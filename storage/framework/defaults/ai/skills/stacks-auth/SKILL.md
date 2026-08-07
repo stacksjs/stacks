@@ -333,7 +333,7 @@ await authUser.authorize('edit-post', post)  // throws if denied
   tokenExpiry: 30,         // days, AUTH_TOKEN_EXPIRY env
   tokenRotation: 7,        // days, AUTH_TOKEN_ROTATION env
   defaultAbilities: ['*'],
-  defaultTokenName: 'auth_token',
+  defaultTokenName: 'auth-token',
   passwordReset: { expire: 60, throttle: 60 }
 }
 ```

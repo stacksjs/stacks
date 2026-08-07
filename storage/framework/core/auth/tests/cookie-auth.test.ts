@@ -10,7 +10,7 @@ describe('authCookie', () => {
   it('carries the token and the attributes a session needs', () => {
     const cookie = authCookie('abc123')
 
-    expect(cookie).toContain('stacks_auth=abc123')
+    expect(cookie).toContain('auth-token=abc123')
     expect(cookie).toContain('Path=/')
     expect(cookie).toContain('HttpOnly')
     expect(cookie).toContain('SameSite=Lax')
@@ -48,7 +48,7 @@ describe('authCookie', () => {
   it('percent-encodes a token containing cookie separators', () => {
     const cookie = authCookie('12|plain;text value')
 
-    expect(cookie).toContain('stacks_auth=12%7Cplain%3Btext%20value')
+    expect(cookie).toContain('auth-token=12%7Cplain%3Btext%20value')
     // The separators must not survive into the header, or the cookie splits.
     expect(cookie.split(';')[0]).not.toContain('plain;')
   })
@@ -67,7 +67,7 @@ describe('clearAuthCookie', () => {
 
 describe('authCookieToken', () => {
   it('finds its cookie among others', () => {
-    const token = authCookieToken(requestWith('theme=dark; stacks_auth=abc123; locale=de'))
+    const token = authCookieToken(requestWith('theme=dark; auth-token=abc123; locale=de'))
     expect(token).toBe('abc123')
   })
 
@@ -81,10 +81,10 @@ describe('authCookieToken', () => {
   it('returns undefined when there is no cookie, no match, or an empty value', () => {
     expect(authCookieToken(new Request('https://example.com/'))).toBeUndefined()
     expect(authCookieToken(requestWith('theme=dark'))).toBeUndefined()
-    expect(authCookieToken(requestWith('stacks_auth='))).toBeUndefined()
+    expect(authCookieToken(requestWith('auth-token='))).toBeUndefined()
   })
 
   it('does not match a cookie whose name merely ends with the wanted one', () => {
-    expect(authCookieToken(requestWith('other_stacks_auth=abc123'))).toBeUndefined()
+    expect(authCookieToken(requestWith('other_auth-token=abc123'))).toBeUndefined()
   })
 })

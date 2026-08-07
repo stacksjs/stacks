@@ -69,6 +69,13 @@ export const defaults: StacksOptions = {
     username: 'email',
     password: 'password',
     defaultTokenName: 'auth-token',
+    // The cookie that carries an access token to a browser. Named separately
+    // from `defaultTokenName` because that one is a per-token label, not a
+    // wire identifier (stacksjs/stacks#2236). `auth-token` keeps the name every
+    // existing reader already looks for.
+    cookie: {
+      name: 'auth-token',
+    },
     // Short-lived access token (1 hour). Pair with the refresh token below
     // for a standard "rotate-on-refresh" flow. A non-expiring (or 30-day)
     // bearer token has no recovery path if it leaks — see #1839.

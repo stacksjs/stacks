@@ -24,7 +24,7 @@ type AuthenticatedUser = Awaited<ReturnType<typeof Auth.getUserFromToken>>
  */
 
 export interface AuthCookieOptions {
-  /** Cookie name. Defaults to `config.auth.cookie.name` or `stacks_auth`. */
+  /** Cookie name. Defaults to {@link authCookieName} — `config.auth.cookie.name`, else `auth-token`. */
   name?: string
   /** Lifetime in seconds. Defaults to the configured token expiry. */
   maxAge?: number
@@ -40,8 +40,62 @@ export interface AuthCookieOptions {
   sameSite?: 'Strict' | 'Lax' | 'None'
 }
 
+/**
+ * RFC 6265 cookie-name grammar: a `token`, i.e. any US-ASCII character except
+ * CTLs and separators. A space, comma, semicolon or equals sign makes the
+ * `Set-Cookie` header malformed.
+ */
+const COOKIE_NAME_RE = /^[!#$%&'*+\-.^_`|~0-9A-Za-z]+$/
+
+/**
+ * The one name the auth cookie has.
+ *
+ * There used to be two. `authCookie()` wrote `stacks_auth` (via
+ * `config.auth.cookie.name`, a key that did not exist on `AuthOptions`, so no
+ * app using `satisfies AuthConfig` could even set it), while the Auth
+ * middleware, `team.ts` and the stx page gate all read
+ * `config.auth.defaultTokenName` — `auth-token`. A cookie the framework wrote
+ * was never one the framework read, which is why apps ended up hand-writing a
+ * token pack into `localStorage` from an inline script instead
+ * (stacksjs/stacks#2236).
+ *
+ * Resolution order:
+ *   1. an explicit `options.name`
+ *   2. `config.auth.cookie.name` — the supported key
+ *   3. `config.auth.defaultTokenName` — DEPRECATED, honoured so an app that
+ *      had renamed it (and thereby renamed the cookie those readers wanted)
+ *      keeps working. Ignored with a warning when it is not a legal cookie
+ *      name, which it very often is not: it is a human-readable token label
+ *      like `Web Session`.
+ *   4. `auth-token`
+ */
+export function authCookieName(options?: AuthCookieOptions): string {
+  if (options?.name)
+    return options.name
+
+  const configured = (config.auth as any)?.cookie?.name
+  if (typeof configured === 'string' && configured.length > 0)
+    return configured
+
+  const legacy = (config.auth as any)?.defaultTokenName
+  if (typeof legacy === 'string' && legacy.length > 0 && legacy !== 'auth-token') {
+    if (COOKIE_NAME_RE.test(legacy))
+      return legacy
+
+    // Falling back rather than emitting a malformed Set-Cookie. This is the
+    // failure the overload made likely, so it says what to do about it.
+    console.warn(
+      `[auth] config.auth.defaultTokenName ("${legacy}") is not a valid cookie name and is being ignored `
+      + `for cookie naming; using "auth-token". defaultTokenName is a personal access token label, not a `
+      + `cookie name — set config.auth.cookie.name instead (stacksjs/stacks#2236).`,
+    )
+  }
+
+  return 'auth-token'
+}
+
 function cookieName(options?: AuthCookieOptions): string {
-  return options?.name ?? (config.auth as any)?.cookie?.name ?? 'stacks_auth'
+  return authCookieName(options)
 }
 
 function defaultMaxAge(): number {

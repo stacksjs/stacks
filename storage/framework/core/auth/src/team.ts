@@ -2,6 +2,7 @@ import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { Auth } from './authentication'
 import { sessionUser } from './session-auth'
+import { authCookieName } from './cookie-auth'
 
 /**
  * Team resolution from a request's real auth credential (bearer token or
@@ -271,7 +272,7 @@ async function resolveSessionUser(request: TeamAuthRequest) {
 }
 
 async function resolveTokenUser(request: TeamAuthRequest) {
-  const cookieName = config.auth?.defaultTokenName || 'auth-token'
+  const cookieName = authCookieName()
   // Guard the bearerToken() call: partial request objects must resolve
   // to "unauthenticated", not crash the auth path.
   const bearer = (typeof request.bearerToken === 'function' ? request.bearerToken() : undefined)

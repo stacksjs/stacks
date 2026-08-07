@@ -1,3 +1,32 @@
+/**
+ * The browser cookie that carries a personal access token.
+ *
+ * One name, in one place. Before stacksjs/stacks#2236 there were two: the
+ * writer (`authCookie()`) defaulted to `stacks_auth` while every reader looked
+ * for `config.auth.defaultTokenName` (`auth-token`), so a cookie the framework
+ * set was never one the framework read.
+ */
+export interface AuthCookieConfig {
+  /**
+   * Cookie name. Must be a valid RFC 6265 token: no spaces, no separators.
+   * @default 'auth-token'
+   */
+  name?: string
+  /** Path the cookie is sent for. @default '/' */
+  path?: string
+  /** Domain, for sharing one session across subdomains. */
+  domain?: string
+  /** Lifetime in seconds. Defaults to `tokenExpiry`, so cookie and token die together. */
+  maxAge?: number
+  /**
+   * Send only over HTTPS. Defaults to true outside local development, where
+   * the dev server is plain HTTP and a Secure cookie would never be stored.
+   */
+  secure?: boolean
+  /** @default 'Lax' — a link from an email arrives signed in; a cross-site POST does not. */
+  sameSite?: 'Strict' | 'Lax' | 'None'
+}
+
 export interface AuthOptions {
   /**
    * Top-level feature gate. When `false`, the auth feature is inert at boot
@@ -79,9 +108,28 @@ export interface AuthOptions {
   defaultAbilities: string[]
 
   /**
-   * The token name used when creating new tokens
+   * The label written to a personal access token's `name` column.
+   *
+   * Per-token and human-readable — it is what a "your active sessions" list
+   * shows, and `createTokenForUser(user, { name: 'iPhone' })` overrides it.
+   *
+   * It is NOT the auth cookie's name, although four separate readers used to
+   * treat it as one (stacksjs/stacks#2236). That overload could not hold: one
+   * key cannot be both a per-row label and a single wire identifier, and an
+   * app setting `defaultTokenName: 'Web Session'` to tidy its sessions UI
+   * silently renamed the cookie those readers looked for — to a string with a
+   * space in it, which RFC 6265 does not permit in a cookie name. Use
+   * {@link AuthCookieConfig.name}.
    */
   defaultTokenName: string
+
+  /**
+   * The browser cookie that carries a personal access token.
+   *
+   * Used by `authCookie()` / `authCookieName()` in `@stacksjs/auth` and by
+   * every framework reader that resolves a signed-in user from a request.
+   */
+  cookie: AuthCookieConfig
 
   /**
    * Password reset configuration

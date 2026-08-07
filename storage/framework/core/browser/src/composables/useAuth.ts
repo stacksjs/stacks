@@ -303,6 +303,50 @@ export function useAuth(): AuthComposable {
     }
   }
 
+
+  /**
+   * Finish a sign-in that completed on the server, typically an OAuth redirect.
+   *
+   * The browser arrives back from the provider with a session the server
+   * established and no client state at all. Before this existed, the only way
+   * to bridge that gap was for the callback to return an HTML page with an
+   * inline script writing the framework's own storage keys by hand
+   * (stacksjs/stacks#2236) — which meant re-deriving `useStorage`'s encoding.
+   * Getting it wrong was easy and quiet: `useStorage` JSON-stringifies on
+   * write, so the string that belongs in `localStorage` under `token` is
+   * `"abc"` WITH the quotes, and passing the user object straight to
+   * `setItem` stored the literal `[object Object]`.
+   *
+   * Two shapes, because there are two ways a server can hand a session over:
+   *
+   *   - **Cookie** (preferred). The callback replies `303` with
+   *     `Set-Cookie: authCookie(token)` and no body. Nothing secret ever
+   *     touches the URL or the DOM. Call this with no argument; it hydrates
+   *     `user` from the cookie-authenticated `/api/me`.
+   *   - **Token pack.** When a cookie is not an option — a cross-origin API,
+   *     say, where the browser would not send one — hand the pack straight in
+   *     and it is stored through the same path `login()` uses.
+   *
+   * Returns the signed-in user, or `null` when the session did not take.
+   *
+   * @example
+   * ```ts
+   * // after redirecting back from /auth/github/callback
+   * const user = await completeSocialLogin()
+   * if (user) location.replace('/account')
+   * ```
+   */
+  async function completeSocialLogin(
+    pack?: { token?: string, refresh_token?: string } | null,
+  ): Promise<UserData | null> {
+    if (pack?.token)
+      token.value = pack.token
+    if (pack?.refresh_token)
+      refreshToken.value = pack.refresh_token
+
+    return fetchAuthUser()
+  }
+
   return {
     user,
     isAuthenticated,
@@ -312,6 +356,7 @@ export function useAuth(): AuthComposable {
     login,
     logout,
     fetchAuthUser,
+    completeSocialLogin,
     checkAuthentication,
     refreshToken,
     getRefreshToken: () => refreshToken.value,
