@@ -1541,6 +1541,70 @@ function validationFailureResponse(errors: Record<string, string[]>): Response {
   return response.validationError(errors) as Response
 }
 
+/**
+ * Whether this request is asking "would this be accepted?" rather than
+ * "do this" (stacksjs/stacks#2226).
+ *
+ * An Action's `validations:` block was a server-only artifact: nothing could
+ * read it from a template or a client script, so every form in every app
+ * retyped the rules in the browser and the two copies drifted. The framework's
+ * own defaults demonstrated it — the browser refused a 7-character password
+ * that `POST /register` would have accepted.
+ *
+ * Rather than serialise the rules (a `schema.*` chain is a live object with
+ * no faithful JSON projection), the client asks the real endpoint to run the
+ * real rules and stops short of the side effect. Same shape as Laravel
+ * Precognition, and deliberately header-compatible with it.
+ *
+ * `?_validate=1` is accepted too: a header cannot be set on a plain form
+ * submission or a `<script client>` block using a bare fetch shorthand, and
+ * requiring one would have put this out of reach of the simplest caller.
+ */
+export function precognitionRequest(req: EnhancedRequest): { only: string[] } | null {
+  const header = req.headers?.get?.('Precognition')
+  const viaHeader = typeof header === 'string' && header.toLowerCase() === 'true'
+
+  let viaQuery = false
+  try {
+    viaQuery = new URL(req.url).searchParams.get('_validate') === '1'
+  }
+  catch {
+    viaQuery = false
+  }
+
+  if (!viaHeader && !viaQuery)
+    return null
+
+  // `Precognition-Validate-Only: email,password` narrows the run to the fields
+  // the form has actually touched, which is what makes validate-on-blur usable:
+  // without it, blurring the first field reports every later field as empty.
+  const only = (req.headers?.get?.('Precognition-Validate-Only') ?? '')
+    .split(',')
+    .map(field => field.trim())
+    .filter(Boolean)
+
+  return { only }
+}
+
+/**
+ * The "nothing to report" answer to a precognition request. 204 rather than an
+ * empty 200 so a client cannot mistake it for the action's real result.
+ *
+ * `Vary` because the same URL and method now has two different answers
+ * depending on a request header — without it a shared cache is entitled to
+ * serve this 204 to a caller that meant to submit.
+ */
+export function precognitionSuccess(): Response {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Precognition': 'true',
+      'Precognition-Success': 'true',
+      'Vary': 'Precognition, Precognition-Validate-Only',
+    },
+  })
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
@@ -1641,6 +1705,29 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       ;(req as any)._requestValidationRules = action.validations
         ?? modelValidationRules(action.modelDefinition ?? action.model)
       try {
+        // A precognition request answers "would this be accepted?" and must
+        // never reach handle() — that is the whole point, and it is why this
+        // returns before authorize/before/handle rather than after validation
+        // falls through. An action with no validations still returns early:
+        // running the handler because there was nothing to check would make
+        // the probe itself the side effect (#2226).
+        const precognition = precognitionRequest(req)
+        if (precognition) {
+          if (!action.validations)
+            return precognitionSuccess()
+
+          const rules = precognition.only.length > 0
+            ? Object.fromEntries(
+                Object.entries(action.validations).filter(([field]) => precognition.only.includes(field)),
+              )
+            : action.validations
+
+          const precognitionResult = await validateActionInput(req, rules)
+          return precognitionResult.valid
+            ? precognitionSuccess()
+            : validationFailureResponse(precognitionResult.errors)
+        }
+
         // Validate action input if validations are defined. Always returns
         // JSON — validation failures are 100% an API-shape signal and HTML
         // pages would be useless here.

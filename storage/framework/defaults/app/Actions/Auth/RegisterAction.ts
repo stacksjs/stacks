@@ -3,6 +3,7 @@ import { Auth, register } from '@stacksjs/auth'
 import { dispatch } from '@stacksjs/events'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
+import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, PASSWORD_POLICY_MESSAGE } from '../../password-policy'
 
 export default new Action({
   name: 'RegisterAction',
@@ -15,8 +16,8 @@ export default new Action({
       message: 'Email must be a valid email address.',
     },
     password: {
-      rule: schema.string().min(6).max(255),
-      message: 'Password must be between 6 and 255 characters.',
+      rule: schema.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH),
+      message: PASSWORD_POLICY_MESSAGE,
     },
     name: {
       rule: schema.string().min(2).max(255),
