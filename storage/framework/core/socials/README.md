@@ -103,6 +103,65 @@ bun test
 
 Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
+## Completing a sign-in
+
+The driver stops at the provider user. These two steps take it the rest of the
+way, and both already exist — do not hand-roll either.
+
+### CSRF state
+
+`withState()` / `getState()` / `validateState()` ship on the abstract driver
+(`src/abstract.ts`). `validateState()` compares in constant time. There is no
+reason to write your own HMAC.
+
+```ts
+const url = driver.withState(await driver.redirectUrl())
+// …provider redirects back…
+if (!driver.validateState(request.get('state')))
+  return socialHandoffFailureRedirect('invalid_state', { redirectTo: '/login' })
+```
+
+### Handing the session to the browser
+
+Do **not** return an HTML page whose inline script writes `localStorage`. The
+session format is the framework's, and re-deriving it is how apps ended up
+double-stringifying tokens and storing the literal `[object Object]` as the
+user (stacksjs/stacks#2236). An inline script also has to escape provider text
+— a display name containing a closing script tag terminates the block.
+
+```ts
+import { socialHandoffRedirect } from '@stacksjs/socials'
+
+const result = await Auth.loginUsingId(user.id)
+
+return socialHandoffRedirect({
+  token: result.token,
+  refreshToken: result.refreshToken,
+  user: { id: user.id, email: user.email, name: user.name },
+  expiresIn: result.expiresIn,
+}, { redirectTo: '/account' })
+```
+
+That is a plain 302 — no HTML, no script, nothing to escape. The pack travels
+in the URL fragment, which is never sent to a server, so it stays out of access
+logs, `Referer` and any proxy in between.
+
+On the landing page:
+
+```ts
+const { completeSocialLogin } = useAuth()
+
+// Returns false when there is no handoff, so it is safe on every load.
+completeSocialLogin()
+```
+
+That writes through the same storage refs an ordinary `login()` uses, so the
+encoding cannot be got wrong, and strips the fragment from the URL and from
+history.
+
+An absolute `redirectTo` is refused unless its host is in `allowedHosts` — the
+redirect carries a token pack, and the target often comes from user input.
+
 ## 🚜 Contributing
 
 Please review the [Contributing Guide](https://github.com/stacksjs/contributing) for details.

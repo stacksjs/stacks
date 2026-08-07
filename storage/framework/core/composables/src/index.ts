@@ -313,3 +313,17 @@ export { useThrottledRef as throttledRef } from './useThrottledRef'
 export { useThrottledRef as refThrottled } from './useThrottledRef'
 export { watchDebounced as debouncedWatch } from './watchDebounced'
 export { watchThrottled as throttledWatch } from './watchThrottled'
+
+// Moving a server-minted session into the browser at the end of a redirect
+// flow (stacksjs/stacks#2236). Shared by @stacksjs/socials (which builds the
+// redirect) and @stacksjs/browser (which consumes it), so the storage format
+// is never re-derived by an application.
+export {
+  buildSessionHandoffUrl,
+  decodeSessionHandoff,
+  encodeSessionHandoff,
+  readSessionHandoff,
+  SESSION_HANDOFF_KEY,
+  stripSessionHandoff,
+  type SessionHandoffPack,
+} from './session-handoff'
