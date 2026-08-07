@@ -269,6 +269,19 @@ export function isDuplicateIndexError(error: unknown): boolean {
   return /duplicate key name|already exists/i.test(message)
 }
 
+/**
+ * True when an `ALTER TABLE ... ADD COLUMN` failed only because the column is
+ * already there.
+ *
+ * SQLite says "duplicate column name", MySQL "Duplicate column name",
+ * Postgres "column ... of relation ... already exists". Adding a column that
+ * exists is the success case for a reconciliation pass, not a failure.
+ */
+export function isDuplicateColumnError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error)
+  return /duplicate column|already exists/i.test(message)
+}
+
 /** Every dialect with a capability row, for CLI help and validation messages. */
 export function knownDialects(): string[] {
   return Object.keys(CAPABILITIES)

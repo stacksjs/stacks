@@ -7,6 +7,7 @@ import {
   indexSqlForDialect,
   migrateTraitTables,
   taggablesTableSql,
+  traitTableColumnGuarantees,
   traitTableIndexSql,
   traitTableNames,
   taggableModelsTableSql,
@@ -448,5 +449,73 @@ describe('the trait pivots exist without a model declaring them', () => {
     link('categorizable_models', 'category_id, categorizable_id, categorizable_type', [1, 1, 'posts'])
     expect(() => link('categorizable_models', 'category_id, categorizable_id, categorizable_type', [1, 1, 'posts'])).toThrow()
     db.close()
+  })
+})
+
+describe('drifted catalogue tables', () => {
+  /**
+   * `CREATE TABLE IF NOT EXISTS` guarantees a table by that NAME, not a table
+   * with these columns. A database whose `categorizables` predates the
+   * owner-scoping column kept its old shape, the create was skipped in
+   * silence, and the unique index then failed with "no such column:
+   * categorizable_id" on every single migrate of every app.
+   */
+  test('adds an owner column a pre-existing table is missing', () => {
+    const db = new Database(':memory:')
+    const sql = sqlHelpers('sqlite')
+
+    // The old shape: no categorizable_id.
+    db.run(`CREATE TABLE categorizables (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(255) NOT NULL,
+      slug VARCHAR(255) NOT NULL,
+      categorizable_type VARCHAR(255) NOT NULL
+    )`)
+
+    // The create is a no-op against it, which is the trap.
+    db.run(categorizablesTableSql(sql))
+    const before = db.query('PRAGMA table_info(categorizables)').all() as { name: string }[]
+    expect(before.some(column => column.name === 'categorizable_id')).toBe(false)
+
+    // The reconciliation pass is what closes the gap.
+    for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
+      if (table !== 'categorizables')
+        continue
+
+      db.run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`)
+    }
+
+    const after = db.query('PRAGMA table_info(categorizables)').all() as { name: string }[]
+    expect(after.some(column => column.name === 'categorizable_id')).toBe(true)
+
+    // And the index that had been failing now applies.
+    const index = traitTableIndexSql().find(statement => statement.includes('categorizables_owner_slug_unique'))
+    expect(() => db.run(indexSqlForDialect(index as string, 'sqlite'))).not.toThrow()
+
+    db.close()
+  })
+
+  test('is a no-op against a table that already has the column', () => {
+    const db = new Database(':memory:')
+    const sql = sqlHelpers('sqlite')
+
+    db.run(categorizablesTableSql(sql))
+    db.run(taggablesTableSql(sql))
+
+    for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
+      // Adding a column that exists throws, and the caller tolerates exactly
+      // that error rather than treating a healthy database as broken.
+      expect(() => db.run(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`))
+        .toThrow(/duplicate column/i)
+    }
+
+    db.close()
+  })
+
+  test('guarantees the owner column on both catalogues', () => {
+    const guarantees = traitTableColumnGuarantees(sqlHelpers('sqlite'))
+
+    expect(guarantees.map(g => `${g.table}.${g.column}`).sort())
+      .toEqual(['categorizables.categorizable_id', 'taggables.taggable_id'])
   })
 })

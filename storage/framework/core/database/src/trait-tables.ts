@@ -49,7 +49,7 @@ import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
 import { sqlHelpers } from './sql-helpers'
-import { indexSqlForDialect, isDuplicateIndexError } from './dialect'
+import { indexSqlForDialect, isDuplicateColumnError, isDuplicateIndexError } from './dialect'
 
 export { indexSqlForDialect } from './dialect'
 
@@ -268,6 +268,28 @@ export function commentableUpvotesTableSql(sql: SqlHelpers): string {
  * supported, {@link migrateTraitTables} drops the clause and tolerates the
  * duplicate-index error on replay instead.
  */
+/**
+ * Columns the indexes below depend on, for tables that may predate them.
+ *
+ * Only additive: a column that is missing gets added with a default, and one
+ * that is present is left alone. Nothing here drops or retypes, so replaying
+ * it against an up-to-date database is a no-op.
+ */
+export function traitTableColumnGuarantees(sql: SqlHelpers): { table: string, column: string, definition: string }[] {
+  return [
+    {
+      table: 'taggables',
+      column: 'taggable_id',
+      definition: `INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID}`,
+    },
+    {
+      table: 'categorizables',
+      column: 'categorizable_id',
+      definition: `INTEGER NOT NULL DEFAULT ${UNSCOPED_OWNER_ID}`,
+    },
+  ]
+}
+
 export function traitTableIndexSql(): string[] {
   return [
     `CREATE INDEX IF NOT EXISTS commentables_owner_index ON commentables (commentables_type, commentables_id)`,
@@ -383,6 +405,23 @@ export async function migrateTraitTables(options: { verbose?: boolean } = {}): P
     }
     catch (error) {
       log.debug(`[trait-tables] Skipped likeable tables: ${error instanceof Error ? error.message : String(error)}`)
+    }
+
+    // `CREATE TABLE IF NOT EXISTS` guarantees a table by that NAME, not a
+    // table with these columns. A database whose `categorizables` predates the
+    // owner-scoping column keeps its old shape, the create is skipped in
+    // silence, and the unique index below then fails with "no such column:
+    // categorizable_id" on every single migrate. Reconcile before indexing.
+    for (const { table, column, definition } of traitTableColumnGuarantees(sql)) {
+      try {
+        await db.unsafe(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`).execute()
+        if (options.verbose) log.info(`Added missing ${table}.${column}`)
+      }
+      catch (error) {
+        // Already present is the ordinary outcome; anything else is real.
+        if (!isDuplicateColumnError(error))
+          throw error
+      }
     }
 
     for (const statement of traitTableIndexSql()) {
