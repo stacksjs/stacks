@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.299...v0.70.300)
+
+## 🐛 Bug Fixes
+
+- **validation**: accept the timestamps the framework itself writes ([ddf683c](https://github.com/stacksjs/stacks/commit/ddf683c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.298...v0.70.299)
 
 ## ✨ Features
