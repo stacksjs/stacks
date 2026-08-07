@@ -4,6 +4,29 @@ import * as fcm from './drivers/fcm'
 
 export * from './drivers'
 
+/*
+ * Named rather than `export * from './drivers'`.
+ *
+ * The declaration build rewrites a star re-export into imports of whatever the
+ * file happens to use, and everything else silently vanishes from the published
+ * types - so `sendWebPush` worked at runtime and did not exist to TypeScript.
+ * Naming them states the package's surface rather than inferring it, and it
+ * survives the build.
+ */
+export {
+  buildVapidHeaders,
+  encryptPayload,
+  generateVapidKeys,
+  sendWebPush,
+} from './drivers/web-push'
+
+export type {
+  SendWebPushOptions,
+  VapidKeys,
+  WebPushResult,
+  WebPushSubscription,
+} from './drivers/web-push'
+
 export interface PushNotification {
   title?: string
   body: string

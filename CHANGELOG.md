@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.308...v0.70.309)
+
+## 🐛 Bug Fixes
+
+- **migrate**: stop sending constraint failures round the migrate:fresh loop ([f5820b7](https://github.com/stacksjs/stacks/commit/f5820b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bun-query-builder 0.2.25 ([1792714](https://github.com/stacksjs/stacks/commit/1792714)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.307...v0.70.308)
 
 ## 🐛 Bug Fixes
