@@ -1,5 +1,6 @@
 import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
-import { useStorage } from '@stacksjs/composables'
+import type { SessionHandoffPack } from '@stacksjs/composables'
+import { readSessionHandoff, stripSessionHandoff, useStorage } from '@stacksjs/composables'
 /// <reference lib="dom" />
 import { ref } from '@stacksjs/stx'
 import { withCsrfHeader } from './csrf'
@@ -45,6 +46,55 @@ const isAuthenticated = ref(false)
  * call in the page.
  */
 let inFlightRefresh: Promise<boolean> | null = null
+
+/**
+ * Finish a social sign-in that arrived as a redirect (stacksjs/stacks#2236).
+ *
+ * Call it on the landing page:
+ *
+ *     const { completeSocialLogin } = useAuth()
+ *     completeSocialLogin()
+ *
+ * With no argument it reads the handoff `socialHandoffRedirect()` put in the
+ * fragment. Pass a pack explicitly if it reached the page another way.
+ *
+ * The point is that this is the ONLY supported way in — before it existed, an
+ * app's callback action returned an HTML page whose inline script wrote
+ * `localStorage` by hand, and had to know that `useStorage` JSON-stringifies
+ * on write. Getting that wrong stored the literal `[object Object]` as the
+ * user. Here the values go through the same refs an ordinary `login()` writes,
+ * so the encoding cannot be re-derived incorrectly — there is nothing to
+ * derive.
+ *
+ * Returns false when there was no handoff to apply, so a page can call it
+ * unconditionally on every load.
+ */
+function completeSocialLogin(pack?: SessionHandoffPack | null): boolean {
+  const resolved = pack ?? (typeof window !== 'undefined' ? readSessionHandoff(window.location.hash) : null)
+
+  if (!resolved)
+    return false
+
+  token.value = resolved.token
+  if (resolved.refreshToken)
+    refreshToken.value = resolved.refreshToken
+
+  if (resolved.user !== undefined && resolved.user !== null)
+    user.value = resolved.user as UserData
+
+  isAuthenticated.value = true
+
+  // Strip the fragment immediately. It is not sent to servers, so it stayed
+  // out of logs and Referer on the way here, but it is in browser history —
+  // and history is shared with anyone who later uses the machine. replaceState
+  // so the Back button does not return to a URL still carrying the pack.
+  if (typeof window !== 'undefined' && !pack) {
+    const rest = stripSessionHandoff(window.location.hash)
+    window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}${rest}`)
+  }
+
+  return true
+}
 
 function clearSession(): void {
   token.value = ''
@@ -307,6 +357,7 @@ export function useAuth(): AuthComposable {
     user,
     isAuthenticated,
     token,
+    completeSocialLogin,
     getToken: () => token.value,
     register,
     login,
