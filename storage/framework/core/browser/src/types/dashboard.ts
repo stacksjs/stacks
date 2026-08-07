@@ -1,3 +1,4 @@
+import type { SessionHandoffPack } from '@stacksjs/composables'
 import type { Ref } from '@stacksjs/stx'
 
 export interface ValidationError {
@@ -86,7 +87,7 @@ export interface AuthComposable {
    * inside the framework instead of being re-derived by an inline script
    * (stacksjs/stacks#2236).
    */
-  completeSocialLogin: (pack?: { token?: string, refresh_token?: string } | null) => Promise<UserData | null>
+  completeSocialLogin: (pack?: SessionHandoffPack | null) => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
   logout: () => void
   getToken: () => string | null
