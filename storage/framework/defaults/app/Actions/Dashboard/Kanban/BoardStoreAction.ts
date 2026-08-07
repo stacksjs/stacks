@@ -46,7 +46,7 @@ export default new Action({
       // is a sort hint, not a unique key. Reorder via /boards/reorder
       // restores tight ordering when the user cares.
       const maxRow = await db.unsafe(
-        'SELECT COALESCE(MAX(position), -1) AS m FROM boards WHERE archived = 0',
+        'SELECT COALESCE(MAX(position), -1) AS m FROM boards WHERE archived = false',
       ).execute() as Array<{ m: number }>
       const nextPosition = (Number(maxRow?.[0]?.m ?? -1) + 1) || 0
 

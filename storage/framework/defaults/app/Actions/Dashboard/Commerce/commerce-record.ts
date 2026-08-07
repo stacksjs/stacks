@@ -174,6 +174,13 @@ export function commerceUrl(input: unknown, source: string, field: string): stri
 }
 
 export function commerceTimestamp(input: unknown, source: string, field = 'created_at'): string {
+  // Postgres and MySQL drivers return Date instances for timestamp columns;
+  // SQLite stores TEXT and returns strings. Accept both.
+  if (input instanceof Date) {
+    if (!Number.isFinite(input.getTime()))
+      throw commerceRecordError(source, field, 'a valid timestamp')
+    return input.toISOString()
+  }
   const raw = typeof input === 'number'
     ? String(input)
     : commerceRequiredString(input, source, field)
@@ -197,6 +204,12 @@ export function commerceOptionalTimestamp(input: unknown, source: string, field:
 }
 
 export function commerceDate(input: unknown, source: string, field: string): string {
+  // Postgres and MySQL drivers return Date instances for date columns.
+  if (input instanceof Date) {
+    if (!Number.isFinite(input.getTime()))
+      throw commerceRecordError(source, field, 'a valid YYYY-MM-DD date')
+    return input.toISOString().slice(0, 10)
+  }
   const raw = commerceRequiredString(input, source, field)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(raw))
     throw commerceRecordError(source, field, 'a valid YYYY-MM-DD date')

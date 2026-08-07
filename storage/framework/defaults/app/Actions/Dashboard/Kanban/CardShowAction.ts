@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { modelBoolean } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface CardRow {
@@ -12,7 +13,8 @@ interface CardRow {
   position: number
   created_by_user_id: number | null
   due_date: string | null
-  archived: number
+  // SQLite stores booleans as 0/1 INTEGER columns; Postgres returns real booleans.
+  archived: number | boolean
   created_at: string | null
   updated_at: string | null
 }
@@ -91,7 +93,7 @@ export default new Action({
           position: card.position,
           createdByUserId: card.created_by_user_id,
           dueDate: card.due_date,
-          archived: card.archived === 1,
+          archived: modelBoolean(card, 'archived'),
           createdAt: card.created_at,
           updatedAt: card.updated_at,
         },

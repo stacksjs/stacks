@@ -10,7 +10,7 @@ export default new Action({
     const rows = await db
       .selectFrom('releases')
       .select(['created_at'])
-      .where('created_at', 'is not', null)
+      .whereNotNull('created_at')
       .orderBy('created_at')
       .execute() as unknown as Array<{ created_at: string }>
 

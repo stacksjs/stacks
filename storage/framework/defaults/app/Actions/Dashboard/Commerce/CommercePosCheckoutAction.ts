@@ -79,6 +79,13 @@ function receiptOptionalText(input: unknown, source: string, fieldName: string):
 }
 
 function receiptTimestamp(input: unknown, source: string, fieldName: string): string {
+  // Postgres and MySQL drivers return Date instances for timestamp columns;
+  // SQLite stores TEXT and returns strings. Accept both.
+  if (input instanceof Date) {
+    if (!Number.isFinite(input.getTime()))
+      throw receiptError(source, fieldName, 'a valid timestamp')
+    return input.toISOString()
+  }
   const raw = receiptText(input, source, fieldName)
   const date = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(raw) ? `${raw.replace(' ', 'T')}Z` : raw)
   if (!Number.isFinite(date.getTime()))

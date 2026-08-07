@@ -35,13 +35,13 @@ export default new Action({
       db
         .selectFrom('campaign_sends')
         .select(['campaign_id', db.fn.count('id').as('count')])
-        .where('opened_at', 'is not', null)
+        .whereNotNull('opened_at')
         .groupBy('campaign_id')
         .execute(),
       db
         .selectFrom('campaign_sends')
         .select(['campaign_id', db.fn.count('id').as('count')])
-        .where('clicked_at', 'is not', null)
+        .whereNotNull('clicked_at')
         .groupBy('campaign_id')
         .execute(),
     ])
