@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.304...v0.70.305)
+
+## ✨ Features
+
+- **deploy**: refuse a tenant deploy that would delete another project's routes ([af647e4](https://github.com/stacksjs/stacks/commit/af647e4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **lint**: take pickier's regex fix, and the two vars it was hiding ([2bbf6da](https://github.com/stacksjs/stacks/commit/2bbf6da)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **desktop**: stop resolving craft from a developer's home directory first ([679fe12](https://github.com/stacksjs/stacks/commit/679fe12)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.303...v0.70.304)
 
 ## ✨ Features
