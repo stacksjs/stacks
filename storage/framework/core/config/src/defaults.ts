@@ -563,6 +563,13 @@ export const defaults: StacksOptions = {
     driver: 'stripe',
   },
 
+  server: {
+    // Empty by default: `/api/**` and the mutating verbs are already forwarded
+    // by `resolveApiProxyRules`, and anything added here shadows a `public/`
+    // file of the same name (stacksjs/stacks#2230).
+    proxy: {},
+  },
+
   ports: {
     frontend: 3000,
     backend: 3001,

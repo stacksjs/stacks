@@ -32,6 +32,7 @@ config/
 ├── hashing.ts      # Password hashing
 ├── logging.ts      # Log configuration
 ├── services.ts     # Third-party services
+├── server.ts       # Views server / API proxy
 └── index.ts        # Config export
 ```
 
@@ -320,6 +321,55 @@ export default defineAuthConfig({
   },
 })
 ```
+
+## Server Config
+
+`config/server.ts` controls the views server in the split views/API topology,
+which is what both `buddy dev` and `buddy serve` run.
+
+The views server renders stx pages and forwards everything else to the API
+process. By default "everything else" means the `/api/**` prefix plus the
+mutating verbs, which never match a page render:
+
+```typescript
+export default {
+  proxy: {
+    prefixes: [],
+    paths: [],
+  },
+} satisfies ServerConfig
+```
+
+That default leaves a plain `GET` route declared at the root on the API process
+unreachable, because the views server treats it as a page and 404s. Name it here
+and it is forwarded:
+
+```typescript
+export default {
+  proxy: {
+    // Exact paths, forwarded whatever the verb.
+    paths: ['/health', '/me'],
+    // Prefixes, forwarded along with their whole subtree.
+    // `/api/` is always forwarded and does not need listing.
+    prefixes: ['/oauth/'],
+    // Verbs forwarded whatever the path. Setting this REPLACES the default
+    // of POST/PUT/PATCH/DELETE rather than adding to it.
+    // methods: ['POST', 'PUT', 'PATCH', 'DELETE'],
+  },
+} satisfies ServerConfig
+```
+
+`buddy dev` prints the effective rules at boot whenever you have widened them,
+so a 404 on a route you know you registered is diagnosable.
+
+One caveat before adding a path: stx runs its request hook *before* static file
+serving, so a path listed here shadows a `public/` file of the same name.
+Listing `/script.js` makes `public/script.js` unreachable.
+
+Why this is configuration rather than a route lookup: the route table is
+registered in the API process, which is a separate process under `buddy dev`
+and potentially a separate host in production, so the views server cannot
+consult it.
 
 ## Environment Variables
 
