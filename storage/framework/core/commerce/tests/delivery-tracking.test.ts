@@ -117,3 +117,21 @@ describe('OUT_FOR_DELIVERY transitions', () => {
     expect(canTransition('REFUNDED', 'OUT_FOR_DELIVERY')).toBe(false)
   })
 })
+
+describe('transitionPath (via the dispatch flow)', () => {
+  // A storefront order sits at PENDING until someone accepts it, and
+  // PENDING -> OUT_FOR_DELIVERY is not a legal edge. Loading it onto a vehicle
+  // IS the accept, so the dispatch path has to walk PROCESSING rather than
+  // silently leave the customer's order reading "pending" while a van drives
+  // to their door. These assert the edges that walk depends on.
+  it('has a two-hop route from a fresh order to the vehicle', () => {
+    expect(canTransition('PENDING', 'OUT_FOR_DELIVERY')).toBe(false)
+    expect(canTransition('PENDING', 'PROCESSING')).toBe(true)
+    expect(canTransition('PROCESSING', 'OUT_FOR_DELIVERY')).toBe(true)
+  })
+
+  it('has no route out of a terminal state, one hop or two', () => {
+    expect(canTransition('REFUNDED', 'PROCESSING')).toBe(false)
+    expect(canTransition('REFUNDED', 'SHIPPED')).toBe(false)
+  })
+})
