@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.305...v0.70.306)
+
+## 🐛 Bug Fixes
+
+- **deploy**: refuse to start a site on a port another tenant already holds ([eb9b4b2](https://github.com/stacksjs/stacks/commit/eb9b4b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.304...v0.70.305)
 
 ## ✨ Features
