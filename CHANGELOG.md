@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.306...v0.70.307)
+
+## ✨ Features
+
+- **push**: a Web Push driver, VAPID and RFC 8291 payload encryption ([0963ad8](https://github.com/stacksjs/stacks/commit/0963ad8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.305...v0.70.306)
 
 ## 🐛 Bug Fixes
