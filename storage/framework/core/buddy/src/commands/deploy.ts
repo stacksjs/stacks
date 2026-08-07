@@ -777,6 +777,85 @@ export async function assertFragmentIsOurs(
   process.exit(ExitCode.FatalError)
 }
 
+/**
+ * Refuse to start a site on a port another tenant is already serving.
+ *
+ * Two processes CAN bind the same port here: ts-cloud's units do not set
+ * exclusive binding, so the kernel load-balances between them instead of
+ * failing. Nothing errors, both services look healthy, and each domain serves
+ * the other tenant's site on roughly half its requests.
+ *
+ * That is exactly what happened when a storefront picked 3070 by reading other
+ * tenants' config files rather than the box: predicthq.org had been on 3070 for
+ * a day and a half, and after the deploy it answered with the storefront.
+ *
+ * Ports already held by THIS project's own units are fine — that is a redeploy
+ * replacing itself.
+ */
+export async function assertPortsAreFree(
+  ip: string,
+  tsCloudConfig: any,
+  log: { error: (m: string) => void, info: (m: string) => void },
+): Promise<void> {
+  const slug = tsCloudConfig.project?.slug || 'app'
+  const wanted = new Map<number, string>()
+
+  for (const [name, site] of Object.entries((tsCloudConfig.sites ?? {}) as Record<string, { port?: number }>)) {
+    const port = Number(site?.port)
+    if (Number.isFinite(port) && port > 0)
+      wanted.set(port, name)
+  }
+
+  if (wanted.size === 0)
+    return
+
+  let listing = ''
+  try {
+    const { execSync } = await import('node:child_process')
+    const args = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+    // `ss -lntp` gives port plus the owning pid; the unit name resolves the
+    // owner, which is what tells a redeploy apart from a collision.
+    listing = execSync(`ssh ${args.map(a => `'${a}'`).join(' ')} bash -s`, {
+      input: `for p in ${[...wanted.keys()].join(' ')}; do
+  pid=$(ss -lntpH "sport = :$p" 2>/dev/null | grep -oE 'pid=[0-9]+' | head -1 | cut -d= -f2)
+  [ -n "$pid" ] || continue
+  unit=$(systemctl status "$pid" 2>/dev/null | head -1 | grep -oE '[a-zA-Z0-9_.@-]+\\.service' | head -1)
+  echo "$p \${unit:-unknown}"
+done`,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+  }
+  catch {
+    // No access, no `ss`, no answer: the deploy's own failures are louder.
+    return
+  }
+
+  const clashes: string[] = []
+  for (const line of listing.split('\n')) {
+    const [portText, unit = 'unknown'] = line.trim().split(/\s+/)
+    const port = Number(portText)
+    if (!Number.isFinite(port) || !wanted.has(port))
+      continue
+
+    // Our own unit holding the port is a redeploy, not a collision.
+    if (unit.startsWith(`${slug}-`))
+      continue
+
+    clashes.push(`  ${port} (site '${wanted.get(port)}') is held by ${unit}`)
+  }
+
+  if (clashes.length === 0)
+    return
+
+  log.error('Another service on the box is already listening on a port this project wants:')
+  for (const clash of clashes)
+    log.error(clash)
+  log.error('Two services on one port do not error: the kernel load-balances, and each domain serves the other\'s site about half the time.')
+  log.info('Pick free ports in config/cloud.ts. `ss -lntp` on the box lists what is taken.')
+  process.exit(ExitCode.FatalError)
+}
+
 export async function resolveDeployEnvValues(
   environment: 'production' | 'staging' | 'development',
   tsCloudConfig?: { project?: { slug?: string } },
@@ -1607,6 +1686,7 @@ async function runHetznerDeploy(args: {
     // serves: if it declares domains this project does not, writing ours would
     // silently drop them. Read before write.
     await assertFragmentIsOurs(ip, tsCloudConfig, log)
+    await assertPortsAreFree(ip, tsCloudConfig, log)
 
     // The attached-to box is fronted by the owner's rpx gateway (it owns :80/:443
     // and terminates TLS). Force rpx for our sites regardless of what the config
