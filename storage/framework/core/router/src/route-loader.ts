@@ -89,23 +89,148 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
  * Resolved through @stacksjs/path so the same import works whether this
  * package runs from the workspace or from `node_modules/@stacksjs/router/`.
  */
+/**
+ * The framework's default route files, as selectable bundles.
+ *
+ * `core` is not listed because it is not optional: it carries the locale
+ * cookie and the `/locale/{code}` redirect, and bootstrap registers it
+ * unconditionally.
+ */
+export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'email'] as const
+
+export type DefaultRouteBundle = typeof DEFAULT_ROUTE_BUNDLES[number]
+
+/** Where {@link loadFrameworkRoutes} leaves the selection for bootstrap.ts. */
+export const DEFAULT_ROUTE_BUNDLES_KEY = '__stacksDefaultRouteBundles'
+
+/**
+ * Which framework default route bundles this app mounts.
+ *
+ * `STACKS_SKIP_DEFAULT_ROUTES=1` was a single boolean over a 724-line
+ * `dashboard.ts` that bundled auth, password reset, 2FA, storefront
+ * cart/checkout, reviews, sitemap, AI and voice together. An app wanting
+ * `/login` and 2FA without shipping `Product` or `Coupon` had exactly two
+ * options: mount the commerce demo surface, or turn everything off and
+ * re-declare the auth routes by hand with the rate limits copied out of
+ * framework source. One reporting app took the second and permanently gave up
+ * 2FA, sign-out-everywhere and API token management (stacksjs/stacks#2229).
+ *
+ * `STACKS_DEFAULT_ROUTES=auth` now names the bundles directly.
+ *
+ * ## Why bundles are not gated on `feature()`
+ *
+ * The issue asks for `feature('auth')` to mount the auth bundle. It cannot:
+ * `feature()` treats a present config object as enabled, and `config/auth.ts`
+ * ships in every scaffolded app with `enabled: true`. Gating on it would mount
+ * `/login`, `/register`, `/generate-two-factor-secret`, `/logout-all` and
+ * `/auth/tokens` in every app that currently runs with `dashboard` off -
+ * silently widening the public surface of existing apps on upgrade. An opt-in
+ * that is on by default is not an opt-in. So selection is explicit, and the
+ * default is exactly what the app got before.
+ *
+ * Precedence: `STACKS_DEFAULT_ROUTES` wins; then the legacy
+ * `STACKS_SKIP_DEFAULT_ROUTES`; then everything.
+ *
+ * Accepted spellings, so the two variables cannot contradict each other in a
+ * surprising way:
+ *   - `STACKS_DEFAULT_ROUTES=auth,email` - exactly those bundles
+ *   - `STACKS_DEFAULT_ROUTES=none` (or empty) - none, same as the old `=1`
+ *   - `STACKS_DEFAULT_ROUTES=all` - everything, same as the old unset
+ *   - `STACKS_SKIP_DEFAULT_ROUTES=1` - none. Still supported, still documented.
+ *
+ * An unknown name is ignored rather than fatal: a typo should cost you the
+ * bundle you misspelled, not the whole boot. `unknown` reports them so the
+ * caller can warn.
+ *
+ * ## Actions still resolve when routes do not
+ *
+ * Worth knowing because it is what made the original failure confusing to
+ * diagnose. Turning bundles off stops the framework's ROUTES from being
+ * registered; it does not stop its ACTIONS from resolving. A handler
+ * referenced by string - `route.post('/login', 'Actions/Auth/LoginAction')` -
+ * is still found in `@stacksjs/defaults`, so an app can re-declare a route in
+ * `routes/api.ts` and point it at a framework action it never copied into
+ * `app/Actions/`. The reporting app's nine hand-written auth routes work
+ * exactly this way, which is why they have no files behind them.
+ */
+export function resolveDefaultRouteBundles(env: NodeJS.ProcessEnv = process.env): Set<DefaultRouteBundle> {
+  return resolveDefaultRouteBundlesWithDiagnostics(env).bundles
+}
+
+/**
+ * {@link resolveDefaultRouteBundles} plus the names it did not recognise, and
+ * whether the app named bundles at all.
+ *
+ * `explicit` matters because it decides who wins against the feature flags. An
+ * app that wrote `STACKS_DEFAULT_ROUTES=auth` has said what it wants; the
+ * `feature('dashboard')` gate must not then withhold it, or the whole point -
+ * mounting auth WITHOUT the dashboard surface - is lost. When nothing is
+ * named, the flags gate exactly as they did before.
+ */
+export function resolveDefaultRouteBundlesWithDiagnostics(
+  env: NodeJS.ProcessEnv = process.env,
+): { bundles: Set<DefaultRouteBundle>, unknown: string[], explicit: boolean } {
+  const all = (): Set<DefaultRouteBundle> => new Set(DEFAULT_ROUTE_BUNDLES)
+  const raw = env.STACKS_DEFAULT_ROUTES
+
+  if (raw !== undefined) {
+    const names = raw.split(',').map(name => name.trim().toLowerCase()).filter(Boolean)
+
+    if (names.length === 0 || names.includes('none'))
+      return { bundles: new Set(), unknown: [], explicit: true }
+    if (names.includes('all'))
+      return { bundles: all(), unknown: [], explicit: true }
+
+    const bundles = new Set<DefaultRouteBundle>()
+    const unknown: string[] = []
+    for (const name of names) {
+      if ((DEFAULT_ROUTE_BUNDLES as readonly string[]).includes(name))
+        bundles.add(name as DefaultRouteBundle)
+      else
+        unknown.push(name)
+    }
+    return { bundles, unknown, explicit: true }
+  }
+
+  // Legacy wholesale switch. Only `1` ever meant anything, and it still does.
+  if (env.STACKS_SKIP_DEFAULT_ROUTES === '1')
+    return { bundles: new Set(), unknown: [], explicit: true }
+
+  return { bundles: all(), unknown: [], explicit: false }
+}
+
 async function loadFrameworkRoutes(): Promise<void> {
-  // Projects that don't use the bundled dashboard / commerce / monitoring
-  // surface area can opt out of framework default route registration
-  // entirely by setting `STACKS_SKIP_DEFAULT_ROUTES=1`. Without it, the
-  // bootstrap imports `defaults/routes/dashboard.ts` (and friends), each
-  // of which references actions that pull in models like `Product`,
-  // `Coupon`, `WaitlistRestaurant`, `Error` — and projects that don't
-  // ship those models flood their API boot with
-  // `[Router] Failed to import action ...` lines for every missing one.
-  //
-  // The per-route override pattern (declare the same path first in
-  // `routes/api.ts`) only scales when you want a handful of overrides;
-  // for projects that want none of the bundled domain at all this gate
-  // is the wholesale escape hatch. Pattern matches the existing
-  // `STACKS_DEV_DASHBOARD=1` opt-in on the dev-server side.
-  if (process.env.STACKS_SKIP_DEFAULT_ROUTES === '1') return
+  const { bundles, unknown, explicit } = resolveDefaultRouteBundlesWithDiagnostics()
+
+  for (const name of unknown)
+    log.warn(`[Routes] STACKS_DEFAULT_ROUTES lists unknown bundle "${name}" — known bundles are ${DEFAULT_ROUTE_BUNDLES.join(', ')}.`)
+
+  if (bundles.size === 0)
+    return
+
+  // Publish the selection for `defaults/bootstrap.ts`, which does the actual
+  // per-bundle registration. A module-scoped export would be cleaner, but
+  // bootstrap.ts is reached by dynamic import from a path this package
+  // resolves at runtime, so there is no import edge to hang it on.
+  ;(globalThis as Record<string, unknown>)[DEFAULT_ROUTE_BUNDLES_KEY] = { bundles, explicit }
+
   try {
+    // The gates in bootstrap.ts call `feature()`, which reads the live config
+    // proxy. Before `overridesReady` resolves that proxy holds
+    // `defaultsForOverrides()`, where every feature key is a present object
+    // with no `enabled` field - and `feature()` treats presence as on. So a
+    // gate evaluated too early answers "enabled" for a feature the app
+    // switched off. `serve/api.ts` and `dev/api.ts` already await it before
+    // calling in; `buddy route:list` and the lazy first-request load in
+    // `handleServerRequest` did not. Awaiting here puts the wait next to the
+    // read instead of relying on every caller to remember
+    // (stacksjs/stacks#2229).
+    try {
+      const { overridesReady } = await import('@stacksjs/config')
+      await overridesReady
+    }
+    catch { /* config unavailable; gates fall back to framework defaults */ }
+
     const { frameworkPath } = await import('@stacksjs/path')
     const bootstrapPath = frameworkPath('defaults/bootstrap.ts')
     if (await Bun.file(bootstrapPath).exists()) {

@@ -41,8 +41,8 @@ describe('TOTP login-challenge wiring', () => {
     expect(enableSource).not.toMatch(/request\.get\('secret'\)/)
   })
 
-  test('routes/dashboard.ts gates setup/enable/disable behind auth, leaves verify-two-factor-login open', () => {
-    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/dashboard.ts'), 'utf-8')
+  test('routes/auth.ts gates setup/enable/disable behind auth, leaves verify-two-factor-login open', () => {
+    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/auth.ts'), 'utf-8')
     const lines = source.split('\n')
 
     const setupLine = lines.find(l => l.includes('generate-two-factor-secret'))
