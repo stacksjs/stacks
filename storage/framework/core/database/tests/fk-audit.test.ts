@@ -66,3 +66,66 @@ describe('getDeclaredFKs (stacksjs/stacks#1916)', () => {
     }
   })
 })
+
+// The auditor and the migration generator have to agree about what counts as
+// "declared", or the audit reports differences that are not defects — and then
+// recommends `migrate:fresh`, which is destructive, to reconcile them.
+//
+// bun-query-builder's rule (`migrations.ts`, `declaresBelongsTo`): convention
+// applies only to a model that declares no `belongsTo`. Once a model documents
+// its relations, a `_id` column outside that list is a column that happens to
+// end in `_id`.
+describe('declared FKs mirror the generator\'s belongsTo rule', () => {
+  const models = [
+    { name: 'Session', table: 'sessions', primaryKey: 'id', attributes: {} },
+    { name: 'Turn', table: 'turns', primaryKey: 'id', attributes: {} },
+    {
+      // Declares its relations, so only `session_id` is a foreign key.
+      name: 'Checkpoint',
+      table: 'checkpoints',
+      attributes: { sessionId: { validation: {} }, turnId: { validation: {} } },
+      belongsTo: ['Session'],
+    },
+    {
+      // Declares none, so convention applies to both columns.
+      name: 'Event',
+      table: 'events',
+      attributes: { sessionId: { validation: {} }, turnId: { validation: {} } },
+    },
+  ] as any
+
+  function fksFor(table: string): string[] {
+    return getDeclaredFKsFromModels(models)
+      .filter(fk => fk.fromTable === table)
+      .map(fk => `${fk.fromColumn}→${fk.toTable}`)
+      .sort()
+  }
+
+  it('honours a declared relation', () => {
+    expect(fksFor('checkpoints')).toContain('session_id→sessions')
+  })
+
+  it('does not invent one the generator will never emit', () => {
+    // `turn_id` is real and points at turns, but Checkpoint never said so. The
+    // generator omits the constraint, so claiming it is missing is noise.
+    expect(fksFor('checkpoints')).not.toContain('turn_id→turns')
+  })
+
+  it('still infers by convention for a model that declares nothing', () => {
+    expect(fksFor('events')).toEqual(['session_id→sessions', 'turn_id→turns'])
+  })
+
+  it('lets an explicit attribute foreignKey win even when belongsTo is declared', () => {
+    const fks = getDeclaredFKsFromModels([
+      { name: 'Turn', table: 'turns', primaryKey: 'id', attributes: {} },
+      { name: 'Session', table: 'sessions', primaryKey: 'id', attributes: {} },
+      {
+        name: 'Checkpoint',
+        table: 'checkpoints',
+        attributes: { turnId: { foreignKey: { table: 'turns' } } },
+        belongsTo: ['Session'],
+      },
+    ] as any)
+    expect(fks.map(fk => `${fk.fromColumn}→${fk.toTable}`)).toContain('turn_id→turns')
+  })
+})

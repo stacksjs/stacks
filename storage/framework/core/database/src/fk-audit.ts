@@ -36,8 +36,10 @@ export function safeGlob(pattern: string): string[] {
 //
 //   1. Declared FKs: walk model files, look at `belongsTo`, compute
 //      the implied FK shape `{ fromTable, fromColumn, toTable,
-//      toColumn }`. Convention is `<related>_id` → `<related>.id`,
-//      same as the migration generator.
+//      toColumn }`. Convention is `<related>_id` → `<related>.id`, and —
+//      exactly as in the migration generator — it applies only to models
+//      that declare no `belongsTo` at all. Once a model documents its
+//      relations, that list is the whole answer.
 //
 //   2. Live FKs: query the live database. SQLite via
 //      `PRAGMA foreign_key_list("…")`, MySQL/Postgres via
@@ -98,11 +100,32 @@ export function getDeclaredFKsFromModels(models: Model[]): DeclaredFK[] {
     const modelName = String(model.name ?? '')
     const attributes = (model.attributes ?? {}) as Record<string, { foreignKey?: boolean | { table: string, column?: string } }>
 
+    const belongsTo = (model as { belongsTo?: unknown }).belongsTo
+    const relations = Array.isArray(belongsTo)
+      ? belongsTo
+      : (belongsTo && typeof belongsTo === 'object'
+          ? Object.keys(belongsTo).map(name => ({ model: name }))
+          : [])
+
+    // A model that documents its `belongsTo` has already answered the
+    // question, so a `_id` column outside that list is a column that happens
+    // to end in `_id` — not a foreign key.
+    //
+    // This mirrors the migration generator exactly (bun-query-builder's
+    // `migrations.ts`, `declaredFkTargets` / `declaresBelongsTo`). Auditing by
+    // convention regardless meant reporting foreign keys the generator was
+    // never going to emit, and then recommending `migrate:fresh` — a
+    // destructive command — to reconcile a difference that was never a defect.
+    // The two halves have to agree about what "declared" means or the audit is
+    // just noise.
+    const declaresBelongsTo = relations.length > 0
+
     for (const [attributeName, attribute] of Object.entries(attributes)) {
       const fromColumn = snakeCase(attributeName)
       if (!fromColumn.endsWith('_id') || attribute.foreignKey === false)
         continue
 
+      // An explicit `foreignKey` on the attribute is authoritative either way.
       if (attribute.foreignKey && typeof attribute.foreignKey === 'object') {
         push({
           fromTable,
@@ -114,18 +137,23 @@ export function getDeclaredFKsFromModels(models: Model[]): DeclaredFK[] {
         continue
       }
 
+      const declaredTarget = relations.some((entry) => {
+        const relatedName = typeof entry === 'string' ? entry : String((entry as { model?: string }).model ?? '')
+        const relatedColumn = typeof entry === 'object' && (entry as { foreignKey?: string }).foreignKey
+          ? String((entry as { foreignKey: string }).foreignKey)
+          : `${snakeCase(relatedName)}_id`
+        return relatedColumn === fromColumn
+      })
+
+      if (declaresBelongsTo && !declaredTarget)
+        continue
+
       const related = meta.get(modelNameForColumn(fromColumn))
       if (related) {
         push({ fromTable, fromColumn, toTable: related.table, toColumn: related.primaryKey, model: modelName })
       }
     }
 
-    const belongsTo = (model as { belongsTo?: unknown }).belongsTo
-    const relations = Array.isArray(belongsTo)
-      ? belongsTo
-      : (belongsTo && typeof belongsTo === 'object'
-          ? Object.keys(belongsTo).map(name => ({ model: name }))
-          : [])
     for (const entry of relations) {
       const relatedName = typeof entry === 'string' ? entry : String((entry as { model?: string }).model ?? '')
       if (!relatedName) continue
