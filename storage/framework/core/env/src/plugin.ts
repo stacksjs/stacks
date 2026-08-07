@@ -159,12 +159,25 @@ export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}):
 }
 
 /**
- * Clear the cached private key. Needed after key rotation and between tests
- * that swap `DOTENV_PRIVATE_KEY*` or `APP_ENV`.
+ * Clear the cached private key AND the recorded environment. Needed after key
+ * rotation and between tests that swap `DOTENV_PRIVATE_KEY*` or `APP_ENV`.
+ *
+ * `loadedEnvName` has to go with it. It deliberately outranks `APP_ENV` in
+ * {@link activeEnvName} — an env file that has been read owns the keys for
+ * anything decrypted afterwards — so leaving it set means a later
+ * `APP_ENV` swap is silently ignored, which is the one thing this function
+ * exists to make possible. Whether it happened to be set at all depended on
+ * which test file ran first in the process, so the env proxy's decryption
+ * tests passed or failed on file ordering and CI went red on roughly half of
+ * all runs (stacksjs/stacks#2259).
+ *
+ * Test-only: nothing outside `core/env/tests` calls this, so clearing the
+ * recorded environment cannot affect a running app.
  */
 export function resetPrivateKeyCache(): void {
   cachedKeyEnv = null
   cachedPrivateKey = undefined
+  loadedEnvName = undefined
 }
 
 /**
