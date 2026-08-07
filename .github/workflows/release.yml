@@ -191,27 +191,49 @@ jobs:
           cd "$smoke_dir"
           echo '{"name":"stacks-release-smoke","private":true}' > package.json
           installed=false
-          # npm's package metadata can become visible before the corresponding
-          # tarball reaches every registry edge. Allow three minutes for that
-          # propagation; the per-attempt timeout still bounds network stalls.
-          for attempt in $(seq 1 18); do
-            # A package published near the end of the workspace can still be
-            # absent from registry metadata cached by the first failed install.
-            # Force each retry to fetch fresh manifests so eventual consistency
-            # can recover without turning a successful publish into a false
-            # release failure.
-            # A registry or package-manager request can stall without exiting;
-            # bound each attempt so one bad connection cannot hold the
-            # serialized framework release queue forever.
-            if timeout 120s bun add --no-cache "stacks@$version"; then
+          # This gate exists to catch a manifest that can never install (a
+          # `workspace:` protocol that escaped into the published artifact).
+          # That failure is deterministic and worth failing the release over.
+          #
+          # A tarball 404 is a different animal: npm publishes ~180 packages
+          # here, and metadata becomes visible on the edges well before every
+          # tarball does. The old three-minute budget was routinely shorter
+          # than that propagation, so a completely successful publish was
+          # reported as a failed release, twice in a row, while the packages
+          # it had just pushed installed fine minutes later.
+          #
+          # So: fail fast on the deterministic error, and be patient about the
+          # transient one. Twelve minutes, backing off, costs nothing when
+          # propagation is quick.
+          attempts=30
+          for attempt in $(seq 1 "$attempts"); do
+            # Force fresh manifests each retry: a package published near the
+            # end of the workspace can be absent from metadata the first failed
+            # install cached. The per-attempt timeout bounds a network stall so
+            # one bad connection cannot hold the serialized release queue.
+            if timeout 120s bun add --no-cache "stacks@$version" 2>install.log; then
               installed=true
               break
             fi
-            if [ "$attempt" -eq 18 ]; then
-              echo "::error::stacks@$version is published but cannot be installed from a clean project"
+
+            cat install.log
+
+            # A protocol or resolution error means the published artifact is
+            # broken. Retrying cannot fix it, and waiting twelve minutes to say
+            # so helps nobody.
+            if grep -qiE 'workspace:|EUNSUPPORTEDPROTOCOL|unsupported URL type' install.log; then
+              echo "::error::stacks@$version published a manifest that cannot be installed (workspace protocol leaked into the artifact)"
               exit 1
             fi
-            sleep 10
+
+            if [ "$attempt" -eq "$attempts" ]; then
+              echo "::error::stacks@$version is published but still could not be installed from a clean project after $attempts attempts"
+              exit 1
+            fi
+
+            # 10s for the first minute, then 30s: quick when the registry is
+            # quick, patient when it is not.
+            if [ "$attempt" -le 6 ]; then sleep 10; else sleep 30; fi
           done
           if [ "$installed" != true ]; then
             exit 1
