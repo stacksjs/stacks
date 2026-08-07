@@ -3,9 +3,18 @@ export {
   useDark,
   useDateFormat,
   useFetch,
+  // Reachable from a client script at last (stacksjs/stacks#1940, stx#1843).
+  // It shipped with per-field validation, `inputProps()` carrying
+  // aria-invalid / aria-describedby, isSubmitting, touched/dirty and
+  // setErrors for 422 mapping — and appeared in neither auto-import surface,
+  // so there was no way to find it without already knowing the package path.
+  // Two production apps hand-rolled N signals plus manual error flags and
+  // manual focus per form rather than use it.
+  useForm,
   useNow,
   useOnline,
   usePreferredDark,
+  useScrollLock,
   useStorage,
   useToggle,
 } from '@stacksjs/composables'
