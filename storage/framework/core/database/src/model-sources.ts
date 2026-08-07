@@ -234,6 +234,20 @@ export function resolveModelSources(options: {
   frameworkRoot?: string
   /** Force the merge on or off, bypassing config and env. */
   includeFrameworkDefaults?: boolean
+  /**
+   * Always stage, even when a single flat root could be read directly.
+   *
+   * For callers that WRITE into the resolved directory. bun-query-builder reads
+   * `.qb-migrations.<dialect>.json` from the models directory as a previous
+   * state, and `regenerateMigrationCorpus` writes one there to force a full
+   * emit. On the fast path that directory is the app's own `app/Models`, so the
+   * sentinel landed in the user's source tree and stayed — and a later generate
+   * with no model snapshot would read it back as "no tables exist" and re-emit
+   * the entire schema. Unreachable before #2220, because an app with models of
+   * its own always had two roots to merge and therefore always staged
+   * (stacksjs/stacks#2255).
+   */
+  forceStage?: boolean
 } = {}): ResolvedModelSources | null {
   const userRoot = options.userRoot ?? path.userModelsPath()
   const frameworkRoot = options.frameworkRoot ?? path.frameworkPath('defaults/app/Models')
@@ -289,7 +303,7 @@ export function resolveModelSources(options: {
   // so the common userland-only project keeps reading its own directory.
   const onlyUser = contributing.length === 0
   const allFlat = models.every(m => basename(join(m.file, '..')) === basename(onlyUser ? userRoot : frameworkRoot))
-  if (roots.length === 1 && allFlat) {
+  if (!options.forceStage && roots.length === 1 && allFlat) {
     return { dir: roots[0]!, models, roots, staged: false, shadowed, excluded, excludedTables }
   }
 
