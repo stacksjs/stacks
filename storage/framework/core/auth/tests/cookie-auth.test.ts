@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { authCookie, authCookieToken, clearAuthCookie } from '../src/cookie-auth'
+import { authCookie, authCookieToken, clearAuthCookie, shouldSecureAuthCookie } from '../src/cookie-auth'
 
 /** A request carrying the given Cookie header, which is all these read. */
 function requestWith(cookie: string): Request {
@@ -43,6 +43,40 @@ describe('authCookie', () => {
   it('can be forced insecure for plain-HTTP development', () => {
     expect(authCookie('abc123', { secure: false })).not.toContain('Secure')
     expect(authCookie('abc123', { secure: true })).toContain('Secure')
+  })
+
+  // The Secure default is decided by the app URL, not the environment name —
+  // `.env.example` ships APP_ENV=development, so an env-name rule failed open
+  // on every HTTPS deployment that kept the default (stacksjs/stacks#2275).
+  describe('shouldSecureAuthCookie', () => {
+    it('always secures an https app URL, whatever the env calls itself', () => {
+      expect(shouldSecureAuthCookie({ url: 'https://openfarm.ing', env: 'development' })).toBe(true)
+      expect(shouldSecureAuthCookie({ url: 'https://openfarm.ing', env: 'local' })).toBe(true)
+      expect(shouldSecureAuthCookie({ url: 'https://stacks.localhost', env: 'development' })).toBe(true)
+    })
+
+    it('drops Secure only for plain-HTTP loopback hosts', () => {
+      expect(shouldSecureAuthCookie({ url: 'http://localhost:3000' })).toBe(false)
+      expect(shouldSecureAuthCookie({ url: 'http://stacks.localhost' })).toBe(false)
+      expect(shouldSecureAuthCookie({ url: 'http://127.0.0.1:5173' })).toBe(false)
+      // A real host on plain HTTP is a misconfiguration, not a dev setup —
+      // the cookie stays Secure so the token never travels in the clear.
+      expect(shouldSecureAuthCookie({ url: 'http://openfarm.ing', env: 'development' })).toBe(true)
+    })
+
+    it('treats a scheme-less URL by its host', () => {
+      // config/app.ts defaults to plain 'stacks.localhost'.
+      expect(shouldSecureAuthCookie({ url: 'stacks.localhost' })).toBe(false)
+      expect(shouldSecureAuthCookie({ url: 'openfarm.ing', env: 'development' })).toBe(true)
+    })
+
+    it('without a URL, only the unambiguous local env names opt out', () => {
+      expect(shouldSecureAuthCookie({ url: '', env: 'local' })).toBe(false)
+      expect(shouldSecureAuthCookie({ url: '', env: 'dev' })).toBe(false)
+      expect(shouldSecureAuthCookie({ url: '', env: 'development' })).toBe(true)
+      expect(shouldSecureAuthCookie({ url: '', env: 'production' })).toBe(true)
+      expect(shouldSecureAuthCookie({ url: '', env: '' })).toBe(true)
+    })
   })
 
   it('percent-encodes a token containing cookie separators', () => {

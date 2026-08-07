@@ -157,7 +157,7 @@ async function startDefaultServer() {
 
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
-  const { authCookieName } = await import('@stacksjs/auth')
+  const { authCookieName, stxPageAuthMiddleware } = await import('@stacksjs/auth')
   const authCookie = authCookieName()
 
   // Which of the framework's default views this app serves (#2237). Defaults
@@ -194,6 +194,10 @@ async function startDefaultServer() {
       cookieName: authCookie,
       redirectTo: '/login',
     },
+    // Override stx-serve's built-in `auth`/`guest` gate, which only checks
+    // that the cookie EXISTS — `document.cookie = 'auth-token=x'` satisfied
+    // it (stacksjs/stacks#2274). These validate the token like a bearer.
+    middleware: stxPageAuthMiddleware({ cookieName: authCookie, redirectTo: '/login' }),
     onRequest: async (req: Request) => {
       const url = new URL(req.url)
 

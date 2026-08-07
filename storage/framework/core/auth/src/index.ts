@@ -37,6 +37,9 @@ export * from './session-auth'
 // Cookie-carried access tokens, for server-rendered pages.
 export * from './cookie-auth'
 
+// The stx page gate (`middleware: ['auth' | 'guest']`), token-validating.
+export * from './page-gate'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,
