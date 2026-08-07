@@ -716,6 +716,67 @@ async function resolveDeclaredTenants(): Promise<string[]> {
  * @param environment - Which `.env.<environment>` to read.
  * @param tsCloudConfig - The deploy target's ts-cloud config, read for `project.slug`.
  */
+/**
+ * Refuse to overwrite a gateway fragment that is serving somebody else.
+ *
+ * `/etc/rpx/sites.d/<slug>.json` is replaced wholesale by a tenant deploy. If
+ * the copy already on the box declares domains this project does not, then the
+ * slug belongs to a different project and writing ours deletes their routes.
+ *
+ * Best-effort on the read (an unreachable box or an absent fragment is the
+ * normal first-deploy case and must not block it) but hard on the answer: a
+ * fragment that clearly belongs to someone else stops the deploy.
+ */
+export async function assertFragmentIsOurs(
+  ip: string,
+  tsCloudConfig: any,
+  log: { error: (m: string) => void, info: (m: string) => void },
+): Promise<void> {
+  const slug = tsCloudConfig.project?.slug || 'app'
+  const ours = new Set(
+    Object.values((tsCloudConfig.sites ?? {}) as Record<string, { domain?: string }>)
+      .map(site => String(site?.domain ?? '').toLowerCase())
+      .filter(Boolean),
+  )
+
+  let remote = ''
+  try {
+    const { execSync } = await import('node:child_process')
+    const args = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+    remote = execSync(`ssh ${args.map(a => `'${a}'`).join(' ')} bash -s`, {
+      input: `cat /etc/rpx/sites.d/${slug}.json 2>/dev/null || true`,
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    })
+  }
+  catch {
+    // No fragment, no box access, no ssh — all fine. The deploy itself will
+    // fail later on anything that actually matters.
+    return
+  }
+
+  if (!remote.trim())
+    return
+
+  // Domains the existing fragment serves, from its route table.
+  const existing = new Set(
+    [...remote.matchAll(/"(?:domain|to|from)"\s*:\s*"([a-z0-9.*-]+\.[a-z]{2,})"/gi)]
+      .map(match => String(match[1]).toLowerCase())
+      .filter(Boolean),
+  )
+
+  const orphaned = [...existing].filter(domain => !ours.has(domain) && !ours.has(domain.replace(/^www\./, '')))
+  if (orphaned.length === 0)
+    return
+
+  log.error(`/etc/rpx/sites.d/${slug}.json on the box already serves ${orphaned.length} domain(s) this project does not declare:`)
+  for (const domain of orphaned.slice(0, 8))
+    log.error(`  ${domain}`)
+  log.error(`Deploying would replace that fragment and take those domains down.`)
+  log.info(`Either the slug '${slug}' belongs to another project (pick a different project.slug), or those domains belong here and should be in config/cloud.ts sites.`)
+  process.exit(ExitCode.FatalError)
+}
+
 export async function resolveDeployEnvValues(
   environment: 'production' | 'staging' | 'development',
   tsCloudConfig?: { project?: { slug?: string } },
@@ -1522,7 +1583,30 @@ async function runHetznerDeploy(args: {
     }
     ip = box.publicIp
     ipv6 = box.publicIpv6
+
+    // A tenant's slug names the files its deploy OWNS on the shared box: the
+    // rpx gateway fragment `/etc/rpx/sites.d/<slug>.json` and the per-tenant
+    // cert units. Colliding with the box owner means the tenant's deploy
+    // rewrites the OWNER's fragment — every one of the owner's routes replaced
+    // by the tenant's, and, because that file also carries the gateway's
+    // global TLS block, TLS broken for every domain on the box.
+    //
+    // This is not hypothetical: a storefront that kept the template's default
+    // slug took stacksjs.com down exactly this way.
+    if ((tsCloudConfig.project?.slug || 'app') === attachTo) {
+      log.error(`This project's slug is '${attachTo}', which is the slug of the box it attaches to.`)
+      log.error(`A tenant's deploy owns /etc/rpx/sites.d/<slug>.json, so deploying would overwrite '${attachTo}'s own gateway fragment and take its sites down.`)
+      log.info(`Set a distinct project.slug in config/cloud.ts (e.g. '${p.projectPath().split('/').pop()}') and deploy again.`)
+      process.exit(ExitCode.FatalError)
+    }
+
     log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
+
+    // Even a unique slug can collide with a tenant that got there first. The
+    // fragment on the box is the source of truth for what this slug currently
+    // serves: if it declares domains this project does not, writing ours would
+    // silently drop them. Read before write.
+    await assertFragmentIsOurs(ip, tsCloudConfig, log)
 
     // The attached-to box is fronted by the owner's rpx gateway (it owns :80/:443
     // and terminates TLS). Force rpx for our sites regardless of what the config
