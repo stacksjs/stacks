@@ -4,6 +4,7 @@ import * as drivers from './drivers'
 import * as licenses from './license-keys'
 import * as methods from './shipping-methods'
 import * as rates from './shipping-rates'
+import * as tracking from './tracking'
 import * as zones from './shipping-zones'
 
 export {
@@ -13,6 +14,7 @@ export {
   methods,
   rates,
   routes,
+  tracking,
   zones,
 }
 
@@ -23,6 +25,7 @@ interface ShippingsNamespace {
   methods: typeof methods
   rates: typeof rates
   routes: typeof routes
+  tracking: typeof tracking
   zones: typeof zones
 }
 
@@ -33,6 +36,7 @@ const shippings: ShippingsNamespace = {
   methods,
   rates,
   routes,
+  tracking,
   zones,
 }
 

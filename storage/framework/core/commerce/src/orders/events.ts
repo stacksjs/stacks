@@ -20,7 +20,14 @@
  * too so the rules are co-located with the events they trigger.
  */
 
-export type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED' | 'REFUNDED'
+export type OrderStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SHIPPED'
+  | 'OUT_FOR_DELIVERY'
+  | 'DELIVERED'
+  | 'CANCELLED'
+  | 'REFUNDED'
 
 /**
  * Whitelisted state transitions. Forward-only progressions and
@@ -33,8 +40,14 @@ export type OrderStatus = 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | '
  */
 const TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   PENDING: ['PROCESSING', 'CANCELLED'],
-  PROCESSING: ['SHIPPED', 'CANCELLED', 'REFUNDED'],
-  SHIPPED: ['DELIVERED', 'REFUNDED'],
+  PROCESSING: ['SHIPPED', 'OUT_FOR_DELIVERY', 'CANCELLED', 'REFUNDED'],
+  // A courier hands off to a last-mile driver; a local kitchen or dispensary
+  // skips SHIPPED entirely and goes straight out on its own van. Both routes
+  // into OUT_FOR_DELIVERY are legal.
+  SHIPPED: ['OUT_FOR_DELIVERY', 'DELIVERED', 'REFUNDED'],
+  // On the vehicle. A failed drop returns it to the depot, so falling back to
+  // SHIPPED has to stay legal, or a missed delivery has nowhere to go.
+  OUT_FOR_DELIVERY: ['DELIVERED', 'SHIPPED', 'CANCELLED', 'REFUNDED'],
   DELIVERED: ['REFUNDED'], // post-delivery refund is the only legal exit
   CANCELLED: ['PROCESSING'], // admin recovery — rare but supported
   REFUNDED: [], // terminal
@@ -86,6 +99,11 @@ export async function emitOrderShipped(order: Record<string, unknown>): Promise<
   await emitOrderEvent('order:shipped', { order })
 }
 
+/** Emit `order:out_for_delivery` when the order is loaded onto a vehicle. */
+export async function emitOrderOutForDelivery(order: Record<string, unknown>): Promise<void> {
+  await emitOrderEvent('order:out_for_delivery', { order })
+}
+
 /** Emit `order:delivered` after the carrier confirms delivery. */
 export async function emitOrderDelivered(order: Record<string, unknown>): Promise<void> {
   await emitOrderEvent('order:delivered', { order })
@@ -110,6 +128,7 @@ export async function emitForStatus(status: OrderStatus, order: Record<string, u
   switch (status) {
     case 'PROCESSING': return emitOrderPaid(order)
     case 'SHIPPED': return emitOrderShipped(order)
+    case 'OUT_FOR_DELIVERY': return emitOrderOutForDelivery(order)
     case 'DELIVERED': return emitOrderDelivered(order)
     case 'CANCELLED': return emitOrderCancelled(order)
     case 'REFUNDED': return emitOrderRefunded(order)

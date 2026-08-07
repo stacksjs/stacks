@@ -29,7 +29,7 @@ export default defineModel({
     observe: true,
   },
 
-  hasMany: ['OrderItem', 'Payment', 'LicenseKey'],
+  hasMany: ['OrderItem', 'Payment', 'LicenseKey', 'DeliveryStop'],
   belongsTo: ['Customer', 'Coupon'],
 
   attributes: {
@@ -39,7 +39,18 @@ export default defineModel({
       validation: {
         rule: schema.string().required(),
       },
-      factory: faker => faker.helpers.arrayElement(['PENDING', 'PREPARING', 'READY', 'DELIVERED', 'CANCELED']),
+      /*
+       * The canonical vocabulary is `OrderStatus` in
+       * `commerce/src/orders/events.ts`, which is what `canTransition` and
+       * `emitForStatus` are keyed on. The factory used to generate
+       * PREPARING / READY / CANCELED, none of which are in that union, so
+       * seeded orders could not legally transition anywhere.
+       *
+       * The column stays a free string rather than an enum: existing
+       * databases hold the old spellings, and adding a CHECK constraint here
+       * would fail their next migration rather than fix their data.
+       */
+      factory: faker => faker.helpers.arrayElement(['PENDING', 'PROCESSING', 'SHIPPED', 'OUT_FOR_DELIVERY', 'DELIVERED']),
     },
 
     totalAmount: {
@@ -141,8 +152,38 @@ export default defineModel({
       },
     },
 
-    appliedCouponId: {
+    /**
+     * Unguessable handle for the customer-facing tracking page.
+     *
+     * A tracking URL is opened from an SMS, on a phone, by someone who is not
+     * signed in, so it authorises on possession of this token. Sequential
+     * order ids would let anyone walk the table.
+     */
+    trackingToken: {
       order: 13,
+      unique: true,
+      fillable: true,
+      validation: { rule: schema.string().max(64) },
+      factory: faker => faker.string.alphanumeric({ length: 32 }),
+    },
+
+    /** Geocoded delivery destination, so the map has somewhere to point. */
+    deliveryLatitude: {
+      order: 14,
+      fillable: true,
+      validation: { rule: schema.number().min(-90).max(90) },
+      factory: faker => faker.location.latitude(),
+    },
+
+    deliveryLongitude: {
+      order: 15,
+      fillable: true,
+      validation: { rule: schema.number().min(-180).max(180) },
+      factory: faker => faker.location.longitude(),
+    },
+
+    appliedCouponId: {
+      order: 16,
       fillable: true,
       validation: {
         rule: schema.string(),
