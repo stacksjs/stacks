@@ -54,6 +54,20 @@ export {
 // Export route introspection helpers
 export { listRegisteredRoutes, routeParams } from './stacks-router'
 
+// Route-model binding (stacksjs/stacks#2231): what lets `can:view,site`
+// reach `SitePolicy.view(user, site)` instead of handing the policy layer a
+// raw path string it can never match a policy against.
+export {
+  clearRouteModelBindings,
+  defineRouteModelBinding,
+  resolveRouteModel,
+  routeModelBindings,
+  setRouteModelFallback,
+  type RouteModelContext,
+  type RouteModelResolution,
+  type RouteModelResolver,
+} from './route-model-binding'
+
 // Export JSON-vs-HTML negotiation predicate so userland can short-circuit
 // the same decision the framework makes in formatResult / error-handler.
 export { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
