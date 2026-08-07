@@ -1,4 +1,5 @@
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { Auth } from './authentication'
 
 /** Whatever the token layer resolves a user to, so the two cannot drift. */
@@ -20,7 +21,8 @@ type AuthenticatedUser = Awaited<ReturnType<typeof Auth.getUserFromToken>>
  *
  * The cookie is httpOnly (a page script never needs it), SameSite=Lax (so a
  * link from an email still arrives signed in, while a cross-site POST does
- * not), and Secure everywhere except local HTTP development.
+ * not), and Secure everywhere except a plain-HTTP loopback app URL — see
+ * `shouldSecureAuthCookie` for exactly how that is decided.
  */
 
 export interface AuthCookieOptions {
@@ -33,8 +35,10 @@ export interface AuthCookieOptions {
   /** Domain, for sharing one session across subdomains. */
   domain?: string
   /**
-   * Send only over HTTPS. Defaults to true outside local development, where
-   * the dev server is plain HTTP and a Secure cookie would never be stored.
+   * Send only over HTTPS. By default this is decided from the configured app
+   * URL: Secure everywhere except a plain-HTTP loopback host (localhost,
+   * `*.localhost`, 127.0.0.1), so a deployment cannot lose the flag by
+   * calling its environment `development`.
    */
   secure?: boolean
   sameSite?: 'Strict' | 'Lax' | 'None'
@@ -109,10 +113,56 @@ function defaultMaxAge(): number {
   return Math.max(60, Math.round(milliseconds / 1000))
 }
 
-function isLocal(): boolean {
-  const environment = String((config.app as any)?.env ?? process.env.APP_ENV ?? '')
-  return environment === 'local' || environment === 'development' || environment === 'dev'
+function isLoopbackHost(hostname: string): boolean {
+  const host = hostname.toLowerCase()
+  return host === 'localhost'
+    || host.endsWith('.localhost')
+    || host === '127.0.0.1'
+    || host === '0.0.0.0'
+    || host === '::1'
+    || host === '[::1]'
 }
+
+/**
+ * Whether the auth cookie should carry `Secure`, decided from what the app
+ * demonstrably is rather than what its environment is called.
+ *
+ * The old rule was "Secure unless APP_ENV looks development-ish", and it
+ * failed open: `.env.example` ships `APP_ENV=development`, so an HTTPS
+ * deployment that never changed the env name served its session token
+ * without `Secure` (stacksjs/stacks#2275). Now the URL decides:
+ *
+ * - an `https://` app URL is always Secure
+ * - a plain-HTTP or scheme-less URL drops Secure only on a loopback host
+ *   (localhost, `*.localhost`, 127.0.0.1) — the one place plain HTTP is a
+ *   development reality rather than a misconfiguration
+ * - with no URL configured at all, only the unambiguous `local` / `dev`
+ *   environment names opt out; `development` no longer does
+ *
+ * Exported for tests; `authCookie()` feeds it the live config.
+ */
+export function shouldSecureAuthCookie(
+  app: { url?: unknown, env?: unknown } = (config.app as any) ?? {},
+): boolean {
+  const rawUrl = String(app?.url ?? process.env.APP_URL ?? '').trim()
+  if (rawUrl) {
+    try {
+      const url = new URL(rawUrl.includes('://') ? rawUrl : `http://${rawUrl}`)
+      if (url.protocol === 'https:')
+        return true
+      return !isLoopbackHost(url.hostname)
+    }
+    catch {
+      // An unparseable URL says nothing either way; fall through to the env.
+    }
+  }
+
+  const environment = String(app?.env ?? process.env.APP_ENV ?? '')
+  return !(environment === 'local' || environment === 'dev')
+}
+
+/** Warned once per process, not per response. */
+let warnedInsecureOverride = false
 
 /**
  * The `Set-Cookie` value that signs a browser in.
@@ -139,8 +189,17 @@ export function authCookie(token: string, options: AuthCookieOptions = {}): stri
   if (options.domain)
     parts.push(`Domain=${options.domain}`)
 
-  if (options.secure ?? !isLocal())
+  if (options.secure ?? shouldSecureAuthCookie()) {
     parts.push('Secure')
+  }
+  else if (options.secure === false && shouldSecureAuthCookie() && !warnedInsecureOverride) {
+    // Explicitly stripping Secure off an app whose URL says HTTPS means the
+    // session token is exposed to any plain-HTTP request to the same host.
+    // The default can no longer produce this combination, so it is always a
+    // deliberate override — say so once rather than failing silently open.
+    warnedInsecureOverride = true
+    log.warn('[auth] authCookie() was asked for secure: false while the app URL is HTTPS — the session cookie will also travel over plain HTTP.')
+  }
 
   return parts.join('; ')
 }
