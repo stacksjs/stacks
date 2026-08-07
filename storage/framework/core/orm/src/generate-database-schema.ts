@@ -39,7 +39,13 @@ function snakeCase(str: string): string {
   return str
     .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
     .replace(/([a-z\d])([A-Z])/g, '$1_$2')
-    .replace(/(\d)([A-Za-z])/g, '$1_$2')
+    // Deliberately no `(\d)([A-Za-z])` rule. A digit followed by a lowercase
+    // letter is not a word boundary: `p256dh` is one token and splitting it
+    // yields `p256_dh`, a column name nothing else in the framework derives.
+    // `sha256Sum` still splits correctly, on the uppercase rule above, which is
+    // the only place a boundary actually is. This matches snakeCase in
+    // `@stacksjs/strings`; the two disagreeing is how the generated types and
+    // the generated SQL end up naming the same column differently.
     .toLowerCase()
 }
 

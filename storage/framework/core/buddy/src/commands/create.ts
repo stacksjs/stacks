@@ -79,13 +79,23 @@ export function create(buddy: CLI): void {
   ensureExecutableScripts(path)
   applyAppVcsTemplate(path)
   await ensureEnv(path, options)
+
+  // Strip BEFORE install, not after. `install()` runs pantry's
+  // post-database-setup hook, which shells out to `./buddy migrate` and
+  // `./buddy seed` — and the migration runner gates a feature's tables on
+  // `config.<feature>.enabled`. Stripping afterwards flipped that config on a
+  // database that had already materialised and seeded every feature, so
+  // `--minimal` produced a project whose config said commerce was off while
+  // `orders`, `carts` and thirty-odd other tables sat there fully populated.
+  // Nothing downstream could tell the difference between that and a project
+  // that had asked for commerce.
+  if (options.minimal)
+    await stripFeatures(path)
+
   await install(path, options)
 
   if (!options.withCore)
     await unvendorCore(path, options)
-
-  if (options.minimal)
-    await stripFeatures(path)
 
       if (startTime) {
         const time = performance.now() - startTime
