@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.307...v0.70.308)
+
+## 🐛 Bug Fixes
+
+- **orm**: a digit followed by a lowercase letter is not a word boundary ([3c571f6](https://github.com/stacksjs/stacks/commit/3c571f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.306...v0.70.307)
 
 ## ✨ Features
