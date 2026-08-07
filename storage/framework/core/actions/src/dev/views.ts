@@ -152,7 +152,8 @@ async function startDefaultServer() {
 
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
-  const authCookie = (config as any)?.auth?.defaultTokenName ?? 'auth-token'
+  const { authCookieName } = await import('@stacksjs/auth')
+  const authCookie = authCookieName()
 
   // Which of the framework's default views this app serves (#2237). Defaults
   // to all of them, so an app that says nothing is unaffected.

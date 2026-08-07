@@ -77,6 +77,16 @@ export interface AuthComposable {
   login: (user: AuthUser) => Promise<LoginResponse | LoginError>
   register: (user: AuthUser) => Promise<RegisterResponse | RegisterError>
   fetchAuthUser: () => Promise<UserData | null>
+  /**
+   * Finish a sign-in the server completed, typically an OAuth redirect.
+   *
+   * Call with no argument when the callback set the auth cookie (the
+   * preferred handoff — nothing secret in the URL or the DOM); pass the token
+   * pack when a cookie is not available. Either way the storage encoding stays
+   * inside the framework instead of being re-derived by an inline script
+   * (stacksjs/stacks#2236).
+   */
+  completeSocialLogin: (pack?: { token?: string, refresh_token?: string } | null) => Promise<UserData | null>
   checkAuthentication: () => Promise<boolean>
   logout: () => void
   getToken: () => string | null

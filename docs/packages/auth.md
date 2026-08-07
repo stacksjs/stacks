@@ -49,8 +49,15 @@ export default {
   password: 'password',
 
   // Token configuration
+  // The LABEL written to a token's `name` column — what a "your active
+  // sessions" list shows. Not the cookie name; see `cookie` below.
   defaultTokenName: 'auth-token',
   defaultAbilities: ['*'],
+
+  // The browser cookie that carries an access token.
+  cookie: {
+    name: 'auth-token',
+  },
   tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
   tokenRotation: 24, // Rotate after 24 hours
 
@@ -710,3 +717,42 @@ route.post('/login', async (req) => {
 | `totpKeyUri(options)` | Generate URI |
 | `generateQRCodeDataURL(uri)` | Generate QR code |
 | `generateQRCodeSVG(uri)` | Generate SVG QR |
+
+## Cookie sessions for the browser
+
+An API client holds a bearer token in a header. A browser coming back from an
+OAuth redirect or a form POST has nothing but cookies, so `@stacksjs/auth`
+carries the same personal access token in an `HttpOnly` cookie:
+
+```ts
+import { Auth, authCookie, clearAuthCookie } from '@stacksjs/auth'
+
+const session = await Auth.loginUsingId(user.id)
+
+return new Response(null, {
+  status: 303,
+  headers: {
+    'Location': '/account',
+    'Set-Cookie': authCookie(String(session.token)),
+  },
+})
+```
+
+The cookie is `HttpOnly` (no page script needs it), `SameSite=Lax` (a link from
+an email arrives signed in, a cross-site POST does not) and `Secure` everywhere
+except local development. It carries a real token, so it is revocable through
+the usual token calls and survives a restart. Sign out with
+`clearAuthCookie()`.
+
+The Auth middleware reads it automatically — bearer header first, then this
+cookie. `authCookieName()` is the single resolver both sides use, so the name
+written is always the name read. Until stacksjs/stacks#2236 it was not:
+`authCookie()` wrote `stacks_auth` while every reader looked for
+`defaultTokenName`, and the whole path was quietly inert.
+
+On the client, finish the handoff instead of writing storage keys by hand:
+
+```ts
+const { completeSocialLogin } = useAuth()
+await completeSocialLogin()
+```

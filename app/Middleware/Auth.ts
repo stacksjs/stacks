@@ -1,4 +1,4 @@
-import { Auth } from '@stacksjs/auth'
+import { Auth, authCookieName } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -33,7 +33,7 @@ export default new Middleware({
     // resolveTokenUser so every cookie-authenticated entry point behaves
     // identically. Distinct from the session_id branch below, which only
     // applies to the `session` guard driver.
-    const tokenCookieName = config.auth?.defaultTokenName || 'auth-token'
+    const tokenCookieName = authCookieName()
     const cookieToken = request.cookie(tokenCookieName)
 
     if (cookieToken) {
