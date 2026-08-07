@@ -241,7 +241,7 @@ Read the top-level fields. Replace `res.meta.page` with `res.current_page`, and 
 Run through this checklist after upgrading:
 
 - `./buddy migrate` — now fails loud on duplicate rows; resolve them as above.
-- `./buddy doctor` — runs the `Database` and `Database FKs` probes today. A unique-index/duplicate-row check is a planned follow-up; until it ships, use the SQL in the [#1952 section](#unique-indexes-are-now-enforced-on-sqlite-1952) for duplicate detection.
+- `./buddy doctor` — runs the `Database`, `Database FKs`, and `Unique indexes` probes, so it now surfaces both orphaned rows and model-declared unique attributes missing their index. The SQL in the [#1952 section](#unique-indexes-are-now-enforced-on-sqlite-1952) remains useful for cleaning up whatever it finds.
 - `sqlite3 database/stacks.sqlite "PRAGMA foreign_key_check;"` — expect empty output on a clean, freshly migrated database.
 - Anonymous-write spot check: `curl -i -X POST http://localhost:3000/api/<model> -d '{}'` should return `401`.
 - Generated list endpoint: `curl -s http://localhost:3000/api/<model> | jq 'keys'` now exposes `current_page` at the top level.
