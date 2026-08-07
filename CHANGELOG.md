@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.310...v0.70.311)
+
+## 🐛 Bug Fixes
+
+- **search**: give Typesense collections a real schema, and extend the data table ([e46088e](https://github.com/stacksjs/stacks/commit/e46088e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.308...v0.70.310)
 
 ## 🐛 Bug Fixes
