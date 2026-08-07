@@ -210,6 +210,25 @@ export interface AuthOptions {
      */
     preventEnumeration?: boolean
   }
+
+  /**
+   * Social sign-in policy (stacksjs/stacks#2276).
+   */
+  socials?: {
+    /**
+     * What happens when a provider identity has no link row yet:
+     *
+     * - `'link'` — a verified-email match links to the existing user, no
+     *   match creates a new user. An UNVERIFIED provider email never links
+     *   to an existing account regardless of this setting (account-takeover
+     *   guard).
+     * - `'create'` — never match by email; a first-time identity always
+     *   becomes a new user.
+     * - `'refuse'` — only identities linked beforehand may sign in.
+     * @default 'link'
+     */
+    matching?: 'link' | 'create' | 'refuse'
+  }
 }
 
 export type AuthConfig = Partial<AuthOptions>

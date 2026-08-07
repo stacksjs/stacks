@@ -33,6 +33,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import {
   DEFAULT_ROUTE_BUNDLES,
+  OPT_IN_ROUTE_BUNDLES,
   resolveDefaultRouteBundles,
   resolveDefaultRouteBundlesWithDiagnostics,
 } from '../src/route-loader'
@@ -77,6 +78,25 @@ const AUTH_ROUTES = [
 describe('resolveDefaultRouteBundles (#2229)', () => {
   test('an app that says nothing gets every bundle', () => {
     expect(resolveDefaultRouteBundles({})).toEqual(new Set(DEFAULT_ROUTE_BUNDLES))
+  })
+
+  // Opt-in bundles (#2276): recognized when named, part of neither the
+  // implicit default nor `all` — both are what an app that said nothing gets,
+  // and OAuth callback URLs in an app with no provider are surface for
+  // nothing. (bootstrap.ts additionally mounts `social` on its own when a
+  // provider is configured; that gate lives there, not in this resolver.)
+  test('opt-in bundles mount when named and never by default', () => {
+    for (const name of OPT_IN_ROUTE_BUNDLES) {
+      expect(resolveDefaultRouteBundles({})).not.toContain(name)
+      expect(resolveDefaultRouteBundles({ STACKS_DEFAULT_ROUTES: 'all' })).not.toContain(name)
+
+      const named = resolveDefaultRouteBundlesWithDiagnostics({ STACKS_DEFAULT_ROUTES: name })
+      expect(named.bundles).toEqual(new Set([name]))
+      expect(named.unknown).toEqual([])
+    }
+
+    expect(resolveDefaultRouteBundles({ STACKS_DEFAULT_ROUTES: 'auth,social' }))
+      .toEqual(new Set(['auth', 'social']))
   })
 
   test('the legacy STACKS_SKIP_DEFAULT_ROUTES=1 still means none', () => {
