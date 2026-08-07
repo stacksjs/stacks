@@ -76,26 +76,58 @@ route.use(MaintenanceMiddleware.toRouterHandler() as any)
 // Overridable by registering the same path in app routes first.
 await route.register(frameworkPath('defaults/routes/core.ts'))
 
-// Feature-gated route registration. The dashboard.ts file currently bundles
-// ~687 lines covering auth, password reset, email subscribe, storefront
-// cart/checkout, reviews, sitemap, AI, voice, and the admin dashboard's
-// REST surface. Until that file is split per-feature (auth.ts, marketing.ts,
-// commerce.ts, monitoring.ts), the whole thing loads when `dashboard` is
-// activated and stays inert otherwise.
+// Which default route bundles this app mounts. The route loader resolves the
+// selection (STACKS_DEFAULT_ROUTES, or the legacy STACKS_SKIP_DEFAULT_ROUTES)
+// and leaves it here; see `resolveDefaultRouteBundles` in
+// `core/router/src/route-loader.ts`. Absent when bootstrap is imported by
+// something other than the loader, in which case every bundle is eligible and
+// the feature gates below decide, exactly as before.
+const selection = (globalThis as Record<string, unknown>).__stacksDefaultRouteBundles as
+  { bundles: Set<string>, explicit: boolean } | undefined
+
+/**
+ * Whether a bundle mounts.
+ *
+ * An app that NAMED its bundles has already answered the question, so the
+ * feature flag does not get a second veto - otherwise `STACKS_DEFAULT_ROUTES=auth`
+ * would still be withheld from an app running with `dashboard` off, which is
+ * the exact case this exists for. When nothing was named, the flags gate
+ * precisely as they did before.
+ */
+function mounts(bundle: string, featureEnabled: boolean): boolean {
+  if (selection && !selection.bundles.has(bundle))
+    return false
+  return selection?.explicit ? true : featureEnabled
+}
+
+// Auth: login, registration, logout, refresh/revoke, passkeys, TOTP 2FA and
+// password reset. Split out of dashboard.ts so it can be mounted on its own
+// (stacksjs/stacks#2229) — previously the only way to get `/login` was to
+// activate `dashboard` and take the storefront, reviews, AI and voice surface
+// with it.
 //
-// Apps that need only a slice — e.g. a marketing site that wants
-// `/api/email/subscribe` and `/api/contact` but not the rest — can either
-//   1. Activate `dashboard` and live with the over-broad register; the
-//      action handlers for routes you don't hit never fire, and their
-//      models stay un-loaded as long as the corresponding feature flag
-//      (`commerce`, `cms`, `monitoring`) is off, so there's no hidden
-//      cost beyond the bun-router route-table entries.
-//   2. Define the routes they want directly in `routes/api.ts` —
-//      first-registration-wins means the user version takes priority.
+// Registered BEFORE dashboard.ts, which is where these lived, so the
+// first-registration-wins order among framework routes is unchanged.
 //
-// Once the per-feature route split lands, each `if (feature('X'))` block
-// below registers just the X-specific routes file.
-if (feature('dashboard')) {
+// Deliberately NOT gated on `feature('auth')`, despite the issue asking for
+// it: `config/auth.ts` ships in every app with `enabled: true`, so that gate
+// is true everywhere and would mount the auth surface — including
+// `/generate-two-factor-secret`, `/logout-all` and `/auth/tokens` — in apps
+// currently running with `dashboard` off. Widening an app's public surface on
+// upgrade is not something a refactor gets to do silently.
+if (mounts('auth', feature('dashboard')))
+  await route.register(frameworkPath('defaults/routes/auth.ts'))
+
+// The rest of dashboard.ts: email subscribe, storefront cart/checkout,
+// reviews, sitemap, AI, voice, and the admin dashboard's REST surface. Still
+// one file and still one gate — splitting auth out was the case with a
+// reporter behind it; marketing.ts / commerce.ts / monitoring.ts remain the
+// obvious next cuts.
+//
+// Apps that need only a slice can also define the routes they want directly
+// in `routes/api.ts` — first-registration-wins means the user version takes
+// priority.
+if (mounts('dashboard', feature('dashboard'))) {
   await route.register(frameworkPath('defaults/routes/dashboard.ts'))
   // JSON endpoints for the dev dashboard UI. Kept separate from the view
   // routes above so the data layer is one obvious file to grep.
@@ -112,6 +144,6 @@ if (feature('dashboard')) {
 // non-default mount path register their own routes in `routes/api.ts`
 // and the framework's mount silently no-ops since user routes
 // register first.
-if (feature('email')) {
+if (mounts('email', feature('email'))) {
   await route.register(frameworkPath('defaults/routes/email.ts'))
 }

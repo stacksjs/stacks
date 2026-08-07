@@ -61,14 +61,18 @@ describe('dev-only default routes — registration gate (#1955)', () => {
     expect(routes).not.toContain('GET /install')
     expect(routes).not.toContain('GET /test-error')
     // Sanity: the file still registered — the gate fired, not a broken import.
-    expect(routes).toContain('POST /login')
+    // Anchored on a route dashboard.ts still owns. This used to be
+    // `POST /login`, which moved to defaults/routes/auth.ts when the auth
+    // bundle was split out (stacksjs/stacks#2229) and the fixture only imports
+    // dashboard.ts.
+    expect(routes).toContain('POST /ai/ask')
   }, 30000)
 
   test('APP_ENV=staging omits both (allowlist, not a production blocklist)', async () => {
     const routes = await routesFor('staging')
     expect(routes).not.toContain('GET /install')
     expect(routes).not.toContain('GET /test-error')
-    expect(routes).toContain('POST /login')
+    expect(routes).toContain('POST /ai/ask')
   }, 30000)
 
   test('unset APP_ENV/NODE_ENV keeps both (buddy dev out of the box)', async () => {

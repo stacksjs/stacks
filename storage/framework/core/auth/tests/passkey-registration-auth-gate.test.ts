@@ -39,8 +39,8 @@ describe('passkey registration auth gate', () => {
     expect(source).not.toMatch(/const email = request\.get\('email'\)/)
   })
 
-  test('routes/dashboard.ts gates both registration routes behind middleware(\'auth\')', () => {
-    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/dashboard.ts'), 'utf-8')
+  test('routes/auth.ts gates both registration routes behind middleware(\'auth\')', () => {
+    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/auth.ts'), 'utf-8')
 
     const genLine = source.split('\n').find(l => l.includes('generate-registration-options'))
     const verifyLine = source.split('\n').find(l => l.includes('/verify-registration'))
@@ -52,7 +52,7 @@ describe('passkey registration auth gate', () => {
   })
 
   test('passkey AUTHENTICATION (login) routes remain unauthenticated', () => {
-    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/dashboard.ts'), 'utf-8')
+    const source = readFileSync(resolve(DEFAULTS_ROOT, 'routes/auth.ts'), 'utf-8')
 
     const genAuthLine = source.split('\n').find(l => l.includes('generate-authentication-options'))
     const verifyAuthLine = source.split('\n').find(l => l.includes('/verify-authentication'))

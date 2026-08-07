@@ -74,6 +74,48 @@ export default defineModel({
 } as const)
 ```
 
+### Framework Default Routes
+
+Stacks ships default routes of its own - auth, the admin dashboard's REST
+surface, and email webhooks - registered *after* your routes, so anything you
+declare yourself always wins.
+
+Pick which of them you mount with `STACKS_DEFAULT_ROUTES`:
+
+```bash
+# Auth only: login, register, logout, refresh/revoke, passkeys, 2FA, password reset
+STACKS_DEFAULT_ROUTES=auth
+
+# Several bundles
+STACKS_DEFAULT_ROUTES=auth,email
+
+# Everything (the default when the variable is unset)
+STACKS_DEFAULT_ROUTES=all
+
+# Nothing
+STACKS_DEFAULT_ROUTES=none
+```
+
+Available bundles are `auth`, `dashboard` and `email`. Unset means all of them,
+so an app that says nothing keeps the behaviour it already had.
+`STACKS_SKIP_DEFAULT_ROUTES=1` still means "none" and is still supported.
+
+This exists so an app can mount `/login` and 2FA without also mounting the
+storefront, reviews, AI and voice routes that share `dashboard.ts`. Before it,
+the only way to avoid those was to turn everything off and re-declare the auth
+routes by hand, rate limits included.
+
+One asymmetry worth knowing, because it is confusing when you hit it: turning
+bundles off stops framework **routes** from registering, but framework
+**actions** still resolve. A route you declare yourself can point straight at
+one:
+
+```typescript
+// routes/api.ts — works with STACKS_DEFAULT_ROUTES=none,
+// with no file in app/Actions/
+route.post('/login', 'Actions/Auth/LoginAction').rateLimit(5, 'minute')
+```
+
 ### Manual API Routes
 
 ```typescript
