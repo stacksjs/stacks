@@ -65,6 +65,19 @@ export interface OpenDevWindowOptions {
 
 export type CraftLauncher = (command: string[]) => void | Promise<void>
 
+/**
+ * Locate the `craft` binary.
+ *
+ * Order matters: an explicit path or `CRAFT_BIN` wins, then the copy installed
+ * into the app's own `node_modules`, then whatever is on `PATH`. The
+ * `~/Code/Tools/craft` checkout is last and is purely a convenience for people
+ * developing Craft itself — it used to be *first*, which meant an app resolved
+ * a stranger's working tree if one happened to exist and ignored the version it
+ * actually depends on.
+ *
+ * Returning a bare `'craft'` when nothing matches keeps the old behaviour of
+ * deferring to `PATH` resolution at spawn time.
+ */
 export function resolveCraftBinary(explicit: string | undefined = process.env.CRAFT_BIN): string {
   if (explicit) {
     if (!existsSync(explicit))
@@ -72,11 +85,13 @@ export function resolveCraftBinary(explicit: string | undefined = process.env.CR
     return explicit
   }
 
-  const craftRoot = join(homedir(), 'Code/Tools/craft')
+  const devCheckout = join(homedir(), 'Code/Tools/craft')
   const candidates = [
-    join(craftRoot, 'packages/zig/zig-out/bin/craft'),
-    join(craftRoot, 'craft'),
-    join(craftRoot, 'bin/craft'),
+    join(process.cwd(), 'node_modules/.bin/craft'),
+    join(process.cwd(), 'node_modules/craft/bin/craft'),
+    join(devCheckout, 'packages/zig/zig-out/bin/craft'),
+    join(devCheckout, 'craft'),
+    join(devCheckout, 'bin/craft'),
   ]
 
   return candidates.find(candidate => existsSync(candidate)) || 'craft'
