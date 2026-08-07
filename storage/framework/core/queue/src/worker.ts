@@ -38,6 +38,9 @@ let workerId = ''
  */
 const inFlightJobs = new Set<Promise<unknown>>()
 
+/** When a reserve failure was last reported, per queue. See the poll loop. */
+const reserveErrorLoggedAt = new Map<string, number>()
+
 /**
  * Track a job promise so {@link stopProcessor} can await it. The
  * promise is removed from the set when it settles (regardless of
@@ -276,8 +279,23 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         try {
           jobs = await fetchPendingJobs(queueName, concurrency)
         }
-        catch {
-          // Ignore fetch errors, will retry next cycle
+        catch (error) {
+          // Reported, not swallowed. This `catch` used to be bare, and it hid a
+          // worker that could not reserve anything at all: `whereNull` did not
+          // exist on the update builder, so every claim threw a TypeError in
+          // here and the loop carried on printing "Listening for jobs..." once a
+          // second with no error anywhere. A transient database failure and a
+          // reserve that can never work looked identical for months.
+          //
+          // Rate-limited to once a minute per queue, because the alternative to
+          // silence is a log line every second, and a log nobody can read is the
+          // same as no log.
+          const now = Date.now()
+          const last = reserveErrorLoggedAt.get(queueName) ?? 0
+          if (now - last > 60_000) {
+            reserveErrorLoggedAt.set(queueName, now)
+            log.error(`[queue] Could not reserve jobs on "${queueName}" — retrying each cycle:`, error)
+          }
           continue
         }
 
