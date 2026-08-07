@@ -98,7 +98,18 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
  */
 export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'email'] as const
 
-export type DefaultRouteBundle = typeof DEFAULT_ROUTE_BUNDLES[number]
+/**
+ * Bundles an app must ask for. Excluded from the implicit default AND from
+ * `all`, because both are what an app that said nothing gets: `social` mounts
+ * OAuth callback URLs, which are surface for nothing in an app that never
+ * configured a provider (stacksjs/stacks#2276). Naming one in
+ * `STACKS_DEFAULT_ROUTES` mounts it like any other; bootstrap additionally
+ * mounts `social` on its own when a provider is actually configured, so the
+ * env var is only needed to force it on or off.
+ */
+export const OPT_IN_ROUTE_BUNDLES = ['social'] as const
+
+export type DefaultRouteBundle = typeof DEFAULT_ROUTE_BUNDLES[number] | typeof OPT_IN_ROUTE_BUNDLES[number]
 
 /** Where {@link loadFrameworkRoutes} leaves the selection for bootstrap.ts. */
 export const DEFAULT_ROUTE_BUNDLES_KEY = '__stacksDefaultRouteBundles'
@@ -184,10 +195,13 @@ export function resolveDefaultRouteBundlesWithDiagnostics(
     const bundles = new Set<DefaultRouteBundle>()
     const unknown: string[] = []
     for (const name of names) {
-      if ((DEFAULT_ROUTE_BUNDLES as readonly string[]).includes(name))
+      if ((DEFAULT_ROUTE_BUNDLES as readonly string[]).includes(name)
+        || (OPT_IN_ROUTE_BUNDLES as readonly string[]).includes(name)) {
         bundles.add(name as DefaultRouteBundle)
-      else
+      }
+      else {
         unknown.push(name)
+      }
     }
     return { bundles, unknown, explicit: true }
   }

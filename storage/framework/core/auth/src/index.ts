@@ -40,6 +40,9 @@ export * from './cookie-auth'
 // The stx page gate (`middleware: ['auth' | 'guest']`), token-validating.
 export * from './page-gate'
 
+// Social sign-in: which local user a provider identity resolves to.
+export * from './socials'
+
 // TOTP (Two-Factor Authentication) - re-export from ts-auth
 export {
   generateTOTP,

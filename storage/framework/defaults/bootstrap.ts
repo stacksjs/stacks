@@ -147,3 +147,19 @@ if (mounts('dashboard', feature('dashboard'))) {
 if (mounts('email', feature('email'))) {
   await route.register(frameworkPath('defaults/routes/email.ts'))
 }
+
+// Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`
+// (stacksjs/stacks#2276). An opt-in bundle, NOT part of the implicit default
+// set or `all` — OAuth callback URLs in an app that configured no provider
+// are surface for nothing. So `mounts()` does not apply here: an app that
+// NAMED its bundles decides outright (`social` listed → on, absent → off),
+// and an app that said nothing gets it exactly when a provider is actually
+// configured in config/services.ts — configuring GitHub and finding
+// /auth/github dead would be the puzzle, not the mount.
+const { configuredSocialProviders } = await import('@stacksjs/socials')
+const mountSocial = selection?.explicit
+  ? selection.bundles.has('social')
+  : configuredSocialProviders().length > 0
+if (mountSocial) {
+  await route.register(frameworkPath('defaults/routes/socials.ts'))
+}
