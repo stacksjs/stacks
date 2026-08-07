@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.298...v0.70.299)
+
+## ✨ Features
+
+- **commerce**: geocode a delivery address, and check it is in range ([ef19905](https://github.com/stacksjs/stacks/commit/ef19905)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **ci**: stop reporting a good release as failed while npm propagates ([4a132e1](https://github.com/stacksjs/stacks/commit/4a132e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.297...v0.70.298)
 
 ## 🐛 Bug Fixes
