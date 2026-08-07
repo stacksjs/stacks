@@ -13,4 +13,12 @@ export { FRAMEWORK_DEFAULTS } from './defaults'
 export { validateConfig, reportConfigIssues, type ConfigValidationIssue } from './validators'
 export { feature, enableFeature, disableFeature, resetFeature, listFeatures } from './features'
 export { resolveViewPatterns, type DefaultViewsSetting, type ViewPatternResolution } from './views'
+export {
+  createRequestContext,
+  installRequestContext,
+  parseCookieHeader,
+  useRequestEvent,
+  type RequestContextSnapshot,
+  type StacksRequestContext,
+} from './request-context'
 export * from './capabilities'

@@ -1,7 +1,9 @@
+import type { RequestContextSnapshot } from '@stacksjs/config'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
+import { installRequestContext, parseCookieHeader } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -28,60 +30,43 @@ import { log } from '@stacksjs/logging'
  * that precedent instead of a mechanism that demonstrably doesn't work
  * in this server.
  */
-;(globalThis as any).requestContext = {
-  cookie(name: string): string | null {
-    // stx builds a per-request snapshot and refreshes this mirror
-    // immediately before each server script runs, so it is the accurate
-    // source even when a concurrent request has already moved on. The
-    // hook-set global below is the fallback for stx versions that predate
-    // it. Preferring the snapshot matters most for the thing cookies are
-    // usually carrying: whoever is signed in.
-    const snapshot = (globalThis as { __stxServeContext?: { cookies?: Record<string, string> } }).__stxServeContext
-    if (snapshot?.cookies && name in snapshot.cookies)
-      return snapshot.cookies[name] ?? null
+/**
+ * Where this server's snapshot comes from.
+ *
+ * stx builds a per-request snapshot and refreshes `__stxServeContext`
+ * immediately before each server script runs, so it is the accurate source even
+ * when a concurrent request has already moved on. The two hook-set globals are
+ * the fallback for stx versions that predate it. Preferring the snapshot
+ * matters most for the thing cookies usually carry: whoever is signed in.
+ *
+ * This function is the ONLY thing that differs from the dev server now — the
+ * object itself is built by the shared factory, so production can no longer
+ * quietly grow a different `url()` or lose `locale()` (#2232).
+ */
+function productionRequestSnapshot(): RequestContextSnapshot | undefined {
+  const snapshot = (globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext
+  const legacyCookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
+  const legacySearch = (globalThis as { __stxServeSearch?: string }).__stxServeSearch
 
-    const cookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
-    return cookies?.[name] ?? null
-  },
-  // The full request URL, as the dev server has always returned — production
-  // used to return only the query string, so a page that did
-  // `new URL(requestContext.url())` worked in development and threw on the
-  // box. `search()` is the query string for callers that only want that.
-  url(): string {
-    const snapshot = (globalThis as { __stxServeContext?: { url?: string, search?: string } }).__stxServeContext
-    return snapshot?.url || snapshot?.search || (globalThis as { __stxServeSearch?: string }).__stxServeSearch || ''
-  },
-  search(): string {
-    const snapshot = (globalThis as { __stxServeContext?: { search?: string } }).__stxServeContext
-    return snapshot?.search ?? (globalThis as { __stxServeSearch?: string }).__stxServeSearch ?? ''
-  },
-  // The dev server has always exposed this; production had not, so a page
-  // that branched on the locale worked under `buddy dev` and threw
-  // "requestContext.locale is not a function" on the box.
-  locale(): string {
-    const snapshot = (globalThis as { __stxServeContext?: { locale?: string | null } }).__stxServeContext
-    return snapshot?.locale ?? 'en'
-  },
+  if (!snapshot && !legacyCookies && legacySearch === undefined)
+    return undefined
+
+  return {
+    ...snapshot,
+    cookies: snapshot?.cookies ?? legacyCookies ?? {},
+    // `url` used to fall back to the query string here, which is exactly how
+    // `new URL(requestContext.url())` came to work in dev and throw on the box.
+    // Kept as a last resort only because an old snapshot has nothing better.
+    url: snapshot?.url || snapshot?.search || legacySearch || '',
+    search: snapshot?.search ?? legacySearch ?? '',
+  }
 }
 
+installRequestContext(productionRequestSnapshot)
+
+/** Byte-identical to the dev server's copy, so both now share one. */
 function parseCookies(req: Request): Record<string, string> {
-  const out: Record<string, string> = {}
-  const header = req.headers.get('cookie') || ''
-  if (!header)
-    return out
-  for (const part of header.split(';')) {
-    const trimmed = part.trim()
-    const eq = trimmed.indexOf('=')
-    if (eq === -1)
-      continue
-    const k = trimmed.slice(0, eq).trim()
-    const v = trimmed.slice(eq + 1).trim()
-    if (!k)
-      continue
-    try { out[k] = decodeURIComponent(v) }
-    catch { out[k] = v }
-  }
-  return out
+  return parseCookieHeader(req.headers.get('cookie'))
 }
 
 /**
