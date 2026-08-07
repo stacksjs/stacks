@@ -71,7 +71,7 @@
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/stx": "^0.2.148",
-    "bun-query-builder": "^0.2.23"
+    "bun-query-builder": "^0.2.24"
   },
   "peerDependencies": {
     "@stripe/stripe-js": "^9.10.0"
