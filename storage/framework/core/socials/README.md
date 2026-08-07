@@ -151,13 +151,15 @@ On the landing page:
 ```ts
 const { completeSocialLogin } = useAuth()
 
-// Returns false when there is no handoff, so it is safe on every load.
-completeSocialLogin()
+// Safe on every load: resolves null when there was no handoff to apply.
+const user = await completeSocialLogin()
 ```
 
 That writes through the same storage refs an ordinary `login()` uses, so the
 encoding cannot be got wrong, and strips the fragment from the URL and from
-history.
+history. It then confirms the session against `/api/me`, which is also what
+picks up the cookie handoff below — there the browser holds no tokens at all
+and there is nothing in the fragment to apply.
 
 An absolute `redirectTo` is refused unless its host is in `allowedHosts` — the
 redirect carries a token pack, and the target often comes from user input.

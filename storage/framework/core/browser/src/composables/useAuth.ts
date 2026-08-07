@@ -69,7 +69,7 @@ let inFlightRefresh: Promise<boolean> | null = null
  * Returns false when there was no handoff to apply, so a page can call it
  * unconditionally on every load.
  */
-function completeSocialLogin(pack?: SessionHandoffPack | null): boolean {
+function applySessionHandoff(pack?: SessionHandoffPack | null): boolean {
   const resolved = pack ?? (typeof window !== 'undefined' ? readSessionHandoff(window.location.hash) : null)
 
   if (!resolved)
@@ -386,22 +386,32 @@ export function useAuth(): AuthComposable {
    * if (user) location.replace('/account')
    * ```
    */
-  async function completeSocialLogin(
-    pack?: { token?: string, refresh_token?: string } | null,
-  ): Promise<UserData | null> {
-    if (pack?.token)
-      token.value = pack.token
-    if (pack?.refresh_token)
-      refreshToken.value = pack.refresh_token
+  async function completeSocialLogin(pack?: SessionHandoffPack | null): Promise<UserData | null> {
+    // Fragment or explicit pack first: it writes the tokens through the same
+    // refs `login()` uses and strips the fragment out of history.
+    const applied = applySessionHandoff(pack)
 
-    return fetchAuthUser()
+    // Then confirm with the server. This is what covers the cookie handoff,
+    // where the browser arrives holding no tokens at all and the session lives
+    // in an httpOnly cookie the page cannot read — `applySessionHandoff`
+    // returns false and there is nothing to apply, but the request is
+    // authenticated all the same.
+    //
+    // Also worth the round-trip when a pack WAS applied: the pack is a claim
+    // made by a redirect, and `/api/me` is the server agreeing with it. An
+    // expired or revoked token then fails here rather than at the next call,
+    // which is where a confusing session comes from.
+    const confirmed = await fetchAuthUser()
+    if (confirmed || applied)
+      return confirmed
+
+    return null
   }
 
   return {
     user,
     isAuthenticated,
     token,
-    completeSocialLogin,
     getToken: () => token.value,
     register,
     login,
