@@ -32,6 +32,7 @@ import type {
   SaasConfig,
   SearchEngineConfig,
   SecurityConfig,
+  ServerConfig,
   ServicesConfig,
   Team,
   UiConfig,
@@ -326,6 +327,14 @@ export interface StacksOptions {
    * you may hover any of the options below and the definitions will be provided. In case
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
+  /**
+   * **Server Options**
+   *
+   * How the views server behaves in the split views/API topology - notably
+   * which requests it forwards to the API process. See {@link ServerConfig}.
+   */
+  server: ServerConfig
+
   services: ServicesConfig
 
   /**

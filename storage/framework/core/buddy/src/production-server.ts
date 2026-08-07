@@ -242,7 +242,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
-  const { injectGlobalAutoImports } = await import('@stacksjs/server')
+  const { describeApiProxyRules, injectGlobalAutoImports, resolveApiProxyRules } = await import('@stacksjs/server')
   await injectGlobalAutoImports()
 
       // Resolve the stx `serve` implementation: local STX worktree first
@@ -311,6 +311,14 @@ export async function startProductionServer(options?: { port?: string | number, 
       for (const name of viewPatterns.missing)
         log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} — ignoring.`)
 
+      // Same rules the dev server uses, so a route reachable under `buddy dev`
+      // is reachable under `buddy serve` (stacksjs/stacks#2230). Resolved here
+      // rather than per request: config loads asynchronously, and the answer
+      // must not depend on how far boot had progressed.
+      const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
+      if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1)
+        log.info(`API proxy: ${describeApiProxyRules(apiProxyRules)}`)
+
       log.info(`Starting production server on port ${port}...`)
 
       await stxServe({
@@ -347,17 +355,18 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request) => {
-          const { maintenanceGate, isApiBoundRequest, proxyToBackend } = await import('@stacksjs/server')
+          const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
           if (gated)
             return gated
 
-          // Mirror the dev server's API forwarding: `/api/**` and any
-          // non-GET/HEAD verb belong to bun-router, never stx-serve.
+          // Mirror the dev server's API forwarding: `/api/**`, any mutating
+          // verb, and anything `config/server.ts` adds under `proxy` belong to
+          // bun-router, never stx-serve.
           // /docs is deliberately NOT proxied — in production it is a
           // server-static site routed by the rpx gateway, not a dev server.
           const url = new URL(req.url)
-          if (isApiBoundRequest(req, url.pathname)) {
+          if (isApiBound(req, url.pathname, apiProxyRules)) {
             if (!apiBase) {
               log.error(
                 `No API target configured for ${url.pathname}. This app shares its host with other `

@@ -114,7 +114,7 @@ function parseCookies(req: Request): Record<string, string> {
 async function startDefaultServer() {
   await overridesReady
 
-  const { injectGlobalAutoImports, isApiBoundRequest, proxyToBackend } = await import('@stacksjs/server')
+  const { describeApiProxyRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -146,6 +146,20 @@ async function startDefaultServer() {
   const docsPort = Number(process.env.PORT_DOCS) || config.ports?.docs || 3006
   const apiBase = `http://127.0.0.1:${apiPort}`
   const docsBase = `http://127.0.0.1:${docsPort}`
+
+  // Resolved once, after `overridesReady`, because `@stacksjs/config`
+  // populates `overrides` asynchronously — a per-request read would answer
+  // differently depending on how far boot had progressed.
+  const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
+
+  // Announce the rules only when the app has widened them. A route that
+  // definitely exists returning 404 is very hard to diagnose when the rule
+  // that swallowed it is invisible (stacksjs/stacks#2230) — but printing the
+  // defaults on every boot would be noise nobody reads.
+  if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1) {
+    // eslint-disable-next-line no-console
+    console.log(`  API proxy: ${describeApiProxyRules(apiProxyRules)}`)
+  }
 
   // Whether `/docs` belongs to the docs dev server at all
   // (stacksjs/stacks#2213).
@@ -245,17 +259,19 @@ async function startDefaultServer() {
           return blogResponse
       }
 
-      // Forward to the API dev server when this request can't possibly
-      // be a stx page render. Two cases:
+      // Forward to the API dev server when this request can't be a stx page
+      // render. Three cases:
       //   1. `/api/**` — the canonical API prefix.
-      //   2. Any non-GET/HEAD verb — POST/PUT/PATCH/DELETE never match
-      //      a static stx page, so they always belong to bun-router.
-      // Without (2), `route.post('/subscribe', ...)` declared at the
-      // root (no /api prefix) hits stx-serve and 404s.
+      //   2. Any mutating verb — POST/PUT/PATCH/DELETE never match a static
+      //      stx page, so they always belong to bun-router. Without this,
+      //      `route.post('/subscribe', ...)` declared at the root 404s.
+      //   3. Whatever `config/server.ts` adds under `proxy`, which is how a
+      //      plain `GET /health` on the API process becomes reachable
+      //      (stacksjs/stacks#2230). Printed at boot, below.
       if (docsProxyEnabled && (url.pathname === '/docs' || url.pathname.startsWith('/docs/')))
         return proxyToBackend(req, docsBase, '/docs')
 
-      if (isApiBoundRequest(req, url.pathname))
+      if (isApiBoundRequest(req, url.pathname, apiProxyRules))
         return proxyToBackend(req, apiBase)
 
       // Optional `/locale/{code}` redirect (same as default SetLocaleAction).
