@@ -3017,6 +3017,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // install is still worth flagging. By now importRoutes() has run, so any
       // second instance is already registered.
       warnOnMultipleRouterInstances()
+
+      // Where this app's components, layouts and partials are. Without it a
+      // view served from here renders every component as an inline error and
+      // still answers 200 - see `configureViewDirectories`.
+      configureViewDirectories(bunRouter)
+
       return bunRouter.serve(options)
     },
 
@@ -3164,6 +3170,63 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   }
 
   return stacksRouter
+}
+
+/**
+ * Tell the file-based view renderer where this application keeps its templates.
+ *
+ * Two different programs render `.stx` in a Stacks app and they were not
+ * agreeing. `buddy dev` and the production server go through
+ * `bun-plugin-stx`'s own `serve()`, which is handed the components, layouts and
+ * partials directories explicitly. `route.serve()` goes through bun-router's
+ * file routing, which was handed nothing - so its components directory fell
+ * back to `<viewsDir>/components`, and `resources/components`, where every
+ * Stacks app actually keeps them, was never looked in.
+ *
+ * The failure is silent in the direction that hides bugs. The page still
+ * answers 200; the component is replaced inline with
+ * `[Error loading component: ENOENT ...]`. So a test that boots the router and
+ * asserts on rendered HTML cannot see any component at all, and reads as though
+ * the feature under test were missing rather than the harness.
+ *
+ * Only fills in what has not been set: an application that called
+ * `route.bunRouter.views(...)` itself has said something more specific, and
+ * this must not overwrite it.
+ *
+ * **It deliberately does not set `viewsPath`.** Naming one switches on
+ * file-based route discovery, which walks the whole views tree - so an
+ * application that never asked for file routing would start doing it because a
+ * directory happened to exist. Where the views are is already decided
+ * elsewhere; the only thing missing was where the *components* are.
+ */
+export function configureViewDirectories(bunRouter: Router): void {
+  const router = bunRouter as Router & { _fileRoutingConfig?: Record<string, unknown>, views?: (config: Record<string, unknown>) => unknown }
+
+  if (typeof router.views !== 'function')
+    return
+
+  // Already configured by the application, or file routing deliberately off.
+  const existing = router._fileRoutingConfig
+  if (existing && Object.keys(existing).length > 0)
+    return
+
+  // Nothing to configure for an application with no views at all.
+  if (!existsSync(p.projectPath('resources/views')))
+    return
+
+  // `resources/views/layouts` is where the scaffold puts them now;
+  // `resources/layouts` is the older location and still in use. Whichever
+  // exists is the answer, and the production server picks between them the
+  // same way.
+  const layouts = [p.projectPath('resources/views/layouts'), p.projectPath('resources/layouts')].find(existsSync)
+  const partials = [p.projectPath('resources/views/partials'), p.projectPath('resources/partials')].find(existsSync)
+  const components = [p.projectPath('resources/components'), p.projectPath('resources/views/components')].find(existsSync)
+
+  router.views({
+    ...(components ? { componentsDir: components } : {}),
+    ...(layouts ? { layoutsDir: layouts } : {}),
+    ...(partials ? { partialsDir: partials } : {}),
+  })
 }
 
 export interface StacksRouterInstance {
