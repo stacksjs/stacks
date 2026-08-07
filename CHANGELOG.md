@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.296...v0.70.297)
+
+## 🐛 Bug Fixes
+
+- **queue**: a worker that cannot reserve says so, and --queue works ([2fcd73f](https://github.com/stacksjs/stacks/commit/2fcd73f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser**: export the composables subpaths the framework imports ([2563db0](https://github.com/stacksjs/stacks/commit/2563db0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.294...v0.70.296)
 
 ## ✨ Features
