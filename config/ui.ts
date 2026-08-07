@@ -13,18 +13,22 @@ export default {
   // which also exports this as STX_DIR for processes that never read a config.
   stateDir: 'storage/framework/stx',
 
-  // Components directory - for user-defined components
-  componentsDir: 'resources/components',
+  // Components, layouts and partials directories.
+  //
+  // These are resolved RELATIVE TO the stx root, which auto-detects as
+  // `resources` in a Stacks app (it is the directory holding `views/` and
+  // `layouts/`). Spelling them `resources/components` here made stx join the
+  // root on a second time and look in `resources/resources/components`, so
+  // `<Card />` in a template resolved to nothing and stx warned on every boot.
+  componentsDir: 'components',
 
   // Expose @stacksjs/components' ui library (<Sidebar>, <Button>, ...)
   // to tag resolution everywhere — the dashboard's macOS-style sidebar
   // resolves through this. See the plugin file for the lookup order.
   plugins: ['./storage/framework/defaults/stx-components-plugin.ts'],
 
-  // Layouts directory - for layout templates
-  layoutsDir: 'resources/layouts',
+  layoutsDir: 'layouts',
 
-  // Partials directory - for partial templates
-  partialsDir: 'resources/partials',
+  partialsDir: 'partials',
 // `plugins` landed in stx after the pinned @stacksjs/stx types — widen until the dep updates.
 } satisfies UiOptions & { plugins?: string[] }
