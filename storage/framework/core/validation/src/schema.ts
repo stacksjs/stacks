@@ -59,6 +59,53 @@ function dateInputFactory(): ReturnType<ValidationInstance['date']> {
   return withConditionals(validator) as unknown as ReturnType<ValidationInstance['date']>
 }
 
+/** `YYYY-MM-DD HH:MM:SS`, optionally with fractional seconds. What SQL hands back. */
+const SQL_DATETIME = /^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}(?:\.\d+)?$/
+
+/**
+ * Anything the framework actually stores in a timestamp column.
+ *
+ * Upstream's `timestamp` accepts 32-bit epoch SECONDS and nothing else, so it
+ * rejected every value the framework's own models produce: 39 attributes
+ * across the default models validate with `schema.timestamp()`, and their
+ * factories emit `toISOString()` or the `YYYY-MM-DD HH:MM:SS` form SQLite
+ * returns. `Cart.expiresAt` failed its own factory's output, which is how this
+ * surfaced: a storefront could not create a cart.
+ *
+ * Accepted: a Date, an ISO 8601 string, a SQL datetime string, and epoch
+ * seconds or milliseconds as a number or a numeric string. Anything that does
+ * not parse to a real instant is still rejected.
+ */
+function isValidTimestampInput(value: unknown): boolean {
+  if (value instanceof Date)
+    return !Number.isNaN(value.getTime())
+
+  if (typeof value === 'number')
+    return Number.isFinite(value) && value >= 0
+
+  if (typeof value !== 'string')
+    return false
+
+  const trimmed = value.trim()
+  if (!trimmed)
+    return false
+
+  // Epoch as a string, seconds or milliseconds.
+  if (/^\d+$/.test(trimmed))
+    return true
+
+  if (SQL_DATETIME.test(trimmed))
+    return !Number.isNaN(new Date(trimmed.replace(' ', 'T')).getTime())
+
+  return !Number.isNaN(new Date(trimmed).getTime())
+}
+
+function timestampInputFactory(): ReturnType<ValidationInstance['timestamp']> {
+  const validator = v.custom(isValidTimestampInput, 'Must be a valid timestamp')
+  validator.name = 'timestamp'
+  return withConditionals(validator) as unknown as ReturnType<ValidationInstance['timestamp']>
+}
+
 /**
  * Wrap a ts-validation factory function so each returned validator
  * gets `.when()` / `.sometimes()` (see ./conditional.ts) added.
@@ -82,6 +129,7 @@ export const schema: SchemaWithFile = new Proxy(v as unknown as SchemaWithFile, 
     if (prop === 'file') return file
     if (prop === 'object') return objectWithContext
     if (prop === 'date') return dateInputFactory
+    if (prop === 'timestamp') return timestampInputFactory
     if (typeof prop === 'string' && FACTORY_KEYS.has(prop)) {
       const factory = Reflect.get(target, prop, receiver)
       if (typeof factory === 'function') return wrapFactory(factory)
