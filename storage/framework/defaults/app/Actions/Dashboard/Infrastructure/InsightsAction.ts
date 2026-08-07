@@ -56,20 +56,20 @@ export default new Action({
         db.fn.max('duration_ms').as('maximum'),
         db.fn.max('created_at').as('latest'),
       ])
-      .where('deleted_at', 'is', null)
+      .whereNull('deleted_at')
       .executeTakeFirst() as Promise<NumericSummaryRow | undefined>
 
     const requestSuccessQuery = db
       .selectFrom('requests')
       .select(db.fn.count('id').as('count'))
-      .where('deleted_at', 'is', null)
+      .whereNull('deleted_at')
       .where('status_code', '<', 400)
       .executeTakeFirst() as Promise<{ count: number | string } | undefined>
 
     const slowRequestsQuery = db
       .selectFrom('requests')
       .select(['id', 'method', 'path', 'status_code', 'duration_ms', 'created_at'])
-      .where('deleted_at', 'is', null)
+      .whereNull('deleted_at')
       .orderBy('duration_ms', 'desc')
       .orderBy('id', 'desc')
       .limit(5)

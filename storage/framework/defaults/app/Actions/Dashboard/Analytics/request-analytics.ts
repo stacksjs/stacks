@@ -105,7 +105,12 @@ export function requestAnalyticsRow(record: AnalyticsModelRecord): RequestAnalyt
   if (durationMs < 0)
     throw new TypeError('Request.duration_ms cannot be negative.')
 
-  const createdAt = requiredRecordString(record, 'created_at')
+  // Postgres and MySQL drivers return Date instances for timestamp columns;
+  // SQLite stores TEXT and returns strings.
+  const createdAtValue = record.get('created_at')
+  const createdAt = createdAtValue instanceof Date
+    ? createdAtValue.toISOString()
+    : requiredRecordString(record, 'created_at')
   if (!Number.isFinite(timestamp(createdAt)))
     throw new TypeError('Request.created_at must be a valid timestamp.')
 

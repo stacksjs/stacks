@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { modelBoolean } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface BoardRow {
@@ -10,7 +11,8 @@ interface BoardRow {
   icon: string
   color: string
   position: number
-  archived: number
+  // SQLite stores booleans as 0/1 INTEGER columns; Postgres returns real booleans.
+  archived: number | boolean
   created_at: string | null
   updated_at: string | null
 }
@@ -37,7 +39,7 @@ interface CardRow {
   position: number
   created_by_user_id: number | null
   due_date: string | null
-  archived: number
+  archived: number | boolean
   created_at: string | null
   updated_at: string | null
 }
@@ -103,7 +105,7 @@ export default new Action({
           [id],
         ).execute() as Promise<ColumnRow[]>,
         db.unsafe(
-          'SELECT * FROM cards WHERE board_id = ? AND archived = 0 ORDER BY column_id ASC, position ASC, id ASC',
+          'SELECT * FROM cards WHERE board_id = ? AND archived = false ORDER BY column_id ASC, position ASC, id ASC',
           [id],
         ).execute() as Promise<CardRow[]>,
         db.unsafe(
@@ -121,7 +123,7 @@ export default new Action({
           `SELECT cl.card_id, l.id, l.name, l.color
           FROM card_labels cl
           JOIN labels l ON l.id = cl.label_id
-          WHERE cl.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = 0)
+          WHERE cl.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = false)
           ORDER BY l.name ASC`,
           [id],
         ).execute() as Promise<Array<{ card_id: number, id: number, name: string, color: string }>>,
@@ -129,7 +131,7 @@ export default new Action({
           `SELECT ca.card_id, ca.user_id, u.name, u.email
           FROM card_assignees ca
           LEFT JOIN users u ON u.id = ca.user_id
-          WHERE ca.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = 0)`,
+          WHERE ca.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = false)`,
           [id],
         ).execute() as Promise<Array<{ card_id: number, user_id: number, name: string | null, email: string | null }>>,
       ])
@@ -175,7 +177,7 @@ export default new Action({
           position: c.position,
           createdByUserId: c.created_by_user_id,
           dueDate: c.due_date,
-          archived: c.archived === 1,
+          archived: modelBoolean(c, 'archived'),
           createdAt: c.created_at,
           updatedAt: c.updated_at,
           labels: labelsByCard.get(c.id) ?? [],
@@ -192,7 +194,7 @@ export default new Action({
           icon: board.icon,
           color: board.color,
           position: board.position,
-          archived: board.archived === 1,
+          archived: modelBoolean(board, 'archived'),
           createdAt: board.created_at,
           updatedAt: board.updated_at,
         },

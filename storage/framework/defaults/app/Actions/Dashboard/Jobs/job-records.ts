@@ -98,7 +98,11 @@ function timestampValue(
     return undefined
 
   let time = Number.NaN
-  if (typeof value === 'number' && Number.isInteger(value) && value >= 0)
+  // Postgres and MySQL drivers return Date instances for timestamp columns;
+  // SQLite stores TEXT and returns strings.
+  if (value instanceof Date)
+    time = value.getTime()
+  else if (typeof value === 'number' && Number.isInteger(value) && value >= 0)
     time = value * 1000
   else if (typeof value === 'string' && value.trim())
     time = new Date(/^\d{4}-\d{2}-\d{2} \d/.test(value) ? `${value.replace(' ', 'T')}Z` : value).getTime()

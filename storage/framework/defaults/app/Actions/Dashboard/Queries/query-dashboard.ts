@@ -6,7 +6,8 @@ export interface QueryLogSourceRow {
   connection?: string | null
   status?: string | null
   error?: string | null
-  executed_at: string
+  // SQLite returns timestamp columns as TEXT; Postgres and MySQL drivers return Date instances.
+  executed_at: string | Date
   model?: string | null
   method?: string | null
   rows_affected?: number | null
@@ -89,7 +90,8 @@ export function mapDashboardQueryLog(row: QueryLogSourceRow): DashboardQueryLog 
   const status = queryStatus(row.status, label)
   if (typeof row.query !== 'string' || !row.query.trim())
     throw new TypeError(`${label} query must be a non-empty string`)
-  if (typeof row.executed_at !== 'string' || !row.executed_at.trim())
+  const executedAt = row.executed_at instanceof Date ? row.executed_at.toISOString() : row.executed_at
+  if (typeof executedAt !== 'string' || !executedAt.trim())
     throw new TypeError(`${label} executed_at must be a non-empty string`)
 
   return {
@@ -101,7 +103,7 @@ export function mapDashboardQueryLog(row: QueryLogSourceRow): DashboardQueryLog 
     connection: row.connection || 'unknown',
     status,
     error: row.error || '',
-    executedAt: row.executed_at,
+    executedAt,
     model: row.model || '',
     method: row.method || '',
     rowsAffected: nullableFiniteNumber(row.rows_affected, `${label} rows_affected`),

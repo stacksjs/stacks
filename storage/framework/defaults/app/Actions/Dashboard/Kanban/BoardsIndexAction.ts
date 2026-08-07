@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { modelBoolean } from './kanban-model'
 import { kanbanError } from './kanban-response'
 
 interface BoardRow {
@@ -10,7 +11,8 @@ interface BoardRow {
   icon: string
   color: string
   position: number
-  archived: number
+  // SQLite stores booleans as 0/1 INTEGER columns; Postgres returns real booleans.
+  archived: number | boolean
   created_at: string | null
   updated_at: string | null
   card_count?: number
@@ -46,9 +48,9 @@ export default new Action({
         SELECT
           b.id, b.uuid, b.name, b.description, b.icon, b.color,
           b.position, b.archived, b.created_at, b.updated_at,
-          (SELECT COUNT(*) FROM cards c WHERE c.board_id = b.id AND c.archived = 0) AS card_count
+          (SELECT COUNT(*) FROM cards c WHERE c.board_id = b.id AND c.archived = false) AS card_count
         FROM boards b
-        WHERE b.archived = 0
+        WHERE b.archived = false
         ORDER BY b.position ASC, b.id ASC
       `).execute() as BoardRow[]
 
@@ -60,7 +62,7 @@ export default new Action({
         icon: r.icon,
         color: r.color,
         position: r.position,
-        archived: r.archived === 1,
+        archived: modelBoolean(r, 'archived'),
         cardCount: Number(r.card_count ?? 0),
         createdAt: r.created_at,
         updatedAt: r.updated_at,

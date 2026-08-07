@@ -36,7 +36,7 @@ export default new Action({
           db.fn.count('id').as('count'),
           db.fn.max('sent_at').as('last_sent_at'),
         ])
-        .where('email_list_id', 'is not', null)
+        .whereNotNull('email_list_id')
         .groupBy('email_list_id')
         .execute(),
     ])

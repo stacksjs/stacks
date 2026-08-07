@@ -1,3 +1,5 @@
+import { commerceTimestamp } from './commerce-record'
+
 export interface CommerceProductRecord {
   id: string
   name: string
@@ -230,7 +232,7 @@ export function normalizeCommerceProductRecord(
     variantCount: variantCounts.get(id) || 0,
     unitCount: unitCounts.get(id) || 0,
     reviewCount: reviewCounts.get(id) || 0,
-    createdAt: requiredText(value(product, 'created_at', 'createdAt'), source, 'created_at'),
+    createdAt: commerceTimestamp(value(product, 'created_at', 'createdAt'), source, 'created_at'),
   }
 }
 
