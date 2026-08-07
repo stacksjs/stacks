@@ -273,6 +273,7 @@ declare global {
   const useFocus: typeof import('../core/browser/src/utils/vendors')['useFocus']
   const useFocusWithin: typeof import('../core/browser/src/utils/vendors')['useFocusWithin']
   const useFps: typeof import('../core/browser/src/utils/vendors')['useFps']
+  const useForm: typeof import('../core/browser/src/utils/vendors')['useForm']
   const useFullscreen: typeof import('../core/browser/src/utils/vendors')['useFullscreen']
   const useGamepad: typeof import('../core/browser/src/utils/vendors')['useGamepad']
   const useGeolocation: typeof import('../core/browser/src/utils/vendors')['useGeolocation']
@@ -706,6 +707,7 @@ declare module '@stacksjs/stx' {
     readonly useFocus: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocus']>
     readonly useFocusWithin: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFocusWithin']>
     readonly useFps: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFps']>
+    readonly useForm: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useForm']>
     readonly useFullscreen: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('../core/browser/src/utils/vendors')['useGeolocation']>
