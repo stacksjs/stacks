@@ -30,5 +30,14 @@ export default {
   layoutsDir: 'layouts',
 
   partialsDir: 'partials',
+
+  // Whether this app serves the framework's default views, which include a
+  // demo storefront (/cart, /checkout/*, /orders/:id) alongside the error
+  // pages and mail previews. `true` serves all of them and is the historical
+  // behaviour; `false` serves only `resources/views`; an array names the
+  // subtrees to keep, e.g. `['errors', 'emails']`. Applies to `buddy dev` and
+  // `buddy serve` alike, and to whatever the route manifest enumerates into
+  // the sitemap.
+  defaultViews: true,
 // `plugins` landed in stx after the pinned @stacksjs/stx types — widen until the dep updates.
-} satisfies UiOptions & { plugins?: string[] }
+} satisfies UiOptions & { plugins?: string[], defaultViews?: boolean | string[] }

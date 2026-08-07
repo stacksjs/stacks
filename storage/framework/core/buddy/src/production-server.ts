@@ -239,7 +239,7 @@ export async function startProductionServer(options?: { port?: string | number, 
 
   const port = Number(process.env.PORT) || 3000
 
-  const { config, overridesReady } = await import('@stacksjs/config')
+  const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
   const { injectGlobalAutoImports } = await import('@stacksjs/server')
@@ -298,10 +298,23 @@ export async function startProductionServer(options?: { port?: string | number, 
       // misdelivering a visitor's credentials to a stranger.
       const apiBase = resolveApiBase(config.ports?.api)
 
+      // Which of the framework's default views this app serves (#2237). Must
+      // resolve identically to `dev/views.ts` — hence the shared helper rather
+      // than a second copy of the rule — or an app opts a demo route out in dev
+      // and still ships it.
+      const viewPatterns = resolveViewPatterns(
+        userViewsPath,
+        defaultViewsPath,
+        (config as any)?.ui?.defaultViews,
+      )
+
+      for (const name of viewPatterns.missing)
+        log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} — ignoring.`)
+
       log.info(`Starting production server on port ${port}...`)
 
       await stxServe({
-        patterns: [userViewsPath, defaultViewsPath],
+        patterns: viewPatterns.patterns,
         port,
         // Never silently drift off the configured port: the reverse
         // proxy/gateway routes to exactly this port, so stx's fallback bind
