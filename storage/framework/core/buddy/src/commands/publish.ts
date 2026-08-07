@@ -687,6 +687,15 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   await assertNoUncommittedChanges(coreDir, force)
 
+  // The vendored copy is routinely ahead of npm: a release commit bumps every
+  // package.json in the monorepo, and publishing happens afterwards (or not at
+  // all, for a local working checkout). Pinning `^<vendored version>` then
+  // produces a package.json that no registry can resolve, and `bun install`
+  // fails the scaffold with `No version matching "^x.y.z" found`. Ask the
+  // registry what actually exists before writing the range.
+  const depName = corePkg.name ?? 'stacks'
+  const range = `^${await resolvePublishedVersion(depName, version)}`
+
   // 1. package.json: the workspace link becomes a version range, and the
   //    workspace globs that point into core stop matching anything real.
   const rootPkgPath = resolve(process.cwd(), 'package.json')
@@ -697,9 +706,6 @@ async function unvendorFramework(force: boolean): Promise<void> {
     scripts?: Record<string, string>
     workspaces?: string[]
   }
-
-  const depName = corePkg.name ?? 'stacks'
-  const range = `^${version}`
 
   // Everything the vendored workspace was providing. Any `workspace:` range on
   // one of these names has to become a version range, wherever it is declared:
@@ -858,6 +864,60 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   log.success('This project now runs on the published Stacks packages.')
   log.info('Vendor an individual package again any time with `buddy publish:core <pkg>`.')
+}
+
+/**
+ * The version to pin the unvendored framework to.
+ *
+ * Prefers the vendored version, because that is the source the project has
+ * been running against. When it is not on the registry — the normal state of a
+ * checkout between a release bump and a publish — fall back to the newest
+ * version that IS published, so the install resolves instead of failing. A
+ * registry that cannot be reached is not fatal either: the vendored version is
+ * still the best guess, and `bun install` reports the real problem.
+ */
+async function resolvePublishedVersion(depName: string, vendored: string): Promise<string> {
+  let published: { latest?: string, versions: Set<string> }
+
+  try {
+    published = await fetchPublishedVersions(depName)
+  }
+  catch (error) {
+    log.warn(`Could not reach the npm registry to check ${depName} versions (${error instanceof Error ? error.message : String(error)}).`)
+    log.info(`Pinning the vendored version, ${depName}@^${vendored}.`)
+    return vendored
+  }
+
+  if (published.versions.has(vendored))
+    return vendored
+
+  if (!published.latest) {
+    log.warn(`${depName}@${vendored} is not published and the registry reports no latest version.`)
+    return vendored
+  }
+
+  log.warn(`${depName}@${vendored} is not published yet — the vendored copy is ahead of npm.`)
+  log.info(`Pinning the newest published version instead, ${depName}@^${published.latest}.`)
+  return published.latest
+}
+
+async function fetchPublishedVersions(depName: string): Promise<{ latest?: string, versions: Set<string> }> {
+  const response = await fetch(`https://registry.npmjs.org/${depName.replace('/', '%2F')}`, {
+    headers: { accept: 'application/vnd.npm.install-v1+json' },
+  })
+
+  if (!response.ok)
+    throw new Error(`registry responded ${response.status}`)
+
+  const packument = await response.json() as {
+    'dist-tags'?: Record<string, string>
+    'versions'?: Record<string, unknown>
+  }
+
+  return {
+    latest: packument['dist-tags']?.latest,
+    versions: new Set(Object.keys(packument.versions ?? {})),
+  }
 }
 
 /** Accepts `router`, `@stacksjs/router`, or `core/router`. */
