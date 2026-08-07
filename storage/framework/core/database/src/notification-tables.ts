@@ -101,6 +101,78 @@ async function createIndex(statement: string, dialect: string): Promise<void> {
 }
 
 /**
+ * The columns each guaranteed table must end up with, for the check below.
+ * Kept beside the DDL so the two move together.
+ */
+const REQUIRED_COLUMNS: Record<string, string[]> = {
+  notifications: ['id', 'user_id', 'type', 'data', 'read_at'],
+  notification_preferences: ['id', 'user_id', 'channel', 'enabled', 'category'],
+  notification_deliveries: ['id', 'user_id', 'channel', 'recipient', 'body', 'status'],
+}
+
+/**
+ * Warn when a guaranteed table already exists in a shape we would not have
+ * created.
+ *
+ * `CREATE TABLE IF NOT EXISTS` against a name something else already claimed
+ * does *nothing at all*, silently, and the guarantee then reports success. That
+ * is the worst possible outcome: the notification driver goes on to query a
+ * column that is not there, and the error surfaces far from the cause with
+ * nothing pointing back here. An application whose own model corpus declares a
+ * table of the same name hits this on its first migrate and has no way to know
+ * why - the migration it generated ran, reported success, and changed nothing.
+ *
+ * A warning rather than a throw. This runs on every `buddy migrate`, and an
+ * application that deliberately owns one of these names should not be unable to
+ * migrate anything; it should be told, once, in words that name the table and
+ * the missing columns.
+ */
+async function warnOnShapeMismatch(table: string): Promise<void> {
+  const required = REQUIRED_COLUMNS[table]
+  if (!required)
+    return
+
+  try {
+    const rows: any = await db
+      .unsafe(`SELECT * FROM ${table} WHERE 1 = 0`)
+      .execute()
+
+    // A zero-row result carries no column names on every driver, so fall back
+    // to probing each column individually rather than guessing.
+    const known = Array.isArray(rows) && rows.length > 0 ? Object.keys(rows[0]) : null
+    const missing: string[] = []
+
+    for (const column of required) {
+      if (known) {
+        if (!known.includes(column))
+          missing.push(column)
+        continue
+      }
+
+      try {
+        await db.unsafe(`SELECT ${column} FROM ${table} WHERE 1 = 0`).execute()
+      }
+      catch {
+        missing.push(column)
+      }
+    }
+
+    if (missing.length > 0) {
+      log.warn(
+        `[notifications] "${table}" already exists without ${missing.join(', ')}. `
+        + `CREATE TABLE IF NOT EXISTS left it untouched, so the notification `
+        + `driver will fail on those columns. Something else owns this table - `
+        + `either rename it, or stop using the framework's notification tables.`,
+      )
+    }
+  }
+  catch {
+    // The table does not exist yet, which is the ordinary case: the CREATE
+    // below is about to make it. Nothing to warn about.
+  }
+}
+
+/**
  * Create the notification + notification_preferences tables. Idempotent
  * (`IF NOT EXISTS`), so it's safe to run on every `buddy migrate`.
  */
@@ -113,14 +185,17 @@ export async function migrateNotificationTables(options: { verbose?: boolean } =
 
   try {
     if (options.verbose) log.info('Creating notifications table...')
+    await warnOnShapeMismatch('notifications')
     await db.unsafe(notificationsTableSql(sql)).execute()
     await createIndex(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`, dbDriver)
 
     if (options.verbose) log.info('Creating notification_preferences table...')
+    await warnOnShapeMismatch('notification_preferences')
     await db.unsafe(notificationPreferencesTableSql(sql)).execute()
     await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`, dbDriver)
 
     if (options.verbose) log.info('Creating notification deliveries table...')
+    await warnOnShapeMismatch('notification_deliveries')
     await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
     await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`, dbDriver)
     await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`, dbDriver)
