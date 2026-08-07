@@ -76,12 +76,21 @@ route.use(MaintenanceMiddleware.toRouterHandler() as any)
 // Overridable by registering the same path in app routes first.
 await route.register(frameworkPath('defaults/routes/core.ts'))
 
-// Feature-gated route registration. The dashboard.ts file currently bundles
-// ~687 lines covering auth, password reset, email subscribe, storefront
-// cart/checkout, reviews, sitemap, AI, voice, and the admin dashboard's
-// REST surface. Until that file is split per-feature (auth.ts, marketing.ts,
-// commerce.ts, monitoring.ts), the whole thing loads when `dashboard` is
-// activated and stays inert otherwise.
+// Auth (login/register/passkeys/2FA/tokens/password) is its own bundle now, so
+// an app can mount just the auth surface without the dashboard's commerce, cms,
+// ai and admin routes (stacksjs/stacks#2229). Gated by `feature('auth')`, and
+// ALSO mounted whenever `dashboard` is on — the admin SPA needs it — so a full
+// dashboard app is unchanged. Registered before the dashboard bundle to keep
+// the previous order (auth used to sit at the top of dashboard.ts).
+if (feature('auth') || feature('dashboard')) {
+  await route.register(frameworkPath('defaults/routes/auth.ts'))
+}
+
+// Feature-gated route registration. The dashboard.ts file still bundles the
+// remaining ~625 lines — email subscribe, storefront cart/checkout, reviews,
+// sitemap, AI, voice, and the admin dashboard's REST surface. Splitting the
+// rest per-feature (marketing.ts, commerce.ts, monitoring.ts) is the follow-up;
+// auth.ts is the first slice extracted.
 //
 // Apps that need only a slice — e.g. a marketing site that wants
 // `/api/email/subscribe` and `/api/contact` but not the rest — can either
@@ -92,9 +101,6 @@ await route.register(frameworkPath('defaults/routes/core.ts'))
 //      cost beyond the bun-router route-table entries.
 //   2. Define the routes they want directly in `routes/api.ts` —
 //      first-registration-wins means the user version takes priority.
-//
-// Once the per-feature route split lands, each `if (feature('X'))` block
-// below registers just the X-specific routes file.
 if (feature('dashboard')) {
   await route.register(frameworkPath('defaults/routes/dashboard.ts'))
   // JSON endpoints for the dev dashboard UI. Kept separate from the view

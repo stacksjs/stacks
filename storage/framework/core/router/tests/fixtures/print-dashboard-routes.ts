@@ -23,6 +23,9 @@
 
 if (import.meta.main) {
   const { listRegisteredRoutes } = await import('@stacksjs/router')
+  // Auth routes moved to their own file (stacksjs/stacks#2229); import both so
+  // this snapshot still covers the full default surface (POST /login etc.).
+  await import('../../../../defaults/routes/auth')
   await import('../../../../defaults/routes/dashboard')
 
   // eslint-disable-next-line no-console
