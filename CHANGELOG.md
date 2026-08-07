@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.302...v0.70.303)
+
+## 🐛 Bug Fixes
+
+- **database**: say so when a guaranteed notification table is the wrong shape ([52828f2](https://github.com/stacksjs/stacks/commit/52828f2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.301...v0.70.302)
 
 ## 🔧 Chores
