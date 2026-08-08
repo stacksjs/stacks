@@ -2,7 +2,7 @@
   "name": "@stacksjs/charts",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.323",
+  "version": "0.70.322",
   "description": "Chart rendering for Stacks. Built on ts-charts (D3 in TypeScript).",
   "author": "Chris Breuer",
   "contributors": [
@@ -59,9 +59,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@ts-charts/format": "^0.2.6",
-    "@ts-charts/scale": "^0.2.6",
-    "@ts-charts/shape": "^0.2.6"
+    "@ts-charts/format": "^0.2.7",
+    "@ts-charts/scale": "^0.2.7",
+    "@ts-charts/shape": "^0.2.7"
   },
   "devDependencies": {
     "better-dx": "^0.2.17"

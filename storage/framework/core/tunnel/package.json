@@ -2,7 +2,7 @@
   "name": "@stacksjs/tunnel",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.323",
+  "version": "0.70.322",
   "description": "Local development tunnel.",
   "author": "Chris Breuer",
   "contributors": [
@@ -57,7 +57,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "localtunnels": "^0.2.11"
+    "localtunnels": "^0.2.12"
   },
   "devDependencies": {
     "better-dx": "^0.2.17"

@@ -2,7 +2,7 @@
   "name": "@stacksjs/router",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.323",
+  "version": "0.70.322",
   "description": "The Stacks framework router.",
   "author": "Chris Breuer",
   "contributors": [
@@ -61,7 +61,7 @@
   "dependencies": {
     "@stacksjs/bun-router": "^0.0.21",
     "@stacksjs/collections": "workspace:*",
-    "ts-rate-limiter": "^0.4.2"
+    "ts-rate-limiter": "^0.4.4"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

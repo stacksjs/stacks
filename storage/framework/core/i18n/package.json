@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.70.323",
+  "version": "0.70.322",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "sideEffects": false,
@@ -36,7 +36,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-i18n": "^0.1.9"
+    "@stacksjs/ts-i18n": "^0.1.11"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"
