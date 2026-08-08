@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.321...v0.70.322)
+
+## 🐛 Bug Fixes
+
+- **search**: read the query the builder actually sends ([bf43cb7](https://github.com/stacksjs/stacks/commit/bf43cb7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.320...v0.70.321)
 
 ## 🐛 Bug Fixes
