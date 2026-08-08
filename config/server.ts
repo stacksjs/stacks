@@ -39,4 +39,31 @@ export default {
     prefixes: [],
     paths: [],
   },
+
+  /**
+   * **Redirects**
+   *
+   * Old URLs and where they go now. Every site that replaces an older one
+   * inherits its URLs — they are in search indexes, in other people's links,
+   * and on printed material — and a 301 is the only thing that carries their
+   * standing across to the new page.
+   *
+   * ```ts
+   * redirects: {
+   *   '/old-page': '/new-page',
+   *   '/summer-sale': { to: '/specials', status: 302 },
+   *   '/docs': { to: 'https://docs.example.com', preserveQuery: false },
+   * }
+   * ```
+   *
+   * Matching is exact on the path, ignoring a trailing slash, and the query
+   * string is carried over unless you say otherwise. Rules are answered before
+   * a page is looked for and before `public/` is searched, so — as with
+   * `proxy.paths` — a rule shadows a static file of the same name. Anything
+   * under `/api/` is ignored, and a rule pointing at itself is dropped rather
+   * than looping the browser.
+   *
+   * `buddy dev` prints the effective rules at boot.
+   */
+  redirects: {},
 } satisfies ServerConfig

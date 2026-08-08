@@ -80,7 +80,7 @@ function parseCookies(req: Request): Record<string, string> {
 async function startDefaultServer() {
   await overridesReady
 
-  const { describeApiProxyRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules } = await import('@stacksjs/server')
+  const { describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveRedirect, resolveRedirectRules } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -120,6 +120,7 @@ async function startDefaultServer() {
   // populates `overrides` asynchronously — a per-request read would answer
   // differently depending on how far boot had progressed.
   const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
+  const redirectRules = resolveRedirectRules(config.server?.redirects)
 
   // Announce the rules only when the app has widened them. A route that
   // definitely exists returning 404 is very hard to diagnose when the rule
@@ -128,6 +129,13 @@ async function startDefaultServer() {
   if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1) {
     // eslint-disable-next-line no-console
     console.log(`  API proxy: ${describeApiProxyRules(apiProxyRules)}`)
+  }
+
+  // Same reasoning for redirects: a URL that quietly bounces somewhere else is
+  // hard to diagnose when the rule causing it is invisible.
+  if (redirectRules.size > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`  Redirects: ${describeRedirectRules(redirectRules)}`)
   }
 
   // Whether `/docs` belongs to the docs dev server at all
@@ -210,6 +218,13 @@ async function startDefaultServer() {
       const gated = await maintenanceGate(req)
       if (gated)
         return gated
+
+      // Declared redirects from `config/server.ts`. After the maintenance gate
+      // (a site being down outranks a URL having moved) and before everything
+      // else, so a legacy path never needs a stub page to bounce off.
+      const redirected = resolveRedirect(url, redirectRules)
+      if (redirected)
+        return redirected
 
       // Blog rendering. By default the blog is rendered by BunPress with a
       // custom Stacks theme (see ./blog.ts) — intercept /blog and /blog/<slug>

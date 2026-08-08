@@ -47,9 +47,43 @@ export interface ApiProxyOptions {
  * How the views server behaves in the split views/API topology, shared by
  * `buddy dev` and `buddy serve`.
  */
+/**
+ * URLs the site used to have, and where they go now.
+ *
+ * A site that replaces an older one inherits its URLs, and a 301 is the only
+ * thing that carries their standing in a search index across to the new page.
+ * Keys are the old paths; values are either the new path or an object.
+ *
+ * ```ts
+ * redirects: {
+ *   '/old-page': '/new-page',
+ *   '/summer-sale': { to: '/specials', status: 302 },
+ *   '/docs': { to: 'https://docs.example.com', preserveQuery: false },
+ * }
+ * ```
+ *
+ * Matching is exact on the path, ignoring a trailing slash. Rules are answered
+ * before a page is looked for and before `public/` is searched, so a rule
+ * shadows a static file of the same name — the same caveat as `proxy.paths`.
+ * Anything under `/api/` is ignored.
+ *
+ * `buddy dev` prints the effective rules at boot.
+ */
+export type RedirectsOptions = Record<string, string | {
+  /** Where to send the request. A path, or an absolute URL to leave the site. */
+  to: string
+  /** Defaults to 301. Use 302 for something genuinely temporary. */
+  status?: number
+  /** Carry the incoming query string onto the target. Defaults to true. */
+  preserveQuery?: boolean
+}>
+
 export interface ServerConfig {
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */
   proxy?: ApiProxyOptions
+
+  /** Old URLs and where they go now. See {@link RedirectsOptions}. */
+  redirects?: RedirectsOptions
 }
 
 export interface ServerOptions {

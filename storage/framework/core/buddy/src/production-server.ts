@@ -227,7 +227,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
-  const { describeApiProxyRules, injectGlobalAutoImports, resolveApiProxyRules } = await import('@stacksjs/server')
+  const { describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiProxyRules, resolveRedirectRules } = await import('@stacksjs/server')
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
   await injectGlobalAutoImports()
 
@@ -305,6 +305,10 @@ export async function startProductionServer(options?: { port?: string | number, 
       if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1)
         log.info(`API proxy: ${describeApiProxyRules(apiProxyRules)}`)
 
+      const redirectRules = resolveRedirectRules(config.server?.redirects)
+      if (redirectRules.size > 0)
+        log.info(`Redirects: ${describeRedirectRules(redirectRules)}`)
+
       log.info(`Starting production server on port ${port}...`)
 
       await stxServe({
@@ -347,17 +351,26 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request) => {
-          const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend } = await import('@stacksjs/server')
+          const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
           if (gated)
             return gated
+
+          const url = new URL(req.url)
+
+          // Declared redirects from `config/server.ts`. After the maintenance
+          // gate (a site being down outranks a URL having moved) and before
+          // everything else, so a legacy path never needs a stub page to
+          // bounce off. Identical placement to the dev views server.
+          const redirected = resolveRedirect(url, redirectRules)
+          if (redirected)
+            return redirected
 
           // Mirror the dev server's API forwarding: `/api/**`, any mutating
           // verb, and anything `config/server.ts` adds under `proxy` belong to
           // bun-router, never stx-serve.
           // /docs is deliberately NOT proxied — in production it is a
           // server-static site routed by the rpx gateway, not a dev server.
-          const url = new URL(req.url)
           if (isApiBound(req, url.pathname, apiProxyRules)) {
             if (!apiBase) {
               log.error(
