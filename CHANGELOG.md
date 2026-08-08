@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.314...v0.70.315)
+
+## 🐛 Bug Fixes
+
+- **database**: guarantee email_verifications, the other half of password_resets ([2ce5b35](https://github.com/stacksjs/stacks/commit/2ce5b35)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.313...v0.70.314)
 
 ## 🐛 Bug Fixes
