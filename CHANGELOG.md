@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.320...v0.70.321)
+
+## 🐛 Bug Fixes
+
+- **orm**: give the search builder the fields the model declared searchable ([8e0cd98](https://github.com/stacksjs/stacks/commit/8e0cd98)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.319...v0.70.320)
 
 ## ✨ Features

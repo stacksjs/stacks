@@ -2,7 +2,7 @@
   "name": "@stacksjs/cli",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.320",
+  "version": "0.70.321",
   "description": "TypeScript framework for CLI artisans. Build beautiful console apps with ease.",
   "author": "Chris Breuer",
   "contributors": [
