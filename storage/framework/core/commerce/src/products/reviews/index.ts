@@ -13,6 +13,14 @@ export {
   fetchMostHelpfulByProductId,
 } from './fetch'
 
+// Functions from stats.ts
+export type { ReviewStats } from './stats'
+
+export {
+  fetchStats,
+  fetchStatsByProductIds,
+} from './stats'
+
 // Functions from store.ts
 export {
   store,
