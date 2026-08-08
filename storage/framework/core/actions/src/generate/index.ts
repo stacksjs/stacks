@@ -110,6 +110,31 @@ export async function generateComponentMeta(): Promise<void> {
 }
 
 export async function generateTypes(options?: GeneratorOptions): Promise<void> {
+  /*
+   * `storage/framework/package.json` is the framework's own development
+   * manifest, and it gets vendored into every app. Its `generate:types` script
+   * runs `./core/actions/src/generate/types.ts` — a path that exists in a full
+   * checkout and nowhere else, because an app installs the framework from npm
+   * and has no `core/` directory at all.
+   *
+   * So this crashed on every app: `Module not found "./core/actions/src/
+   * generate/types.ts"`, surfaced as a stack trace and a non-zero exit from
+   * `buddy generate:types`, and as a repeating failure inside `dev:api`'s
+   * watcher.
+   *
+   * The generator is a module in this very package, so import it rather than
+   * spawning a subprocess through a manifest that may not describe the
+   * installed layout. A cache-busting query keeps the watch case working:
+   * `types.ts` does its work at module scope, and a plain re-import would be
+   * served from the module cache and silently do nothing the second time.
+   */
+  const entry = frameworkPath('core/actions/src/generate/types.ts')
+
+  if (!fs.existsSync(entry)) {
+    await import(`./types?t=${Date.now()}`)
+    return
+  }
+
   const result = await runNpmScript(NpmScript.GenerateTypes, {
     cwd: frameworkPath(),
     ...options,
