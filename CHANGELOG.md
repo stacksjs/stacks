@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.330...v0.70.331)
+
+## 🐛 Bug Fixes
+
+- **dev**: resolve the default resources from the framework, not the cwd ([fcc7b04](https://github.com/stacksjs/stacks/commit/fcc7b04)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.329...v0.70.330)
 
 ## 🐛 Bug Fixes
