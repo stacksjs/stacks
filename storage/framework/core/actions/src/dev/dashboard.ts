@@ -527,15 +527,6 @@ const initialUrl = dashboardHttpsUrl && proxyStarted
   ? `${dashboardHttpsUrl}/`
   : `${dashboardLocalUrl}/`
 
-// The native Craft window loads over http://localhost, NOT the pretty HTTPS URL
-// shown above. Craft's WKWebView rejects the tlsx local-CA cert ("The
-// certificate for this server is invalid") because Craft installs no
-// didReceiveAuthenticationChallenge handler to trust it, so the HTTPS URL fails
-// to load and the window goes blank / flashes then clears. Plain http on
-// loopback needs no cert and renders identically in the webview. The browser
-// "Local" URL above stays HTTPS for anyone opening it in a real browser.
-const nativeWindowUrl = `${dashboardLocalUrl}/`
-
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
 
@@ -694,7 +685,11 @@ if (createApp) {
   }
 
   const app = createApp!({
-    url: nativeWindowUrl,
+    // Same pretty HTTPS URL as the browser. Craft's WKWebView trusts the tlsx
+    // local-dev CA via its didReceiveAuthenticationChallenge handler (scoped to
+    // loopback / *.localhost), so the native window loads it directly instead of
+    // failing the cert and going blank.
+    url: initialUrl,
     quiet: !verbose,
     ...(craftBinaryPath && { craftPath: craftBinaryPath }),
     window: {
