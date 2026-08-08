@@ -229,19 +229,32 @@ export function r2Disk(bucket: string, accountId: string, options?: Partial<Omit
 }
 
 /**
+ * Hetzner's object-storage locations, which double as the S3 region name.
+ * Kept a union rather than `string` so a typo is a compile error instead of a
+ * request to a host that does not resolve.
+ */
+export type HetznerLocation = 'fsn1' | 'nbg1' | 'hel1'
+
+/**
  * Helper to create a Hetzner Object Storage disk config (stacksjs/stacks#1897).
  *
  * Hetzner Object Storage exposes an S3-compatible API, so it reuses the `s3`
- * adapter. `location` is the datacenter (e.g. `fsn1`, `nbg1`, `hel1`), used as
- * both the region and the endpoint host `https://<location>.your-objectstorage.com`.
- * Supply Hetzner S3 credentials via `options.credentials` or the AWS_* env vars.
+ * adapter. `location` is the datacenter, used as both the region and the
+ * endpoint host `https://<location>.your-objectstorage.com`. Supply Hetzner S3
+ * credentials via `options.credentials` or the AWS_* env vars.
+ *
+ * Path-style addressing is on by default. Virtual-hosted-style puts the bucket
+ * in the hostname, and Hetzner's wildcard certificate covers only one label, so
+ * a bucket name containing a dot fails TLS verification. Pass
+ * `usePathStyleEndpoint: false` to opt out.
  */
-export function hetznerDisk(bucket: string, location: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+export function hetznerDisk(bucket: string, location: HetznerLocation = 'fsn1', options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
   return {
     driver: 's3',
     bucket,
     region: location,
     endpoint: `https://${location}.your-objectstorage.com`,
+    usePathStyleEndpoint: true,
     visibility: 'private',
     ...options,
   }

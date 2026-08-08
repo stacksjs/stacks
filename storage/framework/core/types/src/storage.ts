@@ -119,6 +119,15 @@ export interface StorageOptions {
      * Custom endpoint (for S3-compatible services)
      */
     endpoint?: string
+
+    /**
+     * Force path-style addressing (`host/bucket/key`) instead of
+     * virtual-hosted-style (`bucket.host/key`).
+     *
+     * Required by several S3-compatible providers, Hetzner Object Storage and
+     * MinIO among them. Leave unset for AWS S3.
+     */
+    usePathStyleEndpoint?: boolean
   }
 
   /**

@@ -16,6 +16,15 @@ async function loadConfig(): Promise<StorageAdapter> {
       bucket: s3Config?.bucket || 'stacks',
       prefix: s3Config?.prefix || 'stx',
       region: s3Config?.region || 'us-east-1',
+      // The adapter has always understood these; this loader used to drop
+      // them, which quietly pinned the driver to AWS. Without `endpoint` an
+      // S3-compatible provider (Hetzner, R2, B2, MinIO) is unreachable, and
+      // without `credentials` an explicitly configured key pair was ignored in
+      // favour of whatever ambient AWS credentials the process happened to
+      // have.
+      endpoint: s3Config?.endpoint,
+      usePathStyleEndpoint: s3Config?.usePathStyleEndpoint,
+      credentials: s3Config?.credentials,
     })
   }
   catch {
@@ -26,6 +35,14 @@ async function loadConfig(): Promise<StorageAdapter> {
       bucket: env.AWS_S3_BUCKET || 'stacks',
       prefix: env.AWS_S3_PREFIX || 'stx',
       region: env.AWS_REGION || 'us-east-1',
+      endpoint: env.AWS_ENDPOINT || undefined,
+      usePathStyleEndpoint: env.AWS_USE_PATH_STYLE_ENDPOINT === true,
+      credentials: env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY
+        ? {
+            accessKeyId: env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
+          }
+        : undefined,
     })
   }
 }
