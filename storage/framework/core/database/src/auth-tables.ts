@@ -6,6 +6,7 @@
  * - oauth_access_tokens
  * - oauth_refresh_tokens
  * - password_resets
+ * - email_verifications
  *
  * Pre stacksjs/stacks#1915 D-3, every CREATE TABLE was duplicated three
  * times — once per dialect — and ~200 lines of copy-pasted SQL diverged
@@ -205,6 +206,41 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
 
     try {
       await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`, dbDriver)).execute()
+    }
+    catch {
+      // Index might already exist
+    }
+
+    /*
+     * `email_verifications` — the other half of the pair above, and it was
+     * missing while `password_resets` was here.
+     *
+     * `core/auth/src/email-verification.ts` has been writing to this table
+     * since it was written: `sendVerificationEmail` deletes and inserts,
+     * `verifyEmail` selects. With nothing creating it, an application that
+     * wires up the framework's own verification flow gets a 500 naming a
+     * relation that does not exist, from code it did not write. The schema
+     * matches what that file reads and writes, exactly.
+     *
+     * The token column holds a hash, never the token itself, so a database
+     * copy is not a set of working verification links.
+     */
+    if (options.verbose) log.info('Creating email_verifications table...')
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        ${pkColumn},
+        user_id INTEGER NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        expires_at ${datetime} NOT NULL,
+        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+      )
+    `).execute()
+
+    try {
+      // One outstanding verification per user is what the code assumes: the
+      // send deletes by `user_id` before inserting, and the verify selects one
+      // row by it.
+      await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_email_verifications_user_id ON email_verifications(user_id)`, dbDriver)).execute()
     }
     catch {
       // Index might already exist
