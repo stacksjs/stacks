@@ -208,9 +208,22 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
   const filterBy = params.filter_by || convertToFilterBy(params.filter)
   const sortBy = convertToSortBy(params.sort)
 
+  /*
+   * No `id` fallback. Typesense refuses `id` as a query field outright, so
+   * defaulting to it turned "the caller did not say which fields to search"
+   * into a 400 from the search node with a message about `id` - which sends
+   * whoever reads it looking at the document rather than at the missing
+   * parameter. Saying so here costs one line and names the actual problem.
+   */
   const queryBy = (params.queryBy as string[] | undefined)?.join(',')
     || (params.query_by as string | undefined)
-    || 'id'
+
+  if (!queryBy) {
+    throw new Error(
+      `[search/typesense] search on "${index}" needs fields to search by. `
+      + 'Pass `query_by`, or declare `searchable` on the model\'s `useSearch` trait so it can be supplied for you.',
+    )
+  }
 
   const q = params.query == null || params.query === '' ? '*' : String(params.query)
 

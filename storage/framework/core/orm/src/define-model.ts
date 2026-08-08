@@ -1288,7 +1288,17 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
     // raw driver response via `.raw()`.
     if (typeof baseModel.search !== 'function') {
       baseModel.search = function (query: string, params?: Record<string, unknown>) {
-        return createSearchQueryBuilder(baseModel, indexName, query, params)
+        /*
+         * The fields the model declared searchable, handed to the builder.
+         *
+         * Without this the driver has nothing to search *by* and falls back to
+         * `id`, which Typesense refuses outright - so `Model.search('anything')`
+         * was a guaranteed 400 for every model that did not pass `query_by` by
+         * hand. The trait already knows the answer: `searchable` is what
+         * `useSearch` was given, and it is what the index settings are built
+         * from a few lines above. It just was not reaching the query.
+         */
+        return createSearchQueryBuilder(baseModel, indexName, query, params, searchConfig.searchable)
       }
     }
 
@@ -1390,6 +1400,7 @@ function createSearchQueryBuilder(
   indexName: string,
   query: string,
   initialParams?: Record<string, unknown>,
+  searchableFields?: readonly string[],
 ): {
   get: () => Promise<unknown[]>
   paginate: (perPage: number, page?: number) => Promise<{ hits: unknown[], total: number, page: number, perPage: number }>
@@ -1397,7 +1408,14 @@ function createSearchQueryBuilder(
   with: (params: Record<string, unknown>) => ReturnType<typeof createSearchQueryBuilder>
   where: (filter: string | string[]) => ReturnType<typeof createSearchQueryBuilder>
 } {
-  let params: Record<string, unknown> = { q: query, ...(initialParams ?? {}) }
+  // `query_by` from the model's `searchable` unless the caller named their own.
+  // Explicit params win: a caller narrowing the search to one field is making a
+  // deliberate choice, and the default is only there so the common case works.
+  const defaultQueryBy = searchableFields && searchableFields.length > 0
+    ? { query_by: [...searchableFields].join(',') }
+    : {}
+
+  let params: Record<string, unknown> = { q: query, ...defaultQueryBy, ...(initialParams ?? {}) }
 
   const builder = {
     /** Merge extra search params (filters, facets, attributesToRetrieve, etc.). */
