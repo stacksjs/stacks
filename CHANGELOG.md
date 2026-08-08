@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.331...v0.70.332)
+
+## 🐛 Bug Fixes
+
+- **build**: stop shipping tests in dist, and close the cwd-path bug class ([9790694](https://github.com/stacksjs/stacks/commit/9790694)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.330...v0.70.331)
 
 ## 🐛 Bug Fixes
