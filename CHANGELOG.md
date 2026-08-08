@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.327...v0.70.328)
+
+## 🐛 Bug Fixes
+
+- **search**: a reindex that reports importing rows now actually imports them ([4fe5d6a](https://github.com/stacksjs/stacks/commit/4fe5d6a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: stop the s3 driver dropping endpoint and credentials ([6f594b8](https://github.com/stacksjs/stacks/commit/6f594b8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.326...v0.70.327)
 
 ## 🐛 Bug Fixes
