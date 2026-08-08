@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.323...v0.70.324)
+
+## ✨ Features
+
+- **orm**: let useSearch build an index that needs the database ([f2e0917](https://github.com/stacksjs/stacks/commit/f2e0917)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.322...v0.70.323)
 
 ## ✨ Features
