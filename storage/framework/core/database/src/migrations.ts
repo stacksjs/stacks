@@ -49,7 +49,7 @@ import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
-import { migrateNotificationTables } from './notification-tables'
+import { ensureNotificationForeignKeys, migrateNotificationTables } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
@@ -1435,13 +1435,6 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
 
-    // Generated model migrations may normalize or rebuild the framework
-    // notification tables. Guarantee those sources before executing the
-    // model migration batch, including on a brand-new database.
-    const notificationTables = await migrateNotificationTables()
-    if (!notificationTables.success)
-      throw new Error(notificationTables.error || 'Failed to prepare notification tables')
-
     // Acquire the distributed migration lock (stacksjs/stacks#1876 D-1).
     // Without this, two concurrent runners (parallel CI jobs, two app
     // instances on boot) race the migrations table and corrupt state —
@@ -1476,6 +1469,49 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // Execute existing migration files
     log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
+
+    /*
+     * The notification tables, *after* the model migrations and not before.
+     *
+     * These guarantees create the framework's notification tables so an app
+     * that never declares the models still has somewhere to write. They used
+     * to run ahead of the batch, on the reasoning that a generated migration
+     * might ALTER one of them and would need it to exist - and that quietly
+     * broke the more common case. An app that *does* declare `Notification`
+     * generates a CREATE TABLE carrying the relations the model declares;
+     * pre-creating the table makes that `CREATE TABLE IF NOT EXISTS` a no-op,
+     * so the table survives without its foreign keys and nothing reports it.
+     * The migration is recorded as applied, the file plainly contains
+     * `REFERENCES "users"("id")`, and the constraint is simply absent.
+     *
+     * `buddy migrate` already ordered its own copy of these guarantees after
+     * the batch for exactly this reason (#1952, which fixed
+     * `notification_preferences`); this call ran before it and undid that for
+     * `notifications` and `notification_deliveries`. One ordering, in both
+     * places, so the model stays authoritative over the table it declares.
+     *
+     * Safe for the case that motivated the old placement: a generated ALTER
+     * only exists when the model does, and when the model exists so does its
+     * CREATE, which the batch above has already run.
+     */
+    const notificationTables = await migrateNotificationTables()
+    if (!notificationTables.success)
+      throw new Error(notificationTables.error || 'Failed to prepare notification tables')
+
+    /*
+     * The notification foreign keys, now that `users` is certain to exist.
+     *
+     * The guarantee above runs before the batch on purpose, so a generated
+     * model migration can normalize these tables - and that is exactly why the
+     * keys never landed. The guarantee created the tables without them, and the
+     * model's own `CREATE TABLE IF NOT EXISTS … REFERENCES users(id)` was then a
+     * no-op against a table that already existed. The migration ran, the corpus
+     * declared the key, and the key was not there.
+     *
+     * Same shape as `ensureUsersAuthColumns` being called a second time after
+     * the numbered migrations, and for the same reason.
+     */
+    await ensureNotificationForeignKeys()
 
     const appliedAfter = await countAppliedMigrations()
     const appliedCount = Math.max(0, appliedAfter - appliedBefore)

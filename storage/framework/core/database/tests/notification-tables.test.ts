@@ -82,3 +82,37 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
     expect(isDuplicateIndexError(new Error('connection refused'))).toBe(false)
   })
 })
+
+/**
+ * The foreign keys, and why they need a second pass.
+ *
+ * `migrateNotificationTables` runs *before* the model migration batch on
+ * purpose - a generated model migration may normalize or rebuild these tables
+ * and needs them to exist first. That ordering is also why the keys never
+ * landed: the guarantee created `notifications` without them, and the model's
+ * own `CREATE TABLE IF NOT EXISTS … REFERENCES users(id) ON DELETE CASCADE`
+ * became a no-op against a table that already existed.
+ *
+ * The migration ran, the corpus declared the key, and the key was not there -
+ * which is the shape that made it survive a tick on somebody's roadmap.
+ */
+describe('ensureNotificationForeignKeys', () => {
+  test('is exported, so the migration runner can call it after the batch', async () => {
+    const { ensureNotificationForeignKeys } = await import('../src/notification-tables')
+
+    expect(typeof ensureNotificationForeignKeys).toBe('function')
+  })
+
+  test('is a no-op rather than a throw when there is no database to reach', async () => {
+    const { ensureNotificationForeignKeys } = await import('../src/notification-tables')
+
+    /*
+     * Every statement is swallowed individually, because an installation that
+     * has deliberately dropped the relation - or has no `users` table at all -
+     * must not fail its migration over a constraint it does not want. The
+     * per-statement scope matters too: a drop that finds nothing must not skip
+     * the add that follows it.
+     */
+    await expect(ensureNotificationForeignKeys()).resolves.toBeUndefined()
+  })
+})

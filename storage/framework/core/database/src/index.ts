@@ -99,7 +99,7 @@ export * from './managed-columns'
 export * from './relation-columns'
 
 // Notification tables migration (stacksjs/stacks#1937)
-export { migrateNotificationTables } from './notification-tables'
+export { ensureNotificationForeignKeys, migrateNotificationTables } from './notification-tables'
 
 // RBAC tables migration (stacksjs/stacks#1941 Phase A)
 export { migrateRbacTables } from './rbac-tables'

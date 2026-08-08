@@ -209,3 +209,62 @@ export async function migrateNotificationTables(options: { verbose?: boolean } =
     return { success: false, error: message }
   }
 }
+
+/**
+ * The foreign keys on `notifications.user_id` and
+ * `notification_deliveries.user_id`, added after the model batch has run.
+ *
+ * **Why this is a second pass rather than part of the CREATE above.** The
+ * guarantee runs *before* the model migrations, deliberately - a generated
+ * model migration may normalize or rebuild these tables and needs them to
+ * exist first. But that ordering is also why the keys never landed: the
+ * guarantee created the table without them, and the model's own
+ * `CREATE TABLE IF NOT EXISTS … REFERENCES users(id) ON DELETE CASCADE` then
+ * became a no-op against a table that already existed. The migration ran, the
+ * corpus declared the key, and the key was not there - reproducible by
+ * dropping the table, un-recording the migration and replaying it.
+ *
+ * Putting `REFERENCES` inline in the guarantee does not work either: on a
+ * brand-new database nothing has created `users` yet, so the CREATE would
+ * fail and take the whole boot with it.
+ *
+ * So the keys are added at the end, when `users` is certain to exist, using
+ * the same defensive-ALTER-and-swallow pattern `ensureUsersAuthColumns` uses
+ * in `auth-tables.ts` and for the same reason: an installation that has
+ * deliberately dropped the relation, or has no `users` table at all, must not
+ * fail its migration over a constraint it does not want.
+ *
+ * Both spellings are dropped first. A column declared `REFERENCES` inline gets
+ * Postgres's own `<table>_<column>_fkey`, while the generator emits
+ * `<table>_<column>_fk`, and leaving both in place lets the stricter one win
+ * every disagreement.
+ */
+export async function ensureNotificationForeignKeys(options: { verbose?: boolean } = {}): Promise<void> {
+  const dbDriver = getDbDriver()
+
+  // SQLite cannot add a foreign key to an existing table at all - it needs a
+  // twelve-step rebuild - and the corpus creates these tables with the key
+  // inline there anyway. Nothing to repair.
+  if (dbDriver === 'sqlite')
+    return
+
+  for (const table of ['notifications', 'notification_deliveries'] as const) {
+    const statements = [
+      `ALTER TABLE ${table} DROP CONSTRAINT IF EXISTS "${table}_user_id_fk"`,
+      `ALTER TABLE ${table} DROP CONSTRAINT IF EXISTS "${table}_user_id_fkey"`,
+      `ALTER TABLE ${table} ADD CONSTRAINT "${table}_user_id_fk" FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE`,
+    ]
+
+    for (const statement of statements) {
+      try {
+        await db.unsafe(statement).execute()
+      }
+      catch (error) {
+        // Swallowed per statement rather than per table, so a drop that finds
+        // nothing does not skip the add that follows it.
+        if (options.verbose)
+          log.debug(`[notification-tables] Skipped: ${statement} (${error instanceof Error ? error.message : String(error)})`)
+      }
+    }
+  }
+}
