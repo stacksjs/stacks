@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.324...v0.70.325)
+
+## ✨ Features
+
+- **api**: a TypeScript client, generated from the document ([a78843e](https://github.com/stacksjs/stacks/commit/a78843e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 👷 Build System
+
+- **api**: the generated client is a checked artifact, like the document ([3355b89](https://github.com/stacksjs/stacks/commit/3355b89)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.323...v0.70.324)
 
 ## ✨ Features
