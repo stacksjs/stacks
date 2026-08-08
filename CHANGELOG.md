@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.313...v0.70.314)
+
+## 🐛 Bug Fixes
+
+- **router**: middleware() accepts an array, and says so when it cannot ([ce7a8fe](https://github.com/stacksjs/stacks/commit/ce7a8fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.312...v0.70.313)
 
 ## 🐛 Bug Fixes
