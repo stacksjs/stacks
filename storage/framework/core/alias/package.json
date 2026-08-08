@@ -2,7 +2,7 @@
   "name": "@stacksjs/alias",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.326",
+  "version": "0.70.327",
   "description": "The Stacks aliases.",
   "author": "Chris Breuer",
   "contributors": [
