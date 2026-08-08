@@ -228,6 +228,10 @@ export async function startProductionServer(options?: { port?: string | number, 
   await overridesReady
 
   const { describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiProxyRules, resolveRedirectRules } = await import('@stacksjs/server')
+  // The one copy of this. It used to be duplicated here verbatim — the shared
+  // module was extracted precisely so the dev and production servers could not
+  // drift, and then this half kept its own.
+  const { resolveDefaultsResources } = await import('@stacksjs/actions/dev/defaults-resources')
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
   await injectGlobalAutoImports()
 
@@ -435,28 +439,6 @@ export async function startProductionServer(options?: { port?: string | number, 
       })
 
   log.success(`Production server listening on http://0.0.0.0:${port}`)
-}
-
-/**
- * Resolve the framework's default resources root (fallback views/layouts/
- * components + preloader). A vendored checkout has them at
- * `storage/framework/defaults/resources` (the source of truth), which wins so
- * a full checkout behaves exactly as before. An app that consumes the framework
- * from node_modules has no vendored copy, so fall back to the published
- * `@stacksjs/defaults` package. Returns the vendored path if neither resolves,
- * letting stx surface a clear missing-directory error.
- */
-function resolveDefaultsResources(): string {
-  const vendored = 'storage/framework/defaults/resources'
-  if (existsSync(vendored))
-    return vendored
-  try {
-    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
-    return join(dirname(pkgJson), 'resources')
-  }
-  catch {
-    return vendored
-  }
 }
 
 async function resolveVendoredStxModule(): Promise<any | undefined> {

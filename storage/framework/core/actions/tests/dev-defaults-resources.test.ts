@@ -20,23 +20,50 @@
  * resolved sub-paths still equal the strings the dev server used to hardcode.
  */
 import { existsSync } from 'node:fs'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { resolveDefaultsResources } from '../src/dev/defaults-resources'
 
+/*
+ * Absolute, and compared as paths rather than strings.
+ *
+ * The resolver used to return the bare relative string, so these assertions
+ * compared against it directly — and passed only when the suite ran from the
+ * project root. From `core/actions`, where `bun test` in this package puts the
+ * working directory, `existsSync` missed the vendored copy entirely and the
+ * package fallback answered instead. What matters is that the resolver points
+ * at the same directories the dev server used to hardcode, not that it spells
+ * them the same way.
+ */
+const VENDORED = resolve(import.meta.dir, '../../../defaults/resources')
+
 describe('resolveDefaultsResources — vendored branch (#2240)', () => {
   it('returns the vendored resources root when it exists', () => {
-    expect(resolveDefaultsResources()).toBe('storage/framework/defaults/resources')
+    expect(resolveDefaultsResources()).toBe(VENDORED)
   })
 
-  it('is behaviour-preserving: the sub-paths equal the old hardcoded strings', () => {
+  it('finds it regardless of the working directory', () => {
+    // The bug this replaced: the answer changed depending on where the process
+    // was started, and the wrong answer was a plausible-looking directory.
+    const fromRoot = resolveDefaultsResources()
+    const previous = process.cwd()
+    try {
+      process.chdir(import.meta.dir)
+      expect(resolveDefaultsResources()).toBe(fromRoot)
+    }
+    finally {
+      process.chdir(previous)
+    }
+  })
+
+  it('is behaviour-preserving: the sub-paths are the ones dev/views.ts hardcoded', () => {
     // dev/views.ts previously hardcoded exactly these three. If the resolver
     // ever drifts from them, a default view/component/layout stops resolving in
     // dev with no other signal, so pin them.
     const root = resolveDefaultsResources()
-    expect(join(root, 'views')).toBe('storage/framework/defaults/resources/views')
-    expect(join(root, 'components')).toBe('storage/framework/defaults/resources/components')
-    expect(join(root, 'layouts')).toBe('storage/framework/defaults/resources/layouts')
+    expect(join(root, 'views')).toBe(join(VENDORED, 'views'))
+    expect(join(root, 'components')).toBe(join(VENDORED, 'components'))
+    expect(join(root, 'layouts')).toBe(join(VENDORED, 'layouts'))
   })
 
   it('resolves to a real directory that actually holds the defaults', () => {
