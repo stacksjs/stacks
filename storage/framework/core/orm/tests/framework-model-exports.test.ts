@@ -2,8 +2,17 @@ import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { basename, join, resolve } from 'node:path'
 
-const modelsRoot = resolve('storage/framework/defaults/app/Models')
-const ormSource = readFileSync(resolve('storage/framework/core/orm/src/index.ts'), 'utf8')
+/*
+ * Resolved from this file, not the working directory.
+ *
+ * `resolve('storage/framework/...')` only found the models when the suite was
+ * run from the repository root; running it from this package — which is what
+ * `bun test` in `core/orm` does — looked for
+ * `core/orm/storage/framework/...` and died on ENOENT. The model imports above
+ * are already relative to this file, so the directory scan should be too.
+ */
+const modelsRoot = resolve(import.meta.dir, '../../../defaults/app/Models')
+const ormSource = readFileSync(resolve(import.meta.dir, '../src/index.ts'), 'utf8')
 
 function modelFiles(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

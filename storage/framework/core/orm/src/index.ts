@@ -289,6 +289,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Team', [''], 'auth'],
   ['TeamInvitation', [''], 'auth'],
   ['TeamMember', [''], 'auth'],
+  ['SocialAccount', [''], 'auth'],
   ['Subscriber', [''], 'auth'],
   ['SubscriberEmail', [''], 'auth'],
   ['Subscription', [''], 'auth'],
@@ -357,8 +358,10 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['ShippingRate', ['commerce'], 'commerce'],
   ['ShippingZone', ['commerce'], 'commerce'],
   ['DeliveryRoute', ['commerce'], 'commerce'],
+  ['DeliveryStop', ['commerce'], 'commerce'],
   ['DigitalDelivery', ['commerce'], 'commerce'],
   ['Driver', ['commerce'], 'commerce'],
+  ['DriverPing', ['commerce'], 'commerce'],
   ['TaxRate', ['commerce'], 'commerce'],
   ['WaitlistProduct', ['commerce'], 'commerce'],
   ['WaitlistRestaurant', ['commerce'], 'commerce'],
@@ -422,9 +425,11 @@ export const Comment = lazyModel<typeof import('../../../defaults/app/Models/Com
 export const Coupon = lazyModel<typeof import('../../../defaults/app/Models/commerce/Coupon').default>('Coupon')
 export const Customer = lazyModel<typeof import('../../../defaults/app/Models/commerce/Customer').default>('Customer')
 export const DeliveryRoute = lazyModel<typeof import('../../../defaults/app/Models/commerce/DeliveryRoute').default>('DeliveryRoute')
+export const DeliveryStop = lazyModel<typeof import('../../../defaults/app/Models/commerce/DeliveryStop').default>('DeliveryStop')
 export const Deployment = lazyModel<typeof import('../../../defaults/app/Models/Deployment').default>('Deployment')
 export const DigitalDelivery = lazyModel<typeof import('../../../defaults/app/Models/commerce/DigitalDelivery').default>('DigitalDelivery')
 export const Driver = lazyModel<typeof import('../../../defaults/app/Models/commerce/Driver').default>('Driver')
+export const DriverPing = lazyModel<typeof import('../../../defaults/app/Models/commerce/DriverPing').default>('DriverPing')
 export const CampaignSend = lazyModel<typeof import('../../../defaults/app/Models/CampaignSend').default>('CampaignSend')
 export const EmailList = lazyModel<typeof import('../../../defaults/app/Models/EmailList').default>('EmailList')
 export const EmailListSubscriber = lazyModel<typeof import('../../../defaults/app/Models/EmailListSubscriber').default>('EmailListSubscriber')
@@ -461,6 +466,7 @@ export const ShippingMethod = lazyModel<typeof import('../../../defaults/app/Mod
 export const ShippingRate = lazyModel<typeof import('../../../defaults/app/Models/commerce/ShippingRate').default>('ShippingRate')
 export const ShippingZone = lazyModel<typeof import('../../../defaults/app/Models/commerce/ShippingZone').default>('ShippingZone')
 export const SocialPost = lazyModel<typeof import('../../../defaults/app/Models/SocialPost').default>('SocialPost')
+export const SocialAccount = lazyModel<typeof import('../../../defaults/app/Models/SocialAccount').default>('SocialAccount')
 export const Subscriber = lazyModel<typeof import('../../../defaults/app/Models/Subscriber').default>('Subscriber')
 export const SubscriberEmail = lazyModel<typeof import('../../../defaults/app/Models/SubscriberEmail').default>('SubscriberEmail')
 export const Subscription = lazyModel<typeof import('../../../defaults/app/Models/Subscription').default>('Subscription')
@@ -487,13 +493,15 @@ const _allExports: Record<string, any> = {
   User, Job, FailedJob,
   Activity, Author, Board, BoardColumn, Campaign, CampaignSend, Card,
   CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
-  DeliveryRoute, Deployment, DigitalDelivery, Driver, EmailList,
+  DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Driver, DriverPing,
+  EmailList,
   EmailListSubscriber, ErrorModel, GiftCard, Label, LicenseKey,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   NotificationDelivery, Order, OrderIdempotency, OrderItem, Page, Payment, PaymentMethod,
   PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,
   ProductVariant, QueryLog, Receipt, Release, Request, Review, ShippingMethod,
-  ShippingRate, ShippingZone, SocialPost, Subscriber, SubscriberEmail,
+  ShippingRate, ShippingZone, SocialAccount, SocialPost, Subscriber,
+  SubscriberEmail,
   Subscription, Tag, TaxRate, Team, TeamInvitation, TeamMember, Transaction,
   WaitlistProduct, WaitlistRestaurant, Websocket,
 }

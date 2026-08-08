@@ -22,6 +22,22 @@ function timestampValue(
   current?: DeliveryRouteWriteData,
 ): number {
   const value = input.last_active ?? current?.last_active
+
+  /*
+   * A route nobody has given a timestamp is active as of now.
+   *
+   * `last_active` is a liveness heartbeat — `fetchActive` reads it, and
+   * `updateLastActive` is what moves it afterwards. Requiring it on create
+   * meant every caller had to pass `Date.now()` themselves to describe a route
+   * that had just been created, and forgetting threw "Last active must be a
+   * valid Unix timestamp" for a field they had no opinion about.
+   *
+   * Only absence defaults. A value that is present and unparseable still fails,
+   * because that is a caller getting it wrong rather than leaving it out.
+   */
+  if (value === undefined || value === null)
+    return Date.now()
+
   if (value instanceof Date)
     return value.getTime()
   if (typeof value === 'number')
@@ -63,7 +79,13 @@ export async function validateDeliveryRouteWrite(
   return {
     ...input,
     driver_id: Number(driver.id),
+    // Denormalised from the driver row, never taken from the caller: a route
+    // cannot name a driver it is not assigned to, or a vehicle that driver
+    // does not have.
     driver: driver.name,
     vehicle: driver.vehicle_number,
+    // The validated value, not the raw input — this is the one field that may
+    // have been defaulted rather than supplied, and the column is NOT NULL.
+    last_active: lastActive,
   }
 }

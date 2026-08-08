@@ -84,7 +84,12 @@ describe('sensitive model API security', () => {
   })
 
   test('keeps anonymous generated reads on an explicit public catalog allowlist', () => {
-    const publicModels = modelFiles(resolve('storage/framework/defaults/app/Models'))
+    // Relative to this file rather than the working directory: run from
+    // inside the package, a cwd-relative path resolves to
+    // `core/orm/storage/framework/...` and the scan throws ENOENT — which
+    // failed a security assertion for a reason that had nothing to do with
+    // security.
+    const publicModels = modelFiles(resolve(import.meta.dir, '../../../defaults/app/Models'))
       .flatMap((file) => {
         const source = readFileSync(file, 'utf8')
         const start = source.indexOf('useApi:')

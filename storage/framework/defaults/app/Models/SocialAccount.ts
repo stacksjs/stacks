@@ -67,4 +67,4 @@ export default defineModel({
       },
     },
   },
-})
+} as const)

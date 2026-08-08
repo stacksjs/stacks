@@ -31,6 +31,10 @@ describe('S3-compatible storage presets', () => {
       bucket: 'bucket',
       region: 'fsn1',
       endpoint: 'https://fsn1.your-objectstorage.com',
+      // Path style, deliberately: Hetzner's wildcard certificate covers a
+      // single label, so virtual-hosted style fails TLS verification for any
+      // bucket whose name contains a dot. The preset documents the opt-out.
+      usePathStyleEndpoint: true,
       visibility: 'private',
     })
   })

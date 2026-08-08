@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
+import { db } from '@stacksjs/database'
 import { refreshDatabase } from './setup'
 import { bulkDestroy } from '../shippings/delivery-routes/destroy'
 import { fetchActive, fetchByDriver } from '../shippings/delivery-routes/fetch'
@@ -8,22 +9,46 @@ beforeEach(async () => {
   await refreshDatabase()
 })
 
+/**
+ * A route belongs to a driver row.
+ *
+ * `driver` and `vehicle` on a route are denormalised copies that
+ * `validateDeliveryRouteWrite` fills in from the driver it looks up — a route
+ * cannot name a driver that does not exist, or claim a vehicle that driver is
+ * not assigned. Passing them as input, which these tests used to do, has no
+ * effect; `driver_id` is the real input.
+ */
+async function createDriver(name: string, vehicleNumber: string): Promise<number> {
+  const driver = await db
+    .insertInto('drivers')
+    .values({
+      name,
+      phone: '555-0100',
+      vehicle_number: vehicleNumber,
+      license: `LIC-${vehicleNumber}`,
+      status: 'active',
+    })
+    .returningAll()
+    .executeTakeFirst()
+
+  return Number((driver as { id: number }).id)
+}
+
 describe('Delivery Route Module', () => {
   describe('fetch', () => {
     it('should fetch routes by driver', async () => {
-      // Create routes for the same driver
+      // Two routes run by the same driver.
       const driverName = 'John Doe'
+      const driverId = await createDriver(driverName, 'Truck A123')
       const routes = [
         {
-          driver: driverName,
-          vehicle: 'Truck A123',
+          driver_id: driverId,
           stops: 5,
           delivery_time: 120,
           total_distance: 50,
         },
         {
-          driver: driverName,
-          vehicle: 'Van B456',
+          driver_id: driverId,
           stops: 3,
           delivery_time: 60,
           total_distance: 25,
@@ -47,8 +72,7 @@ describe('Delivery Route Module', () => {
 
     it('should normalize model attribute names to database columns', async () => {
       const route = await store({
-        driver: 'Jane Doe',
-        vehicle: 'Van C789',
+        driver_id: await createDriver('Jane Doe', 'Van C789'),
         stops: 4,
         deliveryTime: 75,
         totalDistance: 31,
@@ -63,16 +87,14 @@ describe('Delivery Route Module', () => {
     it('should only fetch routes active within the last 24 hours', async () => {
       const now = Date.now()
       const recentRoute = await store({
-        driver: 'Recent Driver',
-        vehicle: 'Van R100',
+        driver_id: await createDriver('Recent Driver', 'Van R100'),
         stops: 2,
         deliveryTime: 30,
         totalDistance: 12,
         lastActive: now - 60 * 60 * 1000,
       })
       const staleRoute = await store({
-        driver: 'Stale Driver',
-        vehicle: 'Van S100',
+        driver_id: await createDriver('Stale Driver', 'Van S100'),
         stops: 1,
         deliveryTime: 20,
         totalDistance: 8,
