@@ -5,7 +5,7 @@ interface OpenApiPathItem {
   [method: string]: {
     summary?: string
     operationId?: string
-    parameters?: Array<{ name: string, in: string, required: boolean, schema: { type: string } }>
+    parameters?: Array<{ name: string, in: string, required: boolean, schema: SchemaObject }>
     responses: Record<string, { description: string, content?: Record<string, { schema?: SchemaObject }> }>
     requestBody?: { content: Record<string, { schema?: SchemaObject }>, required?: boolean }
   }
@@ -53,7 +53,16 @@ function ruleToSchema(rule: unknown): Record<string, unknown> {
  * any resolution failure so generation never crashes the spec build.
  */
 async function loadActionValidations(handlerPath: string): Promise<Record<string, unknown> | null> {
-  if (typeof handlerPath !== 'string' || !handlerPath.includes('Actions')) return null
+  /*
+   * Any handler that resolves to a file under `app/` or the framework
+   * defaults, not only one whose path happens to contain `Actions`.
+   *
+   * That substring check quietly excluded every action registered from a
+   * sibling directory - `'Mcp/McpAction'`, `'Git/ReceivePack'` - which is a
+   * layout the override model explicitly supports. `..` is refused because a
+   * handler string is data from a route file and this ends in an `import`.
+   */
+  if (typeof handlerPath !== 'string' || !handlerPath || handlerPath.includes('..')) return null
   try {
     const { path: p } = await import('@stacksjs/path')
     const candidates = [
@@ -247,24 +256,54 @@ export async function generateOpenApi(options: {
       },
     }
 
-    if (method !== 'get' && method !== 'head' && r.name) {
-      // Heuristic: convert route name `posts.store` → action
-      // `Actions/PostStoreAction`. Best-effort — silently fall through
-      // if no action file matches.
-      const guess = r.name
-        .split('.')
-        .map(part => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')
-      const actionPath = `Actions/${guess}Action`
-      const validations = await loadActionValidations(actionPath)
-      if (validations && Object.keys(validations).length > 0) {
+    /*
+     * The action, from the handler the route was registered with.
+     *
+     * This used to title-case the route *name* into a guessed file path
+     * (`posts.store` → `Actions/PostsStoreAction`), which meant an input schema
+     * appeared only for routes that both carried a name and happened to follow
+     * that convention. Every other endpoint was documented as accepting
+     * nothing - not "unknown", *nothing* - and a client generated from the
+     * document therefore took no arguments and could not call them.
+     *
+     * `handler` is the string the route was actually registered with, so this
+     * is a lookup rather than a guess. An inline function handler has no file
+     * to read, and reports nothing, which is honest.
+     */
+    const validations = r.handler ? await loadActionValidations(r.handler) : null
+
+    if (validations && Object.keys(validations).length > 0) {
+      const fields = Object.entries(validations).map(([field, def]) => {
+        const rule = (def as { rule?: unknown })?.rule
+        return { field, schema: ruleToSchema(rule), required: Boolean((rule as { _required?: boolean })?._required) }
+      })
+
+      if (method === 'get' || method === 'head' || method === 'delete') {
+        /*
+         * Query parameters, not a body.
+         *
+         * A GET with a body is a request most intermediaries drop silently, so
+         * a document that describes one produces a client that appears to work
+         * locally and loses its arguments behind the first proxy. DELETE goes
+         * the same way for the same reason.
+         *
+         * Path parameters are already in the list and win: a field that
+         * appears in both is the same value, and declaring it twice makes the
+         * document invalid.
+         */
+        const taken = new Set(paramNames)
+        for (const { field, schema, required } of fields) {
+          if (taken.has(field)) continue
+          op.parameters?.push({ name: field, in: 'query', required, schema: schema as SchemaObject })
+        }
+      }
+      else {
         const schema: Record<string, unknown> = { type: 'object', properties: {}, required: [] }
         const props = schema.properties as Record<string, unknown>
         const required = schema.required as string[]
-        for (const [field, def] of Object.entries(validations)) {
-          const rule = (def as { rule?: unknown })?.rule
-          props[field] = ruleToSchema(rule)
-          if ((rule as { _required?: boolean })?._required) required.push(field)
+        for (const field of fields) {
+          props[field.field] = field.schema
+          if (field.required) required.push(field.field)
         }
         if (required.length === 0) delete schema.required
         op.requestBody = {
@@ -285,6 +324,21 @@ export async function generateOpenApi(options: {
     const writer = file.writer()
     writer.write(JSON.stringify(spec, null, 2))
     await writer.end()
+
+    /*
+     * The types and the client, from the same document, in the same step.
+     *
+     * Emitting them from a separate command is how they drift: the document
+     * gets regenerated by whoever added a route, the client does not, and the
+     * mismatch surfaces as a client that cannot call an endpoint that plainly
+     * exists. One command means there is no version of "regenerated" that
+     * leaves them disagreeing.
+     */
+    const { renderOpenApiTypes } = await import('./generate-types')
+    const { renderApiClient } = await import('./generate-client')
+
+    await Bun.write(path.frameworkPath('api/api-types.ts'), renderOpenApiTypes(spec))
+    await Bun.write(path.frameworkPath('api/client.ts'), renderApiClient(spec, { name: spec.info.title }))
   }
 
   return spec

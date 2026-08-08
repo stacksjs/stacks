@@ -539,11 +539,21 @@ export function routeParams(routeName: string): string[] {
 }
 
 /**
- * Snapshot of the registered routes — `{ method, path, name? }` per
- * route. Used by `buddy route:list` and the dev-server startup banner.
+ * Snapshot of the registered routes — `{ method, path, name?, handler? }` per
+ * route. Used by `buddy route:list`, the dev-server startup banner, and the
+ * OpenAPI generator.
+ *
+ * `handler` is the string a route was registered with (`'Actions/…'`), and it
+ * is absent for an inline function, which has no file to read anything out of.
+ * The OpenAPI generator needs it to find the action's `validations`: it used to
+ * guess the path by title-casing the route *name* (`posts.store` →
+ * `Actions/PostsStoreAction`), which found a schema for the handful of routes
+ * following that convention and silently described every other endpoint as
+ * taking no input at all. The registry has known the real answer the whole
+ * time; it was simply not being reported.
  */
-export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string }> {
-  const out: Array<{ method: string, path: string, name?: string }> = []
+export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string }> {
+  const out: Array<{ method: string, path: string, name?: string, handler?: string }> = []
   // routeMiddlewareRegistry keys look like 'METHOD:/path'. We intentionally
   // walk it (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
@@ -558,7 +568,7 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
     for (const [n, named] of namedRouteRegistry.entries()) {
       if (named.path === path) { routeName = n; break }
     }
-    out.push({ method, path, name: routeName })
+    out.push({ method, path, name: routeName, handler: routeHandlerKeyRegistry.get(key) })
   }
   return out.sort((a, b) => a.path.localeCompare(b.path))
 }
