@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.323",
+  "version": "0.70.322",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -60,9 +60,9 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.6",
+    "@stacksjs/bumpx": "^0.2.16",
     "@stacksjs/bunpress": "^0.1.18",
-    "@stacksjs/logsmith": "^0.2.3",
+    "@stacksjs/logsmith": "^0.2.11",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.148",
     "@stacksjs/ts-cloud": "^0.7.103",
