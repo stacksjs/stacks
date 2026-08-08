@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.316...v0.70.317)
+
+## 🐛 Bug Fixes
+
+- **router**: the array middleware() takes, the type finally admits ([167b198](https://github.com/stacksjs/stacks/commit/167b198)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.315...v0.70.316)
 
 ## 🐛 Bug Fixes
