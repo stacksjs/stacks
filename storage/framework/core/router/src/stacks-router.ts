@@ -1389,11 +1389,34 @@ function createChainableRoute(routeKey: string): ChainableRoute {
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
 
   const chain: ChainableRoute = {
-    middleware(name: string) {
+    /**
+     * Attach one middleware alias, or several.
+     *
+     * The array form is accepted because it is the obvious way to write a
+     * route with two guards, and it used to be a trap: the array was pushed
+     * whole, `parseMiddlewareName` found no colon in it, and the failure
+     * surfaced at boot as `input.split is not a function` from inside a case
+     * converter — an error that names nothing about routes or middleware and
+     * sends the reader into the router's internals.
+     *
+     * A non-string entry throws by name for the same reason. This runs at
+     * registration, before anything is served, so a loud throw here is the
+     * cheapest possible place to learn about it.
+     */
+    middleware(name: string | readonly string[]) {
       const middlewareList = routeMiddlewareRegistry.get(routeKey)
-      if (middlewareList) {
-        middlewareList.push(name)
+      if (!middlewareList)
+        return chain
+
+      for (const entry of Array.isArray(name) ? name : [name]) {
+        if (typeof entry !== 'string') {
+          throw new TypeError(
+            `[Router] middleware() on ${routeKey} was given a ${typeof entry}; it takes an alias or an array of aliases`,
+          )
+        }
+        middlewareList.push(entry)
       }
+
       return chain
     },
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createStacksRouter, url, validateActionInput } from '../src/stacks-router'
+import { createStacksRouter, findUnresolvableRouteMiddleware, url, validateActionInput } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
 // createStacksRouter - basic instantiation
@@ -167,6 +167,38 @@ describe('Middleware chaining', () => {
     const handler = () => new Response('ok')
     const chainable = router.get('/admin', handler)
     expect(() => chainable.middleware('auth').middleware('verified')).not.toThrow()
+  })
+
+  test('an array is the same as chaining, one entry each', async () => {
+    /*
+     * It is the obvious way to write a route with two guards, and it used to be
+     * a trap: the array was pushed whole, `parseMiddlewareName` found no colon
+     * in it, and the failure surfaced at boot as `input.split is not a
+     * function` from inside a case converter — an error naming nothing about
+     * routes or middleware.
+     *
+     * Asserted through the boot-time resolver rather than the registry, which
+     * is internal: two made-up aliases must come back as two aliases, named.
+     * Before the fix this call threw the TypeError instead of reporting
+     * anything.
+     */
+    const router = createStacksRouter()
+    router.get('/both', () => new Response('ok')).middleware(['no-such-alias', 'no-such-parameterised:x'])
+
+    const unresolvable = await findUnresolvableRouteMiddleware()
+    const names = unresolvable.map(entry => entry.alias)
+
+    expect(names).toContain('no-such-alias')
+    expect(names).toContain('no-such-parameterised')
+  })
+
+  test('and a non-string entry throws by name, at registration', () => {
+    const router = createStacksRouter()
+    const chainable = router.get('/bad', () => new Response('ok'))
+
+    // Loud here, before anything is served, rather than three frames deep in a
+    // case converter at boot.
+    expect(() => chainable.middleware([undefined as any])).toThrow(/middleware\(\)/)
   })
 })
 
