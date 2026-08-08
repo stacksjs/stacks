@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.318...v0.70.319)
+
+## 🐛 Bug Fixes
+
+- **database**: the notification foreign keys land, after the batch rather than before ([ef10dbc](https://github.com/stacksjs/stacks/commit/ef10dbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.317...v0.70.318)
 
 ## ✨ Features
