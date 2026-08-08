@@ -145,6 +145,31 @@ async function ensureCollection(indexName: string, sampleDoc?: Record<string, un
     // collection missing — create below
   }
 
+  /*
+   * No sample, no collection.
+   *
+   * A schema has to come from data. `inferFieldType(undefined)` answers
+   * 'string', so creating a collection from a settings list alone - which is
+   * what the settings sync does, before anything has been indexed - typed
+   * every field as text. Typesense then *refuses* every document carrying an
+   * array or a number ("Field `topics` must be a string"), so the index could
+   * never be written to while the importer reported the rows it believed it
+   * wrote. Sorting broke in the same stroke, ordering numeric fields
+   * lexicographically.
+   *
+   * Typing those fields `auto` instead is not enough either: Typesense
+   * materialises an auto field only when a document gives it a type, so a
+   * field that is empty across the whole corpus - `topics: []` where nobody
+   * has set any - never appears, and `query_by` on it fails with "Could not
+   * find a field named".
+   *
+   * So creation waits for the first document, which is the only thing that
+   * knows the shape. `addDocument` and `addDocuments` both pass one; settings
+   * applied before then are applied when the collection is really created.
+   */
+  if (!sampleDoc)
+    return
+
   const fieldNames = new Set<string>(['id'])
   const searchable = settings?.searchableAttributes ?? []
   const filterable = settings?.filterableAttributes ?? []
@@ -179,15 +204,13 @@ async function ensureCollection(indexName: string, sampleDoc?: Record<string, un
    * only thing that actually knows. An explicit sample still wins, because a
    * known shape beats an inferred one.
    */
-  const fields = sampleDoc
-    ? [...fieldNames].map(name => ({
-        name,
-        type: name === 'id' ? 'string' : inferFieldType(sampleDoc?.[name]),
-        facet: filterable.includes(name),
-        sort: sortable.includes(name),
-        optional: name !== 'id',
-      }))
-    : [{ name: '.*', type: 'auto' }]
+  const fields = [...fieldNames].map(name => ({
+    name,
+    type: name === 'id' ? 'string' : inferFieldType(sampleDoc[name]),
+    facet: filterable.includes(name),
+    sort: sortable.includes(name),
+    optional: name !== 'id',
+  }))
 
   await request('POST', '/collections', {
     name: indexName,

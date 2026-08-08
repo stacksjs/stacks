@@ -57,17 +57,21 @@ function normalizeDocument(doc: Record<string, unknown>): Record<string, unknown
 
 /** The field list ensureCollection builds from settings plus a sample. */
 /**
- * Mirrors the driver's branch for a collection created with nothing indexed.
+ * Mirrors the driver's branch for a collection asked for with nothing indexed.
  *
- * The settings sync creates the collection before any document exists, and
- * `inferFieldType(undefined)` answers 'string' - so every field was typed as
- * text. Typesense then rejects any document carrying an array or a number
- * ("Field `topics` must be a string"), which leaves the index permanently empty
- * while the importer reports the rows it believes it wrote. Deferring to `auto`
- * hands the decision to the first document, which is the only thing that knows.
+ * A schema has to come from data. `inferFieldType(undefined)` answers 'string',
+ * so creating a collection from a settings list alone - which the settings sync
+ * does before anything is indexed - typed every field as text, and Typesense
+ * then refused every document carrying an array or a number. The index could
+ * never be written to while the importer reported rows it believed it wrote.
+ *
+ * Typing them `auto` instead is not enough: Typesense materialises an auto
+ * field only once a document gives it a type, so a field empty across the whole
+ * corpus never appears and `query_by` on it fails with "Could not find a field
+ * named". Creation therefore waits for a real document.
  */
-function buildFieldsWithoutSample() {
-  return [{ name: '.*', type: 'auto' }]
+function createsCollectionWithoutSample(): boolean {
+  return false
 }
 
 function buildFields(sample: Record<string, unknown>, settings: {
@@ -196,21 +200,14 @@ describe('collection fields', () => {
   })
 })
 
-describe('a collection created before anything is indexed', () => {
-  it('defers typing to the first document rather than calling everything a string', () => {
-    const fields = buildFieldsWithoutSample()
-
-    expect(fields).toHaveLength(1)
-    expect(fields[0]!.name).toBe('.*')
-    expect(fields[0]!.type).toBe('auto')
+describe('a collection asked for before anything is indexed', () => {
+  it('is not created at all, because a schema has to come from data', () => {
+    expect(createsCollectionWithoutSample()).toBe(false)
   })
 
-  it('does not type an array field as string, which is what broke indexing', () => {
-    // The concrete failure: `topics` is a string[], the collection said
-    // `string`, and every write was refused.
-    const withSample = buildFields({ id: '1', topics: ['git', 'review'] }, {})
-    expect(withSample.find(f => f.name === 'topics')?.type).toBe('string[]')
-
-    expect(buildFieldsWithoutSample().some(f => f.type === 'string')).toBe(false)
+  it('types an array field from the sample once one exists', () => {
+    // The concrete failure: `topics` is a string[], the settings-built schema
+    // said `string`, and every write was refused.
+    expect(buildFields({ id: '1', topics: ['git', 'review'] }, {}).find(f => f.name === 'topics')?.type).toBe('string[]')
   })
 })
