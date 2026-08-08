@@ -225,7 +225,19 @@ async function search(index: string, params: any): Promise<SearchResponse<Record
     )
   }
 
-  const q = params.query == null || params.query === '' ? '*' : String(params.query)
+  /*
+   * `query` or `q`, because both spellings arrive here.
+   *
+   * The ORM's search builder sets `q` (it is the name Typesense itself uses on
+   * the wire); this read only `params.query`, found nothing, and fell back to
+   * `*`. So every `Model.search('anything')` matched every document in the
+   * collection and returned a full page of results - which looks like working
+   * search right up until somebody notices the same twenty rows come back for
+   * a term that appears nowhere. Silent, and worse than an error: a 400 gets
+   * fixed, a wrong answer gets shipped.
+   */
+  const rawQuery = params.query ?? params.q
+  const q = rawQuery == null || rawQuery === '' ? '*' : String(rawQuery)
 
   const searchParams = new URLSearchParams({
     q,
