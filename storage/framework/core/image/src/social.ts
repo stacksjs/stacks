@@ -73,13 +73,21 @@ export async function generateSocialCardSet(
 
   await mkdir(outputDir, { recursive: true })
 
-  const drawMark = await markPainter(social.mark, root)
+  const mark = await markPainter(social.mark, root)
   const shared = {
     titleFont: fonts.title,
     bodyFont: fonts.body,
     brand: social.brand,
-    drawMark,
-    markPlate: social.markPlate === false ? undefined : color(social.markPlate),
+    drawMark: mark?.draw,
+    // Declared so a wordmark gets the width it needs rather than being fitted
+    // into a square and either shrunk or run over the text beside it.
+    markAspect: mark?.aspect,
+    // `false` means no plate at all, not "use the default white one": white
+    // artwork on a white plate is invisible. ts-images 0.2.8 accepts null for
+    // exactly this; the cast is because its published bundle still surfaces
+    // the pre-0.2.8 `RGBA | undefined` for the card-SET options, so only the
+    // single-card type carries the wider signature.
+    markPlate: (social.markPlate === false ? null : color(social.markPlate)) as never,
     surface: background(social.background, root),
     color: color(social.color),
     mutedColor: color(social.mutedColor),

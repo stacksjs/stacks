@@ -88,10 +88,16 @@ export function device(value: ImageDeviceConfig | undefined): {
  * is nearly always a file already in the repository — the app icon — so the
  * callback is just a placement.
  */
+export interface MarkPainter {
+  draw: (canvas: ImageData, box: { x: number, y: number, size: number, width?: number }) => void
+  /** Width divided by height, so the card can reserve the right box. */
+  aspect: number
+}
+
 export async function markPainter(
   path: string | undefined,
   root: string = process.cwd(),
-): Promise<((canvas: ImageData, box: { x: number, y: number, size: number }) => void) | undefined> {
+): Promise<MarkPainter | undefined> {
   if (!path)
     return undefined
 
@@ -106,16 +112,21 @@ export async function markPainter(
    * off the height instead means a square mark is unchanged and a wide one
    * fills the height and takes the width it needs.
    */
-  const ratio = mark.height > 0 ? mark.width / mark.height : 1
+  const aspect = mark.height > 0 ? mark.width / mark.height : 1
 
-  return (canvas, box) => {
-    drawImage(canvas, mark, {
-      x: box.x,
-      y: box.y,
-      width: box.size * ratio,
-      height: box.size,
-      fit: 'contain',
-    })
+  return {
+    aspect,
+    draw: (canvas, box) => {
+      drawImage(canvas, mark, {
+        x: box.x,
+        y: box.y,
+        // The card reserves the width from `aspect` and passes it back; fall
+        // back to computing it for a caller that does not.
+        width: box.width ?? box.size * aspect,
+        height: box.size,
+        fit: 'contain',
+      })
+    },
   }
 }
 

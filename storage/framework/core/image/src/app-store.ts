@@ -41,7 +41,9 @@ export async function generateAppStoreScreenshotSet(
     titleFont: fonts.title,
     bodyFont: fonts.body,
     brand: appStore.brand,
-    drawMark: await markPainter(appStore.mark, root),
+    // Store screenshots keep their own square mark slot, so only the painter
+    // is taken here.
+    drawMark: (await markPainter(appStore.mark, root))?.draw,
     markPlate: appStore.markPlate === false ? undefined : color(appStore.markPlate),
     background: background(appStore.background, root),
     color: color(appStore.color),
