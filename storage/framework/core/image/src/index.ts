@@ -48,7 +48,14 @@ export class ImageBuilder {
   private options: ImageOptions & { root: string, outputDir: string, publicPath: string, concurrency: number, upscale: boolean }
 
   constructor(private readonly source: string, options: ImageOptions = {}) {
-    this.options = { ...options, root: options.root ?? process.cwd(), outputDir: options.outputDir ?? resolve('public/media/images'), publicPath: options.publicPath ?? '/media/images', concurrency: options.concurrency ?? 4, upscale: options.upscale ?? false }
+    // `outputDir` hangs off `root`, not the working directory. They were
+    // resolved independently — `root` from `options.root ?? process.cwd()` and
+    // `outputDir` from a bare `resolve('public/media/images')` — so passing a
+    // root sent the derivatives to `cwd/public/media/images` anyway, and the
+    // manifest pointed at files that were not there.
+    const root = options.root ?? process.cwd()
+
+    this.options = { ...options, root, outputDir: options.outputDir ?? resolve(root, 'public/media/images'), publicPath: options.publicPath ?? '/media/images', concurrency: options.concurrency ?? 4, upscale: options.upscale ?? false }
   }
 
   widths(widths: number[]): this { if (!widths.length) throw new TypeError('Image widths are required'); widths.forEach(value => integer('Image width', value, 1, 16_384)); this.targetWidths = [...new Set(widths)].sort((a, b) => a - b); return this }

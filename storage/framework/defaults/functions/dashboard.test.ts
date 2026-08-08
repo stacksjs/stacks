@@ -15,7 +15,10 @@ describe('dashboard home composable', () => {
   })
 
   test('uses the guarded canonical home endpoint', () => {
-    const source = readFileSync(resolve('storage/framework/defaults/functions/dashboard.ts'), 'utf8')
+    // Read next to this file, not from the working directory: the same path
+    // relative to cwd only exists when the suite is run from the framework
+    // root, and resolves to nothing from the package it lives in.
+    const source = readFileSync(resolve(import.meta.dir, 'dashboard.ts'), 'utf8')
 
     expect(source).toContain("dashboardApi<DashboardHomeResponse>('/api/dashboard/home')")
     expect(source).not.toContain('defaultStats')

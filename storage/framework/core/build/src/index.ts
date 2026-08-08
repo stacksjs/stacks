@@ -139,8 +139,21 @@ export async function transpilePackage(options: {
   const srcDir = p.resolve(options.dir, 'src')
   const distDir = p.resolve(options.dir, 'dist')
 
+  /*
+   * Everything under `src/`, minus declarations and tests.
+   *
+   * A package that keeps its suites in `src/tests/` — several do — was
+   * transpiling them straight into `dist/`, which has two costs. Every
+   * consumer downloads test files they can never run, since the fixtures and
+   * `bun:test` import are not shipped with them. And a stale
+   * `dist/**\/*.test.js` is picked up by a bare `bun test` inside the package,
+   * so a test that passes in `src/` is reported as failing from a copy of
+   * itself built weeks earlier — which is exactly how `actions` came to have a
+   * phantom failure nobody could reproduce by editing the file it named.
+   */
   const srcFiles = (await Array.fromAsync(new Bun.Glob('**/*.ts').scan({ cwd: srcDir })))
     .filter(f => !f.endsWith('.d.ts'))
+    .filter(f => !f.endsWith('.test.ts') && !f.endsWith('.spec.ts'))
 
   // 1. Emit .d.ts (the accompanying .js output is overwritten in step 2).
   await Bun.build({
