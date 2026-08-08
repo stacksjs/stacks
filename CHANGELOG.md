@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.325...v0.70.326)
+
+## 🐛 Bug Fixes
+
+- **generate**: `buddy generate:types` crashed in every installed app ([684cd15](https://github.com/stacksjs/stacks/commit/684cd15)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.324...v0.70.325)
 
 ## ✨ Features
