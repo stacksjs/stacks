@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.317...v0.70.318)
+
+## ✨ Features
+
+- **image**: let a social card's mark be a wordmark ([6255426](https://github.com/stacksjs/stacks/commit/6255426)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.316...v0.70.317)
 
 ## 🐛 Bug Fixes
