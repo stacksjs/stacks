@@ -35,7 +35,9 @@ async function loadConfig(): Promise<StorageAdapter> {
       bucket: env.AWS_S3_BUCKET || 'stacks',
       prefix: env.AWS_S3_PREFIX || 'stx',
       region: env.AWS_REGION || 'us-east-1',
-      endpoint: env.AWS_ENDPOINT || undefined,
+      // `env` values widen to `string | number | true`, so `|| undefined` alone
+      // leaves the non-string cases in the type. An endpoint is a URL either way.
+      endpoint: env.AWS_ENDPOINT ? String(env.AWS_ENDPOINT) : undefined,
       usePathStyleEndpoint: env.AWS_USE_PATH_STYLE_ENDPOINT === true,
       credentials: env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY
         ? {

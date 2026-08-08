@@ -285,7 +285,13 @@ export const appearanceStore = defineStore('appearance', () => {
   },
 })
 
-export type AppearanceSnapshot = ReturnType<typeof appearanceStore>
+/*
+ * `defineStore` hands back the store itself, not a factory that makes one —
+ * which is why `useAppearance()` below returns `appearanceStore` directly and
+ * `appearanceStore.apply()` is a valid call. `ReturnType<>` therefore had
+ * nothing to unwrap and failed its own constraint.
+ */
+export type AppearanceSnapshot = typeof appearanceStore
 
 /**
  * Keep `system` live.

@@ -1323,7 +1323,9 @@ export function idempotentSql(sql: string): string {
        */
       const fk = /\bFOREIGN\s+KEY\s*\(\s*"?(\w+)"?\s*\)/i.exec(stmt)
       if (fk) {
-        const table = m[1].replace(/"/g, '')
+        // Both captures exist by construction: the patterns that produced `m`
+        // and `fk` each have a mandatory group, so a match implies a value.
+        const table = m[1]!.replace(/"/g, '')
         drops.push(`ALTER TABLE ${m[1]} DROP CONSTRAINT IF EXISTS "${table}_${fk[1]}_fkey"`)
       }
 
@@ -1339,9 +1341,11 @@ export function idempotentSql(sql: string): string {
        */
       const already = new Set<string>()
       for (let i = out.length - 1; i >= 0; i--) {
-        if (!/^ALTER\s+TABLE\s+"?\w+"?\s+DROP\s+CONSTRAINT\b/i.test(out[i]))
+        // In bounds by the loop condition.
+        const previous = out[i]!
+        if (!/^ALTER\s+TABLE\s+"?\w+"?\s+DROP\s+CONSTRAINT\b/i.test(previous))
           break
-        already.add(out[i].toUpperCase())
+        already.add(previous.toUpperCase())
       }
 
       for (const drop of drops) {

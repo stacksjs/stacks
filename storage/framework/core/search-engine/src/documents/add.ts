@@ -47,6 +47,29 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
           continue
         }
 
+        /*
+         * The trait's own bulk path, when the model has one.
+         *
+         * Below this, rows are projected with `toSearchableObject()` - the
+         * legacy hook - and any row that does not have one is counted as
+         * skipped. A model that describes its index through `useSearch`'s
+         * `shape` or `shapeMany` has no such method, so every row was skipped
+         * and the command reported `imported 0, skipped 134` while doing
+         * exactly nothing. It looked like a working reindex with an odd
+         * number in it.
+         *
+         * `makeAllSearchable` is installed by the same trait, chunks the table,
+         * and runs the projection the model actually declared - including the
+         * batch form, which is the only way a document carrying relations gets
+         * built without a query per row. So when it exists, it is the answer.
+         */
+        const bulk = (ModelClass as { makeAllSearchable?: (chunkSize?: number) => Promise<number> }).makeAllSearchable
+        if (typeof bulk === 'function') {
+          const indexed = await bulk.call(ModelClass)
+          log.info(`[search] ${modelName}: imported ${indexed}, skipped 0`)
+          continue
+        }
+
         // stacksjs/stacks#1918 — if the model declared `denormalize`
         // paths, eager-load the head segment of every path so the
         // synchronous `toSearchableObject()` can resolve them out of

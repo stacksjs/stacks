@@ -587,7 +587,12 @@ async function main() {
 
     else if (command === 'snapshot') {
       const cdp = await openPage(session.port)
-      await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
+      // Captured, not discarded: the `state.dispose()` at the end of this
+      // branch needs it. Without the binding that call resolved to stx's
+      // auto-imported `state` signal factory, which has no `dispose`, so
+      // `browse snapshot` threw on its last line and left the CDP listeners
+      // attached.
+      const state = await gotoAndInstrument(cdp, url, { cookies, settleMs, scheme })
       const expr = `(() => {
         const sel = (q) => Array.from(document.querySelectorAll(q));
         const txt = (e) => (e.innerText || e.textContent || '').trim().slice(0, 80);

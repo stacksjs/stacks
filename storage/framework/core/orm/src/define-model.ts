@@ -2249,6 +2249,27 @@ function mergeModelHooks(
 interface SearchableTraitConfig {
   /** Index name. Defaults to the model's table name. */
   index?: string
+
+  /*
+   * The four field lists every model already passes.
+   *
+   * These were missing from the interface while `useSearch` was documented
+   * around them and every model in the framework declares them — so reading
+   * `searchConfig.searchable`, which is what supplies Typesense's `query_by`,
+   * was a type error even though the value is always there. The runtime
+   * contract and the type had simply drifted apart.
+   *
+   * Attribute names in the model's own casing; the trait maps them to columns.
+   */
+
+  /** Fields returned on a hit. Defaults to the whole document. */
+  displayable?: string[]
+  /** Fields matched against the query. Becomes Typesense's `query_by`. */
+  searchable?: string[]
+  /** Fields a result set may be ordered by. */
+  sortable?: string[]
+  /** Fields a result set may be narrowed by. */
+  filterable?: string[]
   /**
    * Projection function — what gets indexed. Lets you index a
    * curated subset of fields (or denormalize relations) instead of

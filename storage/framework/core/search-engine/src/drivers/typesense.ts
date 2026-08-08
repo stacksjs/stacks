@@ -163,13 +163,31 @@ async function ensureCollection(indexName: string, sampleDoc?: Record<string, un
     }
   }
 
-  const fields = [...fieldNames].map(name => ({
-    name,
-    type: name === 'id' ? 'string' : inferFieldType(sampleDoc?.[name]),
-    facet: filterable.includes(name),
-    sort: sortable.includes(name),
-    optional: name !== 'id',
-  }))
+  /*
+   * With no document to look at, let Typesense infer types per field.
+   *
+   * `inferFieldType(undefined)` answers 'string', so creating a collection
+   * from settings alone - which is what the settings sync does, before
+   * anything has been indexed - typed every field as text. That is not a
+   * cosmetic mistake: Typesense then *rejects* every document that carries an
+   * array or a number ("Field `topics` must be a string"), so the index stays
+   * empty while the importer cheerfully reports the rows it thinks it wrote.
+   * Sorting was broken in the same stroke, lexicographically ordering the
+   * numeric fields the sort was declared on.
+   *
+   * The auto field defers the decision to the first document, which is the
+   * only thing that actually knows. An explicit sample still wins, because a
+   * known shape beats an inferred one.
+   */
+  const fields = sampleDoc
+    ? [...fieldNames].map(name => ({
+        name,
+        type: name === 'id' ? 'string' : inferFieldType(sampleDoc?.[name]),
+        facet: filterable.includes(name),
+        sort: sortable.includes(name),
+        optional: name !== 'id',
+      }))
+    : [{ name: '.*', type: 'auto' }]
 
   await request('POST', '/collections', {
     name: indexName,
