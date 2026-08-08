@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.311...v0.70.312)
+
+## 🐛 Bug Fixes
+
+- **router**: the CSRF cookie was never seeded on a file-based view ([bc96c5a](https://github.com/stacksjs/stacks/commit/bc96c5a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.310...v0.70.311)
 
 ## 🐛 Bug Fixes
