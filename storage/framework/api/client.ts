@@ -2818,7 +2818,7 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /api/dashboard/email/send
    */
-  postDashboardEmailSend(input?: { body?: { "to"?: string; "subject"?: string; "body"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postDashboardEmailSend(input: { body: { "to": string; "subject": string; "body": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/dashboard/email/send", input ?? {}, [], true, options)
   },
 
@@ -6689,14 +6689,14 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /password/forgot
    */
-  postPasswordForgot(input?: { body?: { "email"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postPasswordForgot(input: { body: { "email": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/password/forgot", input ?? {}, [], true, options)
   },
 
   /**
    * POST /password/reset
    */
-  postPasswordReset(input?: { body?: { "email"?: string; "token"?: string; "password"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postPasswordReset(input: { body: { "email": string; "token": string; "password": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/password/reset", input ?? {}, [], true, options)
   },
 
@@ -6997,7 +6997,7 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /voide/process
    */
-  postVoideProcess(input?: { body?: { "command"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postVoideProcess(input: { body: { "command": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/voide/process", input ?? {}, [], true, options)
   },
 

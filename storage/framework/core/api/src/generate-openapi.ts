@@ -21,30 +21,64 @@ interface OpenApiSpec {
 /**
  * Map a Stacks validation rule to an OpenAPI 3.0 schema fragment.
  *
- * The validation library wraps rules in a Validator object whose
- * shape isn't formally typed at this boundary, so we duck-type the
- * common fields: `_type` ('string'|'number'|'boolean'|'array'|'object'),
- * `_required`, plus method-chain hints (`_email`, `_url`, `_min`,
- * `_max`). This is best-effort — anything we don't recognize falls
- * through as `{ type: 'string' }` so the spec stays valid even when
- * we can't precisely describe the rule.
+ * A validator is not formally typed at this boundary, so this reads the shape
+ * it actually has: `name` for the type, `rules[]` for the chained constraints
+ * and their params, `allowedValues` for an enum, `isRequired` for presence.
+ * Best-effort - anything unrecognised falls through as `{ type: 'string' }` so
+ * the spec stays valid even when the rule cannot be described precisely.
  */
-function ruleToSchema(rule: unknown): Record<string, unknown> {
+export function ruleToSchema(rule: unknown): Record<string, unknown> {
   if (!rule || typeof rule !== 'object') return { type: 'string' }
   const r = rule as Record<string, unknown>
-  const type = (r._type as string) ?? 'string'
-  const out: Record<string, unknown> = { type: type === 'array' ? 'array' : type }
-  if (typeof r._min === 'number') {
-    out[type === 'string' ? 'minLength' : 'minimum'] = r._min
+
+  /*
+   * Read the validator's own shape: `name`, `rules[]`, `allowedValues`.
+   *
+   * This used to duck-type `_type` / `_min` / `_email` / `_enum`, none of which
+   * the validation library has - so every field in every document came out as
+   * `{ type: 'string' }` with no constraints, including the numbers. A document
+   * that types everything as a string is worse than one that says nothing: a
+   * client generated from it compiles, and then sends `"12"` where the server
+   * wanted `12`.
+   *
+   * The underscore fields are still read as a fallback. If some validator
+   * somewhere really does use them, describing it is better than not.
+   */
+  const rules = Array.isArray(r.rules) ? (r.rules as Array<Record<string, unknown>>) : []
+  const named = (name: string) => rules.find(entry => entry.name === name)
+  const parameter = (name: string, key: string): number | undefined => {
+    const value = (named(name)?.params as Record<string, unknown> | undefined)?.[key]
+    return typeof value === 'number' ? value : undefined
   }
-  if (typeof r._max === 'number') {
-    out[type === 'string' ? 'maxLength' : 'maximum'] = r._max
-  }
-  if (r._email) out.format = 'email'
-  if (r._url) out.format = 'uri'
-  if (r._uuid) out.format = 'uuid'
-  if (Array.isArray(r._enum)) out.enum = r._enum
+
+  const type = (r.name as string) ?? (r._type as string) ?? 'string'
+  const out: Record<string, unknown> = { type: type === 'enum' ? 'string' : type }
+
+  const min = parameter('min', 'min') ?? (typeof r._min === 'number' ? r._min : undefined)
+  const max = parameter('max', 'max') ?? (typeof r._max === 'number' ? r._max : undefined)
+
+  // A string's bound is a length and a number's is a value. Emitting
+  // `minimum: 3` for a string is not merely unhelpful, it is a constraint a
+  // strict validator will try to enforce against text.
+  if (min !== undefined) out[type === 'string' ? 'minLength' : 'minimum'] = min
+  if (max !== undefined) out[type === 'string' ? 'maxLength' : 'maximum'] = max
+
+  if (named('email') || r._email) out.format = 'email'
+  if (named('url') || r._url) out.format = 'uri'
+  if (named('uuid') || r._uuid) out.format = 'uuid'
+
+  const allowed = Array.isArray(r.allowedValues) ? r.allowedValues : Array.isArray(r._enum) ? r._enum : null
+  if (allowed) out.enum = allowed
+
   return out
+}
+
+/** Whether a rule says the field must be present. */
+export function ruleIsRequired(rule: unknown): boolean {
+  if (!rule || typeof rule !== 'object') return false
+  const r = rule as Record<string, unknown>
+
+  return Boolean(r.isRequired ?? r._required)
 }
 
 /**
@@ -275,7 +309,7 @@ export async function generateOpenApi(options: {
     if (validations && Object.keys(validations).length > 0) {
       const fields = Object.entries(validations).map(([field, def]) => {
         const rule = (def as { rule?: unknown })?.rule
-        return { field, schema: ruleToSchema(rule), required: Boolean((rule as { _required?: boolean })?._required) }
+        return { field, schema: ruleToSchema(rule), required: ruleIsRequired(rule) }
       })
 
       if (method === 'get' || method === 'head' || method === 'delete') {

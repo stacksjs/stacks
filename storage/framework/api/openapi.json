@@ -163,7 +163,9 @@
                 "type": "object",
                 "properties": {
                   "question": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 3,
+                    "maxLength": 255
                   }
                 }
               }
@@ -203,7 +205,8 @@
                 "type": "object",
                 "properties": {
                   "text": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 3
                   }
                 }
               }
@@ -11129,22 +11132,31 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "to": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 320,
+                    "format": "email"
                   },
                   "subject": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 255
                   },
                   "body": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 100000
                   }
-                }
+                },
+                "required": [
+                  "to",
+                  "subject",
+                  "body"
+                ]
               }
             }
           }
@@ -25790,7 +25802,8 @@
                 "type": "object",
                 "properties": {
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   }
                 }
               }
@@ -25830,7 +25843,9 @@
                 "type": "object",
                 "properties": {
                   "code": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 6
                   }
                 }
               }
@@ -26584,10 +26599,13 @@
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
                   }
                 }
               }
@@ -26770,16 +26788,20 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   }
-                }
+                },
+                "required": [
+                  "email"
+                ]
               }
             }
           }
@@ -26810,22 +26832,31 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   },
                   "token": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 255
                   }
-                }
+                },
+                "required": [
+                  "email",
+                  "token",
+                  "password"
+                ]
               }
             }
           }
@@ -27752,13 +27783,18 @@
                 "type": "object",
                 "properties": {
                   "email": {
-                    "type": "string"
+                    "type": "string",
+                    "format": "email"
                   },
                   "password": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 8,
+                    "maxLength": 255
                   },
                   "name": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 255
                   }
                 }
               }
@@ -27973,10 +28009,13 @@
                 "type": "object",
                 "properties": {
                   "challenge_token": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   },
                   "code": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 6,
+                    "maxLength": 6
                   }
                 }
               }
@@ -28134,16 +28173,20 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
                 "type": "object",
                 "properties": {
                   "command": {
-                    "type": "string"
+                    "type": "string",
+                    "minLength": 1
                   }
-                }
+                },
+                "required": [
+                  "command"
+                ]
               }
             }
           }

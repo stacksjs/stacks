@@ -7241,7 +7241,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: { content: { "application/json": { "to"?: string; "subject"?: string; "body"?: string } } }
+    requestBody: { content: { "application/json": { "to": string; "subject": string; "body": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }
@@ -17880,7 +17880,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: { content: { "application/json": { "email"?: string } } }
+    requestBody: { content: { "application/json": { "email": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }
@@ -17903,7 +17903,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: { content: { "application/json": { "email"?: string; "token"?: string; "password"?: string } } }
+    requestBody: { content: { "application/json": { "email": string; "token": string; "password": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }
@@ -18892,7 +18892,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    requestBody?: { content: { "application/json": { "command"?: string } } }
+    requestBody: { content: { "application/json": { "command": string } } }
     responses: {
       "200": { content: { "application/json": Record<string, unknown> } }
       "422": { content: never }
