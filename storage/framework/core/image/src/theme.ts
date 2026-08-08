@@ -97,8 +97,25 @@ export async function markPainter(
 
   const mark = await decode(new Uint8Array(await readFile(projectFile(path, root))))
 
+  /*
+   * Keep the mark's own proportions rather than fitting it inside a square.
+   *
+   * `fit: 'contain'` in a square box is right for an icon and wrong for a
+   * wordmark: a 2:1 logo comes out at half the box height, so the one asset
+   * that carries the brand renders smaller than the text beside it. Scaling
+   * off the height instead means a square mark is unchanged and a wide one
+   * fills the height and takes the width it needs.
+   */
+  const ratio = mark.height > 0 ? mark.width / mark.height : 1
+
   return (canvas, box) => {
-    drawImage(canvas, mark, { x: box.x, y: box.y, width: box.size, height: box.size, fit: 'contain' })
+    drawImage(canvas, mark, {
+      x: box.x,
+      y: box.y,
+      width: box.size * ratio,
+      height: box.size,
+      fit: 'contain',
+    })
   }
 }
 
