@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.328...v0.70.329)
+
+## 🐛 Bug Fixes
+
+- **orm**: register the three models that were reachable from nowhere ([74a318a](https://github.com/stacksjs/stacks/commit/74a318a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.327...v0.70.328)
 
 ## 🐛 Bug Fixes
