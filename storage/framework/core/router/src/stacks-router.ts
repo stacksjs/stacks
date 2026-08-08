@@ -134,7 +134,15 @@ interface ResourceRouteOptions {
  * Chainable route interface for middleware and naming support
  */
 interface ChainableRoute {
-  middleware: (name: string) => ChainableRoute
+  /**
+   * One middleware alias, or an array of them applied in order.
+   *
+   * The array form is what the implementation has always accepted - and what
+   * `RouteOptions.middleware` and `register()` already declare - but this
+   * interface said `string`, so `.middleware(['auth', 'can:x'])` was a type
+   * error at every call site despite working.
+   */
+  middleware: (name: string | readonly string[]) => ChainableRoute
   name: (routeName: string) => ChainableRoute
   /**
    * Opt this route out of the default-on CSRF check.
