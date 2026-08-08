@@ -1325,7 +1325,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
             const q = query.call(baseModel) as { chunk?: (size: number, cb: (rows: any[]) => Promise<void>) => Promise<void> }
             if (q && typeof q.chunk === 'function') {
               await q.chunk(chunkSize, async (rows: any[]) => {
-                const docs = rows.map(r => projectDocumentFromTrait(r, searchConfig)).filter(Boolean) as Record<string, unknown>[]
+                const docs = await projectDocumentsFromTrait(rows, searchConfig)
                 if (docs.length > 0) await engine.addDocuments(indexName, docs)
                 total += docs.length
               })
@@ -1338,7 +1338,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         }
 
         const rows = (await all.call(baseModel)) || []
-        const docs = (rows as any[]).map(r => projectDocumentFromTrait(r, searchConfig)).filter(Boolean) as Record<string, unknown>[]
+        const docs = await projectDocumentsFromTrait(rows as any[], searchConfig)
         if (docs.length > 0) await engine.addDocuments(indexName, docs)
         return docs.length
       }
@@ -1375,12 +1375,44 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
  * consistent. Mirrors the closure inside `buildSearchHooks` but
  * lives at module scope so the static-helpers code can reach it.
  */
-function projectDocumentFromTrait(
+/**
+ * Project a whole chunk at once.
+ *
+ * The entry point for every bulk indexing path. `shapeMany` gets the batch and
+ * decides for itself how many queries that costs; without it this falls back to
+ * projecting each row, which is what a column-rearranging `shape` wants anyway.
+ */
+export async function projectDocumentsFromTrait(
+  models: any[],
+  config: SearchableTraitConfig,
+): Promise<Record<string, unknown>[]> {
+  if (models.length === 0)
+    return []
+
+  if (typeof config.shapeMany === 'function') {
+    const docs = await config.shapeMany(models)
+
+    if (!Array.isArray(docs) || docs.length !== models.length) {
+      throw new TypeError(
+        `[orm/search] shapeMany returned ${Array.isArray(docs) ? docs.length : typeof docs} documents for ${models.length} rows. `
+        + 'It must return one document per row, in order, or documents are indexed under the wrong ids.',
+      )
+    }
+
+    return docs.filter(Boolean)
+  }
+
+  const projected = await Promise.all(models.map(model => projectDocumentFromTrait(model, config)))
+
+  return projected.filter(Boolean) as Record<string, unknown>[]
+}
+
+async function projectDocumentFromTrait(
   model: any,
   config: SearchableTraitConfig,
-): Record<string, unknown> | null | undefined {
+): Promise<Record<string, unknown> | null | undefined> {
   if (typeof config.shape === 'function') {
-    try { return config.shape(model) }
+    try { return await config.shape(model) }
     catch { return undefined }
   }
   const fromHook = (model as { toSearchableObject?: () => Record<string, unknown> | null })?.toSearchableObject?.()
@@ -2224,7 +2256,26 @@ interface SearchableTraitConfig {
    * if both are absent; if neither exists, the whole row is
    * indexed.
    */
-  shape?: (model: any) => Record<string, unknown> | null | undefined
+  shape?: (model: any) => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>
+  /**
+   * Batch projection, for a document that needs the database.
+   *
+   * `shape` is called once per row, which is right for a projection that only
+   * rearranges columns. It is the wrong shape for the case the comment above
+   * promises - "or denormalize relations" - because doing that per row means a
+   * query per row, and a rebuild of ten thousand repositories becomes twenty
+   * thousand round trips.
+   *
+   * `shapeMany` receives the whole chunk and returns a document for each, in
+   * order, so the owner handles are one query and the topics are one more
+   * however large the batch is. It takes precedence over `shape` when both are
+   * given, and it is what the indexing paths reach for first.
+   *
+   * Returning a shorter array than it was given is a programming error and is
+   * refused loudly rather than silently indexing the wrong document under the
+   * wrong id.
+   */
+  shapeMany?: (models: any[]) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>
   /**
    * When `true`, the search-sync runs through a queued job
    * (`SyncSearchIndexJob`) instead of inline. Recommended for
@@ -2260,9 +2311,24 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
    *      supported for back-compat
    *   3. fall back to the raw model attributes
    */
-  function projectDocument(model: any): Record<string, unknown> | null | undefined {
+  async function projectDocument(model: any): Promise<Record<string, unknown> | null | undefined> {
+    // A single save goes through the batch projector too, as a batch of one, so
+    // a model that defines `shapeMany` indexes the same document on save as it
+    // does on a rebuild. Two projections for one model is how the index quietly
+    // disagrees with itself depending on which path last wrote a row.
+    if (typeof searchConfig.shapeMany === 'function') {
+      try {
+        const [doc] = await projectDocumentsFromTrait([model], searchConfig)
+        return doc
+      }
+      catch (err) {
+        log.warn(`[orm/search] shapeMany() threw for ${definition.name}: ${(err as Error).message}`)
+        return undefined
+      }
+    }
+
     if (typeof searchConfig.shape === 'function') {
-      try { return searchConfig.shape(model) }
+      try { return await searchConfig.shape(model) }
       catch (err) {
         log.warn(`[orm/search] shape() threw for ${definition.name}: ${(err as Error).message}`)
         return undefined
@@ -2284,7 +2350,7 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
    */
   const syncDocument = async (model: any) => {
     if (eventsAreSuppressed()) return
-    const doc = projectDocument(model)
+    const doc = await projectDocument(model)
     if (!doc) return
 
     if (config.queueable) {
