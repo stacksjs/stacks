@@ -3110,6 +3110,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // still answers 200 - see `configureViewDirectories`.
       configureViewDirectories(bunRouter)
 
+      // A view served from here never reaches the route pipeline, so the CSRF
+      // cookie was only ever seeded on API responses. See the wrapper.
+      wrapHandleRequestForCsrf(bunRouter)
+
       return bunRouter.serve(options)
     },
 
@@ -3257,6 +3261,89 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   }
 
   return stacksRouter
+}
+
+/**
+ * Seed the CSRF cookie on file-based view responses too.
+ *
+ * **Every form in a server-rendered Stacks app was refused for a first-time
+ * visitor.** Both halves of the seeding exist and both hang off the *route
+ * handler* pipeline: `seedCsrfTokenForRender` puts a token on the incoming
+ * request so a template can embed it, and `seedCsrfCookieIfMissing` puts the
+ * matching cookie on the outgoing response. A file-based view takes neither -
+ * bun-router serves it directly - so the page rendered a token the browser had
+ * no cookie for, and the first submit came back `CSRF token mismatch`.
+ *
+ * It is invisible to a test suite. A request carrying a Bearer token bypasses
+ * the check by design, and that is how integration tests authenticate, so the
+ * suite passes while every human interaction fails. The application that found
+ * this had a hundred passing tests and not one working form.
+ *
+ * Wrapped around `handleRequest` rather than added as a middleware, because a
+ * middleware runs on the route pipeline and that is the pipeline a view does not
+ * take. It cannot go in the serve options either: bun-router's `serve()`
+ * overwrites `fetch` with its own bound `handleRequest`, so anything passed
+ * there is discarded.
+ *
+ * Safe methods only, and only when the request carried no token of its own:
+ * anything else is a live session whose token must not be rotated mid-flight.
+ */
+function wrapHandleRequestForCsrf(bunRouter: Router): void {
+  const router = bunRouter as Router & { _csrfSeedingWrapped?: boolean, handleRequest: (req: Request) => Promise<Response> }
+
+  // `serve()` can be called more than once in a process - a test that boots a
+  // server per file does exactly that - and wrapping twice would append two
+  // Set-Cookie headers carrying different tokens.
+  if (router._csrfSeedingWrapped)
+    return
+
+  const original = router.handleRequest.bind(router)
+
+  router.handleRequest = async (request: Request): Promise<Response> => {
+    const method = request.method?.toUpperCase?.() ?? 'GET'
+    const safe = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
+
+    /*
+     * Seeded *before* the render, not only after it.
+     *
+     * A template reads cookies off the incoming request, so a first-time
+     * visitor whose request carries none renders an empty token no matter what
+     * the response sets afterwards - and their first submit fails. Putting it
+     * on the request first is what makes that first form usable; the response
+     * half below then stores the same value in the browser.
+     */
+    if (safe)
+      await seedCsrfTokenForRender(request as Request & { _csrfToken?: string })
+
+    const response = await original(request)
+
+    if (!safe || !response)
+      return response
+
+    try {
+      const { seedCsrfCookieIfMissing } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
+
+      return (seedCsrfCookieIfMissing as (req: Request, res: Response, token?: string) => Response)(
+        request,
+        response,
+        // The value a render already embedded, when the route pipeline ran and
+        // seeded one. Reused rather than regenerated: two independent tokens
+        // put one value in the form and another in the browser, which fails
+        // exactly the way no token at all does.
+        (request as Request & { _csrfToken?: string })._csrfToken,
+      )
+    }
+    catch (err) {
+      // No CSRF middleware in this project's defaults, or it could not be read.
+      // Reported rather than swallowed: a cookie that quietly stops being set
+      // turns every form in the product into a button that does nothing.
+      log.warn('[router] CSRF cookie seeding failed on the view path', { error: err })
+
+      return response
+    }
+  }
+
+  router._csrfSeedingWrapped = true
 }
 
 /**
