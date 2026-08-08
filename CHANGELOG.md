@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.312...v0.70.313)
+
+## 🐛 Bug Fixes
+
+- **database**: a generated ADD CONSTRAINT now displaces the one already there ([8cb050c](https://github.com/stacksjs/stacks/commit/8cb050c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.311...v0.70.312)
 
 ## 🐛 Bug Fixes
