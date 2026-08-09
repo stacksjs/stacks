@@ -2619,6 +2619,23 @@ async function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): P
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   applyRequestEnhancements(req as unknown as Request, req.params || {})
 
+  /*
+   * Every request gets an id.
+   *
+   * The router already echoed `X-Request-ID`, stitched it into JSON error
+   * bodies, and used it as the implicit trace for downstream work - all of it
+   * guarded on `_requestId` being set, and **nothing ever set it.** A complete
+   * read path with no writer: the header never appeared, error bodies carried
+   * no id, and every queued job logged under an id of its own.
+   *
+   * An inbound value is honoured, because correlating a request across a proxy
+   * and two services is the entire point of having one. It is bounded and
+   * filtered first: this string goes into log lines, and an unbounded one from
+   * a stranger is log injection with extra steps.
+   */
+  if (!req._requestId)
+    req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
+
   // Parse query string if not present
   let query = req.query
   if (!query) {
@@ -2636,6 +2653,27 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   Object.assign(req, REQUEST_METHODS)
 
   return req
+}
+
+/**
+ * A request id supplied by the caller, if it is one we are willing to repeat.
+ *
+ * Accepted so a trace survives a proxy or a sibling service. Constrained
+ * because it is written into logs verbatim: 8 to 200 characters of the
+ * alphabet ids actually use. Anything else is ignored rather than rejected -
+ * refusing a request over a malformed diagnostic header would turn a header
+ * nobody needs into an outage.
+ */
+function incomingRequestId(req: EnhancedRequest): string | undefined {
+  try {
+    const supplied = req.headers?.get?.('x-request-id')?.trim()
+
+    if (supplied && /^[\w.:-]{8,200}$/.test(supplied))
+      return supplied
+  }
+  catch { /* a request with no readable headers is not worth failing over */ }
+
+  return undefined
 }
 
 function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerFn {
