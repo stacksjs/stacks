@@ -121,6 +121,19 @@ export interface StacksRequestMarkers {
    * this layer's to state.
    */
   _responseHeaders?: Record<string, string>
+
+  /**
+   * Callbacks to run once the response is known.
+   *
+   * The other half of what a pre-action middleware pipeline cannot do: the
+   * header seam covers "put this on the response", this covers "record that
+   * this happened". Metrics are the obvious case - a middleware can time the
+   * start of a request and has no way to learn its status or duration.
+   *
+   * A callback that throws is swallowed: an observation is worth less than the
+   * request it observes.
+   */
+  _afterResponse?: Array<(outcome: { status: number, durationMs: number }) => void>
 }
 
 /**

@@ -1328,6 +1328,30 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
          * purpose - `X-Request-ID` and `Server-Timing` are this layer's to
          * state, and a middleware overwriting them breaks correlation.
          */
+        /*
+         * Callbacks a middleware asked to run once the answer is known.
+         *
+         * The header seam covers "put this on the response"; this covers
+         * "record that this happened", which is the other half of what a
+         * pre-action pipeline cannot do. Metrics are the obvious case: a
+         * middleware can time the start of a request and has no way to learn
+         * the status or the duration without one of these.
+         *
+         * Failures are swallowed on purpose. A metrics callback that throws
+         * must not turn a served request into a 500 - the observation is worth
+         * less than the thing being observed.
+         */
+        const after = (enhancedReq as any)._afterResponse
+        if (Array.isArray(after)) {
+          for (const callback of after) {
+            try {
+              if (typeof callback === 'function')
+                callback({ status: response?.status ?? 0, durationMs: durMs ?? 0 })
+            }
+            catch { /* an observation is worth less than the request it observes */ }
+          }
+        }
+
         const requested = (enhancedReq as any)._responseHeaders
         if (requested && typeof requested === 'object') {
           for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
