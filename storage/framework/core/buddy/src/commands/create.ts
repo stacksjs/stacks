@@ -1,5 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
-import { chmodSync, cpSync, existsSync, readdirSync, rmSync } from 'node:fs'
+import { chmodSync, cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
@@ -78,6 +78,7 @@ export function create(buddy: CLI): void {
   // has not happened yet.
   ensureExecutableScripts(path)
   applyAppVcsTemplate(path)
+  applyAppConfigTemplate(path)
   removeFrameworkTests(path)
   await ensureEnv(path, options)
 
@@ -233,6 +234,56 @@ function applyAppVcsTemplate(path: string) {
   }
   catch (error) {
     log.warn(`Could not install the app CI template: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+/**
+ * Replace the framework repository's owner-specific infrastructure settings
+ * with safe application defaults.
+ *
+ * `buddy new` downloads this repository as its template, so without this pass
+ * a new app inherits the Stacks production project slug, attached tenants,
+ * hosted-zone id, mailboxes, forwards, and team roster. A later `buddy deploy`
+ * can then target infrastructure owned by the framework repository. The app
+ * template keeps the useful cloud primitives while making every external
+ * integration opt-in and disabling mail-server reconciliation by default.
+ *
+ * Runs before unvendoring because its source lives under the defaults tree.
+ */
+function applyAppConfigTemplate(path: string) {
+  const source = resolve(path, 'storage/framework/defaults/scaffold/config')
+  const destination = resolve(path, 'config')
+
+  if (!existsSync(source)) {
+    log.warn('No app config template found at storage/framework/defaults/scaffold/config - leaving config as downloaded.')
+    return
+  }
+
+  const slug = path.replace(/\/+$/, '').split('/').pop() || 'stacks-app'
+  const displayName = slug
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map(part => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+    .join(' ')
+
+  log.info('Installing app-safe infrastructure configuration...')
+
+  try {
+    for (const file of readdirSync(source)) {
+      if (!file.endsWith('.ts'))
+        continue
+
+      const template = readFileSync(resolve(source, file), 'utf8')
+      const rendered = template
+        .replaceAll('__APP_NAME__', displayName)
+        .replaceAll('__APP_SLUG__', slug)
+
+      writeFileSync(resolve(destination, file), rendered)
+    }
+    log.success('App-safe infrastructure configuration installed')
+  }
+  catch (error) {
+    log.warn(`Could not install the app config template: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
