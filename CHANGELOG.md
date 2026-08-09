@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.341...v0.70.342)
+
+## ✨ Features
+
+- **queue**: a request id that follows a request into its jobs ([5ad8376](https://github.com/stacksjs/stacks/commit/5ad8376)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.340...v0.70.341)
 
 ## ✨ Features
