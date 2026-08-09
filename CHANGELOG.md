@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.338...v0.70.339)
+
+## 👷 Build System
+
+- take ts-pantry 0.11.21, which stops shipping a broken chunk ([f3bd138](https://github.com/stacksjs/stacks/commit/f3bd138)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.337...v0.70.338)
 
 ## 🐛 Bug Fixes
