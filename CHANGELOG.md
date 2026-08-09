@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.344...v0.70.345)
+
+## 🐛 Bug Fixes
+
+- **queue**: the sync driver kept minting a new id for an inline job ([df88fb0](https://github.com/stacksjs/stacks/commit/df88fb0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.343...v0.70.344)
 
 ## 🐛 Bug Fixes
