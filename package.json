@@ -76,7 +76,8 @@
     "@stacksjs/dtsx": "^0.11.4",
     "bun-plugin-dtsx": "^0.11.4",
     "pickier": "^0.1.49",
-    "stacks": "workspace:*"
+    "stacks": "workspace:*",
+    "ts-pantry": "^0.11.21"
   },
   "workspaces": [
     "storage/framework",
