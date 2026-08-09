@@ -106,6 +106,21 @@ export interface StacksRequestMarkers {
    * middleware chain doesn't re-parse JSON / multipart bodies twice.
    */
   _bodyParsed?: boolean
+
+  /**
+   * Headers a middleware wants on the outgoing response.
+   *
+   * The middleware pipeline runs before the action and cannot see what it
+   * returned, so a middleware with something to say *about the answer* - a rate
+   * limit's remaining count, a cache verdict, a deprecation notice - had
+   * nowhere to put it. Compression got a hard-coded post-action wrapper;
+   * everything else had to wrap every action in the app.
+   *
+   * Written by a middleware, applied by the router. The router's own headers
+   * (`X-Request-ID`, `Server-Timing`) win a collision, because correlation is
+   * this layer's to state.
+   */
+  _responseHeaders?: Record<string, string>
 }
 
 /**

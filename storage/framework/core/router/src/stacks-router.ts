@@ -1313,6 +1313,29 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       const durMs = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
 
       const setHeaders = (h: Headers) => {
+        /*
+         * Headers a middleware asked to have on the response.
+         *
+         * The middleware pipeline is pre-action only, so a middleware that has
+         * something to say *about the answer* - a rate limit's remaining count,
+         * a cache verdict, a deprecation notice - had nowhere to put it.
+         * Compression got a hard-coded post-action wrapper keyed on a
+         * `_compress` marker; everything else got nothing, and the workaround
+         * in an app is to wrap every action.
+         *
+         * So: a middleware writes `request._responseHeaders`, and they land
+         * here, before the router's own. The router's win a collision on
+         * purpose - `X-Request-ID` and `Server-Timing` are this layer's to
+         * state, and a middleware overwriting them breaks correlation.
+         */
+        const requested = (enhancedReq as any)._responseHeaders
+        if (requested && typeof requested === 'object') {
+          for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
+            if (typeof value === 'string')
+              h.set(name, value)
+          }
+        }
+
         if (reqId) h.set('X-Request-ID', reqId)
         if (durMs != null) {
           const parts = [`total;dur=${durMs.toFixed(1)}`]
