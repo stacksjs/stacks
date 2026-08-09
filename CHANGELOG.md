@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.340...v0.70.341)
+
+## ✨ Features
+
+- **router**: a middleware can put a header on the response ([1b08486](https://github.com/stacksjs/stacks/commit/1b08486)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.339...v0.70.340)
 
 ## 🔧 Chores
