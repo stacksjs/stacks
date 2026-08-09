@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.337...v0.70.338)
+
+## 🐛 Bug Fixes
+
+- **create**: don't hand a new app the framework's own test suite ([64b72b7](https://github.com/stacksjs/stacks/commit/64b72b7)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2239](https://github.com/stacksjs/stacks/issues/2239))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.336...v0.70.337)
 
 ## 🐛 Bug Fixes
