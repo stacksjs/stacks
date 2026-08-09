@@ -1,3 +1,4 @@
+import type { ModelRow, ProductUnit, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import type { ProductUnitWriteData } from './types'

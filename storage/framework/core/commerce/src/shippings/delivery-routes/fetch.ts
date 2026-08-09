@@ -1,3 +1,4 @@
+import type { DeliveryRoute, ModelRow } from '@stacksjs/orm'
 type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
 import { db } from '@stacksjs/database'
 

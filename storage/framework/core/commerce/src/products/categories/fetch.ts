@@ -1,3 +1,4 @@
+import type { Category, ModelRow } from '@stacksjs/orm'
 import type { CategoryStats } from '../../types'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'

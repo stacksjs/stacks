@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, Review } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
 type NewReview = NewModelData<typeof Review>
 type NewReviewInput = NewReview & Partial<{

@@ -1,3 +1,4 @@
+import type { Category, ModelRow } from '@stacksjs/orm'
 type CategoryJsonResponse = ModelRow<typeof Category>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'

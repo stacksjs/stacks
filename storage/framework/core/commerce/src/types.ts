@@ -1,3 +1,4 @@
+import type { Coupon, Customer, GiftCard, Manufacturer, ModelRow, Order, Review } from '@stacksjs/orm'
 // Import the CustomerTable type from the ORM
 
 type CouponJsonResponse = ModelRow<typeof Coupon>

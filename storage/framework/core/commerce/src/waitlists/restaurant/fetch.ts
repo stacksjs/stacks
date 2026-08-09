@@ -1,3 +1,4 @@
+import type { ModelRow, WaitlistRestaurant } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>

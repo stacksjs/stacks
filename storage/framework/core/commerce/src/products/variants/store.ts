@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, ProductVariant } from '@stacksjs/orm'
 type ProductVariantJsonResponse = ModelRow<typeof ProductVariant>
 type NewProductVariant = NewModelData<typeof ProductVariant>
 import { randomUUIDv7 } from 'bun'

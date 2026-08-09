@@ -1,3 +1,4 @@
+import type { LicenseKey, ModelRow, NewModelData } from '@stacksjs/orm'
 // Import dependencies
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type NewLicenseKey = NewModelData<typeof LicenseKey>

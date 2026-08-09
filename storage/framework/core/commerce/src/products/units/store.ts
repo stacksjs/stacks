@@ -1,3 +1,4 @@
+import type { ModelRow, ProductUnit } from '@stacksjs/orm'
 // Import dependencies
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
 import { randomUUIDv7 } from 'bun'

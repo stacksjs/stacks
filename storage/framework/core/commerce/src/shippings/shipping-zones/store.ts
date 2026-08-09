@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, ShippingZone } from '@stacksjs/orm'
 // Import dependencies
 type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 type NewShippingZone = NewModelData<typeof ShippingZone>

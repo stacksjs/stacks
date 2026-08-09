@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, Payment } from '@stacksjs/orm'
 type PaymentJsonResponse = ModelRow<typeof Payment>
 type NewPayment = NewModelData<typeof Payment>
 import { randomUUIDv7 } from 'bun'

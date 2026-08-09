@@ -1,3 +1,4 @@
+import type { ModelRow, WaitlistProduct } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 import { db } from '@stacksjs/database'
 import { mutationCount } from '../../utils/mutation-count'

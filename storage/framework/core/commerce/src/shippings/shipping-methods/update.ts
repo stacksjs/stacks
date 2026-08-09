@@ -1,3 +1,4 @@
+import type { ModelRow, ShippingMethod, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { shippingMethodWriteData } from '../write-data'

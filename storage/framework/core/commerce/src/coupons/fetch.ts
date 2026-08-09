@@ -1,3 +1,4 @@
+import type { Coupon, ModelRow } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
 import { extractDate, formatDate } from '@stacksjs/orm'

@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, WaitlistProduct } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 type NewWaitlistProduct = NewModelData<typeof WaitlistProduct>
 import { randomUUIDv7 } from 'bun'

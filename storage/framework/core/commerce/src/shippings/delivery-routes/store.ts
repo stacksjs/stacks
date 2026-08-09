@@ -1,3 +1,4 @@
+import type { DeliveryRoute, ModelRow, NewModelData } from '@stacksjs/orm'
 type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
 type NewDeliveryRoute = NewModelData<typeof DeliveryRoute>
 type DeliveryRouteInput = NewDeliveryRoute & Partial<{

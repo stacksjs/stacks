@@ -1,3 +1,4 @@
+import type { Customer, ModelRow } from '@stacksjs/orm'
 type CustomerJsonResponse = ModelRow<typeof Customer>
 import { db } from '@stacksjs/database'
 

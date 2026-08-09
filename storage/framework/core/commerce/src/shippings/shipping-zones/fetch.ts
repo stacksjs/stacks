@@ -1,3 +1,4 @@
+import type { ModelRow, ShippingZone } from '@stacksjs/orm'
 type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 import { db } from '@stacksjs/database'
 

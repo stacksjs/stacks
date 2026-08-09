@@ -1,3 +1,4 @@
+import type { ModelRow, WaitlistProduct } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import { createSpreadsheet } from 'ts-spreadsheets'

@@ -1,3 +1,4 @@
+import type { Category, ModelRow } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'

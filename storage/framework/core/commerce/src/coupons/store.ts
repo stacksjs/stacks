@@ -1,3 +1,4 @@
+import type { Coupon, ModelRow, NewModelData } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
 type NewCoupon = NewModelData<typeof Coupon>
 import { randomUUIDv7 } from 'bun'

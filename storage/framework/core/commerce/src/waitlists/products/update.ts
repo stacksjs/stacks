@@ -1,3 +1,4 @@
+import type { ModelRow, UpdateModelData, WaitlistProduct } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'

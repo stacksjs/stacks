@@ -1,3 +1,4 @@
+import type { ModelRow, PrintDevice } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 import type { SpreadsheetWrapper } from 'ts-spreadsheets'
 import { createSpreadsheet } from 'ts-spreadsheets'

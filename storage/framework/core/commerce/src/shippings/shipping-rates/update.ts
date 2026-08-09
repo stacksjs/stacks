@@ -1,3 +1,4 @@
+import type { ModelRow, ShippingRate, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { mutationCount } from '../../utils/mutation-count'

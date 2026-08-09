@@ -1,3 +1,4 @@
+import type { GiftCard, ModelRow } from '@stacksjs/orm'
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
 import { formatDate, toTimestamp } from '@stacksjs/orm'

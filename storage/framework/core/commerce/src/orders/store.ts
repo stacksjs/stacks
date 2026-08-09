@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, Order } from '@stacksjs/orm'
 // Import dependencies
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'

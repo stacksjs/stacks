@@ -1,3 +1,4 @@
+import type { ModelRow, WaitlistRestaurant } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { refreshDatabase } from './setup'

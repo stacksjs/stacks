@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, PrintDevice } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type NewPrintDevice = NewModelData<typeof PrintDevice>
 import { randomUUIDv7 } from 'bun'

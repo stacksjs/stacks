@@ -1,3 +1,4 @@
+import type { DigitalDelivery, ModelRow, NewModelData } from '@stacksjs/orm'
 type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 type NewDigitalDelivery = NewModelData<typeof DigitalDelivery>
 import { randomUUIDv7 } from 'bun'

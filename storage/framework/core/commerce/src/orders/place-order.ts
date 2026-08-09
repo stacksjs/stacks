@@ -1,3 +1,4 @@
+import type { ModelRow, NewModelData, Order, OrderItem, Payment } from '@stacksjs/orm'
 /**
  * Atomic order placement (stacksjs/stacks#1879 Co-1).
  *

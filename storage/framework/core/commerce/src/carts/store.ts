@@ -1,3 +1,4 @@
+import type { Cart, ModelRow, NewModelData } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>
 type NewCart = NewModelData<typeof Cart>
 import { randomUUIDv7 } from 'bun'

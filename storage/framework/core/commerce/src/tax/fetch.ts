@@ -1,3 +1,4 @@
+import type { ModelRow, TaxRate } from '@stacksjs/orm'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
 import { db } from '@stacksjs/database'
 

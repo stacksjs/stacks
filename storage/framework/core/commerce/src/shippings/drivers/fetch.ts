@@ -1,3 +1,4 @@
+import type { Driver, ModelRow } from '@stacksjs/orm'
 type DriverJsonResponse = ModelRow<typeof Driver>
 import { db } from '@stacksjs/database'
 

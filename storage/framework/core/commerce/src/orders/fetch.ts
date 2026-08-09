@@ -1,3 +1,4 @@
+import type { ModelRow, Order } from '@stacksjs/orm'
 type OrderJsonResponse = ModelRow<typeof Order>
 import type {
   OrderStats,

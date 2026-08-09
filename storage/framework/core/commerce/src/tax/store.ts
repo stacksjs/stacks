@@ -1,3 +1,4 @@
+import type { ModelRow, TaxRate } from '@stacksjs/orm'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
