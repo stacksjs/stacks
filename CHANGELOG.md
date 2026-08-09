@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.335...v0.70.336)
+
+## 🐛 Bug Fixes
+
+- **orm**: a hidden attribute never reaches the search index ([bceaea8](https://github.com/stacksjs/stacks/commit/bceaea8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.334...v0.70.335)
 
 ## 👷 Build System
