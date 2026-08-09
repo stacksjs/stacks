@@ -38,11 +38,14 @@ dist*
 # Git files
 !.gitkeep
 
-# Database files
-database/stacks_testing.sqlite
-database/stacks.sqlite
-database/*.sqlite-wal
-database/*.sqlite-shm
+# Database files. Unanchored, because a package whose tests open a database
+# gets one in its own directory: `bun test` in core/queue leaves
+# core/queue/database/stacks.sqlite, which the root-relative form above missed,
+# so it showed as untracked after every run.
+**/database/stacks_testing.sqlite
+**/database/stacks.sqlite
+**/database/*.sqlite-wal
+**/database/*.sqlite-shm
 
 # OS files
 .DS_Store
@@ -66,6 +69,13 @@ discovered-packages.json
 storage/framework/stx/
 storage/framework/runtime/
 storage/cloud/
+
+# Same cache, in the wrong place. stx falls back to `.stx` beside the working
+# directory when STX_DIR is unset, and a package's own `bun test` runs with
+# that set to the package root — so core/browser-extension grows a `.stx/`.
+# Ignored wherever it lands: an untracked directory after every test run is how
+# a real change gets overlooked, and how `git add -A` sweeps in build noise.
+**/.stx/
 
 # Pre-relocation names of the three directories above. stx and ts-cloud each
 # take their state directory from config now (`stateDir` in config/ui.ts and
