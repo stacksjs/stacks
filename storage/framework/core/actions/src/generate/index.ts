@@ -10,6 +10,7 @@ import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
+import { generateEnvFiles } from './env-files'
 
 export { generateProjectImages } from './images'
 export type { GenerateImagesActionOptions } from './images'
@@ -128,6 +129,12 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
    * `types.ts` does its work at module scope, and a plain re-import would be
    * served from the module cache and silently do nothing the second time.
    */
+  // Environment declarations are part of "generate the project's types", and
+  // until now nothing ran the generator that produces them — so `env.X` for
+  // any variable added after the file was last written by hand fell through to
+  // the index signature and typed as `string | number | true`.
+  await generateEnvFiles()
+
   const entry = frameworkPath('core/actions/src/generate/types.ts')
 
   if (!fs.existsSync(entry)) {
