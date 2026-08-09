@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/cache",
   "type": "module",
-  "version": "0.70.343",
+  "version": "0.70.344",
   "description": "Caching the Stacks way.",
   "author": "Chris Breuer",
   "contributors": [

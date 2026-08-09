@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.343...v0.70.344)
+
+## 🐛 Bug Fixes
+
+- **router**: actually set the request id it has always read ([fb676f1](https://github.com/stacksjs/stacks/commit/fb676f1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.342...v0.70.343)
 
 ## ✨ Features
