@@ -409,6 +409,20 @@ export interface Log {
    * truncate the output. Cheap when nothing is buffered.
    */
   flush: () => Promise<void>
+  /**
+   * Flush, then exit.
+   *
+   * The counterpart to {@link fatal} for the path a command actually takes
+   * most often — it succeeded, it said so, and now it wants to end. Writing
+   * that as `log.success(...)` followed by `process.exit(0)` drops the
+   * message: the write is async and `process.exit` does not wait, so the one
+   * line the operator was watching for is the one that never arrives, and the
+   * command reads as having hung partway through work it in fact completed.
+   *
+   * @example
+   * await log.exit(`Indexed ${count} products`)
+   */
+  exit: (msg?: string, exitCode?: number) => Promise<never>
 }
 
 export type ErrorMessage = string
@@ -581,6 +595,14 @@ export const log: Log = {
 
   fatal: (msg: string, exitCode = ExitCode.FatalError): never => {
     process.stderr.write(`${msg}\n`)
+    process.exit(exitCode)
+  },
+
+  exit: async (msg?: string, exitCode = ExitCode.Success): Promise<never> => {
+    if (msg)
+      await log.success(msg)
+
+    await log.flush()
     process.exit(exitCode)
   },
 
