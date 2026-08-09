@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.336...v0.70.337)
+
+## 🐛 Bug Fixes
+
+- **actions**: actually generate the env declarations, from the actual env ([ea16a3f](https://github.com/stacksjs/stacks/commit/ea16a3f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.335...v0.70.336)
 
 ## 🐛 Bug Fixes
