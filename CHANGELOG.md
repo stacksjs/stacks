@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.345...v0.70.346)
+
+## 🐛 Bug Fixes
+
+- **orm**: let a declared default satisfy a declared required ([013ab30](https://github.com/stacksjs/stacks/commit/013ab30)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.344...v0.70.345)
 
 ## 🐛 Bug Fixes
