@@ -203,10 +203,59 @@ export function withLogContext<T>(context: LogContext, fn: () => T): T {
 }
 
 /**
- * Get the current log context (if any).
+ * Get the current log context (if any), with the active trace id folded in.
+ *
+ * The trace is read from the router's own AsyncLocalStorage through the
+ * process-global symbol it publishes, rather than by importing
+ * `@stacksjs/router` - which would be a cycle, since the router imports this.
+ * That symbol is already a deliberate cross-copy contract (see
+ * `request-context.ts`), so reading it here is using the seam rather than
+ * reaching around one.
+ *
+ * Why it belongs here at all: a log line without a request id is a log line
+ * nobody can join to anything. The id follows a request into its jobs now, and
+ * the only place that becomes *useful* is the log.
+ *
+ * An explicit context wins, so a caller who sets `trace_id` deliberately - a
+ * migration script correlating to a deploy, say - is not overwritten by an
+ * ambient one.
  */
 export function getLogContext(): LogContext | undefined {
-  return logContextStorage.getStore()
+  const store = logContextStorage.getStore()
+  const trace = activeTraceId()
+
+  if (!trace)
+    return store
+
+  return { trace_id: trace, ...store }
+}
+
+/**
+ * The router's active trace id, if this process has a router and a request.
+ *
+ * Defensive to the point of paranoia on purpose: this runs inside the logger,
+ * and a logger that throws while reporting a failure turns one problem into a
+ * silent one.
+ */
+function activeTraceId(): string | undefined {
+  try {
+    const storage = (globalThis as Record<symbol, unknown>)[Symbol.for('stacks.router.traceStorage')] as
+      | { getStore: () => string | undefined }
+      | undefined
+
+    const explicit = storage?.getStore?.()
+    if (explicit)
+      return explicit
+
+    const requests = (globalThis as Record<symbol, unknown>)[Symbol.for('stacks.router.requestStorage')] as
+      | { getStore: () => { _requestId?: string } | undefined }
+      | undefined
+
+    return requests?.getStore?.()?._requestId
+  }
+  catch {
+    return undefined
+  }
 }
 
 async function initLogger(): Promise<void> {
