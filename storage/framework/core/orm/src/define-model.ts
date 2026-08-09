@@ -1278,7 +1278,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // stay free for caller-defined statics. Each one is a thin
   // wrapper around the search-engine driver scoped to the model's
   // resolved index name.
-  const searchConfig = resolveSearchConfig(definition.traits?.useSearch)
+  const searchConfig = resolveSearchConfig(definition.traits?.useSearch, definition)
   if (searchConfig) {
     const indexName = searchConfig.index ?? definition.table ?? snakeCase(`${definition.name}s`)
 
@@ -1407,6 +1407,49 @@ export async function projectDocumentsFromTrait(
   return projected.filter(Boolean) as Record<string, unknown>[]
 }
 
+/**
+ * The attribute names a model declared `hidden`.
+ *
+ * `hidden: true` already means "never serialise this" - it is how `password`
+ * is kept out of a JSON response - and the search projection ignored it. The
+ * default projection is the whole row, so any model with a hidden attribute and
+ * `useSearch` enabled wrote that attribute into the search index. For the
+ * framework's own `User` that is the password hash, which turns a read of the
+ * search node into an offline cracking target needing no further access, and
+ * `email`, which makes every address on the instance queryable.
+ *
+ * `displayable` did not prevent it: that governs what a query returns, not what
+ * is written.
+ */
+function hiddenAttributeNames(definition: BQBModelDefinition): Set<string> {
+  const hidden = new Set<string>()
+  const attributes = (definition as { attributes?: Record<string, { hidden?: boolean }> }).attributes ?? {}
+
+  for (const [name, attribute] of Object.entries(attributes)) {
+    if (attribute?.hidden)
+      hidden.add(name)
+  }
+
+  return hidden
+}
+
+/** Strip hidden attributes from a document the default projection produced. */
+function withoutHidden(
+  document: Record<string, unknown> | null | undefined,
+  hidden: Set<string>,
+): Record<string, unknown> | null | undefined {
+  if (!document || hidden.size === 0)
+    return document
+
+  const safe: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(document)) {
+    if (!hidden.has(key))
+      safe[key] = value
+  }
+
+  return safe
+}
+
 async function projectDocumentFromTrait(
   model: any,
   config: SearchableTraitConfig,
@@ -1417,7 +1460,13 @@ async function projectDocumentFromTrait(
   }
   const fromHook = (model as { toSearchableObject?: () => Record<string, unknown> | null })?.toSearchableObject?.()
   if (fromHook !== undefined) return fromHook
-  return model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null)
+
+  // The default projection is the whole row, so anything the model marked
+  // `hidden` is removed here. See `hiddenAttributeNames` for why that matters.
+  return withoutHidden(
+    model?._attributes ?? (typeof model?.toJSON === 'function' ? model.toJSON() : null),
+    config.hidden ?? new Set<string>(),
+  )
 }
 
 /**
@@ -2298,6 +2347,13 @@ interface SearchableTraitConfig {
    */
   shapeMany?: (models: any[]) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>
   /**
+   * Attribute names the model declared `hidden`, resolved by the trait.
+   *
+   * Not something a caller sets: it is filled in from the model definition so
+   * the default projection cannot write a password hash into a search index.
+   */
+  hidden?: Set<string>
+  /**
    * When `true`, the search-sync runs through a queued job
    * (`SyncSearchIndexJob`) instead of inline. Recommended for
    * production where the search backend is on a separate network
@@ -2309,15 +2365,27 @@ interface SearchableTraitConfig {
   queueable?: boolean
 }
 
-function resolveSearchConfig(useSearch: unknown): SearchableTraitConfig | null {
-  if (!useSearch) return null
-  if (useSearch === true) return {}
-  if (typeof useSearch === 'object') return useSearch as SearchableTraitConfig
-  return null
+function resolveSearchConfig(useSearch: unknown, definition?: BQBModelDefinition): SearchableTraitConfig | null {
+  if (!useSearch)
+    return null
+
+  const base: SearchableTraitConfig = useSearch === true
+    ? {}
+    : (typeof useSearch === 'object' ? { ...(useSearch as SearchableTraitConfig) } : null) as SearchableTraitConfig
+
+  if (!base)
+    return null
+
+  // Resolved once, here, so both the per-save hook and the bulk path strip the
+  // same attributes rather than each deciding for itself.
+  if (definition)
+    base.hidden = hiddenAttributeNames(definition)
+
+  return base
 }
 
 function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
-  const config = resolveSearchConfig(definition.traits?.useSearch)
+  const config = resolveSearchConfig(definition.traits?.useSearch, definition)
   if (!config) return undefined
   const searchConfig = config
 

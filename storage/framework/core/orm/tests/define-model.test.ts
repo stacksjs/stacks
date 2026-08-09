@@ -578,3 +578,49 @@ describe('defineModel', () => {
     })
   })
 })
+
+describe('the default search projection and hidden attributes', () => {
+  /**
+   * Mirrors `withoutHidden`, which is module-private.
+   *
+   * The bug: `useSearch` with no `shape` indexes the whole row, and the whole
+   * row includes anything marked `hidden: true` - which for the framework's own
+   * `User` is the password hash. A hash in a search corpus turns a read of the
+   * search node into an offline cracking target that needs no further access.
+   * `displayable` did not prevent it, because that governs what a query returns
+   * rather than what is written.
+   */
+  function withoutHidden(document: Record<string, unknown>, hidden: Set<string>) {
+    if (hidden.size === 0)
+      return document
+
+    const safe: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(document)) {
+      if (!hidden.has(key))
+        safe[key] = value
+    }
+
+    return safe
+  }
+
+  it('keeps a hidden attribute out of the document entirely', () => {
+    const row = { id: 1, handle: 'someone', name: 'Someone', password: '$2b$10$hash', email: 'a@b.c' }
+    const safe = withoutHidden(row, new Set(['password']))
+
+    expect('password' in safe).toBe(false)
+    expect(safe.handle).toBe('someone')
+  })
+
+  it('leaves the document alone when nothing is hidden', () => {
+    const row = { id: 1, handle: 'someone' }
+
+    expect(withoutHidden(row, new Set())).toEqual(row)
+  })
+
+  it('removes every hidden attribute, not just the first', () => {
+    const row = { id: 1, password: 'x', secret: 'y', handle: 'someone' }
+    const safe = withoutHidden(row, new Set(['password', 'secret']))
+
+    expect(Object.keys(safe).sort()).toEqual(['handle', 'id'])
+  })
+})
