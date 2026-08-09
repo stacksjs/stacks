@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.333...v0.70.334)
+
+## 🐛 Bug Fixes
+
+- **commerce**: import the ORM types the source already uses ([c03829e](https://github.com/stacksjs/stacks/commit/c03829e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.332...v0.70.333)
 
 ## ✨ Features
