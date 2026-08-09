@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.346...v0.70.347)
+
+## ✨ Features
+
+- **router**: callbacks that run once the answer is known ([4537f2f](https://github.com/stacksjs/stacks/commit/4537f2f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **scaffold**: isolate generated app infrastructure ([e9220b5](https://github.com/stacksjs/stacks/commit/e9220b5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: preflight missing notification tables ([520a69d](https://github.com/stacksjs/stacks/commit/520a69d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.345...v0.70.346)
 
 ## 🐛 Bug Fixes
