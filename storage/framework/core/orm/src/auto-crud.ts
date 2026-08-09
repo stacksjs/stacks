@@ -371,7 +371,31 @@ export function validateWriteBody(
     if (!rule || typeof rule.validate !== 'function') continue
     const present = Object.prototype.hasOwnProperty.call(data, field)
     if (!present && hook === 'updating') continue
-    const value = normalizeValidationValue(rule, present ? data[field] : undefined)
+
+    // An absent field on create is worth `default`, not `undefined`.
+    //
+    // Enforcement is the outermost write wrapper — deliberately, since the
+    // rules are written against pre-cast input — which puts it ahead of every
+    // step that fills defaults in. Reading `undefined` here therefore failed
+    // `required()` for fields the model had already said it knew a value for,
+    // making `required().default(x)` a mandatory field with a dead default.
+    // The framework's own `Product.preparationTime` is declared that way, so
+    // writing a product from code failed on a field the caller had no opinion
+    // about.
+    //
+    // `hasOwnProperty`, not a truthiness test: `default: 0` and `default: ''`
+    // are values, and are exactly the defaults most likely to be declared.
+    const hasDefault = def !== null && typeof def === 'object'
+      && Object.prototype.hasOwnProperty.call(def, 'default')
+
+    const raw = present
+      ? data[field]
+      : hasDefault ? (def as { default?: unknown }).default : undefined
+
+    // The default is validated rather than waved through, so a default that
+    // breaks its own rule is caught at the first write instead of silently
+    // storing an invalid row.
+    const value = normalizeValidationValue(rule, raw)
     const result = rule.validate(value)
     if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
       errors[field] = result.errors.map((e: any) =>

@@ -176,3 +176,69 @@ describe('withoutValidation escape hatch', () => {
     expect(await withoutValidation(async () => 'done')).toBe('done')
   })
 })
+
+/**
+ * A declared `default` must satisfy a declared `required`.
+ *
+ * `validateWriteBody` treated an absent field as `undefined` on create, so
+ * `required()` failed even when the attribute declared a `default` that the
+ * write would have filled in. Enforcement runs as the outermost wrapper —
+ * deliberately, because the rules are written against pre-cast input — which
+ * puts it ahead of every step that supplies defaults, so the default never got
+ * a chance to exist.
+ *
+ * The effect is that `required().default(x)` is not a defaulted field at all:
+ * it is a mandatory one whose default is dead code, and every caller has to
+ * pass a value the model already said it knew. The framework's own commerce
+ * `Product` declares `preparationTime` exactly that way, so any app writing a
+ * product from code — an importer, a seeder, a migration — got
+ * `Product validation failed: preparationTime` for a field it had no opinion
+ * about.
+ */
+const defaulted = {
+  name: 'Product',
+  attributes: {
+    name: { fillable: true, validation: { rule: schema.string().required() } },
+    preparationTime: { fillable: true, default: 15, validation: { rule: schema.number().required().min(1) } },
+    servings: { fillable: true, default: 0, validation: { rule: schema.number().min(0) } },
+  },
+}
+
+describe('defaults and required', () => {
+  it('accepts a create that omits a required field carrying a default', () => {
+    expect(validateWriteBody({ name: 'Strawnana' }, defaulted, 'creating').valid).toBe(true)
+  })
+
+  it('still rejects a required field with no default', () => {
+    const result = validateWriteBody({ preparationTime: 20 }, defaulted, 'creating')
+
+    expect(result.valid).toBe(false)
+    if (!result.valid)
+      expect(Object.keys(result.errors)).toEqual(['name'])
+  })
+
+  it('validates the default itself, so a default that breaks its own rule is caught', () => {
+    // Worth failing loudly: nothing else ever looks at this value, and a
+    // default below the rule's own minimum writes an invalid row on every
+    // create that omits the field.
+    const bad = {
+      name: 'Product',
+      attributes: {
+        preparationTime: { fillable: true, default: 0, validation: { rule: schema.number().required().min(1) } },
+      },
+    }
+
+    expect(validateWriteBody({}, bad, 'creating').valid).toBe(false)
+  })
+
+  it('does not treat a falsy default as absent', () => {
+    // `default: 0` is a value. An `attribute.default ?? undefined` style check
+    // would drop it and re-introduce the bug for exactly the fields most likely
+    // to have one.
+    expect(validateWriteBody({ name: 'x' }, defaulted, 'creating').valid).toBe(true)
+  })
+
+  it('leaves the update path alone', () => {
+    expect(validateWriteBody({ name: 'x' }, defaulted, 'updating').valid).toBe(true)
+  })
+})
