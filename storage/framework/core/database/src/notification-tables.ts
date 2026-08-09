@@ -110,6 +110,36 @@ const REQUIRED_COLUMNS: Record<string, string[]> = {
   notification_deliveries: ['id', 'user_id', 'channel', 'recipient', 'body', 'status'],
 }
 
+export const notificationTableNames = [
+  'notifications',
+  'notification_preferences',
+  'notification_deliveries',
+] as const
+
+export type NotificationTableName = typeof notificationTableNames[number]
+
+/**
+ * Return framework notification tables that a migration corpus does not
+ * create itself.
+ *
+ * Old generated corpora can contain UPDATE or SQLite rebuild statements for
+ * these tables without containing their original CREATE TABLE migrations. A
+ * fresh database therefore needs the framework guarantee before that corpus
+ * runs. When the corpus does declare a table, the model-owned CREATE remains
+ * authoritative and the framework must not pre-create a narrower shape.
+ */
+export function notificationTablesMissingCreateStatements(sql: string): NotificationTableName[] {
+  return notificationTableNames.filter((table) => {
+    const escaped = table.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const createPattern = new RegExp(
+      `\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?["\\x60\\[]?${escaped}["\\x60\\]]?\\s*\\(`,
+      'i',
+    )
+
+    return !createPattern.test(sql)
+  })
+}
+
 /**
  * Warn when a guaranteed table already exists in a shape we would not have
  * created.
@@ -176,29 +206,36 @@ async function warnOnShapeMismatch(table: string): Promise<void> {
  * Create the notification + notification_preferences tables. Idempotent
  * (`IF NOT EXISTS`), so it's safe to run on every `buddy migrate`.
  */
-export async function migrateNotificationTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
+export async function migrateNotificationTables(options: { verbose?: boolean, tables?: readonly NotificationTableName[] } = {}): Promise<{ success: boolean, error?: string }> {
   const dbDriver = getDbDriver()
   const sql = sqlHelpers(dbDriver)
+  const tables = new Set(options.tables ?? notificationTableNames)
 
   if (options.verbose)
     log.info(`Creating notification tables for ${dbDriver}...`)
 
   try {
-    if (options.verbose) log.info('Creating notifications table...')
-    await warnOnShapeMismatch('notifications')
-    await db.unsafe(notificationsTableSql(sql)).execute()
-    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`, dbDriver)
+    if (tables.has('notifications')) {
+      if (options.verbose) log.info('Creating notifications table...')
+      await warnOnShapeMismatch('notifications')
+      await db.unsafe(notificationsTableSql(sql)).execute()
+      await createIndex(`CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id)`, dbDriver)
+    }
 
-    if (options.verbose) log.info('Creating notification_preferences table...')
-    await warnOnShapeMismatch('notification_preferences')
-    await db.unsafe(notificationPreferencesTableSql(sql)).execute()
-    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`, dbDriver)
+    if (tables.has('notification_preferences')) {
+      if (options.verbose) log.info('Creating notification_preferences table...')
+      await warnOnShapeMismatch('notification_preferences')
+      await db.unsafe(notificationPreferencesTableSql(sql)).execute()
+      await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_preferences_user ON notification_preferences (user_id)`, dbDriver)
+    }
 
-    if (options.verbose) log.info('Creating notification deliveries table...')
-    await warnOnShapeMismatch('notification_deliveries')
-    await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
-    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`, dbDriver)
-    await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`, dbDriver)
+    if (tables.has('notification_deliveries')) {
+      if (options.verbose) log.info('Creating notification deliveries table...')
+      await warnOnShapeMismatch('notification_deliveries')
+      await db.unsafe(notificationDeliveriesTableSql(sql)).execute()
+      await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_channel ON notification_deliveries (channel)`, dbDriver)
+      await createIndex(`CREATE INDEX IF NOT EXISTS idx_notification_deliveries_status ON notification_deliveries (status)`, dbDriver)
+    }
 
     if (options.verbose) log.success('Notification tables created')
     return { success: true }

@@ -49,7 +49,7 @@ import { findShadowedColumnDrops, shadowDropsAllowed, shadowedDropMessage } from
 import { frameworkManagedColumns, withoutManagedColumnDrops, withoutManagedColumnDropSql } from './managed-columns'
 import { acquireMigrationLock } from './migration-lock'
 import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
-import { ensureNotificationForeignKeys, migrateNotificationTables } from './notification-tables'
+import { ensureNotificationForeignKeys, migrateNotificationTables, notificationTablesMissingCreateStatements } from './notification-tables'
 import { traitTableNames } from './trait-tables'
 
 // Use environment variables via @stacksjs/env for proper type coercion
@@ -1464,6 +1464,36 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 
     const modelsDir = path.userModelsPath()
 
+    /*
+     * Some older generated migration corpora rebuild or normalize framework
+     * notification tables but never contain their original CREATE TABLE. On a
+     * fresh database those statements fail before the post-batch guarantee can
+     * run. Pre-create only the tables the corpus does not declare itself, so a
+     * model-owned CREATE remains authoritative over its full schema and keys.
+     */
+    const migrationsDir = migrationDirectory()
+    let migrationSql = ''
+    try {
+      migrationSql = readdirSync(migrationsDir)
+        .filter(file => file.endsWith('.sql'))
+        .sort()
+        .map(file => readFileSync(join(migrationsDir, file), 'utf8'))
+        .join('\n')
+    }
+    catch {
+      // A missing migration directory is a valid first-run state. The normal
+      // post-batch guarantee below still creates the framework tables.
+    }
+
+    if (migrationSql) {
+      const preflightTables = notificationTablesMissingCreateStatements(migrationSql)
+      if (preflightTables.length > 0) {
+        const preflight = await migrateNotificationTables({ tables: preflightTables })
+        if (!preflight.success)
+          throw new Error(preflight.error || 'Failed to prepare notification tables before migrations')
+      }
+    }
+
     // Count applied-before so we can compute the delta after the
     // migration run. Lets the buddy CLI distinguish "nothing to
     // migrate" from "applied N" in the outro (user-reported
@@ -1474,30 +1504,8 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
 
-    /*
-     * The notification tables, *after* the model migrations and not before.
-     *
-     * These guarantees create the framework's notification tables so an app
-     * that never declares the models still has somewhere to write. They used
-     * to run ahead of the batch, on the reasoning that a generated migration
-     * might ALTER one of them and would need it to exist - and that quietly
-     * broke the more common case. An app that *does* declare `Notification`
-     * generates a CREATE TABLE carrying the relations the model declares;
-     * pre-creating the table makes that `CREATE TABLE IF NOT EXISTS` a no-op,
-     * so the table survives without its foreign keys and nothing reports it.
-     * The migration is recorded as applied, the file plainly contains
-     * `REFERENCES "users"("id")`, and the constraint is simply absent.
-     *
-     * `buddy migrate` already ordered its own copy of these guarantees after
-     * the batch for exactly this reason (#1952, which fixed
-     * `notification_preferences`); this call ran before it and undid that for
-     * `notifications` and `notification_deliveries`. One ordering, in both
-     * places, so the model stays authoritative over the table it declares.
-     *
-     * Safe for the case that motivated the old placement: a generated ALTER
-     * only exists when the model does, and when the model exists so does its
-     * CREATE, which the batch above has already run.
-     */
+    // Complete the guarantee after the model batch. This creates tables absent
+    // from both the corpus and the preflight, and validates existing shapes.
     const notificationTables = await migrateNotificationTables()
     if (!notificationTables.success)
       throw new Error(notificationTables.error || 'Failed to prepare notification tables')
@@ -1505,12 +1513,11 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     /*
      * The notification foreign keys, now that `users` is certain to exist.
      *
-     * The guarantee above runs before the batch on purpose, so a generated
-     * model migration can normalize these tables - and that is exactly why the
-     * keys never landed. The guarantee created the tables without them, and the
-     * model's own `CREATE TABLE IF NOT EXISTS … REFERENCES users(id)` was then a
-     * no-op against a table that already existed. The migration ran, the corpus
-     * declared the key, and the key was not there.
+     * The conditional preflight can create a table before the batch when an
+     * older corpus references it without declaring it. Those framework tables
+     * intentionally start without user foreign keys because `users` may not
+     * exist yet. Model-owned tables skip the preflight and retain the inline
+     * keys from their own CREATE statements.
      *
      * Same shape as `ensureUsersAuthColumns` being called a second time after
      * the numbered migrations, and for the same reason.

@@ -3,6 +3,7 @@ import {
   migrateNotificationTables,
   notificationDeliveriesTableSql,
   notificationPreferencesTableSql,
+  notificationTablesMissingCreateStatements,
   notificationsTableSql,
 } from '../src/notification-tables'
 import { sqlHelpers } from '../src/sql-helpers'
@@ -81,20 +82,38 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
     expect(isDuplicateIndexError(new Error("Duplicate key name 'notifications_uuid_unique'"))).toBe(true)
     expect(isDuplicateIndexError(new Error('connection refused'))).toBe(false)
   })
+
+  test('preflights legacy corpora that reference tables without creating them', () => {
+    const sql = `
+      CREATE TABLE "_qb_tmp_notifications" ("id" INTEGER PRIMARY KEY);
+      INSERT INTO "_qb_tmp_notifications" SELECT "id" FROM "notifications";
+      UPDATE notification_deliveries SET user_id = NULL;
+    `
+
+    expect(notificationTablesMissingCreateStatements(sql)).toEqual([
+      'notifications',
+      'notification_preferences',
+      'notification_deliveries',
+    ])
+  })
+
+  test('leaves model-owned notification table creates authoritative', () => {
+    const sql = `
+      CREATE TABLE IF NOT EXISTS "notifications" ("id" INTEGER PRIMARY KEY, "user_id" INTEGER REFERENCES "users"("id"));
+      CREATE TABLE \`notification_deliveries\` (\`id\` BIGINT PRIMARY KEY, \`user_id\` BIGINT);
+    `
+
+    expect(notificationTablesMissingCreateStatements(sql)).toEqual(['notification_preferences'])
+  })
 })
 
 /**
  * The foreign keys, and why they need a second pass.
  *
- * `migrateNotificationTables` runs *before* the model migration batch on
- * purpose - a generated model migration may normalize or rebuild these tables
- * and needs them to exist first. That ordering is also why the keys never
- * landed: the guarantee created `notifications` without them, and the model's
- * own `CREATE TABLE IF NOT EXISTS … REFERENCES users(id) ON DELETE CASCADE`
- * became a no-op against a table that already existed.
- *
- * The migration ran, the corpus declared the key, and the key was not there -
- * which is the shape that made it survive a tick on somebody's roadmap.
+ * A legacy corpus may need selected framework tables before its model batch,
+ * while a corpus with its own CREATE statements must keep those model-owned
+ * schemas authoritative. Either way, the foreign-key pass runs after `users`
+ * exists and can safely repair preflighted tables on supported dialects.
  */
 describe('ensureNotificationForeignKeys', () => {
   test('is exported, so the migration runner can call it after the batch', async () => {
