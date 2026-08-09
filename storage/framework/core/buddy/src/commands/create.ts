@@ -78,6 +78,7 @@ export function create(buddy: CLI): void {
   // has not happened yet.
   ensureExecutableScripts(path)
   applyAppVcsTemplate(path)
+  removeFrameworkTests(path)
   await ensureEnv(path, options)
 
   // Strip BEFORE install, not after. `install()` runs pantry's
@@ -233,6 +234,42 @@ function applyAppVcsTemplate(path: string) {
   catch (error) {
     log.warn(`Could not install the app CI template: ${error instanceof Error ? error.message : String(error)}`)
   }
+}
+
+/**
+ * Drop the framework's own test suite.
+ *
+ * Same root as `applyAppVcsTemplate` above: the template IS this repository,
+ * so the download carries `tests/` — 41 files asserting on `storage/framework/
+ * defaults/...` and on the layout of `core/`. `unvendorCore` deletes both a
+ * few steps later, so every one of them fails on ENOENT, in an app that never
+ * asked for them and cannot fix them.
+ *
+ * erbamarkets shipped that way and ran 117 red tests from its first commit.
+ * The cost is not the failures themselves — it is that a suite which is always
+ * red is read exactly as often as no suite, so the app's own first real test
+ * would have landed in a list nobody looks at.
+ *
+ * `tests/setup.ts` stays. It is harness rather than assertion: it seeds the
+ * env vars config reads at module scope and shims `requestAnimationFrame`,
+ * and `bunfig.toml` preloads it by name for the app's own tests.
+ */
+function removeFrameworkTests(path: string) {
+  const tests = resolve(path, 'tests')
+
+  if (!existsSync(tests))
+    return
+
+  log.info('Removing the framework\'s own test suite...')
+
+  for (const entry of readdirSync(tests)) {
+    if (entry === 'setup.ts')
+      continue
+
+    rmSync(resolve(tests, entry), { recursive: true, force: true })
+  }
+
+  log.success('App starts with a clean test suite')
 }
 
 function ensureExecutableScripts(path: string) {
