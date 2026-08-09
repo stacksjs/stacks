@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.342...v0.70.343)
+
+## ✨ Features
+
+- **logging**: every log line can say which request it belongs to ([1bc88b5](https://github.com/stacksjs/stacks/commit/1bc88b5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.341...v0.70.342)
 
 ## ✨ Features
