@@ -285,7 +285,20 @@ class JobBuilder {
         await this.dispatchToRedis()
       }
       else if (driver === 'sync') {
-        await runJob(this.name, { payload: this.payload, context: this.options.context })
+        /*
+         * The ambient trace, carried explicitly.
+         *
+         * `runJob` mints an id when it is not given one, and minting *replaces*
+         * the caller's - so a job run inline under a request logged under a
+         * different id from the request that ran it, which is the one case
+         * where the connection is trivially available and was being thrown
+         * away.
+         */
+        await runJob(this.name, {
+          payload: this.payload,
+          context: this.options.context,
+          traceId: await currentTraceId(),
+        })
       }
       else if (driver === 'sqs' || driver === 'memory' || driver === 'beanstalkd') {
         // Listed in config schemas but never implemented (stacksjs/stacks#1872 Q-1).
