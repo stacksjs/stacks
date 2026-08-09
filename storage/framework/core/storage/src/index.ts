@@ -8,6 +8,8 @@ export * from './hash'
 export * from './helpers'
 export * as storage from './storage'
 export * from './zip'
+export { ensureBucket, ensureConfiguredBuckets } from './provision'
+export type { ProvisionOptions, ProvisionResult } from './provision'
 
 // Storage adapters and types
 export * from './adapters'
