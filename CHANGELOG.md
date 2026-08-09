@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.332...v0.70.333)
+
+## ✨ Features
+
+- **storage**: provision buckets from the app, Vapor-style ([51d6f10](https://github.com/stacksjs/stacks/commit/51d6f10)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: clear the request context instead of switching it off ([302105d](https://github.com/stacksjs/stacks/commit/302105d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.331...v0.70.332)
 
 ## 🐛 Bug Fixes
