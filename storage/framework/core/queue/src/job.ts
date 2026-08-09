@@ -351,7 +351,7 @@ class JobBuilder {
       timeout: this.options.timeout,
       tries: this.options.tries,
       backoff: this.options.backoff,
-    })
+    }, await currentTraceId())
 
     const { db } = await import('@stacksjs/database')
 
@@ -644,4 +644,25 @@ export async function runJob(name: string, options: { payload?: any; context?: a
       throw new Error(`Job ${name} does not have a valid handler`)
     }
   })
+}
+
+/**
+ * The trace id of whatever is dispatching, if anything is.
+ *
+ * Read at dispatch rather than at run, because a worker is another process and
+ * the AsyncLocalStorage the trace lives in during a request cannot reach it.
+ * The id has to be written into the row.
+ *
+ * Never throws. A trace id is a debugging aid, and failing a dispatch because
+ * one could not be read would trade a real feature for a diagnostic.
+ */
+async function currentTraceId(): Promise<string | undefined> {
+  try {
+    const { getTraceId } = await import('@stacksjs/router')
+
+    return getTraceId()
+  }
+  catch {
+    return undefined
+  }
 }

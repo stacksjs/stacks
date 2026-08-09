@@ -776,7 +776,20 @@ async function executeJobPayload(payload: unknown): Promise<void> {
     )
   }
   const { runJob } = await import('./job')
-  await runJob(parsed.envelope.jobName, { payload: parsed.envelope.payload })
+
+  /*
+   * The dispatcher's trace id, carried through.
+   *
+   * Without it `runJob` mints a fresh one, and the connection between "this
+   * request was slow" and "because the job it queued took nine seconds" is
+   * lost at exactly the moment somebody is trying to make it. An envelope
+   * queued before this existed has no `traceId` and still gets a minted id,
+   * which is what it always got.
+   */
+  await runJob(parsed.envelope.jobName, {
+    payload: parsed.envelope.payload,
+    traceId: parsed.envelope.traceId,
+  })
 }
 
 /**
@@ -844,7 +857,9 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
 
     try {
       const { runJob } = await import('./job')
-      await runJob(data.jobName, { payload: data.payload })
+      // Same as the database driver: the dispatcher's id, when the envelope
+      // carried one.
+      await runJob(data.jobName, { payload: data.payload, traceId: (data as any).traceId })
 
       tracker.recordCompletion(workerId)
       await emitQueueEvent('job:completed', {

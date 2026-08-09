@@ -35,7 +35,11 @@
  * `JobEnvelope` in a way that older workers couldn't deserialize.
  *
  * - v1: jobName + payload + optional options + envelopeVersion +
- *       dispatchedAt
+ *       dispatchedAt, plus an optional `traceId`. Added without a version bump
+ *       because it is additive and optional: an old worker reading a new
+ *       envelope ignores the field, and a new worker reading an old one mints
+ *       an id exactly as it did before. Bumping would have stalled in-flight
+ *       jobs during a rolling deploy for a field nothing requires.
  */
 export const JOB_ENVELOPE_VERSION = 1
 
@@ -60,6 +64,19 @@ export interface JobEnvelope {
   envelopeVersion: number
   /** ISO 8601 UTC. Useful for diagnosing \"job sat in queue for X\" cases. */
   dispatchedAt: string
+  /**
+   * The trace id of whatever dispatched this.
+   *
+   * A worker runs in another process, so the AsyncLocalStorage the trace lives
+   * in during a request cannot reach it - the id has to travel *in the row*.
+   * Without this, `runJob` mints a fresh id and the connection between "this
+   * request was slow" and "because the job it queued took nine seconds" is lost
+   * at exactly the moment somebody is trying to make it.
+   *
+   * Optional, because a job dispatched by the scheduler has no parent request.
+   * Those get a minted id, which at least correlates the job to itself.
+   */
+  traceId?: string
 }
 
 /**
@@ -70,6 +87,7 @@ export function createEnvelope(
   jobName: string,
   payload: unknown,
   options?: JobEnvelopeOptions,
+  traceId?: string,
 ): JobEnvelope {
   return {
     jobName,
@@ -77,6 +95,7 @@ export function createEnvelope(
     options,
     envelopeVersion: JOB_ENVELOPE_VERSION,
     dispatchedAt: new Date().toISOString(),
+    ...(traceId ? { traceId } : {}),
   }
 }
 
@@ -148,6 +167,11 @@ export function parseEnvelope(raw: unknown): ParsedEnvelope {
       options: (obj.options as JobEnvelopeOptions | undefined) ?? undefined,
       envelopeVersion: JOB_ENVELOPE_VERSION,
       dispatchedAt: typeof obj.dispatchedAt === 'string' ? obj.dispatchedAt : new Date(0).toISOString(),
+      // Carried through, not rebuilt away. This function reconstructs the
+      // envelope field by field rather than spreading, so anything it does not
+      // name is silently dropped - which is what happened to the trace id, and
+      // the symptom was every job logging under an id of its own.
+      ...(typeof obj.traceId === 'string' && obj.traceId ? { traceId: obj.traceId } : {}),
     }
     return { ok: true, envelope, source: 'v1' }
   }
@@ -179,6 +203,7 @@ export function parseEnvelope(raw: unknown): ParsedEnvelope {
         options: (obj.options as JobEnvelopeOptions | undefined) ?? undefined,
         envelopeVersion: JOB_ENVELOPE_VERSION,
         dispatchedAt: typeof obj.dispatchedAt === 'string' ? obj.dispatchedAt : new Date(0).toISOString(),
+        ...(typeof obj.traceId === 'string' && obj.traceId ? { traceId: obj.traceId } : {}),
       },
       source: 'v0-implicit',
     }
