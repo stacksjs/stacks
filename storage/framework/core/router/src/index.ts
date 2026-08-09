@@ -26,7 +26,7 @@ export { assertRouteMiddlewareResolvable,
   configureViewDirectories, clearMiddlewareCache, createStacksRouter, findUnresolvableRouteMiddleware, installMiddlewareHotReload, route, serve, serverResponse, url, warnOnMultipleRouterInstances } from './stacks-router'
 
 // Export request context helpers
-export { cacheRequestQuery, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'
+export { cacheRequestQuery, clearCurrentRequest, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'
 
 // Export Middleware class for defining route middleware
 export { Middleware } from './middleware'

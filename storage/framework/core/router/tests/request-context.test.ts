@@ -7,10 +7,8 @@ import {
   setCurrentRequest,
 } from '../src/request-context'
 
-// setCurrentRequest uses AsyncLocalStorage.enterWith, which mutates the test
-// runner's own async frame and never restores it. Without this cleanup the
-// leaked frame poisons the next test file bun collects (mis-registered tests,
-// done-callback timeouts, dropped it.each cases).
+// setCurrentRequest uses AsyncLocalStorage.enterWith, which mutates this
+// scope's store and never restores it, so each test starts clean.
 afterEach(() => {
   clearCurrentRequest()
 })
@@ -134,5 +132,46 @@ describe('Request Context - request proxy', () => {
     // bearerToken should be callable via proxy
     const bearerFn = request.bearerToken
     expect(typeof bearerFn).toBe('function')
+  })
+})
+
+describe('Request Context - clearing', () => {
+  test('clearing removes the current request', () => {
+    setCurrentRequest(makeFakeRequest())
+    expect(getCurrentRequest()).toBeDefined()
+
+    clearCurrentRequest()
+
+    expect(getCurrentRequest()).toBeUndefined()
+  })
+
+  test('clearing one scope leaves a request in flight elsewhere alone', async () => {
+    /*
+     * The distinction this guards is `enterWith(undefined)` versus `disable()`.
+     * Both leave `getCurrentRequest()` undefined in the calling scope, and a
+     * later `runWithRequest` works either way — `run()` re-enables a disabled
+     * storage — so nothing sequential can tell them apart. What separates them
+     * is reach: `enterWith` clears one async scope, `disable()` turns off the
+     * storage instance, and that instance is process-wide, keyed on a
+     * `Symbol.for` and shared by every copy of this module. So `disable()`
+     * takes the request away from requests already in flight.
+     *
+     * It shipped that way. Because `bun test` runs every file in one process,
+     * the first teardown in this file disabled the storage for all thirty-three
+     * files in the suite: sixty-one tests across eleven unrelated files died on
+     * the hook timeout, and the run went from six seconds to ten minutes.
+     */
+    const inFlight = runWithRequest(
+      makeFakeRequest({ url: 'https://example.com/in-flight' }),
+      async () => {
+        await new Promise(resolve => setTimeout(resolve, 1))
+        return getCurrentRequest()?.url
+      },
+    )
+
+    // Another scope tidies up while that one is suspended.
+    clearCurrentRequest()
+
+    expect(await inFlight).toBe('https://example.com/in-flight')
   })
 })

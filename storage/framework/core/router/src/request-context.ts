@@ -138,12 +138,26 @@ export function setCurrentRequest(req: EnhancedRequest): void {
  *
  * `setCurrentRequest` uses `AsyncLocalStorage.enterWith`, which mutates the
  * caller's async scope and never restores it. Call this in test teardown
- * (`afterEach`) whenever a test body calls `setCurrentRequest`, so the leaked
- * frame doesn't poison subsequently-collected test files (bun's runner
- * mis-registers tests when collected on a foreign async frame).
+ * (`afterEach`) whenever a test body calls `setCurrentRequest`.
+ *
+ * `enterWith(undefined)`, not `disable()`. The two look interchangeable and
+ * are not: `enterWith` clears the value for this async scope, while `disable`
+ * turns the whole storage instance off — and `requestStorage` is process-wide,
+ * keyed on a `Symbol.for` so every copy of this module shares it. So one call
+ * to `disable()` clears the request context for the entire process, including
+ * requests already in flight and every other module holding the same storage.
+ *
+ * That is not theoretical. This function used to call `disable()`, and it cost
+ * the router suite about seven minutes a run: `bun test` puts every file in one
+ * process, so the first `afterEach` here disabled the storage for all thirty-
+ * three files, and sixty-one tests in eleven unrelated files then died on the
+ * hook timeout. The suite passed in any subset that excluded this one file,
+ * which is what made it look like accumulation rather than a single bad call.
  */
 export function clearCurrentRequest(): void {
-  requestStorage.disable()
+  // `EnhancedRequest | undefined` is the honest type of the slot — the store is
+  // absent outside a request — but AsyncLocalStorage<T> types it as T.
+  requestStorage.enterWith(undefined as unknown as EnhancedRequest)
 }
 
 /**
