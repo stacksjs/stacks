@@ -1,3 +1,9 @@
+<script server>
+import { publicApplicationUrl } from '../../../../functions/public-application-url'
+
+export const blogUrl = publicApplicationUrl('/blog')
+</script>
+
 <template>
 <div class="p-6 min-h-screen max-w-full text-neutral-950 dark:text-neutral-100 bg-neutral-50 dark:bg-neutral-950">
   <div class="flex flex-col gap-6 mx-auto min-w-0 max-w-7xl w-full">
@@ -10,7 +16,7 @@
         </p>
       </div>
       <div class="flex flex-wrap gap-2">
-        <Button tag="a" href="/blog" target="_blank" rel="noopener" variant="secondary">
+        <Button tag="a" href="{{ blogUrl }}" target="_blank" rel="noopener" variant="secondary">
           <span class="h-4 w-4 i-hugeicons-view"></span>
           View blog
         </Button>
@@ -123,7 +129,7 @@
                   <div class="flex gap-1 justify-end">
                     <a
                       x-show="!post.draft"
-                      :href="'/blog/' + post.slug"
+                      :href="publicPostUrl(post.slug)"
                       target="_blank"
                       rel="noopener"
                       :title="'View ' + post.title"
@@ -264,6 +270,8 @@
 // markdown files in content/blog. It owns no state; the signals below do.
 import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '~/storage/framework/defaults/functions/blog'
 
+const publicBlogBaseUrl = {{ blogUrl }}
+
 // Fixed-length list purely to render the loading skeleton rows.
 const skeletonRows = [1, 2, 3, 4]
 
@@ -290,6 +298,10 @@ const formDraft = state(false)
 const formFeatured = state(false)
 
 const postToDelete = state(null)
+
+function publicPostUrl(slug) {
+  return `${publicBlogBaseUrl}/${encodeURIComponent(String(slug))}`
+}
 
 // Read by the delete dialog's copy; kept as a derived signal so the template
 // never has to reach through a possibly-null post.
