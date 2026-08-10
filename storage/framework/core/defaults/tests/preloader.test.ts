@@ -77,6 +77,10 @@ describe('default preloader', () => {
       env: {
         PATH: process.env.PATH ?? '',
         HOME: process.env.HOME ?? tempDir,
+        // Passed through deliberately. Code in this graph gates on it, and a
+        // child that believes it is interactive can sit on a prompt instead of
+        // exiting, which reads as a hang rather than a failure.
+        ...(process.env.CI ? { CI: process.env.CI } : {}),
       },
       stderr: 'pipe',
       stdout: 'pipe',
