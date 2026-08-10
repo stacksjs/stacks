@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { NotificationDelivery } from '@stacksjs/orm'
-import { request as routerRequest, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
+import { dashboardRequestValue } from '../dashboard-request'
 import { parseDeliveryMetadata } from './notification-delivery'
 
 type DashboardDeliveryChannel = 'email' | 'sms'
@@ -29,9 +30,10 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle(request: RequestInstance) {
-    const query = ((routerRequest as any).query || {}) as Record<string, string | string[] | undefined>
-    const queryChannel = Array.isArray(query.channel) ? query.channel[0] : query.channel
-    const channel = resolveDashboardDeliveryChannel(request.url, queryChannel, request.get('channel'))
+    const channel = resolveDashboardDeliveryChannel(
+      request.url,
+      dashboardRequestValue(request, 'channel'),
+    )
     if (!channel)
       return response.json({ message: 'Channel must be email or sms.' }, 422)
 

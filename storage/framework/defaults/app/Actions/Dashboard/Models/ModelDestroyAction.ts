@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { parseRowId, resolveWritableModel } from './model-write'
 
@@ -13,12 +14,12 @@ export default new Action({
   description: 'Deletes one row of a model from the dashboard model browser.',
   method: 'DELETE',
   apiResponse: true,
-  async handle(req: { getParam?: (name: string) => unknown, route?: { params?: { slug?: string, id?: string } } }) {
-    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''), 'destroy')
+  async handle(request: RequestInstance) {
+    const resolved = await resolveWritableModel(request.getParam('slug'), 'destroy')
     if ('error' in resolved)
       return { ok: false, error: resolved.error }
 
-    const id = parseRowId(req?.getParam?.('id') ?? req?.route?.params?.id)
+    const id = parseRowId(request.getParam('id'))
     if (id === null)
       return { ok: false, error: 'A numeric row id is required.' }
 

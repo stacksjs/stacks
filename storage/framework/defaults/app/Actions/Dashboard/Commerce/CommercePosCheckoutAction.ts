@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { randomUUIDv7 } from 'bun'
 import { Action } from '@stacksjs/actions'
 import { orders } from '@stacksjs/commerce'

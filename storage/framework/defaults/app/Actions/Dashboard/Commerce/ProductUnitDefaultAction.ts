@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { products } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'

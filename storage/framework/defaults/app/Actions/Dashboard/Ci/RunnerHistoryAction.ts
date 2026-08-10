@@ -1,5 +1,7 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
+import { dashboardRequestValue } from '../dashboard-request'
 import { fetchRunnerHistory } from './runner-pressure-monitor'
 
 /**
@@ -21,14 +23,13 @@ export default new Action({
   description: 'Recent runner-sample history for one org (sparkline data).',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
+  async handle(request: RequestInstance) {
     const ci = dashboardConfig?.ci
     if (!ci?.enabled || !ci.alerts?.enabled) {
       return { org: null, samples: [], disabled: true }
     }
 
-    const url = new URL(request.url ?? 'http://localhost/')
-    const org = String(url.searchParams.get('org') ?? '').trim()
+    const org = dashboardRequestValue(request, 'org')
     if (!org) {
       return { error: '`org` query param is required.', status: 400 }
     }
@@ -38,7 +39,7 @@ export default new Action({
       return { error: 'Org not in `config.dashboard.ci.orgs`.', status: 403 }
     }
 
-    const rawLimit = Number(url.searchParams.get('limit') ?? '60')
+    const rawLimit = Number(dashboardRequestValue(request, 'limit', '60'))
     const limit = Number.isFinite(rawLimit) && rawLimit > 0
       ? Math.min(Math.floor(rawLimit), 500)
       : 60

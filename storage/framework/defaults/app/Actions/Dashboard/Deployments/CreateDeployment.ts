@@ -1,8 +1,9 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { join } from 'node:path'
 import process from 'node:process'
 import { Deployment } from '@stacksjs/orm'
-import { request, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
 import { booleanValue, deploymentCommandArgs } from './deployment-input'
 
 function gitValue(args: string[]): string {
@@ -22,7 +23,7 @@ export default new Action({
   method: 'POST',
   apiResponse: true,
 
-  async handle() {
+  async handle(request: RequestInstance) {
     const dryRun = booleanValue(request.get('dryRun') || request.get('dry_run'))
     const confirmed = booleanValue(request.get('confirmed'))
     if (!dryRun && !confirmed) {

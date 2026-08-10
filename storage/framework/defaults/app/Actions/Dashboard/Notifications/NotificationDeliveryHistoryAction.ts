@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { request as routerRequest, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
+import { dashboardRequestValue } from '../dashboard-request'
 import {
   type NotificationDeliveryRow,
   serializeNotificationDelivery,
@@ -16,9 +17,7 @@ type DeliveryStatus = typeof STATUSES[number]
 type DeliverySort = typeof SORTS[number]
 
 function queryValue(request: RequestInstance, key: string): string {
-  const query = ((routerRequest as any).query || {}) as Record<string, string | string[] | undefined>
-  const value = query[key]
-  return String((Array.isArray(value) ? value[0] : value) || request.get(key) || '').trim()
+  return dashboardRequestValue(request, key)
 }
 
 function allowedValue<T extends string>(value: string, values: readonly T[]): T | null {

@@ -1,8 +1,9 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { mkdir, rename, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
-import { request, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
 
 export default new Action({
   name: 'UpdateDeployScript',
@@ -10,7 +11,7 @@ export default new Action({
   method: 'PUT',
   apiResponse: true,
 
-  async handle() {
+  async handle(request: RequestInstance) {
     const content = String(request.get('content') || '')
     if (!content.trim())
       return response.json({ success: false, message: 'Deploy script content is required.' }, { status: 422 })
