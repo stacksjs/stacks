@@ -13,6 +13,35 @@ import { ref } from '@stacksjs/stx'
  * `<SubmitButton>` / `<ErrorMessage>` companion components, field
  * arrays, server-error auto-surfacing on 422, and progressive HTML
  * fallback are scoped to Phases 2-5 of the issue.
+ *
+ * ---
+ *
+ * THERE IS A SECOND `useForm`, in stx
+ * (packages/stx/src/composables/use-form.ts, called `defineForm` before
+ * stacksjs/stx#1843). It is not this one, and the two are not interchangeable —
+ * they were written independently because neither side could find the other's,
+ * which is stx#1843's adoption problem happening to the framework itself.
+ *
+ *   this one                        stx
+ *   useForm({ initialValues,        useForm(schema, initialValues)
+ *             onSubmit })
+ *   form.values.value.email         form.values.email
+ *   form.field('email')             form.getFieldState('email')
+ *   schema.string().email()         v.required().email()  (stx's own builder)
+ *   validate() -> { valid, errors } validate() -> Promise<string[]>
+ *   has: isSubmitting, isValid,     has: validating, validateField
+ *        isDirty, setErrors (422),
+ *        clearErrors,
+ *        submitButtonProps,
+ *        firstErrorField,
+ *        aria inputProps
+ *
+ * stx's is the one that reaches a `<script client>` block via the demand
+ * bundler; this one is delivered through the browser vendors re-export.
+ *
+ * Before adding a feature here, check whether it exists there — and say so in
+ * the PR either way. Unifying them is a breaking change to one side's public
+ * API, not a re-export, so it needs a deliberate decision rather than drift.
  */
 
 /** Minimal Validator surface this composable depends on. */
