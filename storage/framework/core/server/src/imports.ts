@@ -540,14 +540,48 @@ export async function injectGlobalAutoImports(): Promise<void> {
   // it's safe to load the user's auto-import barrel: models can read
   // `schema`, jobs can read `mail`, controllers can extend `Controller`,
   // etc. without hitting a TDZ caused by mid-evaluation namespace access.
-  try {
-    const autoImportsPath = path.storagePath('framework/auto-imports/index.ts')
-    const autoImports = await import(autoImportsPath)
-    Object.assign(globalThis, autoImports)
+  // Each barrel is loaded separately, not through the combined `index.ts`.
+  //
+  // `index.ts` re-exports all four with `export *`, so a single duplicate name
+  // in any one of them makes the whole module fail to link and NOTHING reaches
+  // globalThis — every model, job and controller in the project disappears at
+  // once. That is how an app ended up with `HtrSample is not defined` in its
+  // stx views while `functions.ts` merely had `useProducts` exported twice: the
+  // generator emitted a name collision between `commerce/products` and
+  // `commerce/products/products`, and the only trace was a one-line warning
+  // that read like a lint nit rather than "no models exist".
+  //
+  // Split, a broken barrel costs only its own names. The order matches
+  // `index.ts` so shadowing behaviour is unchanged.
+  const barrels = ['functions', 'models', 'jobs', 'controllers'] as const
+  const injected: string[] = []
+
+  for (const barrel of barrels) {
+    const barrelPath = path.storagePath(`framework/auto-imports/${barrel}.ts`)
+
+    if (!existsSync(barrelPath))
+      continue
+
+    try {
+      const mod = await import(barrelPath)
+      Object.assign(globalThis, mod)
+      injected.push(barrel)
+    }
+    catch (err) {
+      // Named loudly. The consequence of losing a barrel is not obvious from
+      // the linker's message: "Cannot export a duplicate name" says nothing
+      // about every model in the app becoming undefined in templates.
+      log.warn(
+        `[auto-imports] ${barrel}.ts failed to load, so nothing it exports is available. `
+        + `Views and actions referencing them will throw "is not defined". Cause: ${(err as Error).message}`,
+      )
+    }
   }
-  catch (err) {
-    errors.push(err as Error)
-  }
+
+  // A project with models on disk and none injected is broken in a way that is
+  // invisible until a template renders empty, so it is reported up front.
+  if (!injected.includes('models') && existsSync(path.storagePath('framework/auto-imports/models.ts')))
+    log.warn('[auto-imports] No models were injected. Every model reference in stx views and actions will be undefined.')
 
   // Listeners last, and after the barrel deliberately: a listener reads models
   // and jobs at module-evaluation time exactly as an action does, so it has to
