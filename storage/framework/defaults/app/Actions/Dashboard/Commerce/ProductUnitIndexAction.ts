@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Product, ProductUnit } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   normalizeProductUnitRecord,
   productUnitOptions,
@@ -30,9 +30,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Product unit records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Product unit records could not be read.', 'ProductUnitIndexAction')
     }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { ShippingMethod, ShippingZone } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   groupShippingMethodZones,
   normalizeShippingMethodRecord,
@@ -24,9 +24,7 @@ export default new Action({
       return methods.map(method => normalizeShippingMethodRecord(method, zonesByMethodId))
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Shipping method records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Shipping method records could not be read.', 'ShippingMethodIndexAction')
     }
   },
 })

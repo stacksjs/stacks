@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Customer } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   normalizeCommerceCustomerCurrency,
   normalizeCommerceCustomerRecord,
@@ -25,9 +25,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Customer records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Customer records could not be read.', 'CommerceCustomersAction')
     }
   },
 })

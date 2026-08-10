@@ -81,6 +81,41 @@ describe('dashboard operational error contract', () => {
     expect(search).toContain('finally {\n        db.close()')
   })
 
+  test('protects commerce read failures', () => {
+    const readActions = [
+      'CommerceCategoriesAction.ts',
+      'CommerceCouponsAction.ts',
+      'CommerceCustomersAction.ts',
+      'CommerceDashboardAction.ts',
+      'CommerceDeliveryAction.ts',
+      'CommerceGiftCardsAction.ts',
+      'CommerceOrdersAction.ts',
+      'CommercePaymentsAction.ts',
+      'CommercePosAction.ts',
+      'CommercePrintDevicesAction.ts',
+      'CommercePrintLogsAction.ts',
+      'CommerceProductDetailAction.ts',
+      'CommerceProductsAction.ts',
+      'CommerceTaxesAction.ts',
+      'DeliveryRouteIndexAction.ts',
+      'DigitalDeliveryIndexAction.ts',
+      'DriverIndexAction.ts',
+      'LicenseKeyIndexAction.ts',
+      'LicenseKeyOptionsAction.ts',
+      'ManufacturerIndexAction.ts',
+      'ProductUnitIndexAction.ts',
+      'ProductVariantIndexAction.ts',
+      'ProductWaitlistIndexAction.ts',
+      'RestaurantWaitlistIndexAction.ts',
+      'ReviewIndexAction.ts',
+      'ShippingMethodIndexAction.ts',
+      'ShippingRateIndexAction.ts',
+      'ShippingZoneIndexAction.ts',
+    ].map(path => readAction(`Commerce/${path}`)).join('\n')
+    expect(readActions).not.toContain('error instanceof Error ? error.message')
+    expect(readActions.match(/dashboardOperationalError\(/g)?.length).toBe(28)
+  })
+
   test('separates model validation, absence, capability, and ORM failures', () => {
     const writes = [
       'Models/ModelDestroyAction.ts',

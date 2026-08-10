@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Product, Review } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   normalizeReviewCustomerContext,
   normalizeReviewProductOption,
@@ -42,9 +42,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Review records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Review records could not be read.', 'ReviewIndexAction')
     }
   },
 })

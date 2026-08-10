@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Driver, User } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { indexDriverUsers, normalizeDriverRecord } from './driver-records'
 
 export default new Action({
@@ -18,9 +18,7 @@ export default new Action({
       return drivers.map(driver => normalizeDriverRecord(driver, usersById))
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Driver records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Driver records could not be read.', 'DriverIndexAction')
     }
   },
 })

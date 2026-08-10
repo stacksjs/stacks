@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Order, Product } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   normalizeLicenseKeyCustomer,
   normalizeLicenseKeyOrder,
@@ -26,9 +26,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'License key options could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'License key options could not be read.', 'LicenseKeyOptionsAction')
     }
   },
 })

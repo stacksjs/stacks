@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, GiftCard } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeGiftCardRecord, summarizeGiftCards } from './gift-card-records'
 import { commerceIdentifier, commerceValue } from './commerce-record'
 
@@ -26,9 +26,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Gift card records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Gift card records could not be read.', 'CommerceGiftCardsAction')
     }
   },
 })

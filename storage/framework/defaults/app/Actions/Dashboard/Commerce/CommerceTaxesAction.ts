@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { TaxRate } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeTaxRateRecord, summarizeTaxRates } from './tax-rate-records'
 
 export default new Action({
@@ -19,9 +19,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Tax rate records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Tax rate records could not be read.', 'CommerceTaxesAction')
     }
   },
 })

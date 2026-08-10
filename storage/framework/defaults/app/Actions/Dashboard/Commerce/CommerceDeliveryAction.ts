@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { DeliveryRoute, Driver, ShippingMethod, ShippingZone } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { buildDeliveryOverview } from './commerce-delivery'
 
 export default new Action({
@@ -28,9 +28,7 @@ export default new Action({
       )
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Delivery records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Delivery records could not be read.', 'CommerceDeliveryAction')
     }
   },
 })

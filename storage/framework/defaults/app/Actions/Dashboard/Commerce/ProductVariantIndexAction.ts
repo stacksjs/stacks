@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Product, ProductVariant } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   normalizeProductVariantRecord,
   productVariantOptions,
@@ -29,9 +29,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Product variant records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Product variant records could not be read.', 'ProductVariantIndexAction')
     }
   },
 })

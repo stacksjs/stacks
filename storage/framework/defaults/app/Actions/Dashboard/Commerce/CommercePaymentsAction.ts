@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Order, Payment } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { commerceIdentifier, commerceValue } from './commerce-record'
 import { normalizePaymentRecord, summarizePayments } from './payment-records'
 
@@ -32,9 +32,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Payment records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Payment records could not be read.', 'CommercePaymentsAction')
     }
   },
 })

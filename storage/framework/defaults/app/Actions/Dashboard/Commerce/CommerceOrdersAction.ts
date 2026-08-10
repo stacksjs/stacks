@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Coupon, Customer, Order, OrderItem } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   addOrderItemQuantity,
   normalizeCommerceOrderRecord,
@@ -54,9 +54,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Order records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Order records could not be read.', 'CommerceOrdersAction')
     }
   },
 })

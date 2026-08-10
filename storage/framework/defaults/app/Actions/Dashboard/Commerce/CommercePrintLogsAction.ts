@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { formatDate, PrintDevice } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dashboardRequestValue } from '../dashboard-request'
 import {
   commerceEnum,
@@ -115,9 +115,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Print log records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Print log records could not be read.', 'CommercePrintLogsAction')
     }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, LicenseKey, Order, Product } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   indexLicenseKeyOptions,
   normalizeLicenseKeyCustomer,
@@ -31,9 +31,7 @@ export default new Action({
       return keys.map(key => normalizeLicenseKeyRecord(key, customerMap, productMap, orderMap))
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'License key records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'License key records could not be read.', 'LicenseKeyIndexAction')
     }
   },
 })

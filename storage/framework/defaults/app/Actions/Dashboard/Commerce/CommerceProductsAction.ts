@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Category, Manufacturer, Product, ProductUnit, ProductVariant, Review } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   commerceRecordIdentifier,
   countProductRelations,
@@ -54,9 +54,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Product records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Product records could not be read.', 'CommerceProductsAction')
     }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Category } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeCommerceCategoryRecord, summarizeCommerceCategories } from './commerce-category-records'
 
 export default new Action({
@@ -24,9 +24,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Category records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Category records could not be read.', 'CommerceCategoriesAction')
     }
   },
 })

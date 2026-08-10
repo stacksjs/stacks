@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Manufacturer, Product } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   manufacturerIdentifiers,
   manufacturerProductCounts,
@@ -31,9 +31,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Manufacturer records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Manufacturer records could not be read.', 'ManufacturerIndexAction')
     }
   },
 })

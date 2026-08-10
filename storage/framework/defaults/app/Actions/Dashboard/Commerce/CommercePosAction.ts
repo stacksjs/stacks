@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Category, Customer, Manufacturer, Product, TaxRate } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   isCommercePosCustomerActive,
   normalizeCommercePosCustomer,
@@ -63,9 +63,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Point of sale records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Point of sale records could not be read.', 'CommercePosAction')
     }
   },
 })

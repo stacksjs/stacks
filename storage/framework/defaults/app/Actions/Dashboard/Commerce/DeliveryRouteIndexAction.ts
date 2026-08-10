@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { DeliveryRoute, Driver } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   indexDeliveryRouteDrivers,
   normalizeDeliveryRouteRecord,
@@ -21,9 +21,7 @@ export default new Action({
       return routes.map(route => normalizeDeliveryRouteRecord(route, driversById))
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Delivery route records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Delivery route records could not be read.', 'DeliveryRouteIndexAction')
     }
   },
 })

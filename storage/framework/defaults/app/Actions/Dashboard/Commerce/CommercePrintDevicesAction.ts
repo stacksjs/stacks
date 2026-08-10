@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { PrintDevice } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizePrintDeviceRecord, summarizePrintDevices } from './print-device-records'
 
 export default new Action({
@@ -19,9 +19,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Print device records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Print device records could not be read.', 'CommercePrintDevicesAction')
     }
   },
 })

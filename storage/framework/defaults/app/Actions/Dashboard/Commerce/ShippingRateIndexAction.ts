@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { ShippingMethod, ShippingRate, ShippingZone } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   indexShippingRateMethods,
   indexShippingRateZones,
@@ -27,9 +27,7 @@ export default new Action({
       return rates.map(rate => normalizeShippingRateRecord(rate, methodsById, zonesById))
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Shipping rate records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Shipping rate records could not be read.', 'ShippingRateIndexAction')
     }
   },
 })

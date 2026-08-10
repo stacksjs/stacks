@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Product, WaitlistProduct } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeProductWaitlistCustomerOption, normalizeProductWaitlistOption, normalizeProductWaitlistRecord, summarizeProductWaitlist } from './product-waitlist-records'
 
 export default new Action({
@@ -33,9 +33,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Product waitlist records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Product waitlist records could not be read.', 'ProductWaitlistIndexAction')
     }
   },
 })

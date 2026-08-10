@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { DigitalDelivery } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeDigitalDeliveryRecord } from './digital-delivery-records'
 
 export default new Action({
@@ -15,9 +15,7 @@ export default new Action({
       return records.map(normalizeDigitalDeliveryRecord)
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Digital delivery records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Digital delivery records could not be read.', 'DigitalDeliveryIndexAction')
     }
   },
 })
