@@ -12,6 +12,7 @@ describe('dashboard rendered route cache', () => {
     expect(dashboardDevSource).toContain('renderCache: true')
     expect(dashboardDevSource).toContain("renderCacheVary: 'source'")
     expect(dashboardDevSource).toContain('prewarmRenderCache: 4')
+    expect(dashboardDevSource).toContain('publicDir: publicPath()')
   })
 
   test('invalidates client bundles when dashboard composables change', () => {

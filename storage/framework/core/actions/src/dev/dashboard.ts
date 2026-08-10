@@ -2,7 +2,7 @@ import process from 'node:process'
 import { randomUUID } from 'node:crypto'
 import { existsSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
-import { projectPath, storagePath } from '@stacksjs/path'
+import { projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
@@ -382,6 +382,11 @@ async function startStxServer(): Promise<void> {
     componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
+    // Pin the app's canonical public root. Dashboard pages can be discovered
+    // from framework storage while the assets they reference still belong to
+    // the application, independent of the process working directory or an
+    // inferred STX template root.
+    publicDir: publicPath(),
     // Dashboard routes render source-derived STX shells and load live data
     // through dashboardApi() after hydration. Reuse the dependency-aware
     // static render between navigations, while watching every composable root
