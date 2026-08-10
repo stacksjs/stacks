@@ -201,7 +201,11 @@ export async function tokens(userId: number): Promise<AccessToken[]> {
     revoked: !!row.revoked,
     expiresAt: row.expires_at ? new Date(row.expires_at) : null,
     createdAt: new Date(row.created_at),
+    // Touched on every use by `getUserFromToken`, so this is "last seen" - the
+    // column a session list sorts by and the one an idle timeout measures.
     updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
+    userAgent: row.user_agent ?? null,
+    ipAddress: row.ip_address ?? null,
   }))
 }
 
@@ -399,12 +403,25 @@ export async function createToken(
     expiresInMinutes?: number
     withRefreshToken?: boolean
     refreshExpiresInDays?: number
+    /**
+     * What the browser called itself, when there is one.
+     *
+     * Stored so a person can recognise their own sessions on a list well enough
+     * to revoke one. Untrusted - it is a string a client chose - which is why
+     * it sits beside the address rather than instead of it, and why nothing
+     * authorises on it.
+     */
+    userAgent?: string | null
+    /** Where the request came from, for the same list. */
+    ipAddress?: string | null
   } = {}
 ): Promise<PersonalAccessTokenResult> {
   const {
     expiresInMinutes = 60,
     withRefreshToken = true,
     refreshExpiresInDays = 30,
+    userAgent = null,
+    ipAddress = null,
   } = options
 
   // Get the personal access client
@@ -425,17 +442,23 @@ export async function createToken(
   const expiresAt = new Date()
   expiresAt.setMinutes(expiresAt.getMinutes() + expiresInMinutes)
 
+  // Truncated to what the columns hold rather than left to the driver, which
+  // errors on Postgres and silently cuts on MySQL - two behaviours for one
+  // over-long header is worse than either.
+  const agent = userAgent ? String(userAgent).slice(0, 255) : null
+  const address = ipAddress ? String(ipAddress).slice(0, 45) : null
+
   // Insert access token
   if (isPostgres) {
     await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, false, $6, ${appNow()}, ${appNow()})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
+      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, false, $6, $7, $8, ${appNow()}, ${appNow()})
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
   } else {
     await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, ${appNow()}, ${appNow()})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt)])
+      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ${appNow()}, ${appNow()})
+    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
   }
 
   // Get the inserted token

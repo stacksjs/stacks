@@ -533,6 +533,11 @@ export class Auth {
         expiresInMinutes,
         withRefreshToken: options?.withRefreshToken !== false,
         refreshExpiresInDays,
+        // Passed straight through. A caller with a request in hand supplies
+        // them; a script minting a token has neither, and inventing one would
+        // make a session list less trustworthy rather than more.
+        userAgent: options?.userAgent ?? null,
+        ipAddress: options?.ipAddress ?? null,
       },
     )
 
@@ -676,6 +681,36 @@ export class Auth {
 
     if (accessToken.revoked)
       return undefined
+
+    /*
+     * Idle expiry, on top of the absolute one above.
+     *
+     * `expires_at` bounds how long a session can live; this bounds how long it
+     * can live *unused*, which is the one that matters for a browser left open
+     * on a machine somebody walked away from. `updated_at` is touched on every
+     * validation just below, so it is genuinely last-seen.
+     *
+     * Off unless configured, and that is the honest default: an idle timeout is
+     * a policy about a deployment's physical security, not a property of the
+     * framework, and one imposed by surprise reads as being logged out at
+     * random.
+     */
+    const idleMs = config.auth?.idleTimeout ?? 0
+    if (idleMs > 0) {
+      const lastSeen = parseSqlDateTime(accessToken.updated_at ?? accessToken.created_at)
+
+      if (lastSeen && Date.now() - lastSeen.getTime() > idleMs) {
+        // Revoked rather than deleted, unlike the absolute-expiry branch above.
+        // A row that went idle is one somebody may ask about - "when did that
+        // session stop?" - and the answer costs one boolean.
+        await db.updateTable('oauth_access_tokens')
+          .set({ revoked: true })
+          .where('id', '=', accessToken.id)
+          .execute()
+
+        return undefined
+      }
+    }
 
     // Cache the current token for ability checks (per-request).
     const stateForToken = authStateOrNull()

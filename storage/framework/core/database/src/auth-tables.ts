@@ -94,6 +94,32 @@ export function usersStripeIdSql(): string {
 }
 
 /**
+ * Defensive ALTERs guaranteeing the device columns on
+ * `oauth_access_tokens` - `user_agent` and `ip_address`.
+ *
+ * They exist for one feature and it cannot be built without them: **a list of
+ * your own sessions that you can revoke.** Without something to recognise a row
+ * by, that page is a column of identical timestamps and "revoke" is guesswork,
+ * so the page nobody can act on is the page nobody builds - which is why
+ * "somebody is signed in as me on a laptop I sold" has no answer in most
+ * self-hosted software.
+ *
+ * Nullable, and populated only by callers that have a request to read them
+ * from. A token minted by a script has no user agent and no meaningful address,
+ * and inventing one would make the list less trustworthy rather than more.
+ *
+ * Same pure-builder + try/catch-swallow pattern as the `users` guarantees
+ * above, for the same reason: no generated migration creates this table, so
+ * both schema paths have to be able to add to it idempotently.
+ */
+export function oauthAccessTokenDeviceColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_access_tokens ADD COLUMN user_agent VARCHAR(255)`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN ip_address VARCHAR(45)`,
+  ]
+}
+
+/**
  * Runs every `users` guarantee-column ALTER (email_verified_at,
  * password_changed_at, two_factor_secret, two_factor_enabled,
  * stripe_id), each independently try/catch-swallowed so one
@@ -170,6 +196,11 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         scopes TEXT,
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
+        -- What the browser called itself and where it came from, so a person
+        -- can recognise their own sessions well enough to revoke one. Null for
+        -- a token minted by a script, which has neither.
+        user_agent VARCHAR(255),
+        ip_address VARCHAR(45),
         created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
         updated_at ${nullableTimestamp}
       )
@@ -179,6 +210,18 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // `token(255)`); Postgres + SQLite don't. Try the prefixed form
     // first, fall back to the unprefixed form.
     await createTokenIndex('idx_oauth_access_tokens_token', 'oauth_access_tokens', 'token')
+
+    // The device columns, for installs whose table predates them. New installs
+    // get them from the CREATE above; both paths have to end in the same
+    // schema, and the ALTER is the only one that can run twice.
+    for (const alterSql of oauthAccessTokenDeviceColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch {
+        if (options.verbose) log.debug(`[auth-tables] Skipped (already applied): ${alterSql}`)
+      }
+    }
 
     if (options.verbose) log.info('Creating oauth_refresh_tokens table...')
     await db.unsafe(`

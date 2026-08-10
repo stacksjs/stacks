@@ -99,8 +99,24 @@ export interface AccessToken {
   readonly expiresAt: Date | null
   /** When the token was created */
   readonly createdAt: Date
-  /** When the token was last updated */
+  /**
+   * When the token was last used.
+   *
+   * Touched on every successful validation, so this is "last seen" rather than
+   * "last edited" - it is what a session list sorts by and what an idle timeout
+   * measures against.
+   */
   readonly updatedAt: Date
+  /**
+   * What the client called itself when the token was issued, when it said.
+   *
+   * Untrusted, and stored for one purpose: so a person looking at a list of
+   * their own sessions can tell which is the laptop they sold. Nothing
+   * authorises on it.
+   */
+  readonly userAgent?: string | null
+  /** Where the request came from when the token was issued, for the same list. */
+  readonly ipAddress?: string | null
 }
 
 /**
@@ -255,6 +271,16 @@ export interface TokenCreateOptions {
   withRefreshToken?: boolean
   /** Refresh token expiry in days */
   refreshExpiresInDays?: number
+  /**
+   * What the client called itself, recorded on the token.
+   *
+   * For a session list somebody can act on: without something to recognise a
+   * row by, "revoke" is guesswork. Pass it from the request at sign-in; leave
+   * it out for a token minted by a script, which has no meaningful answer.
+   */
+  userAgent?: string | null
+  /** Where the request came from, for the same list. */
+  ipAddress?: string | null
 }
 
 /**

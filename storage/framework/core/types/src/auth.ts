@@ -98,6 +98,21 @@ export interface AuthOptions {
   refreshTokenExpiry?: number
 
   /**
+   * How long a session may go **unused** before it stops working, in
+   * milliseconds. Zero or absent means no idle limit, which is the default.
+   *
+   * Distinct from `tokenExpiry`, which bounds how long a session may live at
+   * all. This bounds how long it may live untouched, which is the one that
+   * matters for a browser left open on a machine somebody walked away from -
+   * an absolute expiry alone lets that session work for its full term.
+   *
+   * Off by default on purpose. An idle timeout is a policy about a deployment's
+   * physical security rather than a property of the framework, and one imposed
+   * by surprise reads to the person it logs out as being logged out at random.
+   */
+  idleTimeout?: number
+
+  /**
    * The token rotation time in hours
    */
   tokenRotation: number
