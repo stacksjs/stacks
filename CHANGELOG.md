@@ -1,5 +1,43 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.352...v0.70.353)
+
+## ✨ Features
+
+- **queue**: a documented envelope contract, and per-instance OnQueueEvent (#2282 items 6, 7) ([3aabab3](https://github.com/stacksjs/stacks/commit/3aabab3)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2282](https://github.com/stacksjs/stacks/issues/2282), [#2282](https://github.com/stacksjs/stacks/issues/2282), [#1884](https://github.com/stacksjs/stacks/issues/1884), [#2282](https://github.com/stacksjs/stacks/issues/2282))
+
+## 🐛 Bug Fixes
+
+- **lint**: silence pickier false positives that blocked the release ([a7275c8](https://github.com/stacksjs/stacks/commit/a7275c8)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **auth**: stop confirming whether an email is registered, by default (#2299) ([8bfa68a](https://github.com/stacksjs/stacks/commit/8bfa68a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2299](https://github.com/stacksjs/stacks/issues/2299), [#2299](https://github.com/stacksjs/stacks/issues/2299))
+- **config**: stop an app config restating what the library already defaults (#2301) ([226cac2](https://github.com/stacksjs/stacks/commit/226cac2)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2301](https://github.com/stacksjs/stacks/issues/2301), [#2301](https://github.com/stacksjs/stacks/issues/2301))
+- **queue**: refuse an add to a cancelled batch, and cover the races (#2282 item 3) (#2293) ([9f29cfa](https://github.com/stacksjs/stacks/commit/9f29cfa)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2282](https://github.com/stacksjs/stacks/issues/2282), [#2293](https://github.com/stacksjs/stacks/issues/2293), [#2282](https://github.com/stacksjs/stacks/issues/2282), [#2293](https://github.com/stacksjs/stacks/issues/2293), [#2297](https://github.com/stacksjs/stacks/issues/2297), [#2297](https://github.com/stacksjs/stacks/issues/2297), [#2282](https://github.com/stacksjs/stacks/issues/2282), [#2215](https://github.com/stacksjs/stacks/issues/2215), [#2297](https://github.com/stacksjs/stacks/issues/2297), [#2297](https://github.com/stacksjs/stacks/issues/2297), [#2297](https://github.com/stacksjs/stacks/issues/2297))
+- **queue**: spread retries so an outage cannot resynchronise the herd (#2298) ([3bd1e4a](https://github.com/stacksjs/stacks/commit/3bd1e4a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2298](https://github.com/stacksjs/stacks/issues/2298), [#2298](https://github.com/stacksjs/stacks/issues/2298), [#2282](https://github.com/stacksjs/stacks/issues/2282), [#2282](https://github.com/stacksjs/stacks/issues/2282))
+- **dashboard**: native window uses HTTPS now that Craft trusts local dev TLS (#2193) ([4dee38d](https://github.com/stacksjs/stacks/commit/4dee38d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2193](https://github.com/stacksjs/stacks/issues/2193), [#2193](https://github.com/stacksjs/stacks/issues/2193))
+- **server**: find the framework defaults in the package, not only the vendored tree (#2296) ([5f2c678](https://github.com/stacksjs/stacks/commit/5f2c678)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2296](https://github.com/stacksjs/stacks/issues/2296), [#2296](https://github.com/stacksjs/stacks/issues/2296))
+- **queue**: atomic batch.add, and a shutdown drain the Redis driver reaches (#2297) ([7b78005](https://github.com/stacksjs/stacks/commit/7b78005)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2297](https://github.com/stacksjs/stacks/issues/2297), [#2297](https://github.com/stacksjs/stacks/issues/2297), [#2282](https://github.com/stacksjs/stacks/issues/2282), [#1984](https://github.com/stacksjs/stacks/issues/1984), [#1984](https://github.com/stacksjs/stacks/issues/1984), [#2282](https://github.com/stacksjs/stacks/issues/2282))
+- **preloader**: stop paying full module resolution to answer a stat question (#2295) ([eb5380f](https://github.com/stacksjs/stacks/commit/eb5380f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2295](https://github.com/stacksjs/stacks/issues/2295), [#2295](https://github.com/stacksjs/stacks/issues/2295), [#2292](https://github.com/stacksjs/stacks/issues/2292), [#2292](https://github.com/stacksjs/stacks/issues/2292))
+- **preloader**: never boot against the global install cache (#2292) ([ece0caa](https://github.com/stacksjs/stacks/commit/ece0caa)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2292](https://github.com/stacksjs/stacks/issues/2292), [#2292](https://github.com/stacksjs/stacks/issues/2292), [#2289](https://github.com/stacksjs/stacks/issues/2289))
+- **ci**: build the one package the suite imports by subpath (#2291) ([7cd5394](https://github.com/stacksjs/stacks/commit/7cd5394)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2291](https://github.com/stacksjs/stacks/issues/2291), [#2291](https://github.com/stacksjs/stacks/issues/2291))
+- **auth**: create password_resets.expires_at, and three red core packages (#2288) ([e0b720a](https://github.com/stacksjs/stacks/commit/e0b720a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2288](https://github.com/stacksjs/stacks/issues/2288), [#2288](https://github.com/stacksjs/stacks/issues/2288))
+- **dashboard**: the desktop sidebar renders its rows again (#2279) (#2287) ([c6cb3cf](https://github.com/stacksjs/stacks/commit/c6cb3cf)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2279](https://github.com/stacksjs/stacks/issues/2279), [#2287](https://github.com/stacksjs/stacks/issues/2287), [#2279](https://github.com/stacksjs/stacks/issues/2279), [#2287](https://github.com/stacksjs/stacks/issues/2287), [#2279](https://github.com/stacksjs/stacks/issues/2279))
+- **server**: load auto-import barrels separately so one bad name can't erase all ([160c6e3](https://github.com/stacksjs/stacks/commit/160c6e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **readme**: point people at the pre-launch signup (#2300) ([479b1a3](https://github.com/stacksjs/stacks/commit/479b1a3)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2300](https://github.com/stacksjs/stacks/issues/2300), [#2300](https://github.com/stacksjs/stacks/issues/2300))
+- **forms**: point at the other useForm, so nobody writes a third (#2277) ([915d06a](https://github.com/stacksjs/stacks/commit/915d06a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2277](https://github.com/stacksjs/stacks/issues/2277), [#2277](https://github.com/stacksjs/stacks/issues/2277), [#1843](https://github.com/stacksjs/stacks/issues/1843), [#1843](https://github.com/stacksjs/stacks/issues/1843), [#1843](https://github.com/stacksjs/stacks/issues/1843))
+
+## 🔧 Chores
+
+- upgrade lockfile verison to v2 ([5b24543](https://github.com/stacksjs/stacks/commit/5b24543)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.351...v0.70.352)
 
 ## ✨ Features
@@ -2720,7 +2758,7 @@
 - **deps**: stx 0.2.100, ts-cloud 0.7.60 ([a5cf770](https://github.com/stacksjs/stacks/commit/a5cf770)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **cloud**: widen the tenant namespace guard to the whole box ([052f67c](https://github.com/stacksjs/stacks/commit/052f67c)) _(by Chris <chrisbreuer93@gmail.com>)_
 - **env**: remove other tenants' keys from the committed env files ([707cdd1](https://github.com/stacksjs/stacks/commit/707cdd1)) _(by Chris <chrisbreuer93@gmail.com>)_
-- **env**: rename the GHOST** tenant keys to ANALYTICSHQ** ([4b9626a](https://github.com/stacksjs/stacks/commit/4b9626a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: rename the GHOST**tenant keys to ANALYTICSHQ** ([4b9626a](https://github.com/stacksjs/stacks/commit/4b9626a)) _(by Chris <chrisbreuer93@gmail.com>)_
 - untrack local cloud driver state ([6a1d538](https://github.com/stacksjs/stacks/commit/6a1d538)) _(by Chris <chrisbreuer93@gmail.com>)_
 - wip ([d6d734b](https://github.com/stacksjs/stacks/commit/d6d734b)) _(by Chris <chrisbreuer93@gmail.com>)_
 - link the community as stacksjs.com/discord ([231b86c](https://github.com/stacksjs/stacks/commit/231b86c)) _(by Chris <chrisbreuer93@gmail.com>)_
