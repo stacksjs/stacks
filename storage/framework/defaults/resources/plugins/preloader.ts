@@ -145,24 +145,62 @@ if (!isRepl && !isPostinstall) {
  * specifier fails FAST. That holds for one that cannot be resolved at all. It
  * does not hold for one that resolves to a stale copy.
  *
- * Accepted: anything under a `node_modules/` (a real install, the app's own or
- * a vendored checkout's) and anything inside this framework tree (the core
- * packages beside this file). Both are cwd-independent, so running a command
- * from a subdirectory does not change what loads.
+ * ## Why this is a directory probe and not `Bun.resolveSync`
+ *
+ * The first version of this guard asked `Bun.resolveSync`, which answers the
+ * question exactly but pays full module resolution to do it. Measured on a
+ * Linux CI runner, a specifier that is NOT in `node_modules` cost **0.9 to 2.0
+ * seconds per call**, because bun walks the entire tree and then scans a global
+ * cache the install had just filled with 600+ packages. Twenty of those is 20
+ * to 40 seconds, so the guard turned a hang into a crawl and the preloader test
+ * kept timing out, intermittently, depending on how loaded the runner was.
+ *
+ * Locating the `node_modules/@stacksjs` directory once and then asking
+ * `existsSync` per package is the same question answered with stat calls:
+ * microseconds, and it never touches the global cache. The walk is memoised
+ * because the answer cannot change within a process.
+ *
+ * Accepted: a package present in this project's `@stacksjs` scope directory,
+ * which covers a real install and a vendored checkout alike (the framework's
+ * own core packages are symlinked into it). Anchored on `import.meta.dir`
+ * rather than the cwd, so running a command from a subdirectory does not change
+ * what loads.
  */
+let stacksScopeDir: string | null | undefined
+
+async function findStacksScopeDir(): Promise<string | null> {
+  if (stacksScopeDir !== undefined)
+    return stacksScopeDir
+
+  const { existsSync } = await import('node:fs')
+  const { dirname, join } = await import('node:path')
+
+  let dir = import.meta.dir
+  for (;;) {
+    const candidate = join(dir, 'node_modules', '@stacksjs')
+    if (existsSync(candidate)) {
+      stacksScopeDir = candidate
+      return candidate
+    }
+    const parent = dirname(dir)
+    if (parent === dir)
+      break
+    dir = parent
+  }
+
+  stacksScopeDir = null
+  return null
+}
+
 async function belongsToThisProject(specifier: string): Promise<boolean> {
-  let resolved: string
-  try {
-    resolved = Bun.resolveSync(specifier, import.meta.dir)
-  }
-  catch {
-    return false // Not installed, and not in the cache either
-  }
+  const scopeDir = await findStacksScopeDir()
+  if (!scopeDir)
+    return false
 
-  const { resolve, sep } = await import('node:path')
-  const frameworkRoot = resolve(import.meta.dir, '../../..')
+  const { existsSync } = await import('node:fs')
+  const { join } = await import('node:path')
 
-  return resolved.includes(`${sep}node_modules${sep}`) || resolved.startsWith(frameworkRoot + sep)
+  return existsSync(join(scopeDir, specifier.slice('@stacksjs/'.length)))
 }
 
 // Auto-import ALL Stacks framework modules into globalThis
