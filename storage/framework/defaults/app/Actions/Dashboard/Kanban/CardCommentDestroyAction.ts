@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { CardComment } from '@stacksjs/orm'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
  * `DELETE /api/dashboard/kanban/comments/:id`.
@@ -25,8 +25,7 @@ export default new Action({
       return { deleted: true, id }
     }
     catch (err) {
-      console.error('[dashboard/kanban] CardCommentDestroyAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'CardCommentDestroyAction')
     }
   },
 })

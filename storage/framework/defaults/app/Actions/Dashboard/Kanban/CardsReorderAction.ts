@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface ColumnReorder {
   columnId: number
@@ -135,8 +135,7 @@ export default new Action({
       return { moved: allCardIds.size, boardId }
     }
     catch (err) {
-      console.error('[dashboard/kanban] CardsReorderAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'CardsReorderAction')
     }
   },
 })

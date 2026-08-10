@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { modelBoolean } from './kanban-model'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface BoardRow {
   id: number
@@ -70,8 +70,7 @@ export default new Action({
       return { boards }
     }
     catch (err) {
-      console.error('[dashboard/kanban] BoardsIndexAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'BoardsIndexAction')
     }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 /**
  * `GET /api/dashboard/kanban/users`.
@@ -30,8 +30,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/kanban] UsersListAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'UsersListAction')
     }
   },
 })

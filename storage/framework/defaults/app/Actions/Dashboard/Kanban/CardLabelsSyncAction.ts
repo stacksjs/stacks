@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface SyncInput {
   labelIds?: unknown
@@ -92,8 +92,7 @@ export default new Action({
       return { cardId, labels }
     }
     catch (err) {
-      console.error('[dashboard/kanban] CardLabelsSyncAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'CardLabelsSyncAction')
     }
   },
 })

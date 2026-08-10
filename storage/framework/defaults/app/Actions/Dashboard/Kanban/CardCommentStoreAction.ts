@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { Card, CardComment } from '@stacksjs/orm'
 import { cardCommentResponse } from './kanban-comment'
 import { refreshModel } from './kanban-model'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface CommentInput {
   body?: unknown
@@ -52,8 +52,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/kanban] CardCommentStoreAction failed:', err)
-      return kanbanError(err instanceof Error ? err.message : 'unknown error', 500)
+      return kanbanActionError(err, 'CardCommentStoreAction')
     }
   },
 })

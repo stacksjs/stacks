@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { CardComment, User } from '@stacksjs/orm'
 import { cardCommentResponse } from './kanban-comment'
 import { modelNullableNumber, refreshModel } from './kanban-model'
-import { kanbanError } from './kanban-response'
+import { kanbanActionError, kanbanError } from './kanban-response'
 
 interface CommentInput {
   body?: unknown
@@ -37,8 +37,7 @@ export default new Action({
       return { comment: cardCommentResponse(updated, author) }
     }
     catch (error) {
-      console.error('[dashboard/kanban] CardCommentUpdateAction failed:', error)
-      return kanbanError(error instanceof Error ? error.message : 'unknown error', 500)
+      return kanbanActionError(error, 'CardCommentUpdateAction')
     }
   },
 })
