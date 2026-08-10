@@ -240,9 +240,12 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   }
   log.debug(`[action] Resolved: ${action} → ${path}`)
 
-  // Use --watch for dev actions to enable hot reloading
+  // STX dashboard and desktop actions own their source watcher and HMR server.
+  // Wrapping them in Bun's process-level watch mode tears down the listening
+  // socket on the first component edit; the re-exec then exits and leaves the
+  // advertised dashboard port closed. Other dev actions still use Bun watch.
   const isDevAction = action.startsWith('dev/')
-  const watchFlag = isDevAction ? '--watch' : ''
+  const watchFlag = developmentWatchFlag(action)
   // Match the top-level `buddy` launcher: vendored workspace packages ship
   // source but may not have been built yet, so their `bun` export can point at
   // a missing/stale dist file. Keep the development condition on child action
@@ -278,6 +281,12 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   const result = await runCommand(cmd, optionsWithCwd)
   log.debug(`[action] Completed: ${action}`)
   return result
+}
+
+export function developmentWatchFlag(action: Action): string {
+  if (!action.startsWith('dev/'))
+    return ''
+  return action === 'dev/dashboard' || action === 'dev/desktop' ? '' : '--watch'
 }
 
 /**

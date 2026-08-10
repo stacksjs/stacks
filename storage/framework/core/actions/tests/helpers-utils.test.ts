@@ -2,7 +2,8 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
 import { afterEach, describe, expect, it } from 'bun:test'
-import { actionNodePath, developmentConditionForProject, publishedActionCandidates, runActionSequence } from '../src/helpers/utils'
+import type { Action } from '@stacksjs/enums'
+import { actionNodePath, developmentConditionForProject, developmentWatchFlag, publishedActionCandidates, runActionSequence } from '../src/helpers/utils'
 
 const roots: string[] = []
 
@@ -31,6 +32,17 @@ describe('developmentConditionForProject', () => {
     mkdirSync(join(root, 'storage/framework/core'), { recursive: true })
 
     expect(developmentConditionForProject(root)).toBe('')
+  })
+})
+
+describe('developmentWatchFlag', () => {
+  it('lets STX dashboard processes own their HMR lifecycle', () => {
+    expect(developmentWatchFlag('dev/dashboard' as Action)).toBe('')
+    expect(developmentWatchFlag('dev/desktop' as Action)).toBe('')
+  })
+
+  it('keeps process watch mode for other development actions', () => {
+    expect(developmentWatchFlag('dev/api' as Action)).toBe('--watch')
   })
 })
 
