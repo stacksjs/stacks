@@ -248,7 +248,7 @@
         "better-dx": "^0.2.17",
       },
       "peerDependencies": {
-        "web-ext": ">=8",
+        "web-ext": ">=10.6.0",
       },
       "optionalPeers": [
         "web-ext",
