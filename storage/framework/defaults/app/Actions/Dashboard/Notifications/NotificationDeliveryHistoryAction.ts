@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dashboardRequestValue } from '../dashboard-request'
 import {
   type NotificationDeliveryRow,
@@ -30,13 +31,15 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle(request: RequestInstance) {
-    const page = Math.max(1, Number.parseInt(queryValue(request, 'page') || '1', 10) || 1)
+    const page = Math.min(1_000_000, Math.max(1, Number.parseInt(queryValue(request, 'page') || '1', 10) || 1))
     const perPage = Math.min(100, Math.max(1, Number.parseInt(queryValue(request, 'per_page') || '20', 10) || 20))
     const channel = allowedValue(queryValue(request, 'channel').toLowerCase(), CHANNELS)
     const status = allowedValue(queryValue(request, 'status').toLowerCase(), STATUSES)
     const sort = allowedValue(queryValue(request, 'sort').toLowerCase(), SORTS) || 'sent_at'
     const direction = queryValue(request, 'direction').toLowerCase() === 'asc' ? 'asc' : 'desc'
     const search = queryValue(request, 'search')
+    if (search.length > 200)
+      return response.json({ message: 'Notification delivery search must be 200 characters or fewer.' }, 422)
     const searchPattern = `%${search}%`
 
     const applyFilters = <T extends {
@@ -58,42 +61,49 @@ export default new Action({
       return filtered
     }
 
-    const countQuery = applyFilters(
-      db
-        .selectFrom('notification_deliveries')
-        .select(db.fn.count('id').as('count')),
-    )
-    const rowsQuery = applyFilters(
-      db
-        .selectFrom('notification_deliveries')
-        .selectAll(),
-    )
+    try {
+      const countQuery = applyFilters(
+        db
+          .selectFrom('notification_deliveries')
+          .select(db.fn.count('id').as('count')),
+      )
+      const rowsQuery = applyFilters(
+        db
+          .selectFrom('notification_deliveries')
+          .selectAll(),
+      )
 
-    const [countRow, rows] = await Promise.all([
-      countQuery.executeTakeFirst() as Promise<{ count: number | string } | undefined>,
-      rowsQuery
-        .orderBy(sort as DeliverySort, direction)
-        .limit(perPage)
-        .offset((page - 1) * perPage)
-        .execute() as Promise<NotificationDeliveryRow[]>,
-    ])
+      const [countRow, rows] = await Promise.all([
+        countQuery.executeTakeFirst() as Promise<{ count: number | string } | undefined>,
+        rowsQuery
+          .orderBy(sort as DeliverySort, direction)
+          .limit(perPage)
+          .offset((page - 1) * perPage)
+          .execute() as Promise<NotificationDeliveryRow[]>,
+      ])
 
-    const total = Number(countRow?.count || 0)
-    return response.json({
-      deliveries: rows.map(serializeNotificationDelivery),
-      pagination: {
-        page,
-        per_page: perPage,
-        total,
-        total_pages: Math.max(1, Math.ceil(total / perPage)),
-      },
-      filters: {
-        channel: channel as DeliveryChannel | null,
-        status: status as DeliveryStatus | null,
-        search,
-        sort,
-        direction,
-      },
-    })
+      const total = Number(countRow?.count || 0)
+      if (!Number.isSafeInteger(total) || total < 0)
+        throw new TypeError('Notification delivery count must be a non-negative integer.')
+      return response.json({
+        deliveries: rows.map(serializeNotificationDelivery),
+        pagination: {
+          page,
+          per_page: perPage,
+          total,
+          total_pages: Math.max(1, Math.ceil(total / perPage)),
+        },
+        filters: {
+          channel: channel as DeliveryChannel | null,
+          status: status as DeliveryStatus | null,
+          search,
+          sort,
+          direction,
+        },
+      })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Notification delivery history could not be loaded.', 'NotificationDeliveryHistoryAction')
+    }
   },
 })

@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { NotificationDelivery } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dashboardRequestValue } from '../dashboard-request'
 import { parseDeliveryMetadata } from './notification-delivery'
 
@@ -37,9 +38,14 @@ export default new Action({
     if (!channel)
       return response.json({ message: 'Channel must be email or sms.' }, 422)
 
-    const records = await NotificationDelivery.where('channel', '=', channel).get()
-    const deliveries = records
-      .map(record => ({
+    try {
+      const records = await NotificationDelivery
+        .where('channel', '=', channel)
+        .orderByDesc('sent_at')
+        .orderByDesc('created_at')
+        .limit(500)
+        .get()
+      const deliveries = records.map(record => ({
         id: Number(record.get('id')),
         user_id: record.get('user_id') ? Number(record.get('user_id')) : null,
         channel,
@@ -55,9 +61,11 @@ export default new Action({
         sent_at: String(record.get('sent_at') || record.get('created_at') || ''),
         created_at: String(record.get('created_at') || ''),
       }))
-      .sort((a, b) => new Date(b.sent_at).getTime() - new Date(a.sent_at).getTime())
-      .slice(0, 500)
 
-    return response.json(deliveries)
+      return response.json(deliveries)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Notification deliveries could not be loaded.', 'NotificationDeliveryIndexAction')
+    }
   },
 })

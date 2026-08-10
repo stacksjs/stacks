@@ -4,6 +4,7 @@ import { Action } from '@stacksjs/actions'
 import { notify } from '@stacksjs/notifications'
 import { NotificationDelivery } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { parseDeliveryMetadata } from './notification-delivery'
 
 type RetryChannel = 'email' | 'sms'
@@ -19,10 +20,16 @@ export default new Action({
   apiResponse: true,
   async handle(request: RequestInstance) {
     const id = Number(request.getParam('id'))
-    if (!Number.isFinite(id) || id <= 0)
-      return response.json({ message: 'A valid delivery ID is required.' }, 422)
+    if (!Number.isSafeInteger(id) || id <= 0)
+      return response.json({ message: 'A valid delivery ID is required.' }, 400)
 
-    const delivery = await NotificationDelivery.find(id)
+    let delivery: Awaited<ReturnType<typeof NotificationDelivery.find>>
+    try {
+      delivery = await NotificationDelivery.find(id)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Notification delivery could not be loaded.', 'NotificationDeliveryRetryAction.lookup')
+    }
     if (!delivery)
       return response.json({ message: 'Notification delivery not found.' }, 404)
 
@@ -34,27 +41,33 @@ export default new Action({
     if (!recipientValue)
       return response.json({ message: 'The original delivery has no recipient.' }, 422)
 
-    const channels: NotificationChannel[] = [channel]
-    const results = await notify(
-      {
-        userId: delivery.get('user_id') ? Number(delivery.get('user_id')) : undefined,
-        ...(channel === 'email' ? { email: recipientValue } : { phone: recipientValue }),
-      },
-      {
-        subject: String(delivery.get('subject') || ''),
-        body: String(delivery.get('body') || ''),
-        data: parseDeliveryMetadata(
-          delivery.get('metadata'),
-          `notification delivery ${id} metadata`,
-        ),
-      },
-      channels,
-      { ignorePreferences: true },
-    )
+    let results: Awaited<ReturnType<typeof notify>>
+    try {
+      const channels: NotificationChannel[] = [channel]
+      results = await notify(
+        {
+          userId: delivery.get('user_id') ? Number(delivery.get('user_id')) : undefined,
+          ...(channel === 'email' ? { email: recipientValue } : { phone: recipientValue }),
+        },
+        {
+          subject: String(delivery.get('subject') || ''),
+          body: String(delivery.get('body') || ''),
+          data: parseDeliveryMetadata(
+            delivery.get('metadata'),
+            `notification delivery ${id} metadata`,
+          ),
+        },
+        channels,
+        { ignorePreferences: true },
+      )
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'The notification retry could not be completed.', 'NotificationDeliveryRetryAction.provider', 502)
+    }
 
     const result = results[0]
     if (!result?.success)
-      return response.json({ message: result?.error?.message || 'The retry failed.' }, 502)
+      return dashboardOperationalError(result?.error, 'The notification retry failed.', 'NotificationDeliveryRetryAction.result', 502)
 
     return response.json({ success: true })
   },
