@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { Activity } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
@@ -37,11 +38,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return {
-        activities: [],
-        stats: { total: 0, last24Hours: 0, last7Days: 0 },
-        error: error instanceof Error ? error.message : 'Activity could not be loaded.',
-      }
+      return dashboardOperationalError(error, 'Activity could not be loaded.', 'ActivityIndexAction')
     }
   },
 })

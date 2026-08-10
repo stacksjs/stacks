@@ -98,25 +98,21 @@ async function loadRecords(): Promise<void> {
       const response = await fetchDashboardData<DashboardActivity>('activity')
       records.set(response.activities || [])
       stats.set(response.stats)
-      loadError.set(response.error || '')
     }
     else if (mode() === 'users') {
       const response = await fetchDashboardData<DashboardUser>('users')
       records.set(response.users || [])
       stats.set(response.stats)
-      loadError.set(response.error || '')
     }
     else if (mode() === 'teams') {
       const response = await fetchDashboardData<DashboardTeam>('teams')
       records.set(response.teams || [])
       stats.set(response.stats)
-      loadError.set(response.error || '')
     }
     else {
       const response = await fetchDashboardData<DashboardSubscriber>('subscribers')
       records.set(response.subscribers || [])
       stats.set(response.stats)
-      loadError.set(response.error || '')
     }
   }
   catch (error) {

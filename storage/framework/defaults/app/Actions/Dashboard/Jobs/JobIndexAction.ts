@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { matchesJobSearch, normalizeActiveJob, normalizeFailedJob } from './job-records'
 
 export default new Action({
@@ -43,9 +43,7 @@ export default new Action({
       return { data, total, page, perPage, queues, queueConnected: true }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Job history could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Job history could not be loaded.', 'JobIndexAction')
     }
   },
 })

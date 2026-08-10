@@ -45,7 +45,6 @@ export interface DashboardSubscriber {
 
 export interface DashboardDataResponse<T> {
   stats: DataStats
-  error?: string
   activities?: T[]
   users?: T[]
   teams?: T[]

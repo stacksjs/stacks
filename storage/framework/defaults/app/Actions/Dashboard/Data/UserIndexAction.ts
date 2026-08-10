@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
@@ -36,11 +37,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return {
-        users: [],
-        stats: { total: 0, newThisWeek: 0, verified: 0 },
-        error: error instanceof Error ? error.message : 'Users could not be loaded.',
-      }
+      return dashboardOperationalError(error, 'Users could not be loaded.', 'UserIndexAction')
     }
   },
 })

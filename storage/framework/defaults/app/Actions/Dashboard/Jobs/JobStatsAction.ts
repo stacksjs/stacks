@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { getGlobalMetrics } from '@stacksjs/queue'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'JobStatsAction',
@@ -38,9 +38,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Job metrics could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Job metrics could not be loaded.', 'JobStatsAction')
     }
   },
 })

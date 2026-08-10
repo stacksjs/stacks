@@ -1,5 +1,6 @@
 <script client>
 import type { DashboardJob } from '../../../../functions/jobs'
+import { DashboardApiError } from '../../../../functions/dashboard-api'
 import { fetchJob, retryJob } from '../../../../functions/jobs'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -53,11 +54,11 @@ async function loadJob(): Promise<void> {
   try {
     const response = await fetchJob(jobId())
     job.set(response.job)
-    loadError.set(response.error || '')
   }
   catch (error) {
     job.set(null)
-    loadError.set(error instanceof Error ? error.message : 'Job could not be loaded.')
+    if (!(error instanceof DashboardApiError && error.status === 404))
+      loadError.set(error instanceof Error ? error.message : 'Job could not be loaded.')
   }
   finally {
     isLoading.set(false)

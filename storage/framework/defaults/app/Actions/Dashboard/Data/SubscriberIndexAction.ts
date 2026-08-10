@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { Subscriber } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
@@ -38,11 +39,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return {
-        subscribers: [],
-        stats: { total: 0, subscribed: 0, unsubscribed: 0, newThisMonth: 0 },
-        error: error instanceof Error ? error.message : 'Subscribers could not be loaded.',
-      }
+      return dashboardOperationalError(error, 'Subscribers could not be loaded.', 'SubscriberIndexAction')
     }
   },
 })

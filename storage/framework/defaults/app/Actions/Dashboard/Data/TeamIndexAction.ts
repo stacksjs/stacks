@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { Team } from '@stacksjs/orm'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dateValue, daysAgoIso, numberValue, textValue } from './data-records'
 
 export default new Action({
@@ -39,11 +40,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return {
-        teams: [],
-        stats: { total: 0, active: 0, members: 0, newThisMonth: 0 },
-        error: error instanceof Error ? error.message : 'Teams could not be loaded.',
-      }
+      return dashboardOperationalError(error, 'Teams could not be loaded.', 'TeamIndexAction')
     }
   },
 })

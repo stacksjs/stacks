@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
 import { getGlobalMetrics } from '@stacksjs/queue'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface QueueBucket {
   pending: number
@@ -81,9 +81,7 @@ export default new Action({
       return { queues, stats, queueConnected: true }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Queue statistics could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Queue statistics could not be loaded.', 'QueueStatsAction')
     }
   },
 })

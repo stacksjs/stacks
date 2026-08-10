@@ -52,7 +52,6 @@ export interface JobListFilters {
 
 export interface JobShowResponse {
   job: DashboardJob | null
-  error?: string
 }
 
 export async function fetchJobs(filters: JobListFilters = {}): Promise<JobListResponse> {

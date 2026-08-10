@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { Activity } from '@stacksjs/orm'
 import { safeGet } from '../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from './dashboard-response'
 import { dateValue, numberValue, textValue } from './Data/data-records'
 
 export function activityStatus(type: string): 'success' | 'warning' {
@@ -35,11 +36,7 @@ export default new Action({
       return { activity, count: activity.length }
     }
     catch (error) {
-      return {
-        activity: [],
-        count: 0,
-        error: error instanceof Error ? error.message : 'Activity records could not be loaded.',
-      }
+      return dashboardOperationalError(error, 'Activity records could not be loaded.', 'DashboardActivityAction')
     }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getActiveJobCount, getWorkerTracker, isWorkerRunning } from '@stacksjs/queue'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'QueueWorkersAction',
@@ -41,9 +41,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Queue workers could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Queue workers could not be loaded.', 'QueueWorkersAction')
     }
   },
 })
