@@ -34,4 +34,12 @@ describe('dashboard backend reload contract', () => {
     expect(source).toContain("process.env.STACKS_DASHBOARD_WORKER !== '1'")
     expect(source).toContain('runDashboardSupervisor(import.meta.path, process.argv.slice(2))')
   })
+
+  test('pins the STX template root for app and dashboard serving', () => {
+    const dashboard = readFileSync(resolve('storage/framework/core/actions/src/dev/dashboard.ts'), 'utf8')
+    const uiConfig = readFileSync(resolve('config/ui.ts'), 'utf8')
+
+    expect(dashboard).toContain("root: projectPath('resources')")
+    expect(uiConfig).toContain("root: 'resources'")
+  })
 })

@@ -387,6 +387,7 @@ async function startStxServer(): Promise<void> {
   const stacksRoute = router.route
 
   const serverPromise = serve({
+    root: projectPath('resources'),
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
     componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),

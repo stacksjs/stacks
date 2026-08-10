@@ -6,6 +6,11 @@ import type { StxOptions as UiOptions } from '@stacksjs/stx'
  */
 
 export default {
+  // Pin template topology to the application resources directory. This keeps
+  // component, layout and partial resolution stable for CLI, dev and build
+  // processes instead of asking each process to infer the same root.
+  root: 'resources',
+
   // Where stx keeps everything it generates: the compiled-template cache, the
   // Crosswind CSS cache, client-script bundles, the route manifest and route
   // types. Stacks keeps every runtime-owned directory under storage/ rather
@@ -15,9 +20,8 @@ export default {
 
   // Components, layouts and partials directories.
   //
-  // These are resolved RELATIVE TO the stx root, which auto-detects as
-  // `resources` in a Stacks app (it is the directory holding `views/` and
-  // `layouts/`). Spelling them `resources/components` here made stx join the
+  // These are resolved RELATIVE TO the explicit `resources` stx root.
+  // Spelling them `resources/components` here made stx join the
   // root on a second time and look in `resources/resources/components`, so
   // `<Card />` in a template resolved to nothing and stx warned on every boot.
   componentsDir: 'components',
