@@ -506,10 +506,24 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * PUT /api/card-comments/{id}
+   */
+  putCardCommentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/card-comments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * DELETE /api/card-comments/{id}
    */
   deleteCardCommentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "DELETE", "/api/card-comments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/card-comments/{id}
+   */
+  patchCardCommentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/card-comments/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -3072,6 +3086,13 @@ export function createClient(config: ClientConfig) {
    */
   deleteDashboardKanbanCommentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "DELETE", "/api/dashboard/kanban/comments/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/dashboard/kanban/comments/{id}
+   */
+  patchDashboardKanbanCommentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/kanban/comments/{id}", input ?? {}, [], false, options)
   },
 
   /**
