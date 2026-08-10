@@ -55,7 +55,20 @@ describe('default preloader', () => {
       'storage/framework/defaults/app/Models',
       'storage/framework/defaults/app/Controllers',
     ].map(path => mkdir(resolve(tempDir, path), { recursive: true })))
-    await Bun.write(isolatedPreloader, Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')))
+    // TEMPORARY DIAGNOSTIC round 5 (stacksjs/stacks#2292 follow-up). The
+    // global-install-cache guard is in place and the hang is now INTERMITTENT:
+    // the same commit passed on its PR run and timed out on the main run. So
+    // trace every await site, not just the imports, and instrument the COPY
+    // rather than the framework source.
+    const preloaderSource = await Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')).text()
+    const instrumented = preloaderSource.split('\n').map((line, index) => {
+      if (!/^\s*(?:const|let|var|await|for|if|return)\b.*\bawait\b/.test(line))
+        return line
+      const indent = line.match(/^\s*/)?.[0] ?? ''
+      const label = `L${index + 1} ${line.trim().slice(0, 60).replace(/['\\]/g, '')}`
+      return `${indent}process.stderr.write('[pre ${label}]\\n')\n${line}`
+    }).join('\n')
+    await Bun.write(isolatedPreloader, instrumented)
     await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
       Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
     ))
@@ -63,7 +76,22 @@ describe('default preloader', () => {
       resolve(isolatedPathRoot, 'index.ts'),
       Bun.file(resolve(import.meta.dir, '../../path/src/index.ts')),
     )
-    await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
+    await Bun.write(isolatedRunner, [
+      `const t0 = Date.now()`,
+      `const mark = (m) => process.stderr.write(\`[mark +\${Date.now() - t0}ms] \${m}\\n\`)`,
+      `process.on('exit', c => mark('exit ' + c))`,
+      `const bomb = setTimeout(() => {`,
+      `  let res = 'unavailable'`,
+      `  try { res = JSON.stringify(process.getActiveResourcesInfo()) } catch (e) { res = 'threw: ' + e.message }`,
+      `  mark('STILL ALIVE at 3s, active resources: ' + res)`,
+      `  process.exit(9)`,
+      `}, 3000)`,
+      `if (typeof bomb.unref === 'function') bomb.unref()`,
+      `mark('preloader: start')`,
+      `await import('./storage/framework/defaults/resources/plugins/preloader.ts')`,
+      `mark('preloader: ok')`,
+      ``,
+    ].join('\n'))
 
     // A curated environment rather than the developer's. This test is about
     // whether the preloader resolves with nothing linked, and it asserts on
@@ -90,6 +118,8 @@ describe('default preloader', () => {
       new Response(child.stderr).text(),
       new Response(child.stdout).text(),
     ])
+    // TEMPORARY DIAGNOSTIC: surface the trace in the CI log.
+    console.error(`[preloader diag] exit=${await child.exited}\n${stderr}\n--- stdout ---\n${stdout}\n--- end ---`)
     expect(stderr).toBe('')
     expect(stdout).toBe('')
     expect(await child.exited).toBe(0)
