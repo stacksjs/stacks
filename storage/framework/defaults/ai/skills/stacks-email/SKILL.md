@@ -1,6 +1,6 @@
 ---
 name: stacks-email
-description: Use when working with email in a Stacks application — sending emails via SES/SendGrid/Mailgun/Mailtrap/SMTP, email templates with STX, email drivers, the Mail singleton, the EmailSDK for inbox management, or email configuration. Covers @stacksjs/email, config/email.ts, and app/Mail/.
+description: Use when working with email in a Stacks application - sending emails via SES/SendGrid/Mailgun/Mailtrap/SMTP, email templates with STX, email drivers, the Mail singleton, the EmailSDK for inbox management, inbound MIME parsing, or email configuration. Covers @stacksjs/email, config/email.ts, and app/Mail/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -23,8 +23,9 @@ email/src/
 ├── index.ts          # All exports
 ├── email.ts          # Email class + Mail singleton
 ├── template.ts       # Template rendering engine
+├── inbound-parser.ts # Bounded RFC MIME parsing for inbound mail
 ├── types.ts          # Types and interfaces
-├── sdk/index.ts      # EmailSDK (send + inbox management)
+├── sdk/index.ts      # EmailSDK (send + inbox and attachment management)
 └── drivers/
     ├── base.ts       # BaseEmailDriver abstract class
     ├── ses.ts        # AWS SES driver
@@ -106,14 +107,16 @@ import { emailSDK, sendEmail, getInbox, searchEmails, deleteEmail } from '@stack
 await sendEmail({ from: { address: 'a@b.com' }, to: 'c@d.com', subject: 'Hi', html: '<p>Hello</p>' })
 
 // Send with template
-await emailSDK.sendTemplate({ to: 'user@example.com', templateName: 'welcome', data: { name: 'John' } })
+await emailSDK.sendTemplate({ to: 'user@example.com', template: 'welcome', data: { name: 'John' } })
 
 // Read inbox (from S3)
 const emails = await getInbox('chris', { limit: 20 })
 const email = await emailSDK.getEmail('chris', messageId)
+const attachments = await emailSDK.getAttachments('chris', messageId)
+const download = await emailSDK.getAttachment('chris', messageId, attachments?.[0]?.id || '')
 
 // Search
-const results = await searchEmails('chris', { from: 'boss', after: '2024-01-01', hasAttachments: true })
+const results = await searchEmails('chris', { from: 'boss', after: new Date('2024-01-01'), hasAttachments: true })
 
 // Manage
 await emailSDK.markAsRead('chris', messageId)
@@ -237,20 +240,35 @@ export async function sendSubscriptionConfirmation({ to, subscriberUuid }: Optio
 }
 ```
 
+## Inbound MIME and attachment storage
+
+`parseInboundEmail()` parses RFC messages with bounded header, nesting, total-size, and attachment-count limits. It returns normalized sender and recipient data, text and HTML bodies, and binary-safe attachments. Attachment filenames are sanitized before they become S3 keys.
+
+`buddy email:reprocess` reads raw messages with `getObjectBytes()`, parses them through this shared helper, and writes:
+
+- `raw.eml`
+- `metadata.json`
+- `body.txt` and `body.html` when present
+- binary objects under `attachments/`
+- the per-mailbox `inbox.json` index
+
+Reprocessing refreshes existing messages instead of skipping them, preserves their read state, and repairs body and attachment metadata written by older versions. The dashboard receives opaque attachment IDs, resolves them against the stored message before download, and never accepts arbitrary S3 keys from a client.
+
 ## CLI Commands
-- `buddy email` / `buddy mail` — email management
-- `buddy email:verify` — check domain verification
-- `buddy email:test [recipient]` — send test email
-- `buddy email:list` — list mailboxes
-- `buddy email:logs -n 50` — view logs
-- `buddy email:status` — server status
-- `buddy email:inbox [mailbox]` — view inbox from S3
-- `buddy mail:user:add <email>` — add mail user
-- `buddy mail:user:list` — list mail users
-- `buddy mail:user:delete <email>` — delete mail user
+- `buddy email` / `buddy mail` - email management
+- `buddy email:verify` - check domain verification
+- `buddy email:test [recipient]` - send test email
+- `buddy email:list` - list mailboxes
+- `buddy email:logs -n 50` - view logs
+- `buddy email:status` - server status
+- `buddy email:inbox [mailbox]` - view inbox from S3
+- `buddy email:reprocess` - parse raw S3 mail into mailbox bodies and attachments
+- `buddy mail:user:add <email>` - add mail user
+- `buddy mail:user:list` - list mail users
+- `buddy mail:user:delete <email>` - delete mail user
 
 ## Gotchas
-- Default driver is `ses` — requires AWS credentials
+- Default driver is `ses` - requires AWS credentials
 - Template rendering supports both `.stx` and `.html` files
 - Variable interpolation uses `{{ }}` double-brace syntax
 - The `mail` singleton auto-registers all 5 drivers on initialization
@@ -258,5 +276,7 @@ export async function sendSubscriptionConfirmation({ to, subscriberUuid }: Optio
 - SendGrid/Mailgun retry with exponential backoff on failure
 - Mailtrap requires `inboxId` for sandbox mode
 - EmailSDK reads inbox from S3 (bucket configured via env)
+- EmailSDK attachment downloads use binary-safe S3 reads and opaque IDs
+- `buddy email:reprocess` preserves existing read state and exits nonzero on failure
 - Email categorization auto-sorts incoming mail by domain/substring patterns
 - The `text` fallback is auto-generated from HTML via `htmlToText()`
