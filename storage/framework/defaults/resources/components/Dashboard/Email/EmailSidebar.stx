@@ -47,7 +47,7 @@ function mailboxLabel(): string {
 }
 </script>
 
-<aside class="flex flex-col flex-shrink-0 w-64 bg-white dark:bg-neutral-800 border-gray-200 border-r dark:border-neutral-600">
+<aside class="flex flex-col flex-shrink-0 w-full md:w-64 bg-white dark:bg-neutral-800 border-b border-gray-200 md:border-b-0 md:border-r dark:border-neutral-600">
   <div class="p-3 border-b border-gray-200 dark:border-neutral-600">
     <div class="flex items-center space-x-2">
       <div class="flex flex-shrink-0 items-center justify-center h-8 w-8 text-gray-700 dark:text-white bg-gray-200 dark:bg-neutral-700 rounded">

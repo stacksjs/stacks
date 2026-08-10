@@ -8,17 +8,17 @@ function linkClass(name: string): string {
 }
 </script>
 
-<nav aria-label="Mail sections" class="inline-flex gap-1 p-1 bg-gray-100 dark:bg-neutral-900 rounded-lg">
-  <StxLink to="/inbox" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('inbox')">
+<nav aria-label="Mail sections" class="flex overflow-x-auto gap-0.5 sm:gap-1 p-1 max-w-full bg-gray-100 dark:bg-neutral-900 rounded-lg">
+  <StxLink to="/inbox" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('inbox')">
     Inbox
   </StxLink>
-  <StxLink to="/inbox/activity" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('activity')">
+  <StxLink to="/inbox/activity" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('activity')">
     Activity
   </StxLink>
-  <StxLink to="/inbox/captured" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('captured')">
+  <StxLink to="/inbox/captured" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('captured')">
     Captured
   </StxLink>
-  <StxLink to="/inbox/settings" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('settings')">
+  <StxLink to="/inbox/settings" :class="'px-2 sm:px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('settings')">
     Settings
   </StxLink>
 </nav>
