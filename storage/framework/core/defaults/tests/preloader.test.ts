@@ -65,9 +65,19 @@ describe('default preloader', () => {
     )
     await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
 
+    // A curated environment rather than the developer's. This test is about
+    // whether the preloader resolves with nothing linked, and it asserts on
+    // empty stdout/stderr, so inheriting the ambient environment made it
+    // assert on whatever database the machine running it happened to have
+    // configured: a local `DB_CONNECTION=postgres` is enough to put a
+    // bun-query-builder dialect warning on stderr and fail a test that has
+    // nothing to do with databases.
     const child = Bun.spawn([process.execPath, isolatedRunner], {
       cwd: tempDir,
-      env: { ...process.env },
+      env: {
+        PATH: process.env.PATH ?? '',
+        HOME: process.env.HOME ?? tempDir,
+      },
       stderr: 'pipe',
       stdout: 'pipe',
     })

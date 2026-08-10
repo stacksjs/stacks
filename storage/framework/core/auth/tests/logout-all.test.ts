@@ -24,6 +24,7 @@ process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
 
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
+const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { createToken, findToken, revokeAllTokens, validateRefreshToken } = await import('../src/tokens')
 const { sessionCheck, sessionDestroyAll } = await import('../src/session-auth')
 const { makeHash } = await import('@stacksjs/security')
@@ -76,47 +77,6 @@ beforeAll(async () => {
   `).execute()
 
   await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_clients (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name VARCHAR(255) NOT NULL,
-      secret VARCHAR(100),
-      provider VARCHAR(255),
-      redirect VARCHAR(2000) NOT NULL,
-      personal_access_client BOOLEAN NOT NULL DEFAULT 0,
-      password_client BOOLEAN NOT NULL DEFAULT 0,
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP
-    )
-  `).execute()
-
-  await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_access_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      oauth_client_id INTEGER NOT NULL,
-      token TEXT NOT NULL,
-      name VARCHAR(255),
-      scopes TEXT,
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      expires_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP
-    )
-  `).execute()
-
-  await db.unsafe(`
-    CREATE TABLE IF NOT EXISTS oauth_refresh_tokens (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      access_token_id INTEGER NOT NULL,
-      token TEXT NOT NULL,
-      revoked BOOLEAN NOT NULL DEFAULT 0,
-      expires_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-  `).execute()
-
-  await db.unsafe(`
     CREATE TABLE IF NOT EXISTS sessions (
       id VARCHAR(255) PRIMARY KEY,
       user_id INTEGER NOT NULL,
@@ -128,10 +88,7 @@ beforeAll(async () => {
     )
   `).execute()
 
-  await db.unsafe(`
-    INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
-    VALUES (?, ?, ?, ?, 1, 0, 0, datetime('now'))
-  `, ['Personal Access Client', 'test-secret', 'local', 'http://localhost']).execute()
+  await ensureFrameworkAuthTables()
 })
 
 afterAll(() => {

@@ -120,6 +120,26 @@ export function oauthAccessTokenDeviceColumnsSql(): string[] {
 }
 
 /**
+ * Defensive ALTER guaranteeing `password_resets.expires_at`.
+ *
+ * `createResetToken` in `core/auth/src/password/reset.ts` has always written
+ * this column on insert, and the CREATE here never declared it, so on any
+ * install whose table came from this migrator "forgot my password" failed with
+ * `table password_resets has no column named expires_at`. It went unnoticed
+ * because the tests that cover the reset flow hand-rolled their own
+ * `password_resets` DDL and invented the column the migrator was missing.
+ *
+ * The read path deliberately tolerates its absence (see `isWithinExpiry`,
+ * which falls back to `created_at` plus the configured expiry), so adding it
+ * changes no behaviour for rows already written.
+ */
+export function passwordResetsExpiresAtSql(): string[] {
+  return [
+    `ALTER TABLE password_resets ADD COLUMN expires_at TIMESTAMP`,
+  ]
+}
+
+/**
  * Runs every `users` guarantee-column ALTER (email_verified_at,
  * password_changed_at, two_factor_secret, two_factor_enabled,
  * stripe_id), each independently try/catch-swallowed so one
@@ -243,9 +263,27 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         ${pkColumn},
         email VARCHAR(255) NOT NULL,
         token VARCHAR(255) NOT NULL,
+        -- createResetToken writes this on every insert, so the table has to
+        -- have it or requesting a reset throws. The read side (isWithinExpiry)
+        -- still falls back to clock arithmetic against created_at, because
+        -- rows written before the column existed have to keep verifying.
+        expires_at ${nullableTimestamp},
         created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
       )
     `).execute()
+
+    // For installs whose password_resets predates the column. Same
+    // CREATE-plus-idempotent-ALTER pairing as the oauth device columns above,
+    // and for the same reason: no generated migration creates this table, so
+    // both schema paths have to end up somewhere identical.
+    for (const alterSql of passwordResetsExpiresAtSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch {
+        if (options.verbose) log.debug(`[auth-tables] Skipped (already applied): ${alterSql}`)
+      }
+    }
 
     try {
       await db.unsafe(indexSqlForDialect(`CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)`, dbDriver)).execute()
