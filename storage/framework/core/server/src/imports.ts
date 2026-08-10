@@ -549,6 +549,24 @@ export async function injectGlobalAutoImports(): Promise<void> {
     errors.push(err as Error)
   }
 
+  // Listeners last, and after the barrel deliberately: a listener reads models
+  // and jobs at module-evaluation time exactly as an action does, so it has to
+  // be imported once those are on globalThis.
+  //
+  // Here rather than in the router because listeners are not an HTTP concern -
+  // `buddy seed`, a scheduled job and a console command all dispatch events,
+  // and every one of those paths comes through this function. Before this call
+  // existed, nothing registered listeners anywhere: `app/Events.ts` was read
+  // only by a test, `discoverListeners` was exported and never called, and
+  // `dispatch` succeeded into an emitter with no handlers on it.
+  try {
+    const { registerAppListeners } = await import('@stacksjs/events')
+    await registerAppListeners()
+  }
+  catch (err) {
+    errors.push(err as Error)
+  }
+
   if (errors.length) {
     // Non-fatal — framework parts the project doesn't install can be missing.
     for (const err of errors)
