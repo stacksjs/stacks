@@ -6,6 +6,16 @@ import { projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
 import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
+import { runDashboardSupervisor } from './dashboard-supervisor'
+
+if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
+  // The STX server owns template and component HMR. Backend modules need a
+  // clean Bun process because its ESM dependency cache cannot be invalidated
+  // safely when an action helper adds or removes an export.
+  // eslint-disable-next-line ts/no-top-level-await
+  const exitCode = await runDashboardSupervisor(import.meta.path, process.argv.slice(2))
+  process.exit(exitCode)
+}
 
 // buddyOptions serializes `verbose: false` as `--verbose false`, so
 // process.argv.includes('--verbose') would always match. Check the value too.
