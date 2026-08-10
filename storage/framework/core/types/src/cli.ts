@@ -391,6 +391,7 @@ export type DomainsOptions = CliOptions & {
 }
 
 export interface CleanOptions extends CliOptions {
+  dryRun?: boolean
   force?: boolean
 }
 
