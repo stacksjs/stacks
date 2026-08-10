@@ -1,6 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
+import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { prepareModelFields, resolveWritableModel } from './model-write'
 
 interface ModelWriteInput {
@@ -15,7 +17,7 @@ export default new Action({
   async handle(request: RequestInstance<ModelWriteInput>) {
     const resolved = await resolveWritableModel(request.getParam('slug'), 'store')
     if ('error' in resolved)
-      return { ok: false, error: resolved.error }
+      return response.json({ message: resolved.error }, resolved.status)
 
     const input = request.all()
     const raw = input.fields
@@ -23,9 +25,9 @@ export default new Action({
     const { data, errors } = prepareModelFields(resolved.Model, body)
 
     if (Object.keys(errors).length > 0)
-      return { ok: false, error: 'Validation failed.', errors }
+      return response.json({ message: 'Validation failed.', errors }, 422)
     if (Object.keys(data).length === 0)
-      return { ok: false, error: 'No fillable fields in the request body.' }
+      return response.json({ message: 'No fillable fields in the request body.' }, 422)
 
     try {
       const row = await resolved.Model.create(toSnakeCaseKeys(data))
@@ -33,7 +35,7 @@ export default new Action({
       return { ok: true, id }
     }
     catch (error) {
-      return { ok: false, error: error instanceof Error ? error.message : String(error) }
+      return dashboardOperationalError(error, 'The model record could not be created.', 'ModelStoreAction', 500)
     }
   },
 })

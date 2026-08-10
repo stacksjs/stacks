@@ -7,7 +7,7 @@
 // works the same on a table with 10 rows and one with a million. Rows and
 // writes go through the model, so scopes, casts and observers apply.
 import { useNavigation } from '~/storage/framework/defaults/views/dashboard/composables/useNavigation'
-import { dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
+import { DashboardApiError, dashboardApi } from '~/storage/framework/defaults/functions/dashboard-api'
 import { pushToast } from '~/storage/framework/defaults/functions/toasts'
 
 interface ColumnMeta {
@@ -46,7 +46,6 @@ interface ResponseShape {
   writable: boolean
   writeCapabilities: WriteCapabilities
   createFields: CreateField[]
-  source: 'orm' | 'sqlite-fallback'
   error: string | null
 }
 
@@ -67,7 +66,6 @@ const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
 const writeCapabilities = state<WriteCapabilities>({ create: false, update: false, destroy: false })
 const createFields = state<CreateField[]>([])
-const source = state<'orm' | 'sqlite-fallback'>('orm')
 const error = state<string | null>(null)
 const loading = state(true)
 const showFilters = state(false)
@@ -85,14 +83,6 @@ const createError = state('')
 const createErrors = state<Record<string, string[]>>({})
 
 const slug = derived(() => navigation.urlSegment(-1) || '')
-
-const sourceLabel = derived(() => {
-  if (source() === 'orm')
-    return 'via Stacks ORM'
-  return Object.values(writeCapabilities()).some(Boolean)
-    ? 'SQLite query, ORM writes'
-    : 'raw SQLite, read-only'
-})
 
 const recordLabel = derived(() => {
   const n = totalCount()
@@ -223,7 +213,6 @@ async function load() {
     sort.set(data.sort ?? '')
     writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
     createFields.set(data.createFields ?? [])
-    source.set(data.source ?? 'orm')
     error.set(data.error ?? null)
   }
   catch (e) {
@@ -319,6 +308,11 @@ async function createRecord(fields: Record<string, unknown>): Promise<void> {
   }
   catch (reason) {
     createError.set(reason instanceof Error ? reason.message : String(reason))
+    if (reason instanceof DashboardApiError && reason.fields) {
+      createErrors.set(Object.fromEntries(
+        Object.entries(reason.fields).map(([field, message]) => [field, [message]]),
+      ))
+    }
   }
   finally {
     creating.set(false)
@@ -402,7 +396,7 @@ void load()
   <div class="flex flex-wrap gap-4 items-start justify-between">
     <div class="min-w-0">
       <h1 class="font-semibold text-2xl text-neutral-900 truncate dark:text-white" :text="modelName()"></h1>
-      <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="recordLabel() + ' · ' + tableName() + ' · ' + sourceLabel()"></p>
+      <p class="mt-1 text-[13px] text-neutral-500 dark:text-neutral-400" :text="recordLabel() + ' · ' + tableName() + ' · via Stacks ORM'"></p>
     </div>
     <div class="flex gap-2 items-center">
       <Button

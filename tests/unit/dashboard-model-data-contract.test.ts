@@ -23,10 +23,19 @@ describe('dashboard model data integrity contract', () => {
     expect(indexSource).not.toContain('count: 0,')
   })
 
-  test('does not replace ORM query failures with raw SQLite reads', () => {
-    expect(showSource).toContain('if (e instanceof SearchUnsupported)')
-    expect(showSource).toContain('Could not query model')
-    expect(showSource).toContain('Model table "${response.tableName}" does not exist.')
-    expect(showSource).not.toContain("if (!(e instanceof SearchUnsupported))")
+  test('keeps every model query on the native ORM path', () => {
+    expect(showSource).toContain('chain.whereGroup((group: any) => {')
+    expect(showSource).toContain('group.orWhereLike(column, `%${q}%`)')
+    expect(showSource).toContain("dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')")
+    expect(showSource).not.toContain('SearchUnsupported')
+    expect(showSource).not.toContain('sqlite-fallback')
+    expect(showSource).not.toContain("import('bun:sqlite')")
+  })
+
+  test('projects hidden model attributes out before rows are serialized', () => {
+    expect(showSource).toContain('const hiddenColumns = hiddenModelColumns(Model)')
+    expect(showSource).toContain('!hiddenColumns.has(k)')
+    expect(showSource).toContain('modelSchemaColumns(Model).filter(column => !hiddenColumns.has(column))')
+    expect(showSource).not.toContain('for (const col of response.displayColumns)')
   })
 })

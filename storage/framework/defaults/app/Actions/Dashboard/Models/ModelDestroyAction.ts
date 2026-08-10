@@ -1,5 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
+import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { parseRowId, resolveWritableModel } from './model-write'
 
 /**
@@ -17,21 +19,21 @@ export default new Action({
   async handle(request: RequestInstance) {
     const resolved = await resolveWritableModel(request.getParam('slug'), 'destroy')
     if ('error' in resolved)
-      return { ok: false, error: resolved.error }
+      return response.json({ message: resolved.error }, resolved.status)
 
     const id = parseRowId(request.getParam('id'))
     if (id === null)
-      return { ok: false, error: 'A numeric row id is required.' }
+      return response.json({ message: 'A numeric row id is required.' }, 400)
 
     try {
       const row = await resolved.Model.find(id)
       if (!row)
-        return { ok: false, error: `${resolved.modelName} ${id} not found.` }
+        return response.json({ message: `${resolved.modelName} ${id} not found.` }, 404)
       await row.delete()
       return { ok: true, id }
     }
-    catch (e) {
-      return { ok: false, error: e instanceof Error ? e.message : String(e) }
+    catch (error) {
+      return dashboardOperationalError(error, 'The model record could not be deleted.', 'ModelDestroyAction', 500)
     }
   },
 })

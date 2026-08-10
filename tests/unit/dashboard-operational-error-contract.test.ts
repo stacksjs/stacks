@@ -80,4 +80,21 @@ describe('dashboard operational error contract', () => {
     expect(search).toContain('modelCatalog.promise = null')
     expect(search).toContain('finally {\n        db.close()')
   })
+
+  test('separates model validation, absence, capability, and ORM failures', () => {
+    const writes = [
+      'Models/ModelDestroyAction.ts',
+      'Models/ModelStoreAction.ts',
+      'Models/ModelUpdateAction.ts',
+    ].map(readAction).join('\n')
+    const show = readAction('Models/ModelShowAction.ts')
+    const resolver = readAction('Models/model-write.ts')
+
+    expect(writes.match(/dashboardOperationalError\(/g)?.length).toBe(3)
+    expect(writes).not.toMatch(/return \{ ok: false, error:/)
+    expect(show.match(/dashboardOperationalError\(/g)?.length).toBe(2)
+    expect(show).not.toContain('e instanceof Error ? e.message')
+    expect(resolver).toContain("status: 400 | 404 | 405 | 500")
+    expect(resolver).toContain("dashboardOperationalIssue(error, `${modelName} could not be loaded.`")
+  })
 })

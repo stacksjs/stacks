@@ -1,8 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { env } from '@stacksjs/env'
 import { response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError } from '../dashboard-response'
 import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
@@ -23,8 +23,8 @@ import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, m
  *      queries, so scopes, casts and accessors all apply.
  *   2. `loadModelIfExists(Name)` — path-map lookup, covers models the ORM has not
  *      registered as a global.
- *   3. Raw SQLite — last resort for a table with no model file at all
- *      (lookup/pivot tables, or a schema added outside the ORM).
+ * A missing model is a 404. The generic browser never bypasses model scopes,
+ * casts, observers, connection drivers, or the app override contract.
  */
 
 interface ColumnMeta {
@@ -50,8 +50,6 @@ interface ResponseShape {
   dir: 'asc' | 'desc'
   q: string
   filters: Record<string, string>
-  source: 'orm' | 'sqlite-fallback'
-  /** False for tables reached through the SQLite fallback: no model, no writes. */
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
@@ -84,6 +82,15 @@ function humanize(column: string): string {
 // column you cannot see is still an enumeration oracle if you can sort or
 // filter by it.
 const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'access_token', 'refresh_token', 'secret', 'two_factor_secret'])
+
+function hiddenModelColumns(Model: any): Set<string> {
+  const hidden = new Set(HIDDEN_COLUMNS)
+  for (const [name, definition] of Object.entries(Model?.attributes ?? {})) {
+    if ((definition as { hidden?: boolean })?.hidden)
+      hidden.add(pascalToSnake(name))
+  }
+  return hidden
+}
 
 /**
  * Column identifiers reach the query builder as raw, unquoted SQL, so only
@@ -151,15 +158,6 @@ export function parseFilters(raw: string | null): Record<string, string> {
   return out
 }
 
-/**
- * Signals that a free-text search spans several columns, which the query
- * builder cannot express (`whereLike` is single-column and `orWhere` only
- * takes equality pairs). The SQLite path builds that OR with bound
- * parameters instead. Distinct from a real failure so it never surfaces
- * to the page as an error.
- */
-class SearchUnsupported extends Error {}
-
 function resolveOrmModel(modelName: string): any {
   const injected = (globalThis as Record<string, any>)[modelName]
   // The ORM injects Proxies that answer `undefined` for every property
@@ -213,182 +211,92 @@ export default new Action({
       dir,
       q,
       filters,
-      source: 'orm',
       writable: false,
       writeCapabilities: { create: false, update: false, destroy: false },
       createFields: [],
       error: null,
     }
 
-    const Model = resolveOrmModel(modelName) ?? await loadModelIfExists(modelName)
-    const hasOrm = Boolean(Model) && typeof Model.where === 'function'
-
-    if (hasOrm) {
-      try {
-        response.tableName = String(Model.table || tableName)
-        // The column list has to come from a real row: the ORM does not
-        // expose a database schema reflection API. Empty tables fall back
-        // to the model definition, which is also the migration source.
-        const probe = await Model.orderByDesc('id').take(1).get() as Array<Record<string, unknown>>
-        const first = Array.isArray(probe) ? probe[0] : undefined
-        const shape = first && typeof first === 'object'
-          ? ((first as { attributes?: Record<string, unknown> }).attributes ?? first)
-          : {}
-        response.columns = Object.keys(shape).filter(k => typeof k === 'string' && !k.startsWith('_'))
-        if (response.columns.length === 0)
-          response.columns = modelSchemaColumns(Model)
-
-        const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
-        const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
-        if (unknownFilter)
-          return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
-        if (requestedSort && !isSafeColumn(requestedSort, allowed))
-          return routerResponse.json({ message: `Unknown model sort column "${requestedSort}".` }, 422)
-
-        const sort = isSafeColumn(requestedSort, allowed)
-          ? requestedSort
-          : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
-        response.sort = sort
-
-        // Text columns are decided from the probe row, before any query is
-        // built, so the search clause does not depend on response metadata
-        // that is only assembled after the rows come back.
-        const searchColumns = [...allowed].filter(c => typeof safeGet(first, c, null) === 'string')
-
-        const build = () => {
-          let chain = Model as any
-          for (const [column, value] of Object.entries(filters)) {
-            if (!isSafeColumn(column, allowed)) continue
-            chain = chain.where(column, value)
-          }
-          // Global search is a LIKE across every text column. The builder's
-          // `whereLike` covers one column and `orWhere` only takes equality
-          // pairs, so a multi-column OR-LIKE has no ORM expression; that
-          // case is served by the SQLite path below instead, which builds
-          // the OR with bound parameters. Writes stay enabled either way,
-          // because the model still exists.
-          if (q && searchColumns.length === 1)
-            chain = chain.whereLike(searchColumns[0], `%${q}%`)
-          return chain
-        }
-
-        // A multi-column search has no ORM expression, so hand that one
-        // query to the SQLite path — without recording an error, because it
-        // is a gap in the builder's vocabulary, not a failure.
-        if (q && searchColumns.length > 1)
-          throw new SearchUnsupported()
-
-        response.totalCount = q && searchColumns.length === 0
-          ? 0
-          : await build().count()
-        const rows = response.totalCount === 0
-          ? []
-          : await build()
-              .orderBy(sort, dir)
-              .skip((page - 1) * perPage)
-              .take(perPage)
-              .get() as Array<Record<string, unknown>>
-
-        // Flatten to plain JSON-safe objects — proxy models and
-        // accessor-rich rows do not serialise cleanly across the wire.
-        response.rows = (Array.isArray(rows) ? rows : []).map((row) => {
-          const flat: Record<string, unknown> = {}
-          for (const col of response.columns)
-            flat[col] = safeGet(row, col, null)
-          return flat
-        })
-      }
-      catch (e) {
-        if (e instanceof SearchUnsupported) {
-          response.source = 'sqlite-fallback'
-        }
-        else {
-          return routerResponse.json({
-            message: `Could not query model ${modelName}: ${e instanceof Error ? e.message : String(e)}`,
-          }, 503)
-        }
-      }
+    let Model: any
+    try {
+      Model = resolveOrmModel(modelName) ?? await loadModelIfExists(modelName)
     }
-    else {
-      response.source = 'sqlite-fallback'
+    catch (error) {
+      return dashboardOperationalError(error, `${modelName} could not be loaded.`, 'ModelShowAction.resolve')
     }
+    if (!Model || typeof Model.where !== 'function')
+      return routerResponse.json({ message: `No ORM model named ${modelName}.` }, 404)
 
-    if (response.source === 'sqlite-fallback') {
-      try {
-        const { Database } = await import('bun:sqlite')
-        const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
-        try {
-          if (!/^[A-Za-z_]\w*$/.test(response.tableName))
-            return routerResponse.json({ message: `Model table "${response.tableName}" is not a safe SQL identifier.` }, 500)
+    try {
+      response.tableName = String(Model.table || tableName)
+      const probe = await Model.orderByDesc('id').take(1).get() as Array<Record<string, unknown>>
+      const first = Array.isArray(probe) ? probe[0] : undefined
+      const shape = first && typeof first === 'object'
+        ? ((first as { attributes?: Record<string, unknown> }).attributes ?? first)
+        : {}
+      const hiddenColumns = hiddenModelColumns(Model)
+      response.columns = Object.keys(shape).filter(k => typeof k === 'string' && !k.startsWith('_') && !hiddenColumns.has(k))
+      if (response.columns.length === 0)
+        response.columns = modelSchemaColumns(Model).filter(column => !hiddenColumns.has(column))
 
-          const tableInfo = db.query(`PRAGMA table_info(${response.tableName})`).all() as Array<{ name: string, type: string }>
-          if (tableInfo.length === 0)
-            return routerResponse.json({ message: `Model table "${response.tableName}" does not exist.` }, 404)
+      const allowed = new Set(response.columns)
+      const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
+      if (unknownFilter)
+        return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
+      if (requestedSort && !isSafeColumn(requestedSort, allowed))
+        return routerResponse.json({ message: `Unknown model sort column "${requestedSort}".` }, 422)
 
-          response.columns = tableInfo.map(c => c.name)
+      const sort = isSafeColumn(requestedSort, allowed)
+        ? requestedSort
+        : (allowed.has('id') ? 'id' : (response.columns[0] ?? ''))
+      response.sort = sort
+      const searchColumns = [...allowed].filter(c => typeof safeGet(first, c, null) === 'string')
 
-          if (response.columns.length > 0) {
-            const allowed = new Set(response.columns.filter(c => !HIDDEN_COLUMNS.has(c)))
-            const unknownFilter = Object.keys(filters).find(column => !isSafeColumn(column, allowed))
-            if (unknownFilter)
-              return routerResponse.json({ message: `Unknown model filter column "${unknownFilter}".` }, 422)
-            if (requestedSort && !isSafeColumn(requestedSort, allowed))
-              return routerResponse.json({ message: `Unknown model sort column "${requestedSort}".` }, 422)
-
-            const sort = isSafeColumn(requestedSort, allowed)
-              ? requestedSort
-              : (allowed.has('id') ? 'id' : response.columns[0])
-            response.sort = sort
-
-            // Every value is bound; only identifiers are interpolated, and
-            // those come from the allowlist built out of PRAGMA above.
-            const wheres: string[] = []
-            const values: unknown[] = []
-            for (const [column, value] of Object.entries(filters)) {
-              if (!isSafeColumn(column, allowed)) continue
-              wheres.push(`${column} = ?`)
-              values.push(value)
+      const build = () => {
+        let chain = Model.query() as any
+        for (const [column, value] of Object.entries(filters)) {
+          if (!isSafeColumn(column, allowed)) continue
+          chain = chain.where(column, value)
+        }
+        if (q && searchColumns.length > 0) {
+          chain = chain.whereGroup((group: any) => {
+            for (const [index, column] of searchColumns.entries()) {
+              group = index === 0
+                ? group.whereLike(column, `%${q}%`)
+                : group.orWhereLike(column, `%${q}%`)
             }
-            if (q) {
-              const textColumns = tableInfo
-                .filter(c => allowed.has(c.name) && /char|text|clob/i.test(c.type || ''))
-                .map(c => c.name)
-              if (textColumns.length > 0) {
-                wheres.push(`(${textColumns.map(c => `${c} LIKE ?`).join(' OR ')})`)
-                for (const _ of textColumns) values.push(`%${q}%`)
-              }
-            }
-            const whereSql = wheres.length > 0 ? ` WHERE ${wheres.join(' AND ')}` : ''
+            return group
+          })
+        }
+        return chain
+      }
 
-            const countRow = db.query(`SELECT COUNT(*) as count FROM ${response.tableName}${whereSql}`).get(...values as any[]) as { count?: number } | null
-            response.totalCount = countRow?.count ?? 0
-            response.rows = db
-              .query(`SELECT * FROM ${response.tableName}${whereSql} ORDER BY ${sort} ${dir.toUpperCase()} LIMIT ? OFFSET ?`)
-              .all(...values as any[], perPage, (page - 1) * perPage) as Array<Record<string, unknown>>
-            response.error = null
-          }
-        }
-        finally {
-          db.close()
-        }
-      }
-      catch (e) {
-        return routerResponse.json({
-          message: `Could not query table ${response.tableName}: ${e instanceof Error ? e.message : String(e)}`,
-        }, 503)
-      }
+      response.totalCount = q && searchColumns.length === 0
+        ? 0
+        : await build().count()
+      const rows = response.totalCount === 0
+        ? []
+        : await build()
+            .orderBy(sort, dir)
+            .skip((page - 1) * perPage)
+            .take(perPage)
+            .get() as Array<Record<string, unknown>>
+
+      response.rows = (Array.isArray(rows) ? rows : []).map((row) => {
+        const flat: Record<string, unknown> = {}
+        for (const col of response.columns)
+          flat[col] = safeGet(row, col, null)
+        return flat
+      })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, `${modelName} records could not be loaded.`, 'ModelShowAction.query')
     }
 
-    // Writability follows the model's declared useApi routes, not which
-    // engine answered this particular query. A multi-column search can be
-    // served by SQLite for a model that still creates and updates through
-    // the ORM.
-    response.writeCapabilities = hasOrm
-      ? modelWriteCapabilities(Model)
-      : { create: false, update: false, destroy: false }
+    response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     response.createFields = response.writeCapabilities.create ? modelCreateFields(Model) : []
-    response.displayColumns = response.columns.filter(col => !HIDDEN_COLUMNS.has(col) && !col.startsWith('_'))
+    response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,
       label: humanize(name),
