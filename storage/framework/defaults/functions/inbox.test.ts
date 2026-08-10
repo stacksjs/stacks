@@ -35,6 +35,8 @@ describe('dashboard inbox mapping', () => {
       date: '2026-07-29T12:00:00.000Z',
       read: false,
       hasAttachments: true,
+      attachments: [],
+      detailsLoaded: false,
     })
   })
 

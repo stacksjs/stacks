@@ -1,0 +1,53 @@
+<script client>
+import type { DashboardInboxAttachment } from '../../../../functions/inbox'
+import { downloadDashboardInboxAttachment } from '../../../../functions/inbox'
+import { pushToast } from '../../../../functions/toasts'
+
+const attachments = useReactiveProp<DashboardInboxAttachment[]>('attachments', [])
+const mailbox = useReactiveProp('mailbox', '')
+const messageId = useReactiveProp('messageId', '')
+const downloadingId = state('')
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes <= 0)
+    return 'Unknown size'
+
+  const units = ['B', 'KB', 'MB', 'GB']
+  const unitIndex = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), units.length - 1)
+  const value = bytes / 1024 ** unitIndex
+  return `${value >= 10 || unitIndex === 0 ? Math.round(value) : value.toFixed(1)} ${units[unitIndex]}`
+}
+
+async function download(attachment: DashboardInboxAttachment): Promise<void> {
+  downloadingId.set(attachment.id)
+  try {
+    await downloadDashboardInboxAttachment(messageId(), attachment, mailbox())
+  }
+  catch (error) {
+    pushToast('error', 'Could not download attachment', { detail: String(error) })
+  }
+  finally {
+    downloadingId.set('')
+  }
+}
+</script>
+
+<section :if="attachments().length" aria-label="Message attachments" class="mb-4 mx-4 p-3 bg-gray-50 dark:bg-neutral-800 border border-gray-200 rounded-md dark:border-neutral-600">
+  <div class="flex gap-2 items-center text-gray-800 dark:text-neutral-200">
+    <span aria-hidden="true" class="h-5 w-5 i-hugeicons-attachment-01"></span>
+    <h3 class="font-medium text-sm">Attachments</h3>
+    <span class="text-gray-500 text-xs dark:text-neutral-400">{{ attachments().length }}</span>
+  </div>
+  <ul class="mt-3 space-y-2">
+    <li :for="attachment in attachments()" class="flex gap-3 items-center justify-between p-2 bg-white dark:bg-neutral-700 border border-gray-200 rounded-md dark:border-neutral-600">
+      <div class="min-w-0">
+        <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ attachment.name }}</p>
+        <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ formatBytes(attachment.size) }}</p>
+      </div>
+      <Button size="sm" :loading="downloadingId() === attachment.id" :disabled="Boolean(downloadingId())" @click="download(attachment)">
+        <span :if="downloadingId() !== attachment.id" aria-hidden="true" class="h-4 w-4 i-hugeicons-download-04"></span>
+        Download
+      </Button>
+    </li>
+  </ul>
+</section>

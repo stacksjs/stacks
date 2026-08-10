@@ -6,7 +6,7 @@
 
 import { ref } from '@stacksjs/stx'
 import { get } from './api'
-import { dashboardApi } from './dashboard-api'
+import { dashboardApi, dashboardDownload } from './dashboard-api'
 import { pushToast } from './toasts'
 
 export type InboxActivityRange = 'day' | 'week' | 'month' | 'year'
@@ -71,6 +71,15 @@ export interface DashboardInboxEmail {
   date: string
   read: boolean
   hasAttachments: boolean
+  attachments: DashboardInboxAttachment[]
+  detailsLoaded: boolean
+}
+
+export interface DashboardInboxAttachment {
+  id: string
+  name: string
+  size: number
+  lastModified?: string
 }
 
 interface DashboardInboxEntry {
@@ -94,6 +103,7 @@ interface DashboardInboxResponse {
 interface DashboardInboxBodyResponse {
   html?: string
   text?: string
+  attachments?: DashboardInboxAttachment[]
   error?: string
 }
 
@@ -166,6 +176,8 @@ export function mapDashboardInboxEntry(item: DashboardInboxEntry): DashboardInbo
     date: item.date,
     read: item.read === true,
     hasAttachments: item.hasAttachments === true,
+    attachments: [],
+    detailsLoaded: false,
   }
 }
 
@@ -179,7 +191,7 @@ export async function fetchDashboardInbox(mailbox?: string): Promise<LoadedDashb
   }
 }
 
-export async function fetchDashboardInboxBody(messageId: string, mailbox?: string): Promise<Pick<DashboardInboxEmail, 'bodyHtml' | 'bodyText'>> {
+export async function fetchDashboardInboxBody(messageId: string, mailbox?: string): Promise<Pick<DashboardInboxEmail, 'attachments' | 'bodyHtml' | 'bodyText' | 'detailsLoaded' | 'hasAttachments'>> {
   const query = mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''
   const data = await dashboardApi<DashboardInboxBodyResponse>(`/api/dashboard/email/inbox/${encodeURIComponent(messageId)}${query}`)
   if (data.error)
@@ -187,7 +199,20 @@ export async function fetchDashboardInboxBody(messageId: string, mailbox?: strin
   return {
     bodyHtml: data.html || '',
     bodyText: data.text || '',
+    attachments: data.attachments || [],
+    detailsLoaded: true,
+    hasAttachments: (data.attachments || []).length > 0,
   }
+}
+
+export async function downloadDashboardInboxAttachment(
+  messageId: string,
+  attachment: DashboardInboxAttachment,
+  mailbox?: string,
+): Promise<void> {
+  const query = mailbox ? `?mailbox=${encodeURIComponent(mailbox)}` : ''
+  const path = `/api/dashboard/email/inbox/${encodeURIComponent(messageId)}/attachments/${encodeURIComponent(attachment.id)}${query}`
+  await dashboardDownload(path, attachment.name)
 }
 
 export async function fetchInboxActivity(range: InboxActivityRange): Promise<InboxActivity | null> {

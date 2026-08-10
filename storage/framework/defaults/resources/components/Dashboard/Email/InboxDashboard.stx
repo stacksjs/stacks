@@ -121,7 +121,7 @@ async function openEmail(value: DashboardInboxEmail | CustomEvent<DashboardInbox
   deletePending.set(false)
   replyText.set('')
 
-  if (!email.bodyHtml && !email.bodyText) {
+  if (!email.detailsLoaded) {
     try {
       const body = await fetchDashboardInboxBody(email.id, mailbox())
       emails.set(emails().map(item => item.id === email.id ? { ...item, ...body } : item))
@@ -277,6 +277,7 @@ onMount(() => {
           :replying="isReplying"
           :replyText="replyText"
           :canSendReply="canSendReply"
+          :mailbox="mailbox"
           @close="closeEmail"
           @toggle-read="toggleSelectedRead"
           @request-delete="requestDelete"

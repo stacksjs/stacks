@@ -7,6 +7,7 @@ const deleting = useReactiveProp('deleting', false)
 const replying = useReactiveProp('replying', false)
 const replyText = useReactiveProp('replyText', '')
 const canSendReply = useReactiveProp('canSendReply', false)
+const mailbox = useReactiveProp('mailbox', '')
 const emit = defineEmits()
 
 function message(): DashboardInboxEmail | null {
@@ -69,10 +70,11 @@ function formatDate(value: string): string {
       :text="message()?.bodyText || ''"
       :title="message()?.subject || 'Inbound email preview'"
     />
-    <div :if="message()?.hasAttachments" class="flex gap-3 items-start mb-4 mx-4 p-3 text-gray-700 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 border border-gray-200 rounded-md dark:border-neutral-600">
-      <span class="flex-shrink-0 mt-0.5 h-5 w-5 i-hugeicons-attachment-01"></span>
-      <p>This message includes attachments. Attachment downloads are not exposed by the inbox API yet.</p>
-    </div>
+    <InboxAttachmentList
+      :attachments="message()?.attachments || []"
+      :mailbox="mailbox"
+      :messageId="message()?.id || ''"
+    />
   </div>
 
   <div class="p-4 bg-white dark:bg-neutral-700 border-gray-200 border-t dark:border-neutral-600">
