@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { getUserRoles } from '@stacksjs/auth'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface MeResponse {
   user: {
@@ -59,17 +60,13 @@ export default new Action({
 
     const userId = Number(user.id)
 
-    let roles: string[] = []
+    let roles: string[]
     try {
       const records = await getUserRoles(userId)
       roles = records.map(r => r.name)
     }
-    catch (err) {
-      // RBAC store not configured, migrations not run, or DB unreachable.
-      // Empty roles → useRole will fall back to its dev default. We don't
-      // want to 500 the dashboard just because the role tables haven't
-      // been migrated yet on a fresh project.
-      console.warn('[dashboard/auth/me] getUserRoles failed:', err instanceof Error ? err.message : err)
+    catch (error) {
+      return dashboardOperationalError(error, 'Dashboard identity could not be loaded.', 'MeAction')
     }
 
     const res: MeResponse = {
