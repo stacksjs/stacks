@@ -620,9 +620,9 @@ onDestroy(() => {
     theme="macos"
     width="250"
     placement="fixed"
-    persist-key="stacks-dashboard-sidebar"
-    shell-selector="[data-stx-content]"
-    :follow-system-appearance="false"
+    persistKey="stacks-dashboard-sidebar"
+    shellSelector="[data-stx-content]"
+    :followSystemAppearance="false"
     @itemClick="handleSidebarItemClick($event)"
   >
     <template #header>
@@ -630,7 +630,7 @@ onDestroy(() => {
           titlebarHidden), so this reserves their space and acts as the window
           drag region; in a plain browser it is the same empty strip macOS
           sidebars carry above their first row. -->
-      <SidebarHeader :show-window-controls="false" />
+      <SidebarHeader :showWindowControls="false" />
     </template>
   </Sidebar>
 </div>
