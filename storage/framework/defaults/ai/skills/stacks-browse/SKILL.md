@@ -98,11 +98,13 @@ Extracts headings, links (`text -> href`), buttons, forms (action + field count)
 
 ### Crawl (whole-site browser audit)
 ```bash
-bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--max 500] [--path /extra-route] [--settle 350] [--progress]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--viewport 1280x900] [--max 500] [--path /extra-route] [--settle 350] [--progress]
 ```
 Uses a fresh isolated page target per route, relaunching Chromium if its DevTools
 session exits during a long audit, while
 following every same-origin link it discovers.
+The viewport is deterministic and defaults to `1280x900`; pass `--viewport 768x1024`
+to repeat the same route audit at a tablet breakpoint.
 Each page is checked for a non-200 document, console exceptions, failed
 requests, and horizontal overflow. Repeat `--path` to seed routes that are not
 linked from the starting page. The command prints every crawled path and exits

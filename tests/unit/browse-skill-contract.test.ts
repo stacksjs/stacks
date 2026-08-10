@@ -14,7 +14,7 @@ const script = readFileSync(
 describe('browse skill contract', () => {
   test('documents a dependency-free whole-site browser audit', () => {
     expect(skill).toContain('### Crawl (whole-site browser audit)')
-    expect(skill).toContain('browse.ts crawl <url> [--max 500] [--path /extra-route] [--settle 350] [--progress]')
+    expect(skill).toContain('browse.ts crawl <url> [--viewport 1280x900] [--max 500] [--path /extra-route] [--settle 350] [--progress]')
     expect(skill).toContain('following every same-origin link it discovers')
     expect(skill).toContain('Repeat `--path` to seed routes that are not')
     expect(skill).toContain('exits\nnonzero when any page fails')
@@ -26,6 +26,8 @@ describe('browse skill contract', () => {
     expect(script).toContain('page.consoleErrors.length > 0')
     expect(script).toContain('page.failedRequests.length > 0')
     expect(script).toContain('page.horizontalOverflowPx > 0')
+    expect(script).toContain('document.body.scrollWidth - window.innerWidth')
+    expect(script).toContain('viewport: crawlViewport')
     expect(script).toContain('overflowingElements: value.overflowing || []')
     expect(script).toContain("['auto', 'scroll', 'hidden', 'clip'].includes(overflowX)")
     expect(script).toContain('scrollWidth: ancestor.scrollWidth')

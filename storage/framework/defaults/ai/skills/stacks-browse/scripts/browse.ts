@@ -12,7 +12,7 @@
  *   bun browse.ts responsive <url> [--out-dir DIR]
  *   bun browse.ts monitor    <url> [--ms 5000]
  *   bun browse.ts snapshot   <url>
- *   bun browse.ts crawl      <url> [--max 500] [--path /extra] [--progress]
+ *   bun browse.ts crawl      <url> [--viewport 1280x900] [--max 500] [--path /extra] [--progress]
  *
  * Browser discovery order: $BROWSE_BROWSER → PATH (chromium, google-chrome, …)
  * → common macOS app bundles → a Playwright-cached chromium as last resort.
@@ -405,6 +405,14 @@ interface CrawlPage {
   consoleErrors: string[]
   failedRequests: Array<{ status: number, url: string }>
   horizontalOverflowPx: number
+  layout: {
+    bodyScrollWidth: number
+    documentScrollWidth: number
+    mainClientWidth: number | null
+    mainOverflowX: string | null
+    mainScrollWidth: number | null
+    viewportWidth: number
+  }
   overflowingElements: Array<{
     element: string
     left: number
@@ -554,7 +562,7 @@ async function main() {
         const cdp = await openPage(session.port)
         const state = await gotoAndInstrument(cdp, url, { viewport: { w: bp.w, h: bp.h }, cookies, settleMs, scheme })
         const overflow = await cdp.send('Runtime.evaluate', {
-          expression: 'document.documentElement.scrollWidth > window.innerWidth ? document.documentElement.scrollWidth - window.innerWidth : 0',
+          expression: 'document.body.scrollWidth > window.innerWidth ? document.body.scrollWidth - window.innerWidth : 0',
           returnByValue: true,
         })
         const out = join(outDir, `${bp.device.toLowerCase().replace(/\s+/g, '-')}.png`)
@@ -614,6 +622,7 @@ async function main() {
     else if (command === 'crawl') {
       const start = new URL(url)
       const max = flags.max ? Number(flags.max) : 500
+      const crawlViewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
       if (!Number.isInteger(max) || max < 1)
         throw new TypeError(`Invalid crawl max "${String(flags.max)}". Expected a positive integer.`)
 
@@ -650,6 +659,7 @@ async function main() {
           links?: string[]
           overflow?: number
           overflowing?: CrawlPage['overflowingElements']
+          layout?: CrawlPage['layout']
           title?: string
         }
       }> => {
@@ -661,12 +671,24 @@ async function main() {
               cookies,
               settleMs: crawlSettleMs,
               scheme,
+              viewport: crawlViewport,
             })
             const inspection = await cdp.send('Runtime.evaluate', {
               expression: `(() => ({
               title: document.title,
               links: Array.from(document.querySelectorAll('a[href]')).map(link => link.href),
-              overflow: Math.max(0, document.documentElement.scrollWidth - window.innerWidth),
+              overflow: Math.max(0, document.body.scrollWidth - window.innerWidth),
+              layout: (() => {
+                const main = document.querySelector('[data-stx-content]')
+                return {
+                  bodyScrollWidth: document.body.scrollWidth,
+                  documentScrollWidth: document.documentElement.scrollWidth,
+                  mainClientWidth: main?.clientWidth ?? null,
+                  mainOverflowX: main ? getComputedStyle(main).overflowX : null,
+                  mainScrollWidth: main?.scrollWidth ?? null,
+                  viewportWidth: window.innerWidth,
+                }
+              })(),
               overflowing: Array.from(document.querySelectorAll('body *'))
                 .map((element) => {
                   const rect = element.getBoundingClientRect()
@@ -746,6 +768,14 @@ async function main() {
             consoleErrors: [...new Set(state.consoleErrors)],
             failedRequests,
             horizontalOverflowPx: Number(value.overflow) || 0,
+            layout: value.layout || {
+              bodyScrollWidth: 0,
+              documentScrollWidth: 0,
+              mainClientWidth: null,
+              mainOverflowX: null,
+              mainScrollWidth: null,
+              viewportWidth: 0,
+            },
             overflowingElements: value.overflowing || [],
           })
           if (flags.progress) {
@@ -777,6 +807,7 @@ async function main() {
       console.log(JSON.stringify({
         start: start.href,
         browser: session.browser,
+        viewport: `${crawlViewport.w}x${crawlViewport.h}`,
         crawled: pages.length,
         remaining: queue.length,
         max,
