@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Board, Label } from '@stacksjs/orm'
 import { kanbanError } from './kanban-response'
@@ -9,7 +10,7 @@ interface LabelInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/labels` (stacksjs/stacks#1846 Phase 3).
+ * `POST /api/dashboard/kanban/labels`.
  *
  * Creates a label scoped to a board. Labels are unique per
  * `(board_id, name)` — the migration enforces this via a unique
@@ -21,8 +22,8 @@ export default new Action({
   description: 'Creates a label on a board.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as LabelInput | undefined ?? {}
+  async handle(request: RequestInstance<LabelInput>) {
+    const body = request.all()
 
     const boardId = Number(body.boardId)
     if (!Number.isFinite(boardId) || boardId <= 0) {

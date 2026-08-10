@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
@@ -14,7 +15,7 @@ interface ReorderInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/boards/reorder` (stacksjs/stacks#1846 Phase 2).
+ * `POST /api/dashboard/kanban/boards/reorder`.
  *
  * Rewrites the `position` column on every board in the submitted list
  * to match its index. Wrapped in a transaction so a partial failure
@@ -33,8 +34,8 @@ export default new Action({
   description: 'Bulk-rewrite `position` on a list of boards to match the submitted order.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as ReorderInput | undefined ?? {}
+  async handle(request: RequestInstance<ReorderInput>) {
+    const body = request.all()
     if (!Array.isArray(body.order) || body.order.length === 0) {
       return kanbanError('`order` must be a non-empty array of board ids.', 400)
     }

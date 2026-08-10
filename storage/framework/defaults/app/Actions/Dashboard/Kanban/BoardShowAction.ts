@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { modelBoolean } from './kanban-model'
@@ -56,8 +57,8 @@ interface LabelRow {
  *
  * Returns a single board with its columns + cards + label palette
  * nested in render order. Powers the kanban board page
- * (`/kanban/[id]`) — Phase 2 hits this on mount, the drag handler
- * then mutates positions via the (Phase 2) reorder endpoint and
+ * (`/kanban/[id]`). The page loads this on mount, then its drag handler
+ * mutates positions through the reorder endpoint and
  * relies on optimistic updates for snappy UX.
  *
  * Query layout (3 queries, all indexed):
@@ -67,24 +68,16 @@ interface LabelRow {
  *      `column_id, position`).
  *   4. All labels for the board.
  *
- * Card-label pivot reads land in Phase 3 alongside the card detail
- * modal — the board view shows label chips inline, hydrated from a
- * single pivot query batched with the card fetch.
+ * Card-label pivots hydrate label chips inline through a single query
+ * batched with the card fetch.
  */
 export default new Action({
   name: 'Kanban Board Show',
   description: 'Returns a single kanban board with its columns + cards + label palette.',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
-    // Route param resolution: bun-router exposes `:id` via
-    // `request.param('id')` / `request.params.id`. Both shapes appear
-    // in this codebase depending on how the route was registered;
-    // covering both keeps the action portable.
-    const rawId = (request as any)?.params?.id
-      ?? (request as any)?.param?.('id')
-      ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid board id', 400)
     }
@@ -114,8 +107,8 @@ export default new Action({
         ).execute() as Promise<LabelRow[]>,
       ])
 
-      // Pivot lookups for label + assignee chips on card previews
-      // (stacksjs/stacks#1846 Phase 3). Two batched JOINs keyed off the
+      // Pivot lookups for label + assignee chips on card previews.
+      // Two batched JOINs keyed off the
       // board's card list — single round-trip per pivot, then group
       // client-side into `cardId → list` maps.
       const [cardLabelRows, cardAssigneeRows] = await Promise.all([

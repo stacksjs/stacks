@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { BoardColumn } from '@stacksjs/orm'
 import { modelNullableString, modelNumber, modelString, modelValue, refreshModel } from './kanban-model'
@@ -10,7 +11,7 @@ interface ColumnInput {
 }
 
 /**
- * `PATCH /api/dashboard/kanban/columns/:id` (stacksjs/stacks#1846 Phase 2).
+ * `PATCH /api/dashboard/kanban/columns/:id`.
  *
  * Partial update for name / color / card limit. `position` and
  * `boardId` are NOT updatable here — moving a column between boards
@@ -23,14 +24,13 @@ export default new Action({
   description: 'Partial update of a board column.',
   method: 'PATCH',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance<ColumnInput>) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid column id', 400)
     }
 
-    const body = (request as any).jsonBody as ColumnInput | undefined ?? {}
+    const body = request.all()
     const set: Record<string, unknown> = {}
 
     if (typeof body.name === 'string') {

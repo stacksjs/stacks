@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { modelBoolean } from './kanban-model'
@@ -20,7 +21,7 @@ interface CardRow {
 }
 
 /**
- * `GET /api/dashboard/kanban/cards/:id` (stacksjs/stacks#1846 Phase 3).
+ * `GET /api/dashboard/kanban/cards/:id`.
  *
  * Fetches a single card with everything the detail modal needs in one
  * round-trip: labels, assignees, comments. The board view's cards
@@ -39,9 +40,8 @@ export default new Action({
   description: 'Returns a single card with its labels, assignees, and comments thread.',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid card id', 400)
     }

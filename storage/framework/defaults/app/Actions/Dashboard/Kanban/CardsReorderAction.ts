@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
@@ -31,7 +32,7 @@ interface ReorderInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/cards/reorder` (stacksjs/stacks#1846 Phase 2).
+ * `POST /api/dashboard/kanban/cards/reorder`.
  *
  * The drag-and-drop hot path. Rewrites card positions and column
  * assignments across one or more columns of a single board in a single
@@ -47,8 +48,8 @@ export default new Action({
   description: 'Bulk-rewrite cards.{column_id, position} across one or more columns of the same board.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as ReorderInput | undefined ?? {}
+  async handle(request: RequestInstance<ReorderInput>) {
+    const body = request.all()
 
     if (!Array.isArray(body.columns) || body.columns.length === 0) {
       return kanbanError('`columns` must be a non-empty array.', 400)

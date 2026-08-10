@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { Board } from '@stacksjs/orm'
@@ -11,7 +12,7 @@ interface BoardInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/boards` (stacksjs/stacks#1846 Phase 2).
+ * `POST /api/dashboard/kanban/boards`.
  *
  * Creates a new board with sensible defaults and appends it to the
  * end of the boards list (`position = max(position) + 1` so the new
@@ -28,8 +29,8 @@ export default new Action({
   description: 'Creates a new kanban board.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as BoardInput | undefined ?? {}
+  async handle(request: RequestInstance<BoardInput>) {
+    const body = request.all()
 
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name || name.length > 120) {

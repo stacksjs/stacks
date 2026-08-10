@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { Board, BoardColumn } from '@stacksjs/orm'
@@ -11,7 +12,7 @@ interface ColumnInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/columns` (stacksjs/stacks#1846 Phase 2).
+ * `POST /api/dashboard/kanban/columns`.
  *
  * Appends a new column to the end of the target board. Validates that
  * `boardId` points at a real board so a typo doesn't silently create
@@ -22,8 +23,8 @@ export default new Action({
   description: 'Creates a new column on a board.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as ColumnInput | undefined ?? {}
+  async handle(request: RequestInstance<ColumnInput>) {
+    const body = request.all()
 
     const boardId = Number(body.boardId)
     if (!Number.isFinite(boardId) || boardId <= 0) {

@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Label } from '@stacksjs/orm'
 import { modelNumber, modelString, refreshModel } from './kanban-model'
@@ -9,7 +10,7 @@ interface LabelInput {
 }
 
 /**
- * `PATCH /api/dashboard/kanban/labels/:id` (stacksjs/stacks#1846 Phase 3).
+ * `PATCH /api/dashboard/kanban/labels/:id`.
  *
  * Partial update for label name + color. `board_id` is not movable —
  * a label on board A renaming to "Bug" must not collide with a
@@ -21,14 +22,13 @@ export default new Action({
   description: 'Partial update of a label name / color.',
   method: 'PATCH',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance<LabelInput>) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid label id', 400)
     }
 
-    const body = (request as any).jsonBody as LabelInput | undefined ?? {}
+    const body = request.all()
     const set: Record<string, unknown> = {}
     let renamingTo: string | null = null
 

@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
@@ -7,7 +8,7 @@ interface SyncInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/cards/:id/assignees` (stacksjs/stacks#1846 Phase 3).
+ * `POST /api/dashboard/kanban/cards/:id/assignees`.
  *
  * Replaces the set of users assigned to a card. Sync semantics —
  * pass the new full list of user ids, the action diffs against
@@ -20,21 +21,20 @@ interface SyncInput {
  *
  * Cross-validation: each user id must exist. Doesn't validate
  * board-scoped membership — kanban users aren't (currently) team-
- * scoped; any platform user can be assigned to any card. Phase 4
- * could tighten this if board-membership becomes a concept.
+ * scoped; any platform user can be assigned to any card. A future
+ * board-membership feature can tighten this contract.
  */
 export default new Action({
   name: 'Kanban Card Assignees Sync',
   description: 'Replaces the set of users assigned to a card.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const cardId = Number(rawId)
+  async handle(request: RequestInstance<SyncInput>) {
+    const cardId = Number(request.getParam('id'))
     if (!Number.isFinite(cardId) || cardId <= 0)
       return kanbanError('Invalid card id', 400)
 
-    const body = (request as any).jsonBody as SyncInput | undefined ?? {}
+    const body = request.all()
     if (!Array.isArray(body.userIds))
       return kanbanError('`userIds` must be an array of user ids (possibly empty).', 400)
 
@@ -63,8 +63,10 @@ export default new Action({
           return kanbanError('One or more user ids do not exist.', 400)
       }
 
-      const requester = (request as any).user ?? (request as any)._authenticatedUser ?? null
-      const assignedByUserId = requester && typeof requester.id === 'number' ? requester.id : null
+      const requester = await request.user()
+      const assignedByUserId = requester && Number.isInteger(Number(requester.id))
+        ? Number(requester.id)
+        : null
 
       await db.transaction(async (rawTrx) => {
         const qb = rawTrx as unknown as typeof db

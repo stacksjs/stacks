@@ -1,9 +1,6 @@
 <script client>
-  // Kanban - Boards index (stacksjs/stacks#1846, Phase 1).
-  //
   // Lists every non-archived board with a card-count badge. Clicking a
-  // board navigates to `/kanban/[id]` - Phase 2 ships the actual
-  // drag-and-drop board view at that URL.
+  // board navigates to its complete drag-and-drop view.
   //
   // Follows #1838 conventions: no <script server>, no vanilla DOM
   // reads, all state via the store. Role gate via useRole() - the

@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { CardComment } from '@stacksjs/orm'
 import { kanbanError } from './kanban-response'
@@ -11,9 +12,8 @@ export default new Action({
   description: 'Hard-deletes a single card comment.',
   method: 'DELETE',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0)
       return kanbanError('Invalid comment id', 400)
 

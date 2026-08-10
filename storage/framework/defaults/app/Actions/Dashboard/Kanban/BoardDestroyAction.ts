@@ -1,9 +1,10 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
 
 /**
- * `DELETE /api/dashboard/kanban/boards/:id` (stacksjs/stacks#1846 Phase 2).
+ * `DELETE /api/dashboard/kanban/boards/:id`.
  *
  * Hard delete with cascade: removes the board, its columns, its cards,
  * its labels, and the relevant pivot rows in `card_labels` and
@@ -23,9 +24,8 @@ export default new Action({
   description: 'Hard-deletes a board and all of its columns, cards, labels, and pivot rows.',
   method: 'DELETE',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid board id', 400)
     }
@@ -42,7 +42,7 @@ export default new Action({
           'DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
           [id],
         ).execute()
-        // Card comments (Phase 3, migration 0000000112). Same
+        // Card comments use the same
         // card-scoped pattern as the pivots.
         await qb.unsafe(
           'DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',

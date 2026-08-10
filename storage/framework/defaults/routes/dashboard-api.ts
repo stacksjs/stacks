@@ -264,28 +264,15 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // requests — see the action for the soft-fallback shape.
   route.get('/auth/me', 'Actions/Dashboard/Auth/MeAction')
 
-  // Kanban surface (stacksjs/stacks#1846). Phase 1: read-only.
-  //
-  // Phase 2 lands write endpoints under the same prefix:
-  //   POST   /kanban/boards           — store
-  //   PATCH  /kanban/boards/{id}      — update
-  //   DELETE /kanban/boards/{id}      — destroy
-  //   POST   /kanban/boards/reorder   — bulk position update
-  //   POST   /kanban/columns          — store
-  //   PATCH  /kanban/columns/{id}     — update
-  //   POST   /kanban/columns/reorder  — bulk position update
-  //   POST   /kanban/cards            — store
-  //   PATCH  /kanban/cards/{id}       — update (incl. column move)
-  //   POST   /kanban/cards/reorder    — bulk position update
-  //
+  // Kanban reads and mutations share the guarded dashboard surface.
   // Kanban data is local-only without authentication. Outside local
   // environments every read and write uses the same auth + admin guard as
   // the other operational dashboard surfaces.
-  // Reads (Phase 1)
+  // Reads
   guard(route.get('/kanban/boards', 'Actions/Dashboard/Kanban/BoardsIndexAction'))
   guard(route.get('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardShowAction'))
 
-  // Writes (Phase 2). The reorder endpoints are POST not PATCH because
+  // Writes. The reorder endpoints are POST not PATCH because
   // their semantics — "here's the full new state of this slice of the
   // board" — match the resource-replacement intent better than PATCH's
   // "apply this delta" verb. They also accept a body shape that PATCH
@@ -305,7 +292,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.delete('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardDestroyAction'))
   guard(route.post('/kanban/cards/reorder', 'Actions/Dashboard/Kanban/CardsReorderAction'))
 
-  // Phase 3 — card detail + labels + assignees + comments.
+  // Card detail, labels, assignees, and comments.
   //
   // The card-show endpoint is the only "single card with everything"
   // read; the boards/{id} response already embeds labels + assignees

@@ -41,8 +41,8 @@ interface CardRecord {
   archived: boolean
   createdAt: string | null
   updatedAt: string | null
-  // Optional pivot-derived fields. BoardShowAction populates them
-  // (Phase 3); CardStoreAction's optimistic insert leaves them empty.
+  // Optional pivot-derived fields. BoardShowAction populates them;
+  // CardStoreAction's optimistic insert leaves them empty.
   labels?: CardLabel[]
   assignees?: CardAssignee[]
 }
@@ -89,10 +89,9 @@ interface BoardDetail {
 /**
  * Kanban dashboard store (stacksjs/stacks#1846).
  *
- * Phase 1 surface — list of boards for the index page plus the
- * fetch-by-id helper that the board detail page (Phase 2) will use.
- * Drag-and-drop reorder, write mutations, and label/assignee ops land
- * in Phase 2 / Phase 3.
+ * Lists boards for the index page and fetches a board for its detail page.
+ * Drag-and-drop reorder, write mutations, labels, assignees, and comments
+ * share this store so optimistic updates and rollback have one owner.
  *
  * Persistence: only the last-viewed board id is cached in
  * sessionStorage so the user lands back where they left off when they
@@ -110,7 +109,7 @@ export const kanbanStore = defineStore('kanban', () => {
   const error = state<string | null>(null)
   const errorBoard = state<string | null>(null)
 
-  // Phase 3 — card detail modal state. Holding card + comments here
+  // Card detail modal state. Holding card + comments here
   // (instead of one of column.cards) keeps the modal independent of
   // its source: opening from a card click on the board uses the
   // already-loaded preview; refresh-mid-modal hits /cards/:id and
@@ -174,14 +173,14 @@ export const kanbanStore = defineStore('kanban', () => {
     }
   }
 
-  // ─── Mutations (Phase 2) ───────────────────────────────────────────
+  // Mutations
   //
   // Every mutation follows the same shape:
   //   1. Apply optimistically — update the local store immediately so
   //      the UI feels snappy.
   //   2. Fire the network request.
   //   3. On failure, restore the pre-mutation snapshot + set an error
-  //      message. Phase 3 wires a toast helper into the rollback path
+  //      message. The dashboard toast helper handles the rollback path
   //      so the user actually sees the failure.
   //
   // The mutations return the new entity (or null on failure) so
@@ -360,7 +359,7 @@ export const kanbanStore = defineStore('kanban', () => {
     }
   }
 
-  // ─── Phase 3 mutations (card detail) ─────────────────────────────
+  // Card detail mutations
 
   /**
    * Helper: project a CardRecord (board view) onto a partial
@@ -689,7 +688,7 @@ export const kanbanStore = defineStore('kanban', () => {
     deleteCard,
     reorderCards,
     reorderColumns,
-    // Phase 3
+    // Card detail
     openCard,
     loadingCard,
     errorCard,

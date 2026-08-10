@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Card, CardComment } from '@stacksjs/orm'
 import { cardCommentResponse } from './kanban-comment'
@@ -23,13 +24,12 @@ export default new Action({
   description: 'Adds a comment to a card.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const cardId = Number(rawId)
+  async handle(request: RequestInstance<CommentInput>) {
+    const cardId = Number(request.getParam('id'))
     if (!Number.isFinite(cardId) || cardId <= 0)
       return kanbanError('Invalid card id', 400)
 
-    const body = (request as any).jsonBody as CommentInput | undefined ?? {}
+    const body = request.all()
     const text = typeof body.body === 'string' ? body.body.trim() : ''
     if (!text || text.length > 10000)
       return kanbanError('`body` is required and must be 1-10000 characters.', 400)
@@ -39,8 +39,8 @@ export default new Action({
       if (!card)
         return kanbanError('Card not found.', 404)
 
-      const user = (request as any).user ?? (request as any)._authenticatedUser ?? null
-      const userId = user && typeof user.id === 'number' ? user.id : null
+      const user = await request.user()
+      const userId = user && Number.isInteger(Number(user.id)) ? Number(user.id) : null
       const comment = await refreshModel(await CardComment.create({
         cardId,
         userId,

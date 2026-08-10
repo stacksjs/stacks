@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Card } from '@stacksjs/orm'
 import { modelBoolean, modelNullableString, modelNumber, modelString, modelValue, refreshModel } from './kanban-model'
@@ -11,7 +12,7 @@ interface CardInput {
 }
 
 /**
- * `PATCH /api/dashboard/kanban/cards/:id` (stacksjs/stacks#1846 Phase 2).
+ * `PATCH /api/dashboard/kanban/cards/:id`.
  *
  * Partial update for the card body: title, description, due date,
  * archive flag. `position` and `columnId` are NOT updatable here —
@@ -25,14 +26,13 @@ export default new Action({
   description: 'Partial update of a card body (title, description, due date, archive).',
   method: 'PATCH',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance<CardInput>) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0) {
       return kanbanError('Invalid card id', 400)
     }
 
-    const body = (request as any).jsonBody as CardInput | undefined ?? {}
+    const body = request.all()
     const set: Record<string, unknown> = {}
 
     if (typeof body.title === 'string') {

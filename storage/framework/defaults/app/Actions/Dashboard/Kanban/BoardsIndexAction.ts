@@ -30,8 +30,7 @@ interface BoardRow {
  * group (boards are a dev-mode surface per #1843). The action body
  * doesn't re-check the role; the middleware did.
  *
- * Phase 1 — read-only. Phase 2 lands store / update / destroy + the
- * reorder endpoint that moves a board's position.
+ * Mutations use the sibling store, update, destroy, and reorder actions.
  */
 export default new Action({
   name: 'Kanban Boards Index',

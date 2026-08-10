@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
@@ -7,7 +8,7 @@ interface SyncInput {
 }
 
 /**
- * `POST /api/dashboard/kanban/cards/:id/labels` (stacksjs/stacks#1846 Phase 3).
+ * `POST /api/dashboard/kanban/cards/:id/labels`.
  *
  * Replaces the set of labels attached to a card. Sync semantics —
  * pass the new full list of label ids, the action diffs against
@@ -26,13 +27,12 @@ export default new Action({
   description: 'Replaces the set of labels attached to a card.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const cardId = Number(rawId)
+  async handle(request: RequestInstance<SyncInput>) {
+    const cardId = Number(request.getParam('id'))
     if (!Number.isFinite(cardId) || cardId <= 0)
       return kanbanError('Invalid card id', 400)
 
-    const body = (request as any).jsonBody as SyncInput | undefined ?? {}
+    const body = request.all()
     if (!Array.isArray(body.labelIds))
       return kanbanError('`labelIds` must be an array of label ids (possibly empty).', 400)
 
@@ -56,7 +56,7 @@ export default new Action({
         return kanbanError('Card not found.', 404)
 
       // Every label must belong to the same board (labels are
-      // board-scoped per Phase 1's `labels.board_id` design).
+      // board-scoped through `labels.board_id`).
       if (uniqueLabelIds.length > 0) {
         const placeholders = uniqueLabelIds.map(() => '?').join(',')
         const labelRows = await db.unsafe(

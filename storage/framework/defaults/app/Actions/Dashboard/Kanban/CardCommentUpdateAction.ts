@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { CardComment, User } from '@stacksjs/orm'
 import { cardCommentResponse } from './kanban-comment'
@@ -14,13 +15,12 @@ export default new Action({
   description: 'Edits the body of a card comment.',
   method: 'PATCH',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id ?? (request as any)?.param?.('id') ?? null
-    const id = Number(rawId)
+  async handle(request: RequestInstance<CommentInput>) {
+    const id = Number(request.getParam('id'))
     if (!Number.isFinite(id) || id <= 0)
       return kanbanError('Invalid comment id', 400)
 
-    const input = (request as any).jsonBody as CommentInput | undefined ?? {}
+    const input = request.all()
     const body = typeof input.body === 'string' ? input.body.trim() : ''
     if (!body || body.length > 10000)
       return kanbanError('`body` is required and must be 1-10000 characters.', 400)

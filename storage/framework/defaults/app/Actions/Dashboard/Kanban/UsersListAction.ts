@@ -3,7 +3,7 @@ import { db } from '@stacksjs/database'
 import { kanbanError } from './kanban-response'
 
 /**
- * `GET /api/dashboard/kanban/users` (stacksjs/stacks#1846 Phase 3).
+ * `GET /api/dashboard/kanban/users`.
  *
  * Lightweight user list for the assignee picker on the card detail
  * modal. Returns `{ id, name, email }` only — no roles, no profile,

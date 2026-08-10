@@ -1,5 +1,5 @@
 <script client>
-  // Kanban board view (stacksjs/stacks#1846 Phase 2).
+  // Kanban board view.
   //
   // Optimistic-update pattern:
   //   1. The DnD handler mutates the store immediately (so the card
@@ -687,7 +687,7 @@
     </div>
   </div>
 
-  <!-- ───────────── Card detail modal (Phase 3) ───────────── -->
+  <!-- Card detail modal -->
   <!-- Opens on card click. Fixed positioned with a backdrop; closes
       on backdrop click + Escape. Sections (top → bottom):
         · Title (inline-editable, blurs to commit)
