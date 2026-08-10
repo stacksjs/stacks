@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
+import { response } from '@stacksjs/router'
 import { dashboardRequestValue } from '../dashboard-request'
 import { fetchRunnerHistory } from './runner-pressure-monitor'
 
@@ -14,9 +15,8 @@ import { fetchRunnerHistory } from './runner-pressure-monitor'
  * configured retention window — older samples aren't available
  * because they've been pruned.
  *
- * Soft-errors to an empty samples array on any failure so the
- * sparkline gracefully degrades to "no history yet" instead of
- * yelling at the user.
+ * Operational failures use a real 503 response so the client can
+ * distinguish unavailable history from a valid empty sample set.
  */
 export default new Action({
   name: 'Dashboard CI Runner History',
@@ -53,7 +53,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/ci] RunnerHistoryAction failed:', err)
-      return { org, samples: [], error: err instanceof Error ? err.message : 'unknown error' }
+      return response.json({ message: 'Runner history could not be loaded.' }, 503)
     }
   },
 })

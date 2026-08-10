@@ -115,6 +115,7 @@ export const ciStore = defineStore('ci', () => {
   // Lazy-loaded on first view of an org's tab.
   const runnerHistoryByOrg = state<Record<string, Array<{ queued: number, sampledAt: string }>>>({})
   const loadingRunnerHistory = state<Record<string, boolean>>({})
+  const runnerHistoryErrors = state<Record<string, string>>({})
 
   const reposForTab = derived(() => {
     const tab = activeTab()
@@ -227,33 +228,37 @@ export const ciStore = defineStore('ci', () => {
     drilldownError.set(null)
   }
 
-  async function loadRunnerHistory(org: string): Promise<void> {
+  async function loadRunnerHistory(org: string, force = false): Promise<void> {
     // Already loaded? Don't re-fetch — runner samples have a 30s
     // refresh cadence anyway. If the user wants a fresh view they
     // can reload the page.
-    if (runnerHistoryByOrg()[org] !== undefined) return
+    if (!force && runnerHistoryByOrg()[org] !== undefined) return
     if (loadingRunnerHistory()[org]) return
 
     loadingRunnerHistory.set({ ...loadingRunnerHistory(), [org]: true })
+    runnerHistoryErrors.set({ ...runnerHistoryErrors(), [org]: '' })
     try {
       const data = await dashboardApi<{
         samples?: Array<{ queued: number, sampledAt: string }>
         error?: string
         disabled?: boolean
       }>(`/api/dashboard/ci/runner-history?org=${encodeURIComponent(org)}`)
-      if (data.disabled || data.error) {
+      if (data.disabled) {
         runnerHistoryByOrg.set({ ...runnerHistoryByOrg(), [org]: [] })
         return
       }
+      if (data.error)
+        throw new Error(data.error)
       runnerHistoryByOrg.set({
         ...runnerHistoryByOrg(),
         [org]: (data.samples ?? []).map(s => ({ queued: s.queued, sampledAt: s.sampledAt })),
       })
     }
-    catch {
-      // Soft-fail — sparkline renders nothing, no need to surface
-      // the error in the main CI page.
-      runnerHistoryByOrg.set({ ...runnerHistoryByOrg(), [org]: [] })
+    catch (e) {
+      runnerHistoryErrors.set({
+        ...runnerHistoryErrors(),
+        [org]: e instanceof Error ? e.message : 'Runner history could not be loaded.',
+      })
     }
     finally {
       loadingRunnerHistory.set({ ...loadingRunnerHistory(), [org]: false })
@@ -327,6 +332,7 @@ export const ciStore = defineStore('ci', () => {
     // Runner-pressure history (#1850)
     runnerHistoryByOrg,
     loadingRunnerHistory,
+    runnerHistoryErrors,
     loadRunnerHistory,
   }
 }, {

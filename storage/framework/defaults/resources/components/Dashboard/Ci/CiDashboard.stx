@@ -139,6 +139,8 @@
     const tab = activeTab()
     return (ci.runnerHistoryByOrg()[tab] || [])
   })
+  const runnerHistoryError = derived(() => ci.runnerHistoryErrors()[activeTab()] || '')
+  const loadingHistory = derived(() => ci.loadingRunnerHistory()[activeTab()] === true)
 
   effect(() => {
     const tab = activeTab()
@@ -171,6 +173,11 @@
   function hasHistory() {
     const samples = runnerHistory()
     return samples && samples.length >= 2
+  }
+
+  function retryRunnerHistory() {
+    const tab = activeTab()
+    if (tab) ci.loadRunnerHistory(tab, true)
   }
 
   // Top-level fetch - runs on both hard reload (SSR hydration) and SPA
@@ -256,6 +263,17 @@
       <svg width="200" height="24" viewBox="0 0 200 24" class="text-violet-400">
         <path :d="sparklinePath()" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
       </svg>
+    </div>
+    <div :if="loadingHistory() && !hasHistory()" role="status" class="flex gap-2 items-center mb-5 text-zinc-500 text-xs dark:text-zinc-400">
+      <span aria-hidden="true" class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+      <span>Loading runner history</span>
+    </div>
+    <div :if="runnerHistoryError()" role="alert" class="flex flex-wrap gap-3 items-center justify-between mb-5 px-3 py-2 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900/50">
+      <div>
+        <p class="font-medium text-amber-800 text-xs dark:text-amber-200">Runner history unavailable</p>
+        <p class="mt-0.5 text-amber-700 text-xs dark:text-amber-300" :text="runnerHistoryError"></p>
+      </div>
+      <Button variant="secondary" size="xs" :loading="loadingHistory" @click="retryRunnerHistory()">Retry</Button>
     </div>
 
     <!-- Repo cards -->
