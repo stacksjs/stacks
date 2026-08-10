@@ -34,6 +34,20 @@ export interface PermissionRecord {
   updated_at?: string
 }
 
+export type RbacEntity = 'permission' | 'role'
+
+export class RbacEntityNotFoundError extends Error {
+  constructor(
+    public readonly entity: RbacEntity,
+    public readonly value: string,
+    public readonly guardName: string,
+  ) {
+    const label = entity === 'role' ? 'Role' : 'Permission'
+    super(`${label} '${value}' not found.`)
+    this.name = 'RbacEntityNotFoundError'
+  }
+}
+
 export interface RolePermissionPivot {
   role_id: number
   permission_id: number
@@ -322,7 +336,7 @@ export async function getUserRoles(user: UserModel | { id: number } | number): P
 export async function assignRole(user: UserModel | { id: number } | number, roleName: string, guardName: string = 'web'): Promise<void> {
   const userId = getUserId(user)
   const role = await findRole(roleName, guardName)
-  if (!role) throw new Error(`Role '${roleName}' not found.`)
+  if (!role) throw new RbacEntityNotFoundError('role', roleName, guardName)
 
   await getStore().assignRoleToUser(userId, role.id)
   cache.userRoles.delete(userId)
@@ -369,7 +383,7 @@ export async function syncRoles(user: UserModel | { id: number } | number, roleN
 
   for (const name of new Set(roleNames)) {
     const role = await findRole(name, guardName)
-    if (!role) throw new Error(`Role '${name}' not found.`)
+    if (!role) throw new RbacEntityNotFoundError('role', name, guardName)
     roleIds.push(role.id)
   }
 
@@ -442,7 +456,7 @@ export async function getUserPermissions(user: UserModel | { id: number } | numb
 export async function givePermission(user: UserModel | { id: number } | number, permissionName: string, guardName: string = 'web'): Promise<void> {
   const userId = getUserId(user)
   const permission = await findPermission(permissionName, guardName)
-  if (!permission) throw new Error(`Permission '${permissionName}' not found.`)
+  if (!permission) throw new RbacEntityNotFoundError('permission', permissionName, guardName)
 
   await getStore().assignPermissionToUser(userId, permission.id)
   cache.userPermissions.delete(userId)
@@ -484,7 +498,7 @@ export async function syncPermissions(user: UserModel | { id: number } | number,
 
   for (const name of new Set(permissionNames)) {
     const perm = await findPermission(name, guardName)
-    if (!perm) throw new Error(`Permission '${name}' not found.`)
+    if (!perm) throw new RbacEntityNotFoundError('permission', name, guardName)
     permissionIds.push(perm.id)
   }
 
@@ -534,10 +548,10 @@ export async function getRolePermissions(roleId: number): Promise<PermissionReco
  */
 export async function givePermissionToRole(roleName: string, permissionName: string, guardName: string = 'web'): Promise<void> {
   const role = await findRole(roleName, guardName)
-  if (!role) throw new Error(`Role '${roleName}' not found.`)
+  if (!role) throw new RbacEntityNotFoundError('role', roleName, guardName)
 
   const permission = await findPermission(permissionName, guardName)
-  if (!permission) throw new Error(`Permission '${permissionName}' not found.`)
+  if (!permission) throw new RbacEntityNotFoundError('permission', permissionName, guardName)
 
   await getStore().assignPermissionToRole(role.id, permission.id)
   cache.rolePermissions.delete(role.id)
@@ -565,12 +579,12 @@ export async function revokePermissionFromRole(roleName: string, permissionName:
  */
 export async function syncRolePermissions(roleName: string, permissionNames: string[], guardName: string = 'web'): Promise<void> {
   const role = await findRole(roleName, guardName)
-  if (!role) throw new Error(`Role '${roleName}' not found.`)
+  if (!role) throw new RbacEntityNotFoundError('role', roleName, guardName)
 
   const permissionIds: number[] = []
   for (const name of permissionNames) {
     const perm = await findPermission(name, guardName)
-    if (!perm) throw new Error(`Permission '${name}' not found.`)
+    if (!perm) throw new RbacEntityNotFoundError('permission', name, guardName)
     permissionIds.push(perm.id)
   }
 

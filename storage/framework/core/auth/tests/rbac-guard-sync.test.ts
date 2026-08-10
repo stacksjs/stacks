@@ -1,6 +1,6 @@
 import type { PermissionRecord, RbacStore, RoleRecord } from '../src/rbac'
 import { beforeEach, describe, expect, test } from 'bun:test'
-import { setRbacStore, syncPermissions, syncRoles } from '../src/rbac'
+import { RbacEntityNotFoundError, setRbacStore, syncPermissions, syncRoles } from '../src/rbac'
 
 const roles: RoleRecord[] = [
   { id: 1, name: 'editor', guard_name: 'web' },
@@ -67,5 +67,19 @@ describe('guard-scoped RBAC sync', () => {
     await syncPermissions(7, ['posts.write', 'posts.write'], 'web')
 
     expect(assignedPermissionIds).toEqual([13, 12])
+  })
+
+  test('missing roles use a typed domain error', async () => {
+    const error = await syncRoles(7, ['missing'], 'web').catch(caught => caught)
+
+    expect(error).toBeInstanceOf(RbacEntityNotFoundError)
+    expect(error).toMatchObject({ entity: 'role', value: 'missing', guardName: 'web' })
+  })
+
+  test('missing permissions use a typed domain error', async () => {
+    const error = await syncPermissions(7, ['missing'], 'api').catch(caught => caught)
+
+    expect(error).toBeInstanceOf(RbacEntityNotFoundError)
+    expect(error).toMatchObject({ entity: 'permission', value: 'missing', guardName: 'api' })
   })
 })
