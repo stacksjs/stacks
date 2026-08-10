@@ -37,6 +37,18 @@ describe('kanban model response values', () => {
     expect(modelBoolean(record({ enabled: 0 }), 'enabled')).toBe(false)
   })
 
+  test('reads raw query rows as well as ORM model records', () => {
+    const row = {
+      board_id: 4,
+      archived: 1,
+      created_at: '2026-08-10 12:00:00',
+    }
+
+    expect(modelNumber(row, 'boardId', 'board_id')).toBe(4)
+    expect(modelBoolean(row, 'archived')).toBe(true)
+    expect(modelString(row, 'createdAt', 'created_at')).toBe('2026-08-10 12:00:00')
+  })
+
   test('refreshes generated database values after a write', async () => {
     const stale = {
       ...record({ updated_at: null }),

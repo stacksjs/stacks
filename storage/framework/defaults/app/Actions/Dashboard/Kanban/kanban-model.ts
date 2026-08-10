@@ -10,28 +10,30 @@ export async function refreshModel(record: RefreshableKanbanModelRecord): Promis
   return await record.fresh() ?? record
 }
 
-export function modelValue(record: KanbanModelRecord, camelKey: string, snakeKey = camelKey): unknown {
-  const camelValue = record.get(camelKey)
+export function modelValue(record: object, camelKey: string, snakeKey = camelKey): unknown {
+  const model = record as Partial<KanbanModelRecord>
+  const row = record as Record<string, unknown>
+  const camelValue = typeof model.get === 'function' ? model.get(camelKey) : row[camelKey]
   if (camelValue !== undefined)
     return camelValue
-  return record.get(snakeKey)
+  return typeof model.get === 'function' ? model.get(snakeKey) : row[snakeKey]
 }
 
-export function modelNumber(record: KanbanModelRecord, camelKey: string, snakeKey = camelKey): number {
+export function modelNumber(record: object, camelKey: string, snakeKey = camelKey): number {
   return Number(modelValue(record, camelKey, snakeKey))
 }
 
-export function modelString(record: KanbanModelRecord, camelKey: string, snakeKey = camelKey): string {
+export function modelString(record: object, camelKey: string, snakeKey = camelKey): string {
   const value = modelValue(record, camelKey, snakeKey)
   return value === undefined || value === null ? '' : String(value)
 }
 
-export function modelNullableString(record: KanbanModelRecord, camelKey: string, snakeKey = camelKey): string | null {
+export function modelNullableString(record: object, camelKey: string, snakeKey = camelKey): string | null {
   const value = modelValue(record, camelKey, snakeKey)
   return value === undefined || value === null ? null : String(value)
 }
 
-export function modelBoolean(record: KanbanModelRecord, camelKey: string, snakeKey = camelKey): boolean {
+export function modelBoolean(record: object, camelKey: string, snakeKey = camelKey): boolean {
   const value = modelValue(record, camelKey, snakeKey)
   return value === true || value === 1 || value === '1' || value === 'true'
 }
