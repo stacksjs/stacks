@@ -23,6 +23,17 @@ export function clean(buddy: CLI): void {
     .action(async (options: CleanOptions) => {
       log.debug('Running `buddy clean` ...', options)
 
+      if (options.dryRun) {
+        const perf = await intro('buddy clean')
+        log.info('Dry run: would remove dependency directories, generated framework builds, and lockfiles.')
+        await outro('Clean preview complete', {
+          startTime: perf,
+          useSeconds: true,
+          message: 'No files were removed',
+        })
+        return
+      }
+
       // `--force` (or the legacy CLI-level bypasses) skips the confirmation.
       const skipConfirm = options.force === true
         || Boolean((buddy as unknown as Record<string, unknown>).isForce)
