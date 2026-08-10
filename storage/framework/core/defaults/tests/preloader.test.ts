@@ -63,7 +63,26 @@ describe('default preloader', () => {
       resolve(isolatedPathRoot, 'index.ts'),
       Bun.file(resolve(import.meta.dir, '../../path/src/index.ts')),
     )
-    await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
+    // TEMPORARY DIAGNOSTIC (stacksjs/stacks#2279 follow-up). The child hangs on
+    // Linux CI and exits 0 on macOS with every environment and bun version I
+    // tried, so this instruments the child to say where it stalls. Revert once
+    // the cause is known.
+    await Bun.write(isolatedRunner, [
+      `const t0 = Date.now()`,
+      `const mark = (m) => process.stderr.write(\`[mark +\${Date.now() - t0}ms] \${m}\\n\`)`,
+      `process.on('exit', c => mark('exit ' + c))`,
+      `const bomb = setTimeout(() => {`,
+      `  let res = 'unavailable'`,
+      `  try { res = JSON.stringify(process.getActiveResourcesInfo()) } catch (e) { res = 'threw: ' + e.message }`,
+      `  mark('STILL ALIVE at 3s, active resources: ' + res)`,
+      `  process.exit(9)`,
+      `}, 3000)`,
+      `if (typeof bomb.unref === 'function') bomb.unref()`,
+      `mark('before import')`,
+      `await import('./storage/framework/defaults/resources/plugins/preloader.ts')`,
+      `mark('after import')`,
+      ``,
+    ].join('\n'))
 
     // A curated environment rather than the developer's. This test is about
     // whether the preloader resolves with nothing linked, and it asserts on
@@ -90,6 +109,8 @@ describe('default preloader', () => {
       new Response(child.stderr).text(),
       new Response(child.stdout).text(),
     ])
+    // TEMPORARY DIAGNOSTIC: surface the child's markers in the CI log.
+    console.error(`[preloader diag] exit=${await child.exited}\n--- stderr ---\n${stderr}\n--- stdout ---\n${stdout}\n--- end ---`)
     expect(stderr).toBe('')
     expect(stdout).toBe('')
     expect(await child.exited).toBe(0)
