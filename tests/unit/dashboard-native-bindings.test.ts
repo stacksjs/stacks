@@ -359,6 +359,10 @@ describe('dashboard native STX bindings', () => {
 
     const accessTokens = componentSource('Auth/AccessTokens.stx')
     expect(accessTokens).toContain('@submit.prevent="createAccessToken"')
+    expect(accessTokens).toContain("import { authStore } from '../../../../views/dashboard/stores/auth'")
+    expect(accessTokens).toContain('await authStore.load()')
+    expect(accessTokens).toContain('if (authStore.unauthenticated())')
+    expect(accessTokens.indexOf('await authStore.load()')).toBeLessThan(accessTokens.indexOf("dashboardApi<TokenListResponse>('/auth/tokens')"))
     expect(accessTokens).not.toContain('event.preventDefault()')
   })
 

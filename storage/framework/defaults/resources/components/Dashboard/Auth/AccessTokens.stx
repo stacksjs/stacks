@@ -1,5 +1,6 @@
 <script client>
 import { DashboardApiError, dashboardApi } from '../../../../functions/dashboard-api'
+import { authStore } from '../../../../views/dashboard/stores/auth'
 
 interface AccessTokenRow {
   id: number
@@ -106,6 +107,20 @@ async function loadTokens(): Promise<void> {
   loading.set(true)
   loadError.set('')
   try {
+    await authStore.load()
+
+    if (authStore.error()) {
+      tokens.set([])
+      loadError.set(authStore.error() || 'The signed-in account could not be verified.')
+      return
+    }
+
+    if (authStore.unauthenticated()) {
+      tokens.set([])
+      authenticationRequired.set(true)
+      return
+    }
+
     const response = await dashboardApi<TokenListResponse>('/auth/tokens')
     tokens.set(response.tokens || [])
     authenticationRequired.set(false)
