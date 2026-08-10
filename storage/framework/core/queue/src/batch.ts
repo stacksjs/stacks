@@ -496,13 +496,8 @@ export class DispatchedBatch {
     if (record.finished_at) throw new Error(`Batch ${this.id} has already finished`)
 
     const batchableJobs = jobs.map(j => 'job' in j ? j : { job: j })
-    const newTotal = record.total_jobs + batchableJobs.length
-    const newPending = record.pending_jobs + batchableJobs.length
 
-    await updateBatchRecord(this.id, {
-      total_jobs: newTotal,
-      pending_jobs: newPending,
-    })
+    await incrementBatchCounters(this.id, batchableJobs.length)
 
     // Dispatch the new jobs
     const options = JSON.parse(record.options || '{}')
@@ -638,6 +633,73 @@ async function updateBatchRecord(id: string, updates: Partial<BatchRecord>): Pro
   }
   else {
     await updateBatchInDatabase(id, updates)
+  }
+}
+
+/**
+ * Add `delta` to a batch's `total_jobs` and `pending_jobs`, atomically.
+ *
+ * `DispatchedBatch.add` used to read the record, add in JavaScript, and write
+ * the absolute result back. Two callers adding to the same in-flight batch at
+ * the same instant both read total=N and both wrote total=N+their own count,
+ * so one add vanished: the batch then reported fewer jobs than it was actually
+ * running and `pending_jobs` could never reach zero, leaving the terminal
+ * `then`/`finally` callbacks unfired (stacksjs/stacks#2282 item 3).
+ *
+ * That is the same race `recordBatchJobCompletion` was given an atomic
+ * decrement for; this is the other half of it, on the way in.
+ *
+ * Both drivers can do this without a read. Postgres/MySQL/SQLite take
+ * `column + n` in the SET clause, and Redis has `HINCRBY` on the hash the
+ * batch is stored as. The Redis path falls back to the database on a
+ * connection error, matching `updateBatchInRedis`.
+ */
+async function incrementBatchCounters(id: string, delta: number): Promise<void> {
+  if (delta === 0)
+    return
+
+  if (getQueueDriver() === 'redis') {
+    try {
+      const client = await connectBatchRedis()
+      const key = `${REDIS_BATCH_PREFIX}${id}`
+      await client.hincrby(key, 'total_jobs', delta)
+      await client.hincrby(key, 'pending_jobs', delta)
+      client.close()
+      return
+    }
+    catch {
+      // Fall through to the database, as updateBatchInRedis does.
+    }
+  }
+
+  const { db, sql } = await import('@stacksjs/database')
+
+  await (db as any)
+    .updateTable('job_batches')
+    .set(batchCounterIncrements(sql, delta))
+    .where('id', '=', id)
+    .execute()
+}
+
+/**
+ * The SET payload that adds `delta` to both batch counters.
+ *
+ * Split out from {@link incrementBatchCounters} purely so the shape is
+ * assertable. The thing worth testing is that these are RELATIVE expressions
+ * evaluated by the database rather than absolute numbers this process worked
+ * out, and checking that through the real call would mean mocking
+ * `@stacksjs/database`. `mock.module` is process-global and bun runs a
+ * package's test files in one process, so mocking a module this widely used
+ * takes out every other test in the package (it dropped the queue suite from
+ * 299 passing to 202 when tried).
+ */
+export function batchCounterIncrements(
+  sql: (strings: TemplateStringsArray, ...values: unknown[]) => unknown,
+  delta: number,
+): { total_jobs: unknown, pending_jobs: unknown } {
+  return {
+    total_jobs: sql`total_jobs + ${delta}`,
+    pending_jobs: sql`pending_jobs + ${delta}`,
   }
 }
 
