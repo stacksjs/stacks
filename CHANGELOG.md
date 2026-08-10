@@ -1,5 +1,73 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.354...v0.70.355)
+
+## ✨ Features
+
+- **deploy**: run the app's scheduled work in production ([b5afbb3](https://github.com/stacksjs/stacks/commit/b5afbb3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: run the app's scheduler on the box ([2716409](https://github.com/stacksjs/stacks/commit/2716409)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: parse inbound MIME messages ([d8b0d0a](https://github.com/stacksjs/stacks/commit/d8b0d0a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browse**: add stateful SPA scenarios ([9c7b0e6](https://github.com/stacksjs/stacks/commit/9c7b0e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: render inbox attachment downloads ([a42d06f](https://github.com/stacksjs/stacks/commit/a42d06f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: add guarded inbox attachment downloads ([ffb3076](https://github.com/stacksjs/stacks/commit/ffb3076)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **kanban**: support editing card comments ([7c65189](https://github.com/stacksjs/stacks/commit/7c65189)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **release**: say why a release was blocked ([0131e12](https://github.com/stacksjs/stacks/commit/0131e12)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: return native CI API errors ([c3349d4](https://github.com/stacksjs/stacks/commit/c3349d4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: surface CI runner history failures ([76d2328](https://github.com/stacksjs/stacks/commit/76d2328)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: constrain inbox storage paths ([37f9625](https://github.com/stacksjs/stacks/commit/37f9625)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove fallback action links ([b912914](https://github.com/stacksjs/stacks/commit/b912914)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: reprocess email bodies and attachments ([7da65c4](https://github.com/stacksjs/stacks/commit/7da65c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: normalize stored MIME bodies ([fdb77e1](https://github.com/stacksjs/stacks/commit/fdb77e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browse**: target scenario controls by text ([962f895](https://github.com/stacksjs/stacks/commit/962f895)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: make inbox responsive ([252abfd](https://github.com/stacksjs/stacks/commit/252abfd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: gate CI navigation by role ([8d2c140](https://github.com/stacksjs/stacks/commit/8d2c140)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: normalize model API metadata ([e359535](https://github.com/stacksjs/stacks/commit/e359535)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: link content to the public app ([054ecce](https://github.com/stacksjs/stacks/commit/054ecce)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: correct detail navigation targets ([2109aad](https://github.com/stacksjs/stacks/commit/2109aad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dev**: keep dashboard HMR server alive ([9e07fac](https://github.com/stacksjs/stacks/commit/9e07fac)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: serve application public assets ([a6cd513](https://github.com/stacksjs/stacks/commit/a6cd513)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browse**: audit deterministic page widths ([8c284f5](https://github.com/stacksjs/stacks/commit/8c284f5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: contain wide page content ([1e7d157](https://github.com/stacksjs/stacks/commit/1e7d157)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: avoid anonymous token requests ([b137975](https://github.com/stacksjs/stacks/commit/b137975)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **kanban**: normalize raw query rows ([ba93d78](https://github.com/stacksjs/stacks/commit/ba93d78)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: stabilize reactive component hydration ([667611e](https://github.com/stacksjs/stacks/commit/667611e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: decode route parameters before actions ([342b3b9](https://github.com/stacksjs/stacks/commit/342b3b9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: expose clean dry-run option ([6139b81](https://github.com/stacksjs/stacks/commit/6139b81)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: make clean dry runs non-destructive ([ce445f1](https://github.com/stacksjs/stacks/commit/ce445f1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browse**: relaunch failed crawl sessions ([c2eccc0](https://github.com/stacksjs/stacks/commit/c2eccc0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **auth**: type missing RBAC entities ([e99ecc3](https://github.com/stacksjs/stacks/commit/e99ecc3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: enforce typed request boundary ([059f86c](https://github.com/stacksjs/stacks/commit/059f86c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: use typed dashboard requests ([2b801ea](https://github.com/stacksjs/stacks/commit/2b801ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: type identity requests ([2b8c09f](https://github.com/stacksjs/stacks/commit/2b8c09f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: type operational requests ([084104f](https://github.com/stacksjs/stacks/commit/084104f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **rbac**: use typed request helpers ([bb60a24](https://github.com/stacksjs/stacks/commit/bb60a24)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **kanban**: use typed request helpers ([9fcfb84](https://github.com/stacksjs/stacks/commit/9fcfb84)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **email**: document inbound attachment flow ([6449b22](https://github.com/stacksjs/stacks/commit/6449b22)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💄 Styles
+
+- **dashboard**: remove separator dash typography ([9e013c9](https://github.com/stacksjs/stacks/commit/9e013c9)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate the artifacts for the inbox attachment route ([3c1bd4a](https://github.com/stacksjs/stacks/commit/3c1bd4a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: regenerate card comment endpoints ([6cb1d75](https://github.com/stacksjs/stacks/commit/6cb1d75)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: update stx to 0.2.173 ([ea150fc](https://github.com/stacksjs/stacks/commit/ea150fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: refresh model manifest ([5e469f2](https://github.com/stacksjs/stacks/commit/5e469f2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.353...v0.70.354)
 
 ## ✨ Features
