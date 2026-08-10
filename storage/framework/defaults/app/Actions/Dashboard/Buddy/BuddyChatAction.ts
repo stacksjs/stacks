@@ -4,6 +4,7 @@ import { Action } from '@stacksjs/actions'
 import { buddyState, createAIClient } from '@stacksjs/ai'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { buddySystemPrompt, isBuddyProviderConfigured, publicBuddyHistory, resolveBuddyProvider } from './buddy-chat'
 
 export default new Action({
@@ -49,9 +50,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Buddy could not answer the question.',
-      }, 502)
+      return dashboardOperationalError(error, 'Buddy could not answer the question.', 'BuddyChatAction', 502)
     }
   },
 })

@@ -4,6 +4,7 @@ import { env } from '@stacksjs/env'
 import { readdirSync } from 'node:fs'
 import { basename, extname, join } from 'node:path'
 import process from 'node:process'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface SearchableModel {
   name: string
@@ -153,8 +154,15 @@ async function loadSearchableModels(): Promise<SearchableModel[]> {
 }
 
 function catalog(): Promise<SearchableModel[]> {
-  modelCatalog.promise ||= loadSearchableModels()
-  return modelCatalog.promise
+  if (modelCatalog.promise)
+    return modelCatalog.promise
+
+  const loading = loadSearchableModels().catch((error) => {
+    modelCatalog.promise = null
+    throw error
+  })
+  modelCatalog.promise = loading
+  return loading
 }
 
 function rowValue(row: Record<string, unknown>, field: string): string {
@@ -185,67 +193,72 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle(request: RequestInstance) {
-    const q = String(request?.get('q') || '').trim().slice(0, MAX_QUERY_LENGTH)
+    const q = String(request.get('q') || '').trim().slice(0, MAX_QUERY_LENGTH)
     if (!q) return { results: {} }
 
-    const { Database } = await import('bun:sqlite')
-    const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
-    const results: Record<string, SearchResult[]> = {}
-    const unavailable: SearchUnavailable[] = []
-
     try {
-      for (const model of await catalog()) {
-        if (Object.keys(results).length >= MAX_GROUPS) break
+      const { Database } = await import('bun:sqlite')
+      const db = new Database(env.DB_DATABASE_PATH || 'database/stacks.sqlite', { readonly: true })
+      const results: Record<string, SearchResult[]> = {}
+      const unavailable: SearchUnavailable[] = []
 
-        const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
-        if (columns.length === 0) {
-          unavailable.push({
-            model: model.name,
-            reason: `Table ${model.table} has not been migrated.`,
-          })
-          continue
-        }
+      try {
+        for (const model of await catalog()) {
+          if (Object.keys(results).length >= MAX_GROUPS) break
 
-        const available = new Set(columns.map(column => column.name))
-        const fields = model.fields.filter(field => available.has(field))
-        if (fields.length === 0) {
-          unavailable.push({
-            model: model.name,
-            reason: 'Declared useSearch fields are not present in the migrated table.',
-          })
-          continue
-        }
-
-        const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
-        const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
-        const bindings = fields.map(() => `%${q}%`)
-        let rows: Array<Record<string, unknown>>
-        try {
-          rows = db
-            .query(`SELECT ${selected.join(', ')} FROM ${model.table} WHERE ${where} LIMIT ?`)
-            .all(...bindings, RESULTS_PER_MODEL) as Array<Record<string, unknown>>
-        }
-        catch (error) {
-          throw new Error(`Could not search model ${model.name}: ${error instanceof Error ? error.message : String(error)}`)
-        }
-        if (rows.length === 0) continue
-
-        results[model.name] = rows.map((row, index) => {
-          const title = resultTitle(model, row)
-          return {
-            id: (row.id as string | number | undefined) ?? index,
-            title,
-            subtitle: resultSubtitle(model, row, title),
-            href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
-            icon: model.icon,
+          const columns = db.query(`PRAGMA table_info(${model.table})`).all() as Array<{ name: string }>
+          if (columns.length === 0) {
+            unavailable.push({
+              model: model.name,
+              reason: `Table ${model.table} has not been migrated.`,
+            })
+            continue
           }
-        })
-      }
-    }
-    finally {
-      db.close()
-    }
 
-    return { results, unavailable }
+          const available = new Set(columns.map(column => column.name))
+          const fields = model.fields.filter(field => available.has(field))
+          if (fields.length === 0) {
+            unavailable.push({
+              model: model.name,
+              reason: 'Declared useSearch fields are not present in the migrated table.',
+            })
+            continue
+          }
+
+          const selected = [...new Set(['id', ...fields])].filter(field => available.has(field))
+          const where = fields.map(field => `${field} LIKE ? COLLATE NOCASE`).join(' OR ')
+          const bindings = fields.map(() => `%${q}%`)
+          let rows: Array<Record<string, unknown>>
+          try {
+            rows = db
+              .query(`SELECT ${selected.join(', ')} FROM ${model.table} WHERE ${where} LIMIT ?`)
+              .all(...bindings, RESULTS_PER_MODEL) as Array<Record<string, unknown>>
+          }
+          catch (error) {
+            throw new Error(`Could not search model ${model.name}: ${error instanceof Error ? error.message : String(error)}`)
+          }
+          if (rows.length === 0) continue
+
+          results[model.name] = rows.map((row, index) => {
+            const title = resultTitle(model, row)
+            return {
+              id: (row.id as string | number | undefined) ?? index,
+              title,
+              subtitle: resultSubtitle(model, row, title),
+              href: `/models/${model.slug}?q=${encodeURIComponent(q)}`,
+              icon: model.icon,
+            }
+          })
+        }
+      }
+      finally {
+        db.close()
+      }
+
+      return { results, unavailable }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Search results could not be loaded.', 'GlobalSearchAction')
+    }
   },
 })

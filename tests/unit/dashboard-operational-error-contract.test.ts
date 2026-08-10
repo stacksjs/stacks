@@ -70,4 +70,14 @@ describe('dashboard operational error contract', () => {
     expect(action.match(/inspectSource\(/g)?.length).toBe(12)
     expect(action).toContain("dashboardOperationalIssue(error, message, `InsightsAction.${source}`)")
   })
+
+  test('protects external Buddy and global-search failures', () => {
+    const buddy = readAction('Buddy/BuddyChatAction.ts')
+    const search = readAction('Search/GlobalSearchAction.ts')
+
+    expect(buddy).toContain("dashboardOperationalError(error, 'Buddy could not answer the question.', 'BuddyChatAction', 502)")
+    expect(search).toContain("dashboardOperationalError(error, 'Search results could not be loaded.', 'GlobalSearchAction')")
+    expect(search).toContain('modelCatalog.promise = null')
+    expect(search).toContain('finally {\n        db.close()')
+  })
 })
