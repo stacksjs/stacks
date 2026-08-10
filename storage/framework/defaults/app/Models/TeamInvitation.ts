@@ -21,6 +21,11 @@ export default defineModel({
       unique: true,
     },
     {
+      name: 'team_invitations_pending_key_unique',
+      columns: ['pending_key'],
+      unique: true,
+    },
+    {
       name: 'team_invitations_team_email_status_index',
       columns: ['team_id', 'email', 'status'],
     },
@@ -76,6 +81,14 @@ export default defineModel({
       hidden: true,
       validation: {
         rule: schema.string().required().max(64),
+      },
+    },
+
+    pendingKey: {
+      required: false,
+      hidden: true,
+      validation: {
+        rule: schema.string().max(384),
       },
     },
 

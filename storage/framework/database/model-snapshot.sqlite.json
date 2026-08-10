@@ -3968,7 +3968,7 @@
             "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
-            "isNullable": false,
+            "isNullable": true,
             "hasDefault": false
           },
           {
@@ -5717,6 +5717,25 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": "",
+            "maxLength": 64
+          },
+          {
+            "name": "exemptible",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": false
           }
         ],
         "indexes": [
@@ -8750,6 +8769,15 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "pending_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 384
           }
         ],
         "indexes": [
@@ -8773,6 +8801,13 @@
             "name": "team_invitations_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "team_invitations_pending_key_unique",
+            "columns": [
+              "pending_key"
             ],
             "type": "unique"
           }
@@ -9283,7 +9318,7 @@
       }
     ]
   },
-  "hash": "0fba94c8f66bd5fc7ebc0d81501ea671c2020f94358bbff64f11d0e182da5850",
+  "hash": "53f8dd5eca1b84d9199470a48129e094bf141f6dc4eb4a94579cd438e945e996",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-07T22:33:37.429Z"
+  "updatedAt": "2026-08-10T23:57:45.251Z"
 }
