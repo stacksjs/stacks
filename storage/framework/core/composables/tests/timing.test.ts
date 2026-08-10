@@ -792,13 +792,20 @@ describe('useTimeAgo', () => {
     expect(result.value).toBe('1 year ago')
   })
 
+  // Future targets get a margin INSIDE the bucket rather than sitting on its
+  // edge. formatTimeAgo floors, and time passes between the Date.now() here
+  // and the one inside useTimeAgo, so an exact `+ 2 hours` is 7199999ms by the
+  // time it is measured and floors to "in 1 hour". Past targets do not need
+  // this: elapsed time grows their difference, which keeps them in the same
+  // bucket. The margin has to be small enough not to reach the next bucket and
+  // large enough to survive a loaded CI runner.
   it('should format future dates', () => {
-    const result = useTimeAgo(Date.now() + 5 * 60 * 1000 + 500)
-    expect(['in 5 minutes', 'in 4 minutes']).toContain(result.value)
+    const result = useTimeAgo(Date.now() + 5 * 60 * 1000 + 30 * 1000)
+    expect(result.value).toBe('in 5 minutes')
   })
 
   it('should format future hours', () => {
-    const result = useTimeAgo(Date.now() + 2 * 60 * 60 * 1000)
+    const result = useTimeAgo(Date.now() + 2 * 60 * 60 * 1000 + 30 * 1000)
     expect(result.value).toBe('in 2 hours')
   })
 
