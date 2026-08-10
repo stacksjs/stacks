@@ -58,6 +58,7 @@ export default new Action({
       const { count: _count, ...metadata } = definition
       return formatDashboardStat(metadata, results[index])
     })
+    // eslint-disable-next-line pickier/no-unused-vars
     const issues = results.flatMap((result, index) => result.status === 'rejected'
       ? [{
           source: definitions[index].title,

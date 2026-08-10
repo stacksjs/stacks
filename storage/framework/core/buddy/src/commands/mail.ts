@@ -21,6 +21,7 @@ export function sanitizeLineCount(value?: string): string {
   return String(Number.isFinite(count) ? Math.min(5000, Math.max(1, count)) : 50)
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`
 }

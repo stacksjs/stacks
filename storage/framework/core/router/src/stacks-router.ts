@@ -1444,6 +1444,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 /**
  * Create a chainable route object (for .middleware() support)
  */
+// eslint-disable-next-line pickier/no-unused-vars
 function createChainableRoute(routeKey: string): ChainableRoute {
   // Initialize middleware list for this route
   if (!routeMiddlewareRegistry.has(routeKey)) {

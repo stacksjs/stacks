@@ -242,6 +242,7 @@ function normalizeDocument(doc: Record<string, unknown>): Record<string, unknown
   return out
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
   const page = Number(params.page) || 1
   const perPage = Number(params.perPage) || 20

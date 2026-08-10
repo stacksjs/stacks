@@ -94,6 +94,7 @@ export interface MarkPainter {
   aspect: number
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 export async function markPainter(
   path: string | undefined,
   root: string = process.cwd(),

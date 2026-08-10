@@ -819,6 +819,7 @@ async function raceWithTimeout<T>(task: Promise<T>, timeoutMs: number, message: 
  * at the worker boundary). The branching shape lived inline; the
  * envelope module is the canonical place now.
  */
+// eslint-disable-next-line pickier/no-unused-vars
 async function executeJobPayload(payload: unknown): Promise<void> {
   const parsed = parseEnvelope(payload)
   if (!parsed.ok) {

@@ -134,6 +134,7 @@ export async function findTimestampColumns(): Promise<TimestampColumn[]> {
  * Identifiers come from `information_schema` and are re-validated here before
  * being spliced into DDL, which cannot take a placeholder.
  */
+// eslint-disable-next-line pickier/no-unused-vars
 export function modifyToDatetimeSql(column: TimestampColumn): string {
   const safe = /^[a-z_]\w*$/i
   if (!safe.test(column.table) || !safe.test(column.column))

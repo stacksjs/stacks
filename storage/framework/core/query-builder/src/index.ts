@@ -48,7 +48,7 @@ function callQueryHooks<K extends 'onQueryStart' | 'onQueryEnd' | 'onQueryError'
 ): void {
   for (const hooks of persistentQueryHooks) {
     try {
-      // eslint-disable-next-line
+      // eslint-disable-next-line pickier/no-unused-vars
       const listener = hooks[hook] as ((value: typeof event) => void) | undefined
       listener?.(event)
     }
@@ -58,7 +58,7 @@ function callQueryHooks<K extends 'onQueryStart' | 'onQueryEnd' | 'onQueryError'
   }
 
   try {
-    // eslint-disable-next-line
+    // eslint-disable-next-line pickier/no-unused-vars
     const listener = configuredHooks?.[hook] as ((value: typeof event) => void) | undefined
     listener?.(event)
   }

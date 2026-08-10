@@ -267,6 +267,7 @@ const SAFE_FILTER_OPERATORS = new Set([
  * text), so filtered aggregates inline values instead - safely, with
  * strict typing and standard `''` quote escaping.
  */
+// eslint-disable-next-line pickier/no-unused-vars
 function inlineSqlLiteral(value: unknown): string {
   if (value === null || value === undefined)
     return 'NULL'
