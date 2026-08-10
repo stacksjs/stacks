@@ -9,3 +9,8 @@ export function dashboardOperationalError(
   console.error(`[dashboard/api] ${action} failed:`, error)
   return response.json({ message }, status)
 }
+
+export function dashboardOperationalIssue(error: unknown, message: string, action: string): string {
+  console.error(`[dashboard/api] ${action} failed:`, error)
+  return message
+}

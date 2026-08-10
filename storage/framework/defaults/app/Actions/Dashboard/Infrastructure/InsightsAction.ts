@@ -6,6 +6,7 @@ import { cache } from '@stacksjs/cache'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { checkQueueHealth } from '@stacksjs/queue'
+import { dashboardOperationalIssue } from '../dashboard-response'
 import {
   compactSql,
   countValue,
@@ -23,14 +24,14 @@ interface SourceResult<T> {
   error: string
 }
 
-async function inspectSource<T>(work: Promise<T>, fallback: T): Promise<SourceResult<T>> {
+async function inspectSource<T>(work: Promise<T>, fallback: T, message: string, source: string): Promise<SourceResult<T>> {
   try {
     return { value: await work, error: '' }
   }
   catch (error) {
     return {
       value: fallback,
-      error: error instanceof Error ? error.message : 'The source could not be inspected.',
+      error: dashboardOperationalIssue(error, message, `InsightsAction.${source}`),
     }
   }
 }
@@ -135,18 +136,18 @@ export default new Action({
       filesystem,
       databaseFile,
     ] = await Promise.all([
-      inspectSource(requestSummaryQuery, undefined),
-      inspectSource(requestSuccessQuery, undefined),
-      inspectSource(slowRequestsQuery, []),
-      inspectSource(querySummaryQuery, undefined),
-      inspectSource(queryStatusesQuery, []),
-      inspectSource(slowQueriesQuery, []),
-      inspectSource(errorSummaryQuery, undefined),
-      inspectSource(recentErrorsQuery, []),
-      inspectSource(checkQueueHealth(), null),
-      inspectSource(cache.getStats(), null),
-      inspectSource(filesystemQuery, null),
-      inspectSource(databaseFileQuery, null),
+      inspectSource(requestSummaryQuery, undefined, 'Request telemetry is unavailable.', 'requests.summary'),
+      inspectSource(requestSuccessQuery, undefined, 'Request telemetry is unavailable.', 'requests.success'),
+      inspectSource(slowRequestsQuery, [], 'Request telemetry is unavailable.', 'requests.slowest'),
+      inspectSource(querySummaryQuery, undefined, 'Query telemetry is unavailable.', 'queries.summary'),
+      inspectSource(queryStatusesQuery, [], 'Query telemetry is unavailable.', 'queries.statuses'),
+      inspectSource(slowQueriesQuery, [], 'Query telemetry is unavailable.', 'queries.slowest'),
+      inspectSource(errorSummaryQuery, undefined, 'Error telemetry is unavailable.', 'errors.summary'),
+      inspectSource(recentErrorsQuery, [], 'Error telemetry is unavailable.', 'errors.recent'),
+      inspectSource(checkQueueHealth(), null, 'Queue telemetry is unavailable.', 'queue'),
+      inspectSource(cache.getStats(), null, 'Cache telemetry is unavailable.', 'cache'),
+      inspectSource(filesystemQuery, null, 'Filesystem telemetry is unavailable.', 'filesystem'),
+      inspectSource(databaseFileQuery, null, 'Database file telemetry is unavailable.', 'database-file'),
     ])
 
     const requestTotal = countValue(requestSummary.value?.total)

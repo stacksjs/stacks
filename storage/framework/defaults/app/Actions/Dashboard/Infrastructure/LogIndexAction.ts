@@ -1,8 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { response } from '@stacksjs/router'
 import { dashboardRequestValue } from '../dashboard-request'
+import { dashboardOperationalError } from '../dashboard-response'
 import { DASHBOARD_LOG_TYPES, normalizeDashboardLog, summarizeDashboardLogTypes } from './log-dashboard'
 
 const RANGES = ['1', '7', '30', '90', 'all'] as const
@@ -101,13 +101,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        logs: [],
-        summary: { total: 0, error: 0, warning: 0, info: 0, success: 0 },
-        pagination: { page: 1, perPage: 25, total: 0, totalPages: 1 },
-        options: { sources: [], projects: [], types: [...DASHBOARD_LOG_TYPES], ranges: [...RANGES] },
-        error: error instanceof Error ? error.message : 'Logs could not be loaded.',
-      }, 500)
+      return dashboardOperationalError(error, 'Logs could not be loaded.', 'LogIndexAction')
     }
   },
 })

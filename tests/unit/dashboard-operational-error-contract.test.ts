@@ -14,6 +14,7 @@ describe('dashboard operational error contract', () => {
 
     expect(helper).toContain('console.error(`[dashboard/api] ${action} failed:`, error)')
     expect(helper).toContain('return response.json({ message }, status)')
+    expect(helper).toContain('return message')
     expect(helper).toContain('status = 503')
   })
 
@@ -29,6 +30,7 @@ describe('dashboard operational error contract', () => {
       'Jobs/JobStatsAction.ts',
       'Email/CapturedMailIndexAction.ts',
       'Email/CapturedMailShowAction.ts',
+      'Infrastructure/LogIndexAction.ts',
       'Queries/QueryDashboardAction.ts',
       'Queries/QueryShowAction.ts',
       'Queue/QueueStatsAction.ts',
@@ -37,7 +39,7 @@ describe('dashboard operational error contract', () => {
     ].map(readAction).join('\n')
 
     expect(sources).not.toContain('error instanceof Error ? error.message')
-    expect(sources.match(/dashboardOperationalError\(/g)?.length).toBe(15)
+    expect(sources.match(/dashboardOperationalError\(/g)?.length).toBe(16)
   })
 
   test('uses native status codes for invalid and missing job records', () => {
@@ -59,5 +61,13 @@ describe('dashboard operational error contract', () => {
     expect(sources.match(/error instanceof Error \? error\.message/g)?.length).toBe(4)
     expect(sources).not.toContain("error.message : 'Sales analytics records could not be read.'")
     expect(sources).not.toContain("error.message : 'Web analytics records could not be read.'")
+  })
+
+  test('keeps partial infrastructure insight issues actionable but safe', () => {
+    const action = readAction('Infrastructure/InsightsAction.ts')
+
+    expect(action).not.toContain('error instanceof Error ? error.message')
+    expect(action.match(/inspectSource\(/g)?.length).toBe(12)
+    expect(action).toContain("dashboardOperationalIssue(error, message, `InsightsAction.${source}`)")
   })
 })
