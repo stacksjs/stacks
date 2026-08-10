@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.348...v0.70.349)
+
+## 🐛 Bug Fixes
+
+- **events**: register the listeners, because nothing ever did ([fd74124](https://github.com/stacksjs/stacks/commit/fd74124)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.347...v0.70.348)
 
 ## ✨ Features
