@@ -67,6 +67,54 @@ function getReservationTtlSec(): number {
 }
 
 /**
+ * How far retries are spread past their backoff delay, as a fraction of it.
+ * Override with `STACKS_QUEUE_RETRY_JITTER`; `0` disables spreading entirely.
+ * Clamped to 0..1.
+ */
+function getRetryJitterRatio(): number {
+  const raw = process.env.STACKS_QUEUE_RETRY_JITTER
+  if (raw === undefined)
+    return 0.2
+  const n = Number(raw)
+  if (!Number.isFinite(n) || n < 0)
+    return 0.2
+  return Math.min(n, 1)
+}
+
+/**
+ * Spread a retry across a window so a downstream outage does not resynchronise
+ * every failed job onto the same second.
+ *
+ * Without this, a provider going down for a minute failed N jobs at once, and
+ * `backoff[0]` sent all N back at once, and they failed together again: the
+ * herd never breaks up, and each wave hits the recovering dependency harder
+ * than the last (stacksjs/stacks#2282 item 2).
+ *
+ * The spread is **additive only**. Classic full jitter picks uniformly from
+ * `[0, delay]`, which retries sooner than asked, and `backoff` here is
+ * frequently a rate-limit accommodation ("wait 60s, the API says so") rather
+ * than a politeness hint. Retrying at 12s because a coin came up short would
+ * be a behaviour change with a real failure mode, so the window opens after
+ * the configured delay, never before it.
+ *
+ * A delay of zero stays zero: someone who asked for an immediate retry gets
+ * one.
+ *
+ * Exported for testing with a supplied `random`, since asserting on a spread
+ * needs a deterministic source.
+ */
+export function applyRetryJitter(
+  delaySeconds: number,
+  ratio: number,
+  random: () => number = Math.random,
+): number {
+  if (!(delaySeconds > 0) || ratio <= 0)
+    return delaySeconds
+
+  return Math.round(delaySeconds + delaySeconds * ratio * random())
+}
+
+/**
  * Sweep frequency — how often the database loop checks for orphaned
  * reservations. Default 60s; override via
  * `STACKS_QUEUE_SWEEP_INTERVAL_SEC`. Cheap (one indexed UPDATE), so
@@ -606,6 +654,10 @@ async function processJob(job: any): Promise<void> {
       retryDelay = Number(retryDelay)
       if (!Number.isFinite(retryDelay) || retryDelay < 0)
         retryDelay = 30
+
+      // Spread the retry so a downstream outage doesn't send every job it
+      // failed back at the same instant. See applyRetryJitter.
+      retryDelay = applyRetryJitter(retryDelay, getRetryJitterRatio())
 
       log.info(`[Queue] Job ${jobId} will be retried in ${retryDelay}s (attempt ${currentAttempts}/${maxAttempts})`)
       try {
