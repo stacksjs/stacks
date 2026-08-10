@@ -1,6 +1,7 @@
 import type { AutoImportsOptions } from 'bun-plugin-auto-imports'
 import { existsSync, statSync } from 'node:fs'
 import { dirname, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { plugin } from 'bun'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
@@ -34,12 +35,67 @@ function configEnabled(configRelPaths: string[]): boolean {
 }
 
 /**
+ * A framework-defaults subdirectory, wherever it actually lives.
+ *
+ * These used to be `path.storagePath('framework/defaults/<sub>')` and nothing
+ * else, which is correct for a vendored app and fatal for one consuming the
+ * framework as packages. An app that has dropped `storage/framework/` still has
+ * the identical files in `@stacksjs/defaults`, but boot never looked there: the
+ * scan was handed a path that did not exist, and `scanDirExportsDetailed` in
+ * bun-plugin-auto-imports THROWS on a missing directory rather than returning
+ * nothing. The API then dies at startup with
+ *
+ *   Failed to scan directory .../storage/framework/defaults/functions
+ *
+ * which is not caught by the tolerance already added around these scans,
+ * because the throw happens inside the plugin.
+ *
+ * Vendored first, so an app with the tree behaves exactly as before and this
+ * cannot change what an existing project resolves. Package second. `undefined`
+ * when neither exists, which callers drop from the scan list — a framework
+ * default that is genuinely absent is not an error, it just contributes no
+ * auto-imports.
+ *
+ * Resolving via `package.json` is deliberate: `@stacksjs/defaults` publishes no
+ * `.` export, so the bare specifier does not resolve, and these are data
+ * directories rather than modules. Inside this monorepo the specifier lands on
+ * the workspace package, which holds only build files — no `functions/`, no
+ * `app/` — so the lookup misses and the vendored branch wins, which is what we
+ * want when developing the framework itself.
+ */
+export function frameworkDefaultsDir(sub: string): string | undefined {
+  const vendored = path.storagePath(`framework/defaults/${sub}`)
+  if (existsSync(vendored))
+    return vendored
+
+  try {
+    const packageRoot = dirname(fileURLToPath(import.meta.resolve('@stacksjs/defaults/package.json')))
+    const packaged = `${packageRoot}/${sub}`
+    if (existsSync(packaged))
+      return packaged
+  }
+  catch {
+    // @stacksjs/defaults is not installed — there is no fallback to offer.
+  }
+
+  return undefined
+}
+
+/** Drop the directories that do not exist, so a scan is never handed one. */
+function existingDirs(dirs: (string | undefined)[]): string[] {
+  return dirs.filter((dir): dir is string => Boolean(dir) && existsSync(dir as string))
+}
+
+/**
  * Resolve the set of directories to scan for framework-default models.
  * Always returns the Models root itself (for top-level files), then includes
  * each opt-in subdir only if its gating config file exists in the project.
  */
 function resolveDefaultModelDirs(): string[] {
-  const root = path.storagePath('framework/defaults/app/Models')
+  const root = frameworkDefaultsDir('app/Models')
+  if (!root)
+    return []
+
   const dirs = [root]
   for (const [subdir, configPaths] of Object.entries(OPTIONAL_MODEL_MODULES)) {
     if (configEnabled(configPaths))
@@ -166,16 +222,16 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
  * Shared by the generator and the staleness check below so the two can
  * never disagree about what the manifest is derived from.
  */
-function autoImportSourceDirs(): string[] {
-  return [
+export function autoImportSourceDirs(): string[] {
+  return existingDirs([
     path.resourcesPath('functions'),
-    path.storagePath('framework/defaults/functions'),
+    frameworkDefaultsDir('functions'),
     path.userModelsPath(),
     ...resolveDefaultModelDirs(),
     path.userJobsPath(),
     path.userControllersPath(),
-    path.storagePath('framework/defaults/app/Controllers'),
-  ]
+    frameworkDefaultsDir('app/Controllers'),
+  ])
 }
 
 /**
@@ -244,12 +300,11 @@ export async function generateAutoImportFiles(): Promise<void> {
   await generateServerAutoImportTypes()
 
   const userFunctionsPath = path.resourcesPath('functions')
-  // Framework-default functions (e.g. storage/framework/defaults/functions/
-  // commerce/coupons.ts → useCoupons) are also auto-importable so dashboard
-  // pages can call them without an explicit `import` line. User functions
-  // come first so a project-level helper of the same name shadows the
-  // default.
-  const defaultFunctionsPath = path.storagePath('framework/defaults/functions')
+  // Framework-default functions (e.g. defaults/functions/commerce/coupons.ts →
+  // useCoupons) are also auto-importable so dashboard pages can call them
+  // without an explicit `import` line. User functions come first so a
+  // project-level helper of the same name shadows the default.
+  const defaultFunctionsPath = frameworkDefaultsDir('functions')
   const functionsPath = userFunctionsPath
   const outputDir = path.storagePath('framework/auto-imports')
 
@@ -258,21 +313,27 @@ export async function generateAutoImportFiles(): Promise<void> {
   // models are imported directly from their canonical source (user or defaults).
   const userModelsPath = path.userModelsPath()
   const defaultModelDirs = resolveDefaultModelDirs()
-  const [defaultsRoot = path.storagePath('framework/defaults/app/Models'), ...enabledSubdirs] = defaultModelDirs
+  const [defaultsRoot, ...enabledSubdirs] = defaultModelDirs
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()
 
   // Controller definition directories (user controllers take priority)
   const userControllersPath = path.userControllersPath()
-  const defaultControllersPath = path.storagePath('framework/defaults/app/Controllers')
+  const defaultControllersPath = frameworkDefaultsDir('app/Controllers')
 
   // Ensure output directory exists
   await Bun.write(`${outputDir}/.gitkeep`, '')
 
-  // Generate runtime index for functions
+  // Generate runtime index for functions.
+  //
+  // Filtered to directories that exist, because generateRuntimeIndex throws on
+  // one that does not. That covers the framework defaults an app consuming the
+  // packages may not have on disk, and equally `resources/functions` in a
+  // project that simply has no functions of its own — which used to be a boot
+  // failure for a reason nobody could act on.
   const functionsIndexPath = `${outputDir}/functions.ts`
-  await (generateRuntimeIndex as any)([userFunctionsPath, defaultFunctionsPath], functionsIndexPath)
+  await (generateRuntimeIndex as any)(existingDirs([userFunctionsPath, defaultFunctionsPath]), functionsIndexPath)
 
   // Generate runtime index for defineModel models (default exports).
   // Defaults root is scanned NON-recursively (so gated subdirs stay opt-in),
@@ -280,7 +341,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   const modelsIndexPath = `${outputDir}/models.ts`
   const modelScan: ScanEntry[] = [
     userModelsPath,
-    { dir: defaultsRoot, recursive: false },
+    ...(defaultsRoot ? [{ dir: defaultsRoot, recursive: false }] : []),
     ...defaultModelDirs.slice(1).map(d => ({ dir: d, recursive: true })),
   ]
   await generateDefineModelIndex(modelScan, modelsIndexPath)
@@ -291,7 +352,7 @@ export async function generateAutoImportFiles(): Promise<void> {
 
   // Generate runtime index for controllers (default exports, user overrides defaults)
   const controllersIndexPath = `${outputDir}/controllers.ts`
-  await generateDefineModelIndex([userControllersPath, defaultControllersPath], controllersIndexPath)
+  await generateDefineModelIndex(existingDirs([userControllersPath, defaultControllersPath]), controllersIndexPath)
 
   // Generate combined index
   const combinedContent = `// Generated by bun-plugin-auto-imports
@@ -321,28 +382,28 @@ export * from './controllers'
  */
 export function initiateImports(): void {
   const functionsPath = path.resourcesPath('functions')
-  // Framework-default helpers (`storage/framework/defaults/functions/...`)
-  // are also surfaced globally so dashboard pages can call `useCoupons()`,
-  // `useCustomers()`, etc. without an explicit import.
-  const defaultFunctionsPath = path.storagePath('framework/defaults/functions')
+  // Framework-default helpers (`defaults/functions/...`) are also surfaced
+  // globally so dashboard pages can call `useCoupons()`, `useCustomers()`,
+  // etc. without an explicit import.
+  const defaultFunctionsPath = frameworkDefaultsDir('functions')
 
   // defineModel() model definition directories (user models take priority).
   // Defaults root is non-recursive so opt-in subdirs must be explicitly added.
   const userModelsPath = path.userModelsPath()
   const defaultModelDirs = resolveDefaultModelDirs()
-  const [defaultsRoot = path.storagePath('framework/defaults/app/Models'), ...enabledSubdirs] = defaultModelDirs
+  const [defaultsRoot, ...enabledSubdirs] = defaultModelDirs
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()
 
   // Controller definition directories
   const userControllersPath = path.userControllersPath()
-  const defaultControllersPath = path.storagePath('framework/defaults/app/Controllers')
+  const defaultControllersPath = frameworkDefaultsDir('app/Controllers')
 
   // Scan defineModel() models (default exports from model definitions)
   const defineModelExports = [
     ...scanDefineModelExports(userModelsPath),
-    ...scanDefineModelExports(defaultsRoot, { recursive: false }),
+    ...(defaultsRoot ? scanDefineModelExports(defaultsRoot, { recursive: false }) : []),
     ...enabledSubdirs.flatMap(d => scanDefineModelExports(d)),
   ]
 
@@ -376,7 +437,7 @@ export function initiateImports(): void {
   // Scan controller definitions (default exports, user overrides defaults)
   const controllerExports = [
     ...scanDefineModelExports(userControllersPath),
-    ...scanDefineModelExports(defaultControllersPath),
+    ...(defaultControllersPath ? scanDefineModelExports(defaultControllersPath) : []),
   ]
   const seenControllers = new Set<string>()
   const uniqueControllerExports = controllerExports.filter(exp => {
@@ -399,8 +460,8 @@ export function initiateImports(): void {
       ...controllerImports,
     ],
     // Use dirs to auto-scan and import all exports from resources/functions
-    // (user) plus storage/framework/defaults/functions (framework defaults).
-    dirs: [functionsPath, defaultFunctionsPath],
+    // (user) plus the framework defaults' functions, wherever they resolve.
+    dirs: existingDirs([functionsPath, defaultFunctionsPath]),
     eslint: {
       enabled: true,
       filepath: path.storagePath('framework/server-auto-imports.json'),
@@ -420,16 +481,17 @@ export function initiateImports(): void {
 export async function generateServerAutoImportTypes(): Promise<void> {
   const userModelsPath = path.userModelsPath()
   const defaultModelDirs = resolveDefaultModelDirs()
-  const [defaultsRoot = path.storagePath('framework/defaults/app/Models'), ...enabledSubdirs] = defaultModelDirs
+  const [defaultsRoot, ...enabledSubdirs] = defaultModelDirs
   const modelExports = [
     ...scanDefineModelExports(userModelsPath),
-    ...scanDefineModelExports(defaultsRoot, { recursive: false }),
+    ...(defaultsRoot ? scanDefineModelExports(defaultsRoot, { recursive: false }) : []),
     ...enabledSubdirs.flatMap(dir => scanDefineModelExports(dir)),
   ]
   const jobExports = scanDefineModelExports(path.userJobsPath())
+  const defaultControllersPath = frameworkDefaultsDir('app/Controllers')
   const controllerExports = [
     ...scanDefineModelExports(path.userControllersPath()),
-    ...scanDefineModelExports(path.storagePath('framework/defaults/app/Controllers')),
+    ...(defaultControllersPath ? scanDefineModelExports(defaultControllersPath) : []),
   ]
 
   const seen = new Set<string>()
