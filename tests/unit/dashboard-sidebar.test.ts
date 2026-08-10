@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import {
+  DEFAULT_TOGGLES,
   buildNavSections,
   buildWebSidebarSections,
   parseDiscoveredManifest,
@@ -59,6 +60,18 @@ describe('dashboard sidebar data', () => {
       to: '/analytics',
       icon: 'dashboard',
       text: 'Overview',
+    })
+  })
+
+  it('gates optional CI navigation to dev-capable viewers', () => {
+    const management = buildNavSections([], { ...DEFAULT_TOGGLES, ci: true })
+      .find(([id]) => id === 'management')?.[2] ?? []
+
+    expect(management).toContainEqual({
+      to: '/ci',
+      icon: 'check-circle',
+      text: 'CI',
+      roles: ['dev'],
     })
   })
 

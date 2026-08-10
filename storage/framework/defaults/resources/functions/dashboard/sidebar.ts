@@ -428,11 +428,11 @@ export function buildNavSections(
       // The layout's role map hides the row from client-role viewers.
       { to: '/kanban', icon: 'table', text: 'Kanban', roles: ['admin', 'dev'] },
     ]
-    // CI tracking (stacksjs/stacks#1844) — opt-in via `ci.enabled` in
-    // config/dashboard.ts. The page additionally checks `useRole().isDev()`
-    // (stub for #1843) before rendering.
+    // CI tracking (stacksjs/stacks#1844) - opt-in via `ci.enabled` in
+    // config/dashboard.ts. Keep the row gate aligned with the page's
+    // `useRole().isDev()` check so client-only viewers never get a dead link.
     if (toggles.ci)
-      managementItems.push({ to: '/ci', icon: 'check-circle', text: 'CI' })
+      managementItems.push({ to: '/ci', icon: 'check-circle', text: 'CI', roles: ['dev'] })
     sections.push(['management', 'management', managementItems])
   }
 
