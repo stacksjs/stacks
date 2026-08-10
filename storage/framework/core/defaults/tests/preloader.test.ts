@@ -62,9 +62,25 @@ describe('default preloader', () => {
     // lines are touched, so this cannot break a continuation.
     const preloaderSource = await Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')).text()
     const instrumented = preloaderSource.split('\n').map((line, index) => {
+      const indent = line.match(/^\s*/)?.[0] ?? ''
+
+      // Round 4. L194 is the `for (const pkg of stacksPackages)` import and it
+      // prints exactly ONCE on Linux before the process stops, so the FIRST
+      // bare specifier is the one that never settles. Say which package it is
+      // and where it resolves to: on macOS these resolve to the global bun
+      // install cache rather than the workspace, so "unresolvable" is not a
+      // safe assumption about what CI is loading.
+      if (line.includes('await import(pkg)')) {
+        return [
+          `${indent}let __resolved = 'UNRESOLVABLE'`,
+          `${indent}try { __resolved = Bun.resolveSync(pkg, import.meta.dir) } catch {}`,
+          `${indent}process.stderr.write('[preloader importing ' + pkg + ' -> ' + __resolved + ']\\n')`,
+          line,
+        ].join('\n')
+      }
+
       if (!/^\s*(?:const|let|var|await)\s.*await import\(/.test(line))
         return line
-      const indent = line.match(/^\s*/)?.[0] ?? ''
       const label = `L${index + 1}: ${line.trim().slice(0, 70).replace(/'/g, '')}`
       return `${indent}process.stderr.write('[preloader ${label}]\\n')\n${line}`
     }).join('\n')
