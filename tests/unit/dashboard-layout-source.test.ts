@@ -39,6 +39,10 @@ describe('dashboard layout client architecture', () => {
     expect(layoutSource).toContain('data-dashboard-web-sidebar')
   })
 
+  test('contains wide page content inside the dashboard shell', () => {
+    expect(layoutSource).toMatch(/\[data-stx-content\] \{[\s\S]*?overflow-x: hidden;/)
+  })
+
   test('does not carry the legacy raw browser wiring', () => {
     expect(layoutSource.match(/^<script\b[^>]*>$/gm)).toEqual([
       '<script server>',

@@ -104,6 +104,9 @@ body {
 [data-stx-content] {
   min-width: 0;
   min-height: 100vh;
+  /* Wide tables scroll inside their own overflow containers without widening
+     the document or moving the fixed dashboard shell. */
+  overflow-x: hidden;
   margin-left: var(--stx-sidebar-width, 250px);
   background: #f4f4f5;
   transition: margin-left 0.3s ease-out;
