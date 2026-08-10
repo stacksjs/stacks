@@ -2641,7 +2641,18 @@ async function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): P
 }
 
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
-  applyRequestEnhancements(req as unknown as Request, req.params || {})
+  const routeParams = Object.fromEntries(
+    Object.entries(req.params || {}).map(([key, value]) => {
+      try {
+        return [key, decodeURIComponent(value)]
+      }
+      catch {
+        return [key, value]
+      }
+    }),
+  )
+  req.params = routeParams
+  applyRequestEnhancements(req as unknown as Request, routeParams)
 
   /*
    * Every request gets an id.

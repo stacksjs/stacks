@@ -73,6 +73,21 @@ describe('request input contract', () => {
     expect(requestWith({}, { url: 'https://example.test/items' }).isEmpty()).toBe(true)
   })
 
+  test('decodes route parameters once before actions read them', () => {
+    const request = requestWith({}, {
+      params: {
+        id: 'disk%3Amessage%2520name.html',
+        malformed: 'value%2',
+      },
+    })
+
+    expect(request.getParams()).toEqual({
+      id: 'disk:message%20name.html',
+      malformed: 'value%2',
+    })
+    expect(request.get('id')).toBe('disk:message%20name.html')
+  })
+
   test('flashes all, selected, and excluded input on the request', () => {
     const request = requestWith({ email: 'hello@example.com', password: 'secret', remember: true })
 
