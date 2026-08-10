@@ -128,6 +128,43 @@ if (!isRepl && !isPostinstall) {
 // eslint-disable-next-line antfu/no-top-level-await
 // await import('bun-plugin-stx')
 
+/**
+ * Whether a bare `@stacksjs/*` specifier resolves to something belonging to
+ * THIS project, and is therefore safe to import.
+ *
+ * A bare specifier resolves through node_modules, and when that is missing or
+ * half-installed bun falls back to its GLOBAL install cache. So a project with
+ * a broken install did not fail. It silently booted against whatever published
+ * version happened to be sitting in ~/.bun/install/cache, which is worse than
+ * loading nothing and completely invisible.
+ *
+ * It also hung, and that is how it was found. On Linux the first such
+ * cache-resolved import never settles: no rejection, no active handles, the
+ * process simply stops, so every stage of the preloader after it is silently
+ * unreachable. Both callers wrap their import in a `catch` that assumes a bad
+ * specifier fails FAST. That holds for one that cannot be resolved at all. It
+ * does not hold for one that resolves to a stale copy.
+ *
+ * Accepted: anything under a `node_modules/` (a real install, the app's own or
+ * a vendored checkout's) and anything inside this framework tree (the core
+ * packages beside this file). Both are cwd-independent, so running a command
+ * from a subdirectory does not change what loads.
+ */
+async function belongsToThisProject(specifier: string): Promise<boolean> {
+  let resolved: string
+  try {
+    resolved = Bun.resolveSync(specifier, import.meta.dir)
+  }
+  catch {
+    return false // Not installed, and not in the cache either
+  }
+
+  const { resolve, sep } = await import('node:path')
+  const frameworkRoot = resolve(import.meta.dir, '../../..')
+
+  return resolved.includes(`${sep}node_modules${sep}`) || resolved.startsWith(frameworkRoot + sep)
+}
+
 // Auto-import ALL Stacks framework modules into globalThis
 // This allows using Action, response, Activity, etc. without ANY imports.
 // Exported so server entrypoints (e.g. `dev/api.ts`) can opt back in
@@ -190,6 +227,12 @@ export async function loadAutoImports() {
   ]
 
   for (const pkg of stacksPackages) {
+    // See `belongsToThisProject`. Skipping is what the `catch` below always
+    // meant to do; it just never got the chance for a specifier that resolves
+    // to a stale copy instead of failing.
+    if (!(await belongsToThisProject(pkg)))
+      continue
+
     try {
       const module = await import(pkg)
       for (const [name, value] of Object.entries(module)) {
@@ -347,12 +390,14 @@ if (!skipAutoImports) {
   await loadAutoImports()
 
   // Run package auto-discovery after all imports are loaded
-  try {
-    const actionsPackage = '@stacksjs/' + 'actions'
-    const { discoverPackages } = await import(actionsPackage)
-    await discoverPackages()
-  }
-  catch {
-    // Discovery may fail during early bootstrap — not critical
+  const actionsPackage = '@stacksjs/' + 'actions'
+  if (await belongsToThisProject(actionsPackage)) {
+    try {
+      const { discoverPackages } = await import(actionsPackage)
+      await discoverPackages()
+    }
+    catch {
+      // Discovery may fail during early bootstrap — not critical
+    }
   }
 }
