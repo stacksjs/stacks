@@ -136,6 +136,19 @@ export async function discoverListeners(options: DiscoverOptions = {}): Promise<
     try {
       const mod = await import(filepath)
       const exported = mod?.default ?? mod
+
+      /*
+       * A function default export is not a malformed listener.
+       *
+       * `app/Listeners/` also holds CLI listeners - the framework ships one,
+       * `Console.ts`, which takes the CLI and registers command handlers - and
+       * those export a function. Warning about it made every application warn
+       * about a file the framework itself put there, on every boot, which is
+       * how people learn to stop reading boot output.
+       */
+      if (typeof exported === 'function')
+        continue
+
       if (!isListenerModule(exported)) {
         logger.warn(`[events/discover] ${filepath}: default export doesn't match ListenerModule shape ({ listensTo, handle }), skipping`)
         continue
