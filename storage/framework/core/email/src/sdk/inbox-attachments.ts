@@ -26,7 +26,8 @@ export function inboxAttachmentId(key: string): string {
 }
 
 export function inboxAttachmentName(key: string, prefix: string): string {
-  const storedName = key.startsWith(prefix) ? key.slice(prefix.length) : key.split('/').pop() || ''
+  const rawStoredName = key.startsWith(prefix) ? key.slice(prefix.length) : key.split('/').pop() || ''
+  const storedName = rawStoredName.replace(/^stacks-\d{4}--/, '')
   let decodedName = storedName
 
   try {

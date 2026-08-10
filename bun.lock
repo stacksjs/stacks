@@ -568,6 +568,7 @@
       "version": "0.70.354",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.7.103",
+        "postal-mime": "^2.7.6",
       },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
@@ -1675,6 +1676,8 @@
     "pickier": ["pickier@0.1.50", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-qzz/Qn/DcdLpNfhhft/qlJEzrVsBLQVFwYUDKoZKTTLRh1Yes09f6wNExiZ5ifV8uz8Bc2ZldP+/nvVwxAH0Ww=="],
 
     "pkce-challenge": ["pkce-challenge@5.0.1", "", {}, "sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ=="],
+
+    "postal-mime": ["postal-mime@2.7.6", "", {}, "sha512-UUlyE2KlxmvwMGq060onF/VWU3zD6dVW31FwokQ5v26jWd35fbs2MoTFzh+jXnPwAyV2MULMKXcBInGOl5TO6Q=="],
 
     "prompts": ["prompts@2.4.2", "", { "dependencies": { "kleur": "^3.0.3", "sisteransi": "^1.0.5" } }, "sha512-NxNv/kLguCA7p3jE8oL2aEBsrJWgAakBpgmgK6lpPWV+WuOmY6r2/zbAVnP+T8bQlA0nzHXSJSJW0Hq7ylaD2Q=="],
 

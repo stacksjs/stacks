@@ -43,6 +43,11 @@ describe('inbox attachments', () => {
     expect(inboxAttachmentName(`${prefix}../report\u0000.csv`, prefix)).toBe('.._report.csv')
   })
 
+  it('removes the framework storage prefix from new attachment names', () => {
+    const prefix = inboxAttachmentPrefix(basePath)
+    expect(inboxAttachmentName(`${prefix}stacks-0003--quarterly%20report.pdf`, prefix)).toBe('quarterly report.pdf')
+  })
+
   it('builds an encoded download disposition', () => {
     expect(inboxAttachmentContentDisposition('Q3 résumé.pdf')).toBe(
       'attachment; filename="Q3 resume.pdf"; filename*=UTF-8\'\'Q3%20r%C3%A9sum%C3%A9.pdf',

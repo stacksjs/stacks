@@ -1,6 +1,7 @@
 export * from './drivers'
 export * from './email'
 export * from './idempotency'
+export * from './inbound-parser'
 export * from './suppression'
 export * from './unsubscribe'
 export * from './webhook-dedup'
