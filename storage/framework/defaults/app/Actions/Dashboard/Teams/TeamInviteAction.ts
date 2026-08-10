@@ -25,12 +25,12 @@ export default new Action({
   method: 'POST',
   apiResponse: true,
 
-  async handle(request: RequestInstance) {
+  async handle(request: RequestInstance<InviteInput>) {
     const teamId = parsePositiveId(request.getParam('id'))
     if (!teamId)
       return response.json({ message: 'Invalid team id.' }, 400)
 
-    const input = (request as any).jsonBody as InviteInput | undefined ?? {}
+    const input = request.all()
     const email = normalizeInvitationEmail(input.email)
     const role = normalizeInvitationRole(input.role ?? 'member')
     if (!email)
@@ -83,7 +83,7 @@ export default new Action({
     const token = generateInvitationToken()
     const tokenHash = hashInvitationToken(token)
     const expiresAt = invitationExpiresAt()
-    const requester = (request as any).user ?? (request as any)._authenticatedUser ?? null
+    const requester = await request.user()
     const invitedByUserId = requester && Number.isInteger(Number(requester.id))
       ? Number(requester.id)
       : null

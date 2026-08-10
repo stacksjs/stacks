@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
 import { response } from '@stacksjs/router'
@@ -22,9 +23,9 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
 
-  async handle(request: any) {
+  async handle(request: RequestInstance) {
     try {
-      const mailbox = request?.query?.mailbox || defaultMailbox()
+      const mailbox = String(request.get('mailbox') || defaultMailbox())
       const emails = await emailSDK.getInbox(mailbox, { limit: 1000 })
 
       return {

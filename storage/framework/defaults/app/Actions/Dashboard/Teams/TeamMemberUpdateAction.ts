@@ -16,7 +16,7 @@ export default new Action({
   method: 'PATCH',
   apiResponse: true,
 
-  async handle(request: RequestInstance) {
+  async handle(request: RequestInstance<UpdateInput>) {
     const teamId = parsePositiveId(request.getParam('id'))
     const memberId = parsePositiveId(request.getParam('memberId'))
     if (!teamId || !memberId)
@@ -33,7 +33,7 @@ export default new Action({
     if (member.role === 'owner')
       return response.json({ message: 'Transfer team ownership before changing the owner.' }, 409)
 
-    const input = (request as any).jsonBody as UpdateInput | undefined ?? {}
+    const input = request.all()
     const role = input.role === undefined ? String(member.role) : normalizeInvitationRole(input.role)
     const status = input.status === undefined ? String(member.status) : String(input.status).trim().toLowerCase()
     if (!role)
