@@ -139,6 +139,16 @@
       }
     },
     {
+      "id": "delivery-stop",
+      "name": "DeliveryStop",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "highlight": true
+      }
+    },
+    {
       "id": "deployment",
       "name": "Deployment",
       "icon": "tablecells.fill",
@@ -167,6 +177,13 @@
       "dashboard": {
         "highlight": true
       }
+    },
+    {
+      "id": "driver-ping",
+      "name": "DriverPing",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce"
     },
     {
       "id": "email-list",
@@ -455,6 +472,13 @@
       "dashboard": {
         "highlight": true
       }
+    },
+    {
+      "id": "social-account",
+      "name": "SocialAccount",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
     },
     {
       "id": "social-post",
