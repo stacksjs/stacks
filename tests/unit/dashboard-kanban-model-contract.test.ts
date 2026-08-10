@@ -9,6 +9,7 @@ const storeModels: Record<string, string[]> = {
   'ColumnStoreAction.ts': ['Board', 'BoardColumn'],
   'CardStoreAction.ts': ['BoardColumn', 'Card'],
   'LabelStoreAction.ts': ['Board', 'Label'],
+  'CardCommentStoreAction.ts': ['Card', 'CardComment'],
 }
 
 const updateModels: Record<string, string> = {
@@ -16,6 +17,11 @@ const updateModels: Record<string, string> = {
   'ColumnUpdateAction.ts': 'BoardColumn',
   'CardUpdateAction.ts': 'Card',
   'LabelUpdateAction.ts': 'Label',
+  'CardCommentUpdateAction.ts': 'CardComment',
+}
+
+const destroyModels: Record<string, string> = {
+  'CardCommentDestroyAction.ts': 'CardComment',
 }
 
 describe('dashboard kanban model contract', () => {
@@ -37,13 +43,25 @@ describe('dashboard kanban model contract', () => {
     for (const [file, model] of Object.entries(updateModels)) {
       const source = readFileSync(resolve(actions, file), 'utf8')
 
-      expect(source).toContain(`import { ${model} } from '@stacksjs/orm'`)
+      expect(source).toMatch(new RegExp(`import \\{[^}]*\\b${model}\\b[^}]*\\} from '@stacksjs/orm'`))
       expect(source).toContain(`await ${model}.find(id)`)
-      expect(source).toContain('.update(set)')
+      expect(source).toContain('.update(')
       expect(source).toContain('refreshModel(')
       expect(source).not.toContain("from '@stacksjs/database'")
       expect(source).not.toContain('.updateTable(')
       expect(source).not.toContain('.unsafe(')
+    }
+  })
+
+  test('deletes single Kanban records through model instances', () => {
+    for (const [file, model] of Object.entries(destroyModels)) {
+      const source = readFileSync(resolve(actions, file), 'utf8')
+
+      expect(source).toContain(`import { ${model} } from '@stacksjs/orm'`)
+      expect(source).toContain(`await ${model}.find(id)`)
+      expect(source).toContain('await comment.delete()')
+      expect(source).not.toContain("from '@stacksjs/database'")
+      expect(source).not.toContain('.deleteFrom(')
     }
   })
 })

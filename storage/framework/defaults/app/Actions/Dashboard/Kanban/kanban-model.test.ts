@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
+import { cardCommentResponse } from './kanban-comment'
 import {
   modelBoolean,
+  modelNullableNumber,
   modelNullableString,
   modelNumber,
   modelString,
@@ -31,6 +33,8 @@ describe('kanban model response values', () => {
   })
 
   test('normalizes nullable strings and persisted booleans', () => {
+    expect(modelNullableNumber(record({ value: null }), 'value')).toBeNull()
+    expect(modelNullableNumber(record({ value: '42' }), 'value')).toBe(42)
     expect(modelNullableString(record({ value: null }), 'value')).toBeNull()
     expect(modelBoolean(record({ enabled: 1 }), 'enabled')).toBe(true)
     expect(modelBoolean(record({ enabled: 'true' }), 'enabled')).toBe(true)
@@ -57,5 +61,25 @@ describe('kanban model response values', () => {
 
     const refreshed = await refreshModel(stale)
     expect(modelString(refreshed, 'updatedAt', 'updated_at')).toBe('2026-07-31 04:00:00')
+  })
+
+  test('serializes model-backed comments with their author', () => {
+    expect(cardCommentResponse(record({
+      id: 7,
+      uuid: 'comment-uuid',
+      userId: 3,
+      body: 'Updated note',
+      createdAt: '2026-08-10 20:00:00',
+      updatedAt: '2026-08-10 21:00:00',
+    }), record({ name: 'Chris', email: 'chris@example.com' }))).toEqual({
+      id: 7,
+      uuid: 'comment-uuid',
+      userId: 3,
+      body: 'Updated note',
+      authorName: 'Chris',
+      authorEmail: 'chris@example.com',
+      createdAt: '2026-08-10 20:00:00',
+      updatedAt: '2026-08-10 21:00:00',
+    })
   })
 })

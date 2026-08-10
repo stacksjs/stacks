@@ -23,6 +23,11 @@ export function modelNumber(record: object, camelKey: string, snakeKey = camelKe
   return Number(modelValue(record, camelKey, snakeKey))
 }
 
+export function modelNullableNumber(record: object, camelKey: string, snakeKey = camelKey): number | null {
+  const value = modelValue(record, camelKey, snakeKey)
+  return value === undefined || value === null ? null : Number(value)
+}
+
 export function modelString(record: object, camelKey: string, snakeKey = camelKey): string {
   const value = modelValue(record, camelKey, snakeKey)
   return value === undefined || value === null ? '' : String(value)

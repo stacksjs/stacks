@@ -584,6 +584,43 @@ export const kanbanStore = defineStore('kanban', () => {
     }
   }
 
+  async function updateComment(commentId: number, body: string): Promise<boolean> {
+    const oc = openCard()
+    const trimmed = body.trim()
+    if (!oc || !trimmed) return false
+    const snapshot = oc.comments
+    const existing = snapshot.find(comment => comment.id === commentId)
+    if (!existing || existing.body === trimmed) return true
+
+    patchOpenCard({
+      comments: snapshot.map(comment => comment.id === commentId
+        ? { ...comment, body: trimmed }
+        : comment),
+    })
+    try {
+      const data = await dashboardApi<{ comment?: CardComment, error?: string }>(`/api/dashboard/kanban/comments/${commentId}`, {
+        method: 'PATCH',
+        body: { body: trimmed },
+      })
+      if (data.error || !data.comment)
+        throw new Error(data.error ?? 'Comment update failed')
+      const current = openCard()
+      if (current) {
+        patchOpenCard({
+          comments: current.comments.map(comment => comment.id === commentId
+            ? data.comment as CardComment
+            : comment),
+        })
+      }
+      return true
+    }
+    catch (error) {
+      patchOpenCard({ comments: snapshot })
+      errorCard.set(error instanceof Error ? error.message : String(error))
+      return false
+    }
+  }
+
   // ─── Label CRUD (board scope) ──────────────────────────────────────
 
   async function createLabel(input: { boardId: number, name: string, color?: string }): Promise<LabelRecord | null> {
@@ -665,6 +702,7 @@ export const kanbanStore = defineStore('kanban', () => {
     syncCardLabels,
     syncCardAssignees,
     addComment,
+    updateComment,
     deleteComment,
     createLabel,
     deleteLabel,

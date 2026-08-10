@@ -325,10 +325,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/kanban/cards/{id}/labels', 'Actions/Dashboard/Kanban/CardLabelsSyncAction'))
   guard(route.post('/kanban/cards/{id}/assignees', 'Actions/Dashboard/Kanban/CardAssigneesSyncAction'))
 
-  // Comments. Append-only thread: store + destroy, no edit yet — the
-  // history-preservation argument outweighs the "fix a typo" argument
-  // until someone explicitly asks for editing.
+  // Card-scoped comment thread. Writes stay under the dashboard guard while
+  // the CardComment model also exposes its conventional generated API.
   guard(route.post('/kanban/cards/{id}/comments', 'Actions/Dashboard/Kanban/CardCommentStoreAction'))
+  guard(route.patch('/kanban/comments/{id}', 'Actions/Dashboard/Kanban/CardCommentUpdateAction'))
   guard(route.delete('/kanban/comments/{id}', 'Actions/Dashboard/Kanban/CardCommentDestroyAction'))
 
   // Lightweight user list for the assignee picker. Distinct from the

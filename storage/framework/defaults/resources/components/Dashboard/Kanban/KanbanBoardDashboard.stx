@@ -48,6 +48,9 @@
   const titleDraft = state('')
   const descDraft = state('')
   const commentDraft = state('')
+  const editingCommentId = state(null)
+  const commentEditDraft = state('')
+  const savingCommentId = state(null)
   const showLabelPicker = state(false)
   const showAssigneePicker = state(false)
   const showNewLabelComposer = state(false)
@@ -83,6 +86,9 @@
     descDraft.set(c ? (c.description || '') : '')
     dueDateDraft.set(c?.dueDate ? c.dueDate.slice(0, 10) : '')
     commentDraft.set('')
+    editingCommentId.set(null)
+    commentEditDraft.set('')
+    savingCommentId.set(null)
   }
   // Sync drafts when the open card changes (open / close / refetch).
   effect(() => { openCard(); Promise.resolve().then(syncDraftsFromCard) })
@@ -132,6 +138,40 @@
     if (!text) return
     const ok = await kanban.addComment(text)
     if (ok) commentDraft.set('')
+  }
+
+  function startCommentEdit(id, body) {
+    editingCommentId.set(id)
+    commentEditDraft.set(body)
+  }
+
+  function cancelCommentEdit() {
+    editingCommentId.set(null)
+    commentEditDraft.set('')
+  }
+
+  async function saveCommentEdit(id) {
+    const body = commentEditDraft().trim()
+    if (!body || savingCommentId()) return
+    savingCommentId.set(id)
+    try {
+      if (await kanban.updateComment(id, body))
+        cancelCommentEdit()
+    }
+    finally {
+      savingCommentId.set(null)
+    }
+  }
+
+  function handleCommentEditKeydown(event, id) {
+    if (event.key === 'Escape') {
+      event.preventDefault()
+      cancelCommentEdit()
+    }
+    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault()
+      void saveCommentEdit(id)
+    }
   }
 
   function requestDelete(kind: DeleteKind, id: number, hasCards = false): void {
@@ -739,9 +779,26 @@
                   <div class="flex gap-2 items-baseline">
                     <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
                     <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
-                    <Button variant="ghost" size="xs" @click="requestDelete('comment', cm.id)"><span class="text-red-500">Delete</span></Button>
+                    <template :if="editingCommentId() !== cm.id">
+                      <Button variant="ghost" size="xs" @click="startCommentEdit(cm.id, cm.body)">Edit</Button>
+                      <Button variant="ghost" size="xs" @click="requestDelete('comment', cm.id)"><span class="text-red-500">Delete</span></Button>
+                    </template>
                   </div>
-                  <p class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="cm.body"></p>
+                  <p :if="editingCommentId() !== cm.id" class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="cm.body"></p>
+                  <div :if="editingCommentId() === cm.id" class="mt-2">
+                    <textarea
+                      x-model="commentEditDraft"
+                      @keydown="handleCommentEditKeydown($event, cm.id)"
+                      rows="3"
+                      maxlength="10000"
+                      :aria-label="'Edit comment by ' + (cm.authorName || cm.authorEmail || 'Unknown')"
+                      class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
+                    ></textarea>
+                    <div class="flex gap-2 justify-end mt-2">
+                      <Button variant="secondary" size="xs" :disabled="savingCommentId() === cm.id" @click="cancelCommentEdit()">Cancel</Button>
+                      <Button size="xs" :loading="savingCommentId() === cm.id" :disabled="!commentEditDraft().trim()" @click="saveCommentEdit(cm.id)">Save comment</Button>
+                    </div>
+                  </div>
                 </div>
               </li>
             </ul>
