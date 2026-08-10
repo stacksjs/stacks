@@ -616,101 +616,6 @@ async function pollUntil(opts: {
  *   TS_CLOUD_SSH_WAIT_SECS   (default 480 = 8m)  — SSH reachability
  *   TS_CLOUD_BOOT_WAIT_SECS  (default 720 = 12m) — cloud-init + bun on PATH
  */
-/**
- * Install the unit that runs the app's scheduler.
- *
- * `app/Scheduler.ts` is the Laravel-shaped place to declare recurring work, and
- * a deploy shipped it to a box where nothing ever ran it. Every schedule an app
- * declared was inert in production — silently, because a task that never fires
- * looks exactly like a task with nothing to do. One dispensary's nightly menu
- * import sat unrun for a day while its storefront served a catalogue from the
- * week before.
- *
- * A service rather than Laravel's every-minute cron entry, because the two
- * runtimes schedule differently: `artisan schedule:run` is a one-shot that
- * exits, so cron has to keep calling it, while `buddy schedule:run` registers
- * timers on the event loop and stays up. Waking a Bun process every minute to
- * re-register the same timers would be strictly worse than leaving one running.
- *
- * Three things this gets right that are easy to get wrong:
- *
- *   - **One per app, not per site.** An app that deploys `main` and `api` from
- *     one codebase would otherwise run its scheduler twice, and every job would
- *     fire twice — the kind of duplicate that shows up as two of every email.
- *   - **Pinned to `current`, not to a release.** The site units are templated
- *     per release (`@%i`) so old and new can overlap during cutover. A
- *     scheduler pinned that way would leave an orphan running old code after
- *     every deploy. It follows the symlink and gets restarted instead.
- *   - **Named per tenant.** `<slug>-scheduler`, so it cannot collide on a box
- *     that hosts several projects.
- *
- * Non-fatal. A release that serves traffic should not be rolled back because
- * its cron did not install; the failure is logged and the deploy stands.
- */
-async function installScheduler(ip: string, slug: string): Promise<void> {
-  const unit = `${slug}-scheduler`
-  const current = `/var/www/${slug}-main/current`
-
-  try {
-    const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
-
-    // Nothing to install for an app that declares no scheduled work. Checked on
-    // the box rather than locally: what matters is what was actually shipped.
-    const declared = await sshExecOrThrow(
-      ip,
-      `test -f ${current}/app/Scheduler.ts && echo yes || echo no`,
-      { user: 'root' },
-    )
-
-    if (!declared.includes('yes')) {
-      log.debug(`[scheduler] ${current}/app/Scheduler.ts not present — nothing to schedule`)
-      return
-    }
-
-    const service = [
-      '[Unit]',
-      `Description=${slug} scheduler (managed by stacks)`,
-      'After=network.target',
-      '',
-      '[Service]',
-      'Type=simple',
-      `WorkingDirectory=${current}`,
-      // Through the release's own `buddy`, so the scheduler runs the same
-      // framework version as the app it schedules for.
-      'ExecStart=/root/.bun/bin/bun buddy schedule:run',
-      'Restart=always',
-      // Longer than the sites': a scheduler that crashes on boot should not
-      // spin, and nothing is waiting on it to answer a request.
-      'RestartSec=30',
-      `EnvironmentFile=${current}/.env`,
-      '',
-      '[Install]',
-      'WantedBy=multi-user.target',
-    ].join('\n')
-
-    await sshExecOrThrow(
-      ip,
-      [
-        `cat > /etc/systemd/system/${unit}.service <<'STACKS_SCHEDULER_EOF'`,
-        service,
-        'STACKS_SCHEDULER_EOF',
-        'systemctl daemon-reload',
-        `systemctl enable ${unit}.service`,
-        // `restart`, not `start`: an already-running scheduler is holding the
-        // previous release's code, and `current` has just moved.
-        `systemctl restart ${unit}.service`,
-      ].join('\n'),
-      { user: 'root' },
-    )
-
-    log.success(`Scheduler running (${unit}.service)`)
-  }
-  catch (err) {
-    // A release that serves traffic should not fail over its cron.
-    log.warn(`Could not install the scheduler unit: ${err instanceof Error ? err.message : String(err)}`)
-  }
-}
-
 async function waitForRemoteReady(ip: string): Promise<void> {
   const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
 
@@ -1207,6 +1112,70 @@ export function applyPersistentStatePaths(sites: Record<string, any>, slug: stri
     out[name] = { ...site, sharedPaths: [...byPath.values()] }
   }
   return out
+}
+
+/**
+ * Does this file declare any scheduled work?
+ *
+ * The scaffold ships an `app/Scheduler.ts` whose body is entirely commented
+ * out except for the example job, so "the file exists" is not the question —
+ * "does it schedule anything" is. A `schedule.` call outside a comment is the
+ * marker: it is what the scheduler action iterates over, and an app with none
+ * has nothing for a daemon to do.
+ */
+export function declaresScheduledWork(schedulerFile: string): boolean {
+  if (!existsSync(schedulerFile))
+    return false
+
+  const source = readFileSync(schedulerFile, 'utf8')
+    // Strip comments first. The scaffold's own file mentions `schedule.action`
+    // and `schedule.command` in commented-out examples, and counting those
+    // would put a daemon on every app that never uncommented one.
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/.*$/gm, '$1')
+
+  return /\bschedule\s*\.\s*(?:job|action|command|call|exec)\b/.test(source)
+}
+
+/**
+ * Turn on the scheduler for the one site that should run it.
+ *
+ * `app/Scheduler.ts` is the Laravel-shaped place to declare recurring work, and
+ * a deploy shipped it to a box where nothing ran it. ts-cloud has known how to
+ * run it all along — `scheduler: true` on a site installs
+ * `<slug>-<site>-scheduler.service`, and for Stacks it runs as a daemon rather
+ * than Laravel's every-minute cron, because `buddy schedule:run` registers
+ * timers on the event loop and stays up where `artisan schedule:run` exits. The
+ * missing piece was that nothing ever set the flag, so every schedule any app
+ * declared was inert in production — silently, because a task that never fires
+ * looks exactly like a task with nothing to do. One dispensary's nightly menu
+ * import sat unrun while its storefront served the previous week's catalogue,
+ * and the only reason anyone noticed was a customer looking at the site.
+ *
+ * On for exactly ONE site, the same owner {@link applyPersistentStatePaths}
+ * picks: the site that runs migrations, else the first server app. An app that
+ * deploys `main` and `api` from one codebase has one `app/Scheduler.ts` between
+ * them, and turning it on per-site would fire every job twice — two of every
+ * email, two menu imports racing each other over one SQLite file.
+ *
+ * A site that says `scheduler` itself is left alone, in both directions: an app
+ * that wants the scheduler somewhere else has said so, and one that has turned
+ * it off has said that too.
+ */
+export function applyScheduledWork(sites: Record<string, any>, schedulerFile: string): Record<string, any> {
+  if (Object.values(sites).some(site => site?.scheduler !== undefined))
+    return sites
+
+  if (!declaresScheduledWork(schedulerFile))
+    return sites
+
+  const appSites = Object.entries(sites).filter(([, site]) => typeof site?.start === 'string')
+  const owner = (appSites.find(([, site]) => runsMigrations(site)) ?? appSites[0])?.[0]
+
+  if (!owner)
+    return sites
+
+  return { ...sites, [owner]: { ...sites[owner], scheduler: true } }
 }
 
 /**
@@ -2031,7 +2000,10 @@ async function runHetznerDeploy(args: {
   // DB_CONNECTION/DB_DATABASE_PATH, not by config/cloud.ts. Requires a ts-cloud
   // that can adopt existing state and honour explicit targets — checked once,
   // fatally, in deployToHetzner (tsCloudPersistentStateSupport).
-  const sitesWithResolvedEnv = applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug)
+  const sitesWithResolvedEnv = applyScheduledWork(
+    applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug),
+    p.projectPath('app/Scheduler.ts'),
+  )
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —
   // not just the env shipped to the remote sites above. reconcileHetznerDns
@@ -2087,12 +2059,6 @@ async function runHetznerDeploy(args: {
       success: (m: string) => log.success(m),
     },
   })
-
-  // The app's own scheduled work — the Laravel-style `app/Scheduler.ts` —
-  // needs something on the box to run it, and until now nothing did. Installed
-  // after the sites so it points at a release that is already serving.
-  if (ok)
-    await installScheduler(ip, slug)
 
   // Reconcile DNS for every site that declares a public domain. Hetzner deploys
   // historically had NO DNS step (Route53 reconciliation only ran on the AWS
