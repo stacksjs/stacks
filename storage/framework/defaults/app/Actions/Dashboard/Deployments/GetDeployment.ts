@@ -12,8 +12,8 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const id = Number(request.getParam('id'))
-    if (!Number.isFinite(id) || id <= 0)
-      return response.json({ message: 'Deployment id must be a positive number.' }, 400)
+    if (!Number.isSafeInteger(id) || id <= 0)
+      return response.json({ message: 'Deployment id must be a positive integer.' }, 400)
 
     try {
       const deployment = await Deployment.find(id)

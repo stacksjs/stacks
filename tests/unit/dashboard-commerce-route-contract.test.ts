@@ -7,6 +7,13 @@ function source(path: string): string {
 }
 
 describe('dashboard commerce route contract', () => {
+  test('validates product detail identifiers before querying the model', () => {
+    const detail = source('storage/framework/defaults/app/Actions/Dashboard/Commerce/CommerceProductDetailAction.ts')
+
+    expect(detail).toContain('!Number.isSafeInteger(id) || id <= 0')
+    expect(detail).toContain("response.notFound({ error: 'Product not found' })")
+  })
+
   test('product mutations use local-friendly guarded dashboard routes', () => {
     const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
     const products = source('storage/framework/defaults/resources/components/Dashboard/Commerce/CommerceProductsDashboard.stx')

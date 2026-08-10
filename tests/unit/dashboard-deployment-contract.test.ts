@@ -72,7 +72,8 @@ describe('dashboard deployment contract', () => {
 
     expect(reads).not.toContain('error instanceof Error ? error.message')
     expect(reads.match(/dashboardOperationalError\(/g)?.length).toBe(7)
-    expect(action('GetDeployment.ts')).toContain("response.json({ message: 'Deployment id must be a positive number.' }, 400)")
+    expect(action('GetDeployment.ts')).toContain('!Number.isSafeInteger(id) || id <= 0')
+    expect(action('GetDeployment.ts')).toContain("response.json({ message: 'Deployment id must be a positive integer.' }, 400)")
     expect(create.match(/dashboardOperationalError\(/g)?.length).toBe(2)
     expect(create.match(/dashboardOperationalIssue\(/g)?.length).toBe(2)
     expect(create.match(/error instanceof Error \? error\.message/g)?.length).toBe(1)

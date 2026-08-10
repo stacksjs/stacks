@@ -23,7 +23,7 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const id = Number(request.getParam('id'))
-    if (!Number.isFinite(id) || id <= 0)
+    if (!Number.isSafeInteger(id) || id <= 0)
       return response.notFound({ error: 'Product not found' })
 
     try {
