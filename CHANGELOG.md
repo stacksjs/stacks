@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.353...v0.70.354)
+
+## ✨ Features
+
+- **commerce**: let dashboard tax rates actually price an order ([07916a4](https://github.com/stacksjs/stacks/commit/07916a4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- remove lint ignores ([d2e7c3b](https://github.com/stacksjs/stacks/commit/d2e7c3b)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.352...v0.70.353)
 
 ## ✨ Features
