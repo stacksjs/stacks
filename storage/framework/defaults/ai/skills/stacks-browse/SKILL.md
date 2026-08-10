@@ -100,7 +100,8 @@ Extracts headings, links (`text -> href`), buttons, forms (action + field count)
 ```bash
 bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--max 500] [--path /extra-route] [--settle 350] [--progress]
 ```
-Reuses one Chromium process with a fresh isolated page target per route while
+Uses a fresh isolated page target per route, relaunching Chromium if its DevTools
+session exits during a long audit, while
 following every same-origin link it discovers.
 Each page is checked for a non-200 document, console exceptions, failed
 requests, and horizontal overflow. Repeat `--path` to seed routes that are not

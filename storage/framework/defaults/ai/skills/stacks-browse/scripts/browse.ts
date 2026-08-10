@@ -509,7 +509,7 @@ async function main() {
     process.exit(url ? 0 : 1)
   }
 
-  const session = await launch()
+  let session = await launch()
   const cookies = flagList(flags.cookie)
   const settleMs = flags.settle ? Number(flags.settle) : undefined
   const scheme = typeof flags.scheme === 'string' ? flags.scheme : undefined
@@ -629,9 +629,19 @@ async function main() {
       const crawlSettleMs = settleMs ?? 350
       let browserPage = await createPage(session.port)
       let cdp = browserPage.cdp
+      const createReplacementPage = async (): Promise<BrowserPage> => {
+        try {
+          return await createPage(session.port)
+        }
+        catch {
+          kill(session)
+          session = await launch()
+          return createPage(session.port)
+        }
+      }
       const replacePage = async (): Promise<void> => {
         await closePage(session.port, browserPage)
-        browserPage = await createPage(session.port)
+        browserPage = await createReplacementPage()
         cdp = browserPage.cdp
       }
       const inspectPage = async (current: string): Promise<{

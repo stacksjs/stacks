@@ -43,7 +43,7 @@ describe('browse skill contract', () => {
     expect(script).toContain('url.hash = \'\'')
   })
 
-  test('reuses one browser with isolated page targets and disposable listeners', () => {
+  test('uses isolated page targets and relaunches a failed browser session', () => {
     const crawl = script.slice(script.indexOf("else if (command === 'crawl')"))
     const connection = crawl.indexOf('let browserPage = await createPage(session.port)')
     const loop = crawl.indexOf('while (queue.length > 0')
@@ -53,7 +53,8 @@ describe('browse skill contract', () => {
     expect(crawl.slice(loop)).not.toContain('openPage(session.port)')
     expect(crawl).toContain('finally {\n        await closePage(session.port, browserPage)')
     expect(crawl).toContain('for (let attempt = 0; attempt < 2; attempt++)')
-    expect(crawl).toContain('browserPage = await createPage(session.port)')
+    expect(crawl).toContain('browserPage = await createReplacementPage()')
+    expect(crawl).toContain('session = await launch()')
     expect(script).toContain("rejectPending('CDP connection closed')")
     expect(script).toContain('/json/new?${encodeURIComponent(\'about:blank\')}')
     expect(script).toContain('/json/close/${encodeURIComponent(page.targetId)}')
