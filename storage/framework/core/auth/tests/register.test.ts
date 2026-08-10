@@ -33,6 +33,10 @@ import { HttpError } from '@stacksjs/error-handling'
 // the full ORM/model graph this file exists to avoid.
 const realDatabase = { ...await import('@stacksjs/database') }
 const realSecurity = { ...await import('@stacksjs/security') }
+// Read at module scope (top-level await is fine here, inside a `describe` it is
+// not). #2281's cases toggle `auth.registration` on the live config object,
+// which `duplicateEmailError` reads per call.
+const realConfig = await import('@stacksjs/config')
 
 afterAll(() => {
   mock.module('@stacksjs/database', () => realDatabase)
@@ -171,15 +175,64 @@ describe('register() input validation (unchanged 422 guards)', () => {
 })
 
 describe('register() timing-oracle hardening (#1953)', () => {
-  test('duplicate email → 409, and bcrypt ran BEFORE the existence check', async () => {
+  test('duplicate email is rejected, and bcrypt ran BEFORE the existence check', async () => {
     scenario.existingRow = { id: 1, email: 'taken@example.com' }
 
     await expect(register({ email: 'taken@example.com', password: 'long-enough-pw', name: 'X' } as any))
-      .rejects.toMatchObject({ status: 409, message: 'Email already exists' })
+      .rejects.toMatchObject({ status: 422 })
 
     // The regression: pre-fix this was ['select'] with no 'hash' —
     // registered emails returned in ~1ms while fresh ones paid bcrypt.
     expect(ops).toEqual(['hash', 'select'])
+  })
+})
+
+// stacksjs/stacks#2281 — #1985 built the generic-response seam but left it
+// opt-in, so every scaffolded app served `409 Email already exists`: an
+// account-existence oracle for anyone who wanted to enumerate users. Timing
+// was equalized above; the response body was the last channel open.
+describe('register() does not confirm whether an address is registered (#2281)', () => {
+  const authConfig = realConfig.config.auth as any
+  const original = authConfig?.registration
+
+  afterAll(() => {
+    if (authConfig)
+      authConfig.registration = original
+  })
+
+  test('an unset flag means protected, not exposed', async () => {
+    if (authConfig)
+      delete authConfig.registration
+    scenario.existingRow = { id: 1, email: 'taken@example.com' }
+
+    // The decisive assertion: the message must not distinguish this from any
+    // other rejection. `409 Email already exists` is the answer to "does this
+    // account exist", handed over on request.
+    await expect(register({ email: 'taken@example.com', password: 'long-enough-pw', name: 'X' } as any))
+      .rejects.toMatchObject({ status: 422 })
+
+    await expect(register({ email: 'taken@example.com', password: 'long-enough-pw', name: 'X' } as any))
+      .rejects.not.toMatchObject({ message: 'Email already exists' })
+  })
+
+  test('explicitly disabling it brings the specific 409 back', async () => {
+    if (authConfig)
+      authConfig.registration = { preventEnumeration: false }
+    scenario.existingRow = { id: 1, email: 'taken@example.com' }
+
+    await expect(register({ email: 'taken@example.com', password: 'long-enough-pw', name: 'X' } as any))
+      .rejects.toMatchObject({ status: 409, message: 'Email already exists' })
+  })
+
+  test('only an explicit false disables it — a truthy or absent value stays protected', async () => {
+    for (const registration of [undefined, {}, { preventEnumeration: true }]) {
+      if (authConfig)
+        authConfig.registration = registration as any
+      scenario.existingRow = { id: 1, email: 'taken@example.com' }
+
+      await expect(register({ email: 'taken@example.com', password: 'long-enough-pw', name: 'X' } as any))
+        .rejects.toMatchObject({ status: 422 })
+    }
   })
 })
 
@@ -214,11 +267,15 @@ describe('register() transactional create (#1953)', () => {
     ['MySQL errno 1062', { errno: 1062 }],
     ['Postgres 23505', { code: '23505' }],
   ] as const) {
-    test(`lost race — insert throws ${label} → mapped to 409`, async () => {
+    // Routed through the same `duplicateEmailError` as the pre-check path, so
+    // the two are indistinguishable from outside. If the race path answered
+    // 409 while the pre-check answered 422, losing the race would itself be
+    // the oracle (stacksjs/stacks#2281).
+    test(`lost race — insert throws ${label} → mapped to a duplicate rejection`, async () => {
       scenario.insertError = err
 
       await expect(register({ email: 'racer@example.com', password: 'long-enough-pw', name: 'X' } as any))
-        .rejects.toMatchObject({ status: 409, message: 'Email already exists' })
+        .rejects.toMatchObject({ status: 422 })
     })
   }
 

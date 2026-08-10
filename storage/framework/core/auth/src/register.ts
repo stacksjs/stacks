@@ -11,16 +11,26 @@ import { isUniqueViolation } from './rbac-store-bqb'
 /**
  * The error thrown when a registration collides with an existing email.
  *
- * By default it says so plainly (friendlier UX). With
- * `config.auth.registration.preventEnumeration` enabled it returns a generic
- * 422 that an attacker can't use to confirm an address is registered
- * (stacksjs/stacks#1985). Timing is already equalized (the bcrypt hash runs
- * before any existence check), so the response body was the last oracle.
+ * Generic by default: a 422 that does not say whether the address is
+ * registered. Timing was already equalized in #1985 (the bcrypt hash runs
+ * before any existence check), which left the response body as the last
+ * remaining oracle, and `409 Email already exists` states the answer outright.
+ *
+ * The default flipped in stacksjs/stacks#2281. #1985 shipped this seam behind
+ * an opt-in flag, which meant every scaffolded app served an account-existence
+ * oracle until someone went looking for a setting they had no reason to know
+ * about. A framework should not need to be configured into not leaking; the
+ * friendlier message is the thing worth opting IN to, because choosing it means
+ * accepting that anyone can enumerate your users.
+ *
+ * Set `config.auth.registration.preventEnumeration = false` to get
+ * `409 Email already exists` back. Only `false` does it: an unset flag now
+ * means protected.
  */
 function duplicateEmailError(): HttpError {
-  if ((config.auth as any)?.registration?.preventEnumeration)
-    return new HttpError(422, 'Registration could not be completed. Please check your details and try again.')
-  return new HttpError(409, 'Email already exists')
+  if ((config.auth as any)?.registration?.preventEnumeration === false)
+    return new HttpError(409, 'Email already exists')
+  return new HttpError(422, 'Registration could not be completed. Please check your details and try again.')
 }
 
 // RFC 5322-ish: a single @ with at least one dot in the domain. Tighter than
