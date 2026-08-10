@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import { tsCloud } from '~/config/cloud'
@@ -9,12 +10,8 @@ export default new Action({
   description: 'Returns one configured server or persisted deployment.',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
-    const identifier = String(
-      (request as any)?.params?.id
-      ?? (request as any)?.param?.('id')
-      ?? '',
-    )
+  async handle(request: RequestInstance) {
+    const identifier = request.getParam('id')
     if (!identifier)
       return response.json({ error: 'A server identifier is required.' }, 400)
 

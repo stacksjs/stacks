@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { fetchWorkflowRuns } from '@stacksjs/github'
@@ -23,15 +24,15 @@ export default new Action({
   description: 'Latest N workflow runs for a single repo (drilldown).',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
+  async handle(request: RequestInstance) {
     const ci = dashboardConfig?.ci
 
     if (!ci?.enabled) {
       return { owner: null, repo: null, runs: [], disabled: true }
     }
 
-    const owner = String((request as any)?.params?.owner ?? (request as any)?.param?.('owner') ?? '').trim()
-    const repo = String((request as any)?.params?.name ?? (request as any)?.param?.('name') ?? '').trim()
+    const owner = request.getParam('owner').trim()
+    const repo = request.getParam('name').trim()
     if (!owner || !repo) {
       return { error: 'Both `owner` and `name` route params are required.', status: 400 }
     }
@@ -43,12 +44,12 @@ export default new Action({
       return { error: 'Org not in `config.dashboard.ci.orgs`.', status: 403 }
     }
 
-    const url = new URL(request.url ?? `http://localhost/`)
-    const rawLimit = Number(url.searchParams.get('limit') ?? '20')
+    const rawLimit = Number(request.get('limit', 20))
     const limit = Number.isFinite(rawLimit) && rawLimit > 0
       ? Math.min(Math.floor(rawLimit), 100)
       : 20
-    const branch = url.searchParams.get('branch') || undefined
+    const branchValue = String(request.get('branch', '')).trim()
+    const branch = branchValue || undefined
 
     try {
       const runs = await fetchWorkflowRuns(owner, repo, { limit, branch })

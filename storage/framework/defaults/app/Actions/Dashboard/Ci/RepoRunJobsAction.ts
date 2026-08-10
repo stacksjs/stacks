@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { fetchRunJobs } from '@stacksjs/github'
@@ -19,17 +20,16 @@ export default new Action({
   description: 'Job-level breakdown for a single workflow run (drilldown expand).',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
+  async handle(request: RequestInstance) {
     const ci = dashboardConfig?.ci
 
     if (!ci?.enabled) {
       return { jobs: [], disabled: true }
     }
 
-    const owner = String((request as any)?.params?.owner ?? (request as any)?.param?.('owner') ?? '').trim()
-    const repo = String((request as any)?.params?.name ?? (request as any)?.param?.('name') ?? '').trim()
-    const runIdRaw = (request as any)?.params?.runId ?? (request as any)?.param?.('runId') ?? null
-    const runId = Number(runIdRaw)
+    const owner = request.getParam('owner').trim()
+    const repo = request.getParam('name').trim()
+    const runId = Number(request.getParam('runId'))
     if (!owner || !repo) {
       return { error: 'Both `owner` and `name` route params are required.', status: 400 }
     }

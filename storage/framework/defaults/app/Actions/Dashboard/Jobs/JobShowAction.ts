@@ -1,14 +1,14 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { request } from '@stacksjs/router'
 import { normalizeActiveJob, normalizeFailedJob, parseJobReference } from './job-records'
 
 export default new Action({
   name: 'JobShowAction',
   description: 'Returns one native Job or FailedJob record for dashboard inspection.',
   method: 'GET',
-  async handle() {
-    const reference = String((request as any).params?.id || '')
+  async handle(request: RequestInstance) {
+    const reference = request.getParam('id')
     const parsed = parseJobReference(reference)
     const id = Number(parsed.id)
 

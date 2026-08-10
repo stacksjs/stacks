@@ -1,5 +1,6 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { request, response } from '@stacksjs/router'
+import { response } from '@stacksjs/router'
 import { retryFailedJob } from '@stacksjs/queue'
 import { parseJobReference } from './job-records'
 
@@ -7,8 +8,8 @@ export default new Action({
   name: 'JobRetryAction',
   description: 'Retries a single failed job by its failed_jobs id.',
   method: 'POST',
-  async handle() {
-    const reference = String((request as any).params?.id || '')
+  async handle(request: RequestInstance) {
+    const reference = request.getParam('id')
     const parsed = parseJobReference(reference)
     const id = Number(parsed.id)
     if (parsed.source === 'job') {
