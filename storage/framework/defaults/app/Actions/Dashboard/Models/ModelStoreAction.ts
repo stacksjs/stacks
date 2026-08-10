@@ -1,23 +1,23 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
-import { request } from '@stacksjs/router'
 import { prepareModelFields, resolveWritableModel } from './model-write'
+
+interface ModelWriteInput {
+  fields?: unknown
+}
 
 export default new Action({
   name: 'Dashboard Model Store',
   description: 'Creates one row through a model declared useApi store contract.',
   method: 'POST',
   apiResponse: true,
-  async handle(req: {
-    getParam?: (name: string) => unknown
-    all?: () => Record<string, unknown>
-    route?: { params?: { slug?: string } }
-  }) {
-    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''), 'store')
+  async handle(request: RequestInstance<ModelWriteInput>) {
+    const resolved = await resolveWritableModel(request.getParam('slug'), 'store')
     if ('error' in resolved)
       return { ok: false, error: resolved.error }
 
-    const input = (req.all?.() ?? (request as any).all?.() ?? {}) as Record<string, unknown>
+    const input = request.all()
     const raw = input.fields
     const body = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw as Record<string, unknown> : {}
     const { data, errors } = prepareModelFields(resolved.Model, body)

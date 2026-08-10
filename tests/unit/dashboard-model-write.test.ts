@@ -92,8 +92,9 @@ describe('dashboard generic model writes', () => {
     const action = source('storage/framework/defaults/app/Actions/Dashboard/Models/ModelStoreAction.ts')
     const routes = source('storage/framework/defaults/routes/dashboard-api.ts')
 
-    expect(action).toContain("resolveWritableModel(String(")
-    expect(action).toContain("'store')")
+    expect(action).toContain("resolveWritableModel(request.getParam('slug'), 'store')")
+    expect(action).toContain('request.all()')
+    expect(action).not.toContain('request as any')
     expect(action).toContain('await resolved.Model.create(toSnakeCaseKeys(data))')
     expect(action).not.toContain('insertInto(')
     expect(routes).toContain("guard(route.post('/models/{slug}', 'Actions/Dashboard/Models/ModelStoreAction'))")

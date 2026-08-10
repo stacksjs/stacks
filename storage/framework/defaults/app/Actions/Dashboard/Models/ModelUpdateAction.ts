@@ -1,7 +1,11 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { toSnakeCaseKeys } from '@stacksjs/orm'
-import { request } from '@stacksjs/router'
 import { parseRowId, prepareModelFields, resolveWritableModel } from './model-write'
+
+interface ModelWriteInput {
+  fields?: unknown
+}
 
 /**
  * `PATCH /api/dashboard/models/{slug}/{id}`.
@@ -16,16 +20,12 @@ export default new Action({
   description: 'Updates one row of a model from the dashboard model browser.',
   method: 'PATCH',
   apiResponse: true,
-  async handle(req: {
-    getParam?: (name: string) => unknown
-    all?: () => Record<string, unknown>
-    route?: { params?: { slug?: string, id?: string } }
-  }) {
-    const resolved = await resolveWritableModel(String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? ''), 'update')
+  async handle(request: RequestInstance<ModelWriteInput>) {
+    const resolved = await resolveWritableModel(request.getParam('slug'), 'update')
     if ('error' in resolved)
       return { ok: false, error: resolved.error }
 
-    const id = parseRowId(req?.getParam?.('id') ?? req?.route?.params?.id)
+    const id = parseRowId(request.getParam('id'))
     if (id === null)
       return { ok: false, error: 'A numeric row id is required.' }
 
@@ -35,7 +35,7 @@ export default new Action({
     // columns — and `slug` is a real column on plenty of models, so it
     // cannot simply be blocklisted. One level of nesting keeps the two
     // namespaces apart.
-    const input = (req.all?.() ?? (request as any).all?.() ?? {}) as Record<string, unknown>
+    const input = request.all()
     const raw = input.fields
     const body = (raw && typeof raw === 'object' && !Array.isArray(raw)) ? raw as Record<string, unknown> : {}
     const prepared = prepareModelFields(resolved.Model, body, true)

@@ -1,6 +1,7 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { env } from '@stacksjs/env'
-import { request, response as routerResponse } from '@stacksjs/router'
+import { response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
 import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
@@ -108,14 +109,11 @@ function typeForColumn(column: string, values: unknown[]): ColumnMeta['type'] {
   return inferType(values)
 }
 
-function queryParams(): URLSearchParams {
-  const query = ((request as any).query || {}) as Record<string, string | string[] | undefined>
-  const params = new URLSearchParams()
-  for (const [key, value] of Object.entries(query)) {
-    if (value === undefined) continue
-    params.set(key, Array.isArray(value) ? String(value[0]) : String(value))
-  }
-  return params
+function queryValue(request: RequestInstance, key: string, fallback = ''): string {
+  const value = request.get<unknown>(key, fallback)
+  if (Array.isArray(value))
+    return value.length > 0 ? String(value[0]) : fallback
+  return value == null ? fallback : String(value)
 }
 
 /** `filters` arrives as a JSON object so column names stay unambiguous. */
@@ -176,23 +174,22 @@ export default new Action({
   description: 'Queries a single model by URL slug with paging, sorting, search and column filters.',
   method: 'GET',
   apiResponse: true,
-  async handle(req: { getParam?: (name: string) => unknown, route?: { params?: { slug?: string } } }) {
-    const slug = String(req?.getParam?.('slug') ?? req?.route?.params?.slug ?? '')
+  async handle(request: RequestInstance) {
+    const slug = request.getParam('slug')
     if (!isValidModelSlug(slug))
       return routerResponse.json({ message: 'Model slug must be lowercase kebab-case.' }, 400)
 
     const modelName = slugToPascal(slug)
     const tableName = pluralize(pascalToSnake(modelName))
 
-    const params = queryParams()
-    const page = Math.max(1, Number.parseInt(params.get('page') || '1', 10) || 1)
-    const perPage = Math.min(MAX_PER_PAGE, Math.max(1, Number.parseInt(params.get('per_page') || String(DEFAULT_PER_PAGE), 10) || DEFAULT_PER_PAGE))
-    const requestedSort = (params.get('sort') || '').trim()
-    const dir: 'asc' | 'desc' = params.get('dir') === 'asc' ? 'asc' : 'desc'
-    const q = (params.get('q') || '').trim()
+    const page = Math.max(1, Number.parseInt(queryValue(request, 'page', '1'), 10) || 1)
+    const perPage = Math.min(MAX_PER_PAGE, Math.max(1, Number.parseInt(queryValue(request, 'per_page', String(DEFAULT_PER_PAGE)), 10) || DEFAULT_PER_PAGE))
+    const requestedSort = queryValue(request, 'sort').trim()
+    const dir: 'asc' | 'desc' = queryValue(request, 'dir') === 'asc' ? 'asc' : 'desc'
+    const q = queryValue(request, 'q').trim()
     let filters: Record<string, string>
     try {
-      filters = parseFilters(params.get('filters'))
+      filters = parseFilters(queryValue(request, 'filters') || null)
     }
     catch (error) {
       return routerResponse.json({
