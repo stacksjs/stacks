@@ -19,6 +19,10 @@ export interface TaxRateRecord {
   region: TaxRateRegion
   status: 'active' | 'inactive'
   isDefault: boolean
+  /** Stable identifier application code matches on, independent of `name`. */
+  code: string
+  /** Whether a qualifying exemption stops this component being charged. */
+  exemptible: boolean
   createdAt: string
 }
 
@@ -50,6 +54,11 @@ export function normalizeTaxRateRecord(record: any): TaxRateRecord {
     ]),
     status: commerceEnum(commerceValue(record, 'status'), source, 'status', ['active', 'inactive']),
     isDefault: commerceBoolean(commerceValue(record, 'is_default', 'isDefault'), source, 'is_default'),
+    // Optional, both of them: a rate created before these columns existed has
+    // neither, and a dashboard that throws on an older row is worse than one
+    // that shows it without a badge.
+    code: String(commerceValue(record, 'code') ?? ''),
+    exemptible: Boolean(commerceValue(record, 'exemptible') ?? false),
     createdAt: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),
   }
 }

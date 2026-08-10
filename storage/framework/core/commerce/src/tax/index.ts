@@ -1,3 +1,11 @@
+// Functions from breakdown.ts
+export {
+  activeTaxRates,
+  breakdownFor,
+  taxFor,
+} from './breakdown'
+export type { BreakdownOptions, TaxBreakdown, TaxComponent } from './breakdown'
+
 // Functions from destroy.ts
 export {
   bulkDestroy,

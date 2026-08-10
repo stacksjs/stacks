@@ -39,9 +39,17 @@ function formatDate(value: string): string {
         <template :for="record in records()" :key="record.id">
           <tr class="align-top">
             <td class="px-4 py-4">
-              <div class="flex gap-2 items-center">
+              <div class="flex flex-wrap gap-2 items-center">
                 <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
                 <span :if="record.isDefault" class="px-2 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-full">Default</span>
+                {{--
+                  Both badges change what a customer is charged, so they sit
+                  next to the name rather than in a column someone has to
+                  scroll to. The code is what application code matches on;
+                  renaming the rate must not change the bill.
+                --}}
+                <span :if="record.code" class="px-2 py-0.5 font-mono text-gray-600 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">{{ record.code }}</span>
+                <span :if="record.exemptible" class="px-2 py-0.5 font-medium text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 rounded-full" title="Not charged to a customer who qualifies for an exemption">Exemptible</span>
               </div>
               <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.type }}</p>
             </td>

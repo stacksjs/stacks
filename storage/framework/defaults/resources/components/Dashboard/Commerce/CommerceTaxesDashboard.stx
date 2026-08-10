@@ -16,6 +16,8 @@ interface TaxRateWritePayload {
   region: string
   status: 'active' | 'inactive'
   isDefault: boolean
+  code: string
+  exemptible: boolean
 }
 
 const emptySummary: TaxRateSummary = { total: 0, active: 0, countries: 0, averageRate: 0, defaultConflicts: 0 }
@@ -136,6 +138,8 @@ async function saveTax(payload: TaxRateWritePayload): Promise<void> {
     region: payload.region,
     status: payload.status,
     isDefault: payload.isDefault,
+    code: payload.code,
+    exemptible: payload.exemptible,
   }
 
   saving.set(true)

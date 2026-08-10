@@ -15,6 +15,8 @@ const country = state('')
 const region = state('North America')
 const status = state<'active' | 'inactive'>('active')
 const isDefault = state(false)
+const code = state('')
+const exemptible = state(false)
 let hydrationKey = ''
 
 const regions = ['North America', 'South America', 'Europe', 'Asia', 'Africa', 'Oceania', 'Antarctica'] as const
@@ -36,6 +38,8 @@ effect(() => {
   region.set(current?.region || 'North America')
   status.set(current?.status || 'active')
   isDefault.set(current?.isDefault || false)
+  code.set(current?.code || '')
+  exemptible.set(current?.exemptible || false)
 })
 
 function submit(): void {
@@ -49,6 +53,8 @@ function submit(): void {
     region: region(),
     status: status(),
     isDefault: isDefault(),
+    code: code().trim(),
+    exemptible: exemptible(),
   })
 }
 
@@ -105,11 +111,28 @@ function errorMessages(): string[] {
               </select>
             </label>
           </div>
+          <label class="block">
+            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Code</span>
+            <input x-model="code" type="text" placeholder="sales" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+            <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">What the application matches on. Renaming the rate above does not change what is charged; changing this can.</span>
+          </label>
           <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
             <input x-model="isDefault" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
             <span>
               <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Default tax rate</span>
               <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Selecting this clears the default flag from every other rate.</span>
+            </span>
+          </label>
+          {{--
+            Spelled out rather than labelled "exempt", because the two read
+            alike and mean opposite things: this marks the component as one an
+            exemption can lift, not one that is currently unpaid.
+          --}}
+          <label class="flex gap-3 items-start p-3 border border-gray-200 rounded-lg dark:border-neutral-700">
+            <input x-model="exemptible" type="checkbox" class="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded" />
+            <span>
+              <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Can be exempted</span>
+              <span class="block mt-0.5 text-gray-500 text-xs dark:text-neutral-400">Customers who qualify for an exemption are not charged this component. Leave off for anything owed regardless — an excise or a city levy is usually still due.</span>
             </span>
           </label>
         </div>
