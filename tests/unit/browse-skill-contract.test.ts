@@ -39,6 +39,17 @@ describe('browse skill contract', () => {
     expect(script).toContain('state.dispose()')
   })
 
+  test('documents repeatable stateful SPA scenarios', () => {
+    expect(skill).toContain('### Scenario (stateful SPA interactions)')
+    expect(skill).toContain('Supported actions are `click`, `fill`, `press`, `wait`, and `assert`')
+    expect(skill).toContain('preserving reactive STX state and SPA navigation')
+    expect(script).toContain("else if (command === 'scenario')")
+    expect(script).toContain('flagList(flags.step).map(parseScenarioStep)')
+    expect(script).toContain("element.dispatchEvent(new InputEvent('input'")
+    expect(script).toContain("await cdp.send('Input.dispatchKeyEvent'")
+    expect(script).toContain('state.consoleErrors.length || failedRequests.length')
+  })
+
   test('keeps crawling within the starting origin', () => {
     expect(script).toContain('url.origin !== origin')
     expect(script).toContain("!['http:', 'https:'].includes(url.protocol)")

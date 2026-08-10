@@ -12,6 +12,7 @@
  *   bun browse.ts responsive <url> [--out-dir DIR]
  *   bun browse.ts monitor    <url> [--ms 5000]
  *   bun browse.ts snapshot   <url>
+ *   bun browse.ts scenario   <url> --step '{"action":"click","selector":"button"}'
  *   bun browse.ts crawl      <url> [--viewport 1280x900] [--max 500] [--path /extra] [--progress]
  *
  * Browser discovery order: $BROWSE_BROWSER → PATH (chromium, google-chrome, …)
@@ -496,6 +497,113 @@ function parseViewport(value: string | undefined): { w: number, h: number } {
   return { w, h }
 }
 
+type ScenarioAction = 'assert' | 'click' | 'fill' | 'press' | 'wait'
+
+interface ScenarioStep {
+  action: ScenarioAction
+  selector?: string
+  text?: string
+  value?: string
+  key?: string
+  ms?: number
+  settle?: number
+}
+
+function parseScenarioStep(value: string): ScenarioStep {
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(value)
+  }
+  catch (error) {
+    throw new TypeError(`Invalid scenario step JSON: ${value}`, { cause: error })
+  }
+
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+    throw new TypeError('Each scenario step must be a JSON object.')
+
+  const step = parsed as Record<string, unknown>
+  if (!['assert', 'click', 'fill', 'press', 'wait'].includes(String(step.action)))
+    throw new TypeError(`Unsupported scenario action: ${String(step.action)}`)
+
+  const action = step.action as ScenarioAction
+  if (['assert', 'click', 'fill'].includes(action) && typeof step.selector !== 'string')
+    throw new TypeError(`Scenario action "${action}" requires a selector.`)
+  if (action === 'fill' && typeof step.value !== 'string')
+    throw new TypeError('Scenario action "fill" requires a string value.')
+  if (action === 'press' && typeof step.key !== 'string')
+    throw new TypeError('Scenario action "press" requires a key.')
+  if (action === 'wait' && (!Number.isFinite(step.ms) || Number(step.ms) < 0 || Number(step.ms) > 30_000))
+    throw new TypeError('Scenario action "wait" requires ms between 0 and 30000.')
+
+  return step as unknown as ScenarioStep
+}
+
+async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<string, unknown>> {
+  if (step.action === 'wait') {
+    await Bun.sleep(Number(step.ms))
+    return { action: step.action, ms: Number(step.ms), ok: true }
+  }
+
+  if (step.action === 'press') {
+    const key = step.key || ''
+    const keyCode = key.length === 1 ? key.charCodeAt(0) : ({ Enter: 13, Escape: 27, Tab: 9 }[key] || 0)
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode })
+    await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: keyCode })
+    return { action: step.action, key, ok: true }
+  }
+
+  const result = await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      const step = ${JSON.stringify(step)}
+      const element = document.querySelector(step.selector)
+      if (!element)
+        return { ok: false, error: 'Element not found', selector: step.selector }
+
+      const rect = element.getBoundingClientRect()
+      const style = getComputedStyle(element)
+      const visible = rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
+      if (!visible)
+        return { ok: false, error: 'Element is not visible', selector: step.selector }
+
+      if (step.action === 'click') {
+        if (element.disabled || element.getAttribute('aria-disabled') === 'true')
+          return { ok: false, error: 'Element is disabled', selector: step.selector }
+        element.click()
+      }
+      else if (step.action === 'fill') {
+        if (!('value' in element))
+          return { ok: false, error: 'Element has no value', selector: step.selector }
+        const prototype = Object.getPrototypeOf(element)
+        const setter = Object.getOwnPropertyDescriptor(prototype, 'value')?.set
+        if (setter)
+          setter.call(element, step.value)
+        else
+          element.value = step.value
+        element.dispatchEvent(new InputEvent('input', { bubbles: true, inputType: 'insertText', data: step.value }))
+        element.dispatchEvent(new Event('change', { bubbles: true }))
+      }
+      else if (step.action === 'assert' && step.text !== undefined) {
+        const content = (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim()
+        if (!content.includes(step.text))
+          return { ok: false, error: 'Expected text was not found', selector: step.selector, expected: step.text, actual: content.slice(0, 240) }
+      }
+
+      return {
+        ok: true,
+        action: step.action,
+        selector: step.selector,
+        tag: element.tagName.toLowerCase(),
+        text: (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 160),
+      }
+    })()`,
+    returnByValue: true,
+  })
+  const value = result.result?.value as Record<string, unknown> | undefined
+  if (!value?.ok)
+    throw new Error(`Scenario ${step.action} failed: ${String(value?.error || 'unknown error')} (${step.selector || step.key || ''})`)
+  return value
+}
+
 const BREAKPOINTS = [
   { device: 'Mobile S', w: 320, h: 568 },
   { device: 'Mobile L', w: 428, h: 926 },
@@ -510,7 +618,7 @@ async function main() {
   const url = positional[0]
 
   if (!command || command === 'help' || !url) {
-    console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot|crawl> <url> [flags]')
+    console.log('Usage: bun browse.ts <navigate|screenshot|responsive|monitor|snapshot|scenario|crawl> <url> [flags]')
     console.log('  --cookie "name=value"   repeatable; pre-seeds cookies (e.g. coming-soon bypass)')
     console.log('  --settle 1500           ms to wait after load before acting (default 700; stretch for entrance animations)')
     console.log('  --scheme dark           emulate prefers-color-scheme (light|dark) for QA of theme-aware pages')
@@ -615,6 +723,53 @@ async function main() {
       })()`
       const r = await cdp.send('Runtime.evaluate', { expression: expr, returnByValue: true })
       console.log(JSON.stringify({ url, ...r.result?.value }, null, 2))
+      state.dispose()
+      cdp.close()
+    }
+
+    else if (command === 'scenario') {
+      const steps = flagList(flags.step).map(parseScenarioStep)
+      if (!steps.length)
+        throw new TypeError('Scenario requires at least one --step JSON object.')
+
+      const cdp = await openPage(session.port)
+      const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
+      const state = await gotoAndInstrument(cdp, url, { viewport, cookies, settleMs, scheme })
+      const results: Record<string, unknown>[] = []
+
+      for (const step of steps) {
+        results.push(await runScenarioStep(cdp, step))
+        if (step.action !== 'wait')
+          await Bun.sleep(step.settle ?? 250)
+      }
+
+      const finalState = await cdp.send('Runtime.evaluate', {
+        expression: `({
+          url: location.href,
+          title: document.title,
+          activeElement: document.activeElement?.tagName?.toLowerCase() || null,
+          bodyText: (document.body.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 500),
+        })`,
+        returnByValue: true,
+      })
+      let screenshot: string | null = null
+      if (typeof flags.out === 'string') {
+        screenshot = flags.out
+        mkdirSync(screenshot.split('/').slice(0, -1).join('/') || '.', { recursive: true })
+        await Bun.write(screenshot, await captureScreenshot(cdp, { full: !!flags.full }))
+      }
+      const failedRequests = state.responses.filter(response => response.status >= 400)
+      console.log(JSON.stringify({
+        url,
+        viewport: `${viewport.w}x${viewport.h}`,
+        steps: results,
+        final: finalState.result?.value,
+        screenshot,
+        consoleErrors: state.consoleErrors,
+        failedRequests,
+      }, null, 2))
+      if (state.consoleErrors.length || failedRequests.length)
+        process.exitCode = 1
       state.dispose()
       cdp.close()
     }
