@@ -497,7 +497,13 @@ export class DispatchedBatch {
 
     const batchableJobs = jobs.map(j => 'job' in j ? j : { job: j })
 
-    await incrementBatchCounters(this.id, batchableJobs.length)
+    // The checks above read the record; this write re-checks the same two
+    // columns as part of the increment. A batch cancelled in between refuses
+    // here rather than being grown with jobs that will never be drained, and
+    // nothing is dispatched.
+    const grew = await incrementBatchCounters(this.id, batchableJobs.length)
+    if (!grew)
+      throw new Error(`Batch ${this.id} was cancelled, finished or deleted before the jobs could be added`)
 
     // Dispatch the new jobs
     const options = JSON.parse(record.options || '{}')
@@ -653,10 +659,17 @@ async function updateBatchRecord(id: string, updates: Partial<BatchRecord>): Pro
  * `column + n` in the SET clause, and Redis has `HINCRBY` on the hash the
  * batch is stored as. The Redis path falls back to the database on a
  * connection error, matching `updateBatchInRedis`.
+ *
+ * Returns whether the increment was applied. On the database path the
+ * cancelled/finished guard is part of the same statement, so a batch cancelled
+ * between `add`'s precondition read and this write refuses the add instead of
+ * growing a batch nothing will ever drain. `add` checks those columns first as
+ * well; that check is the fast path and a clear error message, this one closes
+ * the window between the two.
  */
-async function incrementBatchCounters(id: string, delta: number): Promise<void> {
+async function incrementBatchCounters(id: string, delta: number): Promise<boolean> {
   if (delta === 0)
-    return
+    return true
 
   if (getQueueDriver() === 'redis') {
     try {
@@ -665,7 +678,10 @@ async function incrementBatchCounters(id: string, delta: number): Promise<void> 
       await client.hincrby(key, 'total_jobs', delta)
       await client.hincrby(key, 'pending_jobs', delta)
       client.close()
-      return
+      // Redis has no conditional-increment equivalent here: the two HINCRBYs
+      // are individually atomic but are not a pair, and the cancel flag lives
+      // in the same hash. `add`'s precondition read is the guard on this path.
+      return true
     }
     catch {
       // Fall through to the database, as updateBatchInRedis does.
@@ -674,11 +690,19 @@ async function incrementBatchCounters(id: string, delta: number): Promise<void> 
 
   const { db, sql } = await import('@stacksjs/database')
 
-  await (db as any)
+  // `.whereNull(...)`, not `.where(col, 'is', null)` — the latter binds the
+  // null as a parameter and emits `cancelled_at is $n`, which Postgres rejects
+  // outright (42601). That is how a guard was silently lost once already, in
+  // stacksjs/stacks#2215.
+  const result = await (db as any)
     .updateTable('job_batches')
     .set(batchCounterIncrements(sql, delta))
     .where('id', '=', id)
-    .execute()
+    .whereNull('cancelled_at')
+    .whereNull('finished_at')
+    .executeTakeFirst()
+
+  return updatedRowCount(result) > 0
 }
 
 /**
