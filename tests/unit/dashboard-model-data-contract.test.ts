@@ -20,7 +20,10 @@ describe('dashboard model data integrity contract', () => {
     expect(indexSource).toContain('count: number | null')
     expect(indexSource).toContain('unavailableModels')
     expect(indexSource).toContain('error: string | null')
+    expect(indexSource).toContain("dashboardOperationalIssue(cause, 'Model count could not be loaded.'")
     expect(indexSource).not.toContain('count: 0,')
+    expect(indexSource).not.toContain('cause instanceof Error ? cause.message')
+    expect(indexSource).not.toContain('error instanceof Error ? error.message')
   })
 
   test('keeps every model query on the native ORM path', () => {

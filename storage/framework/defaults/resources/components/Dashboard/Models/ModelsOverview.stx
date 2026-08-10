@@ -129,7 +129,7 @@ onMount(() => {
 
   <div :if="!loadError() && unavailableModels() > 0" role="status" class="flex gap-3 items-start px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg dark:border-amber-900">
     <span class="flex-none mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
-    <span>{{ unavailableModels() }} model {{ unavailableModels() === 1 ? 'count is' : 'counts are' }} unavailable. Affected cards show the query error instead of reporting zero records.</span>
+    <span>{{ unavailableModels() }} model {{ unavailableModels() === 1 ? 'count is' : 'counts are' }} unavailable. Affected cards remain unavailable instead of reporting zero records.</span>
   </div>
 
   <Card padding="none">

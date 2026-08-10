@@ -3,6 +3,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { countRows } from '../../../../resources/functions/dashboard/data'
+import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { modelApiConfiguration } from './model-api'
 
 /**
@@ -39,6 +40,12 @@ interface ModelGroup {
   label: string
   models: ModelRow[]
   countLabel: string
+}
+
+interface DiscoveredModel {
+  name: string
+  file: string
+  source: 'userland' | 'framework'
 }
 
 function pascalToSnake(s: string): string {
@@ -92,6 +99,21 @@ function categoryLabel(k: string): string {
   return k === 'userland' ? 'Your Models' : k.charAt(0).toUpperCase() + k.slice(1)
 }
 
+function unavailableModelRow(model: DiscoveredModel, error: string): ModelRow {
+  return {
+    name: model.name,
+    table: pluralize(pascalToSnake(model.name)),
+    href: `/models/${pascalToKebab(model.name)}`,
+    count: null,
+    attributeCount: 0,
+    category: categorize(model),
+    source: model.source,
+    apiUri: '',
+    apiRoutes: [],
+    error,
+  }
+}
+
 export default new Action({
   name: 'Dashboard Models Index',
   description: 'List every model + live record count for the dashboard models overview.',
@@ -102,11 +124,18 @@ export default new Action({
     const userlandDir = join(cwd, 'app', 'Models')
     const defaultsDir = join(cwd, 'storage/framework/defaults/app/Models')
 
-    const userland = walkModels(userlandDir, false)
-    const defaults = walkModels(defaultsDir, true)
+    let userland: Array<Omit<DiscoveredModel, 'source'>>
+    let defaults: Array<Omit<DiscoveredModel, 'source'>>
+    try {
+      userland = walkModels(userlandDir, false)
+      defaults = walkModels(defaultsDir, true)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Model catalog could not be loaded.', 'ModelsIndexAction.catalog')
+    }
 
     const seen = new Set<string>()
-    const merged: Array<{ name: string, file: string, source: 'userland' | 'framework' }> = []
+    const merged: DiscoveredModel[] = []
     for (const list of [userland, defaults]) {
       for (const m of list) {
         if (seen.has(m.name)) continue
@@ -122,28 +151,29 @@ export default new Action({
         Model = module.default ?? module
       }
       catch (error) {
-        return {
-          name: m.name,
-          table: pluralize(pascalToSnake(m.name)),
-          href: `/models/${pascalToKebab(m.name)}`,
-          count: null,
-          attributeCount: 0,
-          category: categorize(m),
-          source: m.source,
-          apiUri: '',
-          apiRoutes: [],
-          error: error instanceof Error ? error.message : String(error),
-        }
+        return unavailableModelRow(
+          m,
+          dashboardOperationalIssue(error, 'Model definition could not be loaded.', `ModelsIndexAction.import.${m.name}`),
+        )
       }
 
-      const api = modelApiConfiguration(Model)
+      let api: ReturnType<typeof modelApiConfiguration>
+      try {
+        api = modelApiConfiguration(Model)
+      }
+      catch (error) {
+        return unavailableModelRow(
+          m,
+          dashboardOperationalIssue(error, 'Model metadata could not be loaded.', `ModelsIndexAction.metadata.${m.name}`),
+        )
+      }
       let count: number | null = null
       let error: string | null = null
       try {
         count = await countRows(Model)
       }
       catch (cause) {
-        error = cause instanceof Error ? cause.message : String(cause)
+        error = dashboardOperationalIssue(cause, 'Model count could not be loaded.', `ModelsIndexAction.count.${m.name}`)
       }
 
       return {
