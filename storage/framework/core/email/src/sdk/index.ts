@@ -10,6 +10,13 @@
 
 import { email as emailConfig } from '@stacksjs/config'
 import { getErrorMessage } from '@stacksjs/utils'
+import {
+  type InboxAttachment,
+  inboxAttachmentPrefix,
+  mapInboxAttachmentObjects,
+} from './inbox-attachments'
+
+export * from './inbox-attachments'
 
 export interface EmailAddress {
   name?: string
@@ -71,6 +78,16 @@ export interface SendResult {
   error?: string
 }
 
+export type EmailStorageClient = Pick<import('@stacksjs/ts-cloud').S3Client,
+  'deleteObjects' | 'getObject' | 'getObjectBytes' | 'listObjects' | 'putObject'>
+
+export interface EmailSDKOptions {
+  bucket?: string
+  region?: string
+  domain?: string
+  storage?: () => EmailStorageClient | Promise<EmailStorageClient>
+}
+
 /**
  * Email SDK class for Stacks applications
  */
@@ -78,14 +95,16 @@ export class EmailSDK {
   private bucket: string
   private region: string
   private domain: string
+  private storageFactory?: EmailSDKOptions['storage']
 
-  constructor(options?: { bucket?: string; region?: string; domain?: string }) {
+  constructor(options?: EmailSDKOptions) {
     const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
     this.bucket = options?.bucket || process.env.AWS_BUCKET || `${appName}-production-email`
     this.region = options?.region || process.env.AWS_REGION || 'us-east-1'
     const fromAddress = emailConfig?.from?.address
     const parsedDomain = fromAddress?.includes('@') ? fromAddress.split('@')[1] : undefined
     this.domain = options?.domain || parsedDomain || 'stacksjs.com'
+    this.storageFactory = options?.storage
   }
 
   /**
@@ -179,8 +198,7 @@ export class EmailSDK {
    */
   async getInbox(mailbox: string, options?: { limit?: number; offset?: number }): Promise<InboxEmail[]> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud')
-      const s3 = new S3Client(this.region)
+      const s3 = await this.storage()
 
       const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
@@ -237,12 +255,10 @@ export class EmailSDK {
     html?: string
     text?: string
     raw?: string
+    attachments: InboxAttachment[]
   } | null> {
     try {
-      const { S3Client } = await import('@stacksjs/ts-cloud')
-      const s3 = new S3Client(this.region)
-
-      const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
+      const s3 = await this.storage()
 
       // First get the inbox to find the email path
       const inbox = await this.getInbox(mailbox, { limit: 1000 })
@@ -292,13 +308,63 @@ export class EmailSDK {
         }
       }
 
-      return { metadata, html, text }
+      const attachments = await this.listAttachments(s3, email)
+
+      return { metadata, html, text, attachments }
     }
     catch (error: unknown) {
       if (getErrorMessage(error).includes('NoSuchKey') || getErrorMessage(error).includes('404')) {
         return null
       }
       throw error
+    }
+  }
+
+  /**
+   * List the downloadable attachments stored for an inbox email.
+   */
+  async getAttachments(mailbox: string, messageId: string): Promise<InboxAttachment[] | null> {
+    const inbox = await this.getInbox(mailbox, { limit: 1000 })
+    const email = inbox.find(entry => entry.messageId === messageId)
+
+    if (!email)
+      return null
+
+    return this.listAttachments(await this.storage(), email)
+  }
+
+  /**
+   * Read one attachment by its opaque SDK identifier. The identifier is matched
+   * against the mailbox's stored objects before any bytes are fetched, so a
+   * request can never select an arbitrary S3 key.
+   */
+  async getAttachment(mailbox: string, messageId: string, attachmentId: string): Promise<{
+    attachment: InboxAttachment
+    body: Uint8Array
+    contentType: string
+  } | null> {
+    const s3 = await this.storage()
+    const inbox = await this.getInbox(mailbox, { limit: 1000 })
+    const email = inbox.find(entry => entry.messageId === messageId)
+
+    if (!email)
+      return null
+
+    const stored = await this.listStoredAttachments(s3, email)
+    const attachment = stored.find(item => item.id === attachmentId)
+    if (!attachment)
+      return null
+
+    const result = await s3.getObjectBytes(this.bucket, attachment.key)
+    return {
+      attachment: {
+        id: attachment.id,
+        name: attachment.name,
+        size: attachment.size || result.contentLength || result.body.byteLength,
+        ...(attachment.lastModified ? { lastModified: attachment.lastModified } : {}),
+      },
+      body: result.body,
+      contentType: result.contentType || 'application/octet-stream',
     }
   }
 
@@ -343,8 +409,7 @@ export class EmailSDK {
    * Delete an email
    */
   async delete(mailbox: string, messageId: string): Promise<boolean> {
-    const { S3Client } = await import('@stacksjs/ts-cloud')
-    const s3 = new S3Client(this.region)
+    const s3 = await this.storage()
 
     const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
@@ -360,28 +425,10 @@ export class EmailSDK {
     if (!email)
       return false
 
-    // Delete the email files from S3
-    // Note: In production, you might want to use S3 delete objects API
     const basePath = email.path
-    const keysToDelete = [
-      `${basePath}/metadata.json`,
-      `${basePath}/raw.eml`,
-      `${basePath}/body.html`,
-      `${basePath}/body.txt`,
-      `${basePath}/preview.txt`,
-    ]
-
-    for (const key of keysToDelete) {
-      try {
-        await s3.deleteObject(this.bucket, key)
-      }
-      catch (error: unknown) {
-        // Expected for optional files (body.html, body.txt) that may not exist.
-        if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
-          throw error
-        }
-      }
-    }
+    const keysToDelete = await this.listStoredObjectKeys(s3, `${basePath}/`)
+    for (let offset = 0; offset < keysToDelete.length; offset += 1000)
+      await s3.deleteObjects(this.bucket, keysToDelete.slice(offset, offset + 1000))
 
     // Update inbox index only after every stored object was removed.
     inbox.splice(emailIndex, 1)
@@ -394,6 +441,44 @@ export class EmailSDK {
     })
 
     return true
+  }
+
+  private async listAttachments(s3: EmailStorageClient, email: InboxEmail): Promise<InboxAttachment[]> {
+    const attachments = await this.listStoredAttachments(s3, email)
+    return attachments.map(attachment => ({
+      id: attachment.id,
+      name: attachment.name,
+      size: attachment.size,
+      ...(attachment.lastModified ? { lastModified: attachment.lastModified } : {}),
+    }))
+  }
+
+  private async listStoredAttachments(s3: EmailStorageClient, email: InboxEmail) {
+    const result = await s3.listObjects({
+      bucket: this.bucket,
+      prefix: inboxAttachmentPrefix(email.path),
+      maxKeys: 1000,
+    })
+
+    return mapInboxAttachmentObjects(email.path, result.objects)
+  }
+
+  private async listStoredObjectKeys(s3: EmailStorageClient, prefix: string): Promise<string[]> {
+    const keys: string[] = []
+    let continuationToken: string | undefined
+
+    do {
+      const result = await s3.listObjects({
+        bucket: this.bucket,
+        prefix,
+        maxKeys: 1000,
+        ...(continuationToken ? { continuationToken } : {}),
+      })
+      keys.push(...result.objects.map(object => object.Key).filter(Boolean))
+      continuationToken = result.nextContinuationToken
+    } while (continuationToken)
+
+    return keys
   }
 
   /**
@@ -411,8 +496,7 @@ export class EmailSDK {
   }
 
   private async updateEmailStatus(mailbox: string, messageId: string, updates: Partial<InboxEmail>): Promise<boolean> {
-    const { S3Client } = await import('@stacksjs/ts-cloud')
-    const s3 = new S3Client(this.region)
+    const s3 = await this.storage()
 
     const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
@@ -433,6 +517,14 @@ export class EmailSDK {
     })
 
     return true
+  }
+
+  private async storage(): Promise<EmailStorageClient> {
+    if (this.storageFactory)
+      return this.storageFactory()
+
+    const { S3Client } = await import('@stacksjs/ts-cloud')
+    return new S3Client(this.region)
   }
 
   private normalizeAddress(addr: EmailAddress | string): EmailAddress {

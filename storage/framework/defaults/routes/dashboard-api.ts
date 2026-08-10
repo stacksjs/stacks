@@ -466,6 +466,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // the per-mailbox inbox.json index. Both are guarded outside local/dev
   // because they touch real mailbox state and PII.
   guard(route.get('/email/inbox', 'Actions/Dashboard/Email/InboxIndexAction'))
+  guard(route.get('/email/inbox/{id}/attachments/{attachmentId}', 'Actions/Dashboard/Email/InboxAttachmentDownloadAction'))
   guard(route.get('/email/inbox/{id}', 'Actions/Dashboard/Email/InboxShowAction'))
   guard(route.get('/email/stats', 'Actions/Dashboard/Email/InboxStatsAction'))
   guard(route.get('/email/activity', 'Actions/Dashboard/Email/InboxActivityAction'))
