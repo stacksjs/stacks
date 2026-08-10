@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { getDashboardData } from '@stacksjs/github'
+import { response } from '@stacksjs/router'
 import { runCiFailureNotifier } from './failure-notifier'
 import { runRunnerPressureMonitor } from './runner-pressure-monitor'
 
@@ -57,17 +58,7 @@ export default new Action({
       // shape the page can render without leaking the env-var name to
       // every browser viewing the dashboard.
       console.error('[dashboard/ci] snapshot failed:', err)
-      return {
-        repos: [],
-        fetchedAt: new Date().toISOString(),
-        total: 0,
-        passing: 0,
-        failing: 0,
-        pending: 0,
-        noRuns: 0,
-        runners: {},
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return response.json({ message: 'CI status could not be loaded.' }, 502)
     }
   },
 })

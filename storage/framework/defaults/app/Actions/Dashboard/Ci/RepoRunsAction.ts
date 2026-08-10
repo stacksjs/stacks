@@ -2,6 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { fetchWorkflowRuns } from '@stacksjs/github'
+import { response } from '@stacksjs/router'
+import { dashboardRequestValue } from '../dashboard-request'
 
 /**
  * `GET /api/dashboard/ci/repos/:owner/:name/runs?limit=N`
@@ -34,21 +36,21 @@ export default new Action({
     const owner = request.getParam('owner').trim()
     const repo = request.getParam('name').trim()
     if (!owner || !repo) {
-      return { error: 'Both `owner` and `name` route params are required.', status: 400 }
+      return response.json({ message: 'Both owner and name route parameters are required.' }, 400)
     }
 
     // Scope check: only fetch runs for orgs the user explicitly
     // configured. Stops the endpoint from being a generic GH proxy.
     const allowedOrgs = ci.orgs ?? []
     if (allowedOrgs.length > 0 && !allowedOrgs.includes(owner)) {
-      return { error: 'Org not in `config.dashboard.ci.orgs`.', status: 403 }
+      return response.json({ message: 'This organization is not configured for CI tracking.' }, 403)
     }
 
-    const rawLimit = Number(request.get('limit', 20))
+    const rawLimit = Number(dashboardRequestValue(request, 'limit', '20'))
     const limit = Number.isFinite(rawLimit) && rawLimit > 0
       ? Math.min(Math.floor(rawLimit), 100)
       : 20
-    const branchValue = String(request.get('branch', '')).trim()
+    const branchValue = dashboardRequestValue(request, 'branch')
     const branch = branchValue || undefined
 
     try {
@@ -57,12 +59,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/ci] RepoRunsAction failed:', err)
-      return {
-        owner,
-        repo,
-        runs: [],
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return response.json({ message: 'Workflow runs could not be loaded.' }, 502)
     }
   },
 })

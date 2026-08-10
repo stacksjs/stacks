@@ -31,12 +31,12 @@ export default new Action({
 
     const org = dashboardRequestValue(request, 'org')
     if (!org) {
-      return { error: '`org` query param is required.', status: 400 }
+      return response.json({ message: 'The org query parameter is required.' }, 400)
     }
 
     const allowedOrgs = ci.orgs ?? []
     if (allowedOrgs.length > 0 && !allowedOrgs.includes(org)) {
-      return { error: 'Org not in `config.dashboard.ci.orgs`.', status: 403 }
+      return response.json({ message: 'This organization is not configured for CI tracking.' }, 403)
     }
 
     const rawLimit = Number(dashboardRequestValue(request, 'limit', '60'))

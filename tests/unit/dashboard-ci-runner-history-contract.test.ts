@@ -3,6 +3,19 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 describe('dashboard CI runner history contract', () => {
+  test('uses native HTTP errors across CI read endpoints', () => {
+    const actionDirectory = resolve('storage/framework/defaults/app/Actions/Dashboard/CI')
+    const actions = ['StatusAction.ts', 'RepoRunsAction.ts', 'RepoRunJobsAction.ts', 'RunnerHistoryAction.ts']
+      .map(file => readFileSync(resolve(actionDirectory, file), 'utf8'))
+      .join('\n')
+
+    expect(actions).not.toMatch(/error: err instanceof|status: 40[03]/)
+    expect(actions).toContain("response.json({ message: 'CI status could not be loaded.' }, 502)")
+    expect(actions).toContain("response.json({ message: 'Workflow runs could not be loaded.' }, 502)")
+    expect(actions).toContain("response.json({ message: 'Workflow jobs could not be loaded.' }, 502)")
+    expect(actions).toContain("response.json({ message: 'Runner history could not be loaded.' }, 503)")
+  })
+
   test('reports operational history failures with an HTTP error', () => {
     const action = readFileSync(
       resolve('storage/framework/defaults/app/Actions/Dashboard/CI/RunnerHistoryAction.ts'),

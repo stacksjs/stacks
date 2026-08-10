@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { fetchRunJobs } from '@stacksjs/github'
+import { response } from '@stacksjs/router'
 
 /**
  * `GET /api/dashboard/ci/repos/:owner/:name/runs/:runId/jobs`
@@ -31,15 +32,15 @@ export default new Action({
     const repo = request.getParam('name').trim()
     const runId = Number(request.getParam('runId'))
     if (!owner || !repo) {
-      return { error: 'Both `owner` and `name` route params are required.', status: 400 }
+      return response.json({ message: 'Both owner and name route parameters are required.' }, 400)
     }
     if (!Number.isFinite(runId) || runId <= 0) {
-      return { error: '`runId` must be a positive integer.', status: 400 }
+      return response.json({ message: 'The run ID must be a positive integer.' }, 400)
     }
 
     const allowedOrgs = ci.orgs ?? []
     if (allowedOrgs.length > 0 && !allowedOrgs.includes(owner)) {
-      return { error: 'Org not in `config.dashboard.ci.orgs`.', status: 403 }
+      return response.json({ message: 'This organization is not configured for CI tracking.' }, 403)
     }
 
     try {
@@ -48,13 +49,7 @@ export default new Action({
     }
     catch (err) {
       console.error('[dashboard/ci] RepoRunJobsAction failed:', err)
-      return {
-        owner,
-        repo,
-        runId,
-        jobs: [],
-        error: err instanceof Error ? err.message : 'unknown error',
-      }
+      return response.json({ message: 'Workflow jobs could not be loaded.' }, 502)
     }
   },
 })
