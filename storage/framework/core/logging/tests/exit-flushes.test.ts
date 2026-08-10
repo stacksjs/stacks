@@ -78,4 +78,43 @@ describe('log.exit', () => {
 
     expect(seen).toBe(3)
   })
+
+  it('reports a non-zero exit as an error, not a success', async () => {
+    /*
+     * `release` ends this way when a pinned check blocks the release. Logging
+     * that at SUCCESS printed the reason the release stopped in green, under a
+     * label saying it worked — the opposite of what happened, on the one line
+     * the operator reads.
+     */
+    const realFlush = log.flush
+    const realExit = process.exit
+    const realError = log.error
+    const realSuccess = log.success
+    const levels: string[] = []
+
+    log.flush = async () => {}
+    log.error = (async (msg: string) => { levels.push(`error:${msg}`) }) as typeof log.error
+    log.success = (async (msg: string) => { levels.push(`success:${msg}`) }) as typeof log.success
+    process.exit = (() => { throw new Error('exited') }) as typeof process.exit
+
+    try {
+      try {
+        await log.exit('blocked', 1)
+      }
+      catch { /* the stub above */ }
+
+      try {
+        await log.exit('shipped')
+      }
+      catch { /* the stub above */ }
+    }
+    finally {
+      log.flush = realFlush
+      log.error = realError
+      log.success = realSuccess
+      process.exit = realExit
+    }
+
+    expect(levels).toEqual(['error:blocked', 'success:shipped'])
+  })
 })

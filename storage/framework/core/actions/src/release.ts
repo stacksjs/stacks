@@ -39,8 +39,11 @@ if (preflight.bypassed) {
   log.warn(`${BYPASS_ENV} is set, so the pinned checks were skipped for this release.`)
 }
 else if (preflight.failures.length > 0) {
-  log.error(formatPreflightFailure(preflight.failures))
-  process.exit(1)
+  // `log.exit`, not `log.error` + `process.exit`: the error write is async and
+  // `process.exit` does not wait for it, so the only line explaining why the
+  // release stopped was dropped on the way out. `bun run release:patch` printed
+  // nothing at all and exited 1 — a blocked release that looked like a broken one.
+  await log.exit(formatPreflightFailure(preflight.failures), 1)
 }
 
 const result = await runActions(
@@ -55,8 +58,7 @@ const result = await runActions(
 // failed sub-commands. Surface errors so a half-completed release isn't
 // reported as success.
 if (result && (result as { isErr?: boolean }).isErr) {
-  log.error(`Release failed: ${(result as { error?: { message?: string } }).error?.message ?? String((result as { error?: unknown }).error)}`)
-  process.exit(1)
+  await log.exit(`Release failed: ${(result as { error?: { message?: string } }).error?.message ?? String((result as { error?: unknown }).error)}`, 1)
 }
 
 log.success(`Successfully released ${app.name}`)

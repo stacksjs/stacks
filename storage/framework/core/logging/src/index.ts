@@ -419,8 +419,14 @@ export interface Log {
    * line the operator was watching for is the one that never arrives, and the
    * command reads as having hung partway through work it in fact completed.
    *
+   * The message is logged at the level the exit code implies: success when
+   * exiting 0, error otherwise. A command that stops with a non-zero code is
+   * reporting a failure, and printing that in green under a SUCCESS label
+   * tells the operator the opposite of what happened.
+   *
    * @example
    * await log.exit(`Indexed ${count} products`)
+   * await log.exit(`No index to write to`, 1)
    */
   exit: (msg?: string, exitCode?: number) => Promise<never>
 }
@@ -600,7 +606,7 @@ export const log: Log = {
 
   exit: async (msg?: string, exitCode = ExitCode.Success): Promise<never> => {
     if (msg)
-      await log.success(msg)
+      await (exitCode === ExitCode.Success ? log.success(msg) : log.error(msg))
 
     await log.flush()
     process.exit(exitCode)
