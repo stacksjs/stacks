@@ -188,6 +188,16 @@ describe('dashboard native STX bindings', () => {
     expect(blogView).not.toContain('<script')
     expect(blog).toContain('mx-auto min-w-0 max-w-7xl w-full')
     expect(blog).toContain('class="overflow-x-auto max-w-full w-full"')
+    expect(blog).toContain("publicApplicationUrl('/blog')")
+    expect(blog).toContain('href="{{ blogUrl }}"')
+    expect(blog).toContain(':href="publicPostUrl(post.slug)"')
+    expect(blog).toContain('encodeURIComponent(String(slug))')
+    expect(blog).not.toContain('href="/blog"')
+
+    const posts = componentSource('Content/PostsDashboard.stx')
+    expect(posts).toContain("publicApplicationUrl('/blog')")
+    expect(posts).toContain('href="{{ blogUrl }}"')
+    expect(posts).not.toContain('href="/blog"')
 
     const seoView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),
@@ -598,6 +608,9 @@ describe('dashboard native STX bindings', () => {
     const queries = componentSource('Queries/QueryDashboard.stx')
     expect(queries).toContain('const itemsPerPage = state(50)')
     expect(queries).toContain(':for="query in visibleQueries()"')
+    expect(queries).toContain('<a :href="queryDetailsPath(query.id)"')
+    expect(queries).toContain('encodeURIComponent(String(id))')
+    expect(queries).not.toContain("<StxLink :to=\"'/queries/' + query.id\"")
     expect(queries).toContain('<Pagination')
   })
 

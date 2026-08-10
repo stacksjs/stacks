@@ -11,11 +11,8 @@
           Sorry, we couldn't find the page you're looking for. The page might have been moved or deleted.
         </p>
         <div class="flex gap-x-6 items-center justify-center mt-10">
-          <Button tag="a" href="/dashboard">
+          <Button tag="a" href="/">
             Return to dashboard
-          </Button>
-          <Button tag="a" href="/" variant="ghost">
-            Go to home <span aria-hidden="true">&rarr;</span>
           </Button>
         </div>
       </div>
@@ -23,7 +20,7 @@
       <div>
         <h2 class="font-semibold leading-6 text-base text-center text-gray-900 dark:text-white">You might be looking for</h2>
         <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-          <StxLink to="/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+          <StxLink to="/" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0 p-3 bg-blue-500 rounded-md">

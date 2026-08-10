@@ -10,6 +10,10 @@ const guestLayoutSource = readFileSync(
   resolve('storage/framework/defaults/views/dashboard/layouts/guest.stx'),
   'utf8',
 )
+const notFoundSource = readFileSync(
+  resolve('storage/framework/defaults/resources/components/Dashboard/NotFoundDashboard.stx'),
+  'utf8',
+)
 
 /** STX expands this declarative contract into the synchronous pre-paint guard. */
 const BOOTSTRAP = /@appearanceBootstrap\(\{[\s\S]*?\n\}\)/
@@ -20,6 +24,13 @@ describe('dashboard layout client architecture', () => {
     expect(guestLayoutSource).toStartWith('<!DOCTYPE html>')
     expect(guestLayoutSource).toContain('<main data-stx-content>')
     expect(guestLayoutSource).toContain('@yield(\'content\')')
+  })
+
+  test('returns missing dashboard routes to the canonical home route', () => {
+    expect(notFoundSource).toContain('<Button tag="a" href="/">')
+    expect(notFoundSource).toContain('<StxLink to="/"')
+    expect(notFoundSource).not.toContain('href="/dashboard"')
+    expect(notFoundSource).not.toContain('to="/dashboard"')
   })
 
   test('declares light and dark dashboard favicons in both shells', () => {
