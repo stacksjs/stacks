@@ -81,6 +81,14 @@ export function withoutValidation<T>(fn: () => T | Promise<T>): Promise<T> {
  * 400-599 — so an over-length value now surfaces as a 422 instead of the
  * driver's raw 22001 becoming a 500 (stacksjs/stacks#2233).
  */
+/**
+ * Where `defineModel` keeps the definition it was handed.
+ *
+ * `Symbol.for`, so two copies of the ORM in one process still agree — the
+ * dist-only-app split makes that a real arrangement, not a hypothetical.
+ */
+export const MODEL_DEFINITION: unique symbol = Symbol.for('stacks.orm.modelDefinition') as never
+
 export class ModelValidationError extends Error {
   readonly status = 422
   readonly errors: Record<string, string[]>
@@ -1794,7 +1802,7 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
   }
 }
 
-interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits'> {
+export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits'> {
   name: string
   table: string
   primaryKey?: string
@@ -2075,6 +2083,21 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // register) because stacks needs to install its own wrappers around
   // the result of `createModel`.
   registerModel(definition.name, finalModel)
+
+  /*
+   * The definition it was built from, kept for `extendModel`.
+   *
+   * A model file exports the *static*, not the object passed in here, so an
+   * app that wants to add a column to a framework model has nothing to build
+   * on: every field it needs is reachable on the static, but only by reading
+   * a Proxy and hoping the shape holds. Stashing the original makes that an
+   * agreement rather than a guess. A symbol so it cannot collide with a column.
+   */
+  Object.defineProperty(finalModel, MODEL_DEFINITION, {
+    value: definition,
+    enumerable: false,
+    configurable: true,
+  })
 
   return finalModel as unknown as StacksModelStatic<TDef>
 }

@@ -44,6 +44,7 @@ export * from './model-types'
 export * from './types'
 export * from './utils'
 export * from './define-model'
+export * from './extend-model'
 // Codegen for `database/types.d.ts` — augments
 // `@stacksjs/database`'s `DatabaseSchema` so `db.selectFrom(...)` gets
 // table-name autocomplete (stacksjs/stacks#1923).
