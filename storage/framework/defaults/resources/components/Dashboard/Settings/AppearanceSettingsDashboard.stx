@@ -1,6 +1,6 @@
 <script server>
 // The navigation the toggles below control. Read from the same builder the
-// layout uses, so the list can never drift from what the sidebar renders —
+// layout uses, so the list can never drift from what the sidebar renders -
 // including sections a project has switched off in config/dashboard.ts, which
 // simply are not here to toggle.
 import { buildWebSidebarSections } from '~/storage/framework/defaults/resources/functions/dashboard/sidebar'
@@ -58,9 +58,9 @@ function resetAll() {
 }
 
 // Selected state travels as a data attribute rather than as a swapped class
-// string. It began as a workaround — Crosswind could not see class names that
+// string. It began as a workaround - Crosswind could not see class names that
 // existed only inside a client-script expression, so those utilities were never
-// emitted and the control rendered unstyled — and that gap is now closed
+// emitted and the control rendered unstyled - and that gap is now closed
 // upstream. It stays because it is the better shape regardless: one selector
 // per state in the block below, rather than two class strings kept in sync by
 // hand inside a ternary.

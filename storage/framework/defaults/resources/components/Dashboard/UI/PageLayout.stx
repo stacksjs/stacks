@@ -3,11 +3,11 @@ interface PageLayoutProps {
   /**
    * Visual variant.
    *
-   * - `default` — standard centered column with `mx-auto` + max-width
+   * - `default` - standard centered column with `mx-auto` + max-width
    *   gutter. Use for almost every page.
-   * - `centered` — vertically centered hero block on a min-height
+   * - `centered` - vertically centered hero block on a min-height
    *   container. Use for splash / 404 / empty-route pages.
-   * - `bare` — no container at all. Use when the page wants to own
+   * - `bare` - no container at all. Use when the page wants to own
    *   its own gutter (e.g. a settings page with side-by-side panels
    *   that already pad themselves).
    */

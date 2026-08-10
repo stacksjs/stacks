@@ -1,6 +1,6 @@
 <script server>
 // Dashboard chrome. The navigation pane is `@stacksjs/components`' <Sidebar>
-// in its `macos` theme — the same component Craft apps use, so the dashboard
+// in its `macos` theme - the same component Craft apps use, so the dashboard
 // and a native Craft build render the identical source list.
 //
 // This used to be a hand-rolled <aside> plus ~180 lines of plain CSS, because
@@ -89,7 +89,7 @@ canvas[id$="_chart"] {
  * solid body background would paint over it. So the body stays clear and the
  * content color lives on the scrolling pane, which lets the frosted material
  * read through the translucent sidebar. (Do not write angle-bracket tag names in
- * a layout style-block comment — stx parses them as elements and breaks out.)
+ * a layout style-block comment - stx parses them as elements and breaks out.)
  */
 body {
   background: transparent;
@@ -161,15 +161,15 @@ body {
  * Two halves, and only one of them is the sidebar.
  *
  * THE SHELL. Arc's defining move is that the content is not a pane butted up
- * against a sidebar — it is a card floating ON the sidebar's background, inset
+ * against a sidebar - it is a card floating ON the sidebar's background, inset
  * and rounded on every side. So the panel color moves to the body, the sidebar
  * goes transparent on top of it, and the content gets a margin all the way
  * round. No sidebar theme can do this part; it belongs to the layout.
  *
  * THE ROWS. The installed @stacksjs/components predates its own `arc` theme,
  * so the component renders macOS rows and this restyles them. The values are
- * copied from that theme on purpose — 30px rows, 8px radius, a white card with
- * a hairline and a one-pixel shadow instead of an accent fill — so that when
+ * copied from that theme on purpose - 30px rows, 8px radius, a white card with
+ * a hairline and a one-pixel shadow instead of an accent fill - so that when
  * the package ships it, the component and this skin agree and these rules
  * become a no-op rather than a second, competing look.
  *
@@ -218,7 +218,7 @@ html[data-appearance="arc"] [data-stx-content] {
      properties wedges the interpolation in WebKit: switching appearance leaves
      it stuck at the old value until a reload. Inheriting the base declaration
      means the property never changes when the appearance does, so there is
-     nothing to wedge — and the collapse animation keeps working identically in
+     nothing to wedge - and the collapse animation keeps working identically in
      both styles.
 
      The panel strip down the card's left side is the sidebar's own trailing
@@ -227,20 +227,20 @@ html[data-appearance="arc"] [data-stx-content] {
   margin-right: var(--dash-arc-gap);
   margin-bottom: var(--dash-arc-gap);
   /* Beats the base rule's `min-height: 100vh`, which would otherwise hold the
-     card a full viewport tall and push its bottom edge off-screen — losing the
+     card a full viewport tall and push its bottom edge off-screen - losing the
      one gap that shows it is floating. */
   min-height: 0;
   /* The card is exactly the viewport minus its own gaps, and scrolls its own
      content. Letting the page scroll instead would grow the card past the
-     bottom of the window, so the one edge that proves it is floating — the
-     panel showing beneath it — would only ever appear at the end of a long
+     bottom of the window, so the one edge that proves it is floating - the
+     panel showing beneath it - would only ever appear at the end of a long
      page. This is also what Arc does: the sidebar is stationary and the card
      scrolls inside its frame. */
   height: calc(100vh - (2 * var(--dash-arc-gap)));
   overflow-y: auto;
   border-radius: var(--dash-arc-radius);
   background: #fff;
-  /* Clip page content to the rounded corners — full-bleed headers and tables
+  /* Clip page content to the rounded corners - full-bleed headers and tables
      otherwise square them off at the top. */
   overflow-x: hidden;
   box-shadow:
@@ -355,7 +355,7 @@ html[data-appearance="arc"].dark [data-sidebar-selection="accent"][data-window-k
 }
 
 /* The icon, count and chevron turn white on a macOS accent fill. On a white
-   card they must not — they keep their own tint, the same as an idle row. */
+   card they must not - they keep their own tint, the same as an idle row. */
 html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-icon],
 html[data-appearance="arc"] [data-sidebar-selection="accent"][data-window-key="true"] [data-sidebar-item][data-active="true"] [data-sidebar-chevron] {
   color: var(--stx-sidebar-icon, currentColor);
@@ -375,7 +375,7 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 
 /* A viewer can hide navigation sections they never use. Kept as CSS on an
    attribute rather than a DOM removal so the rows stay hydrated and a later
-   change re-shows them without a re-render — the same approach the role
+   change re-shows them without a re-render - the same approach the role
    filter above uses. */
 [data-sidebar-section][data-viewer-hidden="true"] {
   display: none;
@@ -400,7 +400,7 @@ registerStoresClient({ authStore, kanbanStore, rbacStore })
 
 // Helpers below return COMPLETE class strings (static + dynamic) and are
 // applied via `:class="fn(...)"` because stx's `{{ ... }}` placeholder is
-// not reactively bound inside a `class` attribute — only inside text content.
+// not reactively bound inside a `class` attribute - only inside text content.
 const toastIconClass = (type) => `flex-shrink-0 h-5 w-5 mt-0.5 ${({
   success: 'i-hugeicons-checkmark-circle-02 text-green-500 dark:text-green-400',
   error: 'i-hugeicons-alert-02 text-red-500 dark:text-red-400',
@@ -469,7 +469,7 @@ effect(() => {
 // The inline bootstrap at the top of this layout already stamped the root
 // attributes for the first paint. These effects keep them in step afterwards:
 // re-running `applyAppearance` whenever a preference signal changes is what
-// makes the settings page feel immediate — the shell restyles under the user
+// makes the settings page feel immediate - the shell restyles under the user
 // while they are still looking at the picker, with no reload and no navigation.
 // ---------------------------------------------------------------------------
 
@@ -490,7 +490,7 @@ effect(() => {
 function applySectionVisibility() {
   // The signal is read BEFORE the panes are looked up, and that order is the
   // whole point. Read after an early return, it never gets tracked on the first
-  // pass — the panes are not mounted when effects first run — so the effect
+  // pass - the panes are not mounted when effects first run - so the effect
   // ends up with no dependency and never runs again. The toggle then appears to
   // do nothing until a reload.
   const hidden = appearance.hiddenSections()
@@ -504,7 +504,7 @@ function applySectionVisibility() {
 
 // The effect covers later toggles. It cannot cover the FIRST paint on its own:
 // effects run before the layout's refs are populated, so the very first pass
-// finds no panes, and on a fresh load the preference never changes afterwards —
+// finds no panes, and on a fresh load the preference never changes afterwards -
 // leaving hidden sections visible until something else happens to touch the
 // signal. `onMount` below runs it again once the panes exist.
 effect(applySectionVisibility)

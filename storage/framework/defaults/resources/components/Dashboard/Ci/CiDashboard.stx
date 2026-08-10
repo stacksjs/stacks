@@ -5,7 +5,7 @@
   // (Action: Dashboard/Ci/StatusAction → @stacksjs/github). Active tab +
   // status filter live in the `ciStore` so they survive SPA navigation.
   //
-  // No <script server>, no window./document. reads — per #1838 the page
+  // No <script server>, no window./document. reads - per #1838 the page
   // is pure presentation against the store.
   import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
   import { ciStore } from '~/storage/framework/defaults/views/dashboard/stores/ci'
@@ -17,7 +17,7 @@
   // Role check is now backed by the real RBAC store + `/api/dashboard/auth/me`
   // (stacksjs/stacks#1843). `isDev()` returns true if the authenticated user
   // holds the `admin` or `dev` role, OR if the request is unauthenticated
-  // (i.e. local dev dashboard with no bearer token) — see `useRole.ts` for
+  // (i.e. local dev dashboard with no bearer token) - see `useRole.ts` for
   // the full resolution chain.
   const { isDev } = useRole()
   const canView = derived(() => isDev())
@@ -129,7 +129,7 @@
 
   // ─── Runner pressure sparkline (stacksjs/stacks#1850) ────────────
   //
-  // Inline SVG sparkline — no chart lib. The path is built off the
+  // Inline SVG sparkline - no chart lib. The path is built off the
   // active tab's sample history with a simple linear scale: x maps
   // to sample index (oldest left, newest right), y maps to queue
   // depth normalised against the larger of the org's cap or the
@@ -173,7 +173,7 @@
     return samples && samples.length >= 2
   }
 
-  // Top-level fetch — runs on both hard reload (SSR hydration) and SPA
+  // Top-level fetch - runs on both hard reload (SSR hydration) and SPA
   // mount, since `<script client>` re-executes on every entry. The store
   // tracks its own loading flag so back-to-back calls don't double-fire.
   ci.load()
@@ -195,7 +195,7 @@
     <p class="mt-1 text-sm text-zinc-500">GitHub Actions health across the configured orgs. Configure in <code class="text-xs">config/dashboard.ts</code>.</p>
   </header>
 
-  <!-- Disabled state — the surface is off in config/dashboard.ts -->
+  <!-- Disabled state - the surface is off in config/dashboard.ts -->
   <div :if="disabled" class="px-5 py-8 text-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
     <p class="text-sm text-zinc-600 dark:text-zinc-400">CI tracking is disabled.</p>
     <p class="mt-1 text-xs text-zinc-500">Enable it in <code>config/dashboard.ts</code> by setting <code>ci.enabled = true</code> and listing one or more orgs.</p>
@@ -247,7 +247,7 @@
       <span class="text-zinc-300 dark:text-zinc-700">·</span>
       <span class="text-zinc-500 dark:text-zinc-400" :text="runnersText"></span>
     </div>
-    <!-- Sparkline showing recent queue depth for the active org —
+    <!-- Sparkline showing recent queue depth for the active org -
         appears only when alerts are on (history collection is gated
         on `ci.alerts.enabled`). Drawn inline as a single SVG path
         so we don't pull a chart library for 20 datapoints. -->

@@ -29,7 +29,7 @@
   const columns = derived(() => kanban.currentColumns())
   const allLabels = derived(() => kanban.currentLabels())
 
-  // Card detail modal state — read straight from the store. The
+  // Card detail modal state - read straight from the store. The
   // modal itself lives at the bottom of this file.
   const openCard = derived(() => kanban.openCard())
   const loadingCard = derived(() => kanban.loadingCard())
@@ -219,7 +219,7 @@
   }
 
   // Pull the id from the URL through the navigation composable.
-  // (stacksjs/stacks#1838 — no vanilla DOM in dashboard pages).
+  // (stacksjs/stacks#1838 - no vanilla DOM in dashboard pages).
   const id = useNavigation().urlIdParam()
   if (id !== null)
     kanban.loadBoard(id)

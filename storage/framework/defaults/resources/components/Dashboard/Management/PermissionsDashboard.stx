@@ -5,7 +5,7 @@
   // and the role/permission matrix against the live `user_roles` /
   // `role_permissions` / `user_permissions` pivots. All persistence
   // flows through the dashboard RBAC endpoints, which delegate
-  // to `@stacksjs/auth`'s `Rbac` facade — no direct DB writes from the
+  // to `@stacksjs/auth`'s `Rbac` facade - no direct DB writes from the
   // page.
   //
   // Follows #1838 conventions:
@@ -19,7 +19,7 @@
   const rbac = rbacStore
   // Admin-only surface. Per `useRole.ts`, `isAdmin()` returns true for
   // any user with the `admin` role *or* an unauthenticated viewer on
-  // the localhost dev dashboard — same permissive-dev defaults the rest
+  // the localhost dev dashboard - same permissive-dev defaults the rest
   // of the management surface uses.
   const { isAdmin } = useRole()
   const canManage = derived(() => isAdmin())
