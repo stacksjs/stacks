@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { getUserRoles } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
@@ -16,14 +17,12 @@ export default new Action({
   description: 'List roles attached to one user.',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
-    const rawId = (request as any)?.params?.id
-    const userId = Number(rawId)
+  async handle(request: RequestInstance) {
+    const userId = Number(request.getParam('id'))
     if (!Number.isFinite(userId) || userId <= 0) {
       return response.json({ error: 'Invalid user id.' }, 400)
     }
-    const url = new URL(request.url ?? 'http://localhost/')
-    const guardName = (url.searchParams.get('guard') || 'web').trim()
+    const guardName = String(request.get('guard', 'web')).trim()
     if (!guardName || guardName.length > 60) {
       return response.json({ error: 'Invalid guard name.' }, 400)
     }

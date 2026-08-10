@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { getRolePermissions, findRole, syncRolePermissions } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
@@ -19,13 +20,13 @@ export default new Action({
   description: 'Replace the permission set attached to one role.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const roleName = String((request as any)?.params?.name ?? '').trim()
+  async handle(request: RequestInstance<SyncInput>) {
+    const roleName = request.getParam('name').trim()
     if (!roleName) {
       return response.json({ error: '`name` route param is required.' }, 400)
     }
 
-    const body = (request as any).jsonBody as SyncInput | undefined ?? {}
+    const body = request.all()
     if (!Array.isArray(body.permissions)) {
       return response.json({ error: '`permissions` must be an array of permission names (possibly empty).' }, 400)
     }

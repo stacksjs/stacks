@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { createRole, findRole } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
@@ -25,8 +26,8 @@ export default new Action({
   description: 'Create a new role.',
   method: 'POST',
   apiResponse: true,
-  async handle(request) {
-    const body = (request as any).jsonBody as RoleInput | undefined ?? {}
+  async handle(request: RequestInstance<RoleInput>) {
+    const body = request.all()
 
     const name = typeof body.name === 'string' ? body.name.trim() : ''
     if (!name || name.length > 60) {

@@ -1,3 +1,4 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { findRole, getRolePermissions } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
@@ -15,13 +16,12 @@ export default new Action({
   description: 'List permissions attached to one role.',
   method: 'GET',
   apiResponse: true,
-  async handle(request) {
-    const name = String((request as any)?.params?.name ?? '').trim()
+  async handle(request: RequestInstance) {
+    const name = request.getParam('name').trim()
     if (!name) {
       return response.json({ error: '`name` route param is required.' }, 400)
     }
-    const url = new URL(request.url ?? 'http://localhost/')
-    const guardName = (url.searchParams.get('guard') || 'web').trim()
+    const guardName = String(request.get('guard', 'web')).trim()
     if (!guardName || guardName.length > 60) {
       return response.json({ error: 'Invalid guard name.' }, 400)
     }
