@@ -6,6 +6,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { Category, Customer, Manufacturer, OrderItem, Payment, Product, TaxRate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   calculateCommercePosSale,
   CommercePosAvailabilityError,
@@ -165,7 +166,13 @@ export default new Action({
     if (idempotencyKey.length < 8 || idempotencyKey.length > 255)
       return response.json({ message: 'A valid checkout idempotency key is required.' }, 422)
 
-    const existing = await orders.findOrderByIdempotencyKey(idempotencyKey)
+    let existing
+    try {
+      existing = await orders.findOrderByIdempotencyKey(idempotencyKey)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Checkout records could not be read.', 'CommercePosCheckoutAction')
+    }
     if (existing) {
       try {
         return {
@@ -175,9 +182,7 @@ export default new Action({
         }
       }
       catch (error) {
-        return response.json({
-          message: error instanceof Error ? error.message : 'Existing receipt records could not be read.',
-        }, 503)
+        return dashboardOperationalError(error, 'Existing receipt records could not be read.', 'CommercePosCheckoutAction')
       }
     }
 
@@ -211,7 +216,13 @@ export default new Action({
         : Number.NaN
     if (customerId && (!Number.isInteger(customerId) || customerId <= 0))
       return response.json({ message: 'Select a valid customer.' }, 422)
-    const customer = customerId ? await Customer.find(customerId) : null
+    let customer
+    try {
+      customer = customerId ? await Customer.find(customerId) : null
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Customer records could not be read.', 'CommercePosCheckoutAction')
+    }
     if (customerId && !customer)
       return response.json({ message: 'The selected customer no longer exists.' }, 422)
 
@@ -227,17 +238,18 @@ export default new Action({
       return response.json({ message: 'Order instructions must be 1,000 characters or fewer.' }, 422)
 
     const productIds = parsed.lines.map(line => line.productId)
-    const [productRows, categories, manufacturers, taxRates] = await Promise.all([
-      Product.where('id', 'in', productIds).get(),
-      Category.orderBy('name', 'asc').limit(500).get(),
-      Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
-      TaxRate.orderBy('id', 'asc').limit(500).get(),
-    ])
-    const categoryMap = new Map(categories.map(normalizeProductOption).map(option => [option.id, option.label]))
-    const manufacturerMap = new Map(manufacturers.map(normalizeManufacturerOption).map(option => [option.id, option.label]))
-    const emptyCounts = new Map<string, number>()
     let products
+    let taxRates
     try {
+      const [productRows, categories, manufacturers, persistedTaxRates] = await Promise.all([
+        Product.where('id', 'in', productIds).get(),
+        Category.orderBy('name', 'asc').limit(500).get(),
+        Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
+        TaxRate.orderBy('id', 'asc').limit(500).get(),
+      ])
+      const categoryMap = new Map(categories.map(normalizeProductOption).map(option => [option.id, option.label]))
+      const manufacturerMap = new Map(manufacturers.map(normalizeManufacturerOption).map(option => [option.id, option.label]))
+      const emptyCounts = new Map<string, number>()
       products = productRows.map(product => normalizeCommercePosProduct(normalizeCommerceProductRecord(
         product,
         categoryMap,
@@ -246,11 +258,10 @@ export default new Action({
         emptyCounts,
         emptyCounts,
       )))
+      taxRates = persistedTaxRates
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Product records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Product records could not be read.', 'CommercePosCheckoutAction')
     }
     if (products.length !== productIds.length)
       return response.json({ message: 'One or more products no longer exist.' }, 422)
@@ -260,9 +271,7 @@ export default new Action({
       taxRate = selectCommercePosTaxRate(taxRates)
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Tax rate records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Tax rate records could not be read.', 'CommercePosCheckoutAction')
     }
 
     let sale
@@ -270,48 +279,54 @@ export default new Action({
       sale = calculateCommercePosSale(products, parsed.lines, taxRate)
     }
     catch (error) {
-      return response.json(
-        { message: error instanceof Error ? error.message : String(error) },
-        error instanceof CommercePosAvailabilityError ? 409 : 422,
-      )
+      if (error instanceof CommercePosAvailabilityError)
+        return response.json({ message: error.message }, 409)
+
+      return dashboardOperationalError(error, 'Sale totals could not be calculated.', 'CommercePosCheckoutAction')
     }
 
     const currency = normalizeCommerceCurrency((config as any).commerce?.currency)
     const transactionId = randomUUIDv7()
     const referenceNumber = `POS-${transactionId.slice(0, 12).toUpperCase()}`
-    const result = await orders.placeOrder({
-      idempotencyKey,
-      order: {
-        customer_id: customerId || null,
-        status: 'DELIVERED',
-        total_amount: sale.totalAmount,
-        currency,
-        tax_amount: sale.taxAmount,
-        discount_amount: 0,
-        delivery_fee: 0,
-        tip_amount: 0,
-        order_type: orderType,
-        special_instructions: specialInstructions || null,
-      } as any,
-      items: sale.lines.map(line => ({
-        productId: line.productId,
-        quantity: line.quantity,
-        price: line.unitPrice,
-        specialInstructions: line.specialInstructions,
-      })),
-      payment: {
-        customer_id: customerId || null,
-        amount: sale.totalAmount,
-        method: 'cash',
-        status: 'completed',
-        currency,
-        reference_number: referenceNumber,
-        transaction_id: transactionId,
-        payment_provider: 'pos',
-        notes: specialInstructions || null,
-      } as any,
-      inventory: sale.lines.map(line => ({ id: line.productId, delta: -line.quantity })),
-    })
+    let result
+    try {
+      result = await orders.placeOrder({
+        idempotencyKey,
+        order: {
+          customer_id: customerId || null,
+          status: 'DELIVERED',
+          total_amount: sale.totalAmount,
+          currency,
+          tax_amount: sale.taxAmount,
+          discount_amount: 0,
+          delivery_fee: 0,
+          tip_amount: 0,
+          order_type: orderType,
+          special_instructions: specialInstructions || null,
+        } as any,
+        items: sale.lines.map(line => ({
+          productId: line.productId,
+          quantity: line.quantity,
+          price: line.unitPrice,
+          specialInstructions: line.specialInstructions,
+        })),
+        payment: {
+          customer_id: customerId || null,
+          amount: sale.totalAmount,
+          method: 'cash',
+          status: 'completed',
+          currency,
+          reference_number: referenceNumber,
+          transaction_id: transactionId,
+          payment_provider: 'pos',
+          notes: specialInstructions || null,
+        } as any,
+        inventory: sale.lines.map(line => ({ id: line.productId, delta: -line.quantity })),
+      })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'The sale could not be completed atomically.', 'CommercePosCheckoutAction', 500)
+    }
 
     if (!result.ok) {
       if (result.reason === 'unknown') {
@@ -325,7 +340,8 @@ export default new Action({
         : result.reason === 'duplicate-idempotency-key'
           ? 'This checkout is already being processed. Retry once.'
           : 'The sale could not be completed atomically.'
-      return response.json({ message }, result.reason === 'out-of-stock' ? 409 : 422)
+      const status = result.reason === 'unknown' ? 500 : 409
+      return response.json({ message }, status)
     }
 
     const order = result.order as any
@@ -340,9 +356,7 @@ export default new Action({
       )
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Created order record could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Created order record could not be read.', 'CommercePosCheckoutAction', 500)
     }
     return {
       ok: true,

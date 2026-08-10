@@ -116,6 +116,15 @@ describe('dashboard operational error contract', () => {
     expect(readActions.match(/dashboardOperationalError\(/g)?.length).toBe(28)
   })
 
+  test('protects checkout operations without hiding availability conflicts', () => {
+    const checkout = readAction('Commerce/CommercePosCheckoutAction.ts')
+
+    expect(checkout).not.toContain('error instanceof Error ? error.message')
+    expect(checkout.match(/dashboardOperationalError\(/g)?.length).toBe(8)
+    expect(checkout).toContain("return response.json({ message: error.message }, 409)")
+    expect(checkout).toContain("const status = result.reason === 'unknown' ? 500 : 409")
+  })
+
   test('separates model validation, absence, capability, and ORM failures', () => {
     const writes = [
       'Models/ModelDestroyAction.ts',
