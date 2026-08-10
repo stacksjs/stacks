@@ -3,6 +3,7 @@ import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { countRows } from '../../../../resources/functions/dashboard/data'
+import { modelApiConfiguration } from './model-api'
 
 /**
  * `GET /api/dashboard/models` (stacksjs/stacks#1838).
@@ -135,7 +136,7 @@ export default new Action({
         }
       }
 
-      const api = Model.traits?.useApi
+      const api = modelApiConfiguration(Model)
       let count: number | null = null
       let error: string | null = null
       try {
@@ -153,8 +154,8 @@ export default new Action({
         attributeCount: Object.keys(Model.attributes || {}).length,
         category: categorize(m),
         source: m.source,
-        apiUri: typeof api === 'object' && typeof api.uri === 'string' ? `/api/${api.uri}` : '',
-        apiRoutes: typeof api === 'object' && Array.isArray(api.routes) ? api.routes.map(String) : [],
+        apiUri: api.uri ? `/api/${api.uri}` : '',
+        apiRoutes: api.routes,
         error,
       }
     }))

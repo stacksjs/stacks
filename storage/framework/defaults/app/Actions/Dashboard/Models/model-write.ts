@@ -7,6 +7,7 @@
  * bypass every guarantee the ORM makes. Those rows stay read-only.
  */
 import { loadModelIfExists } from '../../../../resources/functions/dashboard/data'
+import { modelApiConfiguration } from './model-api'
 
 /** Never writable from a generic admin table, whatever the model declares. */
 export const PROTECTED_COLUMNS: ReadonlySet<string> = new Set([
@@ -121,17 +122,8 @@ function isProtectedField(name: string): boolean {
   return PROTECTED_COLUMNS.has(name) || PROTECTED_COLUMNS.has(column)
 }
 
-function useApiRoutes(Model: any): string[] {
-  const useApi = Model?.traits?.useApi
-  if (!useApi)
-    return []
-  if (typeof useApi === 'object' && Array.isArray(useApi.routes))
-    return useApi.routes.map(String)
-  return ['index', 'store', 'show', 'update', 'destroy']
-}
-
 export function modelWriteCapabilities(Model: any): ModelWriteCapabilities {
-  const routes = useApiRoutes(Model)
+  const routes = modelApiConfiguration(Model).routes
   return {
     create: routes.includes('store'),
     update: routes.includes('update'),

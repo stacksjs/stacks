@@ -5,12 +5,32 @@ import {
   modelCreateFields,
   modelWriteCapabilities,
 } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
+import { modelApiConfiguration } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-api'
 
 function source(path: string): string {
   return readFileSync(resolve(path), 'utf8')
 }
 
 describe('dashboard generic model writes', () => {
+  test('normalizes useApi metadata with the ORM defaults', () => {
+    expect(modelApiConfiguration({ name: 'Product', table: 'products', traits: {} })).toEqual({
+      uri: '',
+      routes: [],
+    })
+    expect(modelApiConfiguration({ name: 'Product', table: 'products', traits: { useApi: true } })).toEqual({
+      uri: 'products',
+      routes: ['index', 'show', 'store', 'update', 'destroy'],
+    })
+    expect(modelApiConfiguration({
+      name: 'Product',
+      table: 'products',
+      traits: { useApi: { uri: 'catalog', routes: [] } },
+    })).toEqual({
+      uri: 'catalog',
+      routes: [],
+    })
+  })
+
   test('capabilities follow the model useApi route declaration', () => {
     expect(modelWriteCapabilities({ traits: {} })).toEqual({
       create: false,
