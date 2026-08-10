@@ -10,6 +10,7 @@
 
 import { email as emailConfig } from '@stacksjs/config'
 import { getErrorMessage } from '@stacksjs/utils'
+import { normalizeEmailHtmlBody, normalizeEmailTextBody } from '../mime-preview'
 import {
   type InboxAttachment,
   inboxAttachmentPrefix,
@@ -286,7 +287,7 @@ export class EmailSDK {
       let html: string | undefined
       try {
         const htmlResult = await s3.getObject(this.bucket, `${basePath}/body.html`)
-        html = htmlResult || undefined
+        html = htmlResult ? normalizeEmailHtmlBody(htmlResult) : undefined
       }
       catch (error: unknown) {
         // Expected when email has no HTML version (NoSuchKey)
@@ -299,7 +300,7 @@ export class EmailSDK {
       let text: string | undefined
       try {
         const textResult = await s3.getObject(this.bucket, `${basePath}/body.txt`)
-        text = textResult || undefined
+        text = textResult ? normalizeEmailTextBody(textResult) : undefined
       }
       catch (error: unknown) {
         // Expected when email has no text version (NoSuchKey)

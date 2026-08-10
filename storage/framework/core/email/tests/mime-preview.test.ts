@@ -1,5 +1,10 @@
 import { describe, expect, test } from 'bun:test'
-import { extractEmailPreview, normalizeEmailPreview } from '../src/mime-preview'
+import {
+  extractEmailPreview,
+  normalizeEmailHtmlBody,
+  normalizeEmailPreview,
+  normalizeEmailTextBody,
+} from '../src/mime-preview'
 
 describe('email MIME previews', () => {
   test('prefers and decodes a multipart plain-text body', () => {
@@ -26,6 +31,37 @@ describe('email MIME previews', () => {
     expect(normalizeEmailPreview(
       '--001550 Content-Transfer-Encoding: quoted-printable Content-Type: text/plain; charset=utf-8 Mime-Version: 1.0 New sign-in detected for your account',
     )).toBe('New sign-in detected for your account')
+  })
+
+  test('extracts a readable text body from a stored MIME fragment', () => {
+    const stored = [
+      '----==_mimepart_69a13334d1925_a619b09677',
+      'Content-Type: text/plain;',
+      ' charset=utf-8',
+      'Content-Transfer-Encoding: quoted-printable',
+      '',
+      'Hi Chris,',
+      '',
+      'Your account is ready=2E',
+      '----==_mimepart_69a13334d1925_a619b09677',
+      'Content-Type: text/html; charset=utf-8',
+      '',
+      '<p>Hi Chris</p>',
+      '----==_mimepart_69a13334d1925_a619b09677--',
+    ].join('\r\n')
+
+    expect(normalizeEmailTextBody(stored)).toBe('Hi Chris,\n\nYour account is ready.')
+  })
+
+  test('extracts HTML without exposing MIME headers', () => {
+    const stored = [
+      'Content-Type: text/html; charset=utf-8',
+      'Content-Transfer-Encoding: quoted-printable',
+      '',
+      '<p>Great news=21</p>',
+    ].join('\r\n')
+
+    expect(normalizeEmailHtmlBody(stored)).toBe('<p>Great news!</p>')
   })
 
   test('strips markup and bounds the preview', () => {

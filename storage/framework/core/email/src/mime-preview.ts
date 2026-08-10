@@ -22,7 +22,7 @@ function splitHeaders(value: string): { headers: Record<string, string>, body: s
 }
 
 function decodeQuotedPrintable(value: string): string {
-  const input = value.replace(/=\n/g, '')
+  const input = value.replace(/\r\n/g, '\n').replace(/=\n/g, '')
   const bytes: number[] = []
   const encoder = new TextEncoder()
 
@@ -38,6 +38,24 @@ function decodeQuotedPrintable(value: string): string {
   }
 
   return new TextDecoder().decode(Uint8Array.from(bytes))
+}
+
+function normalizedMimeBody(value: string, requestedType: 'text/html' | 'text/plain'): string {
+  const normalized = value.replace(/\r\n/g, '\n').trim()
+  const fragmentBoundary = normalized.match(/^--([^\n]+)\n/)?.[1]?.replace(/--$/, '')
+  const hasMimeHeaders = /^(?:content-type|content-transfer-encoding|mime-version):/i.test(normalized)
+  const source = fragmentBoundary
+    ? `Content-Type: multipart/mixed; boundary="${fragmentBoundary.replace(/["\\]/g, '')}"\n\n${normalized}`
+    : normalized
+
+  if (fragmentBoundary || hasMimeHeaders) {
+    const parts = mimeParts(source)
+    const selected = parts.find(part => part.contentType.startsWith(requestedType))
+    if (selected)
+      return decodeBody(selected.body, selected.encoding).trim()
+  }
+
+  return decodeQuotedPrintable(stripLegacyMimePreamble(normalized)).trim()
 }
 
 function decodeBody(body: string, encoding: string): string {
@@ -117,4 +135,12 @@ export function extractEmailPreview(rawEmail: string, maxLength = 200): string {
 
 export function normalizeEmailPreview(preview: string, maxLength = 200): string {
   return plainText(preview).slice(0, maxLength)
+}
+
+export function normalizeEmailTextBody(body: string): string {
+  return normalizedMimeBody(body, 'text/plain')
+}
+
+export function normalizeEmailHtmlBody(body: string): string {
+  return normalizedMimeBody(body, 'text/html')
 }
