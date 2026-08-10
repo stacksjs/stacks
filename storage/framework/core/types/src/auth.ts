@@ -215,13 +215,20 @@ export interface AuthOptions {
    */
   registration?: {
     /**
-     * When true, a duplicate-email registration returns a generic error
-     * instead of "Email already exists", so the endpoint no longer confirms
-     * whether an address is registered. Off by default (the specific message
-     * is friendlier). Reduces the disclosure; a fully non-enumerable flow
-     * (always respond success + notify the existing account out-of-band) is
-     * a larger, separate opt-in.
-     * @default false
+     * Whether a duplicate-email registration returns a generic error instead
+     * of "Email already exists".
+     *
+     * **On by default** (stacksjs/stacks#2281). Set it to `false` to get the
+     * specific 409 back, accepting that the endpoint then confirms whether any
+     * given address is registered. Only an explicit `false` disables it; unset
+     * means protected.
+     *
+     * This closes the response-body oracle. Timing was equalized separately in
+     * #1985. A fully non-enumerable flow — always respond success and notify
+     * the existing account out-of-band — is a larger, separate opt-in, still
+     * open as the second half of #2281.
+     *
+     * @default true
      */
     preventEnumeration?: boolean
   }
