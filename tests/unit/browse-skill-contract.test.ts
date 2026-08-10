@@ -46,6 +46,7 @@ describe('browse skill contract', () => {
     expect(script).toContain("else if (command === 'scenario')")
     expect(script).toContain('flagList(flags.step).map(parseScenarioStep)')
     expect(script).toContain("element.dispatchEvent(new InputEvent('input'")
+    expect(script).toContain("step.action === 'click' && step.text !== undefined")
     expect(script).toContain("await cdp.send('Input.dispatchKeyEvent'")
     expect(script).toContain('state.consoleErrors.length || failedRequests.length')
   })

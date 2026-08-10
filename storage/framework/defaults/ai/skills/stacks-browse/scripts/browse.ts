@@ -555,7 +555,12 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
   const result = await cdp.send('Runtime.evaluate', {
     expression: `(() => {
       const step = ${JSON.stringify(step)}
-      const element = document.querySelector(step.selector)
+      const candidates = Array.from(document.querySelectorAll(step.selector))
+      const normalizedText = (element) => (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim()
+      const element = step.action === 'click' && step.text !== undefined
+        ? candidates.find(candidate => normalizedText(candidate) === step.text)
+          || candidates.find(candidate => normalizedText(candidate).includes(step.text))
+        : candidates[0]
       if (!element)
         return { ok: false, error: 'Element not found', selector: step.selector }
 
@@ -593,7 +598,7 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
         action: step.action,
         selector: step.selector,
         tag: element.tagName.toLowerCase(),
-        text: (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 160),
+        text: normalizedText(element).slice(0, 160),
       }
     })()`,
     returnByValue: true,
