@@ -355,6 +355,10 @@ For casual chit-chat with others using this package:
 
 [Join the Stacks Discord Server](https://stacksjs.com/discord)
 
+To hear when 1.0 lands, leave your email at [stacksjs.com](https://stacksjs.com). The site is in
+its pre-launch state, so that signup is currently the shortest path to being told when
+something changes.
+
 ## Postcardware
 
 “Software that is free, but hopes for a postcard.” We love receiving postcards from around the world showing where Stacks is being used! We showcase them on our website too.
