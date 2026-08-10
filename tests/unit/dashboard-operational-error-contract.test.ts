@@ -27,13 +27,17 @@ describe('dashboard operational error contract', () => {
       'Jobs/JobIndexAction.ts',
       'Jobs/JobShowAction.ts',
       'Jobs/JobStatsAction.ts',
+      'Email/CapturedMailIndexAction.ts',
+      'Email/CapturedMailShowAction.ts',
+      'Queries/QueryDashboardAction.ts',
+      'Queries/QueryShowAction.ts',
       'Queue/QueueStatsAction.ts',
       'Queue/QueueWorkersAction.ts',
       'Realtime/RealtimeStatsAction.ts',
     ].map(readAction).join('\n')
 
     expect(sources).not.toContain('error instanceof Error ? error.message')
-    expect(sources.match(/dashboardOperationalError\(/g)?.length).toBe(11)
+    expect(sources.match(/dashboardOperationalError\(/g)?.length).toBe(15)
   })
 
   test('uses native status codes for invalid and missing job records', () => {

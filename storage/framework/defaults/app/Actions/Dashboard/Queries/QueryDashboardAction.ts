@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { dashboardQueryColumns, mapDashboardQueryLog, type QueryLogSourceRow } from './query-dashboard'
 
 export default new Action({
@@ -27,9 +27,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Query logs could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Query logs could not be loaded.', 'QueryDashboardAction')
     }
   },
 })

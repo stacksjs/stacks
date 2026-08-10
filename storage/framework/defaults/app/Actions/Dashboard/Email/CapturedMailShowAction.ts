@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { showCapturedMail } from './captured-mail'
 
 export default new Action({
@@ -10,7 +11,7 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const id = request.params?.id
+    const id = request.getParam('id')
     if (typeof id !== 'string' || !id)
       return response.json({ message: 'Captured email id is required.' }, 422)
     if (!/^disk:[^/\\]+\.html$/.test(id) && !/^mem:\d+:\d+$/.test(id))
@@ -23,9 +24,7 @@ export default new Action({
       return { message }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Captured email could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Captured email could not be loaded.', 'CapturedMailShowAction')
     }
   },
 })

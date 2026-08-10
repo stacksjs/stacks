@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { listCapturedMail } from './captured-mail'
 
 export default new Action({
@@ -19,9 +19,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Captured emails could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Captured emails could not be loaded.', 'CapturedMailIndexAction')
     }
   },
 })
