@@ -6,6 +6,7 @@ import { extractEmailPreview } from '@stacksjs/email'
 import { ExitCode } from '@stacksjs/types'
 import { onUnknownSubcommand } from '@stacksjs/cli'
 import { getErrorMessage } from '@stacksjs/utils'
+import { reprocessInboundEmails } from '../email-reprocess'
 
 const TIMEOUT_MS = 30000 // 30 second timeout for AWS operations
 
@@ -571,140 +572,30 @@ export function email(buddy: CLI): void {
       try {
         const { S3Client } = await import('@stacksjs/ts-cloud')
         const s3 = new S3Client(region)
-
-        // List all raw emails
-        const listResult = await withTimeout(s3.listObjects({
+        const report = await reprocessInboundEmails({
+          storage: s3,
           bucket: bucketName,
           prefix,
-          maxKeys: 1000,
-        }), 60000)
+          domain,
+          onProgress(processed, discovered) {
+            if (processed % 5 === 0)
+              console.log(`   Processed ${processed}/${discovered} emails...`)
+          },
+        })
 
-        const objects = (listResult as any).Contents || []
-        console.log(`   Found ${objects.length} raw emails to process\n`)
-
-        // Build inbox indexes per recipient
-        const inboxes: Record<string, any[]> = {}
-        let processed = 0
-
-        for (const obj of objects) {
-          if (!obj.Key || obj.Key.endsWith('/')) continue
-
-          try {
-            const rawEmail = await withTimeout(s3.getObject(bucketName, obj.Key), 15000)
-            if (!rawEmail) continue
-
-            const headers = parseRawEmailHeaders(rawEmail)
-            const messageId = obj.Key.split('/').pop() || obj.Key
-            const from = extractEmailAddress(headers.from || '')
-            const fromName = extractEmailName(headers.from || '')
-            const toList = (headers.to || '').split(',').map((s: string) => s.trim()).filter(Boolean)
-            const subject = headers.subject || 'No Subject'
-            const date = headers.date || (obj.LastModified ? new Date(obj.LastModified).toISOString() : new Date().toISOString())
-
-            const preview = extractEmailPreview(rawEmail)
-
-            // For each recipient on our domain
-            const recipients = toList.length > 0 ? toList : [`unknown@${domain}`]
-            for (const recipient of recipients) {
-              const recipientEmail = extractEmailAddress(recipient)
-              if (!recipientEmail.endsWith(`@${domain}`)) continue
-
-              const [localPart] = recipientEmail.split('@')
-              const d = new Date(date)
-              const year = d.getFullYear()
-              const month = String(d.getMonth() + 1).padStart(2, '0')
-              const day = String(d.getDate()).padStart(2, '0')
-
-              const emailPath = `mailboxes/${domain}/${localPart}/${year}/${month}/${day}/${messageId}`
-
-              // Write raw email
-              await s3.putObject({
-                bucket: bucketName,
-                key: `${emailPath}/raw.eml`,
-                body: rawEmail,
-                contentType: 'message/rfc822',
-              })
-
-              // Write metadata
-              const metadata = { messageId, from, fromName, to: recipientEmail, subject, date, preview, hasAttachments: false }
-              await s3.putObject({
-                bucket: bucketName,
-                key: `${emailPath}/metadata.json`,
-                body: JSON.stringify(metadata, null, 2),
-                contentType: 'application/json',
-              })
-
-              // Build inbox entry
-              const inboxKey = `${domain}/${localPart}`
-              if (!inboxes[inboxKey]) inboxes[inboxKey] = []
-              inboxes[inboxKey].push({
-                messageId,
-                from,
-                fromName,
-                to: recipientEmail,
-                subject,
-                date,
-                read: false,
-                preview,
-                hasAttachments: false,
-                path: emailPath,
-              })
-            }
-
-            processed++
-            if (processed % 5 === 0) {
-              console.log(`   Processed ${processed}/${objects.length} emails...`)
-            }
-          } catch (emailErr: any) {
-            console.log(`   Skipping ${obj.Key}: ${emailErr.message}`)
-          }
+        console.log(`   Found ${report.discovered} raw emails to process\n`)
+        for (const skipped of report.skipped)
+          console.log(`   Skipping ${skipped.key}: ${skipped.error}`)
+        for (const mailbox of report.mailboxes) {
+          console.log(`   Updated inbox for ${mailbox.mailbox}: ${mailbox.newCount} new, ${mailbox.refreshedCount} refreshed (${mailbox.total} total)`)
         }
 
-        // Write inbox.json for each recipient
-        for (const [key, emails] of Object.entries(inboxes)) {
-          const [d, localPart] = key.split('/')
-          const inboxJsonKey = `mailboxes/${d}/${localPart}/inbox.json`
-
-          // Sort by date descending
-          emails.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-
-          // Try to merge with existing inbox
-          let existing: any[] = []
-          try {
-            const existingData = await s3.getObject(bucketName, inboxJsonKey)
-            if (existingData) {
-              try {
-                existing = JSON.parse(existingData) as any[]
-              }
-              catch {
-                existing = []
-              }
-            }
-          }
-          catch {
-            // No existing inbox
-          }
-
-          // Merge: add new emails that aren't already in the inbox
-          const existingIds = new Set(existing.map((e: any) => e.messageId))
-          const newEmails = emails.filter(e => !existingIds.has(e.messageId))
-          const merged = [...newEmails, ...existing].slice(0, 1000)
-
-          await s3.putObject({
-            bucket: bucketName,
-            key: inboxJsonKey,
-            body: JSON.stringify(merged, null, 2),
-            contentType: 'application/json',
-          })
-
-          console.log(`   Updated inbox for ${localPart}@${d}: ${newEmails.length} new emails (${merged.length} total)`)
-        }
-
-        console.log(`\n   Done! Processed ${processed} emails.`)
+        console.log(`\n   Done! Processed ${report.processed} emails.`)
+        process.exit(ExitCode.Success)
       } catch (error: unknown) {
         console.error('Error reprocessing:', getErrorMessage(error))
+        process.exit(ExitCode.FatalError)
       }
-      process.exit(0)
     })
 
   onUnknownSubcommand(buddy, 'email')
