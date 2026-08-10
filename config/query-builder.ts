@@ -19,7 +19,6 @@ export default {
   dialect,
   database: databaseConfig,
   snapshotDir: 'storage/framework/database',
-  migrationDir: 'database/migrations',
   timestamps: {
     createdAt: 'created_at',
     updatedAt: 'updated_at',
@@ -70,4 +69,13 @@ export default {
     column: 'deleted_at',
     defaultFilter: true,
   },
-} satisfies QueryBuilderConfig
+  // `Partial`, not the bare config type. `QueryBuilderConfig` is the RESOLVED
+  // shape the library reads after merging its own defaults, so every field on
+  // it is required — and declaring an app config against it means any field
+  // upstream adds becomes a compile error here until someone restates a value
+  // the library already defaults. That is how `migrationDir` and `snapshotDir`
+  // ended up hard-coded in this file: not because the app wanted to override
+  // them, but to satisfy a type. `setConfig()` has always taken
+  // `Partial<QueryBuilderConfig>`, so this matches what the library actually
+  // accepts.
+} satisfies Partial<QueryBuilderConfig>
