@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Deployment } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'GetRecentDeployments',
@@ -8,7 +9,12 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const deployments = await Deployment.orderByDesc('created_at').limit(3).get()
-    return deployments.map(deployment => deployment.toJSON())
+    try {
+      const deployments = await Deployment.orderByDesc('created_at').limit(3).get()
+      return deployments.map(deployment => deployment.toJSON())
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Recent deployments could not be loaded.', 'GetRecentDeployments')
+    }
   },
 })

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Deployment } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'GetDeployments',
@@ -17,9 +17,7 @@ export default new Action({
       }
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Deployment records could not be loaded.',
-      }, 503)
+      return dashboardOperationalError(error, 'Deployment records could not be loaded.', 'GetDeployments')
     }
   },
 })

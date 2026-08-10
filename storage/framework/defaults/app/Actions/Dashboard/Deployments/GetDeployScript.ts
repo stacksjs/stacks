@@ -2,7 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
-import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'GetDeployScript',
@@ -20,11 +20,8 @@ export default new Action({
       }
     }
     catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-        return response.json({
-          message: error instanceof Error ? error.message : 'Deploy script could not be read.',
-        }, 500)
-      }
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT')
+        return dashboardOperationalError(error, 'Deploy script could not be read.', 'GetDeployScript', 500)
 
       return {
         path: 'cloud/deploy-script.ts',

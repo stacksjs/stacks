@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Deployment } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 import { averageRecordedDuration } from './deployment-input'
 
 export default new Action({
@@ -9,7 +10,12 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const deployments = await Deployment.all()
-    return { average_seconds: averageRecordedDuration(deployments) }
+    try {
+      const deployments = await Deployment.all()
+      return { average_seconds: averageRecordedDuration(deployments) }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Average deployment time could not be loaded.', 'GetAverageDeploymentTime')
+    }
   },
 })

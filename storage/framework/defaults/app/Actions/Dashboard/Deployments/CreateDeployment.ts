@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { Deployment } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 import { booleanValue, deploymentCommandArgs } from './deployment-input'
 
 function gitValue(args: string[]): string {
@@ -63,10 +64,7 @@ export default new Action({
         })
       }
       catch (error) {
-        return response.json({
-          success: false,
-          message: error instanceof Error ? error.message : 'Deployment record could not be created.',
-        }, { status: 500 })
+        return dashboardOperationalError(error, 'Deployment record could not be created.', 'CreateDeployment.record', 500)
       }
     }
 
@@ -81,27 +79,33 @@ export default new Action({
     }
     catch (error) {
       if (deployment) {
-        await deployment.update({
-          status: 'failed',
-          duration: 0,
-          errorLog: error instanceof Error ? error.message : String(error),
-        })
+        try {
+          await deployment.update({
+            status: 'failed',
+            duration: 0,
+            errorLog: 'Deployment process could not be started.',
+          })
+        }
+        catch (updateError) {
+          dashboardOperationalIssue(updateError, 'Deployment failure status could not be recorded.', 'CreateDeployment.failureRecord')
+        }
       }
-      return response.json({
-        success: false,
-        message: error instanceof Error ? error.message : 'Deployment process could not be started.',
-      }, { status: 500 })
+      return dashboardOperationalError(error, 'Deployment process could not be started.', 'CreateDeployment.process', 500)
     }
 
     if (deployment) {
       const record = deployment
-      void child.exited.then(async (exitCode) => {
-        await record.update({
-          status: exitCode === 0 ? 'success' : 'failed',
-          duration: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
-          errorLog: exitCode === 0 ? '' : `buddy deploy exited with code ${exitCode}`,
+      void child.exited
+        .then(async (exitCode) => {
+          await record.update({
+            status: exitCode === 0 ? 'success' : 'failed',
+            duration: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
+            errorLog: exitCode === 0 ? '' : `buddy deploy exited with code ${exitCode}`,
+          })
         })
-      })
+        .catch((error) => {
+          dashboardOperationalIssue(error, 'Deployment completion could not be recorded.', 'CreateDeployment.completionRecord')
+        })
     }
 
     return {

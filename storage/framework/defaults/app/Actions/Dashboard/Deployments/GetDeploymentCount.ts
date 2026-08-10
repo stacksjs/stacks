@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Deployment } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'GetDeploymentCount',
@@ -8,6 +9,11 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return await Deployment.count()
+    try {
+      return await Deployment.count()
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Deployment count could not be loaded.', 'GetDeploymentCount')
+    }
   },
 })

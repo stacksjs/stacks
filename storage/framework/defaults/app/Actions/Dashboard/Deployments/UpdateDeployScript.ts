@@ -1,9 +1,11 @@
 import type { RequestInstance } from '@stacksjs/types'
+import { randomUUIDv7 } from 'bun'
 import { Action } from '@stacksjs/actions'
-import { mkdir, rename, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
 
 export default new Action({
   name: 'UpdateDeployScript',
@@ -29,10 +31,21 @@ export default new Action({
     }
 
     const filePath = join(process.cwd(), 'cloud', 'deploy-script.ts')
-    const temporaryPath = `${filePath}.${process.pid}.tmp`
-    await mkdir(dirname(filePath), { recursive: true })
-    await writeFile(temporaryPath, content, { encoding: 'utf8', mode: 0o644 })
-    await rename(temporaryPath, filePath)
+    const temporaryPath = `${filePath}.${randomUUIDv7()}.tmp`
+    try {
+      await mkdir(dirname(filePath), { recursive: true })
+      await writeFile(temporaryPath, content, { encoding: 'utf8', mode: 0o644 })
+      await rename(temporaryPath, filePath)
+    }
+    catch (error) {
+      try {
+        await rm(temporaryPath, { force: true })
+      }
+      catch (cleanupError) {
+        dashboardOperationalIssue(cleanupError, 'Temporary deploy script could not be removed.', 'UpdateDeployScript.cleanup')
+      }
+      return dashboardOperationalError(error, 'Deploy script could not be saved.', 'UpdateDeployScript', 500)
+    }
 
     return {
       success: true,
