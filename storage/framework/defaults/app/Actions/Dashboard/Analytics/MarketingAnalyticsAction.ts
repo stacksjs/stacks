@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { Campaign } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   analyticsCurrency,
   analyticsIdentifier,
@@ -55,9 +56,7 @@ export default new Action({
       )
     }
     catch (error) {
-      return response.json({
-        message: error instanceof Error ? error.message : 'Campaign analytics records could not be read.',
-      }, 503)
+      return dashboardOperationalError(error, 'Campaign analytics records could not be read.', 'MarketingAnalyticsAction')
     }
   },
 })

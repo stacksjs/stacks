@@ -46,4 +46,18 @@ describe('dashboard operational error contract', () => {
     expect(action).toContain("response.json({ message: 'Invalid job id.' }, 400)")
     expect(action.match(/response\.json\(\{ message: 'Job not found\.' \}, 404\)/g)?.length).toBe(3)
   })
+
+  test('separates analytics validation from operational failures', () => {
+    const sources = [
+      'Analytics/EventAnalyticsAction.ts',
+      'Analytics/MarketingAnalyticsAction.ts',
+      'Analytics/SalesAnalyticsAction.ts',
+      'Analytics/WebAnalyticsAction.ts',
+    ].map(readAction).join('\n')
+
+    expect(sources.match(/dashboardOperationalError\(/g)?.length).toBe(4)
+    expect(sources.match(/error instanceof Error \? error\.message/g)?.length).toBe(4)
+    expect(sources).not.toContain("error.message : 'Sales analytics records could not be read.'")
+    expect(sources).not.toContain("error.message : 'Web analytics records could not be read.'")
+  })
 })
