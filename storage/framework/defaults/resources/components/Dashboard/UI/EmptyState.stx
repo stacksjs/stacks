@@ -19,9 +19,9 @@ const actionHref = useReactiveProp('actionHref', '')
   <p :if="description()" class="mb-6 max-w-sm text-neutral-500 text-sm dark:text-neutral-400" :text="description()"></p>
 
   <Button
-    :if="actionLabel()"
+    :if="actionLabel() && actionHref()"
     tag="a"
-    :href="actionHref() || '#'"
+    :href="actionHref()"
   >
     <span :if="actionIcon()" :class="actionIcon() + ' h-4 w-4'"></span>
     <span :text="actionLabel()"></span>

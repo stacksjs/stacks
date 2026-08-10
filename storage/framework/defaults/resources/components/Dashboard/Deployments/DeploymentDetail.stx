@@ -44,6 +44,20 @@ function statusLabel(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
 
+function deploymentUrl(): string {
+  const value = record()?.url?.trim()
+  if (!value)
+    return ''
+
+  try {
+    const url = new URL(value)
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : ''
+  }
+  catch {
+    return ''
+  }
+}
+
 async function loadDeployment(): Promise<void> {
   const route = useRoute()
   const id = String(route.params.id || '')
@@ -131,9 +145,9 @@ onMount(() => {
             <dt class="text-gray-500 dark:text-neutral-400">Created</dt>
             <dd class="mt-1 text-gray-900 dark:text-white">{{ formatDate(record()?.createdAt || '') }}</dd>
           </div>
-          <div :if="record()?.url">
+          <div :if="deploymentUrl()">
             <dt class="text-gray-500 dark:text-neutral-400">Deployment URL</dt>
-            <dd class="mt-1"><a :href="record()?.url || '#'" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">{{ record()?.url }}</a></dd>
+            <dd class="mt-1"><a :href="deploymentUrl()" target="_blank" rel="noopener noreferrer" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500">{{ deploymentUrl() }}</a></dd>
           </div>
         </dl>
       </div>

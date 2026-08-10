@@ -39,6 +39,15 @@ describe('dashboard deployment contract', () => {
     expect(terminal).not.toMatch(/\b(?:document|window)\./)
   })
 
+  test('only renders safe absolute deployment links', () => {
+    const detail = component('DeploymentDetail.stx')
+
+    expect(detail).toContain("url.protocol === 'http:' || url.protocol === 'https:'")
+    expect(detail).toContain('<div :if="deploymentUrl()">')
+    expect(detail).toContain(':href="deploymentUrl()"')
+    expect(detail).not.toContain("|| '#'")
+  })
+
   test('removes the disconnected legacy activity feed', () => {
     expect(existsSync(resolve(components, 'ActivityFeed.stx'))).toBe(false)
   })
