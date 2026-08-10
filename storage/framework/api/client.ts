@@ -2809,6 +2809,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/email/inbox/{id}/attachments/{attachmentId}
+   */
+  getDashboardEmailInboxIdAttachmentsAttachmentId(input: { "id": string; "attachmentId": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/email/inbox/{id}/attachments/{attachmentId}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/email/preferences
    */
   getDashboardEmailPreferences(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

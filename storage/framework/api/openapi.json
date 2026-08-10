@@ -11099,6 +11099,48 @@
         }
       }
     },
+    "/api/dashboard/email/inbox/{id}/attachments/{attachmentId}": {
+      "get": {
+        "summary": "/api/dashboard/email/inbox/{id}/attachments/{attachmentId}",
+        "operationId": "get__api_dashboard_email_inbox__id__attachments__attachmentId_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "attachmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/email/preferences": {
       "get": {
         "summary": "/api/dashboard/email/preferences",
