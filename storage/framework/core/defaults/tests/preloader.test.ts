@@ -78,9 +78,19 @@ describe('default preloader', () => {
       `  process.exit(9)`,
       `}, 3000)`,
       `if (typeof bomb.unref === 'function') bomb.unref()`,
-      `mark('before import')`,
+      // Round 2. Round 1 proved the preloader import never settles and that
+      // getActiveResourcesInfo() is EMPTY, so nothing holds the loop: it is a
+      // promise that never resolves, not a leaked handle. Import each piece of
+      // the graph on its own first to find which one it is.
+      `mark('env plugin: start')`,
+      `await import('./storage/framework/core/env/src/plugin.ts')`,
+      `mark('env plugin: ok')`,
+      `mark('path: start')`,
+      `await import('./storage/framework/core/path/src/index.ts')`,
+      `mark('path: ok')`,
+      `mark('preloader: start')`,
       `await import('./storage/framework/defaults/resources/plugins/preloader.ts')`,
-      `mark('after import')`,
+      `mark('preloader: ok')`,
       ``,
     ].join('\n'))
 
