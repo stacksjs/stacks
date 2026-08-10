@@ -813,7 +813,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
   const { emitQueueEvent, getWorkerTracker } = await import('./events')
   const tracker = getWorkerTracker()
 
-  queue.process(concurrency, async (bunJob: any) => {
+  const handleRedisJob = async (bunJob: any): Promise<void> => {
     activeJobCount++
     tracker.markActive(workerId)
     const startTime = Date.now()
@@ -916,7 +916,22 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
       activeJobCount--
       tracker.markIdle(workerId)
     }
-  })
+  }
+
+  // Registered through `trackInFlight` so `stopProcessor` can await a Redis
+  // job the same way it awaits a database one.
+  //
+  // It could not before. The drain added in stacksjs/stacks#1984 item 3
+  // (fdbfbba0ff) awaits the `inFlightJobs` set, and only the database path ever
+  // put anything in it, so under the Redis driver the drain had nothing to wait
+  // for and returned immediately. A deploy or a SIGTERM killed Redis jobs
+  // mid-run while the identical deploy against the database driver waited for
+  // them to finish (stacksjs/stacks#2282 item 5).
+  //
+  // Wrapping at the registration rather than inside the handler keeps the
+  // tracked promise the SAME one bun-queue awaits, so a throw still reaches its
+  // retry logic unchanged.
+  queue.process(concurrency, (bunJob: any) => trackInFlight(handleRedisJob(bunJob)))
 
   log.info(`Listening for Redis jobs on queue "${queueName}" with concurrency ${concurrency}...`)
 

@@ -49,4 +49,35 @@ describe('queue worker graceful-shutdown wiring (#1984)', () => {
       expect(workCmd).toContain('PARENT_BACKSTOP_MS = SHUTDOWN_GRACE_MS + 5_000')
     })
   })
+
+  // stacksjs/stacks#2282 item 5 — the drain above awaits the `inFlightJobs`
+  // set, and ONLY the database path ever added to it. Under the Redis driver
+  // the set stayed empty, so the drain had nothing to wait for and returned
+  // immediately: a deploy or SIGTERM killed Redis jobs mid-run, while the
+  // identical deploy against the database driver waited for them.
+  //
+  // Pinned as wiring rather than behaviour for the same reason as the rest of
+  // this file: proving a job survives a signal needs a live Redis and a real
+  // process to kill, neither of which a unit test has. What is checkable is
+  // that both drivers register their handler through the same tracker.
+  describe('both drivers register their handler with the drain (#2282 item 5)', () => {
+    const worker = read('../src/worker.ts')
+
+    it('tracks the redis handler, not just the database one', () => {
+      expect(worker).toMatch(/queue\.process\(\s*concurrency\s*,\s*\(?bunJob[^)]*\)?\s*(:\s*any\s*)?=>\s*trackInFlight\(/)
+    })
+
+    it('keeps the database path tracked too', () => {
+      expect(worker).toContain('await trackInFlight(processJob(job))')
+    })
+
+    it('wraps at registration, so a throw still reaches bun-queue retry logic', () => {
+      // `trackInFlight` returns the promise it was given. Registering
+      // `() => trackInFlight(handler(job))` therefore hands bun-queue the same
+      // promise it would have had, rejection included. Swallowing it here
+      // (e.g. `.catch(() => {})`) would silently disable Redis retries.
+      const registration = worker.slice(worker.indexOf('queue.process(concurrency'))
+      expect(registration.slice(0, 200)).not.toContain('.catch(')
+    })
+  })
 })
