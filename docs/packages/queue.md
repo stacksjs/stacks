@@ -425,6 +425,49 @@ console.log(await metrics.getJobStats())
 console.log(await metrics.getQueueDepth('default'))
 ```
 
+### The `@OnQueueEvent` decorator
+
+`@OnQueueEvent` subscribes an **instance method**, and it subscribes it on `new` —
+not when the class is declared. A class you never construct never receives events,
+so the decorator on its own does nothing:
+
+```typescript
+import type { QueueEventPayload } from '@stacksjs/queue'
+import { getQueueEvents, OnQueueEvent } from '@stacksjs/queue'
+
+class OrderNotifications {
+  private failures = 0
+
+  @OnQueueEvent('job:failed')
+  onJobFailed(payload: QueueEventPayload) {
+    this.failures++ // `this` is the OrderNotifications instance
+  }
+}
+
+// Required. Two things happen here: the subscription is created, and the binding
+// keeps the listener alive.
+export const orderNotifications = new OrderNotifications()
+```
+
+Keeping the binding matters. The global emitter is process-wide and would otherwise
+own every listener ever constructed, so it holds them **weakly**: a listener that
+nothing else references is garbage, and once it is collected it stops receiving
+events. Hold it in a module-level binding, a container, or a registry.
+
+For deterministic teardown, unsubscribe everything an instance subscribed:
+
+```typescript
+getQueueEvents().unsubscribeListener(orderNotifications) // → number removed
+getQueueEvents().listenerCount('job:failed')             // live handlers
+getQueueEvents().off('job:failed')                       // clear the event wholesale
+```
+
+The decorator throws a `TypeError` at class-definition time rather than misbehave
+quietly. It rejects static methods, fields, accessors and whole classes — none of
+them have an instance to bind to, so call `onQueueEvent(event, handler)` directly
+instead — and it rejects legacy `experimentalDecorators` decoration, which gives a
+method decorator no construction-time hook at all.
+
 ## Health Checks
 
 ```typescript

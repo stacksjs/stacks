@@ -1,6 +1,6 @@
 import type { JobOptions } from '@stacksjs/types'
 import { env as envVars } from '@stacksjs/env'
-import { createEnvelope } from './envelope'
+import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -181,13 +181,28 @@ export class Job {
       backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
     })
 
+    /*
+     * Serialized through the guard, and before the database module is even
+     * loaded (stacksjs/stacks#2282 item 6).
+     *
+     * This is the dispatch path `docs/basics/jobs.md` teaches — `new Job({...})`
+     * in `app/Jobs/*.ts`, then `.dispatch(payload)` — so it is the one most
+     * payloads actually travel down, and it was the one still calling
+     * `JSON.stringify` by hand. A BigInt anywhere in the payload threw from
+     * inside JSON, naming neither the job nor the property, with a connection
+     * already taken for a row that was never going to be written. See the
+     * round-trip contract in ./envelope for what else JSON costs a payload —
+     * `undefined` dropped, `Date` flattened to a string.
+     */
+    const payloadJson = serializeEnvelope(envelope)
+
     const { db } = await import('@stacksjs/database')
 
     await db
       .insertInto('jobs')
       .values({
         queue: this.queue || 'default',
-        payload: JSON.stringify(envelope),
+        payload: payloadJson,
         attempts: 0,
         reserved_at: null,
         available_at: availableAt,
@@ -197,6 +212,26 @@ export class Job {
   }
 
   private async dispatchToRedis(payload?: any, opts?: { delay?: number }): Promise<void> {
+    // Same envelope as the database path (stacksjs/stacks#1884 Q-6) —
+    // bun-queue takes the envelope as opaque data; the worker side
+    // parses through `parseEnvelope` regardless of driver.
+    const envelope = createEnvelope(this.name ?? this.constructor.name, payload, {
+      queue: this.queue ?? 'default',
+      tries: typeof this.tries === 'number' ? this.tries : undefined,
+      timeout: this.timeout,
+      backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
+    })
+
+    /*
+     * Built and checked first — before the driver module is loaded, before the
+     * config is read, and so before a socket is opened
+     * (stacksjs/stacks#2282 item 6). bun-queue stringifies `data` itself
+     * several layers down, so an unserializable payload surfaced there as the
+     * bare TypeError this replaces: no job name, no property, and a live Redis
+     * connection held for a job that could never be enqueued.
+     */
+    assertEnvelopeSerializable(envelope)
+
     const { RedisQueue } = await import('./drivers/redis')
     const { queue: queueConfig } = await import('@stacksjs/config')
     // Typed end-to-end via `StacksOptions['queue']` —
@@ -209,16 +244,6 @@ export class Job {
     }
 
     const queue = new RedisQueue(this.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
-
-    // Same envelope as the database path (stacksjs/stacks#1884 Q-6) —
-    // bun-queue takes the envelope as opaque data; the worker side
-    // parses through `parseEnvelope` regardless of driver.
-    const envelope = createEnvelope(this.name ?? this.constructor.name, payload, {
-      queue: this.queue ?? 'default',
-      tries: typeof this.tries === 'number' ? this.tries : undefined,
-      timeout: this.timeout,
-      backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
-    })
 
     await queue.add(
       envelope,

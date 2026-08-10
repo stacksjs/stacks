@@ -298,11 +298,34 @@ const wrappedHandler = withEvents('emails', originalHandler)
 ```
 
 ### OnQueueEvent Decorator
+Subscribes an **instance method** on `new`, with `this` bound to that instance.
+Declaring the class subscribes nothing, so the class has to be constructed — and
+the instance has to stay referenced, because the global emitter holds listeners
+weakly (a collected listener stops receiving events).
+
 ```typescript
 class MyHandler {
   @OnQueueEvent('job:failed')
   handleFailed(payload: QueueEventPayload) { ... }
 }
+
+// Required: subscription happens here, and this binding keeps it alive.
+export const myHandler = new MyHandler()
+
+// Deterministic teardown (otherwise it lasts as long as the instance does)
+getQueueEvents().unsubscribeListener(myHandler)
+```
+
+Rejected with a `TypeError` at class-definition time: static methods, fields,
+accessors and whole classes (no instance to bind to — use `onQueueEvent(...)`),
+and legacy `experimentalDecorators` decoration (no construction-time hook).
+
+### Listener Introspection
+```typescript
+const events = getQueueEvents()
+events.subscribeListener(obj, 'job:failed', fn)  // weak, `this` === obj
+events.unsubscribeListener(obj)                  // → count removed
+events.listenerCount('job:failed')               // live handlers ('*' for wildcards)
 ```
 
 ### QueueMetrics

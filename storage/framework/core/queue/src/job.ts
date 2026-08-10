@@ -9,7 +9,7 @@ import { appPath, frameworkPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
 import { moveToDeadLetter } from './dead-letter'
-import { createEnvelope } from './envelope'
+import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { claimDispatchKey, releaseDispatchKey } from './idempotency'
 import { isQuarantined } from './poison'
 
@@ -269,7 +269,7 @@ class JobBuilder {
         })
         const moved = await moveToDeadLetter({
           queue: this.options.queue || 'default',
-          payload: JSON.stringify(envelope),
+          payload: serializeEnvelope(envelope),
           exception: `quarantined: ${this.name}`,
         }, 'poison-detected')
         if (moved)
@@ -366,13 +366,24 @@ class JobBuilder {
       backoff: this.options.backoff,
     }, await currentTraceId())
 
+    // `serializeEnvelope` rather than a bare `JSON.stringify`
+    // (stacksjs/stacks#2282 item 6): a BigInt anywhere in the payload throws
+    // from inside JSON naming neither the job nor the property, which is a
+    // hard error to act on when it arrives from a dispatch three call frames
+    // away. See the round-trip contract there for what else JSON costs a
+    // payload — `undefined` dropped, `Date` flattened to a string.
+    //
+    // Serialized before the database module is loaded, so a payload that can
+    // never be written costs nothing to reject.
+    const payloadJson = serializeEnvelope(envelope)
+
     const { db } = await import('@stacksjs/database')
 
     await db
       .insertInto('jobs')
       .values({
         queue: this.options.queue || 'default',
-        payload: JSON.stringify(envelope),
+        payload: payloadJson,
         attempts: 0,
         reserved_at: null,
         available_at: availableAt,
@@ -385,19 +396,6 @@ class JobBuilder {
    * Dispatch the job to Redis via bun-queue
    */
   private async dispatchToRedis(): Promise<void> {
-    const { RedisQueue } = await import('./drivers/redis')
-    const { queue: queueConfig } = await import('@stacksjs/config')
-    // `queueConfig` is typed as `StacksOptions['queue']` already — the
-    // previous `as any` cast (stacksjs/stacks#1875 T-6) escaped that
-    // typing so a config-shape rename would silently break here.
-    const redisConfig = queueConfig?.connections?.redis
-
-    if (!redisConfig) {
-      throw new Error('Redis queue connection is not configured. Check config/queue.ts')
-    }
-
-    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
-
     // Same envelope shape as the database driver writes
     // (stacksjs/stacks#1884 Q-6). bun-queue's `Queue.add(data, opts)`
     // takes `data` as opaque `T` — wrapping the framework envelope
@@ -411,6 +409,33 @@ class JobBuilder {
       tries: this.options.tries,
       backoff: this.options.backoff,
     })
+
+    /*
+     * bun-queue stringifies `data` itself, several layers down, so an
+     * unserializable payload surfaces there as the bare TypeError this guard
+     * exists to replace (stacksjs/stacks#2282 item 6).
+     *
+     * Checked HERE, at the top: the first cut sat below `new RedisQueue(...)`
+     * while claiming to spare the caller a failure that arrives "only after
+     * the Redis connection is open" — which the placement made false. Nothing
+     * in the check needs the driver, the config, or a socket, so it runs
+     * before all three. It costs one throwaway serialize of a dispatch-sized
+     * object, which is noise next to the round trip below.
+     */
+    assertEnvelopeSerializable(envelope)
+
+    const { RedisQueue } = await import('./drivers/redis')
+    const { queue: queueConfig } = await import('@stacksjs/config')
+    // `queueConfig` is typed as `StacksOptions['queue']` already — the
+    // previous `as any` cast (stacksjs/stacks#1875 T-6) escaped that
+    // typing so a config-shape rename would silently break here.
+    const redisConfig = queueConfig?.connections?.redis
+
+    if (!redisConfig) {
+      throw new Error('Redis queue connection is not configured. Check config/queue.ts')
+    }
+
+    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as ConstructorParameters<typeof RedisQueue>[1])
 
     await queue.add(
       envelope,

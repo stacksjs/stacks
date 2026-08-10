@@ -57,12 +57,20 @@ export type { CircuitBreakerConfig } from './circuit-breaker'
 // Single shape across database + redis drivers; back-compat parser
 // handles the pre-#1884 implicit-v0 shape and the Laravel-import
 // legacy `{ job, data }` form.
+//
+// `serializeEnvelope` / `assertEnvelopeSerializable` are part of the surface
+// too (stacksjs/stacks#2282 item 6): the JSON round-trip contract is a rule
+// application code has to keep, so it needs a way to ask whether a payload
+// keeps it. Without them exported the only way to find out was to dispatch and
+// see, which on the redis driver meant finding out from inside bun-queue.
 // =============================================================================
 export {
+  assertEnvelopeSerializable,
   clearEnvelopeWarnings,
   createEnvelope,
   JOB_ENVELOPE_VERSION,
   parseEnvelope,
+  serializeEnvelope,
 } from './envelope'
 export type { JobEnvelope, JobEnvelopeOptions, ParsedEnvelope } from './envelope'
 

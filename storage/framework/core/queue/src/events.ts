@@ -56,6 +56,23 @@ export class QueueEvents {
   private wildcardHandlers: Set<(event: QueueEventType, payload: QueueEventPayload) => void | Promise<void>> = new Set()
 
   /**
+   * Unsubscribe functions produced by `subscribeListener`, keyed by the listener
+   * object they belong to, so `unsubscribeListener` can tear all of them down at
+   * once. The map is weak: it must never be the reason a listener stays alive.
+   */
+  private listenerSubscriptions: WeakMap<object, Set<() => void>> = new WeakMap()
+
+  /**
+   * Drops a listener's subscription as soon as the listener itself is collected.
+   * `emit` also prunes dead subscriptions when it walks them, but that only
+   * happens if an event actually fires; the registry keeps the handler set from
+   * growing during quiet periods.
+   */
+  private readonly reclaim = new FinalizationRegistry<() => void>((unsubscribe) => {
+    unsubscribe()
+  })
+
+  /**
    * Subscribe to a queue event
    */
   on(event: QueueEventType, handler: QueueEventHandler): () => void {
@@ -68,6 +85,121 @@ export class QueueEvents {
     return () => {
       this.handlers.get(event)?.delete(handler)
     }
+  }
+
+  /**
+   * Subscribe a method of `listener` to `event`, invoked with `this` bound to
+   * `listener` — but retaining `listener` only *weakly*.
+   *
+   * This is what `@OnQueueEvent` uses. A plain `on(event, listener.method.bind(listener))`
+   * makes the process-global emitter the permanent owner of every listener object
+   * ever created: the emitter outlives everything, so nothing is ever collected and
+   * `emit`'s serial await-loop gets slower for the rest of the process' life
+   * (stacksjs/stacks#2282 item 7). Holding the listener weakly ties the
+   * subscription's lifetime to the only lifetime this class can observe — the
+   * listener's own reachability.
+   *
+   * The trade-off is real and is the caller's to manage: **something else must hold
+   * a reference to `listener`** (a module-level binding, a container, a registry).
+   * A listener that nothing references is garbage, and a collected listener stops
+   * receiving events. Use `unsubscribeListener` for deterministic teardown.
+   *
+   * @returns an unsubscribe function; calling it more than once is a no-op.
+   */
+  subscribeListener(listener: object, event: QueueEventType, method: QueueEventHandler): () => void {
+    // Nothing below may close over `listener` itself. The emitter holds `weakHandler`
+    // strongly, so a single strong reference to `listener` anywhere in that closure
+    // chain — including one reached indirectly through another captured closure —
+    // silently reinstates the leak this method exists to prevent. Everything goes
+    // through `ref` instead.
+    const ref = new WeakRef(listener)
+
+    const weakHandler: QueueEventHandler = (payload) => {
+      const target = ref.deref()
+      if (target === undefined) {
+        // The listener is gone, so this subscription can never do anything again.
+        removeFromHandlers()
+        return
+      }
+
+      return method.call(target, payload)
+    }
+
+    const removeFromHandlers = this.on(event, weakHandler)
+
+    const unsubscribe = (): void => {
+      removeFromHandlers()
+
+      const target = ref.deref()
+      if (target === undefined)
+        return
+
+      const subscriptions = this.listenerSubscriptions.get(target)
+      if (!subscriptions)
+        return
+
+      subscriptions.delete(unsubscribe)
+      if (subscriptions.size === 0) {
+        this.listenerSubscriptions.delete(target)
+        this.reclaim.unregister(target)
+      }
+    }
+
+    let owned = this.listenerSubscriptions.get(listener)
+    if (!owned) {
+      owned = new Set()
+      this.listenerSubscriptions.set(listener, owned)
+    }
+    owned.add(unsubscribe)
+
+    // Registered per subscription (a listener may decorate several methods), all
+    // under the same token so `unsubscribeListener` can drop them in one call. The
+    // held value must not reach the target either, or the registry would pin the very
+    // object whose collection it is waiting for — `removeFromHandlers` only closes
+    // over the weak handler.
+    this.reclaim.register(listener, removeFromHandlers, listener)
+
+    return unsubscribe
+  }
+
+  /**
+   * Remove every subscription `subscribeListener` made for `listener`.
+   *
+   * This is the deterministic counterpart to collection: call it from whatever owns
+   * the listener's lifecycle (`stop()`, `[Symbol.dispose]()`, a container teardown)
+   * instead of waiting for the GC.
+   *
+   * @returns the number of subscriptions removed.
+   */
+  unsubscribeListener(listener: object): number {
+    const owned = this.listenerSubscriptions.get(listener)
+    if (!owned)
+      return 0
+
+    // `unsubscribe` mutates `owned`, so iterate a copy.
+    const all = Array.from(owned)
+    for (const unsubscribe of all)
+      unsubscribe()
+
+    this.listenerSubscriptions.delete(listener)
+    this.reclaim.unregister(listener)
+
+    return all.length
+  }
+
+  /**
+   * Number of handlers currently registered for `event`.
+   *
+   * Exposed so leak regressions are observable: subscriptions belonging to
+   * collected listeners are pruned by `emit`, so this count tracks live listeners
+   * rather than every listener ever constructed (stacksjs/stacks#2282 item 7).
+   * Pass `'*'` for the wildcard handler count.
+   */
+  listenerCount(event: QueueEventType | '*'): number {
+    if (event === '*')
+      return this.wildcardHandlers.size
+
+    return this.handlers.get(event)?.size ?? 0
   }
 
   /**
@@ -170,6 +302,9 @@ export class QueueEvents {
   removeAllListeners(): void {
     this.handlers.clear()
     this.wildcardHandlers.clear()
+    // The per-listener bookkeeping now describes handlers that no longer exist, so
+    // drop it too — otherwise `unsubscribeListener` reports removals it did not make.
+    this.listenerSubscriptions = new WeakMap()
   }
 }
 
@@ -271,29 +406,118 @@ export function withEvents<T extends (...args: any[]) => Promise<any>>(
 /**
  * Queue event listener decorator
  *
+ * Subscribes the decorated **instance method** to `event` on the global queue
+ * events instance once per instance, with `this` bound to that instance — creating
+ * N listener objects means N subscriptions, exactly as if every constructor had
+ * called `onQueueEvent(event, this.method.bind(this))` by hand. A class that is
+ * never instantiated never receives events.
+ *
+ * ## Something else must hold the listener
+ *
+ * The global emitter holds listeners **weakly** (see
+ * `QueueEvents.subscribeListener`), because it is process-global and would
+ * otherwise become the permanent owner of every listener ever constructed
+ * (stacksjs/stacks#2282 item 7). The listener therefore has to be reachable from
+ * somewhere else — a module-level binding, a service container, a registry.
+ * `new EmailNotifications()` as a bare statement is garbage the moment it
+ * finishes, and a collected listener stops receiving events.
+ *
+ * For deterministic teardown call `getQueueEvents().unsubscribeListener(instance)`;
+ * `getQueueEvents().off(event)` still clears an event wholesale.
+ *
+ * ## Instance methods only
+ *
+ * Static methods, fields, accessors and whole classes are rejected with a
+ * `TypeError` at class-definition time — see the guards below for why.
+ *
  * @example
  * ```typescript
  * class EmailNotifications {
+ *   private completed = 0
+ *
  *   @OnQueueEvent('job:completed')
  *   async onJobCompleted(payload: QueueEventPayload) {
- *     console.log('Job completed:', payload)
+ *     this.completed++ // `this` is the EmailNotifications instance
  *   }
  * }
+ *
+ * // Subscribing happens on `new`, not at class definition — and this binding is
+ * // what keeps the listener, and therefore its subscription, alive.
+ * export const emailNotifications = new EmailNotifications()
  * ```
  */
-export function OnQueueEvent(event: QueueEventType) {
+export function OnQueueEvent(event: QueueEventType): (
+  value: any,
+  context: DecoratorContext | string,
+) => any {
   return function (
-    _target: any,
-    _propertyKey: string,
-    descriptor: PropertyDescriptor,
-  ) {
-    const originalMethod = descriptor.value
+    value: any,
+    context: DecoratorContext | string,
+  ): any {
+    // Legacy decorators (`experimentalDecorators: true`) hand a method decorator the
+    // prototype, the property key and a descriptor — and nothing that runs at
+    // construction time, so there is no instance here to bind to. Refuse the
+    // decoration rather than silently reinstating the unbound, class-wide
+    // registration of #2282 item 7; the caller has a compiler flag to flip.
+    if (typeof context !== 'object' || context === null) {
+      throw new TypeError(
+        `@OnQueueEvent('${event}') requires standard (TC39) decorators. `
+        + `Legacy decorators ('experimentalDecorators: true') give a method decorator `
+        + `no construction-time hook, so the handler cannot be bound to an instance.`,
+      )
+    }
 
-    // Register the handler when the class is instantiated
-    const events = getQueueEvents()
-    events.on(event, originalMethod)
+    // "Has addInitializer" is not a method check: every decorator context except a
+    // class field's carries one. Without a `kind` guard, decorating a whole class
+    // subscribes the *constructor* as a handler (which then throws "Cannot call a
+    // class constructor without |new|" inside emit's swallowed try/catch), and
+    // decorating a field dies with an opaque "undefined is not an object (evaluating
+    // 'value.bind')". Fail loudly and say which one happened (#2282 item 7).
+    if (context.kind !== 'method') {
+      throw new TypeError(
+        `@OnQueueEvent('${event}') can only decorate a class method, but it was applied `
+        + `to a ${context.kind}${context.name === undefined ? '' : ` ('${String(context.name)}')`}. `
+        + `Move the handler into a method, or call onQueueEvent('${event}', handler) directly.`,
+      )
+    }
 
-    return descriptor
+    // A static method has no instance, so its initializer runs once at
+    // class-definition time with `this` set to the constructor. That is #2282 item 7
+    // from the other direction: merely importing the module — even through a barrel
+    // re-export, even if the class is never used — would subscribe a handler for the
+    // life of the process, with no instance to scope or unsubscribe it. The
+    // decorator's contract is "subscription happens on `new`" and a static method
+    // cannot honour it, so refuse instead of quietly running a second, contradictory
+    // lifetime under the same syntax.
+    if (context.static) {
+      throw new TypeError(
+        `@OnQueueEvent('${event}') cannot decorate the static method '${String(context.name)}': `
+        + `a static method has no instance, so it would subscribe at class-definition time `
+        + `and stay subscribed for the life of the process, even if the class is never used. `
+        + `Use an instance method, or subscribe explicitly with `
+        + `onQueueEvent('${event}', MyClass.${String(context.name)}).`,
+      )
+    }
+
+    // `addInitializer` is the only hook a *method* decorator gets into construction:
+    // it runs once per `new`, with `this` set to the instance being built, which is
+    // what makes a bound, per-instance subscription possible at all. #2282 item 7:
+    // the original implementation called `events.on(event, descriptor.value)` at
+    // decoration time, so the handler ran with `this` undefined and the class had
+    // exactly one class-wide subscription no matter how many instances existed.
+    //
+    // Caveat worth knowing: TC39 gives a method decorator no *post*-construction
+    // hook, so this initializer runs before the constructor body. A constructor that
+    // throws would otherwise leave a live subscription bound to a half-built object.
+    // `subscribeListener` is what makes that survivable — the half-built object is
+    // unreachable, so its subscription is reclaimed instead of firing forever.
+    // Closing that hole eagerly would need a lifecycle hook the language does not
+    // have.
+    context.addInitializer(function (this: unknown) {
+      getQueueEvents().subscribeListener(this as object, event, value as QueueEventHandler)
+    })
+
+    return value
   }
 }
 

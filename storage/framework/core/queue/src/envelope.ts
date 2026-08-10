@@ -28,6 +28,10 @@
  * is logged and skipped (so a rolling deploy with a newer-shape envelope
  * doesn't crash old workers; they leave the row for the new workers to
  * pick up).
+ *
+ * Wire format: JSON, with everything that implies for a payload. What
+ * survives a round trip, what is silently changed on the way, and what throws
+ * is documented under "JSON round-trip contract" above `serializeEnvelope`.
  */
 
 /**
@@ -97,6 +101,236 @@ export function createEnvelope(
     dispatchedAt: new Date().toISOString(),
     ...(traceId ? { traceId } : {}),
   }
+}
+
+/**
+ * JSON round-trip contract — what a payload is worth on the other side
+ * (stacksjs/stacks#2282, item 6).
+ *
+ * The envelope travels as JSON and only as JSON: the database driver writes it
+ * into `jobs.payload` as text, and the redis driver hands it to bun-queue,
+ * which stringifies it on the way into redis. A payload is therefore subject
+ * to JSON's type system rather than JavaScript's, and the worker on the far
+ * side revives nothing. Precisely what that costs:
+ *
+ *   - `undefined` — the property is DROPPED. `{ a: 1, b: undefined }` arrives
+ *     as `{ a: 1 }`, so `'b' in payload` flips from true to false. Inside an
+ *     array it becomes `null` instead: `[1, undefined]` → `[1, null]`.
+ *   - `Date` — becomes its ISO 8601 STRING (via `Date.prototype.toJSON`) and
+ *     stays a string; a handler calling `.getTime()` on it throws. Send
+ *     `date.toISOString()` or an epoch number on purpose and parse it in the
+ *     handler, so the conversion is visible at both ends.
+ *   - `Map` / `Set` — become `{}`. Their contents are gone, silently. Send an
+ *     array or a plain object.
+ *   - class instances — arrive as plain objects: own enumerable properties
+ *     only, no prototype, so methods and `instanceof` are gone. Model
+ *     instances especially should never be a payload; send the id.
+ *   - functions and symbol values — dropped exactly like `undefined`. Symbol
+ *     keys are ignored outright.
+ *   - `NaN`, `Infinity`, `-Infinity` — become `null`. `-0` becomes `0`.
+ *   - numbers — IEEE-754 doubles. Integers past 2^53 lose precision with no
+ *     error whatsoever, which is the trap `BigInt` exists to avoid and the
+ *     reason large ids are safer sent as strings.
+ *   - `BigInt` — THROWS. Guarded by `serializeEnvelope` below rather than left
+ *     to blow up from inside `JSON.stringify`.
+ *   - circular references — THROW, with no fix but restructuring the payload.
+ *   - anything with a `toJSON()` — is whatever `toJSON()` returns. That is how
+ *     `Date` becomes a string, and it applies to your own classes too.
+ *
+ * Everything else — strings, booleans, `null`, finite numbers, arrays, plain
+ * objects, and key order within them — survives unchanged.
+ *
+ * One trap worth naming: `QUEUE_DRIVER=sync` runs the handler in-process and
+ * never serializes anything, so a payload that violates any of the above works
+ * perfectly in development and changes shape (or throws) the moment the app
+ * runs against `database` or `redis`.
+ *
+ * Rule of thumb: a payload should be data you would be content to read in a
+ * log line. Send ids, not objects. That is also what keeps a job replayable
+ * from the dead-letter queue hours after the things it referred to changed.
+ */
+
+/**
+ * Serialize an envelope for the wire, turning JSON's two hard failures into
+ * errors that say what to do about them.
+ *
+ * On a `BigInt` this FAILS rather than coerces, deliberately. The alternatives
+ * were to stringify it (`"9007199254740993"`), which is silently lossy in the
+ * *type* — the worker gets a string, `typeof` flips, and arithmetic in the
+ * handler either concatenates or throws, in another process, with nothing
+ * pointing back at the dispatch that caused it — or to invent a tagged wrapper
+ * (`{ $bigint: '…' }`), which is a private serialization format that every
+ * reader of the `jobs` table and every non-Stacks consumer of the redis queue
+ * would then have to know about. Both trade a loud, local, fixable failure for
+ * a quiet, remote, strange one. The caller knows whether `String()` or
+ * `Number()` is the right conversion for their value; the framework does not.
+ */
+export function serializeEnvelope(envelope: JobEnvelope): string {
+  try {
+    return JSON.stringify(envelope)
+  }
+  catch (err) {
+    // Diagnosed only on the failing path: finding the offending property costs
+    // a second walk of the payload, and the happy path here is every dispatch
+    // the application ever makes.
+    throw serializationError(envelope, err)
+  }
+}
+
+/**
+ * Check an envelope against the contract above without keeping the JSON.
+ *
+ * For the driver that serializes the envelope somewhere we cannot see: the
+ * redis driver hands the object to bun-queue, which stringifies it several
+ * layers down, so without this the failure surfaces there as the bare
+ * TypeError, naming neither the job nor the property.
+ *
+ * Callers run this BEFORE they acquire anything (stacksjs/stacks#2282 item 6).
+ * A guard placed after the queue was constructed still produced the better
+ * message, but only once a connection had been opened for a job that was never
+ * going to be enqueued.
+ */
+export function assertEnvelopeSerializable(envelope: JobEnvelope): void {
+  serializeEnvelope(envelope)
+}
+
+/**
+ * Turn a `JSON.stringify` failure into something an operator can act on.
+ *
+ * Bun's own message is `JSON.stringify cannot serialize BigInt.` — true, and
+ * useless: it names neither the job nor the property, and the stack points
+ * into the driver rather than at the dispatch that built the payload.
+ *
+ * Which of the three messages below a failure earns is decided by the CAUSE,
+ * never by what a walk of the payload happens to find (stacksjs/stacks#2282
+ * item 6). The first cut asked only "is there a BigInt anywhere in this
+ * graph?", so a payload whose `toJSON()` threw — and which merely also held a
+ * BigInt somewhere `JSON.stringify` never reached — was reported as a BigInt
+ * problem, sending the operator to convert a property that was serializing
+ * perfectly well. The walk now runs only to supply the PATH for a failure the
+ * cause has already identified.
+ */
+function serializationError(envelope: JobEnvelope, cause: unknown): Error {
+  const seeContract = 'See the JSON round-trip contract in @stacksjs/queue\'s src/envelope.ts.'
+
+  if (isBigIntFailure(cause)) {
+    // Only now is the second walk worth paying for, and only to name a
+    // property the cause has already told us exists.
+    let offender: { path: string, value: bigint } | null = null
+    try {
+      offender = findBigInt(envelope, '', new Set())
+    }
+    catch {
+      // A getter in the payload that throws when read. We still know a BigInt
+      // is what broke stringify; we just cannot point at which one.
+    }
+
+    const where = offender
+      ? `\`${offender.path}\` is a BigInt (${offender.value}n)`
+      : 'it holds a BigInt'
+
+    return new Error(
+      `[queue] Job "${envelope.jobName}" was not dispatched: ${where}, `
+      + 'and job envelopes travel as JSON, which cannot represent one. Convert it where you dispatch — '
+      + '`String(value)` keeps every digit, `Number(value)` is exact below 2^53 — and convert it back inside '
+      + `the job handler. ${seeContract}`,
+      { cause },
+    )
+  }
+
+  if (isCircularFailure(cause)) {
+    return new Error(
+      `[queue] Job "${envelope.jobName}" was not dispatched: its payload contains a circular reference, `
+      + 'which JSON cannot represent. Send the ids of the things the payload points at rather than the '
+      + `objects themselves — that also keeps the job replayable once those objects have changed. ${seeContract}`,
+      { cause },
+    )
+  }
+
+  /*
+   * Neither of the two failures JSON has of its own, so the throw came out of
+   * the payload's own code — a `toJSON()` or a property getter. The previous
+   * version appended "a circular reference is the usual cause" here
+   * unconditionally, which for a throwing getter is simply false and costs the
+   * reader a hunt for a cycle that does not exist. Report what threw and stop
+   * guessing.
+   */
+  const detail = cause instanceof Error ? cause.message : String(cause)
+  return new Error(
+    `[queue] Job "${envelope.jobName}" was not dispatched: serializing its payload threw (${detail}). `
+    + 'JSON rejects only two things on its own and this was neither, so the throw came from the payload — '
+    + `a \`toJSON()\` or a property getter. ${seeContract}`,
+    { cause },
+  )
+}
+
+/**
+ * Was the BigInt what threw, as opposed to something else on the way through?
+ *
+ * Matched on the type named inside a `TypeError` rather than on either engine's
+ * exact sentence: JSC and Bun say `JSON.stringify cannot serialize BigInt.`,
+ * V8 says `Do not know how to serialize a BigInt`. Both name the type; nothing
+ * else about the two messages agrees.
+ *
+ * A `toJSON()` that threw a `TypeError` mentioning BigInt would land here too.
+ * That is accepted: the only way to rule it out is to re-run `JSON.stringify`
+ * over a BigInt-free projection of the payload, which is a second full
+ * serialize of arbitrary user data to sharpen a message that would still be
+ * pointing at a real BigInt in the graph.
+ */
+function isBigIntFailure(cause: unknown): boolean {
+  return cause instanceof TypeError && /bigint/i.test(cause.message)
+}
+
+/**
+ * Was it the cycle? Same reasoning as `isBigIntFailure`, different wordings:
+ * JSC and Bun say `JSON.stringify cannot serialize cyclic structures.`, V8 says
+ * `Converting circular structure to JSON …`, SpiderMonkey says
+ * `cyclic object value`.
+ */
+function isCircularFailure(cause: unknown): boolean {
+  return cause instanceof TypeError && /circular|cyclic/i.test(cause.message)
+}
+
+/**
+ * First BigInt in the graph, depth-first, with the path that reaches it —
+ * `payload.invoice.cents`, `payload.ids[3]`.
+ *
+ * `seen` is not an optimization. This walk runs *because* stringify threw, and
+ * a payload is perfectly capable of holding a BigInt AND a cycle — stringify
+ * reports whichever it reaches first — so the walk must not hang on the very
+ * structure it was called to explain. It reads the raw graph rather than
+ * post-`toJSON` values, so in the pathological case where a `toJSON` would have
+ * hidden the BigInt the path is approximate — a near-miss pointer beats none,
+ * and it only ever runs after a genuine failure.
+ */
+function findBigInt(value: unknown, path: string, seen: Set<object>): { path: string, value: bigint } | null {
+  if (typeof value === 'bigint')
+    return { path: path || 'envelope', value }
+
+  if (!value || typeof value !== 'object')
+    return null
+
+  if (seen.has(value))
+    return null
+  seen.add(value)
+
+  if (Array.isArray(value)) {
+    for (let i = 0; i < value.length; i++) {
+      const hit = findBigInt(value[i], `${path}[${i}]`, seen)
+      if (hit)
+        return hit
+    }
+    return null
+  }
+
+  for (const [key, child] of Object.entries(value)) {
+    const hit = findBigInt(child, path ? `${path}.${key}` : key, seen)
+    if (hit)
+      return hit
+  }
+
+  return null
 }
 
 /**

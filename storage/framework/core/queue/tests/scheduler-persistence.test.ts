@@ -73,12 +73,18 @@ describe('scheduler overlap guard (#1984)', () => {
       expect(overlapPayloadPattern('a\\b')).toBe('%"jobName":"a\\\\b"%')
     })
 
-    it('matches the envelope storeJob actually writes', () => {
-      // storeJob puts jobName first in the JSON object; if that ever changes,
-      // the guard silently stops matching and both flags go back to no-ops.
-      const utils = readFileSync(resolve(__dirname, '..', 'src', 'utils.ts'), 'utf-8')
-      expect(utils).toMatch(/JSON\.stringify\(\{\s*\n\s*jobName: name,/)
-    })
+    // The third assertion here read `utils.ts` and required it to literally
+    // contain `JSON.stringify({\n jobName: name,`, to catch the payload shape
+    // drifting away from the pattern above. It could not survive any refactor
+    // of that call, correct ones included, and #2282 item 6 is exactly such a
+    // refactor: `buildScheduledJobRow` now goes through `createEnvelope`,
+    // because the hand-built object was the pre-#1884 v0 shape and every
+    // scheduled dispatch was landing stamped `dispatchedAt: 1970-01-01`.
+    //
+    // Replaced rather than dropped. `envelope-json-contract.test.ts` asserts
+    // the same protection against real `buildScheduledJobRow` output instead of
+    // against the source text: that the LIKE pattern still matches the row, that
+    // a prefix name does not match a sibling, and that underscores stay literal.
   })
 
   it('degrades to "not running" rather than throwing when the DB is unavailable', async () => {
