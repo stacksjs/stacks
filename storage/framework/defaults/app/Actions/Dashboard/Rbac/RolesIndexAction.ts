@@ -1,15 +1,14 @@
 import { Action } from '@stacksjs/actions'
 import { getAllRoles } from '@stacksjs/auth'
-import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `GET /api/dashboard/rbac/roles` (stacksjs/stacks#1845).
  *
  * Returns every role in the system. The dashboard's permissions page
  * renders this as a list users can pick from when assigning roles.
- * Soft-errors to an empty list rather than 500 so a broken RBAC store
- * (e.g., migrations not run) renders an empty-state instead of
- * yelling at the user.
+ * Operational store failures use a real 500 response so the client can
+ * distinguish an unavailable RBAC store from a valid empty role list.
  */
 export default new Action({
   name: 'Dashboard RBAC Roles Index',
@@ -30,8 +29,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/rbac] RolesIndexAction failed:', err)
-      return response.json({ roles: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'Roles could not be loaded.', 'RolesIndexAction')
     }
   },
 })

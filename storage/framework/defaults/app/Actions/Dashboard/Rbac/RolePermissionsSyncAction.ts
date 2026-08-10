@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { getRolePermissions, findRole, syncRolePermissions } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 interface SyncInput {
   permissions?: unknown
@@ -57,12 +58,7 @@ export default new Action({
       }
     }
     catch (err) {
-      const msg = err instanceof Error ? err.message : 'unknown error'
-      if (msg.includes('not found')) {
-        return response.json({ error: msg }, 400)
-      }
-      console.error('[dashboard/rbac] RolePermissionsSyncAction failed:', err)
-      return response.json({ error: msg }, 500)
+      return rbacActionError(err, 'Role permissions could not be updated.', 'RolePermissionsSyncAction')
     }
   },
 })

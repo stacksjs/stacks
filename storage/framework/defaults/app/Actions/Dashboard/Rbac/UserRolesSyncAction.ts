@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { getUserRoles, syncRoles } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 interface SyncInput {
   roles?: unknown
@@ -60,15 +61,7 @@ export default new Action({
       }
     }
     catch (err) {
-      const msg = err instanceof Error ? err.message : 'unknown error'
-      // The facade throws "Role 'X' not found" — surface as 400 so
-      // the UI can show "this role doesn't exist anymore" rather
-      // than a 500.
-      if (msg.includes('not found')) {
-        return response.json({ error: msg }, 400)
-      }
-      console.error('[dashboard/rbac] UserRolesSyncAction failed:', err)
-      return response.json({ error: msg }, 500)
+      return rbacActionError(err, 'User roles could not be updated.', 'UserRolesSyncAction')
     }
   },
 })

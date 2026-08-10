@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { getUserRoles } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `GET /api/dashboard/rbac/users/:id/roles` (stacksjs/stacks#1845).
@@ -43,8 +44,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/rbac] UserRolesShowAction failed:', err)
-      return response.json({ userId, roles: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'User roles could not be loaded.', 'UserRolesShowAction')
     }
   },
 })

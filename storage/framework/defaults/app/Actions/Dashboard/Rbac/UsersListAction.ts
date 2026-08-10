@@ -1,7 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { User } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
 import { safeGet } from '../../../../resources/functions/dashboard/data'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `GET /api/dashboard/rbac/users` (stacksjs/stacks#1845).
@@ -40,8 +40,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/rbac] UsersListAction failed:', err)
-      return response.json({ users: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'Users could not be loaded.', 'UsersListAction')
     }
   },
 })

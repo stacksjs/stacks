@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { createRole, findRole } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 interface RoleInput {
   name?: unknown
@@ -59,8 +60,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/rbac] RoleStoreAction failed:', err)
-      return response.json({ error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'The role could not be created.', 'RoleStoreAction')
     }
   },
 })

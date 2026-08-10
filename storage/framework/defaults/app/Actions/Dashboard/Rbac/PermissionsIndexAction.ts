@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { getAllPermissions } from '@stacksjs/auth'
-import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `GET /api/dashboard/rbac/permissions` (stacksjs/stacks#1845).
@@ -28,8 +28,7 @@ export default new Action({
       }
     }
     catch (err) {
-      console.error('[dashboard/rbac] PermissionsIndexAction failed:', err)
-      return response.json({ permissions: [], error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'Permissions could not be loaded.', 'PermissionsIndexAction')
     }
   },
 })

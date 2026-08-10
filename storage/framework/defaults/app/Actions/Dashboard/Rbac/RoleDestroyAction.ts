@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { deleteRole } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `DELETE /api/dashboard/rbac/roles/:name` (stacksjs/stacks#1845).
@@ -32,8 +33,7 @@ export default new Action({
       return { deleted: true, name, guardName }
     }
     catch (err) {
-      console.error('[dashboard/rbac] RoleDestroyAction failed:', err)
-      return response.json({ error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'The role could not be deleted.', 'RoleDestroyAction')
     }
   },
 })

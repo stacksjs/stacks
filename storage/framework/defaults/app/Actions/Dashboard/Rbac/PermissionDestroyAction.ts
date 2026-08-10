@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { deletePermission } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
+import { rbacActionError } from './rbac-response'
 
 /**
  * `DELETE /api/dashboard/rbac/permissions/:name` (stacksjs/stacks#1845).
@@ -30,8 +31,7 @@ export default new Action({
       return { deleted: true, name, guardName }
     }
     catch (err) {
-      console.error('[dashboard/rbac] PermissionDestroyAction failed:', err)
-      return response.json({ error: err instanceof Error ? err.message : 'unknown error' }, 500)
+      return rbacActionError(err, 'The permission could not be deleted.', 'PermissionDestroyAction')
     }
   },
 })
