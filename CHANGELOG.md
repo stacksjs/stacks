@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.351...v0.70.352)
+
+## ✨ Features
+
+- **auth**: sessions somebody can recognise, and an idle limit ([172550e](https://github.com/stacksjs/stacks/commit/172550e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **storage**: read S3 objects as bytes, not decoded text ([f7786d5](https://github.com/stacksjs/stacks/commit/f7786d5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.350...v0.70.351)
 
 ## 🐛 Bug Fixes
