@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.350...v0.70.351)
+
+## 🐛 Bug Fixes
+
+- **events**: a CLI listener in app/Listeners is not a malformed one ([59e4819](https://github.com/stacksjs/stacks/commit/59e4819)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.349...v0.70.350)
 
 ## ✨ Features
