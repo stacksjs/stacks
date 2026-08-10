@@ -189,7 +189,43 @@ export async function loadAutoImports() {
     '@stacksjs/browser',
   ]
 
+  // Only load a framework package that belongs to THIS project.
+  //
+  // A bare `@stacksjs/*` specifier resolves through node_modules, and when that
+  // is missing or half-installed bun falls back to its global install cache. So
+  // a project with a broken install did not fail: it silently booted against
+  // whatever published version happened to be sitting in ~/.bun/install/cache,
+  // which is a worse outcome than loading nothing, and an invisible one.
+  //
+  // It also hung. On Linux the first such cache-resolved import never settles -
+  // no rejection, no active handles, the process simply stops - so every stage
+  // of the preloader below this loop became unreachable. The `catch` here was
+  // written for "not installed yet" and only ever worked because an
+  // unresolvable specifier rejects promptly; one that resolves to a stale copy
+  // does not. Found via stacksjs/stacks#2279's preloader test, which spawns a
+  // child into a directory with nothing linked and is the only place this
+  // shows up.
+  //
+  // Accepted: anything under a `node_modules/` (a real install, whether the
+  // app's own or a vendored checkout's) and anything inside this framework tree
+  // (the core packages next to this file). Both are cwd-independent, so running
+  // a command from a subdirectory does not change what loads.
+  const nodePath = await import('node:path')
+  const frameworkRoot = nodePath.resolve(import.meta.dir, '../../..')
+  const nodeModulesSegment = `${nodePath.sep}node_modules${nodePath.sep}`
+
   for (const pkg of stacksPackages) {
+    let resolved: string
+    try {
+      resolved = Bun.resolveSync(pkg, import.meta.dir)
+    }
+    catch {
+      continue // Not installed, and not in the cache either
+    }
+
+    if (!resolved.includes(nodeModulesSegment) && !resolved.startsWith(frameworkRoot + nodePath.sep))
+      continue // Resolved outside this project, e.g. the global install cache
+
     try {
       const module = await import(pkg)
       for (const [name, value] of Object.entries(module)) {
