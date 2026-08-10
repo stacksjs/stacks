@@ -149,12 +149,20 @@ jobs:
       # red. It stayed green on developer machines because a stale `dist` was
       # already sitting there.
       #
-      # 182ms, and only this package: it is the only one whose subpaths the
-      # suite reaches. If another package starts being imported by subpath and
-      # its tests fail to resolve, build it here too, or import its root.
+      # Both packages 80090bbe7a touched, in dependency order: browser's built
+      # `composables/useStorage.js` imports `@stacksjs/composables/useStorage`,
+      # so composables has to exist first or the same error just moves one
+      # level down. Under half a second for the pair.
+      #
+      # If another package starts being imported by subpath and the suite
+      # cannot resolve it, add it here, or import its root instead.
       - name: Build packages imported by subpath
-        working-directory: storage/framework/core/browser
-        run: bun run build
+        run: |
+          for pkg in composables browser; do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
 
       - name: Test Suite
         env:
