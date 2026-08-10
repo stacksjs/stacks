@@ -60,14 +60,22 @@ describe('default preloader', () => {
     // the same commit passed on its PR run and timed out on the main run. So
     // trace every await site, not just the imports, and instrument the COPY
     // rather than the framework source.
+    // Round 6: the same markers, now TIMESTAMPED. Round 5 showed the loop
+    // making steady progress through `belongsToThisProject` with an empty
+    // active-resource list, which is synchronous blocking rather than waiting.
+    // The suspect is `Bun.resolveSync` against a global install cache CI had
+    // just filled with 600+ packages. Timing each marker says so or clears it.
     const preloaderSource = await Bun.file(resolve(defaultsRoot, 'resources/plugins/preloader.ts')).text()
-    const instrumented = preloaderSource.split('\n').map((line, index) => {
-      if (!/^\s*(?:const|let|var|await|for|if|return)\b.*\bawait\b/.test(line))
-        return line
-      const indent = line.match(/^\s*/)?.[0] ?? ''
-      const label = `L${index + 1} ${line.trim().slice(0, 60).replace(/['\\]/g, '')}`
-      return `${indent}process.stderr.write('[pre ${label}]\\n')\n${line}`
-    }).join('\n')
+    const instrumented = [
+      `globalThis.__preT0 = Date.now()`,
+      ...preloaderSource.split('\n').map((line, index) => {
+        if (!/^\s*(?:const|let|var|await|for|if|return)\b.*\bawait\b/.test(line))
+          return line
+        const indent = line.match(/^\s*/)?.[0] ?? ''
+        const label = `L${index + 1} ${line.trim().slice(0, 52).replace(/['\\]/g, '')}`
+        return `${indent}process.stderr.write('[pre +' + (Date.now() - globalThis.__preT0) + 'ms ${label}]\\n')\n${line}`
+      }),
+    ].join('\n')
     await Bun.write(isolatedPreloader, instrumented)
     await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
       Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
