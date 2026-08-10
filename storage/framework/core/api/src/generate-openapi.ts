@@ -27,7 +27,6 @@ interface OpenApiSpec {
  * Best-effort - anything unrecognised falls through as `{ type: 'string' }` so
  * the spec stays valid even when the rule cannot be described precisely.
  */
-// eslint-disable-next-line pickier/no-unused-vars
 export function ruleToSchema(rule: unknown): Record<string, unknown> {
   if (!rule || typeof rule !== 'object') return { type: 'string' }
   const r = rule as Record<string, unknown>

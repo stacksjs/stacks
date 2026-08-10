@@ -210,7 +210,6 @@ export function assertEnvelopeSerializable(envelope: JobEnvelope): void {
  * perfectly well. The walk now runs only to supply the PATH for a failure the
  * cause has already identified.
  */
-// eslint-disable-next-line pickier/no-unused-vars
 function serializationError(envelope: JobEnvelope, cause: unknown): Error {
   const seeContract = 'See the JSON round-trip contract in @stacksjs/queue\'s src/envelope.ts.'
 

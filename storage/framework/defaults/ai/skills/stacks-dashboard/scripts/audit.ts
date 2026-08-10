@@ -227,7 +227,6 @@ function concreteApiPath(
   dynamicPages: string[],
   modelRoutes: string[],
 ): string {
-  // eslint-disable-next-line pickier/no-unused-vars
   const match = (prefix: string) => dynamicPages
     .find(route => route.startsWith(`${prefix}/`))
     ?.slice(prefix.length + 1)

@@ -10,7 +10,7 @@ export function parsePublished(value: unknown): boolean {
   return value === true || value === 1 || value === '1' || value === 'true'
 }
 
-// eslint-disable-next-line pickier/no-unused-vars
+// eslint-disable-next-line
 export function parsePageInput(inputRequest: RequestInstance): { data: PageInput } | { message: string } {
   const data = {
     title: str(inputRequest.get('title')).trim(),

@@ -179,7 +179,6 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
 /**
  * Create all authentication tables
  */
-// eslint-disable-next-line pickier/no-unused-vars
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
   const dbDriver = getDbDriver()
   const sql = sqlHelpers(dbDriver)

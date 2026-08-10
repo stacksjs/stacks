@@ -9,7 +9,7 @@ export interface AuthorInput {
   avatar: string
 }
 
-// eslint-disable-next-line pickier/no-unused-vars
+// eslint-disable-next-line
 export function parseAuthorInput(inputRequest: RequestInstance): { data: AuthorInput } | { message: string } {
   const data = {
     name: str(inputRequest.get('name')).trim(),
