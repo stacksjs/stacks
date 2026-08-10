@@ -23,6 +23,13 @@ const deleteRecord = state<ProductWaitlistRecord | null>(null)
 const isSaving = state(false)
 const isDeleting = state(false)
 const validationErrors = state<Record<string, string>>({})
+const metrics = derived(() => [
+  { label: 'Recorded', value: summary().total },
+  { label: 'Waiting', value: summary().waiting },
+  { label: 'Notified', value: summary().notified },
+  { label: 'Purchased', value: summary().purchased },
+  { label: 'Conversion', value: `${summary().conversionRate}%` },
+])
 
 function rows(): ProductWaitlistRecord[] {
   const query = search().trim().toLowerCase()
@@ -166,13 +173,7 @@ onMount(() => {
   </div>
 
   <section class="grid gap-3 grid-cols-2 lg:grid-cols-5">
-    <template :for="item in [
-      { label: 'Recorded', value: summary().total },
-      { label: 'Waiting', value: summary().waiting },
-      { label: 'Notified', value: summary().notified },
-      { label: 'Purchased', value: summary().purchased },
-      { label: 'Conversion', value: summary().conversionRate + '%' }
-    ]">
+    <template :for="item in metrics()">
       <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
         <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">{{ item.label }}</p>
         <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>

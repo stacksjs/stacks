@@ -64,4 +64,15 @@ describe('dashboard layout client architecture', () => {
     expect(bootstrap).toContain("attribute: 'color-mode'")
     expect(bootstrap).toContain("default: 'system'")
   })
+
+  test('bridges appearance navigation metadata into the client controller explicitly', () => {
+    const appearance = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Settings/AppearanceSettingsDashboard.stx'),
+      'utf8',
+    )
+
+    expect(appearance).toContain('export const navSections = buildWebSidebarSections()')
+    expect(appearance).toContain('const sections = {{ navSections }}')
+    expect(appearance).not.toContain('const sections = navSections')
+  })
 })

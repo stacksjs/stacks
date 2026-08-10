@@ -29,7 +29,7 @@ const appearance = useAppearance()
 // see until you navigate away is the thing this is avoiding.
 const styleOptions = SIDEBAR_STYLE_OPTIONS
 const colorModes = COLOR_MODE_OPTIONS
-const sections = navSections
+const sections = {{ navSections }}
 
 const sidebarStyle = appearance.sidebarStyle
 const colorMode = appearance.colorMode

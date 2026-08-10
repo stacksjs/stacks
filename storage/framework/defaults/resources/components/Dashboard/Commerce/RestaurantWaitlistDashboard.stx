@@ -26,6 +26,13 @@ const isSaving = state(false)
 const isDeleting = state(false)
 const busyId = state('')
 const validationErrors = state<Record<string, string>>({})
+const metrics = derived(() => [
+  { label: 'Waiting', value: summary().waiting },
+  { label: 'Quoted wait', value: `${summary().averageQuotedWait} min` },
+  { label: 'Seated', value: summary().seated },
+  { label: 'No show', value: summary().noShow },
+  { label: 'Seating rate', value: `${summary().seatingRate}%` },
+])
 
 function rows(): RestaurantWaitlistRecord[] {
   const query = search().trim().toLowerCase()
@@ -220,13 +227,7 @@ onMount(() => {
   <div :if="loadError()" class="p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ loadError() }}</div>
 
   <section class="grid gap-3 grid-cols-2 lg:grid-cols-5">
-    <template :for="item in [
-      { label: 'Waiting', value: summary().waiting },
-      { label: 'Quoted wait', value: summary().averageQuotedWait + ' min' },
-      { label: 'Seated', value: summary().seated },
-      { label: 'No show', value: summary().noShow },
-      { label: 'Seating rate', value: summary().seatingRate + '%' }
-    ]">
+    <template :for="item in metrics()">
       <div class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
         <p class="text-gray-500 text-xs uppercase dark:text-neutral-400">{{ item.label }}</p>
         <p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p>

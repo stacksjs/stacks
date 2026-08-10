@@ -331,6 +331,9 @@ describe('dashboard commerce route contract', () => {
     expect(routes).toContain("guard(route.patch('/commerce/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductUpdateAction'))")
     expect(routes).toContain("guard(route.delete('/commerce/waitlist-products/{id}', 'Actions/Commerce/WaitlistProductDestroyAction'))")
     expect(waitlist).toContain('/api/dashboard/commerce/waitlist-products')
+    expect(waitlist).toContain('const metrics = derived(() => [')
+    expect(waitlist).toContain('<template :for="item in metrics()">')
+    expect(waitlist).not.toContain('<template :for="item in [')
     expect(waitlist).not.toMatch(/\/api\/waitlist-products(?:\/|\?|'|`)/)
 
     for (const action of [storeAction, updateAction]) {
@@ -353,6 +356,9 @@ describe('dashboard commerce route contract', () => {
     expect(routes).toContain("guard(route.patch('/commerce/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction'))")
     expect(routes).toContain("guard(route.delete('/commerce/waitlist-restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction'))")
     expect(waitlist).toContain('/api/dashboard/commerce/waitlist-restaurants')
+    expect(waitlist).toContain('const metrics = derived(() => [')
+    expect(waitlist).toContain('<template :for="item in metrics()">')
+    expect(waitlist).not.toContain('<template :for="item in [')
     expect(waitlist).not.toMatch(/\/api\/waitlist-restaurants(?:\/|\?|'|`)/)
 
     for (const action of [storeAction, updateAction]) {

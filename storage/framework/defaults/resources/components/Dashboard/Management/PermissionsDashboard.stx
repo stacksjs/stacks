@@ -13,10 +13,10 @@
   //   - All state in the rbacStore; the page is pure presentation.
   //   - Mutations are optimistic with rollback on failure (store handles
   //     the snapshot/rollback dance).
-  import { useStore } from '@stacksjs/stx'
   import { useRole } from '~/storage/framework/defaults/views/dashboard/composables/useRole'
+  import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'
 
-  const rbac = useStore('rbac')
+  const rbac = rbacStore
   // Admin-only surface. Per `useRole.ts`, `isAdmin()` returns true for
   // any user with the `admin` role *or* an unauthenticated viewer on
   // the localhost dev dashboard — same permissive-dev defaults the rest
