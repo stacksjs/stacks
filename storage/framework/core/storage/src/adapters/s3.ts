@@ -281,14 +281,26 @@ export class S3StorageAdapter implements StorageAdapter {
 
   async read(path: string): Promise<FileContents> {
     const key = this.prefixPath(path)
-    const response = await (await this.getClient()).getObject(this.bucket, key)
 
-    if (!response) {
+    // `getObject` decodes the body as text. For anything that is not UTF-8 —
+    // a PDF, an image, a zip — that decode is already lossy: every invalid
+    // sequence becomes U+FFFD, and `Buffer.from(str)` then re-encodes those
+    // replacement characters, so the bytes come back a different length and
+    // the file is unopenable. A 400 MB PDF read this way lost its structure
+    // entirely and no tool could find its page count.
+    //
+    // `getObjectBuffer` is not the fix: it wraps the same `getObject`, so the
+    // decode has already happened by the time it calls `Buffer.from`.
+    // `getObjectBytes` issues its own signed request and reads
+    // `response.arrayBuffer()`, which is the only path here that preserves
+    // bytes. A 400 MB PDF came back as 722 MB through the text path.
+    const response = await (await this.getClient()).getObjectBytes(this.bucket, key)
+
+    if (!response?.body) {
       throw new Error(`Failed to read file: ${path}`)
     }
 
-    // getObject returns a string
-    return Buffer.from(response)
+    return Buffer.from(response.body)
   }
 
   /**
