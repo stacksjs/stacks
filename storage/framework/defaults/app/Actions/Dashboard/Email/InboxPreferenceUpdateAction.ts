@@ -2,8 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { MailPreference } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
 import {
-  defaultMailbox,
   type MailPreferenceInput,
   mailPreferenceAttributes,
   normalizeStringList,
@@ -132,14 +132,13 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const mailboxValue = request.get('mailbox')
-    const mailbox = (mailboxValue === null || mailboxValue === undefined
-      ? defaultMailbox()
-      : typeof mailboxValue === 'string' ? mailboxValue : '')
-      .trim()
-      .toLowerCase()
-    if (!/^[^\s@<>]+@[^\s@<>]+\.[^\s@<>]+$/.test(mailbox) || mailbox.length > 320)
-      return response.json({ message: 'The mail settings are invalid.', fields: { mailbox: 'Enter a valid mailbox.' } }, 422)
+    let mailbox: string
+    try {
+      mailbox = dashboardMailbox(request)
+    }
+    catch (error) {
+      return inboxActionError(error, 'Mail settings could not be updated.')
+    }
 
     const { fields, input } = inputFromRequest(request, mailbox)
     if (Object.keys(fields).length)

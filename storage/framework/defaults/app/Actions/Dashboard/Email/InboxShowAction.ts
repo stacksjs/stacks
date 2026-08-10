@@ -2,7 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
 import { response } from '@stacksjs/router'
-import { defaultMailbox } from './mail-preference'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
 import { sanitizeInboxHtml } from './sanitize-inbox-html'
 
 export default new Action({
@@ -13,7 +13,7 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     try {
-      const mailbox = String(request.get('mailbox') || defaultMailbox())
+      const mailbox = dashboardMailbox(request)
       const messageId = String(request.getParam('id') || '')
 
       if (!messageId)
@@ -33,9 +33,7 @@ export default new Action({
       }
     }
     catch (err) {
-      return response.json({
-        message: err instanceof Error ? err.message : 'Email content could not be loaded.',
-      }, 503)
+      return inboxActionError(err, 'Email content could not be loaded.')
     }
   },
 })

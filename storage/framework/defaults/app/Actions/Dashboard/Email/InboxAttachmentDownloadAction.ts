@@ -6,7 +6,7 @@ import {
   inboxAttachmentContentType,
 } from '@stacksjs/email'
 import { response } from '@stacksjs/router'
-import { defaultMailbox } from './mail-preference'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
 
 export default new Action({
   name: 'InboxAttachmentDownloadAction',
@@ -15,7 +15,6 @@ export default new Action({
   apiResponse: false,
 
   async handle(request: RequestInstance) {
-    const mailbox = String(request.get('mailbox') || defaultMailbox())
     const messageId = String(request.getParam('id') || '')
     const attachmentId = String(request.getParam('attachmentId') || '')
 
@@ -23,6 +22,7 @@ export default new Action({
       return response.json({ message: 'A message ID and attachment ID are required.' }, 422)
 
     try {
+      const mailbox = dashboardMailbox(request)
       const result = await emailSDK.getAttachment(mailbox, messageId, attachmentId)
       if (!result)
         return response.json({ message: 'Attachment not found.' }, 404)
@@ -39,10 +39,7 @@ export default new Action({
       })
     }
     catch (error) {
-      console.error('[dashboard/inbox] Attachment download failed:', error)
-      return response.json({
-        message: 'The attachment could not be downloaded.',
-      }, 503)
+      return inboxActionError(error, 'The attachment could not be downloaded.')
     }
   },
 })

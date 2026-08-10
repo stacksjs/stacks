@@ -1,6 +1,9 @@
 import type { Address, Mailbox } from 'postal-mime'
 import PostalMime from 'postal-mime'
+import { inboundMailboxRecipient } from './inbox-mailbox'
 import { inboxAttachmentContentType } from './sdk/inbox-attachments'
+
+export { inboundMailboxRecipient } from './inbox-mailbox'
 
 const MAX_RAW_EMAIL_BYTES = 50 * 1024 * 1024
 const MAX_ATTACHMENTS = 1000
@@ -53,24 +56,6 @@ export function inboundAttachmentName(filename: string | null | undefined, index
 
 export function inboundAttachmentStorageName(filename: string, index: number): string {
   return `stacks-${String(index + 1).padStart(4, '0')}--${encodeURIComponent(filename)}`
-}
-
-export function inboundMailboxRecipient(address: string, expectedDomain: string): { address: string, domain: string, localPart: string } | null {
-  const normalizedAddress = address.trim().toLowerCase()
-  const separator = normalizedAddress.lastIndexOf('@')
-  if (separator <= 0)
-    return null
-
-  const localPart = normalizedAddress.slice(0, separator)
-  const domain = normalizedAddress.slice(separator + 1)
-  if (domain !== expectedDomain.trim().toLowerCase())
-    return null
-  if (!/^[a-z0-9.!#$%&'*+?^_`{|}~=-]+$/i.test(localPart) || localPart.includes('..'))
-    return null
-  if (!/^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$/i.test(domain))
-    return null
-
-  return { address: normalizedAddress, domain, localPart }
 }
 
 export function inboundMessageStorageId(messageId: string): string {

@@ -7,6 +7,12 @@ import {
   inboxAttachmentPrefix,
   mapInboxAttachmentObjects,
 } from '../src/sdk/inbox-attachments'
+import {
+  InvalidInboxMailboxError,
+  InvalidInboxPathError,
+  inboxMailboxPath,
+  inboxMessagePath,
+} from '../src/inbox-mailbox'
 import { type EmailStorageClient, EmailSDK } from '../src/sdk'
 
 describe('inbox attachments', () => {
@@ -57,6 +63,75 @@ describe('inbox attachments', () => {
   it('normalizes untrusted attachment content types', () => {
     expect(inboxAttachmentContentType('Application/PDF; charset=binary')).toBe('application/pdf')
     expect(inboxAttachmentContentType('text/html\r\nx-unsafe: true')).toBe('application/octet-stream')
+  })
+
+  it('scopes mailbox and message paths to the configured domain', () => {
+    const mailbox = inboxMailboxPath('Support+alerts@Example.com', 'example.com')
+    expect(mailbox).toEqual({
+      address: 'support+alerts@example.com',
+      domain: 'example.com',
+      localPart: 'support+alerts',
+      prefix: 'mailboxes/example.com/support+alerts',
+      indexKey: 'mailboxes/example.com/support+alerts/inbox.json',
+    })
+    expect(inboxMessagePath('mailboxes/example.com/support+alerts/2026/08/message-1', mailbox))
+      .toBe('mailboxes/example.com/support+alerts/2026/08/message-1')
+    expect(() => inboxMailboxPath('../escape@example.com', 'example.com'))
+      .toThrow(InvalidInboxMailboxError)
+    expect(() => inboxMailboxPath('support@example.net', 'example.com'))
+      .toThrow(InvalidInboxMailboxError)
+    expect(() => inboxMessagePath('mailboxes/example.com/other/message-1', mailbox))
+      .toThrow(InvalidInboxPathError)
+    expect(() => inboxMessagePath('mailboxes/example.com/support+alerts/../message-1', mailbox))
+      .toThrow(InvalidInboxPathError)
+  })
+
+  it('rejects an inbox index that points outside its mailbox prefix', async () => {
+    const storage: EmailStorageClient = {
+      async getObject() {
+        return JSON.stringify([{
+          messageId: 'message-1',
+          from: 'sender@example.com',
+          to: 'support@example.com',
+          subject: 'Unsafe path',
+          date: '2026-08-10T12:00:00.000Z',
+          read: false,
+          path: 'mailboxes/example.com/other/message-1',
+        }])
+      },
+      async getObjectBytes() {
+        throw new Error('Attachment bytes must not be read.')
+      },
+      async listObjects() {
+        throw new Error('Objects must not be listed.')
+      },
+      async deleteObjects() {},
+      async putObject() {},
+    }
+    const sdk = new EmailSDK({
+      bucket: 'test-email',
+      domain: 'example.com',
+      storage: () => storage,
+    })
+
+    await expect(sdk.getEmail('support@example.com', 'message-1'))
+      .rejects.toBeInstanceOf(InvalidInboxPathError)
+  })
+
+  it('rejects invalid mailboxes before creating a storage client', async () => {
+    let storageCreated = false
+    const sdk = new EmailSDK({
+      bucket: 'test-email',
+      domain: 'example.com',
+      storage() {
+        storageCreated = true
+        throw new Error('Storage must not be created.')
+      },
+    })
+
+    await expect(sdk.getInbox('support@example.net'))
+      .rejects.toBeInstanceOf(InvalidInboxMailboxError)
+    expect(storageCreated).toBeFalse()
   })
 
   it('lists and downloads binary attachments through an injected storage client', async () => {

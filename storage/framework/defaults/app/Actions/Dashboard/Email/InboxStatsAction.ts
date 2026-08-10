@@ -1,8 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { emailSDK } from '@stacksjs/email'
-import { response } from '@stacksjs/router'
-import { defaultMailbox } from './mail-preference'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
 
 export default new Action({
   name: 'InboxStatsAction',
@@ -12,7 +11,7 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     try {
-      const mailbox = String(request.get('mailbox') || defaultMailbox())
+      const mailbox = dashboardMailbox(request)
       const stats = await emailSDK.getInboxStats(mailbox)
 
       return {
@@ -21,9 +20,7 @@ export default new Action({
       }
     }
     catch (err) {
-      return response.json({
-        message: err instanceof Error ? err.message : 'Inbox statistics could not be loaded.',
-      }, 503)
+      return inboxActionError(err, 'Inbox statistics could not be loaded.')
     }
   },
 })

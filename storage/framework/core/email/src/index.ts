@@ -1,6 +1,7 @@
 export * from './drivers'
 export * from './email'
 export * from './idempotency'
+export * from './inbox-mailbox'
 export * from './inbound-parser'
 export * from './suppression'
 export * from './unsubscribe'

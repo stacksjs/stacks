@@ -2,7 +2,8 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { MailPreference } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { defaultMailbox, serializeMailPreference } from './mail-preference'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
+import { serializeMailPreference } from './mail-preference'
 
 export default new Action({
   name: 'InboxPreferenceShowAction',
@@ -11,8 +12,13 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const mailbox = String(request.get('mailbox') || defaultMailbox()).trim().toLowerCase()
-    const record = await MailPreference.where('mailbox', '=', mailbox).first()
-    return response.json({ preference: serializeMailPreference(record, mailbox) })
+    try {
+      const mailbox = dashboardMailbox(request)
+      const record = await MailPreference.where('mailbox', '=', mailbox).first()
+      return response.json({ preference: serializeMailPreference(record, mailbox) })
+    }
+    catch (error) {
+      return inboxActionError(error, 'Mail settings could not be loaded.')
+    }
   },
 })

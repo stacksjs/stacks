@@ -10,6 +10,11 @@
 
 import { email as emailConfig } from '@stacksjs/config'
 import { getErrorMessage } from '@stacksjs/utils'
+import {
+  type InboxMailboxPath,
+  inboxMailboxPath,
+  inboxMessagePath,
+} from '../inbox-mailbox'
 import { normalizeEmailHtmlBody, normalizeEmailTextBody } from '../mime-preview'
 import {
   type InboxAttachment,
@@ -62,6 +67,39 @@ export interface InboxStats {
   read: number
 }
 
+function inboxString(value: unknown, field: string, index: number): string {
+  if (typeof value !== 'string')
+    throw new TypeError(`Inbox entry ${index} has an invalid ${field}.`)
+  const normalized = value.trim()
+  if (!normalized || /[\u0000-\u001F\u007F]/.test(normalized))
+    throw new TypeError(`Inbox entry ${index} has an invalid ${field}.`)
+  return normalized
+}
+
+function normalizeInboxEntry(value: unknown, index: number, mailbox: InboxMailboxPath): InboxEmail {
+  if (!value || typeof value !== 'object' || Array.isArray(value))
+    throw new TypeError(`Inbox entry ${index} must be an object.`)
+
+  const entry = value as Record<string, unknown>
+  const messageId = inboxString(entry.messageId, 'messageId', index)
+  if (messageId.length > 512)
+    throw new TypeError(`Inbox entry ${index} has an invalid messageId.`)
+
+  const path = inboxMessagePath(inboxString(entry.path, 'path', index), mailbox)
+  return {
+    messageId,
+    from: inboxString(entry.from, 'from', index),
+    ...(typeof entry.fromName === 'string' && entry.fromName.trim() ? { fromName: entry.fromName.trim() } : {}),
+    to: inboxString(entry.to, 'to', index),
+    subject: typeof entry.subject === 'string' ? entry.subject : '',
+    date: inboxString(entry.date, 'date', index),
+    read: entry.read === true,
+    ...(typeof entry.preview === 'string' ? { preview: entry.preview } : {}),
+    hasAttachments: entry.hasAttachments === true,
+    path,
+  }
+}
+
 export interface EmailSearchOptions {
   from?: string
   to?: string
@@ -104,7 +142,7 @@ export class EmailSDK {
     this.region = options?.region || process.env.AWS_REGION || 'us-east-1'
     const fromAddress = emailConfig?.from?.address
     const parsedDomain = fromAddress?.includes('@') ? fromAddress.split('@')[1] : undefined
-    this.domain = options?.domain || parsedDomain || 'stacksjs.com'
+    this.domain = options?.domain || emailConfig?.domain || parsedDomain || 'stacksjs.com'
     this.storageFactory = options?.storage
   }
 
@@ -199,23 +237,22 @@ export class EmailSDK {
    */
   async getInbox(mailbox: string, options?: { limit?: number; offset?: number }): Promise<InboxEmail[]> {
     try {
+      const mailboxPath = inboxMailboxPath(mailbox, this.domain)
       const s3 = await this.storage()
-
-      const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
-
-      const indexKey = `mailboxes/${domain}/${localPart}/inbox.json`
-
-      const result = await s3.getObject(this.bucket, indexKey)
+      const result = await s3.getObject(this.bucket, mailboxPath.indexKey)
 
       if (!result) {
         return []
       }
 
-      let inbox: InboxEmail[] = JSON.parse(result) as InboxEmail[]
+      const parsed = JSON.parse(result) as unknown
+      if (!Array.isArray(parsed))
+        throw new TypeError('Inbox index must be a JSON array.')
+      const inbox = parsed.map((entry, index) => normalizeInboxEntry(entry, index, mailboxPath))
 
       // Apply pagination
-      const offset = options?.offset || 0
-      const limit = options?.limit || 50
+      const offset = Math.max(0, Math.trunc(Number(options?.offset) || 0))
+      const limit = Math.min(1000, Math.max(1, Math.trunc(Number(options?.limit) || 50)))
 
       return inbox.slice(offset, offset + limit)
     }
@@ -259,8 +296,6 @@ export class EmailSDK {
     attachments: InboxAttachment[]
   } | null> {
     try {
-      const s3 = await this.storage()
-
       // First get the inbox to find the email path
       const inbox = await this.getInbox(mailbox, { limit: 1000 })
       const email = inbox.find(e => e.messageId === messageId)
@@ -269,6 +304,7 @@ export class EmailSDK {
         return null
       }
 
+      const s3 = await this.storage()
       const basePath = email.path
 
       // Get metadata
@@ -344,13 +380,13 @@ export class EmailSDK {
     body: Uint8Array
     contentType: string
   } | null> {
-    const s3 = await this.storage()
     const inbox = await this.getInbox(mailbox, { limit: 1000 })
     const email = inbox.find(entry => entry.messageId === messageId)
 
     if (!email)
       return null
 
+    const s3 = await this.storage()
     const stored = await this.listStoredAttachments(s3, email)
     const attachment = stored.find(item => item.id === attachmentId)
     if (!attachment)
@@ -410,9 +446,8 @@ export class EmailSDK {
    * Delete an email
    */
   async delete(mailbox: string, messageId: string): Promise<boolean> {
+    const mailboxPath = inboxMailboxPath(mailbox, this.domain)
     const s3 = await this.storage()
-
-    const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
     // Get inbox and find the email
     const inbox = await this.getInbox(mailbox, { limit: 1000 })
@@ -436,7 +471,7 @@ export class EmailSDK {
 
     await s3.putObject({
       bucket: this.bucket,
-      key: `mailboxes/${domain}/${localPart}/inbox.json`,
+      key: mailboxPath.indexKey,
       body: JSON.stringify(inbox, null, 2),
       contentType: 'application/json',
     })
@@ -497,9 +532,8 @@ export class EmailSDK {
   }
 
   private async updateEmailStatus(mailbox: string, messageId: string, updates: Partial<InboxEmail>): Promise<boolean> {
+    const mailboxPath = inboxMailboxPath(mailbox, this.domain)
     const s3 = await this.storage()
-
-    const [localPart, domain] = mailbox.includes('@') ? mailbox.split('@') : [mailbox, this.domain]
 
     const inbox = await this.getInbox(mailbox, { limit: 1000 })
     const emailIndex = inbox.findIndex(e => e.messageId === messageId)
@@ -512,7 +546,7 @@ export class EmailSDK {
 
     await s3.putObject({
       bucket: this.bucket,
-      key: `mailboxes/${domain}/${localPart}/inbox.json`,
+      key: mailboxPath.indexKey,
       body: JSON.stringify(inbox, null, 2),
       contentType: 'application/json',
     })

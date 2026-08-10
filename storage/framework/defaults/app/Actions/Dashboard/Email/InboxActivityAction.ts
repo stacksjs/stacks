@@ -4,7 +4,7 @@ import { db } from '@stacksjs/database'
 import { emailSDK } from '@stacksjs/email'
 import { response } from '@stacksjs/router'
 import { dashboardRequestValue } from '../dashboard-request'
-import { defaultMailbox } from './mail-preference'
+import { dashboardMailbox, inboxActionError } from './inbox-request'
 
 const RANGES = ['day', 'week', 'month', 'year'] as const
 type ActivityRange = typeof RANGES[number]
@@ -143,23 +143,36 @@ export default new Action({
     const range = RANGES.includes(requestedRange as ActivityRange)
       ? requestedRange as ActivityRange
       : 'week'
-    const mailbox = queryValue(request, 'mailbox') || defaultMailbox()
+    let mailbox: string
+    try {
+      mailbox = dashboardMailbox(request)
+    }
+    catch (error) {
+      return inboxActionError(error, 'Inbox activity could not be loaded.')
+    }
     const buckets = buildBuckets(range, new Date())
     const periodStart = buckets[0]!.start
     const periodEnd = buckets.at(-1)!.end
     const periodLength = periodEnd.getTime() - periodStart.getTime()
     const previousStart = new Date(periodStart.getTime() - periodLength)
 
-    const [inbox, deliveryRows] = await Promise.all([
-      emailSDK.getInbox(mailbox, { limit: 1000 }),
-      db
-        .selectFrom('notification_deliveries')
-        .select(['id', 'recipient', 'subject', 'status', 'sent_at', 'created_at'])
-        .where('channel', '=', 'email')
-        .where('created_at', '>=', previousStart.toISOString())
-        .orderBy('created_at', 'desc')
-        .execute() as Promise<DeliveryRow[]>,
-    ])
+    let inbox
+    let deliveryRows: DeliveryRow[]
+    try {
+      [inbox, deliveryRows] = await Promise.all([
+        emailSDK.getInbox(mailbox, { limit: 1000 }),
+        db
+          .selectFrom('notification_deliveries')
+          .select(['id', 'recipient', 'subject', 'status', 'sent_at', 'created_at'])
+          .where('channel', '=', 'email')
+          .where('created_at', '>=', previousStart.toISOString())
+          .orderBy('created_at', 'desc')
+          .execute() as Promise<DeliveryRow[]>,
+      ])
+    }
+    catch (error) {
+      return inboxActionError(error, 'Inbox activity could not be loaded.')
+    }
 
     const currentInbound = inbox.filter(email => inPeriod(email.date, periodStart, periodEnd))
     const previousInbound = inbox.filter(email => inPeriod(email.date, previousStart, periodStart))
