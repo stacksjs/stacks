@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.349...v0.70.350)
+
+## ✨ Features
+
+- **orm**: extendModel, so an app can add to a framework model without forking it ([0e8dc91](https://github.com/stacksjs/stacks/commit/0e8dc91)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.348...v0.70.349)
 
 ## 🐛 Bug Fixes
