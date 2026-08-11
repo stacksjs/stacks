@@ -4,7 +4,6 @@ import { ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'
-import { snakeCase } from '@stacksjs/strings'
 import { Every } from '@stacksjs/types'
 
 export async function runScheduler(): Promise<Ok<string, never> | Err<string, any>> {
@@ -15,7 +14,15 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
     try {
       const jobModule = await import(jobFile)
       const job = jobModule.default as JobOptions
-      const jobName = snakeCase(getJobName(job, jobFile))
+      // The name has to survive intact: it is what `runJob` resolves back to a
+      // FILE, `app/Jobs/<name>.ts`. Snake-casing it turned `Inspire` into
+      // `inspire`, which resolves on a developer's case-insensitive macOS disk
+      // and on nothing else — so every rate-scheduled job in every app worked
+      // locally and failed on the server, once an hour, forever, in a log line
+      // nobody was watching. Found in a dispensary's production journal:
+      // `Job inspire not found. Looked in app/Jobs/inspire.ts`, beside
+      // `app/Jobs/Inspire.ts`.
+      const jobName = getJobName(job, jobFile)
 
       if (job.rate)
         executeJobRate(jobName, job.rate)
