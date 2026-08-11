@@ -1,5 +1,22 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.356...v0.70.357)
+
+## 🐛 Bug Fixes
+
+- **deploy**: keep the encrypted env files out of the release ([d5610f8](https://github.com/stacksjs/stacks/commit/d5610f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: make content writes atomic ([99493d3](https://github.com/stacksjs/stacks/commit/99493d3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: guard content operations ([b4574ec](https://github.com/stacksjs/stacks/commit/b4574ec)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **orm**: clarify transaction executor ([897f3e1](https://github.com/stacksjs/stacks/commit/897f3e1)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.355...v0.70.356)
 
 ## ✨ Features
