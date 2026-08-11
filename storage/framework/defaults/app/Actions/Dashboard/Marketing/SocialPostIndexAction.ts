@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { SocialPost, User } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeSocialPosts } from './social-post-records'
 
 export default new Action({
@@ -9,10 +10,15 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const [posts, users] = await Promise.all([
-      SocialPost.orderByDesc('id').limit(500).get(),
-      User.orderBy('name', 'asc').limit(500).get(),
-    ])
-    return normalizeSocialPosts(posts, users)
+    try {
+      const [posts, users] = await Promise.all([
+        SocialPost.orderByDesc('id').limit(500).get(),
+        User.orderBy('name', 'asc').limit(500).get(),
+      ])
+      return normalizeSocialPosts(posts, users)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Social posts could not be loaded.', 'SocialPostIndexAction')
+    }
   },
 })

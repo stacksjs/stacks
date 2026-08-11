@@ -1,10 +1,10 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
 import { campaigns } from '@stacksjs/newsletter'
-import { Campaign, EmailList } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { validateCampaignDelivery } from './campaign-delivery'
+import { dashboardOperationalError } from '../dashboard-response'
+import { loadCampaignDeliveryContext, validateCampaignDelivery } from './campaign-delivery'
+import { marketingRecordId } from './marketing-response'
 
 export default new Action({
   name: 'CampaignSendAction',
@@ -12,31 +12,35 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const id = Number(request.getParam('id'))
-    const campaign = await Campaign.find(id)
-    if (!campaign)
+    const id = marketingRecordId(request)
+    if (!id)
+      return response.json({ message: 'A valid campaign id is required.' }, 400)
+
+    let context
+    try {
+      context = await loadCampaignDeliveryContext(id)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign delivery prerequisites could not be loaded.', 'CampaignSendAction.prerequisites')
+    }
+    if (!context.campaign)
       return response.json({ message: 'Campaign not found.' }, 404)
 
-    const listId = Number(campaign.get('email_list_id') || 0)
-    const list = listId ? await EmailList.find(listId) : null
-    const memberRow = listId
-      ? await db
-          .selectFrom('email_list_subscribers')
-          .select(db.fn.count('id').as('count'))
-          .where('email_list_id', '=', listId)
-          .where('status', '=', 'subscribed')
-          .executeTakeFirst()
-      : null
     const validationError = validateCampaignDelivery(
-      campaign,
+      context.campaign,
       'send',
-      Number(memberRow?.count || 0),
-      String(list?.get('status') || ''),
+      context.activeMembers,
+      context.listStatus,
     )
     if (validationError)
       return response.json({ message: validationError }, 422)
 
-    await campaigns.sendNow(id)
-    return response.json({ id, status: 'sending' }, 202)
+    try {
+      await campaigns.sendNow(id)
+      return response.json({ id, status: 'sending' }, 202)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign could not be queued.', 'CampaignSendAction.queue', 500)
+    }
   },
 })

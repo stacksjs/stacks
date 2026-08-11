@@ -1,4 +1,38 @@
+import { db } from '@stacksjs/database'
+import { Campaign, EmailList } from '@stacksjs/orm'
+
 export type CampaignDeliveryOperation = 'send' | 'schedule' | 'cancel'
+
+export interface CampaignDeliveryContext {
+  campaign: any | null
+  activeMembers: number
+  listStatus: string
+}
+
+export async function loadCampaignDeliveryContext(id: number): Promise<CampaignDeliveryContext> {
+  const campaign = await Campaign.find(id)
+  if (!campaign)
+    return { campaign: null, activeMembers: 0, listStatus: '' }
+
+  const listId = Number(campaign.get('email_list_id') || 0)
+  const [list, memberRow] = listId
+    ? await Promise.all([
+        EmailList.find(listId),
+        db
+          .selectFrom('email_list_subscribers')
+          .select(db.fn.count('id').as('count'))
+          .where('email_list_id', '=', listId)
+          .where('status', '=', 'subscribed')
+          .executeTakeFirst(),
+      ])
+    : [null, null]
+
+  return {
+    campaign,
+    activeMembers: Number(memberRow?.count || 0),
+    listStatus: String(list?.get('status') || ''),
+  }
+}
 
 function value(record: any, ...keys: string[]): unknown {
   for (const key of keys) {

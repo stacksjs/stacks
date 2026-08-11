@@ -1,13 +1,14 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { db } from '@stacksjs/database'
 import { campaigns } from '@stacksjs/newsletter'
-import { Campaign, EmailList } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import {
   campaignScheduleIso,
+  loadCampaignDeliveryContext,
   validateCampaignDelivery,
 } from './campaign-delivery'
+import { marketingRecordId } from './marketing-response'
 
 export default new Action({
   name: 'CampaignScheduleAction',
@@ -15,35 +16,38 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const id = Number(request.getParam('id'))
-    const campaign = await Campaign.find(id)
-    if (!campaign)
-      return response.json({ message: 'Campaign not found.' }, 404)
-
-    const listId = Number(campaign.get('email_list_id') || 0)
-    const list = listId ? await EmailList.find(listId) : null
-    const memberRow = listId
-      ? await db
-          .selectFrom('email_list_subscribers')
-          .select(db.fn.count('id').as('count'))
-          .where('email_list_id', '=', listId)
-          .where('status', '=', 'subscribed')
-          .executeTakeFirst()
-      : null
-    const validationError = validateCampaignDelivery(
-      campaign,
-      'schedule',
-      Number(memberRow?.count || 0),
-      String(list?.get('status') || ''),
-    )
-    if (validationError)
-      return response.json({ message: validationError }, 422)
-
+    const id = marketingRecordId(request)
+    if (!id)
+      return response.json({ message: 'A valid campaign id is required.' }, 400)
     const schedule = campaignScheduleIso((await request.all()).scheduledAt)
     if (schedule.error)
       return response.json({ message: schedule.error }, 422)
 
-    await campaigns.schedule(id, schedule.value)
-    return response.json({ id, status: 'scheduled', scheduledAt: schedule.value }, 202)
+    let context
+    try {
+      context = await loadCampaignDeliveryContext(id)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign delivery prerequisites could not be loaded.', 'CampaignScheduleAction.prerequisites')
+    }
+    if (!context.campaign)
+      return response.json({ message: 'Campaign not found.' }, 404)
+
+    const validationError = validateCampaignDelivery(
+      context.campaign,
+      'schedule',
+      context.activeMembers,
+      context.listStatus,
+    )
+    if (validationError)
+      return response.json({ message: validationError }, 422)
+
+    try {
+      await campaigns.schedule(id, schedule.value)
+      return response.json({ id, status: 'scheduled', scheduledAt: schedule.value }, 202)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign could not be scheduled.', 'CampaignScheduleAction.queue', 500)
+    }
   },
 })

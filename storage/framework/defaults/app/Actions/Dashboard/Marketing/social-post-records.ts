@@ -55,11 +55,11 @@ function number(input: unknown): number {
   return Number.isFinite(result) && result >= 0 ? result : 0
 }
 
-function platform(input: unknown): SocialPostPlatform {
+function platform(input: unknown): SocialPostPlatform | '' {
   const normalized = text(input).toLowerCase()
   return ['twitter', 'facebook', 'instagram', 'linkedin', 'tiktok', 'youtube'].includes(normalized)
     ? normalized as SocialPostPlatform
-    : 'twitter'
+    : ''
 }
 
 function status(input: unknown): SocialPostStatus {
@@ -89,7 +89,7 @@ export function normalizeSocialPosts(
     return {
       id: text(value(post, 'id')),
       content: text(value(post, 'content')),
-      platform: platform(value(post, 'platform')),
+      platform: platform(value(post, 'platform')) || 'twitter',
       status: status(value(post, 'status')),
       scheduledAt: text(value(post, 'scheduled_at', 'scheduledAt')),
       publishedAt: text(value(post, 'published_at', 'publishedAt')),
@@ -124,7 +124,7 @@ export function normalizeSocialPosts(
 
 export function socialPostWriteData(input: Record<string, unknown>, now = new Date()): {
   content: string
-  platform: SocialPostPlatform
+  platform: SocialPostPlatform | ''
   status: SocialPostStatus
   scheduled_at: string | null
   published_at: string | null
@@ -160,4 +160,22 @@ export function validateSocialPostSchedule(data: ReturnType<typeof socialPostWri
   if (timestamp <= now.getTime())
     return 'Schedule time must be in the future.'
   return ''
+}
+
+export function validateSocialPostWriteData(data: ReturnType<typeof socialPostWriteData>): string {
+  if (data.content.length < 1 || data.content.length > 2000)
+    return 'Post content must be between 1 and 2000 characters.'
+  if (!data.platform)
+    return 'Choose a valid social platform.'
+  if (data.image_url) {
+    try {
+      const url = new URL(data.image_url)
+      if (!['http:', 'https:'].includes(url.protocol))
+        return 'Image URL must use HTTP or HTTPS.'
+    }
+    catch {
+      return 'Image URL must be a valid URL.'
+    }
+  }
+  return validateSocialPostSchedule(data)
 }

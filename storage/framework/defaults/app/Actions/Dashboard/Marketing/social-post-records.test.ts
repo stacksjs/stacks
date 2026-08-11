@@ -3,6 +3,7 @@ import {
   normalizeSocialPosts,
   socialPostWriteData,
   validateSocialPostSchedule,
+  validateSocialPostWriteData,
 } from './social-post-records'
 
 const now = new Date('2026-07-29T12:00:00.000Z')
@@ -67,5 +68,17 @@ describe('social post records', () => {
       scheduledAt: '2026-07-28 12:00:00',
     }, now)
     expect(validateSocialPostSchedule(stale, now)).toBe('Schedule time must be in the future.')
+  })
+
+  test('rejects missing content, invalid platforms, and unsafe image URLs', () => {
+    expect(validateSocialPostWriteData(socialPostWriteData({})))
+      .toBe('Post content must be between 1 and 2000 characters.')
+    expect(validateSocialPostWriteData(socialPostWriteData({ content: 'Ready to publish' })))
+      .toBe('Choose a valid social platform.')
+    expect(validateSocialPostWriteData(socialPostWriteData({
+      content: 'Ready to publish',
+      platform: 'linkedin',
+      imageUrl: 'javascript:alert(1)',
+    }))).toBe('Image URL must use HTTP or HTTPS.')
   })
 })

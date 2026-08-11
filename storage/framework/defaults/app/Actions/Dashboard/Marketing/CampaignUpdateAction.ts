@@ -4,6 +4,7 @@ import { config } from '@stacksjs/config'
 import { Campaign } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { campaignWriteData, validateCampaignWriteData } from './campaign-records'
+import { marketingModelError, marketingRecordId } from './marketing-response'
 
 export default new Action({
   name: 'CampaignUpdateAction',
@@ -12,16 +13,9 @@ export default new Action({
   model: Campaign,
 
   async handle(request: RequestInstance) {
-    await request.validate()
-    const id = Number(request.getParam('id'))
-    const campaign = await Campaign.find(id)
-    if (!campaign)
-      return response.json({ message: 'Campaign not found.' }, 404)
-
-    const currentStatus = String(campaign.get('status') || '')
-    if (['sending', 'sent'].includes(currentStatus))
-      return response.json({ message: 'Campaigns that entered delivery cannot be edited.' }, 409)
-
+    const id = marketingRecordId(request)
+    if (!id)
+      return response.json({ message: 'A valid campaign id is required.' }, 400)
     const data = campaignWriteData(
       await request.all(),
       String((config as any).commerce?.currency || 'USD').toUpperCase(),
@@ -32,7 +26,20 @@ export default new Action({
     if (['sending', 'sent'].includes(data.status))
       return response.json({ message: 'Campaign delivery status is managed by the send pipeline.' }, 422)
 
-    await campaign.update(data)
-    return response.json({ id })
+    try {
+      const campaign = await Campaign.find(id)
+      if (!campaign)
+        return response.json({ message: 'Campaign not found.' }, 404)
+
+      const currentStatus = String(campaign.get('status') || '')
+      if (['sending', 'sent'].includes(currentStatus))
+        return response.json({ message: 'Campaigns that entered delivery cannot be edited.' }, 409)
+
+      await campaign.update(data)
+      return response.json({ id })
+    }
+    catch (error) {
+      return marketingModelError(error, 'Campaign could not be updated.', 'CampaignUpdateAction')
+    }
   },
 })

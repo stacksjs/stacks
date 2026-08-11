@@ -3,7 +3,9 @@ import { Action } from '@stacksjs/actions'
 import { campaigns } from '@stacksjs/newsletter'
 import { Campaign } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { validateCampaignDelivery } from './campaign-delivery'
+import { marketingRecordId } from './marketing-response'
 
 export default new Action({
   name: 'CampaignCancelAction',
@@ -11,8 +13,17 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
-    const id = Number(request.getParam('id'))
-    const campaign = await Campaign.find(id)
+    const id = marketingRecordId(request)
+    if (!id)
+      return response.json({ message: 'A valid campaign id is required.' }, 400)
+
+    let campaign
+    try {
+      campaign = await Campaign.find(id)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign could not be loaded.', 'CampaignCancelAction.read')
+    }
     if (!campaign)
       return response.json({ message: 'Campaign not found.' }, 404)
 
@@ -20,7 +31,12 @@ export default new Action({
     if (validationError)
       return response.json({ message: validationError }, 422)
 
-    await campaigns.cancel(id)
-    return response.json({ id, status: 'cancelled' })
+    try {
+      await campaigns.cancel(id)
+      return response.json({ id, status: 'cancelled' })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Campaign could not be cancelled.', 'CampaignCancelAction.cancel', 500)
+    }
   },
 })

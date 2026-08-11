@@ -159,3 +159,13 @@ export function marketingListWriteData(input: Record<string, unknown>): {
     doubleOptIn: boolean(input.doubleOptIn ?? input.double_opt_in) ? 1 : 0,
   }
 }
+
+export function validateMarketingListWriteData(data: ReturnType<typeof marketingListWriteData>): string {
+  if (data.name.length < 2 || data.name.length > 100)
+    return 'List name must be between 2 and 100 characters.'
+  if (!data.slug || data.slug.length > 120)
+    return 'List slug must be between 1 and 120 characters.'
+  if (data.description.length > 500)
+    return 'List description must be 500 characters or fewer.'
+  return ''
+}
