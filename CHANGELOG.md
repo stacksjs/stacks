@@ -1,5 +1,36 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.364...v0.70.366)
+
+## 🐛 Bug Fixes
+
+- **scheduler**: stop snake-casing the job name a rate schedules ([6ae2ac6](https://github.com/stacksjs/stacks/commit/6ae2ac6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: keep auth errors in forms ([a4761ea](https://github.com/stacksjs/stacks/commit/a4761ea)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **browser**: export timeout composable ([465728e](https://github.com/stacksjs/stacks/commit/465728e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **auth**: set the auth cookie on every path that starts a session (#2310) ([2d141f2](https://github.com/stacksjs/stacks/commit/2d141f2)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2306](https://github.com/stacksjs/stacks/issues/2306), [#2310](https://github.com/stacksjs/stacks/issues/2310), [#2310](https://github.com/stacksjs/stacks/issues/2310))
+- **unpublish:core**: prune CI that runs the framework's own checks ([680ddbd](https://github.com/stacksjs/stacks/commit/680ddbd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: sign out a browser that signed in by cookie (#2308) ([cd90263](https://github.com/stacksjs/stacks/commit/cd90263)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2306](https://github.com/stacksjs/stacks/issues/2306), [#2308](https://github.com/stacksjs/stacks/issues/2308), [#2308](https://github.com/stacksjs/stacks/issues/2308))
+
+## ♻️ Code Refactoring
+
+- **dashboard**: use native table exports ([3690564](https://github.com/stacksjs/stacks/commit/3690564)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: consolidate modal primitives ([765d28f](https://github.com/stacksjs/stacks/commit/765d28f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share kanban card dialog ([748acac](https://github.com/stacksjs/stacks/commit/748acac)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **dashboard**: refresh audit workflow ([c15f8a6](https://github.com/stacksjs/stacks/commit/c15f8a6)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- release v0.70.365 ([54487b4](https://github.com/stacksjs/stacks/commit/54487b4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.364...v0.70.365)
 
 ## 🐛 Bug Fixes
