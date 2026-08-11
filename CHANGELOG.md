@@ -1,5 +1,52 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.355...v0.70.356)
+
+## ✨ Features
+
+- **deploy**: guarantee the encrypted env file for the target environment ([be0bea3](https://github.com/stacksjs/stacks/commit/be0bea3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: persist delivery safeguards ([d19b9dc](https://github.com/stacksjs/stacks/commit/d19b9dc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: add fail-fast delivery ([cf22695](https://github.com/stacksjs/stacks/commit/cf22695)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **env**: one name for an env file's keypair, and stop growing the file ([dce79cd](https://github.com/stacksjs/stacks/commit/dce79cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: propagate delivery failures ([af20852](https://github.com/stacksjs/stacks/commit/af20852)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: make team management atomic ([55af870](https://github.com/stacksjs/stacks/commit/55af870)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: synchronize model schema ([95b23dd](https://github.com/stacksjs/stacks/commit/95b23dd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: harden library operations ([2984ecc](https://github.com/stacksjs/stacks/commit/2984ecc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect cloud state reads ([5a4c554](https://github.com/stacksjs/stacks/commit/5a4c554)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: reject fractional detail IDs ([d0e83c5](https://github.com/stacksjs/stacks/commit/d0e83c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: harden notification delivery ([66b012c](https://github.com/stacksjs/stacks/commit/66b012c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: sanitize model catalog failures ([c6bb107](https://github.com/stacksjs/stacks/commit/c6bb107)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: harden deployment operations ([638cf3d](https://github.com/stacksjs/stacks/commit/638cf3d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: normalize POS checkout failures ([8ac2253](https://github.com/stacksjs/stacks/commit/8ac2253)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect commerce read failures ([00bf73a](https://github.com/stacksjs/stacks/commit/00bf73a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: pin dashboard template root ([c55ea78](https://github.com/stacksjs/stacks/commit/c55ea78)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: enforce native model boundaries ([108c179](https://github.com/stacksjs/stacks/commit/108c179)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: recover search and Buddy failures ([a70f7cd](https://github.com/stacksjs/stacks/commit/a70f7cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: fail role checks closed ([3223511](https://github.com/stacksjs/stacks/commit/3223511)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: sanitize infrastructure failures ([93b7677](https://github.com/stacksjs/stacks/commit/93b7677)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: isolate analytics read failures ([6a962b2](https://github.com/stacksjs/stacks/commit/6a962b2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect mail and query read errors ([78ce49a](https://github.com/stacksjs/stacks/commit/78ce49a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: normalize operational API failures ([a075640](https://github.com/stacksjs/stacks/commit/a075640)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: reload backend modules during development ([ea47516](https://github.com/stacksjs/stacks/commit/ea47516)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: centralize Kanban error responses ([77b96a7](https://github.com/stacksjs/stacks/commit/77b96a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: centralize RBAC error responses ([46e7b39](https://github.com/stacksjs/stacks/commit/46e7b39)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **email**: document delivery guarantees ([3a9a7ac](https://github.com/stacksjs/stacks/commit/3a9a7ac)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate the artifacts for the email routes ([7ec92c4](https://github.com/stacksjs/stacks/commit/7ec92c4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: pickier 0.1.51 ([d961e22](https://github.com/stacksjs/stacks/commit/d961e22)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.354...v0.70.355)
 
 ## ✨ Features
