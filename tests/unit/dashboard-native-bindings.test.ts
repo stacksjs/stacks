@@ -565,6 +565,10 @@ describe('dashboard native STX bindings', () => {
       ['Commerce/Delivery/DeliveryRouteDialog.stx', 'delivery-route-form'],
       ['Commerce/Delivery/DigitalDeliveryDialog.stx', 'digital-delivery-form'],
       ['Commerce/Delivery/DriverDialog.stx', 'driver-form'],
+      ['Commerce/Delivery/LicenseKeyDialog.stx', 'license-key-form'],
+      ['Commerce/Delivery/ShippingMethodDialog.stx', 'shipping-method-form'],
+      ['Commerce/Delivery/ShippingRateDialog.stx', 'shipping-rate-form'],
+      ['Commerce/Delivery/ShippingZoneDialog.stx', 'shipping-zone-form'],
     ]) {
       const source = componentSource(file)
       expect(source).toContain('<Modal')
