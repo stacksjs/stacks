@@ -191,8 +191,15 @@ export async function generateOpenApi(options: {
     // there used to silently omit every model's CRUD endpoints), and the
     // relative path is the only form that works on a clean checkout of THIS
     // repository, where `@stacksjs/orm`'s dist has not been built yet.
+    // The specifier is held in a variable on purpose. Bun resolves a LITERAL
+    // one while transpiling the module, so an unresolvable literal takes this
+    // whole file down before any `try` around the await can run — which is how
+    // a clean checkout (no built dist behind `@stacksjs/orm/routes`) produced a
+    // spec missing far more than the ORM routes. Through a variable it is a
+    // runtime resolution, and a runtime failure is catchable.
+    const ormRoutesPackage = '@stacksjs/orm/routes'
     try {
-      await import('@stacksjs/orm/routes')
+      await import(ormRoutesPackage)
     }
     catch {
       await import('../../orm/routes')

@@ -62,7 +62,7 @@ describe('the ORM routes entrypoint', () => {
     ]) {
       const source = readFileSync(file, 'utf8')
 
-      expect(source).toContain(`import('@stacksjs/orm/routes')`)
+      expect(source).toContain(`'@stacksjs/orm/routes'`)
       expect(source).toContain(`import('../../orm/routes')`)
     }
   })
@@ -72,6 +72,22 @@ describe('the ORM routes entrypoint', () => {
     // its own files. The router should not leave it without endpoints.
     const router = readFileSync(join(framework, 'core', 'router', 'src', 'stacks-router.ts'), 'utf8')
 
-    expect(router).toContain(`await import('@stacksjs/orm/routes')`)
+    expect(router).toContain(`'@stacksjs/orm/routes'`)
+  })
+
+  it('is mapped where the runtime looks, not only where tsc does', () => {
+    /*
+     * Bun applies tsconfig `paths` at runtime. `@stacksjs/*` binds the wildcard
+     * to the whole remainder, so `@stacksjs/orm/routes` looks for
+     * `./core/orm/routes/src`, misses, and falls through to the package's
+     * `exports` — a `dist/` that a clean checkout has not built. Without the
+     * explicit mapping the generator is unreachable in CI, and every model's
+     * endpoints quietly vanish from the generated OpenAPI spec.
+     */
+    for (const config of ['tsconfig.app.json', 'tsconfig.framework.json']) {
+      expect(readFileSync(join(framework, config), 'utf8')).toContain('"@stacksjs/orm/routes"')
+    }
+
+    expect(readFileSync(join(framework, 'core', 'tsconfig.json'), 'utf8')).toContain('"@stacksjs/orm/routes"')
   })
 })

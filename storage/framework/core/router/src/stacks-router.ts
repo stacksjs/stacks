@@ -3343,7 +3343,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // installed app can actually reach it.
       if (!ormRoutesLoaded) {
         try {
-          await import('@stacksjs/orm/routes')
+          // Variable, not a literal — see generate-openapi.ts: a literal
+          // specifier that cannot resolve fails this module at transpile time
+          // rather than throwing where it can be caught.
+          const ormRoutesPackage = '@stacksjs/orm/routes'
+          await import(ormRoutesPackage)
           ormRoutesLoaded = true
         }
         catch (error) {

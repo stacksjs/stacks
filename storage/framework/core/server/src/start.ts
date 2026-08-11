@@ -55,8 +55,12 @@ loadRoutes(routeRegistry)
       // (so every installed app logged "ORM routes skipped" and served no model
       // endpoints); the relative path is what works on an unbuilt checkout of
       // this repository.
+      // Held in a variable so the specifier is resolved at runtime: a
+      // literal one is resolved while transpiling, and an unresolvable literal
+      // fails the module rather than the import.
+      const ormRoutesPackage = '@stacksjs/orm/routes'
       try {
-        await import('@stacksjs/orm/routes')
+        await import(ormRoutesPackage)
       }
       catch {
         await import('../../orm/routes')

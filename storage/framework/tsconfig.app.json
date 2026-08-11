@@ -16,6 +16,14 @@
     "tsBuildInfoFile": "./.cache/typescript/app.tsbuildinfo",
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
+      // Deep entrypoint, mapped explicitly: `@stacksjs/*` below binds the
+      // wildcard to the whole remainder, so `@stacksjs/orm/routes` looks for
+      // `./core/orm/routes/src`, misses, and falls through to the package's
+      // `exports` — which point at a `dist/` that a clean checkout has not
+      // built. Bun uses these mappings at RUNTIME too, so without this line the
+      // ORM route generator is unreachable in CI and every model's endpoints
+      // vanish from the generated OpenAPI spec.
+      "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
       "buddy": ["./core/buddy/src/index.ts"],
