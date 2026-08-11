@@ -63,87 +63,73 @@ function close(): void {
 }
 </script>
 
-<template :if="open()">
-  <div class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer" @keydown.escape="close">
-    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close create record dialog" @click="close"></button>
+<Modal
+  :isOpen="open()"
+  :title="'Create ' + modelName()"
+  description="Fields come from the model's fillable attributes and useApi store contract."
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="create-record-form" @submit.prevent="submit">
+    <div class="overflow-y-auto space-y-4 max-h-[65vh]">
+      <div :if="error()" role="alert" class="p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+        {{ error() }}
+      </div>
 
-    <div class="flex relative items-center justify-center p-4 min-h-full">
-      <section role="dialog" aria-modal="true" :aria-label="'Create ' + modelName()" class="overflow-hidden relative max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl">
-        <form @submit.prevent="submit">
-          <header class="flex gap-4 items-start justify-between px-5 py-4 bg-neutral-50/80 dark:bg-neutral-800/80 border-b border-neutral-200 dark:border-neutral-700">
-            <div>
-              <h2 class="font-semibold text-base text-neutral-900 dark:text-white">
-                Create {{ modelName() }}
-              </h2>
-              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
-                Fields come from the model's fillable attributes and useApi store contract.
-              </p>
-            </div>
-            <Button type="button" variant="ghost" size="sm" iconOnly ariaLabel="Close create record dialog" @click="close">
-              <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-            </Button>
-          </header>
+      <template :for="field in fields()">
+        <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
+          <input
+            type="checkbox"
+            :checked="Boolean(values()[field.name])"
+            :disabled="busy()"
+            class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
+            @change="setValue(field.name, $event.target.checked)"
+          />
+          <span>
+            <span class="block font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ field.label }}</span>
+            <span :if="fieldError(field.name)" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</span>
+          </span>
+        </label>
 
-          <div class="overflow-y-auto px-5 py-4 space-y-4 max-h-[65vh]">
-            <div :if="error()" role="alert" class="p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
-              {{ error() }}
-            </div>
+        <Select
+          :if="field.type === 'enum'"
+          :value="fieldValue(field.name)"
+          :options="field.options"
+          :label="field.label"
+          :ariaLabel="field.label"
+          :required="field.required"
+          :disabled="busy()"
+          :error="fieldError(field.name)"
+          @update:value="setValue(field.name, $event)"
+        />
 
-            <template :for="field in fields()">
-              <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
-                <input
-                  type="checkbox"
-                  :checked="Boolean(values()[field.name])"
-                  :disabled="busy()"
-                  class="mt-0.5 h-4 w-4 text-blue-600 border-neutral-300 rounded"
-                  @change="setValue(field.name, $event.target.checked)"
-                />
-                <span>
-                  <span class="block font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ field.label }}</span>
-                  <span :if="fieldError(field.name)" class="block mt-0.5 text-red-600 text-xs dark:text-red-400">{{ fieldError(field.name) }}</span>
-                </span>
-              </label>
+        <Input
+          :if="field.type !== 'boolean' && field.type !== 'enum'"
+          :value="fieldValue(field.name)"
+          :type="inputType(field)"
+          :label="field.label"
+          :ariaLabel="field.label"
+          :required="field.required"
+          :disabled="busy()"
+          :error="fieldError(field.name)"
+          @update:value="setValue(field.name, $event)"
+        />
+      </template>
 
-              <Select
-                :if="field.type === 'enum'"
-                :value="fieldValue(field.name)"
-                :options="field.options"
-                :label="field.label"
-                :ariaLabel="field.label"
-                :required="field.required"
-                :disabled="busy()"
-                :error="fieldError(field.name)"
-                @update:value="setValue(field.name, $event)"
-              />
-
-              <Input
-                :if="field.type !== 'boolean' && field.type !== 'enum'"
-                :value="fieldValue(field.name)"
-                :type="inputType(field)"
-                :label="field.label"
-                :ariaLabel="field.label"
-                :required="field.required"
-                :disabled="busy()"
-                :error="fieldError(field.name)"
-                @update:value="setValue(field.name, $event)"
-              />
-            </template>
-
-            <p :if="fields().length === 0" class="py-8 text-center text-neutral-500 text-sm dark:text-neutral-400">
-              This model exposes no safe fillable fields.
-            </p>
-          </div>
-
-          <footer class="flex gap-2 items-center justify-end px-5 py-4 bg-neutral-50/50 dark:bg-neutral-800/50 border-neutral-200 border-t dark:border-neutral-700">
-            <Button :disabled="busy()" variant="secondary" @click="close">
-              Cancel
-            </Button>
-            <Button type="submit" :disabled="busy() || fields().length === 0" :loading="busy()">
-              {{ busy() ? 'Creating' : `Create ${modelName()}` }}
-            </Button>
-          </footer>
-        </form>
-      </section>
+      <p :if="fields().length === 0" class="py-8 text-center text-neutral-500 text-sm dark:text-neutral-400">
+        This model exposes no safe fillable fields.
+      </p>
     </div>
-  </div>
-</template>
+  </form>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">
+        Cancel
+      </Button>
+      <Button type="submit" form="create-record-form" :disabled="busy() || fields().length === 0" :loading="busy()">
+        {{ busy() ? 'Creating' : `Create ${modelName()}` }}
+      </Button>
+    </div>
+  </template>
+</Modal>

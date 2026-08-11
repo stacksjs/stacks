@@ -592,6 +592,7 @@ describe('dashboard native STX bindings', () => {
       ['Commerce/CommercePosCheckoutDialog.stx', 'pos-checkout-form'],
       ['Commerce/ProductWaitlistEntryDialog.stx', 'product-waitlist-entry-form'],
       ['Commerce/RestaurantWaitlistEntryDialog.stx', 'restaurant-waitlist-entry-form'],
+      ['CreateRecordModal.stx', 'create-record-form'],
       ['Marketing/MarketingListDialog.stx', 'marketing-list-form'],
       ['Marketing/SocialPostDialog.stx', 'social-post-form'],
       ['Marketing/CampaignDialog.stx', 'campaign-form'],
