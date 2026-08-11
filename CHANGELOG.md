@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.361...v0.70.362)
+
+## 🐛 Bug Fixes
+
+- **orm**: map the deep entrypoint where the runtime actually looks ([4803803](https://github.com/stacksjs/stacks/commit/4803803)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: share marketing confirmations ([3509455](https://github.com/stacksjs/stacks/commit/3509455)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.360...v0.70.361)
 
 ## 🐛 Bug Fixes
