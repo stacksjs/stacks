@@ -140,10 +140,6 @@ const attentionDeployments = derived(() => deployments().filter(deployment => de
 const dnsResource = derived(() => network().find(resource => resource.id === 'network:dns') ?? null)
 const loadBalancer = derived(() => network().find(resource => resource.id === 'network:load-balancer') ?? null)
 const hasResults = derived(() => filteredServers().length > 0 || filteredDeployments().length > 0)
-const selectedServerDisk = derived(() => {
-  const server = selectedServer()
-  return server ? diskLabel(server) : ''
-})
 
 function formatDate(value: string | null): string {
   if (!value)
@@ -183,11 +179,6 @@ function closeInspector(): void {
   selectedDeployment.set(null)
 }
 
-function selectedDetailsPath(): string {
-  const identifier = selectedServer()?.key || selectedDeployment()?.id
-  return identifier ? `/servers/${encodeURIComponent(identifier)}` : '/servers'
-}
-
 async function loadServers(): Promise<void> {
   loading.set(true)
   loadError.set('')
@@ -213,11 +204,6 @@ async function loadServers(): Promise<void> {
     loading.set(false)
   }
 }
-
-useEventListener('keydown', (event: KeyboardEvent) => {
-  if (event.key === 'Escape')
-    closeInspector()
-})
 
 onMount(() => {
   void loadServers()
@@ -384,49 +370,9 @@ onMount(() => {
     </div>
   </section>
 
-  <div :if="selectedServer() || selectedDeployment()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 dashboard-modal-layer" @click.self="closeInspector">
-    <section role="dialog" aria-modal="true" aria-labelledby="server-inspector-title" class="overflow-y-auto relative p-6 max-h-[90dvh] max-w-xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
-      <div class="flex gap-4 items-start justify-between">
-        <div>
-          <p class="font-semibold text-blue-600 text-xs uppercase dark:text-blue-400">{{ selectedServer() ? 'Configuration' : 'Deployment state' }}</p>
-          <h2 id="server-inspector-title" class="mt-1 font-semibold text-neutral-900 text-xl dark:text-white">{{ selectedServer()?.name || selectedDeployment()?.serverName }}</h2>
-        </div>
-        <Button variant="ghost" iconOnly ariaLabel="Close server details" @click="closeInspector"><span class="h-5 w-5 i-hugeicons-cancel-01"></span></Button>
-      </div>
-
-      <dl :if="selectedServer()" class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 mt-6 text-sm">
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Role</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.role }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Region</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.region }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Size</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.size }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Instances</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.instances }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServerDisk() }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Encryption</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.encrypted ? 'Enabled' : 'Not enabled' }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Domain</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.domain || 'Not set' }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Database</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedServer()?.database || 'Not set' }}</dd></div>
-      </dl>
-
-      <div :if="selectedDeployment()" class="mt-6">
-        <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 text-sm">
-          <div><dt class="text-neutral-500 dark:text-neutral-400">Stack</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.stackName }}</dd></div>
-          <div><dt class="text-neutral-500 dark:text-neutral-400">Environment</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.environment || 'Not mapped' }}</dd></div>
-          <div><dt class="text-neutral-500 dark:text-neutral-400">Provider</dt><dd class="mt-1 capitalize font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.provider }}</dd></div>
-          <div><dt class="text-neutral-500 dark:text-neutral-400">Public IPv4</dt><dd class="mt-1 font-mono text-neutral-900 dark:text-white">{{ selectedDeployment()?.publicIp || 'Not recorded' }}</dd></div>
-          <div><dt class="text-neutral-500 dark:text-neutral-400">SSH user</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedDeployment()?.sshUser || 'Not recorded' }}</dd></div>
-          <div><dt class="text-neutral-500 dark:text-neutral-400">State recorded</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ formatDate(selectedDeployment()?.recordedAt || null) }}</dd></div>
-        </dl>
-        <div :if="selectedDeployment()?.operation" class="mt-6 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
-          <div class="flex gap-3 items-center justify-between"><h3 class="font-semibold text-sm">Resize operation</h3><CloudStatusBadge :status="selectedDeployment()?.status || 'attention'" /></div>
-          <p class="mt-2 text-sm">Phase {{ selectedDeployment()?.operation?.phase }}. Requested {{ selectedDeployment()?.operation?.sourceType || 'current size' }} to {{ selectedDeployment()?.operation?.targetType || 'target size' }}.</p>
-          <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">Updated {{ formatDate(selectedDeployment()?.operation?.updatedAt || null) }} · {{ selectedDeployment()?.operation?.attempts || 0 }} attempts</p>
-        </div>
-      </div>
-
-      <div class="flex justify-end mt-6 pt-5 border-neutral-200 border-t dark:border-neutral-700">
-        <Button tag="a" :href="selectedDetailsPath()" @click="closeInspector">
-          Open full details
-          <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
-        </Button>
-      </div>
-    </section>
-  </div>
+  <ServerInspectorDialog
+    :server="selectedServer()"
+    :deployment="selectedDeployment()"
+    @close="closeInspector"
+  />
 </div>

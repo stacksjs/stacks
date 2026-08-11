@@ -1,0 +1,105 @@
+<script client>
+interface ServerDefinition {
+  id: string
+  key: string
+  name: string
+  role: string
+  region: string
+  size: string
+  instances: number
+  diskGb: number | null
+  diskType: string | null
+  encrypted: boolean
+  domain: string | null
+  database: string | null
+}
+
+interface CloudOperation {
+  phase: string
+  sourceType: string | null
+  targetType: string | null
+  updatedAt: string | null
+  attempts: number
+}
+
+interface ServerDeployment {
+  id: string
+  stackName: string
+  environment: string | null
+  serverName: string
+  provider: string
+  publicIp: string | null
+  sshUser: string | null
+  recordedAt: string
+  status: 'attention' | 'deployed'
+  operation: CloudOperation | null
+}
+
+const server = useReactiveProp('server', null as ServerDefinition | null)
+const deployment = useReactiveProp('deployment', null as ServerDeployment | null)
+const emit = defineEmits()
+const title = derived(() => server()?.name || deployment()?.serverName || 'Server details')
+const detailsPath = derived(() => {
+  const identifier = server()?.key || deployment()?.id
+  return identifier ? `/servers/${encodeURIComponent(identifier)}` : '/servers'
+})
+
+function formatDate(value: string | null | undefined): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? 'Not recorded'
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function diskLabel(value: ServerDefinition | null): string {
+  if (!value || value.diskGb === null)
+    return 'Not set'
+  return `${value.diskGb} GB${value.diskType ? ` ${value.diskType}` : ''}`
+}
+</script>
+
+<Modal
+  :isOpen="Boolean(server() || deployment())"
+  :title="title()"
+  :description="server() ? 'Configuration' : 'Deployment state'"
+  size="lg"
+  @close="emit('close')"
+>
+  <dl :if="server()" class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 text-sm">
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Role</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.role }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Region</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.region }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Size</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.size }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Instances</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.instances }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Disk</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ diskLabel(server()) }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Encryption</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.encrypted ? 'Enabled' : 'Not enabled' }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Domain</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.domain || 'Not set' }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Database</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ server()?.database || 'Not set' }}</dd></div>
+  </dl>
+
+  <div :if="deployment()">
+    <dl class="grid gap-x-6 gap-y-4 grid-cols-1 sm:grid-cols-2 text-sm">
+      <div><dt class="text-neutral-500 dark:text-neutral-400">Stack</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ deployment()?.stackName }}</dd></div>
+      <div><dt class="text-neutral-500 dark:text-neutral-400">Environment</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ deployment()?.environment || 'Not mapped' }}</dd></div>
+      <div><dt class="text-neutral-500 dark:text-neutral-400">Provider</dt><dd class="mt-1 capitalize font-medium text-neutral-900 dark:text-white">{{ deployment()?.provider }}</dd></div>
+      <div><dt class="text-neutral-500 dark:text-neutral-400">Public IPv4</dt><dd class="mt-1 font-mono text-neutral-900 dark:text-white">{{ deployment()?.publicIp || 'Not recorded' }}</dd></div>
+      <div><dt class="text-neutral-500 dark:text-neutral-400">SSH user</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ deployment()?.sshUser || 'Not recorded' }}</dd></div>
+      <div><dt class="text-neutral-500 dark:text-neutral-400">State recorded</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ formatDate(deployment()?.recordedAt) }}</dd></div>
+    </dl>
+    <div :if="deployment()?.operation" class="mt-6 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900/70">
+      <div class="flex gap-3 items-center justify-between"><h3 class="font-semibold text-sm">Resize operation</h3><CloudStatusBadge :status="deployment()?.status || 'attention'" /></div>
+      <p class="mt-2 text-sm">Phase {{ deployment()?.operation?.phase }}. Requested {{ deployment()?.operation?.sourceType || 'current size' }} to {{ deployment()?.operation?.targetType || 'target size' }}.</p>
+      <p class="mt-2 text-amber-700 text-xs dark:text-amber-300">Updated {{ formatDate(deployment()?.operation?.updatedAt) }} · {{ deployment()?.operation?.attempts || 0 }} attempts</p>
+    </div>
+  </div>
+
+  <template #footer>
+    <div class="flex justify-end w-full">
+      <Button tag="a" :href="detailsPath()" @click="emit('close')">
+        Open full details
+        <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
+      </Button>
+    </div>
+  </template>
+</Modal>

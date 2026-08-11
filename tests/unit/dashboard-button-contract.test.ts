@@ -451,8 +451,16 @@ describe('dashboard button contract', () => {
 
       expect(source).toContain('<Button')
       expect(source).not.toMatch(/<StxLink\b[^>]*bg-blue-/)
-      if (file === 'ServersDashboard.stx')
-        expect(source).toContain('<Button tag="a" :href="selectedDetailsPath()"')
+      if (file === 'ServersDashboard.stx') {
+        const inspector = readFileSync(
+          resolve('storage/framework/defaults/resources/components/Dashboard/Infrastructure/ServerInspectorDialog.stx'),
+          'utf8',
+        )
+        expect(source).toContain('<ServerInspectorDialog')
+        expect(source).not.toContain('fixed inset-0')
+        expect(inspector).toContain('<Modal')
+        expect(inspector).toContain('<Button tag="a" :href="detailsPath()"')
+      }
       expect(nativeButtons.every(button => button.includes(':for=') && button.includes('@click="inspect'))).toBe(true)
     }
 
