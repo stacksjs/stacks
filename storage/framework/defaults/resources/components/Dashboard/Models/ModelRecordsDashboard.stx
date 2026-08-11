@@ -46,6 +46,7 @@ interface ResponseShape {
   writable: boolean
   writeCapabilities: WriteCapabilities
   createFields: CreateField[]
+  updateColumns: string[]
   error: string | null
 }
 
@@ -66,15 +67,14 @@ const search = state(navigation.urlQuery('q') || '')
 const filters = state<Record<string, string>>({})
 const writeCapabilities = state<WriteCapabilities>({ create: false, update: false, destroy: false })
 const createFields = state<CreateField[]>([])
+const updateColumns = state<string[]>([])
 const error = state<string | null>(null)
 const loading = state(true)
 const showFilters = state(false)
 
-// Row being edited, plus the working copy of its values. `null` closes the
-// editor; the copy is kept separate so cancelling leaves the table row as
-// it was and a failed save does not desync the two.
+// The row being edited. `null` closes the editor; EditRecordModal owns the
+// working copy so cancelling leaves the table row unchanged.
 const editing = state<Record<string, unknown> | null>(null)
-const editValues = state<Record<string, string>>({})
 const saving = state(false)
 const confirmingDelete = state<Record<string, unknown> | null>(null)
 const showCreate = state(false)
@@ -113,9 +113,9 @@ const deleteDescription = derived(() => {
   return `Row ${row.id} will be removed through the model, so soft deletes and observers apply.`
 })
 
-// Fields for the edit sheet, carrying their starting value. Derived from the
-// row being edited rather than from `editValues`, so the list changes exactly
-// once per open: deriving it from the working copy instead would rebuild
+// Fields for the edit modal, carrying their starting value. Derived from the
+// row being edited rather than from its mutable draft, so the list changes
+// exactly once per open: deriving it from the working copy would rebuild
 // every input on each keystroke and steal focus mid-word.
 const editFields = derived(() => {
   const row = editing()
@@ -124,10 +124,9 @@ const editFields = derived(() => {
     name: column.name,
     label: column.label,
     value: row[column.name] === null || row[column.name] === undefined ? '' : String(row[column.name]),
-    // The primary key, the uuid and the timestamps are shown for context but
-    // the API refuses to write them, so the input says so rather than
-    // accepting an edit that will be silently dropped.
-    readonly: column.name === 'id' || column.name === 'uuid' || column.name.endsWith('_at'),
+    // The model API accepts only fillable attributes and declared belongs-to
+    // keys. Every other database column stays visible as read-only context.
+    readonly: !updateColumns().includes(column.name),
   }))
 })
 
@@ -213,6 +212,7 @@ async function load() {
     sort.set(data.sort ?? '')
     writeCapabilities.set(data.writeCapabilities ?? { create: false, update: false, destroy: false })
     createFields.set(data.createFields ?? [])
+    updateColumns.set(data.updateColumns ?? [])
     error.set(data.error ?? null)
   }
   catch (e) {
@@ -272,12 +272,6 @@ function onPerPageChange() {
 }
 
 function startEdit(row: Record<string, unknown>) {
-  const values: Record<string, string> = {}
-  for (const column of columnMeta()) {
-    const raw = row[column.name]
-    values[column.name] = raw === null || raw === undefined ? '' : String(raw)
-  }
-  editValues.set(values)
   editing.set(row)
 }
 
@@ -319,17 +313,13 @@ async function createRecord(fields: Record<string, unknown>): Promise<void> {
   }
 }
 
-function onEditInput(column: string, event: Event) {
-  editValues.set({ ...editValues(), [column]: (event.target as HTMLInputElement).value })
-}
-
-async function saveEdit() {
+async function saveEdit(values: Record<string, string>) {
   const row = editing()
   if (!row) return
   // Send only what actually changed, so a save never rewrites columns the
   // editor merely displayed.
   const fields: Record<string, unknown> = {}
-  for (const [column, value] of Object.entries(editValues())) {
+  for (const [column, value] of Object.entries(values)) {
     const original = row[column]
     const originalText = original === null || original === undefined ? '' : String(original)
     if (value !== originalText) fields[column] = value === '' ? null : value
@@ -492,7 +482,7 @@ void load()
                 </button>
               </th>
             </template>
-            <th :if="canManageRows()" scope="col" class="px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400">Actions</th>
+            <th :if="canManageRows()" scope="col" class="right-0 sticky z-20 px-3 py-2 w-24 font-medium text-[11px] text-neutral-500 text-right tracking-wide uppercase dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 border-black/5 border-l dark:border-white/10">Actions</th>
           </tr>
 
           <!-- Per-column filter row -->
@@ -508,7 +498,7 @@ void load()
                 >
               </th>
             </template>
-            <th :if="canManageRows()"></th>
+            <th :if="canManageRows()" class="right-0 sticky z-20 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10"></th>
           </tr>
         </thead>
 
@@ -524,7 +514,7 @@ void load()
                   <div class="h-3 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
                 </td>
               </template>
-              <td :if="canManageRows()" class="px-3 py-2">
+              <td :if="canManageRows()" class="right-0 sticky z-10 px-3 py-2 bg-white dark:bg-neutral-900 border-black/5 border-l dark:border-white/10">
                 <div class="ml-auto h-3 w-16 bg-neutral-200 dark:bg-white/10 rounded animate-pulse"></div>
               </td>
             </tr>
@@ -533,19 +523,19 @@ void load()
 
         <tbody :if="!loading()" class="divide-black/5 divide-y dark:divide-white/8">
           <template :for="row in rows()">
-            <tr class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
+            <tr class="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
               <template :for="column in columnMeta()">
                 <td :class="cellClass(column)" :title="cellValue(row, column)">{{ cellValue(row, column) }}</td>
               </template>
-              <td :if="canManageRows()" class="px-3 py-2 text-right">
-                <div class="flex gap-1 items-center justify-end">
-                  <Button :if="writeCapabilities().update" variant="ghost" size="sm" iconOnly :ariaLabel="'Edit ' + modelName() + ' ' + row.id" @click="startEdit(row)">
-                    <span class="h-4 w-4 i-hugeicons-edit-02"></span>
-                  </Button>
-                  <Button :if="writeCapabilities().destroy" variant="ghost" size="sm" iconOnly :ariaLabel="'Delete ' + modelName() + ' ' + row.id" @click="confirmingDelete.set(row)">
-                    <span class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
-                  </Button>
-                </div>
+              <td :if="canManageRows()" class="right-0 sticky z-10 px-3 py-2 text-right bg-white dark:bg-neutral-900 group-hover:bg-neutral-50 dark:group-hover:bg-white/5 border-black/5 border-l dark:border-white/10 transition-colors">
+                <ModelRecordActions
+                  :record="row"
+                  :modelName="modelName()"
+                  :canUpdate="writeCapabilities().update"
+                  :canDestroy="writeCapabilities().destroy"
+                  @edit="startEdit"
+                  @delete="confirmingDelete.set($event)"
+                />
               </td>
             </tr>
           </template>
@@ -565,47 +555,14 @@ void load()
     </div>
   </div>
 
-  <!-- Edit sheet -->
-<div :if="editing()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/30 dashboard-modal-layer" @click="editing.set(null)">
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="model-edit-title"
-      class="flex overflow-hidden flex-col max-h-[85vh] max-w-lg w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl"
-      @click.stop
-    >
-      <div class="flex items-center justify-between px-4 py-3 border-b border-black/5 dark:border-white/10">
-        <h2 id="model-edit-title" class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edit <span :text="modelName()"></span></h2>
-        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close record editor" @click="editing.set(null)">
-          <span class="h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-
-      <div class="overflow-y-auto flex-1 p-4 space-y-3">
-        <template :for="field in editFields()">
-          <div class="flex flex-col gap-1.5">
-            <label :for="'model-edit-' + field.name" class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
-            <input
-              :id="'model-edit-' + field.name"
-              type="text"
-              :value="field.value"
-              @input="onEditInput(field.name, $event)"
-              :readonly="field.readonly"
-              class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-            >
-          </div>
-        </template>
-      </div>
-
-      <div class="flex gap-2 items-center justify-end px-4 py-3 bg-neutral-50 dark:bg-white/5 border-black/5 border-t dark:border-white/10">
-        <Button :disabled="saving()" variant="secondary" @click="editing.set(null)">Cancel</Button>
-        <Button :loading="saving()" @click="saveEdit()">
-          <span :if="!saving()">Save changes</span>
-          <span :if="saving()">Saving</span>
-        </Button>
-      </div>
-    </div>
-  </div>
+  <EditRecordModal
+    :open="Boolean(editing())"
+    :modelName="modelName()"
+    :fields="editFields()"
+    :busy="saving()"
+    @close="editing.set(null)"
+    @submit="saveEdit($event)"
+  />
 
   <ConfirmDialog
     :isOpen="Boolean(confirmingDelete())"

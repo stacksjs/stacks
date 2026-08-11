@@ -204,6 +204,11 @@ export function modelCreateFields(Model: any): ModelCreateField[] {
   })
 }
 
+/** Physical database columns accepted by the model's generic update API. */
+export function modelWritableColumns(Model: any): string[] {
+  return modelCreateFields(Model).map(field => snakeCase(field.name))
+}
+
 function normalizeModelValue(type: ModelCreateField['type'], value: unknown): unknown {
   if (type === 'number') {
     if (value === '' || value === null || value === undefined)

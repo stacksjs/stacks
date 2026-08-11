@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   modelCreateFields,
+  modelWritableColumns,
   modelWriteCapabilities,
 } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-write'
 import { modelApiConfiguration } from '../../storage/framework/defaults/app/Actions/Dashboard/Models/model-api'
@@ -86,6 +87,13 @@ describe('dashboard generic model writes', () => {
       options: ['draft', 'live'],
     })
     expect(fields[3]).toMatchObject({ label: 'Team ID', type: 'number' })
+    expect(modelWritableColumns({
+      attributes: {
+        displayName: { fillable: true },
+        internalNote: { fillable: false },
+      },
+      belongsTo: ['Team'],
+    })).toEqual(['display_name', 'team_id'])
   })
 
   test('store action writes through the model and the guarded dashboard route', () => {
@@ -106,13 +114,21 @@ describe('dashboard generic model writes', () => {
     const page = source('storage/framework/defaults/views/dashboard/models/[model].stx')
     const view = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx')
     const modal = source('storage/framework/defaults/resources/components/Dashboard/CreateRecordModal.stx')
+    const editor = source('storage/framework/defaults/resources/components/Dashboard/Models/EditRecordModal.stx')
+    const actions = source('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordActions.stx')
 
     expect(page).toContain('<ModelRecordsDashboard />')
     expect(page).not.toContain('<script')
     expect(view).toContain('writeCapabilities.set(data.writeCapabilities')
     expect(view).toContain('createFields.set(data.createFields')
+    expect(view).toContain('updateColumns.set(data.updateColumns')
+    expect(view).toContain('readonly: !updateColumns().includes(column.name)')
     expect(view).toContain('reason instanceof DashboardApiError && reason.fields')
     expect(view).toContain('<CreateRecordModal')
+    expect(view).toContain('<EditRecordModal')
+    expect(view).toContain('<ModelRecordActions')
+    expect(view).toContain('right-0 sticky z-20')
+    expect(view).toContain('right-0 sticky z-10')
     expect(view).toContain('<Button')
     expect(view).toContain('@submit="createRecord($event)"')
     expect(view).toContain('<ConfirmDialog')
@@ -122,10 +138,21 @@ describe('dashboard generic model writes', () => {
     expect(modal).toContain('<Button')
     expect(modal).toContain('<Select')
     expect(modal).toContain('<Input')
+    expect(modal.match(/:name="field\.name"/g)).toHaveLength(3)
     expect(modal).toContain('@submit.prevent="submit"')
     expect(modal).not.toContain('bg-blue-600 hover:bg-blue-500')
     expect(modal).not.toMatch(/\b(?:document|window)\./)
     expect(modal).not.toContain('/api/data/')
     expect(modal).not.toContain('<svg')
+    expect(editor).toContain("const fields = useReactiveProp('fields'")
+    expect(editor).toContain('<Modal')
+    expect(editor).toContain('id="model-edit-form"')
+    expect(editor).toContain('form="model-edit-form"')
+    expect(editor).toContain(':name="field.readonly ? undefined : field.name"')
+    expect(editor).toContain('.filter(field => !field.readonly)')
+    expect(editor).not.toMatch(/\b(?:document|window)\./)
+    expect(actions).toContain("const record = useReactiveProp('record'")
+    expect(actions).toContain("emit('edit', record())")
+    expect(actions).toContain("emit('delete', record())")
   })
 })

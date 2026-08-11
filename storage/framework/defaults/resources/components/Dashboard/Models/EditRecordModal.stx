@@ -1,0 +1,81 @@
+<script client>
+interface EditField {
+  name: string
+  label: string
+  value: string
+  readonly: boolean
+}
+
+const open = useReactiveProp('open', false)
+const modelName = useReactiveProp('modelName', 'Record')
+const fields = useReactiveProp('fields', [] as EditField[])
+const busy = useReactiveProp('busy', false)
+const values = state<Record<string, string>>({})
+const emit = defineEmits()
+let hydrationKey = ''
+
+effect(() => {
+  if (!open()) {
+    hydrationKey = ''
+    return
+  }
+
+  const key = fields().map(field => `${field.name}:${field.value}`).join('|')
+  if (key === hydrationKey)
+    return
+
+  hydrationKey = key
+  values.set(Object.fromEntries(fields().map(field => [field.name, field.value])))
+})
+
+function updateValue(field: string, event: Event): void {
+  values.set({ ...values(), [field]: (event.target as HTMLInputElement).value })
+}
+
+function submit(): void {
+  emit('submit', Object.fromEntries(
+    fields()
+      .filter(field => !field.readonly)
+      .map(field => [field.name, values()[field.name]]),
+  ))
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="'Edit ' + modelName()"
+  description="Only changed writable fields will be sent through the model API."
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="model-edit-form" class="overflow-y-auto space-y-3 max-h-[65vh]" @submit.prevent="submit">
+    <template :for="field in fields()">
+      <div class="flex flex-col gap-1.5">
+        <label :for="'model-edit-' + field.name" class="font-medium text-[12px] text-neutral-600 dark:text-neutral-300">{{ field.label }}</label>
+        <input
+          :id="'model-edit-' + field.name"
+          :name="field.readonly ? undefined : field.name"
+          type="text"
+          :value="values()[field.name] ?? field.value"
+          :readonly="field.readonly"
+          class="px-2.5 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 read-only:text-neutral-500 dark:read-only:text-neutral-400 bg-white dark:bg-white/10 read-only:bg-neutral-50 dark:read-only:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+          @input="updateValue(field.name, $event)"
+        >
+      </div>
+    </template>
+  </form>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="model-edit-form" :loading="busy()">
+        {{ busy() ? 'Saving' : 'Save changes' }}
+      </Button>
+    </div>
+  </template>
+</Modal>

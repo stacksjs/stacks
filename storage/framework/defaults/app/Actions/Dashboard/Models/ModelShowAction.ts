@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { response as routerResponse } from '@stacksjs/router'
 import { loadModelIfExists, safeGet } from '../../../../resources/functions/dashboard/data'
 import { dashboardOperationalError } from '../dashboard-response'
-import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWriteCapabilities, slugToPascal } from './model-write'
+import { isValidModelSlug, type ModelCreateField, type ModelWriteCapabilities, modelCreateFields, modelSchemaColumns, modelWritableColumns, modelWriteCapabilities, slugToPascal } from './model-write'
 
 /**
  * `GET /api/dashboard/models/{slug}` (stacksjs/stacks#1838).
@@ -53,6 +53,7 @@ interface ResponseShape {
   writable: boolean
   writeCapabilities: ModelWriteCapabilities
   createFields: ModelCreateField[]
+  updateColumns: string[]
   error: string | null
 }
 
@@ -214,6 +215,7 @@ export default new Action({
       writable: false,
       writeCapabilities: { create: false, update: false, destroy: false },
       createFields: [],
+      updateColumns: [],
       error: null,
     }
 
@@ -296,6 +298,7 @@ export default new Action({
     response.writeCapabilities = modelWriteCapabilities(Model)
     response.writable = Object.values(response.writeCapabilities).some(Boolean)
     response.createFields = response.writeCapabilities.create ? modelCreateFields(Model) : []
+    response.updateColumns = response.writeCapabilities.update ? modelWritableColumns(Model) : []
     response.displayColumns = response.columns.filter(col => !col.startsWith('_'))
     response.columnMeta = response.displayColumns.map(name => ({
       name,

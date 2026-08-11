@@ -1,0 +1,30 @@
+<script client>
+const record = useReactiveProp('record', {} as Record<string, unknown>)
+const modelName = useReactiveProp('modelName', 'Record')
+const canUpdate = useReactiveProp('canUpdate', false)
+const canDestroy = useReactiveProp('canDestroy', false)
+const emit = defineEmits()
+</script>
+
+<div class="flex gap-1 items-center justify-end">
+  <Button
+    :if="canUpdate()"
+    variant="ghost"
+    size="sm"
+    iconOnly
+    :ariaLabel="'Edit ' + modelName() + ' ' + record().id"
+    @click="emit('edit', record())"
+  >
+    <span class="h-4 w-4 i-hugeicons-edit-02"></span>
+  </Button>
+  <Button
+    :if="canDestroy()"
+    variant="ghost"
+    size="sm"
+    iconOnly
+    :ariaLabel="'Delete ' + modelName() + ' ' + record().id"
+    @click="emit('delete', record())"
+  >
+    <span class="h-4 w-4 text-red-500 i-hugeicons-delete-02"></span>
+  </Button>
+</div>

@@ -79,6 +79,7 @@ function close(): void {
       <template :for="field in fields()">
         <label :if="field.type === 'boolean'" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
           <input
+            :name="field.name"
             type="checkbox"
             :checked="Boolean(values()[field.name])"
             :disabled="busy()"
@@ -93,6 +94,7 @@ function close(): void {
 
         <Select
           :if="field.type === 'enum'"
+          :name="field.name"
           :value="fieldValue(field.name)"
           :options="field.options"
           :label="field.label"
@@ -105,6 +107,7 @@ function close(): void {
 
         <Input
           :if="field.type !== 'boolean' && field.type !== 'enum'"
+          :name="field.name"
           :value="fieldValue(field.name)"
           :type="inputType(field)"
           :label="field.label"

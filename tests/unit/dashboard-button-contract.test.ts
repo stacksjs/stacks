@@ -367,9 +367,22 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordsDashboard.stx'),
       'utf8',
     )
+    const editor = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Models/EditRecordModal.stx'),
+      'utf8',
+    )
+    const actions = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Models/ModelRecordActions.stx'),
+      'utf8',
+    )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(12)
+    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(7)
+    expect(source).toContain('<ModelRecordActions')
+    expect((actions.match(/<Button/g) || []).length).toBe(2)
+    expect(source).toContain('<EditRecordModal')
+    expect(editor).toContain('<Modal')
+    expect(editor).toContain('<Button type="submit" form="model-edit-form"')
     expect(source).toContain('interaction="toggle"')
     expect(source).toContain('@click="goToPage(page() + 1)"')
     expect(source).toContain('@click="goToPage(lastPage())"')
