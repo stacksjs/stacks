@@ -476,6 +476,8 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain('const activeElement = useActiveElement()')
     expect(sharedModal).toContain('const focused = peek(() => activeElement.value)')
     expect(sharedModal).toContain('element.showModal()')
+    expect(sharedModal).toContain("element.querySelector<HTMLElement>('[autofocus]:not([disabled])')")
+    expect(sharedModal).toContain('autofocusTarget.focus()')
     expect(sharedModal).toContain('dialog.current.close()')
     expect(sharedModal).toContain('event.preventDefault()')
     expect(sharedModal).toContain('void nextTick(() => target.focus())')

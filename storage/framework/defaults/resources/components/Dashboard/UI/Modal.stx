@@ -58,7 +58,11 @@ effect(() => {
       if (!element) return
       if (!element.open)
         element.showModal()
-      element.focus()
+      const autofocusTarget = element.querySelector<HTMLElement>('[autofocus]:not([disabled])')
+      if (autofocusTarget)
+        autofocusTarget.focus()
+      else
+        element.focus()
     })
     return
   }
