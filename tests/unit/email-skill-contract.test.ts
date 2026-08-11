@@ -21,6 +21,17 @@ describe('email skill contract', () => {
     expect(command).toContain('process.exit(ExitCode.FatalError)')
   })
 
+  it('documents fail-fast delivery and model-backed safeguards', () => {
+    expect(skill).toContain('`mail.send()` always returns an `EmailResult`')
+    expect(skill).toContain('`mail.sendOrFail()`')
+    expect(skill).toContain('`EmailDeliveryError`')
+    expect(skill).toContain('## Delivery persistence models')
+    expect(skill).toContain('`EmailSuppression`')
+    expect(skill).toContain('`EmailIdempotency`')
+    expect(skill).toContain('`EmailWebhookEvent`')
+    expect(skill).toContain('authenticated `useApi`')
+  })
+
   it('keeps generated guidance free of separator dash typography', () => {
     expect(skill).not.toMatch(/[\u2013\u2014]/)
   })

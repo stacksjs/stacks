@@ -14,6 +14,7 @@ Multi-driver email system with template rendering, S3-based inbox management, an
 - Core package: `storage/framework/core/email/src/`
 - Configuration: `config/email.ts`
 - Application mail: `app/Mail/`
+- Persistence models: `storage/framework/defaults/app/Models/EmailSuppression.ts`, `EmailIdempotency.ts`, `EmailWebhookEvent.ts`
 - Email layouts: `storage/framework/defaults/resources/emails/layouts/`
 - Email resources: `storage/framework/defaults/resources/emails/`
 
@@ -54,10 +55,29 @@ await mail.send({
   text: 'Hello!'
 })
 
+// Use this when later state depends on successful provider delivery.
+await mail.sendOrFail({
+  to: 'user@example.com',
+  subject: 'Your invitation',
+  text: 'Open the invitation link.'
+})
+
 // Switch driver
 const sendgridMail = mail.use('sendgrid')
 await sendgridMail.send(message)
 ```
+
+`mail.send()` always returns an `EmailResult`. Provider rejection is represented
+as `{ success: false, message, provider }`, which is useful for campaign jobs
+that aggregate individual outcomes. It may still throw for invalid framework
+configuration. `mail.sendOrFail()` returns the same successful result and throws
+`EmailDeliveryError` for a structured provider failure. Use `sendOrFail()` when
+an action reports that mail was sent, when a caller relies on `.catch()`, or when
+delivery status is persisted after the call.
+
+Keep template rendering fallback separate from provider delivery. Resolve HTML
+and text first, fall back to plain text only when rendering fails, then call
+`sendOrFail()` once outside the template `try` block.
 
 ## Email Class
 
@@ -230,7 +250,7 @@ export async function sendSubscriptionConfirmation({ to, subscriberUuid }: Optio
     }
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     from: { name: config.app.name, address: config.email.from.address },
     to,
     subject: 'Confirm your subscription',
@@ -239,6 +259,21 @@ export async function sendSubscriptionConfirmation({ to, subscriberUuid }: Optio
   })
 }
 ```
+
+## Delivery persistence models
+
+Stacks ships three internal models and their generated migrations:
+
+- `EmailSuppression` uses `email_suppressions` and uniquely keys `email + type`.
+- `EmailIdempotency` uses `email_idempotency` and uniquely keys `idempotency_key`.
+- `EmailWebhookEvent` uses `email_webhook_events` and uniquely keys `provider + event_id`.
+
+Each model declares authenticated `useApi` index, show, and destroy routes, but
+sets `dashboard.enabled` to false so operational records do not clutter the
+generic model catalog. Sensitive idempotency keys, recipients, subjects, and
+provider event IDs are hidden from generated responses. Run `buddy migrate`
+after upgrading so suppression, send deduplication, and webhook deduplication
+are enforced rather than using their legacy warn-once compatibility path.
 
 ## Inbound MIME and attachment storage
 
@@ -274,6 +309,8 @@ Reprocessing refreshes existing messages instead of skipping them, preserves the
 - The `mail` singleton auto-registers all 5 drivers on initialization
 - SMTP driver handles TLS handshake manually (not via node:tls)
 - SendGrid/Mailgun retry with exponential backoff on failure
+- `mail.send()` returns structured failures; use `mail.sendOrFail()` when success is required
+- Suppression, send idempotency, and webhook dedup are backed by built-in `useApi` models
 - Mailtrap requires `inboxId` for sandbox mode
 - EmailSDK reads inbox from S3 (bucket configured via env)
 - EmailSDK attachment downloads use binary-safe S3 reads and opaque IDs
