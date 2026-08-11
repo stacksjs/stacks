@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { pruneVendoredCoreFromWorkflow, splitFrameworkTypecheckScript } from '../src/workflow-prune'
+import { frameworkOnlyScripts, pruneVendoredCoreFromWorkflow, splitFrameworkTypecheckScript } from '../src/workflow-prune'
 
 /** The shape of the scaffold's own CI, reduced to what matters here. */
 const WORKFLOW = `name: CI
@@ -229,5 +229,90 @@ jobs:
     const result = pruneVendoredCoreFromWorkflow(withPublish)
 
     expect(result.removedJobs).toEqual(['publish-commit'])
+  })
+})
+
+/**
+ * The checks that leave no trace in the line that runs them.
+ *
+ * `bun run docs:artifacts:check` names a script that names a buddy command that
+ * verifies the FRAMEWORK's generated OpenAPI, command reference and doc links.
+ * Nothing in that line mentions a path, so the path rule cannot see it — and in
+ * an app the job simply fails, which is how one app's CI stayed red on a job
+ * called "artifact-freshness" for artifacts it does not generate.
+ */
+describe('framework-repo checks invoked by name', () => {
+  const job = (steps: string) => `name: CI
+
+jobs:
+  artifact-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+${steps}`
+
+  it('drops a job that only runs them', () => {
+    const result = pruneVendoredCoreFromWorkflow(job(`
+      - name: docs:buddy:check
+        run: bun run docs:buddy:check
+
+      - name: docs:artifacts:check
+        run: bun run docs:artifacts:check
+`))
+
+    expect(result.removedJobs).toEqual(['artifact-freshness'])
+  })
+
+  it('keeps a job that also does something the app owns', () => {
+    // Removing the checks is right; removing the app's own test with them is
+    // not, however tempting the job's now-inaccurate name is.
+    const result = pruneVendoredCoreFromWorkflow(job(`
+      - name: docs:links:check
+        run: bun run docs:links:check
+
+      - name: Deployment target resolution
+        run: bun test ./.github/scripts/deploy/resolve-target.test.ts
+`))
+
+    expect(result.removedJobs).toEqual([])
+    expect(result.removedSteps).toBe(1)
+    expect(result.yaml).toContain('resolve-target.test.ts')
+    expect(result.yaml).not.toContain('docs:links:check')
+  })
+
+  it('recognises the command through buddy as well as through a script', () => {
+    for (const invocation of ['bun run docs:artifacts:check', './buddy docs:artifacts:check', 'bun buddy docs:artifacts:check']) {
+      const result = pruneVendoredCoreFromWorkflow(job(`
+      - name: Check
+        run: ${invocation}
+`))
+
+      expect(result.removedJobs).toEqual(['artifact-freshness'])
+    }
+  })
+
+  it('leaves a script whose name merely starts the same way', () => {
+    const result = pruneVendoredCoreFromWorkflow(job(`
+      - name: Docs
+        run: bun run docs:build
+`))
+
+    expect(result.removedJobs).toEqual([])
+  })
+
+  it('names scripts the framework actually has', async () => {
+    /*
+     * The guard against the list rotting. A hand-written list of the
+     * framework's own scripts is exactly what went stale elsewhere in this
+     * repository; a rename should fail here rather than quietly leave a job
+     * behind for the next app to trip over.
+     */
+    const pkg = await Bun.file(new URL('../../../../../package.json', import.meta.url).pathname).json() as { scripts: Record<string, string> }
+
+    for (const script of frameworkOnlyScripts)
+      expect(Object.keys(pkg.scripts)).toContain(script)
   })
 })

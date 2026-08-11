@@ -34,14 +34,54 @@ export interface WorkflowPrune {
  */
 const FRAMEWORK_ONLY_PATH = /storage\/framework\/(?:core|scripts\/publish-commit)/
 
-/** Does this line REFER to the vendored core, rather than mention it in prose? */
+/**
+ * Commands that check the FRAMEWORK's own generated output.
+ *
+ * These leave no trace in a workflow line — `bun run docs:artifacts:check` names
+ * a script that names a buddy command — so the path rule above cannot see them,
+ * and the job that runs them fails in an app with nothing to point at. They are
+ * listed rather than detected because the knowledge is genuinely the
+ * framework's: `commands/docs.ts` opens by calling itself framework-repo
+ * tooling, and that sentence was the only place it was written down.
+ *
+ * A list like this is exactly the kind that rots, so a test pins every entry
+ * against the framework's own package.json — a rename fails there rather than
+ * quietly leaving a job behind for the next app to trip over.
+ *
+ * `release` and `test:types` are deliberately NOT here. An app can repurpose
+ * either, and silently deleting somebody's release pipeline is a much worse
+ * mistake than leaving a job they can delete themselves.
+ */
+const FRAMEWORK_ONLY_SCRIPTS = new Set([
+  'docs:buddy',
+  'docs:buddy:check',
+  'docs:artifacts',
+  'docs:artifacts:check',
+  'docs:links',
+  'docs:links:check',
+])
+
+/** Every script or buddy command a line invokes. */
+function invocations(line: string): string[] {
+  return [...line.matchAll(/(?:bun\s+run|bun\s+buddy|\.\/buddy|bunx?\s+buddy)\s+["']?([\w:.-]+)/g)].map(match => match[1]!)
+}
+
+/**
+ * Does this line run work that only exists while the framework is vendored —
+ * rather than merely mention it in prose?
+ */
 function referencesCore(line: string): boolean {
   const trimmed = line.trim()
   if (trimmed.startsWith('#'))
     return false
 
-  return FRAMEWORK_ONLY_PATH.test(line.replace(/\s#.*$/, ''))
+  const code = line.replace(/\s#.*$/, '')
+
+  return FRAMEWORK_ONLY_PATH.test(code) || invocations(code).some(name => FRAMEWORK_ONLY_SCRIPTS.has(name))
 }
+
+/** The framework-repo scripts this prunes, so a test can pin them. */
+export const frameworkOnlyScripts: readonly string[] = [...FRAMEWORK_ONLY_SCRIPTS]
 
 /** The line index each top-level job starts at, in order. */
 function jobStarts(lines: string[]): { name: string, at: number }[] {
