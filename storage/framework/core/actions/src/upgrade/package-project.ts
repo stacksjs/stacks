@@ -94,7 +94,9 @@ function copyFileIfChanged(
   options: PackageProjectOptions,
   executable = false,
 ): void {
-  if (sameFile(source, target, options.shallow)) {
+  // `shallow` is ignored unless nothing is being written, so a size match can
+  // never be the reason a stale file survives a real sync.
+  if (sameFile(source, target, options.shallow && options.dryRun)) {
     if (executable && !options.dryRun)
       chmodSync(target, 0o755)
     return
@@ -255,7 +257,9 @@ export interface DefaultsSkew {
   syncedAt: string | null
 }
 
-const NOT_APPLICABLE: DefaultsSkew = { status: 'not-applicable', installed: null, vendored: null, syncedAt: null }
+function notApplicable(): DefaultsSkew {
+  return { status: 'not-applicable', installed: null, vendored: null, syncedAt: null }
+}
 
 /** Where `syncPackageProjectFiles` reads from, given a project root. */
 export function defaultsPackagePath(projectRoot: string): string {
@@ -284,28 +288,28 @@ export function inspectDefaultsProvenance(projectRoot: string): DefaultsSkew {
   const packageRoot = defaultsPackagePath(projectRoot)
 
   if (!existsSync(targetDefaults) || !existsSync(join(packageRoot, 'package.json')))
-    return NOT_APPLICABLE
+    return notApplicable()
 
   // A framework checkout carries the framework's own source, and there the
   // vendored tree is what `@stacksjs/defaults` is built *from* rather than a
   // copy of it. Comparing the two reports drift that means nothing.
   if (existsSync(join(projectRoot, 'storage/framework/core/buddy/package.json')))
-    return NOT_APPLICABLE
+    return notApplicable()
 
   // Same reasoning for a linked checkout: an installed package resolves inside
   // node_modules, while a workspace or `bun link` reference resolves back out
   // to source the developer is editing.
   try {
     if (!isInside(packageRoot, join(realpathSync(projectRoot), 'node_modules')))
-      return NOT_APPLICABLE
+      return notApplicable()
   }
   catch {
-    return NOT_APPLICABLE
+    return notApplicable()
   }
 
   const installed = packageVersion(packageRoot)
   if (!installed)
-    return NOT_APPLICABLE
+    return notApplicable()
 
   let marker: DefaultsSyncMarker | null = null
   try {
