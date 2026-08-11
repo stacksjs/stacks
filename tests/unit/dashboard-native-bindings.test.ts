@@ -627,6 +627,13 @@ describe('dashboard native STX bindings', () => {
       'Commerce/CommerceVariantDeleteDialog.stx',
       'Commerce/ProductWaitlistDeleteDialog.stx',
       'Commerce/RestaurantWaitlistDeleteDialog.stx',
+      'Commerce/Delivery/DeliveryRouteDeleteDialog.stx',
+      'Commerce/Delivery/DigitalDeliveryDeleteDialog.stx',
+      'Commerce/Delivery/DriverDeleteDialog.stx',
+      'Commerce/Delivery/LicenseKeyDeleteDialog.stx',
+      'Commerce/Delivery/ShippingMethodDeleteDialog.stx',
+      'Commerce/Delivery/ShippingRateDeleteDialog.stx',
+      'Commerce/Delivery/ShippingZoneDeleteDialog.stx',
     ]) {
       const source = componentSource(file)
       expect(source).toContain('<ConfirmDialog')
