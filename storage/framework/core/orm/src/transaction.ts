@@ -34,6 +34,11 @@ export interface TransactionOptions {
  * The transaction will automatically commit if the callback succeeds,
  * or rollback if an error is thrown.
  *
+ * Every query that belongs to the transaction must execute through the `tx`
+ * callback handle. The model executor is a separate execution surface and is
+ * not rebound to this handle, so `User.find()` or an instance relation call
+ * inside the callback cannot be assumed to observe uncommitted `tx` writes.
+ *
  * @example
  * ```ts
  * await transaction(async (tx) => {
