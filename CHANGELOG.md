@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.359...v0.70.360)
+
+## 🐛 Bug Fixes
+
+- **actions**: validate logger requests ([da70977](https://github.com/stacksjs/stacks/commit/da70977)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **orm**: resolve the route generator in both layouts, not just one ([49c156f](https://github.com/stacksjs/stacks/commit/49c156f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ai**: harden provider actions ([59e015b](https://github.com/stacksjs/stacks/commit/59e015b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **browse**: stabilize long route crawls ([9eadc0c](https://github.com/stacksjs/stacks/commit/9eadc0c)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.358...v0.70.359)
 
 ## 🐛 Bug Fixes
