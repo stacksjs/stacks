@@ -49,18 +49,19 @@ function errorMessages(): string[] {
 }
 </script>
 
-<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close edit review dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
-  <section role="dialog" aria-modal="true" aria-labelledby="review-edit-title" class="overflow-hidden relative max-w-xl w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <form @submit.prevent="submit">
-      <div class="p-6">
-        <h2 id="review-edit-title" class="font-semibold text-gray-900 text-lg dark:text-white">Edit review</h2>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ review()?.customerName }} on {{ review()?.productName }}</p>
-        <ul :if="errorMessages().length > 0" class="mt-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+<Modal
+  :isOpen="open()"
+  title="Edit review"
+  :description="`${review()?.customerName || 'Unknown customer'} on ${review()?.productName || 'Unknown product'}`"
+  size="lg"
+  @close="emit('close')"
+>
+    <form id="review-form" @submit.prevent="submit">
+        <ul :if="errorMessages().length > 0" class="mb-5 p-3 space-y-1 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
           <template :for="message in errorMessages()" :key="message"><li>{{ message }}</li></template>
         </ul>
 
-        <div class="mt-5 space-y-4">
+        <div class="space-y-4">
           <label class="block">
             <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
             <input x-model="title" type="text" maxlength="100" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
@@ -90,11 +91,11 @@ function errorMessages(): string[] {
             </label>
           </div>
         </div>
-      </div>
-      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
-        <Button type="submit" :loading="busy()" :disabled="!title().trim() || !content().trim()">Save review</Button>
-      </footer>
     </form>
-  </section>
-</div>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+        <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
+        <Button type="submit" form="review-form" :loading="busy()" :disabled="!title().trim() || !content().trim()">Save review</Button>
+    </div>
+  </template>
+</Modal>

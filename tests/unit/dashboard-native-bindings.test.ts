@@ -573,6 +573,10 @@ describe('dashboard native STX bindings', () => {
       ['Commerce/CommerceTaxDialog.stx', 'tax-rate-form'],
       ['Commerce/CommerceUnitDialog.stx', 'product-unit-form'],
       ['Commerce/CommerceVariantDialog.stx', 'product-variant-form'],
+      ['Commerce/CommerceCustomerDialog.stx', 'customer-form'],
+      ['Commerce/CommerceReviewEditDialog.stx', 'review-form'],
+      ['Commerce/PrintDeviceDialog.stx', 'print-device-form'],
+      ['Commerce/PaymentRefundDialog.stx', 'payment-refund-form'],
     ]) {
       const source = componentSource(file)
       expect(source).toContain('<Modal')
