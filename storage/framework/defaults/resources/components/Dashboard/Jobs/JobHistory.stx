@@ -13,7 +13,6 @@ const selectedStatus = state('all')
 const searchQuery = state('')
 const isLoading = state(true)
 const loadError = state('')
-let searchTimer: ReturnType<typeof setTimeout> | undefined
 
 function totalPages(): number {
   return Math.max(1, Math.ceil(total() / perPage()))
@@ -32,11 +31,7 @@ function reloadFilters(): void {
   void loadJobs()
 }
 
-function reloadSearch(): void {
-  if (searchTimer)
-    clearTimeout(searchTimer)
-  searchTimer = setTimeout(reloadFilters, 250)
-}
+const reloadSearch = useDebounce(reloadFilters, 250)
 
 async function loadJobs(): Promise<void> {
   isLoading.set(true)
@@ -92,11 +87,6 @@ async function handleRetry(id: string | CustomEvent<string>): Promise<void> {
 
 onMount(() => {
   void loadJobs()
-})
-
-onDestroy(() => {
-  if (searchTimer)
-    clearTimeout(searchTimer)
 })
 </script>
 

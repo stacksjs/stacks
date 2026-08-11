@@ -800,9 +800,13 @@ describe('dashboard native STX bindings', () => {
     expect(requestDetails).toContain('<Modal')
     expect(requestDetails).toContain('Recorded')
 
+    // Search stays debounced, but the timer belongs to useDebounce rather than
+    // the component. The composable registers its own onDestroy, so a
+    // hand-rolled timer id plus teardown here is the thing to guard against
+    // now, not the thing to require (#2290).
     const jobs = componentSource('Jobs/JobHistory.stx')
-    expect(jobs).toContain('setTimeout(reloadFilters, 250)')
-    expect(jobs).toContain('onDestroy(')
+    expect(jobs).toContain('useDebounce(reloadFilters, 250)')
+    expect(jobs).not.toMatch(/setTimeout|clearTimeout/)
 
     const queries = componentSource('Queries/QueryDashboard.stx')
     expect(queries).toContain('const itemsPerPage = state(50)')
