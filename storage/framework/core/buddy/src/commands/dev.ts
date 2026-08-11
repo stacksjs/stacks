@@ -8,7 +8,7 @@ import { homedir } from 'node:os'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Action } from '@stacksjs/enums'
-import { libsPath, projectPath, stxPath } from '@stacksjs/path'
+import { inspectDefaultsProvenance, libsPath, projectPath, stxPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 import { resultFailed } from '../result'
@@ -71,15 +71,17 @@ async function actions(): Promise<typeof import('@stacksjs/actions')> {
 }
 
 /**
- * Say so when the app is about to run framework defaults it did not install.
+ * Say so when the vendored framework defaults and the installed package
+ * disagree about which release the app is running.
  *
- * `storage/framework/defaults` is the copy that executes: the generated
- * auto-import barrel reaches into it by relative path. Only `buddy upgrade`
- * writes it, so moving `stacks` forward the ordinary way (edit package.json,
- * `bun install`) advances `node_modules/@stacksjs/defaults` and leaves the
- * vendored tree exactly where it was. Nothing else compares the two, so the
- * only symptom is a ReferenceError naming a framework-internal symbol from a
- * bug that was fixed releases ago.
+ * Only `buddy upgrade` writes `storage/framework/defaults`, so moving `stacks`
+ * forward the ordinary way (edit package.json, `bun install`) advances
+ * `node_modules/@stacksjs/defaults` and leaves the vendored tree where it was.
+ *
+ * A tree with a recorded version is no longer load-bearing in that state:
+ * `frameworkDefaultsDir` resolves to the package instead, so the warning is
+ * telling you where the code came from rather than reporting a fault. A tree
+ * with no stamp still wins, so there the warning is a real one.
  *
  * Cheap on the common path: two manifest reads and a marker read. The file
  * comparison only runs for a tree written before stamping existed, and it
@@ -87,25 +89,25 @@ async function actions(): Promise<typeof import('@stacksjs/actions')> {
  */
 async function warnOnStaleFrameworkDefaults(): Promise<void> {
   try {
-    const { inspectDefaultsProvenance, measureDefaultsDrift } = await actions()
     const skew = inspectDefaultsProvenance(projectPath())
-
     if (skew.status === 'not-applicable' || skew.status === 'current')
       return
 
     if (skew.status === 'stale') {
       log.warn(`storage/framework/defaults is from ${skew.vendored}, but @stacksjs/defaults ${skew.installed} is installed.`)
-    }
-    else {
-      // Unstamped. Only a comparison can tell whether it is actually behind,
-      // and most trees are not, so stay silent unless one really differs.
-      const drift = measureDefaultsDrift(projectPath(), { shallow: true })
-      if (!drift || drift.length === 0)
-        return
-
-      log.warn(`storage/framework/defaults does not match the installed @stacksjs/defaults ${skew.installed}.`)
+      log.warn('Booting the installed package instead. Run `buddy upgrade` to bring the tree up to date.')
+      return
     }
 
+    // Unstamped, so the tree carries no version to compare and resolution stays
+    // on it. Only a file comparison can say whether it is actually behind, and
+    // most are not, so stay silent unless one really differs.
+    const { measureDefaultsDrift } = await actions()
+    const drift = measureDefaultsDrift(projectPath(), { shallow: true })
+    if (!drift || drift.length === 0)
+      return
+
+    log.warn(`storage/framework/defaults does not match the installed @stacksjs/defaults ${skew.installed}.`)
     log.warn('The app runs the vendored copy. Run `buddy upgrade` to sync it, or `buddy doctor` for the file counts.')
   }
   catch {

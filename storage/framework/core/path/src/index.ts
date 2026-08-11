@@ -3,8 +3,10 @@ import {
   existsSync,
   lstatSync,
   mkdirSync,
+  readFileSync,
   readdirSync,
   readlinkSync,
+  realpathSync,
   renameSync,
   rmSync,
   unlinkSync,
@@ -1119,6 +1121,128 @@ export function publicPath(path?: string): string {
 }
 
 /**
+ * Provenance stamp written next to the synced tree. `buddy upgrade` is the only
+ * thing that writes `storage/framework/defaults`, so this is the only record of
+ * which release the tree came from.
+ */
+export const DEFAULTS_SYNC_MARKER = '.stacks-sync.json'
+
+export interface DefaultsSyncMarker {
+  /** `@stacksjs/defaults` version the tree was copied from. */
+  version: string
+  /** ISO-8601 instant of the copy. */
+  syncedAt: string
+}
+
+/**
+ * - `not-applicable` — nothing to compare: no vendored tree, no installed
+ *   package, or a framework checkout where the tree is the source rather than a
+ *   copy of it.
+ * - `unstamped` — the tree predates provenance stamping, so only a file
+ *   comparison can say whether it is current.
+ */
+export type DefaultsProvenance = 'not-applicable' | 'current' | 'stale' | 'unstamped'
+
+export interface DefaultsSkew {
+  status: DefaultsProvenance
+  /** Version of the installed `@stacksjs/defaults`. */
+  installed: string | null
+  /** Version the vendored tree was last synced from. */
+  vendored: string | null
+  syncedAt: string | null
+}
+
+function notApplicable(): DefaultsSkew {
+  return { status: 'not-applicable', installed: null, vendored: null, syncedAt: null }
+}
+
+/** Where `buddy upgrade` reads the managed scaffold from. */
+export function defaultsPackagePath(projectRoot: string = projectPath()): string {
+  return join(projectRoot, 'node_modules/@stacksjs/defaults')
+}
+
+/** Version field of a package manifest, or null when it cannot be read. */
+function manifestVersion(packageRoot: string): string | null {
+  try {
+    const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))?.version
+    return typeof version === 'string' ? version : null
+  }
+  catch {
+    return null
+  }
+}
+
+/** Version of the installed `@stacksjs/defaults`, or null when absent. */
+export function installedDefaultsVersion(projectRoot: string = projectPath()): string | null {
+  return manifestVersion(defaultsPackagePath(projectRoot))
+}
+
+function isInside(child: string, parent: string): boolean {
+  const resolved = realpathSync(child)
+  return resolved === parent || resolved.startsWith(`${parent}${sep}`)
+}
+
+/**
+ * Compare the vendored framework defaults against the installed package.
+ *
+ * `storage/framework/defaults` is the copy that executes, and `buddy upgrade`
+ * is the only thing that writes it. Bump `stacks` in package.json and run
+ * `bun install`, which is how anyone moves a dependency, and the package
+ * advances while the vendored tree stays put.
+ *
+ * Cheap by construction: two manifest reads and one marker read, so callers on
+ * a boot path can consult it freely.
+ */
+export function inspectDefaultsProvenance(projectRoot: string = projectPath()): DefaultsSkew {
+  const targetDefaults = join(projectRoot, 'storage/framework/defaults')
+  const packageRoot = defaultsPackagePath(projectRoot)
+
+  if (!existsSync(targetDefaults) || !existsSync(join(packageRoot, 'package.json')))
+    return notApplicable()
+
+  // A framework checkout carries the framework's own source, and there the
+  // vendored tree is what `@stacksjs/defaults` is built *from* rather than a
+  // copy of it. Comparing the two reports drift that means nothing.
+  if (existsSync(join(projectRoot, 'storage/framework/core/buddy/package.json')))
+    return notApplicable()
+
+  // Same reasoning for a linked checkout: an installed package resolves inside
+  // node_modules, while a workspace or `bun link` reference resolves back out
+  // to source the developer is editing.
+  try {
+    if (!isInside(packageRoot, join(realpathSync(projectRoot), 'node_modules')))
+      return notApplicable()
+  }
+  catch {
+    return notApplicable()
+  }
+
+  const installed = manifestVersion(packageRoot)
+  if (!installed)
+    return notApplicable()
+
+  let marker: DefaultsSyncMarker | null = null
+  try {
+    const raw = JSON.parse(readFileSync(join(targetDefaults, DEFAULTS_SYNC_MARKER), 'utf8'))
+    if (typeof raw?.version === 'string')
+      marker = { version: raw.version, syncedAt: typeof raw.syncedAt === 'string' ? raw.syncedAt : '' }
+  }
+  catch {
+    // No marker, or an unreadable one. Either way the tree is unstamped.
+  }
+
+  if (!marker)
+    return { status: 'unstamped', installed, vendored: null, syncedAt: null }
+
+  return {
+    status: marker.version === installed ? 'current' : 'stale',
+    installed,
+    vendored: marker.version,
+    syncedAt: marker.syncedAt || null,
+  }
+}
+
+/**
  * Returns the path to the `push` directory within the `notifications` directory.
  *
  * @param path - The relative path to the file or directory within the push directory.
@@ -1778,6 +1902,9 @@ export interface Path {
   findProjectPath: (project: string) => Promise<string>
   coreStoragePath: (path?: string) => string
   publicPath: (path?: string) => string
+  defaultsPackagePath: (projectRoot?: string) => string
+  installedDefaultsVersion: (projectRoot?: string) => string | null
+  inspectDefaultsProvenance: (projectRoot?: string) => DefaultsSkew
   pushPath: (path?: string) => string
   queryBuilderPath: (path?: string) => string
   queuePath: (path?: string) => string
@@ -1924,6 +2051,9 @@ export const path: Path = {
   findProjectPath,
   coreStoragePath,
   publicPath,
+  defaultsPackagePath,
+  installedDefaultsVersion,
+  inspectDefaultsProvenance,
   pushPath,
   queryBuilderPath,
   queuePath,

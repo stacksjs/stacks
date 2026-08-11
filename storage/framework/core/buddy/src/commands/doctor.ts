@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { bold, dim, green, intro, log, onUnknownSubcommand, red, yellow } from "@stacksjs/cli"
 import { feature } from '@stacksjs/config'
+import { inspectDefaultsProvenance } from '@stacksjs/path'
 import { storage } from '@stacksjs/storage'
 import { isSupportedBunVersion, isVersionGreaterThanOrEqual, minimumBunVersion } from '@stacksjs/utils'
 import { FEATURE_NAMES, featurePathsPresent } from './features'
@@ -119,7 +120,7 @@ export function doctor(buddy: CLI): void {
       // so an app can run month-old framework code against a current install
       // and the only symptom is a ReferenceError naming an internal symbol.
       await probe(checks, 'Framework defaults', async () => {
-        const { inspectDefaultsProvenance, measureDefaultsDrift, summarizeStructureChanges } = await import('@stacksjs/actions')
+        const { measureDefaultsDrift, summarizeStructureChanges } = await import('@stacksjs/actions')
         const root = resolve(process.cwd())
         const skew = inspectDefaultsProvenance(root)
 
@@ -135,21 +136,24 @@ export function doctor(buddy: CLI): void {
           return `Vendored tree matches @stacksjs/defaults ${skew.installed}${synced}`
 
         const counts = summarizeStructureChanges(drift)
-        const fix = 'The app runs the vendored copy. Run `buddy upgrade` to sync it.'
 
-        // A recorded version that disagrees with the installed one is not open
-        // to interpretation: the app is running a release it did not install.
+        // A recorded version that disagrees with the installed one takes the
+        // tree out of the resolution path, so the app is running what it
+        // installed. Still a warning: the tree on disk is not what executes,
+        // which is confusing to read and to debug against.
         if (skew.status === 'stale') {
-          throw new Error(
-            `storage/framework/defaults is from ${skew.vendored} while @stacksjs/defaults ${skew.installed} is installed (${counts}). ${fix}`,
+          throw new ProbeWarning(
+            `storage/framework/defaults is from ${skew.vendored} while @stacksjs/defaults ${skew.installed} is installed (${counts}). `
+            + 'Boot resolves the package, so the tree on disk is not what runs. Run `buddy upgrade` to sync it.',
           )
         }
 
-        // Unstamped. The files differ, but a tree written before stamping
-        // existed cannot say whether that is age or a deliberate local edit,
-        // so report it without failing the run.
+        // Unstamped, so the tree still wins and the app really is running it.
+        // A file comparison cannot say whether that is age or a deliberate
+        // local edit, so report it without failing the run.
         throw new ProbeWarning(
-          `storage/framework/defaults differs from the installed @stacksjs/defaults ${skew.installed} (${counts}), and carries no record of what it was synced from. ${fix}`,
+          `storage/framework/defaults differs from the installed @stacksjs/defaults ${skew.installed} (${counts}), and carries no record of what it was synced from. `
+          + 'The app runs the vendored copy. Run `buddy upgrade` to sync it.',
         )
       }, 8000)
 

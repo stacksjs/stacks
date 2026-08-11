@@ -62,23 +62,65 @@ function configEnabled(configRelPaths: string[]): boolean {
  * the workspace package, which holds only build files — no `functions/`, no
  * `app/` — so the lookup misses and the vendored branch wins, which is what we
  * want when developing the framework itself.
+ *
+ * The one exception to vendored-first is a tree the installed package has
+ * already moved past. `buddy upgrade` is the only thing that writes
+ * `storage/framework/defaults`, so bumping `stacks` in package.json and running
+ * `bun install` leaves a copy of an older release sitting in front of the one
+ * the app actually declared. That copy is a cache, not source, and preferring
+ * it means booting code from a release nobody asked for. Only a recorded
+ * version that disagrees with the installed one flips the order: an unstamped
+ * tree, a framework checkout, and a linked checkout all keep resolving exactly
+ * as before. See `inspectDefaultsProvenance`.
  */
 export function frameworkDefaultsDir(sub: string): string | undefined {
   const vendored = path.storagePath(`framework/defaults/${sub}`)
-  if (existsSync(vendored))
-    return vendored
 
+  return resolveDefaultsDir(
+    existsSync(vendored) ? vendored : undefined,
+    packagedDefaultsDir(sub),
+    vendoredDefaultsAreStale(),
+  )
+}
+
+/**
+ * The precedence rule on its own, so it can be pinned without a project on
+ * disk. Vendored wins unless it is a copy of a release the app has already
+ * moved past, and a missing side never beats a present one.
+ */
+export function resolveDefaultsDir(
+  vendored: string | undefined,
+  packaged: string | undefined,
+  vendoredIsStale: boolean,
+): string | undefined {
+  if (packaged && vendoredIsStale)
+    return packaged
+
+  return vendored ?? packaged
+}
+
+function packagedDefaultsDir(sub: string): string | undefined {
   try {
     const packageRoot = dirname(fileURLToPath(import.meta.resolve('@stacksjs/defaults/package.json')))
     const packaged = `${packageRoot}/${sub}`
-    if (existsSync(packaged))
-      return packaged
+    return existsSync(packaged) ? packaged : undefined
   }
   catch {
     // @stacksjs/defaults is not installed — there is no fallback to offer.
+    return undefined
   }
+}
 
-  return undefined
+/**
+ * Memoised: `frameworkDefaultsDir` is called once per scanned directory on the
+ * boot path, and the answer cannot change without a restart.
+ */
+let defaultsAreStale: boolean | undefined
+function vendoredDefaultsAreStale(): boolean {
+  if (defaultsAreStale === undefined)
+    defaultsAreStale = path.inspectDefaultsProvenance().status === 'stale'
+
+  return defaultsAreStale
 }
 
 /** Drop the directories that do not exist, so a scan is never handed one. */

@@ -2,11 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import { existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { DEFAULTS_SYNC_MARKER, installedDefaultsVersion } from '@stacksjs/path'
 import {
-  DEFAULTS_SYNC_MARKER,
   detectProjectAiProviders,
-  inspectDefaultsProvenance,
-  installedDefaultsVersion,
   measureDefaultsDrift,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
@@ -127,17 +125,7 @@ describe('framework defaults provenance', () => {
     expect(existsSync(markerPath())).toBe(false)
   })
 
-  it('reports a synced tree as current', () => {
-    syncPackageProjectFiles(root, defaultsRoot)
-
-    expect(inspectDefaultsProvenance(root)).toMatchObject({
-      status: 'current',
-      installed: '0.70.362',
-      vendored: '0.70.362',
-    })
-  })
-
-  it('reports a tree left behind by a plain dependency bump as stale', () => {
+  it('measures what a plain dependency bump left behind', () => {
     syncPackageProjectFiles(root, defaultsRoot)
 
     // What `bun install` does on its own: the package advances, and nothing
@@ -145,39 +133,15 @@ describe('framework defaults provenance', () => {
     writeDefault('package.json', '{"name":"@stacksjs/defaults","version":"0.70.400"}')
     writeDefault('ai/skills/stacks-buddy/SKILL.md', 'newer skill')
 
-    expect(inspectDefaultsProvenance(root)).toMatchObject({
-      status: 'stale',
-      installed: '0.70.400',
-      vendored: '0.70.362',
-    })
+    expect(installedDefaultsVersion(root)).toBe('0.70.400')
     expect(summarizeStructureChanges(measureDefaultsDrift(root) ?? [])).toBe('+0 ~1 -0')
   })
 
-  it('reports a tree written before stamping existed as unstamped', () => {
-    syncPackageProjectFiles(root, defaultsRoot)
-    rmSync(markerPath())
-
-    expect(inspectDefaultsProvenance(root)).toMatchObject({
-      status: 'unstamped',
-      installed: '0.70.362',
-      vendored: null,
-    })
-  })
-
-  it('has nothing to compare without an installed package', () => {
+  it('has nothing to measure without an installed package', () => {
     write('storage/framework/defaults/ai/skills/stacks-buddy/SKILL.md', 'old skill')
     rmSync(defaultsRoot, { recursive: true, force: true })
 
-    expect(inspectDefaultsProvenance(root).status).toBe('not-applicable')
     expect(measureDefaultsDrift(root)).toBeNull()
-  })
-
-  it('stays quiet in a framework checkout, where the tree is the source', () => {
-    syncPackageProjectFiles(root, defaultsRoot)
-    write('storage/framework/core/buddy/package.json', '{"name":"@stacksjs/buddy"}')
-    writeDefault('package.json', '{"name":"@stacksjs/defaults","version":"0.70.400"}')
-
-    expect(inspectDefaultsProvenance(root).status).toBe('not-applicable')
   })
 
   it('finds drift by size alone, for the boot-time probe', () => {

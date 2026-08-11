@@ -48,28 +48,37 @@ Run without a subcommand to upgrade the Stacks framework to the latest version:
 buddy upgrade
 ```
 
-### Why `bun install` is not enough
+### Why `bun install` is not the whole upgrade
 
 A package-managed app keeps a copy of the framework scaffold in
-`storage/framework/defaults`, and that copy is the one that runs: the generated
-auto-import barrel reaches into it by relative path.
+`storage/framework/defaults`, and `buddy upgrade` is the only thing that writes
+it. Bumping `stacks` in `package.json` and running `bun install`, which is the
+ordinary way to move a dependency, advances `node_modules/@stacksjs/defaults`
+and leaves the vendored tree exactly where it was.
 
-`buddy upgrade` is the only thing that writes it. Bumping `stacks` in
-`package.json` and running `bun install`, which is the ordinary way to move a
-dependency, advances `node_modules/@stacksjs/defaults` and leaves the vendored
-tree exactly where it was. The app then runs framework code from whichever
-release it was last synced from, against a current install.
+Every sync stamps `storage/framework/defaults/.stacks-sync.json` with the
+version it copied from. Two things read that stamp.
 
-Three things now report the gap:
+**Boot prefers whichever copy the app actually declared.** A vendored tree
+stamped from an older release than the installed package is a cache of a
+release you have already moved past, so framework defaults resolve from
+`@stacksjs/defaults` instead. A `bun install` bump therefore runs the code you
+installed, not last month's. Nothing else changes order: a tree that matches, a
+tree with no stamp, a framework checkout, and a `bun link` all keep resolving to
+the vendored copy exactly as before.
+
+**Three commands report the gap**, because a tree on disk that is not what runs
+is still confusing to debug against:
 
 - `buddy dev` prints a one-line warning at startup when the two disagree.
 - `buddy doctor` has a **Framework defaults** check with the file counts.
 - `buddy upgrade --dry-run` previews the scaffold changes, not just the
   dependency bumps.
 
-Each sync stamps `storage/framework/defaults/.stacks-sync.json` with the version
-it copied from, which is what those checks read. A tree synced before that stamp
-existed reports as unstamped until the next `buddy upgrade`.
+Running `buddy upgrade` clears all of it. Until then an unstamped tree, which is
+any tree synced before stamping existed, still wins at boot: with no recorded
+version there is nothing to compare, so the checks report the difference without
+changing what resolves.
 
 Note that the sync also removes files under `storage/framework/defaults` that
 the package no longer ships, so it is not purely additive. The tree is

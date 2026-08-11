@@ -16,7 +16,7 @@
 import { existsSync } from 'node:fs'
 import { describe, expect, it } from 'bun:test'
 import { path } from '@stacksjs/path'
-import { autoImportSourceDirs, frameworkDefaultsDir } from '../src/imports'
+import { autoImportSourceDirs, frameworkDefaultsDir, resolveDefaultsDir } from '../src/imports'
 
 describe('framework-default scan directories', () => {
   it('never reports a directory that does not exist', () => {
@@ -52,6 +52,39 @@ describe('framework-default scan directories', () => {
 
   it('returns undefined for a subdirectory that exists in neither place', () => {
     expect(frameworkDefaultsDir('definitely-not-a-real-defaults-subdir')).toBeUndefined()
+  })
+
+  describe('precedence', () => {
+    const vendored = '/app/storage/framework/defaults/functions'
+    const packaged = '/app/node_modules/@stacksjs/defaults/functions'
+
+    it('prefers the vendored copy while it is not known to be behind', () => {
+      // Covers current, unstamped, a framework checkout, and a linked checkout.
+      // All four report something other than `stale`, and all four must resolve
+      // exactly as they did before provenance existed.
+      expect(resolveDefaultsDir(vendored, packaged, false)).toBe(vendored)
+    })
+
+    it('prefers the package once the vendored copy is a release behind', () => {
+      // `buddy upgrade` is the only writer of the vendored tree, so a plain
+      // `bun install` bump leaves a copy of an older release in front of the one
+      // the app declared. That copy is a cache, not source.
+      expect(resolveDefaultsDir(vendored, packaged, true)).toBe(packaged)
+    })
+
+    it('never prefers a package directory that is not there', () => {
+      // The publish wrapper ships a subset. A subdir it does not carry must fall
+      // back to the vendored copy rather than resolving to nothing.
+      expect(resolveDefaultsDir(vendored, undefined, true)).toBe(vendored)
+    })
+
+    it('falls back to the package when there is no vendored copy at all', () => {
+      expect(resolveDefaultsDir(undefined, packaged, false)).toBe(packaged)
+    })
+
+    it('returns undefined when neither side has the directory', () => {
+      expect(resolveDefaultsDir(undefined, undefined, true)).toBeUndefined()
+    })
   })
 
   it('still reports the user-space directories', () => {
