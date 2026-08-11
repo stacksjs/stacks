@@ -32,57 +32,46 @@ function iconName(): string {
 
 </script>
 
-<template :if="open()">
-  <div class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer" @keydown.escape="close">
-    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close confirmation dialog" @click="close"></button>
-
-    <div class="flex relative items-center justify-center p-4 min-h-full">
-      <section
-        role="alertdialog"
-        aria-modal="true"
-        :aria-label="title()"
-        class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl"
-      >
-        <div class="flex gap-4 items-start">
-          <div class="shrink-0 p-2.5 rounded-lg" :class="iconClass()">
-            <span class="block h-5 w-5" :class="iconName()"></span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-lg text-neutral-900 dark:text-white">
-              {{ title() }}
-            </h3>
-            <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
-              {{ description() }}
-            </p>
-          </div>
-        </div>
-
-        <div class="flex gap-2 items-center justify-end mt-6">
-          <Button
-            variant="secondary"
-            :disabled="busy()"
-            @click="close"
-          >
-            {{ cancelLabel() }}
-          </Button>
-          <Button
-            :if="variant() === 'warning'"
-            variant="warning"
-            :loading="busy()"
-            @click="confirm"
-          >
-            {{ confirmLabel() }}
-          </Button>
-          <Button
-            :if="variant() !== 'warning'"
-            variant="danger"
-            :loading="busy()"
-            @click="confirm"
-          >
-            {{ confirmLabel() }}
-          </Button>
-        </div>
-      </section>
+<Modal
+  :isOpen="open()"
+  :title="title()"
+  :description="description()"
+  :closable="!busy()"
+  role="alertdialog"
+  size="sm"
+  @close="close"
+>
+  <template #header-leading>
+    <div class="shrink-0 p-2.5 rounded-lg" :class="iconClass()">
+      <span class="block h-5 w-5" :class="iconName()"></span>
     </div>
-  </div>
-</template>
+  </template>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end">
+      <Button
+        variant="secondary"
+        :disabled="busy()"
+        @click="close"
+      >
+        {{ cancelLabel() }}
+      </Button>
+      <Button
+        :if="variant() === 'warning'"
+        variant="warning"
+        :loading="busy()"
+        @click="confirm"
+      >
+        {{ confirmLabel() }}
+      </Button>
+      <Button
+        :if="variant() !== 'warning'"
+        variant="danger"
+        :loading="busy()"
+        @click="confirm"
+      >
+        {{ confirmLabel() }}
+      </Button>
+    </div>
+  </template>
+</Modal>

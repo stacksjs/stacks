@@ -5,9 +5,10 @@ interface ModalProps {
   description?: string
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   closable?: boolean
+  role?: 'dialog' | 'alertdialog'
 }
 
-const { isOpen = false, title = '', description = '', size = 'md', closable = true } = defineProps<ModalProps>()
+const { isOpen = false, title = '', description = '', size = 'md', closable = true, role = 'dialog' } = defineProps<ModalProps>()
 
 const sizeClasses = {
   sm: 'max-w-sm',
@@ -22,6 +23,7 @@ const open = useReactiveProp('isOpen', false)
 const liveClosable = useReactiveProp('closable', true)
 const liveTitle = useReactiveProp('title', '')
 const liveDescription = useReactiveProp('description', '')
+const liveRole = useReactiveProp('role', 'dialog')
 const dialog = useRef<HTMLDialogElement>('dashboardModalDialog')
 const activeElement = useActiveElement()
 const scrollLocked = useScrollLock()
@@ -72,7 +74,7 @@ effect(() => {
   <dialog
     :if="open()"
     ref="dashboardModalDialog"
-    role="dialog"
+    :role="liveRole()"
     aria-modal="true"
     :aria-label="liveTitle() || 'Dialog'"
     class="fixed inset-0 m-0 p-0 h-dvh max-h-none w-screen max-w-none overflow-y-auto z-[55] bg-transparent dashboard-modal-layer dashboard-modal-dialog"
@@ -84,8 +86,9 @@ effect(() => {
         class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }}"
       >
         <!-- Header -->
-        @if(title || closable)
-          <div class="flex gap-4 items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
+        <div :if="liveTitle() || liveClosable()" class="flex gap-4 items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
+          <div class="flex gap-3 items-start min-w-0">
+            <slot name="header-leading" />
             <div class="min-w-0">
                 <h3 :if="liveTitle()" class="font-semibold text-lg text-neutral-900 dark:text-white">
                   {{ liveTitle() }}
@@ -94,25 +97,26 @@ effect(() => {
                   {{ liveDescription() }}
                 </p>
             </div>
-
-            @if(closable)
-              <Button
-                variant="ghost"
-                size="sm"
-                iconOnly
-                ariaLabel="Close modal"
-                @click="closeModal"
-              >
-                <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
-              </Button>
-            @endif
           </div>
-        @endif
+
+          <Button
+            :if="liveClosable()"
+            variant="ghost"
+            size="sm"
+            iconOnly
+            ariaLabel="Close modal"
+            @click="closeModal"
+          >
+            <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
+          </Button>
+        </div>
 
         <!-- Body -->
-        <div class="p-6">
-          <slot />
-        </div>
+        @if($slots.default)
+          <div class="p-6">
+            <slot />
+          </div>
+        @endif
 
         @if($slots.footer)
           <div class="flex items-center justify-end px-6 py-4 border-neutral-200 border-t dark:border-neutral-700">

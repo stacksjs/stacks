@@ -539,7 +539,7 @@ describe('dashboard native STX bindings', () => {
     expect(componentSource('Transaction/index.stx')).not.toContain('href="#"')
 
     const modal = componentSource('UI/Modal.stx')
-    expect(modal).toContain('role="dialog"')
+    expect(modal).toContain(':role="liveRole()"')
     expect(modal).toContain('aria-modal="true"')
     expect(modal).toContain(`:aria-label="liveTitle() || 'Dialog'"`)
 
@@ -594,9 +594,13 @@ describe('dashboard native STX bindings', () => {
 
     const confirmation = componentSource('UI/ConfirmDialog.stx')
     expect(confirmation).toContain("const open = useReactiveProp('isOpen', false)")
+    expect(confirmation).toContain('<Modal')
     expect(confirmation).toContain('role="alertdialog"')
+    expect(confirmation).toContain(':closable="!busy()"')
+    expect(confirmation).toContain('<template #header-leading>')
     expect(confirmation).toContain("emit('confirm')")
     expect(confirmation).toContain("emit('close')")
+    expect(confirmation).not.toContain('fixed inset-0')
     expect(confirmation).not.toContain('.remove()')
     expect(confirmation).not.toContain('<svg')
 
