@@ -1,0 +1,176 @@
+<script client>
+type PostStatus = 'draft' | 'published' | 'archived'
+interface OptionRecord { id: string, name: string, slug: string }
+interface AuthorRecord { id: string, name: string, email: string }
+interface PostRecord {
+  id: string
+  title: string
+  excerpt: string
+  content: string
+  poster: string
+  status: PostStatus
+  authorId: string
+  featured: boolean
+  categoryIds: string[]
+  tagIds: string[]
+}
+
+interface PostDraft {
+  title: string
+  excerpt: string
+  content: string
+  poster: string
+  status: PostStatus
+  authorId: string | null
+  featured: boolean
+  categoryIds: string[]
+  tagIds: string[]
+}
+
+const open = useReactiveProp('open', false)
+const post = useReactiveProp('post', null as PostRecord | null)
+const categories = useReactiveProp('categories', [] as OptionRecord[])
+const tags = useReactiveProp('tags', [] as OptionRecord[])
+const authors = useReactiveProp('authors', [] as AuthorRecord[])
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const title = state('')
+const excerpt = state('')
+const content = state('')
+const poster = state('')
+const status = state<PostStatus>('draft')
+const authorId = state('')
+const featured = state(false)
+const categoryIds = state<string[]>([])
+const tagIds = state<string[]>([])
+const emit = defineEmits()
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    const record = post()
+    title.set(record?.title || '')
+    excerpt.set(record?.excerpt || '')
+    content.set(record?.content || '')
+    poster.set(record?.poster || '')
+    status.set(record?.status || 'draft')
+    authorId.set(record?.authorId || '')
+    featured.set(Boolean(record?.featured))
+    categoryIds.set(record ? [...record.categoryIds] : [])
+    tagIds.set(record ? [...record.tagIds] : [])
+  }
+  wasOpen = isOpen
+})
+
+function valid(): boolean {
+  const excerptLength = excerpt().trim().length
+  return title().trim().length >= 3 && title().trim().length <= 255
+    && content().trim().length >= 10 && content().length <= 100000
+    && (excerptLength === 0 || excerptLength >= 10) && excerpt().length <= 500
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const draft: PostDraft = {
+    title: title().trim(),
+    excerpt: excerpt().trim(),
+    content: content().trim(),
+    poster: poster().trim(),
+    status: status(),
+    authorId: authorId() || null,
+    featured: featured(),
+    categoryIds: [...categoryIds()],
+    tagIds: [...tagIds()],
+  }
+  emit('submit', draft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="post() ? 'Edit post' : 'New post'"
+  description="Content, ownership, and taxonomies are persisted together."
+  size="xl"
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="post-editor-form" class="grid gap-5" @submit.prevent="submit">
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
+      <input x-model.trim="title" name="title" required minlength="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <label>
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Status</span>
+        <select x-model="status" name="status" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
+          <option value="draft">Draft</option>
+          <option value="published">Published</option>
+          <option value="archived">Archived</option>
+        </select>
+      </label>
+      <label>
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Author</span>
+        <select x-model="authorId" name="author_id" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
+          <option value="">No author</option>
+          <template :for="author in authors()"><option :value="author.id">{{ author.name }} ({{ author.email }})</option></template>
+        </select>
+      </label>
+      <label class="flex gap-3 items-center self-end px-3 py-2 min-h-10 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-md dark:border-neutral-700">
+        <input x-model="featured" name="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-gray-300 rounded" />
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Featured post</span>
+      </label>
+    </div>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Poster URL</span>
+      <input x-model.trim="poster" name="poster" type="url" inputmode="url" maxlength="255" placeholder="https://example.com/poster.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Excerpt</span>
+      <textarea x-model="excerpt" name="excerpt" rows="3" maxlength="500" placeholder="Optional, at least 10 characters when provided" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+      <span class="block mt-1 text-gray-400 text-xs">{{ excerpt().length }}/500</span>
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Content</span>
+      <textarea x-model="content" name="content" required minlength="10" maxlength="100000" rows="10" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+      <span class="block mt-1 text-gray-400 text-xs">{{ content().length }}/100000</span>
+    </label>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <fieldset class="p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <legend class="px-1 font-semibold text-gray-700 text-sm dark:text-neutral-200">Categories, {{ categoryIds().length }} selected</legend>
+        <div :if="categories().length === 0" class="text-gray-500 text-sm dark:text-neutral-400">No categories available.</div>
+        <div :else class="grid gap-2">
+          <template :for="categoryOption in categories()">
+            <label class="flex gap-2 items-center"><input x-model="categoryIds" name="category_ids" type="checkbox" :value="categoryOption.id" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="text-gray-700 text-sm dark:text-neutral-200">{{ categoryOption.name }}</span></label>
+          </template>
+        </div>
+      </fieldset>
+      <fieldset class="p-4 border border-gray-200 rounded-lg dark:border-neutral-700">
+        <legend class="px-1 font-semibold text-gray-700 text-sm dark:text-neutral-200">Tags, {{ tagIds().length }} selected</legend>
+        <div :if="tags().length === 0" class="text-gray-500 text-sm dark:text-neutral-400">No tags available.</div>
+        <div :else class="grid gap-2 sm:grid-cols-2">
+          <template :for="tag in tags()">
+            <label class="flex gap-2 items-center"><input x-model="tagIds" name="tag_ids" type="checkbox" :value="tag.id" class="h-4 w-4 text-blue-600 border-gray-300 rounded" /><span class="text-gray-700 text-sm dark:text-neutral-200">{{ tag.name }}</span></label>
+          </template>
+        </div>
+      </fieldset>
+    </div>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="post-editor-form" :disabled="!valid()" :loading="busy()">
+        {{ post() ? 'Save changes' : 'Create post' }}
+      </Button>
+    </div>
+  </template>
+</Modal>

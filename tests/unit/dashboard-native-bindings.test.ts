@@ -220,9 +220,17 @@ describe('dashboard native STX bindings', () => {
     expect(blog).not.toContain('href="/blog"')
 
     const posts = componentSource('Content/PostsDashboard.stx')
+    const postEditor = componentSource('Content/PostEditorDialog.stx')
     expect(posts).toContain("publicApplicationUrl('/blog')")
     expect(posts).toContain('href="{{ blogUrl }}"')
     expect(posts).not.toContain('href="/blog"')
+    expect(posts).toContain('<PostEditorDialog')
+    expect(posts).toContain('<ConfirmDialog')
+    expect(posts).not.toContain('fixed inset-y-0')
+    expect(postEditor).toContain('<Modal')
+    expect(postEditor).toContain('form="post-editor-form"')
+    expect(postEditor).toContain('x-model="categoryIds"')
+    expect(postEditor).toContain('x-model="tagIds"')
 
     const seoView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),
@@ -537,6 +545,7 @@ describe('dashboard native STX bindings', () => {
       'Content/FileManagerDashboard.stx',
       'Content/PagesDashboard.stx',
       'Content/PostsDashboard.stx',
+      'Content/PostEditorDialog.stx',
     ]) {
       const source = componentSource(file)
       expect(source).not.toMatch(/<button[^>]+bg-(?:blue|red)-600/)
