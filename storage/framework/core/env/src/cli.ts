@@ -81,13 +81,24 @@ function encryptedEnvContent(envContent: string, publicKey: string, publicKeyNam
     '',
   ]
 
+  // Encrypting is not a one-time act: `env:set` re-encrypts, and so does every
+  // deploy. Anything this function ADDS has to be removed from its own output
+  // first, or the file grows a little on each pass — the header stacked up once
+  // per run, and a blank line after it every time on top of that.
+  let seenBody = false
+
   for (const line of envContent.split('\n')) {
     const trimmed = line.trim()
+    if (trimmed.startsWith('#/')) continue
+    if (trimmed.startsWith('DOTENV_PUBLIC_KEY')) continue
+    // The blank the header block already ends with.
+    if (!trimmed && !seenBody) continue
     if (!trimmed || trimmed.startsWith('#')) {
+      seenBody = true
       encryptedLines.push(line)
       continue
     }
-    if (trimmed.startsWith('DOTENV_PUBLIC_KEY')) continue
+    seenBody = true
     const match = trimmed.match(/^([^=]+)=(.*)$/)
     if (!match || match[1] === undefined || match[2] === undefined) {
       encryptedLines.push(line)
@@ -102,6 +113,29 @@ function encryptedEnvContent(envContent: string, publicKey: string, publicKeyNam
     encryptedLines.push(`${key}="${value}"`)
   }
   return encryptedLines.join('\n')
+}
+
+/**
+ * The key names an env file's keypair is stored under: `.env.production` →
+ * `DOTENV_{PUBLIC,PRIVATE}_KEY_PRODUCTION`, plain `.env` → the unsuffixed pair.
+ *
+ * One helper because it was two, and they disagreed. The keys file was written
+ * from the basename (`.env` → no suffix, `secrets/.env.production` →
+ * `_PRODUCTION`), while the header written INTO the encrypted file was derived
+ * from the raw option (`.env` → `_.ENV`, a path → `_SECRETS/.ENV.PRODUCTION`).
+ * A file encrypted that way names a public key that does not exist in
+ * `.env.keys`, so nothing can find the private half and every value in it is
+ * lost — and only for callers who passed `--file` explicitly, which is why it
+ * survived: the default path agreed with itself.
+ */
+export function envKeyNames(file?: string): { publicKeyName: string, privateKeyName: string } {
+  const baseName = (file || '.env').split('/').pop() || ''
+  const suffix = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
+
+  return {
+    publicKeyName: suffix ? `DOTENV_PUBLIC_KEY_${suffix}` : 'DOTENV_PUBLIC_KEY',
+    privateKeyName: suffix ? `DOTENV_PRIVATE_KEY_${suffix}` : 'DOTENV_PRIVATE_KEY',
+  }
 }
 
 /**
@@ -125,12 +159,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
       const keysContent = readFileSync(keysPath, 'utf-8')
       const { parsed } = parse(keysContent)
 
-      // Extract environment name from file path (basename only)
-      const envFileName = options.file || '.env'
-      const baseName = envFileName.split('/').pop() || ''
-      const env = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
-      const publicKeyName = env ? `DOTENV_PUBLIC_KEY_${env}` : 'DOTENV_PUBLIC_KEY'
-      const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
+      const { publicKeyName, privateKeyName } = envKeyNames(options.file)
 
       publicKey = parsed[publicKeyName] || ''
       privateKey = parsed[privateKeyName] || ''
@@ -153,20 +182,15 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
       privateKey = keypair.privateKey
 
       // Create keys file
-      const envFileName = options.file || '.env'
-      const baseName = envFileName.split('/').pop() || ''
-      const env = baseName.replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
-      const publicKeyName = env ? `DOTENV_PUBLIC_KEY_${env}` : 'DOTENV_PUBLIC_KEY'
-      const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
+      const { publicKeyName, privateKeyName } = envKeyNames(options.file)
 
       const keysContent = `# .env.keys - Keep this file secure and never commit to source control\n${publicKeyName}="${publicKey}"\n${privateKeyName}="${privateKey}"\n`
       writeFileSync(keysPath, keysContent, 'utf-8')
     }
 
     const envContent = readFileSync(envPath, 'utf-8')
-    const env = options.file ? options.file.replace(/^\.env\./, '').toUpperCase() : ''
-    const publicKeyName = env ? `DOTENV_PUBLIC_KEY_${env}` : 'DOTENV_PUBLIC_KEY'
-    const output = encryptedEnvContent(envContent, publicKey, publicKeyName, options)
+    // The SAME name the keypair was stored under above — see envKeyNames.
+    const output = encryptedEnvContent(envContent, publicKey, envKeyNames(options.file).publicKeyName, options)
 
     if (options.stdout) {
       return { success: true, output }
