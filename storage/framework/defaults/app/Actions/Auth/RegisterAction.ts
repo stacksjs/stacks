@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, register } from '@stacksjs/auth'
+import { Auth, authCookie, register } from '@stacksjs/auth'
 import { dispatch } from '@stacksjs/events'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -53,6 +53,10 @@ export default new Action({
       // were signed out an hour into their first session while every other
       // user refreshed normally (stacksjs/stacks#2212). The legacy `token`
       // alias stays for backward compatibility.
+      // Registering signs the account in, so it is a session-issuing path like
+      // the other three and carries the cookie for the same reason: the very
+      // next thing a server-rendered app does is redirect to an authenticated
+      // page (#2306).
       return response.json({
         access_token: result.token,
         refresh_token: result.refreshToken,
@@ -64,7 +68,7 @@ export default new Action({
           email: user?.email,
           name: user?.name,
         },
-      })
+      }, { headers: { 'Set-Cookie': authCookie(result.token) } })
     }
 
     return response.error('Registration failed')
