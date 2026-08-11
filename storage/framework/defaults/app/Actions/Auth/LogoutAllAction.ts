@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { revokeAllTokens, sessionDestroyAll } from '@stacksjs/auth'
+import { clearAuthCookie, revokeAllTokens, sessionDestroyAll } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 
 export default new Action({
@@ -21,8 +21,12 @@ export default new Action({
     await revokeAllTokens(Number(user.id))
     await sessionDestroyAll(Number(user.id))
 
-    return response.json({
-      message: 'Successfully logged out from all devices',
-    })
+    // This device included: its cookie carries one of the tokens just revoked,
+    // so leaving it in place means the browser keeps presenting a dead
+    // credential on every request.
+    return response.json(
+      { message: 'Successfully logged out from all devices' },
+      { headers: { 'Set-Cookie': clearAuthCookie() } },
+    )
   },
 })

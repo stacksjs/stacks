@@ -14,6 +14,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
 import { getCurrentRequest, request } from '@stacksjs/router'
+import { requestToken } from './request-token'
 import { Buffer } from 'node:buffer'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
@@ -75,21 +76,20 @@ export class Auth {
   // ============================================================================
 
   /**
-   * Get bearer token from the current request
+   * The access token for the current request, from the Authorization header
+   * or, failing that, the auth cookie.
+   *
+   * The cookie fallback is what makes `user()`, `currentAccessToken()` and
+   * `logout()` work for a server-rendered page. Those pages carry the same
+   * personal access token in an httpOnly cookie precisely because a browser
+   * following a redirect cannot set a header, so a header-only lookup reported
+   * every one of them as signed out — `logout()` most damagingly, since it
+   * found no token, revoked nothing, and still answered 200 (#2306).
+   *
+   * The header is still checked first, so nothing that works today changes.
    */
   private static getBearerToken(): string | null {
-    // Try to get bearer token from request method
-    let bearerToken = request.bearerToken?.()
-
-    // Fallback: get directly from Authorization header
-    if (!bearerToken) {
-      const authHeader = request.headers?.get?.('authorization') || request.headers?.get?.('Authorization')
-      if (authHeader && authHeader.startsWith('Bearer ')) {
-        bearerToken = authHeader.substring(7)
-      }
-    }
-
-    return bearerToken || null
+    return requestToken(request)
   }
 
   /**
@@ -391,29 +391,17 @@ export class Auth {
    *
    * Revokes the current access token AND its paired refresh token so a
    * leaked-but-not-yet-rotated refresh can't be used to mint a new
-   * access token after the user has signed out.
+   * access token after the user has signed out. The cascade now lives in
+   * `revokeToken`, so every revoke path gets it rather than only this one.
+   *
+   * Resolves the token from the Authorization header or the auth cookie, so a
+   * server-rendered page can sign out too.
    */
   public static async logout(): Promise<void> {
     const bearerToken = this.getBearerToken()
 
-    if (bearerToken) {
-      // Find the access-token row by hashed bearer so we can cascade-
-      // revoke any refresh tokens before the access row itself.
-      // Same raw-hex lookup as `validateToken` / `getUserFromToken` —
-      // see their doc comments for the createTokenForUser refactor
-      // context (stacksjs/stacks#1867).
-      const accessToken = await db.selectFrom('oauth_access_tokens')
-        .where('token', '=', hashToken(bearerToken))
-        .select(['id'])
-        .executeTakeFirst()
-      if (accessToken) {
-        await db.updateTable('oauth_refresh_tokens')
-          .set({ revoked: true })
-          .where('access_token_id', '=', Number(accessToken.id))
-          .execute()
-      }
+    if (bearerToken)
       await this.revokeToken(bearerToken)
-    }
 
     const state = authStateOrNull()
     if (state) {
@@ -869,12 +857,27 @@ export class Auth {
   }
 
   /**
-   * Revoke a specific token. Raw-hex hashed lookup matches the bearer
-   * shape `createTokenForUser` actually emits — see `validateToken`
-   * for context on why parseToken / decryptTokenId aren't used here
-   * anymore (stacksjs/stacks#1867 follow-up).
+   * Revoke a specific token, and any refresh token paired with it. Raw-hex
+   * hashed lookup matches the bearer shape `createTokenForUser` actually
+   * emits — see `validateToken` for context on why parseToken /
+   * decryptTokenId aren't used here anymore (stacksjs/stacks#1867 follow-up).
+   *
+   * The cascade used to live inline in `logout()`, which meant it only ran for
+   * a request carrying an Authorization header. Every other revoke path —
+   * `logoutCookie()` above all — left a live refresh token behind, so a
+   * leaked-but-not-yet-rotated refresh could mint a new access token after the
+   * user had signed out. That is the hole `logout()` was written to close, so
+   * it belongs here where all callers get it (#2306).
    */
   public static async revokeToken(token: string): Promise<void> {
+    const accessToken = await db.selectFrom('oauth_access_tokens')
+      .where('token', '=', hashToken(token))
+      .select(['id'])
+      .executeTakeFirst()
+
+    if (accessToken)
+      await this.revokeRefreshTokensFor(Number(accessToken.id))
+
     await db.updateTable('oauth_access_tokens')
       .set({ revoked: true, updated_at: formatDate(new Date()) })
       .where('token', '=', hashToken(token))
@@ -882,12 +885,22 @@ export class Auth {
   }
 
   /**
-   * Revoke a token by its ID
+   * Revoke a token by its ID, and any refresh token paired with it.
    */
   public static async revokeTokenById(tokenId: number): Promise<void> {
+    await this.revokeRefreshTokensFor(tokenId)
+
     await db.updateTable('oauth_access_tokens')
       .set({ revoked: true, updated_at: formatDate(new Date()) })
       .where('id', '=', tokenId)
+      .execute()
+  }
+
+  /** Revoke every refresh token issued against one access token. */
+  private static async revokeRefreshTokensFor(accessTokenId: number): Promise<void> {
+    await db.updateTable('oauth_refresh_tokens')
+      .set({ revoked: true })
+      .where('access_token_id', '=', accessTokenId)
       .execute()
   }
 
@@ -899,6 +912,16 @@ export class Auth {
     const uid = userId ?? (await this.id())
     if (!uid)
       return
+
+    // Same reasoning as `revokeToken`: "sign out everywhere" that leaves the
+    // paired refresh tokens alive is not signing out everywhere (#2306).
+    const accessTokens = await db.selectFrom('oauth_access_tokens')
+      .where('user_id', '=', uid)
+      .select(['id'])
+      .execute()
+
+    for (const accessToken of accessTokens)
+      await this.revokeRefreshTokensFor(Number(accessToken.id))
 
     await db.updateTable('oauth_access_tokens')
       .set({ revoked: true, updated_at: formatDate(new Date()) })
