@@ -158,7 +158,7 @@ describe('dashboard native STX bindings', () => {
 
   test('content dashboards use native filters and form models', () => {
     for (const component of [
-      'Content/AuthorsDashboard.stx',
+      'Content/AuthorEditorDialog.stx',
       'Content/CommentsDashboard.stx',
       'Content/ContentTaxonomyDashboard.stx',
       'Content/PagesDashboard.stx',
@@ -171,6 +171,14 @@ describe('dashboard native STX bindings', () => {
       expect(source).not.toMatch(/:checked="[^"]+\(\)"[^>]+@change=/)
       expect(source).not.toMatch(/function update[A-Z]\w*\(event: Event\)/)
     }
+
+    const authors = componentSource('Content/AuthorsDashboard.stx')
+    const authorEditor = componentSource('Content/AuthorEditorDialog.stx')
+    expect(authors).toContain('<AuthorEditorDialog')
+    expect(authors).toContain('<ConfirmDialog')
+    expect(authors).not.toContain('fixed inset-y-0')
+    expect(authorEditor).toContain('<Modal')
+    expect(authorEditor).toContain('form="author-editor-form"')
 
     const taxonomy = componentSource('Content/ContentTaxonomyDashboard.stx')
     expect(taxonomy).toContain(".normalize('NFKD')")

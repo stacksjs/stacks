@@ -12,6 +12,13 @@ interface AuthorRecord {
   createdAt: string
 }
 
+interface AuthorDraft {
+  name: string
+  email: string
+  bio: string
+  avatar: string
+}
+
 const authors = state<AuthorRecord[]>([])
 const assignedPostCount = state(0)
 const loading = state(true)
@@ -19,10 +26,6 @@ const loadError = state('')
 const search = state('')
 const formOpen = state(false)
 const editingAuthor = state<AuthorRecord | null>(null)
-const name = state('')
-const email = state('')
-const bio = state('')
-const avatar = state('')
 const saving = state(false)
 const saveError = state('')
 const deletingAuthor = state<AuthorRecord | null>(null)
@@ -80,22 +83,15 @@ async function loadAuthors(): Promise<void> {
   }
 }
 
-function resetForm(author: AuthorRecord | null): void {
-  editingAuthor.set(author)
-  name.set(author?.name || '')
-  email.set(author?.email || '')
-  bio.set(author?.bio || '')
-  avatar.set(author?.avatar || '')
-  saveError.set('')
-}
-
 function openCreate(): void {
-  resetForm(null)
+  editingAuthor.set(null)
+  saveError.set('')
   formOpen.set(true)
 }
 
 function openEdit(author: AuthorRecord): void {
-  resetForm(author)
+  editingAuthor.set(author)
+  saveError.set('')
   formOpen.set(true)
 }
 
@@ -104,14 +100,14 @@ function closeForm(): void {
     formOpen.set(false)
 }
 
-async function saveAuthor(): Promise<void> {
+async function saveAuthor(draft: AuthorDraft): Promise<void> {
   const author = editingAuthor()
   saving.set(true)
   saveError.set('')
   try {
     await dashboardApi(author ? `/api/dashboard/authors/${author.id}` : '/api/dashboard/authors', {
       method: author ? 'PATCH' : 'POST',
-      body: { name: name().trim(), email: email().trim(), bio: bio().trim(), avatar: avatar().trim() },
+      body: draft,
     })
     formOpen.set(false)
     pushToast('success', author ? 'Author updated' : 'Author created')
@@ -133,6 +129,13 @@ function openDelete(author: AuthorRecord): void {
 function closeDelete(): void {
   if (!deleting())
     deletingAuthor.set(null)
+}
+
+function deleteDescription(): string {
+  const author = deletingAuthor()
+  return author
+    ? `${author.name} will be removed. Their posts will be kept without an assigned author.`
+    : ''
 }
 
 async function deleteAuthor(): Promise<void> {
@@ -191,17 +194,22 @@ onMount(() => {
   </section>
 </div>
 
-<div :if="formOpen()" class="flex fixed inset-y-0 right-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close author dialog" class="absolute inset-0 bg-black/45" @click="closeForm()"></button>
-  <section role="dialog" aria-modal="true" :aria-label="editingAuthor() ? 'Edit author' : 'New author'" class="relative max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <form @submit.prevent="saveAuthor">
-      <div class="p-6"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">{{ editingAuthor() ? 'Edit author' : 'New author' }}</h2><div :if="saveError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div><div class="grid gap-4 mt-5"><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model="name" required minlength="5" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span><input x-model="email" type="email" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Bio</span><textarea x-model="bio" maxlength="500" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea></label><label><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span><input x-model="avatar" type="url" placeholder="https://example.com/avatar.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label></div></div>
-      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button :disabled="saving()" variant="secondary" @click="closeForm()">Cancel</Button><Button type="submit" :disabled="saving() || name().trim().length < 5 || !email().trim()" :loading="saving()">{{ editingAuthor() ? 'Save changes' : 'Create author' }}</Button></footer>
-    </form>
-  </section>
-</div>
+<AuthorEditorDialog
+  :open="formOpen()"
+  :author="editingAuthor()"
+  :busy="saving()"
+  :error="saveError()"
+  @close="closeForm"
+  @submit="saveAuthor"
+/>
 
-<div :if="Boolean(deletingAuthor())" class="flex fixed inset-y-0 right-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close delete author dialog" class="absolute inset-0 bg-black/45" @click="closeDelete()"></button>
-  <section role="dialog" aria-modal="true" aria-label="Delete author?" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">Delete author?</h2><p class="mt-2 text-gray-500 text-sm dark:text-neutral-400"><strong>{{ deletingAuthor()?.name || '' }}</strong> will be removed. Their posts will be kept without an assigned author.</p><div :if="deleteError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ deleteError() }}</div><div class="flex gap-2 justify-end mt-6"><Button :disabled="deleting()" variant="secondary" @click="closeDelete()">Cancel</Button><Button :loading="deleting()" variant="danger" @click="deleteAuthor()">Delete author</Button></div></section>
-</div>
+<ConfirmDialog
+  :isOpen="Boolean(deletingAuthor())"
+  title="Delete author?"
+  :description="deleteDescription()"
+  confirmLabel="Delete author"
+  :busy="deleting()"
+  :error="deleteError()"
+  @close="closeDelete"
+  @confirm="deleteAuthor"
+/>

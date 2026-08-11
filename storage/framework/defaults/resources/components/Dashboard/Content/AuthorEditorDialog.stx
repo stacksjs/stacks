@@ -1,0 +1,94 @@
+<script client>
+interface AuthorRecord {
+  id: string
+  name: string
+  email: string
+  bio: string
+  avatar: string
+}
+
+interface AuthorDraft {
+  name: string
+  email: string
+  bio: string
+  avatar: string
+}
+
+const open = useReactiveProp('open', false)
+const author = useReactiveProp('author', null as AuthorRecord | null)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const name = state('')
+const email = state('')
+const bio = state('')
+const avatar = state('')
+const emit = defineEmits()
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    const record = author()
+    name.set(record?.name || '')
+    email.set(record?.email || '')
+    bio.set(record?.bio || '')
+    avatar.set(record?.avatar || '')
+  }
+  wasOpen = isOpen
+})
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const draft: AuthorDraft = {
+    name: name().trim(),
+    email: email().trim(),
+    bio: bio().trim(),
+    avatar: avatar().trim(),
+  }
+  emit('submit', draft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="author() ? 'Edit author' : 'New author'"
+  description="Keep author identity and publishing attribution up to date."
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="author-editor-form" class="grid gap-4" @submit.prevent="submit">
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
+      <input x-model="name" name="name" required minlength="5" maxlength="255" autocomplete="name" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Email</span>
+      <input x-model="email" name="email" type="email" required autocomplete="email" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Bio</span>
+      <textarea x-model="bio" name="bio" maxlength="500" rows="3" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Avatar URL</span>
+      <input x-model="avatar" name="avatar" type="url" inputmode="url" placeholder="https://example.com/avatar.jpg" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="author-editor-form" :disabled="name().trim().length < 5 || !email().trim()" :loading="busy()">
+        {{ author() ? 'Save changes' : 'Create author' }}
+      </Button>
+    </div>
+  </template>
+</Modal>
