@@ -100,7 +100,7 @@ describe('dashboard button contract', () => {
     ]
     const allowedStyledControls = [
       'aria-label="Close window"',
-      '@click="selectFile(file.name)"',
+      '@click="requestSelectFile(file.name)"',
     ]
 
     for (const file of files) {

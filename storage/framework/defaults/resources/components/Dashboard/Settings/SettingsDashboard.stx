@@ -42,6 +42,7 @@ const files = state<ConfigFile[]>([])
 const fields = state<ConfigField[]>([])
 const drafts = reactive<Record<string, string | number | boolean>>({})
 const selected = state('')
+const pendingSelection = state('')
 const query = state('')
 const loading = state(true)
 const saving = state(false)
@@ -58,6 +59,7 @@ const filteredFiles = derived(() => {
 
 const selectedFile = derived(() => files().find(file => file.name === selected()))
 const editableCount = derived(() => fields().filter(field => field.editable).length)
+const isDirty = derived(() => fields().some(field => field.editable && drafts[field.key] !== field.value))
 
 function displayValue(field: ConfigField): string | number {
   if (field.editable)
@@ -101,7 +103,6 @@ async function selectFile(name: string): Promise<void> {
     if (!body.ok)
       throw new Error(body.error || `Unable to read config/${name}.ts`)
 
-    fields.set(body.fields)
     for (const key of Object.keys(drafts))
       delete drafts[key]
     Object.assign(
@@ -112,6 +113,7 @@ async function selectFile(name: string): Promise<void> {
           .map((field: ConfigField) => [field.key, field.value]),
       ),
     )
+    fields.set(body.fields)
   }
   catch (cause) {
     error.set(cause instanceof Error ? cause.message : `Unable to read config/${name}.ts`)
@@ -119,6 +121,34 @@ async function selectFile(name: string): Promise<void> {
   finally {
     loading.set(false)
   }
+}
+
+function requestSelectFile(name: string): void {
+  if (name === selected())
+    return
+  if (isDirty()) {
+    pendingSelection.set(name)
+    return
+  }
+  void selectFile(name)
+}
+
+function cancelPendingSelection(): void {
+  pendingSelection.set('')
+}
+
+function discardAndSelect(): void {
+  const name = pendingSelection()
+  pendingSelection.set('')
+  if (name)
+    void selectFile(name)
+}
+
+function handleBeforeUnload(event: BeforeUnloadEvent): void {
+  if (!isDirty())
+    return
+  event.preventDefault()
+  event.returnValue = ''
 }
 
 async function save(): Promise<void> {
@@ -154,6 +184,7 @@ async function save(): Promise<void> {
   }
 }
 
+useEventListener('beforeunload', handleBeforeUnload)
 void loadFiles()
 </script>
 
@@ -185,7 +216,7 @@ void loadFiles()
           <button
             type="button"
             :class="selected() === file.name ? 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-500/10 rounded-lg' : 'flex items-center gap-3 px-3 py-2.5 w-full text-left text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-white/5 rounded-lg'"
-            @click="selectFile(file.name)"
+            @click="requestSelectFile(file.name)"
           >
             <span class="flex-none h-4 w-4 i-hugeicons-settings-02"></span>
             <span class="flex-1 font-medium text-sm truncate">{{ file.title }}</span>
@@ -220,8 +251,9 @@ void loadFiles()
             <p class="mt-1 font-mono text-neutral-500 text-xs dark:text-neutral-400">config/{{ selectedFile().name }}.ts</p>
           </div>
           <div class="flex gap-2 items-center">
+            <Badge :if="isDirty()" variant="warning" size="sm">Unsaved changes</Badge>
             <Badge variant="default" size="sm">{{ editableCount() }} editable</Badge>
-            <Button variant="primary" size="sm" :disabled="saving() || editableCount() === 0" @click="save()">
+            <Button variant="primary" size="sm" :disabled="saving() || editableCount() === 0 || !isDirty()" @click="save()">
               {{ saving() ? 'Saving...' : 'Save changes' }}
             </Button>
           </div>
@@ -247,7 +279,7 @@ void loadFiles()
               </div>
 
               <div>
-                @if(field.type === 'boolean' && field.editable)
+                <template :if="field.type === 'boolean' && field.editable">
                   <label class="inline-flex gap-3 items-center cursor-pointer">
                     <input
                       :id="'config-' + field.key"
@@ -257,26 +289,29 @@ void loadFiles()
                     >
                     <span class="text-neutral-700 text-sm dark:text-neutral-300">{{ drafts[field.key] ? 'Enabled' : 'Disabled' }}</span>
                   </label>
-                @elseif(field.editable && field.type === 'number')
+                </template>
+                <template :else-if="field.editable && field.type === 'number'">
                   <input
                     :id="'config-' + field.key"
                     type="number"
                     x-model.number="drafts[field.key]"
                     class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   >
-                @elseif(field.editable)
+                </template>
+                <template :else-if="field.editable">
                   <input
                     :id="'config-' + field.key"
                     type="text"
                     x-model="drafts[field.key]"
                     class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   >
-                @else
+                </template>
+                <template :else>
                   <div class="px-3 py-2 break-all font-mono text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-white/[0.03] border border-neutral-200 rounded-lg dark:border-white/10">
                     {{ displayValue(field) }}
                   </div>
                   <p class="mt-1.5 text-amber-700 text-xs dark:text-amber-300">{{ field.reason }}</p>
-                @endif
+                </template>
               </div>
             </div>
           </template>
@@ -284,5 +319,15 @@ void loadFiles()
       @endif
     </Card>
   </div>
+
+  <ConfirmDialog
+    :isOpen="Boolean(pendingSelection())"
+    title="Discard unsaved changes?"
+    description="Switching configuration files will discard the edits in this file."
+    confirmLabel="Discard changes"
+    variant="warning"
+    @close="cancelPendingSelection"
+    @confirm="discardAndSelect"
+  />
 </div>
 </template>
