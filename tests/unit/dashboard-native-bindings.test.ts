@@ -973,6 +973,10 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx'),
       'utf8',
     )
+    const cardDialog = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanCardDialog.stx'),
+      'utf8',
+    )
     const indexView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/kanban/index.stx'),
       'utf8',
@@ -996,8 +1000,9 @@ describe('dashboard native STX bindings', () => {
     expect(board).toContain('@drop.prevent="dropOnColumn(col.id)"')
     expect(board).toContain('await kanban.reorderColumns(currentBoard.id, order)')
     expect(board).toContain('<ConfirmDialog')
+    expect(board).toContain('<KanbanCardDialog')
     expect(board).toContain('x-model="draftCardTitle"')
-    expect(board).toContain('x-model="commentDraft"')
+    expect(board).not.toContain('fixed inset-0')
     expect(board).toContain('<StxLink to="/kanban"')
     expect(board).toContain("import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'")
     expect(board).toContain('const kanban = kanbanStore')
@@ -1007,6 +1012,27 @@ describe('dashboard native STX bindings', () => {
     expect(board).not.toContain('https://esm.sh')
     expect(board).not.toContain('<svg')
     expect(board).not.toContain('onUnmount(')
+    expect(cardDialog).toContain('<Modal')
+    expect(cardDialog).toContain('<ConfirmDialog')
+    expect(cardDialog).toContain('x-model="titleDraft"')
+    expect(cardDialog).toContain('x-model="commentDraft"')
+    expect(cardDialog).toContain('x-model="dueDateDraft"')
+    expect(cardDialog).toContain('@keydown.escape.stop.prevent="cancelCommentEditWithoutClosing()"')
+    expect(cardDialog).toContain('useTimeoutFn(cancelCommentEdit, 50, { immediate: false })')
+    expect(cardDialog).toContain(':closable="!deleting && editingCommentId === null"')
+    expect(cardDialog).toContain('@keydown.meta.enter.prevent="saveCommentEdit(comment.id)"')
+    expect(cardDialog).toContain('@keydown.ctrl.enter.prevent="submitComment()"')
+    expect(cardDialog).toContain('const cardComments = derived(() => openCard()?.comments ?? [])')
+    expect(cardDialog).toContain('const cardLabels = derived(() => openCard()?.labels ?? [])')
+    expect(cardDialog).toContain('const cardAssignees = derived(() => openCard()?.assignees ?? [])')
+    expect(cardDialog).toContain(':for="comment in cardComments"')
+    expect(cardDialog).toContain(':for="label in cardLabels"')
+    expect(cardDialog).toContain(':for="assignee in cardAssignees"')
+    expect(cardDialog).not.toMatch(/:for="\w+ in openCard\./)
+    expect(cardDialog).toContain('autofocus')
+    expect(cardDialog).not.toMatch(/\b(?:document|window)\./)
+    expect(cardDialog).not.toContain('useEventListener(')
+    expect(cardDialog).not.toContain('fixed inset-0')
 
     expect(indexView).toContain('<KanbanBoardsDashboard />')
     expect(indexView).not.toContain('<script')

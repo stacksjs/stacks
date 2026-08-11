@@ -27,14 +27,6 @@
   const error = derived(() => kanban.errorBoard())
   const board = derived(() => kanban.currentBoard())
   const columns = derived(() => kanban.currentColumns())
-  const allLabels = derived(() => kanban.currentLabels())
-
-  // Card detail modal state - read straight from the store. The
-  // modal itself lives at the bottom of this file.
-  const openCard = derived(() => kanban.openCard())
-  const loadingCard = derived(() => kanban.loadingCard())
-  const errorCard = derived(() => kanban.errorCard())
-
   // Inline composer state. Each column has its own (independent) "add
   // card" composer; the boolean tracks whether the input is open.
   const composingCardForColumnId = state(null)
@@ -42,23 +34,7 @@
   const composingNewColumn = state(false)
   const draftColumnName = state('')
 
-  // Modal-local edit drafts. Title + description debounce-on-blur,
-  // due-date commits on change. Labels + assignees commit instantly
-  // via the sync endpoints (one round-trip per toggle).
-  const titleDraft = state('')
-  const descDraft = state('')
-  const commentDraft = state('')
-  const editingCommentId = state(null)
-  const commentEditDraft = state('')
-  const savingCommentId = state(null)
-  const showLabelPicker = state(false)
-  const showAssigneePicker = state(false)
-  const showNewLabelComposer = state(false)
-  const newLabelName = state('')
-  const newLabelColor = state('slate')
-  const dueDateDraft = state('')
-
-  type DeleteKind = 'card' | 'column' | 'comment' | 'label'
+  type DeleteKind = 'card' | 'column'
   interface PendingDelete {
     kind: DeleteKind
     id: number
@@ -80,118 +56,14 @@
   const cardDropTarget = state<CardDropTarget | null>(null)
   const columnDropBeforeId = state<number | null>(null)
 
-  function syncDraftsFromCard() {
-    const c = openCard()
-    titleDraft.set(c ? c.title : '')
-    descDraft.set(c ? (c.description || '') : '')
-    dueDateDraft.set(c?.dueDate ? c.dueDate.slice(0, 10) : '')
-    commentDraft.set('')
-    editingCommentId.set(null)
-    commentEditDraft.set('')
-    savingCommentId.set(null)
-  }
-  // Sync drafts when the open card changes (open / close / refetch).
-  effect(() => { openCard(); Promise.resolve().then(syncDraftsFromCard) })
-
-  async function commitTitle() {
-    const c = openCard()
-    if (!c) return
-    const next = titleDraft().trim()
-    if (!next || next === c.title) return
-    await kanban.updateCard({ title: next })
-  }
-
-  async function commitDescription() {
-    const c = openCard()
-    if (!c) return
-    const next = descDraft()
-    if (next === (c.description || '')) return
-    await kanban.updateCard({ description: next || null })
-  }
-
-  async function commitDueDate(value) {
-    await kanban.updateCard({ dueDate: value || null })
-  }
-
-  async function toggleLabel(labelId) {
-    const c = openCard()
-    if (!c) return
-    const has = c.labels.some(l => l.id === labelId)
-    const next = has
-      ? c.labels.filter(l => l.id !== labelId).map(l => l.id)
-      : [...c.labels.map(l => l.id), labelId]
-    await kanban.syncCardLabels(c.id, next)
-  }
-
-  async function toggleAssignee(userId) {
-    const c = openCard()
-    if (!c) return
-    const has = c.assignees.some(a => a.userId === userId)
-    const next = has
-      ? c.assignees.filter(a => a.userId !== userId).map(a => a.userId)
-      : [...c.assignees.map(a => a.userId), userId]
-    await kanban.syncCardAssignees(c.id, next)
-  }
-
-  async function submitComment() {
-    const text = commentDraft().trim()
-    if (!text) return
-    const ok = await kanban.addComment(text)
-    if (ok) commentDraft.set('')
-  }
-
-  function startCommentEdit(id, body) {
-    editingCommentId.set(id)
-    commentEditDraft.set(body)
-  }
-
-  function cancelCommentEdit() {
-    editingCommentId.set(null)
-    commentEditDraft.set('')
-  }
-
-  async function saveCommentEdit(id) {
-    const body = commentEditDraft().trim()
-    if (!body || savingCommentId()) return
-    savingCommentId.set(id)
-    try {
-      if (await kanban.updateComment(id, body))
-        cancelCommentEdit()
-    }
-    finally {
-      savingCommentId.set(null)
-    }
-  }
-
-  function handleCommentEditKeydown(event, id) {
-    if (event.key === 'Escape') {
-      event.preventDefault()
-      cancelCommentEdit()
-    }
-    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-      event.preventDefault()
-      void saveCommentEdit(id)
-    }
-  }
-
   function requestDelete(kind: DeleteKind, id: number, hasCards = false): void {
     pendingDelete.set({ kind, id, hasCards })
   }
 
-  async function submitNewLabel() {
-    const name = newLabelName().trim()
-    if (!name) return
-    const c = openCard()
-    const boardId = c ? c.boardId : (board() ? board().id : null)
-    if (!boardId) return
-    const created = await kanban.createLabel({ boardId, name, color: newLabelColor() })
-    if (created && c)
-      await kanban.syncCardLabels(c.id, [...c.labels.map(l => l.id), created.id])
-    newLabelName.set('')
-    showNewLabelComposer.set(false)
+  function closeDelete(): void {
+    if (!deleting())
+      pendingDelete.set(null)
   }
-
-  const labelColors = ['slate', 'red', 'amber', 'emerald', 'blue', 'violet', 'rose']
 
   const deleteTitle = derived(() => {
     const pending = pendingDelete()
@@ -200,8 +72,6 @@
     return {
       card: 'Delete this card?',
       column: 'Delete this column?',
-      comment: 'Delete this comment?',
-      label: 'Delete this label?',
     }[pending.kind]
   })
 
@@ -211,8 +81,6 @@
       return ''
     if (pending.kind === 'column' && pending.hasCards)
       return 'Every card in this column will also be permanently deleted.'
-    if (pending.kind === 'label')
-      return 'The label will be removed from every card that currently uses it.'
     return 'This action cannot be undone.'
   })
 
@@ -224,11 +92,7 @@
     try {
       const ok = pending.kind === 'card'
         ? await kanban.deleteCard(pending.id)
-        : pending.kind === 'column'
-          ? await kanban.deleteColumn(pending.id)
-          : pending.kind === 'comment'
-            ? await kanban.deleteComment(pending.id)
-            : await kanban.deleteLabel(pending.id)
+        : await kanban.deleteColumn(pending.id)
       if (ok)
         pendingDelete.set(null)
     }
@@ -306,29 +170,12 @@
     closeColumnComposer()
   }
 
-  // ─── Card detail modal handlers ───────────────────────────────────
+  // ─── Card detail launcher ─────────────────────────────────────────
 
   function openDetail(cardId) {
     kanban.loadUsers() // background-fetch for assignee picker
     kanban.openCardDetail(cardId)
   }
-  function closeDetail() { kanban.closeCardDetail() }
-
-  function handleBoardKeydown(event: KeyboardEvent): void {
-    if (event.key !== 'Escape' || pendingDelete())
-      return
-    if (openCard())
-      closeDetail()
-  }
-
-  function handleCommentKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-      event.preventDefault()
-      void submitComment()
-    }
-  }
-
-  useEventListener('keydown', handleBoardKeydown)
 
   // Label color → tailwind hue. Mirrors the column-accent map but
   // returns a more saturated chip class.
@@ -357,13 +204,6 @@
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return ''
     return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-  }
-
-  function formatTimestamp(iso) {
-    if (!iso) return ''
-    const d = new Date(iso)
-    if (Number.isNaN(d.getTime())) return ''
-    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
   }
 
   // ─── Native drag and drop ─────────────────────────────────────────
@@ -687,282 +527,16 @@
     </div>
   </div>
 
-  <!-- Card detail modal -->
-  <!-- Opens on card click. Fixed positioned with a backdrop; closes
-      on backdrop click + Escape. Sections (top → bottom):
-        · Title (inline-editable, blurs to commit)
-        · Description (textarea, blurs to commit)
-        · Sidebar: labels picker, assignees picker, due date, archive
-        · Comments thread + composer
-      All mutations route through the store, which fires optimistic
-      updates with rollback on failure. -->
-  <div
-    :if="openCard()"
-    class="flex fixed inset-0 overflow-y-auto z-50 items-start justify-center px-4 py-8 bg-black/50 dashboard-modal-layer"
-    @click="closeDetail()"
-  >
-    <div
-      @click.stop
-      role="dialog"
-      aria-modal="true"
-      aria-label="Card details"
-      tabindex="-1"
-      class="my-8 max-w-3xl w-full bg-white dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800 shadow-xl"
-    >
-      <!-- Header: title + close -->
-      <div class="flex gap-3 items-start px-6 py-4 border-b border-zinc-200 dark:border-zinc-800">
-        <input
-          x-model="titleDraft"
-          @blur="commitTitle()"
-          @keydown.enter.prevent="(e) => e.target.blur()"
-          class="flex-1 -mx-2 -my-1 px-2 py-1 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-transparent focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded focus:outline-none"
-        />
-        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close card details" @click="closeDetail()">
-          <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-
-      <div :if="loadingCard() && (!openCard() || openCard().comments.length === 0)" class="px-6 py-8 text-center text-sm text-zinc-500">
-        Loading…
-      </div>
-
-      <div :if="errorCard()" class="px-6 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40">
-        <p class="text-red-700 text-xs dark:text-red-300" :text="errorCard()"></p>
-      </div>
-
-      <div class="grid gap-6 grid-cols-1 md:grid-cols-3 px-6 py-5">
-        <!-- Main column: description + comments -->
-        <div class="md:col-span-2 space-y-6">
-          <!-- Description -->
-          <section>
-            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Description</h4>
-            <textarea
-              x-model="descDraft"
-              @blur="commitDescription()"
-              rows="4"
-              placeholder="Add a more detailed description…"
-              class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
-            ></textarea>
-          </section>
-
-          <!-- Comments -->
-          <section>
-            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Activity</h4>
-
-            <!-- Composer -->
-            <div class="mb-4">
-              <textarea
-                x-model="commentDraft"
-                @keydown="handleCommentKeydown"
-                rows="2"
-                placeholder="Add a comment… (⌘+Enter to send)"
-                class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
-              ></textarea>
-              <div class="flex justify-end mt-2">
-                <Button size="sm" :disabled="!commentDraft().trim()" @click="submitComment()">
-                  Comment
-                </Button>
-              </div>
-            </div>
-
-            <!-- Thread -->
-            <div :if="openCard().comments.length === 0 && !loadingCard()" class="italic text-xs text-zinc-400">
-              No comments yet.
-            </div>
-            <ul class="space-y-3">
-              <li
-                :for="cm in openCard.comments"
-                class="flex gap-3"
-              >
-                <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(cm.authorName, cm.authorEmail)"></span>
-                <div class="flex-1 min-w-0">
-                  <div class="flex gap-2 items-baseline">
-                    <span class="font-medium text-xs text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
-                    <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
-                    <template :if="editingCommentId() !== cm.id">
-                      <Button variant="ghost" size="xs" @click="startCommentEdit(cm.id, cm.body)">Edit</Button>
-                      <Button variant="ghost" size="xs" @click="requestDelete('comment', cm.id)"><span class="text-red-500">Delete</span></Button>
-                    </template>
-                  </div>
-                  <p :if="editingCommentId() !== cm.id" class="mt-0.5 text-xs text-zinc-700 whitespace-pre-wrap dark:text-zinc-300" :text="cm.body"></p>
-                  <div :if="editingCommentId() === cm.id" class="mt-2">
-                    <textarea
-                      x-model="commentEditDraft"
-                      @keydown="handleCommentEditKeydown($event, cm.id)"
-                      rows="3"
-                      maxlength="10000"
-                      :aria-label="'Edit comment by ' + (cm.authorName || cm.authorEmail || 'Unknown')"
-                      class="px-3 py-2 w-full text-sm text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
-                    ></textarea>
-                    <div class="flex gap-2 justify-end mt-2">
-                      <Button variant="secondary" size="xs" :disabled="savingCommentId() === cm.id" @click="cancelCommentEdit()">Cancel</Button>
-                      <Button size="xs" :loading="savingCommentId() === cm.id" :disabled="!commentEditDraft().trim()" @click="saveCommentEdit(cm.id)">Save comment</Button>
-                    </div>
-                  </div>
-                </div>
-              </li>
-            </ul>
-          </section>
-        </div>
-
-        <!-- Sidebar: labels, assignees, due date, archive -->
-        <aside class="space-y-5">
-          <!-- Labels -->
-          <section>
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Labels</h4>
-              <Button
-                variant="ghost"
-                size="xs"
-                interaction="toggle"
-                :pressed="showLabelPicker()"
-                @click="showLabelPicker.set(!showLabelPicker())"
-              >
-                <span :if="!showLabelPicker()">Edit</span>
-                <span :if="showLabelPicker()">Done</span>
-              </Button>
-            </div>
-
-            <!-- Selected labels -->
-            <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
-              <span
-                :for="lbl in openCard.labels"
-                :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(lbl.color)}`"
-                :text="lbl.name"
-              ></span>
-              <span :if="openCard().labels.length === 0" class="italic text-xs text-zinc-400">None</span>
-            </div>
-
-            <!-- Picker -->
-            <div :if="showLabelPicker()" class="space-y-2">
-              <div
-                :for="lbl in allLabels"
-                :class="`flex items-center gap-1 px-1 py-0.5 w-full rounded ${labelChipClass(lbl.color)}`"
-              >
-                <button
-                  type="button"
-                  class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90"
-                  :aria-pressed="String(openCard().labels.some(l => l.id === lbl.id))"
-                  @click="toggleLabel(lbl.id)"
-                >
-                  <span class="truncate" :text="lbl.name"></span>
-                  <span :if="openCard().labels.some(l => l.id === lbl.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
-                </button>
-                <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete label ' + lbl.name" @click="requestDelete('label', lbl.id)">
-                  <span class="block h-3 w-3 text-red-500 i-hugeicons-cancel-01"></span>
-                </Button>
-              </div>
-
-              <!-- New label composer -->
-              <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
-                <input
-                  x-model="newLabelName"
-                  @keydown.enter.prevent="submitNewLabel()"
-                  placeholder="Label name"
-                  class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none"
-                />
-                <div class="flex gap-1 items-center" role="group" aria-label="Label color">
-                  <button
-                    :for="c in labelColors"
-                    type="button"
-                    @click="newLabelColor.set(c)"
-                    :class="`w-5 h-5 rounded ${labelChipClass(c)} ${newLabelColor() === c ? 'ring-2 ring-offset-1 ring-violet-500 dark:ring-offset-zinc-900' : ''}`"
-                    :aria-label="'Use ' + c + ' label color'"
-                    :aria-pressed="String(newLabelColor() === c)"
-                  ></button>
-                </div>
-                <div class="flex gap-1">
-                  <Button size="xs" @click="submitNewLabel()">Create</Button>
-                  <Button variant="ghost" size="xs" @click="showNewLabelComposer.set(false)">Cancel</Button>
-                </div>
-              </div>
-              <Button
-                :if="!showNewLabelComposer()"
-                variant="outline"
-                size="sm"
-                fullWidth
-                @click="showNewLabelComposer.set(true)"
-              >
-                + New label
-              </Button>
-            </div>
-          </section>
-
-          <!-- Assignees -->
-          <section>
-            <div class="flex items-center justify-between mb-2">
-              <h4 class="font-medium text-xs text-zinc-500 tracking-wide uppercase">Assignees</h4>
-              <Button
-                variant="ghost"
-                size="xs"
-                interaction="toggle"
-                :pressed="showAssigneePicker()"
-                @click="showAssigneePicker.set(!showAssigneePicker())"
-              >
-                <span :if="!showAssigneePicker()">Edit</span>
-                <span :if="showAssigneePicker()">Done</span>
-              </Button>
-            </div>
-
-            <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
-              <div
-                :for="asg in openCard.assignees"
-                class="flex gap-1.5 items-center text-xs text-zinc-700 dark:text-zinc-200"
-              >
-                <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(asg.name, asg.email)"></span>
-                <span :text="asg.name || asg.email || 'Unknown'"></span>
-              </div>
-              <span :if="openCard().assignees.length === 0" class="italic text-xs text-zinc-400">Unassigned</span>
-            </div>
-
-            <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
-              <p :if="kanban.users().length === 0" class="italic text-xs text-zinc-400">No users to assign.</p>
-              <button
-                :for="u in kanban.users"
-                type="button"
-                :aria-pressed="String(openCard().assignees.some(a => a.userId === u.id))"
-                @click="toggleAssignee(u.id)"
-                class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded"
-              >
-                <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(u.name, u.email)"></span>
-                <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="u.name || u.email"></span>
-                <span :if="openCard().assignees.some(a => a.userId === u.id)" class="h-3.5 w-3.5 text-violet-500 i-hugeicons-tick-02"></span>
-              </button>
-            </div>
-          </section>
-
-          <!-- Due date -->
-          <section>
-            <h4 class="mb-2 font-medium text-xs text-zinc-500 tracking-wide uppercase">Due date</h4>
-            <input
-              type="date"
-              x-model="dueDateDraft"
-              @change="commitDueDate(dueDateDraft())"
-              class="px-2 py-1 w-full text-xs text-zinc-800 dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none"
-            />
-          </section>
-
-          <!-- Meta -->
-          <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-            <p class="text-[10px] text-zinc-400">
-              Created <span :text="formatTimestamp(openCard().createdAt)"></span>
-            </p>
-            <p :if="openCard().updatedAt && openCard().updatedAt !== openCard().createdAt" class="text-[10px] text-zinc-400">
-              Updated <span :text="formatTimestamp(openCard().updatedAt)"></span>
-            </p>
-          </section>
-        </aside>
-      </div>
-    </div>
-  </div>
+  <KanbanCardDialog />
 
   <ConfirmDialog
     :isOpen="Boolean(pendingDelete())"
     :title="deleteTitle()"
     :description="deleteDescription()"
     :busy="deleting()"
+    :error="error() || ''"
     :confirmLabel="deleting() ? 'Deleting' : 'Delete'"
-    @close="pendingDelete.set(null)"
+    @close="closeDelete"
     @confirm="confirmDelete"
   />
 </div>

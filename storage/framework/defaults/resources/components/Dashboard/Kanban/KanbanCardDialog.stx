@@ -1,0 +1,416 @@
+<script client>
+import { kanbanStore } from '~/storage/framework/defaults/views/dashboard/stores/kanban'
+
+const kanban = kanbanStore
+const openCard = derived(() => kanban.openCard())
+const loadingCard = derived(() => kanban.loadingCard())
+const errorCard = derived(() => kanban.errorCard())
+const allLabels = derived(() => kanban.currentLabels())
+const cardComments = derived(() => openCard()?.comments ?? [])
+const cardLabels = derived(() => openCard()?.labels ?? [])
+const cardAssignees = derived(() => openCard()?.assignees ?? [])
+const titleDraft = state('')
+const descDraft = state('')
+const commentDraft = state('')
+const editingCommentId = state<number | null>(null)
+const commentEditDraft = state('')
+const savingCommentId = state<number | null>(null)
+const showLabelPicker = state(false)
+const showAssigneePicker = state(false)
+const showNewLabelComposer = state(false)
+const newLabelName = state('')
+const newLabelColor = state('slate')
+const dueDateDraft = state('')
+const pendingDelete = state<{ kind: 'comment' | 'label', id: number } | null>(null)
+const deleting = state(false)
+const labelColors = ['slate', 'red', 'amber', 'emerald', 'blue', 'violet', 'rose']
+const { start: finishCommentEditCancel } = useTimeoutFn(cancelCommentEdit, 50, { immediate: false })
+let activeCardId: number | null = null
+let wasLoading = false
+
+function syncDraftsFromCard(): void {
+  const card = openCard()
+  titleDraft.set(card?.title || '')
+  descDraft.set(card?.description || '')
+  dueDateDraft.set(card?.dueDate ? card.dueDate.slice(0, 10) : '')
+  commentDraft.set('')
+  editingCommentId.set(null)
+  commentEditDraft.set('')
+  savingCommentId.set(null)
+  showLabelPicker.set(false)
+  showAssigneePicker.set(false)
+  showNewLabelComposer.set(false)
+  newLabelName.set('')
+  newLabelColor.set('slate')
+  pendingDelete.set(null)
+}
+
+effect(() => {
+  const card = openCard()
+  const isLoading = loadingCard()
+  const cardId = card?.id ?? null
+  if (cardId !== activeCardId || (wasLoading && !isLoading)) {
+    activeCardId = cardId
+    syncDraftsFromCard()
+  }
+  wasLoading = isLoading
+})
+
+function close(): void {
+  if (!deleting())
+    kanban.closeCardDetail()
+}
+
+async function commitTitle(): Promise<void> {
+  const card = openCard()
+  if (!card)
+    return
+  const next = titleDraft().trim()
+  if (!next) {
+    titleDraft.set(card.title)
+    return
+  }
+  if (next !== card.title)
+    await kanban.updateCard({ title: next })
+}
+
+async function commitDescription(): Promise<void> {
+  const card = openCard()
+  if (!card)
+    return
+  const next = descDraft()
+  if (next !== (card.description || ''))
+    await kanban.updateCard({ description: next || null })
+}
+
+async function commitDueDate(): Promise<void> {
+  await kanban.updateCard({ dueDate: dueDateDraft() || null })
+}
+
+async function toggleLabel(labelId: number): Promise<void> {
+  const card = openCard()
+  if (!card)
+    return
+  const hasLabel = card.labels.some(label => label.id === labelId)
+  const labelIds = hasLabel
+    ? card.labels.filter(label => label.id !== labelId).map(label => label.id)
+    : [...card.labels.map(label => label.id), labelId]
+  await kanban.syncCardLabels(card.id, labelIds)
+}
+
+async function toggleAssignee(userId: number): Promise<void> {
+  const card = openCard()
+  if (!card)
+    return
+  const hasAssignee = card.assignees.some(assignee => assignee.userId === userId)
+  const userIds = hasAssignee
+    ? card.assignees.filter(assignee => assignee.userId !== userId).map(assignee => assignee.userId)
+    : [...card.assignees.map(assignee => assignee.userId), userId]
+  await kanban.syncCardAssignees(card.id, userIds)
+}
+
+async function submitComment(): Promise<void> {
+  const body = commentDraft().trim()
+  if (!body)
+    return
+  if (await kanban.addComment(body))
+    commentDraft.set('')
+}
+
+function startCommentEdit(id: number, body: string): void {
+  editingCommentId.set(id)
+  commentEditDraft.set(body)
+}
+
+function cancelCommentEdit(): void {
+  editingCommentId.set(null)
+  commentEditDraft.set('')
+}
+
+function cancelCommentEditWithoutClosing(): void {
+  finishCommentEditCancel()
+}
+
+async function saveCommentEdit(id: number): Promise<void> {
+  const body = commentEditDraft().trim()
+  if (!body || savingCommentId())
+    return
+  savingCommentId.set(id)
+  try {
+    if (await kanban.updateComment(id, body))
+      cancelCommentEdit()
+  }
+  finally {
+    savingCommentId.set(null)
+  }
+}
+
+async function submitNewLabel(): Promise<void> {
+  const name = newLabelName().trim()
+  const card = openCard()
+  if (!name || !card)
+    return
+  const created = await kanban.createLabel({ boardId: card.boardId, name, color: newLabelColor() })
+  if (!created)
+    return
+  await kanban.syncCardLabels(card.id, [...card.labels.map(label => label.id), created.id])
+  newLabelName.set('')
+  showNewLabelComposer.set(false)
+}
+
+const deleteTitle = derived(() => pendingDelete()?.kind === 'label'
+  ? 'Delete this label?'
+  : 'Delete this comment?')
+
+const deleteDescription = derived(() => pendingDelete()?.kind === 'label'
+  ? 'The label will be removed from every card that currently uses it.'
+  : 'This action cannot be undone.')
+
+function requestDelete(kind: 'comment' | 'label', id: number): void {
+  pendingDelete.set({ kind, id })
+}
+
+function closeDelete(): void {
+  if (!deleting())
+    pendingDelete.set(null)
+}
+
+async function confirmDelete(): Promise<void> {
+  const pending = pendingDelete()
+  if (!pending || deleting())
+    return
+  deleting.set(true)
+  try {
+    const deleted = pending.kind === 'comment'
+      ? await kanban.deleteComment(pending.id)
+      : await kanban.deleteLabel(pending.id)
+    if (deleted)
+      pendingDelete.set(null)
+  }
+  finally {
+    deleting.set(false)
+  }
+}
+
+function labelChipClass(color: string): string {
+  return ({
+    slate: 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200',
+    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200',
+    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-200',
+    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200',
+    red: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-200',
+    violet: 'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-200',
+    rose: 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-200',
+  })[color] || 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200'
+}
+
+function initialsOf(name: string | null, email: string | null): string {
+  const source = (name || email || '?').trim()
+  const parts = source.split(/\s+/).filter(Boolean)
+  if (parts.length === 0)
+    return '?'
+  if (parts.length === 1)
+    return parts[0].slice(0, 2).toUpperCase()
+  return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
+}
+
+function formatTimestamp(iso: string | null): string {
+  if (!iso)
+    return ''
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime()))
+    return ''
+  return date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+}
+</script>
+
+<Modal
+  :isOpen="Boolean(openCard())"
+  title="Card details"
+  description="Edit card content, ownership, labels, and activity."
+  size="xl"
+  :closable="!deleting && editingCommentId === null"
+  @close="close"
+>
+  <div :if="openCard()" class="grid gap-6">
+    <label class="grid gap-2">
+      <span class="font-medium text-zinc-500 text-xs tracking-wide uppercase">Title</span>
+      <input
+        x-model="titleDraft"
+        name="card_title"
+        required
+        autofocus
+        @blur="commitTitle()"
+        @keydown.enter.prevent="$event.currentTarget.blur()"
+        class="px-3 py-2 font-semibold text-lg text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-950 border border-zinc-200 rounded-md dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600"
+      />
+    </label>
+
+    <div :if="loadingCard()" role="status" class="flex gap-2 items-center text-zinc-500 text-sm">
+      <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+      Refreshing card details
+    </div>
+
+    <div :if="errorCard()" role="alert" class="px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-md dark:border-red-900/40">
+      {{ errorCard() }}
+    </div>
+
+    <div class="grid gap-6 grid-cols-1 md:grid-cols-3">
+      <div class="md:col-span-2 space-y-6">
+        <section>
+          <h4 class="mb-2 font-medium text-zinc-500 text-xs tracking-wide uppercase">Description</h4>
+          <textarea
+            x-model="descDraft"
+            name="card_description"
+            @blur="commitDescription()"
+            rows="4"
+            placeholder="Add a more detailed description"
+            class="px-3 py-2 w-full text-zinc-800 text-sm dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
+          ></textarea>
+        </section>
+
+        <section>
+          <h4 class="mb-2 font-medium text-zinc-500 text-xs tracking-wide uppercase">Activity</h4>
+          <div class="mb-4">
+            <textarea
+              x-model="commentDraft"
+              name="card_comment"
+              @keydown.meta.enter.prevent="submitComment()"
+              @keydown.ctrl.enter.prevent="submitComment()"
+              rows="2"
+              placeholder="Add a comment, then press Command+Enter to send"
+              class="px-3 py-2 w-full text-zinc-800 text-sm dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-none"
+            ></textarea>
+            <div class="flex justify-end mt-2">
+              <Button size="sm" :disabled="!commentDraft().trim()" @click="submitComment()">Comment</Button>
+            </div>
+          </div>
+
+          <div :if="openCard().comments.length === 0 && !loadingCard()" class="italic text-zinc-400 text-xs">No comments yet.</div>
+          <ul class="space-y-3">
+            <li :for="comment in cardComments" class="flex gap-3">
+              <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(comment.authorName, comment.authorEmail)"></span>
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap gap-2 items-baseline">
+                  <span class="font-medium text-zinc-700 text-xs dark:text-zinc-200" :text="comment.authorName || comment.authorEmail || 'Unknown'"></span>
+                  <span class="text-[10px] text-zinc-400" :text="formatTimestamp(comment.createdAt)"></span>
+                  <template :if="editingCommentId() !== comment.id">
+                    <Button variant="ghost" size="xs" @click="startCommentEdit(comment.id, comment.body)">Edit</Button>
+                    <Button variant="ghost" size="xs" @click="requestDelete('comment', comment.id)"><span class="text-red-500">Delete</span></Button>
+                  </template>
+                </div>
+                <p :if="editingCommentId() !== comment.id" class="mt-0.5 text-zinc-700 text-xs whitespace-pre-wrap dark:text-zinc-300" :text="comment.body"></p>
+                <div :if="editingCommentId() === comment.id" class="mt-2">
+                  <textarea
+                    x-model="commentEditDraft"
+                    @keydown.escape.stop.prevent="cancelCommentEditWithoutClosing()"
+                    @keydown.meta.enter.prevent="saveCommentEdit(comment.id)"
+                    @keydown.ctrl.enter.prevent="saveCommentEdit(comment.id)"
+                    rows="3"
+                    maxlength="10000"
+                    :aria-label="'Edit comment by ' + (comment.authorName || comment.authorEmail || 'Unknown')"
+                    class="px-3 py-2 w-full text-zinc-800 text-sm dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none dark:focus:border-violet-600 resize-y"
+                  ></textarea>
+                  <div class="flex gap-2 justify-end mt-2">
+                    <Button variant="secondary" size="xs" :disabled="savingCommentId() === comment.id" @click="cancelCommentEdit()">Cancel</Button>
+                    <Button size="xs" :loading="savingCommentId() === comment.id" :disabled="!commentEditDraft().trim()" @click="saveCommentEdit(comment.id)">Save comment</Button>
+                  </div>
+                </div>
+              </div>
+            </li>
+          </ul>
+        </section>
+      </div>
+
+      <aside class="space-y-5">
+        <section>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-medium text-zinc-500 text-xs tracking-wide uppercase">Labels</h4>
+            <Button variant="ghost" size="xs" interaction="toggle" :pressed="showLabelPicker()" @click="showLabelPicker.set(!showLabelPicker())">
+              <span :if="!showLabelPicker()">Edit</span>
+              <span :if="showLabelPicker()">Done</span>
+            </Button>
+          </div>
+
+          <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
+            <span :for="label in cardLabels" :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(label.color)}`" :text="label.name"></span>
+            <span :if="openCard().labels.length === 0" class="italic text-zinc-400 text-xs">None</span>
+          </div>
+
+          <div :if="showLabelPicker()" class="space-y-2">
+            <div :for="label in allLabels" :class="`flex items-center gap-1 px-1 py-0.5 w-full rounded ${labelChipClass(label.color)}`">
+              <button type="button" class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90" :aria-pressed="String(openCard().labels.some(cardLabel => cardLabel.id === label.id))" @click="toggleLabel(label.id)">
+                <span class="truncate" :text="label.name"></span>
+                <span :if="openCard().labels.some(cardLabel => cardLabel.id === label.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
+              </button>
+              <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete label ' + label.name" @click="requestDelete('label', label.id)">
+                <span class="block h-3 w-3 text-red-500 i-hugeicons-cancel-01"></span>
+              </Button>
+            </div>
+
+            <div :if="showNewLabelComposer()" class="pt-2 space-y-2 border-t border-zinc-200 dark:border-zinc-800">
+              <input x-model="newLabelName" name="label_name" @keydown.enter.prevent="submitNewLabel()" placeholder="Label name" class="px-2 py-1 w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 rounded dark:border-zinc-700 focus:border-violet-500 focus:outline-none" />
+              <div class="flex gap-1 items-center" role="group" aria-label="Label color">
+                <button :for="color in labelColors" type="button" @click="newLabelColor.set(color)" :class="`w-5 h-5 rounded ${labelChipClass(color)} ${newLabelColor() === color ? 'ring-2 ring-offset-1 ring-violet-500 dark:ring-offset-zinc-900' : ''}`" :aria-label="'Use ' + color + ' label color'" :aria-pressed="String(newLabelColor() === color)"></button>
+              </div>
+              <div class="flex gap-1">
+                <Button size="xs" @click="submitNewLabel()">Create</Button>
+                <Button variant="ghost" size="xs" @click="showNewLabelComposer.set(false)">Cancel</Button>
+              </div>
+            </div>
+            <Button :if="!showNewLabelComposer()" variant="outline" size="sm" fullWidth @click="showNewLabelComposer.set(true)">+ New label</Button>
+          </div>
+        </section>
+
+        <section>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-medium text-zinc-500 text-xs tracking-wide uppercase">Assignees</h4>
+            <Button variant="ghost" size="xs" interaction="toggle" :pressed="showAssigneePicker()" @click="showAssigneePicker.set(!showAssigneePicker())">
+              <span :if="!showAssigneePicker()">Edit</span>
+              <span :if="showAssigneePicker()">Done</span>
+            </Button>
+          </div>
+
+          <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
+            <div :for="assignee in cardAssignees" class="flex gap-1.5 items-center text-zinc-700 text-xs dark:text-zinc-200">
+              <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(assignee.name, assignee.email)"></span>
+              <span :text="assignee.name || assignee.email || 'Unknown'"></span>
+            </div>
+            <span :if="openCard().assignees.length === 0" class="italic text-zinc-400 text-xs">Unassigned</span>
+          </div>
+
+          <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
+            <p :if="kanban.users().length === 0" class="italic text-zinc-400 text-xs">No users to assign.</p>
+            <button :for="user in kanban.users" type="button" :aria-pressed="String(openCard().assignees.some(assignee => assignee.userId === user.id))" @click="toggleAssignee(user.id)" class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded">
+              <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(user.name, user.email)"></span>
+              <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="user.name || user.email"></span>
+              <span :if="openCard().assignees.some(assignee => assignee.userId === user.id)" class="h-3.5 w-3.5 text-violet-500 i-hugeicons-tick-02"></span>
+            </button>
+          </div>
+        </section>
+
+        <section>
+          <h4 class="mb-2 font-medium text-zinc-500 text-xs tracking-wide uppercase">Due date</h4>
+          <input type="date" x-model="dueDateDraft" name="due_date" @change="commitDueDate()" class="px-2 py-1 w-full text-zinc-800 text-xs dark:text-zinc-200 bg-white dark:bg-zinc-950 border border-zinc-200 rounded dark:border-zinc-800 focus:border-violet-400 focus:outline-none" />
+        </section>
+
+        <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+          <p class="text-[10px] text-zinc-400">Created <span :text="formatTimestamp(openCard().createdAt)"></span></p>
+          <p :if="openCard().updatedAt && openCard().updatedAt !== openCard().createdAt" class="text-[10px] text-zinc-400">Updated <span :text="formatTimestamp(openCard().updatedAt)"></span></p>
+        </section>
+      </aside>
+    </div>
+  </div>
+
+</Modal>
+
+<ConfirmDialog
+  :isOpen="Boolean(pendingDelete())"
+  :title="deleteTitle()"
+  :description="deleteDescription()"
+  :busy="deleting()"
+  :error="errorCard() || ''"
+  confirmLabel="Delete"
+  @close="closeDelete"
+  @confirm="confirmDelete"
+/>

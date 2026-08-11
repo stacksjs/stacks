@@ -66,7 +66,7 @@ describe('dashboard button contract', () => {
       'storage/framework/defaults/resources/components/Dashboard/Settings/AppearanceSettingsDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx',
       'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardsDashboard.stx',
-      'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx',
+      'storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanCardDialog.stx',
     ]
 
     for (const file of pressedStateFiles) {
@@ -426,17 +426,22 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanBoardDashboard.stx'),
       'utf8',
     )
+    const cardDialog = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Kanban/KanbanCardDialog.stx'),
+      'utf8',
+    )
     const indexButtons = [...index.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
-    const detailButtons = [...detail.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    const detailSource = `${detail}\n${cardDialog}`
+    const detailButtons = [...detailSource.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
     const semanticDetailControls = [
       ':aria-label="\'Open \' + card.title"',
       ':aria-pressed="String(openCard().labels.some',
-      ':aria-label="\'Use \' + c + \' label color\'"',
+      ':aria-label="\'Use \' + color + \' label color\'"',
       ':aria-pressed="String(openCard().assignees.some',
     ]
 
     expect((index.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(4)
-    expect((detail.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(17)
+    expect((detailSource.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(17)
     expect(indexButtons.every(button => button.includes('colorButtonClass(c)'))).toBe(true)
     expect(detailButtons.every(button => semanticDetailControls.some(marker => button.includes(marker)))).toBe(true)
   })
