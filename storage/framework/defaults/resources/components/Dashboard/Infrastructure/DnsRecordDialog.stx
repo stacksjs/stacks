@@ -10,25 +10,13 @@ function ttlLabel(): string {
 }
 </script>
 
-<div :if="open() && record()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close DNS record details" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
-  <section role="dialog" aria-modal="true" aria-labelledby="dns-record-title" class="overflow-y-auto relative max-h-[90vh] max-w-lg w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <header class="flex gap-4 items-start justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700">
-      <div>
-        <p class="text-neutral-500 text-xs dark:text-neutral-400">Configured DNS record</p>
-        <h2 id="dns-record-title" class="mt-1 font-semibold text-lg text-neutral-900 dark:text-white">{{ record()?.type }} · {{ record()?.name }}</h2>
-      </div>
-      <Button variant="ghost" iconOnly ariaLabel="Close DNS record details" @click="emit('close')">
-        <span class="block h-5 w-5 i-hugeicons-cancel-01"></span>
-      </Button>
-    </header>
-    <dl class="grid gap-5 sm:grid-cols-2 p-5 text-sm">
+<Modal :isOpen="open() && Boolean(record())" :title="`${record()?.type || 'DNS'} · ${record()?.name || 'record'}`" description="Configured DNS record" size="md" @close="emit('close')">
+    <dl class="grid gap-5 sm:grid-cols-2 text-sm">
       <div><dt class="text-neutral-500 dark:text-neutral-400">Type</dt><dd class="mt-1 font-semibold text-neutral-900 dark:text-white">{{ record()?.type }}</dd></div>
       <div><dt class="text-neutral-500 dark:text-neutral-400">Name</dt><dd class="mt-1 break-all font-mono text-neutral-900 dark:text-white">{{ record()?.name }}</dd></div>
       <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">Value</dt><dd class="mt-1 break-all font-mono text-neutral-900 dark:text-white">{{ record()?.value || 'Not set' }}</dd></div>
       <div><dt class="text-neutral-500 dark:text-neutral-400">TTL</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ ttlLabel() }}</dd></div>
       <div :if="record()?.priority !== null"><dt class="text-neutral-500 dark:text-neutral-400">Priority</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ record()?.priority }}</dd></div>
     </dl>
-    <p class="mb-5 mx-5 p-3 text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg">Source: config/dns.ts</p>
-  </section>
-</div>
+    <p class="mt-5 p-3 text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800 rounded-lg">Source: config/dns.ts</p>
+</Modal>
