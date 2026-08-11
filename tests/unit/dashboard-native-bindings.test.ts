@@ -419,6 +419,17 @@ describe('dashboard native STX bindings', () => {
     expect(card).not.toContain('action.onClick')
     expect(card).not.toMatch(/@click="\{\{/)
 
+    const sharedModal = componentSource('UI/Modal.stx')
+    expect(sharedModal).toContain("const dialog = useRef<HTMLElement>('dashboardModalDialog')")
+    expect(sharedModal).toContain('const scrollLocked = useScrollLock()')
+    expect(sharedModal).toContain('const activeElement = useActiveElement()')
+    expect(sharedModal).toContain('const focused = peek(() => activeElement.value)')
+    expect(sharedModal).toContain("event.key === 'Escape'")
+    expect(sharedModal).toContain("event.key !== 'Tab'")
+    expect(sharedModal).toContain('void nextTick(() => target.focus())')
+    expect(sharedModal).toContain('class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer"')
+    expect(sharedModal).toContain('@keydown="handleKeydown"')
+
     const tabs = componentSource('UI/Tabs.stx')
     expect(tabs).toContain("emit('update:activeTab', tab.id)")
     expect(tabs).toContain("emit('change', tab.id, tab)")

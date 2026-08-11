@@ -19,21 +19,81 @@ const sizeClasses = {
 </script>
 <script client>
 const open = useReactiveProp('isOpen', false)
+const liveClosable = useReactiveProp('closable', true)
 const liveTitle = useReactiveProp('title', '')
 const liveDescription = useReactiveProp('description', '')
+const dialog = useRef<HTMLElement>('dashboardModalDialog')
+const activeElement = useActiveElement()
+const scrollLocked = useScrollLock()
 const emit = defineEmits()
+let restoreFocus: HTMLElement | null = null
+
+function focusableElements(): HTMLElement[] {
+  return [...(dialog.current?.querySelectorAll<HTMLElement>(
+    'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), textarea:not([disabled]):not([tabindex="-1"]), [tabindex]:not([tabindex="-1"])',
+  ) || [])].filter(element => element.offsetParent !== null)
+}
 
 function closeModal(): void {
   emit('close')
 }
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (!open()) return
+
+  if (event.key === 'Escape' && liveClosable()) {
+    event.preventDefault()
+    event.stopPropagation()
+    closeModal()
+    return
+  }
+
+  if (event.key !== 'Tab') return
+  const focusable = focusableElements()
+  if (focusable.length === 0) {
+    event.preventDefault()
+    dialog.current?.focus()
+    return
+  }
+
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (event.shiftKey && (event.target === first || event.target === dialog.current)) {
+    event.preventDefault()
+    last.focus()
+  }
+  else if (!event.shiftKey && event.target === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+effect(() => {
+  const isOpen = open()
+  scrollLocked.value = isOpen
+
+  if (isOpen) {
+    const focused = peek(() => activeElement.value)
+    if (focused instanceof HTMLElement)
+      restoreFocus = focused
+    void nextTick(() => dialog.current?.focus())
+    return
+  }
+
+  const target = restoreFocus
+  restoreFocus = null
+  if (target)
+    void nextTick(() => target.focus())
+})
 </script>
-  <div :if="open()" class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
+  <div :if="open()" class="fixed inset-0 overflow-y-auto z-[55] dashboard-modal-layer" @keydown="handleKeydown">
     <!-- Overlay -->
     <button type="button" class="absolute inset-0 w-full bg-black/50 backdrop-blur-sm" aria-label="Close modal" @click="closeModal"></button>
 
     <!-- Modal container -->
     <div class="flex items-center justify-center p-4 min-h-full">
       <div
+        ref="dashboardModalDialog"
         role="dialog"
         aria-modal="true"
         :aria-label="liveTitle() || 'Dialog'"
