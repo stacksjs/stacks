@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Customer, Order, Post, User } from '@stacksjs/orm'
+import { dashboardOperationalIssue } from './dashboard-response'
 
 interface DashboardStatDefinition {
   title: string
@@ -61,7 +62,11 @@ export default new Action({
     const issues = results.flatMap((result, index) => result.status === 'rejected'
       ? [{
           source: definitions[index].title,
-          message: result.reason instanceof Error ? result.reason.message : 'Model query failed.',
+          message: dashboardOperationalIssue(
+            result.reason,
+            `${definitions[index].title} data could not be loaded.`,
+            `DashboardStatsAction.${definitions[index].title.toLowerCase().replaceAll(' ', '-')}`,
+          ),
         }]
       : [])
 

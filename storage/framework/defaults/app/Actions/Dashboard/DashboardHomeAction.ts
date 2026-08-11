@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { Order, Post, Product, Request, User } from '@stacksjs/orm'
 import { checkApplicationHealth, type ApplicationHealthCheck } from '@stacksjs/router'
 import { formatRelative, safeGet } from '../../../resources/functions/dashboard/data'
+import { dashboardOperationalIssue } from './dashboard-response'
 
 interface HttpRequestSample {
   duration: number
@@ -28,7 +29,7 @@ export function serializeHealthCheck(name: string, check: ApplicationHealthCheck
     name: name.charAt(0).toUpperCase() + name.slice(1),
     status: check.ok ? 'healthy' : 'critical',
     latency: `${check.ms}ms`,
-    detail: check.message || '',
+    detail: check.ok ? '' : 'Dependency probe failed.',
   }
 }
 
@@ -43,7 +44,11 @@ function issue(source: string, result: PromiseSettledResult<unknown>) {
   return result.status === 'rejected'
     ? {
         source,
-        message: result.reason instanceof Error ? result.reason.message : 'Query failed.',
+        message: dashboardOperationalIssue(
+          result.reason,
+          `${source} data could not be loaded.`,
+          `DashboardHomeAction.${source.toLowerCase().replaceAll(' ', '-')}`,
+        ),
       }
     : null
 }
@@ -65,7 +70,7 @@ export default new Action({
       Request.count(),
       Request.orderBy('created_at', 'desc').limit(1000).get(),
     ])
-    const health = await checkApplicationHealth()
+    const healthResult = await Promise.allSettled([checkApplicationHealth()])
 
     const [
       userCount,
@@ -93,7 +98,19 @@ export default new Action({
       })))
       : summarizeHttpRequests(0, [])
 
-    const services = Object.entries(health.checks).map(([name, check]) => serializeHealthCheck(name, check))
+    const health = healthResult[0]
+    const services = health.status === 'fulfilled'
+      ? Object.entries(health.value.checks).map(([name, check]) => {
+          if (!check.ok) {
+            dashboardOperationalIssue(
+              check.message,
+              'Dependency probe failed.',
+              `DashboardHomeAction.health.${name}`,
+            )
+          }
+          return serializeHealthCheck(name, check)
+        })
+      : []
 
     const activities = [
       ...(recentOrders.status === 'fulfilled' ? recentOrders.value : []).map((order: any) => ({
@@ -127,6 +144,16 @@ export default new Action({
     const issues = modelResults
       .map((result, index) => issue(sources[index], result))
       .filter((entry): entry is { source: string, message: string } => entry !== null)
+    if (health.status === 'rejected') {
+      issues.push({
+        source: 'System health',
+        message: dashboardOperationalIssue(
+          health.reason,
+          'System health could not be loaded.',
+          'DashboardHomeAction.health',
+        ),
+      })
+    }
 
     return { stats, httpMetrics, services, activities, issues }
   },

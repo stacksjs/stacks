@@ -28,7 +28,7 @@ describe('dashboard HTTP metrics', () => {
       name: 'Cache',
       status: 'critical',
       latency: '1500ms',
-      detail: 'timeout',
+      detail: 'Dependency probe failed.',
     })
   })
 
