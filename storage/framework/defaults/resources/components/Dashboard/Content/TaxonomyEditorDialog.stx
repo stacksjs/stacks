@@ -1,0 +1,106 @@
+<script client>
+interface TaxonomyDraft {
+  name: string
+  slug: string
+  description: string
+}
+
+const open = useReactiveProp('open', false)
+const kind = useReactiveProp('kind', 'category')
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const name = state('')
+const slug = state('')
+const description = state('')
+const slugTouched = state(false)
+const emit = defineEmits()
+let wasOpen = false
+
+function slugify(value: string): string {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036F]/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    name.set('')
+    slug.set('')
+    description.set('')
+    slugTouched.set(false)
+  }
+  wasOpen = isOpen
+})
+
+effect(() => {
+  if (!open() || slugTouched())
+    return
+  slug.set(slugify(name()))
+})
+
+function markSlugTouched(): void {
+  slugTouched.set(true)
+}
+
+function normalizeSlug(): void {
+  const normalized = slugify(slug())
+  if (normalized !== slug())
+    slug.set(normalized)
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const draft: TaxonomyDraft = {
+    name: name().trim(),
+    slug: slugify(slug()),
+    description: description().trim(),
+  }
+  emit('submit', draft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="'New ' + kind()"
+  description="Add a reusable classification for your published content."
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="taxonomy-editor-form" class="grid gap-4" @submit.prevent="submit">
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
+      <input x-model="name" name="name" required maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Slug</span>
+      <input x-model="slug" name="slug" required maxlength="255" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" @input="markSlugTouched" @blur="normalizeSlug" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Description</span>
+      <textarea x-model="description" name="description" rows="3" maxlength="1000" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+    </label>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="taxonomy-editor-form" :disabled="!name().trim() || !slug().trim()" :loading="busy()">
+        Create {{ kind() }}
+      </Button>
+    </div>
+  </template>
+</Modal>

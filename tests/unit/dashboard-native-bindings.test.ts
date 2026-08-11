@@ -160,7 +160,7 @@ describe('dashboard native STX bindings', () => {
     for (const component of [
       'Content/AuthorEditorDialog.stx',
       'Content/CommentsDashboard.stx',
-      'Content/ContentTaxonomyDashboard.stx',
+      'Content/TaxonomyEditorDialog.stx',
       'Content/PageEditorDialog.stx',
       'Content/BlogDashboard.stx',
       'Content/SeoDashboard.stx',
@@ -193,11 +193,16 @@ describe('dashboard native STX bindings', () => {
     expect(pageEditor).toContain('form="page-editor-form"')
 
     const taxonomy = componentSource('Content/ContentTaxonomyDashboard.stx')
-    expect(taxonomy).toContain(".normalize('NFKD')")
-    expect(taxonomy).toContain('@input="markSlugTouched"')
-    expect(taxonomy).toContain('@blur="normalizeSlug"')
+    const taxonomyEditor = componentSource('Content/TaxonomyEditorDialog.stx')
+    expect(taxonomy).toContain('<TaxonomyEditorDialog')
+    expect(taxonomy).toContain('<ConfirmDialog')
+    expect(taxonomy).not.toContain('fixed inset-y-0')
     expect(taxonomy).toContain('class="min-w-0 max-w-full space-y-6"')
     expect(taxonomy).toContain('class="overflow-x-auto max-w-full w-full"')
+    expect(taxonomyEditor).toContain(".normalize('NFKD')")
+    expect(taxonomyEditor).toContain('@input="markSlugTouched"')
+    expect(taxonomyEditor).toContain('@blur="normalizeSlug"')
+    expect(taxonomyEditor).toContain('form="taxonomy-editor-form"')
 
     const blogView = readFileSync(
       resolve('storage/framework/defaults/views/dashboard/content/blog/index.stx'),
