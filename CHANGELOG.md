@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.364...v0.70.365)
+
+## 🐛 Bug Fixes
+
+- **unpublish:core**: prune CI that runs the framework's own checks ([680ddbd](https://github.com/stacksjs/stacks/commit/680ddbd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: sign out a browser that signed in by cookie (#2308) ([cd90263](https://github.com/stacksjs/stacks/commit/cd90263)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2306](https://github.com/stacksjs/stacks/issues/2306), [#2308](https://github.com/stacksjs/stacks/issues/2308), [#2308](https://github.com/stacksjs/stacks/issues/2308))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.363...v0.70.364)
 
 ## 🐛 Bug Fixes
