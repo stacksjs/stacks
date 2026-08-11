@@ -16,6 +16,7 @@ import { describe, expect, it } from 'bun:test'
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { encryptedEnvFileNames } from '../src/commands/deploy'
 import { ensureDeployEnvIsSet, isEnvFileEncrypted } from '../src/commands/setup'
 
 /** An empty project directory. */
@@ -144,5 +145,54 @@ describe('ensureDeployEnvIsSet', () => {
     await ensureDeployEnvIsSet(cwd, 'development')
 
     expect(readFileSync(join(cwd, '.env'), 'utf-8')).toContain('base64:dev')
+  })
+})
+
+/**
+ * What a release carries.
+ *
+ * The encrypted env files are the deploy's INPUT, not part of what ships: the
+ * private key never leaves the machine running the deploy, so nothing on the
+ * server can read them. Carrying one anyway is worse than useless, because Bun
+ * loads `.env.<mode>` on top of `.env` and the mode-specific file wins — so a
+ * process reading its own env came up with `APP_KEY=encrypted:v2:…`.
+ */
+describe('encryptedEnvFileNames', () => {
+  it('names the per-environment files', () => {
+    const cwd = project()
+    writeFileSync(join(cwd, '.env.production'), '')
+    writeFileSync(join(cwd, '.env.staging'), '')
+
+    expect(encryptedEnvFileNames(cwd).sort()).toEqual(['.env.production', '.env.staging'])
+  })
+
+  it('finds an environment the framework has never heard of', () => {
+    // The set is open — an app may deploy to whatever it likes, and a list of
+    // the environments stacks knows about would ship that app's secrets.
+    const cwd = project()
+    writeFileSync(join(cwd, '.env.canary-eu'), '')
+
+    expect(encryptedEnvFileNames(cwd)).toEqual(['.env.canary-eu'])
+  })
+
+  it('keeps .env.example', () => {
+    // No values in it, and it is the one file on the box that documents what
+    // the app expects to be configured with.
+    const cwd = project()
+    writeFileSync(join(cwd, '.env.example'), 'APP_KEY=\n')
+    writeFileSync(join(cwd, '.env.production'), '')
+
+    expect(encryptedEnvFileNames(cwd)).toEqual(['.env.production'])
+  })
+
+  it('leaves the plain .env to the exclude beside it', () => {
+    const cwd = project()
+    writeFileSync(join(cwd, '.env'), 'APP_KEY=local\n')
+
+    expect(encryptedEnvFileNames(cwd)).toEqual([])
+  })
+
+  it('says nothing rather than throwing when the directory is not there', () => {
+    expect(encryptedEnvFileNames(join(tmpdir(), 'no-such-project-dir'))).toEqual([])
   })
 })

@@ -1132,6 +1132,26 @@ export function applyPersistentStatePaths(sites: Record<string, any>, slug: stri
 }
 
 /**
+ * The project's per-environment env files — `.env.production`, `.env.staging`,
+ * and whatever else an app has named — which a release must not carry.
+ *
+ * Read from disk rather than listed, because the set is open: an app may deploy
+ * an environment the framework has never heard of, and an exclude list that
+ * enumerates the ones it knows would ship that app's secrets file anyway.
+ *
+ * `.env.example` is kept. It holds no values, and it is the one file on the box
+ * that documents what the app expects to be configured with.
+ */
+export function encryptedEnvFileNames(projectRoot: string): string[] {
+  try {
+    return readdirSync(projectRoot).filter(name => /^\.env\.[\w-]+$/.test(name) && name !== '.env.example')
+  }
+  catch {
+    return []
+  }
+}
+
+/**
  * Does this file declare any scheduled work?
  *
  * The scaffold ships an `app/Scheduler.ts` whose body is entirely commented
@@ -1908,6 +1928,17 @@ async function runHetznerDeploy(args: {
     '.env.keys',
     '.env.production.bak',
     '.env.production.plain',
+    // …and the encrypted ones, which are useless on the box and actively
+    // harmful there. The private key never leaves the machine running the
+    // deploy, so nothing on the server can read `.env.production` — but Bun
+    // loads `.env.<mode>` on top of `.env`, and the mode-specific file WINS.
+    // A process that reads its own env rather than taking systemd's
+    // EnvironmentFile — the scheduler, a queue worker, any `./buddy` command
+    // run on the box — therefore came up with `APP_KEY=encrypted:v2:…`, a
+    // perfectly valid string that fails at whatever first tried to use it.
+    // Verified on a live box: the scheduler saw ciphertext for every secret
+    // while the site beside it, fed by EnvironmentFile, saw the real values.
+    ...encryptedEnvFileNames(p.projectPath()),
     // Local SQLite files. Shipping one overwrites the box's database with
     // whatever the developer happened to have on disk, silently, on every
     // deploy — the production rows are simply gone, and nothing in the output
