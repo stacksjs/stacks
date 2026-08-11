@@ -264,12 +264,38 @@ async function createPage(port: number): Promise<BrowserPage> {
   }
 }
 
-async function closePage(port: number, page: BrowserPage): Promise<void> {
-  page.cdp.close()
+async function closePage(port: number, page: BrowserPage): Promise<boolean> {
   try {
-    await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(page.targetId)}`)
+    const response = await fetch(`http://127.0.0.1:${port}/json/close/${encodeURIComponent(page.targetId)}`)
+    if (!response.ok) {
+      page.cdp.close()
+      return false
+    }
   }
-  catch { /* the target or browser may already have closed */ }
+  catch {
+    page.cdp.close()
+    return false
+  }
+  page.cdp.close()
+
+  // Chromium acknowledges target closure before every renderer/helper has
+  // actually left the target list. Creating the next target immediately can
+  // accumulate closing renderers across a large crawl, eventually dropping
+  // Network and Runtime events. Wait for the target to disappear so each route
+  // starts with the isolation the command promises.
+  for (let attempt = 0; attempt < 40; attempt++) {
+    try {
+      const targets = await (await fetch(`http://127.0.0.1:${port}/json/list`)).json() as any[]
+      if (!targets.some(target => target.id === page.targetId))
+        return true
+    }
+    catch {
+      return false
+    }
+    await Bun.sleep(25)
+  }
+
+  return false
 }
 
 function kill(s: Session): void {
@@ -864,7 +890,11 @@ async function main() {
         }
       }
       const replacePage = async (): Promise<void> => {
-        await closePage(session.port, browserPage)
+        const closed = await closePage(session.port, browserPage)
+        if (!closed) {
+          kill(session)
+          session = await launch()
+        }
         browserPage = await createReplacementPage()
         cdp = browserPage.cdp
       }
@@ -1019,6 +1049,16 @@ async function main() {
         || page.consoleErrors.length > 0
         || page.failedRequests.length > 0
         || page.horizontalOverflowPx > 0)
+      const summaryOnly = Boolean(flags.summary)
+      const reportedFailures = summaryOnly
+        ? failures.map(page => ({
+            path: page.path,
+            status: page.status,
+            consoleErrorCount: page.consoleErrors.length,
+            failedRequestCount: page.failedRequests.length,
+            horizontalOverflowPx: page.horizontalOverflowPx,
+          }))
+        : failures
       console.log(JSON.stringify({
         start: start.href,
         browser: session.browser,
@@ -1026,8 +1066,9 @@ async function main() {
         crawled: pages.length,
         remaining: queue.length,
         max,
-        paths: pages.map(page => page.path),
-        failures,
+        failureCount: failures.length,
+        ...(!summaryOnly ? { paths: pages.map(page => page.path) } : {}),
+        failures: reportedFailures,
       }, null, 2))
       if (failures.length > 0)
         process.exitCode = 1

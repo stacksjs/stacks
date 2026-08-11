@@ -114,10 +114,10 @@ Use `{"action":"assert","selector":"button","text":"Save","focused":true}` to ve
 
 ### Crawl (whole-site browser audit)
 ```bash
-bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--viewport 1280x900] [--max 500] [--path /extra-route] [--settle 350] [--progress]
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl <url> [--viewport 1280x900] [--max 500] [--path /extra-route] [--settle 350] [--progress] [--summary]
 ```
-Uses a fresh isolated page target per route, relaunching Chromium if its DevTools
-session exits during a long audit, while
+Uses a fresh isolated page target per route, waits for each target to fully close,
+and relaunches Chromium if its DevTools session or target lifecycle fails during a long audit, while
 following every same-origin link it discovers.
 The viewport is deterministic and defaults to `1280x900`; pass `--viewport 768x1024`
 to repeat the same route audit at a tablet breakpoint.
@@ -125,7 +125,8 @@ Each page is checked for a non-200 document, console exceptions, failed
 requests, and horizontal overflow. Repeat `--path` to seed routes that are not
 linked from the starting page. The command prints every crawled path and exits
 nonzero when any page fails. Add `--progress` to stream each completed page
-during a long audit.
+during a long audit. Add `--summary` to report totals and compact failure
+diagnostics without printing every visited path or overflowing element.
 
 ## Stacks-Specific QA
 
