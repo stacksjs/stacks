@@ -285,6 +285,7 @@ describe('dashboard button contract', () => {
       'Analytics/EventAnalytics.stx',
       'Buddy/BuddyAssistant.stx',
       'Models/ModelsOverview.stx',
+      'Management/AssignmentDrawer.stx',
       'Data/DataRecords.stx',
       'Releases/ReleaseDashboard.stx',
       'Teams/TeamPeopleDashboard.stx',
@@ -323,6 +324,10 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Management/PermissionsDashboard.stx'),
       'utf8',
     )
+    const drawer = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Management/AssignmentDrawer.stx'),
+      'utf8',
+    )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
     const semanticControls = [
       "tabClass('roles')",
@@ -330,10 +335,12 @@ describe('dashboard button contract', () => {
       "tabClass('users')",
       "tabClass('matrix')",
       '@click="selectRole(role)"',
-      'fixed inset-0 w-full bg-black/50',
     ]
 
-    expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(11)
+    expect(source).toContain('<AssignmentDrawer')
+    expect(source).not.toContain('fixed inset-0')
+    expect(drawer).toContain('<Drawer')
+    expect(drawer).toContain('<Button')
     expect(nativeButtons.every(button => semanticControls.some(marker => button.includes(marker)))).toBe(true)
   })
 

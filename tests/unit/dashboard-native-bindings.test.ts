@@ -1047,16 +1047,24 @@ describe('dashboard native STX bindings', () => {
       'roleFilter',
       'permissionFilter',
       'userFilter',
-      'selectedUserGuard',
     ])
       expect(page).toContain(`x-model="${model}"`)
 
+    const assignmentDrawer = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Management/AssignmentDrawer.stx'),
+      'utf8',
+    )
     expect(page).toContain('<ConfirmDialog')
+    expect(page).toContain('<AssignmentDrawer')
+    expect(page).not.toContain('fixed inset-0')
+    expect(assignmentDrawer).toContain('<Drawer')
+    expect(assignmentDrawer).toContain('x-model="guardValue"')
+    expect(assignmentDrawer).toContain("emit('save', [...selected()])")
     expect(page).toContain('@click="requestRoleDelete(role)"')
     expect(page).toContain('@click="requestPermissionDelete(perm)"')
     expect(page).toContain('@click="selectUser(u)"')
     expect(page).toContain('@click="selectRole(role)"')
-    expect(page).toContain('useEventListener(\'keydown\', handleKeydown)')
+    expect(page).not.toContain('useEventListener(\'keydown\', handleKeydown)')
     expect(page).toContain("import { rbacStore } from '~/storage/framework/defaults/views/dashboard/stores/rbac'")
     expect(page).toContain('const rbac = rbacStore')
     expect(page).not.toContain("useStore('rbac')")

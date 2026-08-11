@@ -1,0 +1,93 @@
+<script client>
+interface AssignmentOption {
+  name: string
+  description?: string | null
+}
+
+interface GuardOption {
+  value: string
+  label: string
+}
+
+const open = useReactiveProp('open', false)
+const title = useReactiveProp('title', 'Manage assignments')
+const description = useReactiveProp('description', '')
+const options = useReactiveProp('options', [] as AssignmentOption[])
+const initialSelected = useReactiveProp('selected', [] as string[])
+const guard = useReactiveProp('guard', '')
+const guardOptions = useReactiveProp('guardOptions', [] as GuardOption[])
+const loading = useReactiveProp('loading', false)
+const busy = useReactiveProp('busy', false)
+const emptyMessage = useReactiveProp('emptyMessage', 'No assignments are available.')
+const selected = state<string[]>([])
+const guardValue = state('')
+const emit = defineEmits()
+
+effect(() => {
+  selected.set([...initialSelected()])
+})
+
+effect(() => {
+  guardValue.set(guard())
+})
+
+function toggle(name: string): void {
+  const current = selected()
+  selected.set(current.includes(name)
+    ? current.filter(value => value !== name)
+    : [...current, name])
+}
+
+function changeGuard(): void {
+  emit('guard-change', guardValue())
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function save(): void {
+  if (!loading() && !busy())
+    emit('save', [...selected()])
+}
+</script>
+
+<Drawer
+  :isOpen="open()"
+  :title="title()"
+  :description="description()"
+  :closable="!busy()"
+  @close="close"
+>
+  <div :if="guardOptions().length > 0" class="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+    <label for="assignment-guard" class="block mb-1.5 font-medium text-zinc-600 text-xs dark:text-zinc-400">Guard</label>
+    <select id="assignment-guard" x-model="guardValue" name="guard" class="px-3 py-1.5 w-full text-zinc-900 text-sm dark:text-zinc-100 bg-white dark:bg-neutral-800 border border-zinc-300 rounded-md dark:border-zinc-700 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20" @change="changeGuard">
+      <template :for="option in guardOptions()">
+        <option :value="option.value">{{ option.label }}</option>
+      </template>
+    </select>
+  </div>
+
+  <div class="px-5 py-4 space-y-2">
+    <div :if="loading()" class="flex gap-2 items-center py-6 text-zinc-500 text-sm">
+      <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
+      Loading assignments...
+    </div>
+    <div :if="!loading() && options().length === 0" class="text-zinc-500 text-sm">{{ emptyMessage() }}</div>
+    <template :if="!loading()" :for="option in options()">
+      <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
+        <input name="assignments" type="checkbox" :value="option.name" :checked="selected().includes(option.name)" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" @change="toggle(option.name)" />
+        <span class="text-zinc-900 text-sm dark:text-zinc-100">{{ option.name }}</span>
+        <span class="text-zinc-500 text-xs">{{ option.description || '' }}</span>
+      </label>
+    </template>
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button :disabled="loading()" :loading="busy()" @click="save">Save</Button>
+    </div>
+  </template>
+</Drawer>

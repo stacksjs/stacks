@@ -175,17 +175,13 @@
 
   const selectedUser = state<UserRow | null>(null)
   const selectedUserGuard = state('web')
-  const userRolesDraft = state([])
   const savingUserRoles = state(false)
 
   async function loadSelectedUserRoles() {
     const user = selectedUser()
     if (!user) return
     const guardName = selectedUserGuard()
-    userRolesDraft.set([])
     await rbac.loadUserRoles(user.id, guardName)
-    if (selectedUser()?.id === user.id && selectedUserGuard() === guardName)
-      userRolesDraft.set([...rbac.userRoleNames(user.id, guardName)])
   }
 
   function selectUser(user: UserRow) {
@@ -199,21 +195,12 @@
     loadSelectedUserRoles()
   }
 
-  function toggleUserRoleDraft(roleName) {
-    const list = userRolesDraft()
-    userRolesDraft.set(
-      list.includes(roleName)
-        ? list.filter(n => n !== roleName)
-        : [...list, roleName],
-    )
-  }
-
-  async function saveUserRoles() {
+  async function saveUserRoles(roleNames: string[]) {
     const user = selectedUser()
     if (!user) return
     savingUserRoles.set(true)
     try {
-      await rbac.syncUserRoles(user.id, userRolesDraft(), selectedUserGuard())
+      await rbac.syncUserRoles(user.id, roleNames, selectedUserGuard())
     }
     finally {
       savingUserRoles.set(false)
@@ -222,14 +209,17 @@
 
   function closeUserDrawer() {
     selectedUser.set(null)
-    userRolesDraft.set([])
-  }
-
-  function isRoleInDraft(roleName) {
-    return userRolesDraft().includes(roleName)
   }
 
   const rolesForSelectedGuard = derived(() => roles().filter(role => role.guardName === selectedUserGuard()))
+  const selectedUserRoles = derived(() => {
+    const user = selectedUser()
+    return user ? rbac.userRoleNames(user.id, selectedUserGuard()) : []
+  })
+  const selectedUserName = derived(() => {
+    const user = selectedUser()
+    return user?.name || user?.email || (user ? `User #${user.id}` : '')
+  })
   const userRolesLoading = derived(() => {
     const user = selectedUser()
     return user ? Boolean(loadingPivots()[`user:${user.id}:${encodeURIComponent(selectedUserGuard())}`]) : false
@@ -238,31 +228,19 @@
   // ─── Role-permission matrix ───────────────────────────────────
 
   const selectedRole = state<RoleRow | null>(null)
-  const rolePermsDraft = state([])
   const savingRolePerms = state(false)
 
   async function selectRole(role: RoleRow) {
     selectedRole.set(role)
-    rolePermsDraft.set([])
     await rbac.loadRolePermissions(role.name, role.guardName)
-    rolePermsDraft.set([...rbac.rolePermissionNames(role.name, role.guardName)])
   }
 
-  function toggleRolePermDraft(permName) {
-    const list = rolePermsDraft()
-    rolePermsDraft.set(
-      list.includes(permName)
-        ? list.filter(n => n !== permName)
-        : [...list, permName],
-    )
-  }
-
-  async function saveRolePerms() {
+  async function saveRolePerms(permissionNames: string[]) {
     const role = selectedRole()
     if (!role) return
     savingRolePerms.set(true)
     try {
-      await rbac.syncRolePermissions(role.name, rolePermsDraft(), role.guardName)
+      await rbac.syncRolePermissions(role.name, permissionNames, role.guardName)
     }
     finally {
       savingRolePerms.set(false)
@@ -271,16 +249,19 @@
 
   function closeRoleDrawer() {
     selectedRole.set(null)
-    rolePermsDraft.set([])
-  }
-
-  function isPermInDraft(permName) {
-    return rolePermsDraft().includes(permName)
   }
 
   const permissionsForSelectedRole = derived(() => {
     const role = selectedRole()
     return role ? permissions().filter(permission => permission.guardName === role.guardName) : []
+  })
+  const selectedRolePermissions = derived(() => {
+    const role = selectedRole()
+    return role ? rbac.rolePermissionNames(role.name, role.guardName) : []
+  })
+  const selectedRoleDescription = derived(() => {
+    const role = selectedRole()
+    return role ? `Guard: ${role.guardName}` : ''
   })
 
   const rolePermissionsLoading = derived(() => {
@@ -331,17 +312,6 @@
       deleting.set(false)
     }
   }
-
-  function handleKeydown(event: KeyboardEvent) {
-    if (event.key !== 'Escape' || pendingDelete())
-      return
-    if (selectedRole())
-      closeRoleDrawer()
-    else if (selectedUser())
-      closeUserDrawer()
-  }
-
-  useEventListener('keydown', handleKeydown)
 
   // ─── Tiny formatters ──────────────────────────────────────────
 
@@ -545,86 +515,34 @@
     </div>
   </div>
 
-  <!-- ─── User-role drawer (right-side panel) ───────────────── -->
-<div :if="selectedUser()" class="fixed inset-0 z-30 dashboard-modal-layer">
-    <button type="button" aria-label="Close role assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeUserDrawer()"></button>
-    <aside role="dialog" aria-modal="true" aria-label="User role assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
-      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-          Roles for <span :text="selectedUser().name || selectedUser().email || ('User #' + selectedUser().id)"></span>
-        </h3>
-        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close role assignment drawer" @click="closeUserDrawer()">
-          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-      <div class="px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <label for="user-role-guard" class="block mb-1.5 font-medium text-xs text-zinc-600 dark:text-zinc-400">Guard</label>
-        <select id="user-role-guard" x-model="selectedUserGuard" @change="changeUserGuard(selectedUserGuard())" class="px-3 py-1.5 w-full text-sm text-zinc-900 dark:text-zinc-100 bg-white dark:bg-neutral-800 border border-zinc-300 rounded-md dark:border-zinc-700 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20">
-          <template :for="option in guardOptions">
-            <option :value="option.value">{{ option.label }}</option>
-          </template>
-        </select>
-      </div>
-      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
-        <div :if="userRolesLoading()" class="flex gap-2 items-center py-6 text-sm text-zinc-500">
-          <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-          Loading assignments…
-        </div>
-        <div :if="!userRolesLoading() && rolesForSelectedGuard().length === 0" class="text-sm text-zinc-500">No roles are defined for this guard.</div>
-        <template :for="role in rolesForSelectedGuard">
-          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
-            <input type="checkbox" :checked="isRoleInDraft(role.name)" @change="toggleUserRoleDraft(role.name)" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
-            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
-            <span class="text-xs text-zinc-500">{{ role.description || '' }}</span>
-          </label>
-        </template>
-      </div>
-      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
-        <Button variant="secondary" size="sm" :disabled="savingUserRoles()" @click="closeUserDrawer()">Cancel</Button>
-        <Button size="sm" :disabled="userRolesLoading()" :loading="savingUserRoles()" @click="saveUserRoles()">
-          Save
-        </Button>
-      </div>
-    </aside>
-  </div>
+  <AssignmentDrawer
+    :open="Boolean(selectedUser())"
+    title="Assign roles"
+    :description="selectedUserName()"
+    :options="rolesForSelectedGuard()"
+    :selected="selectedUserRoles()"
+    :guard="selectedUserGuard()"
+    :guardOptions="guardOptions()"
+    :loading="userRolesLoading()"
+    :busy="savingUserRoles()"
+    emptyMessage="No roles are defined for this guard."
+    @guard-change="changeUserGuard"
+    @close="closeUserDrawer"
+    @save="saveUserRoles"
+  />
 
-  <!-- ─── Role-permission drawer ────────────────────────────── -->
-<div :if="selectedRole()" class="fixed inset-0 z-30 dashboard-modal-layer">
-    <button type="button" aria-label="Close permission assignment drawer" class="fixed inset-0 w-full bg-black/50 cursor-default" @click="closeRoleDrawer()"></button>
-    <aside role="dialog" aria-modal="true" aria-label="Role permission assignments" class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
-      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
-        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
-          Permissions for <span :text="selectedRole().name"></span>
-        </h3>
-        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close permission assignment drawer" @click="closeRoleDrawer()">
-          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-      <div class="px-5 py-3 text-xs text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-        Guard: <code class="text-zinc-700 dark:text-zinc-300">{{ selectedRole().guardName }}</code>
-      </div>
-      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
-        <div :if="rolePermissionsLoading()" class="flex gap-2 items-center py-6 text-sm text-zinc-500">
-          <span class="h-4 w-4 animate-spin i-hugeicons-loading-03"></span>
-          Loading assignments…
-        </div>
-        <div :if="!rolePermissionsLoading() && permissionsForSelectedRole().length === 0" class="text-sm text-zinc-500">No permissions are defined for this guard.</div>
-        <template :for="perm in permissionsForSelectedRole">
-          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
-            <input type="checkbox" :checked="isPermInDraft(perm.name)" @change="toggleRolePermDraft(perm.name)" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
-            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</span>
-            <span class="text-xs text-zinc-500">{{ perm.description || '' }}</span>
-          </label>
-        </template>
-      </div>
-      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
-        <Button variant="secondary" size="sm" :disabled="savingRolePerms()" @click="closeRoleDrawer()">Cancel</Button>
-        <Button size="sm" :disabled="rolePermissionsLoading()" :loading="savingRolePerms()" @click="saveRolePerms()">
-          Save
-        </Button>
-      </div>
-    </aside>
-  </div>
+  <AssignmentDrawer
+    :open="Boolean(selectedRole())"
+    title="Assign permissions"
+    :description="selectedRoleDescription()"
+    :options="permissionsForSelectedRole()"
+    :selected="selectedRolePermissions()"
+    :loading="rolePermissionsLoading()"
+    :busy="savingRolePerms()"
+    emptyMessage="No permissions are defined for this guard."
+    @close="closeRoleDrawer"
+    @save="saveRolePerms"
+  />
 
   <ConfirmDialog
     :isOpen="Boolean(pendingDelete())"
