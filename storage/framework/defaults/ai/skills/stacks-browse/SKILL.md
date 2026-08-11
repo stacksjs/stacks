@@ -101,6 +101,7 @@ Extracts headings, links (`text -> href`), buttons, forms (action + field count)
 bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts scenario <url> \
   --step '{"action":"click","selector":"button[data-open]"}' \
   --step '{"action":"focus","selector":"input[name=name]"}' \
+  --step '{"action":"evaluate","expression":"window.__stxDevtools?.stats()"}' \
   --step '{"action":"fill","selector":"input[name=name]","value":"Example"}' \
   --step '{"action":"click","selector":"button[type=submit]"}' \
   --step '{"action":"assert","selector":"main","text":"Saved"}' \
@@ -108,7 +109,7 @@ bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts scenari
   --out storage/framework/runtime/shots/scenario.png
 ```
 
-Steps run in order within one isolated browser page, preserving reactive STX state and SPA navigation. Supported actions are `click`, `fill`, `focus`, `press`, `wait`, and `assert`. Each step is a JSON object passed through a repeatable `--step` flag. Click and focus steps may include `text` to select the matching control from their CSS selector. The command reports every completed step, the final URL and page text, console messages, console exceptions, failed requests, and an optional screenshot. It exits nonzero when the scenario assertion, browser console, or network fails.
+Steps run in order within one isolated browser page, preserving reactive STX state and SPA navigation. Supported actions are `click`, `fill`, `focus`, `press`, `wait`, `evaluate`, and `assert`. Each step is a JSON object passed through a repeatable `--step` flag. Click and focus steps may include `text` to select the matching control from their CSS selector. Evaluate steps run a JavaScript expression in the isolated page and return its serialized value, which is useful for inspecting STX signals and DevTools state between interactions. The command reports every completed step, the final URL and page text, console messages, console exceptions, failed requests, and an optional screenshot. It exits nonzero when the scenario assertion, evaluation, browser console, or network fails.
 Use `{"action":"assert","selector":"...","absent":true}` to verify that an element is missing or hidden after an interaction.
 Use `{"action":"assert","selector":"button","text":"Save","focused":true}` to verify keyboard focus and focus restoration.
 

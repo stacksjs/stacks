@@ -523,7 +523,7 @@ function parseViewport(value: string | undefined): { w: number, h: number } {
   return { w, h }
 }
 
-type ScenarioAction = 'assert' | 'click' | 'fill' | 'focus' | 'press' | 'wait'
+type ScenarioAction = 'assert' | 'click' | 'evaluate' | 'fill' | 'focus' | 'press' | 'wait'
 
 interface ScenarioStep {
   action: ScenarioAction
@@ -531,6 +531,7 @@ interface ScenarioStep {
   text?: string
   absent?: boolean
   focused?: boolean
+  expression?: string
   value?: string
   key?: string
   ms?: number
@@ -550,7 +551,7 @@ function parseScenarioStep(value: string): ScenarioStep {
     throw new TypeError('Each scenario step must be a JSON object.')
 
   const step = parsed as Record<string, unknown>
-  if (!['assert', 'click', 'fill', 'focus', 'press', 'wait'].includes(String(step.action)))
+  if (!['assert', 'click', 'evaluate', 'fill', 'focus', 'press', 'wait'].includes(String(step.action)))
     throw new TypeError(`Unsupported scenario action: ${String(step.action)}`)
 
   const action = step.action as ScenarioAction
@@ -558,6 +559,8 @@ function parseScenarioStep(value: string): ScenarioStep {
     throw new TypeError(`Scenario action "${action}" requires a selector.`)
   if (action === 'fill' && typeof step.value !== 'string')
     throw new TypeError('Scenario action "fill" requires a string value.')
+  if (action === 'evaluate' && typeof step.expression !== 'string')
+    throw new TypeError('Scenario action "evaluate" requires an expression.')
   if (step.absent !== undefined && (action !== 'assert' || typeof step.absent !== 'boolean'))
     throw new TypeError('Scenario "absent" is a boolean supported only by assert actions.')
   if (step.focused !== undefined && (action !== 'assert' || typeof step.focused !== 'boolean'))
@@ -582,6 +585,17 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyDown', key, code: key, windowsVirtualKeyCode: keyCode })
     await cdp.send('Input.dispatchKeyEvent', { type: 'keyUp', key, code: key, windowsVirtualKeyCode: keyCode })
     return { action: step.action, key, ok: true }
+  }
+
+  if (step.action === 'evaluate') {
+    const result = await cdp.send('Runtime.evaluate', {
+      expression: step.expression,
+      returnByValue: true,
+      awaitPromise: true,
+    })
+    if (result.exceptionDetails)
+      throw new Error(result.exceptionDetails.exception?.description || result.exceptionDetails.text || 'Evaluation failed')
+    return { action: step.action, value: result.result?.value, ok: true }
   }
 
   const result = await cdp.send('Runtime.evaluate', {

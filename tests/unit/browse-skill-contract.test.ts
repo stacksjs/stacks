@@ -47,7 +47,8 @@ describe('browse skill contract', () => {
 
   test('documents repeatable stateful SPA scenarios', () => {
     expect(skill).toContain('### Scenario (stateful SPA interactions)')
-    expect(skill).toContain('Supported actions are `click`, `fill`, `focus`, `press`, `wait`, and `assert`')
+    expect(skill).toContain('Supported actions are `click`, `fill`, `focus`, `press`, `wait`, `evaluate`, and `assert`')
+    expect(skill).toContain('inspecting STX signals and DevTools state')
     expect(skill).toContain('"absent":true')
     expect(skill).toContain('"focused":true')
     expect(skill).toContain('preserving reactive STX state and SPA navigation')
@@ -64,6 +65,9 @@ describe('browse skill contract', () => {
     expect(script).toContain("error: 'Expected element to be absent'")
     expect(script).toContain("error: step.focused ? 'Expected element to be focused'")
     expect(script).toContain("await cdp.send('Input.dispatchKeyEvent'")
+    expect(script).toContain("step.action === 'evaluate'")
+    expect(script).toContain('awaitPromise: true')
+    expect(script).toContain('result.exceptionDetails')
     expect(script).toContain("role: document.activeElement.getAttribute?.('role') || null")
     expect(script).toContain("ref: document.activeElement.getAttribute?.('data-stx-ref') || null")
     expect(script).toContain("window.__browseFocusHistory.push({ event: 'focusout'")
