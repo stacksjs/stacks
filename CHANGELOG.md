@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.358...v0.70.359)
+
+## 🐛 Bug Fixes
+
+- **orm**: publish the route generator, so installed apps serve their models ([8afeb2e](https://github.com/stacksjs/stacks/commit/8afeb2e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: share native confirmation modal ([df08288](https://github.com/stacksjs/stacks/commit/df08288)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **auth**: take bun-router 0.0.22 too, so there is one copy of it ([22319f7](https://github.com/stacksjs/stacks/commit/22319f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.357...v0.70.358)
 
 ## ✨ Features
