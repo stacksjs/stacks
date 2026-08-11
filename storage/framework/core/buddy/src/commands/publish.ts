@@ -7,6 +7,7 @@ import process from 'node:process'
 import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
+import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
 import { ExitCode } from '@stacksjs/types'
 
 interface PublishOptions {
@@ -806,6 +807,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   //    synced out of @stacksjs/defaults by `buddy upgrade`.
   const tsconfigPath = resolve(process.cwd(), 'tsconfig.json')
   let rewroteTsconfig = false
+  let rewroteTypecheck = false
   if (existsSync(tsconfigPath)) {
     const raw = await fs.promises.readFile(tsconfigPath, 'utf-8')
     const next = raw.replace(
@@ -818,6 +820,25 @@ async function unvendorFramework(force: boolean): Promise<void> {
       rewroteTsconfig = true
     }
   }
+
+  // 3b. `typecheck` runs the FRAMEWORK's project (`tsconfig.framework.json`),
+  //     which checks `storage/framework/**` and deliberately excludes `app/`,
+  //     `config/`, `resources/` and `routes/` — they are checked by the root
+  //     project instead. In the framework repository that split is right. In an
+  //     app it means the one command anybody runs checks everything EXCEPT the
+  //     code they write, quietly, forever. Run both.
+  const splitTypecheck = splitFrameworkTypecheckScript(rootPkg.scripts ?? {})
+  if (splitTypecheck) {
+    rootPkg.scripts = splitTypecheck
+    rewroteTypecheck = true
+    await fs.promises.writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
+  }
+
+  // 3c. CI jobs that build, test or compile the vendored packages. They fail by
+  //     construction once the directory is gone, and nobody connects a red
+  //     pipeline to an unvendor that happened weeks earlier — so it just stays
+  //     red, and stops meaning anything.
+  const prunedWorkflows = await pruneVendoredCoreFromWorkflows(process.cwd())
 
   // 4. The vendored source itself, and any node_modules symlink still
   //    pointing into it. Those links survive the directory they point at and
@@ -853,6 +874,15 @@ async function unvendorFramework(force: boolean): Promise<void> {
     log.info(`Rewrote ${rewrittenPreloads} bunfig.toml preload path${rewrittenPreloads === 1 ? '' : 's'} to package specifiers`)
   if (rewroteTsconfig)
     log.info('tsconfig.json now extends storage/framework/tsconfig.app.json')
+  if (rewroteTypecheck)
+    log.info('`typecheck` now checks this app as well as the framework files it still ships')
+  for (const pruned of prunedWorkflows) {
+    const parts = [
+      pruned.removedJobs.length > 0 ? `${pruned.removedJobs.length} job${pruned.removedJobs.length === 1 ? '' : 's'} (${pruned.removedJobs.join(', ')})` : '',
+      pruned.removedSteps > 0 ? `${pruned.removedSteps} step${pruned.removedSteps === 1 ? '' : 's'}` : '',
+    ].filter(Boolean)
+    log.info(`${pruned.file}: removed ${parts.join(' and ')} that ran against the vendored core`)
+  }
 
   log.info('Installing the published packages...')
   const install = Bun.spawn(['bun', 'install'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
