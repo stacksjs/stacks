@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Release } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 import { normalizeReleaseRecord, summarizeReleases } from './release-records'
 
 export default new Action({
@@ -9,12 +10,17 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    const records = await Release.orderByDesc('id').limit(200).get()
-    const releases = records.map(normalizeReleaseRecord)
+    try {
+      const records = await Release.orderByDesc('id').limit(200).get()
+      const releases = records.map(normalizeReleaseRecord)
 
-    return {
-      releases,
-      summary: summarizeReleases(releases),
+      return {
+        releases,
+        summary: summarizeReleases(releases),
+      }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Release history could not be loaded.', 'ReleaseIndexAction')
     }
   },
 })

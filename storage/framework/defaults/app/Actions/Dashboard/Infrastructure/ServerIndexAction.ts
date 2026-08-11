@@ -1,21 +1,27 @@
 import { Action } from '@stacksjs/actions'
 import { tsCloud } from '~/config/cloud'
 import { getDashboardCloudSnapshot } from '../Cloud/cloud-overview'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'ServerIndexAction',
   description: 'Returns configured servers and persisted deployment state.',
   method: 'GET',
   async handle() {
-    const snapshot = await getDashboardCloudSnapshot(tsCloud)
-    return {
-      project: snapshot.project,
-      environments: snapshot.environments,
-      servers: snapshot.serverDefinitions,
-      deployments: snapshot.deployments,
-      network: snapshot.resources.filter(resource => resource.category === 'network'),
-      events: snapshot.events,
-      generatedAt: snapshot.generatedAt,
+    try {
+      const snapshot = await getDashboardCloudSnapshot(tsCloud)
+      return {
+        project: snapshot.project,
+        environments: snapshot.environments,
+        servers: snapshot.serverDefinitions,
+        deployments: snapshot.deployments,
+        network: snapshot.resources.filter(resource => resource.category === 'network'),
+        events: snapshot.events,
+        generatedAt: snapshot.generatedAt,
+      }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Server state could not be loaded.', 'ServerIndexAction')
     }
   },
 })

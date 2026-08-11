@@ -1,4 +1,5 @@
 import { Action } from '@stacksjs/actions'
+import { dashboardOperationalError } from '../dashboard-response'
 import { readEnvironmentFile } from './environment-file'
 
 export default new Action({
@@ -8,9 +9,14 @@ export default new Action({
   apiResponse: true,
 
   async handle() {
-    return Response.json(
-      { environment: await readEnvironmentFile() },
-      { headers: { 'Cache-Control': 'no-store', Pragma: 'no-cache' } },
-    )
+    try {
+      return Response.json(
+        { environment: await readEnvironmentFile() },
+        { headers: { 'Cache-Control': 'no-store', Pragma: 'no-cache' } },
+      )
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Environment file could not be loaded.', 'EnvironmentIndexAction')
+    }
   },
 })

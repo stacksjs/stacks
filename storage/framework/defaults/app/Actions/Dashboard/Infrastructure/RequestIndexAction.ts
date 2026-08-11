@@ -1,19 +1,21 @@
 import { Action } from '@stacksjs/actions'
 import { Request } from '@stacksjs/orm'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'RequestIndexAction',
   description: 'Returns request history data for the dashboard.',
   method: 'GET',
   async handle() {
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    const [allRequests, total, errorCount, averageDurationMs, requestsLastHour] = await Promise.all([
-      Request.orderByDesc('id').limit(100).get(),
-      Request.count(),
-      Request.where('status_code', '>=', 400).count(),
-      Request.avg('duration_ms'),
-      Request.where('created_at', '>=', oneHourAgo).count(),
-    ])
+    try {
+      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+      const [allRequests, total, errorCount, averageDurationMs, requestsLastHour] = await Promise.all([
+        Request.orderByDesc('id').limit(100).get(),
+        Request.count(),
+        Request.where('status_code', '>=', 400).count(),
+        Request.avg('duration_ms'),
+        Request.where('created_at', '>=', oneHourAgo).count(),
+      ])
 
     const requests = allRequests.map(request => ({
       id: Number(request.get('id') || 0),
@@ -28,16 +30,20 @@ export default new Action({
       createdAt: String(request.get('created_at') || ''),
     }))
 
-    return {
-      requests,
-      stats: {
-        total,
-        errorCount,
-        averageDurationMs: Number(averageDurationMs || 0),
-        successRate: total > 0 ? ((total - errorCount) / total) * 100 : 0,
-        requestsLastHour,
-        requestsPerMinute: requestsLastHour / 60,
-      },
+      return {
+        requests,
+        stats: {
+          total,
+          errorCount,
+          averageDurationMs: Number(averageDurationMs || 0),
+          successRate: total > 0 ? ((total - errorCount) / total) * 100 : 0,
+          requestsLastHour,
+          requestsPerMinute: requestsLastHour / 60,
+        },
+      }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Request history could not be loaded.', 'RequestIndexAction')
     }
   },
 })

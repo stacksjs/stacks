@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { updateEnvironmentFile } from './environment-file'
 
 export default new Action({
@@ -18,7 +19,13 @@ export default new Action({
     if (typeof revision !== 'string' || !/^[a-f0-9]{64}$/.test(revision))
       return response.json({ message: 'A valid environment revision is required.' }, 422)
 
-    const result = await updateEnvironmentFile(content, revision)
+    let result
+    try {
+      result = await updateEnvironmentFile(content, revision)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Environment file could not be saved.', 'EnvironmentUpdateAction', 500)
+    }
     if (result.issues?.length) {
       const errors = Object.fromEntries(result.issues.map((issue, index) => [
         issue.line ? String(issue.line) : `file-${index}`,
