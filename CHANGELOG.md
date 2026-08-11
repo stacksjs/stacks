@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.363...v0.70.364)
+
+## 🐛 Bug Fixes
+
+- **unpublish:core**: drop the framework's publish job too ([f28bc72](https://github.com/stacksjs/stacks/commit/f28bc72)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.362...v0.70.363)
 
 ## ✨ Features
