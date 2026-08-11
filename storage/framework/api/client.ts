@@ -3971,6 +3971,34 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/email-idempotency
+   */
+  getEmailIdempotency(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-idempotency", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/email-idempotency/bulk-delete
+   */
+  postEmailIdempotencyBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/email-idempotency/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/email-idempotency/{id}
+   */
+  getEmailIdempotencyId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-idempotency/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/email-idempotency/{id}
+   */
+  deleteEmailIdempotencyId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/email-idempotency/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/email-list-subscribers
    */
   getEmailListSubscribers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -4031,6 +4059,62 @@ export function createClient(config: ClientConfig) {
    */
   patchEmailListsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/email-lists/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/email-suppressions
+   */
+  getEmailSuppressions(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-suppressions", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/email-suppressions/bulk-delete
+   */
+  postEmailSuppressionsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/email-suppressions/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/email-suppressions/{id}
+   */
+  getEmailSuppressionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-suppressions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/email-suppressions/{id}
+   */
+  deleteEmailSuppressionsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/email-suppressions/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/email-webhook-events
+   */
+  getEmailWebhookEvents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-webhook-events", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/email-webhook-events/bulk-delete
+   */
+  postEmailWebhookEventsBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/email-webhook-events/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/email-webhook-events/{id}
+   */
+  getEmailWebhookEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/email-webhook-events/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/email-webhook-events/{id}
+   */
+  deleteEmailWebhookEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/email-webhook-events/{id}", input ?? {}, [], false, options)
   },
 
   /**
