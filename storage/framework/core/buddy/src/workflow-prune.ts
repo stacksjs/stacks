@@ -24,7 +24,15 @@ export interface WorkflowPrune {
   removedSteps: number
 }
 
-const CORE_PATH = /storage\/framework\/core/
+/**
+ * Paths that only exist while the framework is vendored.
+ *
+ * `storage/framework/core` is the source tree itself. `scripts/publish-commit`
+ * is the framework's own npm publish, which walks that tree — it survives the
+ * unvendor as a file and finds nothing, so the job that runs it either publishes
+ * nothing or fails, depending on how far it gets.
+ */
+const FRAMEWORK_ONLY_PATH = /storage\/framework\/(?:core|scripts\/publish-commit)/
 
 /** Does this line REFER to the vendored core, rather than mention it in prose? */
 function referencesCore(line: string): boolean {
@@ -32,7 +40,7 @@ function referencesCore(line: string): boolean {
   if (trimmed.startsWith('#'))
     return false
 
-  return CORE_PATH.test(line.replace(/\s#.*$/, ''))
+  return FRAMEWORK_ONLY_PATH.test(line.replace(/\s#.*$/, ''))
 }
 
 /** The line index each top-level job starts at, in order. */

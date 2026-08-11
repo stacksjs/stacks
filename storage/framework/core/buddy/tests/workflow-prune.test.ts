@@ -207,3 +207,27 @@ describe('splitFrameworkTypecheckScript', () => {
     expect(splitFrameworkTypecheckScript({ typecheck: scaffold.typecheck })).toBeNull()
   })
 })
+
+describe('the framework publish script', () => {
+  it('goes too — it walks the source tree that was just deleted', () => {
+    const withPublish = `name: CI
+
+jobs:
+  publish-commit:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Publish Commit
+        run: ./storage/framework/scripts/publish-commit
+`
+
+    const result = pruneVendoredCoreFromWorkflow(withPublish)
+
+    expect(result.removedJobs).toEqual(['publish-commit'])
+  })
+})
