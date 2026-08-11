@@ -2,7 +2,7 @@
   "name": "@stacksjs/defaults",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.360",
+  "version": "0.70.361",
   "description": "The complete managed Stacks application scaffold, including runtime defaults, AI guidance, editor metadata, and npm-backed project support files.",
   "author": "Chris Breuer",
   "license": "MIT",

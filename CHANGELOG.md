@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.360...v0.70.361)
+
+## 🐛 Bug Fixes
+
+- **orm**: catch the resolve failure, since `.catch` never sees it ([11f5099](https://github.com/stacksjs/stacks/commit/11f5099)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.359...v0.70.360)
 
 ## 🐛 Bug Fixes
