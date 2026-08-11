@@ -708,6 +708,7 @@ describe('dashboard native STX bindings', () => {
 
   test('operational dashboards use native filter models', () => {
     for (const component of [
+      'App/RequestsOverview.stx',
       'Deployments/DeploymentList.stx',
       'Jobs/JobHistory.stx',
       'Monitoring/ErrorDashboard.stx',
@@ -724,6 +725,13 @@ describe('dashboard native STX bindings', () => {
     const deployments = componentSource('Deployments/DeploymentList.stx')
     expect(deployments).toContain('v-model:value="environment"')
     expect(deployments).toContain('v-model:value="domain"')
+
+    const requests = componentSource('App/RequestsOverview.stx')
+    const requestDetails = componentSource('App/RequestDetailsDialog.stx')
+    expect(requests).toContain('<RequestDetailsDialog')
+    expect(requests).not.toContain('fixed inset-0')
+    expect(requestDetails).toContain('<Modal')
+    expect(requestDetails).toContain('Recorded')
 
     const jobs = componentSource('Jobs/JobHistory.stx')
     expect(jobs).toContain('setTimeout(reloadFilters, 250)')

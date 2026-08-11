@@ -260,6 +260,7 @@ describe('dashboard button contract', () => {
       'Infrastructure/ServerDetailsDashboard.stx',
       'Infrastructure/LogsDashboard.stx',
       'App/RequestsOverview.stx',
+      'App/RequestDetailsDialog.stx',
       'App/SourceInventory.stx',
       'Realtime/RealtimeDashboard.stx',
       'Queue/QueueDashboard.stx',

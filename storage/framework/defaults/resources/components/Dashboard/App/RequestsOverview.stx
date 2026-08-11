@@ -229,25 +229,5 @@ onMount(() => {
     </div>
   </Card>
 
-  <div :if="selectedRequest()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 dashboard-modal-layer" @click.self="closeInspector">
-    <div role="dialog" aria-modal="true" aria-labelledby="request-detail-title" class="p-6 max-w-2xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
-      <div class="flex gap-4 items-start justify-between">
-        <div>
-          <h2 id="request-detail-title" class="font-semibold text-lg text-neutral-900 dark:text-white">Request #{{ selectedRequest()?.id }}</h2>
-          <p class="mt-1 break-all font-mono text-neutral-500 text-sm dark:text-neutral-400">{{ selectedRequest()?.method }} {{ selectedRequest()?.path }}</p>
-        </div>
-        <Button variant="ghost" iconOnly ariaLabel="Close request details" @click="closeInspector">
-          <span class="h-5 w-5 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-      <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2 mt-6 text-sm">
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Status</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedRequest()?.status }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Duration</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedRequest()?.durationMs.toFixed(1) }} ms</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">IP address</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedRequest()?.ipAddress || 'Not recorded' }}</dd></div>
-        <div><dt class="text-neutral-500 dark:text-neutral-400">Memory usage</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ selectedRequest()?.memoryUsageMb || 0 }} MB</dd></div>
-        <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">User agent</dt><dd class="mt-1 break-words text-neutral-900 dark:text-white">{{ selectedRequest()?.userAgent || 'Not recorded' }}</dd></div>
-        <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">Error</dt><dd class="mt-1 break-words text-neutral-900 dark:text-white">{{ selectedRequest()?.errorMessage || 'No error recorded' }}</dd></div>
-      </dl>
-    </div>
-  </div>
+  <RequestDetailsDialog :request="selectedRequest()" @close="closeInspector" />
 </div>

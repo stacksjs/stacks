@@ -1,0 +1,42 @@
+<script client>
+interface RequestRow {
+  id: number
+  method: string
+  path: string
+  status: number
+  durationMs: number
+  ipAddress: string
+  memoryUsageMb: number
+  userAgent: string
+  errorMessage: string
+  createdAt: string
+}
+
+const request = useReactiveProp('request', null as RequestRow | null)
+const emit = defineEmits()
+
+function formatDate(value: string | undefined): string {
+  if (!value)
+    return 'Unknown'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
+}
+</script>
+
+<Modal
+  :isOpen="Boolean(request())"
+  :title="request() ? 'Request #' + request()?.id : 'Request details'"
+  size="lg"
+  @close="emit('close')"
+>
+  <p class="mb-5 break-all font-mono text-neutral-500 text-sm dark:text-neutral-400">{{ request()?.method }} {{ request()?.path }}</p>
+  <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2 text-sm">
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Status</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ request()?.status }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Duration</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ request()?.durationMs?.toFixed(1) || '0.0' }} ms</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">IP address</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ request()?.ipAddress || 'Not recorded' }}</dd></div>
+    <div><dt class="text-neutral-500 dark:text-neutral-400">Memory usage</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ request()?.memoryUsageMb || 0 }} MB</dd></div>
+    <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">Recorded</dt><dd class="mt-1 font-medium text-neutral-900 dark:text-white">{{ formatDate(request()?.createdAt) }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">User agent</dt><dd class="mt-1 break-words text-neutral-900 dark:text-white">{{ request()?.userAgent || 'Not recorded' }}</dd></div>
+    <div class="sm:col-span-2"><dt class="text-neutral-500 dark:text-neutral-400">Error</dt><dd class="mt-1 break-words text-neutral-900 dark:text-white">{{ request()?.errorMessage || 'No error recorded' }}</dd></div>
+  </dl>
+</Modal>
