@@ -70,6 +70,49 @@ async function actions(): Promise<typeof import('@stacksjs/actions')> {
   return _actions
 }
 
+/**
+ * Say so when the app is about to run framework defaults it did not install.
+ *
+ * `storage/framework/defaults` is the copy that executes: the generated
+ * auto-import barrel reaches into it by relative path. Only `buddy upgrade`
+ * writes it, so moving `stacks` forward the ordinary way (edit package.json,
+ * `bun install`) advances `node_modules/@stacksjs/defaults` and leaves the
+ * vendored tree exactly where it was. Nothing else compares the two, so the
+ * only symptom is a ReferenceError naming a framework-internal symbol from a
+ * bug that was fixed releases ago.
+ *
+ * Cheap on the common path: two manifest reads and a marker read. The file
+ * comparison only runs for a tree written before stamping existed, and it
+ * compares sizes rather than contents to stay off the boot budget.
+ */
+async function warnOnStaleFrameworkDefaults(): Promise<void> {
+  try {
+    const { inspectDefaultsProvenance, measureDefaultsDrift } = await actions()
+    const skew = inspectDefaultsProvenance(projectPath())
+
+    if (skew.status === 'not-applicable' || skew.status === 'current')
+      return
+
+    if (skew.status === 'stale') {
+      log.warn(`storage/framework/defaults is from ${skew.vendored}, but @stacksjs/defaults ${skew.installed} is installed.`)
+    }
+    else {
+      // Unstamped. Only a comparison can tell whether it is actually behind,
+      // and most trees are not, so stay silent unless one really differs.
+      const drift = measureDefaultsDrift(projectPath(), { shallow: true })
+      if (!drift || drift.length === 0)
+        return
+
+      log.warn(`storage/framework/defaults does not match the installed @stacksjs/defaults ${skew.installed}.`)
+    }
+
+    log.warn('The app runs the vendored copy. Run `buddy upgrade` to sync it, or `buddy doctor` for the file counts.')
+  }
+  catch {
+    // Provenance is a courtesy. It must never stop a dev server from starting.
+  }
+}
+
 export const interactiveDevChoices = [
   { value: 'all', title: 'All' },
   { value: 'frontend', title: 'Frontend' },
@@ -341,6 +384,8 @@ export function dev(buddy: CLI): void {
 
       const perf = Bun.nanoseconds()
       process.env.STACKS_DEV_ENTRY_PATH = resolveDevelopmentEntryPath({ site: options.site })
+
+      await warnOnStaleFrameworkDefaults()
 
       // log.info('Ensuring web server/s running...')
 

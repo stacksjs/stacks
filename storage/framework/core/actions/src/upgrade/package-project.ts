@@ -1,5 +1,5 @@
-import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { dirname, join, relative } from 'node:path'
+import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { dirname, join, relative, sep } from 'node:path'
 
 export interface ProjectStructureChange {
   path: string
@@ -8,6 +8,18 @@ export interface ProjectStructureChange {
 
 interface PackageProjectOptions {
   dryRun?: boolean
+  /**
+   * Treat same-size files as equal instead of reading both sides.
+   *
+   * A full content comparison of the defaults tree costs ~75ms warm and ~200ms
+   * cold, which is too much to spend on every `buddy dev`. Sizes alone still
+   * catch the drift that matters, because a tree that is releases behind
+   * differs in which files exist long before it differs only in bytes.
+   *
+   * Only meaningful together with `dryRun`: nothing should be copied on the
+   * strength of a size match.
+   */
+  shallow?: boolean
 }
 
 interface ProjectPackageJson {
@@ -25,9 +37,17 @@ const DEFAULTS_PACKAGE_IGNORES = new Set([
   'tests',
 ])
 
+/**
+ * Provenance stamp written next to the synced tree. The sync is the only thing
+ * that writes `storage/framework/defaults`, so this is the only record of which
+ * release the tree came from.
+ */
+export const DEFAULTS_SYNC_MARKER = '.stacks-sync.json'
+
 const LOCAL_DEFAULT_IGNORES = new Set([
   '.DS_Store',
   '.discovered-models.json',
+  DEFAULTS_SYNC_MARKER,
   'dist',
   'node_modules',
 ])
@@ -51,7 +71,7 @@ const SUPPORT_FILES: Array<{ source: string, target: string, executable?: boolea
   },
 ]
 
-function sameFile(left: string, right: string): boolean {
+function sameFile(left: string, right: string, shallow = false): boolean {
   if (!existsSync(left) || !existsSync(right))
     return false
 
@@ -59,6 +79,9 @@ function sameFile(left: string, right: string): boolean {
   const rightStat = statSync(right)
   if (leftStat.size !== rightStat.size)
     return false
+
+  if (shallow)
+    return true
 
   return readFileSync(left).equals(readFileSync(right))
 }
@@ -71,7 +94,7 @@ function copyFileIfChanged(
   options: PackageProjectOptions,
   executable = false,
 ): void {
-  if (sameFile(source, target)) {
+  if (sameFile(source, target, options.shallow)) {
     if (executable && !options.dryRun)
       chmodSync(target, 0o755)
     return
@@ -173,7 +196,161 @@ export function syncPackageProjectFiles(
       rmSync(target, { force: true })
   }
 
+  if (!options.dryRun)
+    stampDefaultsSync(targetDefaults, defaultsPackageRoot)
+
   return changes
+}
+
+/** Version field of a package manifest, or null when it cannot be read. */
+function packageVersion(packageRoot: string): string | null {
+  try {
+    const version = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf8'))?.version
+    return typeof version === 'string' ? version : null
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * Record which release the tree was copied from.
+ *
+ * Without this the vendored tree carries no version of its own, so an app that
+ * moves `stacks` forward through `package.json` and `bun install` (which never
+ * runs the sync) has no way to notice that its framework defaults stayed put.
+ */
+function stampDefaultsSync(targetDefaults: string, defaultsPackageRoot: string): void {
+  const version = packageVersion(defaultsPackageRoot)
+  if (!version)
+    return
+
+  const marker: DefaultsSyncMarker = { version, syncedAt: new Date().toISOString() }
+  mkdirSync(targetDefaults, { recursive: true })
+  writeFileSync(join(targetDefaults, DEFAULTS_SYNC_MARKER), `${JSON.stringify(marker, null, 2)}\n`)
+}
+
+export interface DefaultsSyncMarker {
+  /** `@stacksjs/defaults` version the tree was copied from. */
+  version: string
+  /** ISO-8601 instant of the copy. */
+  syncedAt: string
+}
+
+/**
+ * - `not-applicable` — nothing to compare: no vendored tree, no installed
+ *   package, or a framework checkout where the tree is the source rather than a
+ *   copy of it.
+ * - `unstamped` — the tree predates provenance stamping, so only a file
+ *   comparison can say whether it is current.
+ */
+export type DefaultsProvenance = 'not-applicable' | 'current' | 'stale' | 'unstamped'
+
+export interface DefaultsSkew {
+  status: DefaultsProvenance
+  /** Version of the installed `@stacksjs/defaults`. */
+  installed: string | null
+  /** Version the vendored tree was last synced from. */
+  vendored: string | null
+  syncedAt: string | null
+}
+
+const NOT_APPLICABLE: DefaultsSkew = { status: 'not-applicable', installed: null, vendored: null, syncedAt: null }
+
+/** Where `syncPackageProjectFiles` reads from, given a project root. */
+export function defaultsPackagePath(projectRoot: string): string {
+  return join(projectRoot, 'node_modules/@stacksjs/defaults')
+}
+
+/** Version of the installed `@stacksjs/defaults`, or null when absent. */
+export function installedDefaultsVersion(projectRoot: string): string | null {
+  return packageVersion(defaultsPackagePath(projectRoot))
+}
+
+function isInside(child: string, parent: string): boolean {
+  const resolved = realpathSync(child)
+  return resolved === parent || resolved.startsWith(`${parent}${sep}`)
+}
+
+/**
+ * Compare the vendored framework defaults against the installed package.
+ *
+ * Cheap by construction: two manifest reads and one marker read. Callers that
+ * need a file-level answer (there is none when the tree is `unstamped`) run
+ * {@link measureDefaultsDrift}.
+ */
+export function inspectDefaultsProvenance(projectRoot: string): DefaultsSkew {
+  const targetDefaults = join(projectRoot, 'storage/framework/defaults')
+  const packageRoot = defaultsPackagePath(projectRoot)
+
+  if (!existsSync(targetDefaults) || !existsSync(join(packageRoot, 'package.json')))
+    return NOT_APPLICABLE
+
+  // A framework checkout carries the framework's own source, and there the
+  // vendored tree is what `@stacksjs/defaults` is built *from* rather than a
+  // copy of it. Comparing the two reports drift that means nothing.
+  if (existsSync(join(projectRoot, 'storage/framework/core/buddy/package.json')))
+    return NOT_APPLICABLE
+
+  // Same reasoning for a linked checkout: an installed package resolves inside
+  // node_modules, while a workspace or `bun link` reference resolves back out
+  // to source the developer is editing.
+  try {
+    if (!isInside(packageRoot, join(realpathSync(projectRoot), 'node_modules')))
+      return NOT_APPLICABLE
+  }
+  catch {
+    return NOT_APPLICABLE
+  }
+
+  const installed = packageVersion(packageRoot)
+  if (!installed)
+    return NOT_APPLICABLE
+
+  let marker: DefaultsSyncMarker | null = null
+  try {
+    const raw = JSON.parse(readFileSync(join(targetDefaults, DEFAULTS_SYNC_MARKER), 'utf8'))
+    if (typeof raw?.version === 'string')
+      marker = { version: raw.version, syncedAt: typeof raw.syncedAt === 'string' ? raw.syncedAt : '' }
+  }
+  catch {
+    // No marker, or an unreadable one. Either way the tree is unstamped.
+  }
+
+  if (!marker)
+    return { status: 'unstamped', installed, vendored: null, syncedAt: null }
+
+  return {
+    status: marker.version === installed ? 'current' : 'stale',
+    installed,
+    vendored: marker.version,
+    syncedAt: marker.syncedAt || null,
+  }
+}
+
+/**
+ * What a sync would change right now, without changing it.
+ *
+ * Returns null when there is no installed package to compare against. Pass
+ * `shallow` for a boot-time probe; leave it off for an exact answer.
+ */
+export function measureDefaultsDrift(
+  projectRoot: string,
+  options: { shallow?: boolean } = {},
+): ProjectStructureChange[] | null {
+  const packageRoot = defaultsPackagePath(projectRoot)
+  if (!existsSync(join(packageRoot, 'package.json')))
+    return null
+
+  return syncPackageProjectFiles(projectRoot, packageRoot, { dryRun: true, shallow: options.shallow })
+}
+
+/** `+added ~updated -removed`, the shape `buddy upgrade` already prints. */
+export function summarizeStructureChanges(changes: ProjectStructureChange[]): string {
+  const added = changes.filter(change => change.action === 'add').length
+  const updated = changes.filter(change => change.action === 'update').length
+  const removed = changes.filter(change => change.action === 'remove').length
+  return `+${added} ~${updated} -${removed}`
 }
 
 /**
