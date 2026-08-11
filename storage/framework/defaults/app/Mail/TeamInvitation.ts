@@ -23,7 +23,7 @@ export async function sendTeamInvitation(options: TeamInvitationMailOptions): Pr
     subject,
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     to: [options.to],
     from: {
       name: config.email.from?.name || appName,

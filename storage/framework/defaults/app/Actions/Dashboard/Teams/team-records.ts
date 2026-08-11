@@ -24,6 +24,8 @@ export function changedRows(result: unknown): number {
     ?? record.affectedRows
     ?? record.numAffectedRows
     ?? record.numUpdatedRows
+    ?? record.numDeletedRows
+    ?? record.numInsertedRows
     ?? 0,
   )
 }

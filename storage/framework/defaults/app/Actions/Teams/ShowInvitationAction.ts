@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { hashInvitationToken, invitationStatus } from '../Dashboard/Teams/team-records'
+import { teamOperationalError } from './team-response'
 
 export default new Action({
   name: 'Show Team Invitation',
@@ -15,20 +16,26 @@ export default new Action({
     if (!token || token.length > 200)
       return response.json({ message: 'Invitation not found.' }, 404)
 
-    const invitation = await (db as any)
-      .selectFrom('team_invitations')
-      .innerJoin('teams', 'teams.id', '=', 'team_invitations.team_id')
-      .where('team_invitations.token_hash', '=', hashInvitationToken(token))
-      .select([
-        'team_invitations.id as id',
-        'team_invitations.team_id as team_id',
-        'team_invitations.email as email',
-        'team_invitations.role as role',
-        'team_invitations.status as status',
-        'team_invitations.expires_at as expires_at',
-        'teams.name as team_name',
-      ])
-      .executeTakeFirst()
+    let invitation
+    try {
+      invitation = await (db as any)
+        .selectFrom('team_invitations')
+        .innerJoin('teams', 'teams.id', '=', 'team_invitations.team_id')
+        .where('team_invitations.token_hash', '=', hashInvitationToken(token))
+        .select([
+          'team_invitations.id as id',
+          'team_invitations.team_id as team_id',
+          'team_invitations.email as email',
+          'team_invitations.role as role',
+          'team_invitations.status as status',
+          'team_invitations.expires_at as expires_at',
+          'teams.name as team_name',
+        ])
+        .executeTakeFirst()
+    }
+    catch (error) {
+      return teamOperationalError(error, 'Invitation details could not be loaded.', 'ShowInvitationAction')
+    }
     if (!invitation)
       return response.json({ message: 'Invitation not found.' }, 404)
 
