@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { campaigns } from '@stacksjs/newsletter'
+import { campaigns, CampaignStateConflictError } from '@stacksjs/newsletter'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import {
@@ -47,6 +47,8 @@ export default new Action({
       return response.json({ id, status: 'scheduled', scheduledAt: schedule.value }, 202)
     }
     catch (error) {
+      if (error instanceof CampaignStateConflictError)
+        return response.json({ message: 'Campaign delivery state changed. Refresh and try again.' }, 409)
       return dashboardOperationalError(error, 'Campaign could not be scheduled.', 'CampaignScheduleAction.queue', 500)
     }
   },

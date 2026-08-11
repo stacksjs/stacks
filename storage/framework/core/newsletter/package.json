@@ -60,6 +60,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/queue": "workspace:*"
+  },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

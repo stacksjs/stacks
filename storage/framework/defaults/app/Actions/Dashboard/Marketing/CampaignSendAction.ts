@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { campaigns } from '@stacksjs/newsletter'
+import { campaigns, CampaignStateConflictError } from '@stacksjs/newsletter'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import { loadCampaignDeliveryContext, validateCampaignDelivery } from './campaign-delivery'
@@ -40,6 +40,8 @@ export default new Action({
       return response.json({ id, status: 'sending' }, 202)
     }
     catch (error) {
+      if (error instanceof CampaignStateConflictError)
+        return response.json({ message: 'Campaign delivery state changed. Refresh and try again.' }, 409)
       return dashboardOperationalError(error, 'Campaign could not be queued.', 'CampaignSendAction.queue', 500)
     }
   },

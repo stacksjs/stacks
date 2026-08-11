@@ -1,6 +1,6 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { campaigns } from '@stacksjs/newsletter'
+import { campaigns, CampaignStateConflictError } from '@stacksjs/newsletter'
 import { Campaign } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
@@ -36,6 +36,8 @@ export default new Action({
       return response.json({ id, status: 'cancelled' })
     }
     catch (error) {
+      if (error instanceof CampaignStateConflictError)
+        return response.json({ message: 'Campaign delivery state changed. Refresh and try again.' }, 409)
       return dashboardOperationalError(error, 'Campaign could not be cancelled.', 'CampaignCancelAction.cancel', 500)
     }
   },

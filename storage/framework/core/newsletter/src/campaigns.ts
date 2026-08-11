@@ -1,4 +1,5 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
+import { db, sqlDateTime } from '@stacksjs/database'
 import { lists } from './lists'
 
 /**
@@ -30,6 +31,175 @@ interface ScheduledCampaignState {
   status?: unknown
   scheduled_at?: unknown
   scheduledAt?: unknown
+}
+
+interface CampaignDeliverySnapshot {
+  status: string
+  scheduledAt: string | null
+  updatedAt: string | null
+}
+
+interface CampaignDeliveryTarget {
+  status: string
+  scheduledAt: string | null
+  updatedAt: string
+  attemptId: string
+}
+
+export class CampaignStateConflictError extends Error {
+  constructor(id: number) {
+    super(`[newsletter] Campaign ${id} changed before delivery could be queued`)
+    this.name = 'CampaignStateConflictError'
+  }
+}
+
+function campaignValue(campaign: any, snakeKey: string, camelKey: string): unknown {
+  if (typeof campaign?.get === 'function') {
+    const snakeValue = campaign.get(snakeKey)
+    if (snakeValue !== undefined)
+      return snakeValue
+    return campaign.get(camelKey)
+  }
+
+  return campaign?.[snakeKey] ?? campaign?.[camelKey]
+}
+
+export function campaignDeliverySnapshot(campaign: any): CampaignDeliverySnapshot {
+  const scheduledAt = campaignValue(campaign, 'scheduled_at', 'scheduledAt')
+  const updatedAt = campaignValue(campaign, 'updated_at', 'updatedAt')
+  return {
+    status: String(campaignValue(campaign, 'status', 'status') || ''),
+    scheduledAt: scheduledAt === null || scheduledAt === undefined || scheduledAt === ''
+      ? null
+      : String(scheduledAt),
+    updatedAt: updatedAt === null || updatedAt === undefined || updatedAt === ''
+      ? null
+      : String(updatedAt),
+  }
+}
+
+export function campaignDeliveryDispatchKey(
+  id: number,
+  mode: 'immediate' | 'scheduled',
+  attempt: string,
+  scheduledAt?: string,
+): string {
+  return `newsletter:campaign:${id}:${mode}:${scheduledAt || 'now'}:${attempt}`
+}
+
+export function canQueueCampaignStatus(status: unknown): boolean {
+  return ['draft', 'scheduled', 'paused', 'failed'].includes(String(status || '').toLowerCase())
+}
+
+function affectedRows(result: unknown): number {
+  if (Array.isArray(result))
+    return result.reduce((total, item) => total + affectedRows(item), 0)
+  if (typeof result === 'number' || typeof result === 'bigint')
+    return Number(result)
+
+  const record = result as Record<string, unknown> | null | undefined
+  const raw = record?.changes
+    ?? record?.affectedRows
+    ?? record?.numAffectedRows
+    ?? record?.numUpdatedRows
+  if (typeof raw === 'object' && raw !== null)
+    return Number((raw as Record<string, unknown>).changes || 0)
+  return Number(raw || 0)
+}
+
+function withScheduledAtMatch(query: any, scheduledAt: string | null): any {
+  return scheduledAt === null
+    ? query.whereNull('scheduled_at')
+    : query.where('scheduled_at', '=', scheduledAt)
+}
+
+function withUpdatedAtMatch(query: any, updatedAt: string | null): any {
+  return updatedAt === null
+    ? query.whereNull('updated_at')
+    : query.where('updated_at', '=', updatedAt)
+}
+
+async function transitionCampaignDelivery(
+  id: number,
+  expected: CampaignDeliverySnapshot,
+  target: CampaignDeliveryTarget,
+): Promise<void> {
+  const query = withUpdatedAtMatch(
+    withScheduledAtMatch(
+      db
+      .updateTable('campaigns')
+      .set({
+        status: target.status,
+        scheduled_at: target.scheduledAt,
+        updated_at: target.updatedAt,
+      })
+      .where('id', '=', id)
+      .where('status', '=', expected.status),
+      expected.scheduledAt,
+    ),
+    expected.updatedAt,
+  )
+  const result = await query.execute()
+  if (affectedRows(result) !== 1)
+    throw new CampaignStateConflictError(id)
+}
+
+async function restoreCampaignDelivery(
+  id: number,
+  expected: CampaignDeliveryTarget,
+  restore: CampaignDeliverySnapshot,
+): Promise<void> {
+  const query = withScheduledAtMatch(
+    db
+      .updateTable('campaigns')
+      .set({
+        status: restore.status,
+        scheduled_at: restore.scheduledAt,
+        updated_at: sqlDateTime(),
+      })
+      .where('id', '=', id)
+      .where('status', '=', expected.status)
+      .where('updated_at', '=', expected.updatedAt),
+    expected.scheduledAt,
+  )
+  await query.execute()
+}
+
+async function dispatchCampaign(
+  id: number,
+  target: CampaignDeliveryTarget,
+  previous: CampaignDeliverySnapshot,
+  options: SendCampaignOptions,
+  scheduledAt?: string,
+  delaySeconds = 0,
+): Promise<void> {
+  const { job } = await import('@stacksjs/queue')
+  const mode = scheduledAt ? 'scheduled' : 'immediate'
+
+  try {
+    await job('SendCampaign', {
+      campaignId: id,
+      chunkSize: options.chunkSize ?? 50,
+      dryRun: options.dryRun ?? false,
+      ...(scheduledAt ? { scheduledAt } : {}),
+    })
+      .onQueue('campaigns')
+      .delay(delaySeconds)
+      .withIdempotencyKey(campaignDeliveryDispatchKey(id, mode, target.attemptId, scheduledAt))
+      .dispatch()
+  }
+  catch (dispatchError) {
+    try {
+      await restoreCampaignDelivery(id, target, previous)
+    }
+    catch (restoreError) {
+      throw new AggregateError(
+        [dispatchError, restoreError],
+        `[newsletter] Campaign ${id} could not be dispatched or restored`,
+      )
+    }
+    throw dispatchError
+  }
 }
 
 export function shouldRunScheduledCampaign(
@@ -130,19 +300,19 @@ export const campaigns = {
     const campaign = await campaigns.find(id)
     if (!campaign)
       throw new Error(`[newsletter] Campaign ${id} not found`)
-    if (campaign.status === 'sending' || campaign.status === 'sent')
-      throw new Error(`[newsletter] Campaign ${id} already ${campaign.status}`)
+    if (!canQueueCampaignStatus(campaign.status))
+      throw new Error(`[newsletter] Campaign ${id} in status '${campaign.status}' cannot be queued`)
 
-    await campaign.update({ status: 'sending' })
+    const previous = campaignDeliverySnapshot(campaign)
+    const target: CampaignDeliveryTarget = {
+      status: 'sending',
+      scheduledAt: previous.scheduledAt,
+      updatedAt: sqlDateTime(),
+      attemptId: crypto.randomUUID(),
+    }
 
-    const { job } = await import('@stacksjs/queue')
-    await job('SendCampaign', {
-      campaignId: id,
-      chunkSize: options.chunkSize ?? 50,
-      dryRun: options.dryRun ?? false,
-    })
-      .onQueue('campaigns')
-      .dispatch()
+    await transitionCampaignDelivery(id, previous, target)
+    await dispatchCampaign(id, target, previous, options)
 
     return { ok: true, campaignId: id }
   },
@@ -155,6 +325,8 @@ export const campaigns = {
     const campaign = await campaigns.find(id)
     if (!campaign)
       throw new Error(`[newsletter] Campaign ${id} not found`)
+    if (!canQueueCampaignStatus(campaign.status))
+      throw new Error(`[newsletter] Campaign ${id} in status '${campaign.status}' cannot be scheduled`)
 
     const at = scheduledAt instanceof Date ? scheduledAt : new Date(scheduledAt)
     if (!Number.isFinite(at.getTime()))
@@ -163,21 +335,23 @@ export const campaigns = {
     const delaySeconds = Math.max(0, Math.floor((at.getTime() - Date.now()) / 1000))
     const scheduledAtIso = at.toISOString()
 
-    await campaign.update({
+    const previous = campaignDeliverySnapshot(campaign)
+    const target: CampaignDeliveryTarget = {
       status: delaySeconds === 0 ? 'sending' : 'scheduled',
-      scheduled_at: scheduledAtIso,
-    })
+      scheduledAt: scheduledAtIso,
+      updatedAt: sqlDateTime(),
+      attemptId: crypto.randomUUID(),
+    }
 
-    const { job } = await import('@stacksjs/queue')
-    await job('SendCampaign', {
-      campaignId: id,
-      chunkSize: options.chunkSize ?? 50,
-      dryRun: options.dryRun ?? false,
-      ...(delaySeconds > 0 ? { scheduledAt: scheduledAtIso } : {}),
-    })
-      .onQueue('campaigns')
-      .delay(delaySeconds)
-      .dispatch()
+    await transitionCampaignDelivery(id, previous, target)
+    await dispatchCampaign(
+      id,
+      target,
+      previous,
+      options,
+      delaySeconds > 0 ? scheduledAtIso : undefined,
+      delaySeconds,
+    )
 
     return { ok: true, campaignId: id, scheduledAt: scheduledAtIso }
   },
@@ -187,7 +361,15 @@ export const campaigns = {
     if (!campaign)
       throw new Error(`[newsletter] Campaign ${id} not found`)
     if (campaign.status === 'sent')
-      throw new Error(`[newsletter] Campaign ${id} already sent — cannot cancel`)
-    return campaign.update({ status: 'cancelled' })
+      throw new Error(`[newsletter] Campaign ${id} already sent. It cannot be cancelled`)
+    const previous = campaignDeliverySnapshot(campaign)
+    const target: CampaignDeliveryTarget = {
+      status: 'cancelled',
+      scheduledAt: previous.scheduledAt,
+      updatedAt: sqlDateTime(),
+      attemptId: crypto.randomUUID(),
+    }
+    await transitionCampaignDelivery(id, previous, target)
+    return campaigns.find(id)
   },
 }

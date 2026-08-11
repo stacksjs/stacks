@@ -723,6 +723,11 @@
     "storage/framework/core/newsletter": {
       "name": "@stacksjs/newsletter",
       "version": "0.70.357",
+      "dependencies": {
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/orm": "workspace:*",
+        "@stacksjs/queue": "workspace:*",
+      },
       "devDependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",

@@ -116,4 +116,12 @@ describe('dashboard marketing error contract', () => {
     expect(sources).toContain('Campaign could not be cancelled.')
     expect(context).toContain('export async function loadCampaignDeliveryContext')
   })
+
+  test('reports concurrent delivery state changes as conflicts', () => {
+    for (const action of deliveryActions) {
+      const source = readAction(action)
+      expect(source).toContain('error instanceof CampaignStateConflictError')
+      expect(source).toContain("Campaign delivery state changed. Refresh and try again.' }, 409")
+    }
+  })
 })
