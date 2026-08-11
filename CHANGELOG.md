@@ -1,5 +1,72 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.362...v0.70.363)
+
+## ✨ Features
+
+- **dashboard**: add shared drawer primitive ([654e827](https://github.com/stacksjs/stacks/commit/654e827)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: complete model record editing ([2a6ad09](https://github.com/stacksjs/stacks/commit/2a6ad09)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **browse**: inspect scenario runtime state ([68b76d3](https://github.com/stacksjs/stacks/commit/68b76d3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: associate modal submit buttons ([4bb5812](https://github.com/stacksjs/stacks/commit/4bb5812)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **unpublish:core**: clean up the CI and the typecheck the unvendor left behind ([e8d8e95](https://github.com/stacksjs/stacks/commit/e8d8e95)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: honor modal autofocus ([0f24434](https://github.com/stacksjs/stacks/commit/0f24434)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **server**: boot the framework defaults the app actually installed (#2304) ([6c6390e](https://github.com/stacksjs/stacks/commit/6c6390e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2302](https://github.com/stacksjs/stacks/issues/2302), [#2304](https://github.com/stacksjs/stacks/issues/2304), [#2304](https://github.com/stacksjs/stacks/issues/2304), [#2303](https://github.com/stacksjs/stacks/issues/2303))
+- **upgrade**: report when the vendored framework defaults fall behind (#2303) ([fea12e0](https://github.com/stacksjs/stacks/commit/fea12e0)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2302](https://github.com/stacksjs/stacks/issues/2302), [#2303](https://github.com/stacksjs/stacks/issues/2303), [#2303](https://github.com/stacksjs/stacks/issues/2303))
+- **defaults**: repair 18 script blocks that never parsed ([f2fdb53](https://github.com/stacksjs/stacks/commit/f2fdb53)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **browse**: reach overflowed scenario controls ([8be39a0](https://github.com/stacksjs/stacks/commit/8be39a0)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: share blog dialogs ([cd5a06f](https://github.com/stacksjs/stacks/commit/cd5a06f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: replace hand-rolled search timers with useDebounce (#2305) ([b4f4157](https://github.com/stacksjs/stacks/commit/b4f4157)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2290](https://github.com/stacksjs/stacks/issues/2290), [#2305](https://github.com/stacksjs/stacks/issues/2305), [#2305](https://github.com/stacksjs/stacks/issues/2305), [#2290](https://github.com/stacksjs/stacks/issues/2290))
+- **dashboard**: share file manager dialogs ([6f987cb](https://github.com/stacksjs/stacks/commit/6f987cb)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share assignment drawers ([62ca917](https://github.com/stacksjs/stacks/commit/62ca917)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share seo editor modal ([3c8da0b](https://github.com/stacksjs/stacks/commit/3c8da0b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share source scaffold dialog ([8053443](https://github.com/stacksjs/stacks/commit/8053443)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share post dialogs ([e29dd3e](https://github.com/stacksjs/stacks/commit/e29dd3e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share taxonomy dialogs ([ef255d5](https://github.com/stacksjs/stacks/commit/ef255d5)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share page dialogs ([e8bc41f](https://github.com/stacksjs/stacks/commit/e8bc41f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: confirm comment deletion ([30b14ee](https://github.com/stacksjs/stacks/commit/30b14ee)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share author dialogs ([d63593a](https://github.com/stacksjs/stacks/commit/d63593a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share server inspector modal ([92acdbf](https://github.com/stacksjs/stacks/commit/92acdbf)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: confirm access token revocation ([b040de1](https://github.com/stacksjs/stacks/commit/b040de1)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share access token creator ([24b2e87](https://github.com/stacksjs/stacks/commit/24b2e87)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share request detail modal ([3e67278](https://github.com/stacksjs/stacks/commit/3e67278)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share model creation modal ([1b632cf](https://github.com/stacksjs/stacks/commit/1b632cf)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share waitlist editor modals ([26910cc](https://github.com/stacksjs/stacks/commit/26910cc)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share point of sale modals ([38298fc](https://github.com/stacksjs/stacks/commit/38298fc)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share notification detail modal ([678766d](https://github.com/stacksjs/stacks/commit/678766d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share infrastructure detail modals ([4e3171c](https://github.com/stacksjs/stacks/commit/4e3171c)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share campaign editor modal ([17860a8](https://github.com/stacksjs/stacks/commit/17860a8)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share marketing editor modals ([d55f60a](https://github.com/stacksjs/stacks/commit/d55f60a)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share order editor modal ([9927066](https://github.com/stacksjs/stacks/commit/9927066)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share product editor modal ([7b9442e](https://github.com/stacksjs/stacks/commit/7b9442e)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share gift card editor modal ([a512ddf](https://github.com/stacksjs/stacks/commit/a512ddf)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share catalog editor modals ([b3153b4](https://github.com/stacksjs/stacks/commit/b3153b4)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share commerce operation modals ([0c77db3](https://github.com/stacksjs/stacks/commit/0c77db3)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share commerce editor modals ([db8304c](https://github.com/stacksjs/stacks/commit/db8304c)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: finish delivery form modals ([375a93d](https://github.com/stacksjs/stacks/commit/375a93d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share delivery form modals ([eabb1b5](https://github.com/stacksjs/stacks/commit/eabb1b5)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: finish commerce detail modals ([d7e8817](https://github.com/stacksjs/stacks/commit/d7e8817)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share commerce detail modals ([0b48eed](https://github.com/stacksjs/stacks/commit/0b48eed)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share delivery confirmations ([ba34151](https://github.com/stacksjs/stacks/commit/ba34151)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: preserve confirmation warnings ([ade3eed](https://github.com/stacksjs/stacks/commit/ade3eed)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share commerce confirmations ([d8f59b4](https://github.com/stacksjs/stacks/commit/d8f59b4)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bump @stacksjs/stx to 0.2.176, and adopt x-tooltip (#2307) ([55ffdab](https://github.com/stacksjs/stacks/commit/55ffdab)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2290](https://github.com/stacksjs/stacks/issues/2290), [#2307](https://github.com/stacksjs/stacks/issues/2307), [#2307](https://github.com/stacksjs/stacks/issues/2307), [#2290](https://github.com/stacksjs/stacks/issues/2290), [#1902](https://github.com/stacksjs/stacks/issues/1902), [#1905](https://github.com/stacksjs/stacks/issues/1905), [#1922](https://github.com/stacksjs/stacks/issues/1922), [#2290](https://github.com/stacksjs/stacks/issues/2290), [#2290](https://github.com/stacksjs/stacks/issues/2290), [#1907](https://github.com/stacksjs/stacks/issues/1907))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.361...v0.70.362)
 
 ## 🐛 Bug Fixes
