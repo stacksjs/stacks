@@ -9,18 +9,18 @@
  * application had to reinvent.
  *
  * Fix: callers pass an `idempotencyKey` on `EmailMessage`. Before
- * dispatching to the driver, `mail.send()` consults a dedup side-
- * table — hit means we return the cached `EmailResult` from the
+ * dispatching to the driver, `mail.send()` consults a model-backed
+ * dedup table — hit means we return the cached `EmailResult` from the
  * first send; miss means we dispatch as normal and then record the
  * result under the key.
  *
  * Mirrors the order-side dedup shipped in #1879 Co-3
  * (`order_idempotency` table) — same insert-or-skip semantics,
- * same warn-once-and-degrade behavior when the table doesn't exist
- * yet so apps that haven't run the migration aren't broken.
+ * same warn-once-and-degrade behavior for applications that have not
+ * run the model-generated migration yet.
  *
- * Schema (provision via the framework migration that introduces
- * the `email_idempotency` table):
+ * Schema (declared by the built-in `EmailIdempotency` model and
+ * provisioned by its generated migration):
  *
  *   - `idempotency_key` TEXT NOT NULL UNIQUE
  *   - `message_id`      TEXT

@@ -186,6 +186,16 @@
       "category": "commerce"
     },
     {
+      "id": "email-idempotency",
+      "name": "EmailIdempotency",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
       "id": "email-list",
       "name": "EmailList",
       "icon": "envelope.badge.person.crop",
@@ -198,6 +208,26 @@
       "icon": "tablecells.fill",
       "hasDedicatedPage": false,
       "category": "data"
+    },
+    {
+      "id": "email-suppression",
+      "name": "EmailSuppression",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
+    },
+    {
+      "id": "email-webhook-event",
+      "name": "EmailWebhookEvent",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data",
+      "dashboard": {
+        "enabled": false
+      }
     },
     {
       "id": "gift-card",

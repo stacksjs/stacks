@@ -8,19 +8,18 @@
  * enforcement at the framework level so apps couldn't accidentally
  * miss a send call site.
  *
- * Fix: opt-in `email_suppressions` dedup table consulted before
+ * Fix: model-backed `email_suppressions` dedup table consulted before
  * `mail.send()` dispatches to the driver. Hit = short-circuit with
  * a structured failure; miss = proceed.
  *
  * Mirrors the dedup-table patterns shipped across the framework
  * (`order_idempotency`, `email_idempotency`, `job_idempotency`,
  * `stripe_webhook_events`) — same insert-or-skip semantics, same
- * warn-once-and-degrade behavior when the table doesn't exist so
- * apps that haven't run the migration aren't broken by the new
- * behavior.
+ * warn-once-and-degrade behavior for applications that have not run
+ * the model-generated migration yet.
  *
- * Schema (provision via the framework migration that introduces
- * the `email_suppressions` table):
+ * Schema (declared by the built-in `EmailSuppression` model and
+ * provisioned by its generated migration):
  *
  *   - `email`      TEXT NOT NULL
  *   - `type`       TEXT NOT NULL  ('bounce' | 'complaint' | 'unsubscribe' | 'manual')

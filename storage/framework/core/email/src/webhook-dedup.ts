@@ -8,13 +8,14 @@
  * address, or double-fire the framework events that listeners
  * react to (analytics, retry-policy updates, etc.).
  *
- * Fix: insert-or-skip into `email_webhook_events` keyed on
- * `(provider, event_id)`. Same opt-in pattern as
+ * Fix: insert-or-skip into the model-backed `email_webhook_events` table keyed on
+ * `(provider, event_id)`. Same persistence pattern as
  * `stripe_webhook_events` (#1879 Co-17), `order_idempotency`
  * (#1879 Co-3), `email_idempotency` (#1871 M-8),
  * `job_idempotency` (#1872 Q-8).
  *
- * Schema (opt-in; provision via the framework migration):
+ * Schema (declared by the built-in `EmailWebhookEvent` model and
+ * provisioned by its generated migration):
  *
  *   - `provider`     TEXT NOT NULL  ('mailgun' | 'postmark' | 'ses' | 'sendgrid')
  *   - `event_id`     TEXT NOT NULL
