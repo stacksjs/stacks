@@ -230,26 +230,17 @@ function toggleSort(column: ColumnMeta) {
   void load()
 }
 
-// Debounced so a query is not fired per keystroke. The timer id is module
-// scope rather than signal state: it is bookkeeping, not something the
-// template renders.
-let searchTimer: ReturnType<typeof setTimeout> | undefined
-
-function onSearchInput() {
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    page.set(1)
-    void load()
-  }, 250)
-}
+// Debounced so a query is not fired per keystroke. Search and the per-column
+// filters deliberately share one debounce, the way they shared one timer id
+// before: typing in either should schedule a single reload, not two.
+const onSearchInput = useDebounce(() => {
+  page.set(1)
+  void load()
+}, 250)
 
 function onFilterInput(column: string, event: Event) {
   filters.set({ ...filters(), [column]: (event.target as HTMLInputElement).value })
-  clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    page.set(1)
-    void load()
-  }, 250)
+  onSearchInput()
 }
 
 function clearFilters() {

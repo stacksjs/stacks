@@ -10,7 +10,6 @@ const isOpen = state(false)
 const selectedIndex = state(0)
 const error = state('')
 const searchInput = useRef('globalSearchInput')
-let searchTimer: ReturnType<typeof setTimeout> | null = null
 let searchRequest: AbortController | null = null
 
 function flatResults(): SearchResultItem[] {
@@ -74,13 +73,9 @@ async function runSearch(value: string): Promise<void> {
   }
 }
 
-function scheduleSearch(value: string): void {
-  if (searchTimer) clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => {
-    searchTimer = null
-    void runSearch(value)
-  }, 250)
-}
+const scheduleSearch = useDebounce((value: string) => {
+  void runSearch(value)
+}, 250)
 
 function moveUp(): void {
   const items = flatResults()
@@ -137,7 +132,6 @@ function handleGlobalKeydown(event: KeyboardEvent): void {
 useEventListener('keydown', handleGlobalKeydown)
 
 onDestroy(() => {
-  if (searchTimer) clearTimeout(searchTimer)
   searchRequest?.abort()
 })
 </script>
