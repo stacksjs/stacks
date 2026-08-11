@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { dashboardOperationalError } from '../dashboard-response'
 
 const ALLOWED_RANGES = new Set([1, 7, 30, 90, 365])
 
@@ -214,42 +215,47 @@ export default new Action({
     const days = requestedDays(request)
     const since = threshold(days)
 
-    const postQuery = db
-      .selectFrom('posts')
-      .select(['id', 'title', 'status', 'views', 'author_id', 'published_at', 'created_at', 'updated_at'])
-    const pageQuery = db
-      .selectFrom('pages')
-      .select(['id', 'title', 'views', 'published_at', 'created_at'])
-    const commentQuery = db
-      .selectFrom('comments')
-      .select(['id', 'author_name', 'author_email', 'content', 'post_id', 'post_title', 'status', 'created_at'])
+    try {
+      const postQuery = db
+        .selectFrom('posts')
+        .select(['id', 'title', 'status', 'views', 'author_id', 'published_at', 'created_at', 'updated_at'])
+      const pageQuery = db
+        .selectFrom('pages')
+        .select(['id', 'title', 'views', 'published_at', 'created_at'])
+      const commentQuery = db
+        .selectFrom('comments')
+        .select(['id', 'author_name', 'author_email', 'content', 'post_id', 'post_title', 'status', 'created_at'])
 
-    const [posts, pages, comments, categories, authors] = await Promise.all([
-      (since ? postQuery.where('created_at', '>=', since) : postQuery).execute() as unknown as Promise<ContentOverviewPostRow[]>,
-      (since ? pageQuery.where('created_at', '>=', since) : pageQuery).execute() as unknown as Promise<ContentOverviewPageRow[]>,
-      (since ? commentQuery.where('created_at', '>=', since) : commentQuery).execute() as unknown as Promise<ContentOverviewCommentRow[]>,
-      db.selectFrom('categories').select(['id', 'name']).execute() as unknown as Promise<NamedRow[]>,
-      db.selectFrom('authors').select(['id', 'name']).execute() as unknown as Promise<NamedRow[]>,
-    ])
+      const [posts, pages, comments, categories, authors] = await Promise.all([
+        (since ? postQuery.where('created_at', '>=', since) : postQuery).execute() as unknown as Promise<ContentOverviewPostRow[]>,
+        (since ? pageQuery.where('created_at', '>=', since) : pageQuery).execute() as unknown as Promise<ContentOverviewPageRow[]>,
+        (since ? commentQuery.where('created_at', '>=', since) : commentQuery).execute() as unknown as Promise<ContentOverviewCommentRow[]>,
+        db.selectFrom('categories').select(['id', 'name']).execute() as unknown as Promise<NamedRow[]>,
+        db.selectFrom('authors').select(['id', 'name']).execute() as unknown as Promise<NamedRow[]>,
+      ])
 
-    const postIds = posts.map(post => Number(post.id))
-    const categoryRelations = postIds.length > 0
-      ? await db
-          .selectFrom('categorizable_models')
-          .whereIn('categorizable_id', postIds)
-          .where('categorizable_type', '=', 'posts')
-          .select(['categorizable_id as postId', 'category_id as categoryId'])
-          .execute() as unknown as ContentOverviewRelationRow[]
-      : []
+      const postIds = posts.map(post => Number(post.id))
+      const categoryRelations = postIds.length > 0
+        ? await db
+            .selectFrom('categorizable_models')
+            .whereIn('categorizable_id', postIds)
+            .where('categorizable_type', '=', 'posts')
+            .select(['categorizable_id as postId', 'category_id as categoryId'])
+            .execute() as unknown as ContentOverviewRelationRow[]
+        : []
 
-    return buildContentOverview({
-      posts,
-      pages,
-      comments,
-      categories,
-      categoryRelations,
-      authors,
-      days,
-    })
+      return buildContentOverview({
+        posts,
+        pages,
+        comments,
+        categories,
+        categoryRelations,
+        authors,
+        days,
+      })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Content overview could not be loaded.', 'ContentDashboardAction')
+    }
   },
 })

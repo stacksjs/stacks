@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { rowExists, rowId } from './content-input'
 
 /**
@@ -20,11 +21,16 @@ export default new Action({
     if (!id)
       return response.json({ message: 'A valid comment id is required.' }, 422)
 
-    if (!await rowExists('comments', id))
-      return response.json({ message: 'Comment not found.' }, 404)
+    try {
+      if (!await rowExists('comments', id))
+        return response.json({ message: 'Comment not found.' }, 404)
 
-    await db.deleteFrom('comments').where('id', '=', id).execute()
+      await db.deleteFrom('comments').where('id', '=', id).execute()
 
-    return response.json({ message: 'Comment deleted.', id })
+      return response.json({ message: 'Comment deleted.', id })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Comment could not be deleted.', 'CommentDestroyAction', 500)
+    }
   },
 })

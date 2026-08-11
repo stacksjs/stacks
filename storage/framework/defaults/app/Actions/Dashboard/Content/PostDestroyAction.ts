@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 /**
  * `DELETE /api/dashboard/posts/{id}` — deletes a CMS post from the dashboard.
@@ -18,17 +19,22 @@ export default new Action({
     if (!Number.isInteger(id) || id <= 0)
       return response.json({ message: 'A valid post id is required.' }, 422)
 
-    const post = await Post.find(id)
+    try {
+      const post = await Post.find(id)
 
-    if (!post)
-      return response.json({ message: 'Post not found.' }, 404)
+      if (!post)
+        return response.json({ message: 'Post not found.' }, 404)
 
-    await Promise.all([
-      post.categories().detach(),
-      post.tags().detach(),
-    ])
-    await post.delete()
+      await Promise.all([
+        post.categories().detach(),
+        post.tags().detach(),
+      ])
+      await post.delete()
 
-    return response.json({ message: 'Post deleted.', id })
+      return response.json({ message: 'Post deleted.', id })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Post could not be deleted.', 'PostDestroyAction', 500)
+    }
   },
 })

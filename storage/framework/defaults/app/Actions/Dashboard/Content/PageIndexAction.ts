@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface PageRow {
   id: number
@@ -30,24 +31,29 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const rows = await db
-      .selectFrom('pages')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .execute() as unknown as PageRow[]
+    try {
+      const rows = await db
+        .selectFrom('pages')
+        .selectAll()
+        .orderBy('created_at', 'desc')
+        .execute() as unknown as PageRow[]
 
-    const pages = rows.map(row => ({
-      id: Number(row.id),
-      title: String(row.title || ''),
-      template: String(row.template || 'default'),
-      views: Number(row.views || 0),
-      conversions: Number(row.conversions || 0),
-      published_at: row.published_at || null,
-      author_id: row.author_id ?? null,
-      created_at: row.created_at || null,
-      updated_at: row.updated_at || null,
-    }))
+      const pages = rows.map(row => ({
+        id: Number(row.id),
+        title: String(row.title || ''),
+        template: String(row.template || 'default'),
+        views: Number(row.views || 0),
+        conversions: Number(row.conversions || 0),
+        published_at: row.published_at || null,
+        author_id: row.author_id ?? null,
+        created_at: row.created_at || null,
+        updated_at: row.updated_at || null,
+      }))
 
-    return { pages }
+      return { pages }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Pages could not be loaded.', 'PageIndexAction')
+    }
   },
 })

@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
+import { dashboardOperationalError } from '../dashboard-response'
 import { findRow, insertedId, timestamp } from './content-input'
 import { parsePageInput, parsePublished } from './page-input'
 
@@ -22,27 +23,32 @@ export default new Action({
     if ('message' in input)
       return response.json({ message: input.message }, 422)
 
-    const now = timestamp()
+    try {
+      const now = timestamp()
 
-    const result = await db
-      .insertInto('pages')
-      .values({
-        uuid: randomUUIDv7(),
-        title: input.data.title,
-        template: input.data.template,
-        views: 0,
-        conversions: 0,
-        published_at: parsePublished(request.get('published')) ? now : null,
-        created_at: now,
-        updated_at: now,
-      } as any)
-      .executeTakeFirst()
+      const result = await db
+        .insertInto('pages')
+        .values({
+          uuid: randomUUIDv7(),
+          title: input.data.title,
+          template: input.data.template,
+          views: 0,
+          conversions: 0,
+          published_at: parsePublished(request.get('published')) ? now : null,
+          created_at: now,
+          updated_at: now,
+        } as any)
+        .executeTakeFirst()
 
-    const id = insertedId(result)
+      const id = insertedId(result)
 
-    if (!id)
-      return response.json({ message: 'Could not create page.' }, 500)
+      if (!id)
+        return response.json({ message: 'Could not create page.' }, 500)
 
-    return response.json(await findRow('pages', id), 201)
+      return response.json(await findRow('pages', id), 201)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Page could not be created.', 'PageStoreAction', 500)
+    }
   },
 })

@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { COMMENT_STATUSES, parseCommentStatus } from './comment-input'
 import { findRow, rowExists, rowId, timestamp } from './content-input'
 
@@ -30,19 +31,24 @@ export default new Action({
     if (!status)
       return response.json({ message: `Status must be one of: ${COMMENT_STATUSES.join(', ')}.` }, 422)
 
-    if (!await rowExists('comments', id))
-      return response.json({ message: 'Comment not found.' }, 404)
+    try {
+      if (!await rowExists('comments', id))
+        return response.json({ message: 'Comment not found.' }, 404)
 
-    await db
-      .updateTable('comments')
-      .set({
-        status,
-        is_approved: status === 'approved' ? 1 : 0,
-        updated_at: timestamp(),
-      } as any)
-      .where('id', '=', id)
-      .execute()
+      await db
+        .updateTable('comments')
+        .set({
+          status,
+          is_approved: status === 'approved' ? 1 : 0,
+          updated_at: timestamp(),
+        } as any)
+        .where('id', '=', id)
+        .execute()
 
-    return response.json(await findRow('comments', id))
+      return response.json(await findRow('comments', id))
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Comment could not be updated.', 'CommentUpdateAction', 500)
+    }
   },
 })

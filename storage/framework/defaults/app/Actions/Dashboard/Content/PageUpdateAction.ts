@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { findRow, rowExists, rowId, timestamp } from './content-input'
 import { parsePageInput, parsePublished } from './page-input'
 
@@ -15,32 +16,37 @@ export default new Action({
     if (!id)
       return response.json({ message: 'A valid page id is required.' }, 422)
 
-    if (!await rowExists('pages', id))
-      return response.json({ message: 'Page not found.' }, 404)
-
     const input = parsePageInput(request)
 
     if ('message' in input)
       return response.json({ message: input.message }, 422)
 
-    const current = await db
-      .selectFrom('pages')
-      .select(['published_at'])
-      .where('id', '=', id)
-      .executeTakeFirst()
-    const published = parsePublished(request.get('published'))
+    try {
+      if (!await rowExists('pages', id))
+        return response.json({ message: 'Page not found.' }, 404)
 
-    await db
-      .updateTable('pages')
-      .set({
-        title: input.data.title,
-        template: input.data.template,
-        published_at: published ? current?.published_at || timestamp() : null,
-        updated_at: timestamp(),
-      } as any)
-      .where('id', '=', id)
-      .execute()
+      const current = await db
+        .selectFrom('pages')
+        .select(['published_at'])
+        .where('id', '=', id)
+        .executeTakeFirst()
+      const published = parsePublished(request.get('published'))
 
-    return response.json(await findRow('pages', id))
+      await db
+        .updateTable('pages')
+        .set({
+          title: input.data.title,
+          template: input.data.template,
+          published_at: published ? current?.published_at || timestamp() : null,
+          updated_at: timestamp(),
+        } as any)
+        .where('id', '=', id)
+        .execute()
+
+      return response.json(await findRow('pages', id))
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Page could not be updated.', 'PageUpdateAction', 500)
+    }
   },
 })

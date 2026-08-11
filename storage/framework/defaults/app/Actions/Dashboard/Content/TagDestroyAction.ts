@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { rowId } from './content-input'
 
 /**
@@ -19,13 +20,18 @@ export default new Action({
     if (!id)
       return response.json({ message: 'A valid tag id is required.' }, 422)
 
-    const tag = await Tag.find(id)
-    if (!tag)
-      return response.json({ message: 'Tag not found.' }, 404)
+    try {
+      const tag = await Tag.find(id)
+      if (!tag)
+        return response.json({ message: 'Tag not found.' }, 404)
 
-    await tag.posts().detach()
-    await tag.delete()
+      await tag.posts().detach()
+      await tag.delete()
 
-    return response.json({ message: 'Tag deleted.', id })
+      return response.json({ message: 'Tag deleted.', id })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Tag could not be deleted.', 'TagDestroyAction', 500)
+    }
   },
 })

@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface PostRow {
   id: number
@@ -69,56 +70,61 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const rows = await db
-      .selectFrom('posts')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .execute() as unknown as PostRow[]
+    try {
+      const rows = await db
+        .selectFrom('posts')
+        .selectAll()
+        .orderBy('created_at', 'desc')
+        .execute() as unknown as PostRow[]
 
-    const posts = rows.map(row => ({
-      id: Number(row.id),
-      title: String(row.title || ''),
-      excerpt: String(row.excerpt || ''),
-      content: String(row.content || ''),
-      poster: String(row.poster || ''),
-      status: normalizeStatus(row.status),
-      views: Number(row.views || 0),
-      published_at: row.published_at || null,
-      created_at: row.created_at || null,
-      updated_at: row.updated_at || null,
-      author_id: row.author_id ?? null,
-      featured: Boolean(row.is_featured),
-    }))
+      const posts = rows.map(row => ({
+        id: Number(row.id),
+        title: String(row.title || ''),
+        excerpt: String(row.excerpt || ''),
+        content: String(row.content || ''),
+        poster: String(row.poster || ''),
+        status: normalizeStatus(row.status),
+        views: Number(row.views || 0),
+        published_at: row.published_at || null,
+        created_at: row.created_at || null,
+        updated_at: row.updated_at || null,
+        author_id: row.author_id ?? null,
+        featured: Boolean(row.is_featured),
+      }))
 
-    const postIds = posts.map(post => post.id)
-    const [categories, tags, authors, categoryRelations, tagRelations] = await Promise.all([
-      db.selectFrom('categories').select(['id', 'name', 'slug']).orderBy('name').execute(),
-      db.selectFrom('tags').select(['id', 'name', 'slug']).orderBy('name').execute(),
-      db.selectFrom('authors').select(['id', 'name', 'email']).orderBy('name').execute(),
-      postIds.length
-        ? db.selectFrom('categorizable_models')
-            .whereIn('categorizable_id', postIds)
-            .where('categorizable_type', '=', 'posts')
-            .select(['category_id as relatedId', 'categorizable_id as postId'])
-            .execute() as unknown as Promise<PivotRow[]>
-        : Promise.resolve([]),
-      postIds.length
-        ? db.selectFrom('taggable_models')
-            .whereIn('taggable_id', postIds)
-            .where('taggable_type', '=', 'posts')
-            .select(['tag_id as relatedId', 'taggable_id as postId'])
-            .execute() as unknown as Promise<PivotRow[]>
-        : Promise.resolve([]),
-    ])
+      const postIds = posts.map(post => post.id)
+      const [categories, tags, authors, categoryRelations, tagRelations] = await Promise.all([
+        db.selectFrom('categories').select(['id', 'name', 'slug']).orderBy('name').execute(),
+        db.selectFrom('tags').select(['id', 'name', 'slug']).orderBy('name').execute(),
+        db.selectFrom('authors').select(['id', 'name', 'email']).orderBy('name').execute(),
+        postIds.length
+          ? db.selectFrom('categorizable_models')
+              .whereIn('categorizable_id', postIds)
+              .where('categorizable_type', '=', 'posts')
+              .select(['category_id as relatedId', 'categorizable_id as postId'])
+              .execute() as unknown as Promise<PivotRow[]>
+          : Promise.resolve([]),
+        postIds.length
+          ? db.selectFrom('taggable_models')
+              .whereIn('taggable_id', postIds)
+              .where('taggable_type', '=', 'posts')
+              .select(['tag_id as relatedId', 'taggable_id as postId'])
+              .execute() as unknown as Promise<PivotRow[]>
+          : Promise.resolve([]),
+      ])
 
-    const categoryIdsByPost = relatedIdsByPost(categoryRelations)
-    const tagIdsByPost = relatedIdsByPost(tagRelations)
-    const withRelations = posts.map(post => ({
-      ...post,
-      categoryIds: categoryIdsByPost.get(post.id) || [],
-      tagIds: tagIdsByPost.get(post.id) || [],
-    }))
+      const categoryIdsByPost = relatedIdsByPost(categoryRelations)
+      const tagIdsByPost = relatedIdsByPost(tagRelations)
+      const withRelations = posts.map(post => ({
+        ...post,
+        categoryIds: categoryIdsByPost.get(post.id) || [],
+        tagIds: tagIdsByPost.get(post.id) || [],
+      }))
 
-    return { posts: withRelations, categories, tags, authors, ...counts(posts) }
+      return { posts: withRelations, categories, tags, authors, ...counts(posts) }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Posts could not be loaded.', 'PostIndexAction')
+    }
   },
 })

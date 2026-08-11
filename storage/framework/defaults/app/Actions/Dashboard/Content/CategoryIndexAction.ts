@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { dashboardOperationalError } from '../dashboard-response'
 
 interface CategoryRow {
   id: number
@@ -29,22 +30,27 @@ export default new Action({
   method: 'GET',
   apiResponse: true,
   async handle() {
-    const rows = await db
-      .selectFrom('categories')
-      .selectAll()
-      .orderBy('created_at', 'desc')
-      .execute() as unknown as CategoryRow[]
+    try {
+      const rows = await db
+        .selectFrom('categories')
+        .selectAll()
+        .orderBy('created_at', 'desc')
+        .execute() as unknown as CategoryRow[]
 
-    const categories = rows.map(row => ({
-      id: Number(row.id),
-      name: String(row.name || ''),
-      slug: String(row.slug || ''),
-      description: String(row.description || ''),
-      is_active: row.is_active == null ? true : Boolean(row.is_active),
-      created_at: row.created_at || null,
-      updated_at: row.updated_at || null,
-    }))
+      const categories = rows.map(row => ({
+        id: Number(row.id),
+        name: String(row.name || ''),
+        slug: String(row.slug || ''),
+        description: String(row.description || ''),
+        is_active: row.is_active == null ? true : Boolean(row.is_active),
+        created_at: row.created_at || null,
+        updated_at: row.updated_at || null,
+      }))
 
-    return { categories }
+      return { categories }
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Categories could not be loaded.', 'CategoryIndexAction')
+    }
   },
 })

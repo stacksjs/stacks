@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { rowId } from './content-input'
 
 /**
@@ -19,13 +20,18 @@ export default new Action({
     if (!id)
       return response.json({ message: 'A valid category id is required.' }, 422)
 
-    const category = await Category.find(id)
-    if (!category)
-      return response.json({ message: 'Category not found.' }, 404)
+    try {
+      const category = await Category.find(id)
+      if (!category)
+        return response.json({ message: 'Category not found.' }, 404)
 
-    await category.posts().detach()
-    await category.delete()
+      await category.posts().detach()
+      await category.delete()
 
-    return response.json({ message: 'Category deleted.', id })
+      return response.json({ message: 'Category deleted.', id })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Category could not be deleted.', 'CategoryDestroyAction', 500)
+    }
   },
 })

@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
+import { dashboardOperationalError } from '../dashboard-response'
 import { findRow, insertedId, slugify, str, timestamp } from './content-input'
 
 /**
@@ -26,40 +27,45 @@ export default new Action({
     if (!slug)
       return response.json({ message: 'Slug could not be derived from the name; enter one.' }, 422)
 
-    const duplicate = await db
-      .selectFrom('categories')
-      .select(['id'])
-      .where('slug', '=', slug)
-      .executeTakeFirst()
+    try {
+      const duplicate = await db
+        .selectFrom('categories')
+        .select(['id'])
+        .where('slug', '=', slug)
+        .executeTakeFirst()
 
-    if (duplicate)
-      return response.json({ message: 'A category with that slug already exists.' }, 422)
+      if (duplicate)
+        return response.json({ message: 'A category with that slug already exists.' }, 422)
 
-    const now = timestamp()
-    const displayOrder = await db
-      .selectFrom('categories')
-      .select(db.fn.max('display_order').as('max_display_order'))
-      .executeTakeFirst()
+      const now = timestamp()
+      const displayOrder = await db
+        .selectFrom('categories')
+        .select(db.fn.max('display_order').as('max_display_order'))
+        .executeTakeFirst()
 
-    const result = await db
-      .insertInto('categories')
-      .values({
-        uuid: randomUUIDv7(),
-        name,
-        slug,
-        description,
-        is_active: 1,
-        display_order: Number(displayOrder?.max_display_order || 0) + 1,
-        created_at: now,
-        updated_at: now,
-      } as any)
-      .executeTakeFirst()
+      const result = await db
+        .insertInto('categories')
+        .values({
+          uuid: randomUUIDv7(),
+          name,
+          slug,
+          description,
+          is_active: 1,
+          display_order: Number(displayOrder?.max_display_order || 0) + 1,
+          created_at: now,
+          updated_at: now,
+        } as any)
+        .executeTakeFirst()
 
-    const id = insertedId(result)
+      const id = insertedId(result)
 
-    if (!id)
-      return response.json({ message: 'Could not create category.' }, 500)
+      if (!id)
+        return response.json({ message: 'Could not create category.' }, 500)
 
-    return response.json(await findRow('categories', id), 201)
+      return response.json(await findRow('categories', id), 201)
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Category could not be created.', 'CategoryStoreAction', 500)
+    }
   },
 })

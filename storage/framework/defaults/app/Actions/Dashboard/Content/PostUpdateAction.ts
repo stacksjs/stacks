@@ -2,6 +2,7 @@ import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { findPost, invalidPostContent, invalidPostReference, postPayload, publishedAtFor, timestamp } from './post-input'
 
 /**
@@ -27,45 +28,50 @@ export default new Action({
     if (invalidContent)
       return response.json({ message: invalidContent }, 422)
 
-    const invalidReference = await invalidPostReference(payload)
-    if (invalidReference)
-      return response.json({ message: invalidReference }, 422)
+    try {
+      const invalidReference = await invalidPostReference(payload)
+      if (invalidReference)
+        return response.json({ message: invalidReference }, 422)
 
-    const existing = await db
-      .selectFrom('posts')
-      .select(['id', 'published_at'])
-      .where('id', '=', id)
-      .executeTakeFirst() as { id: number, published_at: string | null } | undefined
+      const existing = await db
+        .selectFrom('posts')
+        .select(['id', 'published_at'])
+        .where('id', '=', id)
+        .executeTakeFirst() as { id: number, published_at: string | null } | undefined
 
-    if (!existing)
-      return response.json({ message: 'Post not found.' }, 404)
+      if (!existing)
+        return response.json({ message: 'Post not found.' }, 404)
 
-    await db
-      .updateTable('posts')
-      .set({
-        title: payload.title,
-        excerpt: payload.excerpt,
-        content: payload.content,
-        poster: payload.poster,
-        status: payload.status,
-        author_id: payload.authorId,
-        is_featured: payload.featured ? 1 : 0,
-        published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
-        updated_at: timestamp(),
-      } as any)
-      .where('id', '=', id)
-      .execute()
+      await db
+        .updateTable('posts')
+        .set({
+          title: payload.title,
+          excerpt: payload.excerpt,
+          content: payload.content,
+          poster: payload.poster,
+          status: payload.status,
+          author_id: payload.authorId,
+          is_featured: payload.featured ? 1 : 0,
+          published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
+          updated_at: timestamp(),
+        } as any)
+        .where('id', '=', id)
+        .execute()
 
-    const post = await Post.find(id)
+      const post = await Post.find(id)
 
-    if (!post)
-      return response.json({ message: 'Updated post could not be loaded.' }, 500)
+      if (!post)
+        return response.json({ message: 'Updated post could not be loaded.' }, 500)
 
-    await Promise.all([
-      post.categories().sync(payload.categoryIds),
-      post.tags().sync(payload.tagIds),
-    ])
+      await Promise.all([
+        post.categories().sync(payload.categoryIds),
+        post.tags().sync(payload.tagIds),
+      ])
 
-    return response.json(await findPost(id))
+      return response.json(await findPost(id))
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Post could not be updated.', 'PostUpdateAction', 500)
+    }
   },
 })
