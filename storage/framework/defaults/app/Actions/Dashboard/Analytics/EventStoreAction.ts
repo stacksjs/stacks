@@ -1,7 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { AnalyticsEvent } from '@stacksjs/orm'
+import { AnalyticsEvent, ModelValidationError } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 
 function token(value: unknown, fallback: string): string {
   const normalized = String(value || '')
@@ -46,14 +47,25 @@ export default new Action({
     if (properties.length > 10_000)
       return response.json({ message: 'Properties must be 10,000 characters or fewer.' }, 422)
 
-    await AnalyticsEvent.create({
-      name,
-      category,
-      path,
-      value,
-      currency,
-      properties,
-    })
+    try {
+      await AnalyticsEvent.create({
+        name,
+        category,
+        path,
+        value,
+        currency,
+        properties,
+      })
+    }
+    catch (error) {
+      if (error instanceof ModelValidationError) {
+        return response.json({
+          message: 'Validation failed.',
+          errors: error.errors,
+        }, 422)
+      }
+      return dashboardOperationalError(error, 'Analytics event could not be recorded.', 'EventStoreAction', 500)
+    }
 
     return response.json({ success: true }, 201)
   },

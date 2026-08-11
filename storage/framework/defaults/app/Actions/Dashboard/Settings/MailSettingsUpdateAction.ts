@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
+import { dashboardOperationalError } from '../dashboard-response'
 import { updateMailSettings } from './mail-settings'
 
 export default new Action({
@@ -10,7 +11,13 @@ export default new Action({
   apiResponse: true,
 
   async handle(request: RequestInstance) {
-    const result = await updateMailSettings(await request.all())
+    let result
+    try {
+      result = await updateMailSettings(await request.all())
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Mail settings could not be saved.', 'MailSettingsUpdateAction', 500)
+    }
 
     if ('validation' in result) {
       return response.json({

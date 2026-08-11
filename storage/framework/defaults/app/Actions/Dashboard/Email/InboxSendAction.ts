@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { notify } from '@stacksjs/notifications'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
+import { dashboardOperationalError } from '../dashboard-response'
 
 export default new Action({
   name: 'InboxSendAction',
@@ -29,15 +30,21 @@ export default new Action({
     const subject = String(request.get('subject') || '').trim()
     const body = String(request.get('body') || '').trim()
 
-    const [result] = await notify(
-      { email: to },
-      { subject, body, data: { source: 'dashboard-inbox' } },
-      ['email'],
-      { ignorePreferences: true },
-    )
+    let result
+    try {
+      [result] = await notify(
+        { email: to },
+        { subject, body, data: { source: 'dashboard-inbox' } },
+        ['email'],
+        { ignorePreferences: true },
+      )
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'The email could not be sent.', 'InboxSendAction.provider', 502)
+    }
 
     if (!result?.success)
-      return response.json({ message: result?.error?.message || 'The email could not be sent.' }, 502)
+      return dashboardOperationalError(result?.error, 'The email could not be sent.', 'InboxSendAction.result', 502)
 
     return response.json({ success: true })
   },
