@@ -497,6 +497,7 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain('element.showModal()')
     expect(sharedModal).toContain("element.querySelector<HTMLElement>('[autofocus]:not([disabled])')")
     expect(sharedModal).toContain('autofocusTarget.focus()')
+    expect(sharedModal).toContain('element.contains(currentFocus)')
     expect(sharedModal).toContain('dialog.current.close()')
     expect(sharedModal).toContain('event.preventDefault()')
     expect(sharedModal).toContain("type ModalCloseReason = 'backdrop' | 'button' | 'escape'")

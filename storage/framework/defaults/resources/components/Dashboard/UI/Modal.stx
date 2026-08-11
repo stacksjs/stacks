@@ -87,8 +87,11 @@ effect(() => {
       const autofocusTarget = element.querySelector<HTMLElement>('[autofocus]:not([disabled])')
       if (autofocusTarget)
         autofocusTarget.focus()
-      else
-        element.focus()
+      else {
+        const currentFocus = peek(() => activeElement.value)
+        if (!(currentFocus instanceof HTMLElement && element.contains(currentFocus)))
+          element.focus()
+      }
     })
     return
   }
