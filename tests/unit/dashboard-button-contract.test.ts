@@ -248,6 +248,7 @@ describe('dashboard button contract', () => {
       'Notifications/NotificationDeliveryOverview.stx',
       'Billing/BillingSettings.stx',
       'Auth/AccessTokens.stx',
+      'Auth/AccessTokenCreateDialog.stx',
       'Infrastructure/DnsRecordDialog.stx',
       'Infrastructure/LogDetailsDialog.stx',
       'Infrastructure/MailboxDetailsDialog.stx',

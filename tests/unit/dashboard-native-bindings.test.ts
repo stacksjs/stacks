@@ -368,7 +368,15 @@ describe('dashboard native STX bindings', () => {
     }
 
     const accessTokens = componentSource('Auth/AccessTokens.stx')
-    expect(accessTokens).toContain('@submit.prevent="createAccessToken"')
+    const accessTokenCreate = componentSource('Auth/AccessTokenCreateDialog.stx')
+    expect(accessTokens).toContain('<AccessTokenCreateDialog')
+    expect(accessTokens).toContain('@submit="createAccessToken($event)"')
+    expect(accessTokens).not.toContain('fixed inset-0')
+    expect(accessTokenCreate).toContain('<Modal')
+    expect(accessTokenCreate).toContain('@submit.prevent="submit"')
+    expect(accessTokenCreate).toContain('form="access-token-create-form"')
+    expect(accessTokenCreate).toContain('x-model="tokenName"')
+    expect(accessTokenCreate).toContain('x-model="expiryMinutes"')
     expect(accessTokens).toContain("import { authStore } from '../../../../views/dashboard/stores/auth'")
     expect(accessTokens).toContain('await authStore.load()')
     expect(accessTokens).toContain('if (authStore.unauthenticated())')
@@ -593,6 +601,7 @@ describe('dashboard native STX bindings', () => {
       ['Commerce/ProductWaitlistEntryDialog.stx', 'product-waitlist-entry-form'],
       ['Commerce/RestaurantWaitlistEntryDialog.stx', 'restaurant-waitlist-entry-form'],
       ['CreateRecordModal.stx', 'create-record-form'],
+      ['Auth/AccessTokenCreateDialog.stx', 'access-token-create-form'],
       ['Models/EditRecordModal.stx', 'model-edit-form'],
       ['Marketing/MarketingListDialog.stx', 'marketing-list-form'],
       ['Marketing/SocialPostDialog.stx', 'social-post-form'],

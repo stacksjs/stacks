@@ -28,13 +28,11 @@ interface CreatedTokenResponse {
   }
 }
 
-const availableScopes = [
-  { name: 'read', description: 'Read application resources' },
-  { name: 'write', description: 'Create and update resources' },
-  { name: 'delete', description: 'Delete application resources' },
-  { name: 'deploy', description: 'Run deployment operations' },
-  { name: 'admin', description: 'Use administrative operations' },
-]
+interface TokenDraft {
+  name: string
+  scopes: string[]
+  expiresInMinutes: number
+}
 
 const tokens = state<AccessTokenRow[]>([])
 const loading = state(true)
@@ -44,11 +42,7 @@ const actionError = state('')
 const actionMessage = state('')
 const showCreate = state(false)
 const creating = state(false)
-const tokenName = state('')
-const expiryMinutes = state('10080')
-const selectedScopes = state<string[]>(['read'])
 const createdToken = state('')
-const copied = state(false)
 const confirmingRevoke = state<number | null>(null)
 const revoking = state<number | null>(null)
 
@@ -74,33 +68,18 @@ function formatDate(value: string | null): string {
   return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleString()
 }
 
-function toggleScope(event: Event, scope: string): void {
-  const enabled = (event.target as HTMLInputElement).checked
-  selectedScopes.set(enabled
-    ? [...new Set([...selectedScopes(), scope])]
-    : selectedScopes().filter(item => item !== scope))
-}
-
-function resetCreateForm(): void {
-  tokenName.set('')
-  expiryMinutes.set('10080')
-  selectedScopes.set(['read'])
-  createdToken.set('')
-  copied.set(false)
-}
-
 function openCreate(): void {
   if (authenticationRequired())
     return
 
-  resetCreateForm()
+  createdToken.set('')
   actionError.set('')
   showCreate.set(true)
 }
 
 function closeCreate(): void {
   showCreate.set(false)
-  resetCreateForm()
+  createdToken.set('')
 }
 
 async function loadTokens(): Promise<void> {
@@ -139,27 +118,18 @@ async function loadTokens(): Promise<void> {
   }
 }
 
-async function createAccessToken(): Promise<void> {
+async function createAccessToken(draft: TokenDraft): Promise<void> {
   actionError.set('')
   actionMessage.set('')
-
-  if (!tokenName().trim()) {
-    actionError.set('Enter a name for this token.')
-    return
-  }
-  if (selectedScopes().length === 0) {
-    actionError.set('Select at least one scope.')
-    return
-  }
 
   creating.set(true)
   try {
     const response = await dashboardApi<CreatedTokenResponse>('/auth/token', {
       method: 'POST',
       body: {
-        name: tokenName().trim(),
-        scopes: selectedScopes(),
-        expires_in_minutes: Number(expiryMinutes()),
+        name: draft.name,
+        scopes: draft.scopes,
+        expires_in_minutes: draft.expiresInMinutes,
         with_refresh_token: false,
       },
     })
@@ -179,17 +149,6 @@ async function createAccessToken(): Promise<void> {
   }
   finally {
     creating.set(false)
-  }
-}
-
-async function copyCreatedToken(): Promise<void> {
-  actionError.set('')
-  try {
-    await globalThis.navigator.clipboard.writeText(createdToken())
-    copied.set(true)
-  }
-  catch {
-    actionError.set('Clipboard access is unavailable. Select and copy the token manually.')
   }
 }
 
@@ -260,8 +219,8 @@ onMount(() => {
     <Button variant="secondary" size="sm" @click="loadTokens">Try again</Button>
   </div>
 
-  <div :if="actionError()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ actionError() }}</div>
-  <div :if="actionMessage()" role="status" class="px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-950/40 border border-green-200 rounded-lg dark:border-green-900">{{ actionMessage() }}</div>
+  <div :if="actionError() && !showCreate()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-lg dark:border-red-900">{{ actionError() }}</div>
+  <div :if="actionMessage() && !showCreate()" role="status" class="px-4 py-3 text-green-700 text-sm dark:text-green-300 bg-green-50 dark:bg-green-950/40 border border-green-200 rounded-lg dark:border-green-900">{{ actionMessage() }}</div>
 
   <Card padding="none">
     <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
@@ -343,73 +302,13 @@ onMount(() => {
     </div>
   </Card>
 
-  <div :if="showCreate()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black/50 dashboard-modal-layer" @click.self="closeCreate">
-    <div role="dialog" aria-modal="true" aria-labelledby="create-token-title" class="p-6 max-w-lg w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-xl">
-      <div class="flex gap-4 items-start justify-between">
-        <div>
-          <h2 id="create-token-title" class="font-semibold text-lg text-neutral-900 dark:text-white">Create Access Token</h2>
-          <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Grant only the scopes this integration needs.</p>
-        </div>
-        <Button variant="ghost" iconOnly ariaLabel="Close create token dialog" @click="closeCreate">
-          <span class="h-5 w-5 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-
-      <div :if="createdToken()" class="mt-6 space-y-4">
-        <div role="status" class="px-4 py-3 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 rounded-lg dark:border-amber-900">
-          {{ actionMessage() }}
-        </div>
-        <label class="block">
-          <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">New token</span>
-          <textarea readonly rows="4" class="block mt-2 p-3 w-full font-mono text-neutral-900 text-xs dark:text-white bg-neutral-50 dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700">{{ createdToken() }}</textarea>
-        </label>
-        <div class="flex gap-2 justify-end">
-          <Button variant="secondary" @click="closeCreate">Done</Button>
-          <Button @click="copyCreatedToken">
-            <span class="h-4 w-4 i-hugeicons-copy-01"></span>
-            {{ copied() ? 'Copied' : 'Copy Token' }}
-          </Button>
-        </div>
-      </div>
-
-      <form :if="!createdToken()" class="mt-6 space-y-5" @submit.prevent="createAccessToken">
-        <label class="block">
-          <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Token name</span>
-          <input x-model="tokenName" type="text" maxlength="255" required placeholder="CI deployment" class="block mt-2 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-        </label>
-
-        <label class="block">
-          <span class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Expires after</span>
-          <select x-model="expiryMinutes" class="block mt-2 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-950 border border-neutral-300 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20">
-            <option value="60">1 hour</option>
-            <option value="1440">1 day</option>
-            <option value="10080">7 days</option>
-            <option value="43200">30 days</option>
-          </select>
-        </label>
-
-        <fieldset>
-          <legend class="font-medium text-neutral-700 text-sm dark:text-neutral-300">Scopes</legend>
-          <div class="grid gap-2 grid-cols-1 sm:grid-cols-2 mt-2">
-            <label :for="scope in availableScopes" class="flex gap-3 items-start p-3 border border-neutral-200 rounded-lg dark:border-neutral-700">
-              <input type="checkbox" :checked="selectedScopes().includes(scope.name)" class="mt-0.5 h-4 w-4 text-blue-600 rounded" @change="toggleScope($event, scope.name)">
-              <span>
-                <span class="block font-medium text-neutral-900 text-sm dark:text-white">{{ scope.name }}</span>
-                <span class="block mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ scope.description }}</span>
-              </span>
-            </label>
-          </div>
-        </fieldset>
-
-        <div :if="actionError()" role="alert" class="px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/40 rounded-lg">{{ actionError() }}</div>
-
-        <div class="flex gap-2 justify-end pt-2">
-          <Button variant="secondary" :disabled="creating()" @click="closeCreate">Cancel</Button>
-          <Button type="submit" :loading="creating()">
-            {{ creating() ? 'Creating...' : 'Create Token' }}
-          </Button>
-        </div>
-      </form>
-    </div>
-  </div>
+  <AccessTokenCreateDialog
+    :open="showCreate()"
+    :busy="creating()"
+    :createdToken="createdToken()"
+    :message="actionMessage()"
+    :error="actionError()"
+    @close="closeCreate"
+    @submit="createAccessToken($event)"
+  />
 </div>
