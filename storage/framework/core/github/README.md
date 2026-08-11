@@ -11,7 +11,7 @@ alerts, kanban→PR links, etc.).
 
   list of orgs, with on-disk caching and stale-while-revalidate semantics.
 
-- Lower-level helpers (`fetchAllRepos`, `fetchRepoStatus`, `fetchBotPRCounts`,
+- Lower-level helpers (`fetchAllRepos`, `fetchRepoStatus`, `fetchPullRequestCounts`,
 
   `fetchRepoActiveRuns`) for callers that need a single dimension.
 

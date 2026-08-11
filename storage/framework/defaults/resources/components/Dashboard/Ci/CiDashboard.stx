@@ -263,13 +263,13 @@
             <span class="text-xs text-zinc-400" :text="repo.commitAuthor"></span>
           </div>
 
-          <div :if="repo.renovatePRs > 0 || repo.actionsPRs > 0" class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
+          <div :if="repo.buddyBotPRs > 0 || repo.actionsPRs > 0" class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
             <div class="mb-1 text-xs text-zinc-400">Pull Requests</div>
             <div class="flex flex-wrap gap-x-3 gap-y-0.5">
-              <a :if="repo.renovatePRs > 0" :href="repo.renovatePRsUrl" target="_blank" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
-                renovatebot: <span :text="repo.renovatePRs"></span>
+              <a :if="repo.buddyBotPRs > 0" :href="repo.buddyBotPRsUrl" target="_blank" rel="noreferrer" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+                buddy-bot: <span :text="repo.buddyBotPRs"></span>
               </a>
-              <a :if="repo.actionsPRs > 0" :href="repo.actionsPRsUrl" target="_blank" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+              <a :if="repo.actionsPRs > 0" :href="repo.actionsPRsUrl" target="_blank" rel="noreferrer" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
                 github-actions: <span :text="repo.actionsPRs"></span>
               </a>
             </div>

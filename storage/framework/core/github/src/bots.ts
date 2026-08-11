@@ -1,17 +1,16 @@
 import { ghFetch, GITHUB_API } from './client'
 
 /**
- * Count open PRs authored by a GitHub App across every repo in an org.
+ * Count open PRs matching GitHub search qualifiers across every repo in an org.
  * Returns a map keyed by `owner/repo` so callers can attribute counts back
- * to the right repo card. Used to surface Renovate / GitHub Actions bot
- * traffic in the dashboard.
+ * to the right repo card.
  */
-export async function fetchBotPRCounts(org: string, authorSlug: string): Promise<Map<string, number>> {
+export async function fetchPullRequestCounts(org: string, qualifiers: string): Promise<Map<string, number>> {
   const counts = new Map<string, number>()
   let page = 1
 
   while (true) {
-    const q = `is:pr is:open org:${org} author:app/${authorSlug}`
+    const q = `is:pr is:open org:${org} ${qualifiers}`
     const res = await ghFetch(`${GITHUB_API}/search/issues?q=${encodeURIComponent(q)}&per_page=100&page=${page}`)
     if (!res.ok)
       break
@@ -31,4 +30,14 @@ export async function fetchBotPRCounts(org: string, authorSlug: string): Promise
   }
 
   return counts
+}
+
+/**
+ * Count open pull requests authored by a GitHub App.
+ *
+ * @deprecated Prefer {@link fetchPullRequestCounts} for new integrations so
+ * branch-based automation such as buddy-bot can be identified accurately.
+ */
+export function fetchBotPRCounts(org: string, authorSlug: string): Promise<Map<string, number>> {
+  return fetchPullRequestCounts(org, `author:app/${authorSlug}`)
 }

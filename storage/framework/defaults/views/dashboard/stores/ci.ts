@@ -24,8 +24,8 @@ interface RepoStatus {
   updatedAt: string | null
   runUrl: string | null
   failedJobs: FailedJob[]
-  renovatePRs: number
-  renovatePRsUrl: string | null
+  buddyBotPRs: number
+  buddyBotPRsUrl: string | null
   actionsPRs: number
   actionsPRsUrl: string | null
 }

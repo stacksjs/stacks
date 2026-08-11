@@ -18,7 +18,7 @@ const SAMPLE: DashboardData = {
 describe('getDashboardData cache', () => {
   test('returns disk-cached data without hitting the network', async () => {
     const cachePath = join(tmpdir(), `dashboard-cache-${Date.now()}-${Math.random().toString(36).slice(2)}.json`)
-    await Bun.write(cachePath, JSON.stringify({ data: SAMPLE, savedAt: Date.now() }))
+    await Bun.write(cachePath, JSON.stringify({ version: 2, data: SAMPLE, savedAt: Date.now() }))
 
     clearDashboardCache(cachePath)
     const data = await getDashboardData({

@@ -1,5 +1,5 @@
 import type { DashboardData, DashboardOptions, RepoStatus } from './types'
-import { fetchBotPRCounts } from './bots'
+import { fetchPullRequestCounts } from './bots'
 import { mapWithConcurrency } from './client'
 import { fetchAllRepos } from './repos'
 import { fetchRepoActiveRuns } from './runners'
@@ -8,6 +8,7 @@ import { fetchRepoStatus } from './runs'
 const DEFAULT_TTL_MS = 30 * 1000
 const DEFAULT_CACHE_PATH = '.cache/dashboard.json'
 const DEFAULT_RUNNER_CAP = 20
+const DASHBOARD_CACHE_VERSION = 2
 
 /**
  * In-memory cache scoped per cache-path. Multiple callers hitting the same
@@ -39,7 +40,9 @@ async function loadCacheFromDisk(entry: CacheEntry, path: string): Promise<void>
     const file = Bun.file(path)
     if (!(await file.exists()))
       return
-    const stored = await file.json() as { data: DashboardData, savedAt: number }
+    const stored = await file.json() as { version?: number, data: DashboardData, savedAt: number }
+    if (stored.version !== DASHBOARD_CACHE_VERSION)
+      return
     entry.data = stored.data
     entry.savedAt = stored.savedAt
   }
@@ -50,7 +53,7 @@ async function loadCacheFromDisk(entry: CacheEntry, path: string): Promise<void>
 
 async function saveCacheToDisk(path: string, data: DashboardData, savedAt: number): Promise<void> {
   try {
-    await Bun.write(path, JSON.stringify({ data, savedAt }))
+    await Bun.write(path, JSON.stringify({ version: DASHBOARD_CACHE_VERSION, data, savedAt }))
   }
   catch (err) {
     console.warn('[github/dashboard] cache write failed:', err)
@@ -72,26 +75,26 @@ async function buildDashboardData(opts: DashboardOptions): Promise<DashboardData
 
   const prCountMaps = await Promise.all(
     orgs.flatMap(org => [
-      fetchBotPRCounts(org, 'renovate').then(m => ({ type: 'renovate' as const, map: m })),
-      fetchBotPRCounts(org, 'github-actions').then(m => ({ type: 'actions' as const, map: m })),
+      fetchPullRequestCounts(org, 'head:buddy-bot').then(m => ({ type: 'buddy-bot' as const, map: m })),
+      fetchPullRequestCounts(org, 'author:app/github-actions -head:buddy-bot').then(m => ({ type: 'actions' as const, map: m })),
     ]),
   )
-  const renovateCounts = new Map<string, number>()
+  const buddyBotCounts = new Map<string, number>()
   const actionsCounts = new Map<string, number>()
   for (const { type, map } of prCountMaps) {
-    const target = type === 'renovate' ? renovateCounts : actionsCounts
+    const target = type === 'buddy-bot' ? buddyBotCounts : actionsCounts
     for (const [k, v] of map) target.set(k, (target.get(k) ?? 0) + v)
   }
 
   for (const s of statuses) {
-    const rCount = renovateCounts.get(s.fullName) ?? 0
+    const buddyBotCount = buddyBotCounts.get(s.fullName) ?? 0
     const aCount = actionsCounts.get(s.fullName) ?? 0
-    s.renovatePRs = rCount
+    s.buddyBotPRs = buddyBotCount
     s.actionsPRs = aCount
-    if (rCount > 0)
-      s.renovatePRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open author:app/renovate')}`
+    if (buddyBotCount > 0)
+      s.buddyBotPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open head:buddy-bot')}`
     if (aCount > 0)
-      s.actionsPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open author:app/github-actions')}`
+      s.actionsPRsUrl = `https://github.com/${s.fullName}/pulls?q=${encodeURIComponent('is:pr is:open author:app/github-actions -head:buddy-bot')}`
   }
 
   const runnerCounts = await mapWithConcurrency(repos, 8, async r => ({

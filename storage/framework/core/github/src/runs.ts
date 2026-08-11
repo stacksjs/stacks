@@ -61,8 +61,8 @@ export async function fetchRepoStatus(owner: string, name: string, defaultBranch
     updatedAt: null,
     runUrl: null,
     failedJobs: [],
-    renovatePRs: 0,
-    renovatePRsUrl: null,
+    buddyBotPRs: 0,
+    buddyBotPRsUrl: null,
     actionsPRs: 0,
     actionsPRsUrl: null,
   }

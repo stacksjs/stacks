@@ -8,7 +8,7 @@
  * single dimension without pulling the whole snapshot through.
  */
 
-export { fetchBotPRCounts } from './bots'
+export { fetchBotPRCounts, fetchPullRequestCounts } from './bots'
 export { ghFetch, ghHeaders, githubHeaders, githubJson, githubRequest, GITHUB_API, mapWithConcurrency } from './client'
 export type { GitHubClientOptions } from './client'
 export { clearDashboardCache, getDashboardData } from './dashboard'
