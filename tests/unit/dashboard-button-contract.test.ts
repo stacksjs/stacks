@@ -275,6 +275,7 @@ describe('dashboard button contract', () => {
       'Library/ComponentsDashboard.stx',
       'Library/DependenciesDashboard.stx',
       'Library/FunctionsDashboard.stx',
+      'Library/SourceScaffoldDialog.stx',
       'Library/PackagesDashboard.stx',
       'Analytics/AnalyticsPageHeader.stx',
       'Analytics/AnalyticsHub.stx',

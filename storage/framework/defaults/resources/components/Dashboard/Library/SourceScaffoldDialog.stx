@@ -1,0 +1,95 @@
+<script client>
+type SourceKind = 'component' | 'function'
+
+const open = useReactiveProp('open', false)
+const kind = useReactiveProp('kind', 'component' as SourceKind)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const sourceName = state('')
+const emit = defineEmits()
+const actionLabel = derived(() => `Create ${kind()}`)
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen)
+    sourceName.set('')
+  wasOpen = isOpen
+})
+
+function description(): string {
+  return kind() === 'component'
+    ? 'Uses the native Stacks component scaffold in resources/components.'
+    : 'Uses the native Stacks function scaffold in resources/functions.'
+}
+
+function pattern(): string {
+  return kind() === 'component'
+    ? '[A-Z][A-Za-z0-9]*'
+    : '[a-z][a-z0-9]*(?:-[a-z0-9]+)*'
+}
+
+function placeholder(): string {
+  return kind() === 'component' ? 'OrderSummary' : 'send-invoice'
+}
+
+function hint(): string {
+  return kind() === 'component'
+    ? 'Use a PascalCase component name.'
+    : 'Use lowercase kebab-case. The generated export uses camelCase.'
+}
+
+function valid(): boolean {
+  const value = sourceName().trim()
+  return kind() === 'component'
+    ? /^[A-Z][A-Za-z0-9]*$/.test(value)
+    : /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(value)
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  if (valid())
+    emit('submit', sourceName().trim())
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="actionLabel()"
+  :description="description()"
+  size="sm"
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="source-scaffold-form" @submit.prevent="submit">
+    <label class="block">
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span>
+      <input
+        x-model.trim="sourceName"
+        name="name"
+        required
+        :pattern="pattern()"
+        :placeholder="placeholder()"
+        class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"
+      >
+      <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ hint() }}</span>
+    </label>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button type="button" variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button type="submit" form="source-scaffold-form" :loading="busy()" :disabled="!valid()">
+        {{ actionLabel() }}
+      </Button>
+    </div>
+  </template>
+</Modal>

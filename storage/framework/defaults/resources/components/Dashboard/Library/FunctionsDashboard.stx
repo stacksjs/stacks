@@ -20,7 +20,6 @@ const loading = state(true)
 const loadError = state('')
 const search = state('')
 const dialogOpen = state(false)
-const functionName = state('')
 const saving = state(false)
 const saveError = state('')
 
@@ -61,7 +60,6 @@ async function loadFunctions(): Promise<void> {
 }
 
 function openCreate(): void {
-  functionName.set('')
   saveError.set('')
   dialogOpen.set(true)
 }
@@ -71,20 +69,16 @@ function closeCreate(): void {
     dialogOpen.set(false)
 }
 
-function validName(): boolean {
-  return /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/.test(functionName().trim())
-}
-
-async function createFunction(): Promise<void> {
+async function createFunction(name: string): Promise<void> {
   saving.set(true)
   saveError.set('')
   try {
     await dashboardApi('/api/dashboard/library/functions', {
       method: 'POST',
-      body: { name: functionName().trim() },
+      body: { name },
     })
     dialogOpen.set(false)
-    pushToast('success', 'Function created', { detail: `${functionName().trim()}.ts` })
+    pushToast('success', 'Function created', { detail: `${name}.ts` })
     await loadFunctions()
   }
   catch (error) {
@@ -122,9 +116,11 @@ onMount(() => { void loadFunctions() })
   </section>
 </div>
 
-<div :if="dialogOpen()" class="flex fixed inset-y-0 right-0 z-[55] items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close function dialog" class="absolute inset-0 bg-black/45" @click="closeCreate()"></button>
-  <section role="dialog" aria-modal="true" aria-label="Create function" class="relative max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <form @submit.prevent="createFunction()"><div class="p-6"><h2 class="font-semibold text-gray-900 text-lg dark:text-white">Create function</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Uses the native Stacks function scaffold in resources/functions.</p><div :if="saveError()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ saveError() }}</div><label class="block mt-5"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Name</span><input x-model.trim="functionName" required pattern="[a-z][a-z0-9]*(?:-[a-z0-9]+)*" placeholder="send-invoice" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /><span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Lowercase kebab-case. The generated export uses camelCase.</span></label></div><footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700"><Button type="button" variant="secondary" :disabled="saving()" @click="closeCreate()">Cancel</Button><Button type="submit" variant="primary" :loading="saving()" :disabled="saving() || !validName()">Create function</Button></footer></form>
-  </section>
-</div>
+<SourceScaffoldDialog
+  :open="dialogOpen()"
+  kind="function"
+  :busy="saving()"
+  :error="saveError()"
+  @close="closeCreate"
+  @submit="createFunction"
+/>
