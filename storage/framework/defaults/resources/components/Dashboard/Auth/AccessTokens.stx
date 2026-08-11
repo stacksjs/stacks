@@ -48,6 +48,10 @@ const revoking = state<number | null>(null)
 
 const activeCount = derived(() => tokens().filter(token => tokenStatus(token) === 'active').length)
 const expiredCount = derived(() => tokens().filter(token => tokenStatus(token) === 'expired').length)
+const tokenToRevoke = derived(() => tokens().find(token => token.id === confirmingRevoke()) ?? null)
+const revokeDescription = derived(() => tokenToRevoke()
+  ? `${tokenToRevoke()?.name} will immediately stop authorizing API requests.`
+  : 'This access token will immediately stop authorizing API requests.')
 
 function tokenStatus(token: AccessTokenRow): 'active' | 'expired' {
   if (!token.expires_at)
@@ -152,11 +156,10 @@ async function createAccessToken(draft: TokenDraft): Promise<void> {
   }
 }
 
-async function revokeToken(id: number): Promise<void> {
-  if (confirmingRevoke() !== id) {
-    confirmingRevoke.set(id)
+async function revokeToken(): Promise<void> {
+  const id = confirmingRevoke()
+  if (id === null)
     return
-  }
 
   actionError.set('')
   actionMessage.set('')
@@ -292,8 +295,8 @@ onMount(() => {
             <td class="px-4 py-3.5"><span :class="'inline-flex px-2 py-0.5 font-medium text-xs capitalize rounded ' + statusClass(token)">{{ tokenStatus(token) }}</span></td>
             <td class="px-4 py-3.5 text-neutral-500 text-right text-xs whitespace-nowrap dark:text-neutral-400">{{ formatDate(token.expires_at) }}</td>
             <td class="pr-5 py-3.5 text-right whitespace-nowrap">
-              <Button variant="danger" size="sm" :loading="revoking() === token.id" @click="revokeToken(token.id)">
-                {{ revoking() === token.id ? 'Revoking...' : confirmingRevoke() === token.id ? 'Confirm Revoke' : 'Revoke' }}
+              <Button variant="danger" size="sm" :loading="revoking() === token.id" @click="confirmingRevoke.set(token.id)">
+                {{ revoking() === token.id ? 'Revoking...' : 'Revoke' }}
               </Button>
             </td>
           </tr>
@@ -310,5 +313,15 @@ onMount(() => {
     :error="actionError()"
     @close="closeCreate"
     @submit="createAccessToken($event)"
+  />
+
+  <ConfirmDialog
+    :isOpen="confirmingRevoke() !== null"
+    title="Revoke this access token?"
+    :description="revokeDescription()"
+    :busy="revoking() !== null"
+    confirmLabel="Revoke"
+    @close="confirmingRevoke.set(null)"
+    @confirm="revokeToken"
   />
 </div>
