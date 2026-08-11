@@ -1,16 +1,15 @@
+import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { summarize } from '@stacksjs/ai'
+import { log } from '@stacksjs/logging'
+import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
-
-// TODO: this should have been auto-generated
-interface Request {
-  text: string
-}
 
 export default new Action({
   name: 'AiSummaryAction',
   description: 'Summary AI',
   method: 'POST',
+  apiResponse: true,
 
   validations: {
     text: {
@@ -19,22 +18,18 @@ export default new Action({
     },
   },
 
-  async handle(request: Request) {
+  async handle(request: RequestInstance) {
+    await request.validate()
+    const text = String(request.get('text') || '').trim()
+
     try {
-      const text = request.text
-
-      console.log(`Text received: ${text}`)
-
-      return {
+      return response.json({
         data: await summarize(text),
-      }
+      })
     }
     catch (error) {
-      console.error('Error:', error)
-
-      return {
-        error: 'An error occurred while processing your request.',
-      }
+      log.error('[ai] Summary request failed', { error })
+      return response.json({ message: 'The AI provider could not summarize the text.' }, 502)
     }
   },
 })
