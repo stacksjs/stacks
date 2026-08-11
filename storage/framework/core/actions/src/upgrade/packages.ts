@@ -11,8 +11,11 @@ import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import {
   detectProjectAiProviders,
+  installedDefaultsVersion,
+  measureDefaultsDrift,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,
+  summarizeStructureChanges,
   syncPackageProjectFiles,
 } from './package-project'
 
@@ -232,6 +235,18 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     console.log(`  Project manifest migrations: ${projectManifestChanges.length}\n`)
 
   if (options.dryRun) {
+    // Manifest rewrites are the small half of an upgrade. The large half is the
+    // scaffold under storage/framework/defaults, and a preview that reports
+    // only the former reads as "this upgrade touches four files" when it is
+    // about to rewrite hundreds. The comparison is against the version
+    // installed right now, because the target is not on disk yet.
+    const pending = measureDefaultsDrift(projectRoot)
+    if (pending && pending.length > 0) {
+      const installed = installedDefaultsVersion(projectRoot)
+      console.log(`  Managed project files, against the installed @stacksjs/defaults${installed ? ` (${installed})` : ''}:`)
+      console.log(`    ${summarizeStructureChanges(pending)}   in storage/framework/defaults and project support files\n`)
+    }
+
     console.log('  --dry-run: no files were written and nothing was installed.\n')
     process.exit(0)
   }

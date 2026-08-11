@@ -109,6 +109,50 @@ export function doctor(buddy: CLI): void {
         })
       }
 
+      // Framework defaults that are older than the package they came from
+      //
+      // `storage/framework/defaults` is the copy that executes — the generated
+      // auto-import barrel reaches into it by relative path — and only
+      // `buddy upgrade` writes it. Bump `stacks` in package.json and
+      // `bun install`, which is how anyone moves a dependency, and the package
+      // advances while the vendored tree stays put. Nothing else compares them,
+      // so an app can run month-old framework code against a current install
+      // and the only symptom is a ReferenceError naming an internal symbol.
+      await probe(checks, 'Framework defaults', async () => {
+        const { inspectDefaultsProvenance, measureDefaultsDrift, summarizeStructureChanges } = await import('@stacksjs/actions')
+        const root = resolve(process.cwd())
+        const skew = inspectDefaultsProvenance(root)
+
+        if (skew.status === 'not-applicable')
+          return 'Not a package-managed project (nothing to compare)'
+
+        // Exact counts here. `doctor` is the command you run to get a number,
+        // and a full comparison of the tree costs well under a second.
+        const drift = measureDefaultsDrift(root) ?? []
+        const synced = skew.syncedAt ? `, synced ${skew.syncedAt.slice(0, 10)}` : ''
+
+        if (drift.length === 0)
+          return `Vendored tree matches @stacksjs/defaults ${skew.installed}${synced}`
+
+        const counts = summarizeStructureChanges(drift)
+        const fix = 'The app runs the vendored copy. Run `buddy upgrade` to sync it.'
+
+        // A recorded version that disagrees with the installed one is not open
+        // to interpretation: the app is running a release it did not install.
+        if (skew.status === 'stale') {
+          throw new Error(
+            `storage/framework/defaults is from ${skew.vendored} while @stacksjs/defaults ${skew.installed} is installed (${counts}). ${fix}`,
+          )
+        }
+
+        // Unstamped. The files differ, but a tree written before stamping
+        // existed cannot say whether that is age or a deliberate local edit,
+        // so report it without failing the run.
+        throw new ProbeWarning(
+          `storage/framework/defaults differs from the installed @stacksjs/defaults ${skew.installed} (${counts}), and carries no record of what it was synced from. ${fix}`,
+        )
+      }, 8000)
+
       // Check Bun version against the framework minimum
       const bunVersion = process.versions.bun
       if (bunVersion && isSupportedBunVersion(bunVersion)) {

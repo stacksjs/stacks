@@ -32,7 +32,7 @@ buddy upgrade:<type> [options]
 | `-v, --version <version>` | Install a specific version (e.g., 0.70.23) |
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build |
 | `--stable` | Switch to the latest vetted stable release |
-| `--dry-run` | Preview which dependencies would change without writing or installing |
+| `--dry-run` | Preview which dependencies and managed project files would change, without writing or installing |
 | `-f, --force` | Force re-download, bypassing cache and version checks |
 | `--from <path>` | Sync from a local stacks checkout (e.g. ~/Code/stacks), skips GitHub |
 | `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) |
@@ -47,6 +47,34 @@ Run without a subcommand to upgrade the Stacks framework to the latest version:
 ```bash
 buddy upgrade
 ```
+
+### Why `bun install` is not enough
+
+A package-managed app keeps a copy of the framework scaffold in
+`storage/framework/defaults`, and that copy is the one that runs: the generated
+auto-import barrel reaches into it by relative path.
+
+`buddy upgrade` is the only thing that writes it. Bumping `stacks` in
+`package.json` and running `bun install`, which is the ordinary way to move a
+dependency, advances `node_modules/@stacksjs/defaults` and leaves the vendored
+tree exactly where it was. The app then runs framework code from whichever
+release it was last synced from, against a current install.
+
+Three things now report the gap:
+
+- `buddy dev` prints a one-line warning at startup when the two disagree.
+- `buddy doctor` has a **Framework defaults** check with the file counts.
+- `buddy upgrade --dry-run` previews the scaffold changes, not just the
+  dependency bumps.
+
+Each sync stamps `storage/framework/defaults/.stacks-sync.json` with the version
+it copied from, which is what those checks read. A tree synced before that stamp
+existed reports as unstamped until the next `buddy upgrade`.
+
+Note that the sync also removes files under `storage/framework/defaults` that
+the package no longer ships, so it is not purely additive. The tree is
+gitignored, so `git checkout` cannot undo it. Keep customizations in `app/`,
+which overrides the defaults and is never touched by the sync.
 
 ### Upgrade All
 
