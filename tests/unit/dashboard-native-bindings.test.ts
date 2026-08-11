@@ -180,6 +180,10 @@ describe('dashboard native STX bindings', () => {
     expect(authorEditor).toContain('<Modal')
     expect(authorEditor).toContain('form="author-editor-form"')
 
+    const comments = componentSource('Content/CommentsDashboard.stx')
+    expect(comments).toContain('<ConfirmDialog')
+    expect(comments).not.toContain('fixed inset-y-0')
+
     const taxonomy = componentSource('Content/ContentTaxonomyDashboard.stx')
     expect(taxonomy).toContain(".normalize('NFKD')")
     expect(taxonomy).toContain('@input="markSlugTouched"')
