@@ -69,27 +69,27 @@ useClickOutside(userMenu, () => setDropdownOpen(false))
     </StxLink>
 
     <nav class="flex gap-x-4 items-center lg:gap-x-6" aria-label="Dashboard utilities">
-      <a href="/errors" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/errors') ? 'active-header-link' : '' }}" title="View errors">
+      <a href="/errors" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/errors') ? 'active-header-link' : '' }}" x-tooltip="View errors" title="View errors">
         <span class="sr-only">View errors</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-alert-01"></span>
       </a>
 
-      <a href="/health" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/health') ? 'active-header-link' : '' }}" title="View health">
+      <a href="/health" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/health') ? 'active-header-link' : '' }}" x-tooltip="View health" title="View health">
         <span class="sr-only">View health</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-health"></span>
       </a>
 
-      <a href="/insights" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/insights') ? 'active-header-link' : '' }}" title="View cloud insights">
+      <a href="/insights" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/insights') ? 'active-header-link' : '' }}" x-tooltip="View cloud insights" title="View cloud insights">
         <span class="sr-only">View cloud insights</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-pulse-01"></span>
       </a>
 
-      <a href="/inbox" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/inbox') ? 'active-header-link' : '' }}" title="View inbox">
+      <a href="/inbox" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/inbox') ? 'active-header-link' : '' }}" x-tooltip="View inbox" title="View inbox">
         <span class="sr-only">View inbox</span>
         <span aria-hidden="true" class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-mail-02"></span>
       </a>
 
-      <a href="/notifications/dashboard" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/notifications/dashboard') ? 'active-header-link' : '' }}" title="View notifications">
+      <a href="/notifications/dashboard" data-stx-link class="header-icon-button header-link {{ isActiveRoute('/notifications/dashboard') ? 'active-header-link' : '' }}" x-tooltip="View notifications" title="View notifications">
         <span class="sr-only">View notifications</span>
         <span aria-hidden="true" class="h-6 w-6 i-hugeicons-notification-02"></span>
       </a>

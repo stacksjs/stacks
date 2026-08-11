@@ -83,7 +83,7 @@ void loadProjects()
         <p class="text-neutral-500 text-xs dark:text-neutral-400">Project shortcuts</p>
       </div>
     </div>
-    <button type="button" class="flex items-center justify-center h-9 w-9 text-neutral-500 hover:text-neutral-900 dark:hover:text-white bg-white dark:bg-white/5 border border-black/5 rounded-lg dark:border-white/10" @click="run('refresh')" title="Refresh">
+    <button type="button" class="flex items-center justify-center h-9 w-9 text-neutral-500 hover:text-neutral-900 dark:hover:text-white bg-white dark:bg-white/5 border border-black/5 rounded-lg dark:border-white/10" @click="run('refresh')" x-tooltip="Refresh" title="Refresh">
       <span :class="running() === 'refresh' ? 'h-4 w-4 animate-spin i-hugeicons-loading-03' : 'h-4 w-4 i-hugeicons-refresh'"></span>
     </button>
   </header>

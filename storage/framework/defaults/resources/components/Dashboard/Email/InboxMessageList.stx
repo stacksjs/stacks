@@ -68,7 +68,7 @@ function listClass(): string {
                 <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ email.preview }}</p>
               </div>
               <div class="flex flex-shrink-0 gap-2 items-center">
-                <span :if="email.hasAttachments" class="h-4 w-4 text-gray-400 i-hugeicons-attachment-01" title="Has attachments"></span>
+                <span :if="email.hasAttachments" class="h-4 w-4 text-gray-400 i-hugeicons-attachment-01" x-tooltip="Has attachments" title="Has attachments"></span>
                 <time class="text-gray-500 text-xs dark:text-neutral-400" :datetime="email.date">{{ formatDate(email.date) }}</time>
               </div>
             </div>

@@ -52,7 +52,7 @@ function statusClass(status: string): string {
             <td class="px-4 py-4">
               <div class="flex gap-2 items-center">
                 <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.name }}</p>
-                <span :if="record.countDrift" title="Stored counters differ from membership rows" class="h-4 w-4 text-amber-500 i-hugeicons-alert-02"></span>
+                <span :if="record.countDrift" x-tooltip="Stored counters differ from membership rows" title="Stored counters differ from membership rows" class="h-4 w-4 text-amber-500 i-hugeicons-alert-02"></span>
               </div>
               <p class="mt-1 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ record.slug }}</p>
               <p :if="record.description" class="mt-1 max-w-sm text-gray-500 text-xs dark:text-neutral-400">{{ record.description }}</p>
