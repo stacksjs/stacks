@@ -497,13 +497,14 @@ function parseViewport(value: string | undefined): { w: number, h: number } {
   return { w, h }
 }
 
-type ScenarioAction = 'assert' | 'click' | 'fill' | 'press' | 'wait'
+type ScenarioAction = 'assert' | 'click' | 'fill' | 'focus' | 'press' | 'wait'
 
 interface ScenarioStep {
   action: ScenarioAction
   selector?: string
   text?: string
   absent?: boolean
+  focused?: boolean
   value?: string
   key?: string
   ms?: number
@@ -523,16 +524,18 @@ function parseScenarioStep(value: string): ScenarioStep {
     throw new TypeError('Each scenario step must be a JSON object.')
 
   const step = parsed as Record<string, unknown>
-  if (!['assert', 'click', 'fill', 'press', 'wait'].includes(String(step.action)))
+  if (!['assert', 'click', 'fill', 'focus', 'press', 'wait'].includes(String(step.action)))
     throw new TypeError(`Unsupported scenario action: ${String(step.action)}`)
 
   const action = step.action as ScenarioAction
-  if (['assert', 'click', 'fill'].includes(action) && typeof step.selector !== 'string')
+  if (['assert', 'click', 'fill', 'focus'].includes(action) && typeof step.selector !== 'string')
     throw new TypeError(`Scenario action "${action}" requires a selector.`)
   if (action === 'fill' && typeof step.value !== 'string')
     throw new TypeError('Scenario action "fill" requires a string value.')
   if (step.absent !== undefined && (action !== 'assert' || typeof step.absent !== 'boolean'))
     throw new TypeError('Scenario "absent" is a boolean supported only by assert actions.')
+  if (step.focused !== undefined && (action !== 'assert' || typeof step.focused !== 'boolean'))
+    throw new TypeError('Scenario "focused" is a boolean supported only by assert actions.')
   if (action === 'press' && typeof step.key !== 'string')
     throw new TypeError('Scenario action "press" requires a key.')
   if (action === 'wait' && (!Number.isFinite(step.ms) || Number(step.ms) < 0 || Number(step.ms) > 30_000))
@@ -560,7 +563,7 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
       const step = ${JSON.stringify(step)}
       const candidates = Array.from(document.querySelectorAll(step.selector))
       const normalizedText = (element) => (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim()
-      const element = step.action === 'click' && step.text !== undefined
+      const element = (step.action === 'click' || step.action === 'focus' || step.action === 'assert') && step.text !== undefined
         ? candidates.find(candidate => normalizedText(candidate) === step.text)
           || candidates.find(candidate => normalizedText(candidate).includes(step.text))
         : candidates[0]
@@ -583,7 +586,13 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
       if (step.action === 'click') {
         if (element.disabled || element.getAttribute('aria-disabled') === 'true')
           return { ok: false, error: 'Element is disabled', selector: step.selector }
-        element.click()
+      }
+      else if (step.action === 'focus') {
+        if (typeof element.focus !== 'function')
+          return { ok: false, error: 'Element cannot receive focus', selector: step.selector }
+        element.focus()
+        if (document.activeElement !== element)
+          return { ok: false, error: 'Element did not receive focus', selector: step.selector }
       }
       else if (step.action === 'fill') {
         if (!('value' in element))
@@ -603,12 +612,19 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
           return { ok: false, error: 'Expected text was not found', selector: step.selector, expected: step.text, actual: content.slice(0, 240) }
       }
 
+      if (step.action === 'assert' && step.focused !== undefined) {
+        const focused = document.activeElement === element
+        if (focused !== step.focused)
+          return { ok: false, error: step.focused ? 'Expected element to be focused' : 'Expected element not to be focused', selector: step.selector }
+      }
+
       return {
         ok: true,
         action: step.action,
         selector: step.selector,
         tag: element.tagName.toLowerCase(),
         text: normalizedText(element).slice(0, 160),
+        clickPoint: step.action === 'click' ? { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 } : undefined,
       }
     })()`,
     returnByValue: true,
@@ -616,6 +632,12 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
   const value = result.result?.value as Record<string, unknown> | undefined
   if (!value?.ok)
     throw new Error(`Scenario ${step.action} failed: ${String(value?.error || 'unknown error')} (${step.selector || step.key || ''})`)
+  if (step.action === 'click') {
+    const point = value.clickPoint as { x: number, y: number }
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mousePressed', x: point.x, y: point.y, button: 'left', clickCount: 1 })
+    await cdp.send('Input.dispatchMouseEvent', { type: 'mouseReleased', x: point.x, y: point.y, button: 'left', clickCount: 1 })
+    delete value.clickPoint
+  }
   return value
 }
 
@@ -751,6 +773,20 @@ async function main() {
       const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
       const state = await gotoAndInstrument(cdp, url, { viewport, cookies, settleMs, scheme })
       const results: Record<string, unknown>[] = []
+      await cdp.send('Page.bringToFront')
+      await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+          window.__browseFocusHistory = []
+          const describe = (element) => element ? {
+            tag: element.tagName?.toLowerCase() || null,
+            role: element.getAttribute?.('role') || null,
+            ariaLabel: element.getAttribute?.('aria-label') || null,
+            text: (element.innerText || element.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 80),
+          } : null
+          document.addEventListener('focusin', event => window.__browseFocusHistory.push({ event: 'focusin', target: describe(event.target) }), true)
+          document.addEventListener('focusout', event => window.__browseFocusHistory.push({ event: 'focusout', target: describe(event.target), related: describe(event.relatedTarget) }), true)
+        })()`,
+      })
 
       for (const step of steps) {
         results.push(await runScenarioStep(cdp, step))
@@ -762,7 +798,15 @@ async function main() {
         expression: `({
           url: location.href,
           title: document.title,
-          activeElement: document.activeElement?.tagName?.toLowerCase() || null,
+          focusHistory: window.__browseFocusHistory || [],
+          activeElement: document.activeElement ? {
+            tag: document.activeElement.tagName?.toLowerCase() || null,
+            id: document.activeElement.id || null,
+            role: document.activeElement.getAttribute?.('role') || null,
+            ariaLabel: document.activeElement.getAttribute?.('aria-label') || null,
+            ref: document.activeElement.getAttribute?.('data-stx-ref') || null,
+            text: (document.activeElement.innerText || document.activeElement.textContent || '').replace(/\\s+/g, ' ').trim().slice(0, 120),
+          } : null,
           bodyText: (document.body.innerText || '').replace(/\\s+/g, ' ').trim().slice(0, 500),
         })`,
         returnByValue: true,
@@ -780,6 +824,7 @@ async function main() {
         steps: results,
         final: finalState.result?.value,
         screenshot,
+        consoleMessages: state.console,
         consoleErrors: state.consoleErrors,
         failedRequests,
       }, null, 2))
