@@ -542,6 +542,20 @@ describe('dashboard native STX bindings', () => {
     expect(modal).toContain(':role="liveRole()"')
     expect(modal).toContain('aria-modal="true"')
     expect(modal).toContain(`:aria-label="liveTitle() || 'Dialog'"`)
+    expect(modal).toContain('<slot name="header-leading" />')
+    expect(modal).toContain('<slot name="header-trailing" />')
+
+    for (const file of [
+      'Commerce/CommerceCategoryDetailsDialog.stx',
+      'Commerce/CommerceCouponDetailsDialog.stx',
+      'Commerce/CommerceCustomerDetailsDialog.stx',
+      'Commerce/CommerceGiftCardDetailsDialog.stx',
+    ]) {
+      const source = componentSource(file)
+      expect(source).toContain('<Modal')
+      expect(source).not.toContain('fixed inset-0')
+      expect(source).not.toContain('role="dialog"')
+    }
 
     const baseModal = componentSource('Modals/BaseModal.stx')
     expect(baseModal).toContain("const generatedId = useId('modal')")

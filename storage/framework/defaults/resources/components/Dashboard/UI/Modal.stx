@@ -77,7 +77,7 @@ effect(() => {
     :role="liveRole()"
     aria-modal="true"
     :aria-label="liveTitle() || 'Dialog'"
-    class="fixed inset-0 m-0 p-0 h-dvh max-h-none w-screen max-w-none overflow-y-auto z-[55] bg-transparent dashboard-modal-layer dashboard-modal-dialog"
+    class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none w-screen bg-transparent dashboard-modal-dialog dashboard-modal-layer"
     @cancel="handleCancel"
   >
     <!-- Modal container -->
@@ -99,16 +99,19 @@ effect(() => {
             </div>
           </div>
 
-          <Button
-            :if="liveClosable()"
-            variant="ghost"
-            size="sm"
-            iconOnly
-            ariaLabel="Close modal"
-            @click="closeModal"
-          >
-            <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
-          </Button>
+          <div class="flex flex-shrink-0 gap-2 items-center">
+            <slot name="header-trailing" />
+            <Button
+              :if="liveClosable()"
+              variant="ghost"
+              size="sm"
+              iconOnly
+              ariaLabel="Close modal"
+              @click="closeModal"
+            >
+              <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
+            </Button>
+          </div>
         </div>
 
         <!-- Body -->
