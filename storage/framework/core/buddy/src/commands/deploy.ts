@@ -14,7 +14,7 @@ import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
-import { ensureAppKey, ensureEnvIsSet } from './setup'
+import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 
 // Use console.log for clean output without timestamps
@@ -124,10 +124,11 @@ async function findPantryMailBinary(): Promise<string | null> {
   return null
 }
 
-async function ensureDeployPrerequisites(verbose = false): Promise<void> {
+async function ensureDeployPrerequisites(verbose = false, environment = 'production'): Promise<void> {
   const cwd = p.projectPath()
 
   await ensureEnvIsSet({ cwd, verbose })
+  await ensureDeployEnvIsSet(cwd, environment)
   await ensureAppKey(cwd)
 }
 
@@ -881,11 +882,27 @@ export async function resolveDeployEnvValues(
 
     const parsed = JSON.parse(result.output) as Record<string, string>
     const values: Record<string, string> = {}
+    const undecrypted: string[] = []
     for (const [key, value] of Object.entries(parsed)) {
       // dotenvx crypto metadata, not application config — never ship it.
       if (/^DOTENV_(PUBLIC|PRIVATE)_KEY/.test(key))
         continue
       values[key] = String(value)
+      if (/^(?:encrypted|enc):/.test(values[key]))
+        undecrypted.push(key)
+    }
+
+    // A value that could not be decrypted comes back as its own ciphertext, and
+    // a ciphertext is a perfectly valid string: it would be written into the
+    // site's .env and the app would boot with `APP_KEY=encrypted:BEd1…`, failing
+    // at whatever first tried to use it, hours later, in a message about that
+    // feature rather than about the key. Almost always a missing `.env.keys`
+    // (a fresh clone, or CI without DOTENV_PRIVATE_KEY_PRODUCTION), and it is
+    // not recoverable here — the private key is the only thing that would help.
+    if (undecrypted.length > 0) {
+      log.error(`${undecrypted.length} value(s) in ${fileName} could not be decrypted: ${undecrypted.join(', ')}`)
+      log.info(`The private key for this environment lives in .env.keys, which is not committed. Restore it, or set DOTENV_PRIVATE_KEY_${environment.toUpperCase()} in the environment running the deploy.`)
+      process.exit(ExitCode.FatalError)
     }
 
     const { foreignTenantKeys, partitionTenantEnv } = await import('@stacksjs/env')
@@ -3443,14 +3460,16 @@ export function deploy(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await ensureDeployPrerequisites(options.verbose === true)
-
       // Resolve the target environment from the positional arg or the
       // --staging/--dev/--prod flags (the flags were previously ignored, so
       // `buddy deploy --staging` silently deployed production).
       const deployEnv = envArg
         || (options.staging ? 'staging' : options.dev ? 'development' : 'production')
       const deployEnvName = deployEnv === 'prod' ? 'production' : deployEnv === 'dev' ? 'development' : deployEnv
+
+      // Resolved BEFORE the prerequisites, because which env file has to be in
+      // place is the first thing they check.
+      await ensureDeployPrerequisites(options.verbose === true, deployEnvName)
 
       // Deterministic, environment-aware secret resolution. Explicitly load the
       // TARGET environment's decrypted secrets into process.env BEFORE the config

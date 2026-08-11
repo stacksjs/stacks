@@ -528,3 +528,123 @@ export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
     log.success('.env existed')
   }
 }
+
+/**
+ * The env file's actual settings: `KEY=value` pairs, minus blanks, comments,
+ * and the public-key header (which is metadata, and is never encrypted).
+ */
+function envValues(contents: string): string[] {
+  return contents
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0 && !line.startsWith('#') && !line.startsWith('DOTENV_PUBLIC_KEY'))
+    .map(line => line.slice(line.indexOf('=') + 1).trim())
+    .map(value => value.replace(/^['"]/, ''))
+}
+
+/** A value that is already ciphertext, so encrypting again would be a no-op. */
+function isCiphertext(value: string): boolean {
+  return value.startsWith('encrypted:') || value.startsWith('enc:')
+}
+
+/**
+ * Is every value in this env file already ciphertext?
+ *
+ * A file with nothing in it counts: there is no secret in it to protect.
+ */
+export function isEnvFileEncrypted(contents: string): boolean {
+  return envValues(contents).every(isCiphertext)
+}
+
+/**
+ * The header a freshly created `.env.<environment>` starts with.
+ *
+ * Deliberately no values. A first deploy that copied `.env` into
+ * `.env.production` would ship the developer's laptop — a localhost APP_URL, a
+ * dev database, a test Stripe key — to a real server under a name that says
+ * production, and the encryption would then hide the mistake from review.
+ */
+function deployEnvTemplate(environment: string): string {
+  return [
+    `# Secrets for the ${environment} environment.`,
+    '#',
+    '# Values here are encrypted with the public key below and decrypted at',
+    '# deploy time with the matching private key in .env.keys, which is NOT',
+    "# committed. This file is — that is the point: the ciphertext is reviewable",
+    '# and diffable, and losing a laptop does not leak production.',
+    '#',
+    '# Add one with:',
+    `#   buddy env:set STRIPE_SECRET_KEY sk_live_… --env ${environment}`,
+    '#',
+    '# Left empty on purpose. Nothing was copied out of your .env: that file',
+    '# describes a laptop, and a server is not one.',
+    '',
+  ].join('\n')
+}
+
+/**
+ * Guarantee the deploy has an encrypted env file for the environment it is
+ * shipping to.
+ *
+ * A stacks app keeps production secrets in `.env.<environment>`, encrypted, and
+ * the deploy decrypts them locally before shipping — systemd's `EnvironmentFile`
+ * is a plain `KEY=value` parser that could never do it, so this is the only path
+ * a secret can take to a server without lying around in plaintext on the way.
+ *
+ * Nothing enforced that. `resolveDeployEnvValues` returns `{}` for a missing
+ * file, so an app with no `.env.production` deployed perfectly happily and kept
+ * every secret it had in the plaintext `.env` beside its source — which is the
+ * state a project drifts into by simply never being told otherwise, and which
+ * nothing surfaces later because everything works.
+ *
+ * Three states, all of them ending with the file in place:
+ *
+ *   - **Missing** — created, with a header and no values, then encrypted so the
+ *     keypair exists. Empty is not a stopgap: it is the honest starting point,
+ *     and it changes nothing about what the deploy ships today.
+ *   - **Plaintext** — encrypted in place. A value that reached this file was
+ *     meant to be a secret, and leaving it readable is the failure this whole
+ *     mechanism exists to prevent. Already-encrypted values are untouched, so
+ *     this is safe to run on every deploy.
+ *   - **Encrypted** — left alone.
+ *
+ * `development` is skipped: that environment reads plain `.env` by convention,
+ * and encrypting a developer's working file would cost them their editor.
+ */
+export async function ensureDeployEnvIsSet(cwd: string, environment: string): Promise<void> {
+  if (['development', 'dev', 'local', 'test'].includes(environment))
+    return
+
+  const fileName = `.env.${environment}`
+  const filePath = join(cwd, fileName)
+  const created = !existsSync(filePath)
+
+  if (created)
+    writeFileSync(filePath, deployEnvTemplate(environment))
+
+  const contents = readFileSync(filePath, 'utf-8')
+
+  if (!created && isEnvFileEncrypted(contents)) {
+    log.success(`${fileName} existed`)
+    return
+  }
+
+  const { encryptEnv } = await import('@stacksjs/env')
+  const result = encryptEnv({ file: fileName, cwd })
+
+  if (!result.success) {
+    // Fatal on purpose. Continuing would deploy with secrets this project has
+    // said belong in an encrypted file, from wherever they happen to sit
+    // instead — and the point of asking was to stop doing that.
+    log.error(`Could not encrypt ${fileName}: ${result.error ?? 'unknown error'}`)
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (created) {
+    log.success(`${fileName} created (empty, encrypted — add secrets with \`buddy env:set KEY value --env ${environment}\`)`)
+    return
+  }
+
+  const encrypted = envValues(contents).filter(value => !isCiphertext(value)).length
+  log.success(`${fileName} encrypted (${encrypted} value${encrypted === 1 ? '' : 's'})`)
+}
