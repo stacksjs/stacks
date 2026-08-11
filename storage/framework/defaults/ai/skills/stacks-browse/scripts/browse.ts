@@ -612,6 +612,8 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
       if (!element)
         return { ok: false, error: 'Element not found', selector: step.selector }
 
+      if (step.action === 'click' || step.action === 'focus')
+        element.scrollIntoView({ block: 'center', inline: 'center', behavior: 'instant' })
       const rect = element.getBoundingClientRect()
       const style = getComputedStyle(element)
       const visible = rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
@@ -626,6 +628,8 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
       if (step.action === 'click') {
         if (element.disabled || element.getAttribute('aria-disabled') === 'true')
           return { ok: false, error: 'Element is disabled', selector: step.selector }
+        if (rect.right <= 0 || rect.bottom <= 0 || rect.left >= innerWidth || rect.top >= innerHeight)
+          return { ok: false, error: 'Element could not be scrolled into the viewport', selector: step.selector }
       }
       else if (step.action === 'focus') {
         if (typeof element.focus !== 'function')
