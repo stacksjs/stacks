@@ -247,6 +247,9 @@ describe('dashboard button contract', () => {
       'Content/CommentsDashboard.stx',
       'Content/ContentDashboard.stx',
       'Content/SeoEditorDialog.stx',
+      'Content/FileDetailsDrawer.stx',
+      'Content/CreateFolderDialog.stx',
+      'Content/FileUploadDialog.stx',
       'Notifications/NotificationDeliveryTable.stx',
       'Notifications/NotificationDeliveryDialog.stx',
       'Notifications/NotificationDeliveryHistory.stx',
@@ -441,6 +444,18 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileManagerDashboard.stx'),
       'utf8',
     )
+    const details = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileDetailsDrawer.stx'),
+      'utf8',
+    )
+    const folder = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/CreateFolderDialog.stx'),
+      'utf8',
+    )
+    const upload = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Content/FileUploadDialog.stx'),
+      'utf8',
+    )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
     const semanticNavigation = [
       'navRowClass',
@@ -448,11 +463,19 @@ describe('dashboard button contract', () => {
       'aria-label="List view"',
       ':aria-current',
       'class="flex items-center max-w-md',
-      'inset-0',
     ]
 
     expect((source.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(6)
-    expect(source).toContain('<Button :if="selectedItem()?.url" tag="a" :href="selectedItem()?.url"')
+    expect(source).toContain('<FileDetailsDrawer')
+    expect(source).toContain('<CreateFolderDialog')
+    expect(source).toContain('<FileUploadDialog')
+    expect(source).toContain('<ConfirmDialog')
+    expect(source).not.toContain('fixed inset-0')
+    expect(source).not.toContain('fixed inset-y-0')
+    expect(details).toContain('<Drawer')
+    expect(details).toContain('<Button :if="item()?.url" tag="a" :href="item()?.url"')
+    expect(folder).toContain('<Modal')
+    expect(upload).toContain('<Modal')
     expect(source).not.toMatch(/<a\b[^>]*bg-blue-/)
     expect(nativeButtons.every(button => semanticNavigation.some(marker => button.includes(marker)))).toBe(true)
   })

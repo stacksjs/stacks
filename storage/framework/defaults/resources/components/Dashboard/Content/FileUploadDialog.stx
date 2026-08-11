@@ -1,0 +1,89 @@
+<script client>
+const open = useReactiveProp('open', false)
+const location = useReactiveProp('location', 'Storage root')
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const files = state<File[]>([])
+const fileInput = useRef<HTMLInputElement>('dashboardFileUploadInput')
+const emit = defineEmits()
+let wasOpen = false
+
+const selectedFilesLabel = derived(() => {
+  if (!files().length)
+    return 'No files selected'
+  if (files().length === 1)
+    return files()[0]?.name || '1 file selected'
+  return `${files().length} files selected`
+})
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen)
+    reset()
+  wasOpen = isOpen
+})
+
+function formatFileSize(bytes: number): string {
+  if (bytes === 0)
+    return '0 Bytes'
+  const units = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const index = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)))
+  return `${Number.parseFloat((bytes / 1024 ** index).toFixed(2))} ${units[index]}`
+}
+
+function reset(): void {
+  files.set([])
+  if (fileInput.current)
+    fileInput.current.value = ''
+}
+
+function acceptFiles(value: FileList | File[]): void {
+  files.set(Array.from(value))
+}
+
+function handleFileSelection(event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (input.files)
+    acceptFiles(input.files)
+}
+
+function handleDrop(event: DragEvent): void {
+  if (event.dataTransfer?.files)
+    acceptFiles(event.dataTransfer.files)
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  if (files().length)
+    emit('submit', [...files()])
+}
+</script>
+
+<Modal :isOpen="open()" title="Upload files" :description="'Upload to ' + location() + '. Each file can be up to 10 MB.'" :closable="!busy()" @close="close">
+  <form id="file-upload-form" @submit.prevent="submit">
+    <label class="flex flex-col items-center justify-center p-8 text-center border-2 border-dashed border-stone-300 rounded-xl dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-600 cursor-pointer" @dragover.prevent @drop.prevent="handleDrop($event)">
+      <span class="h-10 w-10 text-stone-400 i-hugeicons-upload-01"></span>
+      <span class="mt-3 font-semibold text-stone-800 text-sm dark:text-white">Choose files or drop them here</span>
+      <span class="mt-1 text-stone-500 text-xs dark:text-neutral-400">{{ selectedFilesLabel() }}</span>
+      <input ref="dashboardFileUploadInput" name="files" type="file" class="sr-only" multiple @change="handleFileSelection($event)" />
+    </label>
+    <ul :if="files().length" class="overflow-y-auto mt-4 space-y-1 max-h-32 text-sm">
+      <template :for="file in files">
+        <li class="flex gap-4 items-center justify-between px-3 py-2 bg-stone-50 dark:bg-neutral-900 rounded-lg"><span class="text-stone-700 truncate dark:text-neutral-200">{{ file.name }}</span><span class="flex-shrink-0 font-mono text-stone-400 text-xs dark:text-neutral-500">{{ formatFileSize(file.size) }}</span></li>
+      </template>
+    </ul>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="file-upload-form" :disabled="!files().length" :loading="busy()">Upload</Button>
+    </div>
+  </template>
+</Modal>

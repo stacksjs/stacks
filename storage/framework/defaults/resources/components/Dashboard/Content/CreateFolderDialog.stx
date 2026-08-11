@@ -1,0 +1,45 @@
+<script client>
+const open = useReactiveProp('open', false)
+const location = useReactiveProp('location', 'Storage root')
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const folderName = state('')
+const emit = defineEmits()
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen)
+    folderName.set('')
+  wasOpen = isOpen
+})
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const name = folderName().trim()
+  if (name)
+    emit('submit', name)
+}
+</script>
+
+<Modal :isOpen="open()" title="Create folder" :description="'Add a folder inside ' + location() + '.'" size="sm" :closable="!busy()" @close="close">
+  <form id="create-folder-form" @submit.prevent="submit">
+    <label class="block">
+      <span class="font-medium text-stone-700 text-sm dark:text-neutral-200">Folder name</span>
+      <input x-model.trim="folderName" name="name" required maxlength="255" autocomplete="off" class="mt-1 px-3 py-2 w-full text-stone-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-stone-300 rounded-lg dark:border-neutral-700" />
+    </label>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="create-folder-form" :disabled="!folderName().trim()" :loading="busy()">Create folder</Button>
+    </div>
+  </template>
+</Modal>

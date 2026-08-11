@@ -1,0 +1,31 @@
+<script client>
+interface FileItem {
+  id: string
+  name: string
+  type: string
+  size: number
+  path: string
+  lastModified: string | null
+  mime_type?: string
+  url?: string
+  thumbnail?: string
+  starred: false
+  shared: boolean
+}
+
+const item = useReactiveProp('item', null as FileItem | null)
+const disk = useReactiveProp('disk', '')
+const title = derived(() => item()?.name || 'File details')
+const description = derived(() => `File details · ${disk()} disk`)
+const emit = defineEmits()
+</script>
+
+<Drawer :isOpen="Boolean(item())" :title="title()" :description="description()" size="sm" @close="emit('close')">
+  <div class="p-5">
+    <MediaInfoPanel :item="item()" />
+    <Button :if="item()?.url" tag="a" :href="item()?.url" target="_blank" rel="noopener" fullWidth class="mt-5">
+      <span class="h-4 w-4 i-hugeicons-link-square-02"></span>
+      Open file
+    </Button>
+  </div>
+</Drawer>
