@@ -84,16 +84,17 @@ function submit(): void {
 }
 </script>
 
-<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close driver dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
-  <section role="dialog" aria-modal="true" aria-labelledby="driver-dialog-title" class="overflow-y-auto relative max-h-[92dvh] max-w-lg w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <form @submit.prevent="submit()">
-      <div class="p-6">
-        <h2 id="driver-dialog-title" class="font-semibold text-gray-900 text-lg dark:text-white">{{ mode() === 'edit' ? 'Edit driver' : 'Add driver' }}</h2>
-        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage operational identity, vehicle assignment, availability, and the optional User relationship.</p>
-        <div :if="error()" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+<Modal
+  :isOpen="open()"
+  :title="mode() === 'edit' ? 'Edit driver' : 'Add driver'"
+  description="Manage operational identity, vehicle assignment, availability, and the optional User relationship."
+  size="md"
+  @close="emit('close')"
+>
+    <form id="driver-form" @submit.prevent="submit()">
+        <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
-        <div class="mt-5 space-y-4">
+        <div class="space-y-4">
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver name</span><input x-model="name" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input x-model="phone" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
@@ -109,11 +110,11 @@ function submit(): void {
             </select>
           </label>
         </div>
-      </div>
-      <footer class="flex gap-2 justify-end px-6 py-4 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
-        <Button :disabled="busy()" variant="secondary" @click="emit('close')">Cancel</Button>
-        <Button type="submit" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</Button>
-      </footer>
     </form>
-  </section>
-</div>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="emit('close')">Cancel</Button>
+      <Button type="submit" form="driver-form" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</Button>
+    </div>
+  </template>
+</Modal>

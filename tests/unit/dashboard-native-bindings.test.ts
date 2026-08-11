@@ -561,6 +561,19 @@ describe('dashboard native STX bindings', () => {
       expect(source).not.toContain('role="dialog"')
     }
 
+    for (const [file, formId] of [
+      ['Commerce/Delivery/DeliveryRouteDialog.stx', 'delivery-route-form'],
+      ['Commerce/Delivery/DigitalDeliveryDialog.stx', 'digital-delivery-form'],
+      ['Commerce/Delivery/DriverDialog.stx', 'driver-form'],
+    ]) {
+      const source = componentSource(file)
+      expect(source).toContain('<Modal')
+      expect(source).toContain(`id="${formId}"`)
+      expect(source).toContain(`form="${formId}"`)
+      expect(source).not.toContain('fixed inset-0')
+      expect(source).not.toContain('role="dialog"')
+    }
+
     const baseModal = componentSource('Modals/BaseModal.stx')
     expect(baseModal).toContain("const generatedId = useId('modal')")
     expect(baseModal).toContain("emit('update:show', false)")
