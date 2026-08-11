@@ -3,12 +3,13 @@ interface ModalProps {
   isOpen?: boolean
   title?: string
   description?: string
+  ariaLabel?: string
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
   closable?: boolean
   role?: 'dialog' | 'alertdialog'
 }
 
-const { isOpen = false, title = '', description = '', size = 'md', closable = true, role = 'dialog' } = defineProps<ModalProps>()
+const { isOpen = false, title = '', description = '', ariaLabel = '', size = 'md', closable = true, role = 'dialog' } = defineProps<ModalProps>()
 
 const sizeClasses = {
   sm: 'max-w-sm',
@@ -23,6 +24,7 @@ const open = useReactiveProp('isOpen', false)
 const liveClosable = useReactiveProp('closable', true)
 const liveTitle = useReactiveProp('title', '')
 const liveDescription = useReactiveProp('description', '')
+const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveRole = useReactiveProp('role', 'dialog')
 const dialog = useRef<HTMLDialogElement>('dashboardModalDialog')
 const activeElement = useActiveElement()
@@ -30,19 +32,21 @@ const scrollLocked = useScrollLock()
 const emit = defineEmits()
 let restoreFocus: HTMLElement | null = null
 
-function closeModal(): void {
+type ModalCloseReason = 'backdrop' | 'button' | 'escape'
+
+function closeModal(reason: ModalCloseReason): void {
   if (!liveClosable()) return
-  emit('close')
+  emit('close', reason)
 }
 
 function handleCancel(event: Event): void {
   event.preventDefault()
-  closeModal()
+  closeModal('escape')
 }
 
 function handleBackdropClick(event: MouseEvent): void {
   if (event.target === event.currentTarget)
-    closeModal()
+    closeModal('backdrop')
 }
 
 effect(() => {
@@ -80,7 +84,7 @@ effect(() => {
     ref="dashboardModalDialog"
     :role="liveRole()"
     aria-modal="true"
-    :aria-label="liveTitle() || 'Dialog'"
+    :aria-label="liveAriaLabel() || liveTitle() || 'Dialog'"
     class="fixed inset-0 overflow-y-auto z-[55] m-0 p-0 h-dvh max-h-none max-w-none w-screen bg-transparent dashboard-modal-dialog dashboard-modal-layer"
     @cancel="handleCancel"
   >
@@ -111,7 +115,7 @@ effect(() => {
               size="sm"
               iconOnly
               ariaLabel="Close modal"
-              @click="closeModal"
+              @click="closeModal('button')"
             >
               <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
             </Button>
