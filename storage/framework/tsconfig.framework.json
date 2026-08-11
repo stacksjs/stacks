@@ -4,12 +4,42 @@
   // `tsconfig.json` (which extends `tsconfig.app.json`).
   //
   // Run it with: bun run typecheck
-  "extends": "./core/tsconfig.json",
+  //
+  // Extends the BASE, not `core/tsconfig.json`, and carries its own path map.
+  // An installed app has no `core/` directory: `extends` pointed at a file that
+  // was not there, TypeScript reported one TS5083 and then silently dropped
+  // every option the base sets — `skipLibCheck` included — so `bun run
+  // typecheck` in an app turned into a full type-check of node_modules and
+  // reported 265 errors, none of them in the app's own code. Paths that do not
+  // resolve are harmless: TypeScript falls back to node resolution, which is
+  // how an app finds `@stacksjs/*` in node_modules.
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "declaration": false,
     "declarationMap": false,
     "rootDir": "../..",
-    "tsBuildInfoFile": "./.cache/typescript/framework.tsbuildinfo"
+    "tsBuildInfoFile": "./.cache/typescript/framework.tsbuildinfo",
+    "paths": {
+      "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/browser/*": ["./core/browser/src/*"],
+      "@stacksjs/composables/*": ["./core/composables/src/*"],
+      "@stacksjs/desktop-build": ["./core/desktop/src"],
+      "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
+      "@stacksjs/*": ["./core/*/src"],
+      "stacks/*": ["./core/*/src"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
+      "Actions/*": ["../../app/Actions/*"],
+      "Commands/*": ["../../app/Commands/*"],
+      "Jobs/*": ["../../app/Jobs/*"],
+      "Middleware/*": ["../../app/Middleware/*"],
+      "Models/*": ["../../app/Models/*"],
+      "Notifications/*": ["../../app/Notifications/*"],
+      "~/*": ["../../*"],
+      "@/*": ["../../resources/*"],
+      "ts-pantry": ["../../node_modules/ts-pantry"],
+      "*": ["../../pantry/*"]
+    }
   },
   "include": [
     "./**/*.ts",

@@ -1,6 +1,11 @@
-// Canonical ORM route entrypoint.
+// Canonical ORM route entrypoint — the file the router loads to register the
+// CRUD endpoints a model's `useApi` trait declares.
 //
-// Keep the implementation in the @stacksjs/orm core source so application
-// servers, the dev dashboard, tests, and package builds cannot drift between
-// duplicate route generators.
-export { default } from '../core/orm/routes'
+// Through the PACKAGE, not a relative path into `core/`. This file is vendored
+// into every app, and an installed app has no `storage/framework/core/` at all:
+// the re-export this used to carry pointed there and resolved to nothing, so
+// the router's first candidate threw, its second did not exist, and production
+// logged "model useApi endpoints are unavailable" and served none of them. The
+// specifier below resolves in both layouts — to the workspace package in this
+// repository, and to node_modules in an app.
+export { default } from '@stacksjs/orm/routes'

@@ -14,6 +14,12 @@
       // "Cannot find module" on a clean checkout and in CI, and are four of the
       // six errors that have kept the typecheck job red.
       "@stacksjs/actions/*": ["./actions/src/*"],
+      // The ORM route generator is a package entrypoint of its own, so the
+      // vendored `storage/framework/orm/routes.ts` can reach it from an app
+      // that has no `core/` directory. Mapped explicitly because `@stacksjs/*`
+      // below binds the wildcard to the whole remainder — `@stacksjs/orm/routes`
+      // would look for `./orm/routes/src`.
+      "@stacksjs/orm/routes": ["./orm/src/routes.ts"],
       "@stacksjs/browser/*": ["./browser/src/*"],
       "@stacksjs/composables/*": ["./composables/src/*"],
       // Published name and directory name disagree: `@stacksjs/desktop-build`

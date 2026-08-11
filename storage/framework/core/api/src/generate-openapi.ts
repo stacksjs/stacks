@@ -186,7 +186,10 @@ export async function generateOpenApi(options: {
     console.warn(`[generateOpenApi] Failed to load routes/api.ts + framework routes: ${message}`)
   }
   try {
-    await import('../../orm/routes')
+    // Package specifier — see the note in `@stacksjs/server`'s start.ts: the
+    // relative path only resolves inside this repository, so a spec generated
+    // from an installed app silently omitted every model's CRUD endpoints.
+    await import('@stacksjs/orm/routes')
   }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error)

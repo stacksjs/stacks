@@ -75,7 +75,9 @@ describe('the auto-CRUD write path agrees', () => {
   it('emits the same envelope as the router', async () => {
     // Two more emitters of the old shape lived here. Leaving them would have
     // meant fixing the router and still shipping two shapes.
-    const text = await Bun.file(new URL('../../orm/routes.ts', import.meta.url).pathname).text()
+    // `core/orm/routes.ts` is a re-export now — the generator itself lives in
+    // `src/` so the package can publish it to installed apps.
+    const text = await Bun.file(new URL('../../orm/src/routes.ts', import.meta.url).pathname).text()
 
     expect(text).not.toContain('{ error: \'Validation failed\', errors:')
     expect(text).toContain('{ success: false, message: \'Validation failed\', errors:')

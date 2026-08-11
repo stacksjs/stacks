@@ -3335,6 +3335,22 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           log.warn(`[router] ORM routes candidate failed to load, falling back to next: ${candidate}\n`, error)
         }
       }
+      // Last resort: the package itself. An app scaffolded before the vendored
+      // shim was fixed still has one that re-exports `../core/orm/routes`, a
+      // directory that exists in this repository and nowhere else — so both
+      // file candidates above fail and the app serves no model endpoints at
+      // all. `@stacksjs/orm/routes` is the same generator, resolved the way an
+      // installed app can actually reach it.
+      if (!ormRoutesLoaded) {
+        try {
+          await import('@stacksjs/orm/routes')
+          ormRoutesLoaded = true
+        }
+        catch (error) {
+          log.warn('[router] ORM routes could not be loaded from @stacksjs/orm either\n', error)
+        }
+      }
+
       if (!ormRoutesLoaded)
         log.warn('[router] No ORM routes candidate loaded — model useApi endpoints are unavailable.')
 
