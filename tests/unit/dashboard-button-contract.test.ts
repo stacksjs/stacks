@@ -210,7 +210,7 @@ describe('dashboard button contract', () => {
       )
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-      expect(source).toContain('<Button')
+      expect(source).toMatch(/<(?:Button|ConfirmDialog)\b/)
       expect(nativeButtons.every(button => button.includes('absolute inset-0 bg-black/45'))).toBe(true)
     }
   })
