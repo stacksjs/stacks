@@ -405,6 +405,16 @@ describe('dashboard native STX bindings', () => {
     expect(forgotPasswordDashboard).toContain('auth: false')
     expect(forgotPasswordDashboard).not.toContain("fetch('/forgot-password'")
 
+    for (const component of [
+      'Auth/LoginDashboard.stx',
+      'Auth/RegisterDashboard.stx',
+      'Auth/ForgotPasswordDashboard.stx',
+    ]) {
+      const source = componentSource(component)
+      expect(source).toContain('err instanceof Error ? err.message')
+      expect(source).not.toContain('console.error')
+    }
+
     const authRoutes = [
       ['login.stx', '<LoginDashboard />'],
       ['register.stx', '<RegisterDashboard />'],
