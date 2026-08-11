@@ -186,10 +186,12 @@ export async function generateOpenApi(options: {
     console.warn(`[generateOpenApi] Failed to load routes/api.ts + framework routes: ${message}`)
   }
   try {
-    // Package specifier — see the note in `@stacksjs/server`'s start.ts: the
-    // relative path only resolves inside this repository, so a spec generated
-    // from an installed app silently omitted every model's CRUD endpoints.
-    await import('@stacksjs/orm/routes')
+    // Package first, relative second. Each resolves in exactly one layout: the
+    // specifier is the only form an installed app can follow (a spec generated
+    // there used to silently omit every model's CRUD endpoints), and the
+    // relative path is the only form that works on a clean checkout of THIS
+    // repository, where `@stacksjs/orm`'s dist has not been built yet.
+    await import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))
   }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error)

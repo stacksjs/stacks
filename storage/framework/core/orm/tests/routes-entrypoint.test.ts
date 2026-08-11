@@ -47,11 +47,14 @@ describe('the ORM routes entrypoint', () => {
     expect(legacy).toContain('./src/routes')
   })
 
-  it('is imported by package name everywhere that ships in a package', () => {
+  it('is tried by package name first, everywhere that ships in a package', () => {
     /*
      * `@stacksjs/server/dist/start.js` reaching for `../../orm/routes` names a
      * file that does not exist beside a published package — the relative form
-     * only ever worked inside this repository.
+     * only ever worked inside this repository. It stays as the FALLBACK,
+     * because it is the only form that works on a clean checkout here, where
+     * the package's dist has not been built yet: the release gate caught that
+     * the moment the relative path was removed outright.
      */
     for (const file of [
       join(framework, 'core', 'server', 'src', 'start.ts'),
@@ -59,8 +62,7 @@ describe('the ORM routes entrypoint', () => {
     ]) {
       const source = readFileSync(file, 'utf8')
 
-      expect(source).toContain('@stacksjs/orm/routes')
-      expect(source).not.toContain(`import('../../orm/routes')`)
+      expect(source).toContain(`import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))`)
     }
   })
 

@@ -49,11 +49,13 @@ loadRoutes(routeRegistry)
     // Load ORM auto-generated routes (model CRUD endpoints)
     // These run after manual routes so routeExists() correctly detects conflicts
     try {
-      // Through the package, not a relative path: this file ships as
-      // `@stacksjs/server/dist/start.js`, where `../../orm/routes` names a file
-      // that does not exist beside a published package. Every installed app
-      // therefore logged "ORM routes skipped" and served no model endpoints.
-      await import('@stacksjs/orm/routes')
+      // Package first, relative second — each resolves in exactly one
+      // layout. This file ships as `@stacksjs/server/dist/start.js`, where
+      // `../../orm/routes` names a file that is not beside a published package
+      // (so every installed app logged "ORM routes skipped" and served no model
+      // endpoints); the relative path is what works on an unbuilt checkout of
+      // this repository.
+      await import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))
       console.log('[START] ORM routes loaded successfully')
     } catch (ormError) {
       console.warn('[START] ORM routes skipped:', ormError instanceof Error ? ormError.message : String(ormError))
