@@ -45,6 +45,46 @@ describe('email driver missing-credential errors', () => {
     expect(mod.Mail ?? mod.mail).toBeDefined()
   })
 
+  it('sendOrFail rejects a structured driver failure and preserves its result', async () => {
+    const { EmailDeliveryError, Mail } = await import('../src/email')
+    const mail = new Mail({ defaultDriver: 'failure' })
+    const failedResult = {
+      success: false,
+      message: 'provider unavailable',
+      provider: 'failure',
+    }
+    ;(mail as any).drivers.set('failure', {
+      send: async () => failedResult,
+    })
+
+    let caught: unknown
+    try {
+      await mail.sendOrFail({ to: 'a@b.com', subject: 's', html: '<p>h</p>' })
+    }
+    catch (error) {
+      caught = error
+    }
+
+    expect(caught).toBeInstanceOf(EmailDeliveryError)
+    expect((caught as InstanceType<typeof EmailDeliveryError>).result).toEqual(failedResult)
+  })
+
+  it('sendOrFail returns a successful structured result', async () => {
+    const { Mail } = await import('../src/email')
+    const mail = new Mail({ defaultDriver: 'success' })
+    const successResult = {
+      success: true,
+      message: 'sent',
+      provider: 'success',
+      messageId: 'message-1',
+    }
+    ;(mail as any).drivers.set('success', {
+      send: async () => successResult,
+    })
+
+    await expect(mail.sendOrFail({ to: 'a@b.com', subject: 's', html: '<p>h</p>' })).resolves.toEqual(successResult)
+  })
+
   it('exports the driver registry helpers', async () => {
     const mod = await import('../src/email')
     // The Mail class should be exported so users can instantiate

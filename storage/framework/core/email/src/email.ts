@@ -28,6 +28,16 @@ interface MailConfig {
   defaultDriver?: string
 }
 
+export class EmailDeliveryError extends Error {
+  readonly result: EmailResult
+
+  constructor(result: EmailResult) {
+    super(result.message || `Email delivery failed through ${result.provider || 'the configured provider'}.`)
+    this.name = 'EmailDeliveryError'
+    this.result = result
+  }
+}
+
 /**
  * Email notification class for defining email notifications
  */
@@ -90,7 +100,7 @@ export class Email {
 
     try {
       // Use the mail singleton to send
-      await mail.send({
+      await mail.sendOrFail({
         to: recipients,
         from: this.from || {
           name: config.email.from?.name || 'Stacks',
@@ -199,6 +209,21 @@ export class Mail {
     if (message.idempotencyKey) {
       await recordEmailIdempotency(message.idempotencyKey, message, result)
     }
+
+    return result
+  }
+
+  /**
+   * Dispatch an email and reject when the selected driver reports failure.
+   *
+   * Drivers keep returning structured results from `send()` so callers that
+   * aggregate delivery outcomes can inspect them without exceptions. Workflows
+   * that must commit a durable sent state should use this method instead.
+   */
+  public async sendOrFail(message: EmailMessage): Promise<EmailResult> {
+    const result = await this.send(message)
+    if (!result.success)
+      throw new EmailDeliveryError(result)
 
     return result
   }

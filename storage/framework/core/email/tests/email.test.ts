@@ -57,6 +57,10 @@ describe('@stacksjs/email', () => {
       expect(typeof mail.send).toBe('function')
     })
 
+    it('mail has sendOrFail method', () => {
+      expect(typeof mail.sendOrFail).toBe('function')
+    })
+
     it('mail has use method', () => {
       expect(typeof mail.use).toBe('function')
     })
