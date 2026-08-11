@@ -7,7 +7,7 @@
       "dependencies": {
         "@stacksjs/dtsx": "^0.11.4",
         "bun-plugin-dtsx": "^0.11.4",
-        "pickier": "^0.1.49",
+        "pickier": "^0.1.51",
         "stacks": "workspace:*",
         "ts-pantry": "^0.11.21",
       },
@@ -698,7 +698,7 @@
       "name": "@stacksjs/lint",
       "version": "0.70.355",
       "dependencies": {
-        "pickier": "^0.1.49",
+        "pickier": "^0.1.51",
       },
       "devDependencies": {
         "better-dx": "^0.2.17",
@@ -1138,7 +1138,7 @@
     },
   },
   "overrides": {
-    "pickier": "^0.1.49",
+    "pickier": "^0.1.51",
   },
   "packages": {
     "@anthropic-ai/claude-agent-sdk": ["@anthropic-ai/claude-agent-sdk@0.2.141", "", { "dependencies": { "@anthropic-ai/sdk": "^0.93.0", "@modelcontextprotocol/sdk": "^1.29.0" }, "optionalDependencies": { "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-x64": "0.2.141" }, "peerDependencies": { "zod": "^4.0.0" } }, "sha512-AIBacMWGcZIUcXlUoObqjwJ6pmJI3BayAqPAFXuvSq3DHJXdiuZVs7l/zTB5l3nRhRv5cqSrI2XbiDeHgZWizw=="],
@@ -1673,7 +1673,7 @@
 
     "path-to-regexp": ["path-to-regexp@8.4.2", "", {}, "sha512-qRcuIdP69NPm4qbACK+aDogI5CBDMi1jKe0ry5rSQJz8JVLsC7jV8XpiJjGRLLol3N+R5ihGYcrPLTno6pAdBA=="],
 
-    "pickier": ["pickier@0.1.50", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-qzz/Qn/DcdLpNfhhft/qlJEzrVsBLQVFwYUDKoZKTTLRh1Yes09f6wNExiZ5ifV8uz8Bc2ZldP+/nvVwxAH0Ww=="],
+    "pickier": ["pickier@0.1.51", "", { "dependencies": { "@stacksjs/clapp": "^0.2.3", "@stacksjs/clarity": "^0.3.24" }, "optionalDependencies": { "@stacksjs/ts-spell-check": "^0.1.0" }, "bin": { "pickier": "./dist/bin/cli.js" } }, "sha512-F6gcGwA9nixUyG6z0/SEOggAGIflRq44Fpco7AdzS4PzewAGYZS7csWwLVjzGxNdZN2uAi4WTykp9ZYS8BgUCw=="],
 
     "pkce-challenge": ["pkce-challenge@5.0.1", "", {}, "sha512-wQ0b/W4Fr01qtpHlqSqspcj3EhBvimsdh0KlHhH8HRZnMsEa0ea2fTULOXOS9ccQr3om+GcGRk4e+isrZWV8qQ=="],
 
