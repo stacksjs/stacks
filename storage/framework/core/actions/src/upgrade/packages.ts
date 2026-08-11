@@ -9,9 +9,9 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import { join, relative } from 'node:path'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
+import { installedDefaultsVersion } from '@stacksjs/path'
 import {
   detectProjectAiProviders,
-  installedDefaultsVersion,
   measureDefaultsDrift,
   migratePackageProjectManifest,
   migratePackageProjectTsconfig,

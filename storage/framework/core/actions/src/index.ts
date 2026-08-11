@@ -27,18 +27,13 @@ export { formatProject, lintFix, lintProject } from './lint/lint'
 // and never exits, so the command owns rendering and the exit code.
 export { DEFAULT_STX_LINT_CONFIG, loadStxLintConfig, runStxLint } from './lint/stx-gate'
 export type { StxLintConfig, StxLintReport, StxLintResult } from './lint/stx-gate'
-// Provenance of the vendored framework defaults. Exported from
-// ./upgrade/package-project — the pure module — so importing this barrel never
-// pulls ./upgrade/index, which runs an upgrade on import.
-export {
-  DEFAULTS_SYNC_MARKER,
-  defaultsPackagePath,
-  inspectDefaultsProvenance,
-  installedDefaultsVersion,
-  measureDefaultsDrift,
-  summarizeStructureChanges,
-} from './upgrade/package-project'
-export type { DefaultsProvenance, DefaultsSkew, DefaultsSyncMarker, ProjectStructureChange } from './upgrade/package-project'
+// File-level drift between the vendored framework defaults and the installed
+// package. Exported from ./upgrade/package-project — the pure module — so
+// importing this barrel never pulls ./upgrade/index, which runs an upgrade on
+// import. The cheap version-level check lives in @stacksjs/path, because the
+// boot path consults it and cannot depend on this package.
+export { measureDefaultsDrift, summarizeStructureChanges } from './upgrade/package-project'
+export type { ProjectStructureChange } from './upgrade/package-project'
 export * from './setup'
 
 // makeFactory,
