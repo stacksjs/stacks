@@ -33,6 +33,7 @@ export const authStore = defineStore('auth', () => {
   const loading = state(false)
   const error = state<string | null>(null)
   const loaded = state(false)
+  let pendingLoad: Promise<void> | null = null
 
   const isAdmin = derived(() => {
     if (!loaded()) return false
@@ -50,8 +51,7 @@ export const authStore = defineStore('auth', () => {
     return roles().includes('client')
   })
 
-  async function load(): Promise<void> {
-    if (loading() || loaded()) return
+  async function resolveIdentity(): Promise<void> {
     loading.set(true)
     error.set(null)
     try {
@@ -88,7 +88,23 @@ export const authStore = defineStore('auth', () => {
     }
   }
 
+  function load(): Promise<void> {
+    if (loaded())
+      return Promise.resolve()
+
+    if (pendingLoad)
+      return pendingLoad
+
+    pendingLoad = resolveIdentity().finally(() => {
+      pendingLoad = null
+    })
+    return pendingLoad
+  }
+
   async function refresh(): Promise<void> {
+    if (pendingLoad)
+      await pendingLoad
+
     loaded.set(false)
     await load()
   }

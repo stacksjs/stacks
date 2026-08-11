@@ -386,6 +386,13 @@ describe('dashboard native STX bindings', () => {
       expect(source).toContain("import { dashboardApi } from '../../../functions/dashboard-api'")
       expect(source).not.toContain('fetch(')
     }
+
+    const auth = readFileSync(resolve(dashboardViews, 'stores', 'auth.ts'), 'utf8')
+    expect(auth).toContain('let pendingLoad: Promise<void> | null = null')
+    expect(auth).toContain('if (pendingLoad)')
+    expect(auth).toContain('return pendingLoad')
+    expect(auth).toContain('pendingLoad = resolveIdentity().finally(() => {')
+    expect(auth).not.toContain('if (loading() || loaded()) return')
   })
 
   test('Buddy prompt uses a native textarea model and submit prevention', () => {
