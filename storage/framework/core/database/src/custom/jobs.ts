@@ -99,6 +99,142 @@ async function jobsTableExists(): Promise<boolean> {
   return false
 }
 
+async function ensureQueueSupportTables(driver: string): Promise<void> {
+  const sqliteStatements = [
+    `CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      uuid TEXT NOT NULL,
+      connection TEXT NOT NULL,
+      queue TEXT NOT NULL,
+      payload TEXT NOT NULL,
+      exception TEXT NOT NULL,
+      reason TEXT NOT NULL,
+      total_failures INTEGER NOT NULL DEFAULT 1,
+      first_failed_at DATETIME,
+      last_failed_at DATETIME,
+      dead_lettered_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_quarantine (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_name TEXT NOT NULL,
+      payload_hash TEXT NOT NULL,
+      failure_count INTEGER NOT NULL DEFAULT 0,
+      window_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+      quarantined_at DATETIME,
+      UNIQUE(job_name, payload_hash)
+    )`,
+    `CREATE TABLE IF NOT EXISTS queue_circuit_state (
+      queue_name TEXT PRIMARY KEY,
+      success_count INTEGER NOT NULL DEFAULT 0,
+      failure_count INTEGER NOT NULL DEFAULT 0,
+      window_start DATETIME DEFAULT CURRENT_TIMESTAMP,
+      paused_at DATETIME,
+      resume_at DATETIME
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_idempotency (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      idempotency_key TEXT NOT NULL UNIQUE,
+      job_name TEXT NOT NULL,
+      queue TEXT NOT NULL DEFAULT 'default',
+      dispatched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+  ]
+
+  if (driver === 'sqlite') {
+    const sqlite = new Database(getDatabasePath())
+    for (const statement of sqliteStatements)
+      sqlite.run(statement)
+    sqlite.close()
+    return
+  }
+
+  const mysqlStatements = [
+    `CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      uuid VARCHAR(255) NOT NULL,
+      connection VARCHAR(255) NOT NULL,
+      queue VARCHAR(255) NOT NULL,
+      payload LONGTEXT NOT NULL,
+      exception LONGTEXT NOT NULL,
+      reason VARCHAR(64) NOT NULL,
+      total_failures INT NOT NULL DEFAULT 1,
+      first_failed_at TIMESTAMP NULL,
+      last_failed_at TIMESTAMP NULL,
+      dead_lettered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_quarantine (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      job_name VARCHAR(255) NOT NULL,
+      payload_hash VARCHAR(64) NOT NULL,
+      failure_count INT NOT NULL DEFAULT 0,
+      window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      quarantined_at TIMESTAMP NULL,
+      UNIQUE KEY job_quarantine_unique (job_name, payload_hash)
+    )`,
+    `CREATE TABLE IF NOT EXISTS queue_circuit_state (
+      queue_name VARCHAR(255) PRIMARY KEY,
+      success_count INT NOT NULL DEFAULT 0,
+      failure_count INT NOT NULL DEFAULT 0,
+      window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      paused_at TIMESTAMP NULL,
+      resume_at TIMESTAMP NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_idempotency (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      idempotency_key VARCHAR(255) NOT NULL,
+      job_name VARCHAR(255) NOT NULL,
+      queue VARCHAR(255) NOT NULL DEFAULT 'default',
+      dispatched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE KEY job_idempotency_key_unique (idempotency_key)
+    )`,
+  ]
+
+  const postgresStatements = [
+    `CREATE TABLE IF NOT EXISTS dead_letter_jobs (
+      id SERIAL PRIMARY KEY,
+      uuid VARCHAR(255) NOT NULL,
+      connection VARCHAR(255) NOT NULL,
+      queue VARCHAR(255) NOT NULL,
+      payload TEXT NOT NULL,
+      exception TEXT NOT NULL,
+      reason VARCHAR(64) NOT NULL,
+      total_failures INTEGER NOT NULL DEFAULT 1,
+      first_failed_at TIMESTAMP,
+      last_failed_at TIMESTAMP,
+      dead_lettered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_quarantine (
+      id SERIAL PRIMARY KEY,
+      job_name VARCHAR(255) NOT NULL,
+      payload_hash VARCHAR(64) NOT NULL,
+      failure_count INTEGER NOT NULL DEFAULT 0,
+      window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      quarantined_at TIMESTAMP,
+      UNIQUE (job_name, payload_hash)
+    )`,
+    `CREATE TABLE IF NOT EXISTS queue_circuit_state (
+      queue_name VARCHAR(255) PRIMARY KEY,
+      success_count INTEGER NOT NULL DEFAULT 0,
+      failure_count INTEGER NOT NULL DEFAULT 0,
+      window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      paused_at TIMESTAMP,
+      resume_at TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS job_idempotency (
+      id SERIAL PRIMARY KEY,
+      idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+      job_name VARCHAR(255) NOT NULL,
+      queue VARCHAR(255) NOT NULL DEFAULT 'default',
+      dispatched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )`,
+  ]
+
+  const statements = driver === 'mysql' ? mysqlStatements : postgresStatements
+  const { db } = await import('../utils')
+  for (const statement of statements)
+    await (db as any).unsafe(statement).execute()
+}
+
 export async function createJobsMigration(): Promise<Result<MigrationResult[] | string, Error>> {
   try {
     const driver = getDriver()
@@ -205,6 +341,16 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
   paused_at DATETIME,
   resume_at DATETIME
 );
+
+-- Dispatch idempotency (stacksjs/stacks#1872). The unique business key is
+-- claimed before a queue push and released if the driver rejects it.
+CREATE TABLE IF NOT EXISTS job_idempotency (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  idempotency_key TEXT NOT NULL UNIQUE,
+  job_name TEXT NOT NULL,
+  queue TEXT NOT NULL DEFAULT 'default',
+  dispatched_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 `
         }
         else if (driver === 'mysql') {
@@ -288,6 +434,15 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
   paused_at TIMESTAMP NULL,
   resume_at TIMESTAMP NULL
 );
+
+CREATE TABLE IF NOT EXISTS job_idempotency (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  idempotency_key VARCHAR(255) NOT NULL,
+  job_name VARCHAR(255) NOT NULL,
+  queue VARCHAR(255) NOT NULL DEFAULT 'default',
+  dispatched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY job_idempotency_key_unique (idempotency_key)
+);
 `
         }
         else if (driver === 'postgres') {
@@ -370,6 +525,14 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
   window_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   paused_at TIMESTAMP,
   resume_at TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS job_idempotency (
+  id SERIAL PRIMARY KEY,
+  idempotency_key VARCHAR(255) NOT NULL UNIQUE,
+  job_name VARCHAR(255) NOT NULL,
+  queue VARCHAR(255) NOT NULL DEFAULT 'default',
+  dispatched_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 `
         }
@@ -555,6 +718,9 @@ CREATE TABLE IF NOT EXISTS queue_circuit_state (
       else {
         console.log('✓ job_batches table already exists')
       }
+
+      await ensureQueueSupportTables(driver)
+      console.log('✓ Queue safeguard tables ready')
     }
 
     return ok('Migration created and executed.') as any
