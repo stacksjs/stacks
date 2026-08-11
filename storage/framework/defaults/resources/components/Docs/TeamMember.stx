@@ -52,7 +52,7 @@ const { data = {
           href="https://github.com/sponsors/{{ data.github }}"
           target="_blank"
           rel="noopener noreferrer"
-          title="Sponsor {{ data.name }}"
+          x-tooltip="Sponsor {{ data.name }}" title="Sponsor {{ data.name }}"
           aria-label="Sponsor {{ data.name }}"
         ></a>
       @endif
@@ -61,7 +61,7 @@ const { data = {
     @if(data.functions.length > 0 || data.packages.length > 0)
       <div class="grid gap-x-1 gap-y-2 grid-cols-[20px_1fr] items-start mb-2 mx-auto p-3 w-5/6 bg-gray-100 rounded">
         @if(data.functions.length > 0)
-          <div class="ma op50 i-carbon:function-math" title="Functions"></div>
+          <div class="ma op50 i-carbon:function-math" x-tooltip="Functions" title="Functions"></div>
           <div class="flex flex-row flex-wrap gap-2 text-left text-sm">
             @foreach(data.functions as func)
               <a href="/{{ func }}" target="_blank">
@@ -72,7 +72,7 @@ const { data = {
         @endif
 
         @if(data.packages.length > 0)
-          <div class="i-carbon-cube ma op50" title="Packages"></div>
+          <div class="i-carbon-cube ma op50" x-tooltip="Packages" title="Packages"></div>
           <div class="flex flex-row flex-wrap gap-2 text-left text-sm">
             @foreach(data.packages as pkg)
               <a href="/add-ons">
