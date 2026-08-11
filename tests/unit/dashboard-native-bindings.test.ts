@@ -598,11 +598,24 @@ describe('dashboard native STX bindings', () => {
     expect(confirmation).toContain('role="alertdialog"')
     expect(confirmation).toContain(':closable="!busy()"')
     expect(confirmation).toContain('<template #header-leading>')
+    expect(confirmation).toContain("const error = useReactiveProp('error', '')")
+    expect(confirmation).toContain("const disabled = useReactiveProp('disabled', false)")
     expect(confirmation).toContain("emit('confirm')")
     expect(confirmation).toContain("emit('close')")
     expect(confirmation).not.toContain('fixed inset-0')
     expect(confirmation).not.toContain('.remove()')
     expect(confirmation).not.toContain('<svg')
+
+    for (const file of [
+      'Marketing/CampaignDeleteDialog.stx',
+      'Marketing/MarketingListDeleteDialog.stx',
+      'Marketing/SocialPostDeleteDialog.stx',
+    ]) {
+      const source = componentSource(file)
+      expect(source).toContain('<ConfirmDialog')
+      expect(source).not.toContain('fixed inset-0')
+      expect(source).not.toContain('role="dialog"')
+    }
 
   })
 

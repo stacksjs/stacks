@@ -8,6 +8,8 @@ const confirmLabel = useReactiveProp('confirmLabel', 'Delete')
 const cancelLabel = useReactiveProp('cancelLabel', 'Cancel')
 const variant = useReactiveProp('variant', 'danger' as ConfirmVariant)
 const busy = useReactiveProp('busy', false)
+const disabled = useReactiveProp('disabled', false)
+const error = useReactiveProp('error', '')
 const emit = defineEmits()
 
 function close(): void {
@@ -16,7 +18,7 @@ function close(): void {
 }
 
 function confirm(): void {
-  if (!busy())
+  if (!busy() && !disabled())
     emit('confirm')
 }
 
@@ -48,30 +50,37 @@ function iconName(): string {
   </template>
 
   <template #footer>
-    <div class="flex gap-2 items-center justify-end">
-      <Button
-        variant="secondary"
-        :disabled="busy()"
-        @click="close"
-      >
-        {{ cancelLabel() }}
-      </Button>
-      <Button
-        :if="variant() === 'warning'"
-        variant="warning"
-        :loading="busy()"
-        @click="confirm"
-      >
-        {{ confirmLabel() }}
-      </Button>
-      <Button
-        :if="variant() !== 'warning'"
-        variant="danger"
-        :loading="busy()"
-        @click="confirm"
-      >
-        {{ confirmLabel() }}
-      </Button>
+    <div class="w-full">
+      <div :if="error()" role="alert" class="mb-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+        {{ error() }}
+      </div>
+      <div class="flex gap-2 items-center justify-end">
+        <Button
+          variant="secondary"
+          :disabled="busy()"
+          @click="close"
+        >
+          {{ cancelLabel() }}
+        </Button>
+        <Button
+          :if="variant() === 'warning'"
+          variant="warning"
+          :loading="busy()"
+          :disabled="disabled()"
+          @click="confirm"
+        >
+          {{ confirmLabel() }}
+        </Button>
+        <Button
+          :if="variant() !== 'warning'"
+          variant="danger"
+          :loading="busy()"
+          :disabled="disabled()"
+          @click="confirm"
+        >
+          {{ confirmLabel() }}
+        </Button>
+      </div>
     </div>
   </template>
 </Modal>
