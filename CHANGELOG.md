@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.357...v0.70.358)
+
+## ✨ Features
+
+- **browse**: verify native scenario focus ([d973b75](https://github.com/stacksjs/stacks/commit/d973b75)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **browse**: assert absent scenario elements ([f6b56d6](https://github.com/stacksjs/stacks/commit/f6b56d6)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: render modals in native top layer ([12e50a4](https://github.com/stacksjs/stacks/commit/12e50a4)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: complete modal keyboard lifecycle ([5c673a0](https://github.com/stacksjs/stacks/commit/5c673a0)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: await shared identity loads ([095983b](https://github.com/stacksjs/stacks/commit/095983b)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: close remaining operation gaps ([2b72fa4](https://github.com/stacksjs/stacks/commit/2b72fa4)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect source infrastructure reads ([5adf7c9](https://github.com/stacksjs/stacks/commit/5adf7c9)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect overview telemetry ([e71c2f2](https://github.com/stacksjs/stacks/commit/e71c2f2)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **queue**: provision delivery safeguards ([fd23cc0](https://github.com/stacksjs/stacks/commit/fd23cc0)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **newsletter**: claim campaign delivery atomically ([d4ce850](https://github.com/stacksjs/stacks/commit/d4ce850)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: harden marketing operations ([3ce15aa](https://github.com/stacksjs/stacks/commit/3ce15aa)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **router**: take bun-router 0.0.22, where a named catch-all works ([c69ee4f](https://github.com/stacksjs/stacks/commit/c69ee4f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.356...v0.70.357)
 
 ## 🐛 Bug Fixes
