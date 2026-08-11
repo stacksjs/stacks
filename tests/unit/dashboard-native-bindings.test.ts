@@ -559,6 +559,7 @@ describe('dashboard native STX bindings', () => {
       'Infrastructure/DnsRecordDialog.stx',
       'Infrastructure/LogDetailsDialog.stx',
       'Infrastructure/MailboxDetailsDialog.stx',
+      'Notifications/NotificationDeliveryDialog.stx',
     ]) {
       const source = componentSource(file)
       expect(source).toContain('<Modal')
