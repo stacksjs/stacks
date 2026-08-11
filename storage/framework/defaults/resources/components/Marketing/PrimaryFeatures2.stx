@@ -2,14 +2,15 @@
 interface PrimaryFeatures2Props {
   backgroundImage?: string
   screenshotPayroll?: string
-  features?: string
+  features?: Array<{ title: string, description: string, image: string }>
   selectedIndex?: number
   tabOrientation?: string
 }
 
-const { backgroundImage = '/images/screenshots/background-features.jpg', screenshotPayroll = '/images/screenshots/payroll.webp', features = [, selectedIndex = 0, tabOrientation = 'vertical' } = defineProps<PrimaryFeatures2Props>()
-
-{
+// `features` defaults reference `screenshotPayroll`, which is bound earlier in
+// the same pattern — destructuring initializes left to right, so that is legal.
+const { backgroundImage = '/images/screenshots/background-features.jpg', screenshotPayroll = '/images/screenshots/payroll.webp', features = [
+  {
     title: 'Payroll',
     description: "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
     image: screenshotPayroll,
@@ -29,7 +30,7 @@ const { backgroundImage = '/images/screenshots/background-features.jpg', screens
     description: 'Easily export your data into an Excel spreadsheet where you can do whatever the hell you want with it.',
     image: '',
   },
-]
+], selectedIndex = 0, tabOrientation = 'vertical' } = defineProps<PrimaryFeatures2Props>()
 </script>
 <section
   id="features"

@@ -1,18 +1,23 @@
 <script>
 interface FeatureProps {
   className?: string
-  feature?: string
+  feature?: {
+    name: string
+    summary: string
+    description: string
+    image: string
+    icon: string
+  }
   isActive?: boolean
 }
 
-const { className = '', feature = {, isActive = false } = defineProps<FeatureProps>()
-
-name: '',
+const { className = '', feature = {
+  name: '',
   summary: '',
   description: '',
   image: '',
-  icon: ''
-}
+  icon: '',
+}, isActive = false } = defineProps<FeatureProps>()
 </script>
 <div class="{{ className }} {{ !isActive ? 'opacity-75 hover:opacity-100' : '' }}">
   <div class="w-9 rounded-lg {{ isActive ? 'bg-blue-600' : 'bg-slate-500' }}">

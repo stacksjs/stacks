@@ -1,17 +1,21 @@
 <script>
 interface ForumSidebarProps {
-  stats?: string
+  stats?: {
+    topics: number
+    posts: number
+    members: number
+    newestMember: string
+  }
   popularTopics?: any[]
   onlineUsers?: any[]
 }
 
-const { stats = {, popularTopics = [], onlineUsers = [] } = defineProps<ForumSidebarProps>()
-
-topics: 0,
+const { stats = {
+  topics: 0,
   posts: 0,
   members: 0,
-  newestMember: ''
-}
+  newestMember: '',
+}, popularTopics = [], onlineUsers = [] } = defineProps<ForumSidebarProps>()
 </script>
 <div class="space-y-6">
     <!-- Search -->

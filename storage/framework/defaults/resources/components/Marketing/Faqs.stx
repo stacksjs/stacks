@@ -1,12 +1,12 @@
 <script>
 interface FaqsProps {
   backgroundImage?: string
-  faqs?: string
+  /** One inner array per rendered column. */
+  faqs?: Array<Array<{ question: string, answer: string }>>
 }
 
-const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProps<FaqsProps>()
-
-[
+const { backgroundImage = '/images/background-faqs.jpg', faqs = [
+  [
     {
       question: 'What is the goal of the Stacks framework?',
       answer: 'The goal of the Stacks framework is to help you create and maintain frontends, backends, and clouds—without having to worry about the boilerplate. It is a rapid development framework, meeting all your full stack needs.',
@@ -48,7 +48,7 @@ const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProp
       answer: 'The roadmap for Stacks includes first-party supported stacks like Table, Calendar, Command Palette, Date Picker, File Manager, Image, Video, Audio, Identity, Digital Ownership, Payments, and Governance. More information can be found in the detailed roadmap.',
     },
   ],
-]
+] } = defineProps<FaqsProps>()
 </script>
 <section
   id="faq"

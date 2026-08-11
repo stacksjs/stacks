@@ -1,20 +1,24 @@
 <script>
-interface LayoutProps {
-  inter?: string
-  lexend?: string
+interface FontConfig {
+  subsets: string[]
+  display: string
+  variable: string
 }
 
-const { inter = {, lexend = { } = defineProps<LayoutProps>()
+interface LayoutProps {
+  inter?: FontConfig
+  lexend?: FontConfig
+}
 
-subsets: ['latin'],
+const { inter = {
+  subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
-}
-
+}, lexend = {
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-lexend',
-}
+} } = defineProps<LayoutProps>()
 </script>
 <html
   lang="en"

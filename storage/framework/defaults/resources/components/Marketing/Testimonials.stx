@@ -1,11 +1,14 @@
 <script>
 interface TestimonialsProps {
-  testimonials?: string
+  /** One inner array per rendered column. */
+  testimonials?: Array<Array<{
+    content: string
+    author: { name: string, role: string, image: string }
+  }>>
 }
 
-const { testimonials = [ } = defineProps<TestimonialsProps>()
-
-[
+const { testimonials = [
+  [
     {
       content: 'Stacks is a rapid development framework that has helped me create and maintain frontends, backends, and clouds without worrying about the boilerplate.',
       author: {
@@ -59,7 +62,7 @@ const { testimonials = [ } = defineProps<TestimonialsProps>()
       },
     },
   ],
-]
+] } = defineProps<TestimonialsProps>()
 </script>
 <section
   id="testimonials"

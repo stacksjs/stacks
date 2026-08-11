@@ -1,15 +1,14 @@
 <script>
 interface StepperDemoProps {
   currentStep?: number
-  steps?: string
+  steps?: Array<{ title: string, description: string, icon: string }>
 }
 
-const { currentStep = 0, steps = [ } = defineProps<StepperDemoProps>()
-
-{ title: 'Step 1', description: 'First step', icon: 'i-heroicons-check' },
+const { currentStep = 0, steps = [
+  { title: 'Step 1', description: 'First step', icon: 'i-heroicons-check' },
   { title: 'Step 2', description: 'Second step', icon: 'i-heroicons-check' },
   { title: 'Step 3', description: 'Third step', icon: 'i-heroicons-check' },
-]
+] } = defineProps<StepperDemoProps>()
 
 function getStepContent(step) {
   switch (step) {

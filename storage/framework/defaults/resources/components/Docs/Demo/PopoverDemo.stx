@@ -1,12 +1,17 @@
 <script>
 interface PopoverDemoProps {
-  solutions?: string
+  solutions?: Array<{
+    name: string
+    description: string
+    href: string
+    iconBg: string
+    iconStroke: string
+  }>
   isOpen?: boolean
 }
 
-const { solutions = [, isOpen = false } = defineProps<PopoverDemoProps>()
-
-{
+const { solutions = [
+  {
     name: 'Insights',
     description: 'Measure actions your users take',
     href: '##',
@@ -27,7 +32,7 @@ const { solutions = [, isOpen = false } = defineProps<PopoverDemoProps>()
     iconBg: '#FFEDD5',
     iconStroke: '#FB923C',
   },
-]
+], isOpen = false } = defineProps<PopoverDemoProps>()
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>

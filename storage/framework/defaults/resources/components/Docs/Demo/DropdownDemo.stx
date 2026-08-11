@@ -1,19 +1,26 @@
 <script>
+interface DropdownMenuItem {
+  icon?: string
+  label?: string
+  variant?: string
+  /** A separator rather than a real entry — getMenuSections splits on these. */
+  divider?: boolean
+}
+
 interface DropdownDemoProps {
-  menuItems?: string
+  menuItems?: DropdownMenuItem[]
   isOpen?: boolean
 }
 
-const { menuItems = [, isOpen = false } = defineProps<DropdownDemoProps>()
-
-{ icon: 'i-hugeicons-pencil-20-solid', label: 'Edit' },
+const { menuItems = [
+  { icon: 'i-hugeicons-pencil-20-solid', label: 'Edit' },
   { icon: 'i-hugeicons-document-duplicate-20-solid', label: 'Duplicate' },
   { divider: true },
   { icon: 'i-hugeicons-archive-box-20-solid', label: 'Archive' },
   { icon: 'i-hugeicons-arrow-path-20-solid', label: 'Move' },
   { divider: true },
   { icon: 'i-hugeicons-trash-20-solid', label: 'Delete', variant: 'danger' },
-]
+], isOpen = false } = defineProps<DropdownDemoProps>()
 function getMenuSections(items) {
   const sections = []
   let currentSection = []

@@ -1,18 +1,25 @@
 <script>
 interface TeamMemberProps {
-  data?: string
+  data?: {
+    name: string
+    avatar: string
+    description: string
+    github: string
+    sponsors: boolean
+    functions: string[]
+    packages: string[]
+  }
 }
 
-const { data = { } = defineProps<TeamMemberProps>()
-
-name: '',
+const { data = {
+  name: '',
   avatar: '',
   description: '',
   github: '',
   sponsors: false,
   functions: [],
-  packages: []
-}
+  packages: [],
+} } = defineProps<TeamMemberProps>()
 </script>
 <div class="text-center">
     <img

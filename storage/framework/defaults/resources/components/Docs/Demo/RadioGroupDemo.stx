@@ -1,15 +1,23 @@
 <script>
-interface RadioGroupDemoProps {
-  plans?: string
-  selected?: boolean
+interface Plan {
+  name: string
+  ram: string
+  cpus: string
+  disk: string
 }
 
-const { plans = [, selected = plans[0] } = defineProps<RadioGroupDemoProps>()
+interface RadioGroupDemoProps {
+  plans?: Plan[]
+  selected?: Plan
+}
 
-{ name: 'Startup', ram: '12GB', cpus: '6 CPUs', disk: '160 GB SSD disk' },
+// `selected` defaults off `plans`; destructuring binds left to right, so `plans`
+// is already in scope when this default is evaluated.
+const { plans = [
+  { name: 'Startup', ram: '12GB', cpus: '6 CPUs', disk: '160 GB SSD disk' },
   { name: 'Business', ram: '16GB', cpus: '8 CPUs', disk: '512 GB SSD disk' },
   { name: 'Enterprise', ram: '32GB', cpus: '12 CPUs', disk: '1024 GB SSD disk' },
-]
+], selected = plans[0] } = defineProps<RadioGroupDemoProps>()
 </script>
 <div class="max-w-4xl">
     <DocsPlayground>

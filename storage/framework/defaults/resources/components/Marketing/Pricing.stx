@@ -1,11 +1,17 @@
 <script>
 interface PricingProps {
-  plans?: string
+  plans?: Array<{
+    name: string
+    price: string
+    description: string
+    href: string
+    features: string[]
+    featured: boolean
+  }>
 }
 
-const { plans = [ } = defineProps<PricingProps>()
-
-{
+const { plans = [
+  {
     name: 'Hobby (Early Bird Pricing)',
     price: '$19',
     description: 'Get a lifetime access with all upgrades included in the future.',
@@ -49,7 +55,7 @@ const { plans = [ } = defineProps<PricingProps>()
     ],
     featured: false,
   },
-]
+] } = defineProps<PricingProps>()
 </script>
 <section
   id="pricing"

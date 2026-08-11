@@ -1,12 +1,17 @@
 <script>
 interface SecondaryFeaturesProps {
-  features?: string
+  features?: Array<{
+    name: string
+    summary: string
+    description: string
+    image: string
+    icon: string
+  }>
   selectedIndex?: number
 }
 
-const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>()
-
-{
+const { features = [
+  {
     name: 'Dashboard',
     summary: 'The UI to your application.',
     description: 'Whether you are a developer or a client, The Dashboard visualizes your data. Easily extend your admin panel.',
@@ -27,7 +32,7 @@ const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>(
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fprofit-loss.2a2f85d5.png&w=1200&q=75',
     icon: '',
   },
-]
+], selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>()
 </script>
 <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 sm:pb-20 sm:pt-32 lg:pb-32">
   <Container>

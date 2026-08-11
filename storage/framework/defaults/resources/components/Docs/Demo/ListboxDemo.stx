@@ -1,18 +1,26 @@
 <script>
+interface Person {
+  id: number
+  name: string
+  unavailable: boolean
+}
+
 interface ListboxDemoProps {
-  people?: string
-  selectedPerson?: boolean
+  people?: Person[]
+  selectedPerson?: Person
   isOpen?: boolean
 }
 
-const { people = [, selectedPerson = people[0], isOpen = false } = defineProps<ListboxDemoProps>()
-
-{ id: 1, name: 'Chris Breuer', unavailable: false },
+// `selectedPerson` defaults off `people`, which is legal here because
+// destructuring binds left to right — `people` is in scope by the time the
+// default for `selectedPerson` is evaluated.
+const { people = [
+  { id: 1, name: 'Chris Breuer', unavailable: false },
   { id: 2, name: 'Avery Hill', unavailable: false },
   { id: 3, name: 'Glenn Michael', unavailable: false },
   { id: 4, name: 'Michael Vincent', unavailable: true },
   { id: 5, name: 'Blake Ayer', unavailable: false },
-]
+], selectedPerson = people[0], isOpen = false } = defineProps<ListboxDemoProps>()
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>
