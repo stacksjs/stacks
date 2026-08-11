@@ -1,6 +1,6 @@
 # Dashboard audit
 
-Last refreshed: 2026-07-31
+Last refreshed: 2026-08-11
 
 This is the current verification record for `./buddy dev --dashboard`. It
 replaces the May 2026 migration inventory, whose per-file counts no longer
@@ -11,23 +11,25 @@ described the componentized dashboard.
 | Surface | Count |
 |---|---:|
 | Dashboard STX view files | 120 |
-| Dashboard STX components | 283 |
-| Dashboard Actions | 359 |
+| Dashboard STX components | 303 |
+| Dashboard Actions | 368 |
 | Registered `/api/dashboard/*` routes | 283 |
-| Framework model files | 69 |
-| Framework models declaring `useApi` | 60 |
-| Direct `fetch()` calls in dashboard views, components, functions, and stores | 0 |
+| Framework model files | 75 |
+| Framework models declaring `useApi` | 64 |
+| Direct `fetch()` calls in dashboard views, components, and stores | 0 |
 
-The nine models without `useApi` are internal records or relationship-owned
-records: order idempotency keys, order items, errors, jobs, failed jobs, and
-payment-provider records. They are not missing generic CRUD surfaces.
+The eleven models without `useApi` are internal, relationship-owned, or
+provider-owned records: driver pings, order idempotency keys, order items,
+errors, jobs, failed jobs, payment methods, payment products, payment
+transactions, social accounts, and subscriptions. They are not missing generic
+CRUD surfaces.
 
 ## Verified contracts
 
 ### Rendering and navigation
 
-- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.144
-  and Crosswind 0.2.14.
+- `./buddy dev --dashboard` starts on port 3002 and renders with STX 0.2.176
+  and Crosswind 0.2.16.
 - 108 static route views render with HTTP 200.
 - Full-page and STX fragment requests render for every static route.
 - STX prewarms the dependency-aware rendered shell cache with four workers.
@@ -37,12 +39,14 @@ payment-provider records. They are not missing generic CRUD surfaces.
   a dashboard composable invalidates the associated client bundle.
 - The componentized catch-all renders the native not-found page with HTTP 404
   for both full-page and STX fragment requests.
-- 130 distinct rendered local links and assets resolve without a 404 or 5xx.
+- A dependency-free browser crawl followed the complete rendered link graph
+  across 261 distinct page URLs with no HTTP, console, request, or horizontal
+  overflow failure.
 - Rendered pages contain no unresolved PascalCase component tags.
 - Rendered pages contain no duplicate emitted IDs or broken
   `aria-labelledby` references.
 - The live render and navigation audit covers all 108 static destinations,
-  all 69 discovered model destinations, and the remaining eight parameterized
+  all 75 discovered model destinations, and the remaining eight parameterized
   route families without a full-page or STX fragment failure.
 - Headless desktop and narrow-viewport visual checks cover the componentized
   Terms of Service and Privacy Policy routes linked from registration.
@@ -92,9 +96,9 @@ payment-provider records. They are not missing generic CRUD surfaces.
 
 ### Data integrity
 
-- The 128 live GET dashboard API routes return JSON or their documented text
+- The 129 live GET dashboard API routes return JSON or their documented text
   payload with no hidden HTTP-200 error body.
-- A fresh live crawl returned 117 successful responses and 11 intentional
+- A fresh live audit returned 118 successful responses and 11 intentional
   validation, authentication, or missing-resource responses, with no 5xx,
   method mismatch, transport failure, or HTML fallback.
 - Generic model routes reject malformed slugs with HTTP 400 before deriving
@@ -118,6 +122,7 @@ payment-provider records. They are not missing generic CRUD surfaces.
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
 # Or target a non-default origin:
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts --base-url http://127.0.0.1:3002
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl http://localhost:3002/ --max 500 --settle 350 --summary
 bun test tests/unit/dashboard-*.test.ts
 bun test storage/framework/core/actions/tests/dev-csrf.test.ts
 bun run typecheck
@@ -128,7 +133,7 @@ bunx --bun pickier .
 The focused contracts cover buttons, native STX bindings, route and Action
 method alignment, model reads and writes, commerce mutations, deployment
 guards, navigation source, sidebar behavior, toasts, and skill documentation.
-The 2026-07-31 focused run completed 156 tests with 2,916 assertions and no
+The 2026-08-11 focused run completed 226 tests with 5,424 assertions and no
 failures, followed by both TypeScript checks and a clean repository lint.
 
 ## Remaining verification boundaries

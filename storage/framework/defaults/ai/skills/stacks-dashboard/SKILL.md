@@ -354,20 +354,19 @@ drawers must use the shared `dashboard-modal-layer` class so their interactive
 surface starts beside that sidebar and returns to `left: 0` on mobile and in
 the Craft native-sidebar shell.
 
-Use the shared `Dashboard/UI/Modal` and `Dashboard/UI/ConfirmDialog`
-components when possible. A custom overlay root must use this shape:
+Use `Dashboard/UI/Modal`, `Dashboard/UI/Drawer`, and
+`Dashboard/UI/ConfirmDialog` for page dialogs, inspectors, forms, and
+confirmations. They own native `<dialog>` behavior, scroll locking, focus
+restoration, Escape and backdrop handling, accessibility labels, and the
+sidebar-aware boundary. `Dashboard/Modals/BaseModal` and
+`Dashboard/Modals/Popups/Alert` are compatibility wrappers over that same
+primitive, not alternate overlay implementations.
 
-```html
-<div class="fixed inset-y-0 overflow-y-auto right-0 z-[55] dashboard-modal-layer">
-  <button class="absolute inset-0" aria-label="Close dialog"></button>
-  <!-- dialog panel -->
-</div>
-```
-
-Do not solve sidebar overlap by increasing z-index alone. That places the
-dialog above the sidebar without centering it in the available content area.
-Keep overlay children `absolute`, not `fixed`, so they remain bounded by the
-sidebar-aware root.
+Do not add a page-owned `fixed inset-0` overlay. A purpose-built application
+surface such as the global command palette or mobile navigation may own a
+custom layer only when the shared dialog or drawer semantics do not fit. It
+must still use `dashboard-modal-layer` and provide complete keyboard, focus,
+and ARIA behavior. Do not solve sidebar overlap by increasing z-index alone.
 
 ### Live dashboard audit
 
@@ -378,6 +377,9 @@ the project root:
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts
 # Or target a non-default origin:
 bun storage/framework/defaults/ai/skills/stacks-dashboard/scripts/audit.ts --base-url http://127.0.0.1:3002
+
+# Exercise hydrated navigation, console errors, failed requests, and layout:
+bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts crawl http://localhost:3002/ --max 500 --settle 350 --summary
 ```
 
 Pass a base URL as the first argument when the dashboard is not on
@@ -387,6 +389,13 @@ document and an `X-STX-Router` fragment, then crawls every registered GET
 dashboard API. It fails on missing page renders, invalid fragment contracts,
 empty or non-HTML pages, unresolved component tags, 5xx or method-mismatch
 APIs, HTML API fallbacks, invalid JSON, and HTTP-200 error payloads.
+
+The dependency-free browser crawl follows the rendered link graph in a real
+browser and fails on non-200 pages, console errors, failed subrequests, or
+horizontal overflow. Seed source-only routes with repeated `--path` flags,
+including optional or parameterized pages that the current data set does not
+link. The HTTP audit and browser crawl cover different boundaries, so run both
+for exhaustive dashboard work.
 
 Run this after dashboard route, Action, STX, model, migration, or dev-server
 changes. Record provider-backed or destructive success paths as explicit

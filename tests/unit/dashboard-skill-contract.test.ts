@@ -48,6 +48,10 @@ describe('dashboard skill contract', () => {
     expect(skill).toContain('both a full\ndocument and an `X-STX-Router` fragment')
     expect(skill).toContain('crawls every registered GET\ndashboard API')
     expect(skill).toContain('HTTP-200 error payloads')
+    expect(skill).toContain('stacks-browse/scripts/browse.ts crawl')
+    expect(skill).toContain('console errors, failed subrequests, or\nhorizontal overflow')
+    expect(skill).toContain('Seed source-only routes with repeated `--path` flags')
+    expect(skill).toContain('The HTTP audit and browser crawl cover different boundaries')
   })
 
   test('documents component and native input case semantics', () => {
