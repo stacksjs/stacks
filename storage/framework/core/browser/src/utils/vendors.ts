@@ -16,6 +16,7 @@ export {
   usePreferredDark,
   useScrollLock,
   useStorage,
+  useTimeoutFn,
   useToggle,
 } from '@stacksjs/composables'
 

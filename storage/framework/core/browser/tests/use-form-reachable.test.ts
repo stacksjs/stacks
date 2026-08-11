@@ -44,10 +44,10 @@ describe('useForm is reachable (stx#1843)', () => {
 
 describe('a declared browser global is actually exported (stx#1843)', () => {
   // Narrow on purpose. The generated declaration currently names 243 symbols
-  // from this module and the module exports 12, so asserting the whole set
+  // from this module and the module exports 13, so asserting the whole set
   // would just be red — that gap is real but it is its own issue, not this
   // change. These are the ones this commit is responsible for.
-  const OWNED = ['useForm', 'useScrollLock']
+  const OWNED = ['useForm', 'useScrollLock', 'useTimeoutFn']
 
   it('every name this change touched resolves', async () => {
     const vendors = await import('../src/utils/vendors') as Record<string, unknown>
