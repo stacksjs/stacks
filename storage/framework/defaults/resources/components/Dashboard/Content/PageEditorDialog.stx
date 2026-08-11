@@ -1,0 +1,93 @@
+<script client>
+interface PageRecord {
+  id: string
+  title: string
+  template: string
+  publishedAt: string
+}
+
+interface PageDraft {
+  title: string
+  template: string
+  published: boolean
+}
+
+const open = useReactiveProp('open', false)
+const page = useReactiveProp('page', null as PageRecord | null)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const title = state('')
+const template = state('default')
+const published = state(false)
+const emit = defineEmits()
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    const record = page()
+    title.set(record?.title || '')
+    template.set(record?.template || 'default')
+    published.set(Boolean(record?.publishedAt))
+  }
+  wasOpen = isOpen
+})
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const draft: PageDraft = {
+    title: title().trim(),
+    template: template(),
+    published: published(),
+  }
+  emit('submit', draft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="page() ? 'Edit page' : 'New page'"
+  description="Configure the page template and publishing state."
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="page-editor-form" class="grid gap-4" @submit.prevent="submit">
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Title</span>
+      <input x-model="title" name="title" required minlength="3" maxlength="255" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+    </label>
+    <label>
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Template</span>
+      <select x-model="template" name="template" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
+        <option value="default">Default</option>
+        <option value="landing">Landing</option>
+        <option value="blog">Blog</option>
+        <option value="contact">Contact</option>
+      </select>
+    </label>
+    <label class="flex gap-3 items-start p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <input x-model="published" name="published" type="checkbox" class="mt-0.5 h-4 w-4 rounded" />
+      <span>
+        <span class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Published</span>
+        <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Published pages receive a timestamp. Clearing this returns the page to draft.</span>
+      </span>
+    </label>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="close">Cancel</Button>
+      <Button type="submit" form="page-editor-form" :disabled="title().trim().length < 3" :loading="busy()">
+        {{ page() ? 'Save changes' : 'Create page' }}
+      </Button>
+    </div>
+  </template>
+</Modal>

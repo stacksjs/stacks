@@ -237,6 +237,7 @@ describe('dashboard button contract', () => {
       'Marketing/SocialPostsDashboard.stx',
       'Content/PostsDashboard.stx',
       'Content/PagesDashboard.stx',
+      'Content/PageEditorDialog.stx',
       'Content/AuthorsDashboard.stx',
       'Content/AuthorEditorDialog.stx',
       'Content/ContentTaxonomyDashboard.stx',

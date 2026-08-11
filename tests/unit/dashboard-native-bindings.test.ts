@@ -161,7 +161,7 @@ describe('dashboard native STX bindings', () => {
       'Content/AuthorEditorDialog.stx',
       'Content/CommentsDashboard.stx',
       'Content/ContentTaxonomyDashboard.stx',
-      'Content/PagesDashboard.stx',
+      'Content/PageEditorDialog.stx',
       'Content/BlogDashboard.stx',
       'Content/SeoDashboard.stx',
     ]) {
@@ -183,6 +183,14 @@ describe('dashboard native STX bindings', () => {
     const comments = componentSource('Content/CommentsDashboard.stx')
     expect(comments).toContain('<ConfirmDialog')
     expect(comments).not.toContain('fixed inset-y-0')
+
+    const pages = componentSource('Content/PagesDashboard.stx')
+    const pageEditor = componentSource('Content/PageEditorDialog.stx')
+    expect(pages).toContain('<PageEditorDialog')
+    expect(pages).toContain('<ConfirmDialog')
+    expect(pages).not.toContain('fixed inset-y-0')
+    expect(pageEditor).toContain('<Modal')
+    expect(pageEditor).toContain('form="page-editor-form"')
 
     const taxonomy = componentSource('Content/ContentTaxonomyDashboard.stx')
     expect(taxonomy).toContain(".normalize('NFKD')")
