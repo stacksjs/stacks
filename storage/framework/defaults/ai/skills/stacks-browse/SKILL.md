@@ -103,10 +103,12 @@ bun storage/framework/defaults/ai/skills/stacks-browse/scripts/browse.ts scenari
   --step '{"action":"fill","selector":"input[name=name]","value":"Example"}' \
   --step '{"action":"click","selector":"button[type=submit]"}' \
   --step '{"action":"assert","selector":"main","text":"Saved"}' \
+  --step '{"action":"assert","selector":"[role=dialog]","absent":true}' \
   --out storage/framework/runtime/shots/scenario.png
 ```
 
 Steps run in order within one isolated browser page, preserving reactive STX state and SPA navigation. Supported actions are `click`, `fill`, `press`, `wait`, and `assert`. Each step is a JSON object passed through a repeatable `--step` flag. A click step may include `text` to select the matching control from its CSS selector. The command reports every completed step, the final URL and page text, console exceptions, failed requests, and an optional screenshot. It exits nonzero when the scenario assertion, browser console, or network fails.
+Use `{"action":"assert","selector":"...","absent":true}` to verify that an element is missing or hidden after an interaction.
 
 ### Crawl (whole-site browser audit)
 ```bash

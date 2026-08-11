@@ -503,6 +503,7 @@ interface ScenarioStep {
   action: ScenarioAction
   selector?: string
   text?: string
+  absent?: boolean
   value?: string
   key?: string
   ms?: number
@@ -530,6 +531,8 @@ function parseScenarioStep(value: string): ScenarioStep {
     throw new TypeError(`Scenario action "${action}" requires a selector.`)
   if (action === 'fill' && typeof step.value !== 'string')
     throw new TypeError('Scenario action "fill" requires a string value.')
+  if (step.absent !== undefined && (action !== 'assert' || typeof step.absent !== 'boolean'))
+    throw new TypeError('Scenario "absent" is a boolean supported only by assert actions.')
   if (action === 'press' && typeof step.key !== 'string')
     throw new TypeError('Scenario action "press" requires a key.')
   if (action === 'wait' && (!Number.isFinite(step.ms) || Number(step.ms) < 0 || Number(step.ms) > 30_000))
@@ -561,12 +564,19 @@ async function runScenarioStep(cdp: Cdp, step: ScenarioStep): Promise<Record<str
         ? candidates.find(candidate => normalizedText(candidate) === step.text)
           || candidates.find(candidate => normalizedText(candidate).includes(step.text))
         : candidates[0]
+      if (!element && step.action === 'assert' && step.absent)
+        return { ok: true, action: step.action, selector: step.selector, absent: true }
       if (!element)
         return { ok: false, error: 'Element not found', selector: step.selector }
 
       const rect = element.getBoundingClientRect()
       const style = getComputedStyle(element)
       const visible = rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none'
+      if (step.action === 'assert' && step.absent) {
+        if (visible)
+          return { ok: false, error: 'Expected element to be absent', selector: step.selector }
+        return { ok: true, action: step.action, selector: step.selector, absent: true }
+      }
       if (!visible)
         return { ok: false, error: 'Element is not visible', selector: step.selector }
 
