@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
+import { Auth, authCookie, createTwoFactorChallenge, getTwoFactorState } from '@stacksjs/auth'
 import { User } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -66,6 +66,15 @@ export default new Action({
     // The legacy `token` field is kept for backward compatibility
     // with clients that haven't been updated yet — it shadows
     // `access_token` and will be removed in a future major.
+    //
+    // The same token also goes out as an httpOnly cookie, matching
+    // SocialCallbackAction. Without it, how a browser ends up signed in
+    // depended on which way it signed in: OAuth left a cookie, email+password
+    // left only JSON, and a server-rendered page cannot read JSON — it posts a
+    // form, follows a redirect, and comes back carrying nothing but cookies.
+    // So the first authenticated document render had no way to identify the
+    // user (#2306). The body is unchanged, so an API client that ignores the
+    // cookie behaves exactly as before.
     return response.json({
       access_token: result.token,
       refresh_token: result.refreshToken,
@@ -77,6 +86,6 @@ export default new Action({
         email: user?.email,
         name: user?.name,
       },
-    })
+    }, { headers: { 'Set-Cookie': authCookie(result.token) } })
   },
 })

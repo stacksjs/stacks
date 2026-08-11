@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { Auth, consumeTwoFactorChallenge, verifyTwoFactorLoginCode } from '@stacksjs/auth'
+import { Auth, authCookie, consumeTwoFactorChallenge, verifyTwoFactorLoginCode } from '@stacksjs/auth'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -41,6 +41,10 @@ export default new Action({
 
     const user = result.user
 
+    // This is where a 2FA account's session actually begins — LoginAction
+    // deliberately mints nothing for these users until the code is verified —
+    // so the cookie belongs here too. Setting it only on LoginAction would
+    // have left every 2FA account exactly where it started (#2306).
     return response.json({
       access_token: result.token,
       refresh_token: result.refreshToken,
@@ -52,6 +56,6 @@ export default new Action({
         email: user?.email,
         name: user?.name,
       },
-    })
+    }, { headers: { 'Set-Cookie': authCookie(result.token) } })
   },
 })
