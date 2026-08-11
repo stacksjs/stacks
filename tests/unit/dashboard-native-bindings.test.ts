@@ -540,6 +540,11 @@ describe('dashboard native STX bindings', () => {
     expect(table).toContain("emit('selection-change', next)")
     expect(table).toContain(':indeterminate="someSelected()"')
     expect(table).toContain('<slot name="actions" :row="row" />')
+    expect(table).toContain('const exportUrl = useObjectUrl(exportBlob)')
+    expect(table).toContain('tag="a"')
+    expect(table).toContain(':download="exportDownload()"')
+    expect(table).not.toMatch(/\b(?:document|window)\./)
+    expect(table).not.toContain('createObjectURL')
     expect(table).not.toContain('data-select-all')
     expect(table).not.toContain('data-row-select')
 

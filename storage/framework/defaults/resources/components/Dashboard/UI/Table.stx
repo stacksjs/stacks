@@ -326,12 +326,7 @@ function clearFilters(): void {
 
 /* ----------------------------------------------------------------- export */
 
-/**
- * CSV of what is on screen: current search, filters and sort, all columns
- * that are visible, every page rather than just the current one. Exporting
- * the raw prop would hand back something the viewer never asked for.
- */
-function exportCsv(): void {
+function csvBlob(): Blob {
   const cols = visibleColumns()
   const escape = (value: any): string => {
     const text = value === null || value === undefined ? '' : String(value)
@@ -343,15 +338,21 @@ function exportCsv(): void {
     ...sorted().map(row => cols.map(column => escape(rawValue(row, column.key))).join(',')),
   ]
 
-  const blob = new Blob([`﻿${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = `${exportFilename()}.csv`
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
+  return new Blob([`﻿${lines.join('\n')}`], { type: 'text/csv;charset=utf-8' })
+}
+
+/**
+ * CSV of what is on screen: current search, filters and sort, all columns
+ * that are visible, every page rather than just the current one. Exporting
+ * the raw prop would hand back something the viewer never asked for.
+ * useObjectUrl owns URL revocation while the native download link owns the
+ * browser interaction.
+ */
+const exportBlob = derived(() => exportable() ? csvBlob() : null)
+const exportUrl = useObjectUrl(exportBlob)
+const exportDownload = derived(() => `${exportFilename()}.csv`)
+
+function recordExport(): void {
   emit('export', sorted().length)
 }
 
@@ -420,14 +421,14 @@ function cellClass(column: DashboardTableColumn, index: number): string {
         />
       </div>
 
-      <button
+      <Button
         :if="hasActiveFilters()"
-        type="button"
+        variant="ghost"
+        size="xs"
         @click="clearFilters()"
-        class="px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
       >
         Clear filters
-      </button>
+      </Button>
 
       <slot name="toolbar" />
     </div>
@@ -463,15 +464,19 @@ function cellClass(column: DashboardTableColumn, index: number): string {
         </div>
       </div>
 
-      <button
+      <Button
         :if="exportable()"
-        type="button"
-        @click="exportCsv()"
-        class="inline-flex gap-1.5 items-center px-2.5 py-1.5 text-neutral-600 text-xs dark:text-neutral-300 hover:bg-stone-50 dark:hover:bg-neutral-800 border border-stone-300 rounded-lg dark:border-neutral-600"
+        tag="a"
+        variant="outline"
+        size="sm"
+        :href="exportUrl.value || ''"
+        :download="exportDownload()"
+        :disabled="!exportUrl.value"
+        @click="recordExport()"
       >
         <span aria-hidden="true" class="h-3.5 w-3.5 i-hugeicons-download-04"></span>
         Export CSV
-      </button>
+      </Button>
     </div>
   </div>
 
@@ -588,7 +593,7 @@ function cellClass(column: DashboardTableColumn, index: number): string {
     <span aria-hidden="true" class="mb-3 p-3 h-12 w-12 text-neutral-400 bg-neutral-100 dark:bg-neutral-800 rounded-full i-hugeicons-search-remove"></span>
     <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">No matches</p>
     <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">No rows match the current search or filters.</p>
-    <button type="button" @click="clearFilters()" class="mt-3 text-blue-600 text-sm dark:text-blue-400 hover:underline">Clear filters</button>
+    <Button variant="ghost" size="sm" class="mt-3" @click="clearFilters()">Clear filters</Button>
   </div>
 
   <div :if="visibleRows().length === 0 && !loading() && !hasActiveFilters()" class="flex flex-col items-center justify-center px-4 py-12">
