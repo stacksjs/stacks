@@ -62,7 +62,8 @@ describe('the ORM routes entrypoint', () => {
     ]) {
       const source = readFileSync(file, 'utf8')
 
-      expect(source).toContain(`import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))`)
+      expect(source).toContain(`import('@stacksjs/orm/routes')`)
+      expect(source).toContain(`import('../../orm/routes')`)
     }
   })
 

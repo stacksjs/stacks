@@ -191,7 +191,12 @@ export async function generateOpenApi(options: {
     // there used to silently omit every model's CRUD endpoints), and the
     // relative path is the only form that works on a clean checkout of THIS
     // repository, where `@stacksjs/orm`'s dist has not been built yet.
-    await import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))
+    try {
+      await import('@stacksjs/orm/routes')
+    }
+    catch {
+      await import('../../orm/routes')
+    }
   }
   catch (error) {
     const message = error instanceof Error ? error.message : String(error)

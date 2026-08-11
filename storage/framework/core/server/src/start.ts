@@ -55,7 +55,12 @@ loadRoutes(routeRegistry)
       // (so every installed app logged "ORM routes skipped" and served no model
       // endpoints); the relative path is what works on an unbuilt checkout of
       // this repository.
-      await import('@stacksjs/orm/routes').catch(() => import('../../orm/routes'))
+      try {
+        await import('@stacksjs/orm/routes')
+      }
+      catch {
+        await import('../../orm/routes')
+      }
       console.log('[START] ORM routes loaded successfully')
     } catch (ormError) {
       console.warn('[START] ORM routes skipped:', ormError instanceof Error ? ormError.message : String(ormError))
