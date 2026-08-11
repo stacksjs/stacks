@@ -1,0 +1,108 @@
+<script client>
+interface SeoEntry {
+  title: string
+  focus_keyword?: string | null
+  meta_description?: string | null
+  canonical_url?: string | null
+}
+
+interface SeoDraft {
+  focusKeyword: string | null
+  metaDescription: string | null
+  canonicalUrl: string | null
+}
+
+const open = useReactiveProp('open', false)
+const entry = useReactiveProp('entry', null as SeoEntry | null)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const focusKeyword = state('')
+const metaDescription = state('')
+const canonicalUrl = state('')
+const emit = defineEmits()
+let wasOpen = false
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    const record = entry()
+    focusKeyword.set(record?.focus_keyword || '')
+    metaDescription.set(record?.meta_description || '')
+    canonicalUrl.set(record?.canonical_url || '')
+  }
+  wasOpen = isOpen
+})
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  const draft: SeoDraft = {
+    focusKeyword: focusKeyword().trim() || null,
+    metaDescription: metaDescription().trim() || null,
+    canonicalUrl: canonicalUrl().trim() || null,
+  }
+  emit('submit', draft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  title="Edit SEO metadata"
+  :description="entry()?.title || ''"
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="seo-editor-form" class="space-y-4" @submit.prevent="submit">
+    <div>
+      <label for="seo-focus-keyword" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Focus keyword</label>
+      <input
+        id="seo-focus-keyword"
+        name="focus_keyword"
+        type="text"
+        maxlength="100"
+        x-model="focusKeyword"
+        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+      >
+    </div>
+    <div>
+      <div class="flex items-center justify-between">
+        <label for="seo-meta-description" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Meta description</label>
+        <span class="tabular-nums text-neutral-400 text-xs">{{ metaDescription().length }}/160</span>
+      </div>
+      <textarea
+        id="seo-meta-description"
+        name="meta_description"
+        rows="4"
+        maxlength="160"
+        x-model="metaDescription"
+        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+      ></textarea>
+    </div>
+    <div>
+      <label for="seo-canonical-url" class="block font-medium text-neutral-700 text-sm dark:text-neutral-300">Canonical URL</label>
+      <input
+        id="seo-canonical-url"
+        name="canonical_url"
+        type="url"
+        inputmode="url"
+        placeholder="https://example.com/post"
+        x-model="canonicalUrl"
+        class="block mt-1.5 px-3 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+      >
+    </div>
+  </form>
+
+  <div :if="error()" role="alert" class="mt-4 px-3 py-2 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-500/10 border border-red-200 rounded-lg dark:border-red-500/20">
+    {{ error() }}
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-end w-full">
+      <Button type="button" variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button type="submit" form="seo-editor-form" :loading="busy()">Save metadata</Button>
+    </div>
+  </template>
+</Modal>

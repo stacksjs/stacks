@@ -245,6 +245,7 @@ describe('dashboard button contract', () => {
       'Content/TaxonomyEditorDialog.stx',
       'Content/CommentsDashboard.stx',
       'Content/ContentDashboard.stx',
+      'Content/SeoEditorDialog.stx',
       'Notifications/NotificationDeliveryTable.stx',
       'Notifications/NotificationDeliveryDialog.stx',
       'Notifications/NotificationDeliveryHistory.stx',

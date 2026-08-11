@@ -236,8 +236,15 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/views/dashboard/content/seo/index.stx'),
       'utf8',
     )
+    const seo = componentSource('Content/SeoDashboard.stx')
+    const seoEditor = componentSource('Content/SeoEditorDialog.stx')
     expect(seoView).toContain('<SeoDashboard />')
     expect(seoView).not.toContain('<script')
+    expect(seo).toContain('<SeoEditorDialog')
+    expect(seo).not.toContain('fixed inset-0')
+    expect(seoEditor).toContain('<Modal')
+    expect(seoEditor).toContain('form="seo-editor-form"')
+    expect(seoEditor).toContain('x-model="metaDescription"')
   })
 
   test('content overview is a thin component backed by persisted metrics', () => {
