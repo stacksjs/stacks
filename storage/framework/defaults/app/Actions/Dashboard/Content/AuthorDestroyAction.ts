@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import { rowExists, rowId, timestamp } from './content-input'
@@ -24,16 +25,23 @@ export default new Action({
       return response.json({ message: 'A valid author id is required.' }, 422)
 
     try {
-      if (!await rowExists('authors', id))
+      const deleted = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        if (!await rowExists('authors', id, trx))
+          return false
+
+        await trx
+          .updateTable('posts')
+          .set({ author_id: null, updated_at: timestamp() } as any)
+          .where('author_id', '=', id)
+          .execute()
+
+        await trx.deleteFrom('authors').where('id', '=', id).execute()
+        return true
+      })
+
+      if (!deleted)
         return response.json({ message: 'Author not found.' }, 404)
-
-      await db
-        .updateTable('posts')
-        .set({ author_id: null, updated_at: timestamp() } as any)
-        .where('author_id', '=', id)
-        .execute()
-
-      await db.deleteFrom('authors').where('id', '=', id).execute()
 
       return response.json({ message: 'Author deleted.', id })
     }

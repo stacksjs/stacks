@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { isUniqueViolation, transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { dashboardOperationalError } from '../dashboard-response'
@@ -28,37 +29,51 @@ export default new Action({
       return response.json({ message: 'Slug could not be derived from the name; enter one.' }, 422)
 
     try {
-      const duplicate = await db
-        .selectFrom('tags')
-        .select(['id'])
-        .where('slug', '=', slug)
-        .executeTakeFirst()
+      const tag = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        const duplicate = await trx
+          .selectFrom('tags')
+          .select(['id'])
+          .where('slug', '=', slug)
+          .orWhere('name', '=', name)
+          .executeTakeFirst()
 
-      if (duplicate)
-        return response.json({ message: 'A tag with that slug already exists.' }, 422)
+        if (duplicate)
+          return null
 
-      const now = timestamp()
+        const now = timestamp()
 
-      const result = await db
-        .insertInto('tags')
-        .values({
-          uuid: randomUUIDv7(),
-          name,
-          slug,
-          description,
-          created_at: now,
-          updated_at: now,
-        } as any)
-        .executeTakeFirst()
+        const result = await trx
+          .insertInto('tags')
+          .values({
+            uuid: randomUUIDv7(),
+            name,
+            slug,
+            description,
+            created_at: now,
+            updated_at: now,
+          } as any)
+          .executeTakeFirst()
 
-      const id = insertedId(result)
+        const id = insertedId(result)
 
-      if (!id)
-        return response.json({ message: 'Could not create tag.' }, 500)
+        if (!id)
+          throw new Error('Tag insert did not return an id.')
 
-      return response.json(await findRow('tags', id), 201)
+        const created = await findRow('tags', id, trx)
+        if (!created)
+          throw new Error('Created tag could not be loaded.')
+        return created
+      })
+
+      if (!tag)
+        return response.json({ message: 'A tag with that name or slug already exists.' }, 422)
+
+      return response.json(tag, 201)
     }
     catch (error) {
+      if (isUniqueViolation(error))
+        return response.json({ message: 'A tag with that name or slug already exists.' }, 422)
       return dashboardOperationalError(error, 'Tag could not be created.', 'TagStoreAction', 500)
     }
   },

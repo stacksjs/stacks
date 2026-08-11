@@ -1,9 +1,10 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
-import { findPost, invalidPostContent, invalidPostReference, postPayload, publishedAtFor, timestamp } from './post-input'
+import { findPost, invalidPostContent, invalidPostReference, postPayload, publishedAtFor, syncPostRelations, timestamp } from './post-input'
 
 /**
  * `PATCH /api/dashboard/posts/{id}` — updates a CMS post from the dashboard.
@@ -29,46 +30,51 @@ export default new Action({
       return response.json({ message: invalidContent }, 422)
 
     try {
-      const invalidReference = await invalidPostReference(payload)
-      if (invalidReference)
-        return response.json({ message: invalidReference }, 422)
+      const result = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        const invalidReference = await invalidPostReference(payload, trx)
+        if (invalidReference)
+          return { kind: 'invalid', message: invalidReference } as const
 
-      const existing = await db
-        .selectFrom('posts')
-        .select(['id', 'published_at'])
-        .where('id', '=', id)
-        .executeTakeFirst() as { id: number, published_at: string | null } | undefined
+        const existing = await trx
+          .selectFrom('posts')
+          .select(['id', 'published_at'])
+          .where('id', '=', id)
+          .executeTakeFirst() as { id: number, published_at: string | null } | undefined
 
-      if (!existing)
+        if (!existing)
+          return { kind: 'not-found' } as const
+
+        await trx
+          .updateTable('posts')
+          .set({
+            title: payload.title,
+            excerpt: payload.excerpt,
+            content: payload.content,
+            poster: payload.poster,
+            status: payload.status,
+            author_id: payload.authorId,
+            is_featured: payload.featured ? 1 : 0,
+            published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
+            updated_at: timestamp(),
+          } as any)
+          .where('id', '=', id)
+          .execute()
+
+        await syncPostRelations(trx, id, payload)
+
+        const updated = await findPost(id, trx)
+        if (!updated)
+          throw new Error('Updated post could not be read back.')
+        return { kind: 'updated', post: updated } as const
+      })
+
+      if (result.kind === 'invalid')
+        return response.json({ message: result.message }, 422)
+      if (result.kind === 'not-found')
         return response.json({ message: 'Post not found.' }, 404)
 
-      await db
-        .updateTable('posts')
-        .set({
-          title: payload.title,
-          excerpt: payload.excerpt,
-          content: payload.content,
-          poster: payload.poster,
-          status: payload.status,
-          author_id: payload.authorId,
-          is_featured: payload.featured ? 1 : 0,
-          published_at: publishedAtFor(payload.status, existing.published_at, timestamp()),
-          updated_at: timestamp(),
-        } as any)
-        .where('id', '=', id)
-        .execute()
-
-      const post = await Post.find(id)
-
-      if (!post)
-        return response.json({ message: 'Updated post could not be loaded.' }, 500)
-
-      await Promise.all([
-        post.categories().sync(payload.categoryIds),
-        post.tags().sync(payload.tagIds),
-      ])
-
-      return response.json(await findPost(id))
+      return response.json(result.post)
     }
     catch (error) {
       return dashboardOperationalError(error, 'Post could not be updated.', 'PostUpdateAction', 500)

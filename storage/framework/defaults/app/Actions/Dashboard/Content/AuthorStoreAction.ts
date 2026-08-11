@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { isUniqueViolation } from '@stacksjs/orm'
+import { isUniqueViolation, transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
 import { dashboardOperationalError } from '../dashboard-response'
@@ -28,36 +28,47 @@ export default new Action({
       return response.json({ message: input.message }, 422)
 
     try {
-      const duplicate = await db
-        .selectFrom('authors')
-        .select(['id'])
-        .where('email', '=', input.data.email)
-        .executeTakeFirst()
+      const author = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        const duplicate = await trx
+          .selectFrom('authors')
+          .select(['id'])
+          .where('email', '=', input.data.email)
+          .executeTakeFirst()
 
-      if (duplicate)
+        if (duplicate)
+          return null
+
+        const now = timestamp()
+
+        const result = await trx
+          .insertInto('authors')
+          .values({
+            uuid: randomUUIDv7(),
+            name: input.data.name,
+            email: input.data.email,
+            bio: input.data.bio || null,
+            avatar: input.data.avatar || null,
+            created_at: now,
+            updated_at: now,
+          } as any)
+          .executeTakeFirst()
+
+        const id = insertedId(result)
+
+        if (!id)
+          throw new Error('Author insert did not return an id.')
+
+        const created = await findRow('authors', id, trx)
+        if (!created)
+          throw new Error('Created author could not be loaded.')
+        return created
+      })
+
+      if (!author)
         return response.json({ message: 'An author with that email already exists.' }, 422)
 
-      const now = timestamp()
-
-      const result = await db
-        .insertInto('authors')
-        .values({
-          uuid: randomUUIDv7(),
-          name: input.data.name,
-          email: input.data.email,
-          bio: input.data.bio || null,
-          avatar: input.data.avatar || null,
-          created_at: now,
-          updated_at: now,
-        } as any)
-        .executeTakeFirst()
-
-      const id = insertedId(result)
-
-      if (!id)
-        return response.json({ message: 'Could not create author.' }, 500)
-
-      return response.json(await findRow('authors', id), 201)
+      return response.json(author, 201)
     }
     catch (error) {
       if (isUniqueViolation(error))

@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import { rowExists, rowId } from './content-input'
@@ -17,10 +18,16 @@ export default new Action({
       return response.json({ message: 'A valid page id is required.' }, 422)
 
     try {
-      if (!await rowExists('pages', id))
-        return response.json({ message: 'Page not found.' }, 404)
+      const deleted = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        if (!await rowExists('pages', id, trx))
+          return false
+        await trx.deleteFrom('pages').where('id', '=', id).execute()
+        return true
+      })
 
-      await db.deleteFrom('pages').where('id', '=', id).execute()
+      if (!deleted)
+        return response.json({ message: 'Page not found.' }, 404)
 
       return response.json({ message: 'Page deleted.', id })
     }

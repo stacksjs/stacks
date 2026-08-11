@@ -1,6 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import { rowExists, rowId } from './content-input'
@@ -22,10 +23,16 @@ export default new Action({
       return response.json({ message: 'A valid comment id is required.' }, 422)
 
     try {
-      if (!await rowExists('comments', id))
-        return response.json({ message: 'Comment not found.' }, 404)
+      const deleted = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        if (!await rowExists('comments', id, trx))
+          return false
+        await trx.deleteFrom('comments').where('id', '=', id).execute()
+        return true
+      })
 
-      await db.deleteFrom('comments').where('id', '=', id).execute()
+      if (!deleted)
+        return response.json({ message: 'Comment not found.' }, 404)
 
       return response.json({ message: 'Comment deleted.', id })
     }

@@ -1,8 +1,8 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { db } from '@stacksjs/database'
-import { str } from './content-input'
+import { insertedId, str, timestamp } from './content-input'
 
-export { insertedId, timestamp } from './content-input'
+export { insertedId, timestamp }
 
 export interface PostPayload {
   title: string
@@ -42,8 +42,8 @@ export function publishedAtFor(status: string, existing: string | null, now: str
 }
 
 /** Reads a post row back after a write — see `findRow` for why writes re-select. */
-export async function findPost(id: number): Promise<unknown> {
-  return await db.selectFrom('posts').selectAll().where('id', '=', id).executeTakeFirst()
+export async function findPost(id: number, database: typeof db = db): Promise<unknown> {
+  return await database.selectFrom('posts').selectAll().where('id', '=', id).executeTakeFirst()
 }
 
 function ids(value: unknown): number[] {
@@ -83,16 +83,16 @@ export function invalidPostContent(payload: PostPayload): string | null {
   return null
 }
 
-export async function invalidPostReference(payload: PostPayload): Promise<string | null> {
+export async function invalidPostReference(payload: PostPayload, database: typeof db = db): Promise<string | null> {
   const [author, categoryRows, tagRows] = await Promise.all([
     payload.authorId
-      ? db.selectFrom('authors').select(['id']).where('id', '=', payload.authorId).executeTakeFirst()
+      ? database.selectFrom('authors').select(['id']).where('id', '=', payload.authorId).executeTakeFirst()
       : Promise.resolve(undefined),
     payload.categoryIds.length
-      ? db.selectFrom('categories').whereIn('id', payload.categoryIds).select(['id']).execute()
+      ? database.selectFrom('categories').whereIn('id', payload.categoryIds).select(['id']).execute()
       : Promise.resolve([]),
     payload.tagIds.length
-      ? db.selectFrom('tags').whereIn('id', payload.tagIds).select(['id']).execute()
+      ? database.selectFrom('tags').whereIn('id', payload.tagIds).select(['id']).execute()
       : Promise.resolve([]),
   ])
 
@@ -104,6 +104,58 @@ export async function invalidPostReference(payload: PostPayload): Promise<string
     return 'One or more selected tags do not exist.'
 
   return null
+}
+
+async function replacePostPivot(
+  database: typeof db,
+  table: 'categorizable_models' | 'taggable_models',
+  foreignKey: 'category_id' | 'tag_id',
+  ownerKey: 'categorizable_id' | 'taggable_id',
+  typeKey: 'categorizable_type' | 'taggable_type',
+  postId: number,
+  relatedIds: number[],
+  now: string,
+): Promise<void> {
+  await (database as any)
+    .deleteFrom(table)
+    .where(ownerKey, '=', postId)
+    .where(typeKey, '=', 'posts')
+    .execute()
+
+  if (relatedIds.length === 0)
+    return
+
+  await (database as any)
+    .insertInto(table)
+    .values(relatedIds.map(relatedId => ({
+      [foreignKey]: relatedId,
+      [ownerKey]: postId,
+      [typeKey]: 'posts',
+      created_at: now,
+      updated_at: now,
+    })))
+    .execute()
+}
+
+/** Replaces both post pivot sets on the caller's database or transaction. */
+export async function syncPostRelations(database: typeof db, postId: number, payload: Pick<PostPayload, 'categoryIds' | 'tagIds'>): Promise<void> {
+  const now = timestamp()
+  await replacePostPivot(database, 'categorizable_models', 'category_id', 'categorizable_id', 'categorizable_type', postId, payload.categoryIds, now)
+  await replacePostPivot(database, 'taggable_models', 'tag_id', 'taggable_id', 'taggable_type', postId, payload.tagIds, now)
+}
+
+/** Removes both post pivot sets on the caller's database or transaction. */
+export async function detachPostRelations(database: typeof db, postId: number): Promise<void> {
+  await (database as any)
+    .deleteFrom('categorizable_models')
+    .where('categorizable_id', '=', postId)
+    .where('categorizable_type', '=', 'posts')
+    .execute()
+  await (database as any)
+    .deleteFrom('taggable_models')
+    .where('taggable_id', '=', postId)
+    .where('taggable_type', '=', 'posts')
+    .execute()
 }
 
 /** Maps a dashboard request body onto the writable post columns. */

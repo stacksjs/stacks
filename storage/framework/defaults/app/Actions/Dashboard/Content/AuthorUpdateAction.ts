@@ -1,7 +1,7 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { isUniqueViolation } from '@stacksjs/orm'
+import { isUniqueViolation, transaction } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import { parseAuthorInput } from './author-input'
@@ -23,32 +23,45 @@ export default new Action({
       return response.json({ message: input.message }, 422)
 
     try {
-      if (!await rowExists('authors', id))
+      const result = await transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        if (!await rowExists('authors', id, trx))
+          return { kind: 'not-found' } as const
+
+        const duplicate = await trx
+          .selectFrom('authors')
+          .select(['id'])
+          .where('email', '=', input.data.email)
+          .where('id', '!=', id)
+          .executeTakeFirst()
+
+        if (duplicate)
+          return { kind: 'duplicate' } as const
+
+        await trx
+          .updateTable('authors')
+          .set({
+            name: input.data.name,
+            email: input.data.email,
+            bio: input.data.bio || null,
+            avatar: input.data.avatar || null,
+            updated_at: timestamp(),
+          } as any)
+          .where('id', '=', id)
+          .execute()
+
+        const author = await findRow('authors', id, trx)
+        if (!author)
+          throw new Error('Updated author could not be loaded.')
+        return { kind: 'updated', author } as const
+      })
+
+      if (result.kind === 'not-found')
         return response.json({ message: 'Author not found.' }, 404)
-
-      const duplicate = await db
-        .selectFrom('authors')
-        .select(['id'])
-        .where('email', '=', input.data.email)
-        .where('id', '!=', id)
-        .executeTakeFirst()
-
-      if (duplicate)
+      if (result.kind === 'duplicate')
         return response.json({ message: 'An author with that email already exists.' }, 422)
 
-      await db
-        .updateTable('authors')
-        .set({
-          name: input.data.name,
-          email: input.data.email,
-          bio: input.data.bio || null,
-          avatar: input.data.avatar || null,
-          updated_at: timestamp(),
-        } as any)
-        .where('id', '=', id)
-        .execute()
-
-      return response.json(await findRow('authors', id))
+      return response.json(result.author)
     }
     catch (error) {
       if (isUniqueViolation(error))

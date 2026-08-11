@@ -66,4 +66,25 @@ describe('dashboard content error contract', () => {
     expect(sources).toContain("response.json({ message: 'Post not found.' }, 404)")
     expect(sources).toContain("response.json({ message: 'An author with that email already exists.' }, 422)")
   })
+
+  test('commits each content mutation and its readback as one transaction', () => {
+    for (const action of writeActions) {
+      const source = readAction(action)
+
+      expect(source).toMatch(/import \{[^\n]*transaction[^\n]*\} from '@stacksjs\/orm'/)
+      expect(source).toContain('transaction(async (rawTrx) => {')
+      expect(source).toContain('const trx = rawTrx as unknown as typeof db')
+    }
+
+    const postStore = readAction('PostStoreAction.ts')
+    const postUpdate = readAction('PostUpdateAction.ts')
+    const postDestroy = readAction('PostDestroyAction.ts')
+    const relationHelper = readAction('post-input.ts')
+
+    expect(postStore).toContain('syncPostRelations(trx, id, payload)')
+    expect(postUpdate).toContain('syncPostRelations(trx, id, payload)')
+    expect(postDestroy).toContain('detachPostRelations(trx, id)')
+    expect(relationHelper).toContain('export async function syncPostRelations(database: typeof db')
+    expect(relationHelper).toContain('export async function detachPostRelations(database: typeof db')
+  })
 })

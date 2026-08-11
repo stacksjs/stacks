@@ -56,8 +56,8 @@ function counts(posts: Array<{ status: string }>) {
  * `GET /api/dashboard/posts` — backs `views/dashboard/content/posts/index.stx`.
  *
  * Uses one bounded query per persisted dataset and groups pivot ids in maps,
- * avoiding relation N+1 queries while still keeping all writes on the native
- * model relations.
+ * avoiding relation N+1 queries. Writes use the same model-declared pivots on
+ * one native database transaction.
  *
  * There is deliberately no mock-data fallback. This action used to catch every
  * error and serve placeholder rows, which made a page that was 404ing against

@@ -53,13 +53,13 @@ export function slugify(value: string): string {
  * `table` is a literal at every call site; the cast is only here because the
  * query builder's types want a table union rather than a `string`.
  */
-export async function findRow(table: string, id: number): Promise<unknown> {
-  return await (db as any).selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
+export async function findRow(table: string, id: number, database: typeof db = db): Promise<unknown> {
+  return await (database as any).selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
 }
 
 /** Whether a row with this id exists — the 404 check every write shares. */
-export async function rowExists(table: string, id: number): Promise<boolean> {
-  const row = await (db as any).selectFrom(table).select(['id']).where('id', '=', id).executeTakeFirst()
+export async function rowExists(table: string, id: number, database: typeof db = db): Promise<boolean> {
+  const row = await (database as any).selectFrom(table).select(['id']).where('id', '=', id).executeTakeFirst()
 
   return Boolean(row)
 }
