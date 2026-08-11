@@ -35,7 +35,7 @@ describe('dashboard global search', () => {
     expect(client).toContain('`${baseUrl}/dashboard/search?q=${encodeURIComponent(query)}`')
   })
 
-  test('mounts a native command palette in the dashboard layout', () => {
+  test('mounts the command palette through the canonical native modal', () => {
     const component = source('storage/framework/defaults/resources/components/Dashboard/GlobalSearch.stx')
     const layout = source('storage/framework/defaults/views/dashboard/layouts/default.stx')
 
@@ -44,8 +44,14 @@ describe('dashboard global search', () => {
     expect(component).toContain("useEventListener('keydown', handleGlobalKeydown)")
     expect(component).toContain('navigate(item.href)')
     expect(component).toContain('unavailable().length')
-    expect(component).toContain('role="dialog"')
-    expect(component).toContain('aria-modal="true"')
+    expect(component).toContain('<Modal')
+    expect(component).toContain('ariaLabel="Search dashboard"')
+    expect(component).toContain('position="top"')
+    expect(component).toContain(':showCloseButton="false"')
+    expect(component).toContain('@close="close()"')
+    expect(component).toContain('autofocus')
+    expect(component).not.toContain('fixed inset-0')
+    expect(component).not.toContain('role="dialog"')
     expect(component).not.toContain('<svg')
     expect(component).not.toContain('window.')
     expect(component).not.toContain('document.')

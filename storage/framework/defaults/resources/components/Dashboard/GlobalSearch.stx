@@ -112,20 +112,12 @@ function handleDialogKeydown(event: KeyboardEvent): void {
     event.preventDefault()
     selectCurrent()
   }
-  else if (event.key === 'Escape') {
-    event.preventDefault()
-    close()
-  }
 }
 
 function handleGlobalKeydown(event: KeyboardEvent): void {
   if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
     event.preventDefault()
     isOpen() ? close() : open()
-  }
-  else if (isOpen() && event.key === 'Escape') {
-    event.preventDefault()
-    close()
   }
 }
 
@@ -136,94 +128,98 @@ onDestroy(() => {
 })
 </script>
 
-<template :if="isOpen()">
-  <div class="fixed inset-0 overflow-y-auto z-50 dashboard-modal-layer" role="dialog" aria-modal="true" aria-label="Search dashboard" @keydown="handleDialogKeydown">
-    <button type="button" class="fixed inset-0 w-full bg-black/50 backdrop-blur-sm cursor-default" aria-label="Close search" @click="close"></button>
+<Modal
+  :isOpen="isOpen()"
+  ariaLabel="Search dashboard"
+  size="md"
+  position="top"
+  panelClassName="overflow-hidden border border-neutral-200 dark:border-neutral-700"
+  contentClassName="p-0"
+  :showCloseButton="false"
+  @close="close()"
+>
+  <div @keydown="handleDialogKeydown">
+    <div class="flex items-center px-4 border-b border-neutral-200 dark:border-neutral-700">
+      <span class="shrink-0 h-5 w-5 text-neutral-400 i-hugeicons-search-02"></span>
+      <input
+        ref="globalSearchInput"
+        x-model="query"
+        type="search"
+        autofocus
+        placeholder="Search model records"
+        aria-label="Search model records"
+        class="px-3 py-4 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-0"
+        @input="scheduleSearch($event.target.value)"
+      />
+      <span :if="isSearching()" class="shrink-0 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
+      <kbd :if="!isSearching()" class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
+        ESC
+      </kbd>
+    </div>
 
-    <div class="relative mt-[15vh] mx-auto max-w-lg">
-      <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-2xl">
-        <div class="flex items-center px-4 border-b border-neutral-200 dark:border-neutral-700">
-          <span class="shrink-0 h-5 w-5 text-neutral-400 i-hugeicons-search-02"></span>
-          <input
-            ref="globalSearchInput"
-            x-model="query"
-            type="search"
-            placeholder="Search model records"
-            aria-label="Search model records"
-            class="px-3 py-4 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-0"
-            @input="scheduleSearch($event.target.value)"
-          />
-          <span :if="isSearching()" class="shrink-0 h-5 w-5 text-blue-500 animate-spin i-hugeicons-loading-03"></span>
-          <kbd :if="!isSearching()" class="shrink-0 px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">
-            ESC
-          </kbd>
-        </div>
+    <div class="overflow-y-auto max-h-80">
+      <div :if="error()" role="alert" class="px-4 py-8 text-center">
+        <span class="mb-2 mx-auto h-8 w-8 text-red-400 i-hugeicons-alert-02"></span>
+        <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+      </div>
 
-        <div class="overflow-y-auto max-h-80">
-          <div :if="error()" role="alert" class="px-4 py-8 text-center">
-            <span class="mb-2 mx-auto h-8 w-8 text-red-400 i-hugeicons-alert-02"></span>
-            <p class="text-red-600 text-sm dark:text-red-400">{{ error() }}</p>
+      <div :if="!error() && unavailable().length > 0" role="status" class="mt-3 mx-3 px-3 py-2 text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+        {{ unavailable().length }} searchable {{ unavailable().length === 1 ? 'model is' : 'models are' }} unavailable. Run migrations or fix the reported model configuration.
+      </div>
+
+      <template :if="!error() && Object.keys(results()).length > 0">
+        <template :for="group in resultGroups()">
+          <div class="pb-1 pt-3 px-3">
+            <h3 class="px-1 font-semibold text-neutral-400 text-xs tracking-wider uppercase">
+              {{ group.type }}
+            </h3>
           </div>
-
-          <div :if="!error() && unavailable().length > 0" role="status" class="mt-3 mx-3 px-3 py-2 text-amber-700 text-xs dark:text-amber-300 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
-            {{ unavailable().length }} searchable {{ unavailable().length === 1 ? 'model is' : 'models are' }} unavailable. Run migrations or fix the reported model configuration.
-          </div>
-
-          <template :if="!error() && Object.keys(results()).length > 0">
-            <template :for="group in resultGroups()">
-              <div class="pb-1 pt-3 px-3">
-                <h3 class="px-1 font-semibold text-neutral-400 text-xs tracking-wider uppercase">
-                  {{ group.type }}
-                </h3>
-              </div>
-              <template :for="item in group.items">
-                <button
-                  type="button"
-                  class="flex gap-3 items-center px-4 py-2.5 w-full text-left transition-colors"
-                  :class="resultIndex(item) === selectedIndex() ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'"
-                  @mouseenter="selectedIndex.set(resultIndex(item))"
-                  @click="openResult(item)"
-                >
-                  <span :class="'shrink-0 h-5 w-5 text-neutral-400 ' + item.icon"></span>
-                  <span class="flex-1 min-w-0">
-                    <span class="block font-medium text-neutral-900 text-sm truncate dark:text-white">
-                      {{ item.title }}
-                    </span>
-                    <span :if="item.subtitle" class="block text-neutral-500 text-xs truncate dark:text-neutral-400">
-                      {{ item.subtitle }}
-                    </span>
-                  </span>
-                  <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
-                </button>
-              </template>
-            </template>
+          <template :for="item in group.items">
+            <button
+              type="button"
+              class="flex gap-3 items-center px-4 py-2.5 w-full text-left transition-colors"
+              :class="resultIndex(item) === selectedIndex() ? 'bg-blue-50 dark:bg-blue-950/40' : 'hover:bg-neutral-50 dark:hover:bg-neutral-800'"
+              @mouseenter="selectedIndex.set(resultIndex(item))"
+              @click="openResult(item)"
+            >
+              <span :class="'shrink-0 h-5 w-5 text-neutral-400 ' + item.icon"></span>
+              <span class="flex-1 min-w-0">
+                <span class="block font-medium text-neutral-900 text-sm truncate dark:text-white">
+                  {{ item.title }}
+                </span>
+                <span :if="item.subtitle" class="block text-neutral-500 text-xs truncate dark:text-neutral-400">
+                  {{ item.subtitle }}
+                </span>
+              </span>
+              <span class="shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 i-hugeicons-arrow-right-01"></span>
+            </button>
           </template>
+        </template>
+      </template>
 
-          <div :if="!error() && query().trim() && !isSearching() && Object.keys(results()).length === 0" class="px-4 py-8 text-center">
-            <span class="mb-2 mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-600 i-hugeicons-search-02"></span>
-            <p class="text-neutral-500 text-sm dark:text-neutral-400">No results found for "{{ query() }}"</p>
-          </div>
+      <div :if="!error() && query().trim() && !isSearching() && Object.keys(results()).length === 0" class="px-4 py-8 text-center">
+        <span class="mb-2 mx-auto h-8 w-8 text-neutral-300 dark:text-neutral-600 i-hugeicons-search-02"></span>
+        <p class="text-neutral-500 text-sm dark:text-neutral-400">No results found for "{{ query() }}"</p>
+      </div>
 
-          <div :if="!error() && !query().trim() && !isSearching()" class="px-4 py-8 text-center">
-            <p class="text-neutral-400 text-sm">Search fields declared by each model's useSearch trait.</p>
-          </div>
-        </div>
-
-        <div class="flex gap-4 items-center px-4 py-2.5 text-neutral-400 text-xs border-neutral-200 border-t dark:border-neutral-700">
-          <span class="flex gap-1 items-center">
-            <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↑↓</kbd>
-            Navigate
-          </span>
-          <span class="flex gap-1 items-center">
-            <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↵</kbd>
-            Open
-          </span>
-          <span class="flex gap-1 items-center">
-            <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">esc</kbd>
-            Close
-          </span>
-        </div>
+      <div :if="!error() && !query().trim() && !isSearching()" class="px-4 py-8 text-center">
+        <p class="text-neutral-400 text-sm">Search fields declared by each model's useSearch trait.</p>
       </div>
     </div>
+
+    <div class="flex gap-4 items-center px-4 py-2.5 text-neutral-400 text-xs border-neutral-200 border-t dark:border-neutral-700">
+      <span class="flex gap-1 items-center">
+        <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↑↓</kbd>
+        Navigate
+      </span>
+      <span class="flex gap-1 items-center">
+        <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">↵</kbd>
+        Open
+      </span>
+      <span class="flex gap-1 items-center">
+        <kbd class="px-1 py-0.5 text-[10px] bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600">esc</kbd>
+        Close
+      </span>
+    </div>
   </div>
-</template>
+</Modal>

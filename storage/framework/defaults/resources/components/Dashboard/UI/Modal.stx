@@ -5,11 +5,27 @@ interface ModalProps {
   description?: string
   ariaLabel?: string
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  position?: 'center' | 'top'
+  panelClassName?: string
+  contentClassName?: string
+  showCloseButton?: boolean
   closable?: boolean
   role?: 'dialog' | 'alertdialog'
 }
 
-const { isOpen = false, title = '', description = '', ariaLabel = '', size = 'md', closable = true, role = 'dialog' } = defineProps<ModalProps>()
+const {
+  isOpen = false,
+  title = '',
+  description = '',
+  ariaLabel = '',
+  size = 'md',
+  position = 'center',
+  panelClassName = '',
+  contentClassName = 'p-6',
+  showCloseButton = true,
+  closable = true,
+  role = 'dialog',
+} = defineProps<ModalProps>()
 
 const sizeClasses = {
   sm: 'max-w-sm',
@@ -17,6 +33,11 @@ const sizeClasses = {
   lg: 'max-w-2xl',
   xl: 'max-w-4xl',
   full: 'max-w-[calc(100vw-2rem)] max-h-[calc(100vh-2rem)]'
+}
+
+const positionClasses = {
+  center: 'items-center justify-center p-4',
+  top: 'items-start justify-center px-4 pb-4 pt-[15vh]',
 }
 </script>
 <script client>
@@ -26,6 +47,7 @@ const liveTitle = useReactiveProp('title', '')
 const liveDescription = useReactiveProp('description', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
 const liveRole = useReactiveProp('role', 'dialog')
+const liveShowCloseButton = useReactiveProp('showCloseButton', true)
 const dialog = useRef<HTMLDialogElement>('dashboardModalDialog')
 const activeElement = useActiveElement()
 const scrollLocked = useScrollLock()
@@ -89,12 +111,12 @@ effect(() => {
     @cancel="handleCancel"
   >
     <!-- Modal container -->
-    <div class="flex items-center justify-center p-4 min-h-full" @click="handleBackdropClick">
+    <div class="flex min-h-full {{ positionClasses[position] }}" @click="handleBackdropClick">
       <div
-        class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }}"
+        class="relative w-full rounded-xl bg-white dark:bg-neutral-900 shadow-2xl {{ sizeClasses[size] }} {{ panelClassName }}"
       >
         <!-- Header -->
-        <div :if="liveTitle() || liveClosable()" class="flex gap-4 items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
+        <div :if="liveTitle() || (liveClosable() && liveShowCloseButton())" class="flex gap-4 items-start justify-between p-6 border-b border-neutral-200 dark:border-neutral-700">
           <div class="flex gap-3 items-start min-w-0">
             <slot name="header-leading" />
             <div class="min-w-0">
@@ -110,7 +132,7 @@ effect(() => {
           <div class="flex flex-shrink-0 gap-2 items-center">
             <slot name="header-trailing" />
             <Button
-              :if="liveClosable()"
+              :if="liveClosable() && liveShowCloseButton()"
               variant="ghost"
               size="sm"
               iconOnly
@@ -124,7 +146,7 @@ effect(() => {
 
         <!-- Body -->
         @if($slots.default)
-          <div class="p-6">
+          <div class="{{ contentClassName }}">
             <slot />
           </div>
         @endif
