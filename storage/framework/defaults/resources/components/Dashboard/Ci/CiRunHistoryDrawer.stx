@@ -1,0 +1,127 @@
+<script client>
+import { ciStore } from '~/storage/framework/defaults/views/dashboard/stores/ci'
+
+const ci = ciStore
+const target = derived(() => ci.drilldown())
+const runs = derived(() => ci.drilldownRuns())
+const loading = derived(() => ci.loadingDrilldown())
+const error = derived(() => ci.drilldownError())
+const expandedRunId = derived(() => ci.expandedRunId())
+const jobsByRunId = derived(() => ci.drilldownJobsByRunId())
+const loadingJobsRunId = derived(() => ci.loadingJobsForRunId())
+const title = derived(() => target()?.fullName || 'Run history')
+
+function runRowClass(conclusion, status) {
+  const base = 'px-3 py-2 -mx-3 border-l-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors '
+  if (status !== 'completed') return base + 'border-yellow-400'
+  if (conclusion === 'success') return base + 'border-emerald-400'
+  if (conclusion === 'failure' || conclusion === 'timed_out') return base + 'border-red-400'
+  if (conclusion === 'cancelled') return base + 'border-zinc-400'
+  return base + 'border-zinc-200 dark:border-zinc-800'
+}
+
+function runStatusBadge(conclusion, status) {
+  if (status !== 'completed') return { label: status, cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' }
+  if (conclusion === 'success') return { label: 'success', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }
+  if (conclusion === 'failure') return { label: 'failure', cls: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+  return { label: conclusion || 'unknown', cls: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300' }
+}
+
+function formatDuration(ms) {
+  if (ms == null) return ''
+  const seconds = Math.floor(ms / 1000)
+  if (seconds < 60) return seconds + 's'
+  const minutes = Math.floor(seconds / 60)
+  const remainder = seconds % 60
+  if (minutes < 60) return minutes + 'm' + (remainder ? ' ' + remainder + 's' : '')
+  const hours = Math.floor(minutes / 60)
+  return hours + 'h ' + (minutes % 60) + 'm'
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return ''
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const minutes = Math.floor(diff / 60000)
+  if (minutes < 60) return minutes + 'm ago'
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return hours + 'h ago'
+  return Math.floor(hours / 24) + 'd ago'
+}
+
+function truncate(value, length) {
+  if (!value) return ''
+  return value.length > length ? value.slice(0, length) + '...' : value
+}
+
+function jobsForRun(runId) {
+  return jobsByRunId()[runId] || []
+}
+
+function failedJobs(runId) {
+  return jobsForRun(runId).filter(job => job.conclusion && job.conclusion !== 'success' && job.conclusion !== 'skipped' && job.conclusion !== 'neutral')
+}
+</script>
+
+<Drawer
+  :isOpen="Boolean(target())"
+  :title="title()"
+  description="Run history"
+  size="lg"
+  @close="ci.closeDrilldown()"
+>
+  <div :if="error()" class="mt-4 mx-5 px-4 py-3 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900/40">
+    <p class="text-red-700 text-xs dark:text-red-300" :text="error()"></p>
+  </div>
+
+  <div :if="loading() && runs().length === 0" class="px-5 py-12 text-center">
+    <span aria-hidden="true" class="mx-auto h-6 w-6 text-violet-500 animate-spin i-hugeicons-loading-03"></span>
+    <p class="mt-2 text-zinc-500 text-xs">Fetching recent runs...</p>
+  </div>
+
+  <ul :if="runs().length > 0" class="px-5 py-3">
+    <li :for="run in runs" class="border-b border-zinc-100 dark:border-zinc-900 last:border-0">
+      <div @click="ci.toggleRunJobs(run.id)" :class="runRowClass(run.conclusion, run.status)">
+        <div class="flex gap-3 items-start justify-between">
+          <div class="flex-1 min-w-0">
+            <div class="flex gap-2 items-center">
+              <span :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${runStatusBadge(run.conclusion, run.status).cls}`" :text="runStatusBadge(run.conclusion, run.status).label"></span>
+              <span class="font-medium text-sm text-zinc-800 truncate dark:text-zinc-200" :text="run.name"></span>
+            </div>
+            <p :if="run.commitMessage" class="mt-1 text-zinc-500 text-xs truncate" :text="truncate(run.commitMessage, 80)"></p>
+            <div class="flex gap-2 items-center mt-1 text-[10px] text-zinc-400">
+              <span class="font-mono" :text="run.headShaShort"></span>
+              <span :if="run.headBranch" :text="run.headBranch"></span>
+              <span :if="run.commitAuthor">·</span>
+              <span :if="run.commitAuthor" :text="run.commitAuthor"></span>
+              <span>·</span>
+              <span :text="timeAgo(run.updatedAt)"></span>
+              <span :if="run.durationMs">·</span>
+              <span :if="run.durationMs" :text="formatDuration(run.durationMs)"></span>
+            </div>
+          </div>
+          <a :href="run.url" target="_blank" rel="noreferrer" @click.stop class="flex-shrink-0 no-underline text-violet-600 text-xs dark:text-violet-400 hover:underline">View ↗</a>
+        </div>
+      </div>
+
+      <div :if="expandedRunId() === run.id" class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-900">
+        <div :if="loadingJobsRunId() === run.id" class="py-2 text-zinc-500 text-xs">Loading jobs...</div>
+        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="py-1 italic text-zinc-400 text-xs">No job detail.</div>
+        <div :if="loadingJobsRunId() !== run.id && failedJobs(run.id).length > 0" class="space-y-1.5">
+          <p class="text-[10px] text-zinc-500 tracking-wide uppercase">Failed jobs</p>
+          <a :for="job in failedJobs(run.id)" :href="job.url" target="_blank" rel="noreferrer" @click.stop class="flex gap-1.5 items-center no-underline text-red-700 text-xs dark:text-red-400 hover:underline">
+            <span aria-hidden="true" class="h-2.5 w-2.5 i-hugeicons-cancel-circle"></span>
+            <span :text="job.name"></span>
+            <span :if="job.durationMs" class="text-zinc-400" :text="'(' + formatDuration(job.durationMs) + ')'"></span>
+          </a>
+        </div>
+        <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length > 0 && failedJobs(run.id).length === 0" class="py-1 text-zinc-500 text-xs">
+          All <span :text="jobsForRun(run.id).length"></span> jobs passed.
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <div :if="!loading() && !error() && runs().length === 0" class="px-5 py-12 text-center">
+    <p class="text-zinc-500 text-sm">No recent runs.</p>
+  </div>
+</Drawer>

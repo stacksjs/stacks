@@ -1,0 +1,114 @@
+<script server>
+interface DrawerProps {
+  isOpen?: boolean
+  title?: string
+  description?: string
+  size?: 'sm' | 'md' | 'lg'
+  closable?: boolean
+}
+
+const { isOpen = false, title = '', description = '', size = 'md', closable = true } = defineProps<DrawerProps>()
+
+const sizeClasses = {
+  sm: 'max-w-sm',
+  md: 'max-w-lg',
+  lg: 'max-w-2xl',
+}
+</script>
+
+<script client>
+const open = useReactiveProp('isOpen', false)
+const liveClosable = useReactiveProp('closable', true)
+const liveTitle = useReactiveProp('title', '')
+const liveDescription = useReactiveProp('description', '')
+const dialog = useRef<HTMLDialogElement>('dashboardDrawerDialog')
+const activeElement = useActiveElement()
+const scrollLocked = useScrollLock()
+const emit = defineEmits()
+let restoreFocus: HTMLElement | null = null
+
+function close(): void {
+  if (liveClosable())
+    emit('close')
+}
+
+function handleCancel(event: Event): void {
+  event.preventDefault()
+  close()
+}
+
+function handleBackdropClick(event: MouseEvent): void {
+  if (event.target === event.currentTarget)
+    close()
+}
+
+effect(() => {
+  const isOpen = open()
+  scrollLocked.value = isOpen
+
+  if (isOpen) {
+    const focused = peek(() => activeElement.value)
+    if (focused instanceof HTMLElement)
+      restoreFocus = focused
+    void nextTick(() => {
+      const element = dialog.current
+      if (!element)
+        return
+      if (!element.open)
+        element.showModal()
+      element.focus()
+    })
+    return
+  }
+
+  if (dialog.current?.open)
+    dialog.current.close()
+  const target = restoreFocus
+  restoreFocus = null
+  if (target)
+    void nextTick(() => target.focus())
+})
+</script>
+
+<dialog
+  :if="open()"
+  ref="dashboardDrawerDialog"
+  role="dialog"
+  aria-modal="true"
+  :aria-label="liveTitle() || 'Drawer'"
+  class="fixed inset-0 z-[55] m-0 p-0 h-dvh max-h-none max-w-none w-screen bg-transparent dashboard-drawer-dialog dashboard-modal-layer"
+  @cancel="handleCancel"
+>
+  <div class="flex justify-end min-h-full" @click="handleBackdropClick">
+    <section class="flex relative flex-col h-dvh w-full bg-white dark:bg-neutral-950 border-neutral-200 border-l dark:border-neutral-800 shadow-2xl {{ sizeClasses[size] }}" @click.stop>
+      <header class="flex gap-4 items-start px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
+        <slot name="header-leading" />
+        <div class="flex-1 min-w-0">
+          <h2 :if="liveTitle()" class="font-semibold text-lg text-neutral-900 truncate dark:text-white">{{ liveTitle() }}</h2>
+          <p :if="liveDescription()" class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">{{ liveDescription() }}</p>
+        </div>
+        <slot name="header-trailing" />
+        <Button :if="liveClosable()" variant="ghost" size="sm" iconOnly ariaLabel="Close drawer" @click="close">
+          <span aria-hidden="true" class="h-5 w-5 i-hugeicons-cancel-01"></span>
+        </Button>
+      </header>
+
+      <div class="overflow-y-auto flex-1 min-h-0">
+        <slot />
+      </div>
+
+      @if($slots.footer)
+        <footer class="px-5 py-4 border-neutral-200 border-t dark:border-neutral-800">
+          <slot name="footer" />
+        </footer>
+      @endif
+    </section>
+  </div>
+</dialog>
+
+<style>
+.dashboard-drawer-dialog::backdrop {
+  background: rgb(0 0 0 / 45%);
+  backdrop-filter: blur(2px);
+}
+</style>

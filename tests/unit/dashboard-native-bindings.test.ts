@@ -483,6 +483,17 @@ describe('dashboard native STX bindings', () => {
     expect(sharedModal).toContain('@cancel="handleCancel"')
     expect(sharedModal).toContain('.dashboard-modal-dialog::backdrop')
 
+    const sharedDrawer = componentSource('UI/Drawer.stx')
+    expect(sharedDrawer).toContain("const dialog = useRef<HTMLDialogElement>('dashboardDrawerDialog')")
+    expect(sharedDrawer).toContain('const scrollLocked = useScrollLock()')
+    expect(sharedDrawer).toContain('const activeElement = useActiveElement()')
+    expect(sharedDrawer).toContain('element.showModal()')
+    expect(sharedDrawer).toContain('dialog.current.close()')
+    expect(sharedDrawer).toContain('void nextTick(() => target.focus())')
+    expect(sharedDrawer).toContain('<dialog')
+    expect(sharedDrawer).toContain('@cancel="handleCancel"')
+    expect(sharedDrawer).toContain('.dashboard-drawer-dialog::backdrop')
+
     const tabs = componentSource('UI/Tabs.stx')
     expect(tabs).toContain("emit('update:activeTab', tab.id)")
     expect(tabs).toContain("emit('change', tab.id, tab)")
@@ -918,6 +929,10 @@ describe('dashboard native STX bindings', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx'),
       'utf8',
     )
+    const drawer = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiRunHistoryDrawer.stx'),
+      'utf8',
+    )
 
     expect(ciView).toContain('<CiDashboard />')
     expect(ciView).not.toContain('<script')
@@ -926,7 +941,9 @@ describe('dashboard native STX bindings', () => {
     expect(ci).toContain('i-hugeicons-loading-03')
     expect(ci).toContain('i-hugeicons-checkmark-circle-02')
     expect(ci).toContain('i-hugeicons-cancel-circle')
-    expect(ci).toContain('i-hugeicons-cancel-01')
+    expect(ci).toContain('<CiRunHistoryDrawer')
+    expect(drawer).toContain('<Drawer')
+    expect(drawer).toContain('i-hugeicons-cancel-circle')
   })
 
   test('kanban uses native reactive drag, dialogs, and form models', () => {

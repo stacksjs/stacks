@@ -222,6 +222,7 @@ describe('dashboard button contract', () => {
       'UI/Pagination.stx',
       'CreateRecordModal.stx',
       'UI/Modal.stx',
+      'UI/Drawer.stx',
       'UI/ConfirmDialog.stx',
       'UI/EmptyState.stx',
       'Auth/ForgotPassword.stx',
@@ -269,6 +270,7 @@ describe('dashboard button contract', () => {
       'App/RequestDetailsDialog.stx',
       'App/SourceInventory.stx',
       'Realtime/RealtimeDashboard.stx',
+      'Ci/CiRunHistoryDrawer.stx',
       'Queue/QueueDashboard.stx',
       'Jobs/JobTable.stx',
       'Jobs/JobDashboard.stx',
@@ -295,7 +297,7 @@ describe('dashboard button contract', () => {
       )
       const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-      expect(source).toMatch(/<(?:Button|Modal)\b/)
+      expect(source).toMatch(/<(?:Button|Modal|Drawer)\b/)
       expect(nativeButtons.every(button => button.includes('inset-0'))).toBe(true)
     }
   })
@@ -363,9 +365,15 @@ describe('dashboard button contract', () => {
       resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiDashboard.stx'),
       'utf8',
     )
+    const drawer = readFileSync(
+      resolve('storage/framework/defaults/resources/components/Dashboard/Ci/CiRunHistoryDrawer.stx'),
+      'utf8',
+    )
     const nativeButtons = [...source.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
 
-    expect(source).toContain('<Button variant="ghost" size="sm" iconOnly ariaLabel="Close run history"')
+    expect(source).toContain('<CiRunHistoryDrawer')
+    expect(source).not.toContain('fixed inset-0')
+    expect(drawer).toContain('<Drawer')
     expect(source).toContain(':aria-selected="String(activeTab() === org)"')
     expect(nativeButtons.every(button => button.includes('tabClass(') || button.includes('filterClass('))).toBe(true)
   })
