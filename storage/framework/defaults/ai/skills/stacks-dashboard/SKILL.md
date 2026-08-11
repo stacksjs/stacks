@@ -153,6 +153,9 @@ is hidden. Do not create separate `/deployments/scripts` or
 - Use `tag="a"` whenever `href` is reactive, for example
   `<Button tag="a" :href="detailsPath()">Open details</Button>`. Server rendering
   cannot infer an anchor from a client-only reactive URL.
+- When a submit action lives in a shared Modal footer, give the form a stable
+  `id` and associate the action with `<Button type="submit" form="form-id">`.
+  Do not duplicate the footer inside the form or use script-driven submission.
 - Prefer component events and named slots over string callback props or
   `data-action` markers. A `data-action` attribute is only valid when an active
   host integration consumes that exact action.
@@ -325,6 +328,7 @@ the canonical primary action style across the dashboard.
 </Button>
 
 <Button :loading="saving()" type="submit">Save changes</Button>
+<Button :loading="saving()" type="submit" form="settings-form">Save from modal footer</Button>
 <Button variant="secondary" @click="close">Cancel</Button>
 <Button :loading="deleting()" variant="danger" @click="destroy">Delete</Button>
 <Button tag="a" :href="exportHref()" :download="exportFilename()">Export</Button>

@@ -43,6 +43,8 @@ describe('dashboard button contract', () => {
     expect(button).toContain('customClass,')
     expect(button).toContain("const liveDownload = useReactiveProp('download', '')")
     expect(button).toContain("const liveType = useReactiveProp('type', 'button')")
+    expect(button).toContain("const liveForm = useReactiveProp('form', '')")
+    expect(button.match(/:form="liveForm\(\) \|\| undefined"/g)).toHaveLength(2)
     expect(button).not.toContain('dataAction')
     expect(button).not.toContain('dataCloseModal')
     expect(button).not.toContain('dataEmailId')

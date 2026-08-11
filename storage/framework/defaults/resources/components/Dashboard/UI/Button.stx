@@ -15,6 +15,7 @@ interface ButtonProps {
   rel?: string
   ariaLabel?: string
   type?: string
+  form?: string
   class?: string
 }
 
@@ -83,6 +84,7 @@ const liveDownload = useReactiveProp('download', '')
 const liveTarget = useReactiveProp('target', '')
 const liveRel = useReactiveProp('rel', '')
 const liveType = useReactiveProp('type', 'button')
+const liveForm = useReactiveProp('form', '')
 const liveAriaLabel = useReactiveProp('ariaLabel', '')
 </script>
 @if(tag === 'a' || (href && href.length > 0))
@@ -106,6 +108,7 @@ const liveAriaLabel = useReactiveProp('ariaLabel', '')
     @if(interaction === 'toggle')
       <button
         :type="liveType()"
+        :form="liveForm() || undefined"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
@@ -120,6 +123,7 @@ const liveAriaLabel = useReactiveProp('ariaLabel', '')
     @else
       <button
         :type="liveType()"
+        :form="liveForm() || undefined"
         class="{{ buttonClass }}"
         :aria-label="liveAriaLabel() || undefined"
         :aria-busy="liveLoading() ? 'true' : 'false'"
