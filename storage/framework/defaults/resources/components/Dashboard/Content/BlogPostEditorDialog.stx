@@ -1,0 +1,195 @@
+<script client>
+interface BlogPostRecord {
+  slug: string
+  title: string
+  description: string
+  date: string
+  author: string
+  poster: string
+  draft: boolean
+  featured: boolean
+}
+
+interface BlogPostDraft {
+  slug: string
+  title: string
+  description: string
+  date: string
+  author: string
+  authorBio: string
+  poster: string
+  featured: boolean
+  draft: boolean
+  body: string
+}
+
+const open = useReactiveProp('open', false)
+const post = useReactiveProp('post', null as BlogPostRecord | null)
+const loadedBody = useReactiveProp('loadedBody', '')
+const bodyLoading = useReactiveProp('bodyLoading', false)
+const bodyLoadFailed = useReactiveProp('bodyLoadFailed', false)
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const title = state('')
+const slug = state('')
+const description = state('')
+const date = state('')
+const author = state('')
+const poster = state('')
+const body = state('')
+const draft = state(true)
+const featured = state(false)
+const emit = defineEmits()
+let wasOpen = false
+let activeSlug = ''
+
+function slugify(input: string): string {
+  return input
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+}
+
+const suggestedSlug = derived(() => slugify(title()))
+const wordCount = derived(() => body().split(/\s+/).filter(Boolean).length)
+const readingTime = derived(() => Math.max(1, Math.round(wordCount() / 200)))
+const dialogTitle = derived(() => post() ? 'Edit post' : 'New post')
+const actionLabel = derived(() => post() ? 'Save post' : 'Create post')
+
+effect(() => {
+  const isOpen = open()
+  if (isOpen && !wasOpen) {
+    const record = post()
+    activeSlug = record?.slug || ''
+    title.set(record?.title || '')
+    slug.set(record?.slug || '')
+    description.set(record?.description || '')
+    date.set(record?.date || new Date().toISOString().slice(0, 10))
+    author.set(record?.author || '')
+    poster.set(record?.poster || '')
+    draft.set(record?.draft ?? true)
+    featured.set(Boolean(record?.featured))
+    body.set(record ? '' : loadedBody())
+  }
+  wasOpen = isOpen
+})
+
+effect(() => {
+  if (open() && post()?.slug === activeSlug && !bodyLoading())
+    body.set(loadedBody())
+})
+
+function valid(): boolean {
+  return title().trim().length > 0 && !bodyLoading() && !bodyLoadFailed()
+}
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  if (!valid())
+    return
+
+  const postDraft: BlogPostDraft = {
+    slug: slug().trim() || suggestedSlug(),
+    title: title().trim(),
+    description: description().trim(),
+    date: date(),
+    author: author().trim(),
+    authorBio: '',
+    poster: poster().trim(),
+    featured: featured(),
+    draft: draft(),
+    body: body(),
+  }
+  emit('submit', postDraft)
+}
+</script>
+
+<Modal
+  :isOpen="open()"
+  :title="dialogTitle()"
+  description="Edit the markdown file and its publishing metadata together."
+  size="xl"
+  :closable="!busy()"
+  @close="close"
+>
+  <form id="blog-post-editor-form" class="grid gap-4" @submit.prevent="submit">
+    <div :if="error()" role="alert" class="flex flex-wrap gap-3 items-center justify-between px-3 py-2 text-red-800 text-sm dark:text-red-200 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-md dark:border-red-900">
+      <span class="flex gap-2 items-start min-w-0">
+        <span class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
+        <span>{{ error() }}</span>
+      </span>
+      <Button :if="bodyLoadFailed()" variant="secondary" size="sm" @click="emit('retry')">Retry loading content</Button>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="flex flex-col gap-2 sm:col-span-2">
+        <span class="font-medium text-sm">Title</span>
+        <input x-model="title" name="title" type="text" required autofocus class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+      </label>
+
+      <label class="flex flex-col gap-2 sm:col-span-2">
+        <span class="font-medium text-sm">Slug</span>
+        <input x-model="slug" name="slug" type="text" :placeholder="suggestedSlug()" class="placeholder-neutral-500 px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+        <span class="text-neutral-500 text-xs dark:text-neutral-400">The file name and public URL: /blog/{{ slug() || suggestedSlug() || 'your-post' }}</span>
+      </label>
+
+      <label class="flex flex-col gap-2 sm:col-span-2">
+        <span class="font-medium text-sm">Description</span>
+        <input x-model="description" name="description" type="text" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+        <span class="text-neutral-500 text-xs dark:text-neutral-400">Used as the excerpt, meta description, and RSS summary.</span>
+      </label>
+
+      <label class="flex flex-col gap-2">
+        <span class="font-medium text-sm">Date</span>
+        <input x-model="date" name="date" type="date" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+      </label>
+
+      <label class="flex flex-col gap-2">
+        <span class="font-medium text-sm">Author</span>
+        <input x-model="author" name="author" type="text" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+      </label>
+
+      <label class="flex flex-col gap-2 sm:col-span-2">
+        <span class="font-medium text-sm">Poster image</span>
+        <input x-model="poster" name="poster" type="text" placeholder="/assets/images/example.svg" class="placeholder-neutral-500 px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
+      </label>
+
+      <label class="flex flex-col gap-2 sm:col-span-2">
+        <span class="flex items-center justify-between gap-3">
+          <span class="font-medium text-sm">Content</span>
+          <span :if="bodyLoading()" role="status" class="inline-flex gap-1.5 items-center text-neutral-500 text-xs dark:text-neutral-400">
+            <span class="h-3.5 w-3.5 animate-spin i-hugeicons-loading-03"></span>
+            Loading content
+          </span>
+        </span>
+        <textarea x-model="body" name="body" rows="14" :disabled="bodyLoading() || bodyLoadFailed()" class="px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md disabled:opacity-60 dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 resize-y"></textarea>
+        <span class="text-neutral-500 text-xs dark:text-neutral-400">Markdown. {{ wordCount() }} words, about {{ readingTime() }} min read.</span>
+      </label>
+    </div>
+
+    <div class="flex flex-col gap-3 sm:flex-row sm:gap-6 pt-2 border-neutral-200 border-t dark:border-neutral-800">
+      <label class="flex gap-2 items-center text-sm">
+        <input x-model="draft" name="draft" type="checkbox" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
+        <span>Draft, keep off the public blog</span>
+      </label>
+      <label class="flex gap-2 items-center text-sm">
+        <input x-model="featured" name="featured" type="checkbox" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
+        <span>Feature at the top of the listing</span>
+      </label>
+    </div>
+  </form>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button type="submit" form="blog-post-editor-form" :disabled="!valid()" :loading="busy()">
+        {{ actionLabel() }}
+      </Button>
+    </div>
+  </template>
+</Modal>

@@ -168,101 +168,31 @@ export const blogUrl = publicApplicationUrl('/blog')
     </section>
   </div>
 
-  <!-- Editor -->
-<div x-show="isEditorOpen()" class="flex fixed inset-0 overflow-y-auto z-40 items-start justify-center p-4 sm:p-6 dashboard-modal-layer">
-    <div class="fixed inset-0 bg-neutral-950/60" @click="closeEditor()"></div>
-
-    <div role="dialog" aria-modal="true" aria-labelledby="editor-title" class="relative z-10 my-8 max-w-3xl w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
-      <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-800">
-        <h2 id="editor-title" class="font-semibold text-lg">{{ editingSlug() ? 'Edit post' : 'New post' }}</h2>
-        <Button variant="ghost" size="sm" iconOnly ariaLabel="Close editor" @click="closeEditor()">
-          <span class="block h-4 w-4 i-hugeicons-cancel-01"></span>
-        </Button>
-      </div>
-
-      <div class="overflow-y-auto p-5 space-y-4 max-h-[70vh]">
-        <div x-show="formError()" class="flex gap-2 items-start px-3 py-2 text-red-800 text-sm dark:text-red-200 bg-red-50 dark:bg-red-950/40 border border-red-200 rounded-md dark:border-red-900">
-          <span class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
-          <span>{{ formError() }}</span>
-        </div>
-
-        <div class="grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col gap-2 sm:col-span-2">
-            <label for="post-title" class="font-medium text-sm">Title</label>
-            <input id="post-title" type="text" x-model="formTitle" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-          </div>
-
-          <div class="flex flex-col gap-2 sm:col-span-2">
-            <label for="post-slug" class="font-medium text-sm">Slug</label>
-            <input id="post-slug" type="text" x-model="formSlug" :placeholder="suggestedSlug()" class="placeholder-neutral-500 px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-            <p class="text-neutral-500 text-xs dark:text-neutral-400">The file name and public URL: /blog/{{ formSlug() || suggestedSlug() || 'your-post' }}</p>
-          </div>
-
-          <div class="flex flex-col gap-2 sm:col-span-2">
-            <label for="post-description" class="font-medium text-sm">Description</label>
-            <input id="post-description" type="text" x-model="formDescription" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-            <p class="text-neutral-500 text-xs dark:text-neutral-400">Used as the excerpt, the meta description, and the RSS summary.</p>
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label for="post-date" class="font-medium text-sm">Date</label>
-            <input id="post-date" type="date" x-model="formDate" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-          </div>
-
-          <div class="flex flex-col gap-2">
-            <label for="post-author" class="font-medium text-sm">Author</label>
-            <input id="post-author" type="text" x-model="formAuthor" class="px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-          </div>
-
-          <div class="flex flex-col gap-2 sm:col-span-2">
-            <label for="post-poster" class="font-medium text-sm">Poster image</label>
-            <input id="post-poster" type="text" x-model="formPoster" placeholder="/assets/images/example.svg" class="placeholder-neutral-500 px-3 py-2 text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30" />
-          </div>
-
-          <div class="flex flex-col gap-2 sm:col-span-2">
-            <label for="post-body" class="font-medium text-sm">Content</label>
-            <textarea id="post-body" x-model="formBody" rows="14" class="px-3 py-2 font-mono text-neutral-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-950 border border-neutral-300 outline-none rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 resize-y"></textarea>
-            <p class="text-neutral-500 text-xs dark:text-neutral-400">Markdown. {{ bodyWordCount() }} words, about {{ bodyReadingTime() }} min read.</p>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:gap-6 pt-2 border-neutral-200 border-t dark:border-neutral-800">
-          <label class="flex gap-2 items-center text-sm">
-            <input type="checkbox" x-model="formDraft" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
-            <span>Draft, keep off the public blog</span>
-          </label>
-          <label class="flex gap-2 items-center text-sm">
-            <input type="checkbox" x-model="formFeatured" class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600" />
-            <span>Feature at the top of the listing</span>
-          </label>
-        </div>
-      </div>
-
-      <div class="flex gap-2 justify-end px-5 py-4 border-neutral-200 border-t dark:border-neutral-800">
-        <Button variant="secondary" :disabled="isSaving()" @click="closeEditor()">Cancel</Button>
-        <Button :loading="isSaving()" @click="submit()">
-          {{ isSaving() ? 'Saving' : 'Save post' }}
-        </Button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Delete confirmation -->
-<div x-show="postToDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
-    <div class="fixed inset-0 bg-neutral-950/60" @click="cancelDelete()"></div>
-
-    <div role="dialog" aria-modal="true" aria-labelledby="delete-title" class="relative z-10 p-5 max-w-md w-full bg-white dark:bg-neutral-900 border border-neutral-200 rounded-lg dark:border-neutral-800 shadow-xl">
-      <h2 id="delete-title" class="font-semibold text-lg">Delete this post?</h2>
-      <p class="mt-2 text-neutral-600 text-sm dark:text-neutral-300">
-        This deletes the file <code class="px-1 py-0.5 text-xs bg-neutral-100 dark:bg-neutral-800 rounded">content/blog/{{ deleteTargetSlug() }}.md</code>. It stays in git history until you commit the deletion.
-      </p>
-      <div class="flex gap-2 justify-end mt-5">
-        <Button variant="secondary" @click="cancelDelete()">Cancel</Button>
-        <Button variant="danger" @click="confirmDelete()">Delete post</Button>
-      </div>
-    </div>
-  </div>
 </div>
+
+<BlogPostEditorDialog
+  :open="isEditorOpen()"
+  :post="editingPost()"
+  :loadedBody="loadedBody()"
+  :bodyLoading="bodyLoading()"
+  :bodyLoadFailed="bodyLoadFailed()"
+  :busy="isSaving()"
+  :error="formError()"
+  @close="closeEditor"
+  @retry="retryEditorBody"
+  @submit="submit"
+/>
+
+<ConfirmDialog
+  :isOpen="Boolean(postToDelete())"
+  title="Delete this post?"
+  :description="deleteDescription()"
+  confirmLabel="Delete post"
+  :busy="isDeleting()"
+  :error="deleteError()"
+  @close="cancelDelete"
+  @confirm="confirmDelete"
+/>
 </template>
 
 <script client>
@@ -282,33 +212,28 @@ const loadError = state('')
 const searchQuery = state('')
 const statusFilter = state('all')
 
-// Editor state. `editingSlug` doubles as the mode flag: empty means "new post",
-// and it holds the ORIGINAL slug so a slug edit is sent as a rename.
 const isEditorOpen = state(false)
-const editingSlug = state('')
+const editingPost = state(null)
+const loadedBody = state('')
+const bodyLoading = state(false)
+const bodyLoadFailed = state(false)
 const formError = state('')
-const formTitle = state('')
-const formSlug = state('')
-const formDescription = state('')
-const formDate = state('')
-const formAuthor = state('')
-const formPoster = state('')
-const formBody = state('')
-const formDraft = state(false)
-const formFeatured = state(false)
 
 const postToDelete = state(null)
+const isDeleting = state(false)
+const deleteError = state('')
+let editorRequestId = 0
 
 function publicPostUrl(slug) {
   return `${publicBlogBaseUrl}/${encodeURIComponent(String(slug))}`
 }
 
-// Read by the delete dialog's copy; kept as a derived signal so the template
-// never has to reach through a possibly-null post.
-const deleteTargetSlug = derived(() => {
+const deleteDescription = derived(() => {
   const post = postToDelete()
 
-  return post ? post.slug : ''
+  return post
+    ? `Deletes content/blog/${post.slug}.md. The file stays in git history until you commit the deletion.`
+    : ''
 })
 
 const publishedCount = derived(() => posts().filter(p => !p.draft).length)
@@ -330,20 +255,6 @@ const filteredPosts = derived(() => {
     return `${post.title} ${post.description} ${post.slug}`.toLowerCase().includes(q)
   })
 })
-
-// Mirrors slugify() in blog-admin.ts so the placeholder matches what the server
-// will actually write when the slug field is left empty.
-function slugify(input) {
-  return String(input)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80)
-}
-
-const suggestedSlug = derived(() => slugify(formTitle()))
-const bodyWordCount = derived(() => formBody().split(/\s+/).filter(Boolean).length)
-const bodyReadingTime = derived(() => Math.max(1, Math.round(bodyWordCount() / 200)))
 
 function statusClass(draft) {
   return draft
@@ -368,78 +279,69 @@ function clearFilters() {
 }
 
 async function openEditor(post) {
+  const requestId = ++editorRequestId
   formError.set('')
-  editingSlug.set(post ? post.slug : '')
+  editingPost.set(post)
+  loadedBody.set('')
+  bodyLoading.set(Boolean(post))
+  bodyLoadFailed.set(false)
   isEditorOpen.set(true)
 
-  if (!post) {
-    formTitle.set('')
-    formSlug.set('')
-    formDescription.set('')
-    formDate.set(new Date().toISOString().slice(0, 10))
-    formAuthor.set('')
-    formPoster.set('')
-    formBody.set('')
-    formDraft.set(true)
-    formFeatured.set(false)
+  if (!post)
     return
-  }
 
-  // The list omits the markdown body, so fetch the full post. Seed the fields
-  // from the list row first so the editor is never blank while that request
-  // is in flight.
-  formTitle.set(post.title)
-  formSlug.set(post.slug)
-  formDescription.set(post.description)
-  formDate.set(post.date)
-  formAuthor.set(post.author)
-  formPoster.set(post.poster)
-  formDraft.set(post.draft)
-  formFeatured.set(post.featured)
-  formBody.set('')
+  await loadEditorBody(post, requestId)
+}
+
+async function loadEditorBody(post, requestId = ++editorRequestId) {
+  bodyLoading.set(true)
+  bodyLoadFailed.set(false)
+  formError.set('')
 
   try {
     const full = await fetchBlogPost(post.slug)
 
-    // Ignore a late response if the user already closed or switched posts.
-    if (isEditorOpen() && editingSlug() === post.slug)
-      formBody.set(full.body)
+    if (requestId === editorRequestId && isEditorOpen() && editingPost()?.slug === post.slug)
+      loadedBody.set(full.body)
   }
   catch (error) {
-    formError.set(`Couldn't load this post's content: ${error.message}`)
+    if (requestId === editorRequestId) {
+      bodyLoadFailed.set(true)
+      formError.set(`Couldn't load this post's content: ${error.message}`)
+    }
   }
+  finally {
+    if (requestId === editorRequestId && isEditorOpen() && editingPost()?.slug === post.slug)
+      bodyLoading.set(false)
+  }
+}
+
+function retryEditorBody() {
+  const post = editingPost()
+  if (post)
+    void loadEditorBody(post)
 }
 
 function closeEditor() {
+  if (isSaving())
+    return
+
   isEditorOpen.set(false)
-  editingSlug.set('')
+  editorRequestId += 1
+  editingPost.set(null)
+  loadedBody.set('')
+  bodyLoading.set(false)
+  bodyLoadFailed.set(false)
   formError.set('')
 }
 
-async function submit() {
-  if (!formTitle().trim()) {
-    formError.set('A title is required.')
-    return
-  }
-
+async function submit(draft) {
   isSaving.set(true)
   formError.set('')
 
   try {
-    const saved = await saveBlogPost({
-      slug: formSlug().trim() || suggestedSlug(),
-      title: formTitle().trim(),
-      description: formDescription().trim(),
-      date: formDate(),
-      author: formAuthor().trim(),
-      authorBio: '',
-      poster: formPoster().trim(),
-      featured: formFeatured(),
-      draft: formDraft(),
-      body: formBody(),
-    }, editingSlug())
-
-    const original = editingSlug()
+    const original = editingPost()?.slug || ''
+    const saved = await saveBlogPost(draft, original)
 
     posts.update(list => (original
       ? list.map(p => (p.slug === original ? saved : p))
@@ -457,11 +359,15 @@ async function submit() {
 }
 
 function askDelete(post) {
+  deleteError.set('')
   postToDelete.set(post)
 }
 
 function cancelDelete() {
-  postToDelete.set(null)
+  if (!isDeleting()) {
+    postToDelete.set(null)
+    deleteError.set('')
+  }
 }
 
 async function confirmDelete() {
@@ -469,14 +375,19 @@ async function confirmDelete() {
   if (!post)
     return
 
-  postToDelete.set(null)
+  isDeleting.set(true)
+  deleteError.set('')
 
   try {
     await deleteBlogPost(post.slug)
     posts.update(list => list.filter(p => p.slug !== post.slug))
+    postToDelete.set(null)
   }
   catch (error) {
-    loadError.set(`Couldn't delete "${post.title}": ${error.message}`)
+    deleteError.set(`Couldn't delete "${post.title}": ${error.message}`)
+  }
+  finally {
+    isDeleting.set(false)
   }
 }
 

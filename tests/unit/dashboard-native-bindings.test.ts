@@ -163,6 +163,7 @@ describe('dashboard native STX bindings', () => {
       'Content/TaxonomyEditorDialog.stx',
       'Content/PageEditorDialog.stx',
       'Content/BlogDashboard.stx',
+      'Content/BlogPostEditorDialog.stx',
       'Content/SeoDashboard.stx',
     ]) {
       const source = componentSource(component)
@@ -218,6 +219,14 @@ describe('dashboard native STX bindings', () => {
     expect(blog).toContain(':href="publicPostUrl(post.slug)"')
     expect(blog).toContain('encodeURIComponent(String(slug))')
     expect(blog).not.toContain('href="/blog"')
+    expect(blog).toContain('<BlogPostEditorDialog')
+    expect(blog).toContain('<ConfirmDialog')
+    expect(blog).not.toContain('fixed inset-0')
+    const blogEditor = componentSource('Content/BlogPostEditorDialog.stx')
+    expect(blogEditor).toContain('<Modal')
+    expect(blogEditor).toContain('form="blog-post-editor-form"')
+    expect(blogEditor).toContain(':disabled="bodyLoading() || bodyLoadFailed()"')
+    expect(blogEditor).toContain("emit('retry')")
 
     const posts = componentSource('Content/PostsDashboard.stx')
     const postEditor = componentSource('Content/PostEditorDialog.stx')
