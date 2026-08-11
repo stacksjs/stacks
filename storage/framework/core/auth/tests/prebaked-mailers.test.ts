@@ -53,7 +53,7 @@ const realEmail = { ...await import('@stacksjs/email') }
 interface SentMail { to?: string, subject?: string, text?: string, html?: string }
 const sent: SentMail[] = []
 let templateMode: 'ok' | 'throw' | 'empty' = 'ok'
-let mailMode: 'ok' | 'throw' = 'ok'
+let mailMode: 'ok' | 'throw' | 'failure' = 'ok'
 let lastTemplateVars: Record<string, unknown> | null = null
 
 async function fakeTemplate(_name: string, options?: { variables?: Record<string, unknown> }): Promise<{ html: string, text: string }> {
@@ -66,10 +66,19 @@ async function fakeTemplate(_name: string, options?: { variables?: Record<string
 }
 
 const fakeMail = {
-  send: async (msg: SentMail): Promise<void> => {
+  send: async (msg: SentMail) => {
     if (mailMode === 'throw')
       throw new Error('mail driver failure')
+    if (mailMode === 'failure')
+      return { success: false, message: 'provider unavailable', provider: 'test' }
     sent.push({ to: msg.to, subject: msg.subject, text: msg.text, html: msg.html })
+    return { success: true, message: 'sent', provider: 'test' }
+  },
+  sendOrFail: async (msg: SentMail) => {
+    const result = await fakeMail.send(msg)
+    if (!result.success)
+      throw new Error(result.message)
+    return result
   },
 }
 
@@ -292,6 +301,11 @@ describe('password reset plain-text fallback (#1944)', () => {
     mailMode = 'throw'
     await expect(passwordResets(KNOWN_EMAIL).sendEmail()).rejects.toThrow()
   })
+
+  test('structured mail-driver failure still throws', async () => {
+    mailMode = 'failure'
+    await expect(passwordResets(KNOWN_EMAIL).sendEmail()).rejects.toThrow('provider unavailable')
+  })
 })
 
 describe('email verification URL template + fallback (#1944)', () => {
@@ -344,5 +358,10 @@ describe('email verification URL template + fallback (#1944)', () => {
     expect(sent.length).toBe(1)
     expect(sent[0].html).toBeUndefined()
     expect(sent[0].text).toContain(`https://example.test/verify-email/${verifyId}/`)
+  })
+
+  test('structured verification delivery failure still throws', async () => {
+    mailMode = 'failure'
+    await expect(sendVerificationEmail({ id: verifyId, email: VERIFY_EMAIL })).rejects.toThrow('provider unavailable')
   })
 })

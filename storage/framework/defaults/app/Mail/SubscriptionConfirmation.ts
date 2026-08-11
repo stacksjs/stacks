@@ -26,7 +26,7 @@ export async function sendSubscriptionConfirmation(options: SubscriptionConfirma
     subject: `Welcome to ${appName}!`,
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     to: [to],
     from: {
       name: config.email.from?.name || appName,

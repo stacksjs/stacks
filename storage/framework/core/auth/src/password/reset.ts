@@ -71,7 +71,7 @@ async function sendPasswordChangedNotification(userEmail: string): Promise<void>
     // { html: '', text: '' }), which would mail a blank notification with
     // no information. Send a plain-text notification instead.
     if (!html && !text) {
-      await mail.send({
+      await mail.sendOrFail({
         to: userEmail,
         subject: `Your ${appName} password has been changed`,
         text: `Your ${appName} password was changed on ${changedAt}.${supportEmail ? ` If this wasn't you, contact ${supportEmail}.` : ''}`,
@@ -79,7 +79,7 @@ async function sendPasswordChangedNotification(userEmail: string): Promise<void>
       return
     }
 
-    await mail.send({
+    await mail.sendOrFail({
       to: userEmail,
       subject: `Your ${appName} password has been changed`,
       text,
@@ -156,14 +156,18 @@ export function passwordResets(email: string): PasswordResetActions {
     const filled = tpl.replace('{token}', token).replace('{email}', encodeURIComponent(email))
     const resetUrl = /^https?:\/\//.test(filled) ? filled : `${base}${filled.startsWith('/') ? '' : '/'}${filled}`
 
+    let html: string | undefined
+    let text: string | undefined
     try {
-      const { html, text } = await template('password-reset', {
+      const rendered = await template('password-reset', {
         subject: `Reset Your ${appName} Password`,
         variables: {
           resetUrl,
           expireMinutes,
         },
       })
+      html = rendered.html
+      text = rendered.text
 
       // template() swallows missing-template and STX-render failures into
       // empty strings instead of throwing (template.ts returns
@@ -174,13 +178,6 @@ export function passwordResets(email: string): PasswordResetActions {
       // see stacksjs/stacks#1944).
       if (!html && !text)
         throw new Error('password-reset template missing or rendered empty')
-
-      await mail.send({
-        to: email,
-        subject: `Reset Your ${appName} Password`,
-        text,
-        html,
-      })
     }
     catch (templateError) {
       // Template missing → plain-text fallback so the reset still works
@@ -188,12 +185,16 @@ export function passwordResets(email: string): PasswordResetActions {
       // sendVerificationEmail). A hard mail-driver failure still throws.
       const msg = templateError instanceof Error ? templateError.message : String(templateError)
       console.warn(`[PasswordReset] template render failed, sending plain-text fallback: ${msg}`)
-      await mail.send({
-        to: email,
-        subject: `Reset Your ${appName} Password`,
-        text: `Reset your password by visiting: ${resetUrl}\n\nThis link expires in ${expireMinutes} minutes. If you didn't request this, you can safely ignore this email.`,
-      })
+      html = undefined
+      text = `Reset your password by visiting: ${resetUrl}\n\nThis link expires in ${expireMinutes} minutes. If you didn't request this, you can safely ignore this email.`
     }
+
+    await mail.sendOrFail({
+      to: email,
+      subject: `Reset Your ${appName} Password`,
+      text,
+      html,
+    })
   }
 
   async function verifyToken(token: string): Promise<boolean> {

@@ -48,7 +48,7 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
     subject: `Your ${appName} order #${options.orderId} is confirmed`,
   })
 
-  await mail.send({
+  await mail.sendOrFail({
     to: [options.to],
     from: { name: appName, address: fromAddress },
     subject: `Your ${appName} order #${options.orderId} is confirmed`,

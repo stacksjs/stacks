@@ -133,8 +133,10 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
   const verificationUrl = getVerificationUrl(user.id, token)
   const appName = config.app.name || 'Stacks'
 
+  let html: string | undefined
+  let text: string | undefined
   try {
-    const { html, text } = await template('email-verification', {
+    const rendered = await template('email-verification', {
       subject: `Verify Your ${appName} Email Address`,
       variables: {
         verificationUrl,
@@ -142,6 +144,8 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
         userName: user.name || user.email,
       },
     })
+    html = rendered.html
+    text = rendered.text
 
     // template() swallows missing-template and STX-render failures into
     // empty strings instead of throwing (template.ts returns
@@ -150,24 +154,20 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
     // plain-text fallback below actually fires (stacksjs/stacks#1944).
     if (!html && !text)
       throw new Error('email-verification template missing or rendered empty')
-
-    await mail.send({
-      to: user.email,
-      subject: `Verify Your ${appName} Email Address`,
-      text,
-      html,
-    })
   }
   catch (templateError) {
     const errorMessage = templateError instanceof Error ? templateError.message : String(templateError)
     log.warn(`[email] Email verification template failed, using plain text fallback: ${errorMessage}`)
-    // Fallback: send a simple text email if template is not found
-    await mail.send({
-      to: user.email,
-      subject: `Verify Your ${appName} Email Address`,
-      text: `Please verify your email address by visiting: ${verificationUrl}\n\nThis link expires in ${expiryMinutes} minutes.`,
-    })
+    html = undefined
+    text = `Please verify your email address by visiting: ${verificationUrl}\n\nThis link expires in ${expiryMinutes} minutes.`
   }
+
+  await mail.sendOrFail({
+    to: user.email,
+    subject: `Verify Your ${appName} Email Address`,
+    text,
+    html,
+  })
 }
 
 /**

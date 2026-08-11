@@ -15,7 +15,7 @@ export default new Action({
     const appName = config.app.name || 'our app'
     const url = config.app.url || 'https://localhost:5173'
 
-    await mail.send({
+    await mail.sendOrFail({
       to,
       subject: `Welcome to ${appName}!`,
       text: `

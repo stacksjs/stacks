@@ -53,7 +53,7 @@ export default new Action({
     ].join('\n')
 
     try {
-      await mail.send({
+      await mail.sendOrFail({
         to: [toAddress],
         from: { name: appName, address: fromAddress },
         replyTo: email,
@@ -63,7 +63,7 @@ export default new Action({
     }
     catch (err) {
       const errMessage = err instanceof Error ? err.message : String(err)
-      console.error('[ContactAction] mail.send failed:', errMessage)
+      console.error('[ContactAction] mail.sendOrFail failed:', errMessage)
       return { success: false, message: 'We could not send your message. Try again in a moment.' }
     }
 
