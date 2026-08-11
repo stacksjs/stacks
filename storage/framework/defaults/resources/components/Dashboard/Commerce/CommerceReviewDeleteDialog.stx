@@ -5,23 +5,15 @@ const open = useReactiveProp('open', false)
 const review = useReactiveProp('review', null as ReviewRecord | null)
 const busy = useReactiveProp('busy', false)
 const emit = defineEmits()
+const description = derived(() => `Delete "${review()?.title || 'Untitled review'}" permanently? This cannot be undone.`)
 </script>
 
-<div :if="open()" class="flex fixed inset-0 z-50 items-center justify-center p-4 dashboard-modal-layer">
-  <button type="button" aria-label="Close delete review dialog" class="absolute inset-0 bg-black/45" @click="emit('close')"></button>
-  <section role="dialog" aria-modal="true" aria-labelledby="review-delete-title" class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700 shadow-xl">
-    <div class="flex gap-4 items-start">
-      <span class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-950/40 rounded-full">
-        <span class="h-5 w-5 i-hugeicons-waste"></span>
-      </span>
-      <div>
-        <h2 id="review-delete-title" class="font-semibold text-gray-900 text-lg dark:text-white">Delete review</h2>
-        <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Delete "{{ review()?.title || 'Untitled review' }}" permanently? This cannot be undone.</p>
-      </div>
-    </div>
-    <footer class="flex gap-2 justify-end mt-6">
-      <Button variant="secondary" :disabled="busy()" @click="emit('close')">Cancel</Button>
-      <Button variant="danger" :loading="busy()" @click="emit('confirm')">Delete review</Button>
-    </footer>
-  </section>
-</div>
+<ConfirmDialog
+  :isOpen="open()"
+  title="Delete review"
+  :description="description()"
+  confirmLabel="Delete review"
+  :busy="busy()"
+  @close="emit('close')"
+  @confirm="emit('confirm')"
+/>

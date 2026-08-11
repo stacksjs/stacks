@@ -600,6 +600,8 @@ describe('dashboard native STX bindings', () => {
     expect(confirmation).toContain('<template #header-leading>')
     expect(confirmation).toContain("const error = useReactiveProp('error', '')")
     expect(confirmation).toContain("const disabled = useReactiveProp('disabled', false)")
+    expect(confirmation).toContain("const warning = useReactiveProp('warning', '')")
+    expect(confirmation).toContain('role="note"')
     expect(confirmation).toContain("emit('confirm')")
     expect(confirmation).toContain("emit('close')")
     expect(confirmation).not.toContain('fixed inset-0')
@@ -617,6 +619,14 @@ describe('dashboard native STX bindings', () => {
       'Commerce/CommerceOrderDeleteDialog.stx',
       'Commerce/PrintDeviceDeleteDialog.stx',
       'Commerce/PrintLogDeleteDialog.stx',
+      'Commerce/CommerceManufacturerDeleteDialog.stx',
+      'Commerce/CommerceProductDeleteDialog.stx',
+      'Commerce/CommerceReviewDeleteDialog.stx',
+      'Commerce/CommerceTaxDeleteDialog.stx',
+      'Commerce/CommerceUnitDeleteDialog.stx',
+      'Commerce/CommerceVariantDeleteDialog.stx',
+      'Commerce/ProductWaitlistDeleteDialog.stx',
+      'Commerce/RestaurantWaitlistDeleteDialog.stx',
     ]) {
       const source = componentSource(file)
       expect(source).toContain('<ConfirmDialog')
