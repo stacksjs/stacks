@@ -27,12 +27,22 @@ import { HttpError } from '@stacksjs/error-handling'
 // package rely on (password-reset-revocation.test.ts queries the real
 // `db`; reset.ts hashes with the real `makeHash`) and put them back in
 // afterAll. The spread matters: mocking patches the live namespace in
-// place, so a bare namespace capture would "restore" the mock itself.
-// `@stacksjs/orm` / `../src/authentication` stay mocked — no other
-// test file here imports them, and capturing the real ones would boot
-// the full ORM/model graph this file exists to avoid.
+// place, so a bare namespace capture would "restore" the mock itself —
+// which also means the capture has to happen BEFORE the mock below.
+//
+// Every mock this file installs is captured, including
+// `../src/authentication` and `@stacksjs/orm`. An earlier version left
+// those two mocked on the way out, reasoning that no other file in the
+// directory imported them. That was wrong, and it did not fail loudly:
+// `Auth` stayed a plain object carrying nothing but the `createTokenForUser`
+// stub below, so every later file in a whole-directory run saw
+// `Auth.revokeToken` and friends as undefined, and the class behind the
+// framework's documented auth entry point could not be covered by a test
+// that runs in CI at all (stacksjs/stacks#2309).
 const realDatabase = { ...await import('@stacksjs/database') }
 const realSecurity = { ...await import('@stacksjs/security') }
+const realOrm = { ...await import('@stacksjs/orm') }
+const realAuthentication = { ...await import('../src/authentication') }
 // Read at module scope (top-level await is fine here, inside a `describe` it is
 // not). #2281's cases toggle `auth.registration` on the live config object,
 // which `duplicateEmailError` reads per call.
@@ -41,6 +51,8 @@ const realConfig = await import('@stacksjs/config')
 afterAll(() => {
   mock.module('@stacksjs/database', () => realDatabase)
   mock.module('@stacksjs/security', () => realSecurity)
+  mock.module('@stacksjs/orm', () => realOrm)
+  mock.module('../src/authentication', () => realAuthentication)
 })
 
 // ─── Shared recording state ─────────────────────────────────────────
