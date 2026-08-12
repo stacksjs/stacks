@@ -23,8 +23,17 @@ Craft window. `buddy build:desktop` compiles a small Stacks launcher and places
 the launcher, pinned Craft runtime, manifest, provenance, and checksums in
 `storage/framework/desktop-dist`.
 
-Set `CRAFT_BIN` to an executable Craft binary in CI or when Craft is not checked
-out at `~/Code/Tools/craft`.
+Craft is normally installed through pantry and resolved from PATH. Set
+`CRAFT_BIN` to an explicit compiled native binary in CI or local Craft
+development. When testing local SDK source as well, set `CRAFT_SDK_SRC` to its
+`src/index.ts` entry. Set `STACKS_NO_NATIVE=1` only when a deliberately web-only
+dashboard process is required, such as headless browser QA. A missing
+`CRAFT_BIN` is an error and is never treated as a headless flag.
+
+Native development windows load the dashboard through its loopback HTTP
+origin. Keep pretty HTTPS domains for browser access. WKWebView does not assume
+that a developer's local certificate authority is trusted, and a failed TLS
+navigation otherwise appears as a blank native window.
 
 ## API
 

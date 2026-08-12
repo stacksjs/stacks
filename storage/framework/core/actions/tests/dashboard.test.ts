@@ -3,7 +3,6 @@ import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:
 import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import {
-  buildDashboardUrl,
   buildManifest,
   buildSidebarConfig,
   dedicatedPages,
@@ -11,6 +10,7 @@ import {
   excludeModels,
   getModelIcon,
   iconMap,
+  isPortAvailable,
   modelNameToId,
   scanModelsDir,
   waitForServer,
@@ -31,6 +31,19 @@ afterEach(() => {
 })
 
 describe('dashboard-utils', () => {
+  describe('isPortAvailable', () => {
+    it('fully releases a successful probe before returning', async () => {
+      const seed = Bun.serve({ port: 0, fetch: () => new Response('seed') })
+      const port = seed.port
+      await seed.stop(true)
+
+      expect(await isPortAvailable(port)).toBe(true)
+
+      const server = Bun.serve({ port, fetch: () => new Response('ok') })
+      await server.stop(true)
+    })
+  })
+
   describe('modelNameToId', () => {
     it('should convert PascalCase to kebab-case', () => {
       expect(modelNameToId('User')).toBe('user')
@@ -545,23 +558,6 @@ describe('dashboard-utils', () => {
 
       const utilities = config.sections.find(s => s.id === 'utilities')!
       expect(utilities.items.length).toBe(4)
-    })
-  })
-
-  describe('buildDashboardUrl', () => {
-    it('should include native-sidebar parameter', () => {
-      const url = buildDashboardUrl(3456)
-      expect(url).toBe('http://localhost:3456/?native-sidebar=1')
-    })
-
-    it('should use the specified port', () => {
-      const url = buildDashboardUrl(8080)
-      expect(url).toContain(':8080/')
-    })
-
-    it('should open the dashboard root path', () => {
-      const url = buildDashboardUrl(3456)
-      expect(url).toContain('/?native-sidebar=1')
     })
   })
 

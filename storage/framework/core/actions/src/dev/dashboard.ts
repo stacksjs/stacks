@@ -5,7 +5,8 @@ import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, publicPath, storagePath } from '@stacksjs/path'
 import { seedCsrfPageResponse, validateDevCsrfRequest } from './csrf'
 import { shouldDelegateDashboardRequest } from './dashboard-request-routing'
-import { buildDashboardUrl, buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
+import { resolveDashboardCraftExecutable, type CraftBinaryResolver } from './dashboard-native'
+import { buildManifest, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 import { runDashboardSupervisor } from './dashboard-supervisor'
 
 if (process.env.STACKS_DASHBOARD_WORKER !== '1') {
@@ -602,35 +603,44 @@ interface CraftApplication {
 type CraftCreateApp = (options: Record<string, unknown>) => CraftApplication
 
 let createApp: CraftCreateApp | undefined
-const localCraftSdk = process.env.HOME
-  ? `${process.env.HOME}/Code/Tools/craft/packages/typescript/src/index.ts`
-  : undefined
+let resolveCraftBinary: CraftBinaryResolver | undefined
+const nativeDisabled = process.env.STACKS_NO_NATIVE === '1'
+const explicitCraftSdk = process.env.CRAFT_SDK_SRC
 
-if (localCraftSdk && existsSync(localCraftSdk)) {
+if (!nativeDisabled && explicitCraftSdk) {
+  if (!existsSync(explicitCraftSdk))
+    throw new Error(`CRAFT_SDK_SRC not found: ${explicitCraftSdk}`)
+
   try {
-    ;({ createApp } = await import(localCraftSdk) as { createApp?: CraftCreateApp })
+    ;({ createApp, resolveCraftBinary } = await import(explicitCraftSdk) as {
+      createApp?: CraftCreateApp
+      resolveCraftBinary?: CraftBinaryResolver
+    })
+    if (!createApp || !resolveCraftBinary)
+      throw new Error('CRAFT_SDK_SRC must export createApp and resolveCraftBinary')
+  }
+  catch (error) {
+    throw new Error(`Could not load CRAFT_SDK_SRC ${explicitCraftSdk}: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+if (!nativeDisabled && !explicitCraftSdk) {
+  try {
+    ;({ createApp, resolveCraftBinary } = await import('craft-native') as {
+      createApp?: CraftCreateApp
+      resolveCraftBinary?: CraftBinaryResolver
+    })
   }
   catch {
-    // Continue with installed package candidates below.
+    // The canonical Craft SDK is unavailable. Keep serving the web dashboard.
   }
 }
 
-if (!createApp) {
-  const packageNames = ['craft-native', '@craft-native/craft', '@stacksjs/ts-craft'] as const
-  for (const packageName of packageNames) {
-    try {
-      ;({ createApp } = await import(packageName) as { createApp?: CraftCreateApp })
-      if (createApp)
-        break
-    }
-    catch {
-      // The Craft SDK isn't installed (or its native bindings failed to
-      // load on this platform). Continue to the next compatible package.
-    }
-  }
-}
+const craftBinaryPath = createApp && resolveCraftBinary
+  ? resolveDashboardCraftExecutable(resolveCraftBinary)
+  : undefined
 
-if (createApp) {
+if (createApp && craftBinaryPath) {
   // Resolve the dock icon. Userland gets first crack at customizing via
   // `resources/assets/images/app-icon.png` in the project; if absent, fall
   // back to the framework's bundled placeholder so the dock never shows the
@@ -642,72 +652,14 @@ if (createApp) {
     ? userIconPath
     : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
 
-  // Native sidebar mode: Craft renders a real NSOutlineView populated
-  // from `sidebarConfig`. The web sidebar self-hides via the layout's
-  // `?native-sidebar=1` URL signal, so users only ever see one nav.
-  //
-  // If `sidebarConfig` round-tripping ever breaks again (Craft fell back
-  // to its Finder placeholder before because the config didn't survive
-  // argv/file passing), set `nativeSidebar: false` and the web sidebar
-  // stays visible — see the layout for the matching detection logic.
-  // ts-craft@0.0.2's `findCraftBinary()` only looks at a few cwd-relative
-  // paths (packages/zig/zig-out/bin/craft etc.) and then falls back to
-  // `'craft'` from PATH. The fallback resolves to the ts-craft CLI shim,
-  // not the actual native binary, so spawn never produces a window.
-  //
-  // Honour `CRAFT_BIN` (matching the newer craft-native contract)
-  // and probe a couple of known monorepo locations relative to this
-  // checkout so the local `~/Documents/Projects/craft` clone Just Works
-  // without requiring an env var.
-  const craftBinaryPath = (() => {
-    const explicit = process.env.CRAFT_BIN
-    if (explicit) {
-      // Explicit override — use it if it exists, otherwise skip native mode.
-      // Silently falling through to the well-known probe paths below would
-      // be surprising: the user named a path, so honour that decision.
-      // A non-existent CRAFT_BIN is also our test/headless escape hatch.
-      return existsSync(explicit) ? explicit : undefined
-    }
-    const codeTools = `${process.env.HOME}/Code/Tools/craft/craft`
-    if (existsSync(codeTools))
-      return codeTools
-    const codeToolsBin = `${process.env.HOME}/Code/Tools/craft/bin/craft`
-    if (existsSync(codeToolsBin))
-      return codeToolsBin
-    const codeToolsZig = `${process.env.HOME}/Code/Tools/craft/packages/zig/zig-out/bin/craft`
-    if (existsSync(codeToolsZig))
-      return codeToolsZig
-    const homeRel = `${process.env.HOME}/Documents/Projects/craft/packages/zig/zig-out/bin/craft`
-    if (existsSync(homeRel))
-      return homeRel
-    return undefined
-  })()
-
-  // If we couldn't locate a real native binary, don't even attempt to spawn
-  // — old SDK `findCraftBinary()` PATH fallbacks can resolve to their own
-  // CLI shim. That shim then re-receives our
-  // native-style flags (`--url ...`), clapp rejects them as unknown, and the
-  // user sees a noisy "ClappError: Unknown option --url" before the process
-  // exits. Skip native-window mode entirely instead and let the web fallback
-  // below handle it.
-  if (!craftBinaryPath) {
-    createApp = undefined
-  }
-
-  if (!createApp) {
-    // eslint-disable-next-line no-console
-    console.log(`  ${dim('Native window unavailable. Set CRAFT_BIN to a craft binary, or open the URL above in a browser.')}\n`)
-    await new Promise<never>(() => {})
-  }
-
-  const app = createApp!({
-    // Same pretty HTTPS URL as the browser. Craft's WKWebView trusts the tlsx
-    // local-dev CA via its didReceiveAuthenticationChallenge handler (scoped to
-    // loopback / *.localhost), so the native window loads it directly instead of
-    // failing the cert and going blank.
-    url: initialUrl,
+  const app = createApp({
+    // Craft loads the server through loopback HTTP. The pretty HTTPS domain is
+    // for browsers whose trust store contains the local development CA; passing
+    // it to WKWebView leaves a blank window when that CA is not trusted. The
+    // origin server is already bound and carries the exact same dashboard.
+    url: dashboardLocalUrl,
     quiet: !verbose,
-    ...(craftBinaryPath && { craftPath: craftBinaryPath }),
+    craftPath: craftBinaryPath,
     window: {
       title: 'Stacks Dashboard',
       width: 1400,
@@ -736,8 +688,10 @@ if (createApp) {
     await app.show()
     process.exit(0)
   }
-  catch {
+  catch (error) {
     const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
+    // eslint-disable-next-line no-console
+    console.log(`  ${dim('Native Craft window failed:')} ${dim(error instanceof Error ? error.message : String(error))}`)
     // eslint-disable-next-line no-console
     console.log(`  ${dim('Dashboard available at:')} ${cyan(fallbackUrl)}\n`)
 
@@ -750,14 +704,15 @@ else {
   // reachable via the URLs printed in the banner above. SIGINT/SIGTERM
   // exit cleanly without a window to close.
   //
-  // We get here in two cases:
-  //   1. The Craft SDK failed to import (catch above set createApp = null)
-  //   2. We couldn't find a real native craft binary (CRAFT_BIN unset and the
-  //      `~/Documents/Projects/craft` checkout isn't present). In that case
-  //      we deliberately skipped native mode to avoid spawning the ts-craft
-  //      CLI shim with native-style flags (which would error on `--url`).
+  // We get here in three cases:
+  //   1. STACKS_NO_NATIVE=1 explicitly requested a web-only dashboard.
+  //   2. The canonical Craft SDK is unavailable.
+  //   3. Pantry has not installed Craft and CRAFT_BIN was not set.
   // eslint-disable-next-line no-console
-  console.log(`  ${dim('Native window unavailable. Set CRAFT_BIN to a craft binary, or open the URL above in a browser.')}\n`)
+  const nativeMessage = nativeDisabled
+    ? 'Native window disabled by STACKS_NO_NATIVE=1. Open the URL above in a browser.'
+    : 'Native window unavailable. Run pantry install craft, set CRAFT_BIN, or open the URL above in a browser.'
+  console.log(`  ${dim(nativeMessage)}\n`)
   process.on('SIGINT', () => process.exit(0))
   process.on('SIGTERM', () => process.exit(0))
   await new Promise(() => {})

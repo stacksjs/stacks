@@ -258,7 +258,7 @@ export function buildManifest(models: DiscoveredModel[]): DiscoveredModelManifes
 export async function isPortAvailable(port: number): Promise<boolean> {
   try {
     const server = Bun.serve({ port, fetch: () => new Response() })
-    server.stop(true)
+    await server.stop(true)
     return true
   }
   catch {
@@ -635,14 +635,4 @@ export function buildSidebarConfig(
     minWidth: 200,
     maxWidth: 280,
   }
-}
-
-/**
- * Build the URL the Craft window opens to. The `native-sidebar=1` query
- * param signals the layout that Craft is rendering the sidebar natively,
- * so the layout can suppress its own HTML sidebar and let the macOS
- * NSOutlineView own that 240px column.
- */
-export function buildDashboardUrl(port: number): string {
-  return `http://localhost:${port}/?native-sidebar=1`
 }

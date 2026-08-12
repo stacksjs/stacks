@@ -45,6 +45,11 @@ you to `brew install --cask chromium` or set `BROWSE_BROWSER`.
 - Docs: `http://localhost:3005`
 - API: `http://localhost:3008`
 
+For headless dashboard QA, start the server with
+`STACKS_NO_NATIVE=1 ./buddy dev --dashboard`. Never point `CRAFT_BIN` at a
+missing file to suppress the native window because invalid binary overrides are
+configuration errors.
+
 > Pages with an open HMR/SSE connection never reach "network idle"; the driver waits for
 > the load event (with a timeout) plus a short settle, so it won't hang on the dev server.
 

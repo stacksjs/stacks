@@ -66,7 +66,8 @@
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.176",
     "@stacksjs/ts-cloud": "^0.7.103",
-    "@stacksjs/ts-md": "^0.1.1"
+    "@stacksjs/ts-md": "^0.1.1",
+    "craft-native": ">=0.0.55"
   },
   "devDependencies": {
     "@stacksjs/api": "workspace:*",
