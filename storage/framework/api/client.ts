@@ -2732,6 +2732,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/deployments/rollback
+   */
+  postDashboardDeploymentsRollback(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/deployments/rollback", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/deployments/rollback/preview
+   */
+  postDashboardDeploymentsRollbackPreview(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/deployments/rollback/preview", {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/deployments/script
    */
   getDashboardDeploymentsScript(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -3429,6 +3443,146 @@ export function createClient(config: ClientConfig) {
    */
   postDashboardNotificationDeliveriesIdRetry(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/api/dashboard/notification-deliveries/{id}/retry", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/audit
+   */
+  getDashboardOperationsAudit(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/audit", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/changes
+   */
+  getDashboardOperationsChanges(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/changes", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/changes/releases/{id}/decision
+   */
+  postDashboardOperationsChangesReleasesIdDecision(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/changes/releases/{id}/decision", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/incidents
+   */
+  getDashboardOperationsIncidents(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/incidents", {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/dashboard/operations/incidents/{id}
+   */
+  patchDashboardOperationsIncidentsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/operations/incidents/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/migrations
+   */
+  getDashboardOperationsMigrations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/migrations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/migrations/apply
+   */
+  postDashboardOperationsMigrationsApply(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/migrations/apply", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/migrations/reconcile
+   */
+  postDashboardOperationsMigrationsReconcile(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/migrations/reconcile", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/recovery
+   */
+  getDashboardOperationsRecovery(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/recovery", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/destinations
+   */
+  postDashboardOperationsRecoveryDestinations(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/destinations", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/destinations/{id}/test
+   */
+  postDashboardOperationsRecoveryDestinationsIdTest(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/destinations/{id}/test", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/dashboard/operations/recovery/points/{id}/protection
+   */
+  patchDashboardOperationsRecoveryPointsIdProtection(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/operations/recovery/points/{id}/protection", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/points/{id}/restore
+   */
+  postDashboardOperationsRecoveryPointsIdRestore(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/points/{id}/restore", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/points/{id}/verify
+   */
+  postDashboardOperationsRecoveryPointsIdVerify(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/points/{id}/verify", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/policies
+   */
+  postDashboardOperationsRecoveryPolicies(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/policies", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/policies/{id}/run
+   */
+  postDashboardOperationsRecoveryPoliciesIdRun(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/policies/{id}/run", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/recovery/retention
+   */
+  postDashboardOperationsRecoveryRetention(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/recovery/retention", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/operations/scheduler
+   */
+  getDashboardOperationsScheduler(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/operations/scheduler", {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/dashboard/operations/scheduler/{name}
+   */
+  patchDashboardOperationsSchedulerName(input: { "name": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/operations/scheduler/{name}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/operations/scheduler/{name}/run
+   */
+  postDashboardOperationsSchedulerNameRun(input: { "name": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/operations/scheduler/{name}/run", input ?? {}, [], false, options)
   },
 
   /**

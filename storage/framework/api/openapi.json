@@ -10792,6 +10792,56 @@
         }
       }
     },
+    "/api/dashboard/deployments/rollback": {
+      "post": {
+        "summary": "/api/dashboard/deployments/rollback",
+        "operationId": "post__api_dashboard_deployments_rollback",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/deployments/rollback/preview": {
+      "post": {
+        "summary": "/api/dashboard/deployments/rollback/preview",
+        "operationId": "post__api_dashboard_deployments_rollback_preview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/deployments/script": {
       "get": {
         "summary": "/api/dashboard/deployments/script",
@@ -13600,6 +13650,587 @@
         "parameters": [
           {
             "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/audit": {
+      "get": {
+        "summary": "/api/dashboard/operations/audit",
+        "operationId": "get__api_dashboard_operations_audit",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/changes": {
+      "get": {
+        "summary": "/api/dashboard/operations/changes",
+        "operationId": "get__api_dashboard_operations_changes",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/changes/releases/{id}/decision": {
+      "post": {
+        "summary": "/api/dashboard/operations/changes/releases/{id}/decision",
+        "operationId": "post__api_dashboard_operations_changes_releases__id__decision",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/incidents": {
+      "get": {
+        "summary": "/api/dashboard/operations/incidents",
+        "operationId": "get__api_dashboard_operations_incidents",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/incidents/{id}": {
+      "patch": {
+        "summary": "/api/dashboard/operations/incidents/{id}",
+        "operationId": "patch__api_dashboard_operations_incidents__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/migrations": {
+      "get": {
+        "summary": "/api/dashboard/operations/migrations",
+        "operationId": "get__api_dashboard_operations_migrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/migrations/apply": {
+      "post": {
+        "summary": "/api/dashboard/operations/migrations/apply",
+        "operationId": "post__api_dashboard_operations_migrations_apply",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/migrations/reconcile": {
+      "post": {
+        "summary": "/api/dashboard/operations/migrations/reconcile",
+        "operationId": "post__api_dashboard_operations_migrations_reconcile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery": {
+      "get": {
+        "summary": "/api/dashboard/operations/recovery",
+        "operationId": "get__api_dashboard_operations_recovery",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/destinations": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/destinations",
+        "operationId": "post__api_dashboard_operations_recovery_destinations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/destinations/{id}/test": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/destinations/{id}/test",
+        "operationId": "post__api_dashboard_operations_recovery_destinations__id__test",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/points/{id}/protection": {
+      "patch": {
+        "summary": "/api/dashboard/operations/recovery/points/{id}/protection",
+        "operationId": "patch__api_dashboard_operations_recovery_points__id__protection",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/points/{id}/restore": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/points/{id}/restore",
+        "operationId": "post__api_dashboard_operations_recovery_points__id__restore",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/points/{id}/verify": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/points/{id}/verify",
+        "operationId": "post__api_dashboard_operations_recovery_points__id__verify",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/policies": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/policies",
+        "operationId": "post__api_dashboard_operations_recovery_policies",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/policies/{id}/run": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/policies/{id}/run",
+        "operationId": "post__api_dashboard_operations_recovery_policies__id__run",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/recovery/retention": {
+      "post": {
+        "summary": "/api/dashboard/operations/recovery/retention",
+        "operationId": "post__api_dashboard_operations_recovery_retention",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/scheduler": {
+      "get": {
+        "summary": "/api/dashboard/operations/scheduler",
+        "operationId": "get__api_dashboard_operations_scheduler",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/scheduler/{name}": {
+      "patch": {
+        "summary": "/api/dashboard/operations/scheduler/{name}",
+        "operationId": "patch__api_dashboard_operations_scheduler__name_",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/operations/scheduler/{name}/run": {
+      "post": {
+        "summary": "/api/dashboard/operations/scheduler/{name}/run",
+        "operationId": "post__api_dashboard_operations_scheduler__name__run",
+        "parameters": [
+          {
+            "name": "name",
             "in": "path",
             "required": true,
             "schema": {
