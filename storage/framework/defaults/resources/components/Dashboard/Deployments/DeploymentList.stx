@@ -1,5 +1,6 @@
 <script client>
 import type { DeploymentRecord } from '../../../../functions/deployments'
+import type { DeploymentPreview } from '@stacksjs/types'
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { fetchDeployments, summarizeDeployments } from '../../../../functions/deployments'
 import { pushToast } from '../../../../functions/toasts'
@@ -16,7 +17,10 @@ const status = state('all')
 const isLoading = state(true)
 const loadError = state('')
 const showDeployModal = state(false)
+const deploymentDialogMode = state<'preview' | 'deploy'>('deploy')
 const isStarting = state(false)
+const isPreviewing = state(false)
+const previewPlan = state<DeploymentPreview | null>(null)
 const environment = state('production')
 const domain = state('')
 const summary = derived(() => summarizeDeployments(deployments()))
@@ -101,6 +105,41 @@ async function startDeployment(): Promise<void> {
   }
 }
 
+function openDeploymentDialog(mode: 'preview' | 'deploy'): void {
+  deploymentDialogMode.set(mode)
+  showDeployModal.set(true)
+}
+
+async function previewDeployment(): Promise<void> {
+  isPreviewing.set(true)
+  try {
+    const result = await dashboardApi<{ success: boolean, plan: DeploymentPreview }>('/api/dashboard/deployments/preview', {
+      method: 'POST',
+      body: {
+        environment: environment(),
+        domain: domain().trim(),
+      },
+    })
+    if (!result.success || !result.plan)
+      throw new Error('Deployment preview could not be generated.')
+    showDeployModal.set(false)
+    previewPlan.set(result.plan)
+  }
+  catch (error) {
+    pushToast('error', 'Could not preview deployment', {
+      detail: error instanceof Error ? error.message : String(error),
+    })
+  }
+  finally {
+    isPreviewing.set(false)
+  }
+}
+
+function continueFromPreview(): void {
+  previewPlan.set(null)
+  openDeploymentDialog('deploy')
+}
+
 onMount(() => {
   void loadDeployments()
 })
@@ -113,7 +152,10 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Deployment model records through the guarded dashboard API.</p>
     </div>
     <div class="flex gap-2 items-center">
-      <Button :disabled="isStarting()" @click="showDeployModal.set(true)">
+      <Button :disabled="isStarting() || isPreviewing()" variant="outline" @click="openDeploymentDialog('preview')">
+        Preview
+      </Button>
+      <Button :disabled="isStarting() || isPreviewing()" @click="openDeploymentDialog('deploy')">
         Deploy
       </Button>
       <Button :loading="isLoading()" variant="secondary" @click="loadDeployments">
@@ -174,8 +216,8 @@ onMount(() => {
 
   <Modal
     :isOpen="showDeployModal()"
-    title="Start deployment"
-    description="This runs ./buddy deploy as a real background process and records its status."
+    :title="deploymentDialogMode() === 'preview' ? 'Preview deployment' : 'Start deployment'"
+    :description="deploymentDialogMode() === 'preview' ? 'Generate a non-mutating plan from the native Buddy deployment pipeline.' : 'This runs ./buddy deploy as a real background process and records its status.'"
     size="sm"
     @close="showDeployModal.set(false)"
   >
@@ -199,9 +241,16 @@ onMount(() => {
     </div>
     <template #footer>
       <div class="flex gap-2 items-center">
-        <Button :disabled="isStarting()" variant="ghost" @click="showDeployModal.set(false)">Cancel</Button>
-        <Button :loading="isStarting()" @click="startDeployment">Start deployment</Button>
+        <Button :disabled="isStarting() || isPreviewing()" variant="ghost" @click="showDeployModal.set(false)">Cancel</Button>
+        <template :if="deploymentDialogMode() === 'preview'">
+          <Button :loading="isPreviewing()" @click="previewDeployment">Generate preview</Button>
+        </template>
+        <template :else>
+          <Button :loading="isStarting()" @click="startDeployment">Start deployment</Button>
+        </template>
       </div>
     </template>
   </Modal>
+
+  <DeploymentPreviewDialog :plan="previewPlan" @close="previewPlan.set(null)" @deploy="continueFromPreview" />
 </div>

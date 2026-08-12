@@ -2718,6 +2718,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/deployments/preview
+   */
+  postDashboardDeploymentsPreview(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/deployments/preview", {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/deployments/recent
    */
   getDashboardDeploymentsRecent(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -6509,6 +6516,13 @@ export function createClient(config: ClientConfig) {
    */
   getDeploymentsCount(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/deployments/count", {}, [], false, options)
+  },
+
+  /**
+   * POST /deployments/preview
+   */
+  postDeploymentsPreview(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/deployments/preview", {}, [], false, options)
   },
 
   /**

@@ -111,7 +111,13 @@ inject message HTML into the dashboard document.
 - `/deployments/{id}` - one persisted Deployment model record
 
 The deployment page composes `DeploymentList`, `DeploymentTable`,
-`DeployScript`, and `LiveTerminalOutput`. Script reads and atomic writes use
+`DeploymentPreviewDialog`, `DeployScript`, and `LiveTerminalOutput`. The
+Preview action first collects the environment and optional domain, then calls
+the guarded `POST /api/dashboard/deployments/preview` Action. That Action runs
+the native `buddy deploy --dry-run --json` planner and returns its versioned,
+non-mutating plan. The dialog renders the ordered operations and resolved sites
+before the user may continue to the separate real deployment confirmation.
+Script reads and atomic writes use
 `GET|PUT /api/dashboard/deployments/script`. The terminal uses
 `GET /api/dashboard/deployments/terminal` and pauses polling while the document
 is hidden. Do not create separate `/deployments/scripts` or

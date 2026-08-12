@@ -5,7 +5,8 @@ import process from 'node:process'
 import { Deployment } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError, dashboardOperationalIssue } from '../dashboard-response'
-import { booleanValue, deploymentCommandArgs } from './deployment-input'
+import { booleanValue, deploymentCommandArgs, deploymentPreviewCommandArgs } from './deployment-input'
+import { runDeploymentPreview } from './deployment-preview'
 
 function gitValue(args: string[]): string {
   const result = Bun.spawnSync(['git', ...args], {
@@ -27,10 +28,30 @@ export default new Action({
   async handle(request: RequestInstance) {
     const dryRun = booleanValue(request.get('dryRun') || request.get('dry_run'))
     if (dryRun) {
-      return response.json({
-        success: false,
-        message: 'Deployment previews are not supported. Review config/cloud.ts before starting a deployment.',
-      }, { status: 422 })
+      let previewArgs: string[]
+      try {
+        previewArgs = deploymentPreviewCommandArgs({
+          environment: request.get('environment') || request.get('env'),
+          domain: request.get('domain'),
+        })
+      }
+      catch (error) {
+        return response.json({
+          success: false,
+          message: error instanceof Error ? error.message : 'Deployment preview input is invalid.',
+        }, { status: 422 })
+      }
+
+      try {
+        return {
+          success: true,
+          plan: await runDeploymentPreview(previewArgs),
+          message: 'Deployment preview generated.',
+        }
+      }
+      catch (error) {
+        return dashboardOperationalError(error, 'Deployment preview could not be generated.', 'CreateDeployment.preview', 500)
+      }
     }
 
     const confirmed = booleanValue(request.get('confirmed'))

@@ -1,0 +1,118 @@
+<script client>
+import type { DeploymentPreview, DeploymentPreviewOperation } from '@stacksjs/types'
+
+const plan = useReactiveProp<DeploymentPreview | null>('plan', null)
+const emit = defineEmits()
+
+const phaseIcons: Record<DeploymentPreviewOperation['phase'], string> = {
+  validate: 'i-hugeicons-task-01',
+  infrastructure: 'i-hugeicons-cloud-server',
+  build: 'i-hugeicons-tools',
+  package: 'i-hugeicons-package',
+  release: 'i-hugeicons-upload-04',
+  runtime: 'i-hugeicons-computer-terminal-01',
+  gateway: 'i-hugeicons-route-01',
+  dns: 'i-hugeicons-globe-02',
+  tls: 'i-hugeicons-shield-key',
+  container: 'i-hugeicons-cube',
+}
+
+function icon(operation: DeploymentPreviewOperation): string {
+  return phaseIcons[operation.phase] || 'i-hugeicons-check-list'
+}
+</script>
+
+<Modal
+  :isOpen="Boolean(plan())"
+  title="Deployment preview"
+  description="Generated from the same environment-aware deployment model as Buddy. No changes were made."
+  size="xl"
+  contentClassName="p-0"
+  @close="emit('close')"
+>
+  <div :if="plan()" class="max-h-[65vh] overflow-y-auto">
+    <div class="grid gap-px grid-cols-2 md:grid-cols-4 bg-neutral-200 dark:bg-neutral-700 border-neutral-200 border-b dark:border-neutral-700">
+      <div class="p-4 bg-white dark:bg-neutral-900">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Environment</p>
+        <p class="mt-1 capitalize font-semibold text-neutral-900 text-sm dark:text-white">{{ plan()?.environment }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Provider</p>
+        <p class="mt-1 capitalize font-semibold text-neutral-900 text-sm dark:text-white">{{ plan()?.provider }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Region</p>
+        <p class="mt-1 font-semibold text-neutral-900 text-sm dark:text-white">{{ plan()?.region }}</p>
+      </div>
+      <div class="p-4 bg-white dark:bg-neutral-900">
+        <p class="text-neutral-500 text-xs uppercase dark:text-neutral-400">Target</p>
+        <p class="mt-1 font-semibold text-neutral-900 text-sm dark:text-white">{{ plan()?.target.site || 'All sites' }}</p>
+      </div>
+    </div>
+
+    <div class="p-6">
+      <div class="flex gap-3 items-start p-4 text-green-800 dark:text-green-200 bg-green-50 dark:bg-green-950/30 border border-green-200 rounded-xl dark:border-green-900">
+        <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 i-hugeicons-checkmark-circle-02"></span>
+        <div>
+          <p class="font-semibold text-sm">Preview only</p>
+          <p class="mt-1 text-sm">No builds, packages, hooks, cloud providers, records, DNS changes, or service restarts were performed.</p>
+        </div>
+      </div>
+
+      <div :if="(plan()?.warnings || []).length > 0" class="mt-4 space-y-2">
+        <div :for="warning in plan()?.warnings || []" class="flex gap-3 items-start p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900">
+          <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 i-hugeicons-alert-02"></span>
+          <p class="text-sm">{{ warning }}</p>
+        </div>
+      </div>
+
+      <section class="mt-6">
+        <div class="flex gap-3 items-end justify-between">
+          <div>
+            <h4 class="font-semibold text-neutral-900 dark:text-white">Planned operations</h4>
+            <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Executed in this order during a real deployment.</p>
+          </div>
+          <span class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ plan()?.operations.length || 0 }} steps</span>
+        </div>
+        <ol class="mt-4 space-y-3">
+          <li :for="operation, index in plan()?.operations || []" class="flex gap-4 items-start p-4 bg-neutral-50 dark:bg-neutral-800/70 border border-neutral-200 rounded-xl dark:border-neutral-700">
+            <div class="flex shrink-0 items-center justify-center h-9 w-9 text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-950/60 rounded-lg">
+              <span aria-hidden="true" class="h-5 w-5 {{ icon(operation) }}"></span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="flex gap-2 items-center">
+                <span class="font-mono text-neutral-400 text-xs">{{ index + 1 }}</span>
+                <h5 class="font-semibold text-neutral-900 text-sm dark:text-white">{{ operation.label }}</h5>
+              </div>
+              <p class="mt-1 text-neutral-600 text-sm dark:text-neutral-300">{{ operation.detail }}</p>
+              <p :if="operation.sites.length > 0" class="mt-2 font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ operation.sites.join(', ') }}</p>
+            </div>
+          </li>
+        </ol>
+      </section>
+
+      <section class="mt-6">
+        <h4 class="font-semibold text-neutral-900 dark:text-white">Resolved sites</h4>
+        <div class="grid gap-3 md:grid-cols-2 mt-4">
+          <article :for="site in plan()?.sites || []" class="p-4 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-700">
+            <div class="flex gap-3 items-center justify-between">
+              <h5 class="font-semibold text-neutral-900 text-sm dark:text-white">{{ site.name }}</h5>
+              <span class="px-2 py-1 font-mono text-neutral-600 text-[11px] dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-800 rounded-md">{{ site.kind }}</span>
+            </div>
+            <p class="mt-2 text-neutral-500 text-xs dark:text-neutral-400">{{ site.domains.join(', ') || 'Private service' }}{{ site.path !== '/' ? site.path : '' }}</p>
+          </article>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 items-center justify-between w-full">
+      <p class="hidden sm:block text-neutral-500 text-xs dark:text-neutral-400">Review this plan before continuing.</p>
+      <div class="flex gap-2 items-center sm:ml-auto">
+        <Button variant="secondary" @click="emit('close')">Close</Button>
+        <Button @click="emit('deploy')">Continue to deploy</Button>
+      </div>
+    </div>
+  </template>
+</Modal>

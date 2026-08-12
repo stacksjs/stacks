@@ -647,6 +647,7 @@ route.group({ prefix: '/deployments', middleware: 'auth' }, () => {
   route.get('/recent', 'Actions/Dashboard/Deployments/GetRecentDeployments')
   route.get('/avg-time', 'Actions/Dashboard/Deployments/GetAverageDeploymentTime')
   route.post('/', 'Actions/Dashboard/Deployments/CreateDeployment')
+  route.post('/preview', 'Actions/Dashboard/Deployments/PreviewDeployment')
   route.get('/script', 'Actions/Dashboard/Deployments/GetDeployScript')
   route.put('/script', 'Actions/Dashboard/Deployments/UpdateDeployScript')
   route.get('/terminal', 'Actions/Dashboard/Deployments/GetDeploymentLiveTerminalOutput')

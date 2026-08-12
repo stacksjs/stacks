@@ -10742,6 +10742,31 @@
         }
       }
     },
+    "/api/dashboard/deployments/preview": {
+      "post": {
+        "summary": "/api/dashboard/deployments/preview",
+        "operationId": "post__api_dashboard_deployments_preview",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/deployments/recent": {
       "get": {
         "summary": "/api/dashboard/deployments/recent",
@@ -26138,6 +26163,31 @@
       "get": {
         "summary": "/deployments/count",
         "operationId": "get__deployments_count",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/deployments/preview": {
+      "post": {
+        "summary": "/deployments/preview",
+        "operationId": "post__deployments_preview",
         "parameters": [],
         "responses": {
           "200": {

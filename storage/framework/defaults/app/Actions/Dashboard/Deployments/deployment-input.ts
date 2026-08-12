@@ -26,6 +26,11 @@ export function deploymentCommandArgs(input: DeploymentCommandInput): string[] {
   return args
 }
 
+export function deploymentPreviewCommandArgs(input: DeploymentCommandInput): string[] {
+  const args = deploymentCommandArgs(input)
+  return [...args.filter(arg => arg !== '--no-interaction' && arg !== '--yes'), '--dry-run', '--json', '--no-interaction']
+}
+
 export function averageRecordedDuration(records: DeploymentRecordLike[]): number | null {
   const durations = records
     .map(record => record.get('duration'))
