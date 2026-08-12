@@ -330,6 +330,9 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['CampaignSend', [''], 'marketing'],
   ['EmailList', [''], 'marketing'],
   ['EmailListSubscriber', [''], 'marketing'],
+  ['EmailIdempotency', [''], 'marketing'],
+  ['EmailSuppression', [''], 'marketing'],
+  ['EmailWebhookEvent', [''], 'marketing'],
   ['SocialPost', [''], 'marketing'],
 
   // Payments (top-level — used by commerce checkout and by standalone billing)
@@ -434,6 +437,9 @@ export const DriverPing = lazyModel<typeof import('../../../defaults/app/Models/
 export const CampaignSend = lazyModel<typeof import('../../../defaults/app/Models/CampaignSend').default>('CampaignSend')
 export const EmailList = lazyModel<typeof import('../../../defaults/app/Models/EmailList').default>('EmailList')
 export const EmailListSubscriber = lazyModel<typeof import('../../../defaults/app/Models/EmailListSubscriber').default>('EmailListSubscriber')
+export const EmailIdempotency = lazyModel<typeof import('../../../defaults/app/Models/EmailIdempotency').default>('EmailIdempotency')
+export const EmailSuppression = lazyModel<typeof import('../../../defaults/app/Models/EmailSuppression').default>('EmailSuppression')
+export const EmailWebhookEvent = lazyModel<typeof import('../../../defaults/app/Models/EmailWebhookEvent').default>('EmailWebhookEvent')
 export const ErrorModel = lazyModel<typeof import('../../../defaults/app/Models/Error').default>('Error')
 export const GiftCard = lazyModel<typeof import('../../../defaults/app/Models/commerce/GiftCard').default>('GiftCard')
 export const Label = lazyModel<typeof import('../../../defaults/app/Models/Label').default>('Label')
@@ -496,7 +502,7 @@ const _allExports: Record<string, any> = {
   CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Driver, DriverPing,
   EmailList,
-  EmailListSubscriber, ErrorModel, GiftCard, Label, LicenseKey,
+  EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent, ErrorModel, GiftCard, Label, LicenseKey,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
   NotificationDelivery, Order, OrderIdempotency, OrderItem, Page, Payment, PaymentMethod,
   PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,

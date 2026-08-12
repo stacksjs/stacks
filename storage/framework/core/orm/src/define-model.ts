@@ -1,6 +1,7 @@
 import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
-import type { SearchOptions } from '@stacksjs/types'
+import type { Faker } from '@stacksjs/faker'
+import type { ApiMiddleware, SearchOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -1802,6 +1803,12 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
   }
 }
 
+type BQBModelAttribute = BQBModelDefinition['attributes'][string]
+
+export type StacksModelAttribute = Omit<BQBModelAttribute, 'factory'> & {
+  factory?: (faker: Faker) => unknown
+}
+
 export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits'> {
   name: string
   table: string
@@ -1844,30 +1851,49 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
     useApi?: boolean | {
       readonly uri?: string
       readonly routes?: readonly string[]
-      /**
-       * `any` on purpose. The real shape is `ApiMiddleware` in
-       * `@stacksjs/types`, but `TDef` is handed straight to
-       * bun-query-builder's `OrmModelStatic<TDef>`, so this property has to
-       * stay assignable to its `readonly string[]`. A union is not, and every
-       * downstream generic in this file breaks on it; `any` is. The runtime
-       * (`resolveApiMiddleware`) validates the shape and discards junk either
-       * way, so nothing is unchecked at the point it matters.
-       */
-      readonly middleware?: any
+      readonly middleware?: ApiMiddleware
     }
   } & Record<string, unknown>
   indexes?: Array<{ name: string, columns: string[], unique?: boolean, where?: string }>
   casts?: Record<string, CastType | CasterInterface>
-  attributes: {
-    [key: string]: {
-      factory?: (faker: any) => any
-      [key: string]: any
-    }
-  }
-  [key: string]: any
+  attributes: Record<string, StacksModelAttribute>
 }
 
 type ModelDefinition = StacksModelDefinition
+
+type ValidationRuleOf<TAttribute> = TAttribute extends { validation: { rule: infer TRule } } ? TRule : never
+type BQBFaker = Parameters<NonNullable<BQBModelAttribute['factory']>>[0]
+type FactoryReturnOf<TAttribute> = TAttribute extends { factory: (...args: never[]) => infer TResult } ? TResult : never
+type DefaultTypeToken<TAttribute> = TAttribute extends { default: infer TDefault }
+  ? TDefault extends string ? 'string'
+    : TDefault extends number ? 'number'
+      : TDefault extends boolean ? 'boolean'
+        : TDefault extends Date ? 'date'
+          : TDefault extends Record<string, unknown> ? 'json'
+            : never
+  : never
+type InferenceHint<TAttribute> = TAttribute extends { type: unknown } | { factory: (...args: never[]) => unknown }
+  ? object
+  : [ValidationRuleOf<TAttribute>] extends [never]
+      ? [DefaultTypeToken<TAttribute>] extends [never]
+          ? object
+          : { type: DefaultTypeToken<TAttribute> }
+      : { type: ValidationRuleOf<TAttribute> }
+type QueryAttribute<TAttribute> = Omit<TAttribute, 'factory'>
+  & InferenceHint<TAttribute>
+  & ([FactoryReturnOf<TAttribute>] extends [never]
+    ? object
+    : { factory: (faker: BQBFaker) => FactoryReturnOf<TAttribute> })
+type QueryDefinition<TDef extends ModelDefinition> = Omit<TDef, 'attributes' | 'traits'>
+  & Omit<BQBModelDefinition, 'attributes' | 'traits'>
+  & {
+    attributes: { [TKey in keyof TDef['attributes']]: QueryAttribute<TDef['attributes'][TKey]> }
+    traits?: TDef extends { traits: infer TTraits }
+      ? TTraits & NonNullable<BQBModelDefinition['traits']>
+      : BQBModelDefinition['traits']
+}
+type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<TDef>>
+type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
@@ -1911,22 +1937,22 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
  *   name: 'Post',
  *   table: 'posts',
  *   attributes: {
- *     title: { type: 'string', fillable: true, validation: { rule: schema.string() } },
- *     views: { type: 'number', fillable: true, validation: { rule: schema.number() } },
+ *     title: { fillable: true, validation: { rule: schema.string() } },
+ *     views: { fillable: true, validation: { rule: schema.number() } },
  *   },
  *   belongsTo: ['Author'],
  *   hasMany: ['Tag', 'Category', 'Comment'],
  *   traits: { useTimestamps: true, useUuid: true },
- * } as const)
+ * })
  *
  * // Result: Post.where('title', 'test') — 'title' narrowed to valid columns
  * // Result: Post.with('author') — 'author' narrowed to valid relations
  * ```
  */
-export type StacksModelStatic<TDef extends ModelDefinition> = OrmModelStatic<TDef> & TDef & TraitMethods & {
-  update: (id: number | string, data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['find']>
-  forceUpdate: (id: number | string, data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['find']>
-  forceCreate: (data: Record<string, unknown>) => ReturnType<OrmModelStatic<TDef>['create']>
+export type StacksModelStatic<TDef extends ModelDefinition> = QueryModel<TDef> & TDef & TraitMethods & {
+  update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
+  forceUpdate: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
+  forceCreate: (data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
   delete: (id: number | string) => Promise<boolean>
   withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
   /** Run `fn` with declared `validation.rule`s suppressed (bulk imports, backfills). */
@@ -1949,16 +1975,17 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // trait bag via `_definition.__traitMethods` in `wrapModelInstance`'s
   // proxy `get` trap. See TRAIT_INSTANCE_METHOD_BINDINGS.
   const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
-  ;(definition as any).__traitMethods = traitMethods
+  ;(definition as unknown as Record<string, unknown>).__traitMethods = traitMethods
 
   // Merge hooks into definition
   const defWithHooks = hooks
-    ? { ...definition, hooks: { ...(definition as any).hooks, ...hooks } }
+    ? { ...definition, hooks: { ...(definition as unknown as BQBModelDefinition).hooks, ...hooks } }
     : definition
 
   // Create the base model from bun-query-builder (provides all typed query methods)
   // Note: createModel's return type is declared as void in .d.ts but actually returns an object at runtime
-  const baseModel = createModel(defWithHooks as TDef) as OrmModelStatic<TDef> & Record<string, unknown>
+  const queryDefinition = defWithHooks as unknown as QueryDefinition<TDef>
+  const baseModel = createModel(queryDefinition) as QueryModel<TDef> & Record<string, unknown>
 
   // Make ModelInstance attribute access ergonomic: `user.password`,
   // `car.slug`, `{ ...booking }` all do the right thing instead of

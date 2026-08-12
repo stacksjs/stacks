@@ -1,0 +1,22 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "isolatedDeclarations": false,
+    "noEmit": true,
+    "paths": {
+      "@stacksjs/faker": ["../faker/dist/index.d.ts"],
+      "@stacksjs/orm": ["./tests/orm-module-stub.d.ts"],
+      "@stacksjs/query-builder": ["../query-builder/dist/index.d.ts"],
+      "@stacksjs/types": ["../types/dist/index.d.ts"],
+      "@stacksjs/validation": ["../validation/dist/index.d.ts"]
+    }
+  },
+  "include": [
+    "tests/inference.test-d.ts",
+    "tests/orm-module-stub.d.ts"
+  ],
+  "exclude": [
+    "dist/**"
+  ]
+}

@@ -118,15 +118,15 @@ export function mergeModelDefinition(base: StacksModelDefinition, extension: Mod
   }
 
   for (const key of RELATION_KEYS) {
-    const relations = mergeRelations((base as Record<string, unknown>)[key], (extension as Record<string, unknown>)[key])
+    const relations = mergeRelations((base as unknown as Record<string, unknown>)[key], (extension as unknown as Record<string, unknown>)[key])
 
     if (relations)
       merged[key] = relations
   }
 
   for (const key of SHALLOW_MERGE_KEYS) {
-    const first = (base as Record<string, unknown>)[key]
-    const second = (extension as Record<string, unknown>)[key]
+    const first = (base as unknown as Record<string, unknown>)[key]
+    const second = (extension as unknown as Record<string, unknown>)[key]
 
     if (first && second && typeof first === 'object' && typeof second === 'object')
       merged[key] = { ...first as object, ...second as object }
