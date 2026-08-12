@@ -23,7 +23,7 @@ export interface TransactionOptions {
   /** Execute transaction in read-only mode */
   readOnly?: boolean
   /** Called when a transaction is rolled back */
-  onRollback?: (error: any) => void
+  onRollback?: (error: unknown) => void
   /** Called after rollback completes */
   afterRollback?: () => void
 }
@@ -98,7 +98,7 @@ export async function savepoint<T>(callback: (sp: TransactionHandle) => Promise<
  * const user = await createUserWithProfile('Alice', 'Hello world')
  * ```
  */
-export function transactional<TArgs extends any[], R>(
+export function transactional<TArgs extends unknown[], R>(
   fn: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
   options?: TransactionOptions,
 ): (...args: TArgs) => Promise<R> {

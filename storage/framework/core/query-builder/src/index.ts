@@ -126,9 +126,10 @@ export const SQLITE_BOOTSTRAP_PRAGMAS = [
   'PRAGMA wal_autocheckpoint = 1',
 ] as const
 
-// bun-query-builder types `unsafe()` as returning `Promise<any>`, but at
-// runtime it returns a Bun SQL Statement that has `.execute()`.
-type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
+type UnsafeReturn<TResult = unknown> = Promise<TResult> & { execute: () => Promise<TResult> }
+type SqlitePragmaExecutor = {
+  unsafe: (query: string, params?: readonly unknown[]) => UnsafeReturn
+}
 
 /**
  * Apply the bootstrap pragmas to the connection of the CURRENT process-wide
@@ -140,7 +141,7 @@ type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
  * below guarantees that ordering structurally; standalone callers must
  * preserve it themselves.
  */
-export function applySqlitePragmas(instance: { unsafe: (query: string, params?: any[]) => any }): void {
+export function applySqlitePragmas(instance: SqlitePragmaExecutor): void {
   for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS) {
     try {
       // bun:sqlite executes synchronously inside `.execute()` (the returned
@@ -230,12 +231,12 @@ export function configureOrm(options: Parameters<typeof bunQueryBuilder.configur
  * was lazily (re)created from a config change gets its pragmas without any
  * caller having to know the two-connection topology.
  */
-export function createQueryBuilder<DB extends DatabaseSchema<any> = DatabaseSchema<any>>(
+export function createQueryBuilder<DB extends DatabaseSchema<Record<string, unknown>> = DatabaseSchema<Record<string, unknown>>>(
   state?: Parameters<typeof createBunQueryBuilder>[0],
 ): ReturnType<typeof createBunQueryBuilder<DB>> {
   const qb = createBunQueryBuilder<DB>(state)
   if (!state?.sql && bunQbConfig.dialect === 'sqlite') {
-    applySqlitePragmas(qb)
+    applySqlitePragmas(qb as unknown as SqlitePragmaExecutor)
     bootstrapModelExecutorPragmas()
   }
   return qb

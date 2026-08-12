@@ -1,6 +1,6 @@
 export type Operator = '=' | '<' | '>' | '<=' | '>=' | '<>' | '!=' | 'like' | 'not like' | 'in' | 'not in' | 'between' | 'not between' | 'is' | 'is not'
 
-interface WhereCondition<T, V = any> {
+interface WhereCondition<T, V = unknown> {
   type: 'and' | 'or'
   method: 'where' | 'whereIn' | 'whereNull' | 'whereNotNull' | 'whereBetween' | 'whereExists'
   column: keyof T
@@ -14,39 +14,39 @@ interface WhereCondition<T, V = any> {
 export class SubqueryBuilder<T> {
   private conditions: WhereCondition<T>[] = []
 
-  where<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+  where<TKey extends keyof T>(column: TKey, ...args: [T[TKey]] | [Operator, T[TKey]]): void {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue as Operator
-    const actualValue: V = value === undefined ? operatorOrValue as V : value
+    const actualValue: T[TKey] = value === undefined ? operatorOrValue as T[TKey] : value
 
     this.addCondition('and', 'where', column, operator, actualValue)
   }
 
-  orWhere<V>(column: keyof T, ...args: [V] | [Operator, V]): void {
+  orWhere<TKey extends keyof T>(column: TKey, ...args: [T[TKey]] | [Operator, T[TKey]]): void {
     const [operatorOrValue, value] = args
     const operator = value === undefined ? '=' : operatorOrValue as Operator
-    const actualValue: V = value === undefined ? operatorOrValue as V : value
+    const actualValue: T[TKey] = value === undefined ? operatorOrValue as T[TKey] : value
 
     this.addCondition('or', 'where', column, operator, actualValue)
   }
 
-  whereIn<V>(column: keyof T, values: V[]): void {
+  whereIn<TKey extends keyof T>(column: TKey, values: T[TKey][]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
       column,
       values,
-    } as WhereCondition<T, V>)
+    } as WhereCondition<T, T[TKey]>)
   }
 
-  whereNotIn<V>(column: keyof T, values: V[]): void {
+  whereNotIn<TKey extends keyof T>(column: TKey, values: T[TKey][]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereIn',
       column,
       values,
       operator: 'not in',
-    } as WhereCondition<T, V>)
+    } as WhereCondition<T, T[TKey]>)
   }
 
   whereNull(column: keyof T): void {
@@ -65,7 +65,7 @@ export class SubqueryBuilder<T> {
     })
   }
 
-  whereBetween<V>(column: keyof T, range: [V, V]): void {
+  whereBetween<TKey extends keyof T>(column: TKey, range: [T[TKey], T[TKey]]): void {
     this.conditions.push({
       type: 'and',
       method: 'whereBetween',
@@ -83,7 +83,7 @@ export class SubqueryBuilder<T> {
     })
   }
 
-  private addCondition<V>(type: 'and' | 'or', method: 'where', column: keyof T, operator: Operator, value: V): void {
+  private addCondition<TKey extends keyof T>(type: 'and' | 'or', method: 'where', column: TKey, operator: Operator, value: T[TKey]): void {
     this.conditions.push({ type, method, column, operator, value })
   }
 

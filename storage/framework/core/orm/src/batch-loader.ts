@@ -43,15 +43,19 @@ const batches = new WeakMap<object, PendingBatch<unknown, unknown>>()
  * ```
  */
 // eslint-disable-next-line pickier/no-unused-vars
-export function batchLoad<T extends { findMany?: (ids: any[]) => Promise<any[]>, find?: (id: any) => Promise<any> }, K = number | string>(
-  model: T,
-  key: K,
-): Promise<unknown> {
+export function batchLoad<TKey = number | string, TValue = Record<string, unknown>>(
+  model: {
+    name?: string
+    findMany?: (ids: TKey[]) => Promise<TValue[]>
+    find?: (id: TKey) => Promise<TValue | undefined>
+  },
+  key: TKey,
+): Promise<TValue | undefined> {
   // No request scope — just fall through to a single-id call.
   // (cacheRequestQuery's no-op fallback will run the fetcher once.)
-  return cacheRequestQuery(`batchLoad:${(model as any).name ?? 'model'}:${String(key)}`, async () => {
-    return new Promise((resolve, reject) => {
-      let batch = batches.get(model as object) as PendingBatch<K, unknown> | undefined
+  return cacheRequestQuery(`batchLoad:${model.name ?? 'model'}:${String(key)}`, async () => {
+    return new Promise<TValue | undefined>((resolve, reject) => {
+      let batch = batches.get(model as object) as PendingBatch<TKey, TValue> | undefined
       if (!batch) {
         batch = { keys: [], resolvers: [], scheduled: false }
         batches.set(model as object, batch as unknown as PendingBatch<unknown, unknown>)
@@ -66,15 +70,15 @@ export function batchLoad<T extends { findMany?: (ids: any[]) => Promise<any[]>,
       // anything synchronous + sync-microtask completes before we fire,
       // but we don't wait for I/O.
       Promise.resolve().then(async () => {
-        const drained = batches.get(model as object) as PendingBatch<K, unknown> | undefined
+        const drained = batches.get(model as object) as PendingBatch<TKey, TValue> | undefined
         if (!drained) return
         batches.delete(model as object)
         const uniqueKeys = Array.from(new Set(drained.keys))
 
         try {
           const rows = typeof model.findMany === 'function'
-            ? await model.findMany(uniqueKeys as unknown as any[])
-            : await Promise.all(uniqueKeys.map(k => (model.find as any)?.(k)))
+            ? await model.findMany(uniqueKeys)
+            : await Promise.all(uniqueKeys.map(k => model.find?.(k)))
           const byKey = new Map<unknown, unknown>()
           for (const row of rows ?? []) {
             // We assume the primary key is `id` — same convention as
@@ -84,7 +88,7 @@ export function batchLoad<T extends { findMany?: (ids: any[]) => Promise<any[]>,
             if (idVal !== undefined) byKey.set(idVal, row)
           }
           for (const r of drained.resolvers) {
-            r.resolve(byKey.get(r.key))
+            r.resolve(byKey.get(r.key) as TValue | undefined)
           }
         }
         catch (err) {
