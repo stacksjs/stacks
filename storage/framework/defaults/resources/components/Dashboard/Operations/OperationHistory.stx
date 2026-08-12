@@ -3,6 +3,9 @@ import type { OperatorOperation } from '../../../../functions/operations'
 
 const operations = useReactiveProp('operations', [])
 const loading = useReactiveProp('loading', false)
+const subtitle = useReactiveProp('subtitle', 'Every operator mutation is recorded in the append-only control plane.')
+const emptyTitle = useReactiveProp('emptyTitle', 'No operator operations recorded')
+const emptyDescription = useReactiveProp('emptyDescription', 'A completed or attempted operator action will create the first audit entry.')
 
 function rows(): OperatorOperation[] {
   return operations() as OperatorOperation[]
@@ -19,8 +22,12 @@ function formatDate(value?: string): string {
 
 function actionLabel(operation: OperatorOperation): string {
   const action = operation.kind.split('.').at(-1) || operation.kind
-  const task = typeof operation.input.task === 'string' ? operation.input.task : 'Scheduled task'
-  return `${action.charAt(0).toUpperCase()}${action.slice(1)} ${task}`
+  const target = typeof operation.input.task === 'string'
+    ? operation.input.task
+    : typeof operation.input.alertId === 'string'
+      ? operation.input.alertId
+      : ''
+  return `${action.charAt(0).toUpperCase()}${action.slice(1)}${target ? ` ${target}` : ''}`
 }
 
 function statusVariant(state: OperatorOperation['state']): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
@@ -32,11 +39,11 @@ function statusVariant(state: OperatorOperation['state']): 'default' | 'primary'
 }
 </script>
 
-<Card title="Operator history" subtitle="Every scheduler mutation is recorded in the append-only control plane." padding="none">
+<Card title="Operator history" :subtitle="subtitle()" padding="none">
   <div :if="loading()" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">Loading operation history</div>
   <div :if="!loading() && rows().length === 0" class="px-5 py-10 text-center">
-    <p class="font-medium text-gray-900 text-sm dark:text-white">No scheduler operations recorded</p>
-    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Run, pause, or resume a task to create the first audit entry.</p>
+    <p class="font-medium text-gray-900 text-sm dark:text-white">{{ emptyTitle() }}</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ emptyDescription() }}</p>
   </div>
   <ul :if="rows().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
     <li :for="operation in rows()" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">

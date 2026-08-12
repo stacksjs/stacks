@@ -123,7 +123,13 @@ onMount(() => {
     />
   </section>
 
-  <OperationHistory :operations="operations" :loading="isLoading" />
+  <OperationHistory
+    :operations="operations"
+    :loading="isLoading"
+    subtitle="Every scheduler mutation is recorded in the append-only control plane."
+    emptyTitle="No scheduler operations recorded"
+    emptyDescription="Run, pause, or resume a task to create the first audit entry."
+  />
 
   <ConfirmDialog
     :isOpen="pendingAction() !== null"
