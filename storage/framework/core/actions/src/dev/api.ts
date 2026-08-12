@@ -10,7 +10,7 @@ import { parseOptions } from '@stacksjs/cli'
 import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import type { Middleware } from '@stacksjs/router'
-import { route } from '@stacksjs/router'
+import { disableViewRouting, route } from '@stacksjs/router'
 import { autoImportsAreStale, generateAutoImportFiles, generateServerAutoImportTypes, injectGlobalAutoImports } from '@stacksjs/server'
 import { resolveApiHost } from '../helpers/api-host'
 import { exitWithParent } from './exit-with-parent'
@@ -183,6 +183,15 @@ route.use((async (request: any, next: any) => {
 
 // Import routes
 await route.importRoutes()
+
+// This process answers JSON. Without this it also mounts a GET route for every
+// `.stx` under `resources/views` — bun-router finds the directory on its own —
+// and serves the whole site on the port whose banner says "API server ready",
+// with no stylesheet and with every image 404ing because there is no static
+// handling here. The views server renders pages and proxies `/api/**` to this
+// process; it is the proxy target, not a second page server. Runs after the
+// route files so an app that asked for file routing itself keeps it (#2314).
+disableViewRouting(route.bunRouter)
 
 // Start server. Surface EADDRINUSE with a clear message — without this,
 // the process exits with a stack trace that mentions `bun.serve` and

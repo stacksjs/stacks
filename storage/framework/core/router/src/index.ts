@@ -23,7 +23,7 @@ export type { StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers
 
 // Export Stacks-specific action resolver and URL helper
 export { assertRouteMiddlewareResolvable,
-  configureViewDirectories, clearMiddlewareCache, createStacksRouter, findUnresolvableRouteMiddleware, installMiddlewareHotReload, route, serve, serverResponse, url, warnOnMultipleRouterInstances } from './stacks-router'
+  configureViewDirectories, clearMiddlewareCache, createStacksRouter, disableViewRouting, findUnresolvableRouteMiddleware, installMiddlewareHotReload, route, serve, serverResponse, url, warnOnMultipleRouterInstances } from './stacks-router'
 
 // Export request context helpers
 export { cacheRequestQuery, clearCurrentRequest, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'

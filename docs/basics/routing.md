@@ -82,8 +82,10 @@ route.group({ prefix: '/auth' }, () => {
   route.delete('/tokens/{id}', 'Actions/Auth/RevokeTokenAction')
 })
 
-// Nested prefix groups
-route.group({ prefix: '/api/v1' }, () => {
+// Nested prefix groups. Prefixes concatenate, including the one the route
+// file itself is mounted under: in `routes/api.ts` (already `/api`) this
+// lands at /api/v1/users. Writing `/api/v1` here would give /api/api/v1.
+route.group({ prefix: '/v1' }, () => {
   route.group({ prefix: '/users' }, () => {
     route.get('/', 'Actions/User/IndexAction')
     route.get('/{id}', 'Actions/User/ShowAction')

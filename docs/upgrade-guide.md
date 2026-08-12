@@ -236,6 +236,55 @@ This now shows `current_page` and friends at the top level alongside `meta`.
 
 Read the top-level fields. Replace `res.meta.page` with `res.current_page`, and `res.meta._` with `res.*`. The `total` / `last_page` fields remain opt-in behind `?with_count=true` (omitted otherwise, like a simple paginator). Stop depending on `meta`; it will be removed.
 
+## The API server no longer serves pages (#2314)
+
+### What changed
+
+The API process used to mount a GET route for every `.stx` under
+`resources/views`, because bun-router discovers that directory on its own. It
+now serves `/api` and nothing else. Requests to any other path answer `404`
+JSON.
+
+Nothing was ever meant to read those pages. The API process has no static-asset
+handling and no CSS pipeline, so the HTML it emitted carried no stylesheet and
+every image 404'd: it only rendered correctly when fetched through a different
+server. In dev the views server renders pages and proxies `/api/**` to the API
+process, and in production `buddy serve` does the same, so the API process is
+the proxy target in both.
+
+Declared routes are unaffected. bun-router already skipped a discovered view
+when a GET route existed at that path, so nothing that answers a route today
+changes.
+
+### Who is affected
+
+Monitoring, scripts or bookmarks pointed at a non-`/api` path **on the API
+port** (3008 by default) rather than at the site. Traffic through the site
+itself is unchanged, because that never reached this process.
+
+### Detect
+
+```bash
+curl -s -o /dev/null -w '%{http_code} %{content_type}\n' http://127.0.0.1:3008/
+```
+
+`404 application/json` is the new behaviour. If you were relying on the page,
+this used to be `200 text/html`.
+
+### Remediate
+
+Point the request at the site rather than the API port. If you genuinely want
+pages from this process, ask for file routing before the server starts and it
+is left alone:
+
+```ts
+// routes/api.ts, or anywhere that runs during route loading
+route.bunRouter.views({ viewsPath: 'resources/views' })
+```
+
+Health probes should use `/api/health`, which reports `503` when the database
+or cache is down.
+
 ## Verifying the upgrade
 
 Run through this checklist after upgrading:

@@ -133,7 +133,10 @@ diagnostics without printing every visited path or overflowing element.
 
 When testing a Stacks app, check:
 - **Dashboard routes** — admin pages rendering? (`localhost:3002`)
-- **API health** — `GET localhost:3008/health` returns ok?
+- **API health** — `GET localhost:3008/api/health` returns ok? (`/api/health`, not
+  `/health`: the probe is mounted under `/api` so it cannot collide with a page of
+  the same name, and the API port answers `/api` only - every other path is a 404
+  there by design, so point page checks at the frontend instead.)
 - **Auth flow** — `/login`, `/register`
 - **CMS/blog** — `/blog`, post detail pages, `/blog/feed.xml`, `/blog/sitemap.xml`
 - **STX components** — do custom components render server-side?

@@ -3560,6 +3560,68 @@ export function configureViewDirectories(bunRouter: Router): void {
   })
 }
 
+/**
+ * Stop the API server answering page routes.
+ *
+ * bun-router discovers `.stx` files on its own: with no views configured at
+ * all it falls back to `detectViewsDirectory()`, finds `resources/views`
+ * because the directory happens to exist, and mounts a GET route for every
+ * template under it. The API server therefore serves the whole site, on the
+ * port whose banner says "API server ready".
+ *
+ * Those pages cannot work. The API process has no static-asset handling and no
+ * CSS pipeline, so the HTML it emits references images that 404 on that port
+ * and carries no stylesheet - a page that only renders correctly when fetched
+ * through a different server. Nothing needs it either: in dev the views server
+ * renders pages and proxies `/api/**` here, and in production `buddy serve`
+ * does the same. The API server is the proxy *target* in both.
+ *
+ * It is also actively misleading, which is how it was found
+ * (stacksjs/stacks#2314). A page answering 200 at a path the developer never
+ * routed reads as "my route was overridden", when the route was in fact mounted
+ * somewhere else entirely.
+ *
+ * Declared routes were never at risk - bun-router skips a discovered view when
+ * a GET route already exists at that path - so this changes nothing for any
+ * path that answers today.
+ *
+ * An application that called `route.bunRouter.views(...)` itself has asked for
+ * file routing and is left alone; that is the escape hatch for anyone serving
+ * pages from this process on purpose, and it is the same "said something more
+ * specific" rule {@link configureViewDirectories} follows. Route files run
+ * before this does, so asking for it from `routes/*.ts` works.
+ *
+ * The two functions are coupled and the coupling is bun-router's, not ours:
+ * `serve()` calls {@link configureViewDirectories} after this, and that only
+ * backs off because `disableFileRouting()` happens to leave a non-empty
+ * `_fileRoutingConfig` behind. Were that flag ever to move to a field of its
+ * own, `configureViewDirectories` would overwrite the config and re-mount every
+ * template. `api-view-routing.test.ts` drives both, in that order, so the
+ * upgrade that changes it fails a test rather than quietly restoring the site
+ * to the API port.
+ *
+ * @returns whether file routing was switched off by this call.
+ */
+export function disableViewRouting(bunRouter: Router): boolean {
+  const router = bunRouter as Router & {
+    _fileRoutingConfig?: Record<string, unknown>
+    disableFileRouting?: () => unknown
+  }
+
+  // Older bun-router, or a stand-in in a test. Nothing to switch off.
+  if (typeof router.disableFileRouting !== 'function')
+    return false
+
+  // The application configured views itself. Leave it alone.
+  const existing = router._fileRoutingConfig
+  if (existing && Object.keys(existing).length > 0)
+    return false
+
+  router.disableFileRouting()
+
+  return true
+}
+
 export interface StacksRouterInstance {
   bunRouter: Router
   routes: Route[]

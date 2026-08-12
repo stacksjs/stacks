@@ -5,6 +5,12 @@ import { response, route } from '@stacksjs/router'
  * The routes defined here are automatically registered. Last but
  * not least, you may also create any other `routes/*.ts` files.
  *
+ * Every route in this file is mounted under `/api`. The prefix comes from
+ * the `'api'` key in `app/Routes.ts` and lines up with the path the dev
+ * proxy forwards (`/api/*`), so `route.get('/hello', ...)` below answers
+ * `GET /api/hello`. Paths at the document root belong in a route file
+ * whose registry entry sets `prefix: ''`.
+ *
  * Framework routes (auth, dashboard, commerce, CMS, etc.) are loaded
  * automatically from storage/framework/defaults/routes/dashboard.ts.
  * You do NOT need to define them here — only add your own custom routes.
@@ -12,8 +18,8 @@ import { response, route } from '@stacksjs/router'
  * @see https://docs.stacksjs.com/routing
  */
 
-// Your custom routes go here:
-route.get('/', () => response.text('hello world'))
+// Your custom routes go here. This one answers `GET /api/hello`:
+route.get('/hello', () => response.text('hello world'))
 
 // `/coming-soon` is served as an STX view from
 // `storage/framework/defaults/resources/views/coming-soon.stx`. The
