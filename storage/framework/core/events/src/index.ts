@@ -469,7 +469,36 @@ export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
   'user:password-changed': UserPasswordEvent
 }
 
-const events: Emitter<StacksEvents> = createEmitter<StacksEvents>()
+/**
+ * The application's emitter, one per *process* rather than one per copy of this
+ * package.
+ *
+ * A module-level `createEmitter()` makes the emitter a singleton of the module,
+ * and a module is only a singleton if there is exactly one copy of it. There
+ * routinely is not: an app depending on `@stacksjs/events` alongside `stacks`
+ * and `@stacksjs/buddy`, each with their own range, installs two or three, and
+ * bun hoists one while the others sit nested. Every copy is a separate emitter.
+ *
+ * Nothing errors when that happens, which is what makes it expensive. The boot
+ * that registers listeners imports one copy; the action that dispatches imports
+ * another; the dispatch returns normally, having reached nobody. In one
+ * application it meant that *no domain event had ever reached a listener* -
+ * webhooks, notifications and the audit log all silently did nothing, while
+ * `[events] registered 70 listeners` printed at boot and every test that called
+ * a listener directly passed.
+ *
+ * Keyed on a `Symbol.for`, so the shared slot is the same one whichever copy
+ * gets there first and no copy can shadow another with its own property.
+ */
+const EMITTER_SLOT = Symbol.for('stacks.events.emitter')
+
+interface EmitterHost {
+  [EMITTER_SLOT]?: Emitter<StacksEvents>
+}
+
+const host = globalThis as unknown as EmitterHost
+
+const events: Emitter<StacksEvents> = host[EMITTER_SLOT] ?? (host[EMITTER_SLOT] = createEmitter<StacksEvents>())
 
 type Dispatch = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => void
 // eslint-disable-next-line pickier/no-unused-vars
