@@ -281,6 +281,7 @@ export function buildNavSections(
   // (`/notifications/dashboard`); the bare `/notifications` redirects.
   sections.push(['app', 'app', [
     { to: '/deployments', icon: 'rocket', text: 'Deployments' },
+    { to: '/operations/scheduler', icon: 'calendar-03', text: 'Operations' },
     { to: '/requests', icon: 'api', text: 'Requests' },
     { to: '/realtime', icon: 'link', text: 'Realtime' },
     { to: '/actions', icon: 'bolt', text: 'Actions' },

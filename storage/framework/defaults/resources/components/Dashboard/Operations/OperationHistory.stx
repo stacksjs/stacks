@@ -1,0 +1,54 @@
+<script client>
+import type { OperatorOperation } from '../../../../functions/operations'
+
+const operations = useReactiveProp('operations', [])
+const loading = useReactiveProp('loading', false)
+
+function rows(): OperatorOperation[] {
+  return operations() as OperatorOperation[]
+}
+
+function formatDate(value?: string): string {
+  if (!value)
+    return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+function actionLabel(operation: OperatorOperation): string {
+  const action = operation.kind.split('.').at(-1) || operation.kind
+  const task = typeof operation.input.task === 'string' ? operation.input.task : 'Scheduled task'
+  return `${action.charAt(0).toUpperCase()}${action.slice(1)} ${task}`
+}
+
+function statusVariant(state: OperatorOperation['state']): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
+  if (state === 'succeeded') return 'success'
+  if (state === 'failed' || state === 'timed_out') return 'danger'
+  if (state === 'running') return 'primary'
+  if (state === 'cancelled') return 'warning'
+  return 'default'
+}
+</script>
+
+<Card title="Operator history" subtitle="Every scheduler mutation is recorded in the append-only control plane." padding="none">
+  <div :if="loading()" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">Loading operation history</div>
+  <div :if="!loading() && rows().length === 0" class="px-5 py-10 text-center">
+    <p class="font-medium text-gray-900 text-sm dark:text-white">No scheduler operations recorded</p>
+    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Run, pause, or resume a task to create the first audit entry.</p>
+  </div>
+  <ul :if="rows().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+    <li :for="operation in rows()" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div class="min-w-0">
+        <div class="flex flex-wrap gap-2 items-center">
+          <p class="font-medium text-gray-900 text-sm dark:text-white">{{ actionLabel(operation) }}</p>
+          <Badge :variant="statusVariant(operation.state)">{{ operation.state }}</Badge>
+        </div>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ operation.actorName }} at {{ formatDate(operation.finishedAt || operation.createdAt) }}</p>
+        <p :if="operation.error" class="mt-1 text-red-600 text-xs dark:text-red-400">{{ operation.error }}</p>
+      </div>
+      <code class="font-mono text-gray-400 text-[11px] dark:text-neutral-500">{{ operation.id }}</code>
+    </li>
+  </ul>
+</Card>

@@ -1,0 +1,8 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Operations - Scheduler')
+<PageLayout>
+  <SchedulerDashboard />
+</PageLayout>
+@endsection

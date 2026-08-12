@@ -1,0 +1,138 @@
+<script client>
+import type { OperatorOperation, SchedulerOperationsResponse, SchedulerTask } from '../../../../functions/operations'
+import { fetchSchedulerOperations, runSchedulerTask, updateSchedulerTask } from '../../../../functions/operations'
+import { pushToast } from '../../../../functions/toasts'
+
+interface PendingAction {
+  name: string
+  action: 'run' | 'toggle'
+  enabled?: boolean
+}
+
+const tasks = state<SchedulerTask[]>([])
+const operations = state<OperatorOperation[]>([])
+const summary = state<SchedulerOperationsResponse['summary']>({ total: 0, active: 0, paused: 0, nextRun: null })
+const isLoading = state(true)
+const loadError = state('')
+const busyTask = state('')
+const pendingAction = state<PendingAction | null>(null)
+
+function formatDate(value: string | null): string {
+  if (!value)
+    return 'Nothing scheduled'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime())
+    ? value
+    : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+async function loadOperations(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    const result = await fetchSchedulerOperations()
+    tasks.set(result.tasks)
+    operations.set(result.operations)
+    summary.set(result.summary)
+  }
+  catch (error) {
+    loadError.set('Scheduler operations could not be loaded.')
+    pushToast('error', 'Could not load scheduler operations', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function requestRun(name: string | CustomEvent<string>): void {
+  pendingAction.set({ name: typeof name === 'string' ? name : name.detail, action: 'run' })
+}
+
+function requestToggle(detail: { name: string, enabled: boolean } | CustomEvent<{ name: string, enabled: boolean }>): void {
+  const value = detail instanceof CustomEvent ? detail.detail : detail
+  pendingAction.set({ name: value.name, action: 'toggle', enabled: value.enabled })
+}
+
+function closeConfirmation(): void {
+  if (!busyTask())
+    pendingAction.set(null)
+}
+
+async function confirmAction(): Promise<void> {
+  const pending = pendingAction()
+  if (!pending)
+    return
+
+  busyTask.set(`${pending.name}:${pending.action}`)
+  try {
+    const result = pending.action === 'run'
+      ? await runSchedulerTask(pending.name)
+      : await updateSchedulerTask(pending.name, pending.enabled === true)
+    pushToast('success', result.message)
+    pendingAction.set(null)
+    await loadOperations()
+  }
+  catch (error) {
+    pushToast('error', 'Scheduler operation failed', { detail: String(error) })
+  }
+  finally {
+    busyTask.set('')
+  }
+}
+
+onMount(() => {
+  void loadOperations()
+})
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Operations" description="Run and control application schedules through the same registry used by Buddy.">
+    <template #actions>
+      <Button variant="secondary" :loading="isLoading()" @click="loadOperations">
+        <span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Refresh
+      </Button>
+    </template>
+  </PageHeader>
+
+  <OperationsNavigation active="scheduler" />
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900 sm:flex-row sm:items-center sm:justify-between">
+    <span>{{ loadError() }}</span>
+    <Button size="sm" variant="secondary" @click="loadOperations">Try again</Button>
+  </div>
+
+  <section aria-label="Scheduler summary" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <StatsCard title="Registered tasks" :value="String(summary().total)" icon="i-hugeicons-calendar-03" iconBg="primary" :loading="isLoading()" />
+    <StatsCard title="Active" :value="String(summary().active)" icon="i-hugeicons-play" iconBg="success" :loading="isLoading()" />
+    <StatsCard title="Paused" :value="String(summary().paused)" icon="i-hugeicons-pause" iconBg="warning" :loading="isLoading()" />
+    <StatsCard title="Next run" :value="formatDate(summary().nextRun)" icon="i-hugeicons-clock-01" iconBg="neutral" :loading="isLoading()" />
+  </section>
+
+  <section aria-labelledby="scheduled-tasks-heading">
+    <div class="mb-3">
+      <h2 id="scheduled-tasks-heading" class="font-semibold text-gray-900 dark:text-white">Scheduled tasks</h2>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Pauses persist across scheduler processes. Manual runs use normal overlap and error guards.</p>
+    </div>
+    <SchedulerTaskTable
+      :tasks="tasks"
+      :loading="isLoading"
+      :busyTask="busyTask"
+      @run="requestRun"
+      @toggle="requestToggle"
+    />
+  </section>
+
+  <OperationHistory :operations="operations" :loading="isLoading" />
+
+  <ConfirmDialog
+    :isOpen="pendingAction() !== null"
+    :title="pendingAction()?.action === 'run' ? 'Run scheduled task?' : (pendingAction()?.enabled ? 'Resume scheduled task?' : 'Pause scheduled task?')"
+    :description="pendingAction()?.action === 'run' ? 'This executes the task immediately through its configured guards.' : 'This changes the persisted scheduler state without editing application source.'"
+    :confirmLabel="pendingAction()?.action === 'run' ? 'Run now' : (pendingAction()?.enabled ? 'Resume' : 'Pause')"
+    variant="warning"
+    :busy="busyTask() !== ''"
+    @close="closeConfirmation"
+    @confirm="confirmAction"
+  />
+</div>
