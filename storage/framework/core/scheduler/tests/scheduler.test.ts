@@ -442,6 +442,26 @@ describe('@stacksjs/scheduler', () => {
   })
 
   describe('Graceful shutdown', () => {
+    it('lists, runs, pauses, and resumes registered tasks', async () => {
+      const name = 'operator-managed-task'
+      let runs = 0
+      Schedule.setEnabled(name, true)
+      new Schedule(() => {
+        runs++
+      }).hourly().withName(name)
+      await Promise.resolve()
+
+      expect(Schedule.listJobs()).toContainEqual(expect.objectContaining({ name, enabled: true }))
+      await Schedule.runNow(name)
+      expect(runs).toBe(1)
+
+      Schedule.setEnabled(name, false)
+      expect(Schedule.listJobs()).toContainEqual(expect.objectContaining({ name, enabled: false }))
+      await expect(Schedule.runNow(name)).rejects.toThrow('paused')
+
+      Schedule.setEnabled(name, true)
+    })
+
     it('should not throw when no jobs are registered', async () => {
       await expect(Schedule.gracefulShutdown()).resolves.toBeUndefined()
     })

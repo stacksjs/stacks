@@ -13,6 +13,9 @@ export function schedule(buddy: CLI): void {
     verbose: 'Enable verbose output',
     list: 'List all registered scheduled tasks with their next run time',
     status: 'Show currently-held overlap locks (this-process only)',
+    runOne: 'Run one registered scheduled task immediately',
+    enable: 'Resume a paused scheduled task',
+    disable: 'Pause a scheduled task without editing source',
   }
 
   buddy
@@ -44,19 +47,23 @@ export function schedule(buddy: CLI): void {
   // simple table. Doesn't actually run anything.
   buddy
     .command('schedule:list', descriptions.list)
-    .action(async () => {
+    .option('--json', 'Print a machine-readable schedule registry', { default: false })
+    .action(async (options: { json?: boolean }) => {
       try {
-        // Importing the scheduler module side-evaluates the user's
-        // routes/scheduler.ts which registers tasks. Without that
-        // import the static `Schedule.jobs` map is empty.
-        await import(`${process.cwd()}/routes/scheduler.ts`).catch(() => {
-          log.warn('[schedule:list] no routes/scheduler.ts found — registry will be empty unless tasks were registered elsewhere')
-        })
-        const { Schedule } = await import('@stacksjs/scheduler')
+        const { runScheduler, Schedule } = await import('@stacksjs/scheduler')
+        await runScheduler()
+        await Promise.resolve()
         const jobs = Schedule.listJobs()
+
+        if (options.json) {
+          console.log(`STACKS_SCHEDULE_JSON=${JSON.stringify({ jobs, locks: Schedule.listLocks() })}`)
+          await Schedule.gracefulShutdown()
+          process.exit(ExitCode.Success)
+        }
 
         if (jobs.length === 0) {
           log.info('No scheduled tasks registered.')
+          await Schedule.gracefulShutdown()
           process.exit(ExitCode.Success)
         }
 
@@ -64,11 +71,12 @@ export function schedule(buddy: CLI): void {
         // would add a dep, this is enough for operators.
         const nameWidth = Math.max(4, ...jobs.map(j => j.name.length))
         const patternWidth = Math.max(7, ...jobs.map(j => (j.pattern ?? '').length))
-        log.info(`${'NAME'.padEnd(nameWidth)}  ${'PATTERN'.padEnd(patternWidth)}  TIMEZONE                   NEXT RUN (UTC)`)
+        log.info(`${'NAME'.padEnd(nameWidth)}  ${'PATTERN'.padEnd(patternWidth)}  STATUS  TIMEZONE                   NEXT RUN (UTC)`)
         for (const j of jobs) {
-          const next = j.nextRun ? j.nextRun.toISOString() : '—'
-          log.info(`${j.name.padEnd(nameWidth)}  ${(j.pattern ?? '').padEnd(patternWidth)}  ${(j.timezone ?? 'UTC').padEnd(25)}  ${next}`)
+          const next = j.nextRun ? j.nextRun.toISOString() : '-'
+          log.info(`${j.name.padEnd(nameWidth)}  ${(j.pattern ?? '').padEnd(patternWidth)}  ${(j.enabled ? 'active' : 'paused').padEnd(6)}  ${(j.timezone ?? 'UTC').padEnd(25)}  ${next}`)
         }
+        await Schedule.gracefulShutdown()
         process.exit(ExitCode.Success)
       }
       catch (err) {
@@ -86,10 +94,15 @@ export function schedule(buddy: CLI): void {
   // worker process dies.
   buddy
     .command('schedule:status', descriptions.status)
-    .action(async () => {
+    .option('--json', 'Print machine-readable scheduler status', { default: false })
+    .action(async (options: { json?: boolean }) => {
       try {
         const { Schedule } = await import('@stacksjs/scheduler')
         const held = Schedule.listLocks()
+        if (options.json) {
+          console.log(`STACKS_SCHEDULE_STATUS_JSON=${JSON.stringify({ locks: held })}`)
+          process.exit(ExitCode.Success)
+        }
         if (held.length === 0) {
           log.info('No in-process scheduler locks held.')
         }
@@ -105,4 +118,50 @@ export function schedule(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
     })
+
+  buddy
+    .command('schedule:run-one <name>', descriptions.runOne)
+    .action(async (name: string) => {
+      try {
+        const { runScheduler, Schedule } = await import('@stacksjs/scheduler')
+        await runScheduler()
+        await Promise.resolve()
+        await Schedule.runNow(name)
+        await Schedule.gracefulShutdown()
+        log.success(`Scheduled task ${name} completed.`)
+        await log.flush()
+        process.exit(ExitCode.Success)
+      }
+      catch (err) {
+        log.error(`[schedule:run-one] failed: ${err instanceof Error ? err.message : String(err)}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  for (const [command, enabled, description] of [
+    ['schedule:enable', true, descriptions.enable],
+    ['schedule:disable', false, descriptions.disable],
+  ] as const) {
+    buddy
+      .command(`${command} <name>`, description)
+      .action(async (name: string) => {
+        try {
+          const { runScheduler, Schedule } = await import('@stacksjs/scheduler')
+          await runScheduler()
+          await Promise.resolve()
+          const exists = Schedule.listJobs().some(job => job.name === name)
+          await Schedule.gracefulShutdown()
+          if (!exists)
+            throw new Error(`Scheduled task "${name}" was not found.`)
+          Schedule.setEnabled(name, enabled)
+          log.success(`Scheduled task ${name} ${enabled ? 'resumed' : 'paused'}.`)
+          await log.flush()
+          process.exit(ExitCode.Success)
+        }
+        catch (err) {
+          log.error(`[${command}] failed: ${err instanceof Error ? err.message : String(err)}`)
+          process.exit(ExitCode.FatalError)
+        }
+      })
+  }
 }

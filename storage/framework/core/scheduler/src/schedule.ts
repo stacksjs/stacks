@@ -1,7 +1,7 @@
 import type { CatchCallbackFn } from '@stacksjs/cron'
 import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
@@ -38,6 +38,7 @@ export class Schedule implements UntimedSchedule {
   private timezone: Timezone = 'America/Los_Angeles'
   private readonly task: () => void
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
+  private static stateFile = join(process.cwd(), 'storage', 'framework', 'runtime', 'scheduler-state.json')
   private static activeLocks = new Map<string, SchedulerLockHandle>()
   private shouldPreventOverlap = false
   private overlapExpiresAfterMinutes = 24 * 60
@@ -361,17 +362,57 @@ export class Schedule implements UntimedSchedule {
    * operators a view of what's scheduled and when it next runs,
    * without having to read source.
    */
-  static listJobs(): Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null }> {
-    const out: Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null }> = []
+  static listJobs(): Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean }> {
+    const out: Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null, enabled: boolean }> = []
     for (const [name, job] of Schedule.jobs) {
       out.push({
         name,
         pattern: job.pattern,
         timezone: job.timezone,
         nextRun: job.nextRun ? job.nextRun() : null,
+        enabled: Schedule.isEnabled(name),
       })
     }
     return out
+  }
+
+  /** Run one registered task through its normal overlap and error guards. */
+  static async runNow(name: string): Promise<void> {
+    const job = Schedule.jobs.get(name)
+    if (!job)
+      throw new Error(`Scheduled task "${name}" was not found.`)
+    if (!Schedule.isEnabled(name))
+      throw new Error(`Scheduled task "${name}" is paused.`)
+    await job.run()
+  }
+
+  /** Persist an operator pause independently from the scheduler process. */
+  static setEnabled(name: string, enabled: boolean): void {
+    const disabled = Schedule.disabledJobs()
+    if (enabled)
+      disabled.delete(name)
+    else
+      disabled.add(name)
+
+    const directory = join(process.cwd(), 'storage', 'framework', 'runtime')
+    mkdirSync(directory, { recursive: true })
+    const temporary = `${Schedule.stateFile}.${process.pid}.tmp`
+    writeFileSync(temporary, `${JSON.stringify({ disabled: [...disabled].sort() }, null, 2)}\n`, { mode: 0o600 })
+    renameSync(temporary, Schedule.stateFile)
+  }
+
+  static isEnabled(name: string): boolean {
+    return !Schedule.disabledJobs().has(name)
+  }
+
+  private static disabledJobs(): Set<string> {
+    try {
+      const value = JSON.parse(readFileSync(Schedule.stateFile, 'utf8')) as { disabled?: unknown }
+      return new Set(Array.isArray(value.disabled) ? value.disabled.filter((name): name is string => typeof name === 'string') : [])
+    }
+    catch {
+      return new Set()
+    }
   }
 
   /**
@@ -597,7 +638,7 @@ export class Schedule implements UntimedSchedule {
 
   private start(): ScheduledJob {
     if (!this.cronPattern && this.intervalMs === null) {
-      return { stop: () => {}, nextRun: () => null }
+      return { stop: () => {}, run: async () => {}, nextRun: () => null }
     }
 
     // Dedupe: the same job scheduled on the same cadence twice — e.g. a Job's
@@ -636,16 +677,12 @@ export class Schedule implements UntimedSchedule {
       return this.getNextRunTime()
     }
 
-    const job: ScheduledJob = {
-      stop,
-      nextRun,
-      pattern: this.intervalMs !== null ? `every ${this.intervalMs / 1000}s` : this.cronPattern,
-      timezone: this.timezone,
-      name: this.options.name,
-    }
-
     const taskName = this.options.name || 'unnamed-task'
-    const executeTask = () => {
+    const executeTask = async (): Promise<void> => {
+      if (!Schedule.isEnabled(taskName)) {
+        log.debug(`[scheduler] task ${taskName} is paused`)
+        return
+      }
       if (this.options.maxRuns && runCount >= this.options.maxRuns) {
         stop()
         return
@@ -666,28 +703,28 @@ export class Schedule implements UntimedSchedule {
         // callback. Apps that rely on the .catch handler firing for
         // every error MUST `await` every inner promise; we can't fix
         // that boundary, only document it.
-        if (result && typeof (result as Promise<unknown>).then === 'function') {
-          (result as Promise<unknown>).catch((error: unknown) => {
-            if (this.options.catch) {
-              this.options.catch(error as Error)
-            }
-            else {
-              // No user catch installed — log so the rejection is
-              // at least visible. Previously a missing catch + a
-              // rejecting task = silent failure.
-              log.error(`[scheduler] task ${taskName} async error (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
-            }
-          })
-        }
+        if (result && typeof (result as Promise<unknown>).then === 'function')
+          await (result as Promise<unknown>)
       }
       catch (error) {
         if (this.options.catch) {
           this.options.catch(error as Error)
         }
         else {
-          log.error(`[scheduler] task ${taskName} sync error (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
+          log.error(`[scheduler] task ${taskName} failed (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
         }
+        throw error
       }
+    }
+
+    const job: ScheduledJob = {
+      stop,
+      run: executeTask,
+      nextRun,
+      pattern: this.intervalMs !== null ? `every ${this.intervalMs / 1000}s` : this.cronPattern,
+      timezone: this.timezone,
+      name: this.options.name,
+      enabled: Schedule.isEnabled(taskName),
     }
 
     if (this.intervalMs !== null) {
@@ -698,7 +735,7 @@ export class Schedule implements UntimedSchedule {
       // from exiting cleanly.
       timer = setInterval(() => {
         if (stopped) return
-        executeTask()
+        void executeTask().catch(() => {})
       }, this.intervalMs)
       ;(timer as ReturnType<typeof setInterval> & { unref?: () => void }).unref?.()
     }
@@ -724,7 +761,7 @@ export class Schedule implements UntimedSchedule {
         else {
           timer = setTimeout(() => {
             if (stopped) return
-            executeTask()
+            void executeTask().catch(() => {})
             scheduleNext()
           }, delay)
         }
@@ -879,6 +916,7 @@ export class Schedule implements UntimedSchedule {
     }
 
     Schedule.jobs.clear()
+    Schedule.scheduledKeys.clear()
     log.info('All jobs have been stopped')
   }
 }

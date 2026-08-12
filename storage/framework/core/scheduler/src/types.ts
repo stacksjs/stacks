@@ -70,6 +70,8 @@ export type Timezone =
 
 export interface ScheduledJob {
   stop: () => void
+  /** Execute the task immediately through the same overlap and error guards. */
+  run: () => Promise<void>
   nextRun: () => Date | null
   /** Cron pattern or interval description — exposed for CLI listing
    *  (stacksjs/stacks#1877 S-1). `'every Ns'` for sub-minute intervals,
@@ -79,6 +81,8 @@ export interface ScheduledJob {
   timezone?: Timezone
   /** Job name passed via `.withName(...)`. */
   name?: string
+  /** False when an operator has paused the task through the scheduler registry. */
+  enabled?: boolean
 }
 
 // Base interface for common methods
