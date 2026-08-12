@@ -133,12 +133,12 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     // re-charge comparison. Keep it as a string everywhere.
     const method = {
       type: 'card',
-      last_four: String(paymentMethod.card.last4),
+      lastFour: String(paymentMethod.card.last4),
       brand: paymentMethod.card.brand,
-      exp_year: paymentMethod.card.exp_year,
-      exp_month: paymentMethod.card.exp_month,
+      expYear: paymentMethod.card.exp_year,
+      expMonth: paymentMethod.card.exp_month,
       user_id: user.id,
-      provider_id: paymentMethod.id,
+      providerId: paymentMethod.id,
     }
 
     if (paymentMethod.customer !== user.stripe_id) {
