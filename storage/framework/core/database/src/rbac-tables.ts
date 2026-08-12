@@ -36,13 +36,13 @@ function getDbDriver(): string {
 
 /** `roles` table — id + name + guard + timestamps with UNIQUE(name, guard_name). */
 export function rolesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp, datetime } = sql
+  const { pkColumn, nullableTimestamp, datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS roles (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
     guard_name VARCHAR(255) NOT NULL DEFAULT 'web',
     description TEXT,
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     updated_at ${nullableTimestamp},
     UNIQUE (name, guard_name)
   )`
@@ -50,13 +50,13 @@ export function rolesTableSql(sql: SqlHelpers): string {
 
 /** `permissions` table — same shape as `roles`. */
 export function permissionsTableSql(sql: SqlHelpers): string {
-  const { pkColumn, nullableTimestamp, datetime } = sql
+  const { pkColumn, nullableTimestamp, datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS permissions (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
     guard_name VARCHAR(255) NOT NULL DEFAULT 'web',
     description TEXT,
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     updated_at ${nullableTimestamp},
     UNIQUE (name, guard_name)
   )`
@@ -64,33 +64,33 @@ export function permissionsTableSql(sql: SqlHelpers): string {
 
 /** `user_roles` pivot — composite PK makes double-assign a unique violation. */
 export function userRolesTableSql(sql: SqlHelpers): string {
-  const { datetime } = sql
+  const { datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS user_roles (
     user_id INTEGER NOT NULL,
     role_id INTEGER NOT NULL,
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     PRIMARY KEY (user_id, role_id)
   )`
 }
 
 /** `user_permissions` pivot. */
 export function userPermissionsTableSql(sql: SqlHelpers): string {
-  const { datetime } = sql
+  const { datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS user_permissions (
     user_id INTEGER NOT NULL,
     permission_id INTEGER NOT NULL,
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     PRIMARY KEY (user_id, permission_id)
   )`
 }
 
 /** `role_permissions` pivot. */
 export function rolePermissionsTableSql(sql: SqlHelpers): string {
-  const { datetime } = sql
+  const { datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS role_permissions (
     role_id INTEGER NOT NULL,
     permission_id INTEGER NOT NULL,
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     PRIMARY KEY (role_id, permission_id)
   )`
 }

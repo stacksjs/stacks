@@ -31,6 +31,26 @@ export interface SqlDialectHelpers {
    * It remains correct for values the database both writes and compares.
    */
   now: string
+  /**
+   * A default that writes **naive UTC**, which is what this framework stores.
+   *
+   * `DEFAULT CURRENT_TIMESTAMP` does not. On PostgreSQL and MySQL it is the
+   * session's *local* wall clock, and dropping it into a zoneless column keeps
+   * those digits - so a host set to anything but UTC writes a time that never
+   * happened, and every reader that treats the column as UTC is out by the
+   * offset. It is silent, and wrong times look like times: found in ReviewOS as
+   * "7 hours ago" on a row written seconds earlier, on a machine seven hours
+   * behind UTC.
+   *
+   * The column type is not the bug and is deliberately unchanged - naive UTC is
+   * the convention this framework picked so every driver behaves alike, because
+   * MySQL has nothing equivalent to `timestamptz`. What was wrong is the one
+   * value the database supplies for itself.
+   *
+   * SQLite's `CURRENT_TIMESTAMP` is already UTC, so it is the only dialect that
+   * was right by accident.
+   */
+  utcNow: string
   /** SQL literal for boolean true */
   boolTrue: string
   /** SQL literal for boolean false */
@@ -213,6 +233,9 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
     isMysql,
     isSqlite,
     now: isPostgres || isMysql ? 'NOW()' : `datetime('now')`,
+    utcNow: isPostgres
+      ? `(now() AT TIME ZONE 'utc')`
+      : isMysql ? 'UTC_TIMESTAMP' : 'CURRENT_TIMESTAMP',
     boolTrue: isPostgres ? 'true' : '1',
     boolFalse: isPostgres ? 'false' : '0',
     autoIncrement: isPostgres ? 'SERIAL' : 'INTEGER',

@@ -182,7 +182,7 @@ export async function ensureUsersAuthColumns(sql: SqlHelpers, options: { verbose
 export async function migrateAuthTables(options: { verbose?: boolean } = {}): Promise<{ success: boolean, error?: string }> {
   const dbDriver = getDbDriver()
   const sql = sqlHelpers(dbDriver)
-  const { isPostgres, boolTrue, now, pkColumn, nullableTimestamp, datetime } = sql
+  const { isPostgres, boolTrue, now, pkColumn, nullableTimestamp, datetime, utcNow } = sql
 
   if (options.verbose) {
     log.info(`Creating auth tables for ${dbDriver}...`)
@@ -200,7 +200,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         personal_access_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         password_client BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+        created_at ${datetime} DEFAULT ${utcNow},
         updated_at ${nullableTimestamp}
       )
     `).execute()
@@ -221,7 +221,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         -- a token minted by a script, which has neither.
         user_agent VARCHAR(255),
         ip_address VARCHAR(45),
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+        created_at ${datetime} DEFAULT ${utcNow},
         updated_at ${nullableTimestamp}
       )
     `).execute()
@@ -251,7 +251,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         token TEXT NOT NULL,
         revoked BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         expires_at ${nullableTimestamp},
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 
@@ -268,7 +268,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         -- still falls back to clock arithmetic against created_at, because
         -- rows written before the column existed have to keep verifying.
         expires_at ${nullableTimestamp},
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 
@@ -313,7 +313,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         user_id INTEGER NOT NULL,
         token VARCHAR(255) NOT NULL,
         expires_at ${datetime} NOT NULL,
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 
@@ -347,7 +347,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         backup_eligible BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         backup_status BOOLEAN NOT NULL DEFAULT ${sql.boolFalse},
         transports TEXT,
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+        created_at ${datetime} DEFAULT ${utcNow},
         last_used_at ${nullableTimestamp}
       )
     `).execute()
@@ -372,7 +372,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         challenge TEXT NOT NULL,
         purpose VARCHAR(20) NOT NULL,
         expires_at ${datetime} NOT NULL,
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 
@@ -398,7 +398,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         id VARCHAR(255) PRIMARY KEY,
         user_id INTEGER NOT NULL,
         expires_at ${datetime} NOT NULL,
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 
@@ -422,7 +422,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
         user_id INTEGER PRIMARY KEY,
         secret VARCHAR(255) NOT NULL,
         expires_at ${datetime} NOT NULL,
-        created_at ${datetime} DEFAULT CURRENT_TIMESTAMP
+        created_at ${datetime} DEFAULT ${utcNow}
       )
     `).execute()
 

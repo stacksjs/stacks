@@ -38,7 +38,7 @@
  * (ISO without the `Z`), which all three engines accept, so the text column is
  * no longer needed and these line up with the rest of the framework.
  *
- * `DEFAULT CURRENT_TIMESTAMP` is deliberately absent. The database clock
+ * `DEFAULT ${utcNow}` is deliberately absent. The database clock
  * renders space-separated while the application writes the canonical `T` form,
  * and on SQLite — where these columns hold text — mixing the two breaks
  * ordering. Every writer sets the value explicitly, so the default was never
@@ -116,7 +116,7 @@ export const UNSCOPED_OWNER_ID = 0
  * table, `commentables` is the polymorphic trait table.
  */
 export function commentablesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, boolTrue } = sql
+  const { pkColumn, boolTrue, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS commentables (
     ${pkColumn},
     title VARCHAR(255) NOT NULL,
@@ -144,7 +144,7 @@ export function commentablesTableSql(sql: SqlHelpers): string {
  * scoped by both so neither collides with the other.
  */
 export function taggablesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, boolTrue } = sql
+  const { pkColumn, boolTrue, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS taggables (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
@@ -164,7 +164,7 @@ export function taggablesTableSql(sql: SqlHelpers): string {
  * which `orm/src/traits/categorizable.ts` reads to resolve category ids.
  */
 export function categorizablesTableSql(sql: SqlHelpers): string {
-  const { pkColumn, boolTrue } = sql
+  const { pkColumn, boolTrue, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS categorizables (
     ${pkColumn},
     name VARCHAR(255) NOT NULL,
@@ -187,13 +187,13 @@ export function categorizablesTableSql(sql: SqlHelpers): string {
  * does), which left `taggable: true` on its own pointing at a missing table.
  */
 export function taggableModelsTableSql(sql: SqlHelpers): string {
-  const { bigPkColumn, bigInteger } = sql
+  const { bigPkColumn, bigInteger, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS taggable_models (
     ${bigPkColumn},
     tag_id ${bigInteger} NOT NULL,
     taggable_id ${bigInteger} NOT NULL,
     taggable_type VARCHAR(255) NOT NULL DEFAULT 'posts',
-    created_at ${sql.datetime} NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at ${sql.datetime} NOT NULL DEFAULT ${utcNow},
     ${updatedAt(sql)}
   )`
 }
@@ -204,13 +204,13 @@ export function taggableModelsTableSql(sql: SqlHelpers): string {
  * table directly to resolve the category ids an owner is filed under.
  */
 export function categorizableModelsTableSql(sql: SqlHelpers): string {
-  const { bigPkColumn, bigInteger } = sql
+  const { bigPkColumn, bigInteger, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS categorizable_models (
     ${bigPkColumn},
     category_id ${bigInteger} NOT NULL,
     categorizable_id ${bigInteger} NOT NULL,
     categorizable_type VARCHAR(255) NOT NULL DEFAULT 'posts',
-    created_at ${sql.datetime} NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at ${sql.datetime} NOT NULL DEFAULT ${utcNow},
     ${updatedAt(sql)}
   )`
 }
@@ -229,7 +229,7 @@ export function categorizableModelsTableSql(sql: SqlHelpers): string {
  * twice.
  */
 export function likesTableSql(sql: SqlHelpers, table: string, foreignKey: string): string {
-  const { pkColumn } = sql
+  const { pkColumn, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS ${table} (
     ${pkColumn},
     ${foreignKey} INTEGER NOT NULL,
@@ -245,7 +245,7 @@ export function likesTableSql(sql: SqlHelpers, table: string, foreignKey: string
  * `CommentableUpvotesTable`.
  */
 export function commentableUpvotesTableSql(sql: SqlHelpers): string {
-  const { pkColumn } = sql
+  const { pkColumn, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS commentable_upvotes (
     ${pkColumn},
     user_id INTEGER,

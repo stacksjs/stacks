@@ -34,7 +34,7 @@ function getDbDriver(): string {
  * `notifications/src/drivers/database.ts`.
  */
 export function notificationsTableSql(sql: SqlHelpers): string {
-  const { bigPkColumn, bigInteger, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, bigInteger, nullableTimestamp, datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS notifications (
     ${bigPkColumn},
     user_id ${bigInteger},
@@ -42,7 +42,7 @@ export function notificationsTableSql(sql: SqlHelpers): string {
     data TEXT NOT NULL,
     read_at ${nullableTimestamp},
     uuid VARCHAR(255),
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     updated_at ${nullableTimestamp}
   )`
 }
@@ -53,14 +53,14 @@ export function notificationsTableSql(sql: SqlHelpers): string {
  * preference upsert safe — matches `NotificationPreferenceRow`.
  */
 export function notificationPreferencesTableSql(sql: SqlHelpers): string {
-  const { bigPkColumn, bigInteger, boolTrue, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, bigInteger, boolTrue, nullableTimestamp, datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS notification_preferences (
     ${bigPkColumn},
     user_id ${bigInteger} NOT NULL,
     channel VARCHAR(50) NOT NULL,
     enabled BOOLEAN NOT NULL DEFAULT ${boolTrue},
     category VARCHAR(255),
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     updated_at ${nullableTimestamp},
     UNIQUE (user_id, channel, category)
   )`
@@ -72,7 +72,7 @@ export function notificationPreferencesTableSql(sql: SqlHelpers): string {
  * state into the database inbox table.
  */
 export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
-  const { bigPkColumn, nullableTimestamp, datetime } = sql
+  const { bigPkColumn, nullableTimestamp, datetime, utcNow } = sql
   return `CREATE TABLE IF NOT EXISTS notification_deliveries (
     ${bigPkColumn},
     user_id INTEGER,
@@ -84,7 +84,7 @@ export function notificationDeliveriesTableSql(sql: SqlHelpers): string {
     error TEXT,
     metadata TEXT,
     sent_at ${nullableTimestamp},
-    created_at ${datetime} DEFAULT CURRENT_TIMESTAMP,
+    created_at ${datetime} DEFAULT ${utcNow},
     updated_at ${nullableTimestamp}
   )`
 }

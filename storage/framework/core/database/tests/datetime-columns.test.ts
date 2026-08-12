@@ -129,3 +129,53 @@ describe('the legacy-column guarantee', () => {
     }
   })
 })
+
+/**
+ * What the database writes when nobody hands it a value.
+ *
+ * The column type was never the bug. This framework stores **naive UTC** - a
+ * zoneless column holding UTC wall clock - because MySQL has nothing
+ * equivalent to `timestamptz` and one convention across drivers is worth more
+ * than the best type on each. Application writes already honour it: the ORM
+ * persists `Date.toISOString()`.
+ *
+ * `DEFAULT CURRENT_TIMESTAMP` did not. On PostgreSQL and MySQL it is the
+ * session's *local* wall clock, so a host set to anything but UTC wrote digits
+ * that never happened in UTC and every reader was out by the offset. Found in
+ * ReviewOS as "7 hours ago" on a row written seconds earlier.
+ */
+describe('the default that fills a timestamp in', () => {
+  test('writes UTC on every dialect', () => {
+    expect(sqlHelpers('postgres').utcNow).toBe(`(now() AT TIME ZONE 'utc')`)
+    expect(sqlHelpers('mysql').utcNow).toBe('UTC_TIMESTAMP')
+
+    // SQLite's CURRENT_TIMESTAMP is already UTC: the one dialect that was
+    // right by accident.
+    expect(sqlHelpers('sqlite').utcNow).toBe('CURRENT_TIMESTAMP')
+  })
+
+  test('and MySQL-wire dialects inherit it', () => {
+    expect(sqlHelpers('singlestore').utcNow).toBe('UTC_TIMESTAMP')
+    expect(sqlHelpers('vitess').utcNow).toBe('UTC_TIMESTAMP')
+  })
+
+  test('the framework tables use it rather than CURRENT_TIMESTAMP', () => {
+    // The regression that matters: a table defined later with the old spelling
+    // reintroduces the bug for its own rows only, which is the hardest kind to
+    // notice.
+    const sql = [
+      rolesTableSql(sqlHelpers('postgres')),
+      notificationsTableSql(sqlHelpers('postgres')),
+    ].join('\n')
+
+    expect(sql).toContain(`AT TIME ZONE 'utc'`)
+    expect(sql).not.toContain('DEFAULT CURRENT_TIMESTAMP')
+  })
+
+  test('and the column type is deliberately still naive', () => {
+    // Changing this to `timestamptz` was tried and reverted: it contradicts the
+    // cross-driver convention above, and it broke five tests that exist to
+    // state it.
+    expect(sqlHelpers('postgres').datetime).toBe('TIMESTAMP')
+  })
+})
