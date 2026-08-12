@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, resolveCraftBinary, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { assertDesktopReleaseChannel, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 
 const outputDir = storagePath('framework/desktop-dist')
 const launcherName = process.platform === 'win32' ? 'stacks-desktop.exe' : 'stacks-desktop'
@@ -17,9 +17,7 @@ if (!appUrl)
   throw new Error('Desktop builds require APP_URL or DESKTOP_URL so the native app knows which Stacks application to open')
 
 const url = new URL(/^https?:\/\//.test(appUrl) ? appUrl : `https://${appUrl}`)
-const craftBinary = resolveCraftBinary()
-if (basename(craftBinary) === 'craft' && !existsSync(craftBinary))
-  throw new Error('Build Craft first in ~/Code/Tools/craft, or set CRAFT_BIN to the native Craft binary')
+const craftBinary = resolveCraftExecutable()
 
 // The runtime is copied verbatim into the bundle, so it has to be the native
 // executable. A dev wrapper script points at a path outside the bundle and

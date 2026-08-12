@@ -70,5 +70,8 @@
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.17",
     "@stacksjs/server": "workspace:*"
+  },
+  "dependencies": {
+    "craft-native": ">=0.0.55"
   }
 }

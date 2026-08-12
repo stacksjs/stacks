@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { craftBinaryNotFoundMessage, resolveCraftBinary as resolveCraftNativeBinary } from 'craft-native'
 
 export * from './invites'
 export * from './updater'
@@ -68,33 +68,26 @@ export type CraftLauncher = (command: string[]) => void | Promise<void>
 /**
  * Locate the `craft` binary.
  *
- * Order matters: an explicit path or `CRAFT_BIN` wins, then the copy installed
- * into the app's own `node_modules`, then whatever is on `PATH`. The
- * `~/Code/Tools/craft` checkout is last and is purely a convenience for people
- * developing Craft itself — it used to be *first*, which meant an app resolved
- * a stranger's working tree if one happened to exist and ignored the version it
- * actually depends on.
- *
- * Returning a bare `'craft'` when nothing matches keeps the old behaviour of
- * deferring to `PATH` resolution at spawn time.
+ * Craft owns this contract. An explicit path or `CRAFT_BIN` wins, then the
+ * pantry-installed `craft` on PATH. Keeping this as a direct delegation avoids
+ * Stacks drifting back into checkout and node_modules probing.
  */
 export function resolveCraftBinary(explicit: string | undefined = process.env.CRAFT_BIN): string {
-  if (explicit) {
-    if (!existsSync(explicit))
-      throw new Error(`Craft binary not found: ${explicit}`)
-    return explicit
-  }
+  return resolveCraftNativeBinary(explicit)
+}
 
-  const devCheckout = join(homedir(), 'Code/Tools/craft')
-  const candidates = [
-    join(process.cwd(), 'node_modules/.bin/craft'),
-    join(process.cwd(), 'node_modules/craft/bin/craft'),
-    join(devCheckout, 'packages/zig/zig-out/bin/craft'),
-    join(devCheckout, 'craft'),
-    join(devCheckout, 'bin/craft'),
-  ]
+export type CraftBinaryLocator = (binary: string) => string | null
 
-  return candidates.find(candidate => existsSync(candidate)) || 'craft'
+export function resolveCraftExecutable(
+  explicit: string | undefined = process.env.CRAFT_BIN,
+  findOnPath: CraftBinaryLocator = binary => Bun.which(binary),
+): string {
+  const resolved = resolveCraftBinary(explicit)
+  if (resolved !== 'craft') return resolved
+
+  const executable = findOnPath(resolved)
+  if (!executable) throw new Error(craftBinaryNotFoundMessage(resolved))
+  return executable
 }
 
 /**

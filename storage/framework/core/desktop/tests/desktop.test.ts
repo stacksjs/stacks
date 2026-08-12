@@ -86,6 +86,53 @@ describe('desktop module', () => {
     expect(() => resolveDevWindowUrl(0)).toThrow(RangeError)
   })
 
+  test('delegates zero-config binary resolution to pantry PATH lookup', async () => {
+    const { resolveCraftBinary } = await import('../src/index')
+    const previousCraftBin = process.env.CRAFT_BIN
+    delete process.env.CRAFT_BIN
+
+    try {
+      expect(resolveCraftBinary()).toBe('craft')
+    }
+    finally {
+      if (previousCraftBin === undefined) delete process.env.CRAFT_BIN
+      else process.env.CRAFT_BIN = previousCraftBin
+    }
+  })
+
+  test('rejects an explicit missing Craft binary', async () => {
+    const { resolveCraftBinary } = await import('../src/index')
+    expect(() => resolveCraftBinary('/definitely/missing/craft')).toThrow('not found')
+  })
+
+  test('resolves the pantry-installed executable for bundle builds', async () => {
+    const { resolveCraftExecutable } = await import('../src/index')
+    const previousCraftBin = process.env.CRAFT_BIN
+    delete process.env.CRAFT_BIN
+
+    try {
+      expect(resolveCraftExecutable(undefined, () => '/pantry/bin/craft')).toBe('/pantry/bin/craft')
+    }
+    finally {
+      if (previousCraftBin === undefined) delete process.env.CRAFT_BIN
+      else process.env.CRAFT_BIN = previousCraftBin
+    }
+  })
+
+  test('explains how to install Craft when PATH has no executable', async () => {
+    const { resolveCraftExecutable } = await import('../src/index')
+    const previousCraftBin = process.env.CRAFT_BIN
+    delete process.env.CRAFT_BIN
+
+    try {
+      expect(() => resolveCraftExecutable(undefined, () => null)).toThrow('pantry install craft')
+    }
+    finally {
+      if (previousCraftBin === undefined) delete process.env.CRAFT_BIN
+      else process.env.CRAFT_BIN = previousCraftBin
+    }
+  })
+
   test('Desktop interface shape is consistent with exports', async () => {
     // The module exports the function and interfaces only
     const mod = await import('../src/index')

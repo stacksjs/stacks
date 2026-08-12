@@ -522,6 +522,9 @@
     "storage/framework/core/desktop": {
       "name": "@stacksjs/desktop-build",
       "version": "0.70.366",
+      "dependencies": {
+        "craft-native": ">=0.0.55",
+      },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "@stacksjs/server": "workspace:*",
