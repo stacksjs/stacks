@@ -822,7 +822,18 @@ describe('useTimeAgo', () => {
   })
 
   it('should accept a getter function', () => {
-    const result = useTimeAgo(() => Date.now() - 120 * 1000)
+    // The timestamp is captured here rather than computed inside the getter,
+    // and it deliberately is not a round two minutes.
+    //
+    // `update()` reads its own `Date.now()` BEFORE calling the getter, so a
+    // getter that computes `Date.now()` itself yields
+    // `diff = 120000 - (elapsed between the two reads)` - at most exactly two
+    // minutes, and under it the moment the clock ticks once. `formatTimeAgo`
+    // floors, so 119999ms is "1 minute ago". The test passed only while both
+    // reads landed in the same millisecond, which an idle laptop manages and a
+    // loaded CI runner does not.
+    const past = Date.now() - 125 * 1000
+    const result = useTimeAgo(() => past)
     expect(result.value).toBe('2 minutes ago')
   })
 
