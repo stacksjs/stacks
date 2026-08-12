@@ -27,6 +27,7 @@ type ConditionalValidationInstance = {
   // eslint-disable-next-line pickier/no-unused-vars
   [TKey in keyof ValidationInstance]: ValidationInstance[TKey] extends (...args: infer TArgs) => infer TValidator
     ? TValidator extends Validator<any>
+      // eslint-disable-next-line pickier/no-unused-vars
       ? (...args: TArgs) => WithConditionals<TValidator>
       : ValidationInstance[TKey]
     : ValidationInstance[TKey]

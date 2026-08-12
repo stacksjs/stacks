@@ -1,4 +1,6 @@
+// eslint-disable-next-line pickier/no-import-dist
 import { schema } from '../../validation/dist'
+// eslint-disable-next-line pickier/no-import-dist
 import { defineModel } from '../dist/define-model'
 
 type Equal<TLeft, TRight> =
