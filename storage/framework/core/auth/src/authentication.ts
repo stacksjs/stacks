@@ -358,8 +358,11 @@ export class Auth {
     // The configured username column, which the model types as one of its
     // own columns; config carries it as a plain string.
     const username = (config.auth.username || 'email') as Parameters<typeof User.where>[0] & string
+    const usernameValue = credentials[username]
+    if (usernameValue === undefined)
+      return null
     const authedUser = authStateOrNull()?.authUser
-      ?? await User.where(username, '=', credentials[username]).first()
+      ?? await User.where(username, '=', usernameValue).first()
 
     if (!authedUser)
       return null

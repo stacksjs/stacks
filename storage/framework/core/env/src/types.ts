@@ -1,4 +1,4 @@
-import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
+import type { BooleanValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
 import type { schema } from '@stacksjs/validation'
 import type { EnvKey } from '../../../env'
 
@@ -37,7 +37,10 @@ interface BooleanEnvConfig {
 }
 
 interface EnumEnvConfig {
-  validation: EnumValidatorType
+  validation: {
+    readonly name: 'enum'
+    getAllowedValues: () => readonly string[]
+  }
   default: string
 }
 
@@ -206,7 +209,7 @@ export interface StacksEnv {
   [key: string]: string | number | boolean | undefined
 }
 
-export type EnvSchema = any
+export type EnvSchema = EnvConfig
 
 export interface FrontendEnv {
   FRONTEND_APP_ENV: 'local' | 'development' | 'staging' | 'production'
