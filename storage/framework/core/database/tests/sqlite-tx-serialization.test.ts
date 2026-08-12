@@ -34,6 +34,7 @@ afterAll(() => {
 })
 
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('../src/utils')
+const { resetConnection } = await import('@stacksjs/query-builder')
 
 beforeAll(async () => {
   releaseDbConfigLock = await acquireDbConfigLock()
@@ -41,6 +42,7 @@ beforeAll(async () => {
   // Settle the background config reload, then force the dialect back to
   // sqlite — a sibling test file may have flipped the process-wide config.
   await ensureDatabaseConfigLoaded()
+  resetConnection()
   initializeDbConfig({
     database: {
       default: 'sqlite',
