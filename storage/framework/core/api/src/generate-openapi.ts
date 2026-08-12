@@ -6,7 +6,11 @@ interface OpenApiPathItem {
     summary?: string
     operationId?: string
     parameters?: Array<{ name: string, in: string, required: boolean, schema: SchemaObject }>
-    responses: Record<string, { description: string, content?: Record<string, { schema?: SchemaObject }> }>
+    responses: Record<string, {
+      description: string
+      content?: Record<string, { schema?: SchemaObject }>
+      headers?: Record<string, { description: string, schema?: SchemaObject }>
+    }>
     requestBody?: { content: Record<string, { schema?: SchemaObject }>, required?: boolean }
   }
 }
@@ -86,7 +90,84 @@ export function ruleIsRequired(rule: unknown): boolean {
  * path string (e.g. 'Actions/CreatePostAction'). Returns `null` on
  * any resolution failure so generation never crashes the spec build.
  */
-async function loadActionValidations(handlerPath: string): Promise<Record<string, unknown> | null> {
+type ResponseMap = Record<string, {
+  description: string
+  content?: Record<string, { schema?: SchemaObject }>
+  headers?: Record<string, { description: string, schema?: SchemaObject }>
+}>
+
+/**
+ * The answers an operation documents: the defaults, plus whatever the action
+ * says about itself.
+ *
+ * **Merged over the defaults rather than replacing them.** An action that
+ * documents its 200 and its 404 still answers 422 for a bad request and 500
+ * when something breaks, and a document that drops those because the author
+ * wrote down two is less accurate than one that never let them write anything.
+ *
+ * A row without a `description` is ignored. A status with no sentence beside it
+ * is one a reader skims past, and emitting it makes the document longer without
+ * making it more useful.
+ *
+ * Headers apply to every answer, which is what a header on a response *is*:
+ * rate-limit headers ride on the 200 and on the 429 alike, and a client reading
+ * them only on success backs off exactly when it should not.
+ */
+export function describedResponses(action: Record<string, unknown> | null, base: ResponseMap): ResponseMap {
+  const responses: ResponseMap = { ...base }
+  const documented = action?.responses
+
+  if (documented && typeof documented === 'object') {
+    for (const [status, answer] of Object.entries(documented as Record<string, unknown>)) {
+      const shape = answer as { description?: unknown, schema?: unknown }
+
+      if (!shape || typeof shape !== 'object' || typeof shape.description !== 'string')
+        continue
+
+      responses[String(status)] = {
+        description: shape.description,
+        ...(shape.schema && typeof shape.schema === 'object'
+          ? { content: { 'application/json': { schema: shape.schema as SchemaObject } } }
+          : {}),
+      }
+    }
+  }
+
+  const headers = action?.responseHeaders
+
+  if (headers && typeof headers === 'object') {
+    const described: Record<string, { description: string, schema?: SchemaObject }> = {}
+
+    for (const [name, header] of Object.entries(headers as Record<string, unknown>)) {
+      const shape = header as { description?: unknown, schema?: unknown }
+
+      if (!shape || typeof shape !== 'object' || typeof shape.description !== 'string')
+        continue
+
+      described[name] = {
+        description: shape.description,
+        ...(shape.schema && typeof shape.schema === 'object' ? { schema: shape.schema as SchemaObject } : {}),
+      }
+    }
+
+    if (Object.keys(described).length > 0) {
+      for (const status of Object.keys(responses))
+        responses[status] = { ...responses[status]!, headers: described }
+    }
+  }
+
+  return responses
+}
+
+/**
+ * The action a route was registered with, or null.
+ *
+ * Was `loadActionValidations`, which returned only the validations and threw
+ * everything else away - so documenting a response meant either a second
+ * import of the same file or a second convention for where the answer lives.
+ * Returning the action lets one read answer both questions.
+ */
+async function loadAction(handlerPath: string): Promise<Record<string, unknown> | null> {
   /*
    * Any handler that resolves to a file under `app/` or the framework
    * defaults, not only one whose path happens to contain `Actions`.
@@ -109,11 +190,8 @@ async function loadActionValidations(handlerPath: string): Promise<Record<string
         if (!(await file.exists())) continue
         const mod = await import(candidate)
         const action = (mod as { default?: unknown }).default
-        if (action && typeof action === 'object' && 'validations' in (action as Record<string, unknown>)) {
-          const v = (action as Record<string, unknown>).validations
-          return v && typeof v === 'object' ? (v as Record<string, unknown>) : null
-        }
-        return null
+
+        return action && typeof action === 'object' ? (action as Record<string, unknown>) : null
       }
       catch { /* try next candidate */ }
     }
@@ -321,7 +399,12 @@ export async function generateOpenApi(options: {
      * is a lookup rather than a guess. An inline function handler has no file
      * to read, and reports nothing, which is honest.
      */
-    const validations = r.handler ? await loadActionValidations(r.handler) : null
+    const action = r.handler ? await loadAction(r.handler) : null
+    const validations = action && typeof action.validations === 'object' && action.validations !== null
+      ? action.validations as Record<string, unknown>
+      : null
+
+    op.responses = describedResponses(action, op.responses)
 
     if (validations && Object.keys(validations).length > 0) {
       const fields = Object.entries(validations).map(([field, def]) => {

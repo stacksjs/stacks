@@ -59,6 +59,15 @@ type InferRequest<TModel, TValidations, TPath extends string> =
     ? RequestInstance<ResolveBody<TModel, TValidations>>
     : RequestInstance<ResolveBody<TModel, TValidations>, ExtractParams<TPath>>
 
+/** One documented answer: a sentence, and optionally the shape of the body. */
+export interface ActionResponse {
+  description: string
+  schema?: Record<string, unknown>
+}
+
+/** Documented answers, keyed by status code. */
+export type ActionResponses = Record<string | number, ActionResponse>
+
 interface ActionOptions<
   TModel = string,
   TValidations extends ActionValidations | undefined = undefined,
@@ -86,6 +95,42 @@ interface ActionOptions<
    */
   path?: TPath
   requestFile?: string
+  /**
+   * What this endpoint answers with, for the generated OpenAPI document.
+   *
+   * The generator derives an operation's *inputs* from `validations`, which
+   * cannot drift because they are the same object the validator uses. Its
+   * outputs had nowhere to come from, so every operation in every generated
+   * document said the same three things: 200 with `{"type": "object"}`, 422,
+   * 500. A client generated from that knows how to call an endpoint and
+   * nothing about what comes back - and the 401, 403 and 404 that most
+   * endpoints answer are absent entirely, so the generated client has no
+   * branch for them.
+   *
+   * Keyed by status. `description` is required because a status with no
+   * sentence is a row somebody skims past; `schema` is an OpenAPI schema
+   * fragment and is optional, since "404 - no such repository" is worth
+   * documenting even when the body is uninteresting.
+   *
+   *   responses: {
+   *     200: { description: 'The checks on a commit', schema: { type: 'object', properties: { … } } },
+   *     404: { description: 'No such repository, or no such commit' },
+   *   }
+   *
+   * Purely descriptive: nothing here is enforced at runtime. An action whose
+   * documented shape and real shape disagree is a bug, and the honest place to
+   * catch it is a test that calls the endpoint.
+   */
+  responses?: ActionResponses
+  /**
+   * Response headers every answer from this endpoint carries.
+   *
+   * Rate-limit headers are the case this exists for. They are on the response
+   * rather than in it, they are what a well-behaved client backs off on, and a
+   * document that omits them describes an API that appears to have no limits
+   * until a client meets one.
+   */
+  responseHeaders?: Record<string, { description: string, schema?: Record<string, unknown> }>
   model?: TModel
   /**
    * Opt this action out of the global CSRF gate.
@@ -217,6 +262,10 @@ export class Action<
   method?: ActionOptions['method']
   validations?: TValidations
   requestFile?: string
+  /** @see {@link ActionOptions.responses} */
+  responses?: ActionResponses
+  /** @see {@link ActionOptions.responseHeaders} */
+  responseHeaders?: ActionOptions['responseHeaders']
   /** @see {@link ActionOptions.skipCsrf} */
   skipCsrf?: boolean
   /** @see {@link ActionOptions.skipCsrf} */
@@ -264,6 +313,8 @@ export class Action<
     path,
     method,
     requestFile,
+    responses,
+    responseHeaders,
     model,
     skipCsrf,
     csrf,
@@ -283,6 +334,8 @@ export class Action<
     this.method = method
     this.handle = handle
     this.requestFile = requestFile
+    this.responses = responses
+    this.responseHeaders = responseHeaders
     this.skipCsrf = skipCsrf
     this.csrf = csrf
     this.authorize = authorize
