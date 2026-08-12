@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.368...v0.70.369)
+
+## ✨ Features
+
+- **api**: an action can say what it answers with, and the document says so ([c88b969](https://github.com/stacksjs/stacks/commit/c88b969)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.367...v0.70.368)
 
 ## 📝 Documentation
