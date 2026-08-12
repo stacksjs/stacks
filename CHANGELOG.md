@@ -1,5 +1,59 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.366...v0.70.367)
+
+## ✨ Features
+
+- **dashboard**: add change and incident controls ([1397c5c](https://github.com/stacksjs/stacks/commit/1397c5c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add deployment rollback ([e66ef89](https://github.com/stacksjs/stacks/commit/e66ef89)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add migration operations ([b9c8f5a](https://github.com/stacksjs/stacks/commit/b9c8f5a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: add native rollback command ([f6c1f63](https://github.com/stacksjs/stacks/commit/f6c1f63)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add recovery operations ([c78dc90](https://github.com/stacksjs/stacks/commit/c78dc90)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: add scheduler operations ([ffeedc3](https://github.com/stacksjs/stacks/commit/ffeedc3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler**: add operator task controls ([029d42f](https://github.com/stacksjs/stacks/commit/029d42f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: restore deployment previews ([6b2f7a4](https://github.com/stacksjs/stacks/commit/6b2f7a4)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **deploy**: add non-mutating preview plans ([777715f](https://github.com/stacksjs/stacks/commit/777715f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **deploy**: say when production data has no way back (#2318) ([f8993b4](https://github.com/stacksjs/stacks/commit/f8993b4)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2313](https://github.com/stacksjs/stacks/issues/2313), [#2318](https://github.com/stacksjs/stacks/issues/2318), [#2318](https://github.com/stacksjs/stacks/issues/2318), [#2313](https://github.com/stacksjs/stacks/issues/2313))
+
+## 🐛 Bug Fixes
+
+- **events**: one emitter per process, not one per copy of the package ([fb64c63](https://github.com/stacksjs/stacks/commit/fb64c63)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: only publish a www record for an apex domain ([30730d8](https://github.com/stacksjs/stacks/commit/30730d8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: generalize operator history ([4abf403](https://github.com/stacksjs/stacks/commit/4abf403)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: flush the log before outro resolves, so commands print their summary ([4bd0d64](https://github.com/stacksjs/stacks/commit/4bd0d64)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: the default that filled a timestamp in wrote local time ([2d816ce](https://github.com/stacksjs/stacks/commit/2d816ce)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: launch Craft through loopback ([6e0992f](https://github.com/stacksjs/stacks/commit/6e0992f)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: remove unsupported deploy preview ([9b7bbcd](https://github.com/stacksjs/stacks/commit/9b7bbcd)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **composables**: stop useTimeAgo's getter test racing the clock (#2317) ([974134d](https://github.com/stacksjs/stacks/commit/974134d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2317](https://github.com/stacksjs/stacks/issues/2317), [#2317](https://github.com/stacksjs/stacks/issues/2317))
+- **auth**: put back the module mocks that made Auth untestable (#2316) ([6dd8dd1](https://github.com/stacksjs/stacks/commit/6dd8dd1)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2309](https://github.com/stacksjs/stacks/issues/2309), [#2316](https://github.com/stacksjs/stacks/issues/2316), [#2316](https://github.com/stacksjs/stacks/issues/2316), [#2308](https://github.com/stacksjs/stacks/issues/2308))
+- **api**: stop the API server serving the whole site (#2315) ([f5ab04d](https://github.com/stacksjs/stacks/commit/f5ab04d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2315](https://github.com/stacksjs/stacks/issues/2315), [#2315](https://github.com/stacksjs/stacks/issues/2315), [#2314](https://github.com/stacksjs/stacks/issues/2314), [#1955](https://github.com/stacksjs/stacks/issues/1955))
+- **desktop**: honor pantry craft resolution ([804c9ee](https://github.com/stacksjs/stacks/commit/804c9ee)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: preserve native modal focus ([980723d](https://github.com/stacksjs/stacks/commit/980723d)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: protect settings drafts ([b538bda](https://github.com/stacksjs/stacks/commit/b538bda)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: track buddy bot pull requests ([05aae9c](https://github.com/stacksjs/stacks/commit/05aae9c)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **dashboard**: use native loop conditionals ([95721ae](https://github.com/stacksjs/stacks/commit/95721ae)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+- **dashboard**: share search modal ([9034fc1](https://github.com/stacksjs/stacks/commit/9034fc1)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference, which had drifted by one command ([63d35ed](https://github.com/stacksjs/stacks/commit/63d35ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: document operations conventions ([616adf5](https://github.com/stacksjs/stacks/commit/616adf5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- regenerate the command reference for schedule and deploy (#2319) ([ea58e02](https://github.com/stacksjs/stacks/commit/ea58e02)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2319](https://github.com/stacksjs/stacks/issues/2319), [#2319](https://github.com/stacksjs/stacks/issues/2319))
+- **stx**: document client loop conditions ([bfe3fe7](https://github.com/stacksjs/stacks/commit/bfe3fe7)) _(by Chris Breuer <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate the OpenAPI, type and client artifacts ([5d25d93](https://github.com/stacksjs/stacks/commit/5d25d93)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Chris Breuer <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.364...v0.70.366)
 
 ## 🐛 Bug Fixes
