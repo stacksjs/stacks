@@ -40,6 +40,15 @@ const TypedRecord = defineModel({
       fillable: true,
       validation: { rule: schema.array().each(schema.string()) },
     },
+    inferredSettings: {
+      fillable: true,
+      validation: {
+        rule: schema.object({
+          enabled: schema.boolean(),
+          retries: schema.number(),
+        }),
+      },
+    },
     defaultString: { fillable: true, default: 'pending' },
     defaultNumber: { fillable: true, default: 0 },
     defaultBoolean: { fillable: true, default: false },
@@ -72,6 +81,7 @@ type InferredNumber = Expect<Equal<Row['inferredNumber'], number>>
 type InferredBoolean = Expect<Equal<Row['inferredBoolean'], boolean>>
 type InferredEnum = Expect<Equal<Row['inferredStatus'], 'draft' | 'published' | 'archived'>>
 type InferredArray = Expect<Equal<Row['inferredTags'], string[]>>
+type InferredObject = Expect<Equal<Row['inferredSettings'], { enabled: boolean, retries: number }>>
 type DefaultString = Expect<Equal<Row['defaultString'], string>>
 type DefaultNumber = Expect<Equal<Row['defaultNumber'], number>>
 type DefaultBoolean = Expect<Equal<Row['defaultBoolean'], boolean>>
@@ -92,6 +102,7 @@ TypedRecord.where('explicitNumber', 1)
 TypedRecord.where('inferredBoolean', true)
 TypedRecord.where('inferredStatus', 'published')
 TypedRecord.where('inferredTags', ['typed'])
+TypedRecord.where('inferredSettings', { enabled: true, retries: 2 })
 TypedRecord.where('nullableText', null)
 
 // @ts-expect-error explicit model tokens control query values
@@ -102,6 +113,8 @@ TypedRecord.where('inferredBoolean', 1)
 TypedRecord.where('inferredStatus', 'deleted')
 // @ts-expect-error array element types remain inferred
 TypedRecord.where('inferredTags', [123])
+// @ts-expect-error nested object values remain inferred
+TypedRecord.where('inferredSettings', { enabled: 'yes', retries: 2 })
 
 void (0 as unknown as ExplicitString)
 void (0 as unknown as SnakeCaseAlias)
@@ -114,6 +127,7 @@ void (0 as unknown as InferredNumber)
 void (0 as unknown as InferredBoolean)
 void (0 as unknown as InferredEnum)
 void (0 as unknown as InferredArray)
+void (0 as unknown as InferredObject)
 void (0 as unknown as DefaultString)
 void (0 as unknown as DefaultNumber)
 void (0 as unknown as DefaultBoolean)

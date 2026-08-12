@@ -51,7 +51,7 @@ export interface ObjectWithContextValidator<TShape extends ValidatorShape> exten
    * its own `.validate()`. Errors are aggregated by field name (matching
    * the ts-validation `ValidationErrorMap` shape).
    */
-  validate: (value: unknown) => ValidationResult
+  validate: (value: InferObjectShape<TShape>) => ValidationResult
   /** Surface the shape map for introspection. */
   getShape: () => TShape
   /** Mark the whole object as required (mirrors ts-validation). */
@@ -91,7 +91,7 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
       return isRequired
     },
     getRules: () => [],
-    test(value: Record<string, unknown>) {
+    test(value: InferObjectShape<TShape>) {
       return this.validate(value).valid
     },
     // Public + settable: a parent shape-walker (or legacy ObjectValidator
