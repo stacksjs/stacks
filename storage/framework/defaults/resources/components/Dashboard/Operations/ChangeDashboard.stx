@@ -1,0 +1,66 @@
+<script client>
+import type { ChangeOperationsResponse, ReleaseApprovalItem } from '../../../../functions/operations'
+import { decideRelease, fetchChangeOperations } from '../../../../functions/operations'
+import { pushToast } from '../../../../functions/toasts'
+
+const data = state<ChangeOperationsResponse | null>(null)
+const loading = state(true)
+const selected = state<ReleaseApprovalItem | null>(null)
+const comment = state('')
+const busy = state(false)
+
+async function load(): Promise<void> {
+  loading.set(true)
+  try { data.set(await fetchChangeOperations()) }
+  catch (error) { pushToast('error', 'Could not load change plan', { detail: String(error) }) }
+  finally { loading.set(false) }
+}
+
+async function decide(decision: 'approved' | 'rejected'): Promise<void> {
+  if (!selected()) return
+  busy.set(true)
+  try {
+    await decideRelease(selected()!.id, decision, comment())
+    pushToast('success', decision === 'approved' ? 'Release approved.' : 'Release rejected.')
+    selected.set(null)
+    await load()
+  }
+  catch (error) { pushToast('error', 'Approval decision failed', { detail: String(error) }) }
+  finally { busy.set(false) }
+}
+
+onMount(() => void load())
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Operations" description="Review application changes, safety signals, approvals, and active work in one place.">
+    <template #actions><Button variant="secondary" :loading="loading()" @click="load"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button></template>
+  </PageHeader>
+  <OperationsNavigation active="changes" />
+  <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <StatsCard title="Schema changes" :value="String(data()?.summary.migrationChanges || 0)" icon="i-hugeicons-database-01" iconBg="primary" :loading="loading()" />
+    <StatsCard title="Destructive" :value="String(data()?.summary.destructiveChanges || 0)" icon="i-hugeicons-alert-02" iconBg="warning" :loading="loading()" />
+    <StatsCard title="Approvals" :value="String(data()?.summary.approvals || 0)" icon="i-hugeicons-task-done-01" iconBg="neutral" :loading="loading()" />
+    <StatsCard title="Active operations" :value="String(data()?.summary.activeOperations || 0)" icon="i-hugeicons-loading-03" iconBg="success" :loading="loading()" />
+  </section>
+  <section class="grid gap-6 lg:grid-cols-2">
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
+      <div class="px-4 py-4 border-b border-gray-200 dark:border-neutral-800"><h2 class="font-semibold text-gray-900 dark:text-white">Change plan</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Current model and runtime changes for {{ data()?.environment?.name || 'this environment' }}.</p></div>
+      <div class="divide-y divide-gray-100 dark:divide-neutral-800">
+        <div class="flex items-center justify-between px-4 py-3"><span class="text-gray-700 text-sm dark:text-neutral-300">Model-derived schema operations</span><Badge :variant="data()?.summary.destructiveChanges ? 'warning' : 'info'">{{ data()?.summary.migrationChanges || 0 }}</Badge></div>
+        <div class="flex items-center justify-between px-4 py-3"><span class="text-gray-700 text-sm dark:text-neutral-300">Migration ledger drift</span><Badge :variant="data()?.migrations.summary.drift ? 'warning' : 'success'">{{ data()?.migrations.summary.drift ? 'Review' : 'Clean' }}</Badge></div>
+        <div class="flex items-center justify-between px-4 py-3"><span class="text-gray-700 text-sm dark:text-neutral-300">Running or queued control-plane work</span><Badge variant="default">{{ data()?.activeOperations.length || 0 }}</Badge></div>
+      </div>
+    </div>
+    <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
+      <div class="px-4 py-4 border-b border-gray-200 dark:border-neutral-800"><h2 class="font-semibold text-gray-900 dark:text-white">Release approvals</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Only native releases explicitly marked as approval-required appear here.</p></div>
+      <div :if="!loading() && !data()?.pendingReleases.length" class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No releases are awaiting approval.</div>
+      <button :for="release in data()?.pendingReleases || []" type="button" class="flex w-full items-center justify-between gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-neutral-800" @click="selected.set(release)"><div><p class="font-medium text-gray-900 text-sm dark:text-white">{{ release.sourceSha || release.id }}</p><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ release.kind }} · {{ release.strategy }}</p></div><Badge variant="warning">Review</Badge></button>
+    </div>
+  </section>
+  <OperationHistory :operations="data()?.recentOperations || []" :loading="loading()" />
+  <Modal :isOpen="Boolean(selected())" title="Release approval" description="Record an immutable approval decision for this release." size="sm" @close="selected.set(null)">
+    <Input v-model:value="comment" label="Comment" placeholder="Reason for this decision" />
+    <template #footer><Button variant="secondary" :disabled="busy()" @click="selected.set(null)">Cancel</Button><Button variant="danger" :loading="busy()" @click="decide('rejected')">Reject</Button><Button :loading="busy()" @click="decide('approved')">Approve</Button></template>
+  </Modal>
+</div>

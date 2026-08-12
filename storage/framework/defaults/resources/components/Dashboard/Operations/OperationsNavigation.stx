@@ -10,6 +10,9 @@ function linkClass(name: string): string {
 
 <nav aria-label="Operations sections" class="overflow-x-auto">
   <div class="inline-flex gap-1 p-1 min-w-max bg-gray-100 dark:bg-neutral-900 rounded-lg">
+    <StxLink to="/operations/changes" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('changes')">
+      Changes
+    </StxLink>
     <StxLink to="/operations/scheduler" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('scheduler')">
       Scheduler
     </StxLink>
@@ -18,6 +21,12 @@ function linkClass(name: string): string {
     </StxLink>
     <StxLink to="/operations/migrations" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('migrations')">
       Migrations
+    </StxLink>
+    <StxLink to="/operations/incidents" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('incidents')">
+      Incidents
+    </StxLink>
+    <StxLink to="/operations/audit" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('audit')">
+      Audit
     </StxLink>
   </div>
 </nav>

@@ -1,0 +1,39 @@
+<script client>
+import type { IncidentAlert, IncidentOperationsResponse } from '../../../../functions/operations'
+import { fetchIncidentOperations, updateIncident } from '../../../../functions/operations'
+import { pushToast } from '../../../../functions/toasts'
+
+const data = state<IncidentOperationsResponse | null>(null)
+const loading = state(true)
+const busy = state('')
+const selected = state<IncidentAlert | null>(null)
+
+async function load(): Promise<void> { loading.set(true); try { data.set(await fetchIncidentOperations()) } catch (error) { pushToast('error', 'Could not load incidents', { detail: String(error) }) } finally { loading.set(false) } }
+async function mutate(action: 'acknowledge' | 'assign_self' | 'unassign' | 'silence'): Promise<void> {
+  if (!selected()) return
+  busy.set(action)
+  try {
+    const until = action === 'silence' ? new Date(Date.now() + 60 * 60 * 1000).toISOString() : undefined
+    await updateIncident(selected()!.id, { action, until })
+    pushToast('success', action === 'silence' ? 'Alert silenced for one hour.' : 'Incident updated.')
+    selected.set(null); await load()
+  }
+  catch (error) { pushToast('error', 'Incident update failed', { detail: String(error) }) }
+  finally { busy.set('') }
+}
+function severityVariant(value: string): string { return value === 'critical' ? 'danger' : value === 'warning' ? 'warning' : 'info' }
+onMount(() => void load())
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Operations" description="Triage application-wide alerts from native health rules and delivery routes."><template #actions><Button variant="secondary" :loading="loading()" @click="load"><span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button></template></PageHeader>
+  <OperationsNavigation active="incidents" />
+  <section class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4"><StatsCard title="Firing" :value="String(data()?.summary.firing || 0)" icon="i-hugeicons-alert-02" iconBg="warning" :loading="loading()" /><StatsCard title="Critical" :value="String(data()?.summary.critical || 0)" icon="i-hugeicons-fire" iconBg="danger" :loading="loading()" /><StatsCard title="Acknowledged" :value="String(data()?.summary.acknowledged || 0)" icon="i-hugeicons-checkmark-circle-02" iconBg="success" :loading="loading()" /><StatsCard title="Active rules" :value="String(data()?.summary.rules || 0)" icon="i-hugeicons-radar-02" iconBg="neutral" :loading="loading()" /></section>
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
+    <div class="px-4 py-4 border-b border-gray-200 dark:border-neutral-800"><h2 class="font-semibold text-gray-900 dark:text-white">Incidents</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Acknowledgement does not resolve an alert. Resolution follows recovered signal evidence.</p></div>
+    <div :if="!loading() && !data()?.alerts.length" class="px-6 py-12 text-center"><span class="mx-auto h-8 w-8 text-green-500 i-hugeicons-checkmark-circle-02"></span><p class="mt-3 font-medium text-gray-900 dark:text-white">No incidents</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">No native alert is pending, firing, resolved, or silenced in this environment.</p></div>
+    <button :for="alert in data()?.alerts || []" type="button" class="flex w-full items-start justify-between gap-4 px-4 py-4 text-left border-b border-gray-100 last:border-0 dark:border-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-800" @click="selected.set(alert)"><div><div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ alert.title }}</p><Badge :variant="severityVariant(alert.severity)">{{ alert.severity }}</Badge></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ alert.state }} · {{ alert.occurrenceCount }} occurrences · {{ alert.ownerName || 'Unassigned' }}</p></div><span class="h-4 w-4 text-gray-400 i-hugeicons-arrow-right-01"></span></button>
+  </section>
+  <OperationHistory :operations="data()?.operations || []" :loading="loading()" />
+  <Modal :isOpen="Boolean(selected())" title="Incident actions" :description="selected()?.title || ''" size="sm" @close="selected.set(null)"><div class="grid gap-2"><Button variant="secondary" :loading="busy() === 'acknowledge'" @click="mutate('acknowledge')">Acknowledge</Button><Button variant="secondary" :loading="busy() === 'assign_self'" @click="mutate('assign_self')">Assign to me</Button><Button variant="secondary" :loading="busy() === 'silence'" @click="mutate('silence')">Silence for one hour</Button></div></Modal>
+</div>

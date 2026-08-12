@@ -1,0 +1,5 @@
+@extends('layouts/default')
+@section('content')
+@title('Dashboard - Operations - Incidents')
+<PageLayout><IncidentDashboard /></PageLayout>
+@endsection

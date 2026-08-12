@@ -281,3 +281,81 @@ export function applyMigrationOperations(revision: string, confirmation: string)
 export function reconcileMigrationLedger(revision: string, confirmation: string): Promise<{ success: boolean, result: Record<string, unknown>, operation: OperatorOperation }> {
   return dashboardApi('/api/dashboard/operations/migrations/reconcile', { method: 'POST', body: { revision, confirmation } })
 }
+
+export interface ReleaseApprovalItem {
+  id: string
+  sourceSha?: string
+  kind: string
+  strategy: string
+  createdAt: string
+  approvals: Array<{ decision: string, comment?: string, createdAt: string }>
+}
+
+export interface ChangeOperationsResponse {
+  environment?: { id: string, name: string, slug: string }
+  migrations: MigrationOperationsResponse
+  pendingReleases: ReleaseApprovalItem[]
+  activeOperations: OperatorOperation[]
+  recentOperations: OperatorOperation[]
+  summary: { migrationChanges: number, destructiveChanges: number, approvals: number, activeOperations: number }
+}
+
+export function fetchChangeOperations(): Promise<ChangeOperationsResponse> {
+  return dashboardApi('/api/dashboard/operations/changes')
+}
+
+export function decideRelease(id: string, decision: 'approved' | 'rejected', comment = ''): Promise<{ success: boolean }> {
+  return dashboardApi(`/api/dashboard/operations/changes/releases/${encodeURIComponent(id)}/decision`, { method: 'POST', body: { decision, comment } })
+}
+
+export interface IncidentAlert {
+  id: string
+  state: string
+  severity: string
+  title: string
+  occurrenceCount: number
+  ownerName?: string
+  acknowledgedAt?: string
+  silencedUntil?: string
+  firstSeenAt: string
+  lastSeenAt: string
+}
+
+export interface IncidentOperationsResponse {
+  alerts: IncidentAlert[]
+  rules: Array<{ id: string, name: string, severity: string, enabled: boolean }>
+  healthChecks: Array<{ id: string, name: string, kind: string, target: string, enabled: boolean }>
+  channels: Array<{ id: string, name: string, kind: string, status: string }>
+  deliveries: Array<Record<string, unknown>>
+  operations: OperatorOperation[]
+  summary: { firing: number, critical: number, acknowledged: number, rules: number }
+}
+
+export function fetchIncidentOperations(): Promise<IncidentOperationsResponse> {
+  return dashboardApi('/api/dashboard/operations/incidents')
+}
+
+export function updateIncident(id: string, input: { action: 'acknowledge' | 'assign_self' | 'unassign' | 'silence', until?: string }): Promise<{ success: boolean, alert: IncidentAlert }> {
+  return dashboardApi(`/api/dashboard/operations/incidents/${encodeURIComponent(id)}`, { method: 'PATCH', body: input })
+}
+
+export interface AuditEvent {
+  id: string
+  sequence: number
+  operationId?: string
+  actorName: string
+  type: string
+  level: string
+  payload: unknown
+  createdAt: string
+}
+
+export interface AuditOperationsResponse {
+  events: AuditEvent[]
+  operations: OperatorOperation[]
+  summary: { events: number, operators: number, failures: number, latestSequence: number }
+}
+
+export function fetchAuditOperations(): Promise<AuditOperationsResponse> {
+  return dashboardApi('/api/dashboard/operations/audit')
+}

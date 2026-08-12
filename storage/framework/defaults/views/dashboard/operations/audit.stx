@@ -1,0 +1,5 @@
+@extends('layouts/default')
+@section('content')
+@title('Dashboard - Operations - Audit')
+<PageLayout><AuditDashboard /></PageLayout>
+@endsection
