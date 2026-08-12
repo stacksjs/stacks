@@ -135,13 +135,6 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
-   * GET /api/
-   */
-  get(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/", {}, [], false, options)
-  },
-
-  /**
    * GET /api/activities
    */
   getActivities(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -4185,6 +4178,13 @@ export function createClient(config: ClientConfig) {
    */
   patchGiftCardsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/gift-cards/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * GET /api/hello
+   */
+  getHello(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/hello", {}, [], false, options)
   },
 
   /**

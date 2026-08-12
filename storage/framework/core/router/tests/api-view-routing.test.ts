@@ -22,7 +22,7 @@ import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
-import { disableViewRouting } from '../src/stacks-router'
+import { configureViewDirectories, disableViewRouting } from '../src/stacks-router'
 
 let root = ''
 let previousCwd = ''
@@ -104,6 +104,25 @@ describe('disableViewRouting', () => {
 
     const page = await router.handleRequest(new Request('http://localhost/'))
     expect(page.status).toBe(200)
+  })
+
+  it('survives the rest of what serve() does on the way past', async () => {
+    // `route.serve()` calls `configureViewDirectories()` after this, and that
+    // function hands bun-router a view config of its own. It currently backs
+    // off because switching file routing off leaves `_fileRoutingConfig`
+    // non-empty - which is bun-router's implementation detail, not a promise
+    // to us. If an upgrade moved that flag to its own field,
+    // `configureViewDirectories` would overwrite the config and every `.stx`
+    // would come back, with the test above still passing. So drive both, in
+    // the order serve() drives them.
+    const router = makeApp()
+
+    disableViewRouting(router)
+    configureViewDirectories(router)
+    await initFileRoutes(router)
+
+    const page = await router.handleRequest(new Request('http://localhost/'))
+    expect(page.status).toBe(404)
   })
 
   it('does nothing on a router that cannot switch it off', async () => {

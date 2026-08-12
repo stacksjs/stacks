@@ -3591,6 +3591,15 @@ export function configureViewDirectories(bunRouter: Router): void {
  * specific" rule {@link configureViewDirectories} follows. Route files run
  * before this does, so asking for it from `routes/*.ts` works.
  *
+ * The two functions are coupled and the coupling is bun-router's, not ours:
+ * `serve()` calls {@link configureViewDirectories} after this, and that only
+ * backs off because `disableFileRouting()` happens to leave a non-empty
+ * `_fileRoutingConfig` behind. Were that flag ever to move to a field of its
+ * own, `configureViewDirectories` would overwrite the config and re-mount every
+ * template. `api-view-routing.test.ts` drives both, in that order, so the
+ * upgrade that changes it fails a test rather than quietly restoring the site
+ * to the API port.
+ *
  * @returns whether file routing was switched off by this call.
  */
 export function disableViewRouting(bunRouter: Router): boolean {

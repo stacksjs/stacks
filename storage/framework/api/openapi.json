@@ -215,31 +215,6 @@
         }
       }
     },
-    "/api/": {
-      "get": {
-        "summary": "/api/",
-        "operationId": "get__api_",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/api/activities": {
       "get": {
         "summary": "/api/activities",
@@ -16722,6 +16697,31 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/hello": {
+      "get": {
+        "summary": "/api/hello",
+        "operationId": "get__api_hello",
+        "parameters": [],
         "responses": {
           "200": {
             "description": "Successful response",
