@@ -7,7 +7,7 @@ import type { Faker as BaseFaker } from '@stacksjs/ts-faker'
  */
 
 interface DatatypeCompatibility {
-  boolean: () => boolean
+  boolean: (options?: { probability?: number }) => boolean
   number: (options?: { min?: number; max?: number }) => number
   float: (options?: { min?: number; max?: number; precision?: number }) => number
   uuid: () => string
@@ -17,8 +17,8 @@ interface DatatypeCompatibility {
 
 // datatype module for boolean, number generation (compatibility with @faker-js/faker)
 const datatype: DatatypeCompatibility = {
-  boolean(): boolean {
-    return baseFaker.random.boolean()
+  boolean(options?: { probability?: number }): boolean {
+    return baseFaker.random.boolean(options?.probability)
   },
   number(options?: { min?: number; max?: number }): number {
     return baseFaker.number.int({ min: options?.min ?? 0, max: options?.max ?? 100 })
@@ -40,6 +40,49 @@ const datatype: DatatypeCompatibility = {
     }
     return arr
   },
+}
+
+interface NumberCompatibility {
+  int: (options?: number | { min?: number, max?: number, precision?: number }) => number
+  float: (options?: { min?: number, max?: number, precision?: number, fractionDigits?: number }) => number
+}
+
+type EnhancedNumber = Omit<typeof baseFaker.number, keyof NumberCompatibility> & NumberCompatibility
+
+const number = Object.create(baseFaker.number) as EnhancedNumber
+number.int = (options?: number | { min?: number, max?: number, precision?: number }): number => {
+  return baseFaker.number.int(typeof options === 'number' ? { max: options } : options)
+}
+number.float = (options?: { min?: number, max?: number, precision?: number, fractionDigits?: number }): number => {
+  if (!options) return baseFaker.number.float()
+  const { fractionDigits, ...rest } = options
+  return baseFaker.number.float({
+    ...rest,
+    precision: rest.precision ?? fractionDigits,
+  })
+}
+
+interface StringCompatibility {
+  alphanumeric: (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }) => string
+}
+
+type EnhancedString = Omit<typeof baseFaker.string, keyof StringCompatibility> & StringCompatibility
+
+const string = Object.create(baseFaker.string) as EnhancedString
+string.alphanumeric = (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }): string => {
+  return baseFaker.string.alphanumeric(typeof options === 'number' ? { length: options } : options)
+}
+
+interface FinanceCompatibility {
+  creditCardNumber: (options?: string | { issuer?: string, formatted?: boolean }) => string
+}
+
+type EnhancedFinance = Omit<typeof baseFaker.finance, keyof FinanceCompatibility> & FinanceCompatibility
+
+const finance = Object.create(baseFaker.finance) as EnhancedFinance
+finance.creditCardNumber = (options?: string | { issuer?: string, formatted?: boolean }): string => {
+  if (typeof options !== 'string') return baseFaker.finance.creditCardNumber(options)
+  return options.replace(/#/g, () => baseFaker.string.numeric(1))
 }
 
 /**
@@ -187,6 +230,7 @@ interface HelpersCompatibility {
   maybe: <T>(callback: () => T, options?: { probability?: number }) => T | undefined
   objectKey: <T extends object>(obj: T) => keyof T
   objectValue: <T extends object>(obj: T) => T[keyof T]
+  slugify: (value: string) => string
 }
 
 type EnhancedHelpers = Omit<typeof baseFaker.helpers, keyof HelpersCompatibility> & HelpersCompatibility
@@ -237,6 +281,15 @@ const helpers: EnhancedHelpers = {
     const values = Object.values(obj)
     if (values.length === 0) throw new Error('objectValue: object has no values')
     return values[Math.floor(Math.random() * values.length)] as T[keyof T]
+  },
+  slugify(value: string): string {
+    return value
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036F]/g, '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
   },
 } as EnhancedHelpers
 
@@ -369,9 +422,12 @@ interface FakerCompatibility {
   company: typeof company
   vehicle: typeof vehicle
   helpers: typeof helpers
+  number: typeof number
+  string: typeof string
+  finance: typeof finance
 }
 
-type EnhancedFaker = Omit<typeof baseFaker, keyof FakerCompatibility> & FakerCompatibility
+export type EnhancedFaker = Omit<typeof baseFaker, keyof FakerCompatibility> & FakerCompatibility
 
 export const faker = {
   ...baseFaker,
@@ -382,6 +438,9 @@ export const faker = {
   company,
   vehicle,
   helpers,
+  number,
+  string,
+  finance,
 } as EnhancedFaker
 
-export type Faker = BaseFaker
+export type Faker = EnhancedFaker

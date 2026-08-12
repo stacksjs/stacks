@@ -26,6 +26,17 @@ describe('@stacksjs/faker', () => {
     expect(num).toBeLessThanOrEqual(100)
   })
 
+  it('supports the legacy numeric shorthand used by model factories', () => {
+    const integer = faker.number.int(10)
+    const decimal = faker.number.float({ min: 1, max: 2, fractionDigits: 3 })
+
+    expect(integer).toBeGreaterThanOrEqual(0)
+    expect(integer).toBeLessThanOrEqual(10)
+    expect(decimal).toBeGreaterThanOrEqual(1)
+    expect(decimal).toBeLessThanOrEqual(2)
+    expect(decimal.toString().split('.')[1]?.length ?? 0).toBeLessThanOrEqual(3)
+  })
+
   it('faker.lorem.sentence() returns a non-empty string', () => {
     const sentence = faker.lorem.sentence()
     expect(typeof sentence).toBe('string')
@@ -47,6 +58,11 @@ describe('@stacksjs/faker', () => {
     expect(uuid).toMatch(/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i)
   })
 
+  it('supports numeric string lengths and credit-card patterns', () => {
+    expect(faker.string.alphanumeric(12)).toHaveLength(12)
+    expect(faker.finance.creditCardNumber('####-####')).toMatch(/^\d{4}-\d{4}$/)
+  })
+
   it('faker.helpers.arrayElement() picks from provided array', () => {
     const options = ['a', 'b', 'c']
     const picked = faker.helpers.arrayElement(options)
@@ -56,6 +72,12 @@ describe('@stacksjs/faker', () => {
   it('faker.datatype.boolean() returns a boolean', () => {
     const value = faker.datatype.boolean()
     expect(typeof value).toBe('boolean')
+  })
+
+  it('supports probability options and slug generation', () => {
+    expect(faker.datatype.boolean({ probability: 1 })).toBe(true)
+    expect(faker.datatype.boolean({ probability: 0 })).toBe(false)
+    expect(faker.helpers.slugify('Already Typed!')).toBe('already-typed')
   })
 
   it('faker.datatype.uuid() returns a UUID string', () => {
