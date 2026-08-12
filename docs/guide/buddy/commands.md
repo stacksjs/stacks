@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **289 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **292 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -52,7 +52,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `realtime` | 2 |
 | `route` | 1 |
 | `scaffold` | 1 |
-| `schedule` | 3 |
+| `schedule` | 6 |
 | `search` | 2 |
 | `search-engine` | 2 |
 | `seed` | 1 |
@@ -795,14 +795,15 @@ Deploy your project
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--domain` | Specify a domain to deploy to | boolean, optional | — |
+| `--domain` | Specify a domain to deploy to | value, required | — |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--prod` | Deploy to production | boolean, optional | `true` |
+| `--prod` | Deploy to production | boolean, optional | `false` |
 | `--dev` | Deploy to development | boolean, optional | `false` |
 | `--yes` | Confirm all prompts by default | boolean, optional | `false` |
 | `--site` | Deploy only this one site to the existing server (multi-tenant surgical add) | value, required | — |
 | `--staging` | Deploy to staging | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
+| `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `desktop:apple:csr`
@@ -3864,6 +3865,24 @@ Examples:
 buddy scaffold:crud Post --fields=title:string,body:text,published:boolean
 ```
 
+### `schedule:disable`
+
+Pause a scheduled task without editing source
+
+- Usage: `$ buddy schedule:disable <name>`
+- Namespace: `schedule`
+- Aliases: none
+- Arguments: `<name>`
+
+### `schedule:enable`
+
+Resume a paused scheduled task
+
+- Usage: `$ buddy schedule:enable <name>`
+- Namespace: `schedule`
+- Aliases: none
+- Arguments: `<name>`
+
 ### `schedule:list`
 
 List all registered scheduled tasks with their next run time
@@ -3872,6 +3891,10 @@ List all registered scheduled tasks with their next run time
 - Namespace: `schedule`
 - Aliases: none
 - Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print a machine-readable schedule registry | boolean, optional | `false` |
 
 ### `schedule:run`
 
@@ -3887,6 +3910,15 @@ Run the scheduler
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
+### `schedule:run-one`
+
+Run one registered scheduled task immediately
+
+- Usage: `$ buddy schedule:run-one <name>`
+- Namespace: `schedule`
+- Aliases: none
+- Arguments: `<name>`
+
 ### `schedule:status`
 
 Show currently-held overlap locks (this-process only)
@@ -3895,6 +3927,10 @@ Show currently-held overlap locks (this-process only)
 - Namespace: `schedule`
 - Aliases: none
 - Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print machine-readable scheduler status | boolean, optional | `false` |
 
 ### `search-engine:settings`
 
