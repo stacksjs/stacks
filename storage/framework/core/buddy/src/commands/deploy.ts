@@ -1,4 +1,4 @@
-import type { CLI, DeployOptions } from '@stacksjs/types'
+import type { CLI, DeploymentPreview, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -17,6 +17,7 @@ import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, unbackedDataMessage } from '../unbacked-data'
+import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -3463,50 +3464,94 @@ export function deploy(buddy: CLI): void {
 
   buddy
     .command('deploy [env]', descriptions.deploy)
-    .option('--domain', descriptions.domain, { default: undefined })
+    .option('--domain <domain>', descriptions.domain, { default: undefined })
     .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--prod', descriptions.production, { default: true })
+    .option('--prod', descriptions.production, { default: false })
     .option('--dev', descriptions.development, { default: false })
     .option('--yes', descriptions.yes, { default: false })
     .option('--site <name>', 'Deploy only this one site to the existing server (multi-tenant surgical add)', { default: undefined })
     .option('--staging', descriptions.staging, { default: false })
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
+    .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (envArg: string | undefined, options: DeployOptions & { docker?: boolean, dryRun?: boolean }) => {
+    .action(async (envArg: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
-      // `--dry-run` is registered globally, and every other command honours
-      // it. Deploy read the flag and did nothing with it: `buddy deploy
-      // --dry-run` provisioned, shipped a release tarball, started systemd
-      // units, reloaded the gateway, and wrote DNS — the full production
-      // deploy, from the one invocation a person runs precisely because they
-      // are not ready to do that yet.
-      //
-      // Refuse rather than half-simulate. Reporting a plan means predicting
-      // what provisioning, packaging, and each site's preStart would do, and
-      // a plan that quietly diverges from the real run is worse than no plan:
-      // it gets trusted. An explicit refusal costs one flag to get past and
-      // cannot mislead.
-      // Read argv rather than the parsed option. Which key a global flag
-      // lands on is clapp's business and has changed before; if `--dry-run`
-      // ever stops mapping to `dryRun`, an options-based check turns back
-      // into a silent full deploy. argv is what the user actually typed.
+      // Read argv in addition to the parsed option. Which key a global flag
+      // lands on is clapp's business and has changed before; the literal argv
+      // check guarantees that a requested preview can never fall through into
+      // the mutating deployment pipeline.
       const askedForDryRun = process.argv.includes('--dry-run')
-        || (options as { dryRun?: boolean }).dryRun === true
-
-      if (askedForDryRun) {
-        log.error('`buddy deploy --dry-run` is not supported.')
-        log.info('Deploy has no preview mode: provisioning, release shipping, and DNS all mutate real infrastructure.')
-        log.info('To see what would ship without touching the server, inspect `config/cloud.ts` sites, or run `buddy deploy --site <name>` to narrow a real deploy to one site.')
-        process.exit(ExitCode.FatalError)
-      }
+        || options.dryRun === true
 
       // Resolve the target environment from the positional arg or the
       // --staging/--dev/--prod flags (the flags were previously ignored, so
       // `buddy deploy --staging` silently deployed production).
-      const deployEnv = envArg
-        || (options.staging ? 'staging' : options.dev ? 'development' : 'production')
-      const deployEnvName = deployEnv === 'prod' ? 'production' : deployEnv === 'dev' ? 'development' : deployEnv
+      const optionEnvironment = (options as unknown as { env?: string }).env
+      const deployEnvName = resolveDeploymentEnvironment({
+        positional: envArg,
+        option: optionEnvironment,
+        staging: options.staging,
+        development: options.dev,
+      })
+      const deployEnv = deployEnvName
+
+      try {
+        applyDeploymentDomainOverride({}, options.domain)
+      }
+      catch (error) {
+        log.error(getErrorMessage(error))
+        process.exit(ExitCode.InvalidArgument)
+      }
+
+      if (askedForDryRun) {
+        // A preview evaluates the target environment and cloud model, then
+        // exits before prerequisites, builds, packaging, hooks, providers,
+        // persistence, DNS, or TLS can mutate anything.
+        process.env.APP_ENV = deployEnvName
+        const envFile = deployEnvName === 'production' ? '.env.production' : `.env.${deployEnvName}`
+        if (existsSync(p.projectPath(envFile))) {
+          try {
+            const { loadEnv } = await import('@stacksjs/env')
+            loadEnv({ path: envFile, env: deployEnvName, keysFile: '.env.keys', overload: true, quiet: true })
+          }
+          catch (error) {
+            log.debug(`Could not load ${envFile} for preview: ${getErrorMessage(error)}`)
+          }
+        }
+
+        const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
+        const { resolveSiteKind } = await loadTsCloudDeployApi()
+        const unbacked = tsCloudConfig ? findUnbackedManagedServices(tsCloudConfig) : []
+        let plan: DeploymentPreview
+        try {
+          plan = createDeploymentPreview({
+            config: tsCloudConfig,
+            environment: deployEnvName,
+            site: options.site,
+            domain: options.domain,
+            docker: options.docker === true,
+            fallbackProjectName: app.name,
+            fallbackProjectSlug: app.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'app',
+            fallbackProvider: 'aws',
+            fallbackMode: (cloudConfig as { mode?: string }).mode || 'server',
+            fallbackRegion: process.env.AWS_REGION || 'us-east-1',
+            resolveSiteKind,
+            applyEnvironmentToSites,
+            warnings: unbacked.length > 0 ? [unbackedDataMessage(unbacked)] : [],
+          })
+        }
+        catch (error) {
+          log.error(getErrorMessage(error))
+          process.exit(ExitCode.InvalidArgument)
+        }
+
+        if (options.json || process.argv.includes('--json'))
+          console.log(`${deploymentPreviewJsonPrefix}${JSON.stringify(plan)}`)
+        else
+          process.stdout.write(formatDeploymentPreview(plan))
+        return
+      }
 
       // Resolved BEFORE the prerequisites, because which env file has to be in
       // place is the first thing they check.
@@ -3538,7 +3583,7 @@ export function deploy(buddy: CLI): void {
       // Route them off early, before any AWS credential / domain checks run.
       const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
       if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'hetzner') {
-        await deployToHetzner(tsCloudConfig, deployEnv, options)
+        await deployToHetzner(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options)
         return
       }
 
@@ -3572,7 +3617,7 @@ export function deploy(buddy: CLI): void {
       const envUrl = env.APP_URL
       const domain = options.domain || productionUrl || envUrl || app.url
 
-      if ((options.prod || deployEnv === 'production' || deployEnv === 'prod') && !options.yes)
+      if (deployEnvName === 'production' && !options.yes)
         await confirmProductionDeployment()
 
       if (!domain) {

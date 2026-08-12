@@ -16,6 +16,23 @@ The deployment workflow for Stacks applications.
 buddy deploy
 ```
 
+Preview the complete environment-aware plan before changing anything:
+
+```bash
+buddy deploy --dry-run
+buddy deploy --dry-run --env staging
+buddy deploy --dry-run --site docs
+buddy deploy --dry-run --json
+```
+
+The preview uses the same environment transformation and ts-cloud site
+classification as a real deploy. It reports the ordered validation,
+infrastructure, build, package, release, runtime, gateway, DNS, TLS, and
+optional container operations. It exits before prerequisite setup, builds,
+packaging, hooks, provider calls, persistence, DNS, TLS, or service restarts.
+The JSON form emits a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for API and
+tool consumers.
+
 ## Deployment Prerequisites
 
 1. **AWS credentials configured**: `buddy configure:aws`
@@ -87,6 +104,7 @@ buddy deploy
 
 ```bash
 buddy deploy                  # deploy to cloud
+buddy deploy --dry-run        # preview without changing anything
 buddy cloud --diff            # preview infrastructure changes before deploying
 buddy cloud --ssh             # SSH into deployed server
 buddy cloud:remove            # tear down infrastructure
