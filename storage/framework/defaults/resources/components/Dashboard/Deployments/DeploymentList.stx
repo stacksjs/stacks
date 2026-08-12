@@ -1,8 +1,8 @@
 <script client>
-import type { DeploymentRecord } from '../../../../functions/deployments'
+import type { DeploymentRecord, DeploymentRollbackPlan } from '../../../../functions/deployments'
 import type { DeploymentPreview } from '@stacksjs/types'
 import { dashboardApi } from '../../../../functions/dashboard-api'
-import { fetchDeployments, summarizeDeployments } from '../../../../functions/deployments'
+import { fetchDeployments, previewDeploymentRollback, runDeploymentRollback, summarizeDeployments } from '../../../../functions/deployments'
 import { pushToast } from '../../../../functions/toasts'
 
 interface DeploymentStartResponse {
@@ -23,6 +23,12 @@ const isPreviewing = state(false)
 const previewPlan = state<DeploymentPreview | null>(null)
 const environment = state('production')
 const domain = state('')
+const showRollbackModal = state(false)
+const rollbackPlan = state<DeploymentRollbackPlan | null>(null)
+const rollbackSite = state('')
+const rollbackRelease = state('')
+const rollbackConfirmation = state('')
+const isRollingBack = state(false)
 const summary = derived(() => summarizeDeployments(deployments()))
 const environmentOptions = [
   { value: 'production', label: 'Production' },
@@ -140,6 +146,54 @@ function continueFromPreview(): void {
   openDeploymentDialog('deploy')
 }
 
+function openRollback(): void {
+  rollbackPlan.set(null)
+  rollbackConfirmation.set('')
+  showRollbackModal.set(true)
+}
+
+async function previewRollback(): Promise<void> {
+  isRollingBack.set(true)
+  try {
+    const result = await previewDeploymentRollback({
+      environment: environment(),
+      site: rollbackSite().trim() || undefined,
+      release: rollbackRelease().trim() || undefined,
+    })
+    rollbackPlan.set(result.plan)
+  }
+  catch (error) {
+    pushToast('error', 'Could not preview rollback', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    isRollingBack.set(false)
+  }
+}
+
+async function confirmRollback(): Promise<void> {
+  const plan = rollbackPlan()
+  if (!plan) return
+  isRollingBack.set(true)
+  try {
+    const result = await runDeploymentRollback({
+      environment: environment(),
+      site: rollbackSite().trim() || undefined,
+      release: rollbackRelease().trim() || undefined,
+      revision: plan.revision,
+      confirmation: rollbackConfirmation(),
+    })
+    showRollbackModal.set(false)
+    pushToast('success', result.message)
+    await loadDeployments()
+  }
+  catch (error) {
+    pushToast('error', 'Rollback failed', { detail: error instanceof Error ? error.message : String(error) })
+  }
+  finally {
+    isRollingBack.set(false)
+  }
+}
+
 onMount(() => {
   void loadDeployments()
 })
@@ -154,6 +208,9 @@ onMount(() => {
     <div class="flex gap-2 items-center">
       <Button :disabled="isStarting() || isPreviewing()" variant="outline" @click="openDeploymentDialog('preview')">
         Preview
+      </Button>
+      <Button :disabled="isStarting() || isPreviewing() || isRollingBack()" variant="secondary" @click="openRollback">
+        Rollback
       </Button>
       <Button :disabled="isStarting() || isPreviewing()" @click="openDeploymentDialog('deploy')">
         Deploy
@@ -253,4 +310,36 @@ onMount(() => {
   </Modal>
 
   <DeploymentPreviewDialog :plan="previewPlan" @close="previewPlan.set(null)" @deploy="continueFromPreview" />
+
+  <Modal :isOpen="showRollbackModal()" title="Rollback deployment" description="Preview and validate a preserved release before changing the active runtime." size="lg" @close="showRollbackModal.set(false)">
+    <div class="space-y-4">
+      <div class="grid gap-4 sm:grid-cols-2">
+        <Select v-model:value="environment" :options="environmentOptions" label="Environment" placeholder="" />
+        <Input v-model:value="rollbackSite" label="Site" placeholder="All application sites" hint="Optional site slug." />
+      </div>
+      <Input v-model:value="rollbackRelease" label="Preserved release" placeholder="Previous release" hint="Optional. Leave blank to use the previous preserved release." />
+      <template :if="rollbackPlan()">
+        <div class="p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 rounded-lg dark:border-neutral-800">
+          <div class="flex gap-3 items-start">
+            <span aria-hidden="true" class="shrink-0 mt-0.5 h-5 w-5 text-blue-600 i-hugeicons-git-pull-request"></span>
+            <div>
+              <p class="font-semibold text-gray-900 text-sm dark:text-white">Validated rollback to {{ rollbackPlan()?.target }}</p>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ rollbackPlan()?.site || 'All sites' }} in {{ rollbackPlan()?.environment }}</p>
+            </div>
+          </div>
+          <pre class="mt-4 p-3 max-h-40 overflow-auto whitespace-pre-wrap font-mono text-neutral-600 text-xs dark:text-neutral-300 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-md dark:border-neutral-800">{{ rollbackPlan()?.output }}</pre>
+        </div>
+        <div :for="warning in rollbackPlan()?.warnings || []" class="flex gap-2 items-start text-orange-800 text-sm dark:text-orange-200">
+          <span aria-hidden="true" class="shrink-0 mt-0.5 h-4 w-4 i-hugeicons-alert-02"></span>
+          <span>{{ warning }}</span>
+        </div>
+        <Input v-model:value="rollbackConfirmation" label="Confirmation" :placeholder="'rollback ' + environment()" :hint="'Type rollback ' + environment() + ' to continue.'" autocomplete="off" />
+      </template>
+    </div>
+    <template #footer>
+      <Button variant="secondary" :disabled="isRollingBack()" @click="showRollbackModal.set(false)">Cancel</Button>
+      <Button :if="!rollbackPlan()" :loading="isRollingBack()" @click="previewRollback">Preview rollback</Button>
+      <Button :if="rollbackPlan()" variant="danger" :loading="isRollingBack()" @click="confirmRollback">Rollback deployment</Button>
+    </template>
+  </Modal>
 </div>

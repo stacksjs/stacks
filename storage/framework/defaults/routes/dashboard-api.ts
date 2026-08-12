@@ -162,6 +162,8 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.get('/deployments', 'Actions/Dashboard/Deployments/GetDeployments'))
   guard(route.post('/deployments', 'Actions/Dashboard/Deployments/CreateDeployment'))
   guard(route.post('/deployments/preview', 'Actions/Dashboard/Deployments/PreviewDeployment'))
+  guard(route.post('/deployments/rollback/preview', 'Actions/Dashboard/Deployments/PreviewDeploymentRollback'))
+  guard(route.post('/deployments/rollback', 'Actions/Dashboard/Deployments/CreateDeploymentRollback'))
   guard(route.get('/deployments/count', 'Actions/Dashboard/Deployments/GetDeploymentCount'))
   guard(route.get('/deployments/recent', 'Actions/Dashboard/Deployments/GetRecentDeployments'))
   guard(route.get('/deployments/avg-time', 'Actions/Dashboard/Deployments/GetAverageDeploymentTime'))
