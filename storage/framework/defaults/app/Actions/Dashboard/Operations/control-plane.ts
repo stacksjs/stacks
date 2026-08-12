@@ -41,11 +41,11 @@ export async function dashboardOperator(request: RequestInstance): Promise<Contr
     })
 }
 
-function activeEnvironmentId(controlPlane: DashboardControlPlane): string | undefined {
+export function operationsEnvironment(controlPlane = operationsControlPlane()) {
   const requested = String(process.env.CLOUD_ENV || process.env.APP_ENV || process.env.NODE_ENV || 'development').toLowerCase()
-  return controlPlane.environments.get(requested)?.id
-    ?? controlPlane.environments.get('development')?.id
-    ?? controlPlane.environments.values().next().value?.id
+  return controlPlane.environments.get(requested)
+    ?? controlPlane.environments.get('development')
+    ?? controlPlane.environments.values().next().value
 }
 
 export async function trackOperatorOperation<T extends JsonValue>(
@@ -58,7 +58,7 @@ export async function trackOperatorOperation<T extends JsonValue>(
   const actor = await dashboardOperator(request)
   let operation = controlPlane.store.createOperation({
     projectId: controlPlane.project.id,
-    environmentId: activeEnvironmentId(controlPlane),
+    environmentId: operationsEnvironment(controlPlane)?.id,
     actorId: actor.id,
     kind,
     input,
@@ -115,6 +115,24 @@ export async function trackOperatorOperation<T extends JsonValue>(
     })
     throw error
   }
+}
+
+export async function appendOperatorEvent(
+  request: RequestInstance,
+  type: string,
+  payload: JsonValue,
+  resourceId?: string,
+): Promise<void> {
+  const controlPlane = operationsControlPlane()
+  const actor = await dashboardOperator(request)
+  controlPlane.store.appendEvent({
+    organizationId: controlPlane.organization.id,
+    projectId: controlPlane.project.id,
+    resourceId,
+    actorId: actor.id,
+    type,
+    payload,
+  })
 }
 
 export function recentOperatorOperations(prefix: string, limit = 20): Array<ControlPlaneOperation & { actorName: string }> {

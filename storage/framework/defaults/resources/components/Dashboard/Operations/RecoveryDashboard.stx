@@ -1,0 +1,229 @@
+<script client>
+import type {
+  RecoveryDestinationInput,
+  RecoveryOperationsResponse,
+  RecoveryPoint,
+  RecoveryPolicyInput,
+  RestorePlanInput,
+} from '../../../../functions/operations'
+import {
+  createRecoveryDestination,
+  createRecoveryPolicy,
+  fetchRecoveryOperations,
+  planRecoveryRestore,
+  protectRecoveryPoint,
+  runRecoveryPolicy,
+  runRecoveryRetention,
+  testRecoveryDestination,
+  verifyRecoveryPoint,
+} from '../../../../functions/operations'
+import { pushToast } from '../../../../functions/toasts'
+
+const data = state<RecoveryOperationsResponse | null>(null)
+const isLoading = state(true)
+const loadError = state('')
+const busyId = state('')
+const showDestination = state(false)
+const showPolicy = state(false)
+const destinationBusy = state(false)
+const policyBusy = state(false)
+const restorePoint = state<RecoveryPoint | null>(null)
+const restorePlan = state<{ mode: string, target: Record<string, unknown>, warnings: string[] } | null>(null)
+const restoreBusy = state(false)
+
+function summary(): RecoveryOperationsResponse['summary'] {
+  return data()?.summary || { policies: 0, protected: 0, missedRpo: 0, unverified: 0, queuedJobs: 0, latestPoint: null }
+}
+
+function formatDate(value: string | null): string {
+  if (!value) return 'No recovery point'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+
+async function loadRecovery(): Promise<void> {
+  isLoading.set(true)
+  loadError.set('')
+  try {
+    data.set(await fetchRecoveryOperations())
+  }
+  catch (error) {
+    loadError.set('Recovery operations could not be loaded.')
+    pushToast('error', 'Could not load recovery operations', { detail: String(error) })
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+async function saveDestination(input: RecoveryDestinationInput | CustomEvent<RecoveryDestinationInput>): Promise<void> {
+  destinationBusy.set(true)
+  try {
+    await createRecoveryDestination(input instanceof CustomEvent ? input.detail : input)
+    showDestination.set(false)
+    pushToast('success', 'Recovery destination connected')
+    await loadRecovery()
+  }
+  catch (error) {
+    pushToast('error', 'Could not connect destination', { detail: String(error) })
+  }
+  finally { destinationBusy.set(false) }
+}
+
+async function savePolicy(input: RecoveryPolicyInput | CustomEvent<RecoveryPolicyInput>): Promise<void> {
+  policyBusy.set(true)
+  try {
+    await createRecoveryPolicy(input instanceof CustomEvent ? input.detail : input)
+    showPolicy.set(false)
+    pushToast('success', 'Recovery policy created')
+    await loadRecovery()
+  }
+  catch (error) {
+    pushToast('error', 'Could not create policy', { detail: String(error) })
+  }
+  finally { policyBusy.set(false) }
+}
+
+async function testDestination(id: string): Promise<void> {
+  busyId.set(`${id}:test`)
+  try {
+    const result = await testRecoveryDestination(id)
+    pushToast('success', result.message)
+    await loadRecovery()
+  }
+  catch (error) { pushToast('error', 'Destination test failed', { detail: String(error) }) }
+  finally { busyId.set('') }
+}
+
+async function runPolicy(id: string): Promise<void> {
+  busyId.set(`${id}:run`)
+  try {
+    const result = await runRecoveryPolicy(id)
+    pushToast('success', result.message)
+    await loadRecovery()
+  }
+  catch (error) { pushToast('error', 'Backup could not be queued', { detail: String(error) }) }
+  finally { busyId.set('') }
+}
+
+async function verifyPoint(id: string | CustomEvent<string>): Promise<void> {
+  const pointId = typeof id === 'string' ? id : id.detail
+  busyId.set(`${pointId}:verify`)
+  try {
+    const result = await verifyRecoveryPoint(pointId)
+    pushToast('success', result.message)
+    await loadRecovery()
+  }
+  catch (error) { pushToast('error', 'Verification could not be queued', { detail: String(error) }) }
+  finally { busyId.set('') }
+}
+
+function openRestore(point: RecoveryPoint | CustomEvent<RecoveryPoint>): void {
+  restorePlan.set(null)
+  restorePoint.set(point instanceof CustomEvent ? point.detail : point)
+}
+
+async function restore(input: RestorePlanInput | CustomEvent<RestorePlanInput>): Promise<void> {
+  const value = input instanceof CustomEvent ? input.detail : input
+  const point = restorePoint()
+  if (!point) return
+  restoreBusy.set(true)
+  try {
+    const result = await planRecoveryRestore(point.id, value)
+    restorePlan.set(result.plan)
+    if (result.productionExecutionCreated) {
+      pushToast('success', value.drill ? 'Recovery drill queued' : 'Restore queued')
+      restorePoint.set(null)
+      restorePlan.set(null)
+      await loadRecovery()
+    }
+  }
+  catch (error) { pushToast('error', value.execute ? 'Restore could not be queued' : 'Restore plan is not safe yet', { detail: String(error) }) }
+  finally { restoreBusy.set(false) }
+}
+
+async function protect(detail: { id: string, pinned: boolean } | CustomEvent<{ id: string, pinned: boolean }>): Promise<void> {
+  const value = detail instanceof CustomEvent ? detail.detail : detail
+  busyId.set(`${value.id}:protect`)
+  try {
+    await protectRecoveryPoint(value.id, { pinned: value.pinned })
+    pushToast('success', value.pinned ? 'Recovery point pinned' : 'Recovery point unpinned')
+    await loadRecovery()
+  }
+  catch (error) { pushToast('error', 'Protection could not be updated', { detail: String(error) }) }
+  finally { busyId.set('') }
+}
+
+async function retention(): Promise<void> {
+  busyId.set('retention')
+  try {
+    const result = await runRecoveryRetention()
+    pushToast('success', result.message)
+    await loadRecovery()
+  }
+  catch (error) { pushToast('error', 'Retention could not be queued', { detail: String(error) }) }
+  finally { busyId.set('') }
+}
+
+onMount(() => { void loadRecovery() })
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Operations" description="Backup coverage, independent verification, restore planning, and recovery drills from the native control plane.">
+    <template #actions>
+      <Button variant="outline" :disabled="isLoading()" @click="showDestination.set(true)">Connect destination</Button>
+      <Button :disabled="isLoading() || (data()?.destinations.length || 0) === 0" @click="showPolicy.set(true)">Create policy</Button>
+      <Button variant="secondary" :loading="isLoading()" @click="loadRecovery"><span :if="!isLoading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+    </template>
+  </PageHeader>
+  <OperationsNavigation active="recovery" />
+
+  <div :if="loadError()" role="alert" class="flex flex-col gap-3 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900 sm:flex-row sm:items-center sm:justify-between"><span>{{ loadError() }}</span><Button size="sm" variant="secondary" @click="loadRecovery">Try again</Button></div>
+
+  <div :if="!isLoading() && (data()?.destinations.length || 0) === 0" class="flex flex-col gap-4 p-5 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-xl dark:border-amber-900 sm:flex-row sm:items-center sm:justify-between">
+    <div><p class="font-semibold">No recovery destination is connected</p><p class="mt-1 text-sm">Nothing is protected yet. Connect object storage or AWS Backup, then run its health test before creating policies.</p></div>
+    <Button @click="showDestination.set(true)">Connect destination</Button>
+  </div>
+
+  <section aria-label="Recovery summary" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+    <StatsCard title="Policies" :value="String(summary().policies)" icon="i-hugeicons-shield-02" iconBg="primary" :loading="isLoading()" />
+    <StatsCard title="Protected" :value="String(summary().protected)" icon="i-hugeicons-checkmark-badge-01" iconBg="success" :loading="isLoading()" />
+    <StatsCard title="Missed RPO" :value="String(summary().missedRpo)" icon="i-hugeicons-alert-02" iconBg="danger" :loading="isLoading()" />
+    <StatsCard title="Unverified" :value="String(summary().unverified)" icon="i-hugeicons-search-02" iconBg="warning" :loading="isLoading()" />
+    <StatsCard title="Latest point" :value="formatDate(summary().latestPoint)" icon="i-hugeicons-clock-01" iconBg="neutral" :loading="isLoading()" />
+  </section>
+
+  <section>
+    <div class="flex flex-col gap-3 mb-3 sm:flex-row sm:items-end sm:justify-between">
+      <div><h2 class="font-semibold text-gray-900 dark:text-white">Destinations and policies</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Coverage is healthy only when a destination is healthy and the latest point meets its RPO.</p></div>
+      <Button size="sm" variant="outline" :loading="busyId() === 'retention'" :disabled="busyId() !== ''" @click="retention">Run retention</Button>
+    </div>
+    <div class="grid gap-4 lg:grid-cols-2">
+      <Card title="Destinations" subtitle="Credential material is encrypted and never returned to this page." padding="none">
+        <div :if="(data()?.destinations.length || 0) === 0" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No destinations connected</div>
+        <ul :if="(data()?.destinations.length || 0) > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <li :for="destination in data()?.destinations || []" class="flex gap-4 items-center justify-between px-5 py-4">
+            <div><div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ destination.name }}</p><Badge :variant="destination.status === 'healthy' ? 'success' : destination.status === 'failing' ? 'danger' : 'warning'" dot>{{ destination.status }}</Badge></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ destination.provider }} · {{ destination.bucket || 'Provider vault' }} · {{ destination.region || 'Default region' }}</p></div>
+            <Button size="sm" variant="outline" :loading="busyId() === destination.id + ':test'" :disabled="busyId() !== '' || destination.provider === 'aws_backup'" @click="testDestination(destination.id)">Test</Button>
+          </li>
+        </ul>
+      </Card>
+      <Card title="Policies" :subtitle="data()?.environment ? 'Environment: ' + data()?.environment.name : 'Current environment'" padding="none">
+        <div :if="(data()?.policies.length || 0) === 0" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No recovery policies configured</div>
+        <ul :if="(data()?.policies.length || 0) > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+          <li :for="policy in data()?.policies || []" class="flex gap-4 items-center justify-between px-5 py-4">
+            <div><div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm dark:text-white">{{ policy.name }}</p><Badge :variant="policy.enabled ? 'success' : 'default'">{{ policy.enabled ? 'Enabled' : 'Disabled' }}</Badge></div><p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ policy.resourceKind }} · {{ policy.schedule }} · RPO {{ policy.expectedRpoMinutes }}m · RTO {{ policy.expectedRtoMinutes }}m</p></div>
+            <Button size="sm" :loading="busyId() === policy.id + ':run'" :disabled="busyId() !== '' || !policy.enabled" @click="runPolicy(policy.id)">Back up now</Button>
+          </li>
+        </ul>
+      </Card>
+    </div>
+  </section>
+
+  <section aria-labelledby="recovery-points-heading"><div class="mb-3"><h2 id="recovery-points-heading" class="font-semibold text-gray-900 dark:text-white">Recovery points</h2><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Verify independently, pin important points, or preview isolated and in-place restores.</p></div><RecoveryPointTable :points="data()?.recoveryPoints || []" :policies="data()?.policies || []" :busyId="busyId" @verify="verifyPoint" @restore="openRestore" @protect="protect" /></section>
+  <RecoveryJobList :jobs="data()?.jobs || []" />
+
+  <RecoveryDestinationDialog :isOpen="showDestination()" :busy="destinationBusy()" @close="showDestination.set(false)" @save="saveDestination" />
+  <RecoveryPolicyDialog :isOpen="showPolicy()" :busy="policyBusy()" :destinations="data()?.destinations || []" :resources="data()?.resources || []" :dataServices="data()?.dataServices || []" @close="showPolicy.set(false)" @save="savePolicy" />
+  <RecoveryRestoreDialog :isOpen="restorePoint() !== null" :point="restorePoint()" :points="data()?.recoveryPoints || []" :busy="restoreBusy()" :plan="restorePlan()" @close="restorePoint.set(null); restorePlan.set(null)" @preview="restore" @execute="restore" />
+</div>

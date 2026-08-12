@@ -1,0 +1,126 @@
+<script client>
+import type { RecoveryDestinationInput } from '../../../../functions/operations'
+
+const open = useReactiveProp('isOpen', false)
+const busy = useReactiveProp('busy', false)
+const emit = defineEmits()
+
+const name = state('')
+const provider = state<RecoveryDestinationInput['provider']>('aws_s3')
+const bucket = state('')
+const endpoint = state('')
+const prefix = state('stacks')
+const region = state('')
+const accessKeyId = state('')
+const secretAccessKey = state('')
+const sessionToken = state('')
+const encryption = state<RecoveryDestinationInput['encryption']>('provider')
+const encryptionKey = state('')
+const lockDays = state(0)
+const allowPrivate = state(false)
+const forcePathStyle = state(false)
+
+function close(): void {
+  if (!busy())
+    emit('close')
+}
+
+function submit(): void {
+  emit('save', {
+    name: name().trim(),
+    provider: provider(),
+    bucket: bucket().trim(),
+    endpoint: endpoint().trim(),
+    prefix: prefix().trim(),
+    region: region().trim(),
+    allowPrivate: allowPrivate(),
+    forcePathStyle: forcePathStyle(),
+    encryption: encryption(),
+    encryptionKey: encryptionKey(),
+    lockDays: lockDays(),
+    credentials: {
+      accessKeyId: accessKeyId().trim(),
+      secretAccessKey: secretAccessKey(),
+      sessionToken: sessionToken(),
+    },
+  } satisfies RecoveryDestinationInput)
+}
+</script>
+
+<Modal :isOpen="open()" title="Connect recovery destination" description="Backups are only protected after the destination passes a real write, read, checksum, and cleanup test." size="lg" :closable="!busy()" @close="close">
+  <form id="recovery-destination-form" class="space-y-4" @submit.prevent="submit">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="recovery-destination-name" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Name</label>
+        <input id="recovery-destination-name" x-model.trim="name" required placeholder="Production backups" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-destination-provider" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Provider</label>
+        <select id="recovery-destination-provider" x-model="provider" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="aws_s3">AWS S3</option>
+          <option value="s3_compatible">S3 compatible</option>
+          <option value="aws_backup">AWS Backup</option>
+        </select>
+      </div>
+    </div>
+
+    <div :if="provider() !== 'aws_backup'" class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="recovery-destination-bucket" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Bucket</label>
+        <input id="recovery-destination-bucket" x-model.trim="bucket" required placeholder="stacks-production-backups" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-destination-region" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Region</label>
+        <input id="recovery-destination-region" x-model.trim="region" placeholder="us-east-1" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-destination-prefix" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Object prefix</label>
+        <input id="recovery-destination-prefix" x-model.trim="prefix" placeholder="stacks" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div :if="provider() === 's3_compatible'">
+        <label for="recovery-destination-endpoint" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">HTTPS endpoint</label>
+        <input id="recovery-destination-endpoint" x-model.trim="endpoint" type="url" placeholder="https://objects.example.com" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+    </div>
+
+    <details :if="provider() !== 'aws_backup'" class="p-4 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <summary class="font-medium text-gray-900 text-sm cursor-pointer dark:text-white">Static credentials, optional</summary>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave blank to use the runtime's AWS credential chain. Submitted credentials are encrypted in the control plane.</p>
+      <div class="grid gap-4 mt-4 sm:grid-cols-2">
+        <input x-model.trim="accessKeyId" autocomplete="off" placeholder="Access key id" aria-label="Access key id" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+        <input x-model="secretAccessKey" type="password" autocomplete="new-password" placeholder="Secret access key" aria-label="Secret access key" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+        <input x-model="sessionToken" type="password" autocomplete="new-password" placeholder="Session token, optional" aria-label="Session token" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700 sm:col-span-2" />
+      </div>
+    </details>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="recovery-destination-encryption" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Encryption</label>
+        <select id="recovery-destination-encryption" x-model="encryption" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="provider">Provider managed</option>
+          <option value="client_side">Client side</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div>
+        <label for="recovery-destination-lock" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Immutable retention days</label>
+        <input id="recovery-destination-lock" x-model.number="lockDays" type="number" min="0" max="36500" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+    </div>
+    <div :if="encryption() !== 'provider'">
+      <label for="recovery-destination-key" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Client encryption key</label>
+      <input id="recovery-destination-key" x-model="encryptionKey" type="password" minlength="32" autocomplete="new-password" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">At least 32 characters. Keep an independent recovery copy outside this control plane.</p>
+    </div>
+    <div :if="provider() === 's3_compatible'" class="flex flex-wrap gap-4">
+      <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="forcePathStyle" type="checkbox" /> Force path-style URLs</label>
+      <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="allowPrivate" type="checkbox" /> Allow private endpoint</label>
+    </div>
+  </form>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button type="submit" form="recovery-destination-form" :loading="busy()">Connect destination</Button>
+    </div>
+  </template>
+</Modal>

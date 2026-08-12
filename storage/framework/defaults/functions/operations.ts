@@ -56,3 +56,183 @@ export function updateSchedulerTask(name: string, enabled: boolean): Promise<Sch
     body: { enabled },
   })
 }
+
+export type BackupResourceKind = 'managed_database' | 'logical_database' | 'volume' | 'files' | 'control_plane' | 'infrastructure'
+
+export interface RecoveryDestination {
+  id: string
+  name: string
+  provider: 'aws_s3' | 's3_compatible' | 'aws_backup'
+  bucket?: string
+  region?: string
+  status: 'untested' | 'healthy' | 'failing' | 'disabled'
+  credentialsConfigured: boolean
+  clientEncryptionConfigured: boolean
+  lastTestedAt?: string
+  lastError?: string
+}
+
+export interface RecoveryPolicy {
+  id: string
+  destinationId: string
+  name: string
+  resourceKind: BackupResourceKind
+  schedule: string
+  timezone: string
+  expectedRpoMinutes: number
+  expectedRtoMinutes: number
+  enabled: boolean
+  nextRunAt?: string
+  lastRunAt?: string
+}
+
+export interface RecoveryPoint {
+  id: string
+  policyId?: string
+  kind: BackupResourceKind
+  pointInTime: string
+  sizeBytes: number
+  status: 'pending' | 'available' | 'failed' | 'deleting' | 'deleted'
+  verificationState: 'unverified' | 'verifying' | 'verified' | 'corrupt' | 'failed'
+  verifiedAt?: string
+  held: boolean
+  pinned: boolean
+  expiresAt?: string
+  lockedUntil?: string
+}
+
+export interface RecoveryJob {
+  id: string
+  policyId?: string
+  recoveryPointId?: string
+  operationId?: string
+  kind: 'backup' | 'restore' | 'verify' | 'drill' | 'cleanup'
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | 'cancelled' | 'cleanup_required'
+  progress: Record<string, unknown>
+  error?: string
+  startedAt?: string
+  finishedAt?: string
+  createdAt: string
+}
+
+export interface RecoveryCoverage {
+  policy: RecoveryPolicy
+  lastRecoveryPoint?: RecoveryPoint
+  missedRpo: boolean
+  unverified: number
+  destinationHealthy: boolean
+}
+
+export interface RecoveryResource {
+  id: string
+  kind: string
+  name: string
+  slug: string
+}
+
+export interface RecoveryDataService {
+  id: string
+  name: string
+  engine: string
+  provider: string
+  status: string
+}
+
+export interface RecoveryOperationsResponse {
+  environment: { id: string, name: string, slug: string }
+  coverage: RecoveryCoverage[]
+  destinations: RecoveryDestination[]
+  policies: RecoveryPolicy[]
+  recoveryPoints: RecoveryPoint[]
+  jobs: RecoveryJob[]
+  resources: RecoveryResource[]
+  dataServices: RecoveryDataService[]
+  summary: {
+    policies: number
+    protected: number
+    missedRpo: number
+    unverified: number
+    queuedJobs: number
+    latestPoint: string | null
+  }
+}
+
+export interface RecoveryDestinationInput {
+  name: string
+  provider: RecoveryDestination['provider']
+  bucket?: string
+  endpoint?: string
+  prefix?: string
+  region?: string
+  allowPrivate?: boolean
+  forcePathStyle?: boolean
+  encryption: 'provider' | 'client_side' | 'both'
+  encryptionKey?: string
+  lockDays?: number
+  credentials?: { accessKeyId?: string, secretAccessKey?: string, sessionToken?: string }
+}
+
+export interface RecoveryPolicyInput {
+  name: string
+  destinationId: string
+  resourceKind: BackupResourceKind
+  resourceId?: string
+  dataServiceId?: string
+  includePatterns: string[]
+  excludePatterns: string[]
+  schedule: string
+  timezone: string
+  keepLast: number
+  expireAfterDays: number
+  compression: 'none' | 'gzip' | 'zstd'
+  expectedRpoMinutes: number
+  expectedRtoMinutes: number
+  enabled: boolean
+}
+
+export interface RestorePlanInput {
+  mode: 'isolated' | 'in_place'
+  targetName: string
+  target?: Record<string, unknown>
+  drill?: boolean
+  execute?: boolean
+  confirm?: string
+  downtimeAcknowledged?: boolean
+  safetyBackupId?: string
+}
+
+export function fetchRecoveryOperations(): Promise<RecoveryOperationsResponse> {
+  return dashboardApi<RecoveryOperationsResponse>('/api/dashboard/operations/recovery')
+}
+
+export function createRecoveryDestination(input: RecoveryDestinationInput): Promise<{ success: boolean, destination: RecoveryDestination }> {
+  return dashboardApi('/api/dashboard/operations/recovery/destinations', { method: 'POST', body: input })
+}
+
+export function testRecoveryDestination(id: string): Promise<{ success: boolean, message: string, destination: RecoveryDestination }> {
+  return dashboardApi(`/api/dashboard/operations/recovery/destinations/${encodeURIComponent(id)}/test`, { method: 'POST' })
+}
+
+export function createRecoveryPolicy(input: RecoveryPolicyInput): Promise<{ success: boolean, policy: RecoveryPolicy }> {
+  return dashboardApi('/api/dashboard/operations/recovery/policies', { method: 'POST', body: input })
+}
+
+export function runRecoveryPolicy(id: string): Promise<{ success: boolean, message: string, job: RecoveryJob }> {
+  return dashboardApi(`/api/dashboard/operations/recovery/policies/${encodeURIComponent(id)}/run`, { method: 'POST' })
+}
+
+export function verifyRecoveryPoint(id: string): Promise<{ success: boolean, message: string, job: RecoveryJob }> {
+  return dashboardApi(`/api/dashboard/operations/recovery/points/${encodeURIComponent(id)}/verify`, { method: 'POST' })
+}
+
+export function planRecoveryRestore(id: string, input: RestorePlanInput): Promise<{ success: boolean, plan: { mode: string, target: Record<string, unknown>, warnings: string[] }, productionExecutionCreated: boolean }> {
+  return dashboardApi(`/api/dashboard/operations/recovery/points/${encodeURIComponent(id)}/restore`, { method: 'POST', body: input })
+}
+
+export function protectRecoveryPoint(id: string, input: { pinned?: boolean, held?: boolean }): Promise<{ success: boolean, recoveryPoint: RecoveryPoint }> {
+  return dashboardApi(`/api/dashboard/operations/recovery/points/${encodeURIComponent(id)}/protection`, { method: 'PATCH', body: input })
+}
+
+export function runRecoveryRetention(): Promise<{ success: boolean, message: string, jobs: RecoveryJob[] }> {
+  return dashboardApi('/api/dashboard/operations/recovery/retention', { method: 'POST' })
+}

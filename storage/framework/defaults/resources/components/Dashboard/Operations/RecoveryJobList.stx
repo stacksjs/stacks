@@ -1,0 +1,32 @@
+<script client>
+import type { RecoveryJob } from '../../../../functions/operations'
+
+const jobItems = useReactiveProp('jobs', [])
+function jobs(): RecoveryJob[] { return jobItems() as RecoveryJob[] }
+function formatDate(value?: string): string {
+  if (!value) return 'Not recorded'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+}
+function variant(status: RecoveryJob['status']): 'default' | 'primary' | 'success' | 'warning' | 'danger' {
+  if (status === 'succeeded') return 'success'
+  if (status === 'failed' || status === 'cleanup_required') return 'danger'
+  if (status === 'running') return 'primary'
+  if (status === 'cancelled') return 'warning'
+  return 'default'
+}
+</script>
+
+<Card title="Recovery jobs" subtitle="Durable backup, verification, restore, drill, and retention work." padding="none">
+  <div :if="jobs().length === 0" class="px-5 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">No recovery jobs queued</div>
+  <ul :if="jobs().length > 0" class="divide-gray-200 divide-y dark:divide-neutral-700">
+    <li :for="job in jobs().slice(0, 12)" class="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <div class="flex gap-2 items-center"><p class="font-medium text-gray-900 text-sm capitalize dark:text-white">{{ job.kind }}</p><Badge :variant="variant(job.status)">{{ job.status }}</Badge></div>
+        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ job.progress.phase || 'queued' }} · {{ formatDate(job.finishedAt || job.startedAt || job.createdAt) }}</p>
+        <p :if="job.error" class="mt-1 text-red-600 text-xs dark:text-red-400">{{ job.error }}</p>
+      </div>
+      <code class="font-mono text-gray-400 text-[11px] dark:text-neutral-500">{{ job.id }}</code>
+    </li>
+  </ul>
+</Card>

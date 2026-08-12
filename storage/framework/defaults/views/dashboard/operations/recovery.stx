@@ -1,0 +1,8 @@
+@extends('layouts/default')
+
+@section('content')
+@title('Dashboard - Operations - Recovery')
+<PageLayout>
+  <RecoveryDashboard />
+</PageLayout>
+@endsection

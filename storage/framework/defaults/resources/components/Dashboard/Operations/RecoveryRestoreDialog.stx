@@ -1,0 +1,90 @@
+<script client>
+import type { RecoveryPoint, RestorePlanInput } from '../../../../functions/operations'
+
+const open = useReactiveProp('isOpen', false)
+const pointValue = useReactiveProp('point', null)
+const pointItems = useReactiveProp('points', [])
+const busy = useReactiveProp('busy', false)
+const planValue = useReactiveProp('plan', null)
+const emit = defineEmits()
+
+const mode = state<'isolated' | 'in_place'>('isolated')
+const targetName = state('')
+const drill = state(false)
+const downtimeAcknowledged = state(false)
+const confirm = state('')
+const safetyBackupId = state('')
+
+function point(): RecoveryPoint | null { return pointValue() as RecoveryPoint | null }
+function points(): RecoveryPoint[] { return pointItems() as RecoveryPoint[] }
+function plan(): { warnings?: string[] } | null { return planValue() as { warnings?: string[] } | null }
+
+function close(): void {
+  if (!busy()) emit('close')
+}
+
+function input(execute: boolean): RestorePlanInput {
+  return {
+    mode: mode(),
+    targetName: targetName().trim(),
+    drill: drill(),
+    execute,
+    confirm: confirm().trim(),
+    downtimeAcknowledged: downtimeAcknowledged(),
+    safetyBackupId: safetyBackupId() || undefined,
+  }
+}
+
+function preview(): void { emit('preview', input(false)) }
+function execute(): void { emit('execute', input(true)) }
+</script>
+
+<Modal :isOpen="open()" title="Restore recovery point" description="Preview is mandatory. Isolated restores are the default and can run as disposable recovery drills." size="lg" :closable="!busy()" @close="close">
+  <div class="space-y-4">
+    <div class="p-3 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="font-medium text-gray-900 text-sm dark:text-white">{{ point()?.id || 'Recovery point' }}</p>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ point()?.kind }} · {{ point()?.verificationState }}</p>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="restore-mode" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Mode</label>
+        <select id="restore-mode" x-model="mode" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="isolated">Isolated target</option>
+          <option value="in_place">In-place replacement</option>
+        </select>
+      </div>
+      <div>
+        <label for="restore-target" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Target name</label>
+        <input id="restore-target" x-model.trim="targetName" required placeholder="recovery-check-2026-08" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+    </div>
+    <label :if="mode() === 'isolated'" class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="drill" type="checkbox" /> Run as a recovery drill and clean the isolated target after health validation</label>
+    <div :if="mode() === 'in_place'" class="space-y-4 p-4 text-amber-900 dark:text-amber-100 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">
+      <p class="font-medium text-sm">In-place restore replaces live data and requires a distinct verified safety point.</p>
+      <div>
+        <label for="restore-safety" class="block mb-1.5 font-medium text-sm">Safety recovery point</label>
+        <select id="restore-safety" x-model="safetyBackupId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-amber-300 rounded-lg dark:border-amber-800">
+          <option value="">Choose verified safety point</option>
+          <option :for="candidate in points().filter(value => value.id !== point()?.id && value.verificationState === 'verified')" :value="candidate.id">{{ candidate.id }}</option>
+        </select>
+      </div>
+      <label class="inline-flex gap-2 items-center text-sm"><input x-model="downtimeAcknowledged" type="checkbox" /> I acknowledge downtime and live data replacement</label>
+      <div>
+        <label for="restore-confirm" class="block mb-1.5 font-medium text-sm">Type the target name to confirm</label>
+        <input id="restore-confirm" x-model.trim="confirm" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-amber-300 rounded-lg dark:border-amber-800" />
+      </div>
+    </div>
+    <div :if="plan()" class="p-4 text-blue-800 text-sm dark:text-blue-200 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 rounded-lg dark:border-blue-900">
+      <p class="font-medium">Restore plan validated</p>
+      <ul :if="plan()?.warnings?.length" class="mt-2 pl-5 list-disc"><li :for="warning in plan()?.warnings">{{ warning }}</li></ul>
+      <p :if="!plan()?.warnings?.length" class="mt-1">No additional warnings were returned.</p>
+    </div>
+  </div>
+  <template #footer>
+    <div class="flex flex-wrap gap-2 justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button variant="outline" :loading="busy() && !plan()" :disabled="!targetName().trim()" @click="preview">Preview restore</Button>
+      <Button :if="plan()" :loading="busy()" @click="execute">Queue restore</Button>
+    </div>
+  </template>
+</Modal>

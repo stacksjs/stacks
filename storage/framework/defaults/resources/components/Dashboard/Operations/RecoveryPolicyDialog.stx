@@ -1,0 +1,155 @@
+<script client>
+import type { BackupResourceKind, RecoveryDataService, RecoveryDestination, RecoveryPolicyInput, RecoveryResource } from '../../../../functions/operations'
+
+const open = useReactiveProp('isOpen', false)
+const busy = useReactiveProp('busy', false)
+const destinationItems = useReactiveProp('destinations', [])
+const resourceItems = useReactiveProp('resources', [])
+const serviceItems = useReactiveProp('dataServices', [])
+const emit = defineEmits()
+
+const name = state('')
+const destinationId = state('')
+const resourceKind = state<BackupResourceKind>('control_plane')
+const resourceId = state('')
+const dataServiceId = state('')
+const includePatterns = state('')
+const excludePatterns = state('storage/framework/runtime,storage/framework/stx')
+const schedule = state('daily')
+const timezone = state('UTC')
+const keepLast = state(7)
+const expireAfterDays = state(30)
+const expectedRpoMinutes = state(1440)
+const expectedRtoMinutes = state(120)
+const compression = state<RecoveryPolicyInput['compression']>('gzip')
+const enabled = state(true)
+
+function destinations(): RecoveryDestination[] { return destinationItems() as RecoveryDestination[] }
+function resources(): RecoveryResource[] { return resourceItems() as RecoveryResource[] }
+function dataServices(): RecoveryDataService[] { return serviceItems() as RecoveryDataService[] }
+
+function close(): void {
+  if (!busy()) emit('close')
+}
+
+function split(value: string): string[] {
+  return value.split(',').map(entry => entry.trim()).filter(Boolean)
+}
+
+function submit(): void {
+  emit('save', {
+    name: name().trim(),
+    destinationId: destinationId(),
+    resourceKind: resourceKind(),
+    resourceId: resourceId() || undefined,
+    dataServiceId: dataServiceId() || undefined,
+    includePatterns: split(includePatterns()),
+    excludePatterns: split(excludePatterns()),
+    schedule: schedule().trim(),
+    timezone: timezone().trim(),
+    keepLast: keepLast(),
+    expireAfterDays: expireAfterDays(),
+    compression: compression(),
+    expectedRpoMinutes: expectedRpoMinutes(),
+    expectedRtoMinutes: expectedRtoMinutes(),
+    enabled: enabled(),
+  } satisfies RecoveryPolicyInput)
+}
+</script>
+
+<Modal :isOpen="open()" title="Create recovery policy" description="Define the source once. The native recovery queue handles scheduled and on-demand runs." size="lg" :closable="!busy()" @close="close">
+  <form id="recovery-policy-form" class="space-y-4" @submit.prevent="submit">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div>
+        <label for="recovery-policy-name" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Policy name</label>
+        <input id="recovery-policy-name" x-model.trim="name" required placeholder="Daily control plane" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-destination" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Destination</label>
+        <select id="recovery-policy-destination" x-model="destinationId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="">Choose destination</option>
+          <option :for="destination in destinations()" :value="destination.id">{{ destination.name }} ({{ destination.status }})</option>
+        </select>
+      </div>
+      <div>
+        <label for="recovery-policy-kind" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Source type</label>
+        <select id="recovery-policy-kind" x-model="resourceKind" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="control_plane">Control plane</option>
+          <option value="files">Project files</option>
+          <option value="logical_database">Logical database</option>
+          <option value="managed_database">Managed database</option>
+          <option value="volume">Docker volume</option>
+          <option value="infrastructure">AWS infrastructure</option>
+        </select>
+      </div>
+      <div :if="resourceKind() === 'files' || resourceKind() === 'volume'">
+        <label for="recovery-policy-resource" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Resource</label>
+        <select id="recovery-policy-resource" x-model="resourceId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="">Choose resource</option>
+          <option :for="resource in resources()" :value="resource.id">{{ resource.name }} ({{ resource.kind }})</option>
+        </select>
+      </div>
+      <div :if="resourceKind() === 'logical_database' || resourceKind() === 'managed_database'">
+        <label for="recovery-policy-service" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Data service</label>
+        <select id="recovery-policy-service" x-model="dataServiceId" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="">Choose data service</option>
+          <option :for="service in dataServices()" :value="service.id">{{ service.name }} ({{ service.engine }})</option>
+        </select>
+      </div>
+    </div>
+
+    <div :if="resourceKind() === 'files' || resourceKind() === 'volume' || resourceKind() === 'infrastructure'">
+      <label for="recovery-policy-includes" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Include entries</label>
+      <input id="recovery-policy-includes" x-model.trim="includePatterns" required placeholder="storage/app,public/uploads" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Comma separated. Volumes use a volume name. Infrastructure uses resource:arn: and role:arn: entries.</p>
+    </div>
+    <div :if="resourceKind() === 'files'">
+      <label for="recovery-policy-excludes" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Exclude patterns</label>
+      <input id="recovery-policy-excludes" x-model.trim="excludePatterns" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <label for="recovery-policy-schedule" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Schedule</label>
+        <input id="recovery-policy-schedule" x-model.trim="schedule" required placeholder="daily" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-timezone" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Timezone</label>
+        <input id="recovery-policy-timezone" x-model.trim="timezone" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-rpo" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">RPO minutes</label>
+        <input id="recovery-policy-rpo" x-model.number="expectedRpoMinutes" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-rto" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">RTO minutes</label>
+        <input id="recovery-policy-rto" x-model.number="expectedRtoMinutes" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+    </div>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div>
+        <label for="recovery-policy-keep" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Keep latest</label>
+        <input id="recovery-policy-keep" x-model.number="keepLast" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-expire" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Expire after days</label>
+        <input id="recovery-policy-expire" x-model.number="expireAfterDays" type="number" min="1" required class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700" />
+      </div>
+      <div>
+        <label for="recovery-policy-compression" class="block mb-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200">Compression</label>
+        <select id="recovery-policy-compression" x-model="compression" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-lg dark:border-neutral-700">
+          <option value="gzip">Gzip</option>
+          <option value="zstd">Zstandard</option>
+          <option value="none">None</option>
+        </select>
+      </div>
+    </div>
+    <label class="inline-flex gap-2 items-center text-gray-700 text-sm dark:text-neutral-200"><input x-model="enabled" type="checkbox" /> Enable scheduled runs</label>
+  </form>
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button variant="secondary" :disabled="busy()" @click="close">Cancel</Button>
+      <Button type="submit" form="recovery-policy-form" :loading="busy()" :disabled="destinations().length === 0">Create policy</Button>
+    </div>
+  </template>
+</Modal>

@@ -13,5 +13,8 @@ function linkClass(name: string): string {
     <StxLink to="/operations/scheduler" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('scheduler')">
       Scheduler
     </StxLink>
+    <StxLink to="/operations/recovery" :class="'px-3 py-1.5 font-medium text-sm rounded-md transition-colors ' + linkClass('recovery')">
+      Recovery
+    </StxLink>
   </div>
 </nav>
