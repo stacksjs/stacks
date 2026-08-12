@@ -123,6 +123,48 @@ Script reads and atomic writes use
 is hidden. Do not create separate `/deployments/scripts` or
 `/deployments/live-terminal` pages.
 
+Deployment recovery uses `POST /api/dashboard/deployments/rollback/preview`
+followed by `POST /api/dashboard/deployments/rollback`. The preview must run
+the native `buddy deploy:rollback --dry-run` path successfully, and execution
+must re-run that preview, compare its revision, and require the typed target
+environment confirmation. Never implement rollback by editing release links,
+restarting services directly, or guessing a prior release from Deployment
+model rows. Deployment rows are application history. Preserved releases and
+activation are owned by ts-cloud.
+
+### Operations control plane
+
+The Operations sidebar entry deliberately remains one item. Section navigation
+lives in `Dashboard/Operations/OperationsNavigation.stx`:
+
+- `/operations/changes` - unified change review, active work, release approvals
+- `/operations/scheduler` - registered task runs and persisted pause state
+- `/operations/recovery` - destinations, policies, recovery points, restore drills
+- `/operations/migrations` - model diff, schema effects, ledger reconciliation
+- `/operations/incidents` - native alerts, health rules, ownership, silence state
+- `/operations/audit` - append-only operator events and correlations
+
+Operational state belongs in the ts-cloud control plane initialized by
+`Operations/control-plane.ts`. Use its stores for durable operations, events,
+releases, approvals, alerts, backups, actors, and environments. Do not create a
+parallel dashboard-only JSON file or duplicate those entities in application
+models. Application domain records still follow the normal `app/Models` and
+`useApi` convention. Use dashboard Actions for aggregate operational views and
+guard every route in `dashboard-api.ts`.
+
+Every mutating operator action must resolve the authenticated actor and append
+or correlate a control-plane event. Use `trackOperatorOperation()` for bounded
+synchronous work and the native durable queue for long-running backup, restore,
+or provider work. Empty states must reflect real absence of configuration or
+events. Never seed operational pages with sample incidents, releases, backups,
+or health data.
+
+Migration execution must start from `previewPendingMigrations()`, audit the
+ledger against live schema effects, hash the reviewed plan, and recheck it
+immediately before `buddy migrate`. Only `reconcileMigrationLedger()` may
+repair provable ledger drift. Partial and unverifiable migrations require human
+review and must not be silently recorded.
+
 ### Utilities
 - `/health`, `/insights`, `/logs` - operational health and logs
 - `/servers`, `/serverless`, `/realtime` - runtime infrastructure
