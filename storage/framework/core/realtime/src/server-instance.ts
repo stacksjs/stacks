@@ -5,7 +5,7 @@ let serverInstance: BroadcastServer | null = null
 /**
  * Set the global broadcast server instance
  */
-export function setServer(server: BroadcastServer): void {
+export function setServer(server: BroadcastServer | null): void {
   serverInstance = server
 }
 

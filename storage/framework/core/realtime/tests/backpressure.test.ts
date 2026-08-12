@@ -14,6 +14,7 @@ describe('Backpressure guard (stacksjs/stacks#1877 R-2)', () => {
 
   afterEach(() => {
     setBackpressureGuard(null)
+    setServer(null)
   })
 
   test('default is no guard installed (backwards-compat)', () => {

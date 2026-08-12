@@ -15,6 +15,7 @@ describe('Heartbeat (stacksjs/stacks#1877 R-5)', () => {
 
   afterEach(() => {
     setHeartbeatConfig(null)
+    setServer(null)
   })
 
   test('default is off (no config installed)', () => {

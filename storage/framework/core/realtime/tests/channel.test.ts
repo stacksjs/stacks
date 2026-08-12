@@ -92,7 +92,7 @@ describe('Channel with setServer', () => {
     }
     finally {
       // Clean up: reset server to null
-      setServer(null as any)
+      setServer(null)
     }
   })
 })

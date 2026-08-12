@@ -25,6 +25,7 @@ describe('Channel.presence() composition (stacksjs/stacks#1877 R-4)', () => {
 
   afterEach(() => {
     broadcasts = []
+    setServer(null)
   })
 
   test('public() broadcasts on the bare channel name', async () => {
@@ -62,7 +63,7 @@ describe('Channel.presence() composition (stacksjs/stacks#1877 R-4)', () => {
   })
 
   test('presence() throws when broadcast server is not initialized', async () => {
-    setServer(null as any)
+    setServer(null)
     await expect(channel('room').presence('x', {})).rejects.toThrow(/not initialized/)
   })
 })

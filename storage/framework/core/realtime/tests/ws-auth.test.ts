@@ -30,6 +30,7 @@ describe('WebSocket handshake auth (stacksjs/stacks#1877 R-1)', () => {
 
   afterEach(() => {
     setWsAuthenticator(null)
+    setServer(null)
   })
 
   test('unauthed upgrade proceeds when no authenticator is installed', async () => {
