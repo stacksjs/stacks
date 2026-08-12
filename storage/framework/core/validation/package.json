@@ -55,6 +55,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
+    "typecheck:inference": "bun tsc -p tsconfig.type-tests.json",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

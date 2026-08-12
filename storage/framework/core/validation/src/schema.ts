@@ -6,6 +6,32 @@ import { objectWithContext } from './object-with-context'
 import type { ConditionalAPI } from './conditional'
 import type { ObjectWithContextValidator } from './object-with-context'
 
+export interface InferredEnumValidator<TValue extends string> extends Validator<TValue> {
+  readonly name: 'enum'
+  getAllowedValues: () => readonly TValue[]
+  custom: (fn: (value: TValue) => boolean, message: string) => InferredEnumValidator<TValue>
+}
+
+export interface InferredArrayValidator<TValue> extends Validator<TValue[]> {
+  readonly name: 'array'
+  min: (length: number) => InferredArrayValidator<TValue>
+  max: (length: number) => InferredArrayValidator<TValue>
+  length: (length: number) => InferredArrayValidator<TValue>
+  each: <TElement>(validator: Validator<TElement>) => InferredArrayValidator<TElement>
+  unique: () => InferredArrayValidator<TValue>
+}
+
+type WithConditionals<TValidator extends Validator<any>> = TValidator & ConditionalAPI<TValidator>
+
+type ConditionalValidationInstance = {
+  // eslint-disable-next-line pickier/no-unused-vars
+  [TKey in keyof ValidationInstance]: ValidationInstance[TKey] extends (...args: infer TArgs) => infer TValidator
+    ? TValidator extends Validator<any>
+      ? (...args: TArgs) => WithConditionals<TValidator>
+      : ValidationInstance[TKey]
+    : ValidationInstance[TKey]
+}
+
 /**
  * Extended `ValidationInstance` that adds `schema.file()` on top of the
  * ts-validation surface (stacksjs/stacks#1856). Upstream ts-validation
@@ -18,8 +44,10 @@ import type { ObjectWithContextValidator } from './object-with-context'
  * and every primitive factory wrapped to attach `.when()` / `.sometimes()`
  * to the returned validator.
  */
-export type SchemaWithFile = Omit<ValidationInstance, 'object'> & {
+export type SchemaWithFile = Omit<ConditionalValidationInstance, 'array' | 'enum' | 'file' | 'object'> & {
   file: () => FileValidator
+  array: <TValue = unknown>() => WithConditionals<InferredArrayValidator<TValue>>
+  enum: <const TValues extends readonly string[]>(values: TValues) => WithConditionals<InferredEnumValidator<TValues[number]>>
   object: typeof objectWithContext
 }
 
@@ -143,4 +171,4 @@ export type { FileLike } from './file-validator'
 export { applyConditionals, shouldApplyConditional, withConditionals } from './conditional'
 export type { ConditionalAPI, ConditionalRecord, ValidatorWithConditionals } from './conditional'
 export { objectWithContext } from './object-with-context'
-export type { ObjectWithContextValidator } from './object-with-context'
+export type { InferObjectShape, InferValidatorValue, ObjectWithContextValidator, ValidatorShape } from './object-with-context'

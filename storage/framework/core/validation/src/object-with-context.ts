@@ -33,7 +33,17 @@ import type { ConditionalAPI } from './conditional'
  *     and other introspection passes can walk the per-field validators
  *     (and their `__conditionals` arrays).
  */
-export interface ObjectWithContextValidator<T extends Record<string, Validator<any>>> extends Validator<Record<string, unknown>> {
+export type ValidatorShape = Readonly<Record<string, Validator<any>>>
+
+/** Resolve the value accepted by one validator. */
+export type InferValidatorValue<TValidator> = TValidator extends Validator<infer TValue> ? TValue : never
+
+/** Resolve an object value directly from its validator shape. */
+export type InferObjectShape<TShape extends ValidatorShape> = {
+  -readonly [TKey in keyof TShape]: InferValidatorValue<TShape[TKey]>
+}
+
+export interface ObjectWithContextValidator<TShape extends ValidatorShape> extends Validator<InferObjectShape<TShape>> {
   readonly name: 'object'
   /**
    * Run validation against `value`. Conditionals on child validators
@@ -43,7 +53,7 @@ export interface ObjectWithContextValidator<T extends Record<string, Validator<a
    */
   validate: (value: unknown) => ValidationResult
   /** Surface the shape map for introspection. */
-  getShape: () => T
+  getShape: () => TShape
   /** Mark the whole object as required (mirrors ts-validation). */
   required: () => this
   /** Mark the whole object as optional (mirrors ts-validation). */
@@ -51,7 +61,7 @@ export interface ObjectWithContextValidator<T extends Record<string, Validator<a
   /** Internal flag set when nested inside another object's shape. */
   isPartOfShape: boolean
   /** Replace or extend the shape after construction. */
-  shape: (shape: T) => ObjectWithContextValidator<T>
+  shape: <TNextShape extends ValidatorShape>(shape: TNextShape) => ObjectWithContextValidator<TNextShape>
 }
 
 /**
@@ -69,13 +79,13 @@ export interface ObjectWithContextValidator<T extends Record<string, Validator<a
  * }).validate(input)
  * ```
  */
-export function objectWithContext<T extends Record<string, Validator<any>>>(
-  initialShape?: T,
-): ObjectWithContextValidator<T> & ConditionalAPI<ObjectWithContextValidator<T>> {
-  let shape: T = (initialShape ?? {}) as T
+export function objectWithContext<const TShape extends ValidatorShape = Record<string, never>>(
+  initialShape?: TShape,
+): ObjectWithContextValidator<TShape> & ConditionalAPI<ObjectWithContextValidator<TShape>> {
+  let shape: ValidatorShape = initialShape ?? {}
   let isRequired = true
 
-  const validator: ObjectWithContextValidator<T> = {
+  const validator: ObjectWithContextValidator<TShape> = {
     name: 'object',
     get isRequired() {
       return isRequired
@@ -90,13 +100,13 @@ export function objectWithContext<T extends Record<string, Validator<any>>>(
     // external mutations are observed correctly.
     isPartOfShape: false,
 
-    shape(next: T) {
+    shape<TNextShape extends ValidatorShape>(next: TNextShape) {
       shape = next
-      return validator as ObjectWithContextValidator<T>
+      return validator as unknown as ObjectWithContextValidator<TNextShape>
     },
 
     getShape() {
-      return shape
+      return shape as TShape
     },
 
     required() {
@@ -168,7 +178,7 @@ export function objectWithContext<T extends Record<string, Validator<any>>>(
   // Wire `.when()` / `.sometimes()` onto the object validator itself so
   // nested-object-level conditionals work too (e.g. an entire object
   // sub-tree is required only when a sibling key matches a value).
-  type ObjectChain = ObjectWithContextValidator<T> & ConditionalAPI<ObjectWithContextValidator<T>>
+  type ObjectChain = ObjectWithContextValidator<TShape> & ConditionalAPI<ObjectWithContextValidator<TShape>>
   const augmented = withConditionals(validator as unknown as Validator<any>) as unknown as ObjectChain
 
   return augmented

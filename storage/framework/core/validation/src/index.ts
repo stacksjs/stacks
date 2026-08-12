@@ -17,7 +17,12 @@ export {
 export type {
   ConditionalAPI,
   ConditionalRecord,
+  InferObjectShape,
+  InferValidatorValue,
+  InferredArrayValidator,
+  InferredEnumValidator,
   ObjectWithContextValidator,
+  ValidatorShape,
   ValidatorWithConditionals,
 } from './schema'
 
