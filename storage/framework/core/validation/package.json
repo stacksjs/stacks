@@ -59,7 +59,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.5.0"
+    "@stacksjs/ts-validation": "^0.5.3"
   },
   "devDependencies": {
     "better-dx": "^0.2.17",

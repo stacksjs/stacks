@@ -60,8 +60,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.5.0",
-    "bun-query-builder": "^0.2.25",
+    "@stacksjs/ts-validation": "^0.5.3",
+    "bun-query-builder": "^0.2.27",
     "dynamodb-tooling": "^0.3.2"
   },
   "devDependencies": {
