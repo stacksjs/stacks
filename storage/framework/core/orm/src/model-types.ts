@@ -16,29 +16,126 @@
  *   // Or just use the model's typed query methods directly:
  *   const post = await Post.find(id) // already fully typed!
  */
-import type {
-  InferAttributes as QueryInferAttributes,
-  InferColumnNames as QueryInferColumnNames,
-  InferFillableAttributes as QueryInferFillableAttributes,
-  InferNumericColumns as QueryInferNumericColumns,
-  ModelRow as QueryModelRow,
-} from '@stacksjs/query-builder'
+import type { Validator } from '@stacksjs/validation'
+import type { MODEL_DEFINITION } from './define-model'
 
 /**
  * Extract the raw ModelDefinition from a defineModel() return value.
  * Uses the getDefinition() accessor that defineModel() provides.
  */
-export type Def<T> = T extends { getDefinition: () => infer D } ? D : never
+export type Def<T> = T extends { readonly [MODEL_DEFINITION]: infer TDefinition }
+  ? TDefinition
+  : T extends { getDefinition: () => infer TDefinition }
+    ? TDefinition
+    : never
 
 /**
  * Extract foreign key columns from belongsTo relations.
  * e.g., belongsTo: ['Customer', 'Coupon'] → { customer_id: number, coupon_id: number }
  */
-// eslint-disable-next-line ts/no-empty-object-type
-export type BelongsToForeignKeys<TDef> =
-  TDef extends { readonly belongsTo: readonly (infer R extends string)[] }
-    ? { [K in R as `${Lowercase<K>}_id`]: number }
-    : {}
+type SnakeCase<S extends string> = S extends `${infer TFirst}${infer TRest}`
+  ? TFirst extends Lowercase<TFirst>
+    ? `${TFirst}${SnakeCase<TRest>}`
+    : `_${Lowercase<TFirst>}${SnakeCase<TRest>}`
+  : S
+
+type BelongsToForeignKeyOf<TEntry> = TEntry extends string
+  ? `${SnakeCase<Uncapitalize<TEntry>>}_id`
+  : TEntry extends { readonly foreignKey: infer TForeignKey extends string }
+    ? TForeignKey
+    : TEntry extends { readonly model: infer TModel extends string }
+      ? `${SnakeCase<Uncapitalize<TModel>>}_id`
+      : never
+
+type BelongsToForeignKeyNames<TDef> = TDef extends { readonly belongsTo: infer TRelations }
+  ? TRelations extends readonly (infer TEntry)[]
+    ? BelongsToForeignKeyOf<TEntry>
+    : TRelations extends Readonly<Record<string, infer TEntry>>
+      ? BelongsToForeignKeyOf<TEntry>
+      : never
+  : never
+
+export type BelongsToForeignKeys<TDef> = {
+  [TKey in BelongsToForeignKeyNames<TDef>]: number
+}
+
+type DefinitionAttributes<TDef> = TDef extends { readonly attributes: infer TAttributes }
+  ? TAttributes
+  : never
+
+type AttributeKeys<TDef> = keyof DefinitionAttributes<TDef> & string
+
+type PrimitiveType<TType> = TType extends 'string'
+  ? string
+  : TType extends 'number' ? number
+    : TType extends 'boolean' ? boolean
+      : TType extends 'date' ? Date
+        : TType extends 'json' ? Record<string, unknown>
+          : TType extends readonly (infer TValue)[] ? TValue
+            : TType extends Validator<infer TValue> ? TValue
+              : unknown
+
+type WidenDefault<TValue> = TValue extends string
+  ? string
+  : TValue extends number ? number
+    : TValue extends boolean ? boolean
+      : TValue
+
+type AttributeValue<TAttribute> = TAttribute extends { readonly type: infer TType }
+  ? PrimitiveType<TType>
+  : TAttribute extends { readonly factory: (...args: never[]) => infer TValue } ? TValue
+    : TAttribute extends { readonly validation: { readonly rule: infer TRule } }
+      ? TRule extends Validator<infer TValue> ? TValue : unknown
+      : TAttribute extends { readonly default: infer TDefault } ? WidenDefault<TDefault>
+        : unknown
+
+type DeclaredAttributes<TDef> = {
+  [TKey in AttributeKeys<TDef>]: DefinitionAttributes<TDef>[TKey] extends { readonly nullable: true }
+    ? AttributeValue<DefinitionAttributes<TDef>[TKey]> | null
+    : AttributeValue<DefinitionAttributes<TDef>[TKey]>
+}
+
+type SnakeCaseAttributes<TDef> = {
+  [TKey in AttributeKeys<TDef> as SnakeCase<TKey>]: DeclaredAttributes<TDef>[TKey]
+}
+
+type PrimaryKey<TDef> = TDef extends { readonly primaryKey: infer TKey extends string } ? TKey : 'id'
+
+type TraitFields<TDef> = { [TKey in PrimaryKey<TDef>]: number }
+  & (TDef extends { readonly traits: { readonly useUuid: true } } ? { uuid: string } : {})
+  & (TDef extends { readonly traits: { readonly useTimestamps: true } } ? {
+    created_at: string
+    updated_at: string | null
+  } : {})
+  & (TDef extends { readonly traits: { readonly timestampable: true | object } } ? {
+    created_at: string
+    updated_at: string | null
+  } : {})
+  & (TDef extends { readonly traits: { readonly useSoftDeletes: true } } ? { deleted_at: string | null } : {})
+  & (TDef extends { readonly traits: { readonly softDeletable: true | object } } ? { deleted_at: string | null } : {})
+  & (TDef extends { readonly traits: { readonly useAuth: true | object } } ? {
+    two_factor_secret: string | null
+    public_key: string | null
+  } : {})
+  & (TDef extends { readonly traits: { readonly billable: true } } ? { stripe_id: string | null } : {})
+
+type InferredModelRow<TDef> = DeclaredAttributes<TDef>
+  & SnakeCaseAttributes<TDef>
+  & Omit<TraitFields<TDef>, AttributeKeys<TDef> | SnakeCase<AttributeKeys<TDef>>>
+  & Omit<BelongsToForeignKeys<TDef>, AttributeKeys<TDef> | SnakeCase<AttributeKeys<TDef>>>
+
+type FillableKeys<TDef> = {
+  [TKey in AttributeKeys<TDef>]: DefinitionAttributes<TDef>[TKey] extends { readonly fillable: true }
+    ? TKey
+    : never
+}[AttributeKeys<TDef>]
+
+type OptionalFillableKeys<TDef> = {
+  [TKey in FillableKeys<TDef>]: DefinitionAttributes<TDef>[TKey] extends
+  { readonly nullable: true } | { readonly default: unknown }
+    ? TKey
+    : never
+}[FillableKeys<TDef>]
 
 /**
  * Full database row type: model attributes + system fields (id, uuid, timestamps) + FK columns.
@@ -48,7 +145,7 @@ export type BelongsToForeignKeys<TDef> =
  * import type Post from '../models/Post'
  * type PostJsonResponse = ModelRow<typeof Post>
  */
-export type ModelRow<T> = QueryModelRow<T> & BelongsToForeignKeys<Def<T>>
+export type ModelRow<T> = InferredModelRow<Def<T>>
 
 /**
  * Same as {@link ModelRow} but with every field optional. Useful for
@@ -65,7 +162,7 @@ export type ModelRowLoose<T> = Partial<ModelRow<T>>
  * import type Post from '../models/Post'
  * type NewPost = NewModelData<typeof Post>
  */
-export type NewModelData<T> = Partial<QueryInferAttributes<T> & BelongsToForeignKeys<Def<T>>>
+export type NewModelData<T> = Partial<ModelRow<T>>
 
 /**
  * Strict insertable shape: only attributes marked `fillable: true` in
@@ -76,7 +173,7 @@ export type NewModelData<T> = Partial<QueryInferAttributes<T> & BelongsToForeign
  * can't pass non-fillable fields to `create()` / `insert()`.
  * {@link NewModelData} is the looser sibling that allows any attribute.
  */
-export type ModelCreateData<T> = Partial<QueryInferFillableAttributes<T>> & BelongsToForeignKeys<Def<T>>
+export type ModelCreateData<T> = Partial<InferFillableAttributes<T> & BelongsToForeignKeys<Def<T>>>
 
 /** Loose variant of {@link ModelCreateData} — same shape as {@link NewModelData}, aliased for naming-parity with the row types. */
 export type ModelCreateDataLoose<T> = NewModelData<T>
@@ -89,17 +186,13 @@ export type ModelCreateDataLoose<T> = NewModelData<T>
  * import type Post from '../models/Post'
  * type PostUpdate = UpdateModelData<typeof Post>
  */
-export type UpdateModelData<T> = Partial<QueryInferAttributes<T> & BelongsToForeignKeys<Def<T>>>
+export type UpdateModelData<T> = Partial<ModelRow<T>>
 
-/**
- * Just the attribute records flagged `fillable: true` — useful for
- * code-generators and any helper that needs the typed shape of a
- * model's fillable-attribute config (e.g., admin form schemas).
- */
+/** Attribute values accepted by mass-assignment writes. */
 export type InferFillableAttributes<T> = {
-  [K in keyof QueryInferFillableAttributes<T>]: Def<T> extends { attributes: infer A }
-    ? K extends keyof A ? A[K] : never
-    : never
+  [TKey in Exclude<FillableKeys<Def<T>>, OptionalFillableKeys<Def<T>>>]: DeclaredAttributes<Def<T>>[TKey]
+} & {
+  [TKey in OptionalFillableKeys<Def<T>>]?: DeclaredAttributes<Def<T>>[TKey]
 }
 
 /**
@@ -107,7 +200,11 @@ export type InferFillableAttributes<T> = {
  * added by traits like `id`, `uuid`, `created_at`). Useful for
  * constraining query builders that accept a `column` parameter.
  */
-export type InferColumnNames<T> = QueryInferColumnNames<T>
+export type InferColumnNames<T> = AttributeKeys<Def<T>>
+  | SnakeCase<AttributeKeys<Def<T>>>
+  | PrimaryKey<Def<T>>
+  | BelongsToForeignKeyNames<Def<T>>
+  | keyof TraitFields<Def<T>>
 
 /**
  * Attribute keys whose `type` is declared as `'number'` in the model
@@ -120,4 +217,8 @@ export type InferColumnNames<T> = QueryInferColumnNames<T>
  * `AttributeKeys<Def<T>>` here. Tighten by declaring `type: 'number'`
  * on the attribute spec when narrowing matters.
  */
-export type InferNumericColumns<T> = QueryInferNumericColumns<T>
+export type InferNumericColumns<T> = {
+  [TKey in AttributeKeys<Def<T>>]: AttributeValue<DefinitionAttributes<Def<T>>[TKey]> extends number
+    ? TKey
+    : never
+}[AttributeKeys<Def<T>>]

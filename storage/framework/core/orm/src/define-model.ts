@@ -2,6 +2,7 @@ import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmMod
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { Faker } from '@stacksjs/faker'
 import type { ApiMiddleware, SearchOptions } from '@stacksjs/types'
+import type { Validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -1862,6 +1863,7 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
 type ModelDefinition = StacksModelDefinition
 
 type ValidationRuleOf<TAttribute> = TAttribute extends { validation: { rule: infer TRule } } ? TRule : never
+type ValidationInferenceRule<TRule> = TRule extends Validator<number> ? 'number' : TRule
 type BQBFaker = Parameters<NonNullable<BQBModelAttribute['factory']>>[0]
 type FactoryReturnOf<TAttribute> = TAttribute extends { factory: (...args: never[]) => infer TResult } ? TResult : never
 type DefaultTypeToken<TAttribute> = TAttribute extends { default: infer TDefault }
@@ -1878,7 +1880,7 @@ type InferenceHint<TAttribute> = TAttribute extends { type: unknown } | { factor
       ? [DefaultTypeToken<TAttribute>] extends [never]
           ? object
           : { type: DefaultTypeToken<TAttribute> }
-      : { type: ValidationRuleOf<TAttribute> }
+      : { type: ValidationInferenceRule<ValidationRuleOf<TAttribute>> }
 type QueryAttribute<TAttribute> = Omit<TAttribute, 'factory'>
   & InferenceHint<TAttribute>
   & ([FactoryReturnOf<TAttribute>] extends [never]
@@ -1887,14 +1889,14 @@ type QueryAttribute<TAttribute> = Omit<TAttribute, 'factory'>
 type QueryTraits<TDef extends ModelDefinition> = TDef extends { traits: infer TTraits }
   ? { traits: TTraits & NonNullable<BQBModelDefinition['traits']> }
   : { traits?: BQBModelDefinition['traits'] }
-type QueryDefinition<TDef extends ModelDefinition> = Omit<TDef, 'attributes' | 'traits'>
-  & Omit<BQBModelDefinition, 'attributes' | 'traits'>
+type QueryDefinition<TDef extends ModelDefinition> = TDef
   & {
     attributes: { [TKey in keyof TDef['attributes']]: QueryAttribute<TDef['attributes'][TKey]> }
   }
   & QueryTraits<TDef>
 type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<TDef>>
 type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
+type ModelForceWriteData<TDef extends ModelDefinition> = Parameters<ReturnType<QueryModel<TDef>['make']>['forceFill']>[0]
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
@@ -1951,9 +1953,10 @@ import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } f
  * ```
  */
 export type StacksModelStatic<TDef extends ModelDefinition> = QueryModel<TDef> & TDef & TraitMethods & {
+  readonly [MODEL_DEFINITION]: TDef
   update: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
-  forceUpdate: (id: number | string, data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
-  forceCreate: (data: ModelWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
+  forceUpdate: (id: number | string, data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['find']>
+  forceCreate: (data: ModelForceWriteData<TDef>) => ReturnType<QueryModel<TDef>['create']>
   delete: (id: number | string) => Promise<boolean>
   withoutEvents: <T>(fn: () => T | Promise<T>) => Promise<T>
   /** Run `fn` with declared `validation.rule`s suppressed (bulk imports, backfills). */
