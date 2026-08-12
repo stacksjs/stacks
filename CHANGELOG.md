@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.367...v0.70.368)
+
+## 📝 Documentation
+
+- **events**: correct the claim in the previous commit ([038da38](https://github.com/stacksjs/stacks/commit/038da38)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- pin every pantry action to the build that retries a dropped socket ([0b574eb](https://github.com/stacksjs/stacks/commit/0b574eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.366...v0.70.367)
 
 ## ✨ Features
