@@ -279,7 +279,7 @@ void loadFiles()
               </div>
 
               <div>
-                <template :if="field.type === 'boolean' && field.editable">
+                @if(field.type === 'boolean' && field.editable)
                   <label class="inline-flex gap-3 items-center cursor-pointer">
                     <input
                       :id="'config-' + field.key"
@@ -289,29 +289,26 @@ void loadFiles()
                     >
                     <span class="text-neutral-700 text-sm dark:text-neutral-300">{{ drafts[field.key] ? 'Enabled' : 'Disabled' }}</span>
                   </label>
-                </template>
-                <template :else-if="field.editable && field.type === 'number'">
+                @elseif(field.editable && field.type === 'number')
                   <input
                     :id="'config-' + field.key"
                     type="number"
                     x-model.number="drafts[field.key]"
                     class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   >
-                </template>
-                <template :else-if="field.editable">
+                @elseif(field.editable)
                   <input
                     :id="'config-' + field.key"
                     type="text"
                     x-model="drafts[field.key]"
                     class="block px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 rounded-lg dark:border-white/15 focus:border-blue-500/50 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
                   >
-                </template>
-                <template :else>
+                @else
                   <div class="px-3 py-2 break-all font-mono text-neutral-500 text-xs dark:text-neutral-400 bg-neutral-50 dark:bg-white/[0.03] border border-neutral-200 rounded-lg dark:border-white/10">
                     {{ displayValue(field) }}
                   </div>
                   <p class="mt-1.5 text-amber-700 text-xs dark:text-amber-300">{{ field.reason }}</p>
-                </template>
+                @endif
               </div>
             </div>
           </template>
