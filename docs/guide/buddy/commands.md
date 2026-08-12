@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **292 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **293 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -23,6 +23,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `configure` | 1 |
 | `core` | 1 |
 | `dashboard` | 2 |
+| `deploy` | 1 |
 | `desktop` | 6 |
 | `dev` | 8 |
 | `dns` | 3 |
@@ -804,6 +805,22 @@ Deploy your project
 | `--staging` | Deploy to staging | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `deploy:rollback`
+
+Roll back a deployment to a preserved release
+
+- Usage: `$ buddy deploy:rollback [site]`
+- Namespace: `deploy`
+- Aliases: none
+- Arguments: `[site]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment to roll back | value, required | `"production"` |
+| `--to` | Preserved release id to activate | value, required | — |
+| `--dry-run` | Preview the rollback without changing the active release | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `desktop:apple:csr`
