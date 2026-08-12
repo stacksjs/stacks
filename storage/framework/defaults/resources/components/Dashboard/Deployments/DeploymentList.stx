@@ -72,14 +72,13 @@ async function loadDeployments(): Promise<void> {
   }
 }
 
-async function startDeployment(dryRun: boolean): Promise<void> {
+async function startDeployment(): Promise<void> {
   isStarting.set(true)
   try {
     const result = await dashboardApi<DeploymentStartResponse>('/api/dashboard/deployments', {
       method: 'POST',
       body: {
-        confirmed: !dryRun,
-        dryRun,
+        confirmed: true,
         environment: environment(),
         domain: domain().trim(),
       },
@@ -90,11 +89,10 @@ async function startDeployment(dryRun: boolean): Promise<void> {
     pushToast('success', result.message, {
       detail: result.pid ? `Process ${result.pid}` : undefined,
     })
-    if (!dryRun)
-      await loadDeployments()
+    await loadDeployments()
   }
   catch (error) {
-    pushToast('error', dryRun ? 'Could not preview deployment' : 'Could not start deployment', {
+    pushToast('error', 'Could not start deployment', {
       detail: error instanceof Error ? error.message : String(error),
     })
   }
@@ -115,9 +113,6 @@ onMount(() => {
       <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Deployment model records through the guarded dashboard API.</p>
     </div>
     <div class="flex gap-2 items-center">
-      <Button :disabled="isStarting()" variant="outline" @click="startDeployment(true)">
-        Preview
-      </Button>
       <Button :disabled="isStarting()" @click="showDeployModal.set(true)">
         Deploy
       </Button>
@@ -205,7 +200,7 @@ onMount(() => {
     <template #footer>
       <div class="flex gap-2 items-center">
         <Button :disabled="isStarting()" variant="ghost" @click="showDeployModal.set(false)">Cancel</Button>
-        <Button :loading="isStarting()" @click="startDeployment(false)">Start deployment</Button>
+        <Button :loading="isStarting()" @click="startDeployment">Start deployment</Button>
       </div>
     </template>
   </Modal>

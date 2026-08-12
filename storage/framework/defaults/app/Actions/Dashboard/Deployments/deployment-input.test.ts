@@ -19,7 +19,6 @@ describe('dashboard deployment inputs', () => {
     expect(deploymentCommandArgs({
       environment: 'staging',
       domain: 'app.example.com',
-      dryRun: true,
     })).toEqual([
       'deploy',
       '--env',
@@ -28,7 +27,6 @@ describe('dashboard deployment inputs', () => {
       '--yes',
       '--domain',
       'app.example.com',
-      '--dry-run',
     ])
   })
 

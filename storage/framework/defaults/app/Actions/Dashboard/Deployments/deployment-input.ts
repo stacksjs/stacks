@@ -1,7 +1,6 @@
 export interface DeploymentCommandInput {
   environment?: unknown
   domain?: unknown
-  dryRun?: unknown
 }
 
 export interface DeploymentRecordLike {
@@ -24,8 +23,6 @@ export function deploymentCommandArgs(input: DeploymentCommandInput): string[] {
       throw new Error('Domain must be a valid DNS name.')
     args.push('--domain', domain)
   }
-  if (booleanValue(input.dryRun))
-    args.push('--dry-run')
   return args
 }
 

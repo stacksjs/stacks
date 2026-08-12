@@ -26,8 +26,15 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const dryRun = booleanValue(request.get('dryRun') || request.get('dry_run'))
+    if (dryRun) {
+      return response.json({
+        success: false,
+        message: 'Deployment previews are not supported. Review config/cloud.ts before starting a deployment.',
+      }, { status: 422 })
+    }
+
     const confirmed = booleanValue(request.get('confirmed'))
-    if (!dryRun && !confirmed) {
+    if (!confirmed) {
       return response.json({
         success: false,
         confirmationRequired: true,
@@ -40,7 +47,6 @@ export default new Action({
       args = deploymentCommandArgs({
         environment: request.get('environment') || request.get('env'),
         domain: request.get('domain'),
-        dryRun,
       })
     }
     catch (error) {
@@ -50,22 +56,20 @@ export default new Action({
       }, { status: 422 })
     }
 
-    let deployment: Awaited<ReturnType<typeof Deployment.create>> | null = null
+    let deployment: Awaited<ReturnType<typeof Deployment.create>>
     const startedAt = Date.now()
-    if (!dryRun) {
-      try {
-        deployment = await Deployment.create({
-          commitHash: gitValue(['rev-parse', '--short=12', 'HEAD']),
-          commitMessage: gitValue(['log', '-1', '--pretty=%s']),
-          branch: gitValue(['branch', '--show-current']),
-          status: 'running',
-          environment: args[2],
-          author: gitValue(['log', '-1', '--pretty=%an <%ae>']),
-        })
-      }
-      catch (error) {
-        return dashboardOperationalError(error, 'Deployment record could not be created.', 'CreateDeployment.record', 500)
-      }
+    try {
+      deployment = await Deployment.create({
+        commitHash: gitValue(['rev-parse', '--short=12', 'HEAD']),
+        commitMessage: gitValue(['log', '-1', '--pretty=%s']),
+        branch: gitValue(['branch', '--show-current']),
+        status: 'running',
+        environment: args[2],
+        author: gitValue(['log', '-1', '--pretty=%an <%ae>']),
+      })
+    }
+    catch (error) {
+      return dashboardOperationalError(error, 'Deployment record could not be created.', 'CreateDeployment.record', 500)
     }
 
     let child: ReturnType<typeof Bun.spawn>
@@ -78,42 +82,37 @@ export default new Action({
       child.unref()
     }
     catch (error) {
-      if (deployment) {
-        try {
-          await deployment.update({
-            status: 'failed',
-            duration: 0,
-            errorLog: 'Deployment process could not be started.',
-          })
-        }
-        catch (updateError) {
-          dashboardOperationalIssue(updateError, 'Deployment failure status could not be recorded.', 'CreateDeployment.failureRecord')
-        }
+      try {
+        await deployment.update({
+          status: 'failed',
+          duration: 0,
+          errorLog: 'Deployment process could not be started.',
+        })
+      }
+      catch (updateError) {
+        dashboardOperationalIssue(updateError, 'Deployment failure status could not be recorded.', 'CreateDeployment.failureRecord')
       }
       return dashboardOperationalError(error, 'Deployment process could not be started.', 'CreateDeployment.process', 500)
     }
 
-    if (deployment) {
-      const record = deployment
-      void child.exited
-        .then(async (exitCode) => {
-          await record.update({
-            status: exitCode === 0 ? 'success' : 'failed',
-            duration: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
-            errorLog: exitCode === 0 ? '' : `buddy deploy exited with code ${exitCode}`,
-          })
+    void child.exited
+      .then(async (exitCode) => {
+        await deployment.update({
+          status: exitCode === 0 ? 'success' : 'failed',
+          duration: Math.max(0, Math.round((Date.now() - startedAt) / 1000)),
+          errorLog: exitCode === 0 ? '' : `buddy deploy exited with code ${exitCode}`,
         })
-        .catch((error) => {
-          dashboardOperationalIssue(error, 'Deployment completion could not be recorded.', 'CreateDeployment.completionRecord')
-        })
-    }
+      })
+      .catch((error) => {
+        dashboardOperationalIssue(error, 'Deployment completion could not be recorded.', 'CreateDeployment.completionRecord')
+      })
 
     return {
       success: true,
       pid: child.pid,
       command: ['./buddy', ...args],
-      deployment: deployment?.toJSON() || null,
-      message: dryRun ? 'Deployment preview started.' : 'Deployment started.',
+      deployment: deployment.toJSON(),
+      message: 'Deployment started.',
     }
   },
 })

@@ -21,6 +21,8 @@ describe('dashboard deployment contract', () => {
     expect(list).toContain('<DeployScript />')
     expect(list).toContain('<LiveTerminalOutput />')
     expect(list).toContain('<Button :disabled="isStarting()" @click="showDeployModal.set(true)">')
+    expect(list).not.toContain('Preview')
+    expect(list).not.toContain('dryRun')
     expect(list).not.toContain('from-blue-500')
   })
 
@@ -77,6 +79,8 @@ describe('dashboard deployment contract', () => {
     expect(create.match(/dashboardOperationalError\(/g)?.length).toBe(2)
     expect(create.match(/dashboardOperationalIssue\(/g)?.length).toBe(2)
     expect(create.match(/error instanceof Error \? error\.message/g)?.length).toBe(1)
+    expect(create).toContain('Deployment previews are not supported.')
+    expect(create).not.toContain("args.push('--dry-run')")
     expect(updateScript.match(/dashboardOperationalError\(/g)?.length).toBe(1)
     expect(updateScript.match(/dashboardOperationalIssue\(/g)?.length).toBe(1)
     expect(updateScript.match(/error instanceof Error \? error\.message/g)?.length).toBe(1)
