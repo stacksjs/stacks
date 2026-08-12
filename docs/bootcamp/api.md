@@ -19,33 +19,42 @@ Stacks follows a clean, Laravel-inspired architecture for APIs:
 
 Routes are defined in the `routes/` directory. The main API routes go in `routes/api.ts`.
 
+Everything in `routes/api.ts` is mounted under `/api`. The prefix comes from the
+`'api'` key in `app/Routes.ts` and matches the path the dev proxy forwards, so
+the paths you write here are relative to `/api` and the file never spells it out
+itself. Each example below shows the URL it actually answers.
+
 ### Basic Routes
 
 ```typescript
 // routes/api.ts
 import { response, route } from '@stacksjs/router'
 
-// Simple GET route with inline handler
-route.get('/', () => response.text('Hello, World!'))
+// Simple GET route with inline handler -> GET /api/hello
+route.get('/hello', () => response.text('Hello, World!'))
 
-// Return JSON
+// Return JSON -> GET /api/status
 route.get('/status', () => response.json({
   status: 'ok',
   timestamp: Date.now(),
 }))
 
-// Route with path parameters
+// Route with path parameters -> GET /api/users/42
 route.get('/users/{id}', (request) => {
   const userId = request.param('id')
   return response.json({ userId })
 })
 
-// Different HTTP methods
+// Different HTTP methods -> /api/users, /api/users/{id}
 route.post('/users', 'Actions/User/CreateUserAction')
 route.put('/users/{id}', 'Actions/User/UpdateUserAction')
 route.patch('/users/{id}', 'Actions/User/PatchUserAction')
 route.delete('/users/{id}', 'Actions/User/DeleteUserAction')
 ```
+
+To answer a path at the document root instead, add a route file whose registry
+entry sets `prefix: ''` (see `app/Routes.ts`). The API server serves `/api` and
+nothing else; the pages at the document root come from the views server.
 
 ### Route Groups
 
@@ -55,20 +64,21 @@ Group routes with shared configuration:
 // routes/api.ts
 import { route } from '@stacksjs/router'
 
-// Group with prefix
-route.group({ prefix: '/api/v1' }, () => {
+// Group with prefix. Group prefixes nest inside the file's own `/api`, so
+// write `/v1` and not `/api/v1` -> GET /api/v1/users
+route.group({ prefix: '/v1' }, () => {
   route.get('/users', 'Actions/User/ListUsersAction')
   route.get('/users/{id}', 'Actions/User/GetUserAction')
   route.post('/users', 'Actions/User/CreateUserAction')
 })
 
-// Group with middleware
+// Group with middleware -> GET /api/me
 route.group({ middleware: 'auth' }, () => {
   route.get('/me', 'Actions/Auth/AuthUserAction')
   route.post('/logout', 'Actions/Auth/LogoutAction')
 })
 
-// Combine prefix and middleware
+// Combine prefix and middleware -> GET /api/admin/dashboard
 route.group({ prefix: '/admin', middleware: ['auth', 'admin'] }, () => {
   route.get('/dashboard', 'Actions/Admin/DashboardAction')
   route.get('/users', 'Actions/Admin/ListUsersAction')
@@ -77,17 +87,19 @@ route.group({ prefix: '/admin', middleware: ['auth', 'admin'] }, () => {
 
 ### Special Routes
 
-Stacks provides convenience methods for common routes:
+```typescript
+// Health check. Probes the database and cache and answers 503 when either is
+// down, so a load balancer stops routing to a broken instance. It registers
+// `/api/health` regardless of which file calls it - point uptime monitors
+// there, not at `/health`, which is free for a page of your own.
+route.health()
+```
+
+Point a route at an action by naming it instead of passing a function. The path
+is resolved under `app/Actions/`, falling back to the framework defaults:
 
 ```typescript
-// Health check endpoint (GET /health)
-route.health()
-
-// Route to an action
-route.action('/example') // equivalent to route.get('/example', 'ExampleAction')
-
-// Route to a job
-route.job('/process') // equivalent to route.get('/process', 'ProcessJob')
+route.get('/posts', 'Actions/PostIndexAction') // -> GET /api/posts
 ```
 
 ## Creating Actions

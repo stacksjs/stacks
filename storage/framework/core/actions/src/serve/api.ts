@@ -21,7 +21,7 @@ import process from 'node:process'
 import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { frameworkPath } from '@stacksjs/path'
-import { route } from '@stacksjs/router'
+import { disableViewRouting, route } from '@stacksjs/router'
 import { resolveApiHost } from '../helpers/api-host'
 
 /**
@@ -72,6 +72,15 @@ route.use(corsMiddleware.toRouterHandler())
 
 // Import routes
 await route.importRoutes()
+
+// This process answers JSON. Without this it also mounts a GET route for every
+// `.stx` under `resources/views` — bun-router finds the directory on its own —
+// and serves the whole site with no stylesheet and with every image 404ing,
+// because there is no static handling here. `buddy serve` renders pages and
+// reverse-proxies `/api/**` to this process; it is the proxy target, not a
+// second page server. Runs after the route files so an app that asked for file
+// routing itself keeps it (#2314).
+disableViewRouting(route.bunRouter)
 
 // Start server. `reusePort` (SO_REUSEPORT, Linux) lets a new release's
 // instance bind the same port while the old one still serves — the
