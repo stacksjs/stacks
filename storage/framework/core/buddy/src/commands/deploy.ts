@@ -37,6 +37,44 @@ const MAIL_PACKAGE_SPEC = `${MAIL_PACKAGE_DOMAIN}@0.1.0`
 const MAIL_TARGET_PLATFORM = 'linux-x86_64'
 const MAIL_BINARY_NAMES = ['mail', 'mail-x86_64-linux', 'mail-x86_64-linux-gnu']
 
+export interface DeployRollbackOptions {
+  env?: string
+  to?: string
+  dryRun?: boolean
+  verbose?: boolean
+}
+
+export function resolveTsCloudCliPath(tsCloudEntry = import.meta.resolve('@stacksjs/ts-cloud')): string {
+  return resolve(dirname(new URL(tsCloudEntry).pathname), 'bin/cli.js')
+}
+
+export async function runDeployRollback(
+  site: string | undefined,
+  options: DeployRollbackOptions,
+  execute: (command: string[]) => Promise<number> = async (command) => {
+    const child = Bun.spawn(command, {
+      cwd: p.projectPath(),
+      env: process.env,
+      stdin: 'inherit',
+      stdout: 'inherit',
+      stderr: 'inherit',
+    })
+
+    return await child.exited
+  },
+): Promise<number> {
+  const environment = resolveDeploymentEnvironment({ option: options.env })
+  const command = [process.execPath, resolveTsCloudCliPath(), 'deploy:rollback']
+
+  if (site) command.push(site)
+  command.push('--env', environment)
+  if (options.to) command.push('--to', options.to)
+  if (options.dryRun) command.push('--dry-run')
+  if (options.verbose) command.push('--verbose')
+
+  return await execute(command)
+}
+
 function collectMatchingFiles(root: string, names: string[], maxDepth = 8): string[] {
   const nameSet = new Set(names)
   const matches: string[] = []
@@ -3646,6 +3684,18 @@ export function deploy(buddy: CLI): void {
       }
 
       await outro('Project deployed.', { startTime, useSeconds: true })
+    })
+
+  buddy
+    .command('deploy:rollback [site]', 'Roll back a deployment to a preserved release')
+    .option('--env <environment>', 'Environment to roll back', { default: 'production' })
+    .option('--to <release>', 'Preserved release id to activate', { default: undefined })
+    .option('--dry-run', 'Preview the rollback without changing the active release', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (site: string | undefined, options: DeployRollbackOptions) => {
+      const exitCode = await runDeployRollback(site, options)
+      if (exitCode !== ExitCode.Success)
+        process.exit(exitCode)
     })
 
   onUnknownSubcommand(buddy, "deploy")

@@ -31,6 +31,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   // create.ts registers the command as `new [name]`.
   'new': { path: './commands/create.ts', exportName: 'create' },
   'deploy': { path: './commands/deploy.ts', exportName: 'deploy' },
+  'deploy:rollback': { path: './commands/deploy.ts', exportName: 'deploy' },
   'dev': { path: './commands/dev.ts', exportName: 'dev' },
   'desktop:apple:doctor': { path: './commands/desktop-apple.ts', exportName: 'desktopApple' },
   'desktop:apple:csr': { path: './commands/desktop-apple.ts', exportName: 'desktopApple' },
