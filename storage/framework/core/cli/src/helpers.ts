@@ -87,6 +87,20 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
         log.success(text)
     }
 
-    return resolve(ExitCode.Success)
+    // Drain the log before resolving.
+    //
+    // Every one of these writes is async and tracked, and essentially every
+    // caller does `await outro(...)` immediately followed by `process.exit()`.
+    // `process.exit` does not run `beforeExit`, so the queued write is
+    // discarded and the command's closing summary never appears — the logging
+    // module documents that race as deliberately uncovered, leaving it to each
+    // caller to flush, and callers do not.
+    //
+    // The visible cost was `buddy migrate` on a production box: it applied its
+    // migrations and printed nothing at all, exit 0. An operator could not tell
+    // "applied 3", "nothing to migrate" and "died early" apart, and the schema
+    // silently stayed behind. Flushing here fixes it once for every command
+    // that ends with an outro rather than once per call site.
+    void log.flush().catch(() => {}).then(() => resolve(ExitCode.Success))
   })
 }
