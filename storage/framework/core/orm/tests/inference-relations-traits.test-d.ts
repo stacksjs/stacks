@@ -86,6 +86,18 @@ const Minimal = defineModel({
   },
 })
 
+const Polymorphic = defineModel({
+  name: 'Polymorphic',
+  table: 'polymorphics',
+  morphOne: { heroImage: 'Image' },
+  morphMany: { attachments: 'Attachment' },
+  morphToMany: ['Tag'],
+  morphedByMany: ['Post'],
+  attributes: {
+    label: { fillable: true, validation: { rule: schema.string() } },
+  },
+})
+
 type MissionRow = NonNullable<Awaited<ReturnType<typeof Mission.find>>>
 type FarmFk = Expect<Equal<MissionRow['farm_id'], number>>
 type MultiwordFk = Expect<Equal<MissionRow['treatment_map_id'], number>>
@@ -134,6 +146,8 @@ Mission.with(
   'summary',
 )
 
+Polymorphic.with('heroImage', 'attachments', 'tag', 'post')
+
 // @ts-expect-error belongsTo foreign keys are numeric
 Mission.where('owner_id', '3')
 // @ts-expect-error a custom primary key replaces id in the column union
@@ -148,6 +162,36 @@ Minimal.where('uuid', 'uuid')
 Minimal.where('created_at', 'now')
 // @ts-expect-error models without soft deletes do not expose deleted_at
 Minimal.whereNull('deleted_at')
+// @ts-expect-error polymorphic relation names are derived from declarations
+Polymorphic.with('image')
+
+async function polymorphicCardinalityContracts(): Promise<void> {
+  const model = await Polymorphic.with('heroImage', 'attachments', 'tag', 'post').firstOrFail()
+
+  const heroImage = model.getRelation('heroImage')
+  if (heroImage) {
+    // @ts-expect-error morphOne is to-one
+    heroImage.length
+  }
+
+  const attachments = model.getRelation('attachments')
+  if (attachments) {
+    const count: number = attachments.length
+    void count
+  }
+
+  const tags = model.getRelation('tag')
+  if (tags) {
+    const count: number = tags.length
+    void count
+  }
+
+  const posts = model.getRelation('post')
+  if (posts) {
+    const count: number = posts.length
+    void count
+  }
+}
 
 async function relationCardinalityContracts(): Promise<void> {
   const mission = await Mission.with(
@@ -218,3 +262,4 @@ void (0 as unknown as AliasDeletedAt)
 void (0 as unknown as ExplicitCreatedAtWins)
 void (0 as unknown as ExplicitUpdatedAtWins)
 void relationCardinalityContracts
+void polymorphicCardinalityContracts
