@@ -59,6 +59,7 @@ describe('@stacksjs/faker', () => {
   })
 
   it('supports numeric string lengths and credit-card patterns', () => {
+    expect(faker.string.alpha(10)).toHaveLength(10)
     expect(faker.string.alphanumeric(12)).toHaveLength(12)
     expect(faker.finance.creditCardNumber('####-####')).toMatch(/^\d{4}-\d{4}$/)
   })

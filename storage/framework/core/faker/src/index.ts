@@ -63,12 +63,16 @@ number.float = (options?: { min?: number, max?: number, precision?: number, frac
 }
 
 interface StringCompatibility {
+  alpha: (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }) => string
   alphanumeric: (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }) => string
 }
 
 type EnhancedString = Omit<typeof baseFaker.string, keyof StringCompatibility> & StringCompatibility
 
 const string = Object.create(baseFaker.string) as EnhancedString
+string.alpha = (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }): string => {
+  return baseFaker.string.alpha(typeof options === 'number' ? { length: options } : options)
+}
 string.alphanumeric = (options?: number | { length?: number, casing?: 'upper' | 'lower' | 'mixed' }): string => {
   return baseFaker.string.alphanumeric(typeof options === 'number' ? { length: options } : options)
 }
