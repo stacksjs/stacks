@@ -20,7 +20,7 @@ export interface DeployOptions extends CliOptions {
   json?: boolean
 }
 
-export type DeploymentSiteKind = 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
+export type DeploymentSiteKind = 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect' | 'proxy'
 
 export interface DeploymentPreviewSite {
   name: string

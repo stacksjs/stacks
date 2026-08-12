@@ -1,4 +1,4 @@
-import type { CLI, DeploymentPreview, DeployOptions } from '@stacksjs/types'
+import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
@@ -1705,7 +1705,7 @@ async function startGithubDeployments(args: {
   sites: Record<string, any>
   onlySite: string | undefined
   environment: string
-  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
+  resolveSiteKind: (site: any) => DeploymentSiteKind
 }): Promise<GithubDeploymentRecord[]> {
   const { sites, onlySite, environment, resolveSiteKind } = args
   const records: GithubDeploymentRecord[] = []
@@ -1743,7 +1743,7 @@ async function runHetznerDeploy(args: {
   createCloudDriver: any
   deployAllComputeSites: any
   ensureManagementDashboard?: (config: any, options: any) => any
-  resolveSiteKind: (site: any) => 'bucket' | 'server-app' | 'server-static' | 'server-php' | 'redirect'
+  resolveSiteKind: (site: any) => DeploymentSiteKind
   persistedAttachBox?: AttachedComputeBox | null
   /** Deploy ONLY this site (multi-tenant surgical add). Provisioning still uses
    *  the full config so rpx keeps every existing route; only this site's files
