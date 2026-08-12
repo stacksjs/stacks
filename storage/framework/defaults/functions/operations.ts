@@ -236,3 +236,48 @@ export function protectRecoveryPoint(id: string, input: { pinned?: boolean, held
 export function runRecoveryRetention(): Promise<{ success: boolean, message: string, jobs: RecoveryJob[] }> {
   return dashboardApi('/api/dashboard/operations/recovery/retention', { method: 'POST' })
 }
+
+export interface MigrationPlanOperation {
+  kind: string
+  table: string
+  column?: string
+  sql?: string
+  destructive: boolean
+}
+
+export interface MigrationLedgerEntry {
+  file: string
+  status: string
+  recorded: boolean
+  effects: Array<{ kind: string, table?: string, name: string }>
+}
+
+export interface MigrationOperationsResponse {
+  environment: string
+  dialect: string
+  operations: MigrationPlanOperation[]
+  revision: string
+  applied: number
+  ledger: {
+    supported: boolean
+    drift: boolean
+    entries: MigrationLedgerEntry[]
+    orphans: Array<{ migration: string, renamedTo?: string }>
+    counts: Record<string, number>
+  }
+  reconciliation: Record<string, unknown>
+  operatorOperations: OperatorOperation[]
+  summary: { pending: number, destructive: number, drift: boolean, ledgerIssues: number }
+}
+
+export function fetchMigrationOperations(): Promise<MigrationOperationsResponse> {
+  return dashboardApi('/api/dashboard/operations/migrations')
+}
+
+export function applyMigrationOperations(revision: string, confirmation: string): Promise<{ success: boolean, message: string, operation: OperatorOperation }> {
+  return dashboardApi('/api/dashboard/operations/migrations/apply', { method: 'POST', body: { revision, confirmation } })
+}
+
+export function reconcileMigrationLedger(revision: string, confirmation: string): Promise<{ success: boolean, result: Record<string, unknown>, operation: OperatorOperation }> {
+  return dashboardApi('/api/dashboard/operations/migrations/reconcile', { method: 'POST', body: { revision, confirmation } })
+}

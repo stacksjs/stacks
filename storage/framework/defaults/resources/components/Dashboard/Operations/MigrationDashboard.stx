@@ -1,0 +1,146 @@
+<script client>
+import type { MigrationOperationsResponse } from '../../../../functions/operations'
+import { applyMigrationOperations, fetchMigrationOperations, reconcileMigrationLedger } from '../../../../functions/operations'
+import { pushToast } from '../../../../functions/toasts'
+
+const data = state<MigrationOperationsResponse | null>(null)
+const loading = state(true)
+const busy = state('')
+const errorMessage = state('')
+const dialog = state<'' | 'apply' | 'reconcile'>('')
+const confirmation = state('')
+
+async function load(): Promise<void> {
+  loading.set(true)
+  errorMessage.set('')
+  try {
+    data.set(await fetchMigrationOperations())
+  }
+  catch (error) {
+    errorMessage.set('Migration state could not be loaded.')
+    pushToast('error', 'Could not load migrations', { detail: String(error) })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openDialog(kind: 'apply' | 'reconcile'): void {
+  confirmation.set('')
+  dialog.set(kind)
+}
+
+function closeDialog(): void {
+  if (!busy()) dialog.set('')
+}
+
+async function confirm(): Promise<void> {
+  const current = data()
+  const kind = dialog()
+  if (!current || !kind) return
+  busy.set(kind)
+  try {
+    if (kind === 'apply') {
+      const result = await applyMigrationOperations(current.revision, confirmation())
+      pushToast('success', result.message)
+    }
+    else {
+      await reconcileMigrationLedger(current.revision, confirmation())
+      pushToast('success', 'Migration ledger reconciled.')
+    }
+    dialog.set('')
+    await load()
+  }
+  catch (error) {
+    pushToast('error', kind === 'apply' ? 'Migration failed' : 'Reconciliation failed', { detail: String(error) })
+  }
+  finally {
+    busy.set('')
+  }
+}
+
+function statusClass(status: string): string {
+  if (status === 'applied' || status === 'stranded') return 'text-green-700 bg-green-50 dark:text-green-300 dark:bg-green-950/30'
+  if (status === 'pending') return 'text-blue-700 bg-blue-50 dark:text-blue-300 dark:bg-blue-950/30'
+  return 'text-orange-700 bg-orange-50 dark:text-orange-300 dark:bg-orange-950/30'
+}
+
+onMount(() => void load())
+</script>
+
+<div class="space-y-6">
+  <PageHeader title="Operations" description="Review model-derived schema changes and migration ledger health before changing the database.">
+    <template #actions>
+      <Button variant="secondary" :loading="loading()" @click="load">
+        <span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>
+        Refresh
+      </Button>
+    </template>
+  </PageHeader>
+  <OperationsNavigation active="migrations" />
+
+  <div :if="errorMessage()" role="alert" class="px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ errorMessage() }}</div>
+
+  <section aria-label="Migration summary" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    <StatsCard title="Applied" :value="String(data()?.applied || 0)" icon="i-hugeicons-checkmark-circle-02" iconBg="success" :loading="loading()" />
+    <StatsCard title="Pending changes" :value="String(data()?.summary.pending || 0)" icon="i-hugeicons-git-compare" iconBg="primary" :loading="loading()" />
+    <StatsCard title="Destructive" :value="String(data()?.summary.destructive || 0)" icon="i-hugeicons-alert-02" iconBg="warning" :loading="loading()" />
+    <StatsCard title="Ledger issues" :value="String(data()?.summary.ledgerIssues || 0)" icon="i-hugeicons-database-01" iconBg="neutral" :loading="loading()" />
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
+    <div class="flex flex-col gap-3 px-4 py-4 border-b border-gray-200 dark:border-neutral-800 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Schema plan</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ data()?.dialect || 'database' }} in {{ data()?.environment || 'current environment' }}. The plan revision is rechecked at execution.</p>
+      </div>
+      <Button :disabled="!data()?.summary.pending" @click="openDialog('apply')">Apply migrations</Button>
+    </div>
+    <div :if="!loading() && !data()?.operations.length" class="px-6 py-12 text-center">
+      <span aria-hidden="true" class="mx-auto h-8 w-8 text-green-500 i-hugeicons-checkmark-circle-02"></span>
+      <p class="mt-3 font-medium text-gray-900 dark:text-white">Schema is current</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Models and the connected database have no pending structural changes.</p>
+    </div>
+    <div :if="data()?.operations.length" class="divide-y divide-gray-100 dark:divide-neutral-800">
+      <div :for="operation in data()?.operations || []" class="flex items-start justify-between gap-4 px-4 py-3">
+        <div>
+          <p class="font-medium text-gray-900 text-sm dark:text-white">{{ operation.kind.replaceAll('_', ' ') }}</p>
+          <p class="mt-0.5 font-mono text-gray-500 text-xs dark:text-neutral-400">{{ operation.table }}{{ operation.column ? '.' + operation.column : '' }}</p>
+        </div>
+        <Badge :variant="operation.destructive ? 'danger' : 'info'">{{ operation.destructive ? 'Destructive' : 'Safe' }}</Badge>
+      </div>
+    </div>
+  </section>
+
+  <section class="overflow-hidden bg-white dark:bg-neutral-900 border border-gray-200 rounded-lg dark:border-neutral-800">
+    <div class="flex items-center justify-between gap-3 px-4 py-4 border-b border-gray-200 dark:border-neutral-800">
+      <div>
+        <h2 class="font-semibold text-gray-900 dark:text-white">Migration ledger</h2>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Compared with both migration files and live schema effects.</p>
+      </div>
+      <Button variant="secondary" :disabled="!data()?.summary.drift" @click="openDialog('reconcile')">Reconcile provable drift</Button>
+    </div>
+    <div class="max-h-96 overflow-auto divide-y divide-gray-100 dark:divide-neutral-800">
+      <div :for="entry in data()?.ledger.entries || []" class="flex items-center justify-between gap-4 px-4 py-3">
+        <span class="min-w-0 truncate font-mono text-gray-700 text-xs dark:text-neutral-300">{{ entry.file }}</span>
+        <span :class="'shrink-0 px-2 py-1 font-medium text-xs rounded-md ' + statusClass(entry.status)">{{ entry.status }}</span>
+      </div>
+    </div>
+  </section>
+
+  <OperationHistory :operations="data()?.operatorOperations || []" :loading="loading()" />
+
+  <Modal :isOpen="dialog() !== ''" :title="dialog() === 'apply' ? 'Apply migration plan' : 'Reconcile migration ledger'" size="md" @close="closeDialog">
+    <div class="space-y-4">
+      <div :if="dialog() === 'apply' && data()?.summary.destructive" role="alert" class="px-4 py-3 text-orange-800 text-sm dark:text-orange-200 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 rounded-lg dark:border-orange-900">
+        This plan contains {{ data()?.summary.destructive }} destructive operation{{ data()?.summary.destructive === 1 ? '' : 's' }}. Confirm that a verified recovery point exists before continuing.
+      </div>
+      <p class="text-gray-600 text-sm dark:text-neutral-300">Type <strong>{{ dialog() === 'apply' ? 'migrate ' + data()?.environment : 'reconcile ' + data()?.environment }}</strong> to confirm.</p>
+      <Input v-model:value="confirmation" autocomplete="off" placeholder="Typed confirmation" />
+    </div>
+    <template #footer>
+      <Button variant="secondary" :disabled="busy() !== ''" @click="closeDialog">Cancel</Button>
+      <Button :variant="dialog() === 'apply' && data()?.summary.destructive ? 'danger' : 'primary'" :loading="busy() !== ''" @click="confirm">{{ dialog() === 'apply' ? 'Apply migrations' : 'Reconcile ledger' }}</Button>
+    </template>
+  </Modal>
+</div>
