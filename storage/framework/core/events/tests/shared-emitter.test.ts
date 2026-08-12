@@ -7,11 +7,13 @@
 // own range. Bun hoists one and nests the others.
 //
 // Nothing then errors. The boot that registers listeners imports one copy, the
-// action that dispatches imports another, and the dispatch returns normally
-// having reached nobody. In a real application it meant no domain event had
-// ever reached a listener: webhooks, notifications and the audit log all did
-// nothing, while `[events] registered 70 listeners` printed at boot and every
-// test that called a listener directly passed.
+// code that dispatches imports another, and the dispatch returns normally
+// having reached nobody - indistinguishable from an event nobody subscribed to.
+//
+// The tests below construct that situation deliberately, because it is easy to
+// believe you have hit it when you have not: a probe script loaded from outside
+// an application's resolution root produces the same silence, and that one is
+// the probe's fault. This pins the property that makes both harmless.
 
 import { afterAll, describe, expect, test } from 'bun:test'
 import { copyFileSync, rmSync } from 'node:fs'

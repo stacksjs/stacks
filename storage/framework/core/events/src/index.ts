@@ -479,13 +479,17 @@ export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
  * and `@stacksjs/buddy`, each with their own range, installs two or three, and
  * bun hoists one while the others sit nested. Every copy is a separate emitter.
  *
- * Nothing errors when that happens, which is what makes it expensive. The boot
- * that registers listeners imports one copy; the action that dispatches imports
- * another; the dispatch returns normally, having reached nobody. In one
- * application it meant that *no domain event had ever reached a listener* -
- * webhooks, notifications and the audit log all silently did nothing, while
- * `[events] registered 70 listeners` printed at boot and every test that called
- * a listener directly passed.
+ * Nothing errors when that happens, which is what makes it dangerous rather
+ * than merely wasteful: the boot that registers listeners imports one copy, the
+ * code that dispatches imports another, and the dispatch returns normally
+ * having reached nobody. There is no error, no warning, and no way to tell the
+ * outcome apart from "nothing was listening".
+ *
+ * It is easy to be sure this has happened when it has not - the same symptom
+ * appears when a *probe* is loaded from outside the application's resolution
+ * root, and that is a mistake in the probe. What is not in question is that the
+ * hazard is real whenever more than one copy is installed, and that no consumer
+ * can be expected to notice it.
  *
  * Keyed on a `Symbol.for`, so the shared slot is the same one whichever copy
  * gets there first and no copy can shadow another with its own property.
