@@ -91,6 +91,30 @@ STX signals are callable. Read with `count()`, replace with
 `count.update(value => value + 1)`. Do not use Vue-style `.value` access in
 STX templates or `resources/functions`.
 
+### Client loop conditionals
+
+Attribute loops create a client-owned scope. Their item and index aliases may
+be used with either reactive attribute conditionals or STX block conditionals.
+The compiler promotes a block chain that reads those aliases into one reactive
+runtime chain:
+
+```html
+<template :for="(field, index) in fields()">
+  @if(field.editable)
+    <input x-model="drafts[field.key]">
+  @elseif(index === 0)
+    <span>First read-only field</span>
+  @else
+    <span>{{ field.value }}</span>
+  @endif
+</template>
+```
+
+Loop aliases are scoped to the owning element and inherited by nested client
+loops. A condition outside that element remains server-owned. Do not mix a
+server context value into a client loop chain. Serialize the value into client
+state when the browser must reevaluate it.
+
 ### Native form binding
 
 Use `x-model` for two-way form state instead of pairing `:value` with a
@@ -260,6 +284,7 @@ await addLayout('admin', { nav: true, footer: true })
 - **Server-to-client values are explicit** - a JSON-serializable top-level value exported by `<script server>` can be referenced by name in `<script client>`. STX serializes only referenced values and never overwrites a client-owned declaration
 - **`storage/framework/stx/`** — stx build cache and the generated route manifest. `config/ui.ts` sets stx's `stateDir` here, so nothing lands in the project root. Gitignored; safe to delete
 - **Reactivity is signal-based** - use callable `state()` and `derived()` signals, not Vue-style `ref()` or `.value`
+- **Client loop conditions** - `@if` chains that read `:for` or `@for` aliases compile into scoped runtime chains; aliases do not leak outside the loop element
 - **Component tag case is semantic** - `<Input v-model:value="query">` is a paired component, while lowercase `<input v-model="query">` is a native void element. Keep component tags PascalCase, including names that collide with native elements
 - **Structural DOM timing** - use `nextTick()` with `useRef()` after opening reactive markup
 - **Crosswind for styling** — use utility classes, not inline styles
