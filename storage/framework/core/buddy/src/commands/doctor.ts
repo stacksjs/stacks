@@ -453,6 +453,37 @@ export function doctor(buddy: CLI): void {
         })
       }
 
+      // Stateful services provisioned on the compute instance with nothing
+      // backing them up. A warning rather than a failure: the app runs, and
+      // whether that risk is acceptable is the operator's call. It is here
+      // because the alternative is finding out the way the report that opened
+      // stacksjs/stacks#2313 did, which is after the disk is gone.
+      await probe(checks, 'Database backups', async () => {
+        const fs = await import('node:fs')
+        const cloudConfig = resolve(process.cwd(), 'config/cloud.ts')
+        if (!fs.existsSync(cloudConfig))
+          return 'No config/cloud.ts (skipped)'
+
+        const { findUnbackedManagedServices, unbackedDataMessage } = await import('../unbacked-data')
+
+        let tsCloud: unknown
+        try {
+          tsCloud = (await import(cloudConfig)).tsCloud
+        }
+        catch {
+          // Evaluating config/cloud.ts can fail for reasons of its own (a
+          // missing env var, a bad import). Not this probe's business to
+          // report, and the deploy says it far more loudly.
+          throw new ProbeWarning('could not read config/cloud.ts (skipped)')
+        }
+
+        const unbacked = findUnbackedManagedServices(tsCloud)
+        if (unbacked.length === 0)
+          return 'No unbacked managed data services'
+
+        throw new ProbeWarning(unbackedDataMessage(unbacked))
+      })
+
       // .env decryption — verify enc: values can be decrypted with the
       // configured private key, if any are present. No-op when there
       // are no encrypted values or no key.

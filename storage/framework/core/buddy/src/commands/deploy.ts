@@ -16,6 +16,7 @@ import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
+import { findUnbackedManagedServices, unbackedDataMessage } from '../unbacked-data'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -1326,6 +1327,15 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     log.error('Upgrade @stacksjs/ts-cloud (bun update @stacksjs/ts-cloud), or point TS_CLOUD_MODULE at a build that has it.')
     process.exit(ExitCode.FatalError)
   }
+
+  // Say it before the deploy, not after: this run is about to `migrate` against
+  // data that has no restore path, and a schema change is the likeliest way an
+  // app loses it. Not a refusal - the operator may know, and a deploy is the
+  // wrong place to argue - but it will not happen silently, which is how it
+  // went unnoticed in the app that opened stacksjs/stacks#2313.
+  const unbacked = findUnbackedManagedServices(tsCloudConfig)
+  if (unbacked.length > 0)
+    log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
     await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined, persistedAttachBox })
