@@ -18,14 +18,31 @@ export interface ExportedPrintDevice {
   'Print Count': number
 }
 
-function value(device: any, camel: string, snake: string = camel): unknown {
-  return device?.[camel] ?? device?.[snake]
+function value(device: PrintDeviceJsonResponse, camel: keyof PrintDeviceJsonResponse, snake: string = camel): unknown {
+  const values = device as unknown as Record<string, unknown>
+  return values[String(camel)] ?? values[snake]
 }
 
 function timestamp(value: unknown): Date {
-  const raw = String(value || '')
-  const milliseconds = /^\d+$/.test(raw) ? Number(raw) : value
-  return new Date(milliseconds as string | number)
+  if (value instanceof Date)
+    return value
+
+  if (typeof value === 'number')
+    return new Date(value)
+
+  if (typeof value === 'string')
+    return new Date(/^\d+$/.test(value) ? Number(value) : value)
+
+  return new Date(Number.NaN)
+}
+
+function numberValue(device: PrintDeviceJsonResponse, camel: keyof PrintDeviceJsonResponse, snake: string = camel): number {
+  const raw = value(device, camel, snake)
+  if (typeof raw === 'number')
+    return raw
+
+  const parsed = Number(raw)
+  return Number.isFinite(parsed) ? parsed : 0
 }
 
 /**
@@ -72,7 +89,7 @@ function prepareDevicesForExport(devices: PrintDeviceJsonResponse[]) {
       device.terminal,
       device.status,
       timestamp(value(device, 'lastPing', 'last_ping')).toLocaleString(),
-      value(device, 'printCount', 'print_count'),
+      numberValue(device, 'printCount', 'print_count'),
     ]
   })
 
