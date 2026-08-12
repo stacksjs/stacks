@@ -67,12 +67,10 @@ describe('model-types.ts defines correct type utilities', () => {
     expect(content).toContain('_id')
   })
 
-  test('exports ModelRow type (attributes + FK columns)', () => {
+  test('exports ModelRow type inferred from the preserved definition', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
     expect(content).toContain('export type ModelRow<T>')
-    // The attribute half is bun-query-builder's `ModelRow` (imported as
-    // `QueryModelRow`); the FK half is still composed locally.
-    expect(content).toContain('QueryModelRow<T> & BelongsToForeignKeys<Def<T>>')
+    expect(content).toContain('InferredModelRow<Def<T>>')
     expect(content).toContain('BelongsToForeignKeys')
   })
 
@@ -88,14 +86,11 @@ describe('model-types.ts defines correct type utilities', () => {
     expect(content).toContain('Partial<')
   })
 
-  test('imports from @stacksjs/query-builder (not generated types)', () => {
+  test('infers from validators and the preserved model definition', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain("from '@stacksjs/query-builder'")
-    // Imported under aliases (`ModelRow as QueryModelRow`, …), so assert the
-    // upstream names rather than locals the aliasing removed.
-    for (const util of ['InferAttributes', 'InferColumnNames', 'InferFillableAttributes', 'ModelRow'])
+    expect(content).toContain("from '@stacksjs/validation'")
+    for (const util of ['MODEL_DEFINITION', 'AttributeValue', 'TraitFields', 'BelongsToForeignKeys'])
       expect(content).toContain(util)
-    expect(content).toContain('ModelDefinition')
   })
 
   test('does NOT reference generated type files', () => {

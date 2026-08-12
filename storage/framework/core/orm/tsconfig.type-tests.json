@@ -13,7 +13,7 @@
     }
   },
   "include": [
-    "tests/inference.test-d.ts",
+    "tests/*.test-d.ts",
     "tests/orm-module-stub.d.ts"
   ],
   "exclude": [

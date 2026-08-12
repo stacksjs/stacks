@@ -424,17 +424,16 @@ describe('full type inference chain is structurally correct', () => {
     expect(content).toContain('getDefinition: () => definition')
   })
 
-  test('model-types.ts Def type extracts definition via getDefinition', () => {
+  test('model-types.ts Def type prefers the exact definition marker', () => {
     const content = readFileSync(join(coreOrmDir, 'model-types.ts'), 'utf-8')
-    expect(content).toContain('T extends { getDefinition: () => infer D')
+    expect(content).toContain('readonly [MODEL_DEFINITION]')
+    expect(content).toContain('getDefinition: () => infer TDefinition')
   })
 
-  test('ModelRow composes the query-builder row with BelongsToForeignKeys', () => {
-    // The attribute half is delegated to bun-query-builder's `ModelRow` now
-    // (imported as `QueryModelRow`) rather than a local `ModelAttributes`;
-    // the FK half is still composed here.
+  test('ModelRow infers directly from the preserved model definition', () => {
     const content = readFileSync(join(coreOrmDir, 'model-types.ts'), 'utf-8')
-    expect(content).toContain('QueryModelRow<T> & BelongsToForeignKeys<Def<T>>')
+    expect(content).toContain('export type ModelRow<T> = InferredModelRow<Def<T>>')
+    expect(content).toContain('BelongsToForeignKeys<TDef>')
   })
 
   test('orm-globals.d.ts maps RequestInstance<TModel> to _RequestInstance<_ModelRow<TModel>>', () => {
@@ -467,12 +466,9 @@ describe('model-types.ts has no leaky abstractions', () => {
     expect(content).not.toContain('UsersTable')
   })
 
-  test('uses only @stacksjs/query-builder type utilities', () => {
-    // The utilities are aliased on import (`ModelRow as QueryModelRow`, …), so
-    // assert the imports themselves rather than bare local names that the
-    // aliasing removed.
-    expect(content).toContain("from '@stacksjs/query-builder'")
-    for (const util of ['InferAttributes', 'InferColumnNames', 'InferFillableAttributes', 'InferNumericColumns', 'ModelRow'])
+  test('uses the validator and preserved model-definition contracts', () => {
+    expect(content).toContain("from '@stacksjs/validation'")
+    for (const util of ['MODEL_DEFINITION', 'AttributeValue', 'InferFillableAttributes', 'InferNumericColumns', 'ModelRow'])
       expect(content).toContain(util)
   })
 })

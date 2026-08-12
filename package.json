@@ -53,7 +53,7 @@
     "release:major": "./buddy release --bump major",
     "changelog": "./buddy changelog",
     "generate": "./buddy generate",
-    "typecheck": "bun x --bun tsc --noEmit -p storage/framework/tsconfig.framework.json --pretty false",
+    "typecheck": "bun x --bun tsc --noEmit -p storage/framework/tsconfig.framework.json --pretty false && (cd storage/framework/core/orm && bun run typecheck:inference)",
     "typecheck:app": "bun x --bun tsc --noEmit -p tsconfig.json --pretty false",
     "typecheck:clean": "bunx --bun rimraf storage/framework/.cache/typescript",
     "types:check": "bun run typecheck",
