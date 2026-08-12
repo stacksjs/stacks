@@ -4,7 +4,7 @@ import { resolve } from 'node:path'
 
 describe('dashboard CI runner history contract', () => {
   test('uses native HTTP errors across CI read endpoints', () => {
-    const actionDirectory = resolve('storage/framework/defaults/app/Actions/Dashboard/CI')
+    const actionDirectory = resolve('storage/framework/defaults/app/Actions/Dashboard/Ci')
     const actions = ['StatusAction.ts', 'RepoRunsAction.ts', 'RepoRunJobsAction.ts', 'RunnerHistoryAction.ts']
       .map(file => readFileSync(resolve(actionDirectory, file), 'utf8'))
       .join('\n')
@@ -18,7 +18,7 @@ describe('dashboard CI runner history contract', () => {
 
   test('reports operational history failures with an HTTP error', () => {
     const action = readFileSync(
-      resolve('storage/framework/defaults/app/Actions/Dashboard/CI/RunnerHistoryAction.ts'),
+      resolve('storage/framework/defaults/app/Actions/Dashboard/Ci/RunnerHistoryAction.ts'),
       'utf8',
     )
 
