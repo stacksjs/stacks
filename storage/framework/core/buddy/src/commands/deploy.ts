@@ -3357,8 +3357,16 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
 
   if (providerConfigs.length === 0) {
     logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
-    for (const d of domains)
-      logger.info(`  Point manually:  A ${d} → ${ip}   and   A www.${d} → ${ip}`)
+    for (const d of domains) {
+      // Same apex-only rule as the reconcile below: telling someone to create a
+      // www record for a subdomain site would hand them a host that resolves
+      // and then fails TLS.
+      logger.info(
+        d.split('.').length === 2
+          ? `  Point manually:  A ${d} → ${ip}   and   A www.${d} → ${ip}`
+          : `  Point manually:  A ${d} → ${ip}`,
+      )
+    }
     return published
   }
 
@@ -3378,6 +3386,14 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
   }
 
   for (const domain of domains) {
+    // Only an apex gets a `www.` variant. The rpx gateway's autoWww applies the
+    // same rule (it skips any domain that is not two labels), so publishing one
+    // for a subdomain site creates a record with NO route and NO certificate:
+    // the host resolves, then fails TLS verification, which is worse for a
+    // visitor than the name not existing at all. `www.trifitla.stacksjs.com`
+    // and `www.trifit.stacksjs.com` were both live in that state.
+    const subs = domain.split('.').length === 2 ? ['', 'www'] : ['']
+
     try {
       // Credential rejection, nameserver fallback and the "nothing owns this
       // zone" case all live in resolveZoneDnsProvider, so the mail path and
@@ -3387,7 +3403,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
       if (!provider) {
         // No configured provider owns this zone — the records may still be
         // correct (managed at the registrar). Only warn when they aren't.
-        for (const sub of ['', 'www']) {
+        for (const sub of subs) {
           const fqdn = sub ? `${sub}.${domain}` : domain
           const current = await resolveA(fqdn)
           if (current.includes(ip))
@@ -3399,7 +3415,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
         }
         continue
       }
-      for (const sub of ['', 'www']) {
+      for (const sub of subs) {
         const fqdn = sub ? `${sub}.${domain}` : domain
         // Pass the full fqdn as the record name — the provider derives the
         // zone root from `domain` and strips it back off the name. Passing
