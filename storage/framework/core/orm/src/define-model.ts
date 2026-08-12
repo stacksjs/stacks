@@ -1884,14 +1884,15 @@ type QueryAttribute<TAttribute> = Omit<TAttribute, 'factory'>
   & ([FactoryReturnOf<TAttribute>] extends [never]
     ? object
     : { factory: (faker: BQBFaker) => FactoryReturnOf<TAttribute> })
+type QueryTraits<TDef extends ModelDefinition> = TDef extends { traits: infer TTraits }
+  ? { traits: TTraits & NonNullable<BQBModelDefinition['traits']> }
+  : { traits?: BQBModelDefinition['traits'] }
 type QueryDefinition<TDef extends ModelDefinition> = Omit<TDef, 'attributes' | 'traits'>
   & Omit<BQBModelDefinition, 'attributes' | 'traits'>
   & {
     attributes: { [TKey in keyof TDef['attributes']]: QueryAttribute<TDef['attributes'][TKey]> }
-    traits?: TDef extends { traits: infer TTraits }
-      ? TTraits & NonNullable<BQBModelDefinition['traits']>
-      : BQBModelDefinition['traits']
-}
+  }
+  & QueryTraits<TDef>
 type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<TDef>>
 type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
 import { createTaggableMethods } from './traits/taggable'

@@ -13,6 +13,10 @@ type Expect<T extends true> = T
 const Post = defineModel({
   name: 'Post',
   table: 'posts',
+  traits: {
+    useTimestamps: true,
+    useUuid: true,
+  },
   attributes: {
     title: {
       fillable: true,
@@ -38,12 +42,18 @@ type TitleIsString = Expect<Equal<PostResult['title'], string>>
 type StatusIsLiteralUnion = Expect<Equal<PostResult['status'], 'draft' | 'published'>>
 type ViewsAreNumeric = Expect<Equal<PostResult['views'], number>>
 type FeaturedIsBoolean = Expect<Equal<PostResult['featured'], boolean>>
+type CreatedAtIsString = Expect<Equal<PostResult['created_at'], string>>
+type UpdatedAtIsNullableString = Expect<Equal<PostResult['updated_at'], string | null>>
+type UuidIsString = Expect<Equal<PostResult['uuid'], string>>
 
 declare const result: PostResult
 const inferredTitle: string = result.title
 const inferredStatus: 'draft' | 'published' = result.status
 const inferredViews: number = result.views
 const inferredFeatured: boolean = result.featured
+const inferredCreatedAt: string = result.created_at
+const inferredUpdatedAt: string | null = result.updated_at
+const inferredUuid: string = result.uuid
 
 Post.where('title', 'Typed')
 Post.where('status', 'published')
@@ -61,7 +71,13 @@ void (0 as unknown as TitleIsString)
 void (0 as unknown as StatusIsLiteralUnion)
 void (0 as unknown as ViewsAreNumeric)
 void (0 as unknown as FeaturedIsBoolean)
+void (0 as unknown as CreatedAtIsString)
+void (0 as unknown as UpdatedAtIsNullableString)
+void (0 as unknown as UuidIsString)
 void inferredTitle
 void inferredStatus
 void inferredViews
 void inferredFeatured
+void inferredCreatedAt
+void inferredUpdatedAt
+void inferredUuid
