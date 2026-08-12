@@ -104,7 +104,7 @@
         "@stacksjs/video": "^0.70.369",
         "@stacksjs/whois": "^0.70.369",
         "better-dx": "^0.2.17",
-        "bun-query-builder": "^0.2.22",
+        "bun-query-builder": "^0.2.28",
       },
     },
     "storage/framework/core/actions": {
@@ -225,7 +225,7 @@
       "dependencies": {
         "@stacksjs/composables": "workspace:*",
         "@stacksjs/stx": "^0.2.176",
-        "bun-query-builder": "^0.2.27",
+        "bun-query-builder": "^0.2.28",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
@@ -480,7 +480,7 @@
       "version": "0.70.369",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.3",
-        "bun-query-builder": "^0.2.27",
+        "bun-query-builder": "^0.2.28",
         "dynamodb-tooling": "^0.3.2",
       },
       "devDependencies": {
@@ -771,7 +771,7 @@
       "version": "0.70.369",
       "dependencies": {
         "@stacksjs/ts-validation": "^0.5.3",
-        "bun-query-builder": "^0.2.27",
+        "bun-query-builder": "^0.2.28",
       },
       "devDependencies": {
         "@stacksjs/config": "workspace:*",
@@ -820,7 +820,7 @@
       "name": "@stacksjs/query-builder",
       "version": "0.70.369",
       "dependencies": {
-        "bun-query-builder": "^0.2.27",
+        "bun-query-builder": "^0.2.28",
       },
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
@@ -1059,7 +1059,7 @@
         "@stacksjs/clapp": "^0.2.12",
         "@stacksjs/stx": "^0.2.176",
         "@stacksjs/ts-validation": "^0.5.3",
-        "bun-query-builder": "^0.2.27",
+        "bun-query-builder": "^0.2.28",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -1530,7 +1530,7 @@
 
     "bun-plugin-stx": ["bun-plugin-stx@0.2.176", "", { "dependencies": { "@stacksjs/stx": "^0.2.72", "stx-router": "^0.2.72" }, "bin": { "serve": "./dist/serve.js", "stx-serve": "./dist/serve.js" } }, "sha512-6kZniyafHgaiVtmh9spFTeCSxvD7AZnHQmMIJ6SPK4y+aqRi6m8UHhjLhtxkOkAxd0yw9xIF13WS9rxNvOyTYQ=="],
 
-    "bun-query-builder": ["bun-query-builder@0.2.27", "", { "dependencies": { "@stacksjs/clapp": "^0.2.12", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.2", "dynamodb-tooling": "^0.3.5" }, "bin": { "query-builder": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "qb": "./dist/bin/cli.js" } }, "sha512-VSsVLrP6Ix5ylEK6KLNV20hoxKoZFjLvchj9dTQdh833OJkY03L+gCy5c67zKW4Npt2aAe43iCYQjS0+2y7IPQ=="],
+    "bun-query-builder": ["bun-query-builder@0.2.28", "", { "dependencies": { "@stacksjs/clapp": "^0.2.12", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.2", "dynamodb-tooling": "^0.3.5" }, "bin": { "query-builder": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "qb": "./dist/bin/cli.js" } }, "sha512-1p25fTdq/JtBUsLQJvWPj96O+GFjMXDK6wc5eFYejB0RzilGBB9LsGlZu0LghE8xuqu2AxypFkL3dFSnQgxccg=="],
 
     "bun-types": ["bun-types@1.3.14", "", { "dependencies": { "@types/node": "*" } }, "sha512-4N0ig0fEomHt5R0KCFWjovxow98rIoRwKolrYdCcknNwMekCXRnWEUvgu5soYV8QXtVsrUD8B95MBOZGPvr6KQ=="],
 
@@ -1804,12 +1804,8 @@
 
     "body-parser/content-type": ["content-type@2.0.0", "", {}, "sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ=="],
 
-    "stacks/bun-query-builder": ["bun-query-builder@0.2.26", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "@stacksjs/ts-faker": "^0.1.8", "@stacksjs/ts-validation": "^0.5.0", "dynamodb-tooling": "^0.3.5" }, "bin": { "query-builder": "./dist/bin/cli.js", "qbx": "./dist/bin/cli.js", "qb": "./dist/bin/cli.js" } }, "sha512-6cB8/+UxDI9Nf/Ae2Rmjg789+jh641jkiM/gtE67SSd3W30kSBmauo75t2115gPYHNv0J5m5RzFUVSCu638ltA=="],
-
     "type-is/content-type": ["content-type@2.0.0", "", {}, "sha512-j/O/d7GcZCyNl7/hwZAb606rzqkyvaDctLmckbxLzHvFBzTJHuGEdodATcP3yIRoDrLHkIATJuvzbFlp/ki2cQ=="],
 
     "@stacksjs/ts-analytics/bun-query-builder/@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.5.2", "", {}, "sha512-2I6klAbujib44rAO7b88IYFJF0cUlfwgLqBolY7oAjnEWuV0Sm0qU3obtU0VudTsNxBTgdWX2LnFnrUVcYof6w=="],
-
-    "stacks/bun-query-builder/@stacksjs/ts-validation": ["@stacksjs/ts-validation@0.5.2", "", {}, "sha512-2I6klAbujib44rAO7b88IYFJF0cUlfwgLqBolY7oAjnEWuV0Sm0qU3obtU0VudTsNxBTgdWX2LnFnrUVcYof6w=="],
   }
 }
