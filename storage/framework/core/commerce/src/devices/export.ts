@@ -45,6 +45,11 @@ function numberValue(device: PrintDeviceJsonResponse, camel: keyof PrintDeviceJs
   return Number.isFinite(parsed) ? parsed : 0
 }
 
+function stringValue(device: PrintDeviceJsonResponse, camel: keyof PrintDeviceJsonResponse, snake: string = camel): string {
+  const raw = value(device, camel, snake)
+  return raw == null ? '' : String(raw)
+}
+
 /**
  * Export print devices to a spreadsheet
  * @param format The format of the spreadsheet (default is CSV)
@@ -82,12 +87,12 @@ function prepareDevicesForExport(devices: PrintDeviceJsonResponse[]) {
   // Transform devices into export format
   const data = devices.map((device) => {
     return [
-      device.id,
-      device.name,
-      value(device, 'macAddress', 'mac_address'),
-      device.location,
-      device.terminal,
-      device.status,
+      numberValue(device, 'id'),
+      stringValue(device, 'name'),
+      stringValue(device, 'macAddress', 'mac_address'),
+      stringValue(device, 'location'),
+      stringValue(device, 'terminal'),
+      stringValue(device, 'status'),
       timestamp(value(device, 'lastPing', 'last_ping')).toLocaleString(),
       numberValue(device, 'printCount', 'print_count'),
     ]
