@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.371...v0.70.372)
+
+## ✨ Features
+
+- **ios**: add native application build pipeline ([30f3e68](https://github.com/stacksjs/stacks/commit/30f3e68)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: add Craft runtime for STX apps ([fc0a100](https://github.com/stacksjs/stacks/commit/fc0a100)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **faker**: datatype.boolean takes a bare probability too ([d4cf019](https://github.com/stacksjs/stacks/commit/d4cf019)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: keep STX bundles browser safe ([d875672](https://github.com/stacksjs/stacks/commit/d875672)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference ([d5f47e5](https://github.com/stacksjs/stacks/commit/d5f47e5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.369...v0.70.371)
 
 ## ✨ Features
