@@ -1,5 +1,48 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.369...v0.70.370)
+
+## ✨ Features
+
+- **types**: derive ORM utilities from model definitions ([13481f2](https://github.com/stacksjs/stacks/commit/13481f2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: infer model declarations end to end ([4933605](https://github.com/stacksjs/stacks/commit/4933605)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **faker**: type model factory compatibility ([b4cda95](https://github.com/stacksjs/stacks/commit/b4cda95)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: infer schema output types ([7586a87](https://github.com/stacksjs/stacks/commit/7586a87)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **types**: preserve nested object validator inference ([51bb59c](https://github.com/stacksjs/stacks/commit/51bb59c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: normalize spreadsheet row fields ([b029ab2](https://github.com/stacksjs/stacks/commit/b029ab2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: narrow spreadsheet export values ([b652b18](https://github.com/stacksjs/stacks/commit/b652b18)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: preserve trait inference ([2d203af](https://github.com/stacksjs/stacks/commit/2d203af)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **faker**: support alpha length shorthand ([00afd33](https://github.com/stacksjs/stacks/commit/00afd33)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **payments**: use inferred model attributes ([0e6b440](https://github.com/stacksjs/stacks/commit/0e6b440)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: align inferred config values ([51634de](https://github.com/stacksjs/stacks/commit/51634de)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: include proxy site kind ([d6053d1](https://github.com/stacksjs/stacks/commit/d6053d1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **types**: remove query tooling any leaks ([7f24d03](https://github.com/stacksjs/stacks/commit/7f24d03)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **orm**: cover polymorphic relation inference ([02bf902](https://github.com/stacksjs/stacks/commit/02bf902)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: cover model-driven type inference ([5f02412](https://github.com/stacksjs/stacks/commit/5f02412)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **realtime**: isolate broadcast server state ([499f05f](https://github.com/stacksjs/stacks/commit/499f05f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: reset cached sqlite connection ([a771e5b](https://github.com/stacksjs/stacks/commit/a771e5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: use canonical CI action path ([b8b51ec](https://github.com/stacksjs/stacks/commit/b8b51ec)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: bunpress 0.2.2, so the docs site has search again ([efbab2a](https://github.com/stacksjs/stacks/commit/efbab2a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: bump bun-query-builder to 0.2.28 ([5f573b6](https://github.com/stacksjs/stacks/commit/5f573b6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: lint inference checks ([33252c5](https://github.com/stacksjs/stacks/commit/33252c5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: install typed query releases ([6845a4c](https://github.com/stacksjs/stacks/commit/6845a4c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.368...v0.70.369)
 
 ## ✨ Features
