@@ -2,7 +2,7 @@
   "name": "@stacksjs/whois",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.369",
+  "version": "0.70.370",
   "description": "Easily get whois info.",
   "author": "Chris Breuer",
   "contributors": [
