@@ -1,45 +1,43 @@
-import {
-  biometrics,
-  camera,
-  device,
-  haptics,
-  lifecycle,
-  location,
-  notifications,
-  permissions,
-  secureStorage,
-  share,
-} from 'craft-native'
+// @ts-expect-error craft-native/mobile is on Craft main pending its next package release
+import * as craftMobile from 'craft-native/mobile'
+import type {
+  BiometricsApi,
+  CameraApi,
+  DeviceApi,
+  HapticsApi,
+  LifecycleApi,
+  LocationApi,
+  NotificationsApi,
+  PermissionsApi,
+  SecureStorageApi,
+  ShareApi,
+} from './types'
 
-export {
-  biometrics,
-  camera,
-  device,
-  haptics,
-  lifecycle,
-  location,
-  notifications,
-  permissions,
-  secureStorage,
-  share,
-}
+export * from './types'
 
-export type {
-  AppState,
-  BiometricType,
-  CameraOptions,
-  DeviceCapabilities,
-  DeviceInfo,
-  HapticNotificationType,
-  HapticStyle,
-  Location,
-  LocationOptions,
-  NotificationOptions,
-  PermissionStatus,
-  PermissionType,
-  PhotoResult,
-  ShareOptions,
-} from 'craft-native'
+const {
+  biometrics: craftBiometrics,
+  camera: craftCamera,
+  device: craftDevice,
+  haptics: craftHaptics,
+  lifecycle: craftLifecycle,
+  location: craftLocation,
+  notifications: craftNotifications,
+  permissions: craftPermissions,
+  secureStorage: craftSecureStorage,
+  share: craftShare,
+} = craftMobile
+
+export const biometrics: BiometricsApi = craftBiometrics
+export const camera: CameraApi = craftCamera
+export const device: DeviceApi = craftDevice
+export const haptics: HapticsApi = craftHaptics
+export const lifecycle: LifecycleApi = craftLifecycle
+export const location: LocationApi = craftLocation
+export const notifications: NotificationsApi = craftNotifications
+export const permissions: PermissionsApi = craftPermissions
+export const secureStorage: SecureStorageApi = craftSecureStorage
+export const share: ShareApi = craftShare
 
 interface CraftReadyEvent extends Event {
   detail?: { platform?: string }

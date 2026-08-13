@@ -10,7 +10,7 @@ const result = await Bun.build({
   target: 'browser',
   minify: true,
   external: frameworkExternal(),
-  plugins: [dts({ root: './src', outdir: './dist' })],
+  plugins: [dts({ root: './src', outdir: './dist', bundle: true })],
 })
 
 await outro({ dir: import.meta.dir, startTime, result })

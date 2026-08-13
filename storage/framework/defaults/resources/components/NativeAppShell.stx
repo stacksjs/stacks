@@ -4,15 +4,14 @@ interface NativeAppShellProps {
   tabBar?: boolean
 }
 
-const props = defineProps<NativeAppShellProps>()
-const className = props.class || ''
+const { class: className = '', tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
 <div data-native-app-shell class="native-app-shell {{ className }}">
   <main class="native-app-content">
     <slot />
   </main>
-  @if(props.tabBar)
+  @if(tabBar)
     <footer class="native-app-tab-slot">
       <slot name="tab-bar" />
     </footer>

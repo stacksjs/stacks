@@ -1,6 +1,4 @@
-<script client>
-import { haptics } from '@stacksjs/mobile'
-
+<script>
 interface NativeTabItem {
   label: string
   href: string
@@ -9,24 +7,27 @@ interface NativeTabItem {
 
 interface NativeTabBarProps {
   items: NativeTabItem[]
-  active?: string
   label?: string
 }
 
 const props = defineProps<NativeTabBarProps>()
-const active = props.active || ''
+const { items = [], label = 'App navigation' } = props
+</script>
+
+<script client>
+import { haptics } from '@stacksjs/mobile'
 
 function selectTab(): void {
   void haptics.selection()
 }
 </script>
 
-<nav aria-label="{{ props.label || 'App navigation' }}" class="native-tab-bar">
-  @foreach(props.items as item)
+<nav aria-label="{{ label }}" class="native-tab-bar">
+  @foreach(items as item)
     <StxLink
       to="{{ item.href }}"
-      aria-current="{{ active === item.href ? 'page' : 'false' }}"
-      class="native-tab-item {{ active === item.href ? 'is-active' : '' }}"
+      activeClass="is-active"
+      class="native-tab-item"
       @click="selectTab()"
     >
       <i aria-hidden="true" class="{{ item.icon }} native-tab-icon"></i>
