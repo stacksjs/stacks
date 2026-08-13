@@ -113,6 +113,7 @@ const config: BunPressOptions = {
             { text: 'Deploy', link: '/guide/buddy/deploy' },
             { text: 'Make', link: '/guide/buddy/make' },
             { text: 'Migrate', link: '/guide/buddy/migrate' },
+            { text: 'Database Backups', link: '/guide/buddy/db' },
             { text: 'Test', link: '/guide/buddy/test' },
           ],
         },

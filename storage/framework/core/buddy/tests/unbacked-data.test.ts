@@ -64,13 +64,42 @@ describe('findUnbackedManagedServices', () => {
 })
 
 describe('unbackedDataMessage', () => {
-  it('names the service and what is about to run against it', () => {
+  it('names the service and what is still missing', () => {
     const message = unbackedDataMessage(findUnbackedManagedServices(config({ postgres: true })))
 
     expect(message).toContain('postgres is provisioned on the compute instance')
-    expect(message).toContain('no dump, no snapshot, nothing offsite, and no restore path')
-    // The asymmetry that makes this worth interrupting a deploy for.
-    expect(message).toContain('`migrate`')
+    // The remaining gap, now that the deploy dumps before it migrates: nothing
+    // moves those dumps off the instance.
+    expect(message).toContain('nothing copies its data off the box')
+    expect(message).toContain('not the loss of the instance')
+  })
+
+  it('no longer claims there is no dump, because there is one', () => {
+    // The pre-migration dump landed with #2313. A warning that still said "no
+    // dump, no restore path" would be false, and a warning known to overstate
+    // its case is one people learn to skip past.
+    const message = unbackedDataMessage(findUnbackedManagedServices(config({ postgres: true })))
+
+    expect(message).not.toContain('no dump')
+    expect(message).not.toContain('no restore path')
+    expect(message).toContain('buddy db:restore')
+  })
+
+  it('tells a vitess app the opposite thing, because nothing dumps vitess', () => {
+    // This repo's own config/cloud.ts is the vitess case, which is how the
+    // wrong wording got caught: `buddy doctor` cheerfully told it about dumps
+    // that are never taken.
+    const message = unbackedDataMessage(findUnbackedManagedServices(config({ vitess: true })))
+
+    expect(message).toContain('nothing backs it up')
+    expect(message).toContain('does not dump vitess')
+    expect(message).not.toContain('before each migration')
+  })
+
+  it('does not promise dumps when only some of the services get them', () => {
+    const message = unbackedDataMessage(findUnbackedManagedServices(config({ postgres: true, vitess: true })))
+
+    expect(message).toContain('does not dump vitess')
   })
 
   it('does not crash the command it was meant to warn during', () => {
@@ -82,7 +111,6 @@ describe('unbackedDataMessage', () => {
   it('reads correctly for more than one service', () => {
     const message = unbackedDataMessage(findUnbackedManagedServices(config({ postgres: true, mysql: true })))
 
-    expect(message).toContain('are provisioned')
-    expect(message).toContain('backs them up')
+    expect(message).toContain('postgres, mysql are provisioned')
   })
 })
