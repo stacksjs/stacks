@@ -7,7 +7,14 @@ import type { Faker as BaseFaker } from '@stacksjs/ts-faker'
  */
 
 interface DatatypeCompatibility {
-  boolean: (options?: { probability?: number }) => boolean
+  /**
+   * `boolean(0.2)` as well as `boolean({ probability: 0.2 })`.
+   *
+   * faker-js accepts both, factories in the wild are written both ways, and
+   * this framework's own `ProductUnit` model uses the bare form - which was a
+   * type error against a compatibility layer that only described the object.
+   */
+  boolean: (options?: number | { probability?: number }) => boolean
   number: (options?: { min?: number; max?: number }) => number
   float: (options?: { min?: number; max?: number; precision?: number }) => number
   uuid: () => string
@@ -17,8 +24,10 @@ interface DatatypeCompatibility {
 
 // datatype module for boolean, number generation (compatibility with @faker-js/faker)
 const datatype: DatatypeCompatibility = {
-  boolean(options?: { probability?: number }): boolean {
-    return baseFaker.random.boolean(options?.probability)
+  boolean(options?: number | { probability?: number }): boolean {
+    const probability = typeof options === 'number' ? options : options?.probability
+
+    return baseFaker.random.boolean(probability)
   },
   number(options?: { min?: number; max?: number }): number {
     return baseFaker.number.int({ min: options?.min ?? 0, max: options?.max ?? 100 })
