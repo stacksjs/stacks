@@ -25,6 +25,7 @@ export function build(buddy: CLI): void {
     buddy: 'Build the Buddy binary',
     functions: 'Build your function library',
     desktop: 'Build the Desktop Application',
+    ios: 'Build the native iOS application',
     dmg: 'Package the desktop build as a macOS .app inside a .dmg',
     pages: 'Build your frontend',
     docs: 'Build your documentation',
@@ -44,6 +45,7 @@ export function build(buddy: CLI): void {
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
     .option('-k, --desktop', descriptions.desktop)
+    .option('--ios', descriptions.ios)
     .option('-p, --views', descriptions.pages)
     .option('--pages', descriptions.pages) // alias for --views
     .option('-d, --docs', descriptions.docs)
@@ -68,6 +70,7 @@ export function build(buddy: CLI): void {
               { label: 'Web Components', value: 'webComponents' },
               { label: 'Functions', value: 'functions' },
               { label: 'Desktop application', value: 'desktop' },
+              { label: 'iOS application', value: 'ios' },
               { label: 'Documentation', value: 'docs' },
               { label: 'Stacks framework', value: 'stacks' },
               { label: 'Buddy CLI', value: 'buddy' },
@@ -81,6 +84,7 @@ export function build(buddy: CLI): void {
           if (selected.has('webComponents')) options.webComponents = true
           if (selected.has('functions')) options.functions = true
           if (selected.has('desktop')) options.desktop = true
+          if (selected.has('ios')) options.ios = true
           if (selected.has('docs')) options.docs = true
           if (selected.has('stacks')) options.stacks = true
           if (selected.has('buddy')) options.buddy = true
@@ -108,6 +112,8 @@ export function build(buddy: CLI): void {
         succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library')) && succeeded
       if (options.desktop)
         succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application')) && succeeded
+      if (options.ios)
+        succeeded = (await runBuildAction(Action.BuildIos, 'iOS application')) && succeeded
       if (options.views)
         succeeded = (await runBuildAction(Action.BuildViews, 'frontend')) && succeeded
       if (options.stacks)
@@ -266,6 +272,24 @@ export function build(buddy: CLI): void {
     })
 
   buddy
+    .command('build:ios', descriptions.ios)
+    .alias('prod:ios')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:ios` ...', options)
+
+      const perf = await intro('buddy build:ios')
+      const result = await runAction(Action.BuildIos, options)
+      if (resultFailed(result)) {
+        await outro('While building the iOS application, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('iOS application built', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
     .command('build:dmg', descriptions.dmg)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -318,6 +342,7 @@ function hasNoOptions(options: BuildOptions) {
     && !options.elements
     && !options.functions
     && !options.desktop
+    && !options.ios
     && !options.views
     && !options.docs
     && !options.stacks
@@ -339,6 +364,9 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
       break
     case 'desktop':
       options.desktop = true
+      break
+    case 'ios':
+      options.ios = true
       break
     case 'views':
       options.views = true

@@ -133,6 +133,7 @@ storage/framework/cache/
 .tmp-upgrade/
 /storage/framework/frontend-dist
 /storage/framework/desktop-dist
+/storage/framework/mobile
 
 # Per-package runtime logs created when building a core package in place
 storage/framework/core/**/storage/logs/
@@ -147,4 +148,3 @@ storage/framework/core/defaults/*
 !storage/framework/core/defaults/package.json
 !storage/framework/core/defaults/tests/
 !storage/framework/core/defaults/tests/**
-
