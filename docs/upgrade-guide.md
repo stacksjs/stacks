@@ -285,6 +285,57 @@ route.bunRouter.views({ viewsPath: 'resources/views' })
 Health probes should use `/api/health`, which reports `503` when the database
 or cache is down.
 
+## Deploys now dump the database before migrating (#2313)
+
+### What changed
+
+`buddy deploy` runs `migrate` against production on every release, and there was
+nothing to go back to if a migration did something nobody meant. The site that
+runs `migrate` now takes a dump immediately before it:
+
+```bash
+bun … cli.ts db:backup --before-migrations --out /var/www/<slug>-shared/backups
+bun … cli.ts migrate
+```
+
+The dump lands beside the database, outside every release tree, so the release
+pruner cannot delete it along with the release that took it. Seven are kept.
+
+Three commands come with it: `db:backup`, `db:backups`, and `db:restore`.
+
+### Who is affected
+
+Every app that deploys with `preStart` running `migrate`, which the scaffold
+does. Nothing to configure; it is on.
+
+**If the dump fails, the deploy stops before migrating.** That is the point: the
+alternative is changing the schema of a database you have no copy of. A first
+deploy, with no database yet, succeeds quietly.
+
+### Detect
+
+```bash
+./buddy db:backup            # does a dump of your database work at all?
+./buddy doctor               # the "Database backups" probe
+```
+
+For Postgres and MySQL this shells out to `pg_dump` / `mysqldump`, so those must
+be on the box and version-compatible with the server. A mismatch now fails the
+deploy rather than being discovered during an incident.
+
+### Remediate
+
+Nothing, if `./buddy db:backup` succeeds. If your engine is one Stacks will not
+dump (vitess, DynamoDB) the deploy is unchanged and `doctor` says so.
+
+To place the dump yourself, run `db:backup` anywhere in that site's `preStart`
+and the framework leaves your ordering alone.
+
+**These dumps are not offsite.** They survive a bad migration, not the loss of
+the instance. Copy them off the box on a schedule, and restore one into a
+scratch database at least once. See
+[Database Backups](/guide/buddy/db).
+
 ## Verifying the upgrade
 
 Run through this checklist after upgrading:

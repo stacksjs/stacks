@@ -12,27 +12,32 @@
  * `migrate` on every deploy. The framework is willing to run a schema change
  * against production data it has no way to restore.
  *
- * ## Why this reports rather than fixes
+ * ## What this still warns about, now that dumps exist
  *
- * ts-cloud already carries a full backup subsystem - destinations, policies,
- * retention, recovery points, verification, restore planning - but its logical
- * database source runs `pg_dumpall` through `runtime.exec()` against a **data
- * container**, and throws `Data container <name> was not found` for anything
- * else. `managedServices` installs the engine from pantry as a boot-time
- * systemd service, so there is no container and none of that machinery can
- * reach it.
+ * `buddy db:backup` takes a real dump, and the deploy takes one before every
+ * `migrate` (see `database-backup.ts`). That closes the bad-migration hole. It
+ * does NOT close this one: those dumps sit on the same disk as the database
+ * they came from, so they survive a migration and do not survive losing the
+ * box. Nothing in the framework copies them anywhere else.
  *
- * Writing the dump here instead would mean hand-rolling the admin connection,
- * and that is the part which is not obvious: pantry's postgres grants `trust`
- * on the local unix socket but requires md5 over TCP loopback, where the
- * `postgres` superuser has no password - so an on-box admin command must omit
- * `-h` entirely and let the client find the socket. ts-cloud knows this and
- * encodes it in `pgAdminCommand()`, which is declared in its types but exported
- * from none of its entry points. A second copy of that rule in this repo would
- * be wrong the first time upstream changed it.
+ * So this keeps warning, with narrower wording. The day something uploads a
+ * dump offsite is the day this check should start consulting that config
+ * instead of firing unconditionally.
  *
- * So the dump belongs upstream, next to the code that installed the engine, and
- * this file's job is to make sure nobody finds out the way bughq did.
+ * ## Why the dump itself did not have to wait for ts-cloud
+ *
+ * ts-cloud carries a full backup subsystem, but its logical database source
+ * runs `pg_dumpall` through `runtime.exec()` against a **data container** and
+ * throws `Data container <name> was not found` for anything else, while
+ * `managedServices` installs the engine from pantry as a boot-time systemd
+ * service. No container, so none of that machinery can reach a Stacks box.
+ *
+ * The thing that made a local implementation look unwise was the admin
+ * connection: pantry's postgres grants `trust` on the unix socket but requires
+ * md5 over TCP loopback where the `postgres` superuser has no password, and
+ * ts-cloud encodes that rule in an unexported `pgAdminCommand()`. Dumping as
+ * the **application's own user**, for the one database it owns, needs no
+ * superuser and therefore no copy of that rule.
  */
 
 /** A stateful service running on the instance with no backup path. */
@@ -41,6 +46,16 @@ export interface UnbackedService {
   name: string
   /** What is lost with the disk, in one clause. */
   holds: string
+  /**
+   * Does `buddy db:backup` know how to dump this engine?
+   *
+   * `false` for vitess: a `mysqldump` through a vtgate is not a restorable
+   * backup of a sharded keyspace, so nothing is taken. The distinction has to
+   * reach the message - telling a vitess app that the deploy dumps before every
+   * migration would be false, and a warning that overstates its case is one
+   * people learn to skip.
+   */
+  dumpable: boolean
 }
 
 /**
@@ -50,11 +65,12 @@ export interface UnbackedService {
  * or a meilisearch index costs a rebuild, not the data itself, and warning
  * about them would train people to ignore the warning that matters.
  */
-const STATEFUL_SERVICES: Record<string, string> = {
-  postgres: 'the application database',
-  mysql: 'the application database',
-  mariadb: 'the application database',
-  vitess: 'the application database',
+const STATEFUL_SERVICES: Record<string, { holds: string, dumpable: boolean }> = {
+  postgres: { holds: 'the application database', dumpable: true },
+  mysql: { holds: 'the application database', dumpable: true },
+  mariadb: { holds: 'the application database', dumpable: true },
+  // Dumped by nothing: see `UnbackedService.dumpable`.
+  vitess: { holds: 'the application database', dumpable: false },
 }
 
 /** Is this `managedServices` entry actually switched on? */
@@ -84,9 +100,9 @@ export function findUnbackedManagedServices(tsCloudConfig: unknown): UnbackedSer
 
   const out: UnbackedService[] = []
 
-  for (const [name, holds] of Object.entries(STATEFUL_SERVICES)) {
+  for (const [name, { holds, dumpable }] of Object.entries(STATEFUL_SERVICES)) {
     if (isEnabled(managed[name]))
-      out.push({ name, holds })
+      out.push({ name, holds, dumpable })
   }
 
   return out
@@ -110,8 +126,20 @@ export function unbackedDataMessage(services: UnbackedService[]): string {
   const subject = one ? `${names} is` : `${names} are`
   const holds = first.holds.charAt(0).toUpperCase() + first.holds.slice(1)
 
-  return `${subject} provisioned on the compute instance and nothing backs ${one ? 'it' : 'them'} up: `
-    + `no dump, no snapshot, nothing offsite, and no restore path. ${holds} shares a disk with the web process, `
-    + 'and `buddy deploy` runs `migrate` against it on every deploy. Until a backup surface lands (stacksjs/stacks#2313), '
-    + 'take your own dump on a schedule and copy it off the box.'
+  const head = `${subject} provisioned on the compute instance. ${holds} shares a disk with the web process`
+
+  // Two genuinely different situations, and saying the wrong one is how a
+  // warning stops being read. An engine `buddy db:backup` cannot dump gets no
+  // dump at all; the rest get one that is simply not offsite.
+  if (services.every(s => s.dumpable)) {
+    return `${head}, and nothing copies its data off the box. The dumps \`buddy deploy\` takes before each `
+      + 'migration land on that same disk: they survive a bad migration, not the loss of the instance. '
+      + 'Copy them somewhere else on a schedule, and check a restore works (`buddy db:restore`) before you need one.'
+  }
+
+  const undumpable = services.filter(s => !s.dumpable).map(s => s.name).join(', ')
+
+  return `${head}, and nothing backs it up. \`buddy db:backup\` does not dump ${undumpable}: a logical dump `
+    + 'taken through a vtgate does not restore a sharded keyspace, so pretending otherwise would be worse than '
+    + 'saying nothing. Take a snapshot at the storage layer, and test restoring it (stacksjs/stacks#2313).'
 }

@@ -1092,9 +1092,23 @@ export function projectDatabaseTarget(slug: string, relativePath: string): strin
   return `/var/www/${slug}-shared/${relativePath}`
 }
 
+/**
+ * Where `migrate` sits in this site's preStart, or -1.
+ *
+ * One definition, because {@link applyPreMigrationBackup} splices ahead of this
+ * index and {@link runsMigrations} decides whether to: two regexes that agreed
+ * today would eventually disagree, and the failure mode is a dump inserted at
+ * the wrong place rather than an error.
+ */
+function migrateIndex(site: any): number {
+  if (!Array.isArray(site?.preStart))
+    return -1
+  return site.preStart.findIndex((cmd: unknown) => typeof cmd === 'string' && /\bmigrate\b/.test(cmd))
+}
+
 /** Does this site run `migrate`? That site owns the database. */
 function runsMigrations(site: any): boolean {
-  return Array.isArray(site?.preStart) && site.preStart.some((cmd: unknown) => typeof cmd === 'string' && /\bmigrate\b/.test(cmd))
+  return migrateIndex(site) !== -1
 }
 
 /**
@@ -1253,6 +1267,63 @@ export function applyScheduledWork(sites: Record<string, any>, schedulerFile: st
     return sites
 
   return { ...sites, [owner]: { ...sites[owner], scheduler: true } }
+}
+
+/**
+ * The command a site's preStart runs to dump the database before `migrate`
+ * touches it. Built here because this file owns the on-box invocation shape —
+ * the same `bun --conditions development …/cli.ts` form the migrate step uses,
+ * which is what makes it work from a release tree with no built binary.
+ */
+export function preMigrationBackupCommand(backupsDir: string): string {
+  return `bun --conditions development storage/framework/core/buddy/src/cli.ts db:backup --before-migrations --out ${backupsDir}`
+}
+
+/**
+ * Dump the database immediately before the deploy migrates it.
+ *
+ * `buddy deploy` runs `migrate` against production on every release, and until
+ * now there was nothing to go back to if a migration did something nobody meant
+ * (stacksjs/stacks#2313). The dump goes in right before the migrate step in the
+ * OWNER site's preStart — the same site {@link applyPersistentStatePaths} picks,
+ * because that is the one that runs `migrate` and therefore the one whose
+ * database is about to change.
+ *
+ * The destination is a project-level directory outside every release tree, for
+ * the same reason the database itself is: a dump written under
+ * `releases/<sha>/` is deleted by the release pruner, so the backup would
+ * disappear at exactly the moment the previous release did.
+ *
+ * Deliberately NOT offsite. This survives a bad migration; it does not survive
+ * losing the box, and `buddy doctor` keeps saying so.
+ *
+ * Idempotent: a site that already runs `db:backup` in preStart is left alone, so
+ * an app that placed the dump itself keeps its own ordering.
+ */
+export function applyPreMigrationBackup(sites: Record<string, any>, backupsDir: string): Record<string, any> {
+  const out: Record<string, any> = {}
+
+  for (const [name, site] of Object.entries(sites)) {
+    // Before the FIRST migrate command. A preStart that migrates twice still
+    // gets its dump taken while the schema is the one the release inherited.
+    const at = migrateIndex(site)
+    if (at === -1) {
+      out[name] = site
+      continue
+    }
+
+    const preStart: any[] = [...site.preStart]
+    if (preStart.some(cmd => typeof cmd === 'string' && /\bdb:backup\b/.test(cmd))) {
+      out[name] = site
+      continue
+    }
+
+    preStart.splice(at, 0, preMigrationBackupCommand(backupsDir))
+
+    out[name] = { ...site, preStart }
+  }
+
+  return out
 }
 
 /**
@@ -2097,9 +2168,16 @@ async function runHetznerDeploy(args: {
   // DB_CONNECTION/DB_DATABASE_PATH, not by config/cloud.ts. Requires a ts-cloud
   // that can adopt existing state and honour explicit targets — checked once,
   // fatally, in deployToHetzner (tsCloudPersistentStateSupport).
-  const sitesWithResolvedEnv = applyScheduledWork(
-    applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug),
-    p.projectPath('app/Scheduler.ts'),
+  // The pre-migration dump is spliced in LAST, so it lands in a preStart that
+  // is already final, and it goes to the same project-level directory the
+  // database itself lives under - outside every release tree, so the release
+  // pruner cannot take the backup with it (stacksjs/stacks#2313).
+  const sitesWithResolvedEnv = applyPreMigrationBackup(
+    applyScheduledWork(
+      applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug),
+      p.projectPath('app/Scheduler.ts'),
+    ),
+    projectDatabaseTarget(slug, 'backups'),
   )
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —

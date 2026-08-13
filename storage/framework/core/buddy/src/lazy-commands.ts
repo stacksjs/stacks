@@ -72,6 +72,10 @@ const commandRegistry: Record<string, CommandLoader> = {
   'realtime:uninstall': { path: './commands/features.ts', exportName: 'features' },
   'queue:install': { path: './commands/features.ts', exportName: 'features' },
   'queue:uninstall': { path: './commands/features.ts', exportName: 'features' },
+  'db:backup': { path: './commands/db.ts', exportName: 'db' },
+  // db.ts also registers the list and restore halves.
+  'db:backups': { path: './commands/db.ts', exportName: 'db' },
+  'db:restore': { path: './commands/db.ts', exportName: 'db' },
   'fresh': { path: './commands/fresh.ts', exportName: 'fresh' },
   'generate': { path: './commands/generate.ts', exportName: 'generate' },
   'http': { path: './commands/http.ts', exportName: 'http' },

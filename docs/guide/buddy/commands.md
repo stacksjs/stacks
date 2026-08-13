@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **293 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **296 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -23,6 +23,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `configure` | 1 |
 | `core` | 1 |
 | `dashboard` | 2 |
+| `db` | 3 |
 | `deploy` | 1 |
 | `desktop` | 6 |
 | `dev` | 8 |
@@ -784,6 +785,70 @@ Deactivate the dashboard feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the dashboard scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+
+### `db:backup`
+
+Dump the application database to a file
+
+- Usage: `$ buddy db:backup`
+- Namespace: `db`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where to write the dump (default: storage/backups/database) | value, optional | — |
+| `--retain` | How many dumps to keep | value, optional | `"7"` |
+| `--before-migrations` | Deploy mode: succeed quietly when there is no database yet | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy db:backup
+buddy db:backup --out /var/backups/app --retain 30
+```
+
+### `db:backups`
+
+List the database dumps that have been taken
+
+- Usage: `$ buddy db:backups`
+- Namespace: `db`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | — |
+
+Examples:
+
+```bash
+buddy db:backups
+```
+
+### `db:restore`
+
+Restore the application database from a dump
+
+- Usage: `$ buddy db:restore [file]`
+- Namespace: `db`
+- Aliases: none
+- Arguments: `[file]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | — |
+| `--force` | Skip the confirmation prompt | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy db:restore
+buddy db:restore 2026-08-13T09-00-00-000.sqlite.sqlite --force
+```
 
 ### `deploy`
 
