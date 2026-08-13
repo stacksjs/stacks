@@ -61,7 +61,7 @@
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/bumpx": "^0.2.6",
-    "@stacksjs/bunpress": "^0.1.18",
+    "@stacksjs/bunpress": "^0.2.2",
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.176",
