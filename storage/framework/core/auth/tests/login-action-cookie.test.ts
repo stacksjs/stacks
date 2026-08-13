@@ -36,6 +36,7 @@ process.env.DB_CONNECTION = 'sqlite'
 process.env.DB_DATABASE_PATH = DB_PATH
 process.env.APP_ENV = 'testing'
 
+const { configureOrm } = await import('bun-query-builder')
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { makeHash } = await import('@stacksjs/security')
@@ -55,6 +56,19 @@ let releaseDbConfigLock: () => void
  * connection between tests.
  */
 async function forceConfig(): Promise<void> {
+  process.env.DB_CONNECTION = 'sqlite'
+  process.env.DB_DATABASE_PATH = DB_PATH
+
+  // `Auth.attempt` reaches the database through the ORM, which is a SECOND
+  // connection: `initializeDbConfig` steers the `db` proxy, `configureOrm`
+  // steers bun-query-builder, and pointing only the first leaves `User.where()`
+  // querying whatever database a sibling test file opened. Setting the env
+  // alone does not fix it either - measured, because the connection is already
+  // open by then. Both are pointed at this file's path, per test, because bun
+  // runs the whole directory in one process and every file here claims these
+  // globals (stacksjs/stacks#1862).
+  configureOrm({ database: DB_PATH })
+
   await ensureDatabaseConfigLoaded()
   initializeDbConfig({
     app: { env: 'testing' },
