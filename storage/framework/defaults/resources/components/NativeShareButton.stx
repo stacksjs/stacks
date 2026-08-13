@@ -1,0 +1,39 @@
+<script client>
+import { haptics, share } from '@stacksjs/mobile'
+
+interface NativeShareButtonProps {
+  title?: string
+  text?: string
+  url?: string
+  class?: string
+  label?: string
+}
+
+const props = defineProps<NativeShareButtonProps>()
+const status = state<'idle' | 'sharing' | 'shared' | 'error'>('idle')
+
+async function openShareSheet(): Promise<void> {
+  if (status() === 'sharing') return
+  status.set('sharing')
+  await haptics.impact('light')
+  try {
+    await share.share({ title: props.title, text: props.text, url: props.url })
+    status.set('shared')
+    await haptics.notification('success')
+  }
+  catch {
+    status.set('error')
+    await haptics.notification('error')
+  }
+}
+</script>
+
+<button
+  type="button"
+  class="{{ props.class || 'inline-flex gap-2 items-center justify-center min-h-11 px-4 font-semibold text-sm rounded-xl' }}"
+  aria-busy="{{ status() === 'sharing' ? 'true' : 'false' }}"
+  @click="openShareSheet()"
+>
+  <i aria-hidden="true" class="h-5 w-5 i-hugeicons-share-08"></i>
+  <span>{{ status() === 'sharing' ? 'Sharing' : props.label || 'Share' }}</span>
+</button>

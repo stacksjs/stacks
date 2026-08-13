@@ -188,6 +188,10 @@
       "types": "./logging/dist/index.d.ts",
       "import": "./logging/dist/index.js"
     },
+    "./mobile": {
+      "types": "./mobile/dist/index.d.ts",
+      "import": "./mobile/dist/index.js"
+    },
     "./notifications": {
       "types": "./notifications/dist/index.d.ts",
       "import": "./notifications/dist/index.js"
@@ -344,6 +348,7 @@
     "@stacksjs/image": "^0.70.371",
     "@stacksjs/lint": "^0.70.371",
     "@stacksjs/logging": "^0.70.371",
+    "@stacksjs/mobile": "^0.70.371",
     "@stacksjs/notifications": "^0.70.371",
     "@stacksjs/objects": "^0.70.371",
     "@stacksjs/orm": "^0.70.371",

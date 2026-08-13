@@ -1,0 +1,51 @@
+<script>
+interface NativeAppShellProps {
+  class?: string
+  tabBar?: boolean
+}
+
+const props = defineProps<NativeAppShellProps>()
+const className = props.class || ''
+</script>
+
+<div data-native-app-shell class="native-app-shell {{ className }}">
+  <main class="native-app-content">
+    <slot />
+  </main>
+  @if(props.tabBar)
+    <footer class="native-app-tab-slot">
+      <slot name="tab-bar" />
+    </footer>
+  @endif
+</div>
+
+<style>
+  .native-app-shell {
+    min-height: 100dvh;
+    color: inherit;
+    background: inherit;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .native-app-content {
+    min-height: calc(100dvh - env(safe-area-inset-top, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .native-app-shell:has(.native-app-tab-slot) .native-app-content {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .native-app-tab-slot {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+</style>

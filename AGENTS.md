@@ -112,6 +112,7 @@ Read the skill before building. The full list lives in `storage/framework/defaul
 |---|---|
 | The `buddy` / `bud` / `stacks` CLI (50+ commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
+| Native iOS/Android apps, Craft bridge, mobile builds and components | `stacks-mobile` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
 | Testing (DB test utils, feature tests, config) | `stacks-testing` |
 | Dev server, HMR, reverse proxy, SSL | `stacks-development`, `stacks-server` |

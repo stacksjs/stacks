@@ -68,6 +68,7 @@
         "@stacksjs/image": "^0.70.371",
         "@stacksjs/lint": "^0.70.371",
         "@stacksjs/logging": "^0.70.371",
+        "@stacksjs/mobile": "^0.70.371",
         "@stacksjs/newsletter": "^0.70.371",
         "@stacksjs/notifications": "^0.70.371",
         "@stacksjs/objects": "^0.70.371",
@@ -510,6 +511,7 @@
       "dependencies": {
         "@iconify-json/f7": "^1.2.2",
         "@iconify-json/hugeicons": "^1.2.27",
+        "@stacksjs/mobile": "^0.70.371",
         "@stacksjs/sanitizer": "^0.2.113",
       },
     },
@@ -721,6 +723,17 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/validation": "workspace:*",
+        "better-dx": "^0.2.17",
+      },
+    },
+    "storage/framework/core/mobile": {
+      "name": "@stacksjs/mobile",
+      "version": "0.70.371",
+      "dependencies": {
+        "craft-native": ">=0.0.55",
+      },
+      "devDependencies": {
+        "@stacksjs/build": "workspace:*",
         "better-dx": "^0.2.17",
       },
     },
@@ -1305,6 +1318,8 @@
     "@stacksjs/logging": ["@stacksjs/logging@workspace:storage/framework/core/logging"],
 
     "@stacksjs/logsmith": ["@stacksjs/logsmith@0.2.11", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.6", "pickier": "^0.1.9" }, "bin": { "@stacksjs/logsmith": "./dist/bin/cli.js", "logsmith": "./dist/bin/cli.js" } }, "sha512-wqqAxewpsHVDzpC+IRy+yYyGXGlv1j5GCqYTh8fL7d3LLhnRPN72PEQywM357burtORvdkFHfOzk3Ih1SMvuiw=="],
+
+    "@stacksjs/mobile": ["@stacksjs/mobile@workspace:storage/framework/core/mobile"],
 
     "@stacksjs/newsletter": ["@stacksjs/newsletter@workspace:storage/framework/core/newsletter"],
 

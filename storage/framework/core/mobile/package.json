@@ -1,0 +1,41 @@
+{
+  "name": "@stacksjs/mobile",
+  "type": "module",
+  "sideEffects": false,
+  "version": "0.70.371",
+  "description": "Craft-powered native mobile runtime for Stacks and STX applications",
+  "author": "Chris Breuer",
+  "license": "MIT",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/mobile#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/mobile"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "bun": "./dist/index.js",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "craft-native": ">=0.0.55"
+  },
+  "devDependencies": {
+    "@stacksjs/build": "workspace:*",
+    "better-dx": "^0.2.17"
+  }
+}
