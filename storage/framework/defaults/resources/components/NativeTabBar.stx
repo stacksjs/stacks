@@ -1,17 +1,9 @@
 <script>
-interface NativeTabItem {
-  label: string
-  href: string
-  icon: string
-}
-
 interface NativeTabBarProps {
-  items: NativeTabItem[]
   label?: string
 }
 
-const props = defineProps<NativeTabBarProps>()
-const { items = [], label = 'App navigation' } = props
+const { label = 'App navigation' } = defineProps<NativeTabBarProps>()
 </script>
 
 <script client>
@@ -22,18 +14,8 @@ function selectTab(): void {
 }
 </script>
 
-<nav aria-label="{{ label }}" class="native-tab-bar">
-  @foreach(items as item)
-    <StxLink
-      to="{{ item.href }}"
-      activeClass="is-active"
-      class="native-tab-item"
-      @click="selectTab()"
-    >
-      <i aria-hidden="true" class="{{ item.icon }} native-tab-icon"></i>
-      <span>{{ item.label }}</span>
-    </StxLink>
-  @endforeach
+<nav aria-label="{{ label }}" class="native-tab-bar" @click="selectTab()">
+  <slot />
 </nav>
 
 <style>

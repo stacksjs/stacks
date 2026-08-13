@@ -4,10 +4,14 @@ interface NativeAppShellProps {
   tabBar?: boolean
 }
 
-const { class: className = '', tabBar = false } = defineProps<NativeAppShellProps>()
+const { tabBar = false } = defineProps<NativeAppShellProps>()
 </script>
 
-<div data-native-app-shell class="native-app-shell {{ className }}">
+<script client>
+const className = useReactiveProp<string>('class', '')
+</script>
+
+<div data-native-app-shell class="native-app-shell" :class="className()">
   <main class="native-app-content">
     <slot />
   </main>

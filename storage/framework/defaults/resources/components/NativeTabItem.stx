@@ -1,0 +1,18 @@
+<script>
+interface NativeTabItemProps {
+  label: string
+  href: string
+  icon: string
+}
+
+const { href, icon, label } = defineProps<NativeTabItemProps>()
+</script>
+
+<StxLink
+  to="{{ href }}"
+  activeClass="is-active"
+  class="native-tab-item"
+>
+  <i aria-hidden="true" class="{{ icon }} native-tab-icon"></i>
+  <span>{{ label }}</span>
+</StxLink>

@@ -89,7 +89,8 @@ supported web APIs provide fallback behavior outside a native host.
 ## STX components
 
 - `<NativeAppShell>` applies iOS safe-area insets and reserves tab-bar space.
-- `<NativeTabBar>` provides accessible route navigation with selection haptics.
+- `<NativeTabBar>` provides the accessible navigation shell and selection haptics.
+- `<NativeTabItem>` provides each route, active state, label, and Iconify icon.
 - `<NativeShareButton>` opens the native share sheet and reports feedback.
 
 Use Iconify classes for tab icons. Keep native operations inside reusable
