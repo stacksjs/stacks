@@ -10,6 +10,7 @@ const { href, icon, label } = defineProps<NativeTabItemProps>()
 
 <StxLink
   to="{{ href }}"
+  aria-label="{{ label }}"
   activeClass="is-active"
   class="native-tab-item"
 >
