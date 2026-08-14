@@ -50,7 +50,7 @@ export default defineModel({
     title: {
       fillable: true,
       required: true,
-      validation: { rule: schema.string().maxLength(200) },
+      validation: { rule: schema.string().max(200) },
       factory: (faker) => faker.lorem.sentence()
     },
     content: {

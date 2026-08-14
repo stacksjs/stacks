@@ -104,8 +104,8 @@ export default defineModel({
       required: true,
       unique: false,
       validation: {
-        rule: schema.string().maxLength(100),
-        message: { maxLength: 'Name is too long' }
+        rule: schema.string().max(100),
+        message: { max: 'Name is too long' }
       },
       factory: (faker) => faker.lorem.word()
     },

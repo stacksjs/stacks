@@ -121,8 +121,8 @@ import { schema } from '@stacksjs/validation'
 ```typescript
 // String types
 schema.string()                    // StringValidatorType
-schema.string().minLength(2)       // chain: min length
-schema.string().maxLength(100)     // chain: max length
+schema.string().min(2)             // chain: min length
+schema.string().max(100)           // chain: max length
 schema.string().email()            // chain: must be email
 schema.string().url()              // chain: must be URL
 schema.string().matches(/pattern/) // chain: regex match
@@ -189,10 +189,10 @@ export default defineModel({
   attributes: {
     name: {
       validation: {
-        rule: schema.string().minLength(2).maxLength(100),
+        rule: schema.string().min(2).max(100),
         message: {
-          minLength: 'Name must be at least 2 characters',
-          maxLength: 'Name cannot exceed 100 characters',
+          min: 'Name must be at least 2 characters',
+          max: 'Name cannot exceed 100 characters',
         }
       }
     },
@@ -226,9 +226,9 @@ export default defineModel({
 
     bio: {
       validation: {
-        rule: schema.string().maxLength(500),
+        rule: schema.string().max(500),
         message: {
-          maxLength: 'Bio cannot exceed 500 characters',
+          max: 'Bio cannot exceed 500 characters',
         }
       }
     },

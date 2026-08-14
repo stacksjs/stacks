@@ -203,7 +203,7 @@ export default defineModel({
     name: {
       fillable: true,
       required: true,
-      validation: { rule: schema.string().maxLength(100) },
+      validation: { rule: schema.string().max(100) },
       factory: faker => faker.lorem.word(),
     },
     price: {
