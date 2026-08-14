@@ -14,4 +14,18 @@ describe('desktop build command', () => {
     const command = buddy.commands.find(candidate => candidate.name === 'build')
     expect(command?.options.some(option => option.name === 'desktop')).toBeTrue()
   })
+
+  it('supports native mobile build targets', () => {
+    const options = {} as BuildOptions
+    applyBuildTarget('android', options)
+    applyBuildTarget('ios', options)
+    expect(options.android).toBeTrue()
+    expect(options.ios).toBeTrue()
+
+    const buddy = cli('buddy')
+    build(buddy)
+    const command = buddy.commands.find(candidate => candidate.name === 'build')
+    expect(command?.options.some(option => option.name === 'android')).toBeTrue()
+    expect(command?.options.some(option => option.name === 'ios')).toBeTrue()
+  })
 })

@@ -55,6 +55,7 @@ export enum Action {
   BuildDmg = 'build/dmg',
   BuildDocs = 'build/docs',
   BuildFrontendStatic = 'build/frontend-static',
+  BuildAndroid = 'build/android',
   BuildIos = 'build/ios',
   BuildServer = 'build/server',
   Changelog = 'changelog',

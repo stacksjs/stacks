@@ -233,6 +233,7 @@ export type BuildOption =
   | 'elements'
   | 'functions'
   | 'desktop'
+  | 'android'
   | 'ios'
   | 'docs'
   | 'views'

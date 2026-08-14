@@ -16,7 +16,7 @@ Stacks owns application configuration and build orchestration.
 
 - App configuration: `config/mobile.ts`
 - Mobile runtime: `storage/framework/core/mobile/src/`
-- iOS build action: `storage/framework/core/actions/src/build/ios.ts`
+- Platform build actions: `storage/framework/core/actions/src/build/ios.ts` and `build/android.ts`
 - Reusable STX components: `storage/framework/defaults/resources/components/Native*.stx`
 - Generated iOS project: `storage/framework/mobile/ios/` (ignored build output)
 
@@ -24,6 +24,7 @@ Stacks owns application configuration and build orchestration.
 
 ```bash
 buddy build:ios
+buddy build:android
 ```
 
 The build validates `config/mobile.ts`, initializes a Craft iOS project,
@@ -35,10 +36,12 @@ For local Craft development, point Stacks at Craft's builder source:
 
 ```bash
 CRAFT_IOS_SRC=/absolute/path/to/craft/packages/ios/src/index.ts buddy build:ios
+CRAFT_ANDROID_SRC=/absolute/path/to/craft/packages/android/src/index.ts buddy build:android
 ```
 
-`STACKS_IOS_SKIP_XCODEGEN=1` is only for source-level CI and tests. A shippable
-iOS project must be generated and then compiled with Xcode.
+`STACKS_IOS_SKIP_XCODEGEN=1` and `STACKS_ANDROID_SKIP_GRADLE=1` are only for
+source-level CI and tests. Shippable projects must be generated and compiled
+with Xcode or Gradle respectively.
 
 ## Configuration
 
@@ -50,6 +53,7 @@ export default {
     appName: 'My App',
     bundleId: 'com.example.app',
     url: 'https://example.com',
+    fallbackWebAssets: 'dist',
     deploymentTarget: '16.0',
     orientations: ['portrait'],
     urlSchemes: ['myapp'],
@@ -60,14 +64,28 @@ export default {
       secureStorage: true,
     },
   },
+  android: {
+    appName: 'My App',
+    packageName: 'com.example.app',
+    url: 'https://example.com',
+    fallbackWebAssets: 'dist',
+    capabilities: {
+      haptics: true,
+      share: true,
+      geolocation: true,
+      secureStorage: true,
+    },
+  },
 } satisfies MobileConfig
 ```
 
-Choose exactly one content source:
+Choose exactly one primary content source:
 
 - `url`: load the deployed Stacks application and keep server-rendered routes.
 - `webAssets`: bundle a static distribution containing `index.html` and every
   referenced asset.
+- `fallbackWebAssets`: with `url`, bundle a static distribution that Craft
+  loads when the remote application is unreachable on cold start.
 
 Only enable capabilities the product uses. Craft turns enabled capabilities
 into native bridge availability and required iOS privacy descriptions.
@@ -75,10 +93,13 @@ into native bridge availability and required iOS privacy descriptions.
 ## Runtime API
 
 ```ts
-import { haptics, location, share, withNativeFeedback } from '@stacksjs/mobile'
+import { haptics, keepAwake, location, pushNotifications, share, withNativeFeedback } from '@stacksjs/mobile'
 
 await haptics.selection()
 const position = await location.getCurrentPosition({ enableHighAccuracy: true })
+await location.startRecording({ enableHighAccuracy: true })
+await keepAwake.enable()
+const pushToken = await pushNotifications.register()
 await share.share({ title: 'Route', url: 'https://example.com/routes/1' })
 await withNativeFeedback(() => saveActivity())
 ```
@@ -106,6 +127,7 @@ buddy lint
 bun run typecheck:app
 buddy test
 buddy build:ios
+buddy build:android
 ```
 
 On a Mac with full Xcode selected, compile the generated project for an iOS

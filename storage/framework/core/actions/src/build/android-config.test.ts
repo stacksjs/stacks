@@ -1,0 +1,47 @@
+import { describe, expect, it } from 'bun:test'
+import { toCraftAndroidConfig, validateAndroidMobileConfig } from './android-config'
+
+describe('Android mobile build configuration', () => {
+  it('maps Stacks capabilities onto the Craft Android builder', () => {
+    const config = toCraftAndroidConfig({
+      appName: 'WildLoop',
+      packageName: 'org.wildloop.app',
+      url: 'wildloop.org',
+      capabilities: { backgroundLocation: true, haptics: true, camera: false },
+    })
+    expect(config.devServerURL).toBe('https://wildloop.org')
+    expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
+    expect(config.enableBackgroundLocation).toBe(true)
+    expect(config.enableGeolocation).toBe(true)
+    expect(config.enableCamera).toBe(false)
+  })
+
+  it('requires a valid package and exactly one web source', () => {
+    expect(() => validateAndroidMobileConfig({
+      appName: 'WildLoop',
+      packageName: 'wildloop',
+      url: 'wildloop.org',
+    })).toThrow('Invalid Android package name')
+    expect(() => validateAndroidMobileConfig({
+      appName: 'WildLoop',
+      packageName: 'org.wildloop.app',
+      url: 'wildloop.org',
+      webAssets: 'dist',
+    })).toThrow('either android.url or android.webAssets')
+  })
+
+  it('allows a bundled offline fallback only for remote applications', () => {
+    expect(() => validateAndroidMobileConfig({
+      appName: 'WildLoop',
+      packageName: 'org.wildloop.app',
+      url: 'wildloop.org',
+      fallbackWebAssets: 'dist',
+    })).not.toThrow()
+    expect(() => validateAndroidMobileConfig({
+      appName: 'WildLoop',
+      packageName: 'org.wildloop.app',
+      webAssets: 'dist',
+      fallbackWebAssets: 'fallback',
+    })).toThrow('fallbackWebAssets requires android.url')
+  })
+})

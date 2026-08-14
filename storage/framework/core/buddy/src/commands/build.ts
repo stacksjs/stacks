@@ -25,6 +25,7 @@ export function build(buddy: CLI): void {
     buddy: 'Build the Buddy binary',
     functions: 'Build your function library',
     desktop: 'Build the Desktop Application',
+    android: 'Build the native Android application',
     ios: 'Build the native iOS application',
     dmg: 'Package the desktop build as a macOS .app inside a .dmg',
     pages: 'Build your frontend',
@@ -45,6 +46,7 @@ export function build(buddy: CLI): void {
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
     .option('-k, --desktop', descriptions.desktop)
+    .option('--android', descriptions.android)
     .option('--ios', descriptions.ios)
     .option('-p, --views', descriptions.pages)
     .option('--pages', descriptions.pages) // alias for --views
@@ -70,6 +72,7 @@ export function build(buddy: CLI): void {
               { label: 'Web Components', value: 'webComponents' },
               { label: 'Functions', value: 'functions' },
               { label: 'Desktop application', value: 'desktop' },
+              { label: 'Android application', value: 'android' },
               { label: 'iOS application', value: 'ios' },
               { label: 'Documentation', value: 'docs' },
               { label: 'Stacks framework', value: 'stacks' },
@@ -84,6 +87,7 @@ export function build(buddy: CLI): void {
           if (selected.has('webComponents')) options.webComponents = true
           if (selected.has('functions')) options.functions = true
           if (selected.has('desktop')) options.desktop = true
+          if (selected.has('android')) options.android = true
           if (selected.has('ios')) options.ios = true
           if (selected.has('docs')) options.docs = true
           if (selected.has('stacks')) options.stacks = true
@@ -112,6 +116,8 @@ export function build(buddy: CLI): void {
         succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library')) && succeeded
       if (options.desktop)
         succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application')) && succeeded
+      if (options.android)
+        succeeded = (await runBuildAction(Action.BuildAndroid, 'Android application')) && succeeded
       if (options.ios)
         succeeded = (await runBuildAction(Action.BuildIos, 'iOS application')) && succeeded
       if (options.views)
@@ -272,6 +278,24 @@ export function build(buddy: CLI): void {
     })
 
   buddy
+    .command('build:android', descriptions.android)
+    .alias('prod:android')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:android` ...', options)
+
+      const perf = await intro('buddy build:android')
+      const result = await runAction(Action.BuildAndroid, options)
+      if (resultFailed(result)) {
+        await outro('While building the Android application, there was an issue', { startTime: perf, useSeconds: true }, result.error)
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Android application built', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
     .command('build:ios', descriptions.ios)
     .alias('prod:ios')
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -342,6 +366,7 @@ function hasNoOptions(options: BuildOptions) {
     && !options.elements
     && !options.functions
     && !options.desktop
+    && !options.android
     && !options.ios
     && !options.views
     && !options.docs
@@ -364,6 +389,9 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
       break
     case 'desktop':
       options.desktop = true
+      break
+    case 'android':
+      options.android = true
       break
     case 'ios':
       options.ios = true
