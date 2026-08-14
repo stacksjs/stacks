@@ -190,6 +190,48 @@ describe('@stacksjs/error-handling', () => {
         expect(handledError).toBeInstanceOf(Error)
         expect(handledError.message).toBe(JSON.stringify(unknown))
       })
+
+      // `handleError('Label', error)` is used all over the framework - every
+      // migration, cloud and deploy failure funnels through it. The thrown
+      // value used to land in the context slot and be JSON.stringify'd to
+      // `{}`, so "Migration generation failed" was the only thing anybody ever
+      // saw, with no message, no cause and no stack.
+      it('keeps the thrown error when a label is passed first', () => {
+        const cause = new Error('no such table: project_members')
+        const handledError = handleError('Migration generation failed', cause)
+
+        expect(handledError.message).toBe('Migration generation failed: no such table: project_members')
+        expect(handledError.cause).toBe(cause)
+      })
+
+      it('points the stack at the throw site rather than the handler', () => {
+        const cause = new Error('boom')
+        cause.stack = 'Error: boom\n    at thrower (/app/src/thrower.ts:12:9)'
+
+        const handledError = handleError('Deploy failed', cause)
+
+        expect(handledError.stack).toContain('at thrower (/app/src/thrower.ts:12:9)')
+        expect(handledError.stack?.split('\n')[0]).toBe('Error: Deploy failed: boom')
+      })
+
+      it('does not repeat the message when label and cause agree', () => {
+        const cause = new Error('Migration failed')
+        expect(handleError('Migration failed', cause).message).toBe('Migration failed')
+      })
+
+      it('still treats an options bag as options, not a cause', () => {
+        const handledError = handleError(new Error('Test error'), { silent: true })
+
+        expect(handledError.message).toBe('Test error')
+        expect(handledError.cause).toBeUndefined()
+      })
+
+      it('still treats a plain object as context, not a cause', () => {
+        const handledError = handleError('Upload failed', { bucket: 'reports' })
+
+        expect(handledError.message).toBe('Upload failed')
+        expect(handledError.cause).toBeUndefined()
+      })
     })
 
     describe('rescue function', () => {
