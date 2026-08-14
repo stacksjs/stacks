@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { resolveCraftBuilderProvenance } from './craft-provenance'
 import { resolveMobilePath, toCraftIosConfig, validateIosMobileConfig } from './ios-config'
 
 // Action runners install a global exception reporter. Start pessimistically so
@@ -85,6 +86,7 @@ writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify({
     fallback: fallbackWebAssets ? { kind: 'bundled', path: fallbackWebAssets } : undefined,
   },
   capabilities: config.capabilities ?? {},
+  builder: resolveCraftBuilderProvenance(process.env.CRAFT_IOS_SRC),
   craft: generatedConfig,
 }, null, 2)}\n`)
 

@@ -29,8 +29,8 @@ buddy build:android
 
 The build validates `config/mobile.ts`, initializes a Craft iOS project,
 selects either a remote application URL or bundled web assets, generates the
-Xcode project with xcodegen, and records source/capability provenance in
-`stacks-mobile.json`.
+Xcode project with xcodegen, and records source, capability, and Craft builder
+revision provenance in `stacks-mobile.json`.
 
 For local Craft development, point Stacks at Craft's builder source:
 
