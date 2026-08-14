@@ -15,7 +15,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { applyPreMigrationBackup, preMigrationBackupCommand, projectDatabaseTarget } from '../src/commands/deploy'
+import { applyPreMigrationBackup, buddyInvocationFrom, preMigrationBackupCommand, projectDatabaseTarget } from '../src/commands/deploy'
 
 const BACKUPS = projectDatabaseTarget('acme', 'backups')
 
@@ -82,10 +82,43 @@ describe('the pre-migration dump lands where it can do its job', () => {
   })
 
   it('invokes buddy the same way the migrate step does', () => {
-    // A release tree has no built binary; the source-conditions invocation is
-    // the one that works there.
-    expect(preMigrationBackupCommand('/tmp/b')).toContain('storage/framework/core/buddy/src/cli.ts')
-    expect(preMigrationBackupCommand('/tmp/b')).toContain('--conditions development')
+    // A release tree has no built binary, so in the monorepo the migrate step
+    // runs buddy from source — and the dump has to go the same way.
+    const monorepo = 'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate'
+
+    expect(preMigrationBackupCommand('/tmp/b', monorepo))
+      .toBe('bun --conditions development storage/framework/core/buddy/src/cli.ts db:backup --before-migrations --out /tmp/b')
+  })
+
+  /**
+   * The invocation used to be hard-coded to the monorepo's source path. An app
+   * that installs Stacks from npm has no `storage/framework/…` directory, so
+   * every one of those deploys died in preStart with "Module not found" —
+   * before migrate, so the release was never promoted, and the failure had
+   * nothing to do with anything the app had changed.
+   */
+  it('uses the installed CLI when that is what the app runs', () => {
+    const installed = {
+      api: {
+        start: 'bun node_modules/@stacksjs/actions/dist/serve/api.js',
+        preStart: [
+          'bun install --frozen-lockfile',
+          'bun node_modules/@stacksjs/buddy/dist/cli.js migrate --no-auth --force',
+        ],
+      },
+    }
+
+    const backup = applyPreMigrationBackup(installed, BACKUPS).api.preStart[1]
+
+    expect(backup).toBe(`bun node_modules/@stacksjs/buddy/dist/cli.js db:backup --before-migrations --out ${BACKUPS}`)
+    expect(backup).not.toContain('storage/framework')
+  })
+
+  it('reads the invocation off the migrate step, whatever shape it takes', () => {
+    expect(buddyInvocationFrom('./buddy migrate')).toBe('./buddy')
+    expect(buddyInvocationFrom('buddy migrate --force')).toBe('buddy')
+    expect(buddyInvocationFrom('bunx buddy db:migrate')).toBe('bunx buddy')
+    expect(buddyInvocationFrom('bun node_modules/@stacksjs/buddy/dist/cli.js migrate:fresh')).toBe('bun node_modules/@stacksjs/buddy/dist/cli.js')
   })
 })
 
@@ -117,6 +150,22 @@ describe('leaving alone what it should leave alone', () => {
     }
 
     expect(applyPreMigrationBackup(custom, BACKUPS)).toEqual(custom)
+  })
+
+  it('leaves a site alone when its migrate step is not a buddy call', () => {
+    // `bun run migrate` is a package script, `docker exec … migrate` is another
+    // machine's shell. Splicing `<that prefix> db:backup` in front of either
+    // one produces a command that does not exist, and a preStart that exits
+    // non-zero takes the release down — the failure this whole path is meant
+    // to prevent. No dump beats no deploy.
+    const scripted = {
+      main: { start: 'bun serve.js', preStart: ['bun install', 'bun run migrate'] },
+    }
+
+    expect(applyPreMigrationBackup(scripted, BACKUPS)).toEqual(scripted)
+    expect(buddyInvocationFrom('bun run migrate')).toBeUndefined()
+    expect(buddyInvocationFrom('docker compose exec api migrate')).toBeUndefined()
+    expect(buddyInvocationFrom('migrate')).toBeUndefined()
   })
 
   it('does not mutate the sites it was handed', () => {

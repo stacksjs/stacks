@@ -1270,13 +1270,58 @@ export function applyScheduledWork(sites: Record<string, any>, schedulerFile: st
 }
 
 /**
- * The command a site's preStart runs to dump the database before `migrate`
- * touches it. Built here because this file owns the on-box invocation shape —
- * the same `bun --conditions development …/cli.ts` form the migrate step uses,
- * which is what makes it work from a release tree with no built binary.
+ * How a preStart string can be invoking buddy: the monorepo's own source entry,
+ * an installed package's built CLI, or one of the bin names on PATH.
  */
-export function preMigrationBackupCommand(backupsDir: string): string {
-  return `bun --conditions development storage/framework/core/buddy/src/cli.ts db:backup --before-migrations --out ${backupsDir}`
+const buddyEntrypoint = /(?:^|\/)(?:cli\.[cm]?[jt]s|buddy|bud|stacks)$/
+
+/** The `migrate`, `db:migrate`, `migrate:fresh`… token, whatever it is called. */
+const migrateToken = /(?:^|:)migrate(?::|$)/
+
+/**
+ * The way THIS site invokes buddy, taken from its own migrate step: everything
+ * ahead of the migrate subcommand, when what it lands on is a buddy entrypoint.
+ *
+ * Reading it off the site is the whole point. This used to hard-code the
+ * monorepo's `bun --conditions development storage/framework/core/buddy/src/
+ * cli.ts`, on the reasoning that a release tree has no built binary — true of
+ * Stacks' own apps, and false of every app that installs Stacks from npm, where
+ * that path does not exist. Those deploys died in preStart with "Module not
+ * found", before migrate, so the release was never promoted. The migrate step
+ * is the one command already proven to work on that box, so its invocation is
+ * the one to reuse.
+ *
+ * Returns undefined when the migrate step is not a buddy call at all (`bun run
+ * migrate`, a shell script, a container exec). Guessing there is how the
+ * hard-coded path failed in the first place.
+ */
+export function buddyInvocationFrom(migrateCommand: unknown): string | undefined {
+  if (typeof migrateCommand !== 'string')
+    return undefined
+
+  const tokens = migrateCommand.trim().split(/\s+/)
+  const at = tokens.findIndex(token => migrateToken.test(token))
+  if (at < 1)
+    return undefined
+
+  const invocation = tokens.slice(0, at)
+  const entrypoint = invocation[invocation.length - 1]
+  if (!entrypoint || !buddyEntrypoint.test(entrypoint))
+    return undefined
+
+  return invocation.join(' ')
+}
+
+/**
+ * The command a site's preStart runs to dump the database before `migrate`
+ * touches it, invoking buddy exactly as that site's own migrate step does.
+ */
+export function preMigrationBackupCommand(backupsDir: string, migrateCommand: unknown): string | undefined {
+  const invocation = buddyInvocationFrom(migrateCommand)
+  if (!invocation)
+    return undefined
+
+  return `${invocation} db:backup --before-migrations --out ${backupsDir}`
 }
 
 /**
@@ -1299,6 +1344,10 @@ export function preMigrationBackupCommand(backupsDir: string): string {
  *
  * Idempotent: a site that already runs `db:backup` in preStart is left alone, so
  * an app that placed the dump itself keeps its own ordering.
+ *
+ * A site whose migrate step is not a recognisable buddy call is left alone too,
+ * with a warning. Not backing up a database is bad; guessing an invocation and
+ * failing the preStart takes the whole release down instead, which is worse.
  */
 export function applyPreMigrationBackup(sites: Record<string, any>, backupsDir: string): Record<string, any> {
   const out: Record<string, any> = {}
@@ -1318,7 +1367,14 @@ export function applyPreMigrationBackup(sites: Record<string, any>, backupsDir: 
       continue
     }
 
-    preStart.splice(at, 0, preMigrationBackupCommand(backupsDir))
+    const backup = preMigrationBackupCommand(backupsDir, preStart[at])
+    if (!backup) {
+      log.warn(`No pre-migration backup for "${name}": its migrate step (${String(preStart[at])}) is not a buddy invocation this can reuse. Add a \`db:backup\` command to its preStart to take one.`)
+      out[name] = site
+      continue
+    }
+
+    preStart.splice(at, 0, backup)
 
     out[name] = { ...site, preStart }
   }
