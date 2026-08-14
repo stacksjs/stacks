@@ -64,7 +64,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-validation": "^0.5.4",
-    "bun-query-builder": "^0.2.29"
+    "bun-query-builder": "^0.2.30"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
