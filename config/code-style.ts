@@ -82,6 +82,7 @@ const config: PickierOptions = {
     '**/storage/framework/cache/**',
     '**/storage/framework/auto-imports/**',
     '**/storage/framework/frontend-dist/**',
+    '**/storage/framework/mobile/**',
     '**/storage/framework/server/storage/**',
     '**/.bunpress/**',
     '**/docs/deps/**',
