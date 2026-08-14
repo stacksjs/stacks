@@ -13,6 +13,11 @@ export interface CraftIosConfig {
   teamId?: string
   devServerURL?: string
   urlSchemes?: string[]
+  trustedOrigins?: string[]
+  associatedDomains?: string[]
+  appGroups?: string[]
+  appIconPath?: string
+  privacy?: IosMobileConfig['privacy']
   orientations?: IosMobileConfig['orientations']
 }
 
@@ -25,6 +30,7 @@ const CAPABILITY_KEYS = {
   pushNotifications: 'enablePushNotifications',
   secureStorage: 'enableSecureStorage',
   geolocation: 'enableGeolocation',
+  backgroundLocation: 'enableBackgroundLocation',
   clipboard: 'enableClipboard',
   contacts: 'enableContacts',
   calendar: 'enableCalendar',
@@ -63,6 +69,9 @@ export function resolveMobilePath(root: string, value: string | undefined): stri
 }
 
 export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
+  const devServerURL = normalizeMobileUrl(config.url)
+  const trustedOrigins = new Set(config.trustedOrigins ?? [])
+  if (devServerURL) trustedOrigins.add(new URL(devServerURL).origin)
   const craft: CraftIosConfig = {
     appName: config.appName,
     bundleId: config.bundleId,
@@ -72,8 +81,13 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     backgroundColor: config.backgroundColor,
     iosVersion: config.deploymentTarget,
     teamId: config.teamId,
-    devServerURL: normalizeMobileUrl(config.url),
+    devServerURL,
     urlSchemes: config.urlSchemes,
+    trustedOrigins: [...trustedOrigins],
+    associatedDomains: config.associatedDomains,
+    appGroups: config.appGroups,
+    appIconPath: config.appIcon,
+    privacy: config.privacy,
     orientations: config.orientations,
   }
 
@@ -81,6 +95,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     const enabled = config.capabilities?.[key as keyof typeof CAPABILITY_KEYS]
     if (enabled !== undefined) craft[nativeKey] = enabled
   }
+  if (config.capabilities?.backgroundLocation) craft.enableGeolocation = true
 
   return craft
 }
@@ -95,5 +110,18 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
   }
   if (!config.url && !config.webAssets) {
     throw new Error('config/mobile.ts must define ios.url or ios.webAssets')
+  }
+  if (config.fallbackWebAssets && !config.url) {
+    throw new Error('ios.fallbackWebAssets requires ios.url')
+  }
+  if (config.url) {
+    const url = new URL(normalizeMobileUrl(config.url)!)
+    const isLocal = ['localhost', '127.0.0.1', '::1'].includes(url.hostname)
+    if (url.protocol !== 'https:' && !isLocal) throw new Error('ios.url must use HTTPS outside local development')
+  }
+  for (const domain of config.associatedDomains ?? []) {
+    if (!/^(applinks|webcredentials|activitycontinuation):[^/\s]+$/.test(domain)) {
+      throw new Error(`Invalid iOS associated domain: ${domain}`)
+    }
   }
 }

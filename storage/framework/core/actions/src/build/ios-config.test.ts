@@ -7,13 +7,31 @@ describe('iOS mobile build configuration', () => {
       appName: 'WildLoop',
       bundleId: 'org.wildloop.app',
       url: 'wildloop.org',
-      capabilities: { geolocation: true, haptics: true, camera: false },
+      associatedDomains: ['applinks:wildloop.org'],
+      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false },
     })
 
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.enableGeolocation).toBe(true)
     expect(config.enableHaptics).toBe(true)
     expect(config.enableCamera).toBe(false)
+    expect(config.enableBackgroundLocation).toBe(true)
+    expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
+    expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])
+  })
+
+  it('rejects insecure production URLs and malformed associated domains', () => {
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      url: 'http://wildloop.org',
+    })).toThrow('must use HTTPS')
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      url: 'https://wildloop.org',
+      associatedDomains: ['https://wildloop.org'],
+    })).toThrow('Invalid iOS associated domain')
   })
 
   it('normalizes URLs and project-relative asset paths', () => {
@@ -28,5 +46,20 @@ describe('iOS mobile build configuration', () => {
       url: 'wildloop.org',
       webAssets: 'dist',
     })).toThrow('either ios.url or ios.webAssets')
+  })
+
+  it('allows a bundled offline fallback only for remote applications', () => {
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      url: 'wildloop.org',
+      fallbackWebAssets: 'dist',
+    })).not.toThrow()
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      webAssets: 'dist',
+      fallbackWebAssets: 'fallback',
+    })).toThrow('fallbackWebAssets requires ios.url')
   })
 })
