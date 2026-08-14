@@ -1,5 +1,27 @@
-import { describe, expect, it } from 'bun:test'
-import { health, isNativeMobile, liveActivities, onMobileReady, watchConnectivity, withNativeFeedback } from '../src'
+import { describe, expect, it, mock } from 'bun:test'
+
+mock.module('craft-native/mobile', () => ({
+  appReview: {},
+  biometrics: {},
+  camera: {},
+  deepLinks: {},
+  device: { isMobile: () => false },
+  haptics: { impact: async () => {}, notification: async () => {} },
+  health: { getData: async () => ({ unit: 'count', value: 0 }) },
+  keepAwake: {},
+  lifecycle: {},
+  liveActivities: { start: async () => ({ id: 'test' }) },
+  location: {},
+  network: {},
+  notifications: {},
+  permissions: {},
+  pushNotifications: {},
+  secureStorage: {},
+  share: {},
+  watchConnectivity: { isReachable: async () => false },
+}))
+
+const { health, isNativeMobile, liveActivities, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
 
 describe('@stacksjs/mobile', () => {
   it('stays browser-safe when the Craft host is absent', () => {
