@@ -113,10 +113,26 @@ supported web APIs provide fallback behavior outside a native host.
 - `<NativeTabBar>` provides the accessible navigation shell and selection haptics.
 - `<NativeTabItem>` provides each route, active state, label, and Iconify icon.
 - `<NativeShareButton>` opens the native share sheet and reports feedback.
+- `<NativeNetworkBanner>` reflects native connectivity changes and announces offline state accessibly.
+- `<NativePermissionButton>` wraps permission status, requests, haptics, and the native Settings escape hatch.
+- `<NativeHealthButton>` requests the minimal Apple Health or Android Health Connect grants.
 
 Use Iconify classes for tab icons. Keep native operations inside reusable
 components or TypeScript composables, never through `window.*` in an STX
 script.
+
+## Health and watch surfaces
+
+Enable `healthKit` on iOS or `healthConnect` on Android, then use the shared
+`health` service to request only the record types the product needs. Completed
+recordings can be written back with `health.saveWorkout(...)`; treat permission
+revocation as a normal runtime state and never block saving the application's
+own activity when a health write fails.
+
+Enable `watchApp` to generate and embed the SwiftUI watchOS companion. The
+shared `watchConnectivity` service exchanges commands and the latest recording
+context without exposing `WCSession` to STX templates. Set
+`ios.watchDeploymentTarget` when the default watchOS 9.0 target is not suitable.
 
 ## Validation
 
@@ -131,6 +147,8 @@ buddy build:android
 ```
 
 On a Mac with full Xcode selected, compile the generated project for an iOS
-Simulator and a physical-device archive. Verify permission prompts, safe-area
+Simulator (including embedded extensions and watchOS dependencies) and a
+physical-device archive. Compile the Android project with Gradle when Android is
+configured. Verify permission prompts, safe-area
 layout, deep links, offline/error states, background transitions, and native
 feedback on device.
