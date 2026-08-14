@@ -1,0 +1,49 @@
+<script client>
+import type { HealthDataType } from '@stacksjs/mobile'
+import { device, haptics, health, isNativeMobile } from '@stacksjs/mobile'
+
+const types = useReactiveProp<HealthDataType[]>('types', ['steps', 'distance', 'activeEnergy', 'heartRate', 'workouts'])
+const className = useReactiveProp<string>('class', 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold')
+const status = state<'idle' | 'requesting' | 'connected' | 'denied' | 'unavailable' | 'error'>('idle')
+const emit = defineEmits()
+
+const provider = derived(() => device.isIOS() ? 'Apple Health' : device.isAndroid() ? 'Health Connect' : 'Health')
+const buttonLabel = derived(() => {
+  if (status() === 'requesting') return `Connecting ${provider()}`
+  if (status() === 'connected') return `${provider()} connected`
+  if (status() === 'unavailable') return `${provider()} unavailable`
+  return `Connect ${provider()}`
+})
+
+async function connectHealth(): Promise<void> {
+  if (!isNativeMobile()) {
+    status.set('unavailable')
+    return
+  }
+  if (status() === 'requesting' || status() === 'connected') return
+  status.set('requesting')
+  await haptics.selection()
+  try {
+    const allowed = await health.requestAuthorization(types())
+    status.set(allowed ? 'connected' : 'denied')
+    emit('change', { connected: allowed, provider: provider() })
+    await haptics.notification(allowed ? 'success' : 'warning')
+  }
+  catch (error) {
+    status.set('error')
+    emit('error', error)
+    await haptics.notification('error')
+  }
+}
+</script>
+
+<button
+  type="button"
+  :class="className()"
+  :disabled="status() === 'requesting' || status() === 'connected' || status() === 'unavailable'"
+  :aria-busy="status() === 'requesting' ? 'true' : 'false'"
+  @click="connectHealth()"
+>
+  <i aria-hidden="true" class="h-5 w-5 i-hugeicons-health"></i>
+  <span>{{ buttonLabel() }}</span>
+</button>

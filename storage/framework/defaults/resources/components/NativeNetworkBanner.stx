@@ -1,0 +1,53 @@
+<script client>
+import { network } from '@stacksjs/mobile'
+import { onDestroy, onMount } from 'stx'
+
+const className = useReactiveProp<string>('class', '')
+const offlineLabel = useReactiveProp<string>('offlineLabel', 'You are offline. Changes will sync automatically.')
+const connected = state(true)
+let removeListener: (() => void) | null = null
+
+function applyStatus(status: { isConnected: boolean }): void {
+  connected.set(status.isConnected)
+}
+
+onMount(() => {
+  void network.getStatus().then(applyStatus).catch(() => connected.set(false))
+  removeListener = network.onChange(applyStatus)
+})
+
+onDestroy(() => removeListener?.())
+</script>
+
+<div
+  :if="!connected()"
+  role="status"
+  aria-live="polite"
+  class="native-network-banner"
+  :class="className()"
+>
+  <i aria-hidden="true" class="h-4 w-4 i-hugeicons-wifi-disconnected-01"></i>
+  <span>{{ offlineLabel() }}</span>
+</div>
+
+<style>
+  .native-network-banner {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 50;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.75rem;
+    padding: 0.625rem 1rem;
+    color: rgb(120 53 15);
+    background: rgb(254 243 199 / 0.96);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .native-network-banner { color: rgb(254 243 199); background: rgb(120 53 15 / 0.96); }
+  }
+</style>

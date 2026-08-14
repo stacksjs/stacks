@@ -1,0 +1,61 @@
+<script client>
+import type { PermissionStatus, PermissionType } from '@stacksjs/mobile'
+import { haptics, permissions } from '@stacksjs/mobile'
+import { onMount } from 'stx'
+
+const permission = useReactiveProp<PermissionType>('permission', 'location')
+const label = useReactiveProp<string>('label', 'Allow access')
+const grantedLabel = useReactiveProp<string>('grantedLabel', 'Access allowed')
+const className = useReactiveProp<string>('class', 'inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold')
+const status = state<PermissionStatus>('undetermined')
+const busy = state(false)
+const emit = defineEmits()
+
+onMount(() => {
+  void permissions.check(permission()).then(status.set).catch(() => status.set('undetermined'))
+})
+
+async function requestAccess(): Promise<void> {
+  if (busy() || status() === 'granted') return
+  busy.set(true)
+  await haptics.selection()
+  try {
+    const next = await permissions.request(permission())
+    status.set(next)
+    emit('change', next)
+    await haptics.notification(next === 'granted' ? 'success' : 'warning')
+  }
+  catch (error) {
+    emit('error', error)
+    await haptics.notification('error')
+  }
+  finally {
+    busy.set(false)
+  }
+}
+
+async function openNativeSettings(): Promise<void> {
+  await permissions.openSettings()
+}
+</script>
+
+<div class="inline-flex flex-col gap-2">
+  <button
+    type="button"
+    :class="className()"
+    :disabled="busy() || status() === 'granted'"
+    :aria-busy="busy() ? 'true' : 'false'"
+    @click="requestAccess()"
+  >
+    <i aria-hidden="true" :class="status() === 'granted' ? 'i-hugeicons-checkmark-circle-02' : 'i-hugeicons-shield-01'" class="h-5 w-5"></i>
+    <span>{{ busy() ? 'Requesting access' : status() === 'granted' ? grantedLabel() : label() }}</span>
+  </button>
+  <button
+    :if="status() === 'denied' || status() === 'restricted'"
+    type="button"
+    class="min-h-11 text-sm underline underline-offset-4"
+    @click="openNativeSettings()"
+  >
+    Open device settings
+  </button>
+</div>
