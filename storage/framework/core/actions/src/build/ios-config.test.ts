@@ -8,7 +8,8 @@ describe('iOS mobile build configuration', () => {
       bundleId: 'org.wildloop.app',
       url: 'wildloop.org',
       associatedDomains: ['applinks:wildloop.org'],
-      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true },
+      watchDeploymentTarget: '9.0',
+      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true, watchApp: true },
     })
 
     expect(config.devServerURL).toBe('https://wildloop.org')
@@ -17,6 +18,8 @@ describe('iOS mobile build configuration', () => {
     expect(config.enableCamera).toBe(false)
     expect(config.enableBackgroundLocation).toBe(true)
     expect(config.enableLiveActivities).toBe(true)
+    expect(config.enableWatchApp).toBe(true)
+    expect(config.watchosVersion).toBe('9.0')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])
   })
@@ -62,5 +65,15 @@ describe('iOS mobile build configuration', () => {
       webAssets: 'dist',
       fallbackWebAssets: 'fallback',
     })).toThrow('fallbackWebAssets requires ios.url')
+  })
+
+  it('requires a supported watchOS target for companion apps', () => {
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      url: 'wildloop.org',
+      watchDeploymentTarget: '8.0',
+      capabilities: { watchApp: true },
+    })).toThrow('watchOS 9.0 or newer')
   })
 })

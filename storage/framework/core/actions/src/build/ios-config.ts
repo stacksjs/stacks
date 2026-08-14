@@ -10,6 +10,7 @@ export interface CraftIosConfig {
   darkMode?: boolean
   backgroundColor?: string
   iosVersion?: string
+  watchosVersion?: string
   teamId?: string
   devServerURL?: string
   urlSchemes?: string[]
@@ -51,6 +52,7 @@ const CAPABILITY_KEYS = {
   nfc: 'enableNFC',
   healthKit: 'enableHealthKit',
   liveActivities: 'enableLiveActivities',
+  watchApp: 'enableWatchApp',
   backgroundTasks: 'enableBackgroundTasks',
   screenCapture: 'enableScreenCapture',
   pdfViewer: 'enablePDFViewer',
@@ -81,6 +83,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     darkMode: config.darkMode,
     backgroundColor: config.backgroundColor,
     iosVersion: config.deploymentTarget,
+    watchosVersion: config.watchDeploymentTarget,
     teamId: config.teamId,
     devServerURL,
     urlSchemes: config.urlSchemes,
@@ -124,5 +127,9 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
     if (!/^(applinks|webcredentials|activitycontinuation):[^/\s]+$/.test(domain)) {
       throw new Error(`Invalid iOS associated domain: ${domain}`)
     }
+  }
+  if (config.capabilities?.watchApp) {
+    const target = Number.parseFloat(config.watchDeploymentTarget ?? '9.0')
+    if (!Number.isFinite(target) || target < 9) throw new Error('ios.watchDeploymentTarget must be watchOS 9.0 or newer')
   }
 }

@@ -29,7 +29,9 @@ export interface MobileCapabilities {
   bluetooth?: boolean
   nfc?: boolean
   healthKit?: boolean
+  healthConnect?: boolean
   liveActivities?: boolean
+  watchApp?: boolean
   backgroundTasks?: boolean
   screenCapture?: boolean
   pdfViewer?: boolean
@@ -62,6 +64,7 @@ export interface IosMobileConfig {
   version?: string
   buildNumber?: string
   deploymentTarget?: string
+  watchDeploymentTarget?: string
   teamId?: string
   url?: string
   webAssets?: string

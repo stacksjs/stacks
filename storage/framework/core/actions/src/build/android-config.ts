@@ -15,6 +15,7 @@ export interface CraftAndroidConfig {
   trustedOrigins?: string[]
   appIconPath?: string
   googleServicesFile?: string
+  enableHealthConnect?: boolean
 }
 
 const CAPABILITY_KEYS = {
@@ -29,6 +30,7 @@ const CAPABILITY_KEYS = {
   backgroundLocation: 'enableBackgroundLocation',
   keepAwake: 'enableKeepAwake',
   deepLinks: 'enableDeepLinks',
+  healthConnect: 'enableHealthConnect',
 } as const
 
 export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidConfig {
@@ -70,5 +72,8 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
     const url = new URL(normalized!)
     const isLocal = ['localhost', '127.0.0.1', '10.0.2.2'].includes(url.hostname)
     if (url.protocol !== 'https:' && !isLocal) throw new Error('android.url must use HTTPS outside local development')
+  }
+  if (config.capabilities?.healthConnect && (config.minSdk ?? 26) < 26) {
+    throw new Error('Android Health Connect requires android.minSdk 26 or newer')
   }
 }

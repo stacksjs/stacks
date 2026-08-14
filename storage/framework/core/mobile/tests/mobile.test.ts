@@ -7,7 +7,7 @@ mock.module('craft-native/mobile', () => ({
   deepLinks: {},
   device: { isMobile: () => false },
   haptics: { impact: async () => {}, notification: async () => {} },
-  health: { getData: async () => ({ unit: 'count', value: 0 }) },
+  health: { getData: async () => ({ unit: 'count', value: 0 }), saveWorkout: async () => ({ id: 'workout' }) },
   keepAwake: {},
   lifecycle: {},
   liveActivities: { start: async () => ({ id: 'test' }) },
@@ -35,6 +35,7 @@ describe('@stacksjs/mobile', () => {
 
   it('exposes typed native activity services', () => {
     expect(typeof health.getData).toBe('function')
+    expect(typeof health.saveWorkout).toBe('function')
     expect(typeof liveActivities.start).toBe('function')
     expect(typeof watchConnectivity.isReachable).toBe('function')
   })

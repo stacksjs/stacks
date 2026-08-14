@@ -210,7 +210,7 @@ export interface PushNotificationsApi {
   onNotification: (callback: (data: Record<string, unknown>) => void) => () => void
 }
 
-export type HealthDataType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance'
+export type HealthDataType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance' | 'workouts'
 
 export interface HealthDataOptions {
   startDate?: number
@@ -222,9 +222,34 @@ export interface HealthDataResult {
   unit: string
 }
 
+export type HealthWorkoutType = 'running' | 'walking' | 'hiking' | 'cycling'
+
+export interface HealthWorkoutLocation {
+  latitude: number
+  longitude: number
+  altitude?: number
+  accuracy?: number
+  timestamp: number
+}
+
+export interface HealthWorkout {
+  activityId: string
+  type: HealthWorkoutType
+  startDate: number
+  endDate: number
+  distanceMeters?: number
+  activeEnergyCalories?: number
+  locations?: HealthWorkoutLocation[]
+}
+
+export interface HealthWorkoutResult {
+  id: string
+}
+
 export interface HealthApi {
   requestAuthorization: (types: HealthDataType[]) => Promise<boolean>
   getData: (type: HealthDataType, options?: HealthDataOptions) => Promise<HealthDataResult>
+  saveWorkout: (workout: HealthWorkout) => Promise<HealthWorkoutResult>
 }
 
 export interface LiveActivityState {
