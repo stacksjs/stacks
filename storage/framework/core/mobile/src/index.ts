@@ -54,7 +54,24 @@ export const permissions: PermissionsApi = craftPermissions
 export const secureStorage: SecureStorageApi = craftSecureStorage
 export const share: ShareApi = craftShare
 export const appReview: AppReviewApi = craftAppReview
-export const deepLinks: DeepLinksApi = craftDeepLinks
+export function normalizeDeepLinkURL(value: unknown): string | null {
+  if (typeof value === 'string') return value.trim() || null
+  if (!value || typeof value !== 'object') return null
+  const url = (value as { url?: unknown }).url
+  return typeof url === 'string' && url.trim() ? url : null
+}
+
+export const deepLinks: DeepLinksApi = {
+  async getInitialURL() {
+    return normalizeDeepLinkURL(await craftDeepLinks.getInitialURL?.())
+  },
+  onLink(callback) {
+    return craftDeepLinks.onLink?.((value: unknown) => {
+      const url = normalizeDeepLinkURL(value)
+      if (url) callback(url)
+    }) ?? (() => {})
+  },
+}
 export const keepAwake: KeepAwakeApi = craftKeepAwake
 export const network: NetworkApi = craftNetwork
 export const pushNotifications: PushNotificationsApi = craftPushNotifications

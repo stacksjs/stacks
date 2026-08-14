@@ -21,7 +21,7 @@ mock.module('craft-native/mobile', () => ({
   watchConnectivity: { isReachable: async () => false },
 }))
 
-const { health, isNativeMobile, liveActivities, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
+const { health, isNativeMobile, liveActivities, normalizeDeepLinkURL, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
 
 describe('@stacksjs/mobile', () => {
   it('stays browser-safe when the Craft host is absent', () => {
@@ -38,5 +38,11 @@ describe('@stacksjs/mobile', () => {
     expect(typeof health.saveWorkout).toBe('function')
     expect(typeof liveActivities.start).toBe('function')
     expect(typeof watchConnectivity.isReachable).toBe('function')
+  })
+
+  it('normalizes structured native deep-link payloads', () => {
+    expect(normalizeDeepLinkURL('wildloop://record')).toBe('wildloop://record')
+    expect(normalizeDeepLinkURL({ url: 'wildloop://trail/42' })).toBe('wildloop://trail/42')
+    expect(normalizeDeepLinkURL({ path: '/record' })).toBeNull()
   })
 })
