@@ -7,6 +7,7 @@ describe('Android mobile build configuration', () => {
       appName: 'WildLoop',
       packageName: 'org.wildloop.app',
       url: 'wildloop.org',
+      googleServicesFile: 'secrets/google-services.json',
       capabilities: { backgroundLocation: true, haptics: true, camera: false },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
@@ -14,6 +15,7 @@ describe('Android mobile build configuration', () => {
     expect(config.enableBackgroundLocation).toBe(true)
     expect(config.enableGeolocation).toBe(true)
     expect(config.enableCamera).toBe(false)
+    expect(config.googleServicesFile).toBe('secrets/google-services.json')
   })
 
   it('requires a valid package and exactly one web source', () => {

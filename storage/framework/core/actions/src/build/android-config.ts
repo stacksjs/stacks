@@ -14,6 +14,7 @@ export interface CraftAndroidConfig {
   devServerURL?: string
   trustedOrigins?: string[]
   appIconPath?: string
+  googleServicesFile?: string
 }
 
 const CAPABILITY_KEYS = {
@@ -46,6 +47,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     devServerURL,
     trustedOrigins: [...trustedOrigins],
     appIconPath: config.appIcon,
+    googleServicesFile: config.googleServicesFile,
   }
   for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {
     const enabled = config.capabilities?.[key as keyof typeof CAPABILITY_KEYS]
