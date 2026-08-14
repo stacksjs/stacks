@@ -56,6 +56,51 @@ describe('the app CI template exists and is measurable (#2239)', () => {
     expect(existsSync(join(APP_VCS, 'workflows/ci.yml'))).toBeTrue()
     expect(existsSync(join(APP_VCS, 'workflows/release.yml'))).toBeTrue()
   })
+
+  // Every workflow that reads a config file has to ship that file, or the app
+  // gets a job that fails on its first pull request. labeler.yml shipped
+  // without `.github/labeler.yml` for exactly that reason: `HttpError: Not
+  // Found`, on every PR, in every generated app.
+  test('every workflow config a workflow reads is shipped alongside it', () => {
+    const workflows = join(APP_VCS, 'workflows')
+    for (const file of readdirSync(workflows)) {
+      if (!file.endsWith('.yml'))
+        continue
+
+      const source = readFileSync(join(workflows, file), 'utf8')
+
+      // The template directory IS the app's `.github/`, so a configured path
+      // resolves inside it once the `.github/` prefix is stripped.
+      for (const [, configured] of source.matchAll(/configuration-path:\s*['"]?([^'"\s]+)/g))
+        expect(existsSync(join(APP_VCS, configured.replace(/^\.github\//, '')))).toBeTrue()
+
+      // actions/labeler defaults to .github/labeler.yml when no path is given.
+      if (/uses:\s*actions\/labeler@/.test(source))
+        expect(existsSync(join(APP_VCS, 'labeler.yml'))).toBeTrue()
+    }
+  })
+
+  test('the labeler config matches the action version that reads it', () => {
+    // v5 changed the config format: flat glob lists became structured
+    // `changed-files > any-glob-to-any-file` rules. A v6 action pointed at a
+    // v4-format file parses to zero rules and labels nothing, silently.
+    const workflow = readFileSync(join(APP_VCS, 'workflows/labeler.yml'), 'utf8')
+    const config = readFileSync(join(APP_VCS, 'labeler.yml'), 'utf8')
+
+    const version = workflow.match(/actions\/labeler@v(\d+)/)?.[1]
+    expect(version).toBeDefined()
+    expect(Number(version)).toBeGreaterThanOrEqual(5)
+    expect(config).toContain('any-glob-to-any-file')
+  })
+
+  test('the labeler config only claims paths an app owns', () => {
+    // The framework's own labeler is written around storage/framework/core/**,
+    // one label per package. In an app those are node_modules, and the default
+    // unvendor deletes the tree outright, so such rules can never match.
+    const config = readFileSync(join(APP_VCS, 'labeler.yml'), 'utf8')
+    expect(config).not.toContain('storage/framework/core/')
+    expect(config).toContain('app/Models/**')
+  })
 })
 
 describe('the app CI template is app-shaped (#2239)', () => {

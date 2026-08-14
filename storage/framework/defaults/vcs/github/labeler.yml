@@ -1,0 +1,150 @@
+# actions/labeler@v6 format (structured match rules).
+# Each label maps to changed-files > any-glob-to-any-file.
+#
+# Scoped to the paths an application actually owns. The framework's own
+# labeler carries a label per internal package; in an app those are installed
+# dependencies, not code under review.
+
+app:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/**'
+
+actions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Actions/**'
+
+commands:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Commands/**'
+
+events:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Events/**'
+          - 'app/Listeners/**'
+          - 'app/Events.ts'
+          - 'app/Listener.ts'
+
+jobs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Jobs/**'
+
+mail:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Mail/**'
+
+middleware:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Middleware/**'
+          - 'app/Middleware.ts'
+
+models:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Models/**'
+
+notifications:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'app/Notifications/**'
+
+config:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'config/**'
+
+database:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'database/**'
+
+migrations:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'database/migrations/**'
+
+resources:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/**'
+
+components:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/components/**'
+
+views:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/views/**'
+          - 'resources/layouts/**'
+          - 'resources/partials/**'
+
+functions:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/functions/**'
+
+stores:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/stores/**'
+
+lang:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'resources/lang/**'
+          - 'locales/**'
+
+routes:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'routes/**'
+          - 'app/Routes.ts'
+
+tests:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'tests/**'
+
+docs:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docs/**'
+          - 'config/docs.ts'
+          - '**/*.md'
+
+content:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'content/**'
+
+public:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'public/**'
+
+cloud:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'cloud/**'
+          - 'config/cloud.ts'
+
+deps:
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'package.json'
+          - 'bun.lock'
+          - 'deps.yml'
+          - 'pantry.lock'
+
+ci:
+  - changed-files:
+      - any-glob-to-any-file:
+          - '.github/**'
