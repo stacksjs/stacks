@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **297 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **298 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -14,7 +14,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | --- | ---: |
 | `ai` | 1 |
 | `auth` | 4 |
-| `build` | 13 |
+| `build` | 14 |
 | `cloud` | 7 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
@@ -209,6 +209,7 @@ Build any of your libraries (packages) for production use
 | `-e`, `--elements` | An alias to the -w flag | boolean, optional | — |
 | `-f`, `--functions` | Build your function library | boolean, optional | — |
 | `-k`, `--desktop` | Build the Desktop Application | boolean, optional | — |
+| `--android` | Build the native Android application | boolean, optional | — |
 | `--ios` | Build the native iOS application | boolean, optional | — |
 | `-p`, `--views` | Build your frontend | boolean, optional | — |
 | `--pages` | Build your frontend | boolean, optional | — |
@@ -217,6 +218,20 @@ Build any of your libraries (packages) for production use
 | `-s`, `--stacks` | Build Stacks framework | boolean, optional | `false` |
 | `--project` | Target a specific project | value, optional | `false` |
 | `--server` | Build the Stacks cloud server (Docker image) | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `build:android`
+
+Build the native Android application
+
+- Usage: `$ buddy build:android`
+- Namespace: `build`
+- Aliases: `prod:android`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `build:cli`
