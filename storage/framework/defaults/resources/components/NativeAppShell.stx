@@ -37,6 +37,18 @@ const className = useReactiveProp<string>('class', '')
     padding-left: var(--native-safe-area-left);
   }
 
+  .native-app-shell::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 35;
+    height: var(--native-safe-area-top);
+    pointer-events: none;
+    background: var(--native-safe-area-background, Canvas);
+  }
+
   .native-app-content {
     min-height: calc(100dvh - var(--native-safe-area-top));
     padding-bottom: var(--native-safe-area-bottom);
