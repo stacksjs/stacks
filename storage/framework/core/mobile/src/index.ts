@@ -6,8 +6,10 @@ import type {
   DeepLinksApi,
   DeviceApi,
   HapticsApi,
+  HealthApi,
   KeepAwakeApi,
   LifecycleApi,
+  LiveActivitiesApi,
   LocationApi,
   NetworkApi,
   NotificationsApi,
@@ -15,6 +17,7 @@ import type {
   PushNotificationsApi,
   SecureStorageApi,
   ShareApi,
+  WatchConnectivityApi,
 } from './types'
 
 export * from './types'
@@ -35,6 +38,9 @@ const {
   keepAwake: craftKeepAwake,
   network: craftNetwork,
   pushNotifications: craftPushNotifications,
+  health: craftHealth,
+  liveActivities: craftLiveActivities,
+  watchConnectivity: craftWatchConnectivity,
 } = craftMobile
 
 export const biometrics: BiometricsApi = craftBiometrics
@@ -52,6 +58,9 @@ export const deepLinks: DeepLinksApi = craftDeepLinks
 export const keepAwake: KeepAwakeApi = craftKeepAwake
 export const network: NetworkApi = craftNetwork
 export const pushNotifications: PushNotificationsApi = craftPushNotifications
+export const health: HealthApi = craftHealth
+export const liveActivities: LiveActivitiesApi = craftLiveActivities
+export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
 
 interface CraftReadyEvent extends Event {
   detail?: { platform?: string }
@@ -114,6 +123,9 @@ export const mobile = {
   keepAwake,
   network,
   pushNotifications,
+  health,
+  liveActivities,
+  watchConnectivity,
   isNativeMobile,
   onReady: onMobileReady,
   withFeedback: withNativeFeedback,

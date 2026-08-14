@@ -209,3 +209,46 @@ export interface PushNotificationsApi {
   onToken: (callback: (token: string) => void) => () => void
   onNotification: (callback: (data: Record<string, unknown>) => void) => () => void
 }
+
+export type HealthDataType = 'steps' | 'heartRate' | 'activeEnergy' | 'distance'
+
+export interface HealthDataOptions {
+  startDate?: number
+  endDate?: number
+}
+
+export interface HealthDataResult {
+  value: number
+  unit: string
+}
+
+export interface HealthApi {
+  requestAuthorization: (types: HealthDataType[]) => Promise<boolean>
+  getData: (type: HealthDataType, options?: HealthDataOptions) => Promise<HealthDataResult>
+}
+
+export interface LiveActivityState {
+  status?: string
+  distanceMeters?: number
+  durationSeconds?: number
+  progress?: number
+}
+
+export interface LiveActivityOptions extends LiveActivityState {
+  activityId: string
+  title: string
+}
+
+export interface LiveActivitiesApi {
+  start: (options: LiveActivityOptions) => Promise<{ id: string }>
+  update: (state: LiveActivityState) => Promise<void>
+  end: () => Promise<void>
+}
+
+export interface WatchConnectivityApi {
+  send: (message: Record<string, unknown>) => Promise<Record<string, unknown>>
+  updateContext: (context: Record<string, unknown>) => Promise<void>
+  isReachable: () => Promise<boolean>
+  onMessage: (callback: (message: Record<string, unknown>) => void) => () => void
+  onReachabilityChange: (callback: (reachable: boolean) => void) => () => void
+}
