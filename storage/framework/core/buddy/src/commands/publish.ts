@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import { existsSync, mkdirSync } from 'node:fs'
+import { existsSync, mkdirSync, realpathSync } from 'node:fs'
 import { cp, readdir, stat } from 'node:fs/promises'
 import { homedir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -349,7 +349,83 @@ async function publishResource(ctx: PublishContext): Promise<void> {
 
   await fs.promises.copyFile(sourcePath, targetPath)
 
+  const carried = await carryRelativeImports(sourcePath, targetPath)
+
   log.success(`Published ${kind} ${italic(name)} → ${italic(targetPath.replace(`${process.cwd()}/`, ''))}`)
+  for (const file of carried)
+    log.info(`  + ${italic(file.replace(`${process.cwd()}/`, ''))} (imported by it)`)
+}
+
+/**
+ * Copy the modules a published file imports by relative path.
+ *
+ * A plain copyFile publishes a file that does not run. `publish:model User`
+ * lands a model importing `../password-policy`, which resolves inside
+ * `storage/framework/defaults/app/` and nowhere else - so the app gets
+ * `app/Models/User.ts` and no `app/password-policy.ts`, the import throws, and
+ * the ORM quietly falls back to the framework default. The published override
+ * is then inert: edits to it do nothing, and `buddy generate:migrations` fails
+ * with a module-resolution error rather than anything about models.
+ *
+ * The relative offset is preserved, so `../password-policy` from
+ * `Models/User.ts` lands at `app/password-policy.ts` and resolves again. That
+ * is also what the policy file itself documents as the intent: an app that
+ * wants a different rule edits its own copy.
+ *
+ * Recurses, so a dependency's own siblings come too, and refuses to write
+ * outside the project root.
+ */
+export async function carryRelativeImports(sourcePath: string, targetPath: string, seen = new Set<string>()): Promise<string[]> {
+  if (seen.has(sourcePath))
+    return []
+  seen.add(sourcePath)
+
+  const source = await fs.promises.readFile(sourcePath, 'utf-8')
+  const written: string[] = []
+
+  // Both sides of the containment check below have to be real paths. cwd comes
+  // back with symlinks already resolved (on macOS /var is /private/var), while
+  // a path built from the target string does not, so comparing the two rejects
+  // writes that are perfectly inside the project - anywhere the project itself
+  // sits under a symlink.
+  const root = realpathSync(process.cwd())
+  const targetDir = realpathSync(dirname(targetPath))
+
+  // `from './x'`, `from '../x'`, and the same inside `import type`.
+  const specifiers = [...source.matchAll(/from\s+['"](\.[^'"]+)['"]/g)].map(match => match[1])
+
+  for (const specifier of new Set(specifiers)) {
+    if (!specifier)
+      continue
+
+    const candidates = specifier.endsWith('.ts')
+      ? [specifier]
+      : [`${specifier}.ts`, `${specifier}/index.ts`]
+
+    for (const candidate of candidates) {
+      const from = resolve(dirname(sourcePath), candidate)
+      const to = resolve(targetDir, candidate)
+
+      if (!existsSync(from))
+        continue
+
+      // Never write outside the project. A specifier climbing past the app
+      // root is a template bug, not something to act on.
+      if (!to.startsWith(`${root}/`))
+        break
+
+      if (!existsSync(to)) {
+        mkdirSync(dirname(to), { recursive: true })
+        await fs.promises.copyFile(from, to)
+        written.push(to)
+      }
+
+      written.push(...await carryRelativeImports(from, to, seen))
+      break
+    }
+  }
+
+  return written
 }
 
 /**
