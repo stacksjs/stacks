@@ -54,9 +54,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/path": "workspace:*"
+  },
   "devDependencies": {
     "better-dx": "^0.2.17",
-    "@stacksjs/path": "workspace:*",
     "@stacksjs/validation": "workspace:*"
   }
 }
