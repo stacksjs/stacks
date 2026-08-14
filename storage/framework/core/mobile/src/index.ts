@@ -1,14 +1,18 @@
-// @ts-expect-error craft-native/mobile is on Craft main pending its next package release
 import * as craftMobile from 'craft-native/mobile'
 import type {
+  AppReviewApi,
   BiometricsApi,
   CameraApi,
+  DeepLinksApi,
   DeviceApi,
   HapticsApi,
+  KeepAwakeApi,
   LifecycleApi,
   LocationApi,
+  NetworkApi,
   NotificationsApi,
   PermissionsApi,
+  PushNotificationsApi,
   SecureStorageApi,
   ShareApi,
 } from './types'
@@ -26,6 +30,11 @@ const {
   permissions: craftPermissions,
   secureStorage: craftSecureStorage,
   share: craftShare,
+  appReview: craftAppReview,
+  deepLinks: craftDeepLinks,
+  keepAwake: craftKeepAwake,
+  network: craftNetwork,
+  pushNotifications: craftPushNotifications,
 } = craftMobile
 
 export const biometrics: BiometricsApi = craftBiometrics
@@ -38,6 +47,11 @@ export const notifications: NotificationsApi = craftNotifications
 export const permissions: PermissionsApi = craftPermissions
 export const secureStorage: SecureStorageApi = craftSecureStorage
 export const share: ShareApi = craftShare
+export const appReview: AppReviewApi = craftAppReview
+export const deepLinks: DeepLinksApi = craftDeepLinks
+export const keepAwake: KeepAwakeApi = craftKeepAwake
+export const network: NetworkApi = craftNetwork
+export const pushNotifications: PushNotificationsApi = craftPushNotifications
 
 interface CraftReadyEvent extends Event {
   detail?: { platform?: string }
@@ -95,6 +109,11 @@ export const mobile = {
   permissions,
   secureStorage,
   share,
+  appReview,
+  deepLinks,
+  keepAwake,
+  network,
+  pushNotifications,
   isNativeMobile,
   onReady: onMobileReady,
   withFeedback: withNativeFeedback,
