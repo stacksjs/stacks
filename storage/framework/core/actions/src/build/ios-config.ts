@@ -50,6 +50,7 @@ const CAPABILITY_KEYS = {
   bluetooth: 'enableBluetooth',
   nfc: 'enableNFC',
   healthKit: 'enableHealthKit',
+  liveActivities: 'enableLiveActivities',
   backgroundTasks: 'enableBackgroundTasks',
   screenCapture: 'enableScreenCapture',
   pdfViewer: 'enablePDFViewer',

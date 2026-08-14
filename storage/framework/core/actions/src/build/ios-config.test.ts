@@ -8,7 +8,7 @@ describe('iOS mobile build configuration', () => {
       bundleId: 'org.wildloop.app',
       url: 'wildloop.org',
       associatedDomains: ['applinks:wildloop.org'],
-      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false },
+      capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true },
     })
 
     expect(config.devServerURL).toBe('https://wildloop.org')
@@ -16,6 +16,7 @@ describe('iOS mobile build configuration', () => {
     expect(config.enableHaptics).toBe(true)
     expect(config.enableCamera).toBe(false)
     expect(config.enableBackgroundLocation).toBe(true)
+    expect(config.enableLiveActivities).toBe(true)
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])
   })

@@ -29,6 +29,7 @@ export interface MobileCapabilities {
   bluetooth?: boolean
   nfc?: boolean
   healthKit?: boolean
+  liveActivities?: boolean
   backgroundTasks?: boolean
   screenCapture?: boolean
   pdfViewer?: boolean
