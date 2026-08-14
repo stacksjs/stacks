@@ -50,14 +50,13 @@ function selectTab(): void {
   .native-tab-item.is-active { color: rgb(5 150 105); }
   .native-tab-icon { width: 1.35rem; height: 1.35rem; }
 
-  @media (prefers-color-scheme: dark) {
-    .native-tab-bar {
-      border-color: rgb(71 85 105 / 0.55);
-      background: rgb(15 23 42 / 0.9);
-    }
-    .native-tab-item { color: rgb(148 163 184); }
-    .native-tab-item.is-active { color: rgb(52 211 153); }
+  .dark .native-tab-bar {
+    border-color: rgb(71 85 105 / 0.55);
+    background: rgb(15 23 42 / 0.9);
   }
+
+  .dark .native-tab-item { color: rgb(148 163 184); }
+  .dark .native-tab-item.is-active { color: rgb(52 211 153); }
 
   @media (prefers-reduced-transparency: reduce) {
     .native-tab-bar {
@@ -65,6 +64,8 @@ function selectTab(): void {
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
     }
+
+    .dark .native-tab-bar { background: rgb(15 23 42); }
   }
 
   @media (prefers-reduced-motion: reduce) {
