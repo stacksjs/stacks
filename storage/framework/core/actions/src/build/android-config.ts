@@ -13,6 +13,7 @@ export interface CraftAndroidConfig {
   backgroundColor?: string
   devServerURL?: string
   trustedOrigins?: string[]
+  urlSchemes?: string[]
   appIconPath?: string
   googleServicesFile?: string
   enableHealthConnect?: boolean
@@ -48,6 +49,7 @@ export function toCraftAndroidConfig(config: AndroidMobileConfig): CraftAndroidC
     backgroundColor: config.backgroundColor,
     devServerURL,
     trustedOrigins: [...trustedOrigins],
+    urlSchemes: config.urlSchemes,
     appIconPath: config.appIcon,
     googleServicesFile: config.googleServicesFile,
   }
@@ -75,5 +77,8 @@ export function validateAndroidMobileConfig(config: AndroidMobileConfig): void {
   }
   if (config.capabilities?.healthConnect && (config.minSdk ?? 26) < 26) {
     throw new Error('Android Health Connect requires android.minSdk 26 or newer')
+  }
+  for (const scheme of config.urlSchemes ?? []) {
+    if (!/^[a-z][a-z0-9+.-]*$/i.test(scheme)) throw new Error(`Invalid Android URL scheme: ${scheme}`)
   }
 }

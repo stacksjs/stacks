@@ -96,6 +96,8 @@ export interface AndroidMobileConfig {
   darkMode?: boolean
   backgroundColor?: string
   trustedOrigins?: string[]
+  /** Custom URI schemes handled by the app, for example `wildloop`. */
+  urlSchemes?: string[]
   appIcon?: string
   /** Path to Firebase's google-services.json, required for production Android push registration. */
   googleServicesFile?: string

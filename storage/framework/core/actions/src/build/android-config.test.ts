@@ -7,11 +7,13 @@ describe('Android mobile build configuration', () => {
       appName: 'WildLoop',
       packageName: 'org.wildloop.app',
       url: 'wildloop.org',
+      urlSchemes: ['wildloop'],
       googleServicesFile: 'secrets/google-services.json',
       capabilities: { backgroundLocation: true, haptics: true, camera: false, healthConnect: true },
     })
     expect(config.devServerURL).toBe('https://wildloop.org')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
+    expect(config.urlSchemes).toEqual(['wildloop'])
     expect(config.enableBackgroundLocation).toBe(true)
     expect(config.enableGeolocation).toBe(true)
     expect(config.enableCamera).toBe(false)
@@ -56,5 +58,14 @@ describe('Android mobile build configuration', () => {
       minSdk: 25,
       capabilities: { healthConnect: true },
     })).toThrow('minSdk 26 or newer')
+  })
+
+  it('rejects malformed custom URL schemes', () => {
+    expect(() => validateAndroidMobileConfig({
+      appName: 'WildLoop',
+      packageName: 'org.wildloop.app',
+      webAssets: 'dist',
+      urlSchemes: ['not a scheme'],
+    })).toThrow('Invalid Android URL scheme')
   })
 })
