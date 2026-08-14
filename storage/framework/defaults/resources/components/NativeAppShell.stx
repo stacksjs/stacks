@@ -24,21 +24,30 @@ const className = useReactiveProp<string>('class', '')
 
 <style>
   .native-app-shell {
+    --native-safe-area-top: env(safe-area-inset-top, 0px);
+    --native-safe-area-right: env(safe-area-inset-right, 0px);
+    --native-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+    --native-safe-area-left: env(safe-area-inset-left, 0px);
+
     min-height: 100dvh;
     color: inherit;
     background: inherit;
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
+    padding-top: var(--native-safe-area-top);
+    padding-right: var(--native-safe-area-right);
+    padding-left: var(--native-safe-area-left);
   }
 
   .native-app-content {
-    min-height: calc(100dvh - env(safe-area-inset-top, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-height: calc(100dvh - var(--native-safe-area-top));
+    padding-bottom: var(--native-safe-area-bottom);
   }
 
   .native-app-shell:has(.native-app-tab-slot) .native-app-content {
-    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(5rem + var(--native-safe-area-bottom));
+  }
+
+  .native-app-sticky-top {
+    top: var(--native-safe-area-top);
   }
 
   .native-app-tab-slot {
@@ -47,8 +56,8 @@ const className = useReactiveProp<string>('class', '')
     bottom: 0;
     left: 0;
     z-index: 30;
-    padding-right: env(safe-area-inset-right, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: var(--native-safe-area-right);
+    padding-bottom: var(--native-safe-area-bottom);
+    padding-left: var(--native-safe-area-left);
   }
 </style>
