@@ -25,6 +25,7 @@ export function build(buddy: CLI): void {
     buddy: 'Build the Buddy binary',
     functions: 'Build your function library',
     desktop: 'Build the Desktop Application',
+    mobile: 'Build the native iOS and Android applications',
     android: 'Build the native Android application',
     ios: 'Build the native iOS application',
     dmg: 'Package the desktop build as a macOS .app inside a .dmg',
@@ -46,6 +47,7 @@ export function build(buddy: CLI): void {
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
     .option('-k, --desktop', descriptions.desktop)
+    .option('-m, --mobile', descriptions.mobile)
     .option('--android', descriptions.android)
     .option('--ios', descriptions.ios)
     .option('-p, --views', descriptions.pages)
@@ -61,6 +63,11 @@ export function build(buddy: CLI): void {
 
       applyBuildTarget(server, options)
 
+      if (options.mobile) {
+        options.android = true
+        options.ios = true
+      }
+
       if (hasNoOptions(options)) {
         // Bare `buddy build`: ask interactively when a TTY is available.
         if (!isCI && hasTTY && process.stdin.isTTY) {
@@ -72,6 +79,7 @@ export function build(buddy: CLI): void {
               { label: 'Web Components', value: 'webComponents' },
               { label: 'Functions', value: 'functions' },
               { label: 'Desktop application', value: 'desktop' },
+              { label: 'Mobile applications (iOS + Android)', value: 'mobile' },
               { label: 'Android application', value: 'android' },
               { label: 'iOS application', value: 'ios' },
               { label: 'Documentation', value: 'docs' },
@@ -87,6 +95,11 @@ export function build(buddy: CLI): void {
           if (selected.has('webComponents')) options.webComponents = true
           if (selected.has('functions')) options.functions = true
           if (selected.has('desktop')) options.desktop = true
+          if (selected.has('mobile')) {
+            options.mobile = true
+            options.android = true
+            options.ios = true
+          }
           if (selected.has('android')) options.android = true
           if (selected.has('ios')) options.ios = true
           if (selected.has('docs')) options.docs = true
@@ -107,27 +120,27 @@ export function build(buddy: CLI): void {
       let succeeded = true
 
       if (options.docs)
-        succeeded = (await runBuildAction(Action.BuildDocs, 'documentation')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildDocs, 'documentation', options)) && succeeded
       if (options.components)
-        succeeded = (await runBuildAction(Action.BuildComponentLibs, 'component libraries')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildComponentLibs, 'component libraries', options)) && succeeded
       if (options.webComponents)
-        succeeded = (await runBuildAction(Action.BuildWebComponentLib, 'web component library')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildWebComponentLib, 'web component library', options)) && succeeded
       if (options.functions)
-        succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library', options)) && succeeded
       if (options.desktop)
-        succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application', options)) && succeeded
       if (options.android)
-        succeeded = (await runBuildAction(Action.BuildAndroid, 'Android application')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildAndroid, 'Android application', options)) && succeeded
       if (options.ios)
-        succeeded = (await runBuildAction(Action.BuildIos, 'iOS application')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildIos, 'iOS application', options)) && succeeded
       if (options.views)
-        succeeded = (await runBuildAction(Action.BuildViews, 'frontend')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildViews, 'frontend', options)) && succeeded
       if (options.stacks)
-        succeeded = (await runBuildAction(Action.BuildStacks, 'Stacks framework')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildStacks, 'Stacks framework', options)) && succeeded
       if (options.buddy)
-        succeeded = (await runBuildAction(Action.BuildCli, 'Buddy CLI')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildCli, 'Buddy CLI', options)) && succeeded
       if (options.server)
-        succeeded = (await runBuildAction(Action.BuildServer, 'server')) && succeeded
+        succeeded = (await runBuildAction(Action.BuildServer, 'server', options)) && succeeded
 
       if (!succeeded)
         process.exit(ExitCode.FatalError)
@@ -278,6 +291,26 @@ export function build(buddy: CLI): void {
     })
 
   buddy
+    .command('build:mobile', descriptions.mobile)
+    .alias('prod:mobile')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:mobile` ...', options)
+
+      const perf = await intro('buddy build:mobile')
+      const androidSucceeded = await runBuildAction(Action.BuildAndroid, 'Android application', options)
+      const iosSucceeded = await runBuildAction(Action.BuildIos, 'iOS application', options)
+
+      if (!androidSucceeded || !iosSucceeded) {
+        await outro('One or more mobile application builds failed', { startTime: perf, useSeconds: true })
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('iOS and Android applications built', { startTime: perf, useSeconds: true })
+    })
+
+  buddy
     .command('build:android', descriptions.android)
     .alias('prod:android')
     .option('-p, --project [project]', descriptions.project, { default: false })
@@ -366,6 +399,7 @@ function hasNoOptions(options: BuildOptions) {
     && !options.elements
     && !options.functions
     && !options.desktop
+    && !options.mobile
     && !options.android
     && !options.ios
     && !options.views
@@ -389,6 +423,11 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
       break
     case 'desktop':
       options.desktop = true
+      break
+    case 'mobile':
+      options.mobile = true
+      options.android = true
+      options.ios = true
       break
     case 'android':
       options.android = true
@@ -419,8 +458,8 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
  * Runs a build action and reports failures instead of letting them exit 0.
  * Returns true when the build succeeded.
  */
-async function runBuildAction(action: Action, target: string): Promise<boolean> {
-  const result = await runAction(action)
+async function runBuildAction(action: Action, target: string, options?: BuildOptions): Promise<boolean> {
+  const result = await runAction(action, options)
 
   if (resultFailed(result)) {
     log.error(`Failed to build ${target}.`, result.error)
