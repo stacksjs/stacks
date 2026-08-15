@@ -20,6 +20,7 @@ export interface CraftIosConfig {
   appIconPath?: string
   privacy?: IosMobileConfig['privacy']
   orientations?: IosMobileConfig['orientations']
+  deviceFamilies?: IosMobileConfig['deviceFamilies']
 }
 
 const CAPABILITY_KEYS = {
@@ -93,6 +94,7 @@ export function toCraftIosConfig(config: IosMobileConfig): CraftIosConfig {
     appIconPath: config.appIcon,
     privacy: config.privacy,
     orientations: config.orientations,
+    deviceFamilies: config.deviceFamilies,
   }
 
   for (const [key, nativeKey] of Object.entries(CAPABILITY_KEYS)) {
@@ -117,6 +119,9 @@ export function validateIosMobileConfig(config: IosMobileConfig): void {
   }
   if (config.fallbackWebAssets && !config.url) {
     throw new Error('ios.fallbackWebAssets requires ios.url')
+  }
+  if (config.deviceFamilies && (config.deviceFamilies.length === 0 || config.deviceFamilies.some(family => family !== 'iphone' && family !== 'ipad'))) {
+    throw new Error('ios.deviceFamilies must contain iphone and/or ipad')
   }
   if (config.url) {
     const url = new URL(normalizeMobileUrl(config.url)!)

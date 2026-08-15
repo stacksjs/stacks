@@ -1,4 +1,5 @@
 export type MobileOrientation = 'portrait' | 'landscape-left' | 'landscape-right' | 'portrait-upside-down'
+export type IosDeviceFamily = 'iphone' | 'ipad'
 
 export interface MobileCapabilities {
   speechRecognition?: boolean
@@ -79,6 +80,7 @@ export interface IosMobileConfig {
   appIcon?: string
   privacy?: MobilePrivacyManifest
   orientations?: MobileOrientation[]
+  deviceFamilies?: IosDeviceFamily[]
   capabilities?: MobileCapabilities
 }
 

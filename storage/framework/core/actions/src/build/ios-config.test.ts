@@ -8,6 +8,7 @@ describe('iOS mobile build configuration', () => {
       bundleId: 'org.wildloop.app',
       url: 'wildloop.org',
       associatedDomains: ['applinks:wildloop.org'],
+      deviceFamilies: ['iphone'],
       watchDeploymentTarget: '9.0',
       capabilities: { backgroundLocation: true, geolocation: true, haptics: true, camera: false, liveActivities: true, watchApp: true },
     })
@@ -22,6 +23,7 @@ describe('iOS mobile build configuration', () => {
     expect(config.watchosVersion).toBe('9.0')
     expect(config.trustedOrigins).toEqual(['https://wildloop.org'])
     expect(config.associatedDomains).toEqual(['applinks:wildloop.org'])
+    expect(config.deviceFamilies).toEqual(['iphone'])
   })
 
   it('rejects insecure production URLs and malformed associated domains', () => {
@@ -75,5 +77,14 @@ describe('iOS mobile build configuration', () => {
       watchDeploymentTarget: '8.0',
       capabilities: { watchApp: true },
     })).toThrow('watchOS 9.0 or newer')
+  })
+
+  it('requires at least one supported Apple device family', () => {
+    expect(() => validateIosMobileConfig({
+      appName: 'WildLoop',
+      bundleId: 'org.wildloop.app',
+      url: 'wildloop.org',
+      deviceFamilies: [],
+    })).toThrow('iphone and/or ipad')
   })
 })
