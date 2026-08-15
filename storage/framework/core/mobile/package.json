@@ -2,7 +2,7 @@
   "name": "@stacksjs/mobile",
   "type": "module",
   "sideEffects": false,
-  "version": "0.70.373",
+  "version": "0.70.374",
   "description": "Craft-powered native mobile runtime for Stacks and STX applications",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,7 +34,7 @@
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.17",
-    "craft-native": ">=0.0.65"
+    "craft-native": ">=0.0.55"
   },
   "peerDependencies": {
     "craft-native": ">=0.0.65"
