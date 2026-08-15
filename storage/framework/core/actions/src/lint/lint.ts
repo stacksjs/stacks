@@ -12,10 +12,23 @@ import { runFormat, runLint } from 'pickier'
 const lintableFile = /\.(?:ts|js|json|md|yaml|yml)$/i
 const ignoredPath = /(?:^|\/)(?:node_modules|dist|pantry|storage\/framework\/cache|\.git|\.stx|\.stx-serve)(?:\/|$)/
 
-/** The project's git-tracked, lintable files (the single subprocess we keep — git is the source of truth for what to lint). */
-function trackedFiles(cwd: string): string[] {
+/**
+ * The project's lintable files: everything git tracks, plus everything git
+ * would let you add.
+ *
+ * `--others --exclude-standard` is what makes this correct rather than merely
+ * broader. Listing tracked files alone skips every file that has not been
+ * staged yet, which is precisely the set a new commit introduces: you write a
+ * file, `buddy lint` says the project is clean because it never opened it, you
+ * commit, and CI fails on the file you just linted. `--exclude-standard` keeps
+ * .gitignore honoured, so build output and dependencies stay out.
+ */
+export function lintableFiles(cwd: string): string[] {
   try {
-    return execSync('git ls-files -z', { cwd, encoding: 'utf8' })
+    // stderr is discarded: outside a git repository this prints "fatal: not a
+    // git repository", and the caller goes on to report a clean lint, so the
+    // only thing the message achieves is making a success look like a failure.
+    return execSync('git ls-files -z --cached --others --exclude-standard', { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
       .split('\0')
       .filter(file => lintableFile.test(file) && !ignoredPath.test(file))
   }
@@ -34,7 +47,7 @@ export async function lintProject(options: { cwd?: string, fix?: boolean } = {})
   const cwd = options.cwd ?? process.cwd()
   log.info(options.fix ? 'Ensuring Code Style...' : 'Checking Code Style...')
 
-  const files = trackedFiles(cwd)
+  const files = lintableFiles(cwd)
   if (!files.length) {
     log.success('Linted')
     return { ok: true }
@@ -61,7 +74,7 @@ export function lintFix(options: { cwd?: string } = {}): Promise<{ ok: boolean }
  */
 export async function formatProject(options: { cwd?: string, write?: boolean, check?: boolean } = {}): Promise<{ ok: boolean }> {
   const cwd = options.cwd ?? process.cwd()
-  const files = trackedFiles(cwd)
+  const files = lintableFiles(cwd)
   if (!files.length)
     return { ok: true }
 
