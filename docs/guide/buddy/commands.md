@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **298 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **299 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -14,7 +14,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | --- | ---: |
 | `ai` | 1 |
 | `auth` | 4 |
-| `build` | 14 |
+| `build` | 15 |
 | `cloud` | 7 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
