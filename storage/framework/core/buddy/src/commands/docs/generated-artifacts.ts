@@ -1,9 +1,38 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { assertFrameworkRepo } from './framework-repo'
-import { renderApiClient } from '../../../../api/src/generate-client'
-import { generateOpenApi } from '../../../../api/src/generate-openapi'
-import { type OpenApiDocument, renderOpenApiTypes } from '../../../../api/src/generate-types'
+// Type-only: erased at compile time, so it costs nothing at runtime.
+import type { OpenApiDocument } from '../../../../api/src/generate-types'
+
+/**
+ * The generators live in a sibling package, reached by a relative path that
+ * only exists inside a framework checkout. That is fine for a command which
+ * refuses to run anywhere else (see `assertFrameworkRepo` below) — but as
+ * static imports they were resolved when the MODULE loaded, not when the
+ * command ran, and this module is reachable from the package root.
+ *
+ * So importing `@stacksjs/buddy` from an installed copy threw
+ * `Cannot find module '../../../../api/src/generate-client'` before any guard
+ * could explain itself. Resolving them on use puts the failure back where the
+ * guard already handles it: an application gets the message about running from
+ * a framework checkout, and a framework checkout gets the generators.
+ */
+async function generators(): Promise<{
+  renderApiClient: typeof import('../../../../api/src/generate-client').renderApiClient
+  generateOpenApi: typeof import('../../../../api/src/generate-openapi').generateOpenApi
+  renderOpenApiTypes: typeof import('../../../../api/src/generate-types').renderOpenApiTypes
+}> {
+  const [client, openapi, types] = await Promise.all([
+    import('../../../../api/src/generate-client'),
+    import('../../../../api/src/generate-openapi'),
+    import('../../../../api/src/generate-types'),
+  ])
+  return {
+    renderApiClient: client.renderApiClient,
+    generateOpenApi: openapi.generateOpenApi,
+    renderOpenApiTypes: types.renderOpenApiTypes,
+  }
+}
 
 const root = resolve(import.meta.dir, '../../../../../../..')
 const openApiPath = resolve(root, 'storage/framework/api/openapi.json')
@@ -29,6 +58,7 @@ export function validateOpenApi(document: OpenApiDocument): string[] {
 }
 
 async function expectedArtifacts(): Promise<{ openApi: string, apiTypes: string, client: string }> {
+  const { renderApiClient, generateOpenApi, renderOpenApiTypes } = await generators()
   const document = await generateOpenApi({ write: false })
   const errors = validateOpenApi(document)
   if (errors.length) throw new Error(errors.join('\n'))
