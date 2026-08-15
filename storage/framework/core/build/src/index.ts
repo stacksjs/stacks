@@ -218,6 +218,18 @@ export function frameworkExternal(extras: string[] = []): string[] {
     '@stacksjs/*',
     // The building package's own declared deps (see above).
     ...ownDeps,
+    // …and their subpaths. `external: ['foo']` does not cover `foo/bar`, so a
+    // package that imports a subpath of its OWN declared dependency still gets
+    // bundled — and fails the build outright when that subpath cannot be
+    // resolved from the builder's node_modules.
+    //
+    // `@stacksjs/mobile` imports `craft-native/mobile` and declares
+    // `craft-native` as a dependency, so it looked externalised and was not.
+    // The build failed on every release from v0.70.372 onward, which is why
+    // npm sat two versions behind the repo. The `localtunnels` / `localtunnels/*`
+    // pair below is the same problem, solved one package at a time; deriving
+    // the globs from the deps themselves means the next one is already handled.
+    ...ownDeps.map(dep => `${dep}/*`),
     // Optional peers that aren't pulled into every project. Marking them
     // external makes the static-import-failure noise go away during build,
     // and the missing-module surfaces only when the dependent action runs.
