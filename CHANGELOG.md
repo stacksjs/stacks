@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.377...v0.70.378)
+
+## ✨ Features
+
+- **migrate**: warn when the live schema no longer matches the models ([34853c3](https://github.com/stacksjs/stacks/commit/34853c3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: a log line that says migrate is not a migration ([c8b29e6](https://github.com/stacksjs/stacks/commit/c8b29e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.376...v0.70.377)
 
 ## 🐛 Bug Fixes
