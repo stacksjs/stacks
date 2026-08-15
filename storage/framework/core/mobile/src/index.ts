@@ -68,6 +68,7 @@ export const permissions: PermissionsApi = nativeSurface<PermissionsApi>('permis
 export const secureStorage: SecureStorageApi = nativeSurface<SecureStorageApi>('secureStorage')
 export const share: ShareApi = nativeSurface<ShareApi>('share')
 export const appReview: AppReviewApi = nativeSurface<AppReviewApi>('appReview')
+const craftDeepLinks: DeepLinksApi = nativeSurface<DeepLinksApi>('deepLinks')
 export function normalizeDeepLinkURL(value: unknown): string | null {
   if (typeof value === 'string') return value.trim() || null
   if (!value || typeof value !== 'object') return null

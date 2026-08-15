@@ -4,7 +4,13 @@ mock.module('craft-native/mobile', () => ({
   appReview: {},
   biometrics: {},
   camera: {},
-  deepLinks: {},
+  deepLinks: {
+    getInitialURL: async () => ({ url: 'wildloop://record' }),
+    onLink: (callback: (value: unknown) => void) => {
+      callback({ url: 'wildloop://trail/42' })
+      return () => {}
+    },
+  },
   device: { isMobile: () => false },
   haptics: { impact: async () => {}, notification: async () => {} },
   health: { getData: async () => ({ unit: 'count', value: 0 }), saveWorkout: async () => ({ id: 'workout' }) },
@@ -21,7 +27,7 @@ mock.module('craft-native/mobile', () => ({
   watchConnectivity: { isReachable: async () => false },
 }))
 
-const { health, isNativeMobile, liveActivities, normalizeDeepLinkURL, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
+const { deepLinks, health, isNativeMobile, liveActivities, normalizeDeepLinkURL, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
 
 describe('@stacksjs/mobile', () => {
   it('stays browser-safe when the Craft host is absent', () => {
@@ -44,5 +50,14 @@ describe('@stacksjs/mobile', () => {
     expect(normalizeDeepLinkURL('wildloop://record')).toBe('wildloop://record')
     expect(normalizeDeepLinkURL({ url: 'wildloop://trail/42' })).toBe('wildloop://trail/42')
     expect(normalizeDeepLinkURL({ path: '/record' })).toBeNull()
+  })
+
+  it('delegates normalized deep links through the lazy Craft surface', async () => {
+    await expect(deepLinks.getInitialURL()).resolves.toBe('wildloop://record')
+
+    let received: string | undefined
+    const unsubscribe = deepLinks.onLink(value => received = value)
+    expect(received).toBe('wildloop://trail/42')
+    expect(typeof unsubscribe).toBe('function')
   })
 })
