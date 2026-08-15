@@ -1,7 +1,7 @@
 {
   "name": "stacks-orm",
   "type": "module",
-  "version": "0.70.375",
+  "version": "0.70.376",
   "description": "Your custom ORM.",
   "author": "Chris Breuer",
   "contributors": [

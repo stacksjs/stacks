@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.375...v0.70.376)
+
+## ✨ Features
+
+- **buddy**: build native mobile targets ([3d10312](https://github.com/stacksjs/stacks/commit/3d10312)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **mobile**: resolve craft-native on use, not on import ([0bdca47](https://github.com/stacksjs/stacks/commit/0bdca47)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: refresh command reference ([25051e2](https://github.com/stacksjs/stacks/commit/25051e2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: document Buddy native builds ([42e07f4](https://github.com/stacksjs/stacks/commit/42e07f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.373...v0.70.375)
 
 ## ✨ Features
