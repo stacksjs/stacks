@@ -209,6 +209,7 @@ Build any of your libraries (packages) for production use
 | `-e`, `--elements` | An alias to the -w flag | boolean, optional | — |
 | `-f`, `--functions` | Build your function library | boolean, optional | — |
 | `-k`, `--desktop` | Build the Desktop Application | boolean, optional | — |
+| `-m`, `--mobile` | Build the native iOS and Android applications | boolean, optional | — |
 | `--android` | Build the native Android application | boolean, optional | — |
 | `--ios` | Build the native iOS application | boolean, optional | — |
 | `-p`, `--views` | Build your frontend | boolean, optional | — |
@@ -371,6 +372,20 @@ Build the native iOS application
 - Usage: `$ buddy build:ios`
 - Namespace: `build`
 - Aliases: `prod:ios`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `build:mobile`
+
+Build the native iOS and Android applications
+
+- Usage: `$ buddy build:mobile`
+- Namespace: `build`
+- Aliases: `prod:mobile`
 - Arguments: none
 
 | Option | Description | Contract | Default |

@@ -119,6 +119,20 @@ buddy build:desktop
 buddy prod:desktop
 ```
 
+### Mobile Applications
+
+Build both native projects, or target one platform while iterating:
+
+```bash
+buddy build:mobile
+buddy build:ios
+buddy build:android
+# aliases
+buddy prod:mobile
+buddy prod:ios
+buddy prod:android
+```
+
 ### Server Docker Image
 
 Build the production server Docker image:
@@ -153,6 +167,9 @@ Several `build:*` commands ship a matching `prod:*` alias (there is no bare `pro
 ```bash
 buddy prod:components       # Same as buddy build:components
 buddy prod:desktop          # Same as buddy build:desktop
+buddy prod:mobile           # Same as buddy build:mobile
+buddy prod:ios              # Same as buddy build:ios
+buddy prod:android          # Same as buddy build:android
 buddy prod:web-components   # Same as buddy build:web-components
 buddy prod:frontend         # Same as buddy build:frontend (build:views)
 buddy prod:cli              # Same as buddy build:cli

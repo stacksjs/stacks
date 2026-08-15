@@ -127,6 +127,9 @@ buddy serve:api # starts the production API server
 buddy build # select a specific build (follow CLI prompts)
 buddy build:frontend # builds the frontend (aliases: build:views, build:pages)
 buddy build:desktop # builds Desktop application
+buddy build:mobile # builds both native iOS and Android applications
+buddy build:ios # builds the native iOS application
+buddy build:android # builds the native Android application
 buddy build:functions # builds function library
 buddy build:components # builds the STX component library and Web Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
@@ -137,6 +140,9 @@ buddy build:docs # builds the documentation site
 # `buddy build:*` aliases
 buddy prod:components # alias for build:components
 buddy prod:desktop # alias for build:desktop
+buddy prod:mobile # alias for build:mobile
+buddy prod:ios # alias for build:ios
+buddy prod:android # alias for build:android
 buddy prod:web-components # alias for build:web-components
 buddy prod:frontend # alias for build:frontend
 buddy prod:cli # alias for build:cli

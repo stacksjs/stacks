@@ -23,9 +23,15 @@ Stacks owns application configuration and build orchestration.
 ## Build
 
 ```bash
+buddy build:mobile
 buddy build:ios
 buddy build:android
 ```
+
+`buddy build:mobile` builds both native projects in sequence. Use the
+platform-specific commands when iterating on only one native target. The same
+targets are available through `buddy build mobile`, `buddy build ios`, and
+`buddy build android`.
 
 The build validates `config/mobile.ts`, initializes a Craft iOS project,
 selects either a remote application URL or bundled web assets, generates the
