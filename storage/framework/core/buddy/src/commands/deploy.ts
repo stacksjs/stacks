@@ -1103,7 +1103,34 @@ export function projectDatabaseTarget(slug: string, relativePath: string): strin
 function migrateIndex(site: any): number {
   if (!Array.isArray(site?.preStart))
     return -1
-  return site.preStart.findIndex((cmd: unknown) => typeof cmd === 'string' && /\bmigrate\b/.test(cmd))
+  return site.preStart.findIndex((cmd: unknown) => typeof cmd === 'string' && migratesDatabase(cmd))
+}
+
+/**
+ * Does this command run migrations, as opposed to merely mentioning them?
+ *
+ * The word alone is not enough. Apps put progress markers between preStart
+ * steps, because the remote log runs every command together with no delimiters,
+ * and `echo "preStart: migrate"` matched before the invocation it announces. The
+ * backup was then derived from the echo, could not be, and was skipped with a
+ * warning: a deploy migrating a production database with no dump in front of
+ * it, because of a log line.
+ *
+ * So quoted text is removed before looking. What a command SAYS is not what it
+ * DOES, and a message is exactly the place the word will appear innocently. An
+ * invocation that quotes the subcommand itself (`buddy "migrate"`) is unusual
+ * but legal, so the original is still consulted for anything that is not purely
+ * an echo.
+ */
+function migratesDatabase(command: string): boolean {
+  const withoutMessages = command.replace(/'[^']*'/g, '').replace(/"[^"]*"/g, '')
+
+  if (/\bmigrate\b/.test(withoutMessages))
+    return true
+
+  // Nothing outside the quotes migrates. Only a command that does something
+  // besides print gets the benefit of the doubt.
+  return !/^\s*(?:echo|printf)\b/.test(command) && /\bmigrate\b/.test(command)
 }
 
 /** Does this site run `migrate`? That site owns the database. */

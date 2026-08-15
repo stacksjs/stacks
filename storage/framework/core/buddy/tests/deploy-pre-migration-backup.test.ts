@@ -189,3 +189,89 @@ describe('leaving alone what it should leave alone', () => {
     expect(preStart.findIndex((c: string) => c.includes('db:backup'))).toBe(1)
   })
 })
+
+/**
+ * A progress marker is not a migration.
+ *
+ * Apps put echo markers between preStart steps because the remote log runs
+ * every command together with no delimiters, and stdout flushes in chunks while
+ * a failing command's stderr goes straight through. They are the difference
+ * between reading a deploy failure and guessing at it.
+ *
+ * They also broke this. `echo "preStart: migrate"` matched the search for the
+ * migrate step, so the backup was derived from the echo, could not be, and was
+ * skipped with a warning nobody was watching for. A production database was
+ * migrated with no dump in front of it because of a log line, and the deploy
+ * reported success.
+ */
+describe('finding the migrate step among the noise', () => {
+  const withMarkers = () => ({
+    main: {
+      start: 'bun serve.js',
+      preStart: [
+        'echo "[app] preStart: install"',
+        'bun install --frozen-lockfile',
+        'echo "[app] preStart: migrate"',
+        'bun node_modules/@stacksjs/buddy/dist/cli.js migrate',
+        'echo "[app] preStart: done"',
+      ],
+    },
+  })
+
+  it('takes the dump even when an echo announces the migration first', () => {
+    const out = applyPreMigrationBackup(withMarkers(), BACKUPS)
+    const preStart: string[] = out.main.preStart
+
+    expect(preStart.some(cmd => /\bdb:backup\b/.test(cmd))).toBe(true)
+  })
+
+  it('puts the dump before the command that migrates, not before the echo', () => {
+    // In front of the echo would still be before the migration, but it would
+    // also mean the backup was derived from a line that does not run anything.
+    // The ordering is the observable part; deriving it correctly is the point.
+    const preStart: string[] = applyPreMigrationBackup(withMarkers(), BACKUPS).main.preStart
+
+    const backupAt = preStart.findIndex(cmd => /\bdb:backup\b/.test(cmd))
+    const migrateAt = preStart.findIndex(cmd => /cli\.js migrate$/.test(cmd))
+
+    expect(backupAt).toBeGreaterThan(-1)
+    expect(migrateAt).toBeGreaterThan(backupAt)
+  })
+
+  it('reuses the real invocation, not the text of the announcement', () => {
+    const preStart: string[] = applyPreMigrationBackup(withMarkers(), BACKUPS).main.preStart
+    const backup = preStart.find(cmd => /\bdb:backup\b/.test(cmd)) ?? ''
+
+    expect(backup).toContain('node_modules/@stacksjs/buddy/dist/cli.js')
+    expect(backup).not.toContain('echo')
+  })
+
+  it('still finds nothing to do when only an echo mentions migrating', () => {
+    // A site that announces a migration it never runs owns no database, and
+    // splicing a dump into it would back up nothing on a schedule nobody asked
+    // for.
+    const noisy = {
+      main: { start: 'bun serve.js', preStart: ['echo "no migrate here"', 'bun install'] },
+    }
+
+    expect(applyPreMigrationBackup(noisy, BACKUPS)).toEqual(noisy)
+  })
+
+  it('is not fooled by a single-quoted marker either', () => {
+    const singleQuoted = {
+      main: {
+        start: 'bun serve.js',
+        preStart: [
+          `echo '[app] preStart: migrate'`,
+          'bun node_modules/@stacksjs/buddy/dist/cli.js migrate',
+        ],
+      },
+    }
+
+    const preStart: string[] = applyPreMigrationBackup(singleQuoted, BACKUPS).main.preStart
+    const backup = preStart.find(cmd => /\bdb:backup\b/.test(cmd)) ?? ''
+
+    expect(backup).toContain('cli.js')
+    expect(backup).not.toContain('echo')
+  })
+})
