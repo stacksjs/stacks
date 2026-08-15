@@ -2417,14 +2417,30 @@ interface ResolvedMailbox {
 /**
  * Resolve `config.email.mailboxes` — which may be bare local-parts (`'chris'`),
  * full addresses (`'chris@app.com'`), or objects (`{ email, password }`) — into
- * concrete `<local-part>@<domain>` mailboxes with a password each. A password is
- * taken from the entry, else `MAIL_PASSWORD_<LOCALPART>` in the env, else a
- * strong one is generated (and flagged so the deploy prints it once).
+ * concrete `<local-part>@<domain>` mailboxes with a password each.
+ *
+ * A password comes from the entry, else `MAIL_PASSWORD_<LOCALPART>` in the env.
+ * **A mailbox with neither is skipped**, deliberately: a routine deploy must
+ * never conjure random-password mailboxes the operator never asked for and
+ * cannot retrieve. Declaring the password is how a mailbox opts in.
+ *
+ * `skipped` carries the ones that were left out so the caller can say so. This
+ * used to be silent, and silence is the wrong answer here: declaring mailboxes
+ * in `config/email.ts` and watching a deploy report success while creating none
+ * of them looks exactly like the mail server being broken. It cost two
+ * provisioning runs and an SSH session to find out otherwise, and the docstring
+ * above this function claimed the opposite behaviour while it did.
  */
 function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[] {
+  return resolveMailboxesWithSkipped(mailboxes, domain).boxes
+}
+
+/** `resolveMailboxes`, plus the addresses left out for want of a password. */
+function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string): { boxes: ResolvedMailbox[], skipped: string[] } {
   if (!Array.isArray(mailboxes))
-    return []
+    return { boxes: [], skipped: [] }
   const out: ResolvedMailbox[] = []
+  const skipped: string[] = []
   for (const entry of mailboxes) {
     let raw: string | undefined
     let explicitPw: string | undefined
@@ -2445,11 +2461,13 @@ function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[]
     // object or MAIL_PASSWORD_<LOCALPART> env). A routine deploy must never
     // conjure random-password mailboxes the operator never asked for and can't
     // retrieve — declare the password to opt a mailbox in.
-    if (!envPw)
+    if (!envPw) {
+      skipped.push(address)
       continue
+    }
     out.push({ address, localPart: localPart.toUpperCase(), password: envPw, generated: false })
   }
-  return out
+  return { boxes: out, skipped }
 }
 
 /** What a mail-tenant reconcile resolved + provisioned, for the DNS step. */
@@ -2629,7 +2647,16 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
     forwards[localPart] = targets
   }
   const hasForwards = Object.keys(forwards).length > 0
-  const boxes = domain ? resolveMailboxes(cfg.mailboxes, domain) : []
+  const resolved = domain ? resolveMailboxesWithSkipped(cfg.mailboxes, domain) : { boxes: [], skipped: [] }
+  const boxes = resolved.boxes
+
+  // Said out loud. A mailbox declared in config and not created is the sort of
+  // thing somebody discovers weeks later, when the address they printed on a
+  // website turns out to bounce.
+  if (resolved.skipped.length > 0) {
+    logger.warn(`Mail: ${resolved.skipped.length} declared mailbox(es) were not created because no password was supplied: ${resolved.skipped.join(', ')}`)
+    logger.info(`Set MAIL_PASSWORD_<LOCALPART> in the target environment (e.g. ${resolved.skipped[0]?.split('@')[0]?.toUpperCase().replace(/[^A-Z0-9]/g, '_')}) and run this again.`)
+  }
 
   // Nothing declarative to reconcile — skip silently (most apps).
   if (!domain && !hasForwards)
