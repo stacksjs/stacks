@@ -12,14 +12,41 @@ import process from 'node:process'
 import { parseEnvelope } from './envelope'
 import { updatedRowCount } from './utils'
 
-// Prevent unhandled rejections from crashing the worker
-process.on('unhandledRejection', (reason, _promise) => {
-  log.error(`Unhandled Rejection: ${reason}`)
-})
+/**
+ * Keep a RUNNING worker alive through a failure in one job.
+ *
+ * Installed by {@link startProcessor}, deliberately not at module scope. These
+ * handlers swallow the error — that is right for a long-lived worker, which
+ * should log a bad job and carry on, and catastrophic for anything else,
+ * because `process.on('uncaughtException')` is process-wide and the last
+ * handler registered wins the decision to keep going.
+ *
+ * At module scope they applied to every process that imported anything from
+ * this package, including one-shot CLI commands. `buddy typecheck` on a
+ * consumer app failed its `tsc` run, threw, had the throw swallowed here, and
+ * then simply never exited: a file watcher held the event loop open, so the
+ * process sat idle forever. In CI that is not a failed step, it is a job that
+ * hangs until someone notices — one ran for an hour before it was cancelled,
+ * having deployed nothing, while reporting itself in progress the whole time.
+ *
+ * Idempotent: `startProcessor` can be called more than once in a process, and
+ * registering these twice would leak listeners.
+ */
+let workerCrashHandlersInstalled = false
 
-process.on('uncaughtException', (error) => {
-  log.error(`Uncaught Exception: ${error.message}`)
-})
+function installWorkerCrashHandlers(): void {
+  if (workerCrashHandlersInstalled)
+    return
+  workerCrashHandlersInstalled = true
+
+  process.on('unhandledRejection', (reason, _promise) => {
+    log.error(`Unhandled Rejection: ${reason}`)
+  })
+
+  process.on('uncaughtException', (error) => {
+    log.error(`Uncaught Exception: ${error.message}`)
+  })
+}
 
 // Environment variables
 import { env as envVars } from '@stacksjs/env'
@@ -204,6 +231,8 @@ export async function startProcessor(
 ): Promise<Result<undefined, Error>> {
   try {
     log.info('Starting queue processor...')
+
+    installWorkerCrashHandlers()
 
     workerRunning = true
     workerId = `worker-${process.pid}-${Date.now()}`
