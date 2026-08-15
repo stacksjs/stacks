@@ -157,6 +157,12 @@ export * from './ensure-database'
 // Foreign-key audit (stacksjs/stacks#1916) — compare declared
 // `belongsTo` relationships against live FKs.
 export { auditForeignKeys, findFkOrphans, getDeclaredFKs, getLiveFKs } from './fk-audit'
+
+// Schema drift audit — compare live column types against what the models
+// declare. `migrate` only tracks which files have run, so a database built from
+// a wrong migration set reports "up to date" forever while its columns differ.
+export { auditSchemaDrift, formatSchemaDrift } from './schema-drift'
+export type { SchemaDriftColumn, SchemaDriftReport } from './schema-drift'
 export type { DeclaredFK, FkAuditResult, FkOrphan, FkOrphanReport, LiveFK } from './fk-audit'
 
 // Unique-index drift audit (stacksjs/stacks#1952) — compare declared

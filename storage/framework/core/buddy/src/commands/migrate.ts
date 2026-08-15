@@ -206,6 +206,41 @@ export function validateMigrationDialect(cwd = process.cwd()): { valid: boolean,
 }
 
 /**
+ * Post-migrate schema drift probe.
+ *
+ * The companion to {@link reportMissingForeignKeys}, and the one that catches
+ * the quieter failure. `migrate` decides what to do by asking which migration
+ * FILES have not executed, never whether the database resembles the models. A
+ * database created from an older, wrong migration set therefore reports
+ * "nothing to migrate — your database is already up to date" on every run while
+ * its columns are wrong, and a corrected `CREATE TABLE IF NOT EXISTS` deploys
+ * as a no-op against it.
+ *
+ * Two of those reached production on one app: a JSON column in varchar(255) and
+ * a money column in integer, which stored 99.5 as 100. Nothing in the stack
+ * said a word.
+ *
+ * A warning rather than a failure. Drift is usually the operator's to schedule
+ * — repairing it can mean rewriting a table — and a migrate that refuses to
+ * exit 0 over it would block deploys that are otherwise fine. The point is that
+ * it is no longer invisible.
+ */
+async function reportSchemaDrift(): Promise<void> {
+  try {
+    const { auditSchemaDrift, formatSchemaDrift } = await import('@stacksjs/database')
+
+    const drift = await auditSchemaDrift()
+    if (drift.skipped || drift.clean)
+      return
+
+    log.warn(await formatSchemaDrift(drift))
+  }
+  catch (err) {
+    log.debug(`[migrate] schema drift check skipped: ${err instanceof Error ? err.message : String(err)}`)
+  }
+}
+
+/**
  * Post-migrate FK integrity probe (stacksjs/stacks#1915 D-5).
  *
  * Catches the silent "you flipped DB_CONNECTION but the FKs didn't
@@ -675,6 +710,11 @@ export function migrate(buddy: CLI): void {
       // command — the highest-context moment to warn.
       await reportMissingForeignKeys()
 
+      // Post-migrate schema drift probe. Catches a database whose columns no
+      // longer match the models — which `migrate` cannot see, because it only
+      // tracks which files have run.
+      await reportSchemaDrift()
+
       // Post-migrate orphan-row scan (stacksjs/stacks#1951). migrate is the
       // step that flips `foreign_keys = ON` against legacy data, so it's the
       // right place to surface pre-existing orphans (read-only, non-fatal).
@@ -868,6 +908,11 @@ export function migrate(buddy: CLI): void {
 
       // Post-migrate FK integrity check (stacksjs/stacks#1915 D-5).
       await reportMissingForeignKeys()
+
+      // Post-migrate schema drift probe. Catches a database whose columns no
+      // longer match the models — which `migrate` cannot see, because it only
+      // tracks which files have run.
+      await reportSchemaDrift()
 
       // Run seeders if --seed flag is provided.
       //
