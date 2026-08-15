@@ -1,5 +1,34 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.373...v0.70.375)
+
+## ✨ Features
+
+- **mobile**: configure iOS device families ([6adabd5](https://github.com/stacksjs/stacks/commit/6adabd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **mobile**: keep the dev range installable, state the real one for consumers ([5f85db9](https://github.com/stacksjs/stacks/commit/5f85db9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: externalise a package's own deps including their subpaths ([21703fc](https://github.com/stacksjs/stacks/commit/21703fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.373...v0.70.374)
+
+## ✨ Features
+
+- **mobile**: configure iOS device families ([6adabd5](https://github.com/stacksjs/stacks/commit/6adabd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **build**: externalise a package's own deps including their subpaths ([21703fc](https://github.com/stacksjs/stacks/commit/21703fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.372...v0.70.373)
 
 ## ✨ Features
