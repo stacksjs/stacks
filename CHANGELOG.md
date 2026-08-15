@@ -1,5 +1,59 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.372...v0.70.373)
+
+## ✨ Features
+
+- **mobile**: configure Android deep link schemes ([02cede9](https://github.com/stacksjs/stacks/commit/02cede9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: record Craft builder provenance ([7a8dd71](https://github.com/stacksjs/stacks/commit/7a8dd71)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **stx**: add reusable native service components ([dd42821](https://github.com/stacksjs/stacks/commit/dd42821)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: add native health and watch contracts ([3b3dbdb](https://github.com/stacksjs/stacks/commit/3b3dbdb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: expose native activity services ([ad80a6a](https://github.com/stacksjs/stacks/commit/ad80a6a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ios**: configure native Live Activities ([611fe48](https://github.com/stacksjs/stacks/commit/611fe48)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **android**: configure production push credentials ([94e60bc](https://github.com/stacksjs/stacks/commit/94e60bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **android**: add native application build pipeline ([356de74](https://github.com/stacksjs/stacks/commit/356de74)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ios**: harden native application builds ([d7132f6](https://github.com/stacksjs/stacks/commit/d7132f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: expose durable native services ([306209c](https://github.com/stacksjs/stacks/commit/306209c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: require the ts-cloud that knows how to deploy safely ([3e65210](https://github.com/stacksjs/stacks/commit/3e65210)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mail**: say when a declared mailbox was skipped for want of a password ([d09dc2b](https://github.com/stacksjs/stacks/commit/d09dc2b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: install the worker's crash handlers when it starts, not on import ([273299f](https://github.com/stacksjs/stacks/commit/273299f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **lint**: lint new files, not just tracked ones ([064e38b](https://github.com/stacksjs/stacks/commit/064e38b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **env**: ship runtime path dependency (#2324) ([b0797ff](https://github.com/stacksjs/stacks/commit/b0797ff)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2324](https://github.com/stacksjs/stacks/issues/2324), [#2324](https://github.com/stacksjs/stacks/issues/2324))
+- **mobile**: align tab bar with app theme ([69a9169](https://github.com/stacksjs/stacks/commit/69a9169)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scaffold**: migrate the database before running tests in CI ([e36cf38](https://github.com/stacksjs/stacks/commit/e36cf38)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: shield sticky chrome safe area ([91a1a85](https://github.com/stacksjs/stacks/commit/91a1a85)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: require bun-query-builder 0.2.30 for correct $n binding ([b2ababd](https://github.com/stacksjs/stacks/commit/b2ababd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **publish**: carry a published file's relative imports with it ([20e2513](https://github.com/stacksjs/stacks/commit/20e2513)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: expose full tab accessibility targets ([96676ba](https://github.com/stacksjs/stacks/commit/96676ba)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scaffold**: ship the labeler config the labeler workflow reads ([5c24c5c](https://github.com/stacksjs/stacks/commit/5c24c5c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **error-handling**: stop discarding the real error behind a label ([6c6d452](https://github.com/stacksjs/stacks/commit/6c6d452)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: keep sticky chrome below safe areas ([8d72ce8](https://github.com/stacksjs/stacks/commit/8d72ce8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: normalize deep link bridge payloads ([9c476ea](https://github.com/stacksjs/stacks/commit/9c476ea)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: allow current Craft registry versions ([0da4eb1](https://github.com/stacksjs/stacks/commit/0da4eb1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: take the pre-migration dump the way the app runs buddy ([eca2844](https://github.com/stacksjs/stacks/commit/eca2844)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: compose native tab items ([a0f7b25](https://github.com/stacksjs/stacks/commit/a0f7b25)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- teach the validation API that exists ([98c61a0](https://github.com/stacksjs/stacks/commit/98c61a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: regenerate command reference for build:android ([07fed58](https://github.com/stacksjs/stacks/commit/07fed58)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **mobile**: document health and watch surfaces ([14d7023](https://github.com/stacksjs/stacks/commit/14d7023)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **mobile**: isolate the native runtime facade ([59d3c39](https://github.com/stacksjs/stacks/commit/59d3c39)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **lint**: ignore generated mobile projects ([88873df](https://github.com/stacksjs/stacks/commit/88873df)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.371...v0.70.372)
 
 ## ✨ Features
