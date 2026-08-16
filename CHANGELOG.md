@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.6...v0.71.7)
+
+## 🐛 Bug Fixes
+
+- **cms**: close two holes in the rich-text sanitizer ([4106699](https://github.com/stacksjs/stacks/commit/4106699)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **database**: align redirect status schema ([6037793](https://github.com/stacksjs/stacks/commit/6037793)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.5...v0.71.6)
 
 ## 🐛 Bug Fixes
