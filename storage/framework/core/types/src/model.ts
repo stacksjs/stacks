@@ -2,6 +2,7 @@ import type { Faker } from '@stacksjs/faker'
 import type { ValidationType } from '@stacksjs/ts-validation'
 import type { ModelNames, TableNames } from '@stacksjs/types'
 import type { DeepPartial } from '.'
+import type { DashboardModelOptions } from './dashboard'
 import type { SearchOptions } from './search-engine'
 
 /**
@@ -300,9 +301,16 @@ export interface ModelOptions extends Base {
   primaryKey?: string // defaults to `id`
   autoIncrement?: boolean // defaults to true
   indexes?: CompositeIndex[]
-  dashboard?: {
-    highlight?: boolean | number // defaults to undefined
-  }
+  /**
+   * How this model appears in the dashboard sidebar.
+   *
+   * The full shape is {@link DashboardModelOptions}, which model discovery has
+   * always read (`m.dashboard?.icon`, `m.dashboard?.label`, `m.dashboard?.roles`
+   * in `defaults/resources/functions/dashboard/sidebar.ts`). Only `highlight`
+   * was declared here, so a model that set an icon or a label got what it asked
+   * for at runtime and a type error at the same time.
+   */
+  dashboard?: DashboardModelOptions
 
   traits?: {
     useUuid?: boolean // defaults to false

@@ -8,6 +8,28 @@
       "category": "data"
     },
     {
+      "id": "auction",
+      "name": "Auction",
+      "icon": "i-hugeicons-auction",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "icon": "i-hugeicons-auction",
+        "label": "Auctions"
+      }
+    },
+    {
+      "id": "auction-item",
+      "name": "AuctionItem",
+      "icon": "i-hugeicons-package",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "icon": "i-hugeicons-package",
+        "label": "Lots"
+      }
+    },
+    {
       "id": "author",
       "name": "Author",
       "icon": "person.text.rectangle.fill",
@@ -15,6 +37,17 @@
       "category": "content",
       "dashboard": {
         "highlight": true
+      }
+    },
+    {
+      "id": "bid",
+      "name": "Bid",
+      "icon": "i-hugeicons-hand-pointing-right-01",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "icon": "i-hugeicons-hand-pointing-right-01",
+        "label": "Bids"
       }
     },
     {
@@ -390,6 +423,17 @@
       "category": "commerce"
     },
     {
+      "id": "pledge",
+      "name": "Pledge",
+      "icon": "i-hugeicons-give-blood",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "icon": "i-hugeicons-give-blood",
+        "label": "Pledges"
+      }
+    },
+    {
       "id": "post",
       "name": "Post",
       "icon": "doc.text.fill",
@@ -650,5 +694,6 @@
       "subscribers": true,
       "allModels": true
     }
-  }
+  },
+  "nav": []
 }

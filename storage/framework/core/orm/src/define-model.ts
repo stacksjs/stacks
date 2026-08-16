@@ -1,7 +1,7 @@
 import { createModel, type OrmModelDefinition as BQBModelDefinition, type OrmModelStatic, registerModel } from '@stacksjs/query-builder'
 import type { InferRelationNames } from '@stacksjs/query-builder'
 import type { Faker } from '@stacksjs/faker'
-import type { ApiMiddleware, SearchOptions } from '@stacksjs/types'
+import type { ApiMiddleware, DashboardModelOptions, SearchOptions } from '@stacksjs/types'
 import type { Validator } from '@stacksjs/validation'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
@@ -1810,11 +1810,21 @@ export type StacksModelAttribute = Omit<BQBModelAttribute, 'factory'> & {
   factory?: (faker: Faker) => unknown
 }
 
-export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits'> {
+export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attributes' | 'indexes' | 'traits' | 'dashboard'> {
   name: string
   table: string
   primaryKey?: string
   autoIncrement?: boolean
+  /**
+   * How this model appears in the dashboard sidebar.
+   *
+   * `dashboard` is omitted from the bun-query-builder definition above and
+   * restated here because that one carries only `enabled` and `highlight`,
+   * while model discovery has always read `icon`, `label`, `section` and
+   * `roles` as well. A model that set an icon got it at runtime and a type
+   * error at the same time.
+   */
+  dashboard?: DashboardModelOptions
   /**
    * Per-model declarative behaviors. Common entries:
    *   - `observe: true | ['create','update','delete']` — emit

@@ -196,6 +196,12 @@ export interface DashboardModelOptions {
   label?: string
 
   /**
+   * Give this model a prominent row. A number orders the highlighted set;
+   * `true` highlights without taking a position.
+   */
+  highlight?: boolean | number
+
+  /**
    * Override the icon. Defaults to the auto-derived one in `iconMap`.
    * The string is whatever the active sidebar icon set expects
    * (e.g., SF Symbol name for the native sidebar; Lucide-style name for
