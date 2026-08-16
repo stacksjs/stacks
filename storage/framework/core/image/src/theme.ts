@@ -135,9 +135,11 @@ export interface ImageTheme {
   background?: ImageBackgroundConfig
   color?: ImageColor
   mutedColor?: ImageColor
+  accent?: ImageColor
   device?: ImageDeviceConfig
   brand?: string
   mark?: string
+  markPlate?: false | ImageColor
 }
 
 /** Fold the shared palette into a generator's own, letting the generator win. */
@@ -147,8 +149,15 @@ export function themed<T extends ImageTheme>(images: ImagesConfig, section: T | 
     background: section?.background ?? images.background,
     color: section?.color ?? images.color,
     mutedColor: section?.mutedColor ?? images.mutedColor,
+    // `accent` is declared on ImagesConfig as part of the shared palette, so
+    // leaving it out here made it inert: a project that set one at the top
+    // level got the card renderer's built-in orange and no way to tell why.
+    accent: section?.accent ?? images.accent,
     device: section?.device ?? images.device,
     brand: section?.brand ?? images.brand,
     mark: section?.mark ?? images.mark,
+    // `?? undefined` would swallow a deliberate `false`, which is the whole
+    // point of the option: draw the mark with nothing behind it.
+    markPlate: section?.markPlate !== undefined ? section.markPlate : images.markPlate,
   }
 }

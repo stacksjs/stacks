@@ -45,6 +45,37 @@ describe('theme translation', () => {
     expect(merged.brand).toBe('Stacks')
     expect(merged.device).toEqual({ radius: 0.1 })
   })
+
+  // `accent` and `markPlate` were declared on the config and then dropped
+  // here, so setting either at the top level did nothing at all: the eyebrow
+  // came out in the renderer's built-in orange, and a white plate went down
+  // behind a white wordmark and hid it. Both are silent — the card renders,
+  // it is just wrong — so they are worth pinning.
+  test('inherits the accent', () => {
+    expect(themed({ accent: '#5dd37c' }, { enabled: true }).accent).toBe('#5dd37c')
+  })
+
+  test('lets a generator override the accent', () => {
+    expect(themed({ accent: '#5dd37c' }, { accent: '#ff0000' }).accent).toBe('#ff0000')
+  })
+
+  test('inherits the mark plate alongside the mark', () => {
+    const images: ImagesConfig = { mark: 'logo.png', markPlate: false }
+    const merged = themed(images, { enabled: true })
+
+    expect(merged.mark).toBe('logo.png')
+    expect(merged.markPlate).toBe(false)
+  })
+
+  test('carries a deliberate `false` plate rather than treating it as unset', () => {
+    // `?? ` would fall through to the shared value here and quietly put the
+    // plate back, which is the opposite of what the section asked for.
+    expect(themed({ markPlate: '#ffffff' }, { markPlate: false }).markPlate).toBe(false)
+  })
+
+  test('falls back to the shared plate when a section says nothing', () => {
+    expect(themed({ markPlate: '#ffffff' }, { enabled: true }).markPlate).toBe('#ffffff')
+  })
 })
 
 describe('socialCardName', () => {

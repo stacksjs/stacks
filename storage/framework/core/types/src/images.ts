@@ -182,6 +182,13 @@ export interface ImagesConfig {
   /** Wordmark and mark shared by the generators. */
   brand?: string
   mark?: string
+  /**
+   * Plate painted behind the mark. Set `false` to draw it bare.
+   *
+   * Shared alongside `mark`, because the two are one decision: a wordmark
+   * that already ships white wants no plate wherever it is drawn.
+   */
+  markPlate?: false | ImageColor
   social?: SocialCardsConfig
   appStore?: AppStoreScreenshotsConfig
   appIcons?: AppIconsConfig
