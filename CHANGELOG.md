@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.379...v0.70.380)
+
+## 🔧 Chores
+
+- **deps**: take the stx that dropped ts-images 0.1, and refresh the rest ([585f9c6](https://github.com/stacksjs/stacks/commit/585f9c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.378...v0.70.379)
 
 ## 🐛 Bug Fixes
