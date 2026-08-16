@@ -9,6 +9,10 @@ permissions:
   contents: write
   packages: write
   id-token: write
+  # Read-only, and required: naming any scope here sets every unnamed one to
+  # `none`, so without this the `serialize` job's `gh run list` gets a 403 and
+  # blocks every release instead of ordering them.
+  actions: read
 
 # One group PER TAG, not one for all releases.
 #
@@ -57,17 +61,25 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           THIS_RUN: ${{ github.run_number }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           # Poll rather than fail fast: a release ahead of us is expected, and
           # the right response is to wait our turn, not to drop this version.
           for _ in $(seq 1 180); do
-            older=$(gh run list \
+            # Fail OPEN. Ordering is a nicety; publishing is the requirement.
+            # If the API is rate-limited or the token is short a scope, shipping
+            # unserialized is a small risk, whereas blocking here would recreate
+            # the very problem this job exists to prevent — a release that never
+            # reaches npm.
+            if ! older=$(gh run list \
               --repo "$GITHUB_REPOSITORY" \
               --workflow "Releaser" \
               --status in_progress \
               --limit 100 \
               --json number \
-              --jq "[.[] | select(.number < ${THIS_RUN})] | length")
+              --jq "[.[] | select(.number < ${THIS_RUN})] | length" 2>&1); then
+              echo "::warning title=Release ordering::Could not query earlier runs (${older}). Proceeding without waiting."
+              exit 0
+            fi
             if [ "$older" -eq 0 ]; then
               echo "No earlier release in flight; proceeding."
               exit 0
@@ -75,11 +87,11 @@ jobs:
             echo "Waiting on ${older} earlier release run(s)..."
             sleep 20
           done
-          # An hour of waiting means something is stuck, not busy. Fail loudly:
-          # a red run is visible, whereas the old behaviour was an invisible
-          # cancellation.
-          echo "::error::Timed out waiting for earlier Releaser runs to finish."
-          exit 1
+          # An hour of waiting means something is stuck, not busy. Ship anyway
+          # and say so loudly: a warning on a release that went out beats a
+          # release that silently did not.
+          echo "::warning title=Release ordering::Still waiting after an hour; proceeding without waiting. Check for a wedged Releaser run."
+          exit 0
 
   # Nothing stopped a publish before this job existed. `npm` triggers straight
   # off a `v*` tag push with no dependency on CI, and ci.yml does not even run
