@@ -860,6 +860,7 @@ const config: CloudConfig = {
    */
   tenants: [
     'analyticshq',
+    'commshq',
     'erbamarkets',
     'ghost',
     'bughq',
