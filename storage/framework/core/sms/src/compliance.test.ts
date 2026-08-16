@@ -1,6 +1,6 @@
 import { createHmac } from 'node:crypto'
 import { describe, expect, test } from 'bun:test'
-import { classifySmsIntent, estimateSmsSegments, isWithinSmsQuietHours, parseTwilioInbound, verifyTwilioWebhook } from './compliance'
+import { classifySmsIntent, estimateSmsSegments, isWithinSmsQuietHours, parseTwilioInbound, smsComplianceReply, verifyTwilioWebhook } from './compliance'
 
 describe('SMS compliance', () => {
   test('classifies carrier keywords without matching ordinary messages', () => {
@@ -19,6 +19,13 @@ describe('SMS compliance', () => {
       intent: 'opt-out',
       keyword: 'STOP',
     })
+  })
+
+  test('builds provider-neutral compliance replies', () => {
+    expect(smsComplianceReply('opt-out', { appName: 'CommsHQ' })).toContain('unsubscribed')
+    expect(smsComplianceReply('opt-in', { appName: 'CommsHQ' })).toContain('resubscribed')
+    expect(smsComplianceReply('help', { appName: 'CommsHQ', helpContact: 'support@commshq.org' })).toContain('support@commshq.org')
+    expect(smsComplianceReply('message')).toBeNull()
   })
 
   test('verifies Twilio signatures in constant-time compatible form', () => {

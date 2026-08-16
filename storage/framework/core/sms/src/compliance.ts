@@ -26,6 +26,17 @@ export function classifySmsIntent(
   return { intent: 'message' }
 }
 
+export function smsComplianceReply(
+  intent: SmsInboundIntent,
+  options: { appName?: string, helpContact?: string } = {},
+): string | null {
+  const name = options.appName?.trim() || 'This service'
+  if (intent === 'opt-out') return `${name}: you are unsubscribed. No more messages will be sent. Reply START to resubscribe.`
+  if (intent === 'opt-in') return `${name}: you are resubscribed. Reply STOP to unsubscribe.`
+  if (intent === 'help') return `${name}: reply STOP to unsubscribe or START to resubscribe.${options.helpContact ? ` Contact ${options.helpContact}.` : ''}`
+  return null
+}
+
 export function parseTwilioInbound(
   fields: Record<string, string | undefined>,
   options: { optOut?: string[], optIn?: string[], help?: string[] } = {},
