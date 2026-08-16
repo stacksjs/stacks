@@ -44,6 +44,24 @@ export interface RequestContextSnapshot {
   params?: Record<string, string>
   ip?: string
   host?: string
+  site?: SiteSnapshot | null
+}
+
+/**
+ * The site a multi-site server resolved for this request's Host header.
+ *
+ * Carried on the snapshot rather than AsyncLocalStorage because ALS does not
+ * survive into stx-serve's render (see the module comment): a `<script server>`
+ * block that asked an ALS-backed `currentSite()` would silently get undefined.
+ * The resolving server (`@stacksjs/sites` middleware / onRequest hook) stashes
+ * it here; pages read `requestContext.site()`.
+ */
+export interface SiteSnapshot {
+  id: number
+  uuid?: string
+  name?: string
+  subdomain?: string
+  settings?: Record<string, unknown>
 }
 
 /** What a `<script server>` block sees as `requestContext`. */
@@ -68,6 +86,8 @@ export interface StacksRequestContext {
   ip: () => string
   /** Host header, or ''. */
   host: () => string
+  /** The site resolved for this request's host, or null on a single-site app. */
+  site: () => SiteSnapshot | null
 }
 
 /**
@@ -176,6 +196,7 @@ export function createRequestContext(read: () => RequestContextSnapshot | undefi
 
     ip: () => snapshot().ip ?? '',
     host: () => snapshot().host ?? '',
+    site: () => snapshot().site ?? null,
   }
 }
 
@@ -209,6 +230,7 @@ export function useRequestEvent(): {
   locale: string
   ip: string
   host: string
+  site: SiteSnapshot | null
 } {
   const context = (globalThis as { requestContext?: StacksRequestContext }).requestContext
     ?? createRequestContext(() => undefined)
@@ -223,5 +245,6 @@ export function useRequestEvent(): {
     locale: context.locale(),
     ip: context.ip(),
     host: context.host(),
+    site: context.site(),
   }
 }
