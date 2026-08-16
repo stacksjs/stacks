@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'bun:test'
 import { rotateKeypair } from '../src/cli'
-import { aesEncrypt, decryptValue } from '../src/crypto'
+import { aesEncrypt, decryptValue, encryptValue, generateKeypair } from '../src/crypto'
 import { parse } from '../src/parser'
 
 const directories: string[] = []
@@ -46,5 +46,37 @@ describe('version 2 key rotation', () => {
     const encrypted = envContents.match(/^SECRET="([^"]+)"$/m)?.[1]
     expect(encrypted).toBeDefined()
     expect(decryptValue(encrypted!, keys.DOTENV_PRIVATE_KEY!)).toBe('rotate-me')
+  })
+
+  it('migrates environment files encrypted by both scoped and legacy project keys', () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-env-mixed-rotation-'))
+    directories.push(directory)
+    const project = generateKeypair()
+    const production = generateKeypair()
+    writeFileSync(join(directory, '.env.keys'), [
+      `DOTENV_PUBLIC_KEY="${project.publicKey}"`,
+      `DOTENV_PRIVATE_KEY="${project.privateKey}"`,
+      `DOTENV_PUBLIC_KEY_PRODUCTION="${production.publicKey}"`,
+      `DOTENV_PRIVATE_KEY_PRODUCTION="${production.privateKey}"`,
+      '',
+    ].join('\n'), { mode: 0o600 })
+    writeFileSync(join(directory, '.env.production'), [
+      `DOTENV_PUBLIC_KEY_PRODUCTION="${production.publicKey}"`,
+      `LEGACY="${encryptValue('project-secret', project.publicKey)}"`,
+      `SCOPED="${encryptValue('production-secret', production.publicKey)}"`,
+      '',
+    ].join('\n'), { mode: 0o600 })
+
+    const result = rotateKeypair({ cwd: directory, file: '.env.production' })
+    expect(result.success).toBe(true)
+
+    const envContents = readFileSync(join(directory, '.env.production'), 'utf8')
+    const { parsed: keys } = parse(readFileSync(join(directory, '.env.keys'), 'utf8'))
+    const legacy = envContents.match(/^LEGACY="([^"]+)"$/m)?.[1]
+    const scoped = envContents.match(/^SCOPED="([^"]+)"$/m)?.[1]
+    expect(envContents).not.toContain('project-secret')
+    expect(envContents).not.toContain('production-secret')
+    expect(decryptValue(legacy!, keys.DOTENV_PRIVATE_KEY_PRODUCTION!)).toBe('project-secret')
+    expect(decryptValue(scoped!, keys.DOTENV_PRIVATE_KEY_PRODUCTION!)).toBe('production-secret')
   })
 })

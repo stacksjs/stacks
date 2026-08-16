@@ -244,6 +244,14 @@ export function decryptEnv(options: DecryptOptions = {}): { success: boolean, ou
       return { success: false, error: `Private key not found: ${privateKeyName}` }
     }
 
+    // Older production files could be encrypted partly with the unsuffixed
+    // project key and partly with the environment-specific key. Keep both
+    // candidates available so `env:rotate` can migrate that mixed file into
+    // one current keypair without ever writing its plaintext to disk.
+    const privateKeys = [privateKey]
+    if (privateKeyName !== 'DOTENV_PRIVATE_KEY' && keys.DOTENV_PRIVATE_KEY && keys.DOTENV_PRIVATE_KEY !== privateKey)
+      privateKeys.push(keys.DOTENV_PRIVATE_KEY)
+
     // Load and decrypt .env file
     const envContent = readFileSync(envPath, 'utf-8')
     const lines = envContent.split('\n')
@@ -287,7 +295,20 @@ export function decryptEnv(options: DecryptOptions = {}): { success: boolean, ou
       }
 
       if (shouldDecrypt) {
-        value = decryptValue(value, privateKey)
+        let decrypted: string | undefined
+        let lastError: unknown
+        for (const candidate of privateKeys) {
+          try {
+            decrypted = decryptValue(value, candidate)
+            break
+          }
+          catch (error) {
+            lastError = error
+          }
+        }
+        if (decrypted === undefined)
+          throw lastError instanceof Error ? lastError : new Error(`Unable to decrypt ${key}`)
+        value = decrypted
       }
 
       decryptedLines.push(`${key}="${value}"`)
