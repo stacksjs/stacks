@@ -40,8 +40,7 @@ export default {
       authToken: String(env.TWILIO_AUTH_TOKEN || ''),
       from: String(env.TWILIO_FROM_NUMBER || ''),
       messagingServiceSid: String(env.TWILIO_MESSAGING_SERVICE_SID || ''),
-      // For 2FA/OTP verification
-      // verifyServiceSid: env.TWILIO_VERIFY_SERVICE_SID,
+      verifyServiceSid: String(env.TWILIO_VERIFY_SERVICE_SID || ''),
     },
 
     vonage: {
@@ -66,6 +65,18 @@ export default {
    * Monthly spending limit (USD)
    */
   maxSpendPerMonth: 100,
+
+  bulk: {
+    concurrency: 10,
+    delayMs: 100,
+  },
+
+  quietHours: {
+    enabled: true,
+    startHour: 20,
+    endHour: 8,
+    timezone: 'UTC',
+  },
 
   /**
    * Opt-out handling configuration

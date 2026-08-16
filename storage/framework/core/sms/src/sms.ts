@@ -73,7 +73,7 @@ export function getDriver(provider?: SmsProvider): SmsDriver {
       return new TwilioDriver({
         ...twilioConfig,
         from: twilioConfig.from || smsConfig.from,
-      })
+      }, twilioConfig.verifyServiceSid)
     }
 
     case 'vonage': {
@@ -149,7 +149,18 @@ export const sendSms = send
 export async function sendBulk(messages: SmsMessage[]): Promise<SmsSendResult[]> {
   await ensureConfig()
   const driver = getDefaultDriver()
-  return driver.sendBulk(messages)
+  const concurrency = Math.max(1, Math.floor(smsConfig.bulk?.concurrency ?? 10))
+  const delayMs = Math.max(0, Math.floor(smsConfig.bulk?.delayMs ?? 0))
+  const results: SmsSendResult[] = []
+
+  for (let offset = 0; offset < messages.length; offset += concurrency) {
+    const batch = messages.slice(offset, offset + concurrency)
+    results.push(...await driver.sendBulk(batch))
+    if (delayMs > 0 && offset + concurrency < messages.length)
+      await new Promise(resolve => setTimeout(resolve, delayMs))
+  }
+
+  return results
 }
 
 /**

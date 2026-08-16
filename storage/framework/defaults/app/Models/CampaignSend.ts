@@ -6,7 +6,15 @@ export default defineModel({
   table: 'campaign_sends',
   primaryKey: 'id',
   autoIncrement: true,
-  belongsTo: ['Campaign', 'Subscriber', 'EmailList'],
+  belongsTo: ['Team', 'Campaign', 'Subscriber', 'EmailList', 'CampaignVariant'],
+
+  indexes: [
+    {
+      name: 'campaign_sends_idempotency_unique',
+      columns: ['idempotency_key'],
+      unique: true,
+    },
+  ],
 
   traits: {
     useUuid: true,
@@ -32,21 +40,21 @@ export default defineModel({
     },
 
     subscriberId: {
-      required: true,
+      required: false,
       fillable: true,
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1, max: 100 }),
+      factory: () => null,
     },
 
     emailListId: {
-      required: true,
+      required: false,
       fillable: true,
       validation: {
         rule: schema.number(),
       },
-      factory: faker => faker.number.int({ min: 1, max: 8 }),
+      factory: () => null,
     },
 
     status: {
@@ -54,9 +62,40 @@ export default defineModel({
       fillable: true,
       default: 'queued',
       validation: {
-        rule: schema.enum(['queued', 'sent', 'failed', 'bounced', 'complained']),
+        rule: schema.enum([
+          'queued', 'deferred', 'sending', 'sent', 'delivered', 'failed',
+          'undelivered', 'bounced', 'complained', 'suppressed', 'cancelled',
+        ]),
       },
       factory: faker => faker.helpers.arrayElement(['sent', 'sent', 'sent', 'queued', 'failed', 'bounced']),
+    },
+
+    channel: {
+      required: true,
+      fillable: true,
+      default: 'email',
+      validation: {
+        rule: schema.enum(['email', 'sms', 'push']),
+      },
+      factory: faker => faker.helpers.arrayElement(['email', 'sms']),
+    },
+
+    recipient: {
+      required: true,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: faker => faker.internet.email(),
+    },
+
+    idempotencyKey: {
+      required: true,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: faker => faker.string.uuid(),
     },
 
     providerMessageId: {
@@ -102,6 +141,51 @@ export default defineModel({
         rule: schema.timestamp(),
       },
       factory: () => null,
+    },
+
+    deliveredAt: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.timestamp(),
+      },
+      factory: () => null,
+    },
+
+    failedAt: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.timestamp(),
+      },
+      factory: () => null,
+    },
+
+    segments: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.number().min(1),
+      },
+      factory: () => 1,
+    },
+
+    cost: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.number().min(0),
+      },
+      factory: () => 0,
+    },
+
+    metadata: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.json(),
+      },
+      factory: () => JSON.stringify({}),
     },
   },
 } as const)

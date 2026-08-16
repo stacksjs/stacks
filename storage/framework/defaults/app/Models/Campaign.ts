@@ -6,8 +6,8 @@ export default defineModel({
   table: 'campaigns',
   primaryKey: 'id',
   autoIncrement: true,
-  belongsTo: ['EmailList'],
-  hasMany: ['CampaignSend'],
+  belongsTo: ['Team', 'EmailList'],
+  hasMany: ['CampaignSend', 'CampaignVariant'],
 
   traits: {
     useUuid: true,
@@ -24,7 +24,7 @@ export default defineModel({
       displayable: ['id', 'name', 'type', 'status', 'subject', 'scheduledAt', 'sentAt'],
       searchable: ['name', 'description', 'subject'],
       sortable: ['name', 'type', 'status', 'scheduledAt', 'sentAt', 'createdAt', 'updatedAt'],
-      filterable: ['type', 'status', 'emailListId', 'currency'],
+      filterable: ['teamId', 'type', 'status', 'emailListId', 'currency'],
     },
     observe: true,
   },
@@ -109,6 +109,33 @@ export default defineModel({
       factory: faker => faker.lorem.paragraphs(2),
     },
 
+    content: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.json(),
+      },
+      factory: () => JSON.stringify([]),
+    },
+
+    channelSettings: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.json(),
+      },
+      factory: () => JSON.stringify({}),
+    },
+
+    segmentDefinition: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.json(),
+      },
+      factory: () => JSON.stringify({ operator: 'and', rules: [] }),
+    },
+
     fromName: {
       required: false,
       fillable: true,
@@ -125,6 +152,43 @@ export default defineModel({
         rule: schema.string().email().max(255),
       },
       factory: faker => faker.internet.email(),
+    },
+
+    replyTo: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().email().max(255),
+      },
+      factory: faker => faker.internet.email(),
+    },
+
+    timezone: {
+      required: true,
+      fillable: true,
+      default: 'UTC',
+      validation: {
+        rule: schema.string().max(100),
+      },
+      factory: () => 'UTC',
+    },
+
+    recurrence: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: () => null,
+    },
+
+    experimentMetric: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.enum(['open_rate', 'click_rate', 'conversion_rate']),
+      },
+      factory: () => null,
     },
 
     emailListId: {

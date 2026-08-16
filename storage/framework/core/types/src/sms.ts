@@ -81,6 +81,19 @@ export interface TwilioConfig {
   from?: string
   messagingServiceSid?: string
   statusCallback?: string
+  verifyServiceSid?: string
+}
+
+export interface SmsQuietHoursConfig {
+  enabled: boolean
+  startHour: number
+  endHour: number
+  timezone?: string
+}
+
+export interface SmsBulkConfig {
+  concurrency?: number
+  delayMs?: number
 }
 
 export interface VonageConfig {
@@ -187,6 +200,28 @@ export interface SmsOptions {
    * Max monthly spend limit
    */
   maxSpendPerMonth?: number
+
+  quietHours?: SmsQuietHoursConfig
+
+  bulk?: SmsBulkConfig
+}
+
+export type SmsInboundIntent = 'opt-out' | 'opt-in' | 'help' | 'message'
+
+export interface SmsInboundMessage {
+  from: string
+  to: string
+  body: string
+  messageId?: string
+  intent: SmsInboundIntent
+  keyword?: string
+}
+
+export interface SmsSegmentEstimate {
+  encoding: 'gsm-7' | 'ucs-2'
+  characters: number
+  segments: number
+  perSegment: number
 }
 
 export type SmsConfig = Partial<SmsOptions>

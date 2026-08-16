@@ -1,4 +1,5 @@
 export * from './campaigns'
+export * from './delivery'
 export * from './headers'
 export * from './lists'
 export * from './newsletter'
