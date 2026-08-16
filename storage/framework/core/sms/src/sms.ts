@@ -141,7 +141,7 @@ export async function send(message: SmsMessage): Promise<SmsSendResult> {
 /**
  * Send an SMS message (alias)
  */
-export const sendSms = send
+export const sendSms: typeof send = send
 
 /**
  * Send multiple SMS messages
