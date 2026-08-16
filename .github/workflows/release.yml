@@ -10,14 +10,77 @@ permissions:
   packages: write
   id-token: write
 
-# Publishing a workspace exposes packages one at a time. Keep tag releases
-# serialized so a newer compatible version cannot enter npm resolution while
-# the previous tag's clean-install smoke test is still running.
+# One group PER TAG, not one for all releases.
+#
+# Tag releases still have to run one at a time — see the `serialize` job below,
+# which is where that now happens. But a single shared group cannot express
+# "queue them all": GitHub holds at most ONE pending run per concurrency group,
+# so when a third run arrives while one is in progress and one is pending, the
+# pending one is CANCELLED. With `cancel-in-progress: false` that looks safe and
+# is not: on 2026-08-16 six consecutive releases (v0.71.5 through v0.71.10) were
+# all cancelled this way and npm sat three hours behind main, with every run
+# reporting "cancelled" rather than "failed" so nothing alerted.
+#
+# Keying the group on the ref means two different tags never contend, so no
+# release is ever dropped. Re-pushing the SAME tag still serializes, which is
+# the one case where cancelling the older run is right.
 concurrency:
-  group: stacks-framework-release
+  group: stacks-framework-release-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  # Serialization moved here from the concurrency group, because a queue that
+  # silently discards its contents is worse than no queue.
+  #
+  # Publishing a workspace exposes packages one at a time, so a newer compatible
+  # version entering npm resolution while an older tag's clean-install smoke
+  # test is still running would make that test assert against the wrong tree.
+  # This job waits for any Releaser run with a LOWER run number to finish, which
+  # gives the same ordering the shared group intended without the cancellation.
+  # Run number rather than start time, so the order is stable no matter what
+  # order GitHub happens to start queued runs in.
+  #
+  # It waits on `in_progress` only, deliberately not `queued`. Counting queued
+  # runs would be stricter, but every waiter holds a runner, so a burst of
+  # releases could end up with all of them waiting on older runs that cannot get
+  # a runner because the waiters are using them. Ordering can slip if an older
+  # run is still waiting for a runner when we start; that is a far smaller
+  # problem than either deadlocking the pool or the old behaviour of dropping
+  # releases outright.
+  serialize:
+    name: wait for earlier releases
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Wait for older in-progress releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+          THIS_RUN: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          # Poll rather than fail fast: a release ahead of us is expected, and
+          # the right response is to wait our turn, not to drop this version.
+          for _ in $(seq 1 180); do
+            older=$(gh run list \
+              --repo "$GITHUB_REPOSITORY" \
+              --workflow "Releaser" \
+              --status in_progress \
+              --limit 100 \
+              --json number \
+              --jq "[.[] | select(.number < ${THIS_RUN})] | length")
+            if [ "$older" -eq 0 ]; then
+              echo "No earlier release in flight; proceeding."
+              exit 0
+            fi
+            echo "Waiting on ${older} earlier release run(s)..."
+            sleep 20
+          done
+          # An hour of waiting means something is stuck, not busy. Fail loudly:
+          # a red run is visible, whereas the old behaviour was an invisible
+          # cancellation.
+          echo "::error::Timed out waiting for earlier Releaser runs to finish."
+          exit 1
+
   # Nothing stopped a publish before this job existed. `npm` triggers straight
   # off a `v*` tag push with no dependency on CI, and ci.yml does not even run
   # on tags, so 24+ releases went out while the freshness checks were red. The
@@ -34,6 +97,7 @@ jobs:
   # warning annotation on the run so the bypass is visible afterwards.
   release-gate:
     name: release gate
+    needs: serialize
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
