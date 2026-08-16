@@ -21,9 +21,7 @@
  * users. The decision is kept separate from the uploading so it can be tested
  * without touching a store API.
  */
-import type { ExtensionConfig } from './types'
-
-export type ExtensionTarget = 'chrome' | 'firefox' | 'safari'
+import type { ExtensionConfig, ExtensionTarget } from './types'
 
 /** Why a target is not being published. */
 export type PublishSkipReason = 'not-configured' | 'missing-credentials'
@@ -84,7 +82,7 @@ export function missingCredentials(target: ExtensionTarget, env: PublishEnv): st
     .filter(alternatives => !alternatives.some(name => (env[name] ?? '').trim() !== ''))
     // Report the first (preferred) name of each unsatisfied group rather than
     // every alias, so the log reads as a checklist instead of a truth table.
-    .map(alternatives => alternatives[0])
+    .map(alternatives => alternatives[0]!)
 }
 
 /**

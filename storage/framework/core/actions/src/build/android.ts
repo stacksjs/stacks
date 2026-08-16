@@ -30,7 +30,8 @@ async function loadCraftAndroidBuilder(): Promise<CraftAndroidBuilder> {
   const explicit = process.env.CRAFT_ANDROID_SRC
   try {
     if (explicit) return await import(pathToFileURL(explicit).href) as CraftAndroidBuilder
-    return await import('craft-native/android') as CraftAndroidBuilder
+    const packageEntry = 'craft-native/android'
+    return await import(packageEntry) as CraftAndroidBuilder
   }
   catch (error) {
     throw new Error(
