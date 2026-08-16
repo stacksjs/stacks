@@ -19,7 +19,7 @@ export default {
   senderId: 'MyApp', // Sender ID (where supported)
   originationNumber: '+1234567890', // Dedicated number
 
-  defaultCountryCode: 'US',
+  defaultCountryCode: '1',
   messageType: 'TRANSACTIONAL', // or 'PROMOTIONAL'
 
   maxSpendPerMonth: 100, // Budget limit in USD

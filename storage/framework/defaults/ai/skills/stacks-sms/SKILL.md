@@ -276,7 +276,7 @@ The `drivers/` directory contains placeholder files for: `gupshup`, `nexmo` (ali
   enabled: false,                    // Must explicitly enable
   provider: 'twilio',               // 'twilio' | 'vonage'
   from: env.SMS_FROM_NUMBER || '',
-  defaultCountryCode: 'US',
+  defaultCountryCode: '1',
   messageType: 'TRANSACTIONAL',     // TRANSACTIONAL or PROMOTIONAL
 
   drivers: {
@@ -376,7 +376,7 @@ interface VerificationResult {
 - Config is loaded lazily via dynamic import on first `send()`/operation -- `init()` pre-loads it
 - Only Twilio and Vonage drivers are fully implemented; other drivers (gupshup, plivo, sns, telnyx, etc.) are commented-out placeholders
 - `pinpoint` appears in config but has no driver implementation in `getDriver()` -- using it throws `'Unsupported SMS provider: pinpoint'`
-- The `defaultCountryCode` in config is `'US'` but `formatE164()` uses it as a numeric code prefix (the fallback is `'1'`), so the actual behavior uses the number `'1'` for US
+- `defaultCountryCode` is a numeric dialing prefix such as `'1'` for the US or `'44'` for the UK
 - Template variables use single-brace syntax `{variableName}`, NOT double-brace
 - `sendBulk()` sends all messages in parallel via `Promise.all` -- no rate limiting
 - Twilio verification requires a `verifyServiceSid` passed to the driver constructor, which is not part of the standard config structure

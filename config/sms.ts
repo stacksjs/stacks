@@ -24,7 +24,7 @@ export default {
   /**
    * Default country code for phone number formatting
    */
-  defaultCountryCode: 'US',
+  defaultCountryCode: '1',
 
   /**
    * Message type (affects pricing and delivery)

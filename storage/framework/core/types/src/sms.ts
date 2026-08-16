@@ -157,7 +157,7 @@ export interface SmsOptions {
   from?: string
 
   /**
-   * Default country code for phone number formatting
+   * Numeric country dialing prefix for phone number formatting, such as `1` for the US
    */
   defaultCountryCode?: string
 

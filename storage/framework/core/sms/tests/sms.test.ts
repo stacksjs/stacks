@@ -131,6 +131,14 @@ describe('Phone Number Utilities', () => {
     expect(formatE164('7911123456', '44')).toBe('+447911123456')
   })
 
+  test('formatE164 accepts a dialing prefix with a leading plus', () => {
+    expect(formatE164('7911123456', '+44')).toBe('+447911123456')
+  })
+
+  test('formatE164 rejects ISO country names that would produce an invalid number', () => {
+    expect(() => formatE164('4155552671', 'US')).toThrow('numeric dialing prefix')
+  })
+
   test('isValidPhoneNumber returns true for valid E.164 numbers', () => {
     expect(isValidPhoneNumber('+14155552671')).toBe(true)
   })

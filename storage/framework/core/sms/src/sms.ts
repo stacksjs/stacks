@@ -380,7 +380,9 @@ export function formatE164(phoneNumber: string, defaultCountryCode?: string): st
     return cleaned
   }
 
-  const countryCode = defaultCountryCode || smsConfig.defaultCountryCode || '1'
+  const countryCode = String(defaultCountryCode || smsConfig.defaultCountryCode || '1').replace(/^\+/, '')
+  if (!/^[1-9]\d{0,3}$/.test(countryCode))
+    throw new Error('Default SMS country code must be a numeric dialing prefix, such as 1 for the US.')
 
   if (cleaned.startsWith('00')) {
     cleaned = `+${cleaned.slice(2)}`
