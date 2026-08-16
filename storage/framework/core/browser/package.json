@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
-    "@stacksjs/stx": "^0.2.176",
+    "@stacksjs/stx": "^0.2.184",
     "bun-query-builder": "^0.2.30"
   },
   "peerDependencies": {

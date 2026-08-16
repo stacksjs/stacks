@@ -61,10 +61,10 @@
   "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/bumpx": "^0.2.6",
-    "@stacksjs/bunpress": "^0.2.2",
+    "@stacksjs/bunpress": "^0.2.6",
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
-    "@stacksjs/stx": "^0.2.176",
+    "@stacksjs/stx": "^0.2.184",
     "@stacksjs/ts-cloud": "^0.7.103",
     "@stacksjs/ts-md": "^0.1.1",
     "craft-native": ">=0.0.55"

@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@cwcss/crosswind": "^0.2.14",
-    "@stacksjs/components": "^0.2.148"
+    "@stacksjs/components": "^0.2.184"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
