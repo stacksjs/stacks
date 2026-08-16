@@ -74,7 +74,6 @@
   },
   "dependencies": {
     "@stacksjs/dtsx": "^0.11.5",
-    "buddy-bot": "^0.10.2",
     "bun-plugin-dtsx": "^0.11.5",
     "pickier": "^0.1.56",
     "stacks": "workspace:*",
@@ -96,7 +95,7 @@
     "commit-msg": "bun x gitlint --edit \"$1\""
   },
   "devDependencies": {
-    "better-dx": "^0.2.22"
+    "better-dx": "^0.2.23"
   },
   "overrides": {
     "pickier": "^0.1.56"

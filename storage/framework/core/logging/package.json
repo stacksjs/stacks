@@ -67,6 +67,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.17"
+    "better-dx": "^0.2.23"
   }
 }

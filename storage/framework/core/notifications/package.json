@@ -67,7 +67,7 @@
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.23",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/push": "workspace:*",

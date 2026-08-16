@@ -61,7 +61,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "better-dx": "^0.2.17"
+    "better-dx": "^0.2.23"
   },
   "sideEffects": false
 }

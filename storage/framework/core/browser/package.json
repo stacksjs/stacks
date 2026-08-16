@@ -82,7 +82,7 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.23",
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^9.10.0"
   }

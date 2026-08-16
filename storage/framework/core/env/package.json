@@ -58,7 +58,7 @@
     "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.23",
     "@stacksjs/validation": "workspace:*"
   }
 }

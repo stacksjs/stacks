@@ -72,7 +72,7 @@
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.17",
+    "better-dx": "^0.2.23",
     "meilisearch": "^0.59.0"
   },
   "sideEffects": false,

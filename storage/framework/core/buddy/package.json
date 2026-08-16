@@ -150,7 +150,7 @@
     "ts-pantry": "^0.11.27"
   },
   "devDependencies": {
-    "better-dx": "^0.2.17"
+    "better-dx": "^0.2.23"
   },
   "web-types": "./web-types.json"
 }
