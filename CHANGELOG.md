@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.5...v0.71.6)
+
+## 🐛 Bug Fixes
+
+- **api**: emit model schemas in OpenAPI ([06c5bf9](https://github.com/stacksjs/stacks/commit/06c5bf9)) _(by Chris <chris@stacksjs.com>)_
+- **build**: fail a package build whose dist cannot be imported ([386bfcc](https://github.com/stacksjs/stacks/commit/386bfcc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **api**: refresh model-aware API artifacts ([48ecc4d](https://github.com/stacksjs/stacks/commit/48ecc4d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.4...v0.71.5)
 
 ## 🐛 Bug Fixes
