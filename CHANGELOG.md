@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.7...v0.71.8)
+
+## 🐛 Bug Fixes
+
+- **deploy**: re-resolve a cached attach box that has no IPv6 ([84d71a0](https://github.com/stacksjs/stacks/commit/84d71a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.6...v0.71.7)
 
 ## 🐛 Bug Fixes
