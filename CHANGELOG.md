@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.0...v0.71.1)
+
+## 🐛 Bug Fixes
+
+- **deps**: take the ts-pantry with importable release entrypoints ([fa2c38d](https://github.com/stacksjs/stacks/commit/fa2c38d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: teach the repo-wide consistency suites about the new model corpus ([d8c6acc](https://github.com/stacksjs/stacks/commit/d8c6acc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **forms**: complete publishable package scaffold ([14d9602](https://github.com/stacksjs/stacks/commit/14d9602)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **orm**: recognize protected read middleware ([3da2325](https://github.com/stacksjs/stacks/commit/3da2325)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: update owned development toolchain ([ce9a8b6](https://github.com/stacksjs/stacks/commit/ce9a8b6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.380...v0.71.0)
 
 ## ✨ Features

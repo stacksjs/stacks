@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.71.0",
+  "version": "0.71.1",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -65,7 +65,7 @@
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.184",
-    "@stacksjs/ts-cloud": "^0.7.103",
+    "@stacksjs/ts-cloud": "^0.8.2",
     "@stacksjs/ts-md": "^0.1.1",
     "craft-native": ">=0.0.55"
   },
