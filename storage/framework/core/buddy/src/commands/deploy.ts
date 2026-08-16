@@ -2633,14 +2633,23 @@ async function resolveAttachTargetBox(
   if (!chosen)
     return null
   // Hetzner reports the routed block (`2a01:4f8:c014:6186::/64`), not the
-  // address the interface holds — hetznerBoxIpv6 narrows it so the value is
-  // something an AAAA record can actually point at.
-  const { hetznerBoxIpv6 } = await import('@stacksjs/ts-cloud') as any
+  // address the interface holds — normalizePublicIpv6 narrows it to something
+  // an AAAA record can actually point at.
+  //
+  // This used to call `hetznerBoxIpv6?.(…)`, a name ts-cloud no longer exports.
+  // The optional call turned that into `undefined` silently, so every attached
+  // tenant resolved no IPv6, the AAAA pass was skipped, and the whole shared box
+  // quietly served IPv4 only — with nothing in the deploy log to say so. The
+  // call is unconditional now, and a missing export warns instead of vanishing.
+  const { normalizePublicIpv6 } = await import('@stacksjs/ts-cloud') as any
+  if (typeof normalizePublicIpv6 !== 'function')
+    log.warn('DNS: @stacksjs/ts-cloud does not export normalizePublicIpv6 — AAAA records will be skipped. Upgrade ts-cloud.')
+  const reportedIpv6 = chosen.public_net?.ipv6?.ip
   return {
     serverId: chosen.id,
     serverName: chosen.name,
     publicIp: chosen.public_net?.ipv4?.ip,
-    publicIpv6: hetznerBoxIpv6?.(chosen.public_net?.ipv6?.ip),
+    publicIpv6: typeof normalizePublicIpv6 === 'function' ? normalizePublicIpv6(reportedIpv6) : undefined,
   }
 }
 
