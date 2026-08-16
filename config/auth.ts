@@ -97,4 +97,34 @@ export default {
      */
     throttle: env.AUTH_PASSWORD_RESET_THROTTLE ||60,
   },
+
+  /**
+   * Magic-link (passwordless) sign-in. Off by default; parent-portal style
+   * apps flip it on so low-friction audiences never need a password.
+   */
+  magicLink: {
+    enabled: false,
+
+    /**
+     * Link expiration time in minutes.
+     *
+     * @default 15
+     */
+    expire: 15,
+
+    /**
+     * Render a "Continue" button instead of auto-submitting the consume
+     * request on the interstitial page.
+     *
+     * @default false
+     */
+    confirmInteraction: false,
+
+    /**
+     * Where a consumed link lands when the send didn't say.
+     *
+     * @default '/'
+     */
+    redirectDefault: '/',
+  },
 } satisfies AuthConfig

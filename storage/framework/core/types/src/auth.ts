@@ -174,6 +174,45 @@ export interface AuthOptions {
   }
 
   /**
+   * Magic-link (passwordless) sign-in configuration
+   */
+  magicLink?: {
+    /**
+     * Whether the magic-link endpoints are active.
+     * @default false
+     */
+    enabled?: boolean
+
+    /**
+     * Link expiration time in minutes.
+     * @default 15
+     */
+    expire?: number
+
+    /**
+     * Render a "Continue" button on the interstitial page instead of
+     * auto-submitting the consume request. Slightly more friction, immune
+     * to any scanner that executes page scripts.
+     * @default false
+     */
+    confirmInteraction?: boolean
+
+    /**
+     * Where a consumed link lands when the send didn't specify.
+     * @default '/'
+     */
+    redirectDefault?: string
+
+    /**
+     * Link URL template with a `{token}` placeholder. Absolute templates
+     * are used as-is; path templates are prefixed with the app URL (or the
+     * site's primary host on multi-site apps).
+     * @default '/auth/magic/{token}'
+     */
+    url?: string
+  }
+
+  /**
    * Email verification configuration
    */
   emailVerification?: {
