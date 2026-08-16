@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.10...v0.72.0)
+
+## ✨ Features
+
+- **database**: run application seeders ([9799f20](https://github.com/stacksjs/stacks/commit/9799f20)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **env**: rotate mixed legacy key files ([efa7b06](https://github.com/stacksjs/stacks/commit/efa7b06)) _(by Chris <chris@stacksjs.com>)_
+- **release**: use stable Pantry toolchain ([7750db8](https://github.com/stacksjs/stacks/commit/7750db8)) _(by Chris <chris@stacksjs.com>)_
+- **auth**: scope team-owned generated APIs ([c27bd8d](https://github.com/stacksjs/stacks/commit/c27bd8d)) _(by Chris <chris@stacksjs.com>)_
+- **release**: avoid duplicate workspace install ([b98f025](https://github.com/stacksjs/stacks/commit/b98f025)) _(by Chris <chris@stacksjs.com>)_
+- **database**: snapshot regenerated migration corpora ([05dab7f](https://github.com/stacksjs/stacks/commit/05dab7f)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **cms**: pin public page serving through a real stx server ([0d2b86d](https://github.com/stacksjs/stacks/commit/0d2b86d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.9...v0.71.10)
 
 ## 🐛 Bug Fixes
