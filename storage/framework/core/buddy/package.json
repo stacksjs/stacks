@@ -134,6 +134,7 @@
     "@stacksjs/search-engine": "^0.70.380",
     "@stacksjs/security": "^0.70.380",
     "@stacksjs/server": "^0.70.380",
+    "@stacksjs/sites": "^0.70.380",
     "@stacksjs/storage": "^0.70.380",
     "@stacksjs/strings": "^0.70.380",
     "@stacksjs/testing": "^0.70.380",

@@ -47,6 +47,10 @@ function productionRequestSnapshot(): RequestContextSnapshot | undefined {
   const snapshot = (globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext
   const legacyCookies = (globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies
   const legacySearch = (globalThis as { __stxServeSearch?: string }).__stxServeSearch
+  // Resolved by our onRequest, not by stx: stx rebuilds __stxServeContext per
+  // request and knows nothing about sites, so the site rides a sibling global
+  // and merges here.
+  const site = (globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite
 
   if (!snapshot && !legacyCookies && legacySearch === undefined)
     return undefined
@@ -59,6 +63,7 @@ function productionRequestSnapshot(): RequestContextSnapshot | undefined {
     // Kept as a last resort only because an old snapshot has nothing better.
     url: snapshot?.url || snapshot?.search || legacySearch || '',
     search: snapshot?.search ?? legacySearch ?? '',
+    site: snapshot?.site ?? site ?? null,
   }
 }
 
@@ -409,6 +414,19 @@ export async function startProductionServer(options?: { port?: string | number, 
           // __stxServeSearch — see the doc comment above this function.
           ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
           ;(globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies = parseCookies(req)
+
+          // Multi-site: resolve the Host into a site once per request. Behind
+          // rpx the original host arrives on X-Forwarded-Host. Mirrors the dev
+          // views server; gated on config so single-site apps skip the import.
+          if ((config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+            const sites = await import('@stacksjs/sites')
+            const resolved = await sites.resolveSiteByHost(sites.requestHost(req.headers, sites.sitesOptions()))
+            sites.setCurrentSite(resolved)
+            ;(globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite = sites.toSiteSnapshot(resolved)
+          }
+          else {
+            ;(globalThis as { __stxServeSite?: RequestContextSnapshot['site'] }).__stxServeSite = null
+          }
 
           return undefined
         },

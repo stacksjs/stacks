@@ -134,6 +134,7 @@
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/security": "workspace:*",
+        "@stacksjs/sites": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/tlsx": "^0.13.2",
@@ -303,6 +304,7 @@
         "@stacksjs/search-engine": "^0.70.380",
         "@stacksjs/security": "^0.70.380",
         "@stacksjs/server": "^0.70.380",
+        "@stacksjs/sites": "^0.70.380",
         "@stacksjs/skills": "^0.70.380",
         "@stacksjs/storage": "^0.70.380",
         "@stacksjs/strings": "^0.70.380",
@@ -965,6 +967,18 @@
         "better-dx": "^0.2.17",
       },
     },
+    "storage/framework/core/sites": {
+      "name": "@stacksjs/sites",
+      "version": "0.70.380",
+      "devDependencies": {
+        "@stacksjs/auth": "workspace:*",
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/error-handling": "workspace:*",
+        "@stacksjs/router": "workspace:*",
+        "better-dx": "^0.2.17",
+      },
+    },
     "storage/framework/core/skills": {
       "name": "@stacksjs/skills",
       "version": "0.70.380",
@@ -1366,6 +1380,8 @@
     "@stacksjs/server": ["@stacksjs/server@workspace:storage/framework/core/server"],
 
     "@stacksjs/shell": ["@stacksjs/shell@workspace:storage/framework/core/shell"],
+
+    "@stacksjs/sites": ["@stacksjs/sites@workspace:storage/framework/core/sites"],
 
     "@stacksjs/skills": ["@stacksjs/skills@workspace:storage/framework/core/skills"],
 

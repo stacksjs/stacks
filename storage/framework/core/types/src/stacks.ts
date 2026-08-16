@@ -31,6 +31,7 @@ import type {
   RealtimeConfig,
   SaasConfig,
   SearchEngineConfig,
+  SitesConfig,
   SecurityConfig,
   ServerConfig,
   ServicesConfig,
@@ -334,6 +335,15 @@ export interface StacksOptions {
    * which requests it forwards to the API process. See {@link ServerConfig}.
    */
   server: ServerConfig
+
+  /**
+   * **Sites Options**
+   *
+   * Request-level multi-site tenancy: Host header -> Site resolution for
+   * apps that serve many public properties (subdomains + custom domains)
+   * from one deployment. See {@link SitesConfig}.
+   */
+  sites: SitesConfig
 
   services: ServicesConfig
 

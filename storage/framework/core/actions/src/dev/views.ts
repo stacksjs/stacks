@@ -282,6 +282,19 @@ async function startDefaultServer() {
       // boundary, so we additionally stash a plain global (read as a fallback by
       // requestContext, mirroring __stxServeSearch).
       const locale = await applyRequestLocale(req)
+
+      // Multi-site: resolve the Host into a site once per request and carry
+      // it on the snapshot — ALS does not survive into stx-serve's render, so
+      // the snapshot is the only channel `<script server>` blocks can read it
+      // from. Gated on config so a single-site app never loads the package.
+      let site: RequestContextSnapshot['site'] = null
+      if ((config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+        const sites = await import('@stacksjs/sites')
+        const resolved = await sites.resolveSiteByHost(sites.requestHost(req.headers, sites.sitesOptions()))
+        sites.setCurrentSite(resolved)
+        site = sites.toSiteSnapshot(resolved)
+      }
+
       // `search` and `path` alongside `url`: production's snapshot carries them,
       // and a dev snapshot that did not meant `requestContext.path()` answered
       // differently under `buddy dev` than on the box — the same class of
@@ -293,6 +306,7 @@ async function startDefaultServer() {
         search: url.search,
         host: url.host,
         locale,
+        site,
       }
 
       ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
