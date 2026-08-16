@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.9...v0.71.10)
+
+## 🐛 Bug Fixes
+
+- **config**: accept canonical environment names ([b60f80f](https://github.com/stacksjs/stacks/commit/b60f80f)) _(by Chris <chris@stacksjs.com>)_
+- **cloud**: isolate CommsHQ tenant secrets ([5637ecf](https://github.com/stacksjs/stacks/commit/5637ecf)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.8...v0.71.9)
 
 ## 🐛 Bug Fixes
