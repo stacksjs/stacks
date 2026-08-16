@@ -312,6 +312,12 @@ async function startDefaultServer() {
       ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
       ;(globalThis as { __stxServeContext?: RequestContextSnapshot }).__stxServeContext = ctx
 
+      // First-party pageviews: fire-and-forget, gated on config; a failed
+      // insert loses one statistic and never a render.
+      if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews) {
+        void import('@stacksjs/analytics').then(({ recordPageview }) => recordPageview(req)).catch(() => {})
+      }
+
       requestStore.enterWith(ctx)
       return null
     },

@@ -28,3 +28,9 @@ export function exportCalendarOutlook(link: CalendarLink): string {
 export function exportCalendarYahoo(link: CalendarLink): string {
   return generateYahoo(link)
 }
+
+// Subscribable multi-event feeds + server-side recurrence expansion.
+export { buildCalendarFeed, calendarFeedHeaders, escapeIcsText, foldIcsLine } from './feed'
+export type { CalendarFeedEvent, CalendarFeedOptions } from './feed'
+export { expandRecurrence, parseRRule } from './recurrence'
+export type { RecurrenceRule } from './recurrence'

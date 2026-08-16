@@ -9,6 +9,15 @@ export interface AnalyticsOptions {
   /** The analytics driver/provider to use */
   driver: 'google-analytics' | 'fathom' | 'plausible' | 'self-hosted'
 
+  /**
+   * First-party server-side pageview capture: the stx servers record page
+   * GETs into `analytics_events` (name `pageview`), which is what feeds the
+   * native /analytics/pages, /referrers and /devices dashboards. No script,
+   * no cookies, catches no-JS traffic; assets and API calls are excluded.
+   * Off by default.
+   */
+  capturePageviews?: boolean
+
   drivers: {
     /** Google Analytics configuration */
     googleAnalytics?: {

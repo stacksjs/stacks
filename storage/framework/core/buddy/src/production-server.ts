@@ -415,6 +415,13 @@ export async function startProductionServer(options?: { port?: string | number, 
           ;(globalThis as { __stxServeSearch?: string }).__stxServeSearch = url.search
           ;(globalThis as { __stxServeCookies?: Record<string, string> }).__stxServeCookies = parseCookies(req)
 
+          // First-party pageviews: fire-and-forget, gated on config; a
+          // failed insert loses one statistic and never a render. Mirrors
+          // the dev views server.
+          if ((config as { analytics?: { capturePageviews?: boolean } }).analytics?.capturePageviews) {
+            void import('@stacksjs/analytics').then(({ recordPageview }) => recordPageview(req)).catch(() => {})
+          }
+
           // Multi-site: resolve the Host into a site once per request. Behind
           // rpx the original host arrives on X-Forwarded-Host. Mirrors the dev
           // views server; gated on config so single-site apps skip the import.

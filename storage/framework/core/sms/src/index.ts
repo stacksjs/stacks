@@ -5,6 +5,7 @@
  */
 
 // Main SMS facade
+export * from './opt-out'
 export * from './sms'
 export { default as SMS } from './sms'
 

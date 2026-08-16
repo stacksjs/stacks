@@ -257,6 +257,17 @@ export async function notify(
           if (!recipient.phone) {
             throw new Error('[notify] sms channel requires recipient.phone')
           }
+          // STOP compliance: a phone that texted STOP gets nothing except
+          // an `ignorePreferences: true` send (emergency alerts - a
+          // wildfire notice outranks marketing consent, and carriers'
+          // rules carve out exactly this). Throws rather than silently
+          // succeeding so the delivery log records why nothing was sent.
+          if (options.ignorePreferences !== true) {
+            const { isPhoneOptedOut } = await import('@stacksjs/sms')
+            if (await isPhoneOptedOut(recipient.phone)) {
+              throw new Error('[notify] sms recipient has opted out (STOP)')
+            }
+          }
           const driver = useSMS()
           if (!isSendableDriver(driver)) {
             throw new Error('[notify] sms channel is not configured: no usable SMS driver with a send() method')
