@@ -74,10 +74,11 @@
   },
   "dependencies": {
     "@stacksjs/dtsx": "^0.11.5",
+    "buddy-bot": "^0.10.2",
     "bun-plugin-dtsx": "^0.11.5",
     "pickier": "^0.1.56",
     "stacks": "workspace:*",
-    "ts-pantry": "^0.11.26"
+    "ts-pantry": "^0.11.27"
   },
   "workspaces": [
     "storage/framework",
