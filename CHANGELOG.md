@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.1...v0.72.2)
+
+## ✨ Features
+
+- **sms**: build compliance replies ([67b7a7e](https://github.com/stacksjs/stacks/commit/67b7a7e)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **sms**: validate dialing prefixes ([09407b5](https://github.com/stacksjs/stacks/commit/09407b5)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.0...v0.72.1)
 
 ## 🐛 Bug Fixes
