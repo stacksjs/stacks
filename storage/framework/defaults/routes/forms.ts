@@ -61,8 +61,6 @@ route.post('/api/forms/{uuid}/submissions', async (request: any) => {
   // parent's phone on a spinner, and a failed one must not undo the answers.
   if (result.submissionId > 0) {
     void dispatchSubmissionNotifications(form, result, {
-      email: null,
-      name: null,
       ...await submissionIdentity(result.submissionId),
     }).catch(() => {})
   }

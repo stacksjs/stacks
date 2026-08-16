@@ -12,7 +12,7 @@ function withProtocol(baseUrl: string): string {
   if (/^https?:\/\//i.test(baseUrl))
     return baseUrl
 
-  const host = baseUrl.split('/')[0].split(':')[0].toLowerCase()
+  const host = baseUrl.split('/')[0]?.split(':')[0]?.toLowerCase() ?? ''
   const protocol = ['localhost', '127.0.0.1', '0.0.0.0', '[::1]'].includes(host)
     ? 'http'
     : 'https'
