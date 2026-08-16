@@ -235,4 +235,31 @@ describe('sanitizeRichText', () => {
     expect(clean).not.toContain('javascript:')
     expect(clean).toContain('<b>world</b>')
   })
+
+  it('removes blocked elements WITH their content', () => {
+    // A tag-only strip left `alert(1)` and the CSS as visible page text.
+    expect(sanitizeRichText('<script>alert(1)</script>')).toBe('')
+    expect(sanitizeRichText('<style>body{display:none}</style>')).toBe('')
+    expect(sanitizeRichText('<iframe src="data:text/html,<b>x</b>"></iframe>')).toBe('')
+  })
+
+  it('does not let nested tags reconstruct a live script', () => {
+    // One pass over this deletes the inner <script> and rebuilds an OUTER
+    // one from the remaining halves - a real XSS out of "sanitized" input.
+    const nested = '<scr<script>ipt>alert(1)</scr</script>ipt>'
+    const clean = sanitizeRichText(nested)
+    expect(clean).not.toContain('<script')
+    expect(clean).not.toContain('alert(1)')
+  })
+
+  it('closes the unclosed-tag and svg-handler routes', () => {
+    expect(sanitizeRichText('<script src=//evil.com>')).toBe('')
+    expect(sanitizeRichText('<svg onload=alert(1)>')).not.toContain('onload')
+  })
+
+  it('leaves ordinary editorial markup alone', () => {
+    const copy = '<p>Small classes, <b>big</b> <em>questions</em>.</p><ul><li>K-8</li></ul>'
+    expect(sanitizeRichText(copy)).toBe(copy)
+    expect(sanitizeRichText('<a href="/admissions" title="Apply">Apply</a>')).toContain('href="/admissions"')
+  })
 })
