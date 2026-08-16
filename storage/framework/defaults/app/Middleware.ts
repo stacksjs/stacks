@@ -14,6 +14,7 @@ export default {
   'guest': 'Guest',
   'api': 'Api',
   'team': 'Team',
+  'site': 'Site',
   'logger': 'Logger',
   'abilities': 'Abilities',
   'can': 'Can',
