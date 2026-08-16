@@ -1,5 +1,46 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.380...v0.71.0)
+
+## ✨ Features
+
+- **marketing**: add multi-channel delivery primitives ([c8f977c](https://github.com/stacksjs/stacks/commit/c8f977c)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: enforce team-scoped generated APIs ([a70583c](https://github.com/stacksjs/stacks/commit/a70583c)) _(by Chris <chris@stacksjs.com>)_
+- **core**: calendar feeds + RRULE, SMS STOP compliance, first-party pageviews ([c5c757b](https://github.com/stacksjs/stacks/commit/c5c757b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **forms**: native form builder - @stacksjs/forms ([3755d38](https://github.com/stacksjs/stacks/commit/3755d38)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: magic-link (passwordless) sign-in ([7ad717f](https://github.com/stacksjs/stacks/commit/7ad717f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: real pages - block documents, revisions, redirects, menus, public serving ([dcb3f05](https://github.com/stacksjs/stacks/commit/dcb3f05)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sites**: register the site middleware alias in the defaults ([010ead9](https://github.com/stacksjs/stacks/commit/010ead9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sites**: request-level multi-site tenancy as a native core package ([71e5e05](https://github.com/stacksjs/stacks/commit/71e5e05)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: carry the resolved site on the request-context snapshot ([f4ceaa7](https://github.com/stacksjs/stacks/commit/f4ceaa7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: read app nav from config when the manifest predates it ([b90a249](https://github.com/stacksjs/stacks/commit/b90a249)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auctions**: native auction support, app-defined dashboard nav ([8ffcd63](https://github.com/stacksjs/stacks/commit/8ffcd63)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **extension**: publish every set-up store from one release-tag command ([b1babe8](https://github.com/stacksjs/stacks/commit/b1babe8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: preserve generated migration history ([d2e67ae](https://github.com/stacksjs/stacks/commit/d2e67ae)) _(by Chris <chris@stacksjs.com>)_
+- **types**: keep framework builds clean ([a4f557e](https://github.com/stacksjs/stacks/commit/a4f557e)) _(by Chris <chris@stacksjs.com>)_
+- **types**: let a model declare the dashboard fields the sidebar reads ([e51752d](https://github.com/stacksjs/stacks/commit/e51752d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scheduler,commerce**: stop double-scheduling jobs, fix a broken join ([00d9410](https://github.com/stacksjs/stacks/commit/00d9410)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: stop staging vendored core manifests in a consumer app ([dab416c](https://github.com/stacksjs/stacks/commit/dab416c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **commerce**: move auctions into the commerce bundle ([f913912](https://github.com/stacksjs/stacks/commit/f913912)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **api**: refresh generated protocol artifacts ([904b1b3](https://github.com/stacksjs/stacks/commit/904b1b3)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **database**: generate migrations for merged models ([c72c58d](https://github.com/stacksjs/stacks/commit/c72c58d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.379...v0.70.380)
 
 ## 🔧 Chores
