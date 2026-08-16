@@ -15,7 +15,7 @@ export default {
   },
 
   APP_ENV: {
-    validation: schema.enum(['local', 'dev', 'stage', 'prod']),
+    validation: schema.enum(['local', 'development', 'dev', 'staging', 'stage', 'production', 'prod', 'test', 'testing']),
     default: 'local',
   },
 
