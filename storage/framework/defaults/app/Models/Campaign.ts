@@ -18,7 +18,7 @@ export default defineModel({
     useApi: {
       uri: 'campaigns',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
-      middleware: ['auth'],
+      middleware: ['auth', 'team'],
     },
     useSearch: {
       displayable: ['id', 'name', 'type', 'status', 'subject', 'scheduledAt', 'sentAt'],

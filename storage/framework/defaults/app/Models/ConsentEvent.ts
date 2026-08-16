@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'consent-events', routes: ['index', 'show'], middleware: ['auth'] },
+    useApi: { uri: 'consent-events', routes: ['index', 'show'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'consent_events_lookup', columns: ['team_id', 'channel', 'recipient', 'occurred_at'] }],
   attributes: {

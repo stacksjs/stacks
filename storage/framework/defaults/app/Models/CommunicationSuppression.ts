@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'communication-suppressions', routes: ['index', 'store', 'show', 'destroy'], middleware: ['auth'] },
+    useApi: { uri: 'communication-suppressions', routes: ['index', 'store', 'show', 'destroy'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'communication_suppressions_unique', columns: ['team_id', 'channel', 'recipient'], unique: true }],
   attributes: {

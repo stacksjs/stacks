@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'campaign-variants', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth'] },
+    useApi: { uri: 'campaign-variants', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'campaign_variants_name_unique', columns: ['campaign_id', 'name'], unique: true }],
   attributes: {

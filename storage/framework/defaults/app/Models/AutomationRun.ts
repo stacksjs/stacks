@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'automation-runs', routes: ['index', 'show'], middleware: ['auth'] },
+    useApi: { uri: 'automation-runs', routes: ['index', 'show'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'automation_runs_idempotency_unique', columns: ['idempotency_key'], unique: true }],
   attributes: {

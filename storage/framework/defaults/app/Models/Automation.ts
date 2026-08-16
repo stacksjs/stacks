@@ -9,7 +9,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'automations', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth'] },
+    useApi: { uri: 'automations', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] },
     observe: true,
   },
   attributes: {

@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'sender-domains', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth'] },
+    useApi: { uri: 'sender-domains', routes: ['index', 'store', 'show', 'update', 'destroy'], middleware: ['auth', 'team'] },
   },
   indexes: [{ name: 'sender_domains_domain_unique', columns: ['domain'], unique: true }],
   attributes: {

@@ -25,7 +25,7 @@ export default defineModel({
       // Per-recipient send records carry email + delivery status. Treat
       // as PII and require auth on all read paths. The transactional
       // owner-only views in the dashboard are gated separately.
-      middleware: ['auth'],
+      middleware: ['auth', 'team'],
     },
   },
 

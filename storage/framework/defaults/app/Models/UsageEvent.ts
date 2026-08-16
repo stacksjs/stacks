@@ -8,7 +8,7 @@ export default defineModel({
   traits: {
     useUuid: true,
     useTimestamps: true,
-    useApi: { uri: 'usage-events', routes: ['index', 'show'], middleware: ['auth'] },
+    useApi: { uri: 'usage-events', routes: ['index', 'show'], middleware: ['auth', 'team'] },
   },
   indexes: [
     { name: 'usage_events_idempotency_unique', columns: ['idempotency_key'], unique: true },

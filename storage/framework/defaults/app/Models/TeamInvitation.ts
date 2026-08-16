@@ -46,7 +46,7 @@ export default defineModel({
     useApi: {
       uri: 'team-invitations',
       routes: ['index', 'show', 'destroy'],
-      middleware: ['auth'],
+      middleware: ['auth', 'team'],
     },
   },
 

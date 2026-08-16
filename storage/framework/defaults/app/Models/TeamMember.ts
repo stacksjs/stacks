@@ -42,7 +42,7 @@ export default defineModel({
     useApi: {
       uri: 'team-members',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
-      middleware: ['auth'],
+      middleware: ['auth', 'team'],
     },
   },
 

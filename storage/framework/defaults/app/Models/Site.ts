@@ -29,7 +29,7 @@ export default defineModel({
     useApi: {
       uri: 'sites',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
-      middleware: ['auth'],
+      middleware: ['auth', 'team'],
     },
 
     useSearch: {
