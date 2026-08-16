@@ -295,7 +295,64 @@ export function splitFrameworkTypecheckScript(scripts: Record<string, string>): 
 
   return Object.fromEntries(
     Object.entries(scripts).flatMap(([name, script]) => name === 'typecheck'
-      ? [['typecheck', 'bun run typecheck:app && bun run typecheck:framework'], ['typecheck:framework', script]]
+      ? [['typecheck', 'bun run typecheck:app && bun run typecheck:framework'], ['typecheck:framework', dropVendoredCoreSegments(script)]]
       : [[name, script]]),
   )
+}
+
+/**
+ * Drop `&&`-joined segments that run inside `storage/framework/core`.
+ *
+ * The framework's own `typecheck` ends with
+ * `&& (cd storage/framework/core/orm && bun run typecheck:inference)`. Copied
+ * verbatim into an unvendored app that segment cannot work - the directory is
+ * removed by the same command that copies the script - so `bun run typecheck`
+ * fails on `cd: no such file or directory` in every freshly scaffolded app,
+ * with nothing pointing back at the unvendor step that caused it.
+ */
+function dropVendoredCoreSegments(script: string): string {
+  const kept = splitTopLevelAnd(script)
+    .map(segment => segment.trim())
+    .filter(segment => segment && !segment.includes('storage/framework/core'))
+
+  // Every segment referenced the vendored core: leave the script alone rather
+  // than writing an empty one, so the breakage stays visible instead of
+  // turning into a command that silently passes.
+  return kept.length > 0 ? kept.join(' && ') : script
+}
+
+/**
+ * Split on `&&` at the top level only.
+ *
+ * The segment being removed is a subshell - `(cd … && bun run …)` - and a plain
+ * `split('&&')` cuts it in half, dropping the `cd` and keeping a fragment with
+ * an unbalanced paren. Depth tracking is enough here: these are package.json
+ * scripts, not arbitrary shell, and none of them puts an `&&` inside quotes.
+ */
+function splitTopLevelAnd(script: string): string[] {
+  const segments: string[] = []
+  let depth = 0
+  let current = ''
+
+  for (let i = 0; i < script.length; i++) {
+    const char = script[i]!
+
+    if (char === '(')
+      depth++
+    else if (char === ')')
+      depth = Math.max(0, depth - 1)
+
+    if (depth === 0 && char === '&' && script[i + 1] === '&') {
+      segments.push(current)
+      current = ''
+      i++
+      continue
+    }
+
+    current += char
+  }
+
+  segments.push(current)
+
+  return segments
 }

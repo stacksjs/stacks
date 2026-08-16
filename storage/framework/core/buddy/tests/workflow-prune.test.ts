@@ -201,6 +201,31 @@ describe('splitFrameworkTypecheckScript', () => {
     expect(splitFrameworkTypecheckScript({ typecheck: 'tsc --noEmit -p tsconfig.json' })).toBeNull()
   })
 
+  it('drops the segment that runs inside the core it is about to delete', () => {
+    // The framework's own script ends with `(cd storage/framework/core/orm &&
+    // bun run typecheck:inference)`. Copied verbatim into an unvendored app it
+    // fails on `cd: no such file or directory` - the same command that copies
+    // the script removes the directory - so every freshly scaffolded app had a
+    // `bun run typecheck` that could not pass.
+    const withInference = {
+      ...scaffold,
+      typecheck: `${scaffold.typecheck} && (cd storage/framework/core/orm && bun run typecheck:inference)`,
+    }
+
+    expect(splitFrameworkTypecheckScript(withInference)?.['typecheck:framework']).toBe(scaffold.typecheck)
+  })
+
+  it('keeps a script whose every segment referenced the vendored core', () => {
+    // Emptying it would turn a broken command into one that silently passes.
+    const onlyVendored = '(cd storage/framework/core/orm && bun x tsc -p storage/framework/tsconfig.framework.json)'
+    const next = splitFrameworkTypecheckScript({
+      typecheck: onlyVendored,
+      'typecheck:app': scaffold['typecheck:app'],
+    })
+
+    expect(next?.['typecheck:framework']).toBe(onlyVendored)
+  })
+
   it('does nothing without a `typecheck:app` to delegate to', () => {
     // Nothing to split into; guessing at the app's project would be worse than
     // leaving a script the developer can see and change.

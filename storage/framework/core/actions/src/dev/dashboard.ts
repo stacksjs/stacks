@@ -493,20 +493,22 @@ const [, discoveredModels] = await Promise.all([
 ])
 
 // eslint-disable-next-line ts/no-top-level-await
-const { loadDashboardToggles } = await import(
+const { loadDashboardConfig } = await import(
   storagePath('framework/defaults/resources/functions/dashboard/toggles.ts')
 )
 // eslint-disable-next-line ts/no-top-level-await
-const dashboardToggles = await loadDashboardToggles(projectPath('config/dashboard.ts'))
+const { toggles: dashboardToggles, nav: dashboardNav } = await loadDashboardConfig(projectPath('config/dashboard.ts'))
 
-// Write manifest. The envelope format includes the section toggles so the
-// web sidebar (which runs in STX server-script context and can't easily do
-// async config loading) can read them synchronously alongside the model
-// list. Older readers that expect a bare array are handled in the loader.
+// Write manifest. The envelope format includes the section toggles and any
+// app-declared nav sections so the web sidebar (which runs in STX
+// server-script context and can't easily do async config loading) can read
+// them synchronously alongside the model list. Older readers that expect a
+// bare array are handled in the loader.
 const manifestPath = storagePath('framework/defaults/views/dashboard/.discovered-models.json')
 const manifestPayload = {
   models: buildManifest(discoveredModels),
   sections: dashboardToggles,
+  nav: dashboardNav,
 }
 const manifestTempPath = `${manifestPath}.${process.pid}.${randomUUID()}.tmp`
 try {

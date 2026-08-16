@@ -8,7 +8,23 @@ function md5(input: string): { toString(): string } {
   }
 }
 
+/**
+ * The calendar file itself, as text.
+ *
+ * `generateIcs` wraps this in a `data:` URL, which is what an
+ * "add to calendar" anchor wants. A route that serves `text/calendar` needs the
+ * body instead - and so does anything that attaches the invitation to an email,
+ * where a base64 data URL is not a file.
+ */
+export function generateIcsBody(link: CalendarLink): string {
+  return icsLines(link).join('\r\n')
+}
+
 export function generateIcs(link: CalendarLink): string {
+  return buildLink(icsLines(link))
+}
+
+function icsLines(link: CalendarLink): string[] {
   const dateFormat = 'YYYYMMDD'
   const timeFormat = 'YYYYMMDDThhmmss'
 
@@ -47,7 +63,7 @@ export function generateIcs(link: CalendarLink): string {
   url.push('END:VEVENT')
   url.push('END:VCALENDAR')
 
-  return buildLink(url)
+  return url
 }
 
 function buildLink(propertiesAndComponents: any): string {

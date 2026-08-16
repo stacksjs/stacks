@@ -20,6 +20,28 @@ export interface DashboardOptions {
   enabled?: boolean
   /** Optional deploy-target gate, e.g. `['production']`. */
   env?: string[]
+  /**
+   * Sections this application adds to the sidebar, above the framework's own.
+   *
+   * A project that adds dashboard pages under `resources/views/dashboard/`
+   * gets working pages the sidebar cannot reach - they resolve only if you
+   * type the URL. Declaring them here keeps navigation in the project's own
+   * config rather than in the framework registry, which an app cannot edit
+   * without vendoring it.
+   *
+   * `icon` takes a full iconify class (`i-hugeicons-calendar-03`), passed
+   * through as written, or one of the framework's short sidebar icon names.
+   */
+  nav?: Array<{
+    title: string
+    items: Array<{
+      label: string
+      href: string
+      icon?: string
+      /** Role gate, matching the per-model `dashboard.roles` metadata. */
+      roles?: string[]
+    }>
+  }>
   /** Per-section visibility toggles. Omit a section to leave it enabled. */
   sections?: {
     library?: { enabled?: boolean }
