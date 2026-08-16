@@ -85,6 +85,53 @@ export function ruleIsRequired(rule: unknown): boolean {
   return Boolean(r.isRequired ?? r._required)
 }
 
+function snakeCase(value: string): string {
+  return value.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+}
+
+/** Convert a defineModel() definition into its public response schema. */
+export function modelDefinitionToSchema(model: Record<string, any>): SchemaObject {
+  const properties: Record<string, SchemaObject> = {
+    id: { type: 'integer' },
+  }
+  const required = ['id']
+
+  if (model.traits?.useUuid) {
+    properties.uuid = { type: 'string', format: 'uuid' }
+    required.push('uuid')
+  }
+
+  for (const [name, attribute] of Object.entries(model.attributes ?? {}) as Array<[string, Record<string, any>]>) {
+    if (attribute.hidden === true) continue
+    const key = snakeCase(name)
+    properties[key] = ruleToSchema(attribute.validation?.rule) as SchemaObject
+    if (attribute.required === true) required.push(key)
+  }
+
+  for (const relation of model.belongsTo ?? []) {
+    if (typeof relation !== 'string' || !relation.trim()) continue
+    const key = `${snakeCase(relation.trim())}_id`
+    properties[key] ??= { type: 'integer' }
+  }
+
+  if (model.traits?.useTimestamps !== false) {
+    properties.created_at = { type: 'string', format: 'date-time' }
+    properties.updated_at = { type: 'string', format: 'date-time' }
+  }
+  if (model.traits?.useSoftDeletes)
+    properties.deleted_at = { type: 'string', format: 'date-time', nullable: true }
+
+  return { type: 'object', properties, required: [...new Set(required)] }
+}
+
+function modelApiPath(model: Record<string, any>): string | null {
+  const api = model.traits?.useApi
+  if (!api || typeof api !== 'object' || !api.uri) return null
+  const prefix = String(api.prefix || '').replace(/^\/+|\/+$/g, '')
+  const uri = String(api.uri).replace(/^\/+|\/+$/g, '')
+  return `/api/${prefix ? `${prefix}/` : ''}${uri}`
+}
+
 /**
  * Try to resolve an action's validations object given its handler
  * path string (e.g. 'Actions/CreatePostAction'). Returns `null` on
@@ -196,6 +243,7 @@ async function loadAction(handlerPath: string): Promise<Record<string, unknown> 
       catch { /* try next candidate */ }
     }
   }
+
   catch { /* path package or fs unavailable — best-effort */ }
   return null
 }
@@ -290,6 +338,28 @@ export async function generateOpenApi(options: {
     console.warn(`[generateOpenApi] Failed to load useApi-generated ORM routes: ${message}`)
   }
 
+  let modelRegistry: Record<string, any> = {}
+  try {
+    const registryPackage = '@stacksjs/orm/model-registry'
+    let registryModule: { loadModelRegistry: (options: { defaultsRoot: string, userRoot: string }) => Promise<Record<string, any>> }
+    try {
+      registryModule = await import(registryPackage) as typeof registryModule
+    }
+    catch {
+      registryModule = await import('../../orm/src/model-registry') as typeof registryModule
+    }
+    modelRegistry = await registryModule.loadModelRegistry({
+      defaultsRoot: path.storagePath('framework/defaults/app/Models'),
+      userRoot: path.projectPath('app/Models'),
+    })
+  }
+  catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    if (portable)
+      throw new Error(`[generateOpenApi] Refusing to emit model-free schemas: ${message}`)
+    console.warn(`[generateOpenApi] Failed to load model schemas: ${message}`)
+  }
+
   // Convert `:id` to OpenAPI `{id}` up front, because that converted string is
   // what becomes a `spec.paths` key and therefore what has to be sorted. The
   // two orderings genuinely differ: `/api/queries/:id` sorts BEFORE
@@ -342,6 +412,13 @@ export async function generateOpenApi(options: {
     components: { schemas: {} },
   }
 
+  const modelApis = Object.values(modelRegistry)
+    .map(model => ({ name: String(model.name), path: modelApiPath(model), schema: modelDefinitionToSchema(model) }))
+    .filter((entry): entry is { name: string, path: string, schema: SchemaObject } => entry.path !== null)
+    .sort((left, right) => left.name < right.name ? -1 : left.name > right.name ? 1 : 0)
+
+  for (const model of modelApis) spec.components.schemas[model.name] = model.schema
+
   const operationIds = new Set<string>()
   for (const { route: r, oasPath, method } of routes) {
     if (!spec.paths[oasPath]) spec.paths[oasPath] = {}
@@ -383,6 +460,22 @@ export async function generateOpenApi(options: {
         422: { description: 'Validation failed' },
         500: { description: 'Server error' },
       },
+    }
+
+    const modelApi = modelApis.find(model => oasPath === model.path || oasPath === `${model.path}/{id}`)
+    if (modelApi) {
+      const dataSchema: SchemaObject = oasPath === modelApi.path && method === 'get'
+        ? { type: 'array', items: modelApi.schema }
+        : modelApi.schema
+      op.responses[200]!.content = {
+        'application/json': {
+          schema: { type: 'object', properties: { data: dataSchema }, required: ['data'] },
+        },
+      }
+      if (method === 'post' && oasPath === modelApi.path) {
+        op.responses[201] = { ...op.responses[200]!, description: 'Created' }
+        delete op.responses[200]
+      }
     }
 
     /*
