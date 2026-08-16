@@ -11544,16 +11544,12 @@
           },
           {
             "name": "status_code",
-            "type": "enum",
+            "type": "integer",
             "isPrimaryKey": false,
             "isUnique": false,
             "isNullable": true,
             "hasDefault": true,
-            "defaultValue": 301,
-            "enumValues": [
-              "301",
-              "302"
-            ]
+            "defaultValue": 301
           },
           {
             "name": "source",
@@ -12637,7 +12633,7 @@
       }
     ]
   },
-  "hash": "2aaccbaac0dfc8bb3b9abf2ec03723c961fceae07df849891f9be4bd953a02b9",
+  "hash": "3c75d785cb57998372cee125810c292a128e0fcfadefee973e6d4f7697f1a6cd",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-16T19:12:47.448Z"
+  "updatedAt": "2026-08-16T21:06:40.619Z"
 }
