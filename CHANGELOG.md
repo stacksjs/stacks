@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.4...v0.71.5)
+
+## 🐛 Bug Fixes
+
+- **sites**: preserve runtime exports ([5820a7a](https://github.com/stacksjs/stacks/commit/5820a7a)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.3...v0.71.4)
 
 ## 🐛 Bug Fixes
