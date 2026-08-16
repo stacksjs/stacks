@@ -3,6 +3,7 @@ import { config } from '@stacksjs/config'
 import { DEFAULT_INCREMENT_LADDER } from './engine/increments'
 
 interface AuctionConfigShape {
+  enabled?: boolean
   currency?: string
   increments?: IncrementTier[]
   antiSnipeMinutes?: number
@@ -10,8 +11,17 @@ interface AuctionConfigShape {
   maxExtensions?: number
 }
 
+interface CommerceConfigShape {
+  currency?: string
+  auction?: AuctionConfigShape
+}
+
+function commerceConfig(): CommerceConfigShape {
+  return ((config as unknown as { commerce?: CommerceConfigShape }).commerce) ?? {}
+}
+
 function auctionConfig(): AuctionConfigShape {
-  return ((config as unknown as { auction?: AuctionConfigShape }).auction) ?? {}
+  return commerceConfig().auction ?? {}
 }
 
 /**
@@ -34,7 +44,11 @@ export function rulesFor(auction?: Pick<AuctionRow, 'anti_snipe_minutes' | 'exte
   }
 }
 
-/** The auction's currency, falling back to the app-wide default. */
+/**
+ * The auction's currency, falling back to the storefront's. An auction
+ * inherits the currency the rest of commerce already runs in unless it says
+ * otherwise - a school does not raise money in a different one than it bills in.
+ */
 export function currencyFor(auction?: Pick<AuctionRow, 'currency'> | null): string {
-  return auction?.currency ?? auctionConfig().currency ?? 'USD'
+  return auction?.currency ?? auctionConfig().currency ?? commerceConfig().currency ?? 'USD'
 }

@@ -2,7 +2,6 @@ import type {
   AiConfig,
   AnalyticsConfig,
   AppConfig,
-  AuctionConfig,
   AuthConfig,
   BinaryConfig,
   CacheConfig,
@@ -66,14 +65,6 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   app: AppConfig
-
-  /**
-   * **Auction Options**
-   *
-   * Top-level feature gate plus bidding defaults for the auction bundle
-   * (proxy bidding, anti-sniping, pledges and settlement).
-   */
-  auction: AuctionConfig
 
   /**
    * **Auth Options**

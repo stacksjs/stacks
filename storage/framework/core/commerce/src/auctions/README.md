@@ -1,19 +1,19 @@
-# @stacksjs/auctions
+# Auctions
 
-Proxy bidding, anti-sniping, pledges and settlement for Stacks.
+Proxy bidding, anti-sniping, pledges and settlement, inside `@stacksjs/commerce`.
 
-A benefit auction is not a storefront. Nothing has a price, the money is a
-donation, bidding runs against other people rather than against a checkout, and
-the whole thing ends at a fixed time in a room full of people holding phones.
-That is why this is its own package rather than a corner of
-`@stacksjs/commerce`.
+A benefit auction is commerce with the prices taken out: lots instead of
+products, bidders instead of customers, and a hard stop time instead of a
+checkout. It lives here because everything downstream of the hammer - what sold,
+for how much, who owes it, what gets receipted - is ordinary commerce, and
+splitting the two would mean two vocabularies for one night's money.
 
 ## Layers
 
 ```
-engine/     pure rules - increments, proxy bidding, anti-snipe, winners
-bids/       auctions/  pledges/   persistence on top of those rules
-realtime    notifications         how the room and the bidders find out
+engine/                     pure rules - increments, proxy bidding, anti-snipe, winners
+lots/  bids/  pledges/      persistence on top of those rules
+realtime  notifications     how the room and the bidders find out
 ```
 
 The engine reads no clock, no config and no database - every input is an
@@ -25,9 +25,9 @@ Every amount is integer minor units (cents).
 ## Placing a bid
 
 ```ts
-import { placeBid } from '@stacksjs/auctions'
+import { auctions } from '@stacksjs/commerce'
 
-const result = await placeBid({
+const result = await auctions.bids.placeBid({
   itemId: 42,
   bidderName: 'Dana Reyes',
   bidderEmail: 'dana@example.com',
@@ -39,9 +39,9 @@ if (!result.accepted)
   return { error: result.message, nextMinimumBid: result.nextMinimumBid }
 ```
 
-`placeBid` writes every row in one transaction. A silent auction's worst
-failure mode is two leading bids on one lot: two people are told they won the
-same vacation package, and someone has to call one of them back.
+`placeBid` writes every row in one transaction. A silent auction's worst failure
+mode is two leading bids on one lot: two people are told they won the same
+vacation package, and someone has to call one of them back.
 
 ## Proxy bidding
 
@@ -73,21 +73,22 @@ hold one lot open indefinitely and the gala staff could not go home.
 
 ## Increment ladder
 
-Configured in `config/auction.ts`. Bids step by more as the money gets bigger,
-the way a live auctioneer does by instinct - $5 steps would turn a $4,000 travel
-package into a hundred-bid slog, and $100 steps would price everyone out of the
-$60 class art project. A lot may override the ladder with a fixed increment.
+Configured under `commerce.auction.increments` in `config/commerce.ts`. Bids
+step by more as the money gets bigger, the way a live auctioneer does by
+instinct - $5 steps would turn a $4,000 travel package into a hundred-bid slog,
+and $100 steps would price everyone out of the $60 class art project. A lot may
+override the ladder with a fixed increment.
 
 ## Closing and settlement
 
 ```ts
-import { closeDueItems, settleAuction } from '@stacksjs/auctions'
+import { auctions } from '@stacksjs/commerce'
 
 // From a per-minute job. Honours anti-snipe extensions.
-const outcomes = await closeDueItems(auctionId)
+const outcomes = await auctions.lots.closeDueItems(auctionId)
 
 // Read-only until the school has actually invoiced.
-const sheet = await settleAuction(auctionId, { markSettled: true })
+const sheet = await auctions.lots.settleAuction(auctionId, { markSettled: true })
 ```
 
 The settlement sheet reports what the night raised, sell-through, and how
@@ -98,17 +99,18 @@ Lots with no stated value are excluded rather than counted as zero.
 ## Models
 
 `Auction`, `AuctionItem`, `Bid`, `Pledge` ship under
-`storage/framework/defaults/app/Models/auctions/`. An auction's `event_id` is a
-plain column, not a `belongsTo` - the thing an auction hangs off is the
-application's own event model, which the framework does not ship.
+`storage/framework/defaults/app/Models/commerce/`, and their tables gate with
+the rest of commerce. An auction's `event_id` is a plain column, not a
+`belongsTo` - the thing an auction hangs off is the application's own event
+model, which the framework does not ship.
 
-The row shapes in `src/types.ts` are declared by this package rather than
-imported from the generated ORM types, so it builds and runs against an app
-whose types were generated before these models existed.
+The row shapes in `types.ts` are declared by this module rather than imported
+from the generated ORM types, so it builds and runs against an app whose types
+were generated before these models existed.
 
 ## Realtime
 
-Bids, pledges and closings broadcast on `auction.{id}` when
-`@stacksjs/realtime` is installed. It is resolved at call time, so an app
-without it degrades to "no live updates" rather than to a crash - and a
-websocket that is down never fails a bid the database already accepted.
+Bids, pledges and closings broadcast on `auction.{id}` when `@stacksjs/realtime`
+is installed. It is resolved at call time, so an app without it degrades to "no
+live updates" rather than to a crash - and a websocket that is down never fails
+a bid the database already accepted.

@@ -11,7 +11,7 @@
  * and run against an app whose ORM types were generated before the auction
  * models existed - which is every app that installs the published framework
  * before the next release. The models under
- * `storage/framework/defaults/app/Models/auctions/` are the source of the
+ * `storage/framework/defaults/app/Models/commerce/` are the source of the
  * columns; these interfaces are the contract the engine reads them through.
  */
 

@@ -1,3 +1,5 @@
+import type { AuctionOptions } from './auction'
+
 /**
  * **Commerce Options**
  *
@@ -13,6 +15,12 @@ export interface CommerceOptions {
   currency?: string
   /** Default tax rate applied when no product/region rule overrides. */
   defaultTaxRate?: number
+  /**
+   * Benefit auctions: lots, proxy bidding, anti-sniping, pledges and
+   * settlement. Part of commerce because everything downstream of the hammer -
+   * what sold, for how much, who owes it - is ordinary commerce.
+   */
+  auction?: AuctionOptions
 }
 
 export type CommerceConfig = Partial<CommerceOptions>

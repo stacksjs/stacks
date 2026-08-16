@@ -11,19 +11,24 @@ export interface AuctionIncrementTier {
 /**
  * **Auction Options**
  *
- * Top-level feature gate plus bidding defaults for the auction bundle
- * (Auction / AuctionItem / Bid / Pledge models, the proxy-bidding engine and
- * the settlement report). Individual auctions override the timing fields on
- * their own row - one school runs both a two-week online catalogue and a
- * ninety-minute in-room gala, and neither should have to be the global default.
+ * Bidding defaults for the auction part of commerce (Auction / AuctionItem /
+ * Bid / Pledge models, the proxy-bidding engine and the settlement report).
+ * Configured under `commerce.auction` in `config/commerce.ts`.
+ *
+ * Individual auctions override the timing fields on their own row - one school
+ * runs both a two-week online catalogue and a ninety-minute in-room gala, and
+ * neither should have to be the global default.
  *
  * Every amount is integer minor units (cents).
  */
 export interface AuctionOptions {
+  /**
+   * Gate for the auction surface on its own, inside an otherwise enabled
+   * commerce bundle. A storefront that never runs a benefit auction sets this
+   * to `false` and keeps its products, orders and carts.
+   */
   enabled?: boolean
-  /** Optional deploy-target gate, e.g. `['production']`. */
-  env?: string[]
-  /** Default currency (ISO 4217), e.g. `'USD'`. */
+  /** Currency (ISO 4217). Falls back to the storefront's own currency. */
   currency?: string
   /**
    * The increment ladder. A flat increment is wrong at both ends of a

@@ -1,4 +1,5 @@
 // Main commerce module index file
+import * as auctions from './auctions'
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
@@ -13,6 +14,7 @@ import * as tax from './tax'
 import * as waitlists from './waitlists'
 import * as restaurant from './waitlists/restaurant'
 
+type AuctionsModule = typeof auctions
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
 type ErrorsModule = typeof errors
@@ -28,6 +30,8 @@ type DevicesModule = typeof devices
 type ReceiptsModule = typeof receipts
 
 export interface CommerceNamespace {
+  /** Benefit auctions: lots, proxy bidding, anti-snipe, pledges, settlement. */
+  auctions: AuctionsModule
   coupons: CouponsModule
   customers: CustomersModule
   errors: ErrorsModule
@@ -44,6 +48,7 @@ export interface CommerceNamespace {
 }
 
 export const commerce: CommerceNamespace = {
+  auctions,
   coupons,
   customers,
   devices,
@@ -62,6 +67,7 @@ export const commerce: CommerceNamespace = {
 export default commerce
 
 export {
+  auctions,
   coupons,
   customers,
   devices,

@@ -1,9 +1,9 @@
-import type { AuctionItemRow, BidRow } from '../src/types'
+import type { AuctionItemRow, BidRow } from '../src/auctions/types'
 import { describe, expect, it } from 'bun:test'
-import { extendedCloseAt } from '../src/engine/anti-snipe'
-import { DEFAULT_INCREMENT_LADDER, incrementFor, nextMinimumBid } from '../src/engine/increments'
-import { resolveBid } from '../src/engine/proxy'
-import { determineWinner, settle } from '../src/engine/winners'
+import { extendedCloseAt } from '../src/auctions/engine/anti-snipe'
+import { DEFAULT_INCREMENT_LADDER, incrementFor, nextMinimumBid } from '../src/auctions/engine/increments'
+import { resolveBid } from '../src/auctions/engine/proxy'
+import { determineWinner, settle } from '../src/auctions/engine/winners'
 
 /** $ to cents, so the tests read like a bid sheet. */
 function usd(dollars: number): number {

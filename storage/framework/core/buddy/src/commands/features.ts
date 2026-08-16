@@ -37,7 +37,6 @@ export const FEATURE_NAMES = [
   'dashboard',
   'commerce',
   'cms',
-  'auction',
   'marketing',
   'monitoring',
   'realtime',
@@ -64,11 +63,6 @@ export type FeatureName = (typeof FEATURE_NAMES)[number]
  * already claim.
  */
 export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
-  auction: [
-    'app/Actions/Auction/',
-    'app/Models/auctions/',
-    'resources/views/dashboard/auctions/',
-  ],
   cms: [
     'app/Actions/Cms/',
     'app/Actions/Dashboard/Content/',
@@ -150,9 +144,6 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
  * defaults to "run unless owned by a disabled feature".
  */
 export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
-  // `bids` and `pledges` key to `auctions`, so all four have to be gated
-  // together or a disabled bundle's migrations run against missing parents.
-  auction: ['auctions', 'auction_items', 'bids', 'pledges'],
   // The polymorphic pivots belong here too: they carry foreign keys to
   // `posts`/`tags`/`categories`, so leaving them unclaimed means they run
   // against a database where the tables they point at were gated out.
@@ -176,6 +167,10 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     'license_keys', 'loyalty_points', 'loyalty_rewards',
     'print_devices', 'receipts', 'tax_rates',
     'waitlist_products', 'waitlist_restaurants',
+    // Benefit auctions. `bids` and `pledges` key to `auctions`, so all four
+    // gate together or a disabled bundle's migrations run against missing
+    // parents.
+    'auctions', 'auction_items', 'bids', 'pledges',
   ],
   dashboard: [
     // Kanban
