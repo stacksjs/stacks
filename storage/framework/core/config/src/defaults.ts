@@ -52,6 +52,7 @@ export const defaults: StacksOptions = {
   marketing: { enabled: false },
   monitoring: { enabled: false },
   sites: { enabled: false },
+  forms: { enabled: false },
   ai: {
     deploy: false,
     models: [

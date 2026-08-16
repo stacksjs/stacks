@@ -652,6 +652,18 @@
         "better-dx": "^0.2.17",
       },
     },
+    "storage/framework/core/forms": {
+      "name": "@stacksjs/forms",
+      "version": "0.70.380",
+      "devDependencies": {
+        "@stacksjs/config": "workspace:*",
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/notifications": "workspace:*",
+        "@stacksjs/storage": "workspace:*",
+        "@stacksjs/validation": "workspace:*",
+        "better-dx": "^0.2.17",
+      },
+    },
     "storage/framework/core/git": {
       "name": "@stacksjs/git",
       "version": "0.70.380",
@@ -1318,6 +1330,8 @@
     "@stacksjs/faker": ["@stacksjs/faker@workspace:storage/framework/core/faker"],
 
     "@stacksjs/feature-flags": ["@stacksjs/feature-flags@workspace:storage/framework/core/feature-flags"],
+
+    "@stacksjs/forms": ["@stacksjs/forms@workspace:storage/framework/core/forms"],
 
     "@stacksjs/git": ["@stacksjs/git@workspace:storage/framework/core/git"],
 

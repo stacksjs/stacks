@@ -31,6 +31,7 @@ import type {
   RealtimeConfig,
   SaasConfig,
   SearchEngineConfig,
+  FormsConfig,
   SitesConfig,
   SecurityConfig,
   ServerConfig,
@@ -344,6 +345,13 @@ export interface StacksOptions {
    * from one deployment. See {@link SitesConfig}.
    */
   sites: SitesConfig
+
+  /**
+   * **Forms Options**
+   *
+   * Feature gate plus upload/spam settings for the form-builder bundle.
+   */
+  forms: FormsConfig
 
   services: ServicesConfig
 

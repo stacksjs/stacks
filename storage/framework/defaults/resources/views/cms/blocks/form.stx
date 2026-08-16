@@ -1,0 +1,132 @@
+{{--
+  Form block: renders a @stacksjs/forms form inline on a CMS page.
+  `props.formUuid` names the form; the client script fetches the public
+  definition (same-origin), renders the fields, evaluates conditions live,
+  and submits with the CSRF header the page response seeded.
+--}}
+<div class="cms-form mx-auto max-w-xl px-6 py-8" data-form-uuid="{{ props.formUuid }}">
+  <script client>
+  const host = useRef('host')
+  const definition = state(null)
+  const values = reactive({})
+  const errors = state({})
+  const sending = state(false)
+  const done = state('')
+  const openedAt = Date.now()
+
+  effect(() => {
+    if (!host() || definition())
+      return
+    const uuid = host().dataset.formUuid
+    if (!uuid)
+      return
+    fetch(`/api/forms/${uuid}`, { credentials: 'same-origin' })
+      .then(reply => reply.ok ? reply.json() : null)
+      .then((body) => { if (body) definition.set(body) })
+      .catch(() => {})
+  })
+
+  function fieldVisible(field) {
+    const conditions = field.conditions
+    if (!conditions || !conditions.rules || conditions.rules.length === 0)
+      return true
+    const results = conditions.rules.map((rule) => {
+      const actual = values[rule.field]
+      switch (rule.op) {
+        case 'eq': return String(actual ?? '') === String(rule.value ?? '')
+        case 'neq': return String(actual ?? '') !== String(rule.value ?? '')
+        case 'contains': return String(actual ?? '').includes(String(rule.value ?? ''))
+        case 'gt': return Number(actual) > Number(rule.value)
+        case 'lt': return Number(actual) < Number(rule.value)
+        case 'empty': return actual === undefined || actual === null || String(actual) === ''
+        case 'not_empty': return actual !== undefined && actual !== null && String(actual) !== ''
+        default: return false
+      }
+    })
+    const matched = conditions.logic === 'all' ? results.every(Boolean) : results.some(Boolean)
+    return conditions.action === 'show' ? matched : !matched
+  }
+
+  async function submit(event) {
+    event.preventDefault()
+    if (sending())
+      return
+    sending.set(true)
+    errors.set({})
+
+    try {
+      const uuid = host().dataset.formUuid
+      const reply = await fetch(`/api/forms/${uuid}/submissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ ...values, _renderedMs: Date.now() - openedAt }),
+      })
+      const body = await reply.json().catch(() => ({}))
+
+      if (reply.status === 422) {
+        errors.set(body.errors ?? {})
+        return
+      }
+      if (!reply.ok) {
+        errors.set({ _form: body.message ?? 'Something went wrong. Please try again.' })
+        return
+      }
+      if (body.redirect) {
+        navigate(body.redirect)
+        return
+      }
+      done.set(body.message ?? 'Thanks - your response was received.')
+    }
+    catch {
+      errors.set({ _form: 'Something went wrong. Please try again.' })
+    }
+    finally {
+      sending.set(false)
+    }
+  }
+  </script>
+
+  <div ref="host" data-form-uuid="{{ props.formUuid }}">
+    <div :if="done()" class="rounded-lg border border-green-200 bg-green-50 px-5 py-4 text-[15px] text-green-900">{{ done() }}</div>
+    <form :else-if="definition()" @submit="submit" novalidate>
+      <h2 class="text-2xl font-semibold tracking-tight">{{ definition().name }}</h2>
+      <p :if="errors()._form" class="mt-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-[14px] text-red-800">{{ errors()._form }}</p>
+
+      <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <template :for="field in definition().fields">
+          <div :if="fieldVisible(field)" class="{{ field.width === 'half' ? '' : 'sm:col-span-2' }}">
+            <h3 :if="field.type === 'section_break'" class="mt-2 border-t border-gray-200 pt-4 text-lg font-medium">{{ field.label }}</h3>
+            <template :else>
+              <label class="block text-[14px] font-medium text-gray-800">{{ field.label }}<span :if="field.required" aria-hidden="true" class="text-red-500"> *</span></label>
+              <textarea :if="field.type === 'textarea'" rows="4" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]"></textarea>
+              <select :else-if="field.type === 'select'" :required="field.required" @change="values[field.name] = $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px] bg-white">
+                <option value="">Choose...</option>
+                <option :for="choice in field.options.choices ?? []" value="{{ choice.value }}">{{ choice.label }}</option>
+              </select>
+              <div :else-if="field.type === 'radio'" class="mt-2 space-y-2">
+                <label :for="choice in field.options.choices ?? []" class="flex items-center gap-2.5 text-[15px]">
+                  <input type="radio" name="{{ field.name }}" value="{{ choice.value }}" @change="values[field.name] = $event.target.value" class="h-4 w-4">
+                  {{ choice.label }}
+                </label>
+              </div>
+              <label :else-if="field.type === 'checkbox'" class="mt-2 flex items-center gap-2.5 text-[15px]">
+                <input type="checkbox" @change="values[field.name] = $event.target.checked" class="h-4 w-4 rounded">
+                {{ field.options.placeholder ?? 'Yes' }}
+              </label>
+              <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = field.type === 'currency' ? Math.round(Number($event.target.value) * 100) : $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]">
+              <p :if="errors()[field.name]" class="mt-1.5 text-[13px] text-red-600">{{ errors()[field.name] }}</p>
+            </template>
+          </div>
+        </template>
+      </div>
+
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" @input="values._hp = $event.target.value">
+
+      <button type="submit" :disabled="sending()" class="mt-7 rounded-lg px-6 py-3 font-medium bg-gray-900 text-white transition-transform active:scale-[0.98] disabled:opacity-60">
+        {{ sending() ? 'Sending...' : (definition().submitLabel ?? 'Submit') }}
+      </button>
+    </form>
+    <p :else class="text-[15px] text-gray-500">Loading form...</p>
+  </div>
+</div>

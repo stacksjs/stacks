@@ -15,11 +15,11 @@
 import { config } from './config'
 
 export type StacksFeature =
-  | 'auth' | 'marketing' | 'cms' | 'commerce'
+  | 'auth' | 'marketing' | 'cms' | 'commerce' | 'forms'
   | 'dashboard' | 'monitoring' | 'realtime' | 'queue'
 
 const FEATURE_NAMES: readonly StacksFeature[] = [
-  'auth', 'marketing', 'cms', 'commerce',
+  'auth', 'marketing', 'cms', 'commerce', 'forms',
   'dashboard', 'monitoring', 'realtime', 'queue',
 ] as const
 

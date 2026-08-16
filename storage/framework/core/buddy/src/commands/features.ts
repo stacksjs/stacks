@@ -37,6 +37,7 @@ export const FEATURE_NAMES = [
   'dashboard',
   'commerce',
   'cms',
+  'forms',
   'marketing',
   'monitoring',
   'realtime',
@@ -63,6 +64,9 @@ export type FeatureName = (typeof FEATURE_NAMES)[number]
  * already claim.
  */
 export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
+  forms: [
+    'app/Models/Forms/',
+  ],
   cms: [
     'app/Actions/Cms/',
     'app/Actions/Dashboard/Content/',
@@ -144,6 +148,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
  * defaults to "run unless owned by a disabled feature".
  */
 export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
+  forms: ['forms', 'form_fields', 'form_submissions'],
   // The polymorphic pivots belong here too: they carry foreign keys to
   // `posts`/`tags`/`categories`, so leaving them unclaimed means they run
   // against a database where the tables they point at were gated out.
@@ -347,6 +352,7 @@ const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
   dashboard: 'Admin SPA shell + Activity/Log/Request/Deployment/Notification dashboards.',
   commerce: 'Order/Cart/Product/Customer/Coupon/GiftCard/Shipping + storefront API.',
   cms: 'Post/Page/Author/Comment/Tag models + content edit dashboards.',
+  forms: 'User-defined forms: builder models, conditional fields, public submit + CSV export.',
   marketing: '/api/email/subscribe, /api/contact, Campaign/EmailList/SocialPost.',
   monitoring: 'Error model + error-tracking views and actions.',
   realtime: 'WebSocket broadcaster + Websocket model + realtime-stats actions.',
@@ -422,6 +428,19 @@ export default {
 export default {
   enabled: true,
 } satisfies CmsConfig
+`,
+
+  forms: `import type { FormsConfig } from '@stacksjs/types'
+
+/**
+ * **Forms Configuration**
+ *
+ * Controls the form-builder bundle (Form / FormField / FormSubmission
+ * models, public submit endpoints, CSV export).
+ */
+export default {
+  enabled: true,
+} satisfies FormsConfig
 `,
 
   marketing: `import type { MarketingConfig } from '@stacksjs/types'

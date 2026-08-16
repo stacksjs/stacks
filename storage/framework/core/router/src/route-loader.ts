@@ -96,7 +96,7 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
  * cookie and the `/locale/{code}` redirect, and bootstrap registers it
  * unconditionally.
  */
-export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'email'] as const
+export const DEFAULT_ROUTE_BUNDLES = ['auth', 'dashboard', 'email', 'forms'] as const
 
 /**
  * Bundles an app must ask for. Excluded from the implicit default AND from

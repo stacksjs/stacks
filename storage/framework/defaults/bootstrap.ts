@@ -148,6 +148,13 @@ if (mounts('email', feature('email'))) {
   await route.register(frameworkPath('defaults/routes/email.ts'))
 }
 
+// Form-builder public endpoints (`@stacksjs/forms`). Gated on the `forms`
+// feature, which defaults OFF - an app opts in with config/forms.ts
+// (`buddy forms:install`) and only then do the public submit routes exist.
+if (mounts('forms', feature('forms'))) {
+  await route.register(frameworkPath('defaults/routes/forms.ts'))
+}
+
 // Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`
 // (stacksjs/stacks#2276). An opt-in bundle, NOT part of the implicit default
 // set or `all` — OAuth callback URLs in an app that configured no provider
