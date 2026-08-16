@@ -129,6 +129,8 @@ Account.updateOrCreate({ email: 'typed@example.com' }, { role: 'admin' })
 Account.update(1, { email: 'updated@example.com' })
 Account.forceCreate({ email: 'forced@example.com', score: 1 })
 Account.forceUpdate(1, { score: 2 })
+Account.forceCreate({ secret: 'allowed', team_id: 1, invited_by: 2 })
+Account.forceUpdate(1, { secret: 'allowed', team_id: 1, invited_by: 2 })
 Account.forceCreate({ secret: 'allowed', computedLabel: 'forced' })
 Account.forceUpdate(1, { secret: 'allowed', computedLabel: 'forced' })
 

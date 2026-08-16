@@ -9,6 +9,7 @@ import { AsyncLocalStorage } from 'node:async_hooks'
 import { toCursorPaginator, toPaginator, toSimplePaginator } from './paginator'
 import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './paginator-request'
 import { validateWriteBody } from './auto-crud'
+import type { BelongsToForeignKeys } from './model-types'
 
 /**
  * Event-suppression scope. When the current async context's store reports
@@ -1908,6 +1909,7 @@ type QueryDefinition<TDef extends ModelDefinition> = TDef
 type QueryModel<TDef extends ModelDefinition> = OrmModelStatic<QueryDefinition<TDef>>
 type ModelWriteData<TDef extends ModelDefinition> = Parameters<QueryModel<TDef>['create']>[0]
 type ModelForceWriteData<TDef extends ModelDefinition> = Parameters<ReturnType<QueryModel<TDef>['make']>['forceFill']>[0]
+  & Partial<BelongsToForeignKeys<QueryDefinition<TDef>>>
 import { createTaggableMethods } from './traits/taggable'
 import { createCategorizableMethods } from './traits/categorizable'
 import { createCommentableMethods } from './traits/commentable'
