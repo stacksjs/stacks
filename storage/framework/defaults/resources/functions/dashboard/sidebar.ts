@@ -6,6 +6,7 @@
  * persistence stay inside the component instead of being serialized as HTML.
  */
 import { existsSync, readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { resolve } from 'node:path'
 
 type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' | 'system'
@@ -619,9 +620,44 @@ function resolveNavIcon(icon: string): string {
   return NAV_ICON_CLASSES[icon] ?? NAV_ICON_CLASSES.file!
 }
 
+/**
+ * Read app-declared sections straight from `config/dashboard.ts`.
+ *
+ * The manifest is the primary source, but it is written by the dashboard dev
+ * command - so an app running a published framework older than the `nav` key
+ * would get a manifest without one, and its own pages would stay unreachable.
+ * Reading the config directly also means editing it shows up on the next
+ * reload rather than on the next manifest write.
+ *
+ * `require` rather than `import`: this module is called synchronously from STX
+ * server-script context, and Bun transpiles the TS config on the way in.
+ */
+function loadAppNavFromConfig(configPath = resolve(process.cwd(), 'config/dashboard.ts')): AppNavSection[] {
+  if (!existsSync(configPath))
+    return []
+
+  let config: unknown
+  try {
+    const requireFrom = createRequire(import.meta.url)
+    const loaded = requireFrom(configPath) as { default?: unknown }
+    config = loaded?.default ?? loaded
+  }
+  catch {
+    // An unreadable config is the dashboard's problem elsewhere, not the
+    // sidebar's: fall back to the framework sections rather than blanking the
+    // whole navigation.
+    return []
+  }
+
+  // Validation deliberately outside the catch - a malformed `nav` is an
+  // authoring mistake and should say so, not silently render nothing.
+  return normalizeManifestNav((config as { nav?: unknown } | undefined)?.nav)
+}
+
 export function buildWebSidebarSections(): WebSidebarSection[] {
   const manifest = loadDiscoveredManifest()
-  const sections = buildNavSections(manifest.models, manifest.sections, manifest.nav)
+  const appNav = manifest.nav.length > 0 ? manifest.nav : loadAppNavFromConfig()
+  const sections = buildNavSections(manifest.models, manifest.sections, appNav)
 
   return [
     {
