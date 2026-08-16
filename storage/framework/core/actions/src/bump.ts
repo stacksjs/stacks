@@ -400,12 +400,19 @@ async function stageReleaseArtifacts(): Promise<void> {
   // any path containing a space or a non-ASCII byte, and feeding that back to
   // `git add` stages a filename with literal quotes in it. Let git do the
   // matching. Unmodified matches are a no-op, but a pathspec matching nothing
-  // at all is fatal, so the optional two are checked first.
-  // Framework releases only bump manifests inside the vendored framework.
-  // A repository-wide `**/package.json` also matches package-manager scratch
-  // directories (for example an interrupted `node_modules.partial` install),
-  // which can otherwise smuggle generated dependency manifests into the tag.
-  const pathspecs = [':(glob)storage/framework/**/package.json', 'package.json']
+  // at all is fatal, so every optional one is guarded.
+  //
+  // The vendored core manifests belong to a framework release only. A consumer
+  // app either has no `storage/framework` at all or has one with no manifests
+  // in it, and the unguarded glob made `git add` exit 128 — aborting *every*
+  // consumer release right here, after the bump had already rewritten
+  // package.json, CHANGELOG.md and bun.lock. A repository-wide
+  // `**/package.json` is not the alternative: it also matches package-manager
+  // scratch directories (an interrupted `node_modules.partial` install, say),
+  // which would smuggle generated dependency manifests into the tag.
+  const pathspecs = isFrameworkRelease
+    ? [':(glob)storage/framework/**/package.json', 'package.json']
+    : ['package.json']
   for (const file of ['CHANGELOG.md', 'bun.lock']) {
     if (existsSync(p.projectPath(file)))
       pathspecs.push(file)
