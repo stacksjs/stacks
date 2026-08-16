@@ -20,6 +20,58 @@ function parseSafariPlatforms(platform?: string): SafariPlatform[] | undefined {
 }
 
 /**
+ * Rebuild the App Store screenshot set from `config/images.ts`.
+ *
+ * A listing's screenshots are the part most likely to be stale: they are built
+ * from the product, and nothing fails when they fall behind it. Rebuilding on
+ * the way to an upload keeps the set that ships describing the build that
+ * ships. No-ops when the project declares none.
+ *
+ * Never fatal. What gets uploaded is the committed set the config points at;
+ * regenerating is a freshness pass over it, and a publish runner has no reason
+ * to hold captures of a product it did not launch. Letting a missing capture
+ * throw took down the whole Safari publish — and with it the Firefox and
+ * GitHub Release steps waiting behind it — for a listing whose screenshots were
+ * sitting in the repository, correct.
+ */
+async function refreshAppStoreScreenshots(): Promise<void> {
+  try {
+    const { generateProjectImages } = await import('@stacksjs/actions')
+    await generateProjectImages({ only: ['app-store'] })
+  }
+  catch (error) {
+    log.warn(`[extension:publish] using the committed screenshots — could not regenerate: ${(error as Error).message}`)
+  }
+}
+
+/**
+ * Push the declared listing screenshots to AMO after a submission.
+ *
+ * AMO is the only one of the three stores whose API will take these on the way
+ * past. Never fatal: the add-on is already submitted by this point, and a
+ * listing with yesterday's screenshots beats a publish reported as failed.
+ */
+async function syncFirefoxListing(
+  config: { firefoxAddons?: { screenshots?: unknown[] } },
+  credentials: { issuer?: string, secret?: string },
+): Promise<void> {
+  if (!config.firefoxAddons?.screenshots?.length)
+    return
+
+  try {
+    const { syncFirefoxPreviews } = await import('@stacksjs/browser-extension')
+    const previews = await syncFirefoxPreviews(config as never, credentials)
+    if (previews.unchanged)
+      log.info('Firefox listing screenshots already match')
+    else
+      log.success(`Synced ${previews.uploaded.length} Firefox listing screenshot(s), removed ${previews.removed.length}`)
+  }
+  catch (error) {
+    log.warn(`[extension:publish] Firefox listing screenshots not synced: ${(error as Error).message}`)
+  }
+}
+
+/**
  * `buddy extension:*` — build & package MV3 browser extensions from the
  * project's `config/extension.ts` (see @stacksjs/browser-extension). Zero
  * per-project build scripts: the framework owns the manifest, bundling, and
@@ -98,6 +150,78 @@ export function extension(buddy: CLI): void {
       for (const target of targets) {
         const out = await packageExtension(config, { target, version: v })
         log.success(`Packaged ${config.name} (${target}) → ${out}`)
+      }
+    })
+
+  buddy
+    .command('extension:publish', 'Publish to every store this project is set up for — the release-tag entry point')
+    .option('--version <version>', 'Override the extension version (defaults to package.json)')
+    .option('--targets <targets>', 'Comma-separated subset of chrome,firefox,safari')
+    .option('--dry-run', 'Report the publish plan without uploading anything')
+    .action(async (options: { version?: string, targets?: string, dryRun?: boolean }) => {
+      const {
+        formatPublishPlan,
+        planExtensionPublish,
+        publishChromeExtension,
+        publishFirefoxExtension,
+        publishSafariApp,
+      } = await import('@stacksjs/browser-extension')
+      const { config, version } = await load()
+
+      const requested = options.targets
+        ?.split(',')
+        .map(value => value.trim())
+        .filter(Boolean) as ('chrome' | 'firefox' | 'safari')[] | undefined
+      const plan = planExtensionPublish(config, process.env, requested?.length ? requested : undefined)
+      log.info(`Extension publish plan for v${options.version ?? version}:\n${formatPublishPlan(plan)}`)
+
+      const publishing = plan.filter(decision => decision.publish)
+      if (options.dryRun || !publishing.length) {
+        if (!publishing.length)
+          log.warn('No store is both configured and credentialed, so nothing was published.')
+        return
+      }
+
+      // Every credentialed store is attempted before anything is reported as
+      // failed. One store's outage is not a reason to withhold the release from
+      // the others, and a partial publish that is *named* can be retried per
+      // store — whereas aborting at the first failure leaves it ambiguous which
+      // stores actually received the build.
+      const failures: string[] = []
+      for (const { target } of publishing) {
+        try {
+          if (target === 'chrome') {
+            const result = await publishChromeExtension(config, { version: options.version ?? version, blockOnWarnings: true })
+            if (result.deferred)
+              log.warn(`${result.deferred.reason}. Version ${options.version ?? version} remains queued for the next automated retry.`)
+            else if (result.alreadyPublished)
+              log.success(result.alreadyPublished.reason)
+            else
+              log.success(`Submitted Chrome Web Store item ${result.publish?.itemId ?? ''}: ${result.publish?.state ?? 'uploaded'}`)
+          }
+          else if (target === 'firefox') {
+            const result = await publishFirefoxExtension(config, { version: options.version ?? version })
+            log.success(`Submitted Firefox extension (${result.channel}) → ${result.artifactsDir}`)
+            await syncFirefoxListing(config, {})
+          }
+          else {
+            await refreshAppStoreScreenshots()
+            await publishSafariApp(config, { version: options.version ?? version })
+            log.success('Uploaded Safari app to App Store Connect')
+          }
+        }
+        catch (error) {
+          failures.push(`${target}: ${(error as Error).message}`)
+          log.error(`[extension:publish] ${target} failed: ${(error as Error).message}`)
+        }
+      }
+
+      // A store that is set up and still could not publish is a real failure —
+      // exit non-zero so the release job goes red rather than quietly not
+      // reaching users.
+      if (failures.length) {
+        log.error(`Failed to publish ${failures.length} of ${publishing.length} store(s):\n  ${failures.join('\n  ')}`)
+        process.exit(1)
       }
     })
 
