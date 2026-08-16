@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -348,12 +348,6 @@ function ownsRow(rowField: unknown, ownerValue: unknown): boolean {
 // Does this model carry a direct `team_id` column? Declared attributes are
 // keyed by attribute name (camelCase `teamId`) but the DB column is
 // snake_case `team_id` — accept either spelling, always return the column.
-function teamColumnOf(model: any): string | null {
-  const attrs = model?.attributes || {}
-  const has = (k: string) => Object.prototype.hasOwnProperty.call(attrs, k)
-  return (has('teamId') || has('team_id')) ? 'team_id' : null
-}
-
 // Adapt a raw EnhancedRequest to the `{ bearerToken, cookies }` shape
 // @stacksjs/auth's team resolver expects. The handler can't rely on
 // `req.bearerToken()` being wired here (the auto-CRUD paths read the
@@ -391,7 +385,7 @@ function teamAuthRequest(req: EnhancedRequest): { bearerToken: () => string | nu
 // cycle through @stacksjs/auth.
 function effectiveOwnershipConfig(model: any): any | null {
   if (model?.ownership) return model.ownership
-  const teamCol = teamColumnOf(model)
+  const teamCol = teamOwnershipField(model)
   if (!teamCol) return null
   return {
     field: teamCol,
@@ -464,7 +458,7 @@ for (const [modelName, model] of Object.entries(models)) {
   const table = model.table || uri
   const fillableFields = getWritableFields(model)
   const hiddenFields = getHiddenFields(model)
-  const basePath = `/api/${uri}`
+  const basePath = apiBasePath(uri, apiConfig.prefix)
 
   // Read-path column allowlist: declared model attributes + system columns,
   // minus anything marked `hidden`, mapped from EITHER spelling (attribute
@@ -779,7 +773,7 @@ for (const [modelName, model] of Object.entries(models)) {
         // can't sneak `payment_intent_id` etc. into a POST even if a future
         // change accidentally flips them to fillable.
         const safeBody = dropHiddenInputs(body, hiddenFields)
-        const data = filterFillable(safeBody, fillableFields)
+        let data = filterFillable(safeBody, fillableFields)
 
         // Stamp ownership / context-aware fields from the authed user before
         // the body fillable check, so models can declare e.g.
@@ -792,6 +786,16 @@ for (const [modelName, model] of Object.entries(models)) {
             if (v !== undefined && v !== null && data[k] === undefined)
               data[k] = v
           }
+        }
+
+        // Every row-scoped create is stamped from the authenticated ownership
+        // resolver. Client input can never assign a record to another team.
+        const own = await resolveOwnership(model, authedUser, req)
+        if (own.enforced && !own.bypass) {
+          if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
+          const stamped = stampOwnership(data, own.field, own.value)
+          if (stamped.error) return jsonResponse({ error: stamped.error }, 403)
+          data = stamped.data
         }
 
         if (Object.keys(data).length === 0) {

@@ -259,6 +259,8 @@ export type ApiMiddleware =
 
 export interface ApiSettings {
   uri: string
+  /** Path segment placed after /api and before the resource URI. */
+  prefix: string
   middleware: ApiMiddleware
   routes:
     | {

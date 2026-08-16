@@ -1861,6 +1861,7 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
   traits?: Omit<NonNullable<BQBModelDefinition['traits']>, 'useApi'> & {
     useApi?: boolean | {
       readonly uri?: string
+      readonly prefix?: string
       readonly routes?: readonly string[]
       readonly middleware?: ApiMiddleware
     }

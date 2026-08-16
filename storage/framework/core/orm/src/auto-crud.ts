@@ -97,6 +97,64 @@ export function toSnakeCaseKeys(data: Record<string, any>): Record<string, any> 
   return out
 }
 
+/** Build the canonical auto-CRUD path while accepting a version prefix. */
+export function apiBasePath(uri: string, prefix?: string): string {
+  const cleanPrefix = String(prefix || '').replace(/^\/+|\/+$/g, '')
+  const cleanUri = String(uri).replace(/^\/+/, '')
+  return `/api/${cleanPrefix ? `${cleanPrefix}/` : ''}${cleanUri}`
+}
+
+/**
+ * Resolve the database column used for automatic team ownership.
+ *
+ * A belongsTo relation creates its foreign key during model-driven migration,
+ * so Team-owned models do not need to repeat a synthetic teamId attribute just
+ * to activate API isolation.
+ */
+export function teamOwnershipField(model: {
+  attributes?: Record<string, unknown>
+  belongsTo?: unknown[]
+} | null | undefined): string | null {
+  if (!model) return null
+  const attributes = model.attributes ?? {}
+  if (Object.prototype.hasOwnProperty.call(attributes, 'teamId') || Object.prototype.hasOwnProperty.call(attributes, 'team_id'))
+    return 'team_id'
+
+  return model.belongsTo?.some(relation => relation === 'Team') ? 'team_id' : null
+}
+
+/**
+ * Remove every client spelling of an ownership field, then apply the trusted
+ * value resolved from the authenticated request. Array ownership is used for
+ * resources owned through a parent relation, so the client must select one of
+ * the allowed values in that case.
+ */
+export function stampOwnership(
+  data: Record<string, any>,
+  field: string,
+  value: unknown,
+): { data: Record<string, any>, error?: string } {
+  const ownerKey = Object.keys(data).find(key => toSnakeCase(key) === toSnakeCase(field))
+
+  if (Array.isArray(value)) {
+    if (ownerKey === undefined)
+      return { data, error: 'Ownership value is required' }
+    if (!value.some(allowed => String(allowed) === String(data[ownerKey])))
+      return { data, error: 'Ownership value is not available to this caller' }
+    return { data: { ...data, [field]: data[ownerKey] } }
+  }
+
+  if (value === null || value === undefined)
+    return { data, error: 'Caller has no ownership identity' }
+
+  const stamped = { ...data }
+  for (const key of Object.keys(stamped)) {
+    if (toSnakeCase(key) === toSnakeCase(field)) delete stamped[key]
+  }
+  stamped[field] = value
+  return { data: stamped }
+}
+
 /**
  * Resolve the model fields accepted by generated store/update routes.
  *

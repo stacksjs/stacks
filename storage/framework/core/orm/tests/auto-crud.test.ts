@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stripHidden, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -75,6 +75,35 @@ describe('toSnakeCase migration-driver parity', () => {
       expect(toSnakeCase(name)).toBe(snakeCase(name))
     })
   }
+})
+
+describe('automatic team ownership', () => {
+  it('detects Team belongsTo relations and explicit team attributes', () => {
+    expect(teamOwnershipField({ belongsTo: ['Team'] })).toBe('team_id')
+    expect(teamOwnershipField({ attributes: { teamId: {} } })).toBe('team_id')
+    expect(teamOwnershipField({ belongsTo: ['User'] })).toBeNull()
+  })
+
+  it('replaces client-supplied team ownership with the trusted active team', () => {
+    expect(stampOwnership({ teamId: 999, name: 'Launch' }, 'team_id', 42)).toEqual({
+      data: { name: 'Launch', team_id: 42 },
+    })
+  })
+
+  it('rejects unavailable parent ownership values', () => {
+    expect(stampOwnership({ siteId: 99 }, 'site_id', [4, 5]).error).toContain('not available')
+    expect(stampOwnership({}, 'site_id', [4, 5]).error).toContain('required')
+  })
+})
+
+describe('versioned API base paths', () => {
+  it('keeps the legacy path when no prefix is configured', () => {
+    expect(apiBasePath('contacts')).toBe('/api/contacts')
+  })
+
+  it('normalizes a version prefix without double slashes', () => {
+    expect(apiBasePath('/contacts', '/v1/')).toBe('/api/v1/contacts')
+  })
 })
 
 describe('filterFillable (dual-spelling input)', () => {
