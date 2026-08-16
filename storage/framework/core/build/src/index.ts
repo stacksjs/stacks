@@ -26,6 +26,47 @@ export async function validateDeclarations(dir: string): Promise<void> {
   }
 }
 
+/**
+ * Link the built entry before a package can report a successful build.
+ *
+ * A minified bundle can emit `export { S as requireSite }` whose local `S`
+ * was renamed away, which parses fine and only fails when something imports
+ * the package: `Exported binding 'S' needs to refer to a top-level declared
+ * variable`. That shipped three times (ts-collect, bun-router, and again in
+ * sites/cms/analytics), each time discovered by a downstream app rather than
+ * by us, so the check belongs here — at the moment the dist is produced.
+ *
+ * Loading happens in a subprocess because it EXECUTES module top-level code;
+ * a package that needs env or a database at import must not fail its build
+ * for that reason. Only the link-error family is fatal, and anything else is
+ * left alone deliberately.
+ */
+export async function validateRuntimeExports(dir: string): Promise<void> {
+  const entry = p.resolve(dir, 'dist', 'index.js')
+  if (!(await Bun.file(entry).exists()))
+    return
+
+  const proc = Bun.spawnSync({
+    cmd: [process.execPath, '-e', `await import(${JSON.stringify(entry)})`],
+    stdout: 'ignore',
+    stderr: 'pipe',
+    env: { ...process.env, NODE_ENV: 'test' },
+  })
+
+  if (proc.exitCode === 0)
+    return
+
+  const stderr = new TextDecoder().decode(proc.stderr ?? new Uint8Array())
+  const linkError = /needs to refer to a top-level declared variable|does not provide an export named|Export named .* not found/i
+
+  if (linkError.test(stderr)) {
+    throw new Error(
+      `Built package at ${entry} cannot be imported: ${stderr.trim().split('\n')[0]}\n`
+      + 'This is the minified-barrel failure. Build with `transpilePackage` instead of a minifying `Bun.build`.',
+    )
+  }
+}
+
 export async function outro(options: {
   dir: string
   startTime: number
@@ -52,6 +93,7 @@ export async function outro(options: {
   }
 
   await validateDeclarations(options.dir)
+  await validateRuntimeExports(options.dir)
 
   // loop over all the files in the dist directory and log them and their size
   const files = await glob([p.resolve(options.dir, 'dist', '**/*')], { absolute: true })
