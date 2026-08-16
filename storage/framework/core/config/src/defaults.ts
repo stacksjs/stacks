@@ -53,6 +53,11 @@ export const defaults: StacksOptions = {
   monitoring: { enabled: false },
   sites: { enabled: false },
   forms: { enabled: false },
+  sms: {
+    enabled: false,
+    provider: 'twilio',
+    drivers: {},
+  },
   ai: {
     deploy: false,
     models: [

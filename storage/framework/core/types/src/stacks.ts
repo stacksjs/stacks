@@ -33,6 +33,7 @@ import type {
   SearchEngineConfig,
   FormsConfig,
   SitesConfig,
+  SmsConfig,
   SecurityConfig,
   ServerConfig,
   ServicesConfig,
@@ -352,6 +353,12 @@ export interface StacksOptions {
    * Feature gate plus upload/spam settings for the form-builder bundle.
    */
   forms: FormsConfig
+
+  /**
+   * SMS provider, compliance, quiet-hour, and sender configuration.
+   * Configured via `config/sms.ts`.
+   */
+  sms: SmsConfig
 
   services: ServicesConfig
 

@@ -109,6 +109,13 @@ describe('config defaults', () => {
       expect(defaults.email.from.name).toBe('Stacks')
     })
 
+    test('sms section has a disabled provider default', () => {
+      expect(defaults.sms).toBeDefined()
+      expect(defaults.sms.enabled).toBe(false)
+      expect(defaults.sms.provider).toBe('twilio')
+      expect(defaults.sms.drivers).toEqual({})
+    })
+
     test('hashing section exists with driver', () => {
       expect(defaults.hashing).toBeDefined()
       expect(defaults.hashing.driver).toBe('bcrypt')
