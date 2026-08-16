@@ -2,7 +2,7 @@
   "name": "@stacksjs/mobile",
   "type": "module",
   "sideEffects": false,
-  "version": "0.71.3",
+  "version": "0.71.4",
   "description": "Craft-powered native mobile runtime for Stacks and STX applications",
   "author": "Chris Breuer",
   "license": "MIT",

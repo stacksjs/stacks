@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.3...v0.71.4)
+
+## 🐛 Bug Fixes
+
+- **sms**: preserve send alias type ([35af6e2](https://github.com/stacksjs/stacks/commit/35af6e2)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: type relation keys in forced writes ([d419bf3](https://github.com/stacksjs/stacks/commit/d419bf3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.2...v0.71.3)
 
 ## 🐛 Bug Fixes
