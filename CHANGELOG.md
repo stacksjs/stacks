@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.1...v0.71.2)
+
+## 🐛 Bug Fixes
+
+- **deploy**: publish DNS for every hostname the gateway routes ([26ff5f0](https://github.com/stacksjs/stacks/commit/26ff5f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.0...v0.71.1)
 
 ## 🐛 Bug Fixes
