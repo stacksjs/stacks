@@ -1,0 +1,8 @@
+{{-- Call-to-action band. --}}
+<section class="cms-cta mx-auto max-w-4xl px-6 py-16 text-center">
+  <h2 class="text-3xl tracking-tight font-semibold">{{ props.heading }}</h2>
+  @if (props.body)
+    <p class="mt-4 text-lg text-gray-600 max-w-[65ch] mx-auto">{{ props.body }}</p>
+  @endif
+  <a href="{{ props.buttonHref }}" class="mt-8 inline-block rounded-lg px-6 py-3 font-medium bg-gray-900 text-white transition-transform active:scale-[0.98]">{{ props.buttonLabel }}</a>
+</section>

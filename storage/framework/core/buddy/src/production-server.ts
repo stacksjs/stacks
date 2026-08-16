@@ -444,14 +444,31 @@ export async function startProductionServer(options?: { port?: string | number, 
           if (method !== 'GET' && method !== 'HEAD')
             return
 
+          // A 404 from stx-serve gives the CMS page tree its chance — coded
+          // views win by construction because they never 404. Mirrors the dev
+          // views server; failure degrades to the original 404, never a 500.
+          let current = response
+          if (response.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+            try {
+              const { cmsNotFoundFallback } = await import('@stacksjs/cms')
+              const cmsResponse = await cmsNotFoundFallback(req)
+              if (cmsResponse)
+                current = cmsResponse
+            }
+            catch (error) {
+              log.debug(`CMS fallback skipped: ${(error as Error).message}`)
+            }
+          }
+
           try {
             const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
-            return seedCsrfCookieIfMissing(req, response)
+            return (await seedCsrfCookieIfMissing(req, current)) ?? (current === response ? undefined : current)
           }
           catch (error) {
             // Never fail a page render over a cookie — the CSRF middleware
             // still rejects unsafe requests, so this is fail-closed.
             log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
+            return current === response ? undefined : current
           }
         },
       })

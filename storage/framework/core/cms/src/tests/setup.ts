@@ -99,7 +99,93 @@ await db.unsafe(`
   )
 `).execute()
 
-const tableNames = ['categorizables', 'categorizable_models', 'taggable_models']
+// Real-pages tables: pages carries the block-document columns the Page model
+// declares; the rest back revisions, redirects and menus. Hand-created here
+// for the same reason as the trait tables — this harness runs without the
+// migration pipeline.
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    uuid VARCHAR(255),
+    site_id INTEGER,
+    author_id INTEGER,
+    parent_id INTEGER,
+    title VARCHAR(255) NOT NULL,
+    slug VARCHAR(255),
+    path VARCHAR(2048),
+    template VARCHAR(255) NOT NULL DEFAULT 'default',
+    blocks TEXT,
+    meta_description VARCHAR(320),
+    status VARCHAR(32) NOT NULL DEFAULT 'draft',
+    scheduled_at TIMESTAMP,
+    views INTEGER NOT NULL DEFAULT 0,
+    conversions INTEGER NOT NULL DEFAULT 0,
+    published_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+await db.unsafe(`
+  CREATE UNIQUE INDEX IF NOT EXISTS pages_site_path_unique ON pages (site_id, path)
+`).execute()
+
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS page_revisions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_id INTEGER NOT NULL,
+    author_id INTEGER,
+    revision INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    blocks TEXT,
+    meta_description VARCHAR(320),
+    note VARCHAR(500),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS redirects (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER NOT NULL,
+    from_path VARCHAR(2048) NOT NULL,
+    to_path VARCHAR(2048) NOT NULL,
+    status_code INTEGER NOT NULL DEFAULT 301,
+    source VARCHAR(32) NOT NULL DEFAULT 'manual',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS menus (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    site_id INTEGER NOT NULL,
+    handle VARCHAR(64) NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS menu_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    menu_id INTEGER NOT NULL,
+    page_id INTEGER,
+    label VARCHAR(120) NOT NULL,
+    url VARCHAR(2048),
+    target VARCHAR(8) DEFAULT '_self',
+    parent_id INTEGER,
+    position INTEGER DEFAULT 0,
+    visibility VARCHAR(16) DEFAULT 'public',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP
+  )
+`).execute()
+
+const tableNames = ['categorizables', 'categorizable_models', 'taggable_models', 'pages', 'page_revisions', 'redirects', 'menus', 'menu_items']
 
 /**
  * Wipe the trait tables between tests. DELETE (not DROP) keeps the

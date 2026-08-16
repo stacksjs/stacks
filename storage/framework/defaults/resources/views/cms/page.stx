@@ -1,0 +1,28 @@
+{{--
+  The default CMS page shell. Every published block-document page renders
+  through this template unless the app overrides it at
+  `resources/views/cms/page.stx`. It receives:
+
+    site    - { id, name, subdomain, settings } for the request's site
+    page    - { id, title, path, template, metaDescription }
+    content - the pre-rendered, sanitized block HTML
+
+  Deliberately minimal chrome: real sites override this to add their own
+  navigation (fetchMenuTree), theme tokens and footer.
+--}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ page.title }}</title>
+  @if (page.metaDescription)
+    <meta name="description" content="{{ page.metaDescription }}">
+  @endif
+</head>
+<body>
+  <main class="cms-page" data-template="{{ page.template }}">
+    {!! content !!}
+  </main>
+</body>
+</html>

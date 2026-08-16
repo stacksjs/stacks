@@ -11,9 +11,11 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'title', 'author', 'views', 'status', 'poster', 'focusKeyword', 'metaDescription', 'canonicalUrl'],
-      searchable: ['title', 'author', 'body', 'excerpt', 'focusKeyword', 'metaDescription'],
-      sortable: ['published_at', 'views', 'comments'],
+      displayable: ['id', 'title', 'slug', 'author', 'views', 'status', 'poster', 'focusKeyword', 'metaDescription', 'canonicalUrl'],
+      // `content`, not `body` - the column is `content`, and the old spelling
+      // silently indexed nothing. `comments` likewise was never a column.
+      searchable: ['title', 'slug', 'author', 'content', 'excerpt', 'focusKeyword', 'metaDescription'],
+      sortable: ['published_at', 'views'],
       filterable: ['status'],
     },
 
@@ -24,17 +26,16 @@ export default defineModel({
     // trait targets the real `commentables` table, activating it is correct.
     commentable: true,
     useApi: {
-      // Public catalog: anyone may browse, only authenticated callers may
-      // write. Declared explicitly because the trait now defaults BOTH sides to
-      // `auth` — an undeclared read route is how a customer list leaks
-      // (stacksjs/stacks#2224). Behaviour here is unchanged.
-      middleware: { read: [], write: ['auth'] },
+      // Admin surface now: the table carries drafts, and a public read route
+      // is how drafts leak. Public visitors get published posts through the
+      // site's own routes/pages, which filter by status themselves.
+      middleware: ['auth'],
       uri: 'posts',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
     },
   },
 
-  belongsTo: ['Author'],
+  belongsTo: ['Author', 'Site'],
   belongsToMany: {
     categories: {
       model: 'Category',
@@ -77,6 +78,20 @@ export default defineModel({
         },
       },
       factory: faker => faker.lorem.sentence(),
+    },
+
+    /**
+     * URL identity: `/news/{slug}` beats `/blog/{id}` for a public site.
+     * Nullable for pre-slug rows; the RSS/sitemap actions fall back to id.
+     */
+    slug: {
+      required: false,
+      order: 2,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: faker => faker.lorem.slug(),
     },
     poster: {
       required: false,

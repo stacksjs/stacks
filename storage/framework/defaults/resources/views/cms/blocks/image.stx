@@ -1,0 +1,7 @@
+{{-- Image block with required alt text (the editor enforces it; the schema requires it). --}}
+<figure class="cms-image mx-auto px-6 py-8 {{ props.width === 'full' ? 'max-w-none px-0' : (props.width === 'wide' ? 'max-w-6xl' : 'max-w-3xl') }}">
+  <img src="{{ props.src }}" alt="{{ props.alt }}" class="w-full rounded-lg" loading="lazy">
+  @if (props.caption)
+    <figcaption class="mt-3 text-sm text-gray-500">{{ props.caption }}</figcaption>
+  @endif
+</figure>

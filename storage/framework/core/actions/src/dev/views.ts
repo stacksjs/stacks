@@ -315,11 +315,31 @@ async function startDefaultServer() {
       requestStore.enterWith(ctx)
       return null
     },
-    // API requests are CSRF-protected by default. Seed the matching
-    // double-submit cookie on the HTML page response so a first visit to
-    // /login or /register can immediately submit to the API. Production
-    // already applies the same response hook.
-    onResponse: seedCsrfPageResponse,
+    // Two response-time concerns, in order:
+    //   1. A 404 from stx-serve gives the CMS page tree its chance — coded
+    //      views win by construction because they never 404. Failure here
+    //      must degrade to the original 404, never become a 500.
+    //   2. API requests are CSRF-protected by default. Seed the matching
+    //      double-submit cookie on the HTML page response so a first visit
+    //      to /login or /register can immediately submit to the API.
+    //      Production applies the same pair.
+    onResponse: async (req: Request, response: Response) => {
+      let current = response
+      if (response.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+        try {
+          const { cmsNotFoundFallback } = await import('@stacksjs/cms')
+          const cmsResponse = await cmsNotFoundFallback(req)
+          if (cmsResponse)
+            current = cmsResponse
+        }
+        catch (error) {
+          log.debug(`CMS fallback skipped: ${(error as Error).message}`)
+        }
+      }
+
+      const seeded = await seedCsrfPageResponse(req, current)
+      return seeded ?? (current === response ? undefined : current)
+    },
   } as any)
 }
 

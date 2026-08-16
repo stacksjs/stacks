@@ -125,6 +125,7 @@
       "devDependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/cli": "workspace:*",
+        "@stacksjs/cms": "workspace:*",
         "@stacksjs/database": "workspace:*",
         "@stacksjs/dns": "workspace:*",
         "@stacksjs/enums": "workspace:*",
@@ -276,6 +277,7 @@
         "@stacksjs/clapp": "^0.2.12",
         "@stacksjs/cli": "^0.70.380",
         "@stacksjs/cloud": "^0.70.380",
+        "@stacksjs/cms": "^0.70.380",
         "@stacksjs/collections": "^0.70.380",
         "@stacksjs/config": "^0.70.380",
         "@stacksjs/database": "^0.70.380",
@@ -421,6 +423,8 @@
       "name": "@stacksjs/cms",
       "version": "0.70.380",
       "dependencies": {
+        "@stacksjs/sites": "workspace:*",
+        "@stacksjs/validation": "workspace:*",
         "ts-slug": "^0.1.0",
         "ts-spreadsheets": "^0.2.0",
       },

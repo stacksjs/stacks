@@ -1,0 +1,10 @@
+{{-- Columns block: 1-4 sanitized HTML columns on a responsive grid. --}}
+<div class="cms-columns mx-auto max-w-6xl px-6 py-8">
+  {{-- Literal class names, not `md:grid-cols-{{ n }}`: Crosswind extracts
+       classes from template SOURCE, so a composed name generates no CSS. --}}
+  <div class="grid grid-cols-1 gap-8 {{ props.columns.length === 4 ? 'md:grid-cols-4' : (props.columns.length === 3 ? 'md:grid-cols-3' : (props.columns.length === 2 ? 'md:grid-cols-2' : '')) }}">
+    @foreach (props.columns as column)
+      <div class="leading-relaxed">{!! column.html !!}</div>
+    @endforeach
+  </div>
+</div>

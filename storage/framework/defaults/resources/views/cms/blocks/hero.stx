@@ -1,0 +1,16 @@
+{{-- Hero block: heading, optional subheading/image/CTA. --}}
+<section class="cms-hero relative overflow-hidden {{ props.align === 'center' ? 'text-center' : 'text-left' }}">
+  @if (props.imageUrl)
+    <img src="{{ props.imageUrl }}" alt="" class="absolute inset-0 h-full w-full object-cover" aria-hidden="true">
+    <div class="absolute inset-0 bg-black/45" aria-hidden="true"></div>
+  @endif
+  <div class="relative mx-auto max-w-4xl px-6 py-24 {{ props.imageUrl ? 'text-white' : '' }}">
+    <h1 class="text-4xl md:text-6xl tracking-tighter leading-none font-semibold">{{ props.heading }}</h1>
+    @if (props.subheading)
+      <p class="mt-5 text-lg md:text-xl max-w-[65ch] {{ props.align === 'center' ? 'mx-auto' : '' }} opacity-90">{{ props.subheading }}</p>
+    @endif
+    @if (props.ctaLabel && props.ctaHref)
+      <a href="{{ props.ctaHref }}" class="mt-8 inline-block rounded-lg px-6 py-3 font-medium bg-white text-gray-900 shadow-sm transition-transform active:scale-[0.98]">{{ props.ctaLabel }}</a>
+    @endif
+  </div>
+</section>
