@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **299 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **302 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -32,8 +32,9 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
-| `extension` | 12 |
+| `extension` | 13 |
 | `format` | 1 |
+| `forms` | 2 |
 | `general` | 49 |
 | `generate` | 16 |
 | `inspire` | 1 |
@@ -1806,6 +1807,21 @@ Build + zip the browser extension into store-ready archives
 | `--target` | Package a single target (chrome \| firefox \| safari); omit to package all | value, required | — |
 | `--version` | Override the extension version (defaults to package.json) | value, required | — |
 
+### `extension:publish`
+
+Publish to every store this project is set up for — the release-tag entry point
+
+- Usage: `$ buddy extension:publish`
+- Namespace: `extension`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--version` | Override the extension version (defaults to package.json) | value, required | — |
+| `--targets` | Comma-separated subset of chrome,firefox,safari | value, required | — |
+| `--dry-run` | Report the publish plan without uploading anything | boolean, optional | — |
+
 ### `extension:safari:app`
 
 Build the extension and its macOS, iPhone, and iPad Safari container apps
@@ -1923,6 +1939,32 @@ Check formatting without making changes
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `forms:install`
+
+Activate the forms feature bundle. User-defined forms: builder models, conditional fields, public submit + CSV export.
+
+- Usage: `$ buddy forms:install`
+- Namespace: `forms`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--force` | Overwrite any existing forms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+
+### `forms:uninstall`
+
+Deactivate the forms feature bundle.
+
+- Usage: `$ buddy forms:uninstall`
+- Namespace: `forms`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--keep-files` | Don't delete the forms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
 
 ### `fresh`
 
