@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.378...v0.70.379)
+
+## 🐛 Bug Fixes
+
+- **image**: require the ts-images with the card text fixes, and share accent ([7ba008f](https://github.com/stacksjs/stacks/commit/7ba008f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.377...v0.70.378)
 
 ## ✨ Features
