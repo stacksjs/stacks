@@ -1173,20 +1173,21 @@ export function migrate(buddy: CLI): void {
       // Preserved files are the ones no rerun can recreate, so they are the
       // only part of this plan a user cannot undo by running the command
       // again. List them by name rather than as a count (stacksjs/stacks#2234),
-      // and split the two reasons, because they call for opposite responses:
-      // an unmarked file is someone's work, an out-of-scope one is a table this
-      // app's models no longer describe (stacksjs/stacks#2255).
+      // and split the two reasons. A protected history file either predates
+      // the marker or follows a CREATE migration that must retain its original
+      // chronology. An out-of-scope file describes a table this app's models
+      // no longer describe (stacksjs/stacks#2255).
       const outOfScope = new Set(preservedOutOfScope)
-      const unmarked = preserved.filter(f => !outOfScope.has(f))
+      const protectedHistory = preserved.filter(f => !outOfScope.has(f))
 
-      const unmarkedBlock = unmarked.length === 0
+      const protectedHistoryBlock = protectedHistory.length === 0
         ? ''
         : `
-  • ${unmarked.length} file(s) carry no @generated marker and will be KEPT:
-${unmarked.map(f => `      ${f}`).join('\n')}
-    Hand-authored migrations cannot be regenerated, so they are never deleted.
-    If these are output from a Stacks version that predated the marker, re-run
-    with --replace-unmarked to replace them too.`
+  • ${protectedHistory.length} protected history file(s) will be KEPT:
+${protectedHistory.map(f => `      ${f}`).join('\n')}
+    These files either cannot be regenerated safely or follow a preserved
+    CREATE migration whose chronology must remain stable. --replace-unmarked
+    only replaces files that genuinely lack the @generated marker.`
 
       // Capped, unlike the unmarked list: an app that narrowed its model scope
       // can have seventy of these, and scrolling the confirmation prompt off
@@ -1217,7 +1218,7 @@ ${preservedOutOfScope.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('
   ─────────────────────────────────────────────
   • ${models} model(s) read from ${rootList}
   • ${files.length} migration file(s) will be written
-  • ${removed.length} existing file(s) will be removed${unmarkedBlock}${outOfScopeBlock}
+  • ${removed.length} existing file(s) will be removed${protectedHistoryBlock}${outOfScopeBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
 `)

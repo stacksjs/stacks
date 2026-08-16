@@ -21,6 +21,20 @@ const {
 // ---------------------------------------------------------------------------
 
 describe('Database Migrations', () => {
+  test('fresh resets preserve the committed migration corpus and model snapshot', () => {
+    const source = readFileSync(join(import.meta.dir, '..', 'src', 'migrations.ts'), 'utf8')
+    const calls = source.match(/qbResetDatabase\([^\n]+preserveMigrationState: true/g) ?? []
+
+    expect(calls).toHaveLength(2)
+  })
+
+  test('corpus regeneration requests a full model emit', () => {
+    const source = readFileSync(join(import.meta.dir, '..', 'src', 'migrations.ts'), 'utf8')
+    const regeneration = source.slice(source.indexOf('export async function regenerateMigrationCorpus'))
+
+    expect(regeneration).toContain('full: true')
+  })
+
   test('runDatabaseMigration is a function', () => {
     expect(typeof runDatabaseMigration).toBe('function')
   })

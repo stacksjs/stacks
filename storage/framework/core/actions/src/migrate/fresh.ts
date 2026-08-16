@@ -29,6 +29,15 @@ const authResult = await migrateAuthTables()
 if (!authResult.success)
   log.error(`Failed to migrate auth tables: ${authResult.error}`)
 
+// Historical normalization migrations rebuild both notifications and
+// notification_deliveries before the model corpus creates their final shapes.
+// Bootstrap those two tables so an empty database can replay the append-only
+// history. The later model migrations rebuild them, then the full guarantee
+// below checks every notification table after the schema is complete.
+const notificationBootstrap = await migrateNotificationTables({ tables: ['notifications', 'notification_deliveries'] })
+if (!notificationBootstrap.success)
+  log.error(`Failed to bootstrap notification tables: ${notificationBootstrap.error}`)
+
 // Then migrate the model-owned database schema.
 const migrateResult = await runDatabaseMigration()
 

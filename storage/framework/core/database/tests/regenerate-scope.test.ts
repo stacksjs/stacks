@@ -27,8 +27,11 @@ import { afterEach, describe, expect, it } from 'bun:test'
 import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
+  allocateMigrationOrdinals,
   createdTablesOf,
   GENERATED_MIGRATION_MARKER,
+  historicallyRootedTables,
+  migrationTouchesRootedTable,
   migrationsOutsideCorpus,
   prepareMigrationModelsDir,
   tablesOperatedOn,
@@ -93,6 +96,32 @@ describe('createdTablesOf', () => {
     ]
 
     expect(createdTablesOf(statements).sort()).toEqual(['posts', 'users'])
+  })
+})
+
+describe('mixed historical migration corpora', () => {
+  it('keeps generated schema deltas that follow an unmarked CREATE', () => {
+    mkdirSync(TMP, { recursive: true })
+    writeFileSync(join(TMP, '0000000001-create-team_invitations-table.sql'), 'CREATE TABLE team_invitations (id INTEGER);\n')
+    write('0000000002-alter-team_invitations-columns.sql', 'ALTER TABLE team_invitations ADD COLUMN pending_key TEXT;')
+    write('0000000003-create-automations-table.sql', 'CREATE TABLE automations (id INTEGER);')
+
+    const rooted = new Set(historicallyRootedTables(TMP, readdirSync(TMP)))
+
+    expect([...rooted]).toEqual(['team_invitations'])
+    expect(migrationTouchesRootedTable(TMP, '0000000002-alter-team_invitations-columns.sql', rooted)).toBe(true)
+    expect(migrationTouchesRootedTable(TMP, '0000000003-create-automations-table.sql', rooted)).toBe(false)
+  })
+
+  it('fills gaps before preserved generated follow-up migrations', () => {
+    expect(allocateMigrationOrdinals(6, 1834, new Set([1836, 1839]))).toEqual([
+      1834,
+      1835,
+      1837,
+      1838,
+      1840,
+      1841,
+    ])
   })
 })
 

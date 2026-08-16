@@ -1630,7 +1630,7 @@ export async function resetDatabase(): Promise<Result<string, Error>> {
     // "-- Database reset completed successfully" regardless. Skip the call
     // rather than let it narrate a failure as a success.
     if (existsSync(modelsDir)) {
-      await qbResetDatabase(modelsDir, { dialect })
+      await qbResetDatabase(modelsDir, { dialect, preserveMigrationState: true })
     }
     else {
       log.debug(`No models directory at ${modelsDir}; skipping model table drops.`)
@@ -1643,7 +1643,7 @@ export async function resetDatabase(): Promise<Result<string, Error>> {
     // mean the whole schema the framework put there, not just the app's half.
     const defaultsDir = defaultModelsPath()
     if (existsSync(defaultsDir))
-      await qbResetDatabase(defaultsDir, { dialect })
+      await qbResetDatabase(defaultsDir, { dialect, preserveMigrationState: true })
     else
       log.debug(`No framework default models directory at ${defaultsDir}; skipping.`)
 
@@ -2409,6 +2409,63 @@ export function createdTablesOf(statements: readonly string[]): string[] {
 }
 
 /**
+ * Tables whose original CREATE migration is preserved history.
+ *
+ * A pre-marker corpus can contain a hand-authored or legacy generated CREATE
+ * followed by newer generated ALTER files and authored data backfills. A full
+ * CREATE appended at the end cannot replace that history because the backfill
+ * still runs first. Treat the unmarked CREATE as the schema root and retain
+ * its generated follow-up migrations in their existing positions.
+ */
+export function historicallyRootedTables(dir: string, files: readonly string[]): string[] {
+  const tables = new Set<string>()
+
+  for (const file of files) {
+    if (isGeneratedMigration(dir, file))
+      continue
+
+    try {
+      for (const statement of sqlStatementsOf(readFileSync(join(dir, file), 'utf8'))) {
+        const match = statement.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i)
+        if (match?.[1])
+          tables.add(match[1].toLowerCase())
+      }
+    }
+    catch {
+      // An unreadable file cannot prove a root and is preserved by the normal
+      // safety predicate below.
+    }
+  }
+
+  return [...tables]
+}
+
+/** Whether a migration changes a table whose original CREATE is preserved. */
+export function migrationTouchesRootedTable(dir: string, file: string, rootedTables: ReadonlySet<string>): boolean {
+  try {
+    return tablesOperatedOn(readFileSync(join(dir, file), 'utf8'))
+      .some(table => rootedTables.has(table.toLowerCase()))
+  }
+  catch {
+    return false
+  }
+}
+
+/** Allocate monotonically increasing ordinals without displacing preserved history. */
+export function allocateMigrationOrdinals(count: number, startAt: number, reserved: ReadonlySet<number>): number[] {
+  const ordinals: number[] = []
+  let cursor = startAt
+
+  while (ordinals.length < count) {
+    if (!reserved.has(cursor))
+      ordinals.push(cursor)
+    cursor += 1
+  }
+
+  return ordinals
+}
+
+/**
  * Which existing migrations describe tables the incoming corpus does NOT
  * rebuild.
  *
@@ -2620,6 +2677,7 @@ export async function regenerateMigrationCorpus(options: {
         dialect: dialect as 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres',
         vitessSharded: requestedVitessSharded,
         dryRun: true,
+        full: true,
       })
     }
     finally {
@@ -2668,24 +2726,49 @@ export async function regenerateMigrationCorpus(options: {
     //    (stacksjs/stacks#2255). No flag waives this one: `--replace-unmarked`
     //    means "these unmarked files are generator output", not "delete the
     //    schema for tables you are not regenerating".
+    const rootedTables = new Set(options.replaceUnmarked ? [] : historicallyRootedTables(dir, existing))
     const outOfScope = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
     const deletable = options.replaceUnmarked
       ? existing
       : existing.filter(file => isGeneratedMigration(dir, file))
-    const removed = deletable.filter(file => !outOfScope.has(file))
+    const removed = deletable.filter(file => {
+      return !outOfScope.has(file) && !migrationTouchesRootedTable(dir, file, rootedTables)
+    })
     const preserved = existing.filter(file => !removed.includes(file))
     const preservedOutOfScope = preserved.filter(file => outOfScope.has(file))
 
-    // Numbering continues past whatever is preserved rather than restarting at
-    // 1. The corpus runs in filename order, so a preserved
-    // `0000000076-create-users-table.sql` alongside a fresh
-    // `0000000001-create-orders-table.sql` would try to add the orders foreign
-    // key seventy-five files before its target existed. Nothing preserved means
-    // nothing to order against, and numbering starts at 1 as it always has.
-    const startAt = preserved.reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
+    // A full emit for a historically rooted table would be numbered after the
+    // preserved history, so any authored backfill between the old CREATE and
+    // the replacement would run against the old shape. Keep the existing
+    // generated ALTER chain and omit the late duplicate CREATE/index/alter
+    // statements for that table. New tables still receive a full definition.
+    const writableGroups = groups
+      .map(group => ({
+        ...group,
+        statements: group.statements.filter((statement) => {
+          const table = statementTable(statement)
+          return !table || !rootedTables.has(table)
+        }),
+      }))
+      .filter(group => group.statements.length > 0)
 
-    const files = groups.map((group, index) => ({
-      name: `${String(startAt + index).padStart(10, '0')}-${group.label}.sql`,
+    // In a fully generated corpus, numbering continues past whatever is kept.
+    // In a mixed historical corpus, new full CREATEs must sit immediately after
+    // the last unmarked migration, before preserved generated follow-up files
+    // such as SQLite table rebuilds. Skip their occupied ordinals instead of
+    // renumbering them, since authored backfills may depend on those filenames'
+    // relative position.
+    const historicalBoundary = existing
+      .filter(file => !isGeneratedMigration(dir, file))
+      .reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0)
+    const startAt = rootedTables.size > 0
+      ? historicalBoundary + 1
+      : preserved.reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
+    const reservedOrdinals = new Set(preserved.map(migrationOrdinal))
+    const ordinals = allocateMigrationOrdinals(writableGroups.length, startAt, reservedOrdinals)
+
+    const files = writableGroups.map((group, index) => ({
+      name: `${String(ordinals[index]!).padStart(10, '0')}-${group.label}.sql`,
       statements: group.statements.length,
     }))
 
@@ -2699,7 +2782,7 @@ export async function regenerateMigrationCorpus(options: {
     for (const file of removed)
       unlinkSync(join(dir, file))
 
-    groups.forEach((group, index) => {
+    writableGroups.forEach((group, index) => {
       const body = `${group.statements.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
       writeFileSync(join(dir, files[index]!.name), `${GENERATED_MIGRATION_MARKER}\n${body}`)
     })
