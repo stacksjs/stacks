@@ -2787,6 +2787,12 @@ export async function regenerateMigrationCorpus(options: {
       writeFileSync(join(dir, files[index]!.name), `${GENERATED_MIGRATION_MARKER}\n${body}`)
     })
 
+    // The regenerated SQL and its model snapshot are one source-of-truth
+    // update. Persist the snapshot only after every migration file succeeds,
+    // matching the ordinary generation path and keeping dialect-specific
+    // follow-up generation at a true zero diff.
+    saveMigrationSnapshot(result.plan, { dialect: dialect as MigrationPlan['dialect'] })
+
     return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, dir })
   }
   catch (error) {

@@ -35,6 +35,16 @@ describe('Database Migrations', () => {
     expect(regeneration).toContain('full: true')
   })
 
+  test('corpus regeneration persists its dialect snapshot after SQL files', () => {
+    const source = readFileSync(join(import.meta.dir, '..', 'src', 'migrations.ts'), 'utf8')
+    const regeneration = source.slice(source.indexOf('export async function regenerateMigrationCorpus'))
+    const writes = regeneration.indexOf('writableGroups.forEach')
+    const snapshot = regeneration.indexOf('saveMigrationSnapshot(result.plan')
+
+    expect(writes).toBeGreaterThan(-1)
+    expect(snapshot).toBeGreaterThan(writes)
+  })
+
   test('runDatabaseMigration is a function', () => {
     expect(typeof runDatabaseMigration).toBe('function')
   })
