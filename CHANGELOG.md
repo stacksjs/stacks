@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.0...v0.72.1)
+
+## 🐛 Bug Fixes
+
+- **database**: preflight ordered notification tables ([88f9bcd](https://github.com/stacksjs/stacks/commit/88f9bcd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.10...v0.72.0)
 
 ## ✨ Features
