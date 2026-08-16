@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.2...v0.71.3)
+
+## 🐛 Bug Fixes
+
+- **config**: expose typed sms settings ([2ba6893](https://github.com/stacksjs/stacks/commit/2ba6893)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.71.1...v0.71.2)
 
 ## 🐛 Bug Fixes
