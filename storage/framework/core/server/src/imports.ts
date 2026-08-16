@@ -27,6 +27,7 @@ interface ExportInfo {
 const OPTIONAL_MODEL_MODULES: Record<string, string[]> = {
   commerce: ['config/commerce.ts'],
   Content: ['config/cms.ts', 'config/blog.ts'],
+  Forms: ['config/forms.ts'],
   realtime: ['config/realtime.ts'],
 }
 
@@ -522,12 +523,14 @@ export function initiateImports(): void {
 /** Generate TypeScript declarations for the globals injected by the server. */
 export async function generateServerAutoImportTypes(): Promise<void> {
   const userModelsPath = path.userModelsPath()
-  const defaultModelDirs = resolveDefaultModelDirs()
-  const [defaultsRoot, ...enabledSubdirs] = defaultModelDirs
+  const defaultModelsPath = frameworkDefaultsDir('app/Models')
   const modelExports = [
     ...scanDefineModelExports(userModelsPath),
-    ...(defaultsRoot ? scanDefineModelExports(defaultsRoot, { recursive: false }) : []),
-    ...enabledSubdirs.flatMap(dir => scanDefineModelExports(dir)),
+    // Declarations describe the complete framework model surface. Runtime
+    // registration above remains feature-gated, but lazy ORM proxies exist
+    // for opt-in modules too, so their globals need stable types before an app
+    // enables the feature and regenerates its files.
+    ...(defaultModelsPath ? scanDefineModelExports(defaultModelsPath) : []),
   ]
   const jobExports = scanDefineModelExports(path.userJobsPath())
   const defaultControllersPath = frameworkDefaultsDir('app/Controllers')

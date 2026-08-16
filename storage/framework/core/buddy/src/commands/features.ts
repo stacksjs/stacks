@@ -155,6 +155,9 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
   cms: [
     'posts', 'pages', 'comments', 'tags', 'authors', 'categories',
     'taggable_models', 'categorizable_models', 'commentables',
+    // Real-pages additions: revisions snapshot pages, redirects + menus key
+    // to sites/pages, so they gate out together with the rest of the CMS.
+    'page_revisions', 'redirects', 'menus', 'menu_items',
   ],
   commerce: [
     'products', 'product_variants', 'product_units', 'manufacturers',

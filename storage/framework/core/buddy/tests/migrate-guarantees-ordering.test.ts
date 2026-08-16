@@ -53,7 +53,11 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
   it('migrate:fresh action lets model migrations own notification tables', () => {
     const authCall = freshAction.indexOf('await migrateAuthTables')
     const modelMigrate = freshAction.indexOf('await runDatabaseMigration')
-    const notificationCall = freshAction.indexOf('await migrateNotificationTables')
+    // The argument-less call is the FULL post-migration guarantee. A scoped
+    // bootstrap (`migrateNotificationTables({ tables: ... })`) legitimately
+    // runs BEFORE model migrations so the append-only history can replay on
+    // an empty database — matching the bare prefix would pin the wrong call.
+    const notificationCall = freshAction.indexOf('await migrateNotificationTables()')
     const failureExit = freshAction.indexOf("log.error('runDatabaseMigration failed')")
     expect(authCall).toBeGreaterThan(-1)
     expect(modelMigrate).toBeGreaterThan(authCall)

@@ -10,34 +10,13 @@ Object.assign(globalThis, autoImports)
 
 // TypeScript declarations
 declare global {
-  const _increment: typeof autoImports.increment
-  const _count: typeof autoImports.count
-  const _isDark: typeof autoImports.isDark
-  const _toggleDark: typeof autoImports.toggleDark
-  const _preferredDark: typeof autoImports.preferredDark
-  const _parseGpx: typeof autoImports.parseGpx
-  const _parseJsonCoordinates: typeof autoImports.parseJsonCoordinates
-  const _parseGpsData: typeof autoImports.parseGpsData
-  const _generateSampleLoopGpx: typeof autoImports.generateSampleLoopGpx
-  const _generateSampleLoopJson: typeof autoImports.generateSampleLoopJson
-  const _validateGpsDataForClaim: typeof autoImports.validateGpsDataForClaim
-  const _haversineDistance: typeof autoImports.haversineDistance
-  const _isClosedLoop: typeof autoImports.isClosedLoop
-  const _calculatePolygonArea: typeof autoImports.calculatePolygonArea
-  const _calculatePerimeter: typeof autoImports.calculatePerimeter
-  const _simplifyTrack: typeof autoImports.simplifyTrack
-  const _pointInPolygon: typeof autoImports.pointInPolygon
-  const _lineIntersectsPolygon: typeof autoImports.lineIntersectsPolygon
-  const _routeIntersectsPolygon: typeof autoImports.routeIntersectsPolygon
-  const _getBoundingBox: typeof autoImports.getBoundingBox
-  const _parseBoundingBox: typeof autoImports.parseBoundingBox
-  const _boundingBoxesOverlap: typeof autoImports.boundingBoxesOverlap
-  const _getCentroid: typeof autoImports.getCentroid
-  const _coordinatesToGeoJson: typeof autoImports.coordinatesToGeoJson
-  const _geoJsonToCoordinates: typeof autoImports.geoJsonToCoordinates
-  const _findLinePolygonIntersections: typeof autoImports.findLinePolygonIntersections
-  const _splitPolygonByRoute: typeof autoImports.splitPolygonByRoute
-  const _generateLoopCoordinates: typeof autoImports.generateLoopCoordinates
+  const increment: typeof autoImports.increment
+  const decrement: typeof autoImports.decrement
+  const reset: typeof autoImports.reset
+  const count: typeof autoImports.count
+  const toggleDark: typeof autoImports.toggleDark
+  const isDark: typeof autoImports.isDark
+  const preferredDark: typeof autoImports.preferredDark
 }
 
 export {}

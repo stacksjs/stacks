@@ -298,9 +298,25 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   // CMS (Content subdir on disk uses the capital C)
   ['Post', ['Content'], 'cms'],
   ['Page', ['Content'], 'cms'],
+  ['PageRevision', ['Content'], 'cms'],
+  ['Redirect', ['Content'], 'cms'],
+  ['Menu', ['Content'], 'cms'],
+  ['MenuItem', ['Content'], 'cms'],
   ['Author', ['Content'], 'cms'],
   ['Comment', [''], 'cms'],
   ['Tag', [''], 'cms'],
+
+  // Multi-site tenancy + passwordless auth + SMS compliance: always-on
+  // platform models (no feature gate beyond their configs being off).
+  ['Site', [''], 'auth'],
+  ['SiteDomain', [''], 'auth'],
+  ['MagicLinkToken', [''], 'auth'],
+  ['SmsOptOut', [''], 'auth'],
+
+  // Form builder
+  ['Form', ['Forms'], 'forms'],
+  ['FormField', ['Forms'], 'forms'],
+  ['FormSubmission', ['Forms'], 'forms'],
 
   // Dashboard (admin SPA + monitoring dashboards)
   ['Activity', [''], 'dashboard'],
@@ -334,6 +350,15 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['EmailSuppression', [''], 'marketing'],
   ['EmailWebhookEvent', [''], 'marketing'],
   ['SocialPost', [''], 'marketing'],
+  // Multi-channel delivery primitives (automations, variants, consent,
+  // sender domains, cross-channel suppression, usage metering)
+  ['Automation', [''], 'marketing'],
+  ['AutomationRun', [''], 'marketing'],
+  ['CampaignVariant', [''], 'marketing'],
+  ['CommunicationSuppression', [''], 'marketing'],
+  ['ConsentEvent', [''], 'marketing'],
+  ['SenderDomain', [''], 'marketing'],
+  ['UsageEvent', [''], 'marketing'],
 
   // Payments (top-level — used by commerce checkout and by standalone billing)
   ['PaymentMethod', [''], 'commerce'],
@@ -369,6 +394,10 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['TaxRate', ['commerce'], 'commerce'],
   ['WaitlistProduct', ['commerce'], 'commerce'],
   ['WaitlistRestaurant', ['commerce'], 'commerce'],
+  ['Auction', ['commerce'], 'commerce'],
+  ['AuctionItem', ['commerce'], 'commerce'],
+  ['Bid', ['commerce'], 'commerce'],
+  ['Pledge', ['commerce'], 'commerce'],
   ['LoyaltyPoint', ['commerce'], 'commerce'],
   ['LoyaltyReward', ['commerce'], 'commerce'],
   ['Payment', ['commerce'], 'commerce'],
@@ -416,7 +445,17 @@ queueMicrotask(async () => {
 
 export const Activity = lazyModel<typeof import('../../../defaults/app/Models/Activity').default>('Activity')
 export const AnalyticsEvent = lazyModel<typeof import('../../../defaults/app/Models/AnalyticsEvent').default>('AnalyticsEvent')
+export const Automation = lazyModel<typeof import('../../../defaults/app/Models/Automation').default>('Automation')
+export const AutomationRun = lazyModel<typeof import('../../../defaults/app/Models/AutomationRun').default>('AutomationRun')
+export const Auction = lazyModel<typeof import('../../../defaults/app/Models/commerce/Auction').default>('Auction')
+export const CampaignVariant = lazyModel<typeof import('../../../defaults/app/Models/CampaignVariant').default>('CampaignVariant')
+export const CommunicationSuppression = lazyModel<typeof import('../../../defaults/app/Models/CommunicationSuppression').default>('CommunicationSuppression')
+export const ConsentEvent = lazyModel<typeof import('../../../defaults/app/Models/ConsentEvent').default>('ConsentEvent')
+export const SenderDomain = lazyModel<typeof import('../../../defaults/app/Models/SenderDomain').default>('SenderDomain')
+export const UsageEvent = lazyModel<typeof import('../../../defaults/app/Models/UsageEvent').default>('UsageEvent')
+export const AuctionItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/AuctionItem').default>('AuctionItem')
 export const Author = lazyModel<typeof import('../../../defaults/app/Models/Content/Author').default>('Author')
+export const Bid = lazyModel<typeof import('../../../defaults/app/Models/commerce/Bid').default>('Bid')
 export const Board = lazyModel<typeof import('../../../defaults/app/Models/Board').default>('Board')
 export const BoardColumn = lazyModel<typeof import('../../../defaults/app/Models/BoardColumn').default>('BoardColumn')
 export const Campaign = lazyModel<typeof import('../../../defaults/app/Models/Campaign').default>('Campaign')
@@ -437,6 +476,18 @@ export const DriverPing = lazyModel<typeof import('../../../defaults/app/Models/
 export const CampaignSend = lazyModel<typeof import('../../../defaults/app/Models/CampaignSend').default>('CampaignSend')
 export const EmailList = lazyModel<typeof import('../../../defaults/app/Models/EmailList').default>('EmailList')
 export const EmailListSubscriber = lazyModel<typeof import('../../../defaults/app/Models/EmailListSubscriber').default>('EmailListSubscriber')
+export const Form = lazyModel<typeof import('../../../defaults/app/Models/Forms/Form').default>('Form')
+export const FormField = lazyModel<typeof import('../../../defaults/app/Models/Forms/FormField').default>('FormField')
+export const FormSubmission = lazyModel<typeof import('../../../defaults/app/Models/Forms/FormSubmission').default>('FormSubmission')
+export const MagicLinkToken = lazyModel<typeof import('../../../defaults/app/Models/MagicLinkToken').default>('MagicLinkToken')
+export const Menu = lazyModel<typeof import('../../../defaults/app/Models/Content/Menu').default>('Menu')
+export const MenuItem = lazyModel<typeof import('../../../defaults/app/Models/Content/MenuItem').default>('MenuItem')
+export const PageRevision = lazyModel<typeof import('../../../defaults/app/Models/Content/PageRevision').default>('PageRevision')
+export const Pledge = lazyModel<typeof import('../../../defaults/app/Models/commerce/Pledge').default>('Pledge')
+export const Redirect = lazyModel<typeof import('../../../defaults/app/Models/Content/Redirect').default>('Redirect')
+export const Site = lazyModel<typeof import('../../../defaults/app/Models/Site').default>('Site')
+export const SiteDomain = lazyModel<typeof import('../../../defaults/app/Models/SiteDomain').default>('SiteDomain')
+export const SmsOptOut = lazyModel<typeof import('../../../defaults/app/Models/SmsOptOut').default>('SmsOptOut')
 export const EmailIdempotency = lazyModel<typeof import('../../../defaults/app/Models/EmailIdempotency').default>('EmailIdempotency')
 export const EmailSuppression = lazyModel<typeof import('../../../defaults/app/Models/EmailSuppression').default>('EmailSuppression')
 export const EmailWebhookEvent = lazyModel<typeof import('../../../defaults/app/Models/EmailWebhookEvent').default>('EmailWebhookEvent')
@@ -498,18 +549,24 @@ export const Websocket = lazyModel<typeof import('../../../defaults/app/Models/r
 // drained, so `await Order.all()` resolves transparently.
 const _allExports: Record<string, any> = {
   User, Job, FailedJob,
-  Activity, Author, Board, BoardColumn, Campaign, CampaignSend, Card,
+  Activity, AnalyticsEvent, Automation, AutomationRun, Auction, AuctionItem,
+  Author, Bid, Board, BoardColumn, Campaign, CampaignSend, CampaignVariant, Card,
   CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
+  CommunicationSuppression, ConsentEvent,
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Driver, DriverPing,
   EmailList,
-  EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent, ErrorModel, GiftCard, Label, LicenseKey,
+  EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent,
+  ErrorModel, Form, FormField, FormSubmission, GiftCard, Label, LicenseKey,
   Log, LoyaltyPoint, LoyaltyReward, MailPreference, Manufacturer, Notification,
-  NotificationDelivery, Order, OrderIdempotency, OrderItem, Page, Payment, PaymentMethod,
-  PaymentProduct, PaymentTransaction, Post, PrintDevice, Product, ProductUnit,
+  MagicLinkToken, Menu, MenuItem, NotificationDelivery, Order, OrderIdempotency,
+  OrderItem, Page, PageRevision, Payment, PaymentMethod, PaymentProduct,
+  PaymentTransaction, Pledge, Post, PrintDevice, Product, ProductUnit,
   ProductVariant, QueryLog, Receipt, Release, Request, Review, ShippingMethod,
-  ShippingRate, ShippingZone, SocialAccount, SocialPost, Subscriber,
+  Redirect, SenderDomain, ShippingRate, ShippingZone, Site, SiteDomain,
+  SmsOptOut, SocialAccount, SocialPost, Subscriber,
   SubscriberEmail,
   Subscription, Tag, TaxRate, Team, TeamInvitation, TeamMember, Transaction,
+  UsageEvent,
   WaitlistProduct, WaitlistRestaurant, Websocket,
 }
 const g = globalThis as Record<string, any>

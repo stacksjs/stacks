@@ -66,7 +66,9 @@ describe('defineModel definitions preserve literal types via as const', () => {
     const postPath = findModel('Post')
     expect(postPath).toBeDefined()
     const content = readFileSync(postPath!, 'utf-8')
-    expect(content).toContain("belongsTo: ['Author']")
+    // Site joined Author when posts became site-scoped; the point of this
+    // test is the literal-array shape, not the exact relation set.
+    expect(content).toContain("belongsTo: ['Author', 'Site']")
   })
 
   test('User model has narrow attribute keys', () => {

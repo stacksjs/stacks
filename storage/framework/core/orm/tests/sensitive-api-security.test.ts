@@ -20,12 +20,19 @@ import Receipt from '../../../defaults/app/Models/commerce/Receipt'
 import Transaction from '../../../defaults/app/Models/commerce/Transaction'
 
 const PUBLIC_MODEL_APIS = [
+  // The benefit-auction catalogue is anonymously browsable by design - lots,
+  // current bids and buy-now prices are the public storefront. The sensitive
+  // number (a bidder's proxy ceiling) lives on Bid.max_amount, hidden: true.
+  'Auction',
+  'AuctionItem',
   'Author',
   'Category',
   'LoyaltyReward',
   'Manufacturer',
-  'Page',
-  'Post',
+  // Page and Post are deliberately ABSENT: since pages became block
+  // documents and posts gained drafts-by-status, their generated reads are
+  // auth'd admin surfaces - public visitors get published content through
+  // the site's own routes, which filter by status.
   'Product',
   'ProductUnit',
   'ProductVariant',

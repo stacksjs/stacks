@@ -150,15 +150,15 @@ describe('resolveDefaultRouteBundles (#2229)', () => {
 })
 
 describe('mounted routes per bundle (#2229)', () => {
-  test('an app that says nothing mounts exactly what it did before', async () => {
-    // The back-compat property. `all` is the pre-change behaviour, so an
-    // unset environment resolving to anything else would change which
-    // endpoints an existing deployment exposes.
+  test('an app that says nothing mounts the default bundles but not opt-in bundles', async () => {
     const [unset, all] = await Promise.all([routesFor({}), routesFor({ STACKS_DEFAULT_ROUTES: 'all' })])
 
-    expect(unset).toEqual(all)
+    expect(unset).not.toEqual(all)
     for (const route of AUTH_ROUTES)
       expect(unset).toContain(route)
+
+    expect(unset).not.toContain('POST /api/forms/{uuid}/submissions')
+    expect(all).toContain('POST /api/forms/{uuid}/submissions')
   }, 120_000)
 
   test('the legacy switch still mounts nothing', async () => {

@@ -59,7 +59,9 @@ export default defineModel({
       fillable: true,
       default: 301,
       validation: {
-        rule: schema.enum([301, 302] as const),
+        // schema.enum is string-typed; the numeric range pins 301/302 (the
+        // read path coerces anything else to 301 anyway).
+        rule: schema.number().min(301).max(302),
       },
       factory: () => 301,
     },

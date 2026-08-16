@@ -2,3 +2,4 @@
 export * from './functions'
 export * from './models'
 export * from './jobs'
+export * from './controllers'
