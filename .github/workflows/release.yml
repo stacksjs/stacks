@@ -104,6 +104,7 @@ jobs:
         uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
         with:
           version: '0.10.50'
+          install: 'false'
 
       - name: Use Cached node_modules
         uses: actions/cache@v5
