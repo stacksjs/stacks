@@ -105,6 +105,19 @@ describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () =
 
     expect(notificationTablesMissingCreateStatements(sql)).toEqual(['notification_preferences'])
   })
+
+  test('preflights a notification table referenced before its generated create', () => {
+    const sql = `
+      UPDATE notification_deliveries SET user_id = NULL;
+      CREATE TABLE "notification_deliveries" ("id" INTEGER PRIMARY KEY, "user_id" INTEGER);
+    `
+
+    expect(notificationTablesMissingCreateStatements(sql)).toEqual([
+      'notifications',
+      'notification_preferences',
+      'notification_deliveries',
+    ])
+  })
 })
 
 /**

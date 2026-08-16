@@ -135,8 +135,19 @@ export function notificationTablesMissingCreateStatements(sql: string): Notifica
       `\\bCREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?["\\x60\\[]?${escaped}["\\x60\\]]?\\s*\\(`,
       'i',
     )
+    const create = createPattern.exec(sql)
 
-    return !createPattern.test(sql)
+    if (!create)
+      return true
+
+    // A corpus may contain the generated CREATE, but only after an older
+    // normalization or SQLite rebuild already reads the table. Treat that as
+    // missing for preflight purposes: migration order, not mere presence,
+    // determines whether a fresh database can execute the history.
+    const referencePattern = new RegExp(`\\b${escaped}\\b`, 'i')
+    const beforeCreate = sql.slice(0, create.index)
+
+    return referencePattern.test(beforeCreate)
   })
 }
 
