@@ -4,6 +4,8 @@ import { join, resolve } from 'node:path'
 import Comment from '../../../defaults/app/Models/Comment'
 import Notification from '../../../defaults/app/Models/Notification'
 import NotificationDelivery from '../../../defaults/app/Models/NotificationDelivery'
+import Auction from '../../../defaults/app/Models/commerce/Auction'
+import AuctionItem from '../../../defaults/app/Models/commerce/AuctionItem'
 import Cart from '../../../defaults/app/Models/commerce/Cart'
 import CartItem from '../../../defaults/app/Models/commerce/CartItem'
 import Coupon from '../../../defaults/app/Models/commerce/Coupon'
@@ -20,11 +22,6 @@ import Receipt from '../../../defaults/app/Models/commerce/Receipt'
 import Transaction from '../../../defaults/app/Models/commerce/Transaction'
 
 const PUBLIC_MODEL_APIS = [
-  // The benefit-auction catalogue is anonymously browsable by design - lots,
-  // current bids and buy-now prices are the public storefront. The sensitive
-  // number (a bidder's proxy ceiling) lives on Bid.max_amount, hidden: true.
-  'Auction',
-  'AuctionItem',
   'Author',
   'Category',
   'LoyaltyReward',
@@ -90,6 +87,15 @@ describe('sensitive model API security', () => {
     })
   })
 
+  test.each([
+    ['auction', Auction],
+    ['auction item', AuctionItem],
+  ])('protects generated %s reads and writes', (_name, model) => {
+    expect(model.traits.useApi).toMatchObject({
+      middleware: { read: ['auth'], write: ['auth'] },
+    })
+  })
+
   test('keeps anonymous generated reads on an explicit public catalog allowlist', () => {
     // Relative to this file rather than the working directory: run from
     // inside the package, a cwd-relative path resolves to
@@ -103,7 +109,9 @@ describe('sensitive model API security', () => {
         if (start < 0)
           return []
         const block = objectBlock(source, start)
-        if (/middleware\s*:\s*\[[^\]]*['"]auth['"]/.test(block))
+        const flatAuth = /middleware\s*:\s*\[[^\]]*['"]auth['"]/.test(block)
+        const readAuth = /middleware\s*:\s*\{[^}]*read\s*:\s*\[[^\]]*['"]auth['"]/.test(block)
+        if (flatAuth || readAuth)
           return []
         const name = source.match(/name:\s*['"]([^'"]+)/)?.[1]
         return name ? [name] : []
