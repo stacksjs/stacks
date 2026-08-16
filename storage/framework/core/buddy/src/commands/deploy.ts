@@ -1959,7 +1959,18 @@ async function runHetznerDeploy(args: {
   // left undefined, it simply skips them.
   let ipv6: string | undefined
   if (attachTo) {
-    const box = persistedAttachBox ?? await resolveAttachTargetBox(attachTo, environment)
+    let box = persistedAttachBox ?? await resolveAttachTargetBox(attachTo, environment)
+    // A state file written before publicIpv6 was persisted pins the tenant to
+    // IPv4 forever: the cached box short-circuits the Hetzner lookup, the AAAA
+    // pass is skipped for want of an address, and the deploy then rewrites the
+    // same v6-less file. Re-resolve when the cache is missing v6 so an existing
+    // tenant heals itself on its next deploy instead of needing the file
+    // deleted by hand.
+    if (box && !box.publicIpv6) {
+      const resolved = await resolveAttachTargetBox(attachTo, environment)
+      if (resolved?.publicIpv6)
+        box = { ...box, publicIpv6: resolved.publicIpv6 }
+    }
     if (!box?.publicIp) {
       log.error(`Attach target '${attachTo}' has no reachable box for '${environment}'. Is '${attachTo}-${environment}-app' provisioned (by its owner)?`)
       process.exit(ExitCode.FatalError)
