@@ -65,7 +65,7 @@
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.184",
-    "@stacksjs/ts-cloud": "^0.8.2",
+    "@stacksjs/ts-cloud": "^0.8.3",
     "@stacksjs/ts-md": "^0.1.1",
     "craft-native": ">=0.0.55"
   },

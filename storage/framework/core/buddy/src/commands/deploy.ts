@@ -2032,6 +2032,12 @@ async function runHetznerDeploy(args: {
       serverId: box.serverId,
       serverName: box.serverName,
       publicIp: ip,
+      // Persisted because the next deploy short-circuits the Hetzner lookup and
+      // reads this file instead (resolvePersistedAttachTargetBox). Omitting it
+      // silently downgraded every deploy after the first to IPv4-only: the box
+      // has a public v6 and serves on it, but the AAAA pass is skipped when
+      // this is undefined, so tenants ended up reachable over v4 alone.
+      ...(ipv6 ? { publicIpv6: ipv6 } : {}),
       sshUser: 'root',
       deployStoragePath: '/var/ts-cloud/staging',
     }, null, 2)}\n`)
@@ -2325,8 +2331,12 @@ async function runHetznerDeploy(args: {
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
   let publishedDns: string[] = []
-  if (ok)
-    publishedDns = await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6)
+  if (ok) {
+    // The same autoWww setting the gateway was built with, so the hostnames DNS
+    // publishes and the routes rpx serves stay one set.
+    const autoWww = tsCloudConfig.infrastructure?.compute?.proxy?.autoWww
+    publishedDns = await reconcileHetznerDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, ip, log, ipv6, autoWww)
+  }
 
   // A brand-new subdomain does not resolve until the step above runs, and ACME
   // cannot issue for a name that does not resolve — so the certificate the
@@ -3527,17 +3537,36 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   }
 }
 
-async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string): Promise<string[]> {
+async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string, autoWww?: boolean): Promise<string[]> {
   // FQDNs this run actually published, so the caller can re-issue TLS for
   // names that did not resolve when the gateway was last reloaded.
   const published: string[] = []
-  // Collect the apex domains declared by sites (skip loopback/domain-less sites).
-  const domains = new Set<string>()
-  for (const site of Object.values(sites)) {
-    if (site?.domain && typeof site.domain === 'string')
-      domains.add(site.domain.replace(/^www\./, ''))
+
+  // Ask ts-cloud which hostnames the gateway will actually answer, rather than
+  // re-deriving them here. The two used to be computed independently and
+  // drifted: this function collapsed every domain to its apex
+  // (`.replace(/^www\./, '')`) and then re-added a `www` only for two-label
+  // apexes, so an explicitly declared `www.<sub>.<apex>` site — which does get
+  // a real route and a real cert entry — was published as nothing at all. The
+  // name then resolved with no certificate of its own and rpx answered it with
+  // the fallback cert, which on a shared box belongs to another tenant.
+  // `gatewayHostnames` is the same function the gateway builds its route table
+  // from, and a test in ts-cloud pins the two together.
+  const { gatewayHostnames } = await import('@stacksjs/ts-cloud') as any
+  const hostnames: string[] = gatewayHostnames(sites, { autoWww })
+
+  // Group by the zone-ish base each hostname belongs to. The base is what gets
+  // handed to provider detection and to `reconcileAddressRecords`'s `zone`
+  // argument, exactly as before, so provider resolution behaves identically for
+  // every tenant already deployed; only the set of FQDNs under each base grew.
+  const byBase = new Map<string, Set<string>>()
+  for (const fqdn of hostnames) {
+    const base = fqdn.replace(/^www\./, '')
+    const group = byBase.get(base) ?? new Set<string>()
+    group.add(fqdn)
+    byBase.set(base, group)
   }
-  if (domains.size === 0)
+  if (byBase.size === 0)
     return published
 
   // Candidate provider configs, built from whatever credentials are present.
@@ -3545,16 +3574,8 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
 
   if (providerConfigs.length === 0) {
     logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
-    for (const d of domains) {
-      // Same apex-only rule as the reconcile below: telling someone to create a
-      // www record for a subdomain site would hand them a host that resolves
-      // and then fails TLS.
-      logger.info(
-        d.split('.').length === 2
-          ? `  Point manually:  A ${d} → ${ip}   and   A www.${d} → ${ip}`
-          : `  Point manually:  A ${d} → ${ip}`,
-      )
-    }
+    for (const fqdn of hostnames)
+      logger.info(`  Point manually:  A ${fqdn} → ${ip}`)
     return published
   }
 
@@ -3573,14 +3594,12 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     }
   }
 
-  for (const domain of domains) {
-    // Only an apex gets a `www.` variant. The rpx gateway's autoWww applies the
-    // same rule (it skips any domain that is not two labels), so publishing one
-    // for a subdomain site creates a record with NO route and NO certificate:
-    // the host resolves, then fails TLS verification, which is worse for a
-    // visitor than the name not existing at all. `www.trifitla.stacksjs.com`
-    // and `www.trifit.stacksjs.com` were both live in that state.
-    const subs = domain.split('.').length === 2 ? ['', 'www'] : ['']
+  for (const [domain, group] of byBase) {
+    // Exactly the hostnames the gateway routes for this base — the apex, the
+    // `www` variant it synthesizes for a two-label apex, and any `www` host a
+    // site declared for itself. Never a name the gateway does not answer: that
+    // is the record that resolves and then serves the wrong certificate.
+    const fqdns = [...group].sort()
 
     try {
       // Credential rejection, nameserver fallback and the "nothing owns this
@@ -3591,8 +3610,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
       if (!provider) {
         // No configured provider owns this zone — the records may still be
         // correct (managed at the registrar). Only warn when they aren't.
-        for (const sub of subs) {
-          const fqdn = sub ? `${sub}.${domain}` : domain
+        for (const fqdn of fqdns) {
           const current = await resolveA(fqdn)
           if (current.includes(ip))
             logger.success(`  DNS: ${fqdn} → ${ip} (externally managed, already correct)`)
@@ -3603,8 +3621,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
         }
         continue
       }
-      for (const sub of subs) {
-        const fqdn = sub ? `${sub}.${domain}` : domain
+      for (const fqdn of fqdns) {
         // Pass the full fqdn as the record name — the provider derives the
         // zone root from `domain` and strips it back off the name. Passing
         // '' for the apex made subdomain sites (dashboard.hq.training)
