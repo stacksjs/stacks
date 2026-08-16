@@ -37,7 +37,7 @@ export function seed(buddy: CLI): void {
       // stays the single place its data shape is described.
       const { injectGlobalAutoImports } = await import('@stacksjs/server')
       await injectGlobalAutoImports()
-      const { seed: seedDatabase } = await import('@stacksjs/database')
+      const { runApplicationSeeders, seed: seedDatabase } = await import('@stacksjs/database')
 
       const list = (value?: string): string[] | undefined =>
         value ? value.split(',').map(entry => entry.trim()).filter(Boolean) : undefined
@@ -51,22 +51,24 @@ export function seed(buddy: CLI): void {
         includeDefaults: options.includeDefaults,
         allowProtected: options.allowProtected,
       })
+      const applicationSummary = await runApplicationSeeders({ verbose: options.verbose })
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      if (summary.total === 0) {
+      if (summary.total === 0 && applicationSummary.total === 0) {
         await outro(
-          `No models declare a \`useSeeder\` trait — nothing to seed.`,
+          `No models declare a \`useSeeder\` trait and no application seeders were found.`,
           { startTime: perf, useSeconds: true },
         )
         process.exit(ExitCode.Success)
       }
 
+      const failures = summary.failed + applicationSummary.failed
       await outro(
-        `Seeded your ${APP_ENV} database. ${summary.successful}/${summary.total} model(s) seeded${summary.failed > 0 ? `, ${summary.failed} failed` : ''}.`,
+        `Seeded your ${APP_ENV} database. ${summary.successful}/${summary.total} model(s) and ${applicationSummary.successful}/${applicationSummary.total} application seeder(s) completed${failures > 0 ? `, ${failures} failed` : ''}.`,
         { startTime: perf, useSeconds: true },
       )
-      process.exit(summary.failed > 0 ? ExitCode.FatalError : ExitCode.Success)
+      process.exit(failures > 0 ? ExitCode.FatalError : ExitCode.Success)
     })
 
   // `./buddy seed:roles` — idempotently seed the default RBAC role packs

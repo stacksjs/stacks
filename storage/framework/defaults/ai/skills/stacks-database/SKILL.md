@@ -177,6 +177,8 @@ Before running migrations on SQLite, `preprocessSqliteMigrations()`:
 - `seedModel$(modelName, options?): Promise<SeedResult>` -- seed one model by name
 - `freshSeed(config?): Promise<SeedSummary>` -- calls `seed({ ...config, fresh: true })` (truncates before seeding)
 - `listSeedableModels(): Promise<Array<{ name, table, count, source: 'default' | 'user' }>>` -- list without seeding
+- `runApplicationSeeders(config?): Promise<ApplicationSeederSummary>` -- runs `database/seeders` classes in deterministic relative-path order
+- `Seeder` -- abstract base class for idempotent application bootstrap seeders
 
 ### SeederConfig
 ```typescript
@@ -198,6 +200,20 @@ interface SeederConfig {
 - Records inserted in batches of 100
 - Models sorted by dependency: User (0), Team (1), Project (2), everything else (10)
 - Missing tables are skipped gracefully
+- `buddy seed` and `buddy migrate:fresh --seed` also run application seeders after model factories
+- Application seeder modules must default-export a class extending `Seeder` and implement `run()`
+- Application seeders are for idempotent bootstrap work that does not belong in model factories, such as an initial workspace or role assignment
+
+```typescript
+// database/seeders/OwnerSeeder.ts
+import { Seeder } from '@stacksjs/database'
+
+export default class OwnerSeeder extends Seeder {
+  async run(): Promise<void> {
+    // Resolve existing records first, then create only what is missing.
+  }
+}
+```
 
 ### SeedResult / SeedSummary
 ```typescript

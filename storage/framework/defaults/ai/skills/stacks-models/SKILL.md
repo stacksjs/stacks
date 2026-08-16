@@ -244,7 +244,10 @@ traits: {
 ```
 
 `buddy seed` walks every model carrying the trait and fills its table from the
-attribute factories. Nothing else is needed - no seeder files, no registration.
+attribute factories. Model fixture data needs no separate seeder or registration.
+Idempotent application bootstrap work can live in `database/seeders` as a
+default-exported class extending `Seeder` from `@stacksjs/database`. Buddy runs
+those application seeders after the model factories.
 
 ```bash
 buddy seed                       # every model with a useSeeder trait

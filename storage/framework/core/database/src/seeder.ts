@@ -8,6 +8,9 @@
  */
 
 import type { Attribute, Model, SeedOptions } from '@stacksjs/types'
+import { existsSync, readdirSync } from 'node:fs'
+import { extname, relative } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { log } from '@stacksjs/logging'
 // Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
 import { db, ensureDatabaseConfigLoaded } from './utils'
@@ -15,6 +18,135 @@ import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
 import { hashMake } from '@stacksjs/security'
 import { fs } from '@stacksjs/storage'
+
+/**
+ * Base contract for application seeders stored in `database/seeders`.
+ *
+ * Application seeders complement model factories with idempotent bootstrap
+ * work such as creating an initial workspace or assigning roles.
+ */
+export abstract class Seeder {
+  abstract run(): Promise<void> | void
+}
+
+export interface ApplicationSeederResult {
+  seeder: string
+  file: string
+  success: boolean
+  error?: string
+  duration: number
+}
+
+export interface ApplicationSeederSummary {
+  total: number
+  successful: number
+  failed: number
+  results: ApplicationSeederResult[]
+  duration: number
+}
+
+export interface ApplicationSeederConfig {
+  /** Directory containing application seeder modules. */
+  directory?: string
+  /** Whether to output progress and result logs. */
+  verbose?: boolean
+}
+
+const SEEDER_EXTENSIONS = new Set(['.js', '.mjs', '.ts'])
+
+function applicationSeederFiles(directory: string): string[] {
+  if (!existsSync(directory))
+    return []
+
+  const files: string[] = []
+  const visit = (current: string): void => {
+    const entries = readdirSync(current, { withFileTypes: true })
+      .sort((a, b) => a.name.localeCompare(b.name))
+
+    for (const entry of entries) {
+      if (entry.name.startsWith('.'))
+        continue
+
+      const file = `${current}/${entry.name}`
+      if (entry.isDirectory()) {
+        visit(file)
+        continue
+      }
+
+      if (!entry.isFile() || entry.name.endsWith('.d.ts') || !SEEDER_EXTENSIONS.has(extname(entry.name)))
+        continue
+
+      files.push(file)
+    }
+  }
+
+  visit(directory)
+  return files
+}
+
+/**
+ * Run application seeders from `database/seeders` in deterministic path order.
+ *
+ * Each module must default-export a class extending {@link Seeder}. Failures
+ * are recorded and remaining seeders continue, matching model-factory seeding.
+ */
+export async function runApplicationSeeders(config: ApplicationSeederConfig = {}): Promise<ApplicationSeederSummary> {
+  const startTime = Date.now()
+  const directory = config.directory || path.userDatabasePath('seeders')
+  const verbose = config.verbose ?? true
+  const results: ApplicationSeederResult[] = []
+
+  for (const file of applicationSeederFiles(directory)) {
+    const startedAt = Date.now()
+    const displayFile = relative(directory, file)
+    let seeder = displayFile.replace(/\.(?:m?js|ts)$/, '')
+
+    try {
+      const module = await import(pathToFileURL(file).href)
+      const SeederClass = module.default
+
+      if (typeof SeederClass !== 'function')
+        throw new TypeError('The default export must be a Seeder class.')
+
+      const instance = new SeederClass()
+      if (!(instance instanceof Seeder))
+        throw new TypeError('The default export must extend Seeder from @stacksjs/database.')
+
+      seeder = SeederClass.name || seeder
+      if (verbose)
+        log.info(`Running application seeder ${seeder}...`)
+
+      await instance.run()
+      results.push({
+        seeder,
+        file: displayFile,
+        success: true,
+        duration: Date.now() - startedAt,
+      })
+    }
+    catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (verbose)
+        log.error(`Application seeder ${seeder} failed: ${message}`)
+
+      results.push({
+        seeder,
+        file: displayFile,
+        success: false,
+        error: message,
+        duration: Date.now() - startedAt,
+      })
+    }
+  }
+
+  return {
+    total: results.length,
+    successful: results.filter(result => result.success).length,
+    failed: results.filter(result => !result.success).length,
+    results,
+    duration: Date.now() - startTime,
+  }
+}
 
 /**
  * Returns the path to the framework default models directory

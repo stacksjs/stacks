@@ -923,19 +923,25 @@ export function migrate(buddy: CLI): void {
         log.info('Running database seeders...')
         try {
           // Import seed dynamically to avoid circular deps and ensure db is initialized
-          const { seed } = await import('@stacksjs/database')
+          const { runApplicationSeeders, seed } = await import('@stacksjs/database')
           const seedResult = await seed({ verbose: options.verbose, fresh: true })
+          const applicationSeedResult = await runApplicationSeeders({ verbose: options.verbose })
 
-          if (seedResult.failed > 0) {
-            log.warn(`Seeding completed with ${seedResult.failed} failure(s)`)
+          const failures = seedResult.failed + applicationSeedResult.failed
+          if (failures > 0) {
+            log.warn(`Seeding completed with ${failures} failure(s)`)
             for (const r of seedResult.results) {
               if (!r.success) {
                 log.error(`  - ${r.model}: ${r.error}`)
               }
             }
+            for (const r of applicationSeedResult.results) {
+              if (!r.success)
+                log.error(`  - ${r.seeder}: ${r.error}`)
+            }
           }
           else {
-            log.success(`Seeded ${seedResult.successful} model(s)`)
+            log.success(`Seeded ${seedResult.successful} model(s) and ran ${applicationSeedResult.successful} application seeder(s)`)
           }
         }
         catch (error) {
