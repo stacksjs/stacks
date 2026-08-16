@@ -250,7 +250,11 @@ export async function fetchTopProducts(limit: number = 5): Promise<TopProductRow
   try {
     const rows = await db
       .selectFrom('order_items')
-      .innerJoin('products', 'products.id', 'order_items.product_id')
+      // Four arguments, not three: the query builder takes the comparison
+      // operator explicitly, and the three-argument form throws
+      // `innerJoin(onRight): identifier must be a non-empty string` at runtime
+      // rather than failing to compile.
+      .innerJoin('products', 'products.id', '=', 'order_items.product_id')
       .select([
         'products.id as id',
         'products.name as name',

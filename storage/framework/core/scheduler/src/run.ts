@@ -1,6 +1,7 @@
 import type { Err, Ok } from '@stacksjs/error-handling'
 import type { JobOptions } from '@stacksjs/types'
 import { ok } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'
@@ -8,6 +9,16 @@ import { Every } from '@stacksjs/types'
 
 export async function runScheduler(): Promise<Ok<string, never> | Err<string, any>> {
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
+
+  // `app/Scheduler.ts` runs FIRST, before the `rate` fields are read.
+  //
+  // Both are sources of schedules, and a job that declared `rate: Every.Hour`
+  // and also appeared in Scheduler.ts used to be registered twice - two cron
+  // tasks, two runs, every hour, with nothing in the logs to say why the digest
+  // went out in duplicate. Loading the explicit file first lets it win: only an
+  // entry there can carry a timezone, an overlap policy or an `at()` time,
+  // which is exactly the case where the two disagree.
+  await runSchedulerInstance()
 
   // Process job files and initialize schedules if missing
   for (const jobFile of jobFiles) {
@@ -24,15 +35,20 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
       // `app/Jobs/Inspire.ts`.
       const jobName = getJobName(job, jobFile)
 
-      if (job.rate)
-        executeJobRate(jobName, job.rate)
+      if (!job.rate)
+        continue
+
+      if (schedule.isScheduled(jobName)) {
+        log.debug(`[scheduler] ${jobName} is declared in app/Scheduler.ts; ignoring its \`rate\` so it is not scheduled twice`)
+        continue
+      }
+
+      executeJobRate(jobName, job.rate)
     }
     catch (error) {
       console.error(error)
     }
   }
-
-  await runSchedulerInstance()
 
   return ok('Schedules ran successfully') as any
 }

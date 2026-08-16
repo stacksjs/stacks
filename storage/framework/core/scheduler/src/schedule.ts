@@ -405,6 +405,19 @@ export class Schedule implements UntimedSchedule {
     return !Schedule.disabledJobs().has(name)
   }
 
+  /**
+   * Whether a job of this name already has a scheduled task.
+   *
+   * The scheduler has two sources: a `rate` on the job file, and an explicit
+   * entry in `app/Scheduler.ts`. A job that appears in both was registered
+   * twice and ran twice - see `runScheduler`, which uses this to let the
+   * explicit entry win, since only it can carry a timezone and an overlap
+   * policy.
+   */
+  static isScheduled(name: string): boolean {
+    return Schedule.jobs.has(name)
+  }
+
   private static disabledJobs(): Set<string> {
     try {
       const value = JSON.parse(readFileSync(Schedule.stateFile, 'utf8')) as { disabled?: unknown }
