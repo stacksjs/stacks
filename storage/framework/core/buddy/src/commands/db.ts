@@ -23,8 +23,40 @@ import {
 const DEFAULT_BACKUP_DIR = 'storage/backups/database'
 const DEFAULT_RETAIN = 7
 
-async function backupTarget(): Promise<BackupTarget | null> {
-  const { config } = await import('@stacksjs/config')
+/**
+ * The database this app actually opens.
+ *
+ * `@stacksjs/config` merges `config/*.ts` asynchronously and only re-binds its
+ * exports once `overridesReady` resolves, so reading `config.database` before
+ * then answers with the FRAMEWORK DEFAULT rather than the project's config
+ * (stacksjs/stacks#2333). There is no barrier anywhere above this: the CLI
+ * does not await it, so this function has to.
+ *
+ * That matters most where it is least visible. `applyPreMigrationBackup`
+ * splices `db:backup --before-migrations` into a site's `preStart` ahead of
+ * `migrate`, so an early read means dumping one database while `migrate`
+ * changes another - and reporting success. A backup of the wrong database is
+ * worse than no backup, because it is one you would restore from.
+ *
+ * The rejection is swallowed on purpose. `overridesReady` rejects when boot
+ * validation finds ANY issue in ANY config file, but that check runs after
+ * every config module has already merged into `overrides` in place, so the
+ * values here are complete either way. Letting it propagate would mean a typo
+ * in an unrelated file - `ports.frontend`, say - aborts the pre-migration
+ * backup and therefore the deploy, which is a worse failure than the one it
+ * would be reporting. The validator has already printed the issues itself.
+ *
+ * Deliberately untested, which is worth stating rather than hiding. In this
+ * repo `database.default` comes from `DB_CONNECTION` in the environment,
+ * available synchronously, so early and late reads agree and no assertion can
+ * tell them apart - measured over three runs, and an ordering assertion also
+ * passed with the barrier removed. Reproducing the divergence needs a
+ * `config/database.ts` that is not env-derived or that carries a top-level
+ * await. A test that passes either way would only look like coverage.
+ */
+export async function backupTarget(): Promise<BackupTarget | null> {
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady.catch(() => {})
   return resolveBackupTarget((config as any)?.database)
 }
 
