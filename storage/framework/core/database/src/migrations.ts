@@ -2396,6 +2396,193 @@ export function tablesOperatedOn(sql: string): string[] {
   return [...tables]
 }
 
+/**
+ * The columns a CREATE TABLE statement defines, in order.
+ *
+ * Splits on top-level commas only, so `DECIMAL(10, 2)` and a multi-column
+ * `PRIMARY KEY (a, b)` do not read as column boundaries. Table constraints
+ * carry no column name and are skipped.
+ */
+export function columnsDefinedByCreate(statement: string): string[] {
+  const body = statement.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?\w+["'`]?\s*\(([\s\S]*)\)\s*;?\s*$/i)?.[1]
+  if (!body)
+    return []
+
+  const parts: string[] = []
+  let depth = 0
+  let current = ''
+
+  for (const char of body) {
+    if (char === '(')
+      depth++
+    if (char === ')')
+      depth--
+    if (char === ',' && depth === 0) {
+      parts.push(current)
+      current = ''
+      continue
+    }
+    current += char
+  }
+  parts.push(current)
+
+  const constraint = /^\s*(?:PRIMARY\s+KEY|FOREIGN\s+KEY|UNIQUE|CHECK|CONSTRAINT|KEY|INDEX)\b/i
+
+  return parts
+    .map(part => part.trim())
+    .filter(part => part && !constraint.test(part))
+    .flatMap(part => part.match(/^["'`]?(\w+)["'`]?/)?.[1] ?? [])
+}
+
+/**
+ * Which columns of `table` the migrations on disk actually produce.
+ *
+ * This is "what a database would have after running the corpus", which is not
+ * the same as what the models declare - and the gap between those two is the
+ * bug this exists to close.
+ */
+export function columnsProducedByMigrations(dir: string, files: readonly string[], table: string): Set<string> {
+  const columns = new Set<string>()
+  const target = table.toLowerCase()
+
+  for (const file of [...files].sort()) {
+    let content: string
+    try {
+      content = readFileSync(join(dir, file), 'utf8')
+    }
+    catch {
+      continue
+    }
+
+    for (const statement of sqlStatementsOf(content)) {
+      const stmt = statement.trim()
+
+      const create = stmt.match(/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i)
+      if (create?.[1]?.toLowerCase() === target) {
+        for (const column of columnsDefinedByCreate(stmt))
+          columns.add(column.toLowerCase())
+        continue
+      }
+
+      const added = stmt.match(/^ALTER\s+TABLE\s+["'`]?(\w+)["'`]?\s+ADD\s+(?:COLUMN\s+)?["'`]?(\w+)["'`]?/i)
+      if (added?.[1]?.toLowerCase() === target && added[2])
+        columns.add(added[2].toLowerCase())
+
+      const dropped = stmt.match(/^ALTER\s+TABLE\s+["'`]?(\w+)["'`]?\s+DROP\s+(?:COLUMN\s+)?["'`]?(\w+)["'`]?/i)
+      if (dropped?.[1]?.toLowerCase() === target && dropped[2])
+        columns.delete(dropped[2].toLowerCase())
+
+      // A SQLite rebuild replaces the table wholesale: whatever the temp table
+      // defines is what the real one ends up with.
+      const rebuilt = stmt.match(/^ALTER\s+TABLE\s+["'`]?_qb_tmp_(\w+)["'`]?\s+RENAME\s+TO\s+["'`]?(\w+)["'`]?/i)
+      if (rebuilt?.[2]?.toLowerCase() === target) {
+        const temp = sqlStatementsOf(content).find(s =>
+          new RegExp(`^CREATE\\s+TABLE\\s+["'\`]?_qb_tmp_${rebuilt[1]}["'\`]?`, 'i').test(s.trim()),
+        )
+        if (temp) {
+          columns.clear()
+          for (const column of columnsDefinedByCreate(temp))
+            columns.add(column.toLowerCase())
+        }
+      }
+    }
+  }
+
+  return columns
+}
+
+/**
+ * The ALTERs that bring a historically rooted table up to the model's shape.
+ *
+ * A rooted table's CREATE lives in preserved history, so regeneration omits
+ * the full CREATE it just generated - re-creating the table would sit after
+ * authored backfills that already ran against the old shape. That is right
+ * for a table whose columns have not changed and SILENTLY WRONG for one that
+ * gained some: the new columns were in the omitted CREATE and nowhere else,
+ * so no database could ever reach the declared schema, while the snapshot was
+ * written as though the whole corpus had been emitted.
+ *
+ * Observed on a real app: `posts`, `campaigns` and `campaign_sends` were
+ * short 20 columns after a full migrate from empty, with the models and the
+ * snapshot both insisting they were present.
+ *
+ * Emitting ADD COLUMN for exactly the gap keeps the root and the backfills in
+ * place and still lands the new columns.
+ */
+export function rootedTableCatchUpStatements(
+  createStatement: string,
+  existingColumns: ReadonlySet<string>,
+): string[] {
+  const table = createStatement.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i)?.[1]
+  if (!table)
+    return []
+
+  const body = createStatement.match(/\(([\s\S]*)\)\s*;?\s*$/)?.[1]
+  if (!body)
+    return []
+
+  const definitions = new Map<string, string>()
+  let depth = 0
+  let current = ''
+  const parts: string[] = []
+
+  for (const char of body) {
+    if (char === '(')
+      depth++
+    if (char === ')')
+      depth--
+    if (char === ',' && depth === 0) {
+      parts.push(current)
+      current = ''
+      continue
+    }
+    current += char
+  }
+  parts.push(current)
+
+  const constraint = /^\s*(?:PRIMARY\s+KEY|FOREIGN\s+KEY|UNIQUE|CHECK|CONSTRAINT|KEY|INDEX)\b/i
+  for (const raw of parts) {
+    const part = raw.trim()
+    if (!part || constraint.test(part))
+      continue
+    const name = part.match(/^["'`]?(\w+)["'`]?/)?.[1]
+    if (name)
+      definitions.set(name.toLowerCase(), part)
+  }
+
+  const statements: string[] = []
+  for (const [name, definition] of definitions) {
+    if (existingColumns.has(name))
+      continue
+
+    // SQLite refuses ADD COLUMN for PRIMARY KEY, UNIQUE, and AUTOINCREMENT.
+    // A column carrying one of those cannot be added after the fact, so it is
+    // left out rather than emitted as SQL that fails mid-run.
+    if (/\b(?:PRIMARY\s+KEY|UNIQUE|AUTOINCREMENT)\b/i.test(definition))
+      continue
+
+    // NOT NULL with no default is the subtle one: SQLite accepts it against an
+    // EMPTY table and rejects it against a populated one ("Cannot add a NOT
+    // NULL column with default value NULL"), because the existing rows would
+    // have nowhere to get a value. Emitting it as written therefore produces a
+    // migration that passes in CI, where every table starts empty, and fails
+    // on the production database it was written for.
+    //
+    // The constraint is dropped rather than the column. A missing column
+    // breaks every query that names it; a nullable one works and merely holds
+    // a weaker rule than the model asks for, which the model is still the
+    // source of truth for - a later regenerate emits the table rebuild that
+    // tightens it, once there is a value to backfill with.
+    const nullable = /\bNOT\s+NULL\b/i.test(definition) && !/\bDEFAULT\b/i.test(definition)
+      ? definition.replace(/\s*\bNOT\s+NULL\b/i, '')
+      : definition
+
+    statements.push(`ALTER TABLE "${table}" ADD COLUMN ${nullable.trim()}`)
+  }
+
+  return statements
+}
+
 /** The tables a set of generated statements creates, lowercased. */
 export function createdTablesOf(statements: readonly string[]): string[] {
   const tables = new Set<string>()
@@ -2741,6 +2928,27 @@ export async function regenerateMigrationCorpus(options: {
     // the replacement would run against the old shape. Keep the existing
     // generated ALTER chain and omit the late duplicate CREATE/index/alter
     // statements for that table. New tables still receive a full definition.
+    //
+    // Omitting them wholesale is what lost columns: a rooted table that GAINED
+    // attributes had them only in the CREATE being dropped, so no database
+    // could reach the declared schema and the snapshot was still written as if
+    // it could. The gap is emitted as ADD COLUMN instead, which leaves the root
+    // and the backfills exactly where they are.
+    const catchUp: string[] = []
+    for (const table of rootedTables) {
+      const create = groups
+        .flatMap(group => group.statements)
+        .find(statement => statementTable(statement) === table && /^\s*CREATE\s+TABLE\b/i.test(statement))
+      if (!create)
+        continue
+
+      const produced = columnsProducedByMigrations(dir, preserved, table)
+      if (produced.size === 0)
+        continue
+
+      catchUp.push(...rootedTableCatchUpStatements(create, produced))
+    }
+
     const writableGroups = groups
       .map(group => ({
         ...group,
@@ -2750,6 +2958,7 @@ export async function regenerateMigrationCorpus(options: {
         }),
       }))
       .filter(group => group.statements.length > 0)
+      .concat(catchUp.length > 0 ? [{ label: 'alter-rooted-tables-columns', statements: catchUp }] : [])
 
     // In a fully generated corpus, numbering continues past whatever is kept.
     // In a mixed historical corpus, new full CREATEs must sit immediately after
