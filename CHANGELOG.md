@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.2...v0.72.3)
+
+## 🐛 Bug Fixes
+
+- **ci**: grant actions:read and make release ordering fail open ([f78974f](https://github.com/stacksjs/stacks/commit/f78974f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: stop the release concurrency group from cancelling releases ([888f683](https://github.com/stacksjs/stacks/commit/888f683)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **database**: stabilize datetime regressions ([d0c2797](https://github.com/stacksjs/stacks/commit/d0c2797)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: update database tooling ([c9fdb7c](https://github.com/stacksjs/stacks/commit/c9fdb7c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.1...v0.72.2)
 
 ## ✨ Features
