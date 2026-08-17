@@ -1,4 +1,5 @@
 /* eslint no-console: 0 */
+import type { LogContext, LogLevel, LogRecord, LogTransport } from '@stacksjs/types'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import process from 'node:process'
 import { Logger } from '@stacksjs/clarity'
@@ -38,15 +39,132 @@ function registerFlushOnExit(): void {
   })
 }
 
-// Request context propagation for structured logging
-export interface LogContext {
-  requestId?: string
-  userId?: string | number
-  [key: string]: unknown
+// --- Transports -------------------------------------------------------------
+//
+// Everything the framework logs also goes to any registered transport, so a
+// log service, an OTel exporter, or a test sink can see the stream without the
+// application rewriting a single call site.
+//
+// Transports receive the record BEFORE formatting collapses it: `args` still
+// holds the real `Error` and the real context object. That is the whole point
+// of the seam. A formatter would only ever see the string.
+
+const _transports: LogTransport[] = []
+
+/** Transports that have thrown. Reported once each, then left alone. */
+const _brokenTransports = new Set<string>()
+
+/**
+ * Severity ranking for a transport's own `level` filter.
+ *
+ * `success` ranks with `info` deliberately: it is an outcome, not a severity,
+ * and a transport asking for `warning` and above does not want it.
+ */
+const LEVEL_RANK: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  success: 1,
+  warning: 2,
+  error: 3,
 }
 
-/** Valid log levels — mirrors `@stacksjs/clarity`'s `LogLevel`. */
-export type LogLevel = 'debug' | 'info' | 'success' | 'warning' | 'error'
+function addTransport(candidate: unknown): (() => void) | null {
+  const t = candidate as LogTransport | undefined
+  if (!t || typeof t !== 'object' || typeof t.log !== 'function') {
+    process.stderr.write('[logging] Ignoring a transport without a log() function.\n')
+    return null
+  }
+  if (typeof t.name !== 'string' || !t.name) {
+    process.stderr.write('[logging] Ignoring a transport without a name.\n')
+    return null
+  }
+
+  _transports.push(t)
+  return () => {
+    const at = _transports.indexOf(t)
+    if (at !== -1) _transports.splice(at, 1)
+  }
+}
+
+/**
+ * Attach a transport at runtime, and get back a function that detaches it.
+ *
+ * The alternative to declaring one in `config/logging.ts`, for a package that
+ * has to attach without the application editing its config. Registering also
+ * initializes the logger, so a transport attached at boot starts receiving
+ * `debug` records immediately rather than waiting for the first console-visible
+ * line to build the config.
+ */
+export function registerTransport(transport: LogTransport): () => void {
+  const detach = addTransport(transport)
+  if (!detach) return () => {}
+  void initLogger()
+  return detach
+}
+
+/** The transports currently attached. A copy, so callers cannot mutate the list. */
+export function transports(): readonly LogTransport[] {
+  return [..._transports]
+}
+
+/**
+ * Hand one record to every transport that wants it.
+ *
+ * Synchronous and total: a transport that throws is contained and reported
+ * once, because the logger is frequently the thing reporting a failure and it
+ * must not become a second one. Cheap when nothing is attached, which is the
+ * common case and the reason for the length check at every call site.
+ */
+function dispatch(level: LogLevel, message: string, args: unknown[]): void {
+  if (_transports.length === 0) return
+
+  let record: LogRecord
+  try {
+    record = {
+      level,
+      message,
+      args,
+      context: getLogContext(),
+      timestamp: new Date().toISOString(),
+    }
+  }
+  catch {
+    // Building the record must never take a log call down with it.
+    return
+  }
+
+  for (const transport of _transports) {
+    if (transport.level && LEVEL_RANK[level] < LEVEL_RANK[transport.level])
+      continue
+    try {
+      transport.log(record)
+    }
+    catch (err) {
+      if (!_brokenTransports.has(transport.name)) {
+        _brokenTransports.add(transport.name)
+        const reason = err instanceof Error ? err.message : String(err)
+        process.stderr.write(`[logging] Transport "${transport.name}" threw: ${reason}. Further throws from it are silent.\n`)
+      }
+    }
+  }
+}
+
+/** Drain every transport that buffers. Never rejects; see {@link LogTransport.flush}. */
+async function flushTransports(): Promise<void> {
+  const pending = _transports
+    .filter(t => typeof t.flush === 'function')
+    .map(t => t.flush!().catch(() => {}))
+  if (pending.length > 0)
+    await Promise.allSettled(pending)
+}
+
+// Request context propagation for structured logging, and the transport
+// contract. Both are declared in `@stacksjs/types` so `config/logging.ts` can
+// reference them without importing this package, which would be a cycle. They
+// are re-exported here because this is where consumers already import them
+// from.
+export type { LogContext, LogLevel, LogRecord, LogTransport } from '@stacksjs/types'
+
 export type LogFormat = 'json' | 'text'
 
 const VALID_LEVELS: ReadonlySet<string> = new Set<LogLevel>(['debug', 'info', 'success', 'warning', 'error'])
@@ -276,7 +394,7 @@ async function initLogger(): Promise<void> {
     let cfgWriteToFile: boolean | undefined
     try {
       const cfg = await import('@stacksjs/config') as {
-        logging?: { level?: string, format?: string, writeToFile?: boolean, logsPath?: string }
+        logging?: { level?: string, format?: string, writeToFile?: boolean, logsPath?: string, transports?: unknown }
       }
       const logging = cfg.logging
       if (logging) {
@@ -286,6 +404,12 @@ async function initLogger(): Promise<void> {
         if (logging.logsPath) {
           const np = await import('node:path')
           cfgLogDir = np.dirname(logging.logsPath)
+        }
+        // Config-declared transports. Added directly rather than through
+        // `registerTransport`, which would re-enter this function.
+        if (Array.isArray(logging.transports)) {
+          for (const transport of logging.transports)
+            addTransport(transport)
         }
       }
     }
@@ -469,16 +593,21 @@ export const log: Log = {
   info: async (...args: any[]) => {
     const message = formatMessage(...args)
     const logger = await getLogger()
+    // Before the write, not after: a transport should still see the line if
+    // the console or file write is the thing that fails.
+    dispatch('info', message, args)
     await logger.info(message)
   },
 
   success: async (message: string) => {
     const logger = await getLogger()
+    dispatch('success', message, [message])
     await logger.success(message)
   },
 
   warn: async (message: string, context?: unknown) => {
     const logger = await getLogger()
+    dispatch('warning', message, context === undefined ? [message] : [message, context])
     // No context → call with a single arg. Passing a nullish second arg makes
     // clarity stringify it and append a stray " undefined" / " null" to the
     // line (e.g. `log.warn('… All data will be lost.')`, or `log.warn(msg,
@@ -495,6 +624,7 @@ export const log: Log = {
 
   warning: async (message: string) => {
     const logger = await getLogger()
+    dispatch('warning', message, [message])
     await logger.warn(message)
   },
 
@@ -532,6 +662,10 @@ export const log: Log = {
     }
 
     const logger = await getLogger()
+    // The raw call, not the assembled line: a transport building structured
+    // output wants the `Error` itself and the context as an object, which is
+    // exactly what `line` has just finished flattening into a string.
+    dispatch('error', line, legacyOptions ? [message] : [message, error, context].filter(a => a !== undefined))
     await logger.error(line)
 
     // Legacy fatal path: only exit when explicitly asked.
@@ -548,10 +682,24 @@ export const log: Log = {
     // logger.debug and left a floating Promise, despite emitting nothing.
     // Mirrors the underlying logger: debug ranks below info/warn/error.
     const lvl = ((process.env.LOG_LEVEL as string) || 'info').toLowerCase()
-    if (lvl === 'info' || lvl === 'warn' || lvl === 'error')
+    const suppressed = lvl === 'info' || lvl === 'warn' || lvl === 'error'
+
+    // The fast path is unchanged when nothing is attached, which is the common
+    // case. A transport, though, is allowed to be more verbose than the
+    // terminal: shipping debug lines to a log service while keeping the console
+    // at info is a normal thing to want, and suppressing them here would make
+    // it impossible.
+    if (suppressed && _transports.length === 0)
       return
+
     const message = formatMessage(...args)
+    if (suppressed) {
+      dispatch('debug', message, args)
+      return
+    }
+
     const logger = await getLogger()
+    dispatch('debug', message, args)
     await logger.debug(message)
   },
 
@@ -619,6 +767,12 @@ export const log: Log = {
     // write must not abort the shutdown drain.
     if (pendingWrites.size > 0)
       await Promise.allSettled([...pendingWrites])
+
+    // Transports drain after the in-flight writes, so a record dispatched by
+    // one of those writes is in the transport's buffer before we ask it to
+    // deliver. `beforeExit` already calls this, so a buffering transport gets
+    // its chance on a natural shutdown without registering its own hook.
+    await flushTransports()
 
     // If the logger never initialized there's nothing to flush — `getLogger`
     // would create one we don't need. Same for the init-in-flight case;
