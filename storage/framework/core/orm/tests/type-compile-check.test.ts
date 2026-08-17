@@ -391,7 +391,9 @@ describe('Action class uses smart InferRequest for model-aware handlers', () => 
     // across lines, so allow whitespace between `handle: (` and the
     // typed `request:` parameter.
     // `handle: { bivarianceHack: (request: InferRequest<…>) => … }['bivarianceHack']`
-    expect(content).toMatch(/bivarianceHack:\s*\(\s*request: InferRequest<TModel/)
+    // The request type is now gated on TPayload for non-router callers, so
+    // allow the conditional between `request:` and `InferRequest<TModel`.
+    expect(content).toMatch(/bivarianceHack:\s*\(\s*request:[^)]*?InferRequest<TModel/)
   })
 
   test('model property is stored as string for runtime', () => {

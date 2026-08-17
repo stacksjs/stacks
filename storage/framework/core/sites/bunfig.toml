@@ -1,0 +1,9 @@
+# Preload the package test harness so the env pin (sqlite + temp DB file)
+# lands before any test file's imports evaluate.
+#
+# This only applies when `bun test` runs from THIS directory. CI runs
+# `bun test ./storage/framework/core/sites/tests` from the repo root, where
+# bunfig is read from the root and this preload never fires - see
+# tests/setup.ts for why the harness works either way.
+[test]
+preload = ["./tests/setup.ts"]

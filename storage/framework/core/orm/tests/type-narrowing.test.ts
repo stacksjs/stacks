@@ -197,7 +197,11 @@ describe('Action class InferRequest type resolution', () => {
     // `handle` is declared through a bivariance hack —
     // `handle: { bivarianceHack: (request: InferRequest<…>) => … }['bivarianceHack']`
     // — so match the request type it carries rather than a bare `handle: (`.
-    expect(content).toMatch(/bivarianceHack:\s*\(\s*request: InferRequest<TModel/)
+    // The request type is now gated on TPayload, so that non-router callers
+    // (event listeners) can be typed with the payload they actually pass:
+    // `request: [TPayload] extends [never] ? InferRequest<…> : TPayload`.
+    // Anything between `request:` and `InferRequest<TModel` is that gate.
+    expect(content).toMatch(/bivarianceHack:\s*\(\s*request:[^)]*?InferRequest<TModel/)
   })
 
   test('falls back to bare RequestInstance when model is a string', () => {

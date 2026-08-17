@@ -7,22 +7,17 @@
  * overwrite a page somebody has edited since.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { beforeEach, describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
 import { provisionSite } from '../src/provision'
+import { refreshDatabase } from './setup'
 
 const SUBDOMAIN = 'provision-test'
 
-async function cleanup(): Promise<void> {
-  const sites = await db.selectFrom('sites').select(['id']).where('subdomain', '=', SUBDOMAIN).execute()
-  for (const site of sites as Array<{ id: number }>) {
-    await db.deleteFrom('pages').where('site_id', '=', site.id).execute()
-    await db.deleteFrom('sites').where('id', '=', site.id).execute()
-  }
-}
-
-beforeEach(cleanup)
-afterEach(cleanup)
+// `refreshDatabase` also re-pins the database config, which the old
+// subdomain-scoped cleanup did not: `bun test` runs the directory in one
+// process, so a sibling file can otherwise win the connection between tests.
+beforeEach(refreshDatabase)
 
 const pages = [
   { title: 'Home', slug: '/', blocks: [{ type: 'rich-text', props: { html: '<p>Welcome.</p>' } }] },

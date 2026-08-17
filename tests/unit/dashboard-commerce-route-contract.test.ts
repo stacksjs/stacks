@@ -11,7 +11,9 @@ describe('dashboard commerce route contract', () => {
     const detail = source('storage/framework/defaults/app/Actions/Dashboard/Commerce/CommerceProductDetailAction.ts')
 
     expect(detail).toContain('!Number.isSafeInteger(id) || id <= 0')
-    expect(detail).toContain("response.notFound({ error: 'Product not found' })")
+    // `response.notFound(message?)` takes the message itself, so the object form
+    // this used to pin serialized a `{ error }` wrapper the helper never unwraps.
+    expect(detail).toContain("response.notFound('Product not found')")
   })
 
   test('product mutations use local-friendly guarded dashboard routes', () => {
