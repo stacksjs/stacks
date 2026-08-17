@@ -52,6 +52,12 @@ export type FeatureName = (typeof FEATURE_NAMES)[number]
  * ending in `/` are directory trees (recursive remove on uninstall); bare
  * paths are single files.
  *
+ * A feature must also claim the shared files its own actions IMPORT.
+ * `app/Actions/Dashboard/dashboard-response.ts` is the case that bit: five
+ * features publish a subdirectory of `app/Actions/Dashboard/`, and the actions
+ * in each import `../dashboard-response`. Without it, `<feature>:install`
+ * copied 22 actions whose very first import did not resolve.
+ *
  * Manifests intentionally overlap where features share scaffolding —
  * `dashboard` claims the umbrella `app/Actions/Dashboard/` even though
  * `app/Actions/Dashboard/Content/` is also claimed by `cms`. Both the
@@ -70,6 +76,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
   cms: [
     'app/Actions/Cms/',
     'app/Actions/Dashboard/Content/',
+    'app/Actions/Dashboard/dashboard-response.ts',
     'app/Models/Content/',
     'app/Models/Tag.ts',
     'app/Models/Comment.ts',
@@ -78,6 +85,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
   commerce: [
     'app/Actions/Commerce/',
     'app/Actions/Dashboard/Commerce/',
+    'app/Actions/Dashboard/dashboard-response.ts',
     'app/Models/commerce/',
     'resources/components/Dashboard/Commerce/',
     'resources/views/dashboard/commerce/',
@@ -91,6 +99,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
   ],
   marketing: [
     'app/Actions/Dashboard/Marketing/',
+    'app/Actions/Dashboard/dashboard-response.ts',
     'app/Models/Campaign.ts',
     'app/Models/CampaignSend.ts',
     'app/Models/EmailList.ts',
@@ -110,6 +119,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
   realtime: [
     'app/Actions/Realtime/',
     'app/Actions/Dashboard/Realtime/',
+    'app/Actions/Dashboard/dashboard-response.ts',
     'app/Models/realtime/',
     'app/Broadcasts/',
     'functions/realtime/',
@@ -118,6 +128,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
   queue: [
     'app/Actions/Queue/',
     'app/Actions/Dashboard/Jobs/',
+    'app/Actions/Dashboard/dashboard-response.ts',
     'app/Jobs/',
     'app/Models/Job.ts',
     'app/Models/FailedJob.ts',
