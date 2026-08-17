@@ -1,3 +1,4 @@
+import { authenticatedUser } from './authenticated-user'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -16,7 +17,7 @@ export default new Middleware({
   priority: 3,
 
   async handle(request) {
-    const user = request.user || request._user || request._authenticatedUser
+    const user = await authenticatedUser(request)
 
     if (!user) {
       throw new HttpError(401, 'Unauthenticated.')

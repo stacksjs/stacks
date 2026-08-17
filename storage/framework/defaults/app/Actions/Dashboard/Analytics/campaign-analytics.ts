@@ -115,7 +115,12 @@ export function buildCampaignAnalytics(
   }
   const channels = [...channelMap.entries()]
     .map(([key, rows]) => {
-      const [type, currency] = key.split(':')
+      // `split` gives `string | undefined` per element; the keys are built as
+      // `type:currency` a few lines up, so an empty string is the honest
+      // fallback for a malformed one rather than a crash in `titleCase`.
+      const [rawType, rawCurrency] = key.split(':')
+      const type = rawType ?? ''
+      const currency = rawCurrency ?? ''
       return {
         type,
         name: titleCase(type),

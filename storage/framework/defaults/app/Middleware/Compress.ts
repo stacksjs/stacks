@@ -180,7 +180,9 @@ export async function applyCompression(request: Request, response: Response): Pr
     newHeaders.set('Vary', 'Accept-Encoding')
   }
 
-  return new Response(compressed, {
+  // Node's Buffer satisfies BodyInit at runtime but not in the DOM lib's
+  // types; the underlying bytes are what Response wants either way.
+  return new Response(new Uint8Array(compressed), {
     status: response.status,
     statusText: response.statusText,
     headers: newHeaders,

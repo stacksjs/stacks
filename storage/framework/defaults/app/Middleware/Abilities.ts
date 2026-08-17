@@ -36,7 +36,9 @@ export default new Middleware({
       throw new HttpError(401, 'Unauthenticated.')
     }
 
-    const tokenAbilities: string[] = token.abilities || []
+    // `_currentAccessToken` is declared `unknown` (the token row is
+    // project-defined), so name the one field this middleware reads.
+    const tokenAbilities: string[] = (token as { abilities?: string[] }).abilities || []
 
     // Wildcard grants all permissions
     if (tokenAbilities.includes('*')) {

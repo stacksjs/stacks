@@ -1,5 +1,13 @@
+/**
+ * The slice of a model record the Kanban actions use.
+ *
+ * `key` is loose deliberately: a real record's `get` accepts only its own
+ * column names, so a parameter typed `string` is WIDER than what Board, Card
+ * or Label offers, and contravariance meant no real record was assignable
+ * here - six actions failed to typecheck on a helper that works fine.
+ */
 export interface KanbanModelRecord {
-  get: (key: string) => unknown
+  get: (key: any) => unknown
 }
 
 export interface RefreshableKanbanModelRecord extends KanbanModelRecord {

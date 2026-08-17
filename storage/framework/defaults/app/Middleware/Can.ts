@@ -1,3 +1,4 @@
+import { authenticatedUser } from './authenticated-user'
 import { AuthorizationException, authorize } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, resolveRouteModel, setRouteModelFallback } from '@stacksjs/router'
@@ -76,7 +77,7 @@ export default new Middleware({
     }
 
     // Get the authenticated user
-    const user = request.user || request._user || null
+    const user = await authenticatedUser(request)
 
     // Prepare arguments for the gate check
     const args: any[] = []
@@ -109,7 +110,7 @@ export default new Middleware({
 
     // Perform the authorization check
     try {
-      await authorize(ability, user, ...args)
+      await authorize(ability, user ?? null, ...args)
     }
     catch (error) {
       if (error instanceof AuthorizationException) {

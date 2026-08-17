@@ -47,7 +47,7 @@ export default new Middleware({
     let limiter = limiterCache.get(params)
     if (!limiter) {
       try {
-        const config = parseThrottleString(params)
+        const config = parseThrottleString(params as Parameters<typeof parseThrottleString>[0])
         limiter = createRateLimitMiddleware(config, `throttle:${params}`)
         limiterCache.set(params, limiter)
       }

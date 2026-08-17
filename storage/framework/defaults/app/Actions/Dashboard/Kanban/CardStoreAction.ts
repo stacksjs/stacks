@@ -40,7 +40,9 @@ export default new Action({
     if (!title || title.length > 300) {
       return kanbanError('`title` is required and must be 1-300 characters.', 400)
     }
-    const description = typeof body.description === 'string' ? body.description.trim() : null
+    // `undefined` rather than `null`: the model treats the column as optional,
+    // and "no description was sent" is not the same as "set it to null".
+    const description = typeof body.description === 'string' ? body.description.trim() : undefined
     const dueDate = typeof body.dueDate === 'string' && body.dueDate ? body.dueDate : null
 
     try {

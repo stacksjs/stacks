@@ -36,7 +36,9 @@ export default new Action({
     if (!name || name.length > 120) {
       return kanbanError('Name is required and must be 1-120 characters.', 400)
     }
-    const description = typeof body.description === 'string' ? body.description.trim() : null
+    // `undefined` rather than `null`: the model treats the column as optional,
+    // and "no description was sent" is not the same as "set it to null".
+    const description = typeof body.description === 'string' ? body.description.trim() : undefined
     const icon = typeof body.icon === 'string' && body.icon ? body.icon : 'rectangle.stack.fill'
     const color = typeof body.color === 'string' && body.color ? body.color : 'violet'
 
