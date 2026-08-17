@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.14...v0.72.15)
+
+## 🐛 Bug Fixes
+
+- **orm**: encrypt force writes and decrypt query-builder reads ([4ed5ba3](https://github.com/stacksjs/stacks/commit/4ed5ba3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.13...v0.72.14)
 
 ## 🐛 Bug Fixes
