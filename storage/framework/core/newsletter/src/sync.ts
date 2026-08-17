@@ -1,4 +1,4 @@
-import { model } from './models'
+import { db } from '@stacksjs/database'
 import { subscribe } from './subscriptions'
 
 /**
@@ -86,7 +86,6 @@ export async function syncListSubscribers(
   contacts: readonly SyncContact[],
   options: { source?: string } = {},
 ): Promise<SyncListResult> {
-  const [EmailListSubscriber, Subscriber] = await Promise.all([model('EmailListSubscriber'), model('Subscriber')])
 
   const result: SyncListResult = {
     added: 0,
@@ -106,12 +105,20 @@ export async function syncListSubscribers(
 
     let listStatus: string | null = null
     if (looksLikeEmail(email) && !seen.has(email)) {
-      const subscriber = await Subscriber.where('email', email).first()
+      const subscriber = await db
+        .selectFrom('subscribers')
+        .select(['id'])
+        .where('email', '=', email)
+        .executeTakeFirst() as { id: number } | undefined
+
       if (subscriber) {
-        const pivot = await EmailListSubscriber
-          .where('subscriber_id', subscriber.id)
-          .where('email_list_id', await resolveId(list))
-          .first()
+        const pivot = await db
+          .selectFrom('email_list_subscribers')
+          .select(['status'])
+          .where('subscriber_id', '=', Number(subscriber.id))
+          .where('email_list_id', '=', await resolveId(list))
+          .executeTakeFirst() as { status: string } | undefined
+
         listStatus = pivot?.status ?? null
       }
     }
@@ -185,7 +192,11 @@ async function resolveId(list: string | number): Promise<number> {
   if (typeof list === 'number')
     return list
 
-  const EmailList = await model('EmailList')
-  const row = await EmailList.where('slug', list).first()
+  const row = await db
+    .selectFrom('email_lists')
+    .select(['id'])
+    .where('slug', '=', list)
+    .executeTakeFirst() as { id: number } | undefined
+
   return Number(row?.id ?? 0)
 }

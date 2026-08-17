@@ -1,5 +1,5 @@
 import type { SubscribeOptions, SubscribeResult, UnsubscribeResult } from './types'
-import { model } from './models'
+import { db } from '@stacksjs/database'
 import { lists } from './lists'
 
 /**
@@ -32,28 +32,47 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
   if (!email || !email.includes('@'))
     throw new Error('[newsletter] subscribe() requires a valid email address')
 
-  const [Subscriber, EmailListSubscriber] = await Promise.all([model('Subscriber'), model('EmailListSubscriber')])
-
   const listId = await resolveListId(options.list)
   const source = options.source ?? 'api'
 
   // Upsert the Subscriber row — `subscribers.email` is unique, so the
   // same address shared across multiple lists points at one row.
-  let subscriber = await Subscriber.where('email', email).first()
-  if (!subscriber)
-    subscriber = await Subscriber.create({ email, status: 'subscribed', source })
+  let subscriber = await db
+    .selectFrom('subscribers')
+    .selectAll()
+    .where('email', '=', email)
+    .executeTakeFirst() as { id: number } | undefined
+
+  if (!subscriber) {
+    await db
+      .insertInto('subscribers')
+      .values({ uuid: crypto.randomUUID(), email, status: 'subscribed', source })
+      .execute()
+
+    subscriber = await db
+      .selectFrom('subscribers')
+      .selectAll()
+      .where('email', '=', email)
+      .executeTakeFirst() as { id: number }
+  }
 
   // Pivot row: one per (subscriber, list)
-  const existing = await EmailListSubscriber
-    .where('subscriber_id', subscriber.id)
-    .where('email_list_id', listId)
-    .first()
+  const existing = await db
+    .selectFrom('email_list_subscribers')
+    .selectAll()
+    .where('subscriber_id', '=', Number(subscriber.id))
+    .where('email_list_id', '=', listId)
+    .executeTakeFirst() as { id: number, uuid: string, status: string } | undefined
 
   if (existing) {
     if (existing.status === 'unsubscribed') {
       // Returning subscriber — flip them back. Keep the original token
       // so an old "unsubscribe" link the user kept around still works.
-      await existing.update({ status: 'subscribed', unsubscribed_at: null })
+      await db
+        .updateTable('email_list_subscribers')
+        .set({ status: 'subscribed', unsubscribed_at: null })
+        .where('id', '=', Number(existing.id))
+        .execute()
     }
     return {
       created: false,
@@ -63,18 +82,23 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
     }
   }
 
-  const pivot = await EmailListSubscriber.create({
-    subscriber_id: subscriber.id,
-    email_list_id: listId,
-    status: 'subscribed',
-    source,
-  })
+  const uuid = crypto.randomUUID()
+  await db
+    .insertInto('email_list_subscribers')
+    .values({
+      uuid,
+      subscriber_id: Number(subscriber.id),
+      email_list_id: listId,
+      status: 'subscribed',
+      source,
+    })
+    .execute()
 
   return {
     created: true,
     email,
     listId,
-    token: pivot.uuid,
+    token: uuid,
   }
 }
 
@@ -82,52 +106,71 @@ export async function unsubscribe(token: string): Promise<UnsubscribeResult> {
   if (!token)
     return { ok: false }
 
-  const [EmailListSubscriber, Subscriber] = await Promise.all([model('EmailListSubscriber'), model('Subscriber')])
+  const pivot = await db
+    .selectFrom('email_list_subscribers')
+    .selectAll()
+    .where('uuid', '=', token)
+    .executeTakeFirst() as { id: number, status: string, subscriber_id: number, email_list_id: number } | undefined
 
-  const pivot = await EmailListSubscriber.where('uuid', token).first()
   if (!pivot)
     return { ok: false }
 
+  const subscriberEmail = async (): Promise<string | undefined> => {
+    const row = await db
+      .selectFrom('subscribers')
+      .select(['email'])
+      .where('id', '=', Number(pivot.subscriber_id))
+      .executeTakeFirst() as { email: string } | undefined
+    return row?.email
+  }
+
   if (pivot.status === 'unsubscribed') {
-    const sub = await Subscriber.find(pivot.subscriber_id)
     return {
       ok: true,
       alreadyUnsubscribed: true,
-      email: sub?.email,
+      email: await subscriberEmail(),
       listId: pivot.email_list_id,
     }
   }
 
-  await pivot.update({
-    status: 'unsubscribed',
-    unsubscribed_at: new Date().toISOString(),
-  })
+  await db
+    .updateTable('email_list_subscribers')
+    .set({ status: 'unsubscribed', unsubscribed_at: new Date().toISOString() })
+    .where('id', '=', Number(pivot.id))
+    .execute()
 
-  const sub = await Subscriber.find(pivot.subscriber_id)
   return {
     ok: true,
-    email: sub?.email,
+    email: await subscriberEmail(),
     listId: pivot.email_list_id,
   }
 }
 
 /** Bulk unsubscribe by email — used by bounce/complaint handlers. */
 export async function unsubscribeAll(email: string): Promise<number> {
-  const [Subscriber, EmailListSubscriber] = await Promise.all([model('Subscriber'), model('EmailListSubscriber')])
-  const sub = await Subscriber.where('email', email).first()
+  const sub = await db
+    .selectFrom('subscribers')
+    .select(['id'])
+    .where('email', '=', email)
+    .executeTakeFirst() as { id: number } | undefined
+
   if (!sub)
     return 0
 
-  const pivots = await EmailListSubscriber
-    .where('subscriber_id', sub.id)
-    .where('status', 'subscribed')
-    .get()
+  const pivots = await db
+    .selectFrom('email_list_subscribers')
+    .select(['id'])
+    .where('subscriber_id', '=', Number(sub.id))
+    .where('status', '=', 'subscribed')
+    .execute() as Array<{ id: number }>
 
   for (const pivot of pivots) {
-    await pivot.update({
-      status: 'unsubscribed',
-      unsubscribed_at: new Date().toISOString(),
-    })
+    await db
+      .updateTable('email_list_subscribers')
+      .set({ status: 'unsubscribed', unsubscribed_at: new Date().toISOString() })
+      .where('id', '=', Number(pivot.id))
+      .execute()
   }
+
   return pivots.length
 }

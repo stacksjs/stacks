@@ -1,5 +1,4 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
-import { model } from './models'
 import { db, sqlDateTime } from '@stacksjs/database'
 import { lists } from './lists'
 
@@ -292,15 +291,30 @@ export interface CampaignRow {
 
 export const campaigns = {
   async create(input: CreateCampaignInput): Promise<CampaignRow> {
-    const Campaign = await model('Campaign')
     const emailListId = await resolveListId(input)
+    const data = campaignCreateData(input, emailListId)
+    const uuid = crypto.randomUUID()
 
-    return Campaign.create(campaignCreateData(input, emailListId))
+    await db.insertInto('campaigns').values({ ...data, uuid }).execute()
+
+    const row = await db
+      .selectFrom('campaigns')
+      .selectAll()
+      .where('uuid', '=', uuid)
+      .executeTakeFirst() as CampaignRow | undefined
+
+    if (!row)
+      throw new Error('[newsletter] Campaign could not be read back after creation')
+
+    return row
   },
 
   async find(id: number): Promise<CampaignRow | undefined> {
-    const Campaign = await model('Campaign')
-    return Campaign.find(id)
+    return await db
+      .selectFrom('campaigns')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst() as CampaignRow | undefined
   },
 
   async update(id: number, patch: Partial<CreateCampaignInput>): Promise<unknown> {
