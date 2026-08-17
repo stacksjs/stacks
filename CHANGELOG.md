@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.5...v0.72.6)
+
+## ✨ Features
+
+- **newsletter**: add atomic usage reservations ([5a92c13](https://github.com/stacksjs/stacks/commit/5a92c13)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: stop bumping independently-versioned packages in vendored manifests ([d22543f](https://github.com/stacksjs/stacks/commit/d22543f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2078](https://github.com/stacksjs/stacks/issues/2078))
+
+## 💚 Continuous Integration
+
+- align Pantry across workflows ([20ae5e0](https://github.com/stacksjs/stacks/commit/20ae5e0)) _(by Chris <chris@stacksjs.com>)_
+- use current Pantry installer ([a40eba6](https://github.com/stacksjs/stacks/commit/a40eba6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.4...v0.72.5)
 
 ## 🐛 Bug Fixes
