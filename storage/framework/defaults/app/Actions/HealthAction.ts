@@ -1,7 +1,7 @@
 // Health check action with detailed service status
 // This overrides the default framework health check
 
-import { route } from '@stacksjs/router'
+import { response, route } from '@stacksjs/router'
 
 export default {
   name: 'Health',
@@ -72,7 +72,9 @@ async function getServiceHealth() {
   try {
     const { Job } = await import('@stacksjs/orm')
     const queueStart = Date.now()
-    const pendingJobs = await Job.where('status', 'pending').count()
+    // The jobs table has no `status` column: a job is pending until a worker
+    // claims it by stamping `reserved_at`.
+    const pendingJobs = await Job.whereNull('reserved_at').count()
     const queueLatency = Date.now() - queueStart
     services.push({
       name: 'Queue',
@@ -104,9 +106,10 @@ async function getServiceHealth() {
 // Also register as a route for redundancy
 route.get('/health', async () => {
   const services = await getServiceHealth()
-  return {
+  // A route handler returns a Response; a bare object is not one.
+  return response.json({
     status: 'ok',
     timestamp: Date.now(),
     services,
-  }
+  })
 })

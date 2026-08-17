@@ -50,8 +50,12 @@ export function parseCommandSource(
   modifiedAt = '',
 ): SourceInventoryItem {
   const command = source.match(/\.command\(\s*['"`]([^'"`]+)['"`]\s*(?:,\s*['"`]([^'"`]+)['"`])?/)
-  const sourceAliases = [...source.matchAll(/\.alias\(\s*['"`]([^'"`]+)['"`]\s*\)/g)].map(match => match[1])
-  const options = [...source.matchAll(/\.option\(\s*['"`]([^'"`]+)['"`]/g)].map(match => match[1])
+  const sourceAliases = [...source.matchAll(/\.alias\(\s*['"`]([^'"`]+)['"`]\s*\)/g)]
+    .map(match => match[1])
+    .filter((alias): alias is string => alias !== undefined)
+  const options = [...source.matchAll(/\.option\(\s*['"`]([^'"`]+)['"`]/g)]
+    .map(match => match[1])
+    .filter((option): option is string => option !== undefined)
 
   return {
     name: command?.[1] || registeredSignature,

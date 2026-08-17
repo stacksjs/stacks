@@ -33,7 +33,7 @@ export default class PruneModelsJob {
     try {
       log.info('Running model pruning job')
 
-      const { prunable } = await import('../../orm/src/utils/prunable')
+      const { prunable } = await import('@stacksjs/orm')
 
       const results: Array<{ table: string, pruned: number }> = []
       let total = 0

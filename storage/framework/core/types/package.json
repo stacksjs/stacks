@@ -60,7 +60,7 @@
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/stx": "^0.2.184",
     "@stacksjs/ts-validation": "^0.5.4",
-    "bun-query-builder": "^0.2.39"
+    "bun-query-builder": "^0.2.40"
   },
   "peerDependencies": {
     "meilisearch": "^0.59.0"

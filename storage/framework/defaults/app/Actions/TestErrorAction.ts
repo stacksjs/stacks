@@ -5,7 +5,7 @@
  * Append ?type=<scenario> to trigger a specific exception.
  */
 
-import type { EnhancedRequest } from 'bun-router'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'

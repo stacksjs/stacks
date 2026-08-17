@@ -342,7 +342,7 @@ export function groupByDay(
     const d = new Date(raw)
     if (Number.isNaN(d.getTime())) continue
     const k = d.toISOString().slice(0, 10)
-    if (k in buckets) buckets[k]++
+    if (k in buckets) buckets[k] = (buckets[k] ?? 0) + 1
   }
   return Object.entries(buckets).map(([date, count]) => ({ date, count }))
 }
@@ -372,7 +372,7 @@ export function sumByDay(
     if (Number.isNaN(d.getTime())) continue
     const k = d.toISOString().slice(0, 10)
     if (!(k in buckets)) continue
-    buckets[k] += Number(safeGet(r, valueKey, 0)) || 0
+    buckets[k] = (buckets[k] ?? 0) + (Number(safeGet(r, valueKey, 0)) || 0)
   }
   return Object.entries(buckets).map(([date, total]) => ({ date, total }))
 }

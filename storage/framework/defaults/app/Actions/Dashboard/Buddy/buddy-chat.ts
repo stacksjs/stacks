@@ -1,8 +1,16 @@
 import type { AIMessage, AIProvider, ConfiguredAIOptions } from '@stacksjs/ai'
 
+/**
+ * The two keys this check reads out of the environment.
+ *
+ * The index signature is what makes `process.env` assignable: `ProcessEnv`
+ * declares no named members, so a bare two-key interface shares nothing with
+ * it and TypeScript rejects the call - the one thing every caller passes.
+ */
 export interface BuddyProviderEnvironment {
   ANTHROPIC_API_KEY?: string
   OPENAI_API_KEY?: string
+  [key: string]: string | undefined
 }
 
 export function resolveBuddyProvider(config: ConfiguredAIOptions): AIProvider {

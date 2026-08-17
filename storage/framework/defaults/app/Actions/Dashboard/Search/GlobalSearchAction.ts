@@ -131,7 +131,7 @@ async function loadSearchableModels(): Promise<SearchableModel[]> {
       const search = definition.traits?.useSearch
       if (!search || typeof search !== 'object' || !Array.isArray(search.searchable)) continue
 
-      const fields = search.searchable
+      const fields: string[] = (search.searchable as unknown[])
         .map((field: unknown) => snakeCase(String(field)))
         .filter((field: string) => isSafeIdentifier(field) && !HIDDEN_FIELDS.has(field))
       const table = String(definition.table || pluralize(snakeCase(name)))

@@ -45,7 +45,9 @@ export default new Action({
 
     return createLocaleSwitchResponse(request as unknown as Request, String(request.param('locale') ?? ''), {
       locales,
-      defaultLocale: app?.locale ?? locales[0],
+      // `locales[0]` is `string | undefined` under noUncheckedIndexedAccess,
+      // and this list is never empty by construction - but say so.
+      defaultLocale: app?.locale ?? locales[0] ?? 'en',
     })
   },
 })
