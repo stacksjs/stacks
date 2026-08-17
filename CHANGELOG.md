@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.10...v0.72.11)
+
+## ✨ Features
+
+- **newsletter**: sync an audience you already have, without undoing opt-outs ([d5eb007](https://github.com/stacksjs/stacks/commit/d5eb007)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **newsletter**: lists and campaigns returned Promise<void> to every consumer ([cf6dc63](https://github.com/stacksjs/stacks/commit/cf6dc63)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.9...v0.72.10)
 
 ## ✨ Features
