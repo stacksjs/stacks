@@ -7,7 +7,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { QueryHooks } from '@stacksjs/query-builder'
-import { createQueryBuilder, registerPersistentQueryHooks, setConfig } from '@stacksjs/query-builder'
+import { createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -524,6 +524,22 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
  * list cannot keep serving reads from the old hosts.
  */
 let _replicaInstances = new Map<string, ReturnType<typeof createQueryBuilder>>()
+
+/**
+ * Discard every cached database client after the underlying query-builder
+ * connection is reset.
+ *
+ * The Stacks `db` proxy caches a query-builder instance, while
+ * bun-query-builder separately caches the SQL connection captured by that
+ * instance. Resetting only the lower cache leaves the proxy pointing at a
+ * closed SQLite handle. Migration flows reconfigure the lower layer between
+ * reset and replay, so both caches must be invalidated as one operation.
+ */
+export function resetDatabaseConnection(): void {
+  resetQueryBuilderConnection()
+  _dbInstance = null
+  _replicaInstances = new Map()
+}
 
 /**
  * Build (or reuse) a query builder pointed at `replica`.

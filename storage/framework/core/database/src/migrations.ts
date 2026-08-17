@@ -29,13 +29,12 @@ import {
   createQueryBuilder,
   executeMigration as qbExecuteMigration,
   generateMigration as qbGenerateMigration,
-  resetConnection,
   resetDatabase as qbResetDatabase,
   config as qbConfig,
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
-import { db, QB_SNAPSHOT_DIR } from './utils'
+import { db, QB_SNAPSHOT_DIR, resetDatabaseConnection } from './utils'
 import {
   classifyConnectionError,
   createDatabase,
@@ -192,7 +191,7 @@ function configureQueryBuilder(
   })
 
   // Reset the connection to ensure the new config is used
-  resetConnection()
+  resetDatabaseConnection()
 }
 
 export function prepareMigrationModelsDir(): {

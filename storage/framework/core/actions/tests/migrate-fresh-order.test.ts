@@ -13,4 +13,11 @@ describe('migrate:fresh bootstrap order', () => {
     expect(bootstrap).toBeLessThan(migrate)
     expect(finalGuarantee).toBeGreaterThan(migrate)
   })
+
+  it('invalidates the Stacks client whenever migrations reset the query-builder connection', () => {
+    const source = readFileSync(join(import.meta.dir, '..', '..', 'database', 'src', 'migrations.ts'), 'utf8')
+
+    expect(source).toContain('resetDatabaseConnection()')
+    expect(source).not.toMatch(/\bresetConnection\(\)/)
+  })
 })
