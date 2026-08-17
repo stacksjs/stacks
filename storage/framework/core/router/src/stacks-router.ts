@@ -1444,7 +1444,34 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 /**
  * Create a chainable route object (for .middleware() support)
  */
-function createChainableRoute(routeKey: string): ChainableRoute {
+/**
+ * A chain for a registration that will never serve.
+ *
+ * Returned instead of the real chain when a duplicate `METHOD:/path` is
+ * registered (stacksjs/stacks#2332). Every method is a no-op, so
+ * `.middleware('auth')` or `.skipCsrf()` written against a dead duplicate
+ * cannot reach the live route's registries. Chainable, so calling code is
+ * unchanged.
+ */
+function createInertRoute(): ChainableRoute {
+  // Not cast: the annotation makes TypeScript fail here if `ChainableRoute`
+  // grows a member, rather than letting a new one silently reach the live
+  // route from a dead duplicate.
+  const inert: ChainableRoute = {
+    middleware: () => inert,
+    name: () => inert,
+    skipCsrf: () => inert,
+    requireCsrf: () => inert,
+    rateLimit: () => inert,
+  }
+
+  return inert
+}
+
+function createChainableRoute(routeKey: string, shadowed = false): ChainableRoute {
+  if (shadowed)
+    return createInertRoute()
+
   // Initialize middleware list for this route
   if (!routeMiddlewareRegistry.has(routeKey)) {
     routeMiddlewareRegistry.set(routeKey, [])
@@ -2875,30 +2902,64 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   let currentGroupMiddleware: string[] = []
   let currentGroupApiResponse = false
 
+  /**
+   * Every `METHOD:/path` THIS router has already registered.
+   *
+   * Instance-scoped on purpose: bun-router dedupes per instance, so the same
+   * path registered on two routers is live on both. A module-level set would
+   * declare the second one shadowed and silently strip its middleware.
+   */
+  const registeredRouteKeys = new Set<string>()
+
   // Helper to register a route with group middleware applied
   function registerRoute(method: string, path: string, _handler: StacksHandler) {
     const fullPath = currentPrefix + path
     const routeKey = `${method}:${fullPath}`
     log.debug(`[router] ${method} ${fullPath} → ${typeof _handler === 'string' ? _handler : 'function'}`)
 
+    // A second registration of the same method+path never serves: bun-router's
+    // compiler skips it (`RouteCompiler.addRoute` returns false on a duplicate
+    // key) and the static fast map only fills an empty slot, so the FIRST
+    // registration is the live one. That is the whole basis of the override
+    // model in `route-loader.ts`, which loads user routes before framework
+    // defaults precisely so a user route wins.
+    //
+    // The registries below are keyed by `routeKey` alone, so without this
+    // guard the shadowed registration writes into the LIVE route's state:
+    // a user's public `route.get('/dashboard/home', ...)` was answering 401,
+    // because the framework's later duplicate inside
+    // `route.group({ middleware: 'auth' }, ...)` stamped `auth` onto it
+    // (stacksjs/stacks#2332). `.skipCsrf()` on a dead duplicate could likewise
+    // disable CSRF on the live route.
+    //
+    // Tracked per ROUTER INSTANCE, not per module, because bun-router's
+    // duplicate skip is per instance: two `createStacksRouter()` instances
+    // registering the same path both serve it, and both must keep their own
+    // middleware.
+    const shadowed = registeredRouteKeys.has(routeKey)
+    if (!shadowed)
+      registeredRouteKeys.add(routeKey)
+
     // Pre-populate middleware registry with group middleware
-    if (currentGroupMiddleware.length > 0) {
+    if (!shadowed && currentGroupMiddleware.length > 0) {
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
     }
 
     // Pre-populate apiResponse registry with the group flag so the request
     // handler can flip `req._forceJson` without re-walking the group stack.
-    if (currentGroupApiResponse) {
+    if (!shadowed && currentGroupApiResponse) {
       routeApiResponseRegistry.add(routeKey)
     }
 
     // Track string handlers so the CSRF gate can look up action-level
-    // skipCsrf flags without re-importing on every request.
-    if (typeof _handler === 'string') {
+    // skipCsrf flags without re-importing on every request. Guarded for the
+    // same reason, and it is also what made `listRegisteredRoutes()` name a
+    // handler that never runs.
+    if (!shadowed && typeof _handler === 'string') {
       routeHandlerKeyRegistry.set(routeKey, _handler)
     }
 
-    return { fullPath, routeKey }
+    return { fullPath, routeKey, shadowed }
   }
 
   const stacksRouter: StacksRouterInstance = {
@@ -2912,39 +2973,39 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('GET', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('GET', path, handler)
       bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     post(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('POST', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('POST', path, handler)
       bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     put(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('PUT', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('PUT', path, handler)
       bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     patch(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('PATCH', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('PATCH', path, handler)
       bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     delete(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('DELETE', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('DELETE', path, handler)
       bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     options(path: string, handler: StacksHandler) {
-      const { fullPath, routeKey } = registerRoute('OPTIONS', path, handler)
+      const { fullPath, routeKey, shadowed } = registerRoute('OPTIONS', path, handler)
       bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler))
-      return createChainableRoute(routeKey)
+      return createChainableRoute(routeKey, shadowed)
     },
 
     // Route grouping with prefix and middleware support
@@ -3053,9 +3114,16 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Match multiple HTTP methods for a single route
     match(methods: string[], path: string, handler: StacksHandler) {
       log.debug(`[router] Match: [${methods.join(', ')}] ${path} → ${typeof handler === 'string' ? handler : 'function'}`)
-      for (const method of methods) {
+      // The chain returned below belongs to `methods[0]`, so it is that
+      // method's own shadow state that decides whether it is inert. Taking
+      // "any method shadowed" would silently inert a chain whose first method
+      // is perfectly live.
+      let firstShadowed = false
+      for (const [index, method] of methods.entries()) {
         const m = method.toUpperCase()
-        const { fullPath, routeKey } = registerRoute(m, path, handler)
+        const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
+        if (index === 0)
+          firstShadowed = shadowed
         const wrappedHandler = createMiddlewareHandler(routeKey, handler)
         switch (m) {
           case 'GET':
@@ -3078,7 +3146,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
             break
         }
       }
-      return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`)
+      return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`, firstShadowed)
     },
 
     // Health check route — probes critical dependencies and returns
