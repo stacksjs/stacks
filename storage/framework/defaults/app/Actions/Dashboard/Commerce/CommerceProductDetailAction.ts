@@ -24,12 +24,12 @@ export default new Action({
   async handle(request: RequestInstance) {
     const id = Number(request.getParam('id'))
     if (!Number.isSafeInteger(id) || id <= 0)
-      return response.notFound({ error: 'Product not found' })
+      return response.notFound('Product not found')
 
     try {
       const product = await Product.find(id)
       if (!product)
-        return response.notFound({ error: 'Product not found' })
+        return response.notFound('Product not found')
 
       const [categories, manufacturers, variants, units, reviews] = await Promise.all([
         Category.orderBy('name', 'asc').limit(500).get(),

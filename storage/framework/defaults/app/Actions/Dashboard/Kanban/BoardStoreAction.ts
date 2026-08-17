@@ -71,8 +71,8 @@ export default new Action({
           position: nextPosition,
           archived: false,
           cardCount: 0,
-          createdAt: board.get('createdAt') ?? board.get('created_at') ?? null,
-          updatedAt: board.get('updatedAt') ?? board.get('updated_at') ?? null,
+          createdAt: board.get('created_at') ?? null,
+          updatedAt: board.get('updated_at') ?? null,
         },
       }
     }

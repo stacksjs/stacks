@@ -1,10 +1,11 @@
+import type { ResponseStatus } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/router'
 
 export function dashboardOperationalError(
   error: unknown,
   message: string,
   action: string,
-  status = 503,
+  status: ResponseStatus = 503,
 ): Response {
   console.error(`[dashboard/api] ${action} failed:`, error)
   return response.json({ message }, status)

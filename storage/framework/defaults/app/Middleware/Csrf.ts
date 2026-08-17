@@ -1,6 +1,7 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import { HttpError } from '@stacksjs/error-handling'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { Middleware } from '@stacksjs/router'
 
 /**
@@ -218,7 +219,7 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
  * the router, such as the local dashboard config editor, can enforce the same
  * double-submit and bearer-token rules without duplicating security logic.
  */
-export async function validateCsrfRequest(request: Request): Promise<void> {
+export async function validateCsrfRequest(request: Request | EnhancedRequest): Promise<void> {
   const method = request.method.toUpperCase()
 
   // Safe methods don't mutate state — no token check needed.
@@ -236,15 +237,20 @@ export async function validateCsrfRequest(request: Request): Promise<void> {
   // (webhooks, third-party callbacks). The router stamps a hint on
   // the request when it resolves such an action; if that hint is
   // present, skip enforcement.
-  if (request._skipCsrf === true) return
+  const enhanced = request as EnhancedRequest
+  if (enhanced._skipCsrf === true) return
 
   // Look up the submitted token. Header is the SPA path; body field
   // is the traditional form-post path. We accept either.
   const headerToken = request.headers.get(CSRF_HEADER_NAME)
     || request.headers.get('X-CSRF-Token')
     || request.headers.get('X-Csrf-Token')
-  const body = request.jsonBody || request.formBody || {}
-  const bodyToken: string | undefined = body?._token ?? body?.csrf_token
+  const body = enhanced.jsonBody || enhanced.formBody || {}
+  // A parsed body is `unknown`-valued: the token is validated as a string
+  // two lines down, so read it as one rather than asserting it is one.
+  const rawBodyToken = (body as Record<string, unknown> | undefined)?._token
+    ?? (body as Record<string, unknown> | undefined)?.csrf_token
+  const bodyToken: string | undefined = typeof rawBodyToken === 'string' ? rawBodyToken : undefined
 
   const submitted = (typeof headerToken === 'string' && headerToken)
     || (typeof bodyToken === 'string' && bodyToken)

@@ -93,7 +93,7 @@ export default new Action({
       const printDeviceIds = new Set(printDevices.map(device =>
         commerceIdentifier(commerceValue(device, 'id', 'uuid'), 'PrintDevice'),
       ))
-      const records = rows.map(row => normalizePrintLogRecord(row, printDeviceIds))
+      const records = rows.map((row: Record<string, unknown>) => normalizePrintLogRecord(row, printDeviceIds))
 
       return {
         records,

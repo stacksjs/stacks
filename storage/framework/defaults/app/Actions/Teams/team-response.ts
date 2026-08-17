@@ -1,3 +1,4 @@
+import type { ResponseStatus } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/router'
 
 export class TeamStateConflictError extends Error {
@@ -11,7 +12,7 @@ export function teamOperationalError(
   error: unknown,
   message: string,
   action: string,
-  status = 503,
+  status: ResponseStatus = 503,
 ): Response {
   console.error(`[teams/api] ${action} failed:`, error)
   return response.json({ message }, status)

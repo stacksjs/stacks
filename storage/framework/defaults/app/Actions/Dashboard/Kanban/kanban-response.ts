@@ -1,6 +1,7 @@
+import type { ResponseStatus } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/router'
 
-export function kanbanError(error: string, status: number): Response {
+export function kanbanError(error: string, status: ResponseStatus): Response {
   return response.json({ error }, status)
 }
 

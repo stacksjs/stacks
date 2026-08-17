@@ -53,7 +53,8 @@ async function appendSamples(snapshot: DashboardData, nowIso: string): Promise<v
   // Insert one row per org. Cross-dialect multi-row INSERT keeps it
   // a single round-trip even for the typical 5-org fleet.
   const rows = orgs.map((org) => {
-    const r = runners[org]
+    // An org with no sample yet reads as zero pressure rather than throwing.
+    const r = runners[org] ?? { running: 0, queued: 0, cap: 0 }
     return { org, running: r.running, queued: r.queued, cap: r.cap, sampled_at: nowIso }
   })
   await db.insertInto('ci_runner_samples').values(rows as any).execute()

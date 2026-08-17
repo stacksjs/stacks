@@ -420,7 +420,9 @@ function serverlessOverview(config: CloudRecord): {
       serviceDetails: DashboardCloudResourceDetail[] = [],
     ) => {
       const id = `serverless:${environmentName}:${suffix}`
-      const presentation = servicePresentation[type]
+      // `Record<string, …>` makes every lookup optional; an unknown service
+      // type gets a neutral chip rather than crashing the whole overview.
+      const presentation = servicePresentation[type] ?? { color: '#64748B', icon: 'i-hugeicons-cube' }
       services.push({
         id,
         name,

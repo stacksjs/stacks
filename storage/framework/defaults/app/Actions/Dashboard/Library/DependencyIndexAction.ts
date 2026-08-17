@@ -44,6 +44,7 @@ function dependencySnapshot() {
 
   for (const wsKey of Object.keys(workspaces)) {
     const ws = workspaces[wsKey]
+    if (!ws) continue
     const allDeps = { ...ws.dependencies, ...ws.devDependencies }
     for (const depName of Object.keys(allDeps)) {
       if (declaredSet[depName]) continue

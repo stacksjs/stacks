@@ -84,7 +84,7 @@ function walkModels(dir: string, recursive: boolean): Array<{ name: string, file
 function categorize(model: { source: 'userland' | 'framework', file: string }): string {
   if (model.source === 'userland') return 'userland'
   const segs = model.file.split('/Models/')[1]?.split('/') ?? []
-  if (segs.length > 1) return segs[0].toLowerCase()
+  if (segs.length > 1 && segs[0]) return segs[0].toLowerCase()
   return 'framework'
 }
 
@@ -197,19 +197,22 @@ export default new Action({
     const userlandCount = enriched.filter(m => m.source === 'userland').length
     const unavailableModels = enriched.filter(m => m.error !== null).length
 
-    const groupMap: Record<string, ModelRow[]> = {}
+    const groupMap = new Map<string, ModelRow[]>()
     for (const m of enriched) {
-      if (!groupMap[m.category]) groupMap[m.category] = []
-      groupMap[m.category].push(m)
+      const bucket = groupMap.get(m.category) ?? []
+      bucket.push(m)
+      groupMap.set(m.category, bucket)
     }
 
-    const categoryGroups: ModelGroup[] = Object.keys(groupMap)
-      .sort((a, b) => categoryOrder(a) - categoryOrder(b))
-      .map(key => ({
+    // A Map rather than a plain object: every read here is by a key that was
+    // just written, and an index signature makes the compiler doubt all four.
+    const categoryGroups: ModelGroup[] = [...groupMap.entries()]
+      .sort(([a], [b]) => categoryOrder(a) - categoryOrder(b))
+      .map(([key, models]) => ({
         key,
         label: categoryLabel(key),
-        models: groupMap[key],
-        countLabel: `${groupMap[key].length} model${groupMap[key].length === 1 ? '' : 's'}`,
+        models,
+        countLabel: `${models.length} model${models.length === 1 ? '' : 's'}`,
       }))
 
     return {

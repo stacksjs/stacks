@@ -84,8 +84,8 @@ export default new Action({
           createdByUserId,
           dueDate,
           archived: false,
-          createdAt: card.get('createdAt') ?? card.get('created_at') ?? null,
-          updatedAt: card.get('updatedAt') ?? card.get('updated_at') ?? null,
+          createdAt: card.get('created_at') ?? null,
+          updatedAt: card.get('updated_at') ?? null,
         },
       }
     }

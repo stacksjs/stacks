@@ -26,7 +26,7 @@ export default new Action({
       return dashboardOperationalError(error, 'Product unit default could not be updated.', 'ProductUnitDefaultAction', 500)
     }
     if (!updated)
-      return response.notFound({ error: 'Product unit not found' })
+      return response.notFound('Product unit not found')
 
     return { success: true, id: String(id), isDefault }
   },

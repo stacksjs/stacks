@@ -1,3 +1,4 @@
+import type { ResponseStatus } from '@stacksjs/bun-router'
 import { statfs } from 'node:fs/promises'
 import { posix } from 'node:path'
 import type { StorageAdapter, StorageManager, UploadedFileLike } from '@stacksjs/storage'
@@ -52,10 +53,10 @@ export interface DashboardFileSnapshot {
 }
 
 export class DashboardFileError extends Error {
-  readonly status: number
+  readonly status: ResponseStatus
   readonly fields?: Record<string, string>
 
-  constructor(message: string, status = 422, fields?: Record<string, string>) {
+  constructor(message: string, status: ResponseStatus = 422, fields?: Record<string, string>) {
     super(message)
     this.name = 'DashboardFileError'
     this.status = status

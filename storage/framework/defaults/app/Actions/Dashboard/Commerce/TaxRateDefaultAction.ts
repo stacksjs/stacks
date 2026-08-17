@@ -26,7 +26,7 @@ export default new Action({
       return dashboardOperationalError(error, 'Tax rate default could not be updated.', 'TaxRateDefaultAction', 500)
     }
     if (!updated)
-      return response.notFound({ error: 'Tax rate not found' })
+      return response.notFound('Tax rate not found')
 
     return { success: true, id: String(id), isDefault }
   },

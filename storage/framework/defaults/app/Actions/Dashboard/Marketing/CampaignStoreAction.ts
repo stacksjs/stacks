@@ -28,9 +28,9 @@ export default new Action({
         ...data,
         audience_size: 0,
         sent_count: 0,
-        open_rate: null,
-        click_rate: null,
-        conversion_rate: null,
+        // A campaign that has not been sent has no rates yet. The columns are
+        // nullable in the database but the model types them as optional
+        // numbers, so leaving them out says "not measured" in both.
       })
       return response.json({ id: campaign.get('id') }, 201)
     }
