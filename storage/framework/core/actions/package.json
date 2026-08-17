@@ -66,8 +66,7 @@
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.184",
     "@stacksjs/ts-cloud": "^0.8.3",
-    "@stacksjs/ts-md": "^0.1.1",
-    "craft-native": ">=0.0.55"
+    "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
     "@stacksjs/api": "workspace:*",
@@ -91,10 +90,14 @@
     "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
-    "pickier": "^0.1.35"
+    "pickier": "^0.1.35",
+    "craft-native": ">=0.0.65"
   },
   "peerDependenciesMeta": {
     "pickier": {
+      "optional": true
+    },
+    "craft-native": {
       "optional": true
     }
   }
