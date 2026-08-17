@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.17...v0.72.18)
+
+## 🐛 Bug Fixes
+
+- **orm**: read and write attributes under their declared name ([02309cd](https://github.com/stacksjs/stacks/commit/02309cd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.16...v0.72.17)
 
 ## 🐛 Bug Fixes
