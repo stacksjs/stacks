@@ -120,7 +120,6 @@
         "@stacksjs/stx": "^0.2.184",
         "@stacksjs/ts-cloud": "^0.8.3",
         "@stacksjs/ts-md": "^0.1.1",
-        "craft-native": ">=0.0.55",
       },
       "devDependencies": {
         "@stacksjs/api": "workspace:*",
@@ -144,9 +143,11 @@
         "better-dx": "^0.2.23",
       },
       "peerDependencies": {
+        "craft-native": ">=0.0.65",
         "pickier": "^0.1.35",
       },
       "optionalPeers": [
+        "craft-native",
         "pickier",
       ],
     },
@@ -214,7 +215,7 @@
       "version": "0.72.8",
       "dependencies": {
         "@stacksjs/bun-router": "^0.0.22",
-        "@stacksjs/ts-auth": "^0.4.3",
+        "@stacksjs/ts-auth": "^0.4.4",
       },
       "devDependencies": {
         "@stacksjs/error-handling": "workspace:*",
@@ -752,7 +753,6 @@
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
         "better-dx": "^0.2.23",
-        "craft-native": ">=0.0.55",
       },
       "peerDependencies": {
         "craft-native": ">=0.0.65",
