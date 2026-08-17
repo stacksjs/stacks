@@ -28,4 +28,29 @@ export default {
    * @default 'storage/logs/deployments.log'
    */
   deploymentsPath: storagePath('logs/deployments.log'),
+
+  /**
+   * **Transports**
+   *
+   * Extra destinations for every log record, on top of the console and the log
+   * file. Each one receives the record before formatting, so `args` still holds
+   * the real `Error` and the real context object.
+   *
+   * `log()` must return immediately. A transport doing network I/O should
+   * buffer there and deliver on its own timer, then drain in `flush()`, which
+   * the framework calls on `beforeExit`.
+   *
+   * @example
+   * transports: [
+   *   {
+   *     name: 'my-log-service',
+   *     level: 'info',
+   *     log: record => buffer.push(record),
+   *     flush: () => deliver(buffer.splice(0)),
+   *   },
+   * ],
+   *
+   * @default []
+   */
+  transports: [],
 } satisfies LoggingConfig
