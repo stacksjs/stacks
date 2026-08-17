@@ -37,7 +37,9 @@ export default class PruneQueryLogsJob {
       }
 
       // Prune old query logs
-      const result = await QueryController.pruneQueryLogs()
+      // `pruneQueryLogs` is an instance method - the routes reach it through
+      // 'Controllers/QueryController@method', which instantiates for them.
+      const result = await new QueryController().pruneQueryLogs()
 
       log.info(`Successfully pruned ${result.pruned} query logs older than ${result.retentionDays} days`)
 

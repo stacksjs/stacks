@@ -72,6 +72,14 @@ interface ActionOptions<
   TModel = string,
   TValidations extends ActionValidations | undefined = undefined,
   TPath extends string = '',
+  /**
+   * The payload `handle` receives when the action is invoked by something
+   * other than the router - an event listener, for instance, which calls it
+   * with the event object rather than a request (`app/Events.ts` maps
+   * 'user:registered' straight onto an action name). Defaults to `never`,
+   * which leaves every HTTP action typed exactly as before.
+   */
+  TPayload = never,
 > {
   name?: string
   description?: string
@@ -184,7 +192,7 @@ interface ActionOptions<
   ) => void | Response | Promise<void | Response>
   handle: {
     bivarianceHack: (
-      request: InferRequest<TModel, TValidations, TPath>,
+      request: [TPayload] extends [never] ? InferRequest<TModel, TValidations, TPath> : TPayload,
     ) => ActionResult | Promise<ActionResult>
   }['bivarianceHack']
   /**
@@ -250,6 +258,7 @@ export class Action<
   TModel = string,
   TValidations extends ActionValidations | undefined = undefined,
   TPath extends string = '',
+  TPayload = never,
 > {
   name?: string
   description?: string
@@ -274,7 +283,7 @@ export class Action<
   authorize?: ActionOptions<TModel, TValidations, TPath>['authorize']
   /** @see {@link ActionOptions.before} */
   before?: ActionOptions<TModel, TValidations, TPath>['before']
-  handle: ActionOptions<TModel, TValidations, TPath>['handle']
+  handle: ActionOptions<TModel, TValidations, TPath, TPayload>['handle']
   model?: string
   /**
    * Original model definition used for request validation.
@@ -321,7 +330,7 @@ export class Action<
     authorize,
     before,
     dependencies,
-  }: ActionOptions<TModel, TValidations, TPath>) {
+  }: ActionOptions<TModel, TValidations, TPath, TPayload>) {
     this.name = name
     this.description = description
     this.apiResponse = apiResponse

@@ -25,8 +25,12 @@ export default new Action({
       if (!post)
         return response.json({ message: 'Social post not found.' }, 404)
 
+      // Same NOT NULL author column as on create; an update that did not
+      // name one leaves the existing author alone rather than clearing it.
+      const { user_id: authorId, ...rest } = data
       await post.update({
-        ...data,
+        ...rest,
+        ...(authorId === null ? {} : { user_id: authorId }),
         platform: data.platform as Exclude<typeof data.platform, ''>,
       })
       return response.json({ id })

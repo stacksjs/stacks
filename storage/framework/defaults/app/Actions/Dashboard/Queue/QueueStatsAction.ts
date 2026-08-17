@@ -49,7 +49,7 @@ export default new Action({
         failedByQueue.set(queueName, (failedByQueue.get(queueName) ?? 0) + 1)
       }
       let active = 0
-      let completed = 0
+      const completed = 0
 
       for (const j of allJobs) {
         const queueName = String(j.get('queue') || 'default')

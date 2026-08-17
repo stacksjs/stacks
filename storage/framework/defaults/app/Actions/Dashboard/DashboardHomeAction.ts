@@ -142,7 +142,7 @@ export default new Action({
 
     const sources = ['Users', 'Products', 'Orders', 'Posts', 'Revenue', 'Recent orders', 'Recent users', 'Request count', 'Recent requests']
     const issues = modelResults
-      .map((result, index) => issue(sources[index], result))
+      .map((result, index) => issue(sources[index] ?? 'Dashboard', result))
       .filter((entry): entry is { source: string, message: string } => entry !== null)
     if (health.status === 'rejected') {
       issues.push({

@@ -21,7 +21,9 @@ export default new Action({
     }
 
     const paymentIntent = await user?.paymentIntent({
-      amount: Number(product.unit_price),
+      // The Product model's column is `price`; `unit_price` has never been
+      // one, so this read was undefined and the intent was created for NaN.
+      amount: Number(product.get('price')),
       currency: 'usd',
       payment_method_types: ['card'],
     })

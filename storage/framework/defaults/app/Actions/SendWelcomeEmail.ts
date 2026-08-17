@@ -7,7 +7,9 @@ export interface WelcomeEmailParams {
   name?: string
 }
 
-export default new Action({
+// Invoked by the event system with the `user:registered` payload rather than
+// by the router with a request - see app/Events.ts.
+export default new Action<string, undefined, '', WelcomeEmailParams>({
   name: 'SendWelcomeEmail',
   description: 'Sends a welcome email to newly registered users',
 

@@ -17,9 +17,16 @@ export default new Action({
     if (validationError)
       return response.json({ message: validationError }, 422)
 
+    // A social post belongs to a User, and the column is NOT NULL - so an
+    // author-less payload used to pass validation and then fail at the
+    // database as a 500. Say so plainly instead.
+    if (data.user_id === null)
+      return response.json({ message: 'A social post needs an author.' }, 422)
+
     try {
       const post = await SocialPost.create({
         ...data,
+        user_id: data.user_id,
         platform: data.platform as Exclude<typeof data.platform, ''>,
         likes: 0,
         shares: 0,
