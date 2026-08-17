@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.15...v0.72.16)
+
+## 🐛 Bug Fixes
+
+- **orm**: encrypt and decrypt multi-word attribute names ([287b3b7](https://github.com/stacksjs/stacks/commit/287b3b7)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.14...v0.72.15)
 
 ## 🐛 Bug Fixes
