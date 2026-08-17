@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.16...v0.72.17)
+
+## 🐛 Bug Fixes
+
+- **database**: stop regeneration from silently dropping columns (#2337) ([1fb244b](https://github.com/stacksjs/stacks/commit/1fb244b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2337](https://github.com/stacksjs/stacks/issues/2337), [#2337](https://github.com/stacksjs/stacks/issues/2337))
+- **orm**: publish the model definitions the types point at (#2336) ([9b255d3](https://github.com/stacksjs/stacks/commit/9b255d3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2336](https://github.com/stacksjs/stacks/issues/2336), [#2336](https://github.com/stacksjs/stacks/issues/2336))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.15...v0.72.16)
 
 ## 🐛 Bug Fixes

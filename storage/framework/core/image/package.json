@@ -2,7 +2,7 @@
   "name": "@stacksjs/image",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.16",
+  "version": "0.72.17",
   "description": "Native responsive image delivery for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",
