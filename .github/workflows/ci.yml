@@ -86,6 +86,30 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      # Same reason the `test` job builds these, and the same two packages:
+      # a workspace package's ROOT export resolves from source when `dist` is
+      # missing, but a subpath pattern like `./composables/*` does not. `dist`
+      # is gitignored and nothing else here builds it, so every
+      # `@stacksjs/browser/composables/*` import is unresolvable and this job
+      # has been red on:
+      #
+      #   error TS2307: Cannot find module '@stacksjs/browser/composables/csrf'
+      #   error TS2307: Cannot find module '@stacksjs/browser/composables/useStorage'
+      #
+      # It stays green on developer machines because a stale `dist` is already
+      # sitting there.
+      #
+      # Dependency order matters: browser's built `composables/useStorage.js`
+      # imports `@stacksjs/composables/useStorage`, so composables has to exist
+      # first or the same error moves one level down.
+      - name: Build packages imported by subpath
+        run: |
+          for pkg in composables browser; do
+            echo "::group::build @stacksjs/$pkg"
+            (cd "storage/framework/core/$pkg" && bun run build)
+            echo "::endgroup::"
+          done
+
       - name: Typecheck
         run: bun run typecheck
 
