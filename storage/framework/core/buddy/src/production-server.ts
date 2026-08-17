@@ -232,7 +232,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
-  const { describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiProxyRules, resolveRedirectRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -317,6 +317,11 @@ export async function startProductionServer(options?: { port?: string | number, 
       const redirectRules = resolveRedirectRules(config.server?.redirects)
       if (redirectRules.size > 0)
         log.info(`Redirects: ${describeRedirectRules(redirectRules)}`)
+
+      // Resolved at boot for the same reason (stacksjs/stacks#2325).
+      const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
+      if (embeddableRules.paths.length > 0 || embeddableRules.prefixes.length > 0)
+        log.info(`Frameable by other origins: ${[...embeddableRules.paths, ...embeddableRules.prefixes].join(' ')}`)
 
       log.info(`Starting production server on port ${port}...`)
 
@@ -447,15 +452,26 @@ export async function startProductionServer(options?: { port?: string | number, 
         // impossible for anyone whose first request wasn't an API GET. The
         // token has to ride the HTML that carries the form.
         onResponse: async (req: Request, response: Response) => {
+          // ABOVE the verb guard on purpose (stacksjs/stacks#2325). Everything
+          // below this point is GET/HEAD-only page work, but the security
+          // headers belong on every response this server makes - a 405 or an
+          // error page is still a document a browser will render.
+          const secured = applyViewSecurityHeaders(req, response, embeddableRules)
+
           const method = req.method.toUpperCase()
           if (method !== 'GET' && method !== 'HEAD')
-            return
+            return secured
 
           // A 404 from stx-serve gives the CMS page tree its chance — coded
           // views win by construction because they never 404. Mirrors the dev
           // views server; failure degrades to the original 404, never a 500.
-          let current = response
-          if (response.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+          //
+          // `baseline` is what to return when nothing further changes: the
+          // rebuilt response when the headers could not be set in place, and
+          // otherwise the original, which already carries them.
+          const baseline = secured ?? response
+          let current = baseline
+          if (current.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
             try {
               const { cmsNotFoundFallback } = await import('@stacksjs/cms')
               const cmsResponse = await cmsNotFoundFallback(req)
@@ -469,13 +485,13 @@ export async function startProductionServer(options?: { port?: string | number, 
 
           try {
             const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
-            return (await seedCsrfCookieIfMissing(req, current)) ?? (current === response ? undefined : current)
+            return (await seedCsrfCookieIfMissing(req, current)) ?? (current === baseline ? secured : current)
           }
           catch (error) {
             // Never fail a page render over a cookie — the CSRF middleware
             // still rejects unsafe requests, so this is fail-closed.
             log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
-            return current === response ? undefined : current
+            return current === baseline ? secured : current
           }
         },
       })
