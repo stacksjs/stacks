@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.9...v0.72.10)
+
+## ✨ Features
+
+- **forms**: create a form in code, not just read one ([9600074](https://github.com/stacksjs/stacks/commit/9600074)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **db**: wait for the project config before choosing what to back up (#2335) ([481e95f](https://github.com/stacksjs/stacks/commit/481e95f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2335](https://github.com/stacksjs/stacks/issues/2335), [#2335](https://github.com/stacksjs/stacks/issues/2335))
+- **router**: stop a dead duplicate registration rewriting the live route (#2334) ([f6c1e54](https://github.com/stacksjs/stacks/commit/f6c1e54)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2334](https://github.com/stacksjs/stacks/issues/2334), [#2334](https://github.com/stacksjs/stacks/issues/2334), [#2332](https://github.com/stacksjs/stacks/issues/2332))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.8...v0.72.9)
 
 ## ✨ Features
