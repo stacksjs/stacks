@@ -269,20 +269,40 @@ export function campaignUpdateData(
   return data
 }
 
+/**
+ * A campaign row as callers use it.
+ *
+ * Same reason as `EmailListRow`: the models arrive through
+ * `await import(...) as any`, so there is nothing to infer a return type
+ * from, and the published types said `Promise<void>` - which made
+ * `campaigns.create()` useless to anyone who needed the new campaign's id in
+ * order to send it.
+ */
+export interface CampaignRow {
+  id: number
+  name: string
+  subject?: string | null
+  status: string
+  scheduled_at?: string | null
+  sent_count?: number
+  update: (data: Record<string, unknown>) => Promise<unknown>
+  [key: string]: unknown
+}
+
 export const campaigns = {
-  async create(input: CreateCampaignInput) {
+  async create(input: CreateCampaignInput): Promise<CampaignRow> {
     const { Campaign } = await import('@stacksjs/orm') as any
     const emailListId = await resolveListId(input)
 
     return Campaign.create(campaignCreateData(input, emailListId))
   },
 
-  async find(id: number) {
+  async find(id: number): Promise<CampaignRow | undefined> {
     const { Campaign } = await import('@stacksjs/orm') as any
     return Campaign.find(id)
   },
 
-  async update(id: number, patch: Partial<CreateCampaignInput>) {
+  async update(id: number, patch: Partial<CreateCampaignInput>): Promise<unknown> {
     const campaign = await campaigns.find(id)
     if (!campaign)
       throw new Error(`[newsletter] Campaign ${id} not found`)
