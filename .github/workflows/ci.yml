@@ -29,9 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -70,9 +70,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -123,9 +123,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -227,9 +227,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -269,9 +269,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -329,9 +329,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Resolve provisioned deployment target
@@ -360,9 +360,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
@@ -408,9 +408,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@c1417d98f5613290bc3b1f96d35086b834684659 # v0.10.47 + the socket-hang-up retry fix
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
         with:
-          version: '0.10.50'
+          version: '0.11.29'
           install: 'false'
 
       - name: Use cached node_modules
