@@ -13,6 +13,10 @@ process.env.APP_ENV = 'testing'
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { evaluateConditions, visibleFields } = await import('../src/conditions')
 const { loadFormByUuid, publicDefinition } = await import('../src/definition')
+const { createForm, loadFormByHandle } = await import('../src/create')
+
+/** A site id for the scoped-form tests; nothing else in this file uses one. */
+const SITE_ID = 91
 const { completeSubmissionPayment, exportSubmissionsCsv, fetchSubmissions, submitForm } = await import('../src/submissions')
 const { computeAmountCents, validateSubmission } = await import('../src/validate')
 
@@ -342,5 +346,98 @@ describe('exportSubmissionsCsv', () => {
     const csv = await exportSubmissionsCsv(form)
     expect(csv).toContain(`"'=HYPERLINK(""evil"")"`)
     expect(csv.split('\n')[0]).toContain('Parent name')
+  })
+})
+
+describe('createForm', () => {
+  test('creates a form with its fields, readable by handle', async () => {
+    const created = await createForm(SITE_ID, {
+      handle: 'admissions-enquiry',
+      name: 'Admissions enquiry',
+      status: 'active',
+      settings: { submitLabel: 'Send enquiry', notifyEmails: ['admissions@school.test'] },
+      fields: [
+        { name: 'parent_name', label: 'Your name', type: 'text', required: true },
+        { name: 'email', label: 'Email', type: 'email', required: true },
+        { name: 'entry_year', label: 'Entry year', type: 'select', options: { choices: [{ value: '2027', label: '2027' }] } },
+      ],
+    })
+
+    expect(created.created).toBe(true)
+
+    const form = await loadFormByHandle(SITE_ID, 'admissions-enquiry')
+    expect(form).toBeTruthy()
+    expect(form!.name).toBe('Admissions enquiry')
+    expect(form!.fields).toHaveLength(3)
+    // Position is assigned in the order given, so the form renders as written.
+    expect(form!.fields.map(field => field.name)).toEqual(['parent_name', 'email', 'entry_year'])
+    expect(form!.fields[0]!.required).toBe(true)
+  })
+
+  test('is idempotent on the handle rather than making a second form', async () => {
+    const first = await createForm(SITE_ID, {
+      handle: 'repeat-me',
+      name: 'First name',
+      fields: [{ name: 'a', label: 'A', type: 'text' }],
+    })
+
+    const second = await createForm(SITE_ID, {
+      handle: 'repeat-me',
+      name: 'Renamed',
+      fields: [{ name: 'a', label: 'A', type: 'text' }],
+    })
+
+    expect(second.created).toBe(false)
+    expect(second.id).toBe(first.id)
+    expect(second.uuid).toBe(first.uuid)
+
+    const form = await loadFormByHandle(SITE_ID, 'repeat-me')
+    expect(form!.name).toBe('Renamed')
+  })
+
+  test('replaces the fields, so a removed one does not linger', async () => {
+    await createForm(SITE_ID, {
+      handle: 'shrinking',
+      name: 'Shrinking',
+      fields: [
+        { name: 'keep', label: 'Keep', type: 'text' },
+        { name: 'drop', label: 'Drop', type: 'text' },
+      ],
+    })
+
+    await createForm(SITE_ID, {
+      handle: 'shrinking',
+      name: 'Shrinking',
+      fields: [{ name: 'keep', label: 'Keep', type: 'text' }],
+    })
+
+    const form = await loadFormByHandle(SITE_ID, 'shrinking')
+    expect(form!.fields.map(field => field.name)).toEqual(['keep'])
+  })
+
+  test('a handle belongs to its site', async () => {
+    await createForm(SITE_ID, { handle: 'scoped', name: 'Mine', fields: [{ name: 'a', label: 'A', type: 'text' }] })
+
+    expect(await loadFormByHandle(SITE_ID, 'scoped')).toBeTruthy()
+    expect(await loadFormByHandle(SITE_ID + 1, 'scoped')).toBeNull()
+  })
+
+  test('a submission validates against the created definition', async () => {
+    await createForm(SITE_ID, {
+      handle: 'validated',
+      name: 'Validated',
+      fields: [
+        { name: 'name', label: 'Name', type: 'text', required: true },
+        { name: 'email', label: 'Email', type: 'email', required: true },
+      ],
+    })
+
+    const form = (await loadFormByHandle(SITE_ID, 'validated'))!
+
+    const missing = await validateSubmission(form, { name: 'Ada' })
+    expect(missing.ok).toBe(false)
+
+    const good = await validateSubmission(form, { name: 'Ada', email: 'ada@school.test' })
+    expect(good.ok).toBe(true)
   })
 })

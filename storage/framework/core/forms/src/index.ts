@@ -1,4 +1,6 @@
 export { evaluateConditions, visibleFields } from './conditions'
+export { createForm, loadFormByHandle, toCreateFields } from './create'
+export type { CreatedForm, CreateFormFieldInput, CreateFormInput } from './create'
 export { loadFormByUuid, publicDefinition } from './definition'
 export { dispatchSubmissionNotifications } from './notifications'
 export {
