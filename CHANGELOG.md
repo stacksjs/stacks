@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.7...v0.72.8)
+
+## 🐛 Bug Fixes
+
+- **features**: a feature must claim the shared files its actions import ([be68251](https://github.com/stacksjs/stacks/commit/be68251)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.6...v0.72.7)
 
 ## 🐛 Bug Fixes
