@@ -15,7 +15,7 @@ describe('dashboard operational error contract', () => {
     expect(helper).toContain('console.error(`[dashboard/api] ${action} failed:`, error)')
     expect(helper).toContain('return response.json({ message }, status)')
     expect(helper).toContain('return message')
-    expect(helper).toContain('status = 503')
+    expect(helper).toContain('status: ResponseStatus = 503')
   })
 
   test('does not expose caught storage errors from operational read APIs', () => {
