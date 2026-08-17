@@ -1,4 +1,5 @@
 import type { CreateCampaignInput, SendCampaignOptions } from './types'
+import { model } from './models'
 import { db, sqlDateTime } from '@stacksjs/database'
 import { lists } from './lists'
 
@@ -291,14 +292,14 @@ export interface CampaignRow {
 
 export const campaigns = {
   async create(input: CreateCampaignInput): Promise<CampaignRow> {
-    const { Campaign } = await import('@stacksjs/orm') as any
+    const Campaign = await model('Campaign')
     const emailListId = await resolveListId(input)
 
     return Campaign.create(campaignCreateData(input, emailListId))
   },
 
   async find(id: number): Promise<CampaignRow | undefined> {
-    const { Campaign } = await import('@stacksjs/orm') as any
+    const Campaign = await model('Campaign')
     return Campaign.find(id)
   },
 

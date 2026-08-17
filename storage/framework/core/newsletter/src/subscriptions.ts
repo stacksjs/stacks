@@ -1,4 +1,5 @@
 import type { SubscribeOptions, SubscribeResult, UnsubscribeResult } from './types'
+import { model } from './models'
 import { lists } from './lists'
 
 /**
@@ -31,7 +32,7 @@ export async function subscribe(email: string, options: SubscribeOptions = {}): 
   if (!email || !email.includes('@'))
     throw new Error('[newsletter] subscribe() requires a valid email address')
 
-  const { Subscriber, EmailListSubscriber } = await import('@stacksjs/orm') as any
+  const [Subscriber, EmailListSubscriber] = await Promise.all([model('Subscriber'), model('EmailListSubscriber')])
 
   const listId = await resolveListId(options.list)
   const source = options.source ?? 'api'
@@ -81,7 +82,7 @@ export async function unsubscribe(token: string): Promise<UnsubscribeResult> {
   if (!token)
     return { ok: false }
 
-  const { EmailListSubscriber, Subscriber } = await import('@stacksjs/orm') as any
+  const [EmailListSubscriber, Subscriber] = await Promise.all([model('EmailListSubscriber'), model('Subscriber')])
 
   const pivot = await EmailListSubscriber.where('uuid', token).first()
   if (!pivot)
@@ -112,7 +113,7 @@ export async function unsubscribe(token: string): Promise<UnsubscribeResult> {
 
 /** Bulk unsubscribe by email — used by bounce/complaint handlers. */
 export async function unsubscribeAll(email: string): Promise<number> {
-  const { Subscriber, EmailListSubscriber } = await import('@stacksjs/orm') as any
+  const [Subscriber, EmailListSubscriber] = await Promise.all([model('Subscriber'), model('EmailListSubscriber')])
   const sub = await Subscriber.where('email', email).first()
   if (!sub)
     return 0

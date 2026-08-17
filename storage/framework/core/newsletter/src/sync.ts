@@ -1,3 +1,4 @@
+import { model } from './models'
 import { subscribe } from './subscriptions'
 
 /**
@@ -85,7 +86,7 @@ export async function syncListSubscribers(
   contacts: readonly SyncContact[],
   options: { source?: string } = {},
 ): Promise<SyncListResult> {
-  const { EmailListSubscriber, Subscriber } = await import('@stacksjs/orm') as any
+  const [EmailListSubscriber, Subscriber] = await Promise.all([model('EmailListSubscriber'), model('Subscriber')])
 
   const result: SyncListResult = {
     added: 0,
@@ -184,7 +185,7 @@ async function resolveId(list: string | number): Promise<number> {
   if (typeof list === 'number')
     return list
 
-  const { EmailList } = await import('@stacksjs/orm') as any
+  const EmailList = await model('EmailList')
   const row = await EmailList.where('slug', list).first()
   return Number(row?.id ?? 0)
 }

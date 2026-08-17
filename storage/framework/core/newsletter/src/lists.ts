@@ -1,3 +1,4 @@
+import { model } from './models'
 import type { CreateListInput } from './types'
 
 /**
@@ -59,20 +60,20 @@ export interface EmailListRow {
 
 export const lists = {
   async create(input: CreateListInput): Promise<EmailListRow> {
-    const { EmailList } = await import('@stacksjs/orm') as any
+    const EmailList = await model('EmailList')
     return EmailList.create(emailListCreateData(input))
   },
 
   /** Look up by slug first, then by id — slugs are the public-facing handle. */
   async find(idOrSlug: number | string): Promise<EmailListRow | undefined> {
-    const { EmailList } = await import('@stacksjs/orm') as any
+    const EmailList = await model('EmailList')
     if (typeof idOrSlug === 'number')
       return EmailList.find(idOrSlug)
     return EmailList.where('slug', idOrSlug).first()
   },
 
   async all(): Promise<EmailListRow[]> {
-    const { EmailList } = await import('@stacksjs/orm') as any
+    const EmailList = await model('EmailList')
     return EmailList.where('status', 'active').get()
   },
 
