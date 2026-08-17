@@ -1587,6 +1587,21 @@ function createSearchQueryBuilder(
  * mutator works against rows written before the trait was on, mid-migration).
  * Used by `wrapReadsWithEncryption()` and the cast-aware read wrappers.
  */
+/**
+ * The names an encrypted attribute can appear under.
+ *
+ * `collectEncryptedAttributes()` reports the name the model declared
+ * (`encryptedValue`), while a row read back from the database is keyed by
+ * column (`encrypted_value`). Checking only the declared name meant every
+ * multi-word encrypted attribute silently skipped both encryption and
+ * decryption: single-word ones like `ssn` worked because the two spellings
+ * coincide, which is why this held up in testing.
+ */
+function encryptedAliases(key: string): string[] {
+  const snake = snakeCase(key)
+  return snake === key ? [key] : [key, snake]
+}
+
 async function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string>): Promise<void> {
   if (!row || typeof row !== 'object') return
   // Stacks model instances carry their values on `_attributes`; plain rows
@@ -1594,11 +1609,13 @@ async function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string
   const bag: Record<string, unknown> = (row as { _attributes?: Record<string, unknown> })._attributes
     ?? (row as Record<string, unknown>)
   for (const key of encryptedKeys) {
-    if (!(key in bag)) continue
-    const value = bag[key]
-    if (!isEncrypted(value)) continue // plaintext or null — leave alone
-    // eslint-disable-next-line no-await-in-loop
-    bag[key] = await decryptValue(value)
+    for (const alias of encryptedAliases(key)) {
+      if (!(alias in bag)) continue
+      const value = bag[alias]
+      if (!isEncrypted(value)) continue // plaintext or null — leave alone
+      // eslint-disable-next-line no-await-in-loop
+      bag[alias] = await decryptValue(value)
+    }
   }
 }
 
@@ -1715,7 +1732,10 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
     if (!data || typeof data !== 'object' || Array.isArray(data)) return data
     const out = { ...(data as Record<string, unknown>) }
     for (const key of encryptedKeys) {
-      if (key in out) out[key] = await encryptValue(out[key])
+      // Callers write either spelling; both must reach the cipher.
+      for (const alias of encryptedAliases(key)) {
+        if (alias in out) out[alias] = await encryptValue(out[alias])
+      }
     }
     return out
   }

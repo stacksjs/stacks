@@ -104,7 +104,8 @@ describe('force writes still encrypt encrypted columns', () => {
     db.run(`CREATE TABLE fc_secrets (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       label TEXT,
-      token TEXT NOT NULL
+      token TEXT NOT NULL,
+      encrypted_value TEXT
     )`)
   })
 
@@ -122,6 +123,9 @@ describe('force writes still encrypt encrypted columns', () => {
     attributes: {
       label: { type: 'string', fillable: true },
       token: { type: 'string', guarded: true, encrypted: true },
+      // Multi-word: declared camelCase, stored snake_case. The two spellings
+      // diverge here, which is exactly what used to skip the cipher.
+      encryptedValue: { type: 'string', guarded: true, encrypted: true },
     },
   } as const)
 
@@ -137,6 +141,19 @@ describe('force writes still encrypt encrypted columns', () => {
     expect((await (Secret as any).find(Number(created.id)))?.token).toBe('super-secret')
     expect((await (Secret as any).where('id', Number(created.id)).first())?.token).toBe('super-secret')
     expect((await (Secret as any).where('label', 'yelp').first())?.token).toBe('super-secret')
+  })
+
+  it('encrypts a multi-word attribute whose column name differs', async () => {
+    const created = await (Secret as any).forceCreate({
+      label: 'multiword', token: 'tok', encryptedValue: 'provider-api-key',
+    })
+
+    const raw = db.query('SELECT encrypted_value FROM fc_secrets WHERE id = ?').get(Number(created.id)) as any
+    expect(raw.encrypted_value).not.toBe('provider-api-key')
+    expect(String(raw.encrypted_value)).toStartWith('enc:')
+
+    const found = await (Secret as any).where('label', 'multiword').first()
+    expect(found?.encryptedValue ?? found?.encrypted_value).toBe('provider-api-key')
   })
 
   it('encrypts on forceUpdate too', async () => {
