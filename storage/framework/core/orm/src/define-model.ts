@@ -635,6 +635,24 @@ function wrapModelInstance<T extends object>(
               : (...args: any[]) => fn((target as any).id, ...args)
           }
         }
+
+        // Attributes are stored under their column name, but models declare
+        // them in camelCase and every other surface accepts that spelling:
+        // `create({ pollIntervalMinutes })` writes, `where('pollIntervalMinutes')`
+        // queries, and `ModelRow` types the property as present. Only property
+        // reads disagreed, returning undefined for every multi-word attribute
+        // while typechecking clean — so the mistake was invisible and the value
+        // usually vanished into a `|| default`.
+        //
+        // Resolved last, so it can never shadow a real attribute, relation, or
+        // trait method: it only answers where the read was already undefined.
+        // `ownKeys` deliberately still reports column names only, which keeps
+        // spreads, `Object.keys`, and JSON responses byte-identical.
+        if (a) {
+          const column = snakeCase(prop)
+          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column))
+            return a[column]
+        }
       }
       const v = Reflect.get(target, prop, target)
       return typeof v === 'function' ? v.bind(target) : v
@@ -659,6 +677,18 @@ function wrapModelInstance<T extends object>(
           else a[prop] = value
           return true
         }
+        // `inst.pollIntervalMinutes = 5` must land on `poll_interval_minutes`.
+        // Falling through to the new-attribute branch below would add a second
+        // key under the camelCase name, which save() then tries to write as a
+        // column that does not exist.
+        if (a) {
+          const column = snakeCase(prop)
+          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) {
+            if (typeof setter === 'function') setter.call(target, column, value)
+            else a[column] = value
+            return true
+          }
+        }
         // New attribute key not yet in _attributes — still write through
         // so `inst.newField = x` followed by save() works.
         if (a && !(prop in (target as object))) {
@@ -675,6 +705,11 @@ function wrapModelInstance<T extends object>(
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
         const rels = (target as any)._relations
         if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) return true
+        // Keep `in` agreeing with what `get` will actually resolve.
+        if (a) {
+          const column = snakeCase(prop)
+          if (column !== prop && Object.prototype.hasOwnProperty.call(a, column)) return true
+        }
       }
       return Reflect.has(target, prop)
     },
