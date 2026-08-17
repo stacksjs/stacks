@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.4...v0.72.5)
+
+## 🐛 Bug Fixes
+
+- **database**: rebuild client after connection reset ([98cb9e3](https://github.com/stacksjs/stacks/commit/98cb9e3)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.3...v0.72.4)
 
 ## ✨ Features
