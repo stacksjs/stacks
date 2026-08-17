@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.6...v0.72.7)
+
+## 🐛 Bug Fixes
+
+- **release**: stop a dry run reporting that it released ([099ee2b](https://github.com/stacksjs/stacks/commit/099ee2b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: close the scaffold typecheck gap at zero, and wire it up ([aa617f4](https://github.com/stacksjs/stacks/commit/aa617f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: drifted columns, a broken receipt, and a listener contract ([617c807](https://github.com/stacksjs/stacks/commit/617c807)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: queue stats, health and the rest of the import drift ([57e94e3](https://github.com/stacksjs/stacks/commit/57e94e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: repair the passkey actions, which could never have worked ([02d33df](https://github.com/stacksjs/stacks/commit/02d33df)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: type `required: false` attributes as nullable ([2e2f7f2](https://github.com/stacksjs/stacks/commit/2e2f7f2)) _(by Chris <chris@stacksjs.com>)_
+- **middleware**: resolve the authenticated user once, and correctly ([383114c](https://github.com/stacksjs/stacks/commit/383114c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: third pass on the scaffold (104 -> 58) ([9ce75ae](https://github.com/stacksjs/stacks/commit/9ce75ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **defaults**: repair the dashboard scaffold against its own models and deps ([770202f](https://github.com/stacksjs/stacks/commit/770202f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cms**: make the page CRUD surface write pages that actually serve ([920c769](https://github.com/stacksjs/stacks/commit/920c769)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **core**: move the scaffold's shared logic into the packages that own it ([8f5b1c8](https://github.com/stacksjs/stacks/commit/8f5b1c8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.5...v0.72.6)
 
 ## ✨ Features
