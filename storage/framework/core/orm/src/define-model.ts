@@ -1131,7 +1131,11 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
 
       const make = baseModel.make
       if (typeof make === 'function') {
-        const instance = (make as Function).call(baseModel) as {
+        // Awaited because `make()` is not always synchronous: on a model with
+        // encrypted attributes the read wrappers hand back a promise, and an
+        // un-awaited promise has no forceFill/save, so this silently fell
+        // through to the un-forced path.
+        const instance = await (make as Function).call(baseModel) as {
           forceFill?: (data: Record<string, unknown>) => unknown
           save?: () => Promise<unknown>
         } | null
@@ -1645,11 +1649,55 @@ function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKe
   }
 
   // Static `Model.update(id, data)` re-reads after writing — decrypt that.
-  const origUpdate = baseModel.update
-  if (typeof origUpdate === 'function') {
-    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-      const result = await (origUpdate as Function).call(this, id, data)
+  for (const method of ['update', 'forceUpdate']) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = async function (id: number | string, data: Record<string, unknown>) {
+      const result = await (original as Function).call(this, id, data)
       return await decryptResult(result)
+    }
+  }
+
+  // Query-builder reads. The direct helpers above only cover `Model.first()`
+  // and friends; `Model.where(...).first()` resolves on the builder the entry
+  // point returns, which nothing was decrypting. A lookup by anything other
+  // than the primary key — `where('team_id', t).where('provider', p).first()`,
+  // the natural way to fetch a stored credential — therefore handed back raw
+  // `enc:` ciphertext, and callers passed it straight to the provider as if it
+  // were the secret.
+  //
+  // Wrap the entry points that return a builder and decorate that builder's
+  // terminal methods, so every path out of a query decrypts exactly once.
+  const terminals = ['first', 'firstOrFail', 'get', 'all', 'find', 'findOrFail', 'last', 'paginate', 'simplePaginate']
+  const decorateBuilder = (builder: unknown): unknown => {
+    if (!builder || typeof builder !== 'object') return builder
+    const target = builder as Record<string, unknown>
+    if (target.__stacksEncryptedReads) return builder
+    for (const method of terminals) {
+      const original = target[method]
+      if (typeof original !== 'function') continue
+      target[method] = async function (...args: any[]) {
+        return await decryptResult(await (original as Function).apply(this, args))
+      }
+    }
+    // Chainable methods hand back a builder (often `this`, sometimes a new
+    // one); decorate whatever comes back so a longer chain stays covered.
+    for (const method of ['where', 'whereIn', 'whereNull', 'whereNotNull', 'orWhere', 'orderBy', 'orderByDesc', 'limit', 'offset', 'with']) {
+      const original = target[method]
+      if (typeof original !== 'function') continue
+      target[method] = function (...args: any[]) {
+        return decorateBuilder((original as Function).apply(this, args))
+      }
+    }
+    Object.defineProperty(target, '__stacksEncryptedReads', { value: true, enumerable: false })
+    return builder
+  }
+
+  for (const entry of ['where', 'whereIn', 'whereNull', 'whereNotNull', 'orderBy', 'orderByDesc', 'limit', 'query']) {
+    const original = baseModel[entry]
+    if (typeof original !== 'function') continue
+    baseModel[entry] = function (...args: any[]) {
+      return decorateBuilder((original as Function).apply(this, args))
     }
   }
 }
@@ -1672,7 +1720,13 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
     return out
   }
 
-  const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate']
+  // `forceCreate` is in this list because the mass-assignment escape hatch is
+  // not an encryption escape hatch. A guarded, encrypted column (an API key,
+  // a provider secret) is written through exactly that path, and leaving it
+  // out stored the secret as plaintext. This wrapper installs last, so it
+  // sits outside the force helpers and their payload is encrypted before
+  // they ever see it.
+  const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate', 'forceCreate']
   for (const method of writeMethods) {
     const original = baseModel[method]
     if (typeof original !== 'function') continue
@@ -1685,11 +1739,13 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
     }
   }
 
-  const origUpdate = baseModel.update
-  if (typeof origUpdate === 'function') {
-    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
+  // Same for the (id, data) shaped updates, force included.
+  for (const method of ['update', 'forceUpdate']) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = async function (id: number | string, data: Record<string, unknown>) {
       const enc = (await encryptArg(data)) as Record<string, unknown>
-      return await (origUpdate as Function).call(this, id, enc)
+      return await (original as Function).call(this, id, enc)
     }
   }
 }

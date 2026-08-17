@@ -81,3 +81,72 @@ describe('forceCreate persists guarded columns', () => {
     expect(String((thrown as Error).message)).toContain('guarded')
   })
 })
+
+/**
+ * The mass-assignment escape hatch must not double as an encryption escape
+ * hatch. A guarded + encrypted column is exactly what a provider secret looks
+ * like, and it is written through forceCreate/forceUpdate by definition.
+ */
+describe('force writes still encrypt encrypted columns', () => {
+  let db: Database
+  let releaseDbConfigLock: () => void
+  let previousAppKey: string | undefined
+
+  beforeAll(async () => {
+    // Without a key the encrypt helpers deliberately pass values through in
+    // plaintext, which would make these assertions vacuous.
+    previousAppKey = process.env.APP_KEY
+    process.env.APP_KEY = 'base64:0PMErlN4S1yWJn6qk8Zx3vQwRt7YbGh2Kd5FaCsXuLo='
+
+    releaseDbConfigLock = await acquireDbConfigLock()
+    configureOrm({ database: ':memory:' })
+    db = getDatabase()
+    db.run(`CREATE TABLE fc_secrets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      label TEXT,
+      token TEXT NOT NULL
+    )`)
+  })
+
+  afterAll(() => {
+    releaseDbConfigLock()
+    if (previousAppKey === undefined) delete process.env.APP_KEY
+    else process.env.APP_KEY = previousAppKey
+  })
+
+  const Secret = defineModel({
+    name: 'FcSecret',
+    table: 'fc_secrets',
+    primaryKey: 'id',
+    autoIncrement: true,
+    attributes: {
+      label: { type: 'string', fillable: true },
+      token: { type: 'string', guarded: true, encrypted: true },
+    },
+  } as const)
+
+  it('stores ciphertext at rest and returns plaintext on read', async () => {
+    const created = await (Secret as any).forceCreate({ label: 'yelp', token: 'super-secret' })
+
+    const raw = db.query('SELECT token FROM fc_secrets WHERE id = ?').get(Number(created.id)) as any
+    expect(raw.token).not.toBe('super-secret')
+    expect(String(raw.token).length).toBeGreaterThan('super-secret'.length)
+
+    // Both read paths must decrypt: the direct helper and the query chain
+    // callers actually use when looking a row up by something other than id.
+    expect((await (Secret as any).find(Number(created.id)))?.token).toBe('super-secret')
+    expect((await (Secret as any).where('id', Number(created.id)).first())?.token).toBe('super-secret')
+    expect((await (Secret as any).where('label', 'yelp').first())?.token).toBe('super-secret')
+  })
+
+  it('encrypts on forceUpdate too', async () => {
+    const created = await (Secret as any).forceCreate({ label: 'rotate', token: 'first-value' })
+    await (Secret as any).forceUpdate(Number(created.id), { token: 'rotated-value' })
+
+    const raw = db.query('SELECT token FROM fc_secrets WHERE id = ?').get(Number(created.id)) as any
+    expect(raw.token).not.toBe('rotated-value')
+
+    const read = await (Secret as any).where('id', Number(created.id)).first()
+    expect(read?.token).toBe('rotated-value')
+  })
+})
