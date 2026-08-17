@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.12...v0.72.13)
+
+## 🐛 Bug Fixes
+
+- **newsletter**: query through db, so the package works in an installed app ([854e48e](https://github.com/stacksjs/stacks/commit/854e48e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.11...v0.72.12)
 
 ## 🐛 Bug Fixes

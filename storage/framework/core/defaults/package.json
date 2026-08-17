@@ -2,7 +2,7 @@
   "name": "@stacksjs/defaults",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.12",
+  "version": "0.72.13",
   "description": "The complete managed Stacks application scaffold, including runtime defaults, AI guidance, editor metadata, and npm-backed project support files.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -46,7 +46,7 @@
   "dependencies": {
     "@iconify-json/f7": "^1.2.2",
     "@iconify-json/hugeicons": "^1.2.27",
-    "@stacksjs/mobile": "^0.72.12",
+    "@stacksjs/mobile": "^0.72.13",
     "@stacksjs/sanitizer": "^0.2.113"
   },
   "scripts": {
