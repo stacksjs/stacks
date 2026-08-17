@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.3...v0.72.4)
+
+## ✨ Features
+
+- **compliance**: deduplicate consent events ([de2cd4b](https://github.com/stacksjs/stacks/commit/de2cd4b)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **api**: refresh consent artifacts ([d63f138](https://github.com/stacksjs/stacks/commit/d63f138)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **env**: rotate production encryption ([c1fd793](https://github.com/stacksjs/stacks/commit/c1fd793)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.2...v0.72.3)
 
 ## 🐛 Bug Fixes
