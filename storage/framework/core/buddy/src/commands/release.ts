@@ -36,12 +36,19 @@ export function release(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro('Triggered CI/CD Release via GitHub Actions', {
-        startTime,
-        useSeconds: true,
-      })
+      // A dry run neither tags nor pushes, so it must not claim it did. This
+      // used to print "Successfully released" and "Triggered CI/CD Release"
+      // either way, which reads as a release having happened - the one thing
+      // a dry run exists to avoid being unsure about.
+      await outro(
+        options.dryRun
+          ? 'Dry run complete. Nothing was committed, tagged or pushed.'
+          : 'Triggered CI/CD Release via GitHub Actions',
+        { startTime, useSeconds: true },
+      )
 
-      log.info(`Follow along: ${italic(resolveGitHubActionsUrl(readOriginRemote()))}`)
+      if (!options.dryRun)
+        log.info(`Follow along: ${italic(resolveGitHubActionsUrl(readOriginRemote()))}`)
     })
 
   onUnknownSubcommand(buddy, 'release')

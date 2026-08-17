@@ -61,4 +61,9 @@ if (result && (result as { isErr?: boolean }).isErr) {
   await log.exit(`Release failed: ${(result as { error?: { message?: string } }).error?.message ?? String((result as { error?: unknown }).error)}`, 1)
 }
 
-log.success(`Successfully released ${app.name}`)
+// Same reason as in the command: a dry run must not report a release.
+log.success(
+  isDryRun
+    ? `Dry run complete for ${app.name}. Nothing was committed, tagged or pushed.`
+    : `Successfully released ${app.name}`,
+)
