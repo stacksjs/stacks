@@ -77,7 +77,7 @@
     "bun-plugin-dtsx": "^0.11.5",
     "pickier": "^0.1.56",
     "stacks": "workspace:*",
-    "ts-pantry": "^0.11.27"
+    "ts-pantry": "^0.11.29"
   },
   "workspaces": [
     "storage/framework",

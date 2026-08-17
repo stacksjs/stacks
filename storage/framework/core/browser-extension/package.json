@@ -58,7 +58,7 @@
     "safari-template"
   ],
   "dependencies": {
-    "ts-pantry": "^0.11.27"
+    "ts-pantry": "^0.11.29"
   },
   "scripts": {
     "build": "bun build.ts",
