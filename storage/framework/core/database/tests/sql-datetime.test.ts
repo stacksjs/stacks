@@ -90,11 +90,11 @@ describe('expiry comparison against the database clock', () => {
     // as ISO and compared against `datetime('now')`, which is space-separated.
     const db = new Database(':memory:')
     db.run(`CREATE TABLE t (id INTEGER PRIMARY KEY, expires_at TIMESTAMP)`)
-    const anHourAgo = new Date(Date.now() - 3600_000).toISOString()
+    const anHourAgo = new Date(INSTANT.getTime() - 3600_000).toISOString()
     db.run(`INSERT INTO t (expires_at) VALUES (?)`, [anHourAgo])
 
     const viaDbClock = db.query(
-      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > datetime('now')`,
+      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > datetime('${INSTANT.toISOString()}')`,
     ).all()
     expect(viaDbClock).toHaveLength(1) // <- expired, yet returned
 
@@ -104,17 +104,17 @@ describe('expiry comparison against the database clock', () => {
   test('comparing against sqlDateTime() excludes it', () => {
     const db = new Database(':memory:')
     db.run(`CREATE TABLE t (id INTEGER PRIMARY KEY, expires_at TIMESTAMP)`)
-    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(Date.now() - 3600_000))])
+    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(INSTANT.getTime() - 3600_000))])
 
     const expired = db.query(
-      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > ${sqlDateTimeLiteral()}`,
+      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > ${sqlDateTimeLiteral(INSTANT)}`,
     ).all()
     expect(expired).toHaveLength(0)
 
     // and a live row is still returned
-    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(Date.now() + 3600_000))])
+    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(INSTANT.getTime() + 3600_000))])
     const live = db.query(
-      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > ${sqlDateTimeLiteral()}`,
+      `SELECT * FROM t WHERE expires_at IS NULL OR expires_at > ${sqlDateTimeLiteral(INSTANT)}`,
     ).all()
     expect(live).toHaveLength(1)
     db.close()
@@ -125,21 +125,21 @@ describe('expiry comparison against the database clock', () => {
     // nothing, so expired tokens were never swept.
     const db = new Database(':memory:')
     db.run(`CREATE TABLE t (id INTEGER PRIMARY KEY, expires_at TIMESTAMP)`)
-    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(Date.now() - 3600_000))])
+    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [sqlDateTime(new Date(INSTANT.getTime() - 3600_000))])
 
-    expect(db.query(`SELECT * FROM t WHERE expires_at < datetime('now')`).all()).toHaveLength(0)
-    expect(db.query(`SELECT * FROM t WHERE expires_at < ${sqlDateTimeLiteral()}`).all()).toHaveLength(1)
+    expect(db.query(`SELECT * FROM t WHERE expires_at < datetime('${INSTANT.toISOString()}')`).all()).toHaveLength(0)
+    expect(db.query(`SELECT * FROM t WHERE expires_at < ${sqlDateTimeLiteral(INSTANT)}`).all()).toHaveLength(1)
     db.close()
   })
 
   test('a legacy row written with Z is still evaluated correctly', () => {
     const db = new Database(':memory:')
     db.run(`CREATE TABLE t (id INTEGER PRIMARY KEY, expires_at TIMESTAMP)`)
-    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [new Date(Date.now() - 3600_000).toISOString()])
-    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [new Date(Date.now() + 3600_000).toISOString()])
+    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [new Date(INSTANT.getTime() - 3600_000).toISOString()])
+    db.run(`INSERT INTO t (expires_at) VALUES (?)`, [new Date(INSTANT.getTime() + 3600_000).toISOString()])
 
     const live = db.query(
-      `SELECT * FROM t WHERE expires_at > ${sqlDateTimeLiteral()}`,
+      `SELECT * FROM t WHERE expires_at > ${sqlDateTimeLiteral(INSTANT)}`,
     ).all()
     expect(live).toHaveLength(1)
     db.close()
