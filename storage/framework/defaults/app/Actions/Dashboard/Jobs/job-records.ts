@@ -1,19 +1,9 @@
+import type { ReadableRecord } from '@stacksjs/orm'
 export type JobRecordSource = 'job' | 'failed'
 export type DashboardJobStatus = 'queued' | 'processing' | 'failed'
 
-/**
- * The slice of a model record these normalizers need.
- *
- * `key` is deliberately loose. A real record's `get` accepts only that model's
- * own column names, so a parameter typed `string` is WIDER than what Job or
- * FailedJob offers and, by contravariance, no real record is assignable to it -
- * which is what kept this file from typechecking. The normalizers read the two
- * models' overlapping columns by name and tolerate absence, so the honest
- * shape is "some record you can ask for a column".
- */
-export interface ModelRecord {
-  get: (key: any) => unknown
-}
+/** The shared shape, kept under this name for the helpers below. */
+export type ModelRecord = ReadableRecord
 
 export interface NormalizedJob {
   id: string

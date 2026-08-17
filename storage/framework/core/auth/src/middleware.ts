@@ -48,3 +48,40 @@ export const authMiddlewareHandler = {
   name: 'auth',
   handle: authMiddleware,
 }
+
+/**
+ * The authenticated user, for a middleware or action that needs to reason
+ * about one.
+ *
+ * Every authorization middleware in the scaffold used to open with the same
+ * line:
+ *
+ *     const user = request.user || request._user || request._authenticatedUser
+ *
+ * Two things were wrong with it. `_user` is assigned nowhere in the framework,
+ * so it was a dead term. And `user` is a lazily-resolving MACRO - a function -
+ * so on any request carrying it, `user` WAS the function: truthy enough to
+ * pass the "is anyone signed in" check, then missing every field the caller
+ * went on to read, which surfaces as a confusing 403 rather than an honest
+ * 401.
+ *
+ * Resolving it here means every caller agrees on what "the user" is, and the
+ * answer is a user rather than a callable.
+ */
+export async function authenticatedUser(request: any): Promise<any | undefined> {
+  const cached = request?._authenticatedUser
+  if (cached && typeof cached === 'object')
+    return cached
+
+  const macro = request?.user
+  if (typeof macro === 'function') {
+    const resolved = await macro()
+    return resolved && typeof resolved === 'object' ? resolved : undefined
+  }
+
+  // A middleware upstream may have stamped a plain object on `user` instead.
+  if (macro && typeof macro === 'object')
+    return macro
+
+  return undefined
+}

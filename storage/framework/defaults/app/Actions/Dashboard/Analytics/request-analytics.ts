@@ -1,3 +1,4 @@
+import type { ReadableRecord } from '@stacksjs/orm'
 export type AnalyticsRange = 'day' | 'week' | 'month' | 'year'
 export type AnalyticsScope = 'all' | 'blog' | 'commerce'
 
@@ -11,17 +12,8 @@ export interface RequestAnalyticsRow {
   createdAt: string
 }
 
-/**
- * The slice of a model record these helpers read.
- *
- * `key` is loose deliberately: a real record's `get` accepts only its own
- * column names, so a parameter typed `string` is WIDER, and contravariance
- * meant no real record was assignable - see the same note on the Kanban and
- * job record shims.
- */
-export interface AnalyticsModelRecord {
-  get: (key: any) => unknown
-}
+/** The shared shape, kept under this name for the helpers below. */
+export type AnalyticsModelRecord = ReadableRecord
 
 interface TrafficBucket {
   date: string

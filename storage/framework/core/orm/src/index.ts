@@ -609,6 +609,23 @@ function _safeGet(row: any, key: string, fallback: any = ''): any {
 if (g.safeAll === undefined) g.safeAll = _safeAll
 if (g.safeGet === undefined) g.safeGet = _safeGet
 
+/**
+ * A model record seen only through `get(column)`.
+ *
+ * Normalizers, dashboard aggregators and report builders all take rows from
+ * more than one model and read a handful of shared columns by name. Typing
+ * that parameter as the model's own record ties the helper to one model;
+ * typing it as `{ get: (key: string) => unknown }` is WIDER than what any real
+ * record offers, and contravariance then makes every real record unassignable.
+ *
+ * Four copies of this interface had grown up in the dashboard scaffold - one
+ * each for jobs, kanban, analytics and deployments - all with the same
+ * hard-won `any`. This is that type, once.
+ */
+export interface ReadableRecord {
+  get: (key: any) => unknown
+}
+
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions
 export type {

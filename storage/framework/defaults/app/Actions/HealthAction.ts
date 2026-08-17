@@ -70,15 +70,17 @@ async function getServiceHealth() {
 
   // Queue Health
   try {
-    const { Job } = await import('@stacksjs/orm')
+    // The queue package owns what "healthy" means for a queue - depth
+    // thresholds, stuck workers, jobs whose reserve has gone stale - and its
+    // own worker health endpoint reads the same function. This used to count
+    // rows where `status = 'pending'`, a column the jobs table does not have.
+    const { checkQueueHealth } = await import('@stacksjs/queue')
     const queueStart = Date.now()
-    // The jobs table has no `status` column: a job is pending until a worker
-    // claims it by stamping `reserved_at`.
-    const pendingJobs = await Job.whereNull('reserved_at').count()
+    const queueHealth = await checkQueueHealth()
     const queueLatency = Date.now() - queueStart
     services.push({
       name: 'Queue',
-      status: pendingJobs < 100 ? 'healthy' : pendingJobs < 1000 ? 'degraded' : 'critical',
+      status: queueHealth.status === 'unhealthy' ? 'critical' : queueHealth.status,
       latency: `${queueLatency}ms`,
       uptime: '99.9%',
     })

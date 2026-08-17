@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { FailedJob, Job } from '@stacksjs/orm'
-import { getGlobalMetrics } from '@stacksjs/queue'
+import { getGlobalMetrics, queuedJobState } from '@stacksjs/queue'
 import { dashboardOperationalError } from '../dashboard-response'
 
 interface QueueBucket {
@@ -11,19 +11,11 @@ interface QueueBucket {
   total: number
 }
 
-/**
- * A queued job has no `status` column - the queue expresses state through
- * `reserved_at` (a worker has claimed it) and `available_at` (when it becomes
- * eligible). This action used to read `j.get('status')`, which no version of
- * the Job model has ever had, so every job fell to the 'pending' default and
- * the dashboard's active count was always zero.
- *
- * A row that has run to completion is deleted by the worker, so 'completed'
- * is not a state the jobs table can be in; failures live in `failed_jobs`.
- */
-function jobState(reservedAt: unknown): 'pending' | 'active' {
-  return reservedAt ? 'active' : 'pending'
-}
+// A queued job has no `status` column - `queuedJobState` in @stacksjs/queue
+// holds the rule (reserved_at means a worker has it; available_at in the
+// future means it is not eligible yet), and the queue's own health check reads
+// the same one. A row that finished is deleted by the worker, so 'completed'
+// is not a state the jobs table can be in; failures live in `failed_jobs`.
 
 export default new Action({
   name: 'QueueStatsAction',
@@ -53,7 +45,7 @@ export default new Action({
 
       for (const j of allJobs) {
         const queueName = String(j.get('queue') || 'default')
-        const status = jobState(j.get('reserved_at'))
+        const status = queuedJobState({ reserved_at: j.get('reserved_at'), available_at: j.get('available_at') })
 
         if (!queueMap[queueName]) {
           queueMap[queueName] = { pending: 0, active: 0, completed: 0, failed: 0, total: 0 }
@@ -61,12 +53,12 @@ export default new Action({
         const bucket = queueMap[queueName]
         bucket.total++
 
-        if (status === 'pending') {
-          bucket.pending++
-        }
-        else {
+        if (status === 'processing') {
           bucket.active++
           active++
+        }
+        else {
+          bucket.pending++
         }
       }
 

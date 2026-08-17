@@ -1,5 +1,4 @@
-import { authenticatedUser } from './authenticated-user'
-import { AuthorizationException, authorize } from '@stacksjs/auth'
+import { authenticatedUser, AuthorizationException, authorize } from '@stacksjs/auth'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, resolveRouteModel, setRouteModelFallback } from '@stacksjs/router'
 

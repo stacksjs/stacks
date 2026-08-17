@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import {
   generateAuthenticationOptions,
   getUserPasskeys,
+  passkeyDescriptors,
   storeWebAuthnChallenge,
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
@@ -33,16 +34,9 @@ export default new Action({
 
     const options = await generateAuthenticationOptions({
       rpID,
-      // `id` is the base64url string the passkey is stored under, which is
-      // what has to travel in JSON - an ArrayBuffer serializes to `{}`. The
-      // installed @stacksjs/ts-auth types it as ArrayBuffer only; fixed
-      // upstream (ts-auth b59ad36), so this narrowing goes away with the next
-      // release of that package.
-      allowCredentials: userPasskeys.map(passkey => ({
-        id: passkey.id,
-        type: 'public-key' as const,
-        transports: ['internal'],
-      })) as unknown as Parameters<typeof generateAuthenticationOptions>[0]['allowCredentials'],
+      // The JSON-vs-ArrayBuffer boundary lives in `passkeyDescriptors`; the
+      // narrowing goes away when ts-auth b59ad36 ships.
+      allowCredentials: passkeyDescriptors(userPasskeys) as unknown as Parameters<typeof generateAuthenticationOptions>[0]['allowCredentials'],
     }) as unknown as PublicKeyCredentialRequestOptionsJSON
 
     // Persist the challenge server-side so `VerifyAuthenticationAction`

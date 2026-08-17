@@ -83,6 +83,39 @@ export interface PublicKeyCredentialCreationOptionsJSON {
   excludeCredentials?: PublicKeyCredentialDescriptorJSON[]
 }
 
+/**
+ * Turn a user's stored passkeys into credential descriptors for the options a
+ * server hands the browser.
+ *
+ * Both `GenerateRegistrationAction` (as `excludeCredentials`) and
+ * `GenerateAuthenticationAction` (as `allowCredentials`) need the same three
+ * facts: the stored base64url id, the `type: 'public-key'` the spec requires,
+ * and the transports. Building it in one place is also where the
+ * ArrayBuffer-vs-JSON boundary gets explained once rather than at each call.
+ */
+export function passkeyDescriptors(
+  passkeys: readonly PasskeyAttribute[],
+): PublicKeyCredentialDescriptorJSON[] {
+  return passkeys.map(passkey => ({
+    id: passkey.id,
+    type: 'public-key' as const,
+    transports: parseTransports(passkey.transports),
+  }))
+}
+
+/** `transports` is stored as a JSON array string; anything else means unknown. */
+function parseTransports(stored: string | undefined): PublicKeyCredentialDescriptorJSON['transports'] {
+  if (!stored)
+    return ['internal']
+  try {
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) && parsed.length ? parsed : ['internal']
+  }
+  catch {
+    return ['internal']
+  }
+}
+
 type PasskeyInsertable = Insertable<PasskeyAttribute>
 
 export interface PasskeyAttribute {

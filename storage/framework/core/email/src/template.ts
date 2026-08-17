@@ -111,7 +111,7 @@ function darkenColor(hex: string, percent: number): string {
  * Constructed once at module load — a `replace` chain is faster than a
  * single regex for short strings.
  */
-function escapeHtml(input: string): string {
+export function escapeHtml(input: string): string {
   return input
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

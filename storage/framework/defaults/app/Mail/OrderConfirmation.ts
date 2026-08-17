@@ -1,5 +1,5 @@
 import { config } from '@stacksjs/config'
-import { mail, safe, template } from '@stacksjs/email'
+import { escapeHtml, mail, safe, template } from '@stacksjs/email'
 
 export interface OrderConfirmationItem {
   name: string
@@ -58,16 +58,6 @@ export async function sendOrderConfirmation(options: OrderConfirmationOptions): 
     html,
     text,
   })
-}
-
-/** Escape anything that reaches the receipt from user-controlled data. */
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll('\'', '&#39;')
 }
 
 function formatMoney(amount: number): string {

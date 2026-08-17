@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { generateRegistrationOptions, getUserPasskeys, storeWebAuthnChallenge } from '@stacksjs/auth'
+import { generateRegistrationOptions, getUserPasskeys, passkeyDescriptors, storeWebAuthnChallenge } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 
 export default new Action({
@@ -38,16 +38,9 @@ export default new Action({
       userID: userEmail,
       userName: userEmail,
       attestationType: 'none',
-      // `id` is the base64url string the passkey is stored under, which is
-      // what has to travel in JSON - an ArrayBuffer serializes to `{}`. The
-      // installed @stacksjs/ts-auth types it as ArrayBuffer only; fixed
-      // upstream (ts-auth b59ad36), so this narrowing goes away with the next
-      // release of that package.
-      excludeCredentials: userPasskeys.map(passkey => ({
-        id: passkey.id,
-        type: 'public-key' as const,
-        transports: ['internal'],
-      })) as unknown as Parameters<typeof generateRegistrationOptions>[0]['excludeCredentials'],
+      // See `passkeyDescriptors` for the JSON-vs-ArrayBuffer boundary; the
+      // narrowing goes away when ts-auth b59ad36 ships.
+      excludeCredentials: passkeyDescriptors(userPasskeys) as unknown as Parameters<typeof generateRegistrationOptions>[0]['excludeCredentials'],
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',

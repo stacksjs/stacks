@@ -132,11 +132,13 @@ export {
   checkQueueHealth,
   createHealthCheckHandler,
   isQueueHealthy,
+  queuedJobState,
   type HealthAlert,
   type HealthCheckConfig,
   type HealthStatus,
   type QueueHealthResult,
   type QueueMetrics as HealthQueueMetrics,
+  type QueuedJobState,
   type QueueStatus,
   type WorkerStatus,
 } from './health'

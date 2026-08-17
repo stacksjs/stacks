@@ -17,6 +17,8 @@ export {
   resolveSiteByHost,
   sitesOptions,
 } from './resolver'
+export { provisionSite } from './provision'
+export type { SiteProvisionInput, SiteProvisionPage, SiteProvisionResult } from './provision'
 export { forSite, siteOwnership } from './scoping'
 export { toSiteSnapshot } from './snapshot'
 export type { SiteSnapshotShape } from './snapshot'

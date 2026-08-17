@@ -12,6 +12,37 @@ import { getGlobalMetrics, getWorkerTracker } from './events'
  */
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy'
 
+/** What a row in the `jobs` table is currently doing. */
+export type QueuedJobState = 'pending' | 'processing' | 'delayed'
+
+/**
+ * Derive a queued job's state from the columns that hold it.
+ *
+ * There is no `status` column: a worker claims a job by stamping
+ * `reserved_at`, and `available_at` in the future means it is not eligible
+ * yet. Dashboards and health checks both need this rule, and reading it off a
+ * `status` column - which several of them tried - silently reports every job
+ * as pending forever.
+ */
+export function queuedJobState(
+  job: { reserved_at?: unknown, available_at?: unknown },
+  nowTimestamp: number = Math.floor(Date.now() / 1000),
+): QueuedJobState {
+  if (job.reserved_at)
+    return 'processing'
+
+  const availableAt = typeof job.available_at === 'number'
+    ? job.available_at
+    : typeof job.available_at === 'string' && job.available_at.trim()
+      ? Number(job.available_at)
+      : Number.NaN
+
+  if (Number.isFinite(availableAt) && availableAt > nowTimestamp)
+    return 'delayed'
+
+  return 'pending'
+}
+
 /**
  * Queue health check result
  */
@@ -124,10 +155,12 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
 
       const stats = queueMap.get(queueName)!
 
-      if (job.reserved_at) {
+      const state = queuedJobState(job, nowTimestamp)
+
+      if (state === 'processing') {
         stats.processing++
       }
-      else if (job.available_at && job.available_at > nowTimestamp) {
+      else if (state === 'delayed') {
         stats.delayed++
       }
       else {
