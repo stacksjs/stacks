@@ -84,6 +84,21 @@ export interface ServerConfig {
 
   /** Old URLs and where they go now. See {@link RedirectsOptions}. */
   redirects?: RedirectsOptions
+
+  /** Security headers on rendered pages. See {@link ServerSecurityOptions}. */
+  security?: ServerSecurityOptions
+}
+
+/** Security headers the views server puts on rendered pages. */
+export interface ServerSecurityOptions {
+  /**
+   * Paths another origin is allowed to frame.
+   *
+   * `X-Frame-Options: SAMEORIGIN` is omitted for these; every other header
+   * still applies. An entry ending in `/` is a prefix, anything else is an
+   * exact path.
+   */
+  embeddable?: string[]
 }
 
 export interface ServerOptions {

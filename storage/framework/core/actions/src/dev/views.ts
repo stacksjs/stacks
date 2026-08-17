@@ -80,7 +80,7 @@ function parseCookies(req: Request): Record<string, string> {
 async function startDefaultServer() {
   await overridesReady
 
-  const { describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveRedirect, resolveRedirectRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -121,6 +121,7 @@ async function startDefaultServer() {
   // differently depending on how far boot had progressed.
   const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
   const redirectRules = resolveRedirectRules(config.server?.redirects)
+  const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
 
   // Announce the rules only when the app has widened them. A route that
   // definitely exists returning 404 is very hard to diagnose when the rule
@@ -129,6 +130,13 @@ async function startDefaultServer() {
   if (apiProxyRules.paths.length > 0 || apiProxyRules.prefixes.length > 1) {
     // eslint-disable-next-line no-console
     console.log(`  API proxy: ${describeApiProxyRules(apiProxyRules)}`)
+  }
+
+  // A page that another origin can frame is a deliberate exception to the
+  // clickjacking default, so say which ones (stacksjs/stacks#2325).
+  if (embeddableRules.paths.length > 0 || embeddableRules.prefixes.length > 0) {
+    // eslint-disable-next-line no-console
+    console.log(`  Frameable by other origins: ${[...embeddableRules.paths, ...embeddableRules.prefixes].join(' ')}`)
   }
 
   // Same reasoning for redirects: a URL that quietly bounces somewhere else is
@@ -321,17 +329,26 @@ async function startDefaultServer() {
       requestStore.enterWith(ctx)
       return null
     },
-    // Two response-time concerns, in order:
-    //   1. A 404 from stx-serve gives the CMS page tree its chance — coded
+    // Three response-time concerns, in order:
+    //   1. Server-rendered pages carry the same security headers the API
+    //      already sent (stacksjs/stacks#2325). First, because it applies to
+    //      every response including the 404 below.
+    //   2. A 404 from stx-serve gives the CMS page tree its chance — coded
     //      views win by construction because they never 404. Failure here
     //      must degrade to the original 404, never become a 500.
-    //   2. API requests are CSRF-protected by default. Seed the matching
+    //   3. API requests are CSRF-protected by default. Seed the matching
     //      double-submit cookie on the HTML page response so a first visit
     //      to /login or /register can immediately submit to the API.
-    //      Production applies the same pair.
+    // Production applies all three.
     onResponse: async (req: Request, response: Response) => {
-      let current = response
-      if (response.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
+      const secured = applyViewSecurityHeaders(req, response, embeddableRules)
+
+      // `baseline` is what to return when nothing further changes: the rebuilt
+      // response when the headers could not be set in place, else the
+      // original, which already carries them.
+      const baseline = secured ?? response
+      let current = baseline
+      if (current.status === 404 && (config as { sites?: { enabled?: boolean } }).sites?.enabled) {
         try {
           const { cmsNotFoundFallback } = await import('@stacksjs/cms')
           const cmsResponse = await cmsNotFoundFallback(req)
@@ -344,7 +361,7 @@ async function startDefaultServer() {
       }
 
       const seeded = await seedCsrfPageResponse(req, current)
-      return seeded ?? (current === response ? undefined : current)
+      return seeded ?? (current === baseline ? secured : current)
     },
   } as any)
 }

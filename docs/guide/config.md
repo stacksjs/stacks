@@ -371,6 +371,49 @@ registered in the API process, which is a separate process under `buddy dev`
 and potentially a separate host in production, so the views server cannot
 consult it.
 
+### Security headers on pages
+
+Every response the views server renders carries the same three headers the API
+already sent:
+
+```
+X-Frame-Options: SAMEORIGIN
+X-Content-Type-Options: nosniff
+Referrer-Policy: strict-origin-when-cross-origin
+```
+
+None of them can be set from a template. `X-Frame-Options` is an HTTP header
+with no `<meta>` equivalent, and CSP `frame-ancestors` is ignored when set
+through `<meta http-equiv>`, so this has to come from the server.
+
+An app that serves a deliberately embeddable page names it, and only
+`X-Frame-Options` is dropped for those paths:
+
+```typescript
+export default {
+  security: {
+    // An entry ending in `/` is a prefix. Anything else is an exact path.
+    embeddable: ['/embed/', '/share/card'],
+  },
+} satisfies ServerConfig
+```
+
+Both `buddy dev` and `buddy serve` print the list at boot, because a page
+another origin can frame is a deliberate exception worth seeing.
+
+Two headers are deliberately not sent on pages:
+
+- **`Content-Security-Policy`.** `STACKS_CSP` has only ever reached JSON API
+  responses, and a blanket policy breaks inline stx script bootstrapping,
+  Stripe iframes and OAuth popups. A page policy is worth having, but it needs
+  its own testing rather than arriving as a side effect.
+- **`Strict-Transport-Security`.** `buddy serve` treats itself as production
+  even on a laptop, and HSTS on `localhost` commits your browser to HTTPS for
+  that host for a year. Terminate TLS at a proxy and set it there.
+
+`STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, on both the API
+and the views server, for a deployment behind a proxy that injects its own.
+
 ## Environment Variables
 
 Stacks uses a `.env` file for environment-specific configuration:

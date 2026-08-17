@@ -66,4 +66,41 @@ export default {
    * `buddy dev` prints the effective rules at boot.
    */
   redirects: {},
+
+  /**
+   * **Security headers**
+   *
+   * Rendered pages carry `X-Frame-Options: SAMEORIGIN`,
+   * `X-Content-Type-Options: nosniff` and
+   * `Referrer-Policy: strict-origin-when-cross-origin`, the same three the
+   * API already sent. None of them can be set from a template:
+   * `X-Frame-Options` has no `<meta>` equivalent, and CSP `frame-ancestors`
+   * is ignored when set that way.
+   *
+   * `embeddable` lists the paths another origin is allowed to frame. Those
+   * paths omit `X-Frame-Options` and keep everything else:
+   *
+   * ```ts
+   * security: {
+   *   embeddable: ['/embed/', '/share/card'],
+   * }
+   * ```
+   *
+   * An entry ending in `/` is a prefix, anything else is an exact path.
+   * `buddy dev` and `buddy serve` both print the list at boot, because a page
+   * that can be framed is a deliberate exception worth seeing.
+   *
+   * Two headers are deliberately NOT sent on pages. A `STACKS_CSP` policy is
+   * not, because it has only ever reached JSON responses and a blanket policy
+   * breaks inline stx script bootstrapping, Stripe iframes and OAuth popups.
+   * `Strict-Transport-Security` is not, because `buddy serve` treats itself as
+   * production even on a laptop, and HSTS on localhost pins that host to
+   * HTTPS in your browser for a year.
+   *
+   * `STACKS_SECURITY_HEADERS_DISABLE=true` turns the whole set off, for a
+   * deployment behind a proxy that injects its own.
+   */
+  security: {
+    embeddable: [],
+  },
 } satisfies ServerConfig
