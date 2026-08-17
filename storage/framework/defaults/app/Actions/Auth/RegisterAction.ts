@@ -40,11 +40,14 @@ export default new Action({
       // — listener errors are caught by the wildcard handler so a flaky
       // welcome email doesn't fail registration. The `to` alias matches
       // the contract SendWelcomeEmail expects.
+      // `to` is what SendWelcomeEmail addresses the mail to, so it has to be
+      // a string; the registering address is the honest fallback if the
+      // freshly-created user could not be read back.
       dispatch('user:registered', {
         id: user?.id,
-        email: user?.email,
+        email: user?.email ?? email,
         name: user?.name,
-        to: user?.email,
+        to: user?.email ?? email,
       })
 
       // Same OAuth2-compatible payload LoginAction returns, so a client can

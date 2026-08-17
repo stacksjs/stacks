@@ -48,9 +48,11 @@ export default new Action({
     }
     const publicKey = new Uint8Array(Object.values(jsonParse)).buffer
 
-    // Convert challenge string to Uint8Array. The challenge is stored
-    // as base64url (the same form generateAuthenticationOptions emits).
-    const challengeBytes = Uint8Array.from(atob(expectedChallenge), c => c.charCodeAt(0))
+    // `consumeWebAuthnChallenge` already returns the bytes it stored. This
+    // used to run them through `atob()`, which stringifies a Uint8Array to
+    // "12,34,56..." before decoding it - so the challenge never matched and
+    // passkey authentication could not succeed.
+    const challengeBytes = expectedChallenge
 
     // Derive origin and rpID from app config instead of hardcoding localhost
     const appUrl = config.app?.url || 'http://localhost:3333'

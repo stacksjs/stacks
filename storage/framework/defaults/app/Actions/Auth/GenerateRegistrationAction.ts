@@ -30,12 +30,24 @@ export default new Action({
     const options = await generateRegistrationOptions({
       rpName,
       rpID,
+      // The WebAuthn user handle. It was omitted entirely, and the generator
+      // does `new TextEncoder().encode(options.userID)` - so every passkey was
+      // registered against the handle "undefined", the same one for every
+      // user. `storePasskey` records the email as `webauthn_user_id`, so the
+      // email is the handle the two halves have to agree on.
+      userID: userEmail,
       userName: userEmail,
       attestationType: 'none',
+      // `id` is the base64url string the passkey is stored under, which is
+      // what has to travel in JSON - an ArrayBuffer serializes to `{}`. The
+      // installed @stacksjs/ts-auth types it as ArrayBuffer only; fixed
+      // upstream (ts-auth b59ad36), so this narrowing goes away with the next
+      // release of that package.
       excludeCredentials: userPasskeys.map(passkey => ({
         id: passkey.id,
+        type: 'public-key' as const,
         transports: ['internal'],
-      })),
+      })) as unknown as Parameters<typeof generateRegistrationOptions>[0]['excludeCredentials'],
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',

@@ -40,12 +40,16 @@ export default new Action({
     const expectedRPID = new URL(expectedOrigin).hostname
 
     try {
-      const verification = await verifyRegistrationResponse({
-        response: body.attResp,
+      // Positional, as the function is declared. Passing one options object
+      // meant `credential.response` was undefined, the read threw, the catch
+      // swallowed it and every registration came back `verified: false` -
+      // passkey registration could never succeed through this action.
+      const verification = await verifyRegistrationResponse(
+        body.attResp,
         expectedChallenge,
         expectedOrigin,
         expectedRPID,
-      })
+      )
 
       await setCurrentRegistrationOptions(user, verification)
 

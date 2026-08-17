@@ -39,6 +39,50 @@ export type {
   AuthenticationOptions,
 } from '@stacksjs/ts-auth'
 
+/**
+ * A credential descriptor as it crosses the wire.
+ *
+ * `ts-auth`'s `PublicKeyCredentialRequestOptions` describes the shape the
+ * BROWSER wants: `id` as an ArrayBuffer. A server handing those options to a
+ * client has to send JSON, and an ArrayBuffer serializes to `{}` - so ids
+ * travel as the base64url strings the passkey rows already store, and the
+ * client turns them back into buffers before calling `navigator.credentials`.
+ *
+ * The passkey actions were already written against these names; they simply
+ * had nowhere to import them from, so the whole file typechecked as `any`.
+ */
+export interface PublicKeyCredentialDescriptorJSON {
+  /** base64url, as stored in `passkeys.id`. */
+  id: string
+  /** Required by the WebAuthn spec; the actions were omitting it. */
+  type: 'public-key'
+  transports?: Array<'ble' | 'internal' | 'nfc' | 'usb' | 'hybrid'>
+}
+
+export interface PublicKeyCredentialRequestOptionsJSON {
+  challenge: Uint8Array
+  rpId?: string
+  allowCredentials?: PublicKeyCredentialDescriptorJSON[]
+  userVerification?: 'required' | 'preferred' | 'discouraged'
+  timeout?: number
+}
+
+export interface PublicKeyCredentialCreationOptionsJSON {
+  challenge: Uint8Array
+  rp: { name: string, id?: string }
+  user: { id: Uint8Array | string, name: string, displayName: string }
+  pubKeyCredParams: Array<{ alg: number, type: 'public-key' }>
+  timeout?: number
+  attestation?: string
+  authenticatorSelection?: {
+    authenticatorAttachment?: 'platform' | 'cross-platform'
+    requireResidentKey?: boolean
+    residentKey?: 'discouraged' | 'preferred' | 'required'
+    userVerification?: 'required' | 'preferred' | 'discouraged'
+  }
+  excludeCredentials?: PublicKeyCredentialDescriptorJSON[]
+}
+
 type PasskeyInsertable = Insertable<PasskeyAttribute>
 
 export interface PasskeyAttribute {
