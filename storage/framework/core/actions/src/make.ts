@@ -144,7 +144,12 @@ export async function createAction(options: MakeOptions): Promise<void> {
   await createFileWithTemplate(p.userActionsPath(name), templateKey, name)
 }
 
-export async function createComponent(options: MakeOptions): Promise<void> {
+/**
+ * Only `name` is read here, so only `name` is required. Taking the full
+ * `MakeOptions` - whose members are all mandatory - meant a caller with just a
+ * name (the dashboard's "new component" button) could not call this at all.
+ */
+export async function createComponent(options: Pick<MakeOptions, 'name'>): Promise<void> {
   const name = options.name
   await createFileWithTemplate(p.userComponentsPath(componentFileName(name)), 'component', name)
 }
@@ -358,7 +363,8 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
   }
 }
 
-export async function createFunction(options: MakeOptions): Promise<void> {
+/** As `createComponent`: the name is the only option this reads. */
+export async function createFunction(options: Pick<MakeOptions, 'name'>): Promise<void> {
   const name = options.name
   // The template interpolates the name as a JS identifier, so a kebab-case
   // name like `hello-world` would produce invalid code (`const hello-world`).

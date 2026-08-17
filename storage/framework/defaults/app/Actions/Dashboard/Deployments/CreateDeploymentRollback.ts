@@ -3,7 +3,7 @@ import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import { trackOperatorOperation } from '../Operations/control-plane'
 import { stringValue } from '../Operations/recovery-input'
-import { deploymentRollbackInput, DeploymentRollbackError, executeDeploymentRollback } from './deployment-rollback'
+import { DeploymentRollbackError, deploymentRollbackInput, executeDeploymentRollback, rollbackAuditPayload } from './deployment-rollback'
 
 export default new Action({
   name: 'CreateDeploymentRollback',
@@ -14,7 +14,7 @@ export default new Action({
     const body = request.all() as Record<string, unknown>
     try {
       const input = deploymentRollbackInput(body)
-      const tracked = await trackOperatorOperation(request, 'dashboard.deployments.rollback', input, () => executeDeploymentRollback(input, stringValue(body.revision), stringValue(body.confirmation)))
+      const tracked = await trackOperatorOperation(request, 'dashboard.deployments.rollback', rollbackAuditPayload(input), () => executeDeploymentRollback(input, stringValue(body.revision), stringValue(body.confirmation)))
       return { success: true, ...tracked.result, operation: tracked.operation }
     }
     catch (error) {

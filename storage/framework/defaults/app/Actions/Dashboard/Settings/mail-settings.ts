@@ -51,11 +51,19 @@ export interface MailSettingsState {
   }
 }
 
+/**
+ * Whatever the settings form posted.
+ *
+ * Every field is optional AND `unknown`: this is the raw request body, and
+ * `updateMailSettings` runs each value through `stringValue` and validates it.
+ * Declaring the four core fields as required meant `request.all()` - the only
+ * thing any caller has - did not satisfy the type it was written for.
+ */
 export interface MailSettingsInput {
-  revision: unknown
-  driver: unknown
-  fromName: unknown
-  fromAddress: unknown
+  revision?: unknown
+  driver?: unknown
+  fromName?: unknown
+  fromAddress?: unknown
   smtp?: Record<string, unknown>
   ses?: Record<string, unknown>
   sendgrid?: Record<string, unknown>

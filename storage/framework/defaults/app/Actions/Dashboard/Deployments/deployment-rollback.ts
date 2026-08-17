@@ -6,6 +6,18 @@ export interface DeploymentRollbackInput {
   release?: string
 }
 
+/**
+ * The same input as a value the operations log can store.
+ *
+ * `JsonValue` has no room for `undefined`, so the optional fields are dropped
+ * rather than recorded as absent-but-present keys.
+ */
+export function rollbackAuditPayload(input: DeploymentRollbackInput): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(input).filter((entry): entry is [string, string] => typeof entry[1] === 'string'),
+  )
+}
+
 export class DeploymentRollbackError extends Error {
   constructor(message: string) {
     super(message)

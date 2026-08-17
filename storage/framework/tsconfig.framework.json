@@ -65,8 +65,11 @@
     "./core/defaults/resources/**",
     "./core/models/**",
     "./core/requests/**",
-    // The source of the two directories above. Checked as part of the app,
-    // where the `Models/`, `Actions/` and auto-import globals do resolve.
+    // The source of the two directories above. Checked by
+    // `tsconfig.defaults.json`, which resolves it as the app code it becomes
+    // once `<feature>:install` publishes it. (This note used to claim it was
+    // "checked as part of the app" - the app config never included the path,
+    // so nothing checked this tree at all and it drifted for months.)
     "./defaults/**",
     "./frontend-dist/**",
     "./libs/entries/**",

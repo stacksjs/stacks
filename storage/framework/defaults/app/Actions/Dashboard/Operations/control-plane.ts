@@ -51,7 +51,16 @@ export function operationsEnvironment(controlPlane = operationsControlPlane()) {
     ?? controlPlane.environments.values().next().value
 }
 
-export async function trackOperatorOperation<T extends JsonValue>(
+/**
+ * `T` is only required to be serializable, not to BE a `JsonValue`.
+ *
+ * An interface without an index signature - `Alert`, `ReconcileResult` - never
+ * satisfies `{ [key: string]: JsonValue }` structurally, however plainly
+ * JSON-shaped its fields are. Constraining the result that way meant the
+ * honest callers were the ones that failed to typecheck, so the constraint is
+ * dropped here and the value is narrowed once, where it is actually recorded.
+ */
+export async function trackOperatorOperation<T>(
   request: RequestInstance,
   kind: string,
   input: JsonValue,
@@ -86,7 +95,7 @@ export async function trackOperatorOperation<T extends JsonValue>(
     operation = controlPlane.store.transitionOperation(operation.id, {
       to: 'succeeded',
       expectedVersion: operation.version,
-      output: result,
+      output: result as JsonValue,
     })
     controlPlane.store.appendEvent({
       organizationId: controlPlane.organization.id,
@@ -95,7 +104,7 @@ export async function trackOperatorOperation<T extends JsonValue>(
       actorId: actor.id,
       correlationId: operation.correlationId,
       type: `${kind}.succeeded`,
-      payload: result,
+      payload: result as JsonValue,
     })
     return { result, operation }
   }

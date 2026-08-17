@@ -3,8 +3,13 @@ export interface DeploymentCommandInput {
   domain?: unknown
 }
 
+/**
+ * The slice of a model record these helpers read. `key` is loose on purpose:
+ * a real record's `get` accepts only its own columns, so a `string` parameter
+ * is wider and, by contravariance, nothing real is assignable to it.
+ */
 export interface DeploymentRecordLike {
-  get: (key: string) => unknown
+  get: (key: any) => unknown
 }
 
 export function booleanValue(value: unknown): boolean {
