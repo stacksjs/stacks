@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.13...v0.72.14)
+
+## 🐛 Bug Fixes
+
+- **orm**: make forceCreate actually persist guarded columns ([6624e9c](https://github.com/stacksjs/stacks/commit/6624e9c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.12...v0.72.13)
 
 ## 🐛 Bug Fixes
