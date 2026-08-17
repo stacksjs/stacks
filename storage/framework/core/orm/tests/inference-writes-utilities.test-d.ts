@@ -180,3 +180,33 @@ void (0 as unknown as FillableNickname)
 void (0 as unknown as FillableScore)
 void (0 as unknown as ColumnUnion)
 void (0 as unknown as NumericColumnUnion)
+
+/**
+ * `required: false` is the flag that emits a nullable column, so the inferred
+ * value type has to admit null as well. Declared `as const`, the way generated
+ * and hand-written app models are, so `required` stays the literal `false`.
+ */
+const Reading = defineModel({
+  name: 'Reading',
+  table: 'readings',
+  attributes: {
+    label: { fillable: true, required: true, validation: { rule: schema.string() } },
+    // A seed factory returns a real timestamp; the column is still nullable.
+    observedAt: { fillable: true, required: false, validation: { rule: schema.timestamp() }, factory: () => new Date().toISOString() },
+  },
+} as const)
+
+type ReadingRow = ModelRow<typeof Reading>
+type OptionalIsNullable = Expect<Equal<ReadingRow['observedAt'], string | null>>
+type RequiredStaysNonNull = Expect<Equal<ReadingRow['label'], string>>
+
+Reading.create({ label: 'ph', observedAt: null })
+Reading.update(1, { observedAt: null })
+Reading.forceUpdate(1, { observedAt: null })
+Reading.update(1, { observedAt: '2026-01-01T00:00:00.000Z' })
+
+// @ts-expect-error a required column still rejects null
+Reading.update(1, { label: null })
+
+void (0 as unknown as OptionalIsNullable)
+void (0 as unknown as RequiredStaysNonNull)

@@ -1893,11 +1893,36 @@ type InferenceHint<TAttribute> = TAttribute extends { type: unknown } | { factor
           ? object
           : { type: DefaultTypeToken<TAttribute> }
       : { type: ValidationInferenceRule<ValidationRuleOf<TAttribute>> }
+/**
+ * `required: false` is what makes the emitted column nullable, so it has to
+ * imply `nullable: true` for the inferred value type as well.
+ *
+ * Without this the two halves of a definition disagree. Value types come from
+ * the seed factory's return type, and a factory exists to produce a *useful*
+ * sample row, so optional columns are routinely written as
+ * `factory: () => new Date().toISOString()`. That inferred a bare `string`,
+ * which made `update({ nextPollAt: null })` a type error against a column the
+ * migration had already created as nullable. An explicit `nullable` on the
+ * attribute still wins, since it is the more specific declaration.
+ */
+type IsOptionalAttribute<TAttribute> = TAttribute extends { required: false } ? true : false
+/** Covers attributes with no factory, where the validation rule drives the type. */
+type NullabilityOf<TAttribute> = TAttribute extends { nullable: unknown }
+  ? object
+  : IsOptionalAttribute<TAttribute> extends true ? { nullable: true } : object
+/**
+ * Covers attributes that do have a factory, whose return type takes precedence
+ * over `nullable` when the value type is inferred.
+ */
+type FactoryValueOf<TAttribute> = IsOptionalAttribute<TAttribute> extends true
+  ? FactoryReturnOf<TAttribute> | null
+  : FactoryReturnOf<TAttribute>
 type QueryAttribute<TAttribute> = Omit<TAttribute, 'factory'>
   & InferenceHint<TAttribute>
+  & NullabilityOf<TAttribute>
   & ([FactoryReturnOf<TAttribute>] extends [never]
     ? object
-    : { factory: (faker: BQBFaker) => FactoryReturnOf<TAttribute> })
+    : { factory: (faker: BQBFaker) => FactoryValueOf<TAttribute> })
 type QueryTraits<TDef extends ModelDefinition> = TDef extends { traits: infer TTraits }
   ? { traits: TTraits & NonNullable<BQBModelDefinition['traits']> }
   : { traits?: BQBModelDefinition['traits'] }

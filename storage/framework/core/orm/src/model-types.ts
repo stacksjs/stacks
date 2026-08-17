@@ -89,8 +89,17 @@ type AttributeValue<TAttribute> = TAttribute extends { readonly type: infer TTyp
       : TAttribute extends { readonly default: infer TDefault } ? WidenDefault<TDefault>
         : unknown
 
+/**
+ * An attribute is nullable when it says so outright, or when `required: false`
+ * marks it optional. The latter is what makes the generated column nullable, so
+ * the row type has to agree with the schema the migration emits.
+ */
+type IsNullableAttribute<TAttribute> = TAttribute extends { readonly nullable: true }
+  ? true
+  : TAttribute extends { readonly required: false } ? true : false
+
 type DeclaredAttributes<TDef> = {
-  [TKey in AttributeKeys<TDef>]: DefinitionAttributes<TDef>[TKey] extends { readonly nullable: true }
+  [TKey in AttributeKeys<TDef>]: IsNullableAttribute<DefinitionAttributes<TDef>[TKey]> extends true
     ? AttributeValue<DefinitionAttributes<TDef>[TKey]> | null
     : AttributeValue<DefinitionAttributes<TDef>[TKey]>
 }
