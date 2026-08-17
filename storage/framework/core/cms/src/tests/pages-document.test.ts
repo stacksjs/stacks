@@ -3,7 +3,7 @@ import { registerDefaultBlocks } from '../blocks/defaults'
 import { parseStoredBlocks, validateBlocks } from '../blocks/registry'
 import { getDb } from '../database'
 import { fetchMenuTree } from '../menus'
-import { createPageDocument, PageDocumentError, updatePageDocument } from '../pages/document'
+import { createPageDocument, fetchPageDocument, PageDocumentError, updatePageDocument } from '../pages/document'
 import { publishDuePages } from '../publish'
 import { normalizePath, resolvePublishedPage } from '../public/resolve'
 import { sanitizeRichText } from '../public/sanitize'
@@ -261,5 +261,42 @@ describe('sanitizeRichText', () => {
     const copy = '<p>Small classes, <b>big</b> <em>questions</em>.</p><ul><li>K-8</li></ul>'
     expect(sanitizeRichText(copy)).toBe(copy)
     expect(sanitizeRichText('<a href="/admissions" title="Apply">Apply</a>')).toContain('href="/admissions"')
+  })
+})
+
+/**
+ * `fetchPageDocument` - loading a page for an editor.
+ *
+ * The site argument is not a convenience. An editor that looks a page up by id
+ * alone opens whichever tenant's page has that id, so the scope is part of the
+ * lookup and a cross-site read is indistinguishable from "not found".
+ */
+describe('fetchPageDocument', () => {
+  it('returns the page with its blocks parsed', async () => {
+    const created = await createPageDocument(1, {
+      title: 'Athletics',
+      slug: 'athletics',
+      status: 'published',
+      blocks: [{ type: 'rich-text', props: { html: '<p>Go team.</p>' } }],
+    })
+
+    const doc = await fetchPageDocument(1, created.id)
+
+    expect(doc).toBeTruthy()
+    expect(doc!.title).toBe('Athletics')
+    expect(doc!.path).toBe('/athletics')
+    expect(doc!.status).toBe('published')
+    expect(doc!.blocks).toHaveLength(1)
+    expect(doc!.blocks[0]!.type).toBe('rich-text')
+  })
+
+  it('will not hand a page to another site', async () => {
+    const created = await createPageDocument(1, { title: 'Private', slug: 'private' })
+
+    expect(await fetchPageDocument(2, created.id)).toBeNull()
+  })
+
+  it('returns null for a page that does not exist', async () => {
+    expect(await fetchPageDocument(1, 999999)).toBeNull()
   })
 })

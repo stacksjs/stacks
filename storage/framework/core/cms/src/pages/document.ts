@@ -1,7 +1,7 @@
 import type { PageBlock } from '../blocks/types'
 import { formatDate } from '@stacksjs/orm'
 import { slugify } from 'ts-slug'
-import { validateBlocks } from '../blocks/registry'
+import { parseStoredBlocks, validateBlocks } from '../blocks/registry'
 import { getDb } from '../database'
 import { recordSlugChangeRedirects } from '../redirects'
 import { storeRevision } from '../revisions'
@@ -238,3 +238,61 @@ export async function updatePageDocument(siteId: number, pageId: number, input: 
 }
 
 export { PageDocumentError }
+
+/** A page as an editor needs it: meta, parsed blocks, and where it lives. */
+export interface EditablePageDocument {
+  id: number
+  siteId: number
+  title: string
+  slug: string
+  path: string
+  parentId: number | null
+  template: string | null
+  metaDescription: string | null
+  status: string
+  scheduledAt: string | null
+  publishedAt: string | null
+  updatedAt: string | null
+  blocks: PageBlock[]
+}
+
+/**
+ * Load one page for editing, scoped to its site.
+ *
+ * `pages.fetchById` returns the raw row, which leaves every caller to parse
+ * `blocks` themselves and - more to the point - to remember the site check. An
+ * editor that looks a page up by id alone will happily open another tenant's
+ * page, so `siteId` is required and the lookup is scoped by it.
+ *
+ * Returns null when the page does not exist ON THAT SITE, which is the same
+ * answer as "not found" and deliberately indistinguishable from it.
+ */
+export async function fetchPageDocument(siteId: number, pageId: number): Promise<EditablePageDocument | null> {
+  const db = await getDb()
+
+  const row = await db
+    .selectFrom('pages')
+    .where('id', '=', pageId)
+    .where('site_id', '=', siteId)
+    .selectAll()
+    .executeTakeFirst() as Record<string, unknown> | undefined
+
+  if (!row)
+    return null
+
+  return {
+    id: Number(row.id),
+    siteId: Number(row.site_id),
+    title: String(row.title ?? ''),
+    slug: String(row.slug ?? ''),
+    path: String(row.path ?? ''),
+    parentId: row.parent_id === null || row.parent_id === undefined ? null : Number(row.parent_id),
+    template: row.template === null || row.template === undefined ? null : String(row.template),
+    metaDescription: row.meta_description === null || row.meta_description === undefined ? null : String(row.meta_description),
+    status: String(row.status ?? 'draft'),
+    scheduledAt: row.scheduled_at === null || row.scheduled_at === undefined ? null : String(row.scheduled_at),
+    publishedAt: row.published_at === null || row.published_at === undefined ? null : String(row.published_at),
+    updatedAt: row.updated_at === null || row.updated_at === undefined ? null : String(row.updated_at),
+    blocks: parseStoredBlocks(row.blocks),
+  }
+}
