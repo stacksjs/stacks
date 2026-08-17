@@ -673,6 +673,13 @@ export interface FluentChain {
   orWhereILike: (...args: any[]) => FluentChain
   orWhereColumn: (...args: any[]) => FluentChain
   andWhere: (...args: any[]) => FluentChain
+  // The multi-column predicates the query builder ships (`whereAny(columns,
+  // op, value)` and friends). They were missing here, so a caller that used
+  // one - the log search does, across message/project/file/stacktrace - had
+  // no type for the chain it got back.
+  whereAny: (...args: any[]) => FluentChain
+  whereAll: (...args: any[]) => FluentChain
+  whereNone: (...args: any[]) => FluentChain
   having: (...args: any[]) => FluentChain
   groupBy: (...args: any[]) => FluentChain
   orderBy: (...args: any[]) => FluentChain

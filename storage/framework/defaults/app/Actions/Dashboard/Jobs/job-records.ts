@@ -1,8 +1,18 @@
 export type JobRecordSource = 'job' | 'failed'
 export type DashboardJobStatus = 'queued' | 'processing' | 'failed'
 
+/**
+ * The slice of a model record these normalizers need.
+ *
+ * `key` is deliberately loose. A real record's `get` accepts only that model's
+ * own column names, so a parameter typed `string` is WIDER than what Job or
+ * FailedJob offers and, by contravariance, no real record is assignable to it -
+ * which is what kept this file from typechecking. The normalizers read the two
+ * models' overlapping columns by name and tolerate absence, so the honest
+ * shape is "some record you can ask for a column".
+ */
 export interface ModelRecord {
-  get: (key: string) => unknown
+  get: (key: any) => unknown
 }
 
 export interface NormalizedJob {

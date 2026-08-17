@@ -2,9 +2,12 @@ import type { RequestInstance } from '@stacksjs/types'
 import type {
   ControlPlaneActor,
   ControlPlaneOperation,
-  DashboardControlPlane,
   JsonValue,
 } from '@stacksjs/ts-cloud'
+// Lives on the `/deploy` entry alongside `initializeDashboardControlPlane`,
+// not on the package root - importing it from the root silently produced
+// `any`, and every caller of this helper inherited that.
+import type { DashboardControlPlane } from '@stacksjs/ts-cloud/deploy'
 import process from 'node:process'
 import { setStateDir } from '@stacksjs/ts-cloud'
 import { initializeDashboardControlPlane } from '@stacksjs/ts-cloud/deploy'
