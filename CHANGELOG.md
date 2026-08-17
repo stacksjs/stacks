@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.11...v0.72.12)
+
+## 🐛 Bug Fixes
+
+- **newsletter**: reach the models the way an installed app has them ([14ac8d4](https://github.com/stacksjs/stacks/commit/14ac8d4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.10...v0.72.11)
 
 ## ✨ Features
