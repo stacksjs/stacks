@@ -59,6 +59,36 @@ describe('resolveManifestSpec', () => {
     expect(resolveManifestSpec('bun-plugin-stx', '^0.2.108', '0.70.193')).toBeNull()
   })
 
+  it('never bumps an independently-versioned package to a framework version', () => {
+    // The bug this pins: @stacksjs/bun-router publishes 0.0.x and rides no
+    // framework release, but a vendored manifest declaring ^0.0.20 was
+    // rewritten to ^0.72.4 - a version that does not exist - so the upgrade
+    // finished by making the app uninstallable. Only the root manifest had
+    // the guard (#2078); vendored manifests were rewritten blind.
+    const context = {
+      lockstep: new Set(['stacks', '@stacksjs/utils']),
+      metaDeps: { '@stacksjs/utils': '^0.72.4', '@stacksjs/tlsx': '^0.13.0' },
+    }
+
+    expect(resolveManifestSpec('@stacksjs/bun-router', '^0.0.20', '0.72.4', context)).toBeNull()
+    // Not even a workspace reference justifies inventing a version.
+    expect(resolveManifestSpec('@stacksjs/bun-router', 'workspace:*', '0.72.4', context)).toBeNull()
+  })
+
+  it('gives an independently-versioned package the range the meta declares', () => {
+    const context = {
+      lockstep: new Set(['stacks', '@stacksjs/utils']),
+      metaDeps: { '@stacksjs/utils': '^0.72.4', '@stacksjs/tlsx': '^0.13.0' },
+    }
+
+    // tlsx IS declared by the meta, so its correct spec is knowable.
+    expect(resolveManifestSpec('@stacksjs/tlsx', 'workspace:*', '0.72.4', context)).toBe('^0.13.0')
+    expect(resolveManifestSpec('@stacksjs/tlsx', '^0.12.0', '0.72.4', context)).toBe('^0.13.0')
+    expect(resolveManifestSpec('@stacksjs/tlsx', '^0.13.0', '0.72.4', context)).toBeNull()
+    // Lockstep packages still move to the framework version.
+    expect(resolveManifestSpec('@stacksjs/utils', 'workspace:*', '0.72.4', context)).toBe('^0.72.4')
+  })
+
   it('does not guess at a spec someone set deliberately', () => {
     // A git url, a local link, or a dist-tag was a choice; rewriting it to a
     // version would quietly undo that choice.

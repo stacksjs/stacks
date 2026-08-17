@@ -213,7 +213,12 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   // declare their own @stacksjs/* dependencies, and an upgrade that ignores
   // them leaves the app describing two framework versions at once — or, once
   // a vendored core is removed, unable to install at all.
-  const manifestChanges = reconcileVendoredManifests(projectRoot, target, { dryRun: options.dryRun })
+  const manifestChanges = reconcileVendoredManifests(projectRoot, target, {
+    dryRun: options.dryRun,
+    // The same lockstep knowledge the root manifest gets, so vendored
+    // manifests cannot be bumped to a version their package never published.
+    context: { lockstep, metaDeps },
+  })
 
   if (changes.length > 0) {
     console.log('  The following dependencies will be updated:')
@@ -317,6 +322,15 @@ export interface ManifestChange {
   to: string
 }
 
+/** What the framework knows about the target release, for spec decisions. */
+export interface ManifestSpecContext {
+  /** Packages the framework publishes at `target` (see `lockstepPackages`). */
+  lockstep: Set<string>
+  /** The `stacks` meta's declared ranges, which carry the correct version for
+   * independently-versioned packages (`@stacksjs/tlsx`, `@stacksjs/ts-cloud`). */
+  metaDeps: Record<string, string>
+}
+
 /**
  * Decide the spec a vendored manifest's framework dependency should carry.
  *
@@ -330,10 +344,32 @@ export interface ManifestChange {
  * references resolve to nothing: `bun install` fails outright with
  * "@stacksjs/utils@workspace:* failed to resolve", and the app cannot install
  * at all until every one of them is rewritten by hand.
+ *
+ * Not every `@stacksjs/*` package rides the framework version, though, and the
+ * doc above used to describe a guard the code did not have: without `context`
+ * this rewrote `@stacksjs/bun-router: ^0.0.20` to `^0.72.4`, a version that
+ * package has never published, so the "upgrade" left the app unable to install
+ * - the same trap #2078 fixed for the root manifest. Pass `context` and an
+ * independently-versioned package takes the meta's declared range instead, or
+ * is reported rather than guessed at.
  */
-export function resolveManifestSpec(name: string, spec: string, target: string): string | null {
+export function resolveManifestSpec(
+  name: string,
+  spec: string,
+  target: string,
+  context?: ManifestSpecContext,
+): string | null {
   if (name !== 'stacks' && !name.startsWith('@stacksjs/'))
     return null
+
+  // Independently-versioned: the meta's own range is the only trustworthy
+  // answer, and where it says nothing, saying nothing back beats a guess.
+  if (context && !context.lockstep.has(name)) {
+    const declared = context.metaDeps[name]
+    if (!declared)
+      return null
+    return baseVersion(declared) === baseVersion(spec) ? null : declared
+  }
 
   if (spec.startsWith('workspace:'))
     return `^${target}`
@@ -366,7 +402,7 @@ export function resolveManifestSpec(name: string, spec: string, target: string):
 export function reconcileVendoredManifests(
   projectRoot: string,
   target: string,
-  options: { dryRun?: boolean } = {},
+  options: { dryRun?: boolean, context?: ManifestSpecContext } = {},
 ): ManifestChange[] {
   const root = join(projectRoot, 'storage/framework')
   if (!existsSync(root))
@@ -430,7 +466,7 @@ export function reconcileVendoredManifests(
           continue
 
         for (const [name, spec] of Object.entries(deps)) {
-          const next = resolveManifestSpec(name, spec, target)
+          const next = resolveManifestSpec(name, spec, target, options.context)
           if (!next)
             continue
 
