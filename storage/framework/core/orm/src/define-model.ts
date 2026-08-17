@@ -1111,12 +1111,36 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   }
 
   // Model.forceCreate(data) — bypass mass-assignment for create as well.
-  // Calls the un-wrapped `create` captured above, NOT `baseModel.create`
-  // (which is rebound to the rule-enforcing wrapper later).
+  //
+  // Routed through `make().forceFill().save()` rather than the un-wrapped
+  // `create`. Bypassing this layer's rule-enforcing wrapper is not enough on
+  // its own: the query builder's `create()` fills via `fill()`, which only
+  // accepts `fillable && !guarded` attributes, so a guarded column never
+  // reached the INSERT. A guarded NOT NULL column threw a constraint error and
+  // a nullable one silently wrote NULL — exactly the columns (API keys,
+  // idempotency keys) that are marked guarded precisely so they can only be
+  // written deliberately. `forceFill()` is the builder's own bypass and keeps
+  // that intent.
+  //
+  // Falls back to the un-wrapped `create` when the builder predates
+  // `forceFill`, so an older query-builder still creates rows.
   if (typeof baseModel.forceCreate !== 'function') {
     baseModel.forceCreate = async function (data: Record<string, unknown>) {
       if (!data || typeof data !== 'object' || Array.isArray(data))
         throw new Error(`[ORM] ${definition.name}.forceCreate requires a data object`)
+
+      const make = baseModel.make
+      if (typeof make === 'function') {
+        const instance = (make as Function).call(baseModel) as {
+          forceFill?: (data: Record<string, unknown>) => unknown
+          save?: () => Promise<unknown>
+        } | null
+        if (instance && typeof instance.forceFill === 'function' && typeof instance.save === 'function') {
+          instance.forceFill(data)
+          return (await instance.save()) ?? instance
+        }
+      }
+
       if (typeof unwrappedCreate !== 'function')
         throw new Error(`[ORM] ${definition.name}.forceCreate cannot create: the underlying query builder did not expose create()`)
       return await (unwrappedCreate as Function).call(baseModel, data)
