@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.8...v0.72.9)
+
+## ✨ Features
+
+- **cms**: load a page for editing, scoped to its site ([1b77f6b](https://github.com/stacksjs/stacks/commit/1b77f6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: put the API's security headers on rendered pages too (#2330) ([609e054](https://github.com/stacksjs/stacks/commit/609e054)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2330](https://github.com/stacksjs/stacks/issues/2330), [#2330](https://github.com/stacksjs/stacks/issues/2330))
+- **logging**: a transport seam, so the log stream can go elsewhere (#2329) ([63e37d6](https://github.com/stacksjs/stacks/commit/63e37d6)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2329](https://github.com/stacksjs/stacks/issues/2329), [#2329](https://github.com/stacksjs/stacks/issues/2329))
+
+## ✅ Tests
+
+- unbreak the CI test job (three independent failures) (#2327) ([476d320](https://github.com/stacksjs/stacks/commit/476d320)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2327](https://github.com/stacksjs/stacks/issues/2327), [#2327](https://github.com/stacksjs/stacks/issues/2327), [#1862](https://github.com/stacksjs/stacks/issues/1862))
+
+## 💚 Continuous Integration
+
+- build the subpath-exporting packages before typechecking (#2328) ([52cf39b](https://github.com/stacksjs/stacks/commit/52cf39b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2328](https://github.com/stacksjs/stacks/issues/2328), [#2328](https://github.com/stacksjs/stacks/issues/2328))
+
+## 🔧 Chores
+
+- **deps**: stop shipping a craft-native every app downloads and cannot use (#2331) ([de17547](https://github.com/stacksjs/stacks/commit/de17547)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2331](https://github.com/stacksjs/stacks/issues/2331), [#2331](https://github.com/stacksjs/stacks/issues/2331), [#2322](https://github.com/stacksjs/stacks/issues/2322))
+- **auth**: drop the passkey narrowing, ts-auth 0.4.4 carries the fix ([1ec4254](https://github.com/stacksjs/stacks/commit/1ec4254)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.7...v0.72.8)
 
 ## 🐛 Bug Fixes
