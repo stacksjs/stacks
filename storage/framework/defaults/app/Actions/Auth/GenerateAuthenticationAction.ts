@@ -34,9 +34,9 @@ export default new Action({
 
     const options = await generateAuthenticationOptions({
       rpID,
-      // The JSON-vs-ArrayBuffer boundary lives in `passkeyDescriptors`; the
-      // narrowing goes away when ts-auth b59ad36 ships.
-      allowCredentials: passkeyDescriptors(userPasskeys) as unknown as Parameters<typeof generateAuthenticationOptions>[0]['allowCredentials'],
+      // `passkeyDescriptors` explains the JSON-vs-ArrayBuffer boundary; since
+      // ts-auth 0.4.4 the descriptor type accepts the base64url id directly.
+      allowCredentials: passkeyDescriptors(userPasskeys),
     }) as unknown as PublicKeyCredentialRequestOptionsJSON
 
     // Persist the challenge server-side so `VerifyAuthenticationAction`

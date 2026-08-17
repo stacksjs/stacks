@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@stacksjs/bun-router": "^0.0.22",
-    "@stacksjs/ts-auth": "^0.4.3"
+    "@stacksjs/ts-auth": "^0.4.4"
   },
   "devDependencies": {
     "better-dx": "^0.2.23",

@@ -38,9 +38,9 @@ export default new Action({
       userID: userEmail,
       userName: userEmail,
       attestationType: 'none',
-      // See `passkeyDescriptors` for the JSON-vs-ArrayBuffer boundary; the
-      // narrowing goes away when ts-auth b59ad36 ships.
-      excludeCredentials: passkeyDescriptors(userPasskeys) as unknown as Parameters<typeof generateRegistrationOptions>[0]['excludeCredentials'],
+      // See `passkeyDescriptors` for the JSON-vs-ArrayBuffer boundary; since
+      // ts-auth 0.4.4 the descriptor type accepts the base64url id directly.
+      excludeCredentials: passkeyDescriptors(userPasskeys),
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
