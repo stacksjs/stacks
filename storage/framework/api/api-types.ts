@@ -4695,7 +4695,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
+      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "idempotency_key"?: string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -4718,7 +4718,7 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "idempotency_key"?: string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
@@ -21953,7 +21953,7 @@ export interface components {
     "Category": { "id": number; "uuid": string; "name"?: string; "description"?: string; "slug"?: string; "image_url"?: string; "is_active"?: boolean; "parent_category_id"?: string; "display_order"?: number; "created_at"?: string; "updated_at"?: string }
     "Comment": { "id": number; "uuid": string; "author_name": string; "author_email": string; "content": string; "body"?: string; "post_title"?: string; "status": "pending" | "approved" | "spam" | "trash"; "ip_address"?: string; "user_agent"?: string; "is_approved"?: number; "post_id"?: number; "user_id"?: number; "created_at"?: string; "updated_at"?: string }
     "CommunicationSuppression": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "reason": "unsubscribe" | "bounce" | "complaint" | "carrier" | "manual" | "legal"; "source": string; "suppressed_at": unknown; "lifted_at"?: unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
-    "ConsentEvent": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
+    "ConsentEvent": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "idempotency_key"?: string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Coupon": { "id": number; "uuid": string; "code"?: string; "description"?: string; "status"?: "Active" | "Scheduled" | "Expired"; "is_active"?: boolean; "discount_type"?: "fixed_amount" | "percentage"; "discount_value"?: number; "min_order_amount"?: number; "max_discount_amount"?: number; "free_product_id"?: string; "usage_limit"?: number; "usage_count"?: number; "start_date"?: unknown; "end_date"?: unknown; "product_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Customer": { "id": number; "uuid": string; "name"?: string; "email"?: string; "phone"?: string; "total_spent"?: number; "last_order"?: string; "status"?: "Active" | "Inactive"; "avatar"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string }
     "DeliveryRoute": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string }

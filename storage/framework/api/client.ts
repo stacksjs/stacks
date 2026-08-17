@@ -1894,14 +1894,14 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/consent-events
    */
-  getConsentEvents(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+  getConsentEvents(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "idempotency_key"?: string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
     return request(config, "GET", "/api/consent-events", {}, [], false, options)
   },
 
   /**
    * GET /api/consent-events/{id}
    */
-  getConsentEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  getConsentEventsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "recipient": string; "channel": "email" | "sms" | "push"; "action": "requested" | "granted" | "revoked" | "confirmed" | "suppressed"; "purpose": string; "source": string; "jurisdiction"?: string; "policy_version": string; "idempotency_key"?: string; "proof"?: unknown; "ip_address"?: string; "occurred_at": unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "GET", "/api/consent-events/{id}", input ?? {}, [], false, options)
   },
 

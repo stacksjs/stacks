@@ -14468,6 +14468,10 @@
                             "type": "string",
                             "maxLength": 40
                           },
+                          "idempotency_key": {
+                            "type": "string",
+                            "maxLength": 255
+                          },
                           "proof": {
                             "type": "json"
                           },
@@ -14589,6 +14593,10 @@
                         "policy_version": {
                           "type": "string",
                           "maxLength": 40
+                        },
+                        "idempotency_key": {
+                          "type": "string",
+                          "maxLength": 255
                         },
                         "proof": {
                           "type": "json"
@@ -62484,6 +62492,10 @@
           "policy_version": {
             "type": "string",
             "maxLength": 40
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 255
           },
           "proof": {
             "type": "json"
