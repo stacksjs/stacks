@@ -23,14 +23,14 @@ export default new Action({
       },
     })
 
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
     const data = {
       id,
       name: request.get('name'),
       description: request.get('description'),
     }
 
-    const model = await tags.update(id, data)
+    const model = await tags.update(data)
 
     return response.json(model)
   },

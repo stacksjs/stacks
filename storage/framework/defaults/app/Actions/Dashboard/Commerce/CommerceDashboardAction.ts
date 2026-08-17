@@ -35,15 +35,23 @@ export default new Action({
       const customerIds = [...new Set(orderRows
         .map(order => order.customerId)
         .filter(Boolean))]
-      const orderItems = orderIds.length > 0
-        ? await OrderItem.where('order_id', 'in', orderIds).get()
+
+      // The normalizers hand back identifiers as strings (a record may key on
+      // a uuid), but these columns are numeric, so they go back to numbers at
+      // the query boundary - the same conversion CommerceOrdersAction does.
+      const numericOrderIds = orderIds.map(Number).filter(Number.isSafeInteger)
+      const numericCustomerIds = customerIds.map(Number).filter(Number.isSafeInteger)
+
+      const orderItems = numericOrderIds.length > 0
+        ? await OrderItem.whereIn('order_id', numericOrderIds).get()
         : []
       const orderItemRows = orderItems.map(normalizeCommerceDashboardOrderItem)
       const productIds = [...new Set(orderItemRows.map(item => item.productId))]
+      const numericProductIds = productIds.map(Number).filter(Number.isSafeInteger)
 
       const [products, customers] = await Promise.all([
-        productIds.length > 0 ? Product.where('id', 'in', productIds).get() : [],
-        customerIds.length > 0 ? Customer.where('id', 'in', customerIds).get() : [],
+        numericProductIds.length > 0 ? Product.whereIn('id', numericProductIds).get() : [],
+        numericCustomerIds.length > 0 ? Customer.whereIn('id', numericCustomerIds).get() : [],
       ])
 
       return buildCommerceDashboard(

@@ -22,7 +22,7 @@ export default new Action({
         },
       },
     })
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     const data = {
       title: request.get('title'),

@@ -18,7 +18,7 @@ export default new Action({
       const methods = await ShippingMethod.orderBy('name', 'asc').limit(500).get()
       const methodIds = shippingMethodIds(methods)
       const zones = methodIds.size
-        ? await ShippingZone.where('shipping_method_id', 'in', [...methodIds]).orderBy('name', 'asc').get()
+        ? await ShippingZone.whereIn('shipping_method_id', [...methodIds]).orderBy('name', 'asc').get()
         : []
       const zonesByMethodId = groupShippingMethodZones(zones, methodIds)
       return methods.map(method => normalizeShippingMethodRecord(method, zonesByMethodId))

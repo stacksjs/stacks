@@ -8,7 +8,7 @@ export default new Action({
   description: 'Post Destroy ORM Action',
   method: 'DELETE',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     await posts.destroy(id)
 

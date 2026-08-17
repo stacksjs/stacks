@@ -28,7 +28,7 @@ export default new Action({
       const [customers, coupons, items] = await Promise.all([
         Customer.orderBy('name', 'asc').limit(500).get(),
         Coupon.orderBy('id', 'asc').limit(500).get(),
-        numericOrderIds.length > 0 ? OrderItem.where('order_id', 'in', numericOrderIds).get() : [],
+        numericOrderIds.length > 0 ? OrderItem.whereIn('order_id', numericOrderIds).get() : [],
       ])
       const customerContexts = customers.map(normalizeOrderCustomerContext)
       const customerMap = new Map(customerContexts.map(customer => [customer.id, customer.context]))

@@ -7,7 +7,7 @@ export default new Action({
   description: 'Delete an author',
   method: 'DELETE',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
     const author = await Author.find(Number(id))
 
     if (!author) {

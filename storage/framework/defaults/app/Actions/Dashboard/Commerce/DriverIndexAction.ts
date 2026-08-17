@@ -13,7 +13,7 @@ export default new Action({
     try {
       const drivers = await Driver.orderBy('name', 'asc').limit(500).get()
       const userIds = [...new Set(drivers.map(driver => driver.get('user_id')).filter(Boolean))]
-      const users = userIds.length ? await User.where('id', 'in', userIds).get() : []
+      const users = userIds.length ? await User.whereIn('id', userIds).get() : []
       const usersById = indexDriverUsers(users)
       return drivers.map(driver => normalizeDriverRecord(driver, usersById))
     }

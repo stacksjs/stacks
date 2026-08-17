@@ -19,8 +19,8 @@ export default new Action({
       const methodIds = [...new Set(rates.map(rate => rate.get('shipping_method_id')).filter(Boolean))]
       const zoneIds = [...new Set(rates.map(rate => rate.get('shipping_zone_id')).filter(Boolean))]
       const [methods, zones] = await Promise.all([
-        methodIds.length ? ShippingMethod.where('id', 'in', methodIds).get() : [],
-        zoneIds.length ? ShippingZone.where('id', 'in', zoneIds).get() : [],
+        methodIds.length ? ShippingMethod.whereIn('id', methodIds).get() : [],
+        zoneIds.length ? ShippingZone.whereIn('id', zoneIds).get() : [],
       ])
       const methodsById = indexShippingRateMethods(methods)
       const zonesById = indexShippingRateZones(zones)

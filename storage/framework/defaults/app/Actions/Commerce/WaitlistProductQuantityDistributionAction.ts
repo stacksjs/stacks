@@ -7,8 +7,12 @@ export default new Action({
   description: 'WaitlistProduct Quantity Distribution Action',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const startDate = request.getParam<Date>('startDate')
-    const endDate = request.getParam<Date>('endDate')
+    // Params arrive as strings; `getParam` has no type parameter to change that.
+    const startDate = new Date(String(request.getParam('startDate')))
+    const endDate = new Date(String(request.getParam('endDate')))
+
+    if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime()))
+      return response.json({ message: 'startDate and endDate must be valid dates.' }, 422)
 
     const quantityDistribution = await waitlists.products.fetchCountByAllQuantities(startDate, endDate)
 

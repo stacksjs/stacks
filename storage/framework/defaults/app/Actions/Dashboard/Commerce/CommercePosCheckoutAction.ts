@@ -103,7 +103,7 @@ async function existingReceipt(order: any) {
     receiptId(field(item, 'product_id', 'productId'), `OrderItem ${index + 1}`, 'product_id'),
   )
   const [products, payments] = await Promise.all([
-    productIds.length > 0 ? Product.where('id', 'in', productIds).get() : [],
+    productIds.length > 0 ? Product.whereIn('id', productIds).get() : [],
     Payment.where('order_id', orderId).get(),
   ])
   const names = new Map(products.map((product) => {
@@ -242,7 +242,7 @@ export default new Action({
     let taxRates
     try {
       const [productRows, categories, manufacturers, persistedTaxRates] = await Promise.all([
-        Product.where('id', 'in', productIds).get(),
+        Product.whereIn('id', productIds).get(),
         Category.orderBy('name', 'asc').limit(500).get(),
         Manufacturer.orderBy('manufacturer', 'asc').limit(500).get(),
         TaxRate.orderBy('id', 'asc').limit(500).get(),

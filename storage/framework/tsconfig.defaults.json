@@ -1,0 +1,47 @@
+{
+  // The scaffold under `defaults/` - the 80+ actions, 55 models, jobs and
+  // routes that `buddy new` lays down and `<feature>:install` publishes into a
+  // real app.
+  //
+  // It needs its own config because it belongs to neither of the other two.
+  // `tsconfig.app.json` checks the four directories a user authors, and
+  // `tsconfig.framework.json` checks `core/` and excludes `./defaults/**` with
+  // a note saying it is "checked as part of the app" - which it never was.
+  // Nothing checked this tree, so it rotted quietly: when the Page model gained
+  // `path`/`blocks`/`site_id`, `Actions/Cms/PageStoreAction` went on writing
+  // `template`/`content`, and the breakage only surfaced in someone's app after
+  // `buddy cms:install` published the file into userland.
+  //
+  // Checked as APP code (that is what it becomes once published), with the
+  // model paths pointed at the defaults' own models rather than `app/Models`.
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./.cache/typescript/defaults.tsbuildinfo",
+    "paths": {
+      "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
+      "@stacksjs/*": ["./core/*/src"],
+      "stacks/*": ["./core/*/src"],
+      "buddy": ["./core/buddy/src/index.ts"],
+      "buddy/*": ["./core/buddy/src/*"],
+      // Published code resolves these from the app; here they resolve to the
+      // scaffold's own copies, which is what the files sit next to.
+      "Actions/*": ["./defaults/app/Actions/*"],
+      "Commands/*": ["./defaults/app/Commands/*"],
+      "Jobs/*": ["./defaults/app/Jobs/*"],
+      "Middleware/*": ["./defaults/app/Middleware/*"],
+      "Models/*": ["./defaults/app/Models/*"],
+      "Notifications/*": ["./defaults/app/Notifications/*"],
+      "~/*": ["../../*"],
+      "@/*": ["../../resources/*"]
+    }
+  },
+  "include": [
+    "./types/**/*.d.ts",
+    "./defaults/app/**/*.ts"
+  ],
+  "exclude": [
+    "./defaults/app/**/*.test.ts",
+    "./defaults/app/**/*.spec.ts"
+  ]
+}

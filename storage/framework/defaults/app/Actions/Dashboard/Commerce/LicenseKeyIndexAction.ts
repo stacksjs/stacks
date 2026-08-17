@@ -21,9 +21,9 @@ export default new Action({
       const productIds = [...new Set(keys.map(key => key.get('product_id')).filter(Boolean))]
       const orderIds = [...new Set(keys.map(key => key.get('order_id')).filter(Boolean))]
       const [customers, products, orders] = await Promise.all([
-        customerIds.length ? Customer.where('id', 'in', customerIds).get() : [],
-        productIds.length ? Product.where('id', 'in', productIds).get() : [],
-        orderIds.length ? Order.where('id', 'in', orderIds).get() : [],
+        customerIds.length ? Customer.whereIn('id', customerIds).get() : [],
+        productIds.length ? Product.whereIn('id', productIds).get() : [],
+        orderIds.length ? Order.whereIn('id', orderIds).get() : [],
       ])
       const customerMap = indexLicenseKeyOptions(customers.map(normalizeLicenseKeyCustomer))
       const productMap = indexLicenseKeyOptions(products.map(normalizeLicenseKeyProduct))

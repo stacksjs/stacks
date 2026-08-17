@@ -14,7 +14,7 @@ export default new Action({
   async handle(request) {
     await request.validate()
 
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     const data = {
       title: request.get('title'),

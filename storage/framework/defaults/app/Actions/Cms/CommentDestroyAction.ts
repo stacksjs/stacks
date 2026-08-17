@@ -7,7 +7,7 @@ export default new Action({
   description: 'Comment Destroy ORM Action',
   method: 'DELETE',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     await comments.destroy(id)
 

@@ -1,4 +1,3 @@
-import type { CategorizableRequestType } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
 import { categorizable } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
@@ -24,14 +23,14 @@ export default new Action({
       },
     })
 
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
 
     const data = {
       name: request.get('name'),
       description: request.get('description'),
     }
 
-    const model = await categorizable.update(id, data)
+    const model = await categorizable.update({ id, ...data })
 
     return response.json(model)
   },

@@ -7,7 +7,7 @@ export default new Action({
   description: 'Fetch a single author by ID',
   method: 'GET',
   async handle(request: RequestInstance) {
-    const id = request.getParam('id')
+    const id = Number(request.getParam('id'))
     const result = await Author.find(Number(id))
 
     if (!result) {

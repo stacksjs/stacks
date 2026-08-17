@@ -16,7 +16,7 @@ export default new Action({
     try {
       const routes = await DeliveryRoute.orderByDesc('last_active').limit(500).get()
       const driverIds = [...new Set(routes.map(route => route.get('driver_id')).filter(Boolean))]
-      const drivers = driverIds.length ? await Driver.where('id', 'in', driverIds).get() : []
+      const drivers = driverIds.length ? await Driver.whereIn('id', driverIds).get() : []
       const driversById = indexDeliveryRouteDrivers(drivers)
       return routes.map(route => normalizeDeliveryRouteRecord(route, driversById))
     }
