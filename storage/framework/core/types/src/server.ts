@@ -62,7 +62,12 @@ export interface ApiProxyOptions {
  * }
  * ```
  *
- * Matching is exact on the path, ignoring a trailing slash. Rules are answered
+ * A rule written as `/section/*` claims that subtree, appending whatever
+ * followed the prefix to the target. It is the one wildcard form: moving a
+ * section whose pages are dynamic cannot be written as exact rules. An exact
+ * rule always wins over a subtree one.
+ *
+ * Matching is otherwise exact on the path, ignoring a trailing slash. Rules are answered
  * before a page is looked for and before `public/` is searched, so a rule
  * shadows a static file of the same name — the same caveat as `proxy.paths`.
  * Anything under `/api/` is ignored.

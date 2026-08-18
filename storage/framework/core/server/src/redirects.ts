@@ -64,6 +64,11 @@ export interface RedirectRule {
   to: string
   status: number
   preserveQuery: boolean
+  /**
+   * True when the rule was written as `/section/*` and therefore claims the
+   * whole subtree, appending whatever followed the prefix to `to`.
+   */
+  subtree: boolean
 }
 
 export type RedirectRules = Map<string, RedirectRule>
@@ -97,7 +102,10 @@ export function resolveRedirectRules(input: RedirectConfig = {}): RedirectRules 
   const rules: RedirectRules = new Map()
 
   for (const [rawFrom, rawTarget] of Object.entries(input ?? {})) {
-    const from = normalizePath(rawFrom)
+    // `/section/*` claims the subtree. Stored under the prefix WITHOUT the
+    // star so lookups stay a plain map read.
+    const subtree = rawFrom.endsWith('/*')
+    const from = normalizePath(subtree ? rawFrom.slice(0, -2) || '/' : rawFrom)
     if (!from)
       continue
 
@@ -116,11 +124,12 @@ export function resolveRedirectRules(input: RedirectConfig = {}): RedirectRules 
     if (!/^https?:\/\//i.test(to) && normalizePath(to) === from)
       continue
 
-    rules.set(from, {
+    rules.set(subtree ? `${from}/*` : from, {
       from,
       to,
       status: Number(target?.status) || DEFAULT_REDIRECT_STATUS,
       preserveQuery: target?.preserveQuery !== false,
+      subtree,
     })
   }
 
@@ -130,20 +139,42 @@ export function resolveRedirectRules(input: RedirectConfig = {}): RedirectRules 
 /**
  * The response for a redirected path, or undefined to carry on routing.
  *
- * Matching is exact on the normalised path. Prefix and pattern rules are
- * deliberately not supported: a redirect table is read by whoever is debugging
- * a URL at two in the morning, and every wildcard in it is a thing they have
- * to simulate in their head to know what a given path does.
+ * Matching is exact on the normalised path, and an exact rule always wins over
+ * a subtree one covering the same URL.
+ *
+ * ONE wildcard form is supported, `/section/*`, and general pattern rules
+ * still are not. The reasoning behind that original restriction stands — a
+ * redirect table is read by whoever is debugging a URL at two in the morning,
+ * and every wildcard is something they have to simulate in their head — but
+ * exact matching cannot express the case that forced this: moving a whole
+ * section to another host when some of its pages are dynamic. `/dashboard/*`
+ * has to cover `/dashboard/events/42`, and there is no list of exact rules
+ * that does.
+ *
+ * `/section/*` means that subtree and nothing else: whatever followed the
+ * prefix is appended to the target, so `/dashboard/events/42` with
+ * `'/dashboard/*': 'https://dash.example.com'` lands on
+ * `https://dash.example.com/events/42`. No regular expressions, no captures,
+ * no ordering to reason about.
  */
 export function resolveRedirect(url: URL, rules?: RedirectRules): Response | undefined {
   if (!rules?.size)
     return undefined
 
-  const rule = rules.get(normalizePath(url.pathname))
+  const pathname = normalizePath(url.pathname)
+  const rule = rules.get(pathname) ?? matchSubtree(pathname, rules)
   if (!rule)
     return undefined
 
   let location = rule.to
+
+  // Append the part of the path the prefix did not claim, so a subtree rule
+  // lands on the matching page rather than the target's root.
+  if (rule.subtree) {
+    const remainder = pathname.slice(rule.from.length)
+    if (remainder)
+      location = location.replace(/\/$/, '') + remainder
+  }
 
   if (rule.preserveQuery && url.search) {
     // Merge rather than overwrite, so a target that carries its own query
@@ -162,6 +193,30 @@ export function resolveRedirect(url: URL, rules?: RedirectRules): Response | und
         : 'no-store',
     },
   })
+}
+
+/**
+ * The subtree rule claiming this path, if any.
+ *
+ * The LONGEST matching prefix wins, so a more specific section can be carved
+ * out of a broader one (`/dashboard/reports/*` beside `/dashboard/*`) without
+ * depending on declaration order.
+ */
+function matchSubtree(pathname: string, rules: RedirectRules): RedirectRule | undefined {
+  let best: RedirectRule | undefined
+
+  for (const rule of rules.values()) {
+    if (!rule.subtree)
+      continue
+    // A boundary check, not a string prefix: `/dashboards` must not be claimed
+    // by a rule for `/dashboard`.
+    if (pathname !== rule.from && !pathname.startsWith(`${rule.from}/`))
+      continue
+    if (!best || rule.from.length > best.from.length)
+      best = rule
+  }
+
+  return best
 }
 
 /**
