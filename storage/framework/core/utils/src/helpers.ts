@@ -42,9 +42,21 @@ export async function ensureProjectIsInitialized(): Promise<boolean> {
     process.exit(1)
   }
 
+  /*
+   * Ask before writing anything.
+   *
+   * `isAppKeySet` now consults the environment as well as the file, so a
+   * process handed `APP_KEY` the twelve-factor way is already initialised and
+   * there is nothing to set up. Checking first is what keeps this from
+   * copying `.env.example` over a deployment that deliberately has no `.env` -
+   * a check with a side effect, on every single command.
+   */
+  if (await isAppKeySet())
+    return true
+
   // if (storage.isFile(projectPath('.env')))
   if (fs.existsSync(projectPath('.env')))
-    return await isAppKeySet()
+    return false
 
   // copy the .env.example file to .env
   if (fs.existsSync(projectPath('.env.example')))
@@ -82,6 +94,26 @@ export async function frameworkVersion(): Promise<string> {
 }
 
 export async function isAppKeySet(): Promise<boolean> {
+  /*
+   * The environment first, because that is where a real deployment keeps it.
+   *
+   * This read only the `.env` *file*, so anything that supplies `APP_KEY` the
+   * twelve-factor way - a container, a CI job, a systemd unit, `APP_KEY=… bun
+   * run` - was reported as having no key at all. The caller then "helpfully"
+   * copied `.env.example` into place and generated a new key over the top,
+   * which is worse than the false negative: a process that was handed a key
+   * quietly starts using a different one, so anything already encrypted with
+   * the real key stops decrypting.
+   *
+   * It also made every `buddy` invocation in CI do two file writes and a key
+   * generation before it got to the command, which is where this was found -
+   * a CLI test suite where each spawned command paid for it.
+   */
+  const fromEnvironment = String(process.env.APP_KEY ?? '').trim()
+
+  if (fromEnvironment.length > 16)
+    return true
+
   try {
     const env = await readTextFile('.env', projectPath())
     const lines = env.data.split('\n')
