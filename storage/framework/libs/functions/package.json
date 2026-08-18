@@ -1,7 +1,7 @@
 {
   "name": "hello-world-fx",
   "type": "module",
-  "version": "0.72.25",
+  "version": "0.72.26",
   "description": "Your function library description.",
   "author": "Chris Breuer",
   "contributors": [

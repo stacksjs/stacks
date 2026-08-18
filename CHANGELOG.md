@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.24...v0.72.26)
+
+## 🐛 Bug Fixes
+
+- **orm**: a `belongsTo` with a foreign key crashed the type codegen ([55edffe](https://github.com/stacksjs/stacks/commit/55edffe)) _(by Chris <chris@stacksjs.com>)_
+- **database**: declare the rest of the chain, which the index signature hid ([9f8c410](https://github.com/stacksjs/stacks/commit/9f8c410)) _(by Chris <chris@stacksjs.com>)_
+- **types**: declare shape and shapeMany on SearchOptions ([77451cb](https://github.com/stacksjs/stacks/commit/77451cb)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: say why an attach target resolved to nothing (#2345) ([8f14bc9](https://github.com/stacksjs/stacks/commit/8f14bc9)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2344](https://github.com/stacksjs/stacks/issues/2344), [#2345](https://github.com/stacksjs/stacks/issues/2345), [#2345](https://github.com/stacksjs/stacks/issues/2345))
+- **deploy**: say why SSH never came up, instead of guessing (#2343) ([307e2d8](https://github.com/stacksjs/stacks/commit/307e2d8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2342](https://github.com/stacksjs/stacks/issues/2342), [#2343](https://github.com/stacksjs/stacks/issues/2343), [#2343](https://github.com/stacksjs/stacks/issues/2343), [#2342](https://github.com/stacksjs/stacks/issues/2342))
+- **orm**: keep the generated file's shape, and let a row be named either way ([df433ae](https://github.com/stacksjs/stacks/commit/df433ae)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- release v0.72.25 ([b55b781](https://github.com/stacksjs/stacks/commit/b55b781)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.24...v0.72.25)
 
 ## 🐛 Bug Fixes
