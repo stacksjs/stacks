@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.18...v0.72.19)
+
+## ✨ Features
+
+- **dashboard**: a production dashboard server, denying by default (#2338) ([19f9c42](https://github.com/stacksjs/stacks/commit/19f9c42)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2338](https://github.com/stacksjs/stacks/issues/2338), [#2338](https://github.com/stacksjs/stacks/issues/2338))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.17...v0.72.18)
 
 ## 🐛 Bug Fixes
