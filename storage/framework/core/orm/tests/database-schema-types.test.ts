@@ -139,3 +139,43 @@ export default defineModel({
     }
   })
 })
+
+describe('the columns the framework adds to `users` itself', () => {
+  test('are in the generated schema, because queries name them', async () => {
+    const dir = join(import.meta.dir, `fixtures-users-${Math.random().toString(16).slice(2)}`)
+
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'User.ts'), `
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
+
+export default defineModel({
+  name: 'User',
+  table: 'users',
+  traits: { useTimestamps: true },
+  attributes: {
+    email: { fillable: true, validation: { rule: schema.string() } },
+  },
+})
+`)
+
+    try {
+      const result = await buildDatabaseSchema({ modelsDir: dir, defaultsDir: join(dir, 'none'), dryRun: true })
+      const users = result.tables.find(one => one.table === 'users')!
+
+      /*
+       * `ensureUsersAuthColumns` adds these with defensive ALTERs, so they are
+       * on the table and in no `attributes` block. Leaving them out meant the
+       * sign-in path - which selects `two_factor_secret` - fell out of the
+       * narrowing overload and got an unknown-valued row back.
+       */
+      expect(users.columns.two_factor_secret).toBe('string | null')
+      expect(users.columns.two_factor_enabled).toBe('boolean | null')
+      expect(users.columns.email_verified_at).toBe('string | null')
+      expect(users.columns.stripe_id).toBe('string | null')
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})

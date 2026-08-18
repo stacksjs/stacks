@@ -2049,12 +2049,24 @@ export interface FrameworkSchema {
     uuid: string
     created_at: string
     updated_at: string | null
+    email_verified_at: string | null
+    password_changed_at: string | null
+    two_factor_secret: string | null
+    two_factor_enabled: boolean | null
+    two_factor_last_used_step: number | null
+    stripe_id: string | null
     name: string
     email: string
     password: string
     avatar: string
     createdAt: string
     updatedAt: string | null
+    emailVerifiedAt: string | null
+    passwordChangedAt: string | null
+    twoFactorSecret: string | null
+    twoFactorEnabled: boolean | null
+    twoFactorLastUsedStep: number | null
+    stripeId: string | null
   }
   waitlist_products: {
     // columns

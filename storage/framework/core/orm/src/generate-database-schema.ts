@@ -357,6 +357,25 @@ function derivePivotTables(modelName: string, model: Model): Array<{ table: stri
   return out
 }
 
+/**
+ * The columns the framework guarantees on `users` outside any model.
+ *
+ * `ensureUsersAuthColumns` adds these with defensive ALTERs, so they are on the
+ * table and in no `attributes` block - which meant a query naming one, as the
+ * sign-in path does with `two_factor_secret`, fell out of the narrowing overload
+ * and answered an unknown-valued row. The list is the same one
+ * `USERS_GUARANTEED_COLUMNS` guards in the migration differ; kept here rather
+ * than imported so this codegen stays free of the database package's graph.
+ */
+const USERS_GUARANTEED: Record<string, string> = {
+  email_verified_at: 'string | null',
+  password_changed_at: 'string | null',
+  two_factor_secret: 'string | null',
+  two_factor_enabled: 'boolean | null',
+  two_factor_last_used_step: 'number | null',
+  stripe_id: 'string | null',
+}
+
 function deriveSystemColumns(model: Model): Record<string, string> {
   const out: Record<string, string> = { id: 'number' }
   const traits = model.traits ?? {}
@@ -370,6 +389,10 @@ function deriveSystemColumns(model: Model): Record<string, string> {
   if (traits.useSoftDeletes ?? traits.softDeletable) {
     out.deleted_at = 'string | null'
   }
+
+  if ((model.table ?? '') === 'users' || model.name === 'User')
+    Object.assign(out, USERS_GUARANTEED)
+
   return out
 }
 
