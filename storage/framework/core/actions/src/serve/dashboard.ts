@@ -43,6 +43,8 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
+import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { projectPath, publicPath } from '@stacksjs/path'
 import { resolveDefaultsRoot } from '../dev/defaults-resources'
 import { decideDashboardAccess } from './dashboard-gate'
@@ -81,13 +83,25 @@ function readCookie(header: string | null, name: string): string | undefined {
   return undefined
 }
 
-// Routes must be loaded before the first request: the gate delegates `/api/**`
-// and every mutating verb to the Stacks router, and an unloaded router 404s
-// the POST that signs a person in.
-const router = await import('@stacksjs/router')
-const routeRegistry = (await import(projectPath('app/Routes.ts'))).default
-await router.loadRoutes(routeRegistry)
+/**
+ * Where `/api/**` and every sign-in POST go.
+ *
+ * Resolved explicitly and allowed to be null: on a shared box
+ * `127.0.0.1:<default>` is not "my API", it is whichever tenant bound that
+ * port first, and forwarding a session cookie or a login POST there would
+ * hand a visitor's credentials to a stranger. A 502 with an actionable log is
+ * the better failure. Same rule and same helper as the main production
+ * server — this used to be a second copy of the reasoning, which is how the
+ * two drift.
+ */
+const { resolveApiBase } = await import('@stacksjs/buddy/production-server')
+const apiBase = resolveApiBase(config.ports?.api)
 
+const { isApiBoundRequest, proxyToBackend, resolveApiProxyRules } = await import('@stacksjs/server')
+
+// The app's own `proxy` config, so a plain `GET /health` on the API process
+// stays reachable from here exactly as it is from the public site.
+const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
 const { Auth } = await import('@stacksjs/auth')
 const { serve } = await import('bun-plugin-stx/serve')
 
@@ -126,8 +140,33 @@ await serve({
       token => Auth.getUserFromToken(token),
     )
 
-    if (decision.allow)
+    if (decision.allow) {
+      // A dashboard page renders its shell server-side and then loads its data
+      // over `/api/**`. Returning null for those hands them to the PAGE layer,
+      // which answers a 404 HTML document — so every screen renders and then
+      // reports that it could not load anything. They have to be forwarded to
+      // the API process.
+      if (isApiBoundRequest(req, url.pathname, apiProxyRules)) {
+        if (!apiBase) {
+          log.error(
+            `No API target configured for ${url.pathname}. This dashboard shares its host with other `
+            + `deployments, so there is no safe default port to guess — refusing to proxy. Set PORT_API `
+            + `(or API_URL) for this site.`,
+          )
+          return new Response('Bad Gateway', { status: 502 })
+        }
+
+        try {
+          return await proxyToBackend(req, apiBase)
+        }
+        catch (error) {
+          log.error(`API proxy to ${apiBase} failed: ${(error as Error).message}`)
+          return new Response('Bad Gateway', { status: 502 })
+        }
+      }
+
       return null
+    }
 
     // `next` so signing in returns to the page that was asked for. The value
     // is the path only — never the full URL — so this cannot be turned into
