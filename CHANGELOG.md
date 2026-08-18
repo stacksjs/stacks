@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.19...v0.72.20)
+
+## ✨ Features
+
+- **redirects**: one wildcard form, for moving a whole section (#2339) ([72ee724](https://github.com/stacksjs/stacks/commit/72ee724)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2339](https://github.com/stacksjs/stacks/issues/2339), [#2339](https://github.com/stacksjs/stacks/issues/2339))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.18...v0.72.19)
 
 ## ✨ Features
