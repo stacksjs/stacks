@@ -182,3 +182,39 @@ export async function proxyToBackend(req: Request, backendBase: string, stripPre
     headers: out,
   })
 }
+
+/**
+ * Where this app's `/api/**` traffic goes, or null when there is no safe answer.
+ *
+ * Returning null is the important part. On a shared box `127.0.0.1:<default>`
+ * is not "my API" — it is whichever tenant bound that port first. Several SSR
+ * sites legitimately share one instance, so falling back to the framework-wide
+ * default silently forwards this app's session cookies, login POSTs and form
+ * bodies into a DIFFERENT tenant's process. A 502 with an actionable log beats
+ * misdelivering a visitor's credentials to a stranger.
+ *
+ * So an explicit target wins, and in a deployed environment there is no
+ * fallback at all. Only a local dev machine, where nothing else is listening,
+ * gets to guess.
+ *
+ * Lives here rather than beside the production server because more than one
+ * server needs it: the public site and the dashboard both proxy to the same
+ * API process, and a second copy of this rule is a second place for it to
+ * drift.
+ */
+export function resolveApiBase(configuredPort?: number, env: NodeJS.ProcessEnv = process.env): string | null {
+  if (env.API_URL)
+    return env.API_URL
+
+  const explicitPort = Number(env.PORT_API)
+  if (explicitPort)
+    return `http://127.0.0.1:${explicitPort}`
+
+  const deployed = ['production', 'staging', 'development']
+    .includes((env.APP_ENV || '').toLowerCase())
+
+  if (deployed)
+    return null
+
+  return `http://127.0.0.1:${configuredPort || 3008}`
+}

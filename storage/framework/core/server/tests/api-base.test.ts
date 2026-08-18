@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { resolveApiBase } from '../src/production-server'
+import { resolveApiBase } from '../src/proxy'
 
 /**
  * The production page server reverse-proxies `/api/**` to the API process.

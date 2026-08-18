@@ -205,22 +205,6 @@ function resolveCsrfMiddlewarePath(): string {
  * Returning `null` makes the caller answer 502. That is the safe failure: the
  * alternative is proxying authenticated requests into another app's process.
  */
-export function resolveApiBase(configuredPort?: number, env: NodeJS.ProcessEnv = process.env): string | null {
-  if (env.API_URL)
-    return env.API_URL
-
-  const explicitPort = Number(env.PORT_API)
-  if (explicitPort)
-    return `http://127.0.0.1:${explicitPort}`
-
-  const deployed = ['production', 'staging', 'development']
-    .includes((env.APP_ENV || '').toLowerCase())
-
-  if (deployed)
-    return null
-
-  return `http://127.0.0.1:${configuredPort || 3008}`
-}
 
 export async function startProductionServer(options?: { port?: string | number, verbose?: boolean }): Promise<void> {
   if (options?.port)
@@ -232,7 +216,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
