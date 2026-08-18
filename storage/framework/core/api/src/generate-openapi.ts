@@ -547,10 +547,18 @@ export async function generateOpenApi(options: {
     // Persist for build pipelines that want the file on disk; in dev,
     // the live route at GET /__openapi.json regenerates on every hit so
     // schema changes don't require a rebuild step.
-    const file = Bun.file(path.frameworkPath(`api/openapi.json`))
-    const writer = file.writer()
-    writer.write(JSON.stringify(spec, null, 2))
-    await writer.end()
+    /*
+     * `Bun.write` rather than a writer, because a writer does not truncate.
+     *
+     * A document that gets *shorter* - a route removed, a schema simplified -
+     * was being written over a longer one, leaving the tail of the previous
+     * file after the closing brace. The result parses as valid JSON followed by
+     * garbage, so every consumer fails at once with "extra data" and no clue
+     * which of them wrote it. The two lines below always used `Bun.write`,
+     * which is why the types and the client never had this and the document
+     * did.
+     */
+    await Bun.write(path.frameworkPath('api/openapi.json'), JSON.stringify(spec, null, 2))
 
     /*
      * The types and the client, from the same document, in the same step.
