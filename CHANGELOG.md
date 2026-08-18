@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.20...v0.72.21)
+
+## 🐛 Bug Fixes
+
+- **dashboard**: forward the dashboard's API calls instead of 404ing them (#2341) ([471c1d7](https://github.com/stacksjs/stacks/commit/471c1d7)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2341](https://github.com/stacksjs/stacks/issues/2341), [#2341](https://github.com/stacksjs/stacks/issues/2341))
+- **audio,video**: unpack the asset verifiers so lint can read them (#2340) ([ae88a33](https://github.com/stacksjs/stacks/commit/ae88a33)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2340](https://github.com/stacksjs/stacks/issues/2340), [#2340](https://github.com/stacksjs/stacks/issues/2340))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.19...v0.72.20)
 
 ## ✨ Features
