@@ -36,7 +36,7 @@ interface CiRunStateRow {
 async function loadPreviousStates(): Promise<Map<string, PreviousRunState>> {
   const rows = await db.unsafe(
     'SELECT repo_full_name, last_conclusion, last_run_id, last_notified_at FROM ci_run_states',
-  ).execute() as CiRunStateRow[]
+  ).execute() as unknown as CiRunStateRow[]
 
   const map = new Map<string, PreviousRunState>()
   for (const r of rows ?? []) {

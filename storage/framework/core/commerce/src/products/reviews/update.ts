@@ -1,5 +1,5 @@
 import type { ModelRow, Review, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { asRow, db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
 type ReviewUpdate = UpdateModelData<typeof Review>
@@ -71,7 +71,12 @@ export async function updateVotes(
     if (!row)
       throw new Error('Failed to update review votes')
 
-    return row
+    /*
+     * A `RETURNING *` through raw SQL, so the row's shape is the statement's
+     * rather than the schema's. Stated once, here, which is what `asRow` is
+     * for.
+     */
+    return asRow<ReviewJsonResponse>(row) as ReviewJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

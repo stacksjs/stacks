@@ -43,6 +43,11 @@
   // Keeping this list tight is the single biggest lever on check time.
   "include": [
     "./types/**/*.d.ts",
+    // The generated table shapes, from `buddy generate:db-types`. Without this
+    // the augmentation is written and never loaded, so `db.selectFrom('users')`
+    // answers the framework's default `users` - or an unknown-valued record -
+    // and an application's own columns are invisible to the compiler.
+    "../../database/types.d.ts",
     "../../app/**/*.ts",
     "../../config/**/*.ts",
     "../../resources/**/*.ts",

@@ -86,7 +86,7 @@ export default new Action({
       const boards = await db.unsafe(
         'SELECT * FROM boards WHERE id = ? LIMIT 1',
         [id],
-      ).execute() as BoardRow[]
+      ).execute() as unknown as BoardRow[]
       const board = boards[0]
       if (!board) {
         return kanbanError('Board not found', 404)
@@ -96,15 +96,15 @@ export default new Action({
         db.unsafe(
           'SELECT * FROM board_columns WHERE board_id = ? ORDER BY position ASC, id ASC',
           [id],
-        ).execute() as Promise<ColumnRow[]>,
+        ).execute() as unknown as Promise<ColumnRow[]>,
         db.unsafe(
           'SELECT * FROM cards WHERE board_id = ? AND archived = false ORDER BY column_id ASC, position ASC, id ASC',
           [id],
-        ).execute() as Promise<CardRow[]>,
+        ).execute() as unknown as Promise<CardRow[]>,
         db.unsafe(
           'SELECT id, board_id, name, color FROM labels WHERE board_id = ? ORDER BY name ASC',
           [id],
-        ).execute() as Promise<LabelRow[]>,
+        ).execute() as unknown as Promise<LabelRow[]>,
       ])
 
       // Pivot lookups for label + assignee chips on card previews.

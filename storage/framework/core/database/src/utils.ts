@@ -631,10 +631,20 @@ const READ_ENTRY_POINTS = new Set([
 // Start config loading in the background
 ensureConfigLoaded()
 
-// The bun-query-builder types `unsafe()` as returning `Promise<any>`, but at
-// runtime it returns a Bun SQL Statement that has `.execute()`. This interface
-// corrects the return type so callers can chain `.execute()` without type errors.
-type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
+/**
+ * What raw SQL answers: rows whose shape only the SQL knows.
+ *
+ * The query builder types `unsafe()` as `Promise<any>`, and at runtime it hands
+ * back a Bun SQL statement that also has `.execute()`. Both halves are declared
+ * here - and the rows are `Record<string, unknown>` rather than `any`, because
+ * that is the truth about a hand-written `SELECT`: it has aliases this code
+ * cannot see, and every column wants reading out.
+ *
+ * `any` was worse than useless here: it made `rows.map(row => …)` an implicit
+ * any at every call site, which is the error `noImplicitAny` exists to raise.
+ */
+type UnsafeRow = Record<string, unknown>
+type UnsafeReturn = Promise<UnsafeRow[]> & { execute: () => Promise<UnsafeRow[]> }
 
 /**
  * Fluent chain returned by entry-point methods like `selectFrom`/`updateTable`.

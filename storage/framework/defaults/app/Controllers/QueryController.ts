@@ -362,7 +362,22 @@ export default class QueryController extends Controller {
        * asserted: `count` really can be a string, a number or a bigint
        * depending on the driver, which is why the return type says so.
        */
-      return results.map(row => ({
+      /*
+       * Annotated rather than inferred.
+       *
+       * `results` comes back from an aggregate select, whose rows are named by
+       * their aliases rather than by the table, so each row is
+       * `Record<string, unknown>` - and the mapped literal collapses to the
+       * same thing rather than to the shape this method promises. Naming the
+       * element type is what makes the compiler check the mapping against the
+       * signature instead of widening past it.
+       */
+      return results.map((row): {
+        normalized_query: string
+        count: string | number | bigint
+        avg_duration: string | number
+        max_duration: number | undefined
+      } => ({
         normalized_query: String(row.normalized_query ?? ''),
         count: (typeof row.count === 'number' || typeof row.count === 'bigint' ? row.count : String(row.count ?? '0')),
         avg_duration: (typeof row.avg_duration === 'number' ? row.avg_duration : String(row.avg_duration ?? '0')),

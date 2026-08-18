@@ -51,7 +51,7 @@ export default new Action({
         FROM boards b
         WHERE b.archived = false
         ORDER BY b.position ASC, b.id ASC
-      `).execute() as BoardRow[]
+      `).execute() as unknown as BoardRow[]
 
       const boards = (rows ?? []).map(r => ({
         id: r.id,

@@ -72,7 +72,7 @@ async function loadWindowSamples(windowMinutes: number, nowMs: number): Promise<
   const rows = await db.unsafe(
     'SELECT org, running, queued, cap, sampled_at FROM ci_runner_samples WHERE sampled_at >= ? ORDER BY sampled_at ASC',
     [cutoffIso],
-  ).execute() as SampleRow[]
+  ).execute() as unknown as SampleRow[]
 
   return (rows ?? []).map((r): RunnerSample => ({
     org: r.org,
@@ -86,7 +86,7 @@ async function loadWindowSamples(windowMinutes: number, nowMs: number): Promise<
 async function loadAlertStates(): Promise<Map<string, RunnerAlertState>> {
   const rows = await db.unsafe(
     'SELECT org, alerting, last_alerted_at, last_cleared_at FROM ci_runner_alert_states',
-  ).execute() as AlertStateRow[]
+  ).execute() as unknown as AlertStateRow[]
 
   const map = new Map<string, RunnerAlertState>()
   for (const r of rows ?? []) {
@@ -248,7 +248,7 @@ export async function fetchRunnerHistory(
     ORDER BY sampled_at DESC
     LIMIT ?`,
     [org, cutoffIso, limit],
-  ).execute() as SampleRow[]
+  ).execute() as unknown as SampleRow[]
 
   return (rows ?? []).reverse().map((r): RunnerSample => ({
     org: r.org,
