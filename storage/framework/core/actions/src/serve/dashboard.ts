@@ -94,10 +94,8 @@ function readCookie(header: string | null, name: string): string | undefined {
  * server — this used to be a second copy of the reasoning, which is how the
  * two drift.
  */
-const { resolveApiBase } = await import('@stacksjs/buddy/production-server')
+const { isApiBoundRequest, proxyToBackend, resolveApiBase, resolveApiProxyRules } = await import('@stacksjs/server')
 const apiBase = resolveApiBase(config.ports?.api)
-
-const { isApiBoundRequest, proxyToBackend, resolveApiProxyRules } = await import('@stacksjs/server')
 
 // The app's own `proxy` config, so a plain `GET /health` on the API process
 // stays reachable from here exactly as it is from the public site.
