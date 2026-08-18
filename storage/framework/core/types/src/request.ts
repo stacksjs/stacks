@@ -228,6 +228,24 @@ export interface RequestInstance<
   jsonBody?: any
   formBody?: any
   files: Record<string, File | File[]>
+
+  /**
+   * The exact unparsed bytes, for a signature check.
+   *
+   * The router stashes them when it parses a JSON body, because a
+   * re-serialised `jsonBody` is not byte-identical and fails every HMAC a
+   * webhook sender computed - Stripe, GitHub and Slack all sign the raw text.
+   *
+   * Present on a request the router parsed a body for; the two accessors an
+   * action reaches for when it has to read a body the framework did not parse
+   * are here too, since every one of them exists on the underlying request and
+   * a caller that needed one had to type the whole request `any` to get at it.
+   */
+  rawBody?: () => Promise<string> | string
+  arrayBuffer?: () => Promise<ArrayBuffer>
+  body?: ReadableStream<Uint8Array> | null
+  /** The request's URL as the router received it, including the query. */
+  getUrl?: () => string
   /**
    * Cookies parsed from the request. The accessor exposes
    * `get`/`set`/`delete`/`getAll` helpers that mirror bun-router's
