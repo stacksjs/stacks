@@ -30,7 +30,7 @@ export async function bidsForItem(itemId: number): Promise<BidRow[]> {
     .orderBy('placed_at', 'desc')
     .execute()
 
-  return (rows ?? []) as BidRow[]
+  return (rows ?? []) as unknown as BidRow[]
 }
 
 /** Every bid in an auction, oldest first - the settlement input. */
@@ -42,7 +42,7 @@ export async function bidsForAuction(auctionId: number): Promise<BidRow[]> {
     .orderBy('placed_at', 'asc')
     .execute()
 
-  return (rows ?? []) as BidRow[]
+  return (rows ?? []) as unknown as BidRow[]
 }
 
 /**
@@ -58,7 +58,7 @@ export async function bidsByBidder(auctionId: number, bidderEmail: string): Prom
     .orderBy('placed_at', 'desc')
     .execute()
 
-  return (rows ?? []) as BidRow[]
+  return (rows ?? []) as unknown as BidRow[]
 }
 
 /** Distinct bidders in an auction, for audience resolution on notifications. */

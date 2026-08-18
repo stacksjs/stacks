@@ -32,7 +32,7 @@ export async function fetchItems(auctionId: number): Promise<AuctionItemRow[]> {
     .orderBy('lot_number', 'asc')
     .execute()
 
-  return (rows ?? []) as AuctionItemRow[]
+  return (rows ?? []) as unknown as AuctionItemRow[]
 }
 
 export interface ItemWithBidState extends AuctionItemRow {

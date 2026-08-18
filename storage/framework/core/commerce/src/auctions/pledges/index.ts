@@ -46,7 +46,7 @@ export async function makePledge(request: PledgeRequest): Promise<PledgeRow> {
     .selectFrom('pledges')
     .selectAll()
     .where('uuid', '=', uuid)
-    .executeTakeFirst()) as PledgeRow
+    .executeTakeFirst()) as unknown as PledgeRow
 
   await broadcastPledge(pledge, await pledgeTotal(request.auctionId)).catch(() => undefined)
 
@@ -73,7 +73,7 @@ export async function fetchPledges(auctionId: number): Promise<PledgeRow[]> {
     .orderBy('amount', 'desc')
     .execute()
 
-  return (rows ?? []) as PledgeRow[]
+  return (rows ?? []) as unknown as PledgeRow[]
 }
 
 /**

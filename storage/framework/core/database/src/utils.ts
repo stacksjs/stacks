@@ -643,90 +643,224 @@ type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
  * always present at runtime. Re-typing them here avoids forcing every call
  * site to use `?.()` or `!` on the chain.
  *
- * Returns are typed as `any` deliberately — typing each variant precisely
- * would re-introduce the optional methods, and we already lose strict column
- * typing one step into a chain (the underlying query builder is constructed
- * with no schema). Tests cover the runtime semantics.
+ * **The chain carries its row type.** `TRow` comes from the augmented
+ * `DatabaseSchema` that `buddy generate:db-types` writes, so
+ * `db.selectFrom('users').executeTakeFirst()` answers a `users` row rather than
+ * `any` - and `select(['id', 'handle'])` narrows it to those two columns.
+ *
+ * Every terminal used to be `Promise<any>`, and the cost was not theoretical:
+ * an application on top of this ends up annotating every result `any` to say
+ * what it already knows, which is a thousand places the compiler has been told
+ * to stop looking. A row it cannot type is `Record<string, unknown>` instead -
+ * still a value the caller has to narrow, but one narrowing it is checked.
+ *
+ * A join or an aliased select list widens the row to
+ * `Record<string, unknown>`: the shape then depends on the aliases rather than
+ * on any one table, and claiming otherwise would be worse than not knowing.
  */
-export interface FluentChain {
-  where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain
-  where(...args: any[]): FluentChain
-  whereNull: (...args: any[]) => FluentChain
-  whereNotNull: (...args: any[]) => FluentChain
-  whereIn: (...args: any[]) => FluentChain
-  whereNotIn: (...args: any[]) => FluentChain
-  whereLike: (...args: any[]) => FluentChain
-  whereNotLike: (...args: any[]) => FluentChain
-  whereILike: (...args: any[]) => FluentChain
-  whereNotILike: (...args: any[]) => FluentChain
-  whereBetween: (...args: any[]) => FluentChain
-  whereNotBetween: (...args: any[]) => FluentChain
-  whereRaw: (...args: any[]) => FluentChain
-  whereColumn: (...args: any[]) => FluentChain
-  orWhere: (...args: any[]) => FluentChain
-  orWhereNull: (...args: any[]) => FluentChain
-  orWhereNotNull: (...args: any[]) => FluentChain
-  orWhereIn: (...args: any[]) => FluentChain
-  orWhereNotIn: (...args: any[]) => FluentChain
-  orWhereLike: (...args: any[]) => FluentChain
-  orWhereNotLike: (...args: any[]) => FluentChain
-  orWhereILike: (...args: any[]) => FluentChain
-  orWhereColumn: (...args: any[]) => FluentChain
-  andWhere: (...args: any[]) => FluentChain
+/**
+ * State the shape of rows this package knows and the query cannot.
+ *
+ * A raw query answers `Record<string, unknown>` when the table is not in the
+ * generated `DatabaseSchema` - which is always true *inside* the framework,
+ * because an application's schema does not exist at framework build time. The
+ * package that ships the model does know the shape, and this is where that
+ * knowledge is written down: once, at the boundary, named and greppable.
+ *
+ * It is an assertion, and deliberately an obvious one. What it replaces is a
+ * `Promise<any>` that spread the same claim silently through every caller.
+ *
+ * Application code should not need it: `buddy generate:db-types` gives `db` the
+ * real column types, and a row that arrives typed does not want asserting.
+ */
+export function asRows<TRow>(rows: ReadonlyArray<Record<string, unknown>>): TRow[] {
+  return rows as unknown as TRow[]
+}
+
+/** The single-row form of {@link asRows}. */
+export function asRow<TRow>(row: Record<string, unknown> | undefined): TRow | undefined {
+  return row as unknown as TRow | undefined
+}
+
+/**
+ * The keys a row type actually declares, or `never` for a loose record.
+ *
+ * `keyof Record<string, unknown>` is `string`, so a narrowing overload written
+ * against it will happily accept *anything* as a column - including
+ * `'menu_items.id as id'`, which then becomes a property name in the result
+ * type. That is worse than not narrowing: the row type looks specific and every
+ * key in it is fiction.
+ */
+export type KnownKeys<T> = string extends keyof T ? never : keyof T
+
+/**
+ * Which verb started a chain, so its terminals can answer the right thing.
+ *
+ * `returning` is its own kind rather than a flag on the others: a mutation with
+ * `RETURNING` answers rows, and that is the difference between reading
+ * `rows[0].id` and reading a count.
+ */
+export type ChainKind = 'select' | 'insert' | 'update' | 'delete' | 'returning'
+
+/** What `execute()` resolves to for each verb. */
+export type ResultOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'returning'
+  ? TRow[]
+  : number
+
+/** What `executeTakeFirst()` resolves to for each verb. */
+export type FirstOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'returning' | 'insert'
+  ? TRow | undefined
+  : TKind extends 'update'
+    ? { numUpdatedRows?: number }
+    : { numDeletedRows?: number }
+
+export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'> {
+  where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain<TRow, TKind>
+  where(...args: unknown[]): FluentChain<TRow, TKind>
+  whereNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNotNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNotIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereLike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNotLike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereILike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNotILike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereBetween: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNotBetween: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereRaw: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereColumn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhere: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNotNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNotIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereLike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNotLike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereILike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereColumn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  andWhere: (...args: unknown[]) => FluentChain<TRow, TKind>
   // The multi-column predicates the query builder ships (`whereAny(columns,
   // op, value)` and friends). They were missing here, so a caller that used
   // one - the log search does, across message/project/file/stacktrace - had
   // no type for the chain it got back.
-  whereAny: (...args: any[]) => FluentChain
-  whereAll: (...args: any[]) => FluentChain
-  whereNone: (...args: any[]) => FluentChain
-  having: (...args: any[]) => FluentChain
-  groupBy: (...args: any[]) => FluentChain
-  orderBy: (...args: any[]) => FluentChain
-  limit: (...args: any[]) => FluentChain
-  offset: (...args: any[]) => FluentChain
-  select(selection: ((eb: import('./types').StacksExpressionBuilder) => unknown) | ReadonlyArray<string | ((eb: import('./types').StacksExpressionBuilder) => unknown) | unknown>): FluentChain
-  select(...args: any[]): FluentChain
-  selectAll: () => FluentChain
-  selectAllRelations: () => FluentChain
-  selectRaw: (...args: any[]) => FluentChain
-  distinct: () => FluentChain
-  distinctOn: (...args: any[]) => FluentChain
-  innerJoin: (...args: any[]) => FluentChain
-  leftJoin: (...args: any[]) => FluentChain
-  rightJoin: (...args: any[]) => FluentChain
-  fullJoin: (...args: any[]) => FluentChain
-  crossJoin: (...args: any[]) => FluentChain
-  with: (...args: any[]) => FluentChain
-  union: (...args: any[]) => FluentChain
-  unionAll: (...args: any[]) => FluentChain
-  values: (...args: any[]) => FluentChain
-  set: (...args: any[]) => FluentChain
-  returning: (...args: any[]) => FluentChain
-  returningAll: () => FluentChain
-  onConflict: (...args: any[]) => FluentChain
-  onDuplicateKeyUpdate: (...args: any[]) => FluentChain
-  onConflictDoNothing: (...args: any[]) => FluentChain
-  onDuplicateKeyIgnore: () => FluentChain
-  forUpdate: () => FluentChain
-  forShare: () => FluentChain
+  whereAny: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereAll: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNone: (...args: unknown[]) => FluentChain<TRow, TKind>
+  having: (...args: unknown[]) => FluentChain<TRow, TKind>
+  groupBy: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orderBy: (...args: unknown[]) => FluentChain<TRow, TKind>
+  limit: (...args: unknown[]) => FluentChain<TRow, TKind>
+  offset: (...args: unknown[]) => FluentChain<TRow, TKind>
+  /**
+   * Narrow the select list, and the row type with it.
+   *
+   * A list of plain column names narrows to exactly those columns. Anything
+   * else - an alias, an expression builder callback, a raw fragment - answers a
+   * `Record<string, unknown>` chain, because what comes back is then named by
+   * the aliases rather than by the table.
+   */
+  select<K extends KnownKeys<TRow> & string>(columns: readonly K[]): FluentChain<Pick<TRow, K>, TKind>
+  select(selection: ((eb: import('./types').StacksExpressionBuilder) => unknown) | ReadonlyArray<string | ((eb: import('./types').StacksExpressionBuilder) => unknown) | unknown>): FluentChain<Record<string, unknown>, TKind>
+  select(...args: unknown[]): FluentChain<Record<string, unknown>, TKind>
+  selectAll: () => FluentChain<TRow, TKind>
+  selectAllRelations: () => FluentChain<Record<string, unknown>, TKind>
+  selectRaw: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  distinct: () => FluentChain<TRow, TKind>
+  distinctOn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  /*
+   * A joined chain's rows are not this table's rows.
+   *
+   * `Record<string, unknown>` rather than `TRow`, because the select list after
+   * a join is written as aliases - `'users.id as user_id'` - and a row typed as
+   * the base table would be confidently wrong about every one of them.
+   */
+  innerJoin: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  leftJoin: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  rightJoin: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  fullJoin: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  crossJoin: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  with: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  union: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  unionAll: (...args: unknown[]) => FluentChain<Record<string, unknown>, TKind>
+  /**
+   * `values()` takes what the table holds, and keeps the row type for
+   * `returning()`.
+   *
+   * `object` rather than `Record<string, unknown>` as the loose branch, because
+   * an *interface* is not assignable to `Record<string, unknown>` - it has no
+   * index signature - and every caller that has declared a row shape of its own
+   * passes exactly that. Rejecting those would be a type error about a value
+   * that is right.
+   */
+  values: (values: Partial<TRow> | ReadonlyArray<Partial<TRow>> | object | readonly object[]) => FluentChain<TRow, TKind>
+  set: (values: Partial<TRow> | object) => FluentChain<TRow, TKind>
+  /*
+   * `RETURNING` turns a mutation into something that answers rows, which is
+   * why it changes the chain's kind rather than only its row type: the whole
+   * point of writing it is that `execute()` stops answering a count.
+   */
+  returning<K extends KnownKeys<TRow> & string>(columns: readonly K[]): FluentChain<Pick<TRow, K>, 'returning'>
+  returning(...args: unknown[]): FluentChain<Record<string, unknown>, 'returning'>
+  returningAll: () => FluentChain<TRow, 'returning'>
+  onConflict: (...args: unknown[]) => FluentChain<TRow, TKind>
+  onDuplicateKeyUpdate: (...args: unknown[]) => FluentChain<TRow, TKind>
+  onConflictDoNothing: (...args: unknown[]) => FluentChain<TRow, TKind>
+  onDuplicateKeyIgnore: () => FluentChain<TRow, TKind>
+  forUpdate: () => FluentChain<TRow, TKind>
+  forShare: () => FluentChain<TRow, TKind>
   toSQL: () => string
-  execute: () => Promise<any>
-  executeTakeFirst: () => Promise<any>
-  executeTakeFirstOrThrow: () => Promise<any>
-  pluck: (...args: any[]) => Promise<any>
-  count: (...args: any[]) => Promise<number>
-  sum: (...args: any[]) => Promise<number>
-  avg: (...args: any[]) => Promise<number>
-  min: (...args: any[]) => Promise<any>
-  max: (...args: any[]) => Promise<any>
+  /**
+   * What running this chain answers, decided by which verb started it.
+   *
+   * A select resolves rows; an update or a delete resolves how many rows it
+   * changed. Both were `Promise<any>` before, which is why callers in this
+   * framework and in applications on top of it read `numUpdatedRows` off a
+   * value that might be a number - the type never told them which they had.
+   */
+  execute: () => Promise<ResultOf<TRow, TKind>>
+  executeTakeFirst: () => Promise<FirstOf<TRow, TKind>>
+  executeTakeFirstOrThrow: () => Promise<NonNullable<FirstOf<TRow, TKind>>>
+  pluck: (...args: unknown[]) => Promise<unknown[]>
+  count: (...args: unknown[]) => Promise<number>
+  sum: (...args: unknown[]) => Promise<number>
+  avg: (...args: unknown[]) => Promise<number>
+  min: (...args: unknown[]) => Promise<unknown>
+  max: (...args: unknown[]) => Promise<unknown>
   exists: () => Promise<boolean>
   doesntExist: () => Promise<boolean>
-  $call: (callback: (query: FluentChain) => FluentChain) => FluentChain
-  // Allow indexing for dynamic where${Column} helpers that bun-query-builder
-  // generates at the type level via mapped templates.
-  [key: string]: any
+  $call: (callback: (query: FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>
 }
+
+/** `created_at` -> `CreatedAt`, for the dynamic helper names below. */
+type SnakeToPascal<S extends string> = S extends `${infer Head}_${infer Tail}`
+  ? `${Capitalize<Head>}${SnakeToPascal<Tail>}`
+  : Capitalize<S>
+
+/**
+ * The dynamic `where<Column>` helpers bun-query-builder generates.
+ *
+ * Derived from the row type rather than allowed by an index signature. The
+ * index signature that used to be here (`[key: string]: any`) made every
+ * misspelling legal and every result `any`: `whereHndle('a')` compiled, and so
+ * did reading a property that does not exist.
+ */
+export type DynamicWhereMethods<TRow, TKind extends ChainKind = 'select'> = {
+  [K in keyof TRow & string as `where${SnakeToPascal<K>}`]: (value: TRow[K]) => FluentChain<TRow, TKind>
+} & {
+  [K in keyof TRow & string as `orWhere${SnakeToPascal<K>}`]: (value: TRow[K]) => FluentChain<TRow, TKind>
+} & {
+  [K in keyof TRow & string as `andWhere${SnakeToPascal<K>}`]: (value: TRow[K]) => FluentChain<TRow, TKind>
+}
+
+/**
+ * A chain over one table's rows: the methods, plus the generated helpers.
+ *
+ * A type alias rather than an interface because the helper half is a mapped
+ * type over `TRow`, and an interface can only extend members TypeScript knows
+ * statically.
+ */
+export type FluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'>
+  = BaseFluentChain<TRow, TKind> & DynamicWhereMethods<TRow, TKind>
 
 /**
  * Top-level surface of the lazy `db` proxy. Methods that return a chainable
@@ -807,16 +941,34 @@ export interface DatabaseSchema {}
 // eslint-disable-next-line ts/no-empty-object-type
 export type TableName = (keyof DatabaseSchema & string) | (string & {})
 
+/**
+ * The row type of a registered table, or an unknown-valued record.
+ *
+ * A table the generated `DatabaseSchema` knows answers its own columns. One it
+ * does not - an app that has never run `buddy generate:db-types`, or a table
+ * that lives outside a model - answers `Record<string, unknown>`: still a value
+ * the caller narrows, but narrowing it is checked rather than waved through.
+ */
+export type RowOf<T extends TableName> = T extends keyof DatabaseSchema
+  ? DatabaseSchema[T] extends { columns: infer C }
+    ? C
+    : DatabaseSchema[T]
+  : Record<string, unknown>
+
 interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   fn: import('./types').ExpressionFunctions
-  selectFrom: (table: TableName) => FluentChain
-  insertInto: (table: TableName) => FluentChain
-  updateTable: (table: TableName) => FluentChain
-  deleteFrom: (table: TableName) => FluentChain
-  table: (table: TableName) => FluentChain
-  selectFromSub: (sub: any, alias: string) => FluentChain
-  select: (table: TableName, ...columns: string[]) => FluentChain
-  unsafe: (query: string, params?: any[]) => UnsafeReturn
+  selectFrom: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'select'>
+  insertInto: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'insert'>
+  updateTable: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'update'>
+  deleteFrom: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'delete'>
+  table: <T extends TableName>(table: T) => FluentChain<RowOf<T>, 'select'>
+  /*
+   * A subquery's rows are named by its own select list, so there is no table to
+   * take a shape from.
+   */
+  selectFromSub: (sub: unknown, alias: string) => FluentChain<Record<string, unknown>>
+  select: <T extends TableName>(table: T, ...columns: string[]) => FluentChain<Record<string, unknown>>
+  unsafe: (query: string, params?: unknown[]) => UnsafeReturn
   /**
    * Replica-routed handle. Reads issued through it go to a read replica
    * when one is configured, accepting replication lag in exchange for
@@ -830,7 +982,7 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
  */
-export const db = new Proxy({} as Db, {
+export const db: Db = new Proxy({} as Db, {
   get(_target, prop) {
     // `fn` is our own aggregate surface (`aggregateFunctions`) -
     // bun-query-builder has no top-level `fn`, so serve it directly
@@ -873,7 +1025,7 @@ export const db = new Proxy({} as Db, {
  * available behind it (`db.read.selectFrom(...).where(...)`) without
  * re-declaring every chain entry point.
  */
-export const readDb = new Proxy({} as Db, {
+export const readDb: Omit<Db, 'read'> = new Proxy({} as Db, {
   get(_target, prop) {
     if (prop === 'fn')
       return aggregateFunctions

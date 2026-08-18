@@ -216,7 +216,13 @@ export async function resolveTeamContext(
 
   // Switchable teams: the user's own teams, or every team for an operator.
   const roleByTeam = new Map<number, string>(memberships.map((m: any) => [Number(m.team_id), String(m.role)]))
-  let teamRows: Array<{ id: number | string, name: string }> = []
+  /*
+   * `Record<string, unknown>` rows, because the framework has no application
+   * schema at its own build time: `teams` is a table an app declares. The two
+   * fields are read out below rather than asserted, which is the same thing the
+   * code already did with `Number()` and `String()` - now it is checked.
+   */
+  let teamRows: Array<Record<string, unknown>> = []
   if (allowAny) {
     teamRows = await db.selectFrom('teams').select(['id', 'name']).execute()
   }

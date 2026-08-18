@@ -250,7 +250,7 @@ async function fetchPublishedPosts(): Promise<PostRow[]> {
       .where('status', '=', 'published')
       .orderBy('published_at', 'desc')
       .selectAll()
-      .execute() as Promise<PostRow[]>,
+      .execute() as unknown as Promise<PostRow[]>,
     3000,
   )
 }
@@ -265,7 +265,7 @@ async function fetchAuthors(): Promise<AuthorRow[]> {
     db
       .selectFrom('authors')
       .selectAll()
-      .execute() as Promise<AuthorRow[]>,
+      .execute() as unknown as Promise<AuthorRow[]>,
     3000,
   )
 }

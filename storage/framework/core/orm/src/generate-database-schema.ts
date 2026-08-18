@@ -50,14 +50,97 @@ function snakeCase(str: string): string {
 }
 
 /**
- * Map a model attribute's declared `type` to a TS type. Conservative:
- * unknown types fall back to `unknown` so the codegen never produces
- * a silently-wrong column type. Nullable columns get `| null`.
+ * The last hint: what a literal `default` is.
+ *
+ * An attribute with `default: false` and no rule is a boolean whatever else is
+ * missing, and one with `default: 0` is a number. Only literals count - a
+ * function default is computed at runtime and says nothing here.
+ */
+function fromDefault(attr: Attribute): string {
+  const value = (attr as { default?: unknown }).default
+
+  if (typeof value === 'boolean')
+    return 'boolean'
+
+  if (typeof value === 'number')
+    return 'number'
+
+  if (typeof value === 'string')
+    return 'string'
+
+  return 'unknown'
+}
+
+/**
+ * What a validation rule says its own type is.
+ *
+ * Every rule `@stacksjs/validation` builds carries `name` - `'string'`,
+ * `'number'`, `'boolean'`, `'enum'`, ... - and an enum carries its
+ * `allowedValues` with it. That is the discriminator almost every real model
+ * has, because a `defineModel()` attribute declares
+ * `validation: { rule: schema.string() }` and hardly ever a bare `type`.
+ *
+ * Reading only `type` was why this codegen emitted `unknown` for nearly every
+ * column in a real application: the information was one field away, and a
+ * generated row type of `unknown` is a row type every call site replaces with
+ * `any`.
+ */
+interface ValidationRuleShape {
+  name?: unknown
+  allowedValues?: unknown
+}
+
+function ruleOf(attr: Attribute): ValidationRuleShape | null {
+  const validation = (attr as { validation?: { rule?: unknown } }).validation
+
+  if (!validation || typeof validation !== 'object')
+    return null
+
+  const rule = (validation as { rule?: unknown }).rule
+
+  return rule && typeof rule === 'object' ? rule as ValidationRuleShape : null
+}
+
+/** `'draft' | 'published'` for an enum rule, or null when it is not one. */
+function enumUnion(rule: ValidationRuleShape | null): string | null {
+  if (!rule || String(rule.name ?? '') !== 'enum')
+    return null
+
+  const values = Array.isArray(rule.allowedValues) ? rule.allowedValues : []
+  const literals = values
+    .filter(one => typeof one === 'string' || typeof one === 'number')
+    .map(one => (typeof one === 'number' ? String(one) : JSON.stringify(one)))
+
+  /*
+   * A union of the values it allows, rather than `string`. This is the one place
+   * the generated types can be *better* than the database's own: a `state`
+   * column typed `'queued' | 'running' | 'succeeded'` catches the comparison
+   * against `'suceeded'` that a `string` column never will.
+   */
+  return literals.length > 0 ? literals.join(' | ') : null
+}
+
+/**
+ * Map a model attribute to a TS type.
+ *
+ * Three sources, in order of how much they know: the declared `type`, the
+ * validation rule's own name (which is what real models carry), and the shape
+ * of a literal `default`. Anything still unaccounted for is `unknown` rather
+ * than a guess - a silently-wrong column type is worse than one the call site
+ * has to narrow.
  */
 function attributeToTsType(attr: Attribute): string {
+  const rule = ruleOf(attr)
+  const literals = enumUnion(rule)
+
+  if (literals !== null)
+    return attr.nullable === true ? `${literals} | null` : literals
+
   // `type` is the most common discriminator; some attributes carry the
   // type info inside a validation rule instead. Cover both.
-  const declared = typeof attr.type === 'string' ? attr.type.toLowerCase() : ''
+  const declared = typeof attr.type === 'string'
+    ? attr.type.toLowerCase()
+    : String(rule?.name ?? '').toLowerCase()
   const base = (() => {
     switch (declared) {
       case 'string':
@@ -73,9 +156,16 @@ function attributeToTsType(attr: Attribute): string {
       case 'datetime':
       case 'timestamp':
       case 'timestamptz':
+      /*
+       * And the rule name `@stacksjs/validation` uses that the column
+       * vocabulary does not: a `password` column is a string in the row
+       * whatever it means to a form.
+       */
+      case 'password':
       case 'time':
       case 'year':
         return 'string'
+      case 'number':
       case 'integer':
       case 'int':
       case 'tinyint':
@@ -98,8 +188,19 @@ function attributeToTsType(attr: Attribute): string {
       case 'blob':
       case 'bytea':
         return 'Uint8Array'
+      /*
+       * The names validation rules use that the column vocabulary does not.
+       * `datetime`/`timestamp` are already above; these are the rest of what
+       * `@stacksjs/validation` builds.
+       */
+      case 'unix':
+        return 'number'
+      case 'array':
+        return 'unknown[]'
+      case 'object':
+        return 'Record<string, unknown>'
       default:
-        return 'unknown'
+        return fromDefault(attr)
     }
   })()
   return attr.nullable === true ? `${base} | null` : base
@@ -268,7 +369,18 @@ const FOOTER = `  }
 export {}
 `
 
-async function loadModelsFrom(dir: string, recursive: boolean): Promise<Array<{ filePath: string, model: Model }>> {
+async function loadModelsFrom(
+  dir: string,
+  recursive: boolean,
+  /**
+   * Where a file that could not be read is recorded.
+   *
+   * It used to be swallowed here, under a comment claiming the caller captured
+   * it - the caller did not. A model whose import throws simply vanished from
+   * the generated types, so the table came out untyped and nothing said why.
+   */
+  failures: Array<{ file: string, error: string }> = [],
+): Promise<Array<{ filePath: string, model: Model }>> {
   const out: Array<{ filePath: string, model: Model }> = []
   if (!fs.existsSync(dir)) return out
   const entries = fs.readdirSync(dir, { withFileTypes: true })
@@ -276,7 +388,7 @@ async function loadModelsFrom(dir: string, recursive: boolean): Promise<Array<{ 
     const fullPath = path.join(dir, entry.name)
     if (entry.isDirectory()) {
       if (recursive) {
-        const sub = await loadModelsFrom(fullPath, true)
+        const sub = await loadModelsFrom(fullPath, true, failures)
         out.push(...sub)
       }
       continue
@@ -284,14 +396,23 @@ async function loadModelsFrom(dir: string, recursive: boolean): Promise<Array<{ 
     if (!entry.name.endsWith('.ts')) continue
     if (entry.name.startsWith('_') || entry.name.startsWith('index')) continue
     try {
-      const module = await import(fullPath)
+      /*
+       * Imported by absolute path.
+       *
+       * `import('models/Widget.ts')` is a *module specifier*, not a file, so a
+       * relative `modelsDir` resolved against this file's own directory and
+       * failed - silently, until the line above started reporting it.
+       */
+      const module = await import(path.isAbsolute(fullPath) ? fullPath : path.resolve(fullPath))
       const def = (module.default || module) as Model
       if (def?.name && (def.attributes || def.table)) {
         out.push({ filePath: fullPath, model: def })
       }
     }
-    catch {
-      // Per-file failure is non-fatal — buildSchema captures via errors[].
+    catch (err) {
+      // Non-fatal, and now reported: one unreadable model must not take the
+      // other two hundred down with it, and must not disappear either.
+      failures.push({ file: fullPath, error: (err as Error).message })
     }
   }
   return out
@@ -312,7 +433,7 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
 
   for (const [dir, recursive] of [[modelsDir, false], [defaultsDir, true]] as const) {
     try {
-      const found = await loadModelsFrom(dir, recursive)
+      const found = await loadModelsFrom(dir, recursive, errors)
       allModels.push(...found)
     }
     catch (err) {

@@ -49,7 +49,7 @@ export async function closeItem(item: AuctionItemRow, now: Date = new Date()): P
     .selectFrom('bids')
     .selectAll()
     .where('auction_item_id', '=', item.id)
-    .execute()) as BidRow[] | undefined
+    .execute()) as unknown as BidRow[] | undefined
 
   const outcome = determineWinner(item, bids ?? [])
 
@@ -157,13 +157,13 @@ export async function settleAuction(auctionId: number, opts: { markSettled?: boo
     .selectFrom('bids')
     .selectAll()
     .where('auction_id', '=', auctionId)
-    .execute()) as BidRow[] | undefined
+    .execute()) as unknown as BidRow[] | undefined
 
   const pledges = (await db
     .selectFrom('pledges')
     .selectAll()
     .where('auction_id', '=', auctionId)
-    .execute()) as PledgeRow[] | undefined
+    .execute()) as unknown as PledgeRow[] | undefined
 
   const bidsByItem = new Map<number, BidRow[]>()
   for (const bid of bids ?? []) {
