@@ -94,7 +94,17 @@ export function audioResponseHeaders(bytes: number, etag: string, contentType: s
 export function signAudioAsset(path: string, expires: number, secret: string): string {
   return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url')
 }
-export function verifyAudioAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean { if (!Number.isInteger(expires) || expires * 1000 <= now) return false; const expected = Buffer.from(signAudioAsset(path, expires, secret)); const actual = Buffer.from(signature); return expected.length === actual.length && timingSafeEqual(expected, actual) }
+export function verifyAudioAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean {
+  if (!Number.isInteger(expires) || expires * 1000 <= now)
+    return false
+
+  const expected = Buffer.from(signAudioAsset(path, expires, secret))
+  const actual = Buffer.from(signature)
+
+  // The length check has to come first: timingSafeEqual throws on a length
+  // mismatch rather than returning false, and && short-circuits before it.
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
 
 export interface AudioSegment { uri: string, duration: number, data: Uint8Array }
 export interface AudioHlsProtection { key: Uint8Array, keyUri: string }

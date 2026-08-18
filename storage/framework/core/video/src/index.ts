@@ -103,7 +103,17 @@ export function videoResponseHeaders(bytes: number, etag: string, contentType: s
 export function signVideoAsset(path: string, expires: number, secret: string): string {
   return createHmac('sha256', secret).update(`${path}\n${expires}`).digest('base64url')
 }
-export function verifyVideoAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean { if (!Number.isInteger(expires) || expires * 1000 <= now) return false; const expected = Buffer.from(signVideoAsset(path, expires, secret)); const actual = Buffer.from(signature); return expected.length === actual.length && timingSafeEqual(expected, actual) }
+export function verifyVideoAsset(path: string, expires: number, signature: string, secret: string, now: number = Date.now()): boolean {
+  if (!Number.isInteger(expires) || expires * 1000 <= now)
+    return false
+
+  const expected = Buffer.from(signVideoAsset(path, expires, secret))
+  const actual = Buffer.from(signature)
+
+  // The length check has to come first: timingSafeEqual throws on a length
+  // mismatch rather than returning false, and && short-circuits before it.
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}
 
 export interface VideoSegment { uri: string, duration: number, data: Uint8Array }
 export interface VideoHlsProtection { key: Uint8Array, keyUri: string, iv?: (_index: number) => Uint8Array }
