@@ -46,7 +46,17 @@ export function insertedId(result: unknown): number | undefined {
  * the row by the id it reported.
  */
 export async function resolveWrittenRow<T extends object>(
-  db: { selectFrom: (table: string) => any },
+  /*
+   * The chain, not `any`. Only what this needs of it is named, so a caller
+   * passing something else is told at the call site rather than here.
+   */
+  db: {
+    selectFrom: (table: string) => {
+      where: (column: string, op: string, value: unknown) => {
+        selectAll: () => { executeTakeFirst: () => Promise<unknown> }
+      }
+    }
+  },
   table: string,
   result: unknown,
 ): Promise<T | undefined> {
@@ -58,6 +68,10 @@ export async function resolveWrittenRow<T extends object>(
   if (id === undefined)
     return undefined
 
+  /*
+   * Read back by id, and asserted once here rather than at each caller: the
+   * table is a parameter, so there is no schema entry to look the shape up in.
+   */
   return await db
     .selectFrom(table)
     .where('id', '=', id)

@@ -1,4 +1,5 @@
-type AuthorJsonResponse = ModelRow<typeof Author>
+import type { RowOf } from '@stacksjs/database'
+type AuthorJsonResponse = RowOf<'authors'>
 type NewAuthor = NewModelData<typeof Author>
 import { getDb } from '../database'
 import { fetchById } from './fetch'

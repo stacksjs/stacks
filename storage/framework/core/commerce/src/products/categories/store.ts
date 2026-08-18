@@ -1,5 +1,5 @@
-import type { Category, ModelRow } from '@stacksjs/orm'
-type CategoryJsonResponse = ModelRow<typeof Category>
+import type { RowOf } from '@stacksjs/database'
+type CategoryJsonResponse = RowOf<'categories'>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -49,7 +49,7 @@ export async function store(data: CategoryWriteData): Promise<CategoryJsonRespon
     if (!result)
       throw new Error('Failed to create category')
 
-    return result as CategoryJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof HttpError)
@@ -73,7 +73,7 @@ export async function findOrCreateByName(data: Partial<CategorizableTable>): Pro
     .executeTakeFirst()
 
   if (existingCategory)
-    return existingCategory as CategoryJsonResponse
+    return existingCategory
 
   const categoryData: CategoryWriteData = {
     name: data.name,

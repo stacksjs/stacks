@@ -1,8 +1,8 @@
-import type { Category, ModelRow } from '@stacksjs/orm'
+import type { RowOf } from '@stacksjs/database'
 import type { CategoryStats } from '../../types'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
-type CategoryJsonResponse = ModelRow<typeof Category>
+type CategoryJsonResponse = RowOf<'categories'>
 
 /**
  * Fetch all categories from the database
@@ -13,7 +13,7 @@ export async function fetchAll(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories as CategoryJsonResponse[]
+  return categories
 }
 
 /**
@@ -24,7 +24,7 @@ export async function fetchById(id: number): Promise<CategoryJsonResponse | unde
     .selectFrom('categories')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as CategoryJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -35,7 +35,7 @@ export async function fetchByName(name: string): Promise<CategoryJsonResponse | 
     .selectFrom('categories')
     .where('name', '=', name)
     .selectAll()
-    .executeTakeFirst() as CategoryJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -48,7 +48,7 @@ export async function fetchActive(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories as CategoryJsonResponse[]
+  return categories
 }
 
 /**
@@ -62,7 +62,7 @@ export async function fetchRootCategories(): Promise<CategoryJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return categories as CategoryJsonResponse[]
+  return categories
 }
 
 /**
@@ -76,7 +76,7 @@ export async function fetchChildCategories(parentId: string): Promise<CategoryJs
     .selectAll()
     .execute()
 
-  return categories as CategoryJsonResponse[]
+  return categories
 }
 
 /**
@@ -89,10 +89,10 @@ export async function fetchByDisplayOrder(ascending: boolean = true): Promise<Ca
     .selectAll()
 
   if (ascending) {
-    return await query.orderBy('display_order', 'asc').execute() as CategoryJsonResponse[]
+    return await query.orderBy('display_order', 'asc').execute()
   }
   else {
-    return await query.orderBy('display_order', 'desc').execute() as CategoryJsonResponse[]
+    return await query.orderBy('display_order', 'desc').execute()
   }
 }
 

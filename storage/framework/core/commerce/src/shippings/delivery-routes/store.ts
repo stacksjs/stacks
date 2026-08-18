@@ -1,5 +1,6 @@
-import type { DeliveryRoute, ModelRow, NewModelData } from '@stacksjs/orm'
-type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
+import type { RowOf } from '@stacksjs/database'
+import type {NewModelData} from '@stacksjs/orm'
+type DeliveryRouteJsonResponse = RowOf<'delivery_routes'>
 type NewDeliveryRoute = NewModelData<typeof DeliveryRoute>
 type DeliveryRouteInput = NewDeliveryRoute & Partial<{
   delivery_time: number
@@ -42,7 +43,7 @@ export async function store(data: DeliveryRouteInput): Promise<DeliveryRouteJson
     if (!result)
       throw new Error('Failed to create delivery route')
 
-    return result as DeliveryRouteJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof DeliveryRouteInputError)
@@ -76,7 +77,7 @@ export async function updateLastActive(id: number): Promise<DeliveryRouteJsonRes
     if (!result)
       throw new Error('Failed to update delivery route last active')
 
-    return result as DeliveryRouteJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

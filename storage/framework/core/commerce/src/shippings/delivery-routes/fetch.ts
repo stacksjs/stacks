@@ -1,5 +1,5 @@
-import type { DeliveryRoute, ModelRow } from '@stacksjs/orm'
-type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
+import type { RowOf } from '@stacksjs/database'
+type DeliveryRouteJsonResponse = RowOf<'delivery_routes'>
 import { db } from '@stacksjs/database'
 
 /**
@@ -10,14 +10,14 @@ export async function fetchById(id: number): Promise<DeliveryRouteJsonResponse |
     .selectFrom('delivery_routes')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as DeliveryRouteJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
  * Fetch all delivery routes
  */
 export async function fetchAll(): Promise<DeliveryRouteJsonResponse[]> {
-  return await db.selectFrom('delivery_routes').selectAll().execute() as DeliveryRouteJsonResponse[]
+  return await db.selectFrom('delivery_routes').selectAll().execute()
 }
 
 /**
@@ -28,7 +28,7 @@ export async function fetchActive(): Promise<DeliveryRouteJsonResponse[]> {
     .selectFrom('delivery_routes')
     .where('last_active', '>=', Date.now() - 24 * 60 * 60 * 1000)
     .selectAll()
-    .execute() as DeliveryRouteJsonResponse[]
+    .execute()
 }
 
 /**
@@ -39,5 +39,5 @@ export async function fetchByDriver(driver: string): Promise<DeliveryRouteJsonRe
     .selectFrom('delivery_routes')
     .where('driver', '=', driver)
     .selectAll()
-    .execute() as DeliveryRouteJsonResponse[]
+    .execute()
 }

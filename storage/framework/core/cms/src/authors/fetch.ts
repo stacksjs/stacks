@@ -1,4 +1,5 @@
-type AuthorJsonResponse = ModelRow<typeof Author>
+import type { RowOf } from '@stacksjs/database'
+type AuthorJsonResponse = RowOf<'authors'>
 import { getDb } from '../database'
 
 /**
@@ -10,7 +11,7 @@ export async function fetchById(id: number): Promise<AuthorJsonResponse | undefi
     .selectFrom('authors')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as AuthorJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -18,7 +19,7 @@ export async function fetchById(id: number): Promise<AuthorJsonResponse | undefi
  */
 export async function fetchAll(): Promise<AuthorJsonResponse[]> {
   const db = await getDb()
-  return await db.selectFrom('authors').selectAll().execute() as AuthorJsonResponse[]
+  return await db.selectFrom('authors').selectAll().execute()
 }
 
 /**
@@ -30,7 +31,7 @@ export async function findByName(name: string): Promise<AuthorJsonResponse | und
     .selectFrom('authors')
     .where('name', '=', name)
     .selectAll()
-    .executeTakeFirst() as AuthorJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -42,7 +43,7 @@ export async function findByEmail(email: string): Promise<AuthorJsonResponse | u
     .selectFrom('authors')
     .where('email', '=', email)
     .selectAll()
-    .executeTakeFirst() as AuthorJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -54,7 +55,7 @@ export async function findByUuid(uuid: string): Promise<AuthorJsonResponse | und
     .selectFrom('authors')
     .where('uuid', '=', uuid)
     .selectAll()
-    .executeTakeFirst() as AuthorJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -66,5 +67,5 @@ export async function findByUserId(userId: number): Promise<AuthorJsonResponse |
     .selectFrom('authors')
     .where('user_id', '=', userId)
     .selectAll()
-    .executeTakeFirst() as AuthorJsonResponse | undefined
+    .executeTakeFirst()
 }

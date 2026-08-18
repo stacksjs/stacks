@@ -1,11 +1,11 @@
-import type { Category, ModelRow } from '@stacksjs/orm'
+import type { RowOf } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import type { CategoryWriteData } from './types'
 
-type CategoryRow = ModelRow<typeof Category>
+type CategoryRow = RowOf<'categories'>
 
 /**
  * Update a category by ID
@@ -49,7 +49,7 @@ export async function update(id: number, data: CategoryWriteData): Promise<Categ
     if (!result)
       return undefined
 
-    return result as CategoryRow
+    return result
   }
   catch (error) {
     if (error instanceof HttpError)

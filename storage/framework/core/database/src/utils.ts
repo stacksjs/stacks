@@ -15,6 +15,7 @@ import { createQueryBuilder, registerPersistentQueryHooks, resetConnection as re
 import { SQL } from 'bun'
 import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
+import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
@@ -708,17 +709,39 @@ export type ResultOf<TRow, TKind extends ChainKind> = TKind extends 'select' | '
   : number
 
 /**
+ * What an insert reports when it was not asked to return rows.
+ *
+ * Every field optional and every one differently named, because drivers
+ * disagree: Postgres answers a count, SQLite a `changes`, MySQL an `insertId`.
+ * Typing this as the row - which is what the query builder's own declarations
+ * do - is how framework code came to read `insertId` off a value that is not a
+ * row and cannot have one.
+ *
+ * `returning(...)` is the way to get rows out of an insert, and it changes the
+ * chain's kind so the types follow.
+ */
+export interface InsertReceipt {
+  insertId?: number | bigint
+  numInsertedOrUpdatedRows?: number | bigint
+  numAffectedRows?: number | bigint
+  affectedRows?: number
+  changes?: number
+}
+
+/**
  * What `executeTakeFirst()` resolves to for each verb.
  *
  * The counts are *required*, because the runtime always sets them: an update
  * that changed nothing answers `{ numUpdatedRows: 0 }`. Declaring them optional
  * would make every caller write `?? 0` for a case that cannot happen.
  */
-export type FirstOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'returning' | 'insert'
+export type FirstOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'returning'
   ? TRow | undefined
-  : TKind extends 'update'
-    ? { numUpdatedRows: number }
-    : { numDeletedRows: number }
+  : TKind extends 'insert'
+    ? InsertReceipt | undefined
+    : TKind extends 'update'
+      ? { numUpdatedRows: number }
+      : { numDeletedRows: number }
 
 export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'> {
   where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain<TRow, TKind>
@@ -945,7 +968,7 @@ export interface DatabaseSchema {}
  * well-documented LiteralUnion trick.
  */
 // eslint-disable-next-line ts/no-empty-object-type
-export type TableName = (keyof DatabaseSchema & string) | (string & {})
+export type TableName = (keyof DatabaseSchema & string) | (keyof FrameworkSchema & string) | (string & {})
 
 /**
  * The row type of a registered table, or an unknown-valued record.
@@ -956,10 +979,19 @@ export type TableName = (keyof DatabaseSchema & string) | (string & {})
  * the caller narrows, but narrowing it is checked rather than waved through.
  */
 export type RowOf<T extends TableName> = T extends keyof DatabaseSchema
-  ? DatabaseSchema[T] extends { columns: infer C }
-    ? C
-    : DatabaseSchema[T]
-  : Record<string, unknown>
+  ? Shape<DatabaseSchema[T]>
+  : T extends keyof FrameworkSchema
+    ? Shape<FrameworkSchema[T]>
+    : Record<string, unknown>
+
+/**
+ * A generated entry, whichever of the two shapes it was written in.
+ *
+ * The app generator has emitted a flat column record for a while; the
+ * `{ columns }` form is what the query builder's own schema type uses. Both are
+ * accepted so an app does not have to regenerate to keep compiling.
+ */
+type Shape<T> = T extends { columns: infer C } ? C : T
 
 interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   fn: import('./types').ExpressionFunctions

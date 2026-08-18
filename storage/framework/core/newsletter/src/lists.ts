@@ -88,7 +88,9 @@ export const lists = {
       ? await query.where('id', '=', idOrSlug).executeTakeFirst()
       : await query.where('slug', '=', idOrSlug).executeTakeFirst()
 
-    return row as EmailListRow | undefined
+    // A hand-written *instance* shape rather than a row: it carries an
+    // `update()` method, so this is a real assertion rather than a row type.
+    return row as unknown as EmailListRow | undefined
   },
 
   async all(): Promise<EmailListRow[]> {
@@ -96,7 +98,7 @@ export const lists = {
       .selectFrom('email_lists')
       .selectAll()
       .where('status', '=', 'active')
-      .execute() as EmailListRow[]
+      .execute() as unknown as EmailListRow[]
   },
 
   async archive(idOrSlug: number | string): Promise<unknown> {

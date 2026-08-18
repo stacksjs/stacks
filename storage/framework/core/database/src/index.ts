@@ -63,6 +63,7 @@ export type {
 } from './driver-config'
 
 // Core database utilities and default instance
+export type { FrameworkSchema } from './framework-schema'
 export * from './utils'
 
 // Types (compatibility layer for Kysely types)

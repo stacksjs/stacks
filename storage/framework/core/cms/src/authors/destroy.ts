@@ -1,4 +1,5 @@
-type AuthorJsonResponse = ModelRow<typeof Author>
+import type { RowOf } from '@stacksjs/database'
+type AuthorJsonResponse = RowOf<'authors'>
 import { getDb } from '../database'
 
 /**
@@ -20,7 +21,7 @@ export async function destroy(id: number): Promise<AuthorJsonResponse> {
       throw new Error(`Author with ID ${id} not found`)
     }
 
-    return result as AuthorJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof Error)

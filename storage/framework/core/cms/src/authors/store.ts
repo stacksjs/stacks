@@ -1,4 +1,5 @@
-type AuthorJsonResponse = ModelRow<typeof Author>
+import type { RowOf } from '@stacksjs/database'
+type AuthorJsonResponse = RowOf<'authors'>
 type NewAuthor = NewModelData<typeof Author>
 import { randomUUIDv7 } from 'bun'
 import { getDb } from '../database'
@@ -29,7 +30,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
 
     // If author exists, return it
     if (existingAuthor)
-      return existingAuthor as AuthorJsonResponse
+      return existingAuthor
 
     // Look up or create the associated user
     let user = await db
@@ -74,12 +75,12 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
       .returningAll()
       .executeTakeFirst()
 
-    const author = await resolveWrittenRow(db, 'authors', result)
+    const author = await resolveWrittenRow<AuthorJsonResponse>(db, 'authors', result)
 
     if (!author)
       throw new Error('Failed to create author')
 
-    return author as AuthorJsonResponse
+    return author
   }
   catch (error) {
     if (error instanceof HttpError)
@@ -114,7 +115,7 @@ export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
 
     // If author exists, return it
     if (existingAuthor)
-      return existingAuthor as AuthorJsonResponse
+      return existingAuthor
 
     // If no existing author, create a new one
     const authorData = {
@@ -131,12 +132,12 @@ export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
       .returningAll()
       .executeTakeFirst()
 
-    const author = await resolveWrittenRow(db, 'authors', result)
+    const author = await resolveWrittenRow<AuthorJsonResponse>(db, 'authors', result)
 
     if (!author)
       throw new Error('Failed to create author')
 
-    return author as AuthorJsonResponse
+    return author
   }
   catch (error) {
     if (error instanceof HttpError)

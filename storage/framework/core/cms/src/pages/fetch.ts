@@ -1,4 +1,5 @@
-type PageJsonResponse = ModelRow<typeof Page>
+import type { RowOf } from '@stacksjs/database'
+type PageJsonResponse = RowOf<'pages'>
 import { getDb } from '../database'
 
 /**
@@ -10,7 +11,7 @@ export async function fetchById(id: number): Promise<PageJsonResponse | undefine
     .selectFrom('pages')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as PageJsonResponse | undefined
+    .executeTakeFirst()
 }
 
 /**
@@ -18,7 +19,7 @@ export async function fetchById(id: number): Promise<PageJsonResponse | undefine
  */
 export async function fetchAll(): Promise<PageJsonResponse[]> {
   const db = await getDb()
-  return await db.selectFrom('pages').selectAll().execute() as PageJsonResponse[]
+  return await db.selectFrom('pages').selectAll().execute()
 }
 
 /**
@@ -30,7 +31,7 @@ export async function fetchByTemplate(template: string): Promise<PageJsonRespons
     .selectFrom('pages')
     .where('template', '=', template)
     .selectAll()
-    .execute() as PageJsonResponse[]
+    .execute()
 }
 
 /**
@@ -42,7 +43,7 @@ export async function fetchByAuthor(authorId: number): Promise<PageJsonResponse[
     .selectFrom('pages')
     .where('author_id', '=', authorId)
     .selectAll()
-    .execute() as PageJsonResponse[]
+    .execute()
 }
 
 /**
@@ -54,7 +55,7 @@ export async function fetchByMinViews(minViews: number): Promise<PageJsonRespons
     .selectFrom('pages')
     .where('views', '>=', minViews)
     .selectAll()
-    .execute() as PageJsonResponse[]
+    .execute()
 }
 
 /**
@@ -66,7 +67,7 @@ export async function fetchByMinConversions(minConversions: number): Promise<Pag
     .selectFrom('pages')
     .where('conversions', '>=', minConversions)
     .selectAll()
-    .execute() as PageJsonResponse[]
+    .execute()
 }
 
 /**
@@ -78,5 +79,5 @@ export async function fetchPublishedAfter(timestamp: number): Promise<PageJsonRe
     .selectFrom('pages')
     .where('published_at', '>', timestamp)
     .selectAll()
-    .execute() as PageJsonResponse[]
+    .execute()
 }

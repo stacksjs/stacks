@@ -1,4 +1,5 @@
-type PageJsonResponse = ModelRow<typeof Page>
+import type { RowOf } from '@stacksjs/database'
+type PageJsonResponse = RowOf<'pages'>
 type PageUpdate = UpdateModelData<typeof Page>
 import { getDb } from '../database'
 import { fetchById } from './fetch'
@@ -52,7 +53,7 @@ export async function update(id: number, data: Partial<PageUpdate>): Promise<Pag
       if (!saved)
         throw new Error('Failed to update page')
 
-      return saved as PageJsonResponse
+      return saved
     }
   }
 
@@ -79,7 +80,7 @@ export async function update(id: number, data: Partial<PageUpdate>): Promise<Pag
     if (!page)
       throw new Error('Failed to update page')
 
-    return page as PageJsonResponse
+    return page
   }
   catch (error) {
     if (error instanceof Error)

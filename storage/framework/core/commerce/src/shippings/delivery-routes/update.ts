@@ -1,9 +1,10 @@
-import type { DeliveryRoute, ModelRow, UpdateModelData } from '@stacksjs/orm'
+import type { RowOf } from '@stacksjs/database'
+import type {UpdateModelData} from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 import { deliveryRouteWriteData } from '../write-data'
 import { DeliveryRouteInputError, validateDeliveryRouteWrite } from './validate-write'
-type DeliveryRouteJsonResponse = ModelRow<typeof DeliveryRoute>
+type DeliveryRouteJsonResponse = RowOf<'delivery_routes'>
 type DeliveryRouteUpdate = UpdateModelData<typeof DeliveryRoute>
 
 /**
@@ -41,7 +42,7 @@ export async function update(id: number, data: DeliveryRouteUpdate): Promise<Del
     if (!result)
       return undefined
 
-    return result as DeliveryRouteJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof DeliveryRouteInputError)
@@ -79,7 +80,7 @@ export async function updateStops(
     if (!result)
       throw new Error('Failed to update delivery route stops')
 
-    return result as DeliveryRouteJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof Error) {
@@ -123,7 +124,7 @@ export async function updateMetrics(
     if (!result)
       throw new Error('Failed to update delivery metrics')
 
-    return result as DeliveryRouteJsonResponse
+    return result
   }
   catch (error) {
     if (error instanceof Error) {

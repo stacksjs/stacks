@@ -87,3 +87,27 @@ describe('narrowing a select list', () => {
     expect(true).toBe(true)
   })
 })
+
+describe('the framework\'s own tables', () => {
+  test('are typed for the framework\'s own code, without asserting them', () => {
+    /*
+     * The point of `FrameworkSchema`, and the whole reason this exists: the
+     * framework ships these models, so `db.selectFrom('reviews')` inside a
+     * framework package should answer a review - not an unknown-valued record
+     * that the call site then has to assert. It used to have to, and the
+     * assertions were everywhere.
+     */
+    assertType<Same<RowOf<'reviews'>['id'], number>>(true)
+
+    // camelCase aliases too, because that is what a row actually carries: a
+    // schema listing only one spelling is *almost* right, which typechecks until
+    // somebody reads the other one.
+    assertType<Same<RowOf<'pages'>['meta_description'], RowOf<'pages'>['metaDescription']>>(true)
+
+    // And an enum column is the union it allows, so a comparison against a
+    // misspelling does not compile.
+    assertType<Same<RowOf<'pages'>['status'], 'draft' | 'published' | 'archived' | 'scheduled'>>(true)
+
+    expect(true).toBe(true)
+  })
+})
