@@ -100,3 +100,42 @@ describe('a model that cannot be read', () => {
     expect(result.tables.some(one => one.table === 'widgets')).toBe(true)
   })
 })
+
+describe('a `belongsTo` written the way real models write it', () => {
+  test('produces the foreign key column rather than crashing the codegen', async () => {
+    const dir = join(import.meta.dir, `fixtures-belongs-to-${Math.random().toString(16).slice(2)}`)
+
+    mkdirSync(dir, { recursive: true })
+    writeFileSync(join(dir, 'Ticket.ts'), `
+import { defineModel } from '@stacksjs/orm'
+
+export default defineModel({
+  name: 'Ticket',
+  table: 'tickets',
+  belongsTo: [{ model: 'Repository', onDelete: 'cascade' }, { model: 'User', foreignKey: 'author_id' }],
+  attributes: {},
+})
+`)
+
+    try {
+      const result = await buildDatabaseSchema({ modelsDir: dir, defaultsDir: join(dir, 'none'), dryRun: true })
+      const tickets = result.tables.find(one => one.table === 'tickets')
+
+      expect(tickets).toBeTruthy()
+
+      /*
+       * `snakeCase` used to be handed the whole `{ model, foreignKey }` object
+       * and threw, which took the codegen down with it - so `generate:db-types`
+       * emitted nothing and the app kept whatever it had generated last.
+       */
+      expect(tickets!.columns.repository_id).toBe('number')
+
+      // A declared `foreignKey` wins, because that is the column that exists.
+      expect(tickets!.columns.author_id).toBe('number')
+      expect(tickets!.columns.user_id).toBeUndefined()
+    }
+    finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})

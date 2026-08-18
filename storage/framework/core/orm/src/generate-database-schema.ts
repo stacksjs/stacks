@@ -211,14 +211,44 @@ function attributeToTsType(attr: Attribute): string {
   return attr.nullable === true ? `${base} | null` : base
 }
 
+/**
+ * The `<target>_id` columns a `belongsTo` implies.
+ *
+ * Three shapes reach this, and only one of them used to: `['User']`,
+ * `{ author: 'User' }`, and - the one every real model in an application
+ * writes - `[{ model: 'User', foreignKey: 'author_id' }]`. Handed the third,
+ * `snakeCase` was called with an object and threw, which took the whole
+ * codegen down: `buddy generate:db-types` crashed rather than emitting types,
+ * so the app kept whatever file it generated last.
+ *
+ * A declared `foreignKey` wins, because that is the column that exists.
+ */
 function deriveFkColumns(model: Model): Record<string, string> {
   const out: Record<string, string> = {}
   const rel = (model as Model).belongsTo
   if (!rel) return out
-  const list: string[] = Array.isArray(rel) ? rel as string[] : Object.keys(rel as object)
-  for (const target of list) {
-    out[`${snakeCase(target)}_id`] = 'number'
+
+  const entries: unknown[] = Array.isArray(rel) ? rel : Object.values(rel as object)
+
+  for (const entry of entries) {
+    if (typeof entry === 'string') {
+      out[`${snakeCase(entry)}_id`] = 'number'
+      continue
+    }
+
+    if (entry && typeof entry === 'object') {
+      const relation = entry as { model?: unknown, foreignKey?: unknown }
+
+      if (typeof relation.foreignKey === 'string') {
+        out[relation.foreignKey] = 'number'
+        continue
+      }
+
+      if (typeof relation.model === 'string')
+        out[`${snakeCase(relation.model)}_id`] = 'number'
+    }
   }
+
   return out
 }
 
