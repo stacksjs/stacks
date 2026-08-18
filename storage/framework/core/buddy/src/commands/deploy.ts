@@ -613,31 +613,95 @@ function fmtDuration(secs: number): string {
 }
 
 /**
+ * Why the last attempt failed, as one line fit for an error message.
+ *
+ * `sshExecOrThrow` already puts the remote stderr in its message
+ * (``ssh `true` on 1.2.3.4 failed (255): Permission denied (publickey).``), so
+ * the diagnosis exists on every attempt and only needs carrying out of the loop.
+ * Newlines are collapsed because ssh spreads one refusal over several lines, and
+ * the result is capped so a chatty banner cannot bury the summary above it.
+ */
+export function pollFailureDetail(error: unknown): string | undefined {
+  const raw = error instanceof Error ? error.message : typeof error === 'string' ? error : ''
+  const collapsed = raw.replace(/\s+/g, ' ').trim()
+  if (!collapsed)
+    return undefined
+  return collapsed.length > 300 ? `${collapsed.slice(0, 297)}...` : collapsed
+}
+
+/**
+ * What to print when SSH never came up.
+ *
+ * The old text named one cause for a condition with several: "The box may still
+ * be booting - raise TS_CLOUD_SSH_WAIT_SECS and retry." A rejected key and a
+ * fail2ban ban produce exactly that line, and waiting longer fixes neither, which
+ * is how a one-line answer turns into a multi-hour misdiagnosis
+ * (stacksjs/stacks#2342).
+ *
+ * So it leads with what the last attempt actually said and then maps the three
+ * causes that look identical from here onto their different fixes, instead of
+ * asserting the one that happens to be most common.
+ */
+export function sshUnreachableMessage(opts: {
+  ip: string
+  waitSecs: number
+  elapsedSecs: number
+  lastError?: unknown
+}): string {
+  const detail = pollFailureDetail(opts.lastError)
+  return `SSH did not become reachable on ${opts.ip} within ${fmtDuration(opts.waitSecs)} (waited ${opts.elapsedSecs}s).`
+    + (detail ? `\nLast attempt: ${detail}` : '')
+    + `\nA connection timeout means the box is probably still booting, so raise TS_CLOUD_SSH_WAIT_SECS and retry. `
+    + `"Permission denied" means the key is not authorized, and a refused or reset connection (especially after earlier attempts got further) `
+    + `usually means fail2ban banned this IP. Waiting longer fixes neither.`
+}
+
+/** What to print when cloud-init never put bun on the box. */
+export function bunRuntimeMissingMessage(opts: {
+  waitSecs: number
+  elapsedSecs: number
+  lastError?: unknown
+}): string {
+  const detail = pollFailureDetail(opts.lastError)
+  return `bun runtime did not appear at /usr/local/bin/bun within ${fmtDuration(opts.waitSecs)} (waited ${opts.elapsedSecs}s).`
+    + (detail ? `\nLast attempt: ${detail}` : '')
+    + `\ncloud-init may have failed: SSH in and check /var/log/cloud-init-output.log. `
+    + `Raise TS_CLOUD_BOOT_WAIT_SECS for slow regions.`
+}
+
+/**
  * Poll `check()` (awaited each attempt, so it may be sync or async) until it
  * stops throwing or the timeout elapses, emitting a heartbeat every ~30s so a
  * multi-minute wait never looks frozen (and, when backgrounded, so the caller
  * can see it is still alive).
+ *
+ * The last error is kept and handed to `timeoutMessage`. Discarding it is what
+ * made every reachability failure read as the same "the box may still be booting"
+ * guess: a rejected key and a fail2ban ban produced that identical line, and the
+ * advice it gave (wait longer) is useless for both.
  */
-async function pollUntil(opts: {
+export async function pollUntil(opts: {
   label: string
   timeoutSecs: number
   intervalMs?: number
   check: () => unknown | Promise<unknown>
-  timeoutMessage: (elapsedSecs: number) => string
+  timeoutMessage: (elapsedSecs: number, lastError: unknown) => string
 }): Promise<void> {
   log.info(`${opts.label} (up to ${fmtDuration(opts.timeoutSecs)})...`)
   const started = Date.now()
   const deadline = started + opts.timeoutSecs * 1000
   let lastHeartbeat = 0
+  let lastError: unknown
   for (;;) {
     try {
       await opts.check()
       return
     }
-    catch {
+    catch (err) {
+      lastError = err
       const elapsedSecs = Math.floor((Date.now() - started) / 1000)
       if (Date.now() > deadline)
-        throw new Error(opts.timeoutMessage(elapsedSecs))
+        throw new Error(opts.timeoutMessage(elapsedSecs, lastError))
       if (elapsedSecs - lastHeartbeat >= 30) {
         log.info(`  … still waiting (${elapsedSecs}s elapsed)`)
         lastHeartbeat = elapsedSecs
@@ -676,9 +740,8 @@ async function waitForRemoteReady(ip: string): Promise<void> {
     label: 'Waiting for SSH to come up',
     timeoutSecs: sshWaitSecs,
     check: () => run('true'),
-    timeoutMessage: elapsed =>
-      `SSH did not become reachable on ${ip} within ${fmtDuration(sshWaitSecs)} (waited ${elapsed}s). `
-      + `The box may still be booting — raise TS_CLOUD_SSH_WAIT_SECS and retry.`,
+    timeoutMessage: (elapsed, lastError) =>
+      sshUnreachableMessage({ ip, waitSecs: sshWaitSecs, elapsedSecs: elapsed, lastError }),
   })
   log.success('SSH is up')
 
@@ -696,10 +759,8 @@ async function waitForRemoteReady(ip: string): Promise<void> {
     label: 'Waiting for the bun runtime',
     timeoutSecs: bootWaitSecs,
     check: () => run('test -x /usr/local/bin/bun'),
-    timeoutMessage: elapsed =>
-      `bun runtime did not appear at /usr/local/bin/bun within ${fmtDuration(bootWaitSecs)} (waited ${elapsed}s). `
-      + `cloud-init may have failed — SSH in and check /var/log/cloud-init-output.log; `
-      + `raise TS_CLOUD_BOOT_WAIT_SECS for slow regions.`,
+    timeoutMessage: (elapsed, lastError) =>
+      bunRuntimeMissingMessage({ waitSecs: bootWaitSecs, elapsedSecs: elapsed, lastError }),
   })
   log.success('Server is ready (bun installed)')
 }
