@@ -255,6 +255,24 @@ export interface SearchOptions {
    * `toSearchableObject` stays synchronous; no per-row database lookup.
    */
   denormalize?: Record<string, string>
+  /**
+   * Projection: what actually gets indexed, rather than the whole row.
+   *
+   * Both of these are implemented and honoured by the ORM's indexing paths -
+   * `shapeMany` takes precedence over `shape` when both are given - and both
+   * were missing from this interface, which is the one a model's `useSearch`
+   * trait is typed against. So a model that used either was rejected by
+   * `tsc` for naming a property that does exist and does run, and the only
+   * way past it was a cast that hid the mistake rather than fixing it.
+   *
+   * `shape` is called once per row, which is right for a projection that only
+   * rearranges columns. `shapeMany` receives the whole chunk and returns a
+   * document for each, in order, which is what a projection needing the
+   * database wants: denormalising a relation per row is a query per row, and a
+   * rebuild of ten thousand rows becomes twenty thousand round trips.
+   */
+  shape?: (model: any) => Record<string, unknown> | null | undefined | Promise<Record<string, unknown> | null | undefined>
+  shapeMany?: (models: any[]) => Record<string, unknown>[] | Promise<Record<string, unknown>[]>
 }
 
 export type {
