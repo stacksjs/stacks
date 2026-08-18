@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/objects",
   "type": "module",
-  "version": "0.72.28",
+  "version": "0.72.29",
   "description": "The Stacks objects.",
   "author": "Chris Breuer",
   "contributors": [
