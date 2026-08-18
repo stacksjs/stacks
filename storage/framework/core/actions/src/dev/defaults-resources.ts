@@ -24,6 +24,22 @@ import { dirname, join, resolve } from 'node:path'
  * Returns the vendored path if neither resolves, letting the caller (stx serve)
  * surface a clear missing-directory error rather than a silent empty glob.
  */
+export function resolveDefaultsRoot(): string {
+  const projectRoot = resolve(import.meta.dir, '../../../../../..')
+  const vendored = join(projectRoot, 'storage/framework/defaults')
+
+  if (existsSync(vendored))
+    return vendored
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    return dirname(pkgJson)
+  }
+  catch {
+    return vendored
+  }
+}
+
 export function resolveDefaultsResources(): string {
   /*
    * Located from this file, not the working directory.
