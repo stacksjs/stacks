@@ -14,6 +14,7 @@ import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
+import { withDeployNotification } from '../deploy-notify'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, unbackedDataMessage } from '../unbacked-data'
@@ -1536,7 +1537,10 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   catch (err) {
     log.error('Hetzner deploy failed:')
     console.error(err instanceof Error ? (err.stack || err.message) : err)
-    process.exit(ExitCode.FatalError)
+    // Rethrow rather than exit: the command's own handler owns notifying and
+    // setting the exit code, so a deploy failure reports the same way whatever
+    // provider raised it. process.exit() here would skip the notification.
+    throw err
   }
 }
 
@@ -3753,7 +3757,7 @@ export function deploy(buddy: CLI): void {
     .option('--docker', 'Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry', { default: false })
     .option('-J, --json', 'Emit a machine-readable deployment preview', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (envArg: string | undefined, options: DeployOptions) => {
+    .action(withDeployNotification(async (envArg: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
       // Read argv in addition to the parsed option. Which key a global flag
@@ -3925,7 +3929,7 @@ export function deploy(buddy: CLI): void {
       }
 
       await outro('Project deployed.', { startTime, useSeconds: true })
-    })
+    }))
 
   buddy
     .command('deploy:rollback [site]', 'Roll back a deployment to a preserved release')
