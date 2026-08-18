@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.21...v0.72.22)
+
+## 🐛 Bug Fixes
+
+- **utils**: read APP_KEY from the environment, not only from .env ([af58894](https://github.com/stacksjs/stacks/commit/af58894)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.20...v0.72.21)
 
 ## 🐛 Bug Fixes
