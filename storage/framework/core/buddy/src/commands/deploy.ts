@@ -1553,7 +1553,7 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
 
-  const apiToken = tsCloudConfig.hetzner?.apiToken || process.env.HCLOUD_TOKEN || process.env.HETZNER_API_TOKEN
+  const apiToken = resolveHetznerApiToken(tsCloudConfig)
   const persistedAttachBox = resolvePersistedAttachTargetBox(tsCloudConfig, environment)
   if (!apiToken && !persistedAttachBox) {
     log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
@@ -2024,7 +2024,14 @@ async function runHetznerDeploy(args: {
   // left undefined, it simply skips them.
   let ipv6: string | undefined
   if (attachTo) {
-    let box = persistedAttachBox ?? await resolveAttachTargetBox(attachTo, environment)
+    // Kept so the error below can name what actually went wrong. A persisted box
+    // means no lookup ran at all, which is itself worth not misreporting.
+    let lookup: AttachLookupResult | undefined
+    let box: AttachTargetBox | null | undefined = persistedAttachBox
+    if (!box) {
+      lookup = await resolveAttachTargetBox(attachTo, environment, tsCloudConfig)
+      box = lookup.box
+    }
     // A state file written before publicIpv6 was persisted pins the tenant to
     // IPv4 forever: the cached box short-circuits the Hetzner lookup, the AAAA
     // pass is skipped for want of an address, and the deploy then rewrites the
@@ -2032,12 +2039,12 @@ async function runHetznerDeploy(args: {
     // tenant heals itself on its next deploy instead of needing the file
     // deleted by hand.
     if (box && !box.publicIpv6) {
-      const resolved = await resolveAttachTargetBox(attachTo, environment)
-      if (resolved?.publicIpv6)
-        box = { ...box, publicIpv6: resolved.publicIpv6 }
+      const resolved = await resolveAttachTargetBox(attachTo, environment, tsCloudConfig)
+      if (resolved.box?.publicIpv6)
+        box = { ...box, publicIpv6: resolved.box.publicIpv6 }
     }
     if (!box?.publicIp) {
-      log.error(`Attach target '${attachTo}' has no reachable box for '${environment}'. Is '${attachTo}-${environment}-app' provisioned (by its owner)?`)
+      log.error(describeAttachLookupFailure(attachTo, environment, lookup?.failure))
       process.exit(ExitCode.FatalError)
     }
     ip = box.publicIp
@@ -2478,14 +2485,15 @@ async function runHetznerDeploy(args: {
     const mailOwner = mailServerOwnerFromConfig(emailConfig)
     let mailIp: string | undefined = ip
     if (mailOwner) {
-      const mailBox = await resolveAttachTargetBox(mailOwner, environment)
-      if (mailBox?.publicIp) {
-        mailIp = mailBox.publicIp
-        log.info(`Mail: reconciling on '${mailOwner}' box '${mailBox.serverName}' (${mailIp})`)
+      const mailLookup = await resolveAttachTargetBox(mailOwner, environment, tsCloudConfig)
+      if (mailLookup.box?.publicIp) {
+        mailIp = mailLookup.box.publicIp
+        log.info(`Mail: reconciling on '${mailOwner}' box '${mailLookup.box.serverName}' (${mailIp})`)
       }
       else {
         mailIp = undefined
-        log.warn(`Mail: attach target '${mailOwner}' has no reachable '${environment}' box; application deploy remains live`)
+        log.warn(`Mail: ${describeAttachLookupFailure(mailOwner, environment, mailLookup.failure)}`)
+        log.warn('Mail: skipping mail reconciliation; the application deploy remains live.')
       }
     }
 
@@ -2663,58 +2671,158 @@ systemctl reset-failed`
  *      RFC 5228 `forwards.sieve` (live-reloaded).
  *
 /**
+ * The Hetzner token, resolved the same way everywhere.
+ *
+ * `deployToHetzner` accepted `hetzner.apiToken` from the config or either env
+ * var, while `resolveAttachTargetBox` read only `process.env.HCLOUD_TOKEN`. A
+ * project that configured the token in `config/cloud.ts`, or set only
+ * `HETZNER_API_TOKEN`, therefore passed the token check at the top of the deploy
+ * and then failed attach resolution with no request made and no reason given
+ * (stacksjs/stacks#2344). One resolver, so the two cannot drift again.
+ */
+export function resolveHetznerApiToken(tsCloudConfig?: any): string | undefined {
+  return tsCloudConfig?.hetzner?.apiToken || process.env.HCLOUD_TOKEN || process.env.HETZNER_API_TOKEN
+}
+
+/**
+ * A shared box as the Hetzner API just described it.
+ *
+ * Distinct from {@link AttachedComputeBox}, which is the persisted pin: that one
+ * is validated on read and so guarantees a `publicIp`, whereas a live lookup can
+ * legitimately turn up a server that has no IPv4 yet. Collapsing the two would
+ * mean either lying about the pin or re-checking it at every use.
+ */
+export interface AttachTargetBox {
+  serverId: number
+  serverName: string
+  publicIp?: string
+  publicIpv6?: string
+}
+
+/**
+ * Why an attach lookup produced no box.
+ *
+ * These three were previously indistinguishable: every one of them ended as an
+ * empty array, and the caller reported the same "is it provisioned?" for all of
+ * them. Only `no-match` actually justifies that question.
+ */
+export type AttachLookupFailure =
+  | { kind: 'no-token' }
+  | { kind: 'request-failed', status: number, detail?: string }
+  | { kind: 'no-match' }
+
+export interface AttachLookupResult {
+  box: AttachTargetBox | null
+  failure?: AttachLookupFailure
+}
+
+/**
+ * What to tell the operator when no box came back.
+ *
+ * The old message named one cause for four conditions: "Is
+ * '<owner>-<env>-app' provisioned (by its owner)?" A missing token, a 401, and a
+ * network error all printed that, while the box sat there running, which is how
+ * this became a multi-hour diagnosis rather than a one-line one. Each cause now
+ * gets its own answer, and the provisioning question is only asked when nothing
+ * matched.
+ */
+export function describeAttachLookupFailure(
+  owner: string,
+  environment: string,
+  failure: AttachLookupFailure | undefined,
+): string {
+  if (failure?.kind === 'no-token') {
+    return `Attach target '${owner}': no Hetzner API token to look it up with, so no lookup was attempted. `
+      + `Set HCLOUD_TOKEN (or HETZNER_API_TOKEN, or hetzner.apiToken in config/cloud.ts).`
+  }
+
+  if (failure?.kind === 'request-failed') {
+    const where = failure.status > 0 ? `returned HTTP ${failure.status}` : 'could not be reached'
+    return `Attach target '${owner}': the Hetzner API ${where}, so whether the box exists is unknown.`
+      + (failure.detail ? ` ${failure.detail}` : '')
+      + (failure.status === 401 || failure.status === 403
+        ? ' That is an auth failure, not a missing server: check the token is valid for this Hetzner project.'
+        : '')
+  }
+
+  return `Attach target '${owner}' has no reachable box for '${environment}'. `
+    + `Nothing matched ts-cloud/project=${owner},ts-cloud/environment=${environment},ts-cloud/role=app, `
+    + `and no server is named '${owner}-${environment}-app'. Is it provisioned (by its owner)?`
+}
+
+/**
  * Resolve the shared box owned by another project (`cloud.attachTo`) so this
  * project can deploy its sites onto it without provisioning. Looks the box up
  * by the owner's ts-cloud labels (`ts-cloud/project=<owner>`,
- * `environment=<env>`, `role=app`) — the same labels ts-cloud stamps on every
- * app server — falling back to the conventional `<owner>-<env>-app` name. Needs
- * only read access via HCLOUD_TOKEN (the same token the owner provisions with).
+ * `environment=<env>`, `role=app`) - the same labels ts-cloud stamps on every
+ * app server - falling back to the conventional `<owner>-<env>-app` name. Needs
+ * only read access via the Hetzner token.
+ *
+ * Returns why it found nothing, rather than just nothing. Every failure used to
+ * collapse into an empty array inside `req()`: a 401, a network error and a
+ * genuinely empty result were indistinguishable, and none were logged.
  */
-async function resolveAttachTargetBox(
+export async function resolveAttachTargetBox(
   owner: string,
   environment: string,
-): Promise<{ serverId: number, serverName: string, publicIp?: string, publicIpv6?: string } | null> {
-  const token = process.env.HCLOUD_TOKEN
+  tsCloudConfig?: any,
+): Promise<AttachLookupResult> {
+  const token = resolveHetznerApiToken(tsCloudConfig)
   if (!token)
-    return null
+    return { box: null, failure: { kind: 'no-token' } }
+
   const pick = (servers: any[]): any | undefined =>
     servers.find(s => s?.status !== 'off' && s?.public_net?.ipv4?.ip) || servers[0]
+
+  // Kept from the FIRST failing request: by the time the name fallback also
+  // comes back empty, the label query's 401 is the more useful thing to report.
+  let requestFailure: AttachLookupFailure | undefined
+
   const req = async (qs: string): Promise<any[]> => {
     try {
       const res = await fetch(`https://api.hetzner.cloud/v1/servers?${qs}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
-      if (!res.ok)
+      if (!res.ok) {
+        const body = await res.text().catch(() => '')
+        requestFailure ??= { kind: 'request-failed', status: res.status, detail: pollFailureDetail(body) }
         return []
+      }
       return ((await res.json()) as any).servers || []
     }
-    catch {
+    catch (err) {
+      // status 0: the request never got an answer at all.
+      requestFailure ??= { kind: 'request-failed', status: 0, detail: pollFailureDetail(getErrorMessage(err)) }
       return []
     }
   }
+
   // Label match first (robust to renames), then the conventional name.
   const byLabel = await req(`label_selector=${encodeURIComponent(`ts-cloud/project=${owner},ts-cloud/environment=${environment},ts-cloud/role=app`)}`)
   const chosen = pick(byLabel) || pick(await req(`name=${encodeURIComponent(`${owner}-${environment}-app`)}`))
   if (!chosen)
-    return null
+    return { box: null, failure: requestFailure ?? { kind: 'no-match' } }
+
   // Hetzner reports the routed block (`2a01:4f8:c014:6186::/64`), not the
-  // address the interface holds — normalizePublicIpv6 narrows it to something
+  // address the interface holds - normalizePublicIpv6 narrows it to something
   // an AAAA record can actually point at.
   //
   // This used to call `hetznerBoxIpv6?.(…)`, a name ts-cloud no longer exports.
   // The optional call turned that into `undefined` silently, so every attached
   // tenant resolved no IPv6, the AAAA pass was skipped, and the whole shared box
-  // quietly served IPv4 only — with nothing in the deploy log to say so. The
+  // quietly served IPv4 only - with nothing in the deploy log to say so. The
   // call is unconditional now, and a missing export warns instead of vanishing.
   const { normalizePublicIpv6 } = await import('@stacksjs/ts-cloud') as any
   if (typeof normalizePublicIpv6 !== 'function')
     log.warn('DNS: @stacksjs/ts-cloud does not export normalizePublicIpv6 — AAAA records will be skipped. Upgrade ts-cloud.')
   const reportedIpv6 = chosen.public_net?.ipv6?.ip
   return {
-    serverId: chosen.id,
-    serverName: chosen.name,
-    publicIp: chosen.public_net?.ipv4?.ip,
-    publicIpv6: typeof normalizePublicIpv6 === 'function' ? normalizePublicIpv6(reportedIpv6) : undefined,
+    box: {
+      serverId: chosen.id,
+      serverName: chosen.name,
+      publicIp: chosen.public_net?.ipv4?.ip,
+      publicIpv6: typeof normalizePublicIpv6 === 'function' ? normalizePublicIpv6(reportedIpv6) : undefined,
+    },
   }
 }
 
