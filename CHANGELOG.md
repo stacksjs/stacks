@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.29...v0.72.30)
+
+## ✨ Features
+
+- **types**: declare what a request already carries ([24c47e6](https://github.com/stacksjs/stacks/commit/24c47e6)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 ## v0.72.29
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.27...v0.72.28)
