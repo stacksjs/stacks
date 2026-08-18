@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.24...v0.72.25)
+
+## 🐛 Bug Fixes
+
+- **types**: declare shape and shapeMany on SearchOptions ([aa42261](https://github.com/stacksjs/stacks/commit/aa42261)) _(by Chris <chris@stacksjs.com>)_
+- **orm**: keep the generated file's shape, and let a row be named either way ([df433ae](https://github.com/stacksjs/stacks/commit/df433ae)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.23...v0.72.24)
 
 ## ✨ Features
