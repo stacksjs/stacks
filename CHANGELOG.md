@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.22...v0.72.23)
+
+## ✨ Features
+
+- **database**: type the query chain, so applications stop writing `any` ([8aca4df](https://github.com/stacksjs/stacks/commit/8aca4df)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: announce deploy failures from the deploy command itself ([c22c52b](https://github.com/stacksjs/stacks/commit/c22c52b)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.21...v0.72.22)
 
 ## 🐛 Bug Fixes
