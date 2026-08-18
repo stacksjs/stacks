@@ -858,6 +858,107 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
   exists: () => Promise<boolean>
   doesntExist: () => Promise<boolean>
   $call: (callback: (query: FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>) => FluentChain<TRow, TKind>
+
+  /*
+   * The rest of the builder bun-query-builder ships.
+   *
+   * These were reachable only through the `[key: string]: any` index signature
+   * that used to sit at the bottom of this interface: present at runtime,
+   * absent from the type, and typed as `any` when anybody used one. Removing
+   * that signature without declaring them would have been a capability
+   * regression - which is exactly how it was found, on `orderByRaw`.
+   *
+   * Declared as chain-returning, because that is what they are. The arguments
+   * stay `unknown[]`: each one's real signature lives in the query builder, and
+   * restating a hundred of them here is a second declaration to keep in step.
+   */
+  abort: (...args: unknown[]) => FluentChain<TRow, TKind>
+  addSelect: (...args: unknown[]) => FluentChain<TRow, TKind>
+  applyPivotColumns: (...args: unknown[]) => FluentChain<TRow, TKind>
+  cache: (...args: unknown[]) => FluentChain<TRow, TKind>
+  clone: (...args: unknown[]) => FluentChain<TRow, TKind>
+  crossJoinSub: (...args: unknown[]) => FluentChain<TRow, TKind>
+  denseRank: (...args: unknown[]) => FluentChain<TRow, TKind>
+  doesntHave: (...args: unknown[]) => FluentChain<TRow, TKind>
+  dump: (...args: unknown[]) => FluentChain<TRow, TKind>
+  forPage: (...args: unknown[]) => FluentChain<TRow, TKind>
+  groupByRaw: (...args: unknown[]) => FluentChain<TRow, TKind>
+  has: (...args: unknown[]) => FluentChain<TRow, TKind>
+  havingRaw: (...args: unknown[]) => FluentChain<TRow, TKind>
+  inRandomOrder: (...args: unknown[]) => FluentChain<TRow, TKind>
+  join: (...args: unknown[]) => FluentChain<TRow, TKind>
+  joinSub: (...args: unknown[]) => FluentChain<TRow, TKind>
+  latest: (...args: unknown[]) => FluentChain<TRow, TKind>
+  leftJoinSub: (...args: unknown[]) => FluentChain<TRow, TKind>
+  lockForUpdate: (...args: unknown[]) => FluentChain<TRow, TKind>
+  oldest: (...args: unknown[]) => FluentChain<TRow, TKind>
+  onlyTrashed: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereBetween: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereExists: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereGroup: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNested: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereNotILike: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orWhereRaw: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orderByDesc: (...args: unknown[]) => FluentChain<TRow, TKind>
+  orderByRaw: (...args: unknown[]) => FluentChain<TRow, TKind>
+  pipe: (...args: unknown[]) => FluentChain<TRow, TKind>
+  reorder: (...args: unknown[]) => FluentChain<TRow, TKind>
+  rowNumber: (...args: unknown[]) => FluentChain<TRow, TKind>
+  scope: (...args: unknown[]) => FluentChain<TRow, TKind>
+  sharedLock: (...args: unknown[]) => FluentChain<TRow, TKind>
+  tap: (...args: unknown[]) => FluentChain<TRow, TKind>
+  when: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereDate: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereDoesntHave: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereExists: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereGroup: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereHas: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonContains: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonContainsKey: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonDoesntContain: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonDoesntContainKey: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonLength: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereJsonPath: (...args: unknown[]) => FluentChain<TRow, TKind>
+  whereNested: (...args: unknown[]) => FluentChain<TRow, TKind>
+  wherePivot: (...args: unknown[]) => FluentChain<TRow, TKind>
+  wherePivotIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  wherePivotNotIn: (...args: unknown[]) => FluentChain<TRow, TKind>
+  wherePivotNotNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  wherePivotNull: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withAvg: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withCTE: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withCount: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withMax: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withMin: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withPivot: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withRecursive: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withSum: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withTimeout: (...args: unknown[]) => FluentChain<TRow, TKind>
+  withTrashed: (...args: unknown[]) => FluentChain<TRow, TKind>
+
+  /* The terminals, which answer rows rather than a chain. */
+  get: () => Promise<TRow[]>
+  first: () => Promise<TRow | undefined>
+  firstOrFail: () => Promise<TRow>
+  find: (id: number | string) => Promise<TRow | undefined>
+  findMany: (ids: Array<number | string>) => Promise<TRow[]>
+  findOrFail: (id: number | string) => Promise<TRow>
+  value: <K extends keyof TRow & string>(column: K) => Promise<TRow[K]>
+  lazy: () => AsyncIterable<TRow>
+  lazyById: () => AsyncIterable<TRow>
+  chunk: (size: number, handler: (rows: TRow[]) => Promise<void> | void) => Promise<void>
+  chunkById: (size: number, column?: keyof TRow & string, handler?: (rows: TRow[]) => Promise<void> | void) => Promise<void>
+  eachById: (size: number, column?: keyof TRow & string, handler?: (row: TRow) => Promise<void> | void) => Promise<void>
+  paginate: (perPage: number, page?: number, opts?: unknown) => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  simplePaginate: (perPage: number, page?: number) => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  cursorPaginate: (perPage: number, cursor?: string | number, column?: string, direction?: 'asc' | 'desc') => Promise<{ data: TRow[], meta: Record<string, unknown> }>
+  explain: () => Promise<Record<string, unknown>[]>
+  raw: () => Promise<unknown[][]>
+  toParams: () => unknown[]
+  toText: () => string
+  simple: () => unknown
+  cancel: () => void
+  dd: () => never
 }
 
 /** `created_at` -> `CreatedAt`, for the dynamic helper names below. */
