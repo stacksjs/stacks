@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.23...v0.72.24)
+
+## ✨ Features
+
+- **database**: the framework's own tables are typed, so no call site asserts ([09c76d7](https://github.com/stacksjs/stacks/commit/09c76d7)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: make the framework's own callers honest about unknown rows ([0d953a8](https://github.com/stacksjs/stacks/commit/0d953a8)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.22...v0.72.23)
 
 ## ✨ Features
