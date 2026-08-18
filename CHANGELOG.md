@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.27...v0.72.28)
+
+## 🐛 Bug Fixes
+
+- **orm**: the columns the framework adds to `users` are in the types too ([48898f4](https://github.com/stacksjs/stacks/commit/48898f4)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.26...v0.72.27)
 
 ## 🐛 Bug Fixes
