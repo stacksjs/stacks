@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.26...v0.72.27)
+
+## 🐛 Bug Fixes
+
+- **database**: raw SQL answers rows, not `any` ([6f729a2](https://github.com/stacksjs/stacks/commit/6f729a2)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.24...v0.72.26)
 
 ## 🐛 Bug Fixes
