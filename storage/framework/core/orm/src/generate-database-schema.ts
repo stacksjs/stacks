@@ -385,9 +385,15 @@ function renderTableEntry(table: string, columns: Record<string, string>, indent
     .map(([col, ty]) => `${inner}${col}: ${ty}`)
     .join('\n')
 
-  // Quoted, because a pivot table's name can be anything a model pair produces
-  // and an unquoted key that is not a valid identifier does not compile.
-  return `${outer}'${table}': {\n${inner}// columns\n${cols}\n${outer}}`
+  /*
+   * Quoted only when it has to be. A pivot table's name comes from two model
+   * names and can be anything, and an unquoted key that is not a valid
+   * identifier does not compile - but quoting every key would churn the
+   * generated file for no reason.
+   */
+  const key = /^[A-Z_a-z]\w*$/.test(table) ? table : `'${table}'`
+
+  return `${outer}${key}: {\n${inner}// columns\n${cols}\n${outer}}`
 }
 
 /**

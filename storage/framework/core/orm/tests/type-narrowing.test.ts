@@ -211,36 +211,51 @@ describe('Action class InferRequest type resolution', () => {
   })
 })
 
-// ─── 5. Consumer files use ModelRow<typeof Model> pattern ─────────────
+// ─── 5. Consumer files name a row type rather than repeating it ───────
 
-describe('CMS consumer files use ModelRow<typeof Model> pattern', () => {
+/*
+ * Two ways to name a row, both fine, and the test accepts either.
+ *
+ * `ModelRow<typeof Post>` derives it from the model definition.
+ * `RowOf<'posts'>` reads it out of the generated schema - which is what a
+ * package uses once the table is one the framework ships, because then the
+ * query already answers that type and the alias is only a name for it.
+ *
+ * What is being guarded here is the thing that matters: the file names the
+ * shape once instead of asserting it at every call site.
+ */
+function namesARowType(content: string, model: string, table: string): boolean {
+  return content.includes(`ModelRow<typeof ${model}>`) || content.includes(`RowOf<'${table}'>`)
+}
+
+describe('CMS consumer files name their row type', () => {
   const postsFetchFile = join(cmsDir, 'posts/fetch.ts')
   const authorsFetchFile = join(cmsDir, 'authors/fetch.ts')
 
   if (existsSync(postsFetchFile)) {
-    test('posts/fetch.ts uses ModelRow<typeof Post>', () => {
+    test('posts/fetch.ts names the post row', () => {
       const content = readFileSync(postsFetchFile, 'utf-8')
-      expect(content).toContain('ModelRow<typeof Post>')
+      expect(namesARowType(content, 'Post', 'posts')).toBe(true)
       // Should NOT import ModelRow (it's global)
       expect(content).not.toContain("import type { ModelRow }")
     })
   }
 
   if (existsSync(authorsFetchFile)) {
-    test('authors/fetch.ts uses ModelRow<typeof Author>', () => {
+    test('authors/fetch.ts names the author row', () => {
       const content = readFileSync(authorsFetchFile, 'utf-8')
-      expect(content).toContain('ModelRow<typeof Author>')
+      expect(namesARowType(content, 'Author', 'authors')).toBe(true)
     })
   }
 })
 
-describe('Commerce consumer files use ModelRow<typeof Model> pattern', () => {
+describe('Commerce consumer files name their row type', () => {
   const categoriesFetchFile = join(commerceDir, 'products/categories/fetch.ts')
 
   if (existsSync(categoriesFetchFile)) {
-    test('categories/fetch.ts uses ModelRow<typeof Category>', () => {
+    test('categories/fetch.ts names the category row', () => {
       const content = readFileSync(categoriesFetchFile, 'utf-8')
-      expect(content).toContain('ModelRow<typeof Category>')
+      expect(namesARowType(content, 'Category', 'categories')).toBe(true)
     })
   }
 })

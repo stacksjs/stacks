@@ -7,7 +7,7 @@
 // precedence - see `RowOf` in `./utils`.
 
 export interface FrameworkSchema {
-  'activities': {
+  activities: {
     // columns
     id: number
     uuid: string
@@ -28,7 +28,7 @@ export interface FrameworkSchema {
     ipAddress: string
     userId: number
   }
-  'analytics_events': {
+  analytics_events: {
     // columns
     id: number
     uuid: string
@@ -43,7 +43,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'auction_items': {
+  auction_items: {
     // columns
     id: number
     uuid: string
@@ -78,7 +78,7 @@ export interface FrameworkSchema {
     extensionCount: number
     auctionId: number
   }
-  'auctions': {
+  auctions: {
     // columns
     id: number
     uuid: string
@@ -105,7 +105,7 @@ export interface FrameworkSchema {
     extendOnBidWindowMinutes: number
     maxExtensions: number
   }
-  'authors': {
+  authors: {
     // columns
     id: number
     uuid: string
@@ -120,7 +120,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     userId: number
   }
-  'automation_runs': {
+  automation_runs: {
     // columns
     id: number
     uuid: string
@@ -149,7 +149,7 @@ export interface FrameworkSchema {
     teamId: number
     automationId: number
   }
-  'automations': {
+  automations: {
     // columns
     id: number
     uuid: string
@@ -167,7 +167,7 @@ export interface FrameworkSchema {
     publishedAt: string
     teamId: number
   }
-  'bids': {
+  bids: {
     // columns
     id: number
     uuid: string
@@ -190,7 +190,7 @@ export interface FrameworkSchema {
     auctionId: number
     auctionItemId: number
   }
-  'board_columns': {
+  board_columns: {
     // columns
     id: number
     uuid: string
@@ -206,7 +206,7 @@ export interface FrameworkSchema {
     boardId: number
     cardLimit: number
   }
-  'boards': {
+  boards: {
     // columns
     id: number
     uuid: string
@@ -221,7 +221,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'campaign_sends': {
+  campaign_sends: {
     // columns
     id: number
     uuid: string
@@ -261,7 +261,7 @@ export interface FrameworkSchema {
     teamId: number
     campaignVariantId: number
   }
-  'campaign_variants': {
+  campaign_variants: {
     // columns
     id: number
     uuid: string
@@ -288,7 +288,7 @@ export interface FrameworkSchema {
     teamId: number
     campaignId: number
   }
-  'campaigns': {
+  campaigns: {
     // columns
     id: number
     uuid: string
@@ -344,7 +344,7 @@ export interface FrameworkSchema {
     endDate: string
     teamId: number
   }
-  'card_comments': {
+  card_comments: {
     // columns
     id: number
     uuid: string
@@ -358,7 +358,7 @@ export interface FrameworkSchema {
     cardId: number
     userId: number
   }
-  'cards': {
+  cards: {
     // columns
     id: number
     uuid: string
@@ -383,7 +383,7 @@ export interface FrameworkSchema {
     boardColumnId: number
     userId: number
   }
-  'cart_items': {
+  cart_items: {
     // columns
     id: number
     uuid: string
@@ -414,7 +414,7 @@ export interface FrameworkSchema {
     productImage: string
     cartId: number
   }
-  'carts': {
+  carts: {
     // columns
     id: number
     uuid: string
@@ -442,7 +442,7 @@ export interface FrameworkSchema {
     customerId: number
     couponId: number
   }
-  'categories': {
+  categories: {
     // columns
     id: number
     uuid: string
@@ -462,7 +462,7 @@ export interface FrameworkSchema {
     parentCategoryId: string
     displayOrder: number
   }
-  'categorizable_models': {
+  categorizable_models: {
     // columns
     id: number
     category_id: number
@@ -471,7 +471,7 @@ export interface FrameworkSchema {
     created_at: string
     updated_at: string | null
   }
-  'comments': {
+  comments: {
     // columns
     id: number
     uuid: string
@@ -499,7 +499,7 @@ export interface FrameworkSchema {
     postId: number
     userId: number
   }
-  'communication_suppressions': {
+  communication_suppressions: {
     // columns
     id: number
     uuid: string
@@ -518,7 +518,7 @@ export interface FrameworkSchema {
     liftedAt: string
     teamId: number
   }
-  'consent_events': {
+  consent_events: {
     // columns
     id: number
     uuid: string
@@ -544,7 +544,7 @@ export interface FrameworkSchema {
     occurredAt: string
     teamId: number
   }
-  'coupons': {
+  coupons: {
     // columns
     id: number
     uuid: string
@@ -578,7 +578,7 @@ export interface FrameworkSchema {
     endDate: string
     productId: number
   }
-  'customers': {
+  customers: {
     // columns
     id: number
     uuid: string
@@ -598,7 +598,7 @@ export interface FrameworkSchema {
     lastOrder: string
     userId: number
   }
-  'delivery_routes': {
+  delivery_routes: {
     // columns
     id: number
     uuid: string
@@ -623,7 +623,7 @@ export interface FrameworkSchema {
     completedAt: string
     driverId: number
   }
-  'delivery_stops': {
+  delivery_stops: {
     // columns
     id: number
     uuid: string
@@ -654,7 +654,7 @@ export interface FrameworkSchema {
     deliveryRouteId: number
     orderId: number
   }
-  'deployments': {
+  deployments: {
     // columns
     id: number
     uuid: string
@@ -675,7 +675,7 @@ export interface FrameworkSchema {
     commitMessage: string
     errorLog: string
   }
-  'digital_deliveries': {
+  digital_deliveries: {
     // columns
     id: number
     uuid: string
@@ -695,7 +695,7 @@ export interface FrameworkSchema {
     requiresLogin: boolean
     automaticDelivery: boolean
   }
-  'driver_pings': {
+  driver_pings: {
     // columns
     id: number
     uuid: string
@@ -715,7 +715,7 @@ export interface FrameworkSchema {
     driverId: number
     deliveryRouteId: number
   }
-  'drivers': {
+  drivers: {
     // columns
     id: number
     uuid: string
@@ -738,7 +738,7 @@ export interface FrameworkSchema {
     lastPingAt: string
     userId: number
   }
-  'email_idempotency': {
+  email_idempotency: {
     // columns
     id: number
     created_at: string
@@ -754,7 +754,7 @@ export interface FrameworkSchema {
     idempotencyKey: string
     messageId: string
   }
-  'email_list_subscribers': {
+  email_list_subscribers: {
     // columns
     id: number
     uuid: string
@@ -773,7 +773,7 @@ export interface FrameworkSchema {
     subscribedAt: string
     unsubscribedAt: string
   }
-  'email_lists': {
+  email_lists: {
     // columns
     id: number
     uuid: string
@@ -798,7 +798,7 @@ export interface FrameworkSchema {
     isPublic: number
     doubleOptIn: number
   }
-  'email_suppressions': {
+  email_suppressions: {
     // columns
     id: number
     created_at: string
@@ -809,7 +809,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'email_webhook_events': {
+  email_webhook_events: {
     // columns
     id: number
     created_at: string
@@ -822,7 +822,7 @@ export interface FrameworkSchema {
     eventId: string
     processedAt: string
   }
-  'errors': {
+  errors: {
     // columns
     id: number
     created_at: string
@@ -836,7 +836,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     additionalInfo: string
   }
-  'failed_jobs': {
+  failed_jobs: {
     // columns
     id: number
     uuid: string
@@ -856,7 +856,7 @@ export interface FrameworkSchema {
     durationMs: number
     failedAt: string
   }
-  'form_fields': {
+  form_fields: {
     // columns
     id: number
     created_at: string
@@ -874,7 +874,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     formId: number
   }
-  'form_submissions': {
+  form_submissions: {
     // columns
     id: number
     uuid: string
@@ -898,7 +898,7 @@ export interface FrameworkSchema {
     formId: number
     siteId: number
   }
-  'forms': {
+  forms: {
     // columns
     id: number
     uuid: string
@@ -913,7 +913,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     siteId: number
   }
-  'gift_cards': {
+  gift_cards: {
     // columns
     id: number
     uuid: string
@@ -951,7 +951,7 @@ export interface FrameworkSchema {
     templateId: string
     customerId: number
   }
-  'jobs': {
+  jobs: {
     // columns
     id: number
     created_at: string
@@ -966,7 +966,7 @@ export interface FrameworkSchema {
     availableAt: number
     reservedAt: number
   }
-  'labels': {
+  labels: {
     // columns
     id: number
     uuid: string
@@ -979,7 +979,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     boardId: number
   }
-  'license_keys': {
+  license_keys: {
     // columns
     id: number
     uuid: string
@@ -999,7 +999,7 @@ export interface FrameworkSchema {
     productId: number
     orderId: number
   }
-  'logs': {
+  logs: {
     // columns
     id: number
     created_at: string
@@ -1014,7 +1014,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'loyalty_points': {
+  loyalty_points: {
     // columns
     id: number
     uuid: string
@@ -1034,7 +1034,7 @@ export interface FrameworkSchema {
     expiryDate: string
     isUsed: boolean
   }
-  'loyalty_rewards': {
+  loyalty_rewards: {
     // columns
     id: number
     uuid: string
@@ -1061,7 +1061,7 @@ export interface FrameworkSchema {
     imageUrl: string
     productId: number
   }
-  'magic_link_tokens': {
+  magic_link_tokens: {
     // columns
     id: number
     created_at: string
@@ -1081,7 +1081,7 @@ export interface FrameworkSchema {
     siteId: number
     userId: number
   }
-  'mail_preferences': {
+  mail_preferences: {
     // columns
     id: number
     created_at: string
@@ -1127,7 +1127,7 @@ export interface FrameworkSchema {
     vacationSubject: string
     vacationMessage: string
   }
-  'manufacturers': {
+  manufacturers: {
     // columns
     id: number
     uuid: string
@@ -1140,7 +1140,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'menu_items': {
+  menu_items: {
     // columns
     id: number
     created_at: string
@@ -1159,7 +1159,7 @@ export interface FrameworkSchema {
     menuId: number
     pageId: number
   }
-  'menus': {
+  menus: {
     // columns
     id: number
     created_at: string
@@ -1171,7 +1171,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     siteId: number
   }
-  'notification_deliveries': {
+  notification_deliveries: {
     // columns
     id: number
     created_at: string
@@ -1190,7 +1190,7 @@ export interface FrameworkSchema {
     userId: number
     sentAt: string
   }
-  'notifications': {
+  notifications: {
     // columns
     id: number
     uuid: string
@@ -1205,7 +1205,7 @@ export interface FrameworkSchema {
     readAt: string
     userId: number
   }
-  'order_idempotency': {
+  order_idempotency: {
     // columns
     id: number
     created_at: string
@@ -1217,7 +1217,7 @@ export interface FrameworkSchema {
     idempotencyKey: string
     orderId: number
   }
-  'order_items': {
+  order_items: {
     // columns
     id: number
     created_at: string
@@ -1233,7 +1233,7 @@ export interface FrameworkSchema {
     orderId: number
     productId: number
   }
-  'orders': {
+  orders: {
     // columns
     id: number
     uuid: string
@@ -1274,7 +1274,7 @@ export interface FrameworkSchema {
     customerId: number
     couponId: number
   }
-  'page_revisions': {
+  page_revisions: {
     // columns
     id: number
     created_at: string
@@ -1292,7 +1292,7 @@ export interface FrameworkSchema {
     pageId: number
     authorId: number
   }
-  'pages': {
+  pages: {
     // columns
     id: number
     uuid: string
@@ -1321,7 +1321,7 @@ export interface FrameworkSchema {
     authorId: number
     siteId: number
   }
-  'payment_methods': {
+  payment_methods: {
     // columns
     id: number
     uuid: string
@@ -1344,7 +1344,7 @@ export interface FrameworkSchema {
     providerId: string
     userId: number
   }
-  'payment_products': {
+  payment_products: {
     // columns
     id: number
     uuid: string
@@ -1362,7 +1362,7 @@ export interface FrameworkSchema {
     unitPrice: number
     providerId: string
   }
-  'payment_transactions': {
+  payment_transactions: {
     // columns
     id: number
     uuid: string
@@ -1381,7 +1381,7 @@ export interface FrameworkSchema {
     userId: number
     paymentMethodId: number
   }
-  'payments': {
+  payments: {
     // columns
     id: number
     uuid: string
@@ -1413,7 +1413,7 @@ export interface FrameworkSchema {
     orderId: number
     customerId: number
   }
-  'pledges': {
+  pledges: {
     // columns
     id: number
     uuid: string
@@ -1431,7 +1431,7 @@ export interface FrameworkSchema {
     donorEmail: string
     auctionId: number
   }
-  'posts': {
+  posts: {
     // columns
     id: number
     uuid: string
@@ -1461,7 +1461,7 @@ export interface FrameworkSchema {
     authorId: number
     siteId: number
   }
-  'print_devices': {
+  print_devices: {
     // columns
     id: number
     uuid: string
@@ -1480,7 +1480,7 @@ export interface FrameworkSchema {
     lastPing: number
     printCount: number
   }
-  'product_units': {
+  product_units: {
     // columns
     id: number
     uuid: string
@@ -1497,7 +1497,7 @@ export interface FrameworkSchema {
     isDefault: boolean
     productId: number
   }
-  'product_variants': {
+  product_variants: {
     // columns
     id: number
     uuid: string
@@ -1513,7 +1513,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     productId: number
   }
-  'products': {
+  products: {
     // columns
     id: number
     uuid: string
@@ -1540,7 +1540,7 @@ export interface FrameworkSchema {
     categoryId: number
     manufacturerId: number
   }
-  'query_logs': {
+  query_logs: {
     // columns
     id: number
     created_at: string
@@ -1580,7 +1580,7 @@ export interface FrameworkSchema {
     explainPlan: string
     optimizationSuggestions: string
   }
-  'receipts': {
+  receipts: {
     // columns
     id: number
     uuid: string
@@ -1599,7 +1599,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     printDeviceId: number
   }
-  'redirects': {
+  redirects: {
     // columns
     id: number
     created_at: string
@@ -1616,7 +1616,7 @@ export interface FrameworkSchema {
     statusCode: number
     siteId: number
   }
-  'releases': {
+  releases: {
     // columns
     id: number
     uuid: string
@@ -1631,7 +1631,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'requests': {
+  requests: {
     // columns
     id: number
     created_at: string
@@ -1655,7 +1655,7 @@ export interface FrameworkSchema {
     userAgent: string
     errorMessage: string
   }
-  'reviews': {
+  reviews: {
     // columns
     id: number
     uuid: string
@@ -1684,7 +1684,7 @@ export interface FrameworkSchema {
     productId: number
     customerId: number
   }
-  'sender_domains': {
+  sender_domains: {
     // columns
     id: number
     uuid: string
@@ -1704,7 +1704,7 @@ export interface FrameworkSchema {
     lastCheckedAt: string
     teamId: number
   }
-  'shipping_methods': {
+  shipping_methods: {
     // columns
     id: number
     uuid: string
@@ -1720,7 +1720,7 @@ export interface FrameworkSchema {
     baseRate: number
     freeShipping: number
   }
-  'shipping_rates': {
+  shipping_rates: {
     // columns
     id: number
     uuid: string
@@ -1738,7 +1738,7 @@ export interface FrameworkSchema {
     shippingMethodId: number
     shippingZoneId: number
   }
-  'shipping_zones': {
+  shipping_zones: {
     // columns
     id: number
     uuid: string
@@ -1755,7 +1755,7 @@ export interface FrameworkSchema {
     postalCodes: string
     shippingMethodId: number
   }
-  'site_domains': {
+  site_domains: {
     // columns
     id: number
     created_at: string
@@ -1772,7 +1772,7 @@ export interface FrameworkSchema {
     sslStatus: "pending" | "issued" | "failed"
     siteId: number
   }
-  'sites': {
+  sites: {
     // columns
     id: number
     uuid: string
@@ -1788,7 +1788,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     teamId: number
   }
-  'sms_opt_outs': {
+  sms_opt_outs: {
     // columns
     id: number
     created_at: string
@@ -1800,7 +1800,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     optedOutAt: string
   }
-  'social_accounts': {
+  social_accounts: {
     // columns
     id: number
     created_at: string
@@ -1815,7 +1815,7 @@ export interface FrameworkSchema {
     providerEmail: string
     userId: number
   }
-  'social_posts': {
+  social_posts: {
     // columns
     id: number
     uuid: string
@@ -1841,7 +1841,7 @@ export interface FrameworkSchema {
     externalId: string
     userId: number
   }
-  'subscriber_emails': {
+  subscriber_emails: {
     // columns
     id: number
     uuid: string
@@ -1854,7 +1854,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     subscriberId: number
   }
-  'subscribers': {
+  subscribers: {
     // columns
     id: number
     uuid: string
@@ -1870,7 +1870,7 @@ export interface FrameworkSchema {
     unsubscribedAt: string
     userId: number
   }
-  'subscriptions': {
+  subscriptions: {
     // columns
     id: number
     uuid: string
@@ -1900,7 +1900,7 @@ export interface FrameworkSchema {
     lastUsedAt: string
     userId: number
   }
-  'taggable_models': {
+  taggable_models: {
     // columns
     id: number
     tag_id: number
@@ -1909,7 +1909,7 @@ export interface FrameworkSchema {
     created_at: string
     updated_at: string | null
   }
-  'tags': {
+  tags: {
     // columns
     id: number
     uuid: string
@@ -1922,7 +1922,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'tax_rates': {
+  tax_rates: {
     // columns
     id: number
     uuid: string
@@ -1941,7 +1941,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     isDefault: boolean
   }
-  'team_invitations': {
+  team_invitations: {
     // columns
     id: number
     uuid: string
@@ -1973,7 +1973,7 @@ export interface FrameworkSchema {
     deliveredAt: string
     acceptedAt: string
   }
-  'team_members': {
+  team_members: {
     // columns
     id: number
     uuid: string
@@ -1988,7 +1988,7 @@ export interface FrameworkSchema {
     teamId: number
     userId: number
   }
-  'teams': {
+  teams: {
     // columns
     id: number
     uuid: string
@@ -2002,7 +2002,7 @@ export interface FrameworkSchema {
     updatedAt: string | null
     memberCount: number
   }
-  'transactions': {
+  transactions: {
     // columns
     id: number
     uuid: string
@@ -2025,7 +2025,7 @@ export interface FrameworkSchema {
     loyaltyPointsRedeemed: number
     orderId: number
   }
-  'usage_events': {
+  usage_events: {
     // columns
     id: number
     uuid: string
@@ -2043,7 +2043,7 @@ export interface FrameworkSchema {
     occurredAt: string
     teamId: number
   }
-  'users': {
+  users: {
     // columns
     id: number
     uuid: string
@@ -2056,7 +2056,7 @@ export interface FrameworkSchema {
     createdAt: string
     updatedAt: string | null
   }
-  'waitlist_products': {
+  waitlist_products: {
     // columns
     id: number
     uuid: string
@@ -2084,7 +2084,7 @@ export interface FrameworkSchema {
     productId: number
     customerId: number
   }
-  'waitlist_restaurants': {
+  waitlist_restaurants: {
     // columns
     id: number
     uuid: string
@@ -2117,7 +2117,7 @@ export interface FrameworkSchema {
     cancelledAt: string
     customerId: number
   }
-  'websockets': {
+  websockets: {
     // columns
     id: number
     created_at: string
