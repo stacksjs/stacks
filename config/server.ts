@@ -56,7 +56,14 @@ export default {
    * }
    * ```
    *
-   * Matching is exact on the path, ignoring a trailing slash, and the query
+   * A rule written as `/section/*` claims that subtree instead, appending
+   * whatever followed the prefix to the target — `'/dashboard/*':
+   * 'https://dash.example.com'` sends `/dashboard/events/42` to
+   * `https://dash.example.com/events/42`. It is the one wildcard form there
+   * is: moving a section whose pages are dynamic cannot be written as a list
+   * of exact rules. An exact rule always wins over a subtree one.
+   *
+   * Matching is otherwise exact on the path, ignoring a trailing slash, and the query
    * string is carried over unless you say otherwise. Rules are answered before
    * a page is looked for and before `public/` is searched, so — as with
    * `proxy.paths` — a rule shadows a static file of the same name. Anything

@@ -32,6 +32,7 @@ describe('resolveRedirectRules', () => {
       to: '/new',
       status: DEFAULT_REDIRECT_STATUS,
       preserveQuery: true,
+      subtree: false,
     })
   })
 
@@ -165,5 +166,83 @@ describe('describeRedirectRules', () => {
 
     expect(describeRedirectRules(resolveRedirectRules(many)))
       .toBe('/old-0 → /new-0, /old-1 → /new-1, /old-2 → /new-2 (+3 more)')
+  })
+})
+
+/**
+ * Moving a whole section to another host.
+ *
+ * Exact rules cannot express this: `/dashboard/events/[id]` is a real page, so
+ * there is no finite list of paths to enumerate. That is the case `/section/*`
+ * exists for, and the reason the original "no wildcards" rule needed exactly
+ * one exception rather than none.
+ */
+describe('subtree redirects', () => {
+  const rules = resolveRedirectRules({
+    '/dashboard/*': 'https://dashboard.example.com',
+  })
+
+  test('moves the section root', () => {
+    expect(resolveRedirect(at('/dashboard'), rules)?.headers.get('location'))
+      .toBe('https://dashboard.example.com')
+  })
+
+  test('carries the rest of the path onto the new host', () => {
+    expect(resolveRedirect(at('/dashboard/messages'), rules)?.headers.get('location'))
+      .toBe('https://dashboard.example.com/messages')
+  })
+
+  test('covers a dynamic page, which is the whole point', () => {
+    expect(resolveRedirect(at('/dashboard/events/42'), rules)?.headers.get('location'))
+      .toBe('https://dashboard.example.com/events/42')
+  })
+
+  test('stops at a path boundary rather than a string prefix', () => {
+    // `/dashboards` is a different section and must not be swallowed.
+    expect(resolveRedirect(at('/dashboards'), rules)).toBeUndefined()
+    expect(resolveRedirect(at('/dashboard-archive'), rules)).toBeUndefined()
+  })
+
+  test('leaves everything else alone', () => {
+    expect(resolveRedirect(at('/events'), rules)).toBeUndefined()
+  })
+
+  test('keeps the query string', () => {
+    expect(resolveRedirect(at('/dashboard/messages?tab=sent'), rules)?.headers.get('location'))
+      .toBe('https://dashboard.example.com/messages?tab=sent')
+  })
+
+  test('an exact rule beats a subtree rule for the same URL', () => {
+    const mixed = resolveRedirectRules({
+      '/dashboard/*': 'https://dashboard.example.com',
+      '/dashboard/legacy': '/archive',
+    })
+
+    expect(resolveRedirect(at('/dashboard/legacy'), mixed)?.headers.get('location')).toBe('/archive')
+    expect(resolveRedirect(at('/dashboard/other'), mixed)?.headers.get('location'))
+      .toBe('https://dashboard.example.com/other')
+  })
+
+  test('the longest matching prefix wins, whatever the declaration order', () => {
+    // So a section can be carved out of a broader rule without the table
+    // depending on the order someone happened to write it in.
+    const nested = resolveRedirectRules({
+      '/dashboard/*': 'https://dashboard.example.com',
+      '/dashboard/reports/*': 'https://reports.example.com',
+    })
+
+    expect(resolveRedirect(at('/dashboard/reports/q4'), nested)?.headers.get('location'))
+      .toBe('https://reports.example.com/q4')
+  })
+
+  test('still refuses to touch the API', () => {
+    const api = resolveRedirectRules({ '/api/*': 'https://elsewhere.example.com' })
+    expect(resolveRedirect(at('/api/campushq/messages'), api)).toBeUndefined()
+  })
+
+  test('does not double the slash when the target has a trailing one', () => {
+    const trailing = resolveRedirectRules({ '/dashboard/*': 'https://dashboard.example.com/' })
+    expect(resolveRedirect(at('/dashboard/messages'), trailing)?.headers.get('location'))
+      .toBe('https://dashboard.example.com/messages')
   })
 })
