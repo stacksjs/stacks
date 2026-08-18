@@ -9,7 +9,7 @@ type NewReviewInput = NewReview & Partial<{
   is_featured: boolean
 }>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { asRow, db } from '@stacksjs/database'
 
 /**
  * Whether a review says anything at all.
@@ -66,7 +66,8 @@ export async function store(data: NewReviewInput): Promise<ReviewJsonResponse> {
     if (!result)
       throw new Error('Failed to create review')
 
-    return result
+    // The guard above ruled out `undefined`, so the row is the row.
+    return asRow<ReviewJsonResponse>(result) as ReviewJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

@@ -3,7 +3,7 @@ import type { LicenseKey, ModelRow, NewModelData } from '@stacksjs/orm'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 type NewLicenseKey = NewModelData<typeof LicenseKey>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { asRow, db } from '@stacksjs/database'
 import { mutationCount } from '../../utils/mutation-count'
 import { licenseKeyWriteData } from '../write-data'
 import { LicenseKeyInputError, validateLicenseKeyWrite } from './validate-write'
@@ -36,7 +36,8 @@ export async function store(data: NewLicenseKey): Promise<LicenseKeyJsonResponse
     if (!licenseKey)
       throw new Error('Failed to resolve created license key')
 
-    return licenseKey
+    // Read back after the insert, so the shape is stated here once.
+    return asRow<LicenseKeyJsonResponse>(licenseKey) as LicenseKeyJsonResponse
   }
   catch (error) {
     if (error instanceof LicenseKeyInputError)

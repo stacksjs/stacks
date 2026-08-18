@@ -99,7 +99,7 @@ export async function fetchRevisions(pageId: number, limit = 50): Promise<PageRe
     .select([...REVISION_COLUMNS])
     .orderBy('revision', 'desc')
     .limit(limit)
-    .execute() as PageRevisionRow[]
+    .execute() as unknown as PageRevisionRow[]
 }
 
 /**

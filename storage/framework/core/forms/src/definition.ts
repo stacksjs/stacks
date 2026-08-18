@@ -73,7 +73,7 @@ export async function loadFormByUuid(uuid: string, siteId: number | null): Promi
     .where('form_id', '=', form.id)
     .select(['name', 'label', 'type', 'required', 'position', 'width', 'options', 'conditions'])
     .orderBy('position', 'asc')
-    .execute() as FieldRow[]
+    .execute() as unknown as FieldRow[]
 
   return {
     id: Number(form.id),

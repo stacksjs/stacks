@@ -29,7 +29,13 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
       .values(giftCardData)
       .executeTakeFirst()
 
-    const insertId = Number(createdGiftCard.insertId) || Number(createdGiftCard.numInsertedOrUpdatedRows)
+    /*
+     * An insert answers a row or nothing, and this read it blind. A driver that
+     * returns no row - or a statement that inserted nothing - threw a
+     * `TypeError` here rather than reporting a failed insert.
+     */
+    const receipt = (createdGiftCard ?? {}) as { insertId?: unknown, numInsertedOrUpdatedRows?: unknown }
+    const insertId = Number(receipt.insertId ?? 0) || Number(receipt.numInsertedOrUpdatedRows ?? 0)
 
     // If insert was successful, retrieve the newly created gift card
     if (insertId) {

@@ -67,11 +67,23 @@ export async function bulkStore(data: NewReceipt[]): Promise<number> {
       .values(receiptDataArray)
       .executeTakeFirst()
 
+    /*
+     * Four field names, because drivers disagree about what an insert reports -
+     * and the receipt itself can be absent, which this read straight through
+     * before the types said so.
+     */
+    const receipt = (result ?? {}) as {
+      numInsertedOrUpdatedRows?: unknown
+      numAffectedRows?: unknown
+      affectedRows?: unknown
+      changes?: unknown
+    }
+
     return Number(
-      result.numInsertedOrUpdatedRows
-      ?? (result as any).numAffectedRows
-      ?? (result as any).affectedRows
-      ?? (result as any).changes
+      receipt.numInsertedOrUpdatedRows
+      ?? receipt.numAffectedRows
+      ?? receipt.affectedRows
+      ?? receipt.changes
       ?? 0,
     )
   }

@@ -242,8 +242,15 @@ export default class QueryController extends Controller {
         throw new Error('Query not found')
 
       // Parse JSON fields (safely — data may be corrupted)
-      const safeParse = (val: string | null | undefined, fallback: any = []) => {
-        if (!val) return fallback
+      /*
+       * The row's fields arrive `unknown` - the query builder has no schema for
+       * this table - so this takes what it is given and decides. Reading a JSON
+       * column is exactly the place a value has to be checked rather than
+       * trusted: it is text somebody else wrote.
+       */
+      const safeParse = (val: unknown, fallback: unknown = []): unknown => {
+        if (typeof val !== 'string' || !val)
+          return fallback
         try { return JSON.parse(val) }
         catch { return fallback }
       }
@@ -349,7 +356,18 @@ export default class QueryController extends Controller {
         .limit(10)
         .execute()
 
-      return results
+      /*
+       * An aggregate select's rows are named by its aliases rather than by the
+       * table, so they arrive unknown-valued. Read out here, once, rather than
+       * asserted: `count` really can be a string, a number or a bigint
+       * depending on the driver, which is why the return type says so.
+       */
+      return results.map(row => ({
+        normalized_query: String(row.normalized_query ?? ''),
+        count: (typeof row.count === 'number' || typeof row.count === 'bigint' ? row.count : String(row.count ?? '0')),
+        avg_duration: (typeof row.avg_duration === 'number' ? row.avg_duration : String(row.avg_duration ?? '0')),
+        max_duration: typeof row.max_duration === 'number' ? row.max_duration : undefined,
+      }))
     }
     catch (error: unknown) {
       const err = error as Error

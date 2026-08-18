@@ -79,7 +79,7 @@ export default new Action({
           .orderBy(sort as DeliverySort, direction)
           .limit(perPage)
           .offset((page - 1) * perPage)
-          .execute() as Promise<NotificationDeliveryRow[]>,
+          .execute() as unknown as Promise<NotificationDeliveryRow[]>,
       ])
 
       const total = Number(countRow?.count || 0)

@@ -38,18 +38,18 @@ async function notificationDeliveryOverview() {
       .selectFrom('notification_deliveries')
       .select(['status', db.fn.count('id').as('count')])
       .groupBy('status')
-      .execute() as Promise<StatusCountRow[]>,
+      .execute() as unknown as Promise<StatusCountRow[]>,
     db
       .selectFrom('notification_deliveries')
       .select(['channel', 'status', db.fn.count('id').as('count')])
       .groupBy(['channel', 'status'])
-      .execute() as Promise<ChannelStatusCountRow[]>,
+      .execute() as unknown as Promise<ChannelStatusCountRow[]>,
     db
       .selectFrom('notification_deliveries')
       .selectAll()
       .orderBy('sent_at', 'desc')
       .limit(8)
-      .execute() as Promise<NotificationDeliveryRow[]>,
+      .execute() as unknown as Promise<NotificationDeliveryRow[]>,
   ])
 
   const statuses = Object.fromEntries(

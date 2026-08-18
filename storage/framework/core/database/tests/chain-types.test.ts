@@ -51,8 +51,8 @@ describe('what a verb answers', () => {
 
   test('and `executeTakeFirst` follows the same rule', () => {
     assertType<Same<FirstOf<{ id: number }, 'select'>, { id: number } | undefined>>(true)
-    assertType<Same<FirstOf<{ id: number }, 'update'>, { numUpdatedRows?: number }>>(true)
-    assertType<Same<FirstOf<{ id: number }, 'delete'>, { numDeletedRows?: number }>>(true)
+    assertType<Same<FirstOf<{ id: number }, 'update'>, { numUpdatedRows: number }>>(true)
+    assertType<Same<FirstOf<{ id: number }, 'delete'>, { numDeletedRows: number }>>(true)
 
     /*
      * This is the distinction the old `Promise<any>` hid, and it cost real code:

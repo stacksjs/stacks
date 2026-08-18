@@ -167,7 +167,7 @@ export default new Action({
           .where('channel', '=', 'email')
           .where('created_at', '>=', previousStart.toISOString())
           .orderBy('created_at', 'desc')
-          .execute() as Promise<DeliveryRow[]>,
+          .execute() as unknown as Promise<DeliveryRow[]>,
       ])
     }
     catch (error) {

@@ -707,12 +707,18 @@ export type ResultOf<TRow, TKind extends ChainKind> = TKind extends 'select' | '
   ? TRow[]
   : number
 
-/** What `executeTakeFirst()` resolves to for each verb. */
+/**
+ * What `executeTakeFirst()` resolves to for each verb.
+ *
+ * The counts are *required*, because the runtime always sets them: an update
+ * that changed nothing answers `{ numUpdatedRows: 0 }`. Declaring them optional
+ * would make every caller write `?? 0` for a case that cannot happen.
+ */
 export type FirstOf<TRow, TKind extends ChainKind> = TKind extends 'select' | 'returning' | 'insert'
   ? TRow | undefined
   : TKind extends 'update'
-    ? { numUpdatedRows?: number }
-    : { numDeletedRows?: number }
+    ? { numUpdatedRows: number }
+    : { numDeletedRows: number }
 
 export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends ChainKind = 'select'> {
   where(callback: (eb: import('./types').StacksExpressionBuilder) => unknown): FluentChain<TRow, TKind>

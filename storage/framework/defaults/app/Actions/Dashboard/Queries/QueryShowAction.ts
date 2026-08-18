@@ -26,7 +26,7 @@ export default new Action({
       if (!row)
         return response.json({ message: 'Query log not found.' }, 404)
 
-      return { query: mapDashboardQueryLog(row as QueryLogSourceRow) }
+      return { query: mapDashboardQueryLog(row as unknown as QueryLogSourceRow) }
     }
     catch (error) {
       return dashboardOperationalError(error, 'Query log could not be loaded.', 'QueryShowAction')

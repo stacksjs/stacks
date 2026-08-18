@@ -231,7 +231,7 @@ async function currentStopForRoute(routeId: number): Promise<StopRow | null> {
     .where('status', 'in', ['en_route', 'pending', 'arrived'])
     .select(['id', 'order_id', 'status', 'latitude', 'longitude', 'eta_at', 'arrived_at', 'notified_nearby_at'])
     .orderBy('sequence', 'asc')
-    .execute() as StopRow[]
+    .execute() as unknown as StopRow[]
 
   return rows.find(row => row.status === 'en_route')
     ?? rows.find(row => row.status === 'arrived')

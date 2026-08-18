@@ -1,3 +1,4 @@
+import { asRows } from '@stacksjs/database'
 import { getDb } from '../database'
 
 export interface MenuTreeItem {
@@ -39,7 +40,7 @@ export async function fetchMenuTree(siteId: number, handle: string): Promise<Men
   if (!menu)
     return []
 
-  const rows = await db
+  const rows = asRows<MenuItemRow>(await db
     .selectFrom('menu_items')
     .leftJoin('pages', 'pages.id', '=', 'menu_items.page_id')
     .where('menu_items.menu_id', '=', menu.id)
@@ -55,7 +56,7 @@ export async function fetchMenuTree(siteId: number, handle: string): Promise<Men
       'pages.status as page_status',
     ])
     .orderBy('menu_items.position', 'asc')
-    .execute() as MenuItemRow[]
+    .execute())
 
   const toItem = (row: MenuItemRow): MenuTreeItem | null => {
     const href = row.url ?? (row.page_status === 'published' ? row.page_path : null)
