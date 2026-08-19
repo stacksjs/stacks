@@ -139,6 +139,18 @@ interface ActionOptions<
    * until a client meets one.
    */
   responseHeaders?: Record<string, { description: string, schema?: Record<string, unknown> }>
+  /**
+   * Headers the request carries, for endpoints whose inputs are not fields.
+   *
+   * An upload whose body is the file is the case this exists for: its name, its
+   * digest and its retention travel in headers, because a client that has a
+   * stream of bytes should not have to build a multipart form around them. Such
+   * an endpoint has no `validations` to publish, so without this it documents
+   * nothing at all and callers read the source instead.
+   *
+   * Rendered as `in: header` parameters, beside the path and query ones.
+   */
+  requestHeaders?: Record<string, { description: string, required?: boolean, schema?: Record<string, unknown> }>
   model?: TModel
   /**
    * Opt this action out of the global CSRF gate.
@@ -275,6 +287,8 @@ export class Action<
   responses?: ActionResponses
   /** @see {@link ActionOptions.responseHeaders} */
   responseHeaders?: ActionOptions['responseHeaders']
+  /** @see {@link ActionOptions.requestHeaders} */
+  requestHeaders?: ActionOptions['requestHeaders']
   /** @see {@link ActionOptions.skipCsrf} */
   skipCsrf?: boolean
   /** @see {@link ActionOptions.skipCsrf} */
@@ -324,6 +338,7 @@ export class Action<
     requestFile,
     responses,
     responseHeaders,
+    requestHeaders,
     model,
     skipCsrf,
     csrf,
@@ -345,6 +360,7 @@ export class Action<
     this.requestFile = requestFile
     this.responses = responses
     this.responseHeaders = responseHeaders
+    this.requestHeaders = requestHeaders
     this.skipCsrf = skipCsrf
     this.csrf = csrf
     this.authorize = authorize

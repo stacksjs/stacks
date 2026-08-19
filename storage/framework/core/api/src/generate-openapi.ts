@@ -5,7 +5,7 @@ interface OpenApiPathItem {
   [method: string]: {
     summary?: string
     operationId?: string
-    parameters?: Array<{ name: string, in: string, required: boolean, schema: SchemaObject }>
+    parameters?: Array<{ name: string, in: string, required: boolean, schema: SchemaObject, description?: string }>
     responses: Record<string, {
       description: string
       content?: Record<string, { schema?: SchemaObject }>
@@ -498,6 +498,34 @@ export async function generateOpenApi(options: {
       : null
 
     op.responses = describedResponses(action, op.responses)
+
+    /*
+     * Headers the request carries, for endpoints whose inputs are not fields.
+     *
+     * An upload whose body is the file has nothing in `validations` to publish
+     * - its name and its digest arrive as headers - so without these it
+     * documents nothing at all and a caller reads the source instead. Declared
+     * before the query parameters below, because a header is an input the same
+     * way a query string is and the two lists are one list in OpenAPI.
+     */
+    const requestHeaders = (action as { requestHeaders?: Record<string, unknown> })?.requestHeaders
+
+    if (requestHeaders && typeof requestHeaders === 'object') {
+      for (const [name, header] of Object.entries(requestHeaders)) {
+        const shape = header as { description?: unknown, required?: unknown, schema?: unknown }
+
+        if (!shape || typeof shape !== 'object' || typeof shape.description !== 'string')
+          continue
+
+        op.parameters?.push({
+          name,
+          in: 'header',
+          description: shape.description,
+          required: shape.required === true,
+          schema: (shape.schema && typeof shape.schema === 'object' ? shape.schema : { type: 'string' }) as SchemaObject,
+        })
+      }
+    }
 
     if (validations && Object.keys(validations).length > 0) {
       const fields = Object.entries(validations).map(([field, def]) => {
