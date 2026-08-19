@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.35...v0.72.36)
+
+## 🐛 Bug Fixes
+
+- **deps**: bunfig 0.15.19, which has the export 0.15.18 lost ([5ec1433](https://github.com/stacksjs/stacks/commit/5ec1433)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.34...v0.72.35)
 
 ## ✨ Features
