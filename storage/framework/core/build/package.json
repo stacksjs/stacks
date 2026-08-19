@@ -57,7 +57,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "dependencies": {},
+  "dependencies": {
+    "bun-plugin-dtsx": "^0.11.6"
+  },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "better-dx": "^0.2.24",

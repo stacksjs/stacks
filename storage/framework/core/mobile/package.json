@@ -36,7 +36,7 @@
     "better-dx": "^0.2.24"
   },
   "peerDependencies": {
-    "craft-native": ">=0.0.65"
+    "craft-native": "^0.0.67"
   },
   "peerDependenciesMeta": {
     "craft-native": {

@@ -31,7 +31,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-video-player": "^0.1.0",
+    "ts-video-player": "^0.1.1",
     "ts-videos": "^0.1.1"
   },
   "devDependencies": {

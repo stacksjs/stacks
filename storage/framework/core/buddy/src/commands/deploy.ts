@@ -1359,6 +1359,78 @@ export function applyScheduledWork(sites: Record<string, any>, schedulerFile: st
 }
 
 /**
+ * Whether a site is the API process the page server proxies `/api/**` to.
+ *
+ * By name, because that is what the docs and every generated config call it,
+ * or by what it actually runs - a site called something else that starts
+ * `serve:api` is still the API.
+ */
+function servesApi(name: string, site: any): boolean {
+  return name === 'api' || (typeof site?.start === 'string' && /\bserve:api\b/.test(site.start))
+}
+
+/**
+ * Refuse to ship a deploy whose `/api/**` would answer 502.
+ *
+ * Stacks serves the API as its own process: the page server proxies same-origin
+ * `/api` requests to it, and `resolveApiBase` deliberately returns null on a
+ * deployed box unless the operator has said where it is - proxying into
+ * whatever else happens to hold port 3008 on a shared box is worse than
+ * failing. So a working deploy needs *two* declarations that nothing checks
+ * were both made: an `api` site, and `PORT_API` (or `API_URL`) in the page
+ * server's environment.
+ *
+ * Make one and not the other and the deploy succeeds, the site serves, and
+ * every `/api` request answers 502 - health checks, the OpenAPI document, the
+ * MCP endpoint, on-demand social cards, and every `fetch('/api/...')` the app
+ * makes. reviewos.org shipped in that state and nobody noticed until somebody
+ * asked why a link preview was blank: the front page was 200 throughout, which
+ * is what a deploy's own verification looks at.
+ *
+ * This is the check that was missing. A project with no API surface is
+ * untouched - the routes file is the signal, and an app without one has
+ * nothing to serve.
+ */
+export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: boolean): string | undefined {
+  if (!hasApiRoutes)
+    return undefined
+
+  const entries = Object.entries(sites)
+  const appSites = entries.filter(([, site]) => typeof site?.start === 'string')
+  if (appSites.length === 0)
+    return undefined
+
+  const api = entries.find(([name, site]) => servesApi(name, site))
+  // The page servers: every server app that is not the API itself.
+  const pages = appSites.filter(([name, site]) => !servesApi(name, site))
+
+  // Somebody has pointed the proxy somewhere explicitly. That is intent, and
+  // it covers the API living on another host entirely.
+  const configured = (site: any): boolean => {
+    const env = (site?.env ?? {}) as Record<string, unknown>
+    return Boolean(env.API_URL || env.PORT_API)
+  }
+
+  if (!api) {
+    if (pages.every(([, site]) => configured(site)))
+      return undefined
+
+    return 'This project declares API routes and no site serves them. `/api/**` will answer 502 on every request.\n'
+      + 'Add an `api` site to config/cloud.ts running `buddy serve:api` on its own port, and set `PORT_API` on the site that serves the pages so its proxy can find it.\n'
+      + 'Set `API_URL` on the page site instead when the API lives on another host.'
+  }
+
+  const unwired = pages.filter(([, site]) => !configured(site))
+  if (unwired.length === 0)
+    return undefined
+
+  const port = api[1]?.port
+
+  return `The \`${api[0]}\` site serves the API, but ${unwired.map(([name]) => `\`${name}\``).join(', ')} will not proxy to it: neither \`PORT_API\` nor \`API_URL\` is set in its environment, so \`/api/**\` answers 502.\n`
+    + `Set \`PORT_API: '${port ?? '<the api site\'s port>'}'\` in that site's \`env\` in config/cloud.ts.`
+}
+
+/**
  * How a preStart string can be invoking buddy: the monorepo's own source entry,
  * an installed package's built CLI, or one of the bin names on PATH.
  */
@@ -2351,6 +2423,20 @@ async function runHetznerDeploy(args: {
     ),
     projectDatabaseTarget(slug, 'backups'),
   )
+
+  /*
+   * Checked here rather than earlier: `env` is only final after the merge
+   * above, so a `PORT_API` that arrives from .env.production counts.
+   *
+   * Fatal, because the alternative is what already happened - a deploy that
+   * reports success while the entire API surface answers 502, on a site whose
+   * front page is 200 and whose health check therefore passes.
+   */
+  const apiProblem = apiDeploymentProblem(sitesWithResolvedEnv, existsSync(p.projectPath('routes/api.ts')))
+  if (apiProblem) {
+    log.error(apiProblem)
+    throw new Error('Refusing to deploy: the API would not be reachable.')
+  }
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —
   // not just the env shipped to the remote sites above. reconcileHetznerDns

@@ -72,6 +72,6 @@
     "@stacksjs/server": "workspace:*"
   },
   "dependencies": {
-    "craft-native": ">=0.0.55"
+    "craft-native": "^0.0.55"
   }
 }
