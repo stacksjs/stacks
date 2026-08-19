@@ -75,9 +75,9 @@
   "dependencies": {
     "@stacksjs/dtsx": "^0.11.6",
     "bun-plugin-dtsx": "^0.11.6",
-    "pickier": "^0.1.56",
+    "pickier": "^0.1.58",
     "stacks": "workspace:*",
-    "ts-pantry": "^0.11.34"
+    "ts-pantry": "^0.11.35"
   },
   "workspaces": [
     "storage/framework",
@@ -98,6 +98,6 @@
     "better-dx": "^0.2.24"
   },
   "overrides": {
-    "pickier": "^0.1.56"
+    "pickier": "^0.1.58"
   }
 }

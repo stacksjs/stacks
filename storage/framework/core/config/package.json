@@ -55,7 +55,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-pantry": "^0.11.34"
+    "ts-pantry": "^0.11.35"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",

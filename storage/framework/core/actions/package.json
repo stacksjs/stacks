@@ -64,8 +64,8 @@
     "@stacksjs/bunpress": "^0.2.8",
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
-    "@stacksjs/stx": "^0.2.194",
-    "@stacksjs/ts-cloud": "^0.9.3",
+    "@stacksjs/stx": "^0.2.196",
+    "@stacksjs/ts-cloud": "^0.9.4",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
@@ -90,7 +90,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
-    "pickier": "^0.1.35",
+    "pickier": "^0.1.58",
     "craft-native": ">=0.0.65"
   },
   "peerDependenciesMeta": {
