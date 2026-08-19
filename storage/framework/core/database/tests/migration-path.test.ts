@@ -31,6 +31,42 @@ describe('dialect migration corpus paths', () => {
     expect(resolveMigrationDirectory('vitess', { cwd })).toBe(join(cwd, 'database', 'migrations', 'vitess'))
   })
 
+  it('leaves the flat corpus to the dialect that wrote it', () => {
+    // The incumbent's whole applied history lives there. Moving it to a
+    // subdirectory because a second dialect appeared orphans every file in it,
+    // and the runner then tries to create tables that already exist.
+    const cwd = workspace()
+    const flat = join(cwd, 'database', 'migrations')
+    mkdirSync(flat, { recursive: true })
+    writeFileSync(join(flat, '0000000001-create-users-table.sql'), 'CREATE TABLE IF NOT EXISTS "users" ("id" BIGSERIAL PRIMARY KEY);')
+
+    const snapshots = join(cwd, 'storage', 'framework', 'database')
+    mkdirSync(snapshots, { recursive: true })
+    writeFileSync(join(snapshots, 'model-snapshot.postgres.json'), '{}')
+    writeFileSync(join(snapshots, 'model-snapshot.mysql.json'), '{}')
+
+    expect(resolveMigrationDirectory('postgres', { cwd })).toBe(flat)
+
+    // And the newcomer still gets its own, which is what this whole function
+    // is for: the two corpora are not interchangeable SQL.
+    expect(resolveMigrationDirectory('mysql', { cwd })).toBe(join(flat, 'mysql'))
+  })
+
+  it('reads the owner off the corpus, so a MySQL-first project keeps its flat one too', () => {
+    const cwd = workspace()
+    const flat = join(cwd, 'database', 'migrations')
+    mkdirSync(flat, { recursive: true })
+    writeFileSync(join(flat, '0000000001-create-users-table.sql'), 'CREATE TABLE IF NOT EXISTS `users` (`id` bigint PRIMARY KEY);')
+
+    const snapshots = join(cwd, 'storage', 'framework', 'database')
+    mkdirSync(snapshots, { recursive: true })
+    writeFileSync(join(snapshots, 'model-snapshot.mysql.json'), '{}')
+    writeFileSync(join(snapshots, 'model-snapshot.postgres.json'), '{}')
+
+    expect(resolveMigrationDirectory('mysql', { cwd })).toBe(flat)
+    expect(resolveMigrationDirectory('postgres', { cwd })).toBe(join(flat, 'postgres'))
+  })
+
   it('continues using an existing dialect-specific corpus', () => {
     const cwd = workspace()
     const corpus = join(cwd, 'database', 'migrations', 'postgres')
