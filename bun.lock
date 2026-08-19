@@ -5,11 +5,7 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "@stacksjs/dtsx": "^0.11.6",
-        "bun-plugin-dtsx": "^0.11.6",
-        "pickier": "^0.1.58",
         "stacks": "workspace:*",
-        "ts-pantry": "^0.11.35",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
@@ -1200,9 +1196,6 @@
         "stacks": "workspace:*",
       },
     },
-  },
-  "overrides": {
-    "pickier": "^0.1.58",
   },
   "packages": {
     "@anthropic-ai/claude-agent-sdk": ["@anthropic-ai/claude-agent-sdk@0.2.141", "", { "dependencies": { "@anthropic-ai/sdk": "^0.93.0", "@modelcontextprotocol/sdk": "^1.29.0" }, "optionalDependencies": { "@anthropic-ai/claude-agent-sdk-darwin-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-darwin-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-arm64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64": "0.2.141", "@anthropic-ai/claude-agent-sdk-linux-x64-musl": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-arm64": "0.2.141", "@anthropic-ai/claude-agent-sdk-win32-x64": "0.2.141" }, "peerDependencies": { "zod": "^4.0.0" } }, "sha512-AIBacMWGcZIUcXlUoObqjwJ6pmJI3BayAqPAFXuvSq3DHJXdiuZVs7l/zTB5l3nRhRv5cqSrI2XbiDeHgZWizw=="],
