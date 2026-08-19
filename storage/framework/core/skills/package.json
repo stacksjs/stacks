@@ -2,7 +2,7 @@
   "name": "@stacksjs/skills",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.30",
+  "version": "0.72.32",
   "description": "Reads the Stacks framework's agent skills, following the agentskills.io standard. The skills themselves ship in storage/framework/defaults/ai/skills.",
   "author": "Chris Breuer",
   "contributors": [

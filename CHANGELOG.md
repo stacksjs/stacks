@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.31...v0.72.32)
+
+## 🐛 Bug Fixes
+
+- **image**: let a project name its own icons, and decline the ones it has no use for ([6514aad](https://github.com/stacksjs/stacks/commit/6514aad)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.29...v0.72.30)
 
 ## ✨ Features
