@@ -288,6 +288,26 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
   // can run (see .github/scripts/check-lockfile-version.ts, the PR-side guard that
   // release commits bypass). Refuse to ship a lockfile CI cannot read: restore
   // the previous one and abort with an actionable message.
+  /*
+   * A lockfile that was not written back is not a lockfile to read.
+   *
+   * `bun install --lockfile-only` exits zero when it cannot resolve - which is
+   * what happens the moment this bump raises an external range to a version its
+   * own repository has not published yet - and simply writes nothing. The read
+   * below then threw ENOENT *outside* the restore above, so the release aborted
+   * having deleted the repository's lockfile and put nothing in its place.
+   *
+   * Restore first, then say which it was.
+   */
+  if (!existsSync(lockPath)) {
+    writeFileSync(lockPath, previousLock)
+    throw new Error(
+      'Release aborted: `bun install --lockfile-only` wrote no lockfile, so the previous one has been restored. '
+      + 'This usually means a dependency range this bump just raised names a version that is not published yet - '
+      + 'release that package first, then re-run.',
+    )
+  }
+
   const expectedLockfileVersion = 1
   const regeneratedLock = readFileSync(lockPath, 'utf8')
   const versionMatch = regeneratedLock.match(/"lockfileVersion"\s*:\s*(\d+)/)
