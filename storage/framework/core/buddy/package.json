@@ -140,7 +140,7 @@
     "@stacksjs/storage": "^0.72.32",
     "@stacksjs/strings": "^0.72.32",
     "@stacksjs/testing": "^0.72.32",
-    "@stacksjs/ts-cloud": "^0.8.3",
+    "@stacksjs/ts-cloud": "^0.9.3",
     "@stacksjs/tunnel": "^0.72.32",
     "@stacksjs/types": "^0.72.32",
     "@stacksjs/ui": "^0.72.32",
@@ -148,10 +148,10 @@
     "@stacksjs/validation": "^0.72.32",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "ts-pantry": "^0.11.29"
+    "ts-pantry": "^0.11.34"
   },
   "devDependencies": {
-    "better-dx": "^0.2.23"
+    "better-dx": "^0.2.24"
   },
   "web-types": "./web-types.json"
 }

@@ -35,6 +35,6 @@
     "ts-video-player": "^0.1.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.23"
+    "better-dx": "^0.2.24"
   }
 }

@@ -70,7 +70,7 @@
   },
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
-    "@stacksjs/stx": "^0.2.184",
+    "@stacksjs/stx": "^0.2.194",
     "bun-query-builder": "^0.2.41"
   },
   "peerDependencies": {
@@ -82,7 +82,7 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.23",
+    "better-dx": "^0.2.24",
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^9.10.0"
   }

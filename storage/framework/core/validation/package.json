@@ -62,7 +62,7 @@
     "@stacksjs/ts-validation": "^0.5.4"
   },
   "devDependencies": {
-    "better-dx": "^0.2.23",
+    "better-dx": "^0.2.24",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*"
   }

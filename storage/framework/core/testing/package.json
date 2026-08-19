@@ -75,11 +75,11 @@
   },
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.8.3"
+    "@stacksjs/ts-cloud": "^0.9.3"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "better-dx": "^0.2.23"
+    "better-dx": "^0.2.24"
   }
 }

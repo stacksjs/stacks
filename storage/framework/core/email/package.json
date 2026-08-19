@@ -60,13 +60,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.8.3",
+    "@stacksjs/ts-cloud": "^0.9.3",
     "postal-mime": "^2.7.6"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.23",
+    "better-dx": "^0.2.24",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*"
   }
