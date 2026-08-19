@@ -1,5 +1,8 @@
 import type { ImagesConfig } from '@stacksjs/types'
-import { describe, expect, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import { mkdir, rm, writeFile } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
+import { createImageData, encode } from 'ts-images'
 import { generateAppStoreScreenshotSet } from '../src/app-store'
 import { generateAppIconSet } from '../src/app-icons'
 import { generateImages } from '../src/generate'
@@ -152,6 +155,67 @@ describe('generators without configuration', () => {
     const result = await generateImages({ social: { enabled: false } }, { only: ['app-icons'] })
     expect(result.social).toEqual([])
   })
+})
+
+describe('app icons', () => {
+  const source = resolve(import.meta.dir, 'fixtures/icon-source.png')
+
+  beforeAll(async () => {
+    // A flat square is enough: nothing here inspects a pixel, only which
+    // files came out.
+    await mkdir(dirname(source), { recursive: true })
+    await writeFile(source, await encode(createImageData(512, 512, { fill: { r: 15, g: 109, b: 114 } }), 'png'))
+  })
+
+  afterAll(async () => {
+    await rm(resolve(import.meta.dir, 'fixtures'), { recursive: true, force: true })
+    await rm(resolve(import.meta.dir, 'output'), { recursive: true, force: true })
+  })
+
+  test('takes an explicit empty platform list as "none", not as "both"', async () => {
+    // The check used to be on length, so a web project asking for no platform
+    // icon sets got an iOS and a macOS asset catalog it had no use for.
+    const faviconDir = resolve(import.meta.dir, 'output/none')
+    const result = await generateAppIconSet({
+      appIcons: { enabled: true, source, platforms: [], favicon: true, faviconDir },
+    })
+
+    expect(result.icons).toEqual([])
+    expect(result.favicons.length).toBeGreaterThan(0)
+  }, 30000)
+
+  test('writes the manifest a project declared rather than a placeholder', async () => {
+    const faviconDir = resolve(import.meta.dir, 'output/named')
+    await generateAppIconSet({
+      brand: 'Acme',
+      appIcons: {
+        enabled: true,
+        source,
+        platforms: [],
+        favicon: true,
+        faviconDir,
+        manifest: { shortName: 'Acme', themeColor: '#0f6d72' },
+      },
+    })
+
+    const manifest = await Bun.file(resolve(faviconDir, 'site.webmanifest')).json()
+
+    // `name` falls back to the brand, which is the one word this config
+    // already uses for the product.
+    expect(manifest.name).toBe('Acme')
+    expect(manifest.short_name).toBe('Acme')
+    expect(manifest.theme_color).toBe('#0f6d72')
+  }, 30000)
+
+  test('writes no manifest when the project says so', async () => {
+    const faviconDir = resolve(import.meta.dir, 'output/bare')
+    await generateAppIconSet({
+      appIcons: { enabled: true, source, platforms: [], favicon: true, faviconDir, manifest: false },
+    })
+
+    expect(await Bun.file(resolve(faviconDir, 'site.webmanifest')).exists()).toBe(false)
+    expect(await Bun.file(resolve(faviconDir, 'favicon.ico')).exists()).toBe(true)
+  }, 30000)
 })
 
 describe('font resolution', () => {

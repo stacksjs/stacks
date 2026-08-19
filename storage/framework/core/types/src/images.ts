@@ -163,11 +163,33 @@ export interface AppIconsConfig {
   source?: string
   /** @default 'resources/app-icons' */
   outputDir?: string
+  /**
+   * Platform icon sets to build. Defaults to iOS and macOS.
+   *
+   * An explicit `[]` means neither, which is what a web project wants: it
+   * needs the favicons below and has no use for an Xcode asset catalog.
+   */
   platforms?: Array<'ios' | 'macos'>
   /** Also emit a favicon set to `faviconDir`. */
   favicon?: boolean
   /** @default 'public' */
   faviconDir?: string
+  /**
+   * The `site.webmanifest` written beside the favicons. `false` writes none.
+   *
+   * Without this the manifest is generated with the renderer's placeholder
+   * defaults - an app called "App", a theme colour belonging to no brand -
+   * and a project has nowhere to say otherwise short of overwriting the file
+   * after every build.
+   */
+  manifest?: false | {
+    name?: string
+    shortName?: string
+    themeColor?: ImageColor
+    backgroundColor?: ImageColor
+    /** URL prefix for the icon paths, when they are not at the document root. */
+    pathPrefix?: string
+  }
 }
 
 export interface ImagesConfig {
