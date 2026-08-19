@@ -3284,6 +3284,7 @@ Rebuild database/migrations from your models for a given dialect
 | `--dry-run` | Show what would change without writing anything | boolean, optional | `false` |
 | `-f`, `--force` | Regenerate even though the database already has migrations recorded | boolean, optional | `false` |
 | `--replace-unmarked` | Also delete migrations carrying no @generated marker (pre-marker corpora only) | boolean, optional | `false` |
+| `--only-existing-tables` | Rebuild exactly the tables already in the corpus, for changing dialect without adopting the framework schema | boolean, optional | `false` |
 
 ### `migrate:status`
 
