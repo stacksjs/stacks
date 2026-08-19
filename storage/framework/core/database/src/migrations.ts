@@ -2626,6 +2626,34 @@ export function historicallyRootedTables(dir: string, files: readonly string[]):
   return [...tables]
 }
 
+/**
+ * Every table this corpus already defines, however the file was authored.
+ *
+ * Distinct from {@link historicallyRootedTables}, which deliberately looks only
+ * at UNMARKED files to find the roots worth protecting. Here the question is the
+ * opposite one: what is the full set of tables a regeneration must reproduce in
+ * order to replace this corpus without changing what it describes.
+ */
+export function tablesDefinedByCorpus(dir: string, files: readonly string[]): string[] {
+  const tables = new Set<string>()
+
+  for (const file of files) {
+    try {
+      for (const statement of sqlStatementsOf(readFileSync(join(dir, file), 'utf8'))) {
+        const match = statement.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`]?(\w+)["'`]?/i)
+        if (match?.[1])
+          tables.add(match[1].toLowerCase())
+      }
+    }
+    catch {
+      // Unreadable here means "cannot prove this table exists"; the file is
+      // preserved anyway, because it is never in the rebuilt set.
+    }
+  }
+
+  return [...tables]
+}
+
 /** Whether a migration changes a table whose original CREATE is preserved. */
 export function migrationTouchesRootedTable(dir: string, file: string, rootedTables: ReadonlySet<string>): boolean {
   try {
@@ -2732,6 +2760,18 @@ export interface RegeneratedCorpus {
    */
   preserved: string[]
   /**
+   * Tables the corpus defines that no model describes, so `onlyExistingTables`
+   * could not re-emit them and left their files alone.
+   *
+   * Named rather than silently skipped: their migrations stay in the previous
+   * dialect, which is exactly the condition the caller was trying to clear, and
+   * a corpus that is 90% converted looks converted.
+   *
+   * Always present, empty for every other mode. `Result` is invariant through
+   * `mapErr`, so an optional field here would not match the returned object.
+   */
+  unrebuildable: string[]
+  /**
    * The subset of {@link preserved} kept for the second reason: the corpus
    * does not rebuild the tables these files describe.
    *
@@ -2781,6 +2821,27 @@ export async function regenerateMigrationCorpus(options: {
    * is the behaviour that lost hand-authored migrations.
    */
   replaceUnmarked?: boolean
+  /**
+   * Rebuild exactly the tables the corpus already defines, and nothing else.
+   *
+   * For changing DIALECT rather than schema. Neither existing route can do it
+   * (stacksjs/stacks#2346): the default preserves unmarked files, so
+   * wrong-dialect CREATEs survive, and `replaceUnmarked` deletes them but the
+   * generator only emits tables whose models the app declares, so a framework
+   * table the app relies on without declaring is left behind in the old dialect.
+   * Turning on `includeFrameworkDefaults` fixes the dialect by writing the
+   * framework's entire schema into the app: measured at 80 files from 78 models
+   * for an app that declares five.
+   *
+   * This is the intersection those two miss. Every model is available to the
+   * generator, so any table in the corpus can be emitted correctly, but only the
+   * tables already present are written. No new tables, none dropped.
+   *
+   * A table no model describes cannot be regenerated, so its file is preserved
+   * and named in `preserved`. Deleting it would drop a schema nothing can
+   * rebuild.
+   */
+  onlyExistingTables?: boolean
 } = {}): Promise<Result<RegeneratedCorpus, Error>> {
   try {
     const dialect = options.dialect ?? getQbDialect()
@@ -2808,7 +2869,14 @@ export async function regenerateMigrationCorpus(options: {
     // `forceStage` because of the sentinel written just below: it goes into
     // `sources.dir`, and that has to be a directory this call owns rather than
     // the app's own `app/Models` (stacksjs/stacks#2255).
-    const sources = resolveModelSources({ forceStage: true })
+    // `onlyExistingTables` needs every model in scope so a framework table the
+    // app relies on without declaring can still be emitted. The output is
+    // narrowed to the corpus afterwards, so this widens what CAN be generated
+    // without widening what gets written.
+    const sources = resolveModelSources({
+      forceStage: true,
+      ...(options.onlyExistingTables ? { includeFrameworkDefaults: true } : {}),
+    })
     if (!sources) {
       return err(new Error(
         'No models found. Define models in app/Models, or ensure the framework defaults at '
@@ -2894,13 +2962,50 @@ export async function regenerateMigrationCorpus(options: {
       ))
     }
 
-    const groups = groupGeneratedStatements(statements)
+    let groups = groupGeneratedStatements(statements)
 
     let existing: string[] = []
     try {
       existing = readdirSync(dir).filter(f => f.endsWith('.sql')).sort()
     }
     catch { /* directory does not exist yet */ }
+
+    // Narrow a dialect-only regeneration to the tables already described.
+    //
+    // Done before the preservation rules below so everything downstream sees the
+    // reduced corpus: `createdTablesOf` then reports exactly the corpus tables,
+    // so nothing is out of scope and nothing is deleted for describing a table
+    // the emit does not cover.
+    let unrebuildable: string[] = []
+    if (options.onlyExistingTables) {
+      const corpusTables = new Set(tablesDefinedByCorpus(dir, existing))
+      if (corpusTables.size === 0) {
+        return err(new Error(
+          `No CREATE TABLE statements found in ${dir}, so there is nothing to regenerate in place. `
+          + 'Run `buddy migrate:regenerate <dialect>` without --only-existing-tables to write a corpus from your models.',
+        ))
+      }
+
+      const emitted = new Set(createdTablesOf(statements).map(table => table.toLowerCase()))
+      unrebuildable = [...corpusTables].filter(table => !emitted.has(table)).sort()
+
+      groups = groups
+        .map(group => ({
+          ...group,
+          statements: group.statements.filter((statement) => {
+            const table = statementTable(statement)
+            return table ? corpusTables.has(table.toLowerCase()) : false
+          }),
+        }))
+        .filter(group => group.statements.length > 0)
+
+      if (groups.length === 0) {
+        return err(new Error(
+          `None of the ${corpusTables.size} table(s) in ${dir} have a model behind them, so none can be regenerated. `
+          + 'Declare the models, or publish the framework ones with `buddy publish model <Name>`.',
+        ))
+      }
+    }
 
     // Two independent reasons to keep a file, and a file only gets deleted if
     // neither applies.
@@ -2912,9 +3017,15 @@ export async function regenerateMigrationCorpus(options: {
     //    (stacksjs/stacks#2255). No flag waives this one: `--replace-unmarked`
     //    means "these unmarked files are generator output", not "delete the
     //    schema for tables you are not regenerating".
-    const rootedTables = new Set(options.replaceUnmarked ? [] : historicallyRootedTables(dir, existing))
+    // `onlyExistingTables` is a dialect change, so the roots are precisely what
+    // has to be replaced: preserving them is what leaves wrong-dialect CREATEs
+    // on disk. It is safe here in a way `replaceUnmarked` is not, because every
+    // table being deleted is one this run has just re-emitted.
+    const rootedTables = new Set(
+      options.replaceUnmarked || options.onlyExistingTables ? [] : historicallyRootedTables(dir, existing),
+    )
     const outOfScope = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
-    const deletable = options.replaceUnmarked
+    const deletable = options.replaceUnmarked || options.onlyExistingTables
       ? existing
       : existing.filter(file => isGeneratedMigration(dir, file))
     const removed = deletable.filter(file => {
@@ -2981,7 +3092,7 @@ export async function regenerateMigrationCorpus(options: {
     }))
 
     if (options.dryRun)
-      return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, dir })
+      return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, unrebuildable, dir })
 
     mkdirSync(dir, { recursive: true })
 
@@ -3001,7 +3112,7 @@ export async function regenerateMigrationCorpus(options: {
     // follow-up generation at a true zero diff.
     saveMigrationSnapshot(result.plan, { dialect: dialect as MigrationPlan['dialect'] })
 
-    return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, dir })
+    return ok({ dialect, models: sources.models.length, modelRoots: sources.roots, files, removed, preserved, preservedOutOfScope, unrebuildable, dir })
   }
   catch (error) {
     return err(handleError('Migration regeneration failed', error))
