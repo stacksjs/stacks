@@ -418,6 +418,7 @@ export async function optimizePantryDeps(): Promise<void> {
 
   let configDeps: Record<string, string> = {}
   let configServices: string[] = []
+  let configDefined: Record<string, Record<string, unknown>> = {}
 
   try {
     const mod = await import(depsConfigPath)
@@ -432,6 +433,14 @@ export async function optimizePantryDeps(): Promise<void> {
     if (Array.isArray(config?.services?.autoStart)) {
       configServices = config.services.autoStart.filter((name: unknown): name is string => typeof name === 'string')
     }
+
+    // Services the project defines for itself - its own server, its queue
+    // worker - which pantry manages as launchd or systemd agents exactly as it
+    // manages Postgres. Without this, every project's own processes are the
+    // one part of its environment pantry knows nothing about, and each one
+    // ends up with a hand-written unit or a terminal somebody has to remember.
+    if (config?.services?.define && typeof config.services.define === 'object')
+      configDefined = config.services.define as Record<string, Record<string, unknown>>
   }
   catch (err) {
     log.debug('Could not load config/deps.ts, skipping dependency optimization')
@@ -493,11 +502,44 @@ export async function optimizePantryDeps(): Promise<void> {
     lines.push(`  ${pkg}: ${version}`)
   }
 
-  if (autoStart.length > 0) {
-    lines.push('', 'services:', '  enabled: true', '  autoStart:')
+  const defined = Object.entries(configDefined)
 
-    for (const service of autoStart)
-      lines.push(`    - ${service}`)
+  if (autoStart.length > 0 || defined.length > 0) {
+    lines.push('', 'services:', '  enabled: true')
+
+    if (autoStart.length > 0) {
+      lines.push('  autoStart:')
+
+      for (const service of autoStart)
+        lines.push(`    - ${service}`)
+    }
+
+    /*
+     * The project's own services, in the shape pantry reads them.
+     *
+     * `command` is the only required key; `port`, `health` and `cwd` are
+     * optional, and anything else is passed through so a pantry that learns a
+     * new key does not need this generator changed to use it. Values are
+     * emitted unquoted because a command line is the common case and quoting
+     * it would put the quotes in the argv.
+     */
+    if (defined.length > 0) {
+      lines.push('  define:')
+
+      for (const [name, definition] of defined) {
+        if (!definition || typeof definition !== 'object')
+          continue
+
+        lines.push(`    ${name}:`)
+
+        for (const [key, value] of Object.entries(definition)) {
+          if (value === undefined || value === null)
+            continue
+
+          lines.push(`      ${key}: ${String(value)}`)
+        }
+      }
+    }
   }
 
   const depsYamlPath = join(cwd, 'deps.yaml')
