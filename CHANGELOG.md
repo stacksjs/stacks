@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.32...v0.72.33)
+
+## 🐛 Bug Fixes
+
+- **deploy**: refuse to ship a release whose /api answers 502 ([a0a5f5d](https://github.com/stacksjs/stacks/commit/a0a5f5d)) _(by Chris <chris@stacksjs.com>)_
+- **migrations**: the flat corpus belongs to the dialect that wrote it ([127c2bd](https://github.com/stacksjs/stacks/commit/127c2bd)) _(by Chris <chris@stacksjs.com>)_
+- **setup**: pin MySQL to a major, as Postgres already is ([e89b742](https://github.com/stacksjs/stacks/commit/e89b742)) _(by Chris <chris@stacksjs.com>)_
+- **release**: stop the bump from deleting the lockfile it cannot rewrite ([9fc00f5](https://github.com/stacksjs/stacks/commit/9fc00f5)) _(by Chris <chris@stacksjs.com>)_
+- **database**: the UTC default MySQL would not accept ([5e22676](https://github.com/stacksjs/stacks/commit/5e22676)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **deps**: take the rebuilt packages, 165MB to 155MB ([d716a70](https://github.com/stacksjs/stacks/commit/d716a70)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: halve what a Stacks app installs ([ca53d8c](https://github.com/stacksjs/stacks/commit/ca53d8c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.31...v0.72.32)
 
 ## 🐛 Bug Fixes
