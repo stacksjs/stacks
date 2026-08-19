@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.34...v0.72.35)
+
+## ✨ Features
+
+- **api**: requestHeaders, so an upload whose body is the file can document itself ([511aa3c](https://github.com/stacksjs/stacks/commit/511aa3c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: a generated migration says so in the runner's words too ([7b78bb3](https://github.com/stacksjs/stacks/commit/7b78bb3)) _(by Chris <chris@stacksjs.com>)_
+- four deploy and migration defects (#2346, #2347, #2348, #2349) (#2350) ([bb0c03b](https://github.com/stacksjs/stacks/commit/bb0c03b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2349](https://github.com/stacksjs/stacks/issues/2349), [#2348](https://github.com/stacksjs/stacks/issues/2348), [#2347](https://github.com/stacksjs/stacks/issues/2347), [#2346](https://github.com/stacksjs/stacks/issues/2346), [#2346](https://github.com/stacksjs/stacks/issues/2346), [#2346](https://github.com/stacksjs/stacks/issues/2346), [#2347](https://github.com/stacksjs/stacks/issues/2347), [#2348](https://github.com/stacksjs/stacks/issues/2348), [#2349](https://github.com/stacksjs/stacks/issues/2349), [#2350](https://github.com/stacksjs/stacks/issues/2350), [#2346](https://github.com/stacksjs/stacks/issues/2346), [#2347](https://github.com/stacksjs/stacks/issues/2347), [#2348](https://github.com/stacksjs/stacks/issues/2348), [#2349](https://github.com/stacksjs/stacks/issues/2349), [#2350](https://github.com/stacksjs/stacks/issues/2350))
+- **docs**: resolve the bunpress entry instead of hoping it is on PATH ([6b0049f](https://github.com/stacksjs/stacks/commit/6b0049f)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: dtsx 0.11.9, for declarations that parse ([bc77177](https://github.com/stacksjs/stacks/commit/bc77177)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: let the root depend on stacks alone ([8100326](https://github.com/stacksjs/stacks/commit/8100326)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 ## v0.72.34
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.32...v0.72.33)
