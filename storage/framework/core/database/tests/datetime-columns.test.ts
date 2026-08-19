@@ -147,7 +147,9 @@ describe('the legacy-column guarantee', () => {
 describe('the default that fills a timestamp in', () => {
   test('writes UTC on every dialect', () => {
     expect(sqlHelpers('postgres').utcNow).toBe(`(now() AT TIME ZONE 'utc')`)
-    expect(sqlHelpers('mysql').utcNow).toBe('UTC_TIMESTAMP')
+    // Bracketed, because a column default is the one place MySQL will not take
+    // a bare function other than CURRENT_TIMESTAMP.
+    expect(sqlHelpers('mysql').utcNow).toBe('(UTC_TIMESTAMP)')
 
     // SQLite's CURRENT_TIMESTAMP is already UTC: the one dialect that was
     // right by accident.
@@ -155,8 +157,8 @@ describe('the default that fills a timestamp in', () => {
   })
 
   test('and MySQL-wire dialects inherit it', () => {
-    expect(sqlHelpers('singlestore').utcNow).toBe('UTC_TIMESTAMP')
-    expect(sqlHelpers('vitess').utcNow).toBe('UTC_TIMESTAMP')
+    expect(sqlHelpers('singlestore').utcNow).toBe('(UTC_TIMESTAMP)')
+    expect(sqlHelpers('vitess').utcNow).toBe('(UTC_TIMESTAMP)')
   })
 
   test('the framework tables use it rather than CURRENT_TIMESTAMP', () => {

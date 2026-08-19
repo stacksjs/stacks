@@ -233,9 +233,19 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
     isMysql,
     isSqlite,
     now: isPostgres || isMysql ? 'NOW()' : `datetime('now')`,
+    // Parenthesized on MySQL, and that is not cosmetic: a bare
+    // `DEFAULT UTC_TIMESTAMP` is a syntax error there. MySQL accepts exactly
+    // one function unparenthesized in a column default, `CURRENT_TIMESTAMP`,
+    // and any other expression only in the `DEFAULT (expr)` form it gained in
+    // 8.0.13. Without the brackets every framework table that defaults a
+    // timestamp fails to create at all - which is how this surfaced, on the
+    // first `buddy migrate` against MySQL.
+    //
+    // MySQL 5.7 and MariaDB have no expression defaults and cannot write UTC
+    // in DDL at all; they need a connection whose time zone is UTC instead.
     utcNow: isPostgres
       ? `(now() AT TIME ZONE 'utc')`
-      : isMysql ? 'UTC_TIMESTAMP' : 'CURRENT_TIMESTAMP',
+      : isMysql ? '(UTC_TIMESTAMP)' : 'CURRENT_TIMESTAMP',
     boolTrue: isPostgres ? 'true' : '1',
     boolFalse: isPostgres ? 'false' : '0',
     autoIncrement: isPostgres ? 'SERIAL' : 'INTEGER',
