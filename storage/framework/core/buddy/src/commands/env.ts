@@ -96,8 +96,19 @@ export function env(buddy: CLI): void {
     .action(async (key: string, value: string, options: EnvOptions) => {
       log.debug('Running `buddy env:set` ...', options)
 
-      if (!key || !value) {
-        console.error('Both key and value are required')
+      // `value === ''` is a value: "this variable exists and is deliberately
+      // empty" is a normal state for an app whose billing or mail is not
+      // configured yet. Rejecting it as a missing argument left hand-editing the
+      // file as the only way to express it, and hand-writing a plaintext line
+      // into a committed encrypted env file is what the preflight then tried to
+      // re-encrypt (stacksjs/stacks#2348).
+      if (!key) {
+        console.error('A key is required. Pass an empty value to clear it: `buddy env:set KEY \'\'`')
+        process.exit(ExitCode.FatalError)
+      }
+
+      if (value === undefined) {
+        console.error(`No value given for ${key}. Pass one, or an empty string to clear it: \`buddy env:set ${key} ''\``)
         process.exit(ExitCode.FatalError)
       }
 
