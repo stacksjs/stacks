@@ -361,7 +361,12 @@ const DB_CONNECTION_PACKAGES: Record<string, DatabasePackage> = {
   // made the service unbootable. Pin the supported major while allowing
   // security and patch releases within it.
   postgres: { name: 'postgresql.org', version: '^17.10', service: 'postgres' },
-  mysql: { name: 'mysql.com', version: '*', service: 'mysql' },
+  // Pinned to a major for the same reason Postgres is: MySQL's data directory
+  // is upgraded in place and never downgraded, so an unconstrained `*` lets
+  // pantry move a live cluster to the next major on an ordinary install and
+  // leaves no way back. 9.x is what this framework's MySQL support was built
+  // and tested against.
+  mysql: { name: 'mysql.com', version: '^9.2', service: 'mysql' },
   sqlite: { name: 'sqlite.org', version: '^3.47.2' },
 }
 
