@@ -170,8 +170,15 @@ function validateModelsExist(): { valid: boolean, error?: string } {
  * any action subprocess starts, so a mismatch cannot drop the framework tables
  * and only then discover it has nothing to rebuild them with.
  */
-export function validateMigrationDialect(cwd = process.cwd()): { valid: boolean, error?: string } {
-  const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+export function validateMigrationDialect(
+  cwd = process.cwd(),
+  options: { driver?: string } = {},
+): { valid: boolean, error?: string } {
+  // `driver` is passed explicitly by the deploy preflight, which has to audit
+  // the connection each SITE will run with (resolved from its env and
+  // .env.<environment>) rather than whatever DB_CONNECTION happens to be set in
+  // the operator's shell. Defaults to the ambient value for every other caller.
+  const driver = String(options.driver || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
   const dir = resolveMigrationDirectory(driver, { cwd })
   const relativeDir = relativeMigrationDirectory(dir, cwd)
 

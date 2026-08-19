@@ -1470,6 +1470,46 @@ export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: b
 }
 
 /**
+ * The database each site will migrate against, once its env is resolved.
+ *
+ * A site's `DB_CONNECTION` comes from its own `env` merged over
+ * `.env.<environment>`, so it is knowable locally and need not match whatever
+ * the operator has exported in their shell. Deduplicated, because the audit is
+ * per corpus and two sites on sqlite is one thing to check.
+ *
+ * Only sites that actually run migrations are considered. A static or proxy
+ * site ships no schema, and failing a deploy over the database a site never
+ * opens would be a refusal nobody can act on.
+ */
+export function siteDatabaseDrivers(sites: Record<string, any>): string[] {
+  const drivers = new Set<string>()
+
+  for (const site of Object.values(sites ?? {})) {
+    if (typeof site?.start !== 'string')
+      continue
+
+    // `migrateToken` matches one token, not a whole command line, so the step
+    // has to be split the way buddyInvocationFrom splits it.
+    const preStart = Array.isArray(site?.preStart) ? site.preStart : []
+    const migrates = preStart.some((step: unknown) =>
+      typeof step === 'string' && step.trim().split(/\s+/).some(token => migrateToken.test(token)))
+    if (!migrates)
+      continue
+
+    // Deliberately NOT falling back to the deploying shell's DB_CONNECTION. By
+    // this point the site's env already has .env.<environment> merged in, so it
+    // is what the box will run with; the operator's local value describes their
+    // laptop and auditing against it would refuse correct deploys and pass
+    // broken ones. Absent means the framework default, exactly as
+    // validateMigrationDialect reads it.
+    const env = (site?.env ?? {}) as Record<string, unknown>
+    drivers.add(String(env.DB_CONNECTION || 'sqlite').toLowerCase())
+  }
+
+  return [...drivers]
+}
+
+/**
  * How a preStart string can be invoking buddy: the monorepo's own source entry,
  * an installed package's built CLI, or one of the bin names on PATH.
  */
@@ -2475,6 +2515,30 @@ async function runHetznerDeploy(args: {
   if (apiProblem) {
     log.error(apiProblem)
     throw new Error('Refusing to deploy: the API would not be reachable.')
+  }
+
+  /*
+   * Can the committed migrations actually run against the database each site is
+   * configured to open?
+   *
+   * Checked here, with the rest of the preventable refusals, because the answer
+   * is entirely local and the alternative is what already happened: the deploy
+   * succeeds, TLS is issued, DNS reconciles, the site answers 200, and the
+   * migrate step on the box fails with a wrong-dialect corpus. The scaffolded
+   * workflow runs that step with `|| echo "::warning::"`, so the job stays
+   * green and the app serves publicly with no tables (stacksjs/stacks#2347).
+   *
+   * `validateMigrationDialect` is the same gate `buddy migrate` uses, so a
+   * deploy cannot pass something the box will then reject. Same escape hatch
+   * too: STACKS_ALLOW_DIALECT_MISMATCH=1.
+   */
+  const { validateMigrationDialect } = await import('./migrate')
+  for (const driver of siteDatabaseDrivers(sitesWithResolvedEnv)) {
+    const dialect = validateMigrationDialect(p.projectPath(), { driver })
+    if (!dialect.valid) {
+      log.error(dialect.error ?? `The committed migrations cannot run on ${driver}.`)
+      throw new Error(`Refusing to deploy: the migrations cannot run on ${driver}.`)
+    }
   }
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —
