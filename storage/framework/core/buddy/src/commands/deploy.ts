@@ -1359,14 +1359,51 @@ export function applyScheduledWork(sites: Record<string, any>, schedulerFile: st
 }
 
 /**
+ * How a site's `start` says it is the API.
+ *
+ * Two spellings, because both are legitimate and only the first was recognised:
+ *
+ *   `buddy serve:api`                                    the script alias
+ *   `bun node_modules/@stacksjs/actions/dist/serve/api.js`  the entrypoint itself
+ *
+ * The second is what a generated config actually contains once it resolves the
+ * package rather than going through a bin shim, and matching only the
+ * colon-separated alias classified it as a page server (stacksjs/stacks#2349).
+ */
+const apiStartPattern = /\bserve:api\b|(?:^|[\s/])serve\/api\.[cm]?[jt]s\b/
+
+/**
  * Whether a site is the API process the page server proxies `/api/**` to.
  *
  * By name, because that is what the docs and every generated config call it,
- * or by what it actually runs - a site called something else that starts
- * `serve:api` is still the API.
+ * or by what it actually runs - a site called something else that starts the
+ * API is still the API, whichever way it spells it.
  */
 function servesApi(name: string, site: any): boolean {
-  return name === 'api' || (typeof site?.start === 'string' && /\bserve:api\b/.test(site.start))
+  return name === 'api' || (typeof site?.start === 'string' && apiStartPattern.test(site.start))
+}
+
+/**
+ * How each site was classified, for the error message.
+ *
+ * The old messages asserted a conclusion the operator could see was false ("no
+ * site serves them", with an API site right there) and gave no way to find out
+ * what the classifier had decided. Diagnosing it meant reading the bundled
+ * source. Showing the verdict per site makes a misclassification obvious on the
+ * line that reports it.
+ */
+function describeSiteClassification(sites: Record<string, any>): string {
+  const described = Object.entries(sites)
+    .filter(([, site]) => typeof site?.start === 'string')
+    .map(([name, site]) => {
+      if (servesApi(name, site))
+        return `\`${name}\` (api)`
+      const env = (site?.env ?? {}) as Record<string, unknown>
+      const wiring = env.API_URL ? 'API_URL set' : env.PORT_API ? 'PORT_API set' : 'no API_URL or PORT_API'
+      return `\`${name}\` (page, ${wiring})`
+    })
+
+  return described.length > 0 ? `Sites examined: ${described.join(', ')}.` : 'No server-app sites were examined.'
 }
 
 /**
@@ -1416,6 +1453,7 @@ export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: b
       return undefined
 
     return 'This project declares API routes and no site serves them. `/api/**` will answer 502 on every request.\n'
+      + `${describeSiteClassification(sites)}\n`
       + 'Add an `api` site to config/cloud.ts running `buddy serve:api` on its own port, and set `PORT_API` on the site that serves the pages so its proxy can find it.\n'
       + 'Set `API_URL` on the page site instead when the API lives on another host.'
   }
@@ -1427,7 +1465,48 @@ export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: b
   const port = api[1]?.port
 
   return `The \`${api[0]}\` site serves the API, but ${unwired.map(([name]) => `\`${name}\``).join(', ')} will not proxy to it: neither \`PORT_API\` nor \`API_URL\` is set in its environment, so \`/api/**\` answers 502.\n`
+    + `${describeSiteClassification(sites)}\n`
     + `Set \`PORT_API: '${port ?? '<the api site\'s port>'}'\` in that site's \`env\` in config/cloud.ts.`
+}
+
+/**
+ * The database each site will migrate against, once its env is resolved.
+ *
+ * A site's `DB_CONNECTION` comes from its own `env` merged over
+ * `.env.<environment>`, so it is knowable locally and need not match whatever
+ * the operator has exported in their shell. Deduplicated, because the audit is
+ * per corpus and two sites on sqlite is one thing to check.
+ *
+ * Only sites that actually run migrations are considered. A static or proxy
+ * site ships no schema, and failing a deploy over the database a site never
+ * opens would be a refusal nobody can act on.
+ */
+export function siteDatabaseDrivers(sites: Record<string, any>): string[] {
+  const drivers = new Set<string>()
+
+  for (const site of Object.values(sites ?? {})) {
+    if (typeof site?.start !== 'string')
+      continue
+
+    // `migrateToken` matches one token, not a whole command line, so the step
+    // has to be split the way buddyInvocationFrom splits it.
+    const preStart = Array.isArray(site?.preStart) ? site.preStart : []
+    const migrates = preStart.some((step: unknown) =>
+      typeof step === 'string' && step.trim().split(/\s+/).some(token => migrateToken.test(token)))
+    if (!migrates)
+      continue
+
+    // Deliberately NOT falling back to the deploying shell's DB_CONNECTION. By
+    // this point the site's env already has .env.<environment> merged in, so it
+    // is what the box will run with; the operator's local value describes their
+    // laptop and auditing against it would refuse correct deploys and pass
+    // broken ones. Absent means the framework default, exactly as
+    // validateMigrationDialect reads it.
+    const env = (site?.env ?? {}) as Record<string, unknown>
+    drivers.add(String(env.DB_CONNECTION || 'sqlite').toLowerCase())
+  }
+
+  return [...drivers]
 }
 
 /**
@@ -2436,6 +2515,30 @@ async function runHetznerDeploy(args: {
   if (apiProblem) {
     log.error(apiProblem)
     throw new Error('Refusing to deploy: the API would not be reachable.')
+  }
+
+  /*
+   * Can the committed migrations actually run against the database each site is
+   * configured to open?
+   *
+   * Checked here, with the rest of the preventable refusals, because the answer
+   * is entirely local and the alternative is what already happened: the deploy
+   * succeeds, TLS is issued, DNS reconciles, the site answers 200, and the
+   * migrate step on the box fails with a wrong-dialect corpus. The scaffolded
+   * workflow runs that step with `|| echo "::warning::"`, so the job stays
+   * green and the app serves publicly with no tables (stacksjs/stacks#2347).
+   *
+   * `validateMigrationDialect` is the same gate `buddy migrate` uses, so a
+   * deploy cannot pass something the box will then reject. Same escape hatch
+   * too: STACKS_ALLOW_DIALECT_MISMATCH=1.
+   */
+  const { validateMigrationDialect } = await import('./migrate')
+  for (const driver of siteDatabaseDrivers(sitesWithResolvedEnv)) {
+    const dialect = validateMigrationDialect(p.projectPath(), { driver })
+    if (!dialect.valid) {
+      log.error(dialect.error ?? `The committed migrations cannot run on ${driver}.`)
+      throw new Error(`Refusing to deploy: the migrations cannot run on ${driver}.`)
+    }
   }
 
   // Also apply the decrypted values to THIS (local, deploying) process' env —

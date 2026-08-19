@@ -72,3 +72,60 @@ describe('apiDeploymentProblem', () => {
     expect(apiDeploymentProblem({ marketing: { root: './dist' } }, true)).toBeUndefined()
   })
 })
+
+describe('apiDeploymentProblem: classifying the API site (#2349)', () => {
+  // The reporter's config, verbatim in shape: the key is not `api` and the
+  // start command invokes the entrypoint file rather than the `serve:api`
+  // alias, so the old matcher counted the API site as a page server, then
+  // refused the deploy because that "page" had no API_URL.
+  const loghqApi = {
+    root: '.',
+    start: 'bun node_modules/@stacksjs/actions/dist/serve/api.js',
+    port: 3043,
+    env: { HOST: '127.0.0.1' },
+  }
+  const loghqPages = { root: '.', start: 'bun cli.js serve', port: 3042, env: { API_URL: 'http://127.0.0.1:3043' } }
+
+  it('accepts a site that runs the API entrypoint under any key', () => {
+    expect(apiDeploymentProblem({ 'main': loghqPages, 'loghq-api': loghqApi }, true)).toBeUndefined()
+  })
+
+  it('recognises the entrypoint however the path is spelled', () => {
+    for (const start of [
+      'bun node_modules/@stacksjs/actions/dist/serve/api.js',
+      'bun serve/api.ts',
+      'bun /srv/app/dist/serve/api.mjs',
+      'buddy serve:api',
+    ]) {
+      // The page site is wired, so the only thing under test is whether `svc`
+      // is recognised as the API rather than counted as a second page server.
+      const sites = { pages: { start: 'bun cli.js serve', env: { PORT_API: '3043' } }, svc: { start } }
+      expect(apiDeploymentProblem(sites, true)).toBeUndefined()
+    }
+  })
+
+  it('does not mistake a neighbouring path for the API entrypoint', () => {
+    // `preserve/api.js` ends in the same characters; the boundary has to hold
+    // or an unrelated site silently becomes the API and the real one is missed.
+    const problem = apiDeploymentProblem({ pages: { start: 'bun cli.js serve' }, other: { start: 'bun preserve/api.jsx' } }, true)
+
+    expect(problem).toContain('no site serves them')
+  })
+
+  it('shows how every site was classified when it refuses', () => {
+    const problem = apiDeploymentProblem({ main: { start: 'bun cli.js serve' }, worker: { start: 'bun queue.js' } }, true)
+
+    expect(problem).toContain('Sites examined:')
+    expect(problem).toContain('`main` (page, no API_URL or PORT_API)')
+    expect(problem).toContain('`worker` (page, no API_URL or PORT_API)')
+  })
+
+  it('names the API site in the classification when one is found but unwired', () => {
+    const problem = apiDeploymentProblem({ 'main': { start: 'bun cli.js serve' }, 'loghq-api': loghqApi }, true)
+
+    expect(problem).toContain('`loghq-api` (api)')
+    expect(problem).toContain('`main` (page, no API_URL or PORT_API)')
+    expect(problem).toContain('PORT_API')
+  })
+})
+

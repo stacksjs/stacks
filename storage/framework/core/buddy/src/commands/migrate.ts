@@ -170,8 +170,15 @@ function validateModelsExist(): { valid: boolean, error?: string } {
  * any action subprocess starts, so a mismatch cannot drop the framework tables
  * and only then discover it has nothing to rebuild them with.
  */
-export function validateMigrationDialect(cwd = process.cwd()): { valid: boolean, error?: string } {
-  const driver = String(process.env.DB_CONNECTION || 'sqlite').toLowerCase()
+export function validateMigrationDialect(
+  cwd = process.cwd(),
+  options: { driver?: string } = {},
+): { valid: boolean, error?: string } {
+  // `driver` is passed explicitly by the deploy preflight, which has to audit
+  // the connection each SITE will run with (resolved from its env and
+  // .env.<environment>) rather than whatever DB_CONNECTION happens to be set in
+  // the operator's shell. Defaults to the ambient value for every other caller.
+  const driver = String(options.driver || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
   const dir = resolveMigrationDirectory(driver, { cwd })
   const relativeDir = relativeMigrationDirectory(dir, cwd)
 
@@ -1141,7 +1148,8 @@ export function migrate(buddy: CLI): void {
     .option('--dry-run', 'Show what would change without writing anything', { default: false })
     .option('-f, --force', 'Regenerate even though the database already has migrations recorded', { default: false })
     .option('--replace-unmarked', 'Also delete migrations carrying no @generated marker (pre-marker corpora only)', { default: false })
-    .action(async (dialect: string | undefined, options: { dryRun?: boolean, force?: boolean, replaceUnmarked?: boolean }) => {
+    .option('--only-existing-tables', 'Rebuild exactly the tables already in the corpus, for changing dialect without adopting the framework schema', { default: false })
+    .action(async (dialect: string | undefined, options: { dryRun?: boolean, force?: boolean, replaceUnmarked?: boolean, onlyExistingTables?: boolean }) => {
       const perf = await intro('buddy migrate:regenerate')
 
       const target = (dialect || process.env.DB_CONNECTION || 'sqlite').toLowerCase()
@@ -1168,13 +1176,18 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const plan = await regenerateMigrationCorpus({ dialect: target, dryRun: true, replaceUnmarked: options.replaceUnmarked })
+      const plan = await regenerateMigrationCorpus({
+        dialect: target,
+        dryRun: true,
+        replaceUnmarked: options.replaceUnmarked,
+        onlyExistingTables: options.onlyExistingTables,
+      })
       if (resultFailed(plan)) {
         log.syncError(plan.error.message)
         process.exit(ExitCode.FatalError)
       }
 
-      const { files, removed, preserved, preservedOutOfScope, models, modelRoots } = plan.value
+      const { files, removed, preserved, preservedOutOfScope, models, modelRoots, unrebuildable } = plan.value
 
       // Preserved files are the ones no rerun can recreate, so they are the
       // only part of this plan a user cannot undo by running the command
@@ -1209,11 +1222,26 @@ ${preservedOutOfScope.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('
     with no definition for those tables at all. If they belong to framework
     models your app relies on without declaring (users, jobs, payments, ...),
     either publish them with \`buddy publish model <Name>\` or set
-    database.models.includeFrameworkDefaults, then regenerate again.`
+    re-run with --only-existing-tables to rebuild just these tables in the
+    target dialect. database.models.includeFrameworkDefaults also works, but it
+    adopts the framework's ENTIRE schema: every framework model becomes a
+    migration in your app, which for an app declaring a handful of models is
+    dozens of files it never asked for.`
 
       // The roots that actually contributed. Saying "app/Models and the
       // framework defaults" unconditionally was wrong for every app that has
       // models of its own (stacksjs/stacks#2255).
+      // Tables --only-existing-tables could not re-emit. Their files keep the
+      // old dialect, so a corpus that looks converted is not, and saying so is
+      // the difference between a clear result and a migration that fails later.
+      const unrebuildableBlock = unrebuildable.length === 0
+        ? ''
+        : `
+  • ${unrebuildable.length} table(s) in this corpus have no model behind them and will KEEP their current files:
+${unrebuildable.map(t => `      ${t}`).join('\n')}
+    Nothing can regenerate them, so those files stay in their existing dialect.
+    Publish the models with \`buddy publish model <Name>\` to convert them too.`
+
       const rootList = modelRoots.length === 0
         ? 'no model directory'
         : modelRoots.map(root => relative(process.cwd(), root) || root).join(' and ')
@@ -1224,7 +1252,7 @@ ${preservedOutOfScope.slice(0, OUT_OF_SCOPE_SHOWN).map(f => `      ${f}`).join('
   ─────────────────────────────────────────────
   • ${models} model(s) read from ${rootList}
   • ${files.length} migration file(s) will be written
-  • ${removed.length} existing file(s) will be removed${protectedHistoryBlock}${outOfScopeBlock}
+  • ${removed.length} existing file(s) will be removed${protectedHistoryBlock}${outOfScopeBlock}${unrebuildableBlock}
   • These files are tracked in git, so review with \`git diff\` afterwards
   ─────────────────────────────────────────────
 `)

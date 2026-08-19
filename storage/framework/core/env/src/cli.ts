@@ -139,6 +139,57 @@ export function envKeyNames(file?: string): { publicKeyName: string, privateKeyN
 }
 
 /**
+ * The public key an env file's existing ciphertext was encrypted under.
+ *
+ * Encrypting needs only the PUBLIC half, and an encrypted env file already
+ * carries it on its `DOTENV_PUBLIC_KEY*` line. Resolving the keypair from
+ * `.env.keys` instead is what let one file end up holding two generations at
+ * once (stacksjs/stacks#2348):
+ *
+ *   `.env.keys` is gitignored, so on a CI runner it does not exist. The private
+ *   key arrives as `DOTENV_PRIVATE_KEY_<ENV>` in the environment, which this
+ *   path never consulted. A file with any plaintext line therefore got a
+ *   BRAND NEW keypair, its four plaintext values encrypted under generation 2,
+ *   its public-key line replaced with generation 2's, and a fresh `.env.keys`
+ *   written. The thirty-three values already encrypted under generation 1 were
+ *   left behind, decryptable by a key the file no longer names.
+ *
+ * Reusing the file's own public key makes that structurally impossible: every
+ * value in the file stays under one key, and the operator's existing private
+ * key keeps working.
+ *
+ * Only reused when the file actually holds ciphertext. A scaffolded file can
+ * ship a demo `DOTENV_PUBLIC_KEY` whose private half was never generated, and
+ * encrypting real secrets under that would make them permanently unreadable.
+ * With no ciphertext there is nothing to stay consistent with, so a fresh
+ * keypair is both safe and correct.
+ */
+export function reusableEnvPublicKey(envContent: string, publicKeyName: string): string | undefined {
+  let publicKey: string | undefined
+  let hasCiphertext = false
+
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#'))
+      continue
+
+    const match = trimmed.match(/^([^=]+)=(.*)$/)
+    if (!match?.[1] || match[2] === undefined)
+      continue
+
+    const key = match[1].trim()
+    const value = match[2].trim().replace(/^["']|["']$/g, '')
+
+    if (key === publicKeyName)
+      publicKey = value
+    else if (value.startsWith('encrypted:') || value.startsWith('enc:'))
+      hasCiphertext = true
+  }
+
+  return publicKey && hasCiphertext ? publicKey : undefined
+}
+
+/**
  * Encrypt .env file
  */
 export function encryptEnv(options: EncryptOptions = {}): { success: boolean, output?: string, error?: string } {
@@ -155,7 +206,19 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
     let publicKey: string
     let privateKey: string
 
-    if (existsSync(keysPath)) {
+    // The file's own public key wins. See reusableEnvPublicKey: resolving from
+    // `.env.keys` alone is what produced a file holding two key generations.
+    const existingPublicKey = reusableEnvPublicKey(
+      readFileSync(envPath, 'utf-8'),
+      envKeyNames(options.file).publicKeyName,
+    )
+
+    if (existingPublicKey) {
+      // Deliberately no write to `.env.keys`: we hold only the public half, and
+      // inventing a private key to sit beside it would be a lie on disk.
+      publicKey = existingPublicKey
+    }
+    else if (existsSync(keysPath)) {
       const keysContent = readFileSync(keysPath, 'utf-8')
       const { parsed } = parse(keysContent)
 
@@ -394,7 +457,19 @@ export function setEnv(
         hasMatchingPrivateKey = Boolean(keys[privateKeyName])
       }
 
-      if (!hasMatchingPrivateKey) {
+      // Missing locally is not the same as missing. `.env.keys` is gitignored,
+      // so it is absent on every CI runner, where the private key arrives as
+      // `DOTENV_PRIVATE_KEY_<ENV>` in the environment instead. Discarding the
+      // file's public key on that evidence regenerates a keypair and leaves the
+      // file holding two generations, which is exactly the state that made 33
+      // committed values undecryptable in stacksjs/stacks#2348.
+      //
+      // So the file's own ciphertext is the better witness: if there is any,
+      // this public key is the one the rest of the file already uses and it has
+      // to stay. Only when the file carries no ciphertext, and no private key is
+      // reachable either way, is a fresh keypair the safe answer.
+      if (!hasMatchingPrivateKey && !process.env[privateKeyName]
+        && !reusableEnvPublicKey(content, publicKeyName)) {
         publicKey = undefined
       }
     }
