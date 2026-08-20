@@ -224,7 +224,7 @@ router.post('/webhooks/stripe', webhookHandler)
 ```ts
 // app/Events/StripeWebhook.ts
 import type Stripe from 'stripe'
-import { stripe } from '@stacksjs/payments'
+import { constructEvent } from '@stacksjs/payments'
 
 export async function handleWebhook(request: Request) {
   const sig = request.headers.get('stripe-signature')
@@ -233,13 +233,17 @@ export async function handleWebhook(request: Request) {
   let event: Stripe.Event
 
   try {
-    event = stripe.webhooks.constructEvent(
+    // Always await this. Verification is async on every runtime, because Bun
+    // resolves Stripe's crypto provider to WebCrypto, which has no sync path.
+    event = await constructEvent(
       body,
       sig!,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    console.error('Webhook signature verification failed')
+    // Log the real reason. A generic message here is how a verification bug
+    // hides: every delivery fails the same way and the cause never reaches you.
+    console.error('Webhook signature verification failed:', err)
     return new Response('Webhook Error', { status: 400 })
   }
 

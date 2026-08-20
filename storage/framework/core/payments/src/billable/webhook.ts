@@ -66,33 +66,32 @@ export function registerWebhookHandlers(handlerMap: Record<WebhookEventType, Web
 /**
  * Construct and verify a webhook event from the raw request.
  *
+ * Async on every runtime, deliberately. Bun resolves the Stripe SDK's crypto
+ * provider to WebCrypto's `SubtleCrypto`, which is async-only, so the SDK's
+ * synchronous `constructEvent` throws "SubtleCryptoProvider cannot be used in a
+ * synchronous context" there. This package used to wrap that sync call under
+ * this name and offer the working one as `constructEventAsync`, which made the
+ * shorter and more obvious export the one that could never work on the
+ * framework's own default runtime.
+ *
+ * It failed where it hurt most. Verification lives inside the caller's
+ * try/catch, so the throw surfaced as a 401 on every genuine Stripe delivery:
+ * Stripe retried, every retry 401'd, and local subscription state silently
+ * stopped tracking reality. Tests that call the handler directly rather than
+ * POSTing a signed body never touch verification at all, so nothing caught it
+ * (stacksjs/stacks#2355).
+ *
+ * There is one name now, and it works on Node and Bun alike. A caller that
+ * genuinely needs the synchronous path on Node can still reach
+ * `stripe.webhooks.constructEvent` through the exported client.
+ *
  * `tolerance` (in seconds) controls how much clock skew between Stripe and
  * this server is acceptable before signatures are rejected. Stripe's SDK
  * default is 300s; tightening this is recommended in production but the
  * previous code dropped the value entirely, so a configured tolerance was
  * silently ignored.
  */
-export function constructEvent(
-  payload: string | Buffer,
-  signature: string,
-  secret: string,
-  tolerance?: number,
-): Stripe.Event {
-  if (tolerance != null && Number.isFinite(tolerance) && tolerance > 0) {
-    return stripe.webhooks.constructEvent(payload, signature, secret, tolerance)
-  }
-  return stripe.webhooks.constructEvent(payload, signature, secret)
-}
-
-/**
- * Async variant of {@link constructEvent}. Some runtimes (notably Bun) resolve
- * the Stripe SDK's crypto provider to WebCrypto's `SubtleCrypto`, which is
- * async-only — the synchronous `constructEvent` then throws
- * "SubtleCryptoProvider cannot be used in a synchronous context". Verifying via
- * `constructEventAsync` works across Node and Bun, so webhook processing uses
- * this path.
- */
-export async function constructEventAsync(
+export async function constructEvent(
   payload: string | Buffer,
   signature: string,
   secret: string,
@@ -102,6 +101,22 @@ export async function constructEventAsync(
     return await stripe.webhooks.constructEventAsync(payload, signature, secret, tolerance)
   }
   return await stripe.webhooks.constructEventAsync(payload, signature, secret)
+}
+
+/**
+ * Alias of {@link constructEvent}, kept so callers that adopted this name while
+ * `constructEvent` could not work on Bun keep compiling unchanged.
+ *
+ * @deprecated Use {@link constructEvent}. It is async on every runtime as of
+ * stacksjs/stacks#2355, so the two are the same function and one name is enough.
+ */
+export async function constructEventAsync(
+  payload: string | Buffer,
+  signature: string,
+  secret: string,
+  tolerance?: number,
+): Promise<Stripe.Event> {
+  return await constructEvent(payload, signature, secret, tolerance)
 }
 
 /**
