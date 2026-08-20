@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.38...v0.72.39)
+
+## 📝 Documentation
+
+- regenerate the buddy command reference ([efd0924](https://github.com/stacksjs/stacks/commit/efd0924)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💄 Styles
+
+- no em-dashes in the strings people read ([cbc6e2c](https://github.com/stacksjs/stacks/commit/cbc6e2c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.37...v0.72.38)
 
 ## 🐛 Bug Fixes
