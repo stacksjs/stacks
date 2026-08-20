@@ -46,7 +46,7 @@ async function runStxChecks(startTime: number): Promise<void> {
       for (const line of r.detail.slice(0, 8)) out.push(`          ${line}`)
     }
     else if (r.status === 'loosened') {
-      out.push(`  DROP  ${r.label}: ${r.count} < baseline ${r.baseline} — lower it in config/lint.ts`)
+      out.push(`  DROP  ${r.label}: ${r.count} < baseline ${r.baseline} - lower it in config/lint.ts`)
     }
     else {
       out.push(`  ok    ${r.label}${r.baseline > 0 ? `  (${r.count}, held)` : ''}`)
@@ -54,7 +54,7 @@ async function runStxChecks(startTime: number): Promise<void> {
   }
 
   if (report.distMissing)
-    out.push('', '  note: no build output found — the dist checks did not run. Run `./buddy build` first.')
+    out.push('', '  note: no build output found - the dist checks did not run. Run `./buddy build` first.')
 
   if (report.loosened > 0) {
     out.push('', '  Current counts, for config/lint.ts:')

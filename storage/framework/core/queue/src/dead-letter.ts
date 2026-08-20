@@ -41,7 +41,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[queue/dlq] dead_letter_jobs table missing — DLQ disabled. '
+    '[queue/dlq] dead_letter_jobs table missing - DLQ disabled. '
     + 'Run migrations to enable poison-message isolation.',
   )
 }

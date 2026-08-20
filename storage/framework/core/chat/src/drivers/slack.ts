@@ -75,7 +75,7 @@ export function configure(options: SlackConfig): void {
       throw new Error(`[chat/slack] webhookUrl is not a valid URL: ${options.webhookUrl}`)
     }
     if (parsed.protocol !== 'https:') {
-      throw new Error('[chat/slack] webhookUrl must use https:// — Slack does not accept plain HTTP webhooks.')
+      throw new Error('[chat/slack] webhookUrl must use https:// - Slack does not accept plain HTTP webhooks.')
     }
     if (!/(?:^|\.)slack\.com$/i.test(parsed.hostname)) {
       throw new Error(`[chat/slack] webhookUrl host "${parsed.hostname}" is not a Slack-owned domain.`)

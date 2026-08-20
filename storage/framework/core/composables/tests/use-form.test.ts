@@ -35,7 +35,7 @@ const minLen = (n: number, msg: string): FormValidator => ({
   },
 })
 
-describe('useForm — values / dirty / reset', () => {
+describe('useForm - values / dirty / reset', () => {
   test('initialValues populate values + dirty/touched empty at start', () => {
     const form = useForm({
       initialValues: { email: '', password: '' },
@@ -92,7 +92,7 @@ describe('useForm — values / dirty / reset', () => {
   })
 })
 
-describe('useForm — validation modes', () => {
+describe('useForm - validation modes', () => {
   test('default mode (submit) does NOT validate on change or blur', () => {
     const form = useForm({
       initialValues: { email: '' },
@@ -146,7 +146,7 @@ describe('useForm — validation modes', () => {
   })
 })
 
-describe('useForm — handleSubmit', () => {
+describe('useForm - handleSubmit', () => {
   test('calls onSubmit with values when valid', async () => {
     let submitted: Record<string, unknown> | undefined
     const form = useForm({
@@ -219,7 +219,7 @@ describe('useForm — handleSubmit', () => {
   })
 })
 
-describe('useForm — setError / clearErrors (server-side surfacing)', () => {
+describe('useForm - setError / clearErrors (server-side surfacing)', () => {
   test('setError pins a message that survives until cleared', () => {
     const form = useForm({
       initialValues: { email: 'a@b.com' },
@@ -281,7 +281,7 @@ describe('useForm — setError / clearErrors (server-side surfacing)', () => {
   })
 })
 
-describe('useForm — field() accessor', () => {
+describe('useForm - field() accessor', () => {
   test('field accessor reflects current state reactively', () => {
     const form = useForm({
       initialValues: { name: 'Alice' },
@@ -331,7 +331,7 @@ describe('useForm — field() accessor', () => {
   })
 })
 
-describe('useForm — Phase 2 binding helpers (a11y + submit + focus)', () => {
+describe('useForm - Phase 2 binding helpers (a11y + submit + focus)', () => {
   test('inputProps() returns value + handlers + aria attributes', () => {
     const form = useForm({
       initialValues: { email: '' },
@@ -403,7 +403,7 @@ describe('useForm — Phase 2 binding helpers (a11y + submit + focus)', () => {
   })
 })
 
-describe('useForm — bench-review login flow (integration)', () => {
+describe('useForm - bench-review login flow (integration)', () => {
   test('the bench-review login pattern collapses into the documented shape', async () => {
     const calls: string[] = []
     const form = useForm({

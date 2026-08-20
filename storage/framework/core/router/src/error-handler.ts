@@ -177,7 +177,7 @@ export function trackQuery(query: string, time?: number, connection?: string): v
     // logging is the failing component during error rendering.
     import('@stacksjs/logging').then(({ log }) => {
       log.warn(
-        `[orm] Possible N+1 — query shape ran ${next}× in this request:\n  ${shape}\n  `
+        `[orm] Possible N+1 - query shape ran ${next}× in this request:\n  ${shape}\n  `
         + `Hint: load related rows with .with('relation') or eager-load via includes() before iterating.`,
       )
     }).catch(() => { /* logging unavailable — silently skip */ })

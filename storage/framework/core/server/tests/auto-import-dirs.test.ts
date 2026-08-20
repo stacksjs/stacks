@@ -42,7 +42,7 @@ describe('framework-default scan directories', () => {
     }
   })
 
-  it('resolves each directory it returns, or returns undefined — never a guess', () => {
+  it('resolves each directory it returns, or returns undefined - never a guess', () => {
     for (const sub of ['functions', 'app/Models', 'app/Controllers']) {
       const resolved = frameworkDefaultsDir(sub)
       if (resolved !== undefined)

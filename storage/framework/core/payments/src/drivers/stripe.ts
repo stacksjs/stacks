@@ -16,7 +16,7 @@ function StripeCtor(): StripeConstructor {
   catch {
     throw new Error(
       'Stripe payments are being used but the `stripe` package is not installed. '
-      + 'It is an opt-in dependency — run `bun add stripe` to enable server-side Stripe payments.',
+      + 'It is an opt-in dependency - run `bun add stripe` to enable server-side Stripe payments.',
     )
   }
 }

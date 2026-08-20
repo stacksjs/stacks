@@ -194,7 +194,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const sessionToken = process.env.AWS_SESSION_TOKEN
     if (!accessKeyId || !secretAccessKey) {
       throw new Error(
-        '[storage/s3] presignedUploadPolicy requires AWS credentials — '
+        '[storage/s3] presignedUploadPolicy requires AWS credentials - '
         + 'pass them via S3DiskConfig.credentials or set AWS_ACCESS_KEY_ID + AWS_SECRET_ACCESS_KEY.',
       )
     }
@@ -715,7 +715,7 @@ export class S3StorageAdapter implements StorageAdapter {
    */
   async presignedUploadUrl(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl> {
     if (!options.contentType)
-      throw new Error('[storage/s3] presignedUploadUrl requires `contentType` — S3 signs against the exact header.')
+      throw new Error('[storage/s3] presignedUploadUrl requires `contentType` - S3 signs against the exact header.')
 
     const expiresIn = Math.floor(options.expiresIn)
     const MIN_EXPIRY = 60

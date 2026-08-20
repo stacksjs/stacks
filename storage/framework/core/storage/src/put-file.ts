@@ -169,7 +169,7 @@ async function readBytes(file: UploadedFileLike): Promise<ArrayBuffer | Uint8Arr
   if (file.buffer !== undefined) return file.buffer
   if (typeof file.bytes === 'function') return await file.bytes()
   if (typeof file.arrayBuffer === 'function') return await file.arrayBuffer()
-  throw new Error('UploadedFile is missing both `buffer` and `bytes()`/`arrayBuffer()` accessors — cannot read file contents.')
+  throw new Error('UploadedFile is missing both `buffer` and `bytes()`/`arrayBuffer()` accessors - cannot read file contents.')
 }
 
 function bufferLikeToHash(buffer: ArrayBuffer | Uint8Array | Buffer): string {

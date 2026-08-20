@@ -25,7 +25,7 @@ function jsonReq(path: string, body: unknown, contentType = 'application/json'):
   })
 }
 
-describe('formatResult — JSON-first', () => {
+describe('formatResult - JSON-first', () => {
   test('object return → JSON', async () => {
     const router = createStacksRouter()
     router.get('/obj', () => ({ ok: true }) as any)
@@ -95,7 +95,7 @@ describe('formatResult — JSON-first', () => {
   })
 })
 
-describe('parseRequestBody — JSON variant widening', () => {
+describe('parseRequestBody - JSON variant widening', () => {
   test('application/json populates jsonBody', async () => {
     const router = createStacksRouter()
     let seen: unknown = null

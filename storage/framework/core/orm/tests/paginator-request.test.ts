@@ -14,7 +14,7 @@ afterEach(() => {
   // and the router module is real (we wrap real `runWithRequest` calls).
 })
 
-describe('resolvePageArgs — no request scope', () => {
+describe('resolvePageArgs - no request scope', () => {
   test('returns defaults when no args + no request', () => {
     const { perPage, page } = resolvePageArgs()
     expect(perPage).toBe(15)
@@ -31,7 +31,7 @@ describe('resolvePageArgs — no request scope', () => {
   })
 })
 
-describe('resolvePageArgs — with active request', () => {
+describe('resolvePageArgs - with active request', () => {
   test('reads ?page= and ?per_page= from active request', () => {
     runWithRequest(fakeRequest('http://example.com/users?page=3&per_page=25', { page: '3', per_page: '25' }), () => {
       const { perPage, page } = resolvePageArgs()
@@ -83,7 +83,7 @@ describe('resolveCursorArgs', () => {
   })
 })
 
-describe('enrichPaginatorUrls — full Paginator', () => {
+describe('enrichPaginatorUrls - full Paginator', () => {
   test('fills path + prev/next/first/last when on a middle page', () => {
     runWithRequest(fakeRequest('http://example.com/users?page=3&per_page=15', { page: '3', per_page: '15' }), () => {
       const paginator = {
@@ -138,7 +138,7 @@ describe('enrichPaginatorUrls — full Paginator', () => {
   })
 })
 
-describe('enrichPaginatorUrls — SimplePaginator', () => {
+describe('enrichPaginatorUrls - SimplePaginator', () => {
   test('only sets prev / next URLs (no first/last)', () => {
     runWithRequest(fakeRequest('http://example.com/feed?page=2', { page: '2' }), () => {
       const p = enrichPaginatorUrls({
@@ -161,7 +161,7 @@ describe('enrichPaginatorUrls — SimplePaginator', () => {
   })
 })
 
-describe('enrichPaginatorUrls — CursorPaginator', () => {
+describe('enrichPaginatorUrls - CursorPaginator', () => {
   test('emits prev/next URLs with cursor query param', () => {
     runWithRequest(fakeRequest('http://example.com/feed?cursor=mid', { cursor: 'mid' }), () => {
       const p = enrichPaginatorUrls({
@@ -183,7 +183,7 @@ describe('enrichPaginatorUrls — CursorPaginator', () => {
   })
 })
 
-describe('enrichPaginatorUrls — no request scope', () => {
+describe('enrichPaginatorUrls - no request scope', () => {
   test('returns paginator untouched when no request is active', () => {
     const p = enrichPaginatorUrls({
       data: [], current_page: 1, per_page: 10, total: 0, last_page: 1,

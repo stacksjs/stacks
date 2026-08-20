@@ -45,7 +45,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingEmailIdempotencyTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[email/idempotency] email_idempotency table missing — idempotency keys are accepted but NOT enforced. '
+    '[email/idempotency] email_idempotency table missing - idempotency keys are accepted but NOT enforced. '
     + 'Run migrations to enable dedup.',
   )
 }
@@ -81,7 +81,7 @@ export async function findEmailByIdempotencyKey(key: string): Promise<EmailResul
     if (!row) return null
     return {
       success: Boolean(row.success),
-      message: `Idempotent replay — original send recorded ${row.created_at}`,
+      message: `Idempotent replay - original send recorded ${row.created_at}`,
       provider: String(row.provider ?? 'cache'),
       messageId: row.message_id ?? undefined,
     } satisfies EmailResult

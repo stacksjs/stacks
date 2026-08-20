@@ -65,7 +65,7 @@ describe('users.email_verified_at defensive ALTER (stacksjs/stacks#1948)', () =>
       db.close()
     })
 
-    test('re-running the ALTER throws duplicate-column — the swallow both call sites rely on', () => {
+    test('re-running the ALTER throws duplicate-column - the swallow both call sites rely on', () => {
       const db = freshUsersDb()
       const ddl = usersEmailVerifiedAtSql(sqlHelpers('sqlite'))
       db.exec(ddl)

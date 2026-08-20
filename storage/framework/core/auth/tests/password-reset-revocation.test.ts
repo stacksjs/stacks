@@ -244,7 +244,7 @@ describe('password reset destroys session-auth sessions (#1947)', () => {
   const SESSION_VICTIM_EMAIL = 'session-victim-1947@example.com'
   const SESSION_CONTROL_EMAIL = 'session-control-1947@example.com'
 
-  test('successful reset deletes every session row for the user — and only theirs', async () => {
+  test('successful reset deletes every session row for the user - and only theirs', async () => {
     const victimId = await seedUser(SESSION_VICTIM_EMAIL, 'victim-password-123')
     const bystanderId = await seedUser(SESSION_CONTROL_EMAIL, 'bystander-password-123')
 

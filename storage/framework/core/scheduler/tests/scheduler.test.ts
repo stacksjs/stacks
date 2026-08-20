@@ -161,7 +161,7 @@ describe('@stacksjs/scheduler', () => {
     })
   })
 
-  describe('dedupe — same job + same cadence scheduled twice (double-fire fix)', () => {
+  describe('dedupe - same job + same cadence scheduled twice (double-fire fix)', () => {
     it('creates one timer, not two (e.g. a Job `rate` + an explicit Scheduler.ts entry)', async () => {
       const taskFn = mock(() => {})
       new Schedule(taskFn).everySecond().withName('dupe-fix')

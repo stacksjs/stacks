@@ -157,7 +157,7 @@ export function link(buddy: CLI): void {
       for (const name of wanted) {
         const source = available.get(name)
         if (!source) {
-          log.warn(`${name} is not in ${italic(framework)} — skipped.`)
+          log.warn(`${name} is not in ${italic(framework)} - skipped.`)
           continue
         }
 

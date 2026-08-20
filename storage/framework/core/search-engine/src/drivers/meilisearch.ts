@@ -21,7 +21,7 @@ function client(): Meilisearch {
   if (!MeilisearchCtor) {
     throw new Error(
       'The `meilisearch` search driver is selected but the `meilisearch` package is not installed. '
-      + 'It is an opt-in dependency — run `bun add meilisearch` to enable it, or switch drivers in `config/search-engine.ts`.',
+      + 'It is an opt-in dependency - run `bun add meilisearch` to enable it, or switch drivers in `config/search-engine.ts`.',
     )
   }
 

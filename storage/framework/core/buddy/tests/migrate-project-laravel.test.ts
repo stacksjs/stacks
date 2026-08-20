@@ -41,7 +41,7 @@ async function write(rel: string, body: string): Promise<void> {
   await writeFile(abs, body)
 }
 
-describe('parseLaravelMigration() — Schema::create translator', () => {
+describe('parseLaravelMigration() - Schema::create translator', () => {
   test('emits a CREATE TABLE for the canonical users migration', () => {
     const result = parseLaravelMigration(`<?php
 return new class extends Migration {
@@ -172,7 +172,7 @@ Schema::create('cfg', function (Blueprint $table) {
   })
 })
 
-describe('laravelFilenameToStacks() — filename rewriter', () => {
+describe('laravelFilenameToStacks() - filename rewriter', () => {
   test('rewrites create-table migrations into the Stacks sequence form', () => {
     expect(laravelFilenameToStacks('2024_01_15_120000_create_users_table.php', 1, 'users'))
       .toBe('0000000001-create-users-table.sql')
@@ -189,7 +189,7 @@ describe('laravelFilenameToStacks() — filename rewriter', () => {
   })
 })
 
-describe('parseLaravelModel() — Eloquent translator', () => {
+describe('parseLaravelModel() - Eloquent translator', () => {
   test('extracts class name, table, fillable, and casts', () => {
     const result = parseLaravelModel(`<?php
 namespace App\\Models;
@@ -352,7 +352,7 @@ return new class extends Migration {
     await seedLaravelProject()
     const report = await runMigrator({ source, target, from: 'laravel' })
     const md = renderReport(report)
-    expect(md).toContain('# Migration report — laravel → Stacks')
+    expect(md).toContain('# Migration report - laravel → Stacks')
     expect(md).toContain('## Translated')
     expect(md).toContain('## Copied verbatim')
     expect(md).toContain('## Skipped')

@@ -85,7 +85,7 @@ describe('the legacy-column guarantee', () => {
         .toBe('ALTER TABLE `notifications` MODIFY `created_at` DATETIME NOT NULL')
     })
 
-    test('keeps CURRENT_TIMESTAMP unquoted — it is a function, not a literal', () => {
+    test('keeps CURRENT_TIMESTAMP unquoted - it is a function, not a literal', () => {
       expect(modifyToDatetimeSql({ ...base, columnDefault: 'CURRENT_TIMESTAMP' }))
         .toContain('DEFAULT CURRENT_TIMESTAMP')
       expect(modifyToDatetimeSql({ ...base, columnDefault: 'CURRENT_TIMESTAMP' }))

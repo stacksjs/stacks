@@ -21,7 +21,7 @@ function escape(s: unknown): string {
 
 /** Render the recipient line (To/Cc/Bcc) — accepts both string[] and EmailAddress[]. */
 function fmtAddresses(addresses: Array<string | { name?: string, address: string }>): string {
-  if (!addresses?.length) return '—'
+  if (!addresses?.length) return '-'
   return addresses.map((a) => {
     if (typeof a === 'string') return escape(a)
     if (a.name) return `${escape(a.name)} &lt;${escape(a.address)}&gt;`
@@ -142,7 +142,7 @@ export function renderPreviewHtml(
 
   const sampleHint = sampleProps
     ? `<dd><code>resources/emails/_previews/${escape(mailable.slug)}.ts</code></dd>`
-    : `<dd class="muted">No sample file — edit <code>resources/emails/_previews/${escape(mailable.slug)}.ts</code> to customize.</dd>`
+    : `<dd class="muted">No sample file - edit <code>resources/emails/_previews/${escape(mailable.slug)}.ts</code> to customize.</dd>`
 
   return shell(mailable.name, `
     ${errorBlock}

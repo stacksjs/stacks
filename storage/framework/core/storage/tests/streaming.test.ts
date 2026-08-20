@@ -44,7 +44,7 @@ async function drain(stream: ReadableStream<Uint8Array>): Promise<Uint8Array> {
   return merged
 }
 
-describe('memory adapter — streaming', () => {
+describe('memory adapter - streaming', () => {
   const mem = new InMemoryStorageAdapter()
 
   test('putStream merges chunks and stores the byte string', async () => {
@@ -74,7 +74,7 @@ describe('memory adapter — streaming', () => {
   })
 })
 
-describe('local adapter — streaming', () => {
+describe('local adapter - streaming', () => {
   let local: LocalStorageAdapter
 
   beforeAll(() => {

@@ -11,7 +11,7 @@ function tick(ms = 0): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-describe('queryClient — cache + invalidate', () => {
+describe('queryClient - cache + invalidate', () => {
   test('get/set round-trips', () => {
     const c = createQueryClient()
     c.set(['users'], [{ id: 1 }])
@@ -25,7 +25,7 @@ describe('queryClient — cache + invalidate', () => {
     expect(c.get(['count'])).toBe(2)
   })
 
-  test('stable key hashing — object key order does not matter', () => {
+  test('stable key hashing - object key order does not matter', () => {
     const c = createQueryClient()
     c.set(['judges', { practiceArea: 'tax', state: 'CA' }], ['A'])
     expect(c.get(['judges', { state: 'CA', practiceArea: 'tax' }])).toEqual(['A'])
@@ -60,7 +60,7 @@ describe('queryClient — cache + invalidate', () => {
   })
 })
 
-describe('useQuery — fetch + cache + dedup', () => {
+describe('useQuery - fetch + cache + dedup', () => {
   test('first fetch populates data + clears isLoading', async () => {
     const c = createQueryClient()
     const q = useQuery({
@@ -180,7 +180,7 @@ describe('useQuery — fetch + cache + dedup', () => {
   })
 })
 
-describe('useMutation — write + optimistic + rollback', () => {
+describe('useMutation - write + optimistic + rollback', () => {
   test('mutateAsync resolves with data', async () => {
     const m = useMutation({
       mutationFn: async (id: number) => ({ id, done: true }),
@@ -275,7 +275,7 @@ describe('useMutation — write + optimistic + rollback', () => {
   })
 })
 
-describe('Phase B — predicate invalidation', () => {
+describe('Phase B - predicate invalidation', () => {
   test('invalidate({ predicate }) refetches only matching keys', async () => {
     const c = createQueryClient()
     let aN = 0
@@ -303,7 +303,7 @@ describe('Phase B — predicate invalidation', () => {
   })
 })
 
-describe('Phase B — garbage collection', () => {
+describe('Phase B - garbage collection', () => {
   test('gc() removes entries with no subscribers and no inflight', async () => {
     const c = createQueryClient()
     const q = useQuery({ queryKey: ['gc1'], queryFn: async () => 1, client: c })
@@ -349,7 +349,7 @@ describe('Phase B — garbage collection', () => {
   })
 })
 
-describe('Phase B — refetch on focus / reconnect', () => {
+describe('Phase B - refetch on focus / reconnect', () => {
   test('refetchOnFocus refetches (when stale) on a focus event', async () => {
     const c = createQueryClient()
     const target = new EventTarget()

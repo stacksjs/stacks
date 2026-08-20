@@ -109,7 +109,7 @@ export function runOneTick(): void {
     const missed = state.missed.get(socket) ?? 0
 
     if (missed >= state.maxMissedPongs) {
-      log.warn(`[realtime] socket missed ${missed} pongs — declaring dead`)
+      log.warn(`[realtime] socket missed ${missed} pongs - declaring dead`)
       try {
         state.onDead(socket)
       }

@@ -146,7 +146,7 @@ describe('belongsToMany pivot accessor (audit #8)', () => {
     expect(result.detached).not.toContain(a2.id)
   })
 
-  it('toggle flips presence — attached becomes detached and vice versa', async () => {
+  it('toggle flips presence - attached becomes detached and vice versa', async () => {
     const coach = await (Coach as any).create({ name: 'Toggler' })
     const a1 = await (Athlete as any).create({ name: 'M' })
     const a2 = await (Athlete as any).create({ name: 'N' })

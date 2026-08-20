@@ -1001,7 +1001,7 @@ The future of full-stack development is here. Let's build something great togeth
       title: 'Deploying to AWS with a Single Command',
       slug: 'deploying-to-aws',
       content: 'Learn how Stacks makes cloud deployment as simple as running ./buddy deploy.',
-      body: `One of the most powerful features of Stacks is its built-in cloud deployment pipeline. Instead of wrestling with Terraform, CDK, or manual AWS console clicks, you can deploy your entire application — API, frontend, docs, and blog — with a single command.
+      body: `One of the most powerful features of Stacks is its built-in cloud deployment pipeline. Instead of wrestling with Terraform, CDK, or manual AWS console clicks, you can deploy your entire application - API, frontend, docs, and blog - with a single command.
 
 ## The Problem with Cloud Deployment
 
@@ -1055,7 +1055,7 @@ Subsequent deployments are incremental. Stacks detects what changed and only upd
 ## Try It Yourself
 
 If you have an AWS account, you can deploy a Stacks app in under 10 minutes. Check out our [deployment guide](https://stacksjs.com/docs/bootcamp/deploy) to get started.`,
-      excerpt: 'Learn how Stacks makes cloud deployment as simple as running a single command. No Terraform, no CDK — just ./buddy deploy.',
+      excerpt: 'Learn how Stacks makes cloud deployment as simple as running a single command. No Terraform, no CDK - just ./buddy deploy.',
       status: 'published',
       published_at: '2026-02-18T14:00:00.000Z',
       views: 840,
@@ -1153,7 +1153,7 @@ We are working on even more ORM features — real-time subscriptions, full-text 
       title: 'Meet Buddy: Your CLI Companion for Stacks Development',
       slug: 'meet-buddy-cli',
       content: 'Buddy is the CLI tool that powers your entire Stacks development workflow.',
-      body: `Every great framework needs a great CLI. In Stacks, that CLI is called **Buddy** — your companion for development, testing, deployment, and everything in between.
+      body: `Every great framework needs a great CLI. In Stacks, that CLI is called **Buddy** - your companion for development, testing, deployment, and everything in between.
 
 ## What Can Buddy Do?
 
@@ -1207,7 +1207,7 @@ Buddy runs on [Bun](https://bun.sh), giving it near-instant startup times and ex
 ## Try It
 
 Start a new Stacks project and explore what Buddy can do. You might be surprised how much a good CLI can improve your workflow.`,
-      excerpt: 'Buddy is the CLI tool that powers your entire Stacks development workflow — from dev server to deployment, all in one place.',
+      excerpt: 'Buddy is the CLI tool that powers your entire Stacks development workflow - from dev server to deployment, all in one place.',
       status: 'published',
       published_at: '2026-02-12T11:30:00.000Z',
       views: 450,
@@ -1262,7 +1262,7 @@ No separate CI/CD pipeline needed. No extra configuration. It just works.
 ## Start Documenting
 
 Great software deserves great documentation. With Stacks, there's no excuse not to write it.`,
-      excerpt: 'How Stacks makes writing and deploying documentation effortless — from Markdown to a deployed docs site in seconds.',
+      excerpt: 'How Stacks makes writing and deploying documentation effortless - from Markdown to a deployed docs site in seconds.',
       status: 'published',
       published_at: '2026-02-10T08:00:00.000Z',
       views: 380,

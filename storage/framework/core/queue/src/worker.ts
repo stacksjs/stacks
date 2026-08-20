@@ -181,7 +181,7 @@ async function sweepStaleReservations(): Promise<number> {
     if (requeued > 0) {
       log.warn(
         `[queue] Requeued ${requeued} job(s) whose reservation exceeded the `
-        + `${ttlSec}s TTL — likely victims of a worker crash. Set `
+        + `${ttlSec}s TTL - likely victims of a worker crash. Set `
         + `STACKS_QUEUE_RESERVATION_TTL_SEC to tune.`,
       )
     }
@@ -371,7 +371,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
           const last = reserveErrorLoggedAt.get(queueName) ?? 0
           if (now - last > 60_000) {
             reserveErrorLoggedAt.set(queueName, now)
-            log.error(`[queue] Could not reserve jobs on "${queueName}" — retrying each cycle:`, error)
+            log.error(`[queue] Could not reserve jobs on "${queueName}" - retrying each cycle:`, error)
           }
           continue
         }
@@ -604,7 +604,7 @@ async function processJob(job: any): Promise<void> {
             exception: jobError.stack || jobError.message,
           }, 'repeat-failure', 2)
           if (persisted)
-            log.info(`[Queue] Job ${jobId} re-failed after retry — moved to dead_letter_jobs`)
+            log.info(`[Queue] Job ${jobId} re-failed after retry - moved to dead_letter_jobs`)
         }
         catch {
           persisted = false
@@ -632,7 +632,7 @@ async function processJob(job: any): Promise<void> {
         }
       }
       else {
-        log.error(`[Queue] Job ${jobId} exhausted its retries but could NOT be persisted to failed_jobs — leaving it in the queue to avoid data loss (the reservation sweep will retry it). Check that the failed_jobs table exists and is writable.`)
+        log.error(`[Queue] Job ${jobId} exhausted its retries but could NOT be persisted to failed_jobs - leaving it in the queue to avoid data loss (the reservation sweep will retry it). Check that the failed_jobs table exists and is writable.`)
       }
 
       // Poison-message detection + circuit-breaker accounting
@@ -988,7 +988,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
       // exact same payload will fail the exact same way next time. Marking
       // them retryable just burns the retry budget and floods failed_jobs.
       if (isNonRetryableError(e)) {
-        log.info(`[Queue] Redis job ${bunJob.id} hit a non-retryable error — skipping retry`)
+        log.info(`[Queue] Redis job ${bunJob.id} hit a non-retryable error - skipping retry`)
         return // resolve without throw → bun-queue treats job as completed-with-error
       }
       throw e // Let bun-queue handle retries

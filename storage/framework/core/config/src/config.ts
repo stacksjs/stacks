@@ -139,7 +139,7 @@ export async function awaitDatabaseConfig(): Promise<StacksOptions> {
   }
   if (!globalScope[DB_READY]) {
     // eslint-disable-next-line no-console
-    console.warn('[config] awaitDatabaseConfig() timed out — database driver did not signal readiness within 5s')
+    console.warn('[config] awaitDatabaseConfig() timed out - database driver did not signal readiness within 5s')
   }
   return config
 }

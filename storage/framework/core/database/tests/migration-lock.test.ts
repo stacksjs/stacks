@@ -12,7 +12,7 @@ import { acquireMigrationLock } from '../src/migration-lock'
 // integration.test.ts); the unit tests here pin the file-based lock
 // contract: atomic creation, stale-recovery, and timeout behavior.
 
-describe('acquireMigrationLock (sqlite) — stacksjs/stacks#1876 D-1', () => {
+describe('acquireMigrationLock (sqlite) - stacksjs/stacks#1876 D-1', () => {
   const testRoot = join(tmpdir(), `stacks-migration-lock-${Date.now()}`)
   const lockPath = join(testRoot, '.migration.lock')
 
@@ -133,7 +133,7 @@ describe('acquireMigrationLock (unknown dialect)', () => {
   })
 })
 
-describe('acquireMigrationLock (postgres) — mocked db', () => {
+describe('acquireMigrationLock (postgres) - mocked db', () => {
   function mockDb(behavior: (sql: string) => unknown): { unsafe: (sql: string) => Promise<unknown> } {
     return {
       unsafe: async (sql: string) => behavior(sql),
@@ -186,7 +186,7 @@ describe('acquireMigrationLock (postgres) — mocked db', () => {
   })
 })
 
-describe('acquireMigrationLock (mysql) — mocked db', () => {
+describe('acquireMigrationLock (mysql) - mocked db', () => {
   function mockDb(behavior: (sql: string) => unknown): { unsafe: (sql: string) => Promise<unknown> } {
     return {
       unsafe: async (sql: string) => behavior(sql),

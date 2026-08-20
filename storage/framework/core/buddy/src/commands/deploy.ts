@@ -1015,7 +1015,7 @@ export async function resolveDeployEnvValues(
 
     for (const { tenant, keys } of foreignTenantKeys(partition)) {
       log.warn(
-        `[deploy] Skipping ${keys.length} '${tenant}' key(s) in ${fileName} — they belong to that tenant's own `
+        `[deploy] Skipping ${keys.length} '${tenant}' key(s) in ${fileName} - they belong to that tenant's own `
         + `repository, and shipping them writes its secrets into this project's site .env files. `
         + `Remove them with: buddy env:check --file ${fileName}. Keys: ${keys.join(', ')}`,
       )
@@ -2235,7 +2235,7 @@ async function runHetznerDeploy(args: {
       process.exit(ExitCode.FatalError)
     }
 
-    log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) — skipping provisioning`)
+    log.info(`Attaching to '${attachTo}' box '${box.serverName}' (${ip}) - skipping provisioning`)
 
     // Even a unique slug can collide with a tenant that got there first. The
     // fragment on the box is the source of truth for what this slug currently
@@ -2309,7 +2309,7 @@ async function runHetznerDeploy(args: {
   if (ip)
     log.info(`Server IP: ${ip}`)
   if (!ip) {
-    log.error('Provisioned server has no public IP — cannot deploy over SSH.')
+    log.error('Provisioned server has no public IP - cannot deploy over SSH.')
     process.exit(ExitCode.FatalError)
   }
 
@@ -2725,7 +2725,7 @@ async function runHetznerDeploy(args: {
     log.info(`Coming-soon page: http://${ip}:3000  (bypass with ?secret=…)`)
   }
   else {
-    await outro('Hetzner deploy reported a failure — see the per-instance output above.', { startTime, useSeconds: true })
+    await outro('Hetzner deploy reported a failure - see the per-instance output above.', { startTime, useSeconds: true })
     process.exit(ExitCode.FatalError)
   }
 }
@@ -3021,7 +3021,7 @@ export async function resolveAttachTargetBox(
   // call is unconditional now, and a missing export warns instead of vanishing.
   const { normalizePublicIpv6 } = await import('@stacksjs/ts-cloud') as any
   if (typeof normalizePublicIpv6 !== 'function')
-    log.warn('DNS: @stacksjs/ts-cloud does not export normalizePublicIpv6 — AAAA records will be skipped. Upgrade ts-cloud.')
+    log.warn('DNS: @stacksjs/ts-cloud does not export normalizePublicIpv6 - AAAA records will be skipped. Upgrade ts-cloud.')
   const reportedIpv6 = chosen.public_net?.ipv6?.ip
   return {
     box: {
@@ -3108,7 +3108,7 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
     + 'KEY = the delivered mailbox: the FULL address for per-domain isolated mailboxes (e.g. no-reply@app.com), '
     + 'or a bare local-part for legacy role mailboxes. VALUE = list of destination addresses; targets on a local '
     + 'domain are written straight to that mailbox Maildir, external targets are relayed. Managed by buddy deploy '
-    + 'from config/email.ts (merge-based — hand edits to other keys are preserved).'
+    + 'from config/email.ts (merge-based - hand edits to other keys are preserved).'
   const readmeB64 = Buffer.from(readme).toString('base64')
   // address<TAB>password per mailbox, base64'd as one blob for the shell hop.
   //
@@ -3474,7 +3474,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
 
     const certHost = (out.match(/CERTHOST:([^\n]*)/) || [])[1]?.trim()
     if (certHost)
-      logger.success(`Mail: ${certHost} added to the mail certificate — clients can use it as the server name`)
+      logger.success(`Mail: ${certHost} added to the mail certificate - clients can use it as the server name`)
 
     const certError = (out.match(/CERTFAIL:([^\n]*)/) || [])[1]?.trim()
     if (certError)
@@ -3488,7 +3488,7 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
       logger.warn(`Mail: ${unaccounted.length} declared mailbox(es) were not reconciled: ${unaccounted.join(', ')}`)
 
     if (created.length) {
-      logger.info(`Mail: created ${created.length} mailbox(es) — credentials below (save them; shown once):`)
+      logger.info(`Mail: created ${created.length} mailbox(es) - credentials below (save them; shown once):`)
       for (const b of created)
         logger.info(`  ${b.address}  ${b.password}`)
     }
@@ -3539,7 +3539,7 @@ async function resolveZoneDnsProvider(domain: string, providerConfigs: any[], lo
   const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
 
   const provider = await detectDnsProvider(domain, providerConfigs).catch((err: any) => {
-    logger.warn(`  DNS: ignoring a configured provider for ${domain} — its credentials were rejected (${err?.message || err})`)
+    logger.warn(`  DNS: ignoring a configured provider for ${domain} - its credentials were rejected (${err?.message || err})`)
     return undefined
   })
   if (provider)
@@ -3646,7 +3646,7 @@ export function findMailDnsAnomalies<T extends { name?: unknown, type?: unknown,
     if (ours.length === 0)
       problems.push(`${expectation.label}: nothing published at ${expectation.fqdn}`)
     else if (ours.length > 1)
-      problems.push(`${expectation.label}: ${ours.length} records at ${expectation.fqdn}, expected 1 — receivers treat a duplicated ${expectation.type} here as unconfigured, so remove the stale one`)
+      problems.push(`${expectation.label}: ${ours.length} records at ${expectation.fqdn}, expected 1 - receivers treat a duplicated ${expectation.type} here as unconfigured, so remove the stale one`)
   }
 
   return problems
@@ -4015,9 +4015,9 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
           if (current.includes(ip))
             logger.success(`  DNS: ${fqdn} → ${ip} (externally managed, already correct)`)
           else if (current.length === 0)
-            logger.warn(`  DNS: ${fqdn} does not resolve and no configured provider manages ${domain} — create it manually: A ${fqdn} → ${ip}`)
+            logger.warn(`  DNS: ${fqdn} does not resolve and no configured provider manages ${domain} - create it manually: A ${fqdn} → ${ip}`)
           else
-            logger.warn(`  DNS: ${fqdn} resolves to ${current.join(', ')} but this deploy targets ${ip}, and no configured provider manages ${domain} — update it manually: A ${fqdn} → ${ip}`)
+            logger.warn(`  DNS: ${fqdn} resolves to ${current.join(', ')} but this deploy targets ${ip}, and no configured provider manages ${domain} - update it manually: A ${fqdn} → ${ip}`)
         }
         continue
       }
@@ -4081,7 +4081,7 @@ async function buildContainerImageWithPantry(args: {
     catch { /* not on PATH */ }
   }
   if (!cli) {
-    log.warn('pantry CLI not found on PATH — skipping container image build. Install pantry to enable `--docker`.')
+    log.warn('pantry CLI not found on PATH - skipping container image build. Install pantry to enable `--docker`.')
     return
   }
 

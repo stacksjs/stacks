@@ -334,7 +334,7 @@ export class Schedule implements UntimedSchedule {
     }
 
     if (slots.length > max) {
-      log.warn(`[scheduler] runMissed: ${slots.length} missed slots since ${new Date(since).toISOString()}, capping at ${max} — older runs dropped`)
+      log.warn(`[scheduler] runMissed: ${slots.length} missed slots since ${new Date(since).toISOString()}, capping at ${max} - older runs dropped`)
       slots.splice(0, slots.length - max)
     }
 
@@ -905,7 +905,7 @@ export class Schedule implements UntimedSchedule {
         const mod = await import('@stacksjs/notifications').catch(() => null)
         const notify = (mod as { notify?: (...args: unknown[]) => Promise<unknown> } | null)?.notify
         if (!notify) {
-          log.error('schedule.notification: @stacksjs/notifications.notify is not available — install / wire the notifications package.')
+          log.error('schedule.notification: @stacksjs/notifications.notify is not available - install / wire the notifications package.')
           return
         }
         await notify(recipient, payload, channels, options)

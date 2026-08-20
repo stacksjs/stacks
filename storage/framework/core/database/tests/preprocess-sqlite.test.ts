@@ -25,7 +25,7 @@ import { preprocessSqliteMigrations } from '../src/migrations'
 //   - Recorded migration files are immutable, even when the live schema
 //     already reflects their changes.
 
-describe('preprocessSqliteMigrations — keep portable files (stacksjs/stacks#1916)', () => {
+describe('preprocessSqliteMigrations - keep portable files (stacksjs/stacks#1916)', () => {
   let workspace: string
   let migrationsDir: string
   let originalCwd: string
@@ -92,7 +92,7 @@ describe('preprocessSqliteMigrations — keep portable files (stacksjs/stacks#19
   })
 })
 
-describe('preprocessSqliteMigrations — unique-index files must run (stacksjs/stacks#1952)', () => {
+describe('preprocessSqliteMigrations - unique-index files must run (stacksjs/stacks#1952)', () => {
   let workspace: string
   let migrationsDir: string
   let originalCwd: string

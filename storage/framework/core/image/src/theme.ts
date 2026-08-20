@@ -32,7 +32,7 @@ export function projectFile(path: string, root: string = process.cwd()): string 
 export function requireProjectFile(path: string, root: string, describe: string): string {
   const resolved = projectFile(path, root)
   if (!existsSync(resolved))
-    throw new Error(`[image] ${describe} not found: ${path}\nLooked in ${resolved}. Capture it before generating — \`buddy generate:images\` frames existing captures, it does not take them.`)
+    throw new Error(`[image] ${describe} not found: ${path}\nLooked in ${resolved}. Capture it before generating - \`buddy generate:images\` frames existing captures, it does not take them.`)
 
   return resolved
 }

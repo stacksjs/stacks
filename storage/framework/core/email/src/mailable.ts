@@ -351,10 +351,10 @@ export abstract class Mailable<TProps extends Record<string, unknown> = Record<s
     await Promise.resolve(this.build())
 
     if (this._to.length === 0)
-      throw new Error('[Mailable] no recipients — call this.to(...) inside build()')
+      throw new Error('[Mailable] no recipients - call this.to(...) inside build()')
 
     if (!this._subject)
-      throw new Error('[Mailable] no subject — call this.subject(...) inside build()')
+      throw new Error('[Mailable] no subject - call this.subject(...) inside build()')
 
     // Render the template (if provided) into html + text. Direct html/text
     // setters take precedence so apps can override the rendered output if

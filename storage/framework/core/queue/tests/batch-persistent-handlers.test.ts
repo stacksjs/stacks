@@ -32,7 +32,7 @@ function makeRecord(overrides: Partial<BatchRecord> = {}): BatchRecord {
   }
 }
 
-describe('batch persistent handlers — Redis hash codec', () => {
+describe('batch persistent handlers - Redis hash codec', () => {
   test('a registered handler survives the encode/decode round trip', () => {
     const record = makeRecord({
       then_handler: JSON.stringify(thenHandler),

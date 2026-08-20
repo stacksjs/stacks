@@ -463,7 +463,7 @@ export class InMemoryStorageAdapter implements StorageAdapter {
    * ```
    */
   async signedUrl(_path: string, _options: SignedUrlOptions): Promise<string> {
-    throw new Error('[storage/memory] signedUrl is not supported on the in-memory adapter — switch to local or s3 disk for signed URL generation.')
+    throw new Error('[storage/memory] signedUrl is not supported on the in-memory adapter - switch to local or s3 disk for signed URL generation.')
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {

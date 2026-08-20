@@ -72,7 +72,7 @@ function commandSection(command: BuddyCommandInventoryEntry): string {
       '',
       '| Option | Description | Contract | Default |',
       '| --- | --- | --- | --- |',
-      ...command.options.map(option => `| ${optionFlags(option)} | ${markdown(option.description || '—')} | ${optionKind(option)} | ${option.default === undefined ? '—' : code(JSON.stringify(stablePath(option.default)))} |`),
+      ...command.options.map(option => `| ${optionFlags(option)} | ${markdown(option.description || '-')} | ${optionKind(option)} | ${option.default === undefined ? '-' : code(JSON.stringify(stablePath(option.default)))} |`),
     )
   }
 

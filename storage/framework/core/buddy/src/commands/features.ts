@@ -582,7 +582,7 @@ export async function setFeatureEnabled(
   const insertRegex = /(export default\s*\{)/
   if (!insertRegex.test(src)) {
     throw new Error(
-      `Could not locate \`export default {\` in ${path} — please add \`enabled: ${enabled}\` manually.`,
+      `Could not locate \`export default {\` in ${path} - please add \`enabled: ${enabled}\` manually.`,
     )
   }
   const next = src.replace(insertRegex, `$1\n  enabled: ${enabled},`)
@@ -652,7 +652,7 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
           for (const path of copied) console.log(`    - ${path}`)
         }
         else if (featurePathsPresent(feature).length > 0) {
-          console.log(`  → ${feature} scaffolding already in place — use --force to overwrite.`)
+          console.log(`  → ${feature} scaffolding already in place - use --force to overwrite.`)
         }
 
         console.log(`  → next ./buddy dev will boot with ${feature} loaded.`)

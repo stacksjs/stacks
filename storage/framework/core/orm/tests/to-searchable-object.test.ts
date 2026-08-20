@@ -108,7 +108,7 @@ describe('Mailable.toSearchableObject (stacksjs/stacks#1917)', () => {
     const inst = await (RichUser as any).create({
       email: 'grace@example.com',
       name: 'Grace',
-      bio: 'private — should NOT appear in displayable',
+      bio: 'private - should NOT appear in displayable',
       created_at: '2026-05-27T00:00:00Z',
     })
     const doc = (inst as any).toSearchableObject()

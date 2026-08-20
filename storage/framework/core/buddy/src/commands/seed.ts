@@ -84,7 +84,7 @@ export function seed(buddy: CLI): void {
         const result = await seedDefaultRoles()
         if (result.created.length === 0 && result.skipped.length > 0) {
           await outro(
-            `All ${result.skipped.length} default role packs already exist — nothing to do.`,
+            `All ${result.skipped.length} default role packs already exist - nothing to do.`,
             { startTime: perf, useSeconds: true },
           )
         }

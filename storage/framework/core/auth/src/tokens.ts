@@ -468,7 +468,7 @@ export async function createToken(
 
   const row = (inserted as any[])[0]
   if (!row) {
-    throw new HttpError(500, 'Failed to create access token — inserted row not found')
+    throw new HttpError(500, 'Failed to create access token - inserted row not found')
   }
 
   const accessToken: AccessToken = {

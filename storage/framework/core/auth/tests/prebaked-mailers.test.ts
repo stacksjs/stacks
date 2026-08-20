@@ -205,7 +205,7 @@ async function resetRowCount(email: string): Promise<number> {
 }
 
 describe('password reset anti-enumeration (#1944)', () => {
-  test('unknown email is a silent no-op — no row, no send', async () => {
+  test('unknown email is a silent no-op - no row, no send', async () => {
     await expect(passwordResets('ghost-1944@example.com').sendEmail()).resolves.toBeUndefined()
     expect(await resetRowCount('ghost-1944@example.com')).toBe(0)
     expect(sent.length).toBe(0)

@@ -10,7 +10,7 @@ function freshCache(opts: { inflightTimeoutMs?: number } = {}): StacksCache {
   return new StacksCache(manager, opts)
 }
 
-describe('StacksCache.getOrSet — inflight timeout (#1876 C-2)', () => {
+describe('StacksCache.getOrSet - inflight timeout (#1876 C-2)', () => {
   let timers: Array<ReturnType<typeof setTimeout>> = []
 
   afterEach(() => {

@@ -334,7 +334,7 @@ export function assertSafeIdentifier(
   const result = validateIdentifier(value, opts)
   if (result.valid) return
   const ctx = opts.context ? ` in ${opts.context}` : ''
-  throw new Error(`[query-builder] Refusing to use ${JSON.stringify(value)} as a SQL identifier${ctx} — ${result.reason}`)
+  throw new Error(`[query-builder] Refusing to use ${JSON.stringify(value)} as a SQL identifier${ctx} - ${result.reason}`)
 }
 
 /**
@@ -359,7 +359,7 @@ export function isSafeOperator(op: unknown): op is string {
 export function assertSafeOperator(op: unknown, context?: string): asserts op is string {
   if (isSafeOperator(op)) return
   const ctx = context ? ` in ${context}` : ''
-  throw new Error(`[query-builder] Refusing to use ${JSON.stringify(op)} as a SQL operator${ctx} — not in the allowed set (${[...SAFE_OPERATORS].join(', ')})`)
+  throw new Error(`[query-builder] Refusing to use ${JSON.stringify(op)} as a SQL operator${ctx} - not in the allowed set (${[...SAFE_OPERATORS].join(', ')})`)
 }
 
 // Apply the framework's snapshot location at module load.

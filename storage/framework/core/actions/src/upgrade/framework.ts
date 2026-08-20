@@ -234,7 +234,7 @@ const newVersion = readVersion(corePkgPath)
 // itself somehow.
 const ownHashAfter = await hashFileOrZero(ownPath)
 if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfter && !alreadyRestarted) {
-  console.log('Upgrade pulled a newer version of the upgrade action — re-running once to pick up new sync paths and hooks.\n')
+  console.log('Upgrade pulled a newer version of the upgrade action - re-running once to pick up new sync paths and hooks.\n')
   // Forward the user's original args plus the sentinel.
   const args = process.argv.slice(2).filter(a => a !== '--__restarted')
   const proc = Bun.spawn({
@@ -695,7 +695,7 @@ async function runPostSyncHooks(args: {
 
   const changeCount = aggregate.added + aggregate.changed + aggregate.removed
   if (!shouldRunPostSyncHooks(changeCount, alreadyRestarted)) {
-    console.log('Nothing changed — skipping post-sync hooks.')
+    console.log('Nothing changed - skipping post-sync hooks.')
     return
   }
 

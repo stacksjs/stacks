@@ -184,7 +184,7 @@ export function applyBumps(pkg: PkgJson, target: string, lockstep: Set<string>):
 export async function upgradeStacksPackages(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
   const pkgPath = join(projectRoot, 'package.json')
   if (!existsSync(pkgPath)) {
-    console.error('No package.json found — nothing to upgrade.')
+    console.error('No package.json found - nothing to upgrade.')
     process.exit(1)
   }
 
@@ -274,7 +274,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     const result = await runCommand(frameworkPackageUpdateCommand(), { cwd: projectRoot })
 
     if (result.isErr) {
-      console.error('\n✗ The install step failed. Your package.json was updated — resolve the error and re-run `bun update`.\n')
+      console.error('\n✗ The install step failed. Your package.json was updated - resolve the error and re-run `bun update`.\n')
       process.exit(1)
     }
   }
@@ -307,7 +307,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     || tsconfigChanges.length > 0
 
   if (!didChange && !options.force)
-    console.log('\n✔ Already up to date — dependencies and managed project files match the target.\n')
+    console.log('\n✔ Already up to date - dependencies and managed project files match the target.\n')
   else
     console.log(`\n✔ Upgraded to stacks@${target}. Review the changelog: https://github.com/stacksjs/stacks/releases/tag/v${target}\n`)
   process.exit(0)

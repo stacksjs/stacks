@@ -144,7 +144,7 @@ describe('a real defineModel enforces its rules on create/update', () => {
     expect(err?.name).not.toBe('ModelValidationError')
   })
 
-  it('createQuietly is validated too — quiet means no events, not no rules', async () => {
+  it('createQuietly is validated too - quiet means no events, not no rules', async () => {
     // The `*Quietly` helpers capture whichever `create` exists when they are
     // installed, so this fails if the validation wrapper is applied after them.
     const err = await Probe.createQuietly({ path: 'x'.repeat(50) }).then(() => null, (e: any) => e)

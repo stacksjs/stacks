@@ -89,7 +89,7 @@ describe('kanban migrations', () => {
     db.close()
   })
 
-  test('cards (column_id, position) index exists — the drag-reorder hot path', () => {
+  test('cards (column_id, position) index exists - the drag-reorder hot path', () => {
     const db = new Database(':memory:')
     applyMigrations(db)
     const idx = db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'cards'`).all() as Array<{ name: string }>
@@ -112,7 +112,7 @@ describe('kanban migrations', () => {
     db.close()
   })
 
-  test('card_labels enforces composite PK (card_id, label_id) — idempotent attach', () => {
+  test('card_labels enforces composite PK (card_id, label_id) - idempotent attach', () => {
     const db = new Database(':memory:')
     applyMigrations(db)
 
@@ -165,7 +165,7 @@ function seedSampleBoard(db: Database): { boardId: number, col1: number, col2: n
 }
 
 describe('Board cascade delete SQL pattern (BoardDestroyAction)', () => {
-  test('removes pivots, cards, columns, labels, board — and leaves no orphans', () => {
+  test('removes pivots, cards, columns, labels, board - and leaves no orphans', () => {
     const db = new Database(':memory:')
     applyMigrations(db)
     const { boardId } = seedSampleBoard(db)
@@ -204,7 +204,7 @@ describe('Board cascade delete SQL pattern (BoardDestroyAction)', () => {
     db.close()
   })
 
-  test('cascade respects board boundary — sibling board\'s data survives', () => {
+  test('cascade respects board boundary - sibling board\'s data survives', () => {
     const db = new Database(':memory:')
     applyMigrations(db)
     const first = seedSampleBoard(db)
@@ -484,7 +484,7 @@ describe('ci_run_states migration (stacksjs/stacks#1849)', () => {
     db.close()
   })
 
-  test('repo_full_name is the primary key — duplicate insert rejects', () => {
+  test('repo_full_name is the primary key - duplicate insert rejects', () => {
     const db = new Database(':memory:')
     applyCiNotificationsMigrations(db)
     db.run(`INSERT INTO ci_run_states (repo_full_name) VALUES ('org/a')`)
@@ -575,7 +575,7 @@ describe('Runner-pressure migrations (stacksjs/stacks#1850)', () => {
     db.close()
   })
 
-  test('ci_runner_samples (org, sampled_at) index exists — window-load hot path', () => {
+  test('ci_runner_samples (org, sampled_at) index exists - window-load hot path', () => {
     const db = new Database(':memory:')
     applyCiPressureMigrations(db)
     const idx = db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ci_runner_samples'`).all() as Array<{ name: string }>
@@ -583,7 +583,7 @@ describe('Runner-pressure migrations (stacksjs/stacks#1850)', () => {
     db.close()
   })
 
-  test('ci_runner_alert_states has org as primary key — single row per org', () => {
+  test('ci_runner_alert_states has org as primary key - single row per org', () => {
     const db = new Database(':memory:')
     applyCiPressureMigrations(db)
     db.run(`INSERT INTO ci_runner_alert_states (org, alerting) VALUES ('org-a', 0)`)

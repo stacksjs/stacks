@@ -248,7 +248,7 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
       seen.add(basename)
       const relativePath = relative(dirname(outputPath), file).replace(/\.ts$/, '')
       if (GLOBAL_SHADOW_BLOCKLIST.has(basename)) {
-        lines.push(`// Skipped '${basename}' — would shadow a built-in global. Import directly if needed.`)
+        lines.push(`// Skipped '${basename}' - would shadow a built-in global. Import directly if needed.`)
         lines.push(`// export { default as ${basename} } from '${relativePath}'`)
         continue
       }

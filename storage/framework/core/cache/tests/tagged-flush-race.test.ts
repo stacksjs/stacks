@@ -11,7 +11,7 @@ function freshCache(): StacksCache {
   return new StacksCache(manager)
 }
 
-describe('TaggedCache.flush — atomic check-and-set (#1876 C-1)', () => {
+describe('TaggedCache.flush - atomic check-and-set (#1876 C-1)', () => {
   afterEach(() => {
     // The flushLocks map is static — clear it between tests so stale
     // entries from a slow predecessor don't bleed into the next.

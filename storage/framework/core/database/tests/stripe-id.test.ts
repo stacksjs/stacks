@@ -47,7 +47,7 @@ describe('users.stripe_id defensive ALTER (stacksjs/status#1 Phase 9)', () => {
       db.close()
     })
 
-    test('re-running the ALTER throws duplicate-column — the swallow both call sites rely on', () => {
+    test('re-running the ALTER throws duplicate-column - the swallow both call sites rely on', () => {
       const db = freshUsersDb()
       const ddl = usersStripeIdSql()
       db.exec(ddl)

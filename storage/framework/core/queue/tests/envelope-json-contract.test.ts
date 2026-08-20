@@ -360,7 +360,7 @@ async function withoutRedisConfig<T>(fn: () => Promise<T>): Promise<T> {
 }
 
 describe('every dispatch path refuses an unserializable payload, actionably (#2282 item 6)', () => {
-  describe('`class X extends Job` / `new Job({...})` — the form the docs teach', () => {
+  describe('`class X extends Job` / `new Job({...})` - the form the docs teach', () => {
     it('names the job and the property instead of letting JSON throw, on the database driver', async () => {
       const err = await withQueueDriver('database', () =>
         rejectionOf(() => new Job({ name: 'ChargeInvoice' }).dispatch(unserializablePayload())))
@@ -389,7 +389,7 @@ describe('every dispatch path refuses an unserializable payload, actionably (#22
     })
   })
 
-  describe('`job(name, payload)` — the fluent builder', () => {
+  describe('`job(name, payload)` - the fluent builder', () => {
     /*
      * Driven at the driver methods rather than through `dispatch()`: the
      * builder's pipeline consults the quarantine table first, so going in at
@@ -414,7 +414,7 @@ describe('every dispatch path refuses an unserializable payload, actionably (#22
     })
   })
 
-  describe('`storeJob` — the writer behind every scheduled dispatch', () => {
+  describe('`storeJob` - the writer behind every scheduled dispatch', () => {
     it('fails with the job name and the property, not a bare TypeError from a cron tick', async () => {
       const err = await rejectionOf(() => storeJob('NightlyRollup', {
         queue: 'cron',

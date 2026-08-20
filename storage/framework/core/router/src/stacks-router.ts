@@ -1138,7 +1138,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           // Boot-time validation (assertRouteMiddlewareResolvable) catches
           // these earlier and louder; this branch is the request-time
           // guarantee. See stacksjs/stacks#1957.
-          log.error(`[Router] Middleware '${middlewareName}' on ${routeKey} could not be resolved — failing closed`)
+          log.error(`[Router] Middleware '${middlewareName}' on ${routeKey} could not be resolved - failing closed`)
           const failClosedError = new Error(`Middleware '${middlewareName}' could not be resolved`)
           const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
           return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
@@ -3424,7 +3424,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       }
 
       if (!ormRoutesLoaded)
-        log.warn('[router] No ORM routes candidate loaded — model useApi endpoints are unavailable.')
+        log.warn('[router] No ORM routes candidate loaded - model useApi endpoints are unavailable.')
 
       // Load routes from discovered packages
       log.debug('[router] Loading discovered package routes...')

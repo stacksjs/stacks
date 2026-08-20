@@ -215,7 +215,7 @@ export function email(buddy: CLI): void {
         if (result?.messageId)
           console.log(`   Message ID: ${result.messageId}`)
         if (driver === 'log' || driver === 'capture')
-          console.log(`\n💡 The '${driver}' mailer does not deliver mail — set MAIL_MAILER=smtp (or ses) to send for real.`)
+          console.log(`\n💡 The '${driver}' mailer does not deliver mail - set MAIL_MAILER=smtp (or ses) to send for real.`)
       }
       catch (error: unknown) {
         console.error(`\n❌ Error sending test email via '${driver}':`, getErrorMessage(error))

@@ -9,7 +9,7 @@ const IS_MANUAL_CASE = /\p{Ll}(?=\p{Lu})/u
 const ALPHANUMERIC_PATTERN = /[\p{L}\p{N}]+/gu
 const IS_ACRONYM = /^(\P{L})*(?:\p{L}\.){2,}(\P{L})*$/u
 
-export const WORD_SEPARATORS: Set<string> = new Set(['—', '–', '-', '―', '/'])
+export const WORD_SEPARATORS: Set<string> = new Set(['-', '-', '-', '―', '/'])
 
 export const SENTENCE_TERMINATORS: Set<string> = new Set(['.', '!', '?'])
 

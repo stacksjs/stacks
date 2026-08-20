@@ -231,8 +231,8 @@ function serializationError(envelope: JobEnvelope, cause: unknown): Error {
 
     return new Error(
       `[queue] Job "${envelope.jobName}" was not dispatched: ${where}, `
-      + 'and job envelopes travel as JSON, which cannot represent one. Convert it where you dispatch — '
-      + '`String(value)` keeps every digit, `Number(value)` is exact below 2^53 — and convert it back inside '
+      + 'and job envelopes travel as JSON, which cannot represent one. Convert it where you dispatch - '
+      + '`String(value)` keeps every digit, `Number(value)` is exact below 2^53 - and convert it back inside '
       + `the job handler. ${seeContract}`,
       { cause },
     )
@@ -242,7 +242,7 @@ function serializationError(envelope: JobEnvelope, cause: unknown): Error {
     return new Error(
       `[queue] Job "${envelope.jobName}" was not dispatched: its payload contains a circular reference, `
       + 'which JSON cannot represent. Send the ids of the things the payload points at rather than the '
-      + `objects themselves — that also keeps the job replayable once those objects have changed. ${seeContract}`,
+      + `objects themselves - that also keeps the job replayable once those objects have changed. ${seeContract}`,
       { cause },
     )
   }
@@ -258,7 +258,7 @@ function serializationError(envelope: JobEnvelope, cause: unknown): Error {
   const detail = cause instanceof Error ? cause.message : String(cause)
   return new Error(
     `[queue] Job "${envelope.jobName}" was not dispatched: serializing its payload threw (${detail}). `
-    + 'JSON rejects only two things on its own and this was neither, so the throw came from the payload — '
+    + 'JSON rejects only two things on its own and this was neither, so the throw came from the payload - '
     + `a \`toJSON()\` or a property getter. ${seeContract}`,
     { cause },
   )
@@ -450,7 +450,7 @@ export function parseEnvelope(raw: unknown): ParsedEnvelope {
     warnOnce(
       'laravel-legacy',
       '[queue/envelope] Processing Laravel-legacy job envelope (`{ job, data }` shape). '
-      + 'Will continue to process but the queue table contains migration-era rows — '
+      + 'Will continue to process but the queue table contains migration-era rows - '
       + 'consider flushing once they drain.',
     )
     // Strip the `App\\Jobs\\` prefix if present so the file-resolver

@@ -236,7 +236,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
     }
 
     if (sessionFingerprintRejected(session)) {
-      log.warn(`[auth] Session fingerprint mismatch — rejecting request (possible hijack, session left intact)`)
+      log.warn(`[auth] Session fingerprint mismatch - rejecting request (possible hijack, session left intact)`)
       return undefined
     }
 

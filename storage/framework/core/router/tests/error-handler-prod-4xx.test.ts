@@ -41,7 +41,7 @@ function apiReq(): Request {
   })
 }
 
-describe('createErrorResponse — production 4xx (#1946)', () => {
+describe('createErrorResponse - production 4xx (#1946)', () => {
   test('surfaces HttpError name + message for a 4xx', async () => {
     const err = new HttpError(422, 'Already subscribed')
     const res = await createErrorResponse(err, apiReq(), { status: 422 })

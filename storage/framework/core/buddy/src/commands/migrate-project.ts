@@ -32,7 +32,7 @@ interface MigrateProjectOptions {
 export function migrateProject(buddy: CLI): void {
   buddy
     .command('migrate:project [target]', 'Port an existing project (Laravel, Rails) into a Stacks project.')
-    .option('--from <framework>', `Source framework — one of: ${Object.keys(DRIVERS).join(', ')}`, { default: 'laravel' })
+    .option('--from <framework>', `Source framework - one of: ${Object.keys(DRIVERS).join(', ')}`, { default: 'laravel' })
     .option('--source <path>', 'Path to the existing source project. Defaults to the current working directory.', { default: false })
     .option('--dry-run', 'Show what would be translated without writing files.', { default: false })
     .option('--verbose', 'Print the per-entry table after the summary.', { default: false })
@@ -54,7 +54,7 @@ export function migrateProject(buddy: CLI): void {
         : process.cwd()
 
       log.info(`Migrating ${from} project: ${sourcePath} → ${targetPath}`)
-      if (options.dryRun) log.info('(dry run — no files will be written)')
+      if (options.dryRun) log.info('(dry run - no files will be written)')
 
       try {
         const report = await runMigrator({
@@ -74,7 +74,7 @@ export function migrateProject(buddy: CLI): void {
         if (options.verbose) {
           for (const e of report.entries) {
             const arrow = e.target ? ` → ${e.target}` : ''
-            const note = e.note ? ` — ${e.note}` : ''
+            const note = e.note ? ` - ${e.note}` : ''
             log.info(`  [${e.status}] ${e.source}${arrow}${note}`)
           }
         }

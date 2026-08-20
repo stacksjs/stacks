@@ -217,7 +217,7 @@ async function loadFrameworkRoutes(): Promise<void> {
   const { bundles, unknown, explicit } = resolveDefaultRouteBundlesWithDiagnostics()
 
   for (const name of unknown)
-    log.warn(`[Routes] STACKS_DEFAULT_ROUTES lists unknown bundle "${name}" — known bundles are ${DEFAULT_ROUTE_BUNDLES.join(', ')}.`)
+    log.warn(`[Routes] STACKS_DEFAULT_ROUTES lists unknown bundle "${name}" - known bundles are ${DEFAULT_ROUTE_BUNDLES.join(', ')}.`)
 
   if (bundles.size === 0)
     return

@@ -39,7 +39,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[queue/circuit-breaker] queue_circuit_state table missing — circuit breaker disabled. '
+    '[queue/circuit-breaker] queue_circuit_state table missing - circuit breaker disabled. '
     + 'Run migrations to enable.',
   )
 }

@@ -74,7 +74,7 @@ describe('wrapped createQueryBuilder sqlite pragmas (stacksjs/stacks#1951)', () 
 // was correctly bootstrapped — confirmed on a live deploy via lsof showing
 // two db connections and ORM-inserted WAL frames never auto-checkpointing.
 describe('model-executor sqlite pragmas (ORM writer connection)', () => {
-  it('bootstraps the raw Database that configureOrm creates — the exact @stacksjs/orm autoConfigureOrm path', () => {
+  it('bootstraps the raw Database that configureOrm creates - the exact @stacksjs/orm autoConfigureOrm path', () => {
     configureOrm({ database: ':memory:' })
     const raw = getDatabase() as any
     expect(raw.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })

@@ -101,7 +101,7 @@ describe('estimateTokens (#1878 A-7)', () => {
     expect(estimateTokens('', 'gpt-4o')).toBe(0)
   })
 
-  test('rounds up — single char still costs a token', () => {
+  test('rounds up - single char still costs a token', () => {
     expect(estimateTokens('a', 'gpt-4o')).toBe(1)
   })
 

@@ -60,9 +60,9 @@ describe('the pack survives the round trip (#2236)', () => {
     // btoa throws on characters above U+00FF unless the value is encoded to
     // bytes first — a name in any non-Latin script would have crashed the
     // callback.
-    const pack = { ...PACK, user: { name: '日本語 — Ünïcödé 🎉' } }
+    const pack = { ...PACK, user: { name: '日本語 - Ünïcödé 🎉' } }
     expect((decodeSessionHandoff(encodeSessionHandoff(pack))!.user as any).name)
-      .toBe('日本語 — Ünïcödé 🎉')
+      .toBe('日本語 - Ünïcödé 🎉')
   })
 
   it('is URL-safe', () => {
@@ -167,7 +167,7 @@ describe('socialHandoffRedirect (#2236)', () => {
     expect(readSessionHandoff(location.slice(location.indexOf('#')))).toEqual(PACK)
   })
 
-  it('has no body — nothing to escape', () => {
+  it('has no body - nothing to escape', () => {
     expect(socialHandoffRedirect(PACK).body).toBeNull()
   })
 

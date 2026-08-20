@@ -485,7 +485,7 @@ async function generateRecord(
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
         if (report) {
-          log.warn(`  Factory failed for ${modelName}.${fieldName}: ${errorMsg} — seeding the default instead.`)
+          log.warn(`  Factory failed for ${modelName}.${fieldName}: ${errorMsg} - seeding the default instead.`)
         }
         // Use default if available, otherwise use sensible fallbacks based on likely type
         if (attr.default !== undefined) {
@@ -788,7 +788,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
         .executeTakeFirst()
       if (existing) {
         if (options.verbose) {
-          log.info(`  ${model.name}: table already has rows — skipping (--append to add more, --fresh to replace)`)
+          log.info(`  ${model.name}: table already has rows - skipping (--append to add more, --fresh to replace)`)
         }
         return {
           model: model.name,

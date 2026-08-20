@@ -732,7 +732,7 @@ export async function reconcileMigrationLedger(options: {
       }
       result.skipped.push({
         file: entry.file,
-        reason: `${entry.present.length}/${entry.effects.length} effects present — resolve by hand, or pass --include-partial`,
+        reason: `${entry.present.length}/${entry.effects.length} effects present - resolve by hand, or pass --include-partial`,
       })
       continue
     }

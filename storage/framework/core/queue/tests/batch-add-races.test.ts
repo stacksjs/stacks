@@ -188,7 +188,7 @@ function seedBatch(overrides: Partial<BatchRow> = {}): void {
   })
 }
 
-describe('DispatchedBatch.add — atomic counter growth (#2282)', () => {
+describe('DispatchedBatch.add - atomic counter growth (#2282)', () => {
   beforeEach(() => {
     rows.clear()
     afterRead = null

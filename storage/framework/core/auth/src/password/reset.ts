@@ -295,7 +295,7 @@ export function passwordResets(email: string): PasswordResetActions {
       catch (err) {
         const message = err instanceof Error ? err.message : String(err)
         if (/password_changed_at|no such column|unknown column/i.test(message)) {
-          log.warn('[PasswordReset] password_changed_at column missing — run `buddy migrate`; resetting without the credential-version stamp')
+          log.warn('[PasswordReset] password_changed_at column missing - run `buddy migrate`; resetting without the credential-version stamp')
           await trx
             .updateTable('users')
             .set({ password: hashedPassword })

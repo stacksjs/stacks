@@ -177,7 +177,7 @@ function resolveChildModel(
   const isHasMany = hasMany.some(c => relationMatches(c, relationName, true))
   const isHasOne = hasOne.some(c => relationMatches(c, relationName, false))
   if (!isHasMany && !isHasOne) {
-    log.warn(`[orm] soft-delete cascade: '${relationName}' is not a declared hasMany/hasOne relation — skipping`)
+    log.warn(`[orm] soft-delete cascade: '${relationName}' is not a declared hasMany/hasOne relation - skipping`)
     return null
   }
 
@@ -189,7 +189,7 @@ function resolveChildModel(
   const g = globalThis as Record<string, unknown>
   const model = g[className] as Record<string, unknown> | undefined
   if (!model) {
-    log.warn(`[orm] soft-delete cascade: model '${className}' is not yet on globalThis — skipping cascade for '${relationName}'`)
+    log.warn(`[orm] soft-delete cascade: model '${className}' is not yet on globalThis - skipping cascade for '${relationName}'`)
     return null
   }
   return { className, model }
@@ -275,7 +275,7 @@ async function cascadeChildren(
       // eslint-disable-next-line pickier/no-unused-vars
       const childRestore = childModel.restore as ((...a: unknown[]) => Promise<unknown>) | undefined
       if (typeof childRestore !== 'function') {
-        log.debug(`[orm] cascade restore: child has no restore() — nothing to do`)
+        log.debug(`[orm] cascade restore: child has no restore() - nothing to do`)
         return
       }
       // Restore every row currently pointing at the parent (whether

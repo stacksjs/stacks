@@ -256,7 +256,7 @@ describe('trait methods are wired onto hydrated instances (not just the static m
       expect(await post.isLiked(42)).toBe(false)
     })
 
-    it('does NOT bind likedBy on the instance — reverse cross-row lookup, static-only', async () => {
+    it('does NOT bind likedBy on the instance - reverse cross-row lookup, static-only', async () => {
       const post = await freshPost('Another likeable post')
       // `likedBy(userId)` answers "which rows has this user liked" — a
       // query with no relationship to *this* post's own id, so it stays

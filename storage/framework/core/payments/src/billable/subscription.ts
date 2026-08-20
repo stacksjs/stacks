@@ -201,7 +201,7 @@ export const manageSubscription: SubscriptionManager = (() => {
   async function storeSubscription(user: UserModel, type: string, _lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
     const firstItem = options.items.data[0]
     if (!firstItem)
-      throw new Error('Stripe subscription contains no line items — cannot store subscription')
+      throw new Error('Stripe subscription contains no line items - cannot store subscription')
 
     const data = removeNullValues({
       user_id: user.id,
@@ -243,7 +243,7 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const firstItem = options.items.data[0]
     if (!firstItem)
-      throw new Error('Stripe subscription contains no line items — cannot update subscription')
+      throw new Error('Stripe subscription contains no line items - cannot update subscription')
 
     await db?.updateTable('subscriptions')
       .set({

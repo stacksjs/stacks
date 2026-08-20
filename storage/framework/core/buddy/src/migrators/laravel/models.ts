@@ -52,7 +52,7 @@ export function parseLaravelModel(source: string): ParsedModel | null {
   const notes: string[] = []
 
   if (/protected\s+\$appends\s*=/.test(source)) notes.push('$appends accessors require a custom Stacks computed-attribute setup')
-  if (/protected\s+\$dates\s*=/.test(source)) notes.push('$dates is implicit in Stacks — datetime columns are already typed via validation rules')
+  if (/protected\s+\$dates\s*=/.test(source)) notes.push('$dates is implicit in Stacks - datetime columns are already typed via validation rules')
   // Trait `use` lines can be comma-separated: `use HasFactory, SoftDeletes, Notifiable;`.
   // Match the keyword anywhere inside a `use ...;` directive.
   if (/\buse\b[^;]*\bSoftDeletes\b/.test(source)) notes.push('SoftDeletes trait → enable `useDeletedAt` (or matching trait) in the Stacks model traits block')
@@ -127,7 +127,7 @@ function emitStacksModel(args: EmitArgs): string {
 
   const relationsBlock = args.relationships.length === 0
     ? ''
-    : `\n  // Relationships translated from Eloquent — refine targets / foreign keys to match your schema.\n  relations: {\n${args.relationships.map(r => `    ${r.name}: { type: '${r.kind}', target: '${r.target}' },`).join('\n')}\n  },\n`
+    : `\n  // Relationships translated from Eloquent - refine targets / foreign keys to match your schema.\n  relations: {\n${args.relationships.map(r => `    ${r.name}: { type: '${r.kind}', target: '${r.target}' },`).join('\n')}\n  },\n`
 
   return `import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
@@ -152,7 +152,7 @@ function emitAttribute(name: string, args: EmitArgs): string {
   const fillable = args.fillable.includes(name)
   const hidden = args.hidden.includes(name)
   const notes: string[] = []
-  if (hidden) notes.push('hidden from API responses in source — handle via your Stacks resource/transformer')
+  if (hidden) notes.push('hidden from API responses in source - handle via your Stacks resource/transformer')
   const noteLine = notes.length > 0 ? `      // ${notes.join('; ')}\n` : ''
   return `    ${name}: {
       fillable: ${fillable},

@@ -243,7 +243,7 @@ describe('token validity bound to password_changed_at (#1957)', () => {
     expect(await findToken(fresh.plainTextToken)).not.toBeNull()
   })
 
-  test('graceful degradation: users table WITHOUT the column — findToken works, reset succeeds', async () => {
+  test('graceful degradation: users table WITHOUT the column - findToken works, reset succeeds', async () => {
     // Recreate users without password_changed_at to mimic an un-migrated DB.
     await db.unsafe('DROP TABLE users').execute()
     await db.unsafe(`

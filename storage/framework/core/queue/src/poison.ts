@@ -38,7 +38,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[queue/poison] job_quarantine table missing — poison detection disabled. '
+    '[queue/poison] job_quarantine table missing - poison detection disabled. '
     + 'Run migrations to enable.',
   )
 }

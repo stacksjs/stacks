@@ -43,7 +43,7 @@ function buildRepo(overrides: Partial<RepoStatus> & { name: string }): RepoStatu
 
 const NOW = Date.parse('2026-05-20T12:00:00Z')
 
-describe('detectNewlyFailedRuns — transition matrix', () => {
+describe('detectNewlyFailedRuns - transition matrix', () => {
   test('green → red fires a transition', () => {
     const snapshot = { repos: [buildRepo({ name: 'a', status: 'failure' as RepoStatusKind, conclusion: 'failure' })] }
     const previous = new Map<string, PreviousRunState>([
@@ -62,7 +62,7 @@ describe('detectNewlyFailedRuns — transition matrix', () => {
     expect(result[0].previousConclusion).toBeNull()
   })
 
-  test('sticky red — previous was failed, same run id → no fire', () => {
+  test('sticky red - previous was failed, same run id → no fire', () => {
     const snapshot = { repos: [buildRepo({ name: 'c', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: 'https://github.com/org/c/actions/runs/100' })] }
     const previous = new Map<string, PreviousRunState>([
       ['org/c', { repoFullName: 'org/c', lastConclusion: 'failure', lastRunId: 100, lastNotifiedAt: null }],
@@ -71,7 +71,7 @@ describe('detectNewlyFailedRuns — transition matrix', () => {
     expect(result.length).toBe(0)
   })
 
-  test('sticky red — previous failed but DIFFERENT run id → fires (new red build)', () => {
+  test('sticky red - previous failed but DIFFERENT run id → fires (new red build)', () => {
     const snapshot = { repos: [buildRepo({ name: 'd', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: 'https://github.com/org/d/actions/runs/200' })] }
     const previous = new Map<string, PreviousRunState>([
       ['org/d', { repoFullName: 'org/d', lastConclusion: 'failure', lastRunId: 100, lastNotifiedAt: null }],
@@ -122,8 +122,8 @@ describe('detectNewlyFailedRuns — transition matrix', () => {
   })
 })
 
-describe('detectNewlyFailedRuns — cooldown', () => {
-  test('inside cooldown window — silenced', () => {
+describe('detectNewlyFailedRuns - cooldown', () => {
+  test('inside cooldown window - silenced', () => {
     const lastNotifiedAt = new Date(NOW - 60_000).toISOString() // 1m ago
     const snapshot = { repos: [buildRepo({ name: 'a', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: 'https://github.com/org/a/actions/runs/300' })] }
     const previous = new Map<string, PreviousRunState>([
@@ -133,7 +133,7 @@ describe('detectNewlyFailedRuns — cooldown', () => {
     expect(result.length).toBe(0)
   })
 
-  test('outside cooldown window — fires', () => {
+  test('outside cooldown window - fires', () => {
     const lastNotifiedAt = new Date(NOW - 10 * 60_000).toISOString() // 10m ago
     const snapshot = { repos: [buildRepo({ name: 'a', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: 'https://github.com/org/a/actions/runs/300' })] }
     const previous = new Map<string, PreviousRunState>([
@@ -143,7 +143,7 @@ describe('detectNewlyFailedRuns — cooldown', () => {
     expect(result.length).toBe(1)
   })
 
-  test('green → red inside cooldown — silenced (covers flap-storm)', () => {
+  test('green → red inside cooldown - silenced (covers flap-storm)', () => {
     // Previous green, but the same repo just got notified 30s ago
     // (which can happen on a red → green → red flap).
     const lastNotifiedAt = new Date(NOW - 30_000).toISOString()
@@ -175,7 +175,7 @@ describe('detectNewlyFailedRuns — cooldown', () => {
   })
 })
 
-describe('detectNewlyFailedRuns — run id parsing', () => {
+describe('detectNewlyFailedRuns - run id parsing', () => {
   test('extracts run id from canonical GH URL', () => {
     const snapshot = { repos: [buildRepo({ name: 'a', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: 'https://github.com/org/a/actions/runs/123456' })] }
     const result = detectNewlyFailedRuns(snapshot, new Map(), { now: NOW })
@@ -194,7 +194,7 @@ describe('detectNewlyFailedRuns — run id parsing', () => {
     expect(result[0].runId).toBeNull()
   })
 
-  test('treats missing run id as a transition (defensive — better to fire than miss)', () => {
+  test('treats missing run id as a transition (defensive - better to fire than miss)', () => {
     // Both previous and current have no parseable run id.
     const snapshot = { repos: [buildRepo({ name: 'a', status: 'failure' as RepoStatusKind, conclusion: 'failure', runUrl: null })] }
     const previous = new Map<string, PreviousRunState>([
@@ -206,7 +206,7 @@ describe('detectNewlyFailedRuns — run id parsing', () => {
   })
 })
 
-describe('detectNewlyFailedRuns — payload completeness', () => {
+describe('detectNewlyFailedRuns - payload completeness', () => {
   test('carries workflow / commit / run metadata for the notification template', () => {
     const snapshot = {
       repos: [buildRepo({

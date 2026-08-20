@@ -24,7 +24,7 @@ export const railsDriver: Driver = {
       source: '.',
       target: '',
       status: 'skipped',
-      note: 'Rails driver is not yet implemented (stacksjs/stacks#1241 — Laravel driver shipped first). Track follow-up at github.com/stacksjs/stacks/issues/1241.',
+      note: 'Rails driver is not yet implemented (stacksjs/stacks#1241 - Laravel driver shipped first). Track follow-up at github.com/stacksjs/stacks/issues/1241.',
     }]
   },
 }

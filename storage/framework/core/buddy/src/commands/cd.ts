@@ -25,7 +25,7 @@ import { findStacksProjects } from '@stacksjs/utils'
 export function cd(buddy: CLI): void {
   buddy
     .command('cd [name]', 'Print the absolute path of a Stacks project by name')
-    .option('--eval', 'Emit `cd "path"` instead of just the path — pair with `eval "$(buddy cd <name> --eval)"` for real shell-cd', { default: false })
+    .option('--eval', 'Emit `cd "path"` instead of just the path - pair with `eval "$(buddy cd <name> --eval)"` for real shell-cd', { default: false })
     .option('--root <dir>', 'Search root for the project scan (overrides STACKS_PROJECTS_ROOT and the home-dir default)')
     .option('--verbose', 'Enable verbose output', { default: false })
     .action(async (name: string | undefined, options: { eval?: boolean, root?: string }) => {

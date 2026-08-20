@@ -884,7 +884,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
 
         proxyReachable = await waitForHttpsProxy(443, 16_000)
         if (!proxyReachable) {
-          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy not reachable on :443')} — serving ${cyan(`http://localhost:${frontendPort}`)} instead`)
+          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy not reachable on :443')} - serving ${cyan(`http://localhost:${frontendPort}`)} instead`)
           console.log(`  ${dim('    ')}${dim('rpx needs a valid SUDO_PASSWORD in .env to bind :443; trust the local CA, then restart `./buddy dev`.')}`)
           if (options.verbose)
             console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
@@ -925,7 +925,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       if (startedAt) {
         const elapsedMs = (Bun.nanoseconds() - startedAt) / 1_000_000
         const summary = failed.length
-          ? `ready in ${(elapsedMs / 1000).toFixed(1)}s — ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
+          ? `ready in ${(elapsedMs / 1000).toFixed(1)}s - ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
           : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
         console.log(`  ${dim(summary)}`)
         console.log()
@@ -1069,7 +1069,7 @@ function printDevReadyBanner(input: {
   }
   if (isComingSoonMode()) {
     console.log()
-    console.log(`  ${yellow('●')}  ${bold(yellow('Coming soon mode'))} ${dim('— visitors see the holding page; bypass with the coming-soon secret.')}`)
+    console.log(`  ${yellow('●')}  ${bold(yellow('Coming soon mode'))} ${dim('- visitors see the holding page; bypass with the coming-soon secret.')}`)
   }
   if (verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
@@ -1551,7 +1551,7 @@ async function ensureRpxDevelopmentHttps(
       || await forceTrustCertificate(RPX_ROOT_CA_PATH, { serverName: domain, verbose })
       || isRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain, { verbose })
     if (trusted)
-      console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local CA trusted — reload the browser if you still see a warning')}`)
+      console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local CA trusted - reload the browser if you still see a warning')}`)
     else
       console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow(`Local CA not trusted — run: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
   }
@@ -1572,7 +1572,7 @@ async function ensureRpxDevelopmentHttps(
       log.info('Restarting rpx daemon to load TLS certificates for this app')
   }
   else if (!chainOk && verbose) {
-    console.log(`  ${dim('    ')}${dim('HTTPS chain not yet valid on :443 — daemon will (re)start after backends are ready')}`)
+    console.log(`  ${dim('    ')}${dim('HTTPS chain not yet valid on :443 - daemon will (re)start after backends are ready')}`)
   }
 }
 
@@ -1753,7 +1753,7 @@ async function prepareRpxTlsForDev(input: {
   if (dnsDomains.length > 0) {
     const dnsReady = await setupDevelopmentDns({ domains: dnsDomains, verbose }).catch(() => false)
     if (!dnsReady && verbose)
-      log.warn(`Dev DNS not configured for ${dnsDomains.join(', ')} — falling back to /etc/hosts`)
+      log.warn(`Dev DNS not configured for ${dnsDomains.join(', ')} - falling back to /etc/hosts`)
   }
 
   if (!skipHosts && hostsNeedingFile.length > 0) {

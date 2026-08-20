@@ -86,7 +86,7 @@ try {
 }
 catch (err) {
   const { log } = await import('@stacksjs/cli')
-  log.warn(`[api:dev] failed to bootstrap event listeners — dispatched events will be ignored: ${(err as Error).message}`)
+  log.warn(`[api:dev] failed to bootstrap event listeners - dispatched events will be ignored: ${(err as Error).message}`)
 }
 
 // Auto-migrate on model edits: keep the dev database in sync with the models

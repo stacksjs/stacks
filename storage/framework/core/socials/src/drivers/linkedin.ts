@@ -249,7 +249,7 @@ export class LinkedInPublishingDriver implements SocialPublishingDriver, SocialD
     catch (error) {
       if (error instanceof LinkedInApiError && (error.status === 401 || error.status === 403)) {
         throw new LinkedInApiError(
-          'LinkedIn will not list this account\'s posts — the Posts author finder needs the r_member_social permission, which this app does not hold.',
+          'LinkedIn will not list this account\'s posts - the Posts author finder needs the r_member_social permission, which this app does not hold.',
           error.status,
           error.body,
         )

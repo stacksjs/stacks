@@ -267,10 +267,10 @@ async function reportMissingForeignKeys(): Promise<void> {
       .slice(0, 5)
       .map(fk => `  • ${fk.fromTable}.${fk.fromColumn} → ${fk.toTable}.${fk.toColumn} (${fk.model})`)
       .join('\n')
-    const more = result.missing.length > 5 ? `\n  + ${result.missing.length - 5} more — run \`./buddy doctor\` for the full list.` : ''
+    const more = result.missing.length > 5 ? `\n  + ${result.missing.length - 5} more - run \`./buddy doctor\` for the full list.` : ''
     log.warn(
       `${result.missing.length} of ${result.declared.length} declared foreign keys are missing from the live schema:\n${sample}${more}\n`
-      + `The model-backed create migrations may be stale for this database — run \`./buddy migrate:fresh\` to regenerate and replay them from the model attributes (this resets data).`,
+      + `The model-backed create migrations may be stale for this database - run \`./buddy migrate:fresh\` to regenerate and replay them from the model attributes (this resets data).`,
     )
   }
   catch (err) {
@@ -300,11 +300,11 @@ async function reportFkOrphans(): Promise<void> {
       .slice(0, 5)
       .map(o => `  • ${o.table}.${o.column} → ${o.parent} (${o.count} row${o.count === 1 ? '' : 's'})`)
       .join('\n')
-    const more = result.orphans.length > 5 ? `\n  + ${result.orphans.length - 5} more — run \`./buddy doctor\` for the full list.` : ''
+    const more = result.orphans.length > 5 ? `\n  + ${result.orphans.length - 5} more - run \`./buddy doctor\` for the full list.` : ''
     const first = result.orphans[0]!
     log.warn(
       `${result.total} row${result.total === 1 ? '' : 's'} violate foreign keys (orphaned parents), now that SQLite enforces \`foreign_keys = ON\`:\n${sample}${more}\n`
-      + `These were written under the old \`foreign_keys = OFF\` default (#1951). Review and clean up manually — e.g. `
+      + `These were written under the old \`foreign_keys = OFF\` default (#1951). Review and clean up manually - e.g. `
       + `DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}). migrate never deletes data.`,
     )
   }
@@ -363,7 +363,7 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
   // Report data-preserving renames so the user knows data was kept.
   const renames = operations.filter(o => o.kind === 'rename_column' || o.kind === 'rename_table')
   for (const r of renames)
-    log.info(`Detected ${describeOp(r)} — applying as a rename (data preserved). Use --no-rename to drop + add instead.`)
+    log.info(`Detected ${describeOp(r)} - applying as a rename (data preserved). Use --no-rename to drop + add instead.`)
 
   const destructive = operations.filter(o => o.destructive)
   if (destructive.length === 0)
@@ -510,7 +510,7 @@ export function migrate(buddy: CLI): void {
           const { previewPendingMigrations } = await import('@stacksjs/database')
           const ops = await previewPendingMigrations({ fromDb: options.fromDb, applyRenames })
           if (ops.length === 0) {
-            log.info('No pending schema changes — your models match the database.')
+            log.info('No pending schema changes - your models match the database.')
           }
           else {
             log.info(`${ops.length} pending change${ops.length === 1 ? '' : 's'}:`)
@@ -522,7 +522,7 @@ export function migrate(buddy: CLI): void {
           // await: guarantee the error flushes before the outro + exit below.
           await log.error('Failed to preview migrations:', error)
         }
-        await outro('Diff complete — no changes applied.', { startTime: perf, useSeconds: true })
+        await outro('Diff complete - no changes applied.', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.Success)
       }
 
@@ -544,7 +544,7 @@ export function migrate(buddy: CLI): void {
       const guards = await resolveMigrationGuards()
       if (guards.confirmMigrate && !options.force) {
         if (isCI || !hasTTY) {
-          log.debug('[migrate] confirmMigrate guard skipped — non-interactive environment.')
+          log.debug('[migrate] confirmMigrate guard skipped - non-interactive environment.')
         }
         else {
           const APP_ENV = process.env.APP_ENV || 'local'
@@ -556,7 +556,7 @@ export function migrate(buddy: CLI): void {
             initial: true,
           })
           if (!proceed) {
-            await outro('Migration cancelled — no changes applied.', { startTime: perf, useSeconds: true })
+            await outro('Migration cancelled - no changes applied.', { startTime: perf, useSeconds: true })
             process.exit(ExitCode.Success)
           }
         }
@@ -583,7 +583,7 @@ export function migrate(buddy: CLI): void {
       const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
       if (!proceed) {
         lock.release()
-        await outro('Migration cancelled — no changes applied.', { startTime: perf, useSeconds: true })
+        await outro('Migration cancelled - no changes applied.', { startTime: perf, useSeconds: true })
         // An operator declining an interactive prompt is a successful cancel.
         // A non-interactive refusal is a failed deployment precondition and
         // must propagate a non-zero status to systemd/ts-cloud.
@@ -625,7 +625,7 @@ export function migrate(buddy: CLI): void {
       const result = await runAction(Action.Migrate, options).finally(() => lock.release())
 
       if (resultFailed(result)) {
-        log.error('Model migrations failed — applying notification/RBAC table guarantees before exiting.')
+        log.error('Model migrations failed - applying notification/RBAC table guarantees before exiting.')
       }
 
       // Notification, RBAC, and polymorphic-trait guarantees run AFTER model
@@ -742,7 +742,7 @@ export function migrate(buddy: CLI): void {
       const outroMessage = marker == null
         ? `Migrated your ${APP_ENV} database.${authSuffix}`
         : marker.appliedCount === 0
-          ? `Nothing to migrate — your ${APP_ENV} database is already up to date.${authSuffix}`
+          ? `Nothing to migrate - your ${APP_ENV} database is already up to date.${authSuffix}`
           : `Applied ${marker.appliedCount} migration${marker.appliedCount === 1 ? '' : 's'} to your ${APP_ENV} database.${authSuffix}`
 
       await outro(outroMessage, {
@@ -801,7 +801,7 @@ export function migrate(buddy: CLI): void {
           + `  To allow it, set database.safety.migrateFresh to 'allow' in config/database.ts,\n`
           + `  or run once with: DB_MIGRATE_FRESH=allow ./buddy migrate:fresh`,
         )
-        await outro('migrate:fresh refused — the migrateFresh guard is set to "disabled".', { startTime: perf, useSeconds: true })
+        await outro('migrate:fresh refused - the migrateFresh guard is set to "disabled".', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.FatalError)
       }
 
@@ -826,7 +826,7 @@ export function migrate(buddy: CLI): void {
         await log.flush()
         const typed = await text({ message: `Type the database name "${dbLabel}" to confirm (blank to cancel):` })
         if (typed.trim() !== dbLabel) {
-          await outro('migrate:fresh cancelled — confirmation did not match.', { startTime: perf, useSeconds: true })
+          await outro('migrate:fresh cancelled - confirmation did not match.', { startTime: perf, useSeconds: true })
           process.exit(ExitCode.Success)
         }
       }
@@ -842,7 +842,7 @@ export function migrate(buddy: CLI): void {
         // Same ordering rule as `buddy migrate` (#1952): the guarantee
         // tables below are independent, idempotent SQL — a failed model
         // migration must not skip them. Exit comes after they ran.
-        log.error('Model migrations failed — applying auth/notification/RBAC table guarantees before exiting.')
+        log.error('Model migrations failed - applying auth/notification/RBAC table guarantees before exiting.')
       }
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
@@ -969,7 +969,7 @@ export function migrate(buddy: CLI): void {
       const countPhrase = marker == null
         ? ''
         : marker.appliedCount === 0
-          ? ' (0 applied — no migration files found?)'
+          ? ' (0 applied - no migration files found?)'
           : ` (${marker.appliedCount} migration${marker.appliedCount === 1 ? '' : 's'} applied)`
 
       await outro(`All tables dropped successfully & migrated successfully${countPhrase}${suffix}`, {
@@ -1103,7 +1103,7 @@ export function migrate(buddy: CLI): void {
         ? `\n  • Booleans land as 0/1 on SQLite; ${target} stores them as ${target === 'postgres' ? 'true/false' : '0/1 (compatible)'}.`
         : ''
       const tzNote = target === 'postgres'
-        ? `\n  • PostgreSQL uses timestamptz (with TZ) where SQLite/MySQL store plain TIMESTAMP. Existing rows do NOT auto-upgrade — they ride the column's stored type.`
+        ? `\n  • PostgreSQL uses timestamptz (with TZ) where SQLite/MySQL store plain TIMESTAMP. Existing rows do NOT auto-upgrade - they ride the column's stored type.`
         : ''
       const envExtras = target !== 'sqlite' ? `, plus DB_HOST / DB_PORT / DB_USERNAME / DB_PASSWORD / DB_DATABASE` : ``
       const missingNote = missingEnv.length > 0
@@ -1123,7 +1123,7 @@ export function migrate(buddy: CLI): void {
   Next steps:
     1. Update .env:  DB_CONNECTION=${target}${envExtras}
     2. (Optional) Export data from the current ${current} database.
-    3. ${switchBlocked ? `Regenerate the migration files for ${target} FIRST — \`./buddy migrate\` will refuse until then.` : `Run \`./buddy migrate\` (or \`migrate:fresh\` to start clean).`}
+    3. ${switchBlocked ? `Regenerate the migration files for ${target} FIRST - \`./buddy migrate\` will refuse until then.` : `Run \`./buddy migrate\` (or \`migrate:fresh\` to start clean).`}
     4. The post-migrate FK audit will report any constraints that didn't replay.
 `)
 
@@ -1294,7 +1294,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         if (fixed.recorded.length > 0)
           log.info(`Recorded ${fixed.recorded.length} migration(s) already present in the schema.`)
         if (fixed.skipped.length > 0) {
-          log.warn(`${fixed.skipped.length} ledger entr(ies) need a look — run \`./buddy migrate:status\`.`)
+          log.warn(`${fixed.skipped.length} ledger entr(ies) need a look - run \`./buddy migrate:status\`.`)
         }
       }
 
@@ -1403,7 +1403,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       if (fixed.skipped.length > 0) {
         log.warn(`Left ${fixed.skipped.length} entr(ies) alone:`)
         // eslint-disable-next-line no-console
-        console.log(fixed.skipped.slice(0, 8).map(s => `      ${s.file} — ${s.reason}`).join('\n')
+        console.log(fixed.skipped.slice(0, 8).map(s => `      ${s.file} - ${s.reason}`).join('\n')
           + (fixed.skipped.length > 8 ? `\n      … +${fixed.skipped.length - 8} more` : ''))
       }
       if (fixed.remapped.length === 0 && fixed.recorded.length === 0)

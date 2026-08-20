@@ -617,7 +617,7 @@ function deployEnvTemplate(environment: string): string {
     '#',
     '# Values here are encrypted with the public key below and decrypted at',
     '# deploy time with the matching private key in .env.keys, which is NOT',
-    "# committed. This file is — that is the point: the ciphertext is reviewable",
+    "# committed. This file is - that is the point: the ciphertext is reviewable",
     '# and diffable, and losing a laptop does not leak production.',
     '#',
     '# Add one with:',
@@ -688,7 +688,7 @@ export async function ensureDeployEnvIsSet(cwd: string, environment: string): Pr
   }
 
   if (created) {
-    log.success(`${fileName} created (empty, encrypted — add secrets with \`buddy env:set KEY value --env ${environment}\`)`)
+    log.success(`${fileName} created (empty, encrypted - add secrets with \`buddy env:set KEY value --env ${environment}\`)`)
     return
   }
 

@@ -475,7 +475,7 @@ describe('dashboard-utils', () => {
       expect(homeSection.items[0].icon).toBe('house.fill')
     })
 
-    it('omits the CI row by default (stacksjs/stacks#1844 — opt-in)', () => {
+    it('omits the CI row by default (stacksjs/stacks#1844 - opt-in)', () => {
       const config = buildSidebarConfig('http://localhost:3456/pages', [])
       const homeSection = config.sections.find(s => s.id === 'home')!
       expect(homeSection.items.some(i => i.id === 'ci')).toBe(false)

@@ -236,7 +236,7 @@ describe('register() does not confirm whether an address is registered (#2281)',
       .rejects.toMatchObject({ status: 409, message: 'Email already exists' })
   })
 
-  test('only an explicit false disables it — a truthy or absent value stays protected', async () => {
+  test('only an explicit false disables it - a truthy or absent value stays protected', async () => {
     for (const registration of [undefined, {}, { preventEnumeration: true }]) {
       if (authConfig)
         authConfig.registration = registration as any
@@ -283,7 +283,7 @@ describe('register() transactional create (#1953)', () => {
     // the two are indistinguishable from outside. If the race path answered
     // 409 while the pre-check answered 422, losing the race would itself be
     // the oracle (stacksjs/stacks#2281).
-    test(`lost race — insert throws ${label} → mapped to a duplicate rejection`, async () => {
+    test(`lost race - insert throws ${label} → mapped to a duplicate rejection`, async () => {
       scenario.insertError = err
 
       await expect(register({ email: 'racer@example.com', password: 'long-enough-pw', name: 'X' } as any))

@@ -71,7 +71,7 @@ describe('applyRequestEnhancements', () => {
     expect((enhanced as any).get('page')).toBe('2')
   })
 
-  test('is idempotent — running twice does not break the helpers', () => {
+  test('is idempotent - running twice does not break the helpers', () => {
     const req = new Request('https://example.com/x', {
       headers: { Authorization: 'Bearer once' },
     })

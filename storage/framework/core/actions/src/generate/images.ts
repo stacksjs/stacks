@@ -23,7 +23,7 @@ export async function generateProjectImages(options: GenerateImagesActionOptions
   const images = config.images
 
   if (!images || (!images.social?.enabled && !images.appStore?.enabled && !images.appIcons?.enabled)) {
-    log.debug('[generate:images] nothing declared in config/images.ts — skipping')
+    log.debug('[generate:images] nothing declared in config/images.ts - skipping')
     return
   }
 

@@ -48,7 +48,7 @@ export const DEFAULT_ROLE_PACKS: Array<{ name: string, guard_name: string, descr
   {
     name: 'client',
     guard_name: 'web',
-    description: 'End user / client. Sees content, orders, profile, billing — no dev tools, no infra surfaces.',
+    description: 'End user / client. Sees content, orders, profile, billing - no dev tools, no infra surfaces.',
   },
 ]
 

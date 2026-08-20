@@ -166,7 +166,7 @@ const REMEDIES: Record<DdlCapability, string> = {
   foreignKeys: [
     'Distributed engines cannot enforce a foreign key across shards, so referential',
     'integrity has to move into the application. Regenerate the corpus for this',
-    'dialect — the generator emits the backing index without the constraint — and',
+    'dialect - the generator emits the backing index without the constraint - and',
     'rely on the model relationships plus `buddy doctor` (which reports orphan rows)',
     'instead of database-level cascades.',
   ].join('\n'),

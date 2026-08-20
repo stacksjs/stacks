@@ -47,7 +47,7 @@ function warnSecondsIgnored(expression: string, secondsField: string): void {
   sixFieldWarnedFor.add(expression)
   // eslint-disable-next-line no-console
   console.warn(
-    `[cron] 6-field cron expression '${expression}' has seconds='${secondsField}' — the parser is 5-field only. `
+    `[cron] 6-field cron expression '${expression}' has seconds='${secondsField}' - the parser is 5-field only. `
     + `Seconds field IGNORED. For second-precision use the scheduler's '.everySecond()' instead.`,
   )
 }

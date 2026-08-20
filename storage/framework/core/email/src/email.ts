@@ -300,7 +300,7 @@ export class Mail {
       const reason = error instanceof Error ? error.message : String(error)
       log.warn(
         '[email] Queue dispatch failed; falling back to synchronous send. '
-        + 'Background email pipeline is degraded — check the queue worker / broker.',
+        + 'Background email pipeline is degraded - check the queue worker / broker.',
         { ...logExtra, reason },
       )
     }

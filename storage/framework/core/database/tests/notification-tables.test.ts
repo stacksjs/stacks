@@ -18,7 +18,7 @@ import { indexSqlForDialect, isDuplicateIndexError } from '../src/dialect'
  * thin executor over these builders, wired into `buddy migrate`.
  */
 
-describe('notification table DDL — cross-dialect (stacksjs/stacks#1937)', () => {
+describe('notification table DDL - cross-dialect (stacksjs/stacks#1937)', () => {
   test('exports the migrator + pure builders', () => {
     expect(typeof migrateNotificationTables).toBe('function')
     expect(typeof notificationsTableSql).toBe('function')

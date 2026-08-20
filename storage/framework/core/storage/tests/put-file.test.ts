@@ -147,7 +147,7 @@ describe('Storage.put(uploadedFile, opts)', () => {
   })
 })
 
-describe('Storage.put — router UploadedFile class shape (stacksjs/stacks#1856)', () => {
+describe('Storage.put - router UploadedFile class shape (stacksjs/stacks#1856)', () => {
   // The router wraps multipart fields in an `UploadedFile` class
   // that exposes `name`/`mimeType` (camelCase) and async `bytes()` /
   // `arrayBuffer()` accessors instead of a sync `buffer` property.
@@ -200,7 +200,7 @@ describe('Storage.put — router UploadedFile class shape (stacksjs/stacks#1856)
   })
 })
 
-describe('Storage.put — transform pipeline (stacksjs/stacks#1856 Stage 5)', () => {
+describe('Storage.put - transform pipeline (stacksjs/stacks#1856 Stage 5)', () => {
   // The `transform` hook runs in `putUploadedFile` between bytes-read
   // and disk-write. Tests here use a synthetic transform — the real
   // sharp-backed pipeline lives in `@stacksjs/storage/image` and is

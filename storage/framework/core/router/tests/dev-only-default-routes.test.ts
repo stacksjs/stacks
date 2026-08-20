@@ -55,7 +55,7 @@ async function routesFor(appEnv?: string): Promise<string[]> {
   return JSON.parse(lines[lines.length - 1]) as string[]
 }
 
-describe('dev-only default routes — registration gate (#1955)', () => {
+describe('dev-only default routes - registration gate (#1955)', () => {
   test('APP_ENV=production omits /install and /test-error', async () => {
     const routes = await routesFor('production')
     expect(routes).not.toContain('GET /install')
@@ -94,7 +94,7 @@ describe('dev-only default routes — registration gate (#1955)', () => {
   }, 30000)
 })
 
-describe('TestErrorAction — production handler guard (#1955)', () => {
+describe('TestErrorAction - production handler guard (#1955)', () => {
   let prevAppEnv: string | undefined
   let prevNodeEnv: string | undefined
 
@@ -138,7 +138,7 @@ describe('TestErrorAction — production handler guard (#1955)', () => {
   })
 })
 
-describe('InstallAction — production handler guard (#1955)', () => {
+describe('InstallAction - production handler guard (#1955)', () => {
   let prevAppEnv: string | undefined
   let prevNodeEnv: string | undefined
 
@@ -183,7 +183,7 @@ describe('InstallAction — production handler guard (#1955)', () => {
   })
 })
 
-describe('buddy build server image — fails closed (#1955)', () => {
+describe('buddy build server image - fails closed (#1955)', () => {
   // The registration gate treats an unset APP_ENV/NODE_ENV as local, and the
   // `buddy build server` image (storage/framework/server/Dockerfile) ships no
   // .env for Bun's cwd auto-load to find — so unless the image itself pins

@@ -95,7 +95,7 @@ export function doctor(buddy: CLI): void {
             status: insideProject ? 'warn' : 'fail',
             message: insideProject
               ? `node_modules is a symlink to ${target}`
-              : `node_modules is a symlink to ${target}, which belongs to another project — installs here mutate it, and what runs locally is not what the lockfile resolves. Remove the link and run \`bun install\`.`,
+              : `node_modules is a symlink to ${target}, which belongs to another project - installs here mutate it, and what runs locally is not what the lockfile resolves. Remove the link and run \`bun install\`.`,
           })
         }
         else {
@@ -106,7 +106,7 @@ export function doctor(buddy: CLI): void {
         checks.push({
           name: 'Dependency tree',
           status: 'warn',
-          message: 'node_modules is missing — run `bun install`',
+          message: 'node_modules is missing - run `bun install`',
         })
       }
 
@@ -250,7 +250,7 @@ export function doctor(buddy: CLI): void {
         checks.push({
           name: 'APP_KEY',
           status: 'fail',
-          message: 'Not set — features that depend on it (encrypted columns, signed URLs, env decryption) will refuse to run. Run `buddy key:generate`.',
+          message: 'Not set - features that depend on it (encrypted columns, signed URLs, env decryption) will refuse to run. Run `buddy key:generate`.',
         })
       }
 
@@ -345,7 +345,7 @@ export function doctor(buddy: CLI): void {
         const first = result.missing[0]
         if (!first) throw new Error('Unique-index audit reported missing entries without details')
         const example = `CREATE UNIQUE INDEX IF NOT EXISTS "${first.table}_${first.columns.join('_')}_unique" ON "${first.table}" ("${first.columns.join('", "')}")`
-        throw new Error(`${result.missing.length}/${result.declared.length} declared unique constraints have no UNIQUE index: ${sample}${more}. Run \`buddy migrate\` (re-queues missing unique-index migrations, #1952) — dedupe duplicate rows first or migrate hard-fails; if no migration file exists run \`buddy generate:migrations\`, or create manually: ${example}`)
+        throw new Error(`${result.missing.length}/${result.declared.length} declared unique constraints have no UNIQUE index: ${sample}${more}. Run \`buddy migrate\` (re-queues missing unique-index migrations, #1952) - dedupe duplicate rows first or migrate hard-fails; if no migration file exists run \`buddy generate:migrations\`, or create manually: ${example}`)
       }, 10000)
 
       // Migration ledger drift (stacksjs/stacks#2203). The `migrations`
@@ -390,7 +390,7 @@ export function doctor(buddy: CLI): void {
         const more = result.orphans.length > 5 ? ` (+${result.orphans.length - 5} more)` : ''
         const first = result.orphans[0]
         if (!first) throw new Error('Foreign-key audit reported orphan rows without details')
-        throw new Error(`${result.total} orphan rows violate FKs: ${sample}${more}. Legacy rows written under foreign_keys=OFF (#1951). Review and clean manually, e.g. DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}) — doctor never deletes data.`)
+        throw new Error(`${result.total} orphan rows violate FKs: ${sample}${more}. Legacy rows written under foreign_keys=OFF (#1951). Review and clean manually, e.g. DELETE FROM ${first.table} WHERE ${first.column} IS NOT NULL AND ${first.column} NOT IN (SELECT id FROM ${first.parent}) - doctor never deletes data.`)
       }, 10000)
 
       // Cache connectivity
@@ -431,7 +431,7 @@ export function doctor(buddy: CLI): void {
           : {
               name: 'Runtime directories',
               status: 'warn',
-              message: `Still in the project root: ${leftover.map(entry => entry.legacy.slice(projectPath().length + 1)).join(', ')} — remove them so state stays under storage/`,
+              message: `Still in the project root: ${leftover.map(entry => entry.legacy.slice(projectPath().length + 1)).join(', ')} - remove them so state stays under storage/`,
             })
       }
 

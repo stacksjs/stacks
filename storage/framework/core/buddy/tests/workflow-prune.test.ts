@@ -234,7 +234,7 @@ describe('splitFrameworkTypecheckScript', () => {
 })
 
 describe('the framework publish script', () => {
-  it('goes too — it walks the source tree that was just deleted', () => {
+  it('goes too - it walks the source tree that was just deleted', () => {
     const withPublish = `name: CI
 
 jobs:

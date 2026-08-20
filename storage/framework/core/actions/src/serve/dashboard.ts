@@ -148,7 +148,7 @@ await serve({
         if (!apiBase) {
           log.error(
             `No API target configured for ${url.pathname}. This dashboard shares its host with other `
-            + `deployments, so there is no safe default port to guess — refusing to proxy. Set PORT_API `
+            + `deployments, so there is no safe default port to guess - refusing to proxy. Set PORT_API `
             + `(or API_URL) for this site.`,
           )
           return new Response('Bad Gateway', { status: 502 })

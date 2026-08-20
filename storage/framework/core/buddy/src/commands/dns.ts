@@ -168,7 +168,7 @@ export function dns(buddy: CLI): void {
       const result = await syncDnsConfig(target, dnsConfig, { dryRun: options.dryRun })
 
       if (!result.provider && !options.dryRun) {
-        log.warn(`No DNS provider credentials found (e.g. PORKBUN_API_KEY / PORKBUN_SECRET_KEY) — nothing was synced. ${result.plan.create.length} record(s) would be created.`)
+        log.warn(`No DNS provider credentials found (e.g. PORKBUN_API_KEY / PORKBUN_SECRET_KEY) - nothing was synced. ${result.plan.create.length} record(s) would be created.`)
         process.exit(ExitCode.Success)
       }
 

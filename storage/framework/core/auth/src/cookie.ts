@@ -79,7 +79,7 @@ export function authCookieName(options?: AuthCookieOptions): string {
     console.warn(
       `[auth] config.auth.defaultTokenName ("${legacy}") is not a valid cookie name and is being ignored `
       + `for cookie naming; using "auth-token". defaultTokenName is a personal access token label, not a `
-      + `cookie name — set config.auth.cookie.name instead (stacksjs/stacks#2236).`,
+      + `cookie name - set config.auth.cookie.name instead (stacksjs/stacks#2236).`,
     )
   }
 
@@ -186,7 +186,7 @@ export function authCookie(token: string, options: AuthCookieOptions = {}): stri
     // The default can no longer produce this combination, so it is always a
     // deliberate override — say so once rather than failing silently open.
     warnedInsecureOverride = true
-    log.warn('[auth] authCookie() was asked for secure: false while the app URL is HTTPS — the session cookie will also travel over plain HTTP.')
+    log.warn('[auth] authCookie() was asked for secure: false while the app URL is HTTPS - the session cookie will also travel over plain HTTP.')
   }
 
   return parts.join('; ')

@@ -126,7 +126,7 @@ async function recordEventOrSkip(eventId: string, trx: any): Promise<boolean> {
       if (!warnedAboutMissingDedupTable) {
         warnedAboutMissingDedupTable = true
         // eslint-disable-next-line no-console
-        console.warn('[commerce/webhook] stripe_webhook_events table missing — Stripe retries may be processed multiple times. Run migrations to enable dedup.')
+        console.warn('[commerce/webhook] stripe_webhook_events table missing - Stripe retries may be processed multiple times. Run migrations to enable dedup.')
       }
       return true
     }
@@ -295,7 +295,7 @@ export async function registerCommerceWebhookHandlers(): Promise<() => void> {
   const payments = await import('@stacksjs/payments').catch(() => null)
   if (!payments) {
     // eslint-disable-next-line no-console
-    console.warn('[commerce/webhook] @stacksjs/payments not installed — Stripe webhook handlers NOT registered')
+    console.warn('[commerce/webhook] @stacksjs/payments not installed - Stripe webhook handlers NOT registered')
     return () => {}
   }
 
@@ -303,7 +303,7 @@ export async function registerCommerceWebhookHandlers(): Promise<() => void> {
   const onCharge = (payments as { onCharge?: (h: Record<string, unknown>) => void }).onCharge
   if (typeof onPaymentIntent !== 'function' || typeof onCharge !== 'function') {
     // eslint-disable-next-line no-console
-    console.warn('[commerce/webhook] @stacksjs/payments shape changed — handlers NOT registered')
+    console.warn('[commerce/webhook] @stacksjs/payments shape changed - handlers NOT registered')
     return () => {}
   }
 

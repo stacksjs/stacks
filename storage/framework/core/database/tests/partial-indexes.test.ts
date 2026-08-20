@@ -13,7 +13,7 @@ import { generateIndexCreationSQL as postgresIndexSQL } from '../src/drivers/pos
  *     template tag just to express a WHERE clause.
  */
 
-describe('simple indexes — back-compat kysely chain', () => {
+describe('simple indexes - back-compat kysely chain', () => {
   for (const [name, fn] of [['sqlite', sqliteIndexSQL], ['mysql', mysqlIndexSQL], ['postgres', postgresIndexSQL]] as const) {
     test(`${name}: simple index → schema.createIndex chain`, () => {
       const ddl = fn('users', { name: 'idx_users_email', columns: ['email'] })
@@ -55,8 +55,8 @@ describe('UNIQUE indexes (stacksjs/stacks#1943)', () => {
   })
 })
 
-describe('partial indexes — WHERE clause (the canonical case)', () => {
-  test('partial unique with WHERE — bench-review example', () => {
+describe('partial indexes - WHERE clause (the canonical case)', () => {
+  test('partial unique with WHERE - bench-review example', () => {
     const ddl = sqliteIndexSQL('review_flags', {
       name: 'review_flags_review_user_unique',
       columns: ['judge_review_id', 'user_id'],
@@ -79,7 +79,7 @@ describe('partial indexes — WHERE clause (the canonical case)', () => {
     expect(ddl).toContain('WHERE deleted_at IS NULL')
   })
 
-  test('WHERE expression is emitted verbatim (no auto-escape — caller owns safety)', () => {
+  test('WHERE expression is emitted verbatim (no auto-escape - caller owns safety)', () => {
     const ddl = postgresIndexSQL('events', {
       name: 'idx_recent_events',
       columns: ['user_id'],

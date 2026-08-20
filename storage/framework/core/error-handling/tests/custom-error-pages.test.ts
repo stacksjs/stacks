@@ -35,7 +35,7 @@ describe('renderProductionErrorPage userland override', () => {
   })
 
   test('renders the userland status-specific override when present', () => {
-    writeFileSync(status404, '<!DOCTYPE html><body>Custom 404 — {{status}} {{title}}</body>')
+    writeFileSync(status404, '<!DOCTYPE html><body>Custom 404 - {{status}} {{title}}</body>')
     try {
       const html = renderProductionErrorPage(404)
       expect(html).toContain('Custom 404')

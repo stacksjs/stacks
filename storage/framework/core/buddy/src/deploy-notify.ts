@@ -129,8 +129,8 @@ export function buildDeployMessage(outcome: DeployOutcome, env: Record<string, s
   const failed = outcome.status === 'failed'
   const target = [outcome.project, outcome.environment].filter(Boolean).join(' · ') || 'project'
   const heading = failed
-    ? `🔴 Deploy FAILED — ${target}`
-    : `✅ Deploy succeeded — ${target}`
+    ? `🔴 Deploy FAILED - ${target}`
+    : `✅ Deploy succeeded - ${target}`
 
   const lines = [heading]
   if (outcome.provider)
@@ -170,13 +170,13 @@ export async function notifyDeployOutcome(
 ): Promise<boolean> {
   try {
     if (!config.url) {
-      log.debug('[deploy] no DEPLOY_WEBHOOK_URL set — skipping deploy notification')
+      log.debug('[deploy] no DEPLOY_WEBHOOK_URL set - skipping deploy notification')
       return false
     }
 
     const notifyOn = config.notifyOn ?? 'failure'
     if (outcome.status === 'succeeded' && notifyOn !== 'all') {
-      log.debug('[deploy] deploy succeeded and DEPLOY_WEBHOOK_NOTIFY is not "all" — not notifying')
+      log.debug('[deploy] deploy succeeded and DEPLOY_WEBHOOK_NOTIFY is not "all" - not notifying')
       return false
     }
 

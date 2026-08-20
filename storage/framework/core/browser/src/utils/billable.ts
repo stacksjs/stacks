@@ -14,7 +14,7 @@ async function loadStripe(key: string): Promise<any> {
   catch {
     throw new Error(
       'Stripe is being used but the `@stripe/stripe-js` package is not installed. '
-      + 'It is an opt-in dependency — run `bun add @stripe/stripe-js` to enable Stripe payments in the browser.',
+      + 'It is an opt-in dependency - run `bun add @stripe/stripe-js` to enable Stripe payments in the browser.',
     )
   }
 

@@ -289,11 +289,11 @@ export async function createMail(options: MakeOptions & { force?: boolean }): Pr
   // batches via timers and can lose the final write on rapid exit.
   if (!options.force) {
     if (existsSync(mailPath)) {
-      console.error(`${italic(mailPath)} already exists — re-run with --force to overwrite.`)
+      console.error(`${italic(mailPath)} already exists - re-run with --force to overwrite.`)
       return false
     }
     if (existsSync(templatePath)) {
-      console.error(`${italic(templatePath)} already exists — re-run with --force to overwrite.`)
+      console.error(`${italic(templatePath)} already exists - re-run with --force to overwrite.`)
       return false
     }
   }

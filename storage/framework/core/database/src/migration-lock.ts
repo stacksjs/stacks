@@ -155,7 +155,7 @@ async function acquirePostgresLock(
     }
 
     if (Date.now() - start >= timeoutMs)
-      throw new Error('[migration-lock] another migration is in progress — could not acquire postgres advisory lock within timeout')
+      throw new Error('[migration-lock] another migration is in progress - could not acquire postgres advisory lock within timeout')
 
     await sleepWithJitter(backoff)
     backoff = Math.min(backoff * 2, MAX_BACKOFF_MS)
@@ -190,7 +190,7 @@ async function acquireMySqlLock(
     }
 
     if (Date.now() - start >= timeoutMs)
-      throw new Error('[migration-lock] another migration is in progress — could not acquire MySQL named lock within timeout')
+      throw new Error('[migration-lock] another migration is in progress - could not acquire MySQL named lock within timeout')
 
     await sleepWithJitter(backoff)
     backoff = Math.min(backoff * 2, MAX_BACKOFF_MS)
@@ -236,7 +236,7 @@ async function acquireSqliteLock(
     reclaimIfStale(path)
 
     if (Date.now() - start >= timeoutMs)
-      throw new Error(`[migration-lock] another migration is in progress — lock file ${path} held within timeout`)
+      throw new Error(`[migration-lock] another migration is in progress - lock file ${path} held within timeout`)
 
     await sleepWithJitter(backoff)
     backoff = Math.min(backoff * 2, MAX_BACKOFF_MS)

@@ -197,7 +197,7 @@ export async function watchTypes(options?: GeneratorOptions): Promise<void> {
     const text = fs.existsSync(manifestPath) ? fs.readFileSync(manifestPath, 'utf-8') : ''
     const manifest = text ? JSON.parse(text) : {}
     if (!manifest?.scripts?.['generate:types']) {
-      log.warn('[generate:types --watch] no `generate:types` script in framework package.json — type regeneration disabled. dev:api will keep running, but type definitions won\'t auto-refresh on model/config changes.')
+      log.warn('[generate:types --watch] no `generate:types` script in framework package.json - type regeneration disabled. dev:api will keep running, but type definitions won\'t auto-refresh on model/config changes.')
       return
     }
   }
@@ -249,7 +249,7 @@ export async function watchTypes(options?: GeneratorOptions): Promise<void> {
   }
 
   if (watchers.length === 0) {
-    log.warn('[generate:types --watch] no directories to watch — exiting')
+    log.warn('[generate:types --watch] no directories to watch - exiting')
     return
   }
 

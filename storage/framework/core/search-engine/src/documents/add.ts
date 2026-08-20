@@ -43,7 +43,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
         }
 
         if (typeof ModelClass.all !== 'function') {
-          log.warn(`[search] ${modelName}: model has no .all() — run generate:model-files or use defineModel`)
+          log.warn(`[search] ${modelName}: model has no .all() - run generate:model-files or use defineModel`)
           continue
         }
 
@@ -89,7 +89,7 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
             documents = await ModelClass.query().with(...eagerRelations).get()
           }
           catch (err) {
-            log.warn(`[search] ${modelName}: eager-load of [${eagerRelations.join(', ')}] failed — falling back to .all(); denormalized fields will be null. (${(err as Error).message})`)
+            log.warn(`[search] ${modelName}: eager-load of [${eagerRelations.join(', ')}] failed - falling back to .all(); denormalized fields will be null. (${(err as Error).message})`)
             documents = await ModelClass.all()
           }
         }

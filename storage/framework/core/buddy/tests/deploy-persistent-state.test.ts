@@ -79,7 +79,7 @@ describe('applyPersistentStatePaths', () => {
     expect(out.main.sharedPaths).toEqual(['storage/logs'])
   })
 
-  it("is additive — a site's own sharedPaths are never dropped", () => {
+  it("is additive - a site's own sharedPaths are never dropped", () => {
     const site = { ...appSite(), sharedPaths: ['storage/uploads'] }
     const out = applyPersistentStatePaths({ main: site }, 'acme')
 

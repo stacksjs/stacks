@@ -47,7 +47,7 @@ describe('parseEnvelope', () => {
     clearEnvelopeWarnings()
   })
 
-  test('parses a v1 envelope (object input) — round-trip', () => {
+  test('parses a v1 envelope (object input) - round-trip', () => {
     const original = createEnvelope('SendEmail', { to: 'a@b.com' }, { tries: 3 })
     const parsed = parseEnvelope(original)
     expect(parsed.ok).toBe(true)

@@ -322,7 +322,7 @@ async function dynamicImports(buddy: CLI) {
         if (typeof dynamicImport.default === 'function')
           dynamicImport.default(buddy)
         else
-          log.debug(`Skipping ${file} — no default export function`)
+          log.debug(`Skipping ${file} - no default export function`)
       }
       catch (error) {
         log.error(`Failed to load command ${file}:`, error)

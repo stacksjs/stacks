@@ -301,7 +301,7 @@ export function buildErrorMarkdown(opts: {
   if (opts.frames.length > 0) {
     lines.push('## Exception trace', '')
     for (const frame of opts.frames.slice(0, 20)) {
-      lines.push(`\`${frame.function || '<anonymous>'}\` — ${frame.file}:${frame.line}`)
+      lines.push(`\`${frame.function || '<anonymous>'}\` - ${frame.file}:${frame.line}`)
     }
   }
 

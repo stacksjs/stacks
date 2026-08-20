@@ -154,7 +154,7 @@ function logJsonParseFailure(raw: unknown, err: unknown): void {
   jsonParseFailureSeen.add(key)
   const message = err instanceof Error ? err.message : String(err)
   // eslint-disable-next-line no-console
-  console.error(`[orm] JSON cast failed to parse value (returning null): ${message} — value preview: ${JSON.stringify(preview)}`)
+  console.error(`[orm] JSON cast failed to parse value (returning null): ${message} - value preview: ${JSON.stringify(preview)}`)
 }
 
 const builtInCasters: Record<CastType, CasterInterface> = {
@@ -471,7 +471,7 @@ function wrapModelInstance<T extends object>(
               const result = fn((target as any)._attributes as Record<string, unknown>)
               if (result && typeof (result as { then?: unknown }).then === 'function') {
                 throw new Error(
-                  `Setter for "${key}" returned a Promise — use \`saveAsync()\` instead of \`save()\` when a model has async setters.`,
+                  `Setter for "${key}" returned a Promise - use \`saveAsync()\` instead of \`save()\` when a model has async setters.`,
                 )
               }
               ;(target as any)._attributes[key] = result
@@ -1046,7 +1046,7 @@ async function applyDefinedSetters(
       out[key] = await fn(out)
     }
     catch (err) {
-      log.error(`[orm] ${definition.name}.set.${key} threw — skipping setter`, err)
+      log.error(`[orm] ${definition.name}.set.${key} threw - skipping setter`, err)
     }
   }
   return out
@@ -1116,7 +1116,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
       if (!data || typeof data !== 'object' || Array.isArray(data))
         throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
       if (Object.keys(data).length === 0) {
-        log.debug(`[orm] ${definition.name}.update called with empty data — short-circuiting and returning current row`)
+        log.debug(`[orm] ${definition.name}.update called with empty data - short-circuiting and returning current row`)
         const f = baseModel.find as Function | undefined
         return typeof f === 'function' ? await f.call(baseModel, id) : null
       }

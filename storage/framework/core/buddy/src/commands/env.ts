@@ -389,14 +389,14 @@ export function env(buddy: CLI): void {
               checks.push({
                 name: 'Tenant isolation',
                 status: 'pass',
-                message: `${total} archived key(s) — ${envFile} is local-only and never deployed`,
+                message: `${total} archived key(s) - ${envFile} is local-only and never deployed`,
               })
             }
             else {
               checks.push({
                 name: 'Tenant isolation',
                 status: 'warn',
-                message: `${total} key(s) belong to another tenant — move them to .env`,
+                message: `${total} key(s) belong to another tenant - move them to .env`,
               })
               for (const { tenant, keys } of foreign) {
                 checks.push({
@@ -456,7 +456,7 @@ export function env(buddy: CLI): void {
               checks.push({
                 name: 'Committed secrets',
                 status: 'fail',
-                message: `${leaked.length} unencrypted secret${leaked.length === 1 ? '' : 's'} in committed ${envFile}: ${leaked.map(f => f.key).join(', ')}. Run \`buddy env:encrypt\`, then rotate them — they are in git history.`,
+                message: `${leaked.length} unencrypted secret${leaked.length === 1 ? '' : 's'} in committed ${envFile}: ${leaked.map(f => f.key).join(', ')}. Run \`buddy env:encrypt\`, then rotate them - they are in git history.`,
               })
             }
           }

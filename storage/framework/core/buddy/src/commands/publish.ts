@@ -38,7 +38,7 @@ export function publish(buddy: CLI): void {
     frameworkPath: 'The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks)',
     coreStatus: 'Report whether this project runs on a vendored storage/framework/core or on the published packages',
     name: 'The name of the resource to publish (e.g. Cart, User)',
-    pkg: 'The name of the framework package (e.g. router, orm, faker — without @stacksjs/ prefix)',
+    pkg: 'The name of the framework package (e.g. router, orm, faker - without @stacksjs/ prefix)',
     force: 'Overwrite an existing userland file',
     forceUnpublish: 'Delete the vendored source even when it has uncommitted changes',
     verbose: 'Enable verbose output',
@@ -284,7 +284,7 @@ async function publishCorePackage(pkg: string, force: boolean): Promise<void> {
   await copyTreeFiltered(sourceDir, targetDir, SKIP, () => copied++)
 
   log.success(`Published @stacksjs/${shortName} → ${italic(targetDir.replace(`${process.cwd()}/`, ''))} (${copied} files)`)
-  log.info('Edit freely — local changes win over the installed package.')
+  log.info('Edit freely - local changes win over the installed package.')
 }
 
 /**
@@ -467,7 +467,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
   const sourceCore = join(framework, 'storage/framework/core')
   const corePkgPath = resolve(sourceCore, 'package.json')
   if (!existsSync(corePkgPath)) {
-    log.error(`${sourceCore} has no package.json — that does not look like a Stacks checkout.`)
+    log.error(`${sourceCore} has no package.json - that does not look like a Stacks checkout.`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -607,7 +607,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
     process.exit(ExitCode.FatalError)
   }
 
-  log.success('This project now runs on the vendored framework — edits under storage/framework/core are live.')
+  log.success('This project now runs on the vendored framework - edits under storage/framework/core are live.')
   log.info('Go back to the published packages any time with `buddy unpublish:core --all`.')
 }
 
@@ -667,7 +667,7 @@ async function reportCoreStatus(): Promise<void> {
     const packages = (await readdir(coreDir, { withFileTypes: true }))
       .filter(entry => entry.isDirectory() && existsSync(resolve(coreDir, entry.name, 'package.json')))
 
-    log.info(`Layout:  vendored — ${italic(rel(coreDir))} (${packages.length} packages, v${corePkg.version ?? 'unknown'})`)
+    log.info(`Layout:  vendored - ${italic(rel(coreDir))} (${packages.length} packages, v${corePkg.version ?? 'unknown'})`)
     log.info(`Declared: stacks@${declared ?? '(not declared)'}`)
 
     // A vendored directory that nothing links to is the failure mode worth
@@ -684,7 +684,7 @@ async function reportCoreStatus(): Promise<void> {
     ? (JSON.parse(await fs.promises.readFile(installed, 'utf-8')) as { version?: string }).version
     : undefined
 
-  log.info('Layout:  published packages — no storage/framework/core in this project')
+  log.info('Layout:  published packages - no storage/framework/core in this project')
   log.info(`Declared: stacks@${declared ?? '(not declared)'}`)
   log.info(`Installed: ${installedVersion ? `v${installedVersion}` : '(run bun install)'}`)
   log.info('Vendor the framework for local development with `buddy publish:core --all`.')
@@ -700,7 +700,7 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
   const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
 
   if (!existsSync(targetDir)) {
-    log.info(`Not vendored: ${italic(rel(targetDir))} — nothing to do.`)
+    log.info(`Not vendored: ${italic(rel(targetDir))} - nothing to do.`)
     return
   }
 
@@ -717,7 +717,7 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
 
   await fs.promises.rm(targetDir, { recursive: true, force: true })
 
-  log.success(`Unpublished ${italic(rel(targetDir))} — @stacksjs/${shortName} now resolves from node_modules.`)
+  log.success(`Unpublished ${italic(rel(targetDir))} - @stacksjs/${shortName} now resolves from node_modules.`)
 }
 
 /**
@@ -740,7 +740,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
 
   if (!existsSync(coreDir)) {
-    log.info('No storage/framework/core in this project — already on the installed packages.')
+    log.info('No storage/framework/core in this project - already on the installed packages.')
     return
   }
 
@@ -1002,7 +1002,7 @@ async function resolvePublishedVersion(depName: string, vendored: string): Promi
     return vendored
   }
 
-  log.warn(`${depName}@${vendored} is not published yet — the vendored copy is ahead of npm.`)
+  log.warn(`${depName}@${vendored} is not published yet - the vendored copy is ahead of npm.`)
   log.info(`Pinning the newest published version instead, ${depName}@^${published.latest}.`)
   return published.latest
 }

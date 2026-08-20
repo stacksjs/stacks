@@ -46,7 +46,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[email/suppression] email_suppressions table missing — suppression checks accepted but NOT enforced. '
+    '[email/suppression] email_suppressions table missing - suppression checks accepted but NOT enforced. '
     + 'Run migrations to enable enforcement.',
   )
 }

@@ -90,7 +90,7 @@ async function migrateMigrations(req: MigrateProjectRequest): Promise<ReportEntr
       if (!req.dryRun) await writeFile(join(req.target, outRel), parsed.sql)
 
       const skippedNote = parsed.skipped.length > 0
-        ? ` Skipped ${parsed.skipped.length} line(s) inside the create block — hand-port from the source migration.`
+        ? ` Skipped ${parsed.skipped.length} line(s) inside the create block - hand-port from the source migration.`
         : ''
       out.push({
         source: rel,
@@ -165,13 +165,13 @@ async function migrateModels(req: MigrateProjectRequest): Promise<ReportEntry[]>
 }
 
 const DEFERRED_SURFACES = [
-  { path: 'routes', note: 'routes/web.php + routes/api.php — port to routes/web.ts + routes/api.ts using the Stacks router DSL.' },
+  { path: 'routes', note: 'routes/web.php + routes/api.php - port to routes/web.ts + routes/api.ts using the Stacks router DSL.' },
   { path: 'app/Http/Controllers', note: 'Controllers → Stacks Actions in app/Actions/. Each controller method maps to one Action file.' },
   { path: 'resources/views', note: 'Blade templates → stx components in resources/views/.' },
   { path: 'database/seeders', note: 'Seeders → database/seeders/*.ts using Stacks SeederContract.' },
   { path: 'app/Console/Commands', note: 'Artisan commands → app/Commands/*.ts in your Stacks project.' },
   { path: 'app/Jobs', note: 'Queue jobs → app/Jobs/*.ts; pair with config/queue.ts driver settings.' },
-  { path: 'composer.json', note: 'Dependency map — Laravel packages don\'t translate 1:1; the Stacks docs cover the closest @stacksjs/* equivalents.' },
+  { path: 'composer.json', note: 'Dependency map - Laravel packages don\'t translate 1:1; the Stacks docs cover the closest @stacksjs/* equivalents.' },
 ]
 
 function summariseDeferred(req: MigrateProjectRequest): ReportEntry[] {

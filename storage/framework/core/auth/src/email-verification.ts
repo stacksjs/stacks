@@ -35,7 +35,7 @@ function getVerificationKey(): string {
   const appKey = config.app.key
   if (typeof appKey !== 'string' || appKey.length === 0) {
     throw new Error(
-      '[auth] config.app.key is not set — email-verification HMAC requires a real APP_KEY. '
+      '[auth] config.app.key is not set - email-verification HMAC requires a real APP_KEY. '
       + 'Run `./buddy key:generate` to provision one, or set the APP_KEY env var before booting the app.',
     )
   }

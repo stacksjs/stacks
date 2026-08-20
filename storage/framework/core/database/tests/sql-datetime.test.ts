@@ -18,7 +18,7 @@ import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral } from '../src/sql-he
 
 const INSTANT = new Date('2026-08-04T01:52:47.417Z')
 
-describe('sqlDateTime — the write format', () => {
+describe('sqlDateTime - the write format', () => {
   test('is ISO without the trailing Z', () => {
     expect(sqlDateTime(INSTANT)).toBe('2026-08-04T01:52:47.417')
   })
@@ -49,7 +49,7 @@ describe('sqlDateTime — the write format', () => {
   })
 })
 
-describe('parseSqlDateTime — the read format', () => {
+describe('parseSqlDateTime - the read format', () => {
   test('reads the canonical format back as the same instant', () => {
     expect(parseSqlDateTime(sqlDateTime(INSTANT))!.getTime()).toBe(INSTANT.getTime())
   })

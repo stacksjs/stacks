@@ -34,7 +34,7 @@ describe('schema.file()', () => {
   })
 })
 
-describe('FileValidator — required', () => {
+describe('FileValidator - required', () => {
   test('passes when the field is absent if not required', () => {
     expect(file().validate(undefined).valid).toBe(true)
     expect(file().validate(null).valid).toBe(true)
@@ -53,7 +53,7 @@ describe('FileValidator — required', () => {
   })
 })
 
-describe('FileValidator — image()', () => {
+describe('FileValidator - image()', () => {
   test('accepts the common renderable image mimetypes', () => {
     for (const mime of ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif']) {
       expect(file().image().validate(fakeFile({ mimetype: mime })).valid).toBe(true)
@@ -65,7 +65,7 @@ describe('FileValidator — image()', () => {
     expect(file().image().validate(fakeFile({ mimetype: 'text/plain' })).valid).toBe(false)
   })
 
-  test('rejects SVG explicitly — opt-in via `.mimeTypes(...)` instead', () => {
+  test('rejects SVG explicitly - opt-in via `.mimeTypes(...)` instead', () => {
     // SVG's scripting surface makes it a different validation problem
     // from raster images; documented as intentional in the validator.
     expect(file().image().validate(fakeFile({ mimetype: 'image/svg+xml' })).valid).toBe(false)
@@ -77,7 +77,7 @@ describe('FileValidator — image()', () => {
   })
 })
 
-describe('FileValidator — size constraints', () => {
+describe('FileValidator - size constraints', () => {
   test('maxBytes rejects files over the cap', () => {
     const v = file().maxBytes(1000)
     expect(v.validate(fakeFile({ size: 500 })).valid).toBe(true)
@@ -100,7 +100,7 @@ describe('FileValidator — size constraints', () => {
   })
 })
 
-describe('FileValidator — extensions', () => {
+describe('FileValidator - extensions', () => {
   test('matches the original filename extension, case-insensitive', () => {
     const v = file().extensions(['jpg', 'jpeg', 'png'])
     expect(v.validate(fakeFile({ originalName: 'photo.JPG' })).valid).toBe(true)
@@ -112,13 +112,13 @@ describe('FileValidator — extensions', () => {
     expect(file().extensions(['jpg']).validate(fakeFile({ originalName: 'noext' })).valid).toBe(false)
   })
 
-  test('strips leading dots — `.jpg` and `jpg` are equivalent', () => {
+  test('strips leading dots - `.jpg` and `jpg` are equivalent', () => {
     const v = file().extensions(['.jpg'])
     expect(v.validate(fakeFile({ originalName: 'photo.jpg' })).valid).toBe(true)
   })
 })
 
-describe('FileValidator — mimeTypes', () => {
+describe('FileValidator - mimeTypes', () => {
   test('explicit allow-list, case-insensitive', () => {
     const v = file().mimeTypes(['image/jpeg', 'IMAGE/PNG'])
     expect(v.validate(fakeFile({ mimetype: 'image/jpeg' })).valid).toBe(true)
@@ -127,7 +127,7 @@ describe('FileValidator — mimeTypes', () => {
   })
 })
 
-describe('FileValidator — chaining + accumulated errors', () => {
+describe('FileValidator - chaining + accumulated errors', () => {
   test('reports every failing rule, not just the first', () => {
     const v = file().image().maxBytes(100).extensions(['jpg'])
     const r = v.validate(fakeFile({
@@ -148,7 +148,7 @@ describe('FileValidator — chaining + accumulated errors', () => {
   })
 })
 
-describe('FileValidator — action contract', () => {
+describe('FileValidator - action contract', () => {
   test('matches the shape `validateActionInput` expects', () => {
     // The Action layer iterates `{ rule: { validate(value): { valid, errors? } } }`.
     // A new validator must satisfy that contract — this test guards against an

@@ -130,7 +130,7 @@ export class FileValidator {
   maxBytes(max: number): this {
     this._rules.push((file) => {
       if (typeof file.size !== 'number')
-        return 'has no size — cannot enforce maxBytes'
+        return 'has no size - cannot enforce maxBytes'
       if (file.size > max)
         return `is too large: ${file.size} bytes exceeds the ${max}-byte cap`
       return null
@@ -142,7 +142,7 @@ export class FileValidator {
   minBytes(min: number): this {
     this._rules.push((file) => {
       if (typeof file.size !== 'number')
-        return 'has no size — cannot enforce minBytes'
+        return 'has no size - cannot enforce minBytes'
       if (file.size < min)
         return `is too small: ${file.size} bytes is below the ${min}-byte minimum`
       return null

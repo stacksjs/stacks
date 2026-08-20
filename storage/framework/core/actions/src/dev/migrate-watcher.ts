@@ -59,7 +59,7 @@ export function startModelMigrationWatcher(): void {
     }
   }
   if (watching > 0)
-    log.debug('[dev] auto-migrate watcher active — model edits will sync the database')
+    log.debug('[dev] auto-migrate watcher active - model edits will sync the database')
 }
 
 async function reconcile(): Promise<void> {
@@ -78,7 +78,7 @@ async function reconcile(): Promise<void> {
 
     const destructive = ops.filter(o => o.destructive)
     if (destructive.length > 0) {
-      log.warn(`[dev] ${destructive.length} destructive schema change${destructive.length === 1 ? '' : 's'} detected — not auto-applied. Run \`buddy migrate\` to review and apply.`)
+      log.warn(`[dev] ${destructive.length} destructive schema change${destructive.length === 1 ? '' : 's'} detected - not auto-applied. Run \`buddy migrate\` to review and apply.`)
       return
     }
 

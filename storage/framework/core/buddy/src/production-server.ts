@@ -288,7 +288,7 @@ export async function startProductionServer(options?: { port?: string | number, 
       )
 
       for (const name of viewPatterns.missing)
-        log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} — ignoring.`)
+        log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} - ignoring.`)
 
       // Same rules the dev server uses, so a route reachable under `buddy dev`
       // is reachable under `buddy serve` (stacksjs/stacks#2230). Resolved here
@@ -373,7 +373,7 @@ export async function startProductionServer(options?: { port?: string | number, 
             if (!apiBase) {
               log.error(
                 `No API target configured for ${url.pathname}. This app shares its host with other `
-                + `deployments, so there is no safe default port to guess — refusing to proxy. Set `
+                + `deployments, so there is no safe default port to guess - refusing to proxy. Set `
                 + `PORT_API (or API_URL) for this site, and deploy an \`api\` site on its own port.`,
               )
               return new Response('Bad Gateway', { status: 502 })

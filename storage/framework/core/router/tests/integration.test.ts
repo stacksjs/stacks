@@ -336,7 +336,7 @@ describe('path-param coercion (stacksjs/stacks#1865)', () => {
     expect(result.valid).toBe(true)
   })
 
-  test('garbage numeric path "12abc" fails — Number("12abc") is NaN, value stays a string', async () => {
+  test('garbage numeric path "12abc" fails - Number("12abc") is NaN, value stays a string', async () => {
     const req = makeRequest('http://localhost/judges/12abc/follow', { id: '12abc' }, { method: 'POST' })
     const result = await validateActionInput(req, {
       id: { rule: numberRule(n => n > 0), message: 'Invalid judge id.' },

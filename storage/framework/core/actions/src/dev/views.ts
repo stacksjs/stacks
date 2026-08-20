@@ -186,7 +186,7 @@ async function startDefaultServer() {
   )
 
   for (const name of viewPatterns.missing)
-    log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} — ignoring.`)
+    log.warn(`ui.defaultViews lists "${name}", which does not exist under ${defaultViewsPath} - ignoring.`)
 
   await serve({
     patterns: viewPatterns.patterns,

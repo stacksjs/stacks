@@ -29,7 +29,7 @@ function writeModel(dir: string, name: string, content: string): void {
   writeFileSync(join(dir, name), content, 'utf-8')
 }
 
-describe('renderDatabaseTypeFile — pure renderer', () => {
+describe('renderDatabaseTypeFile - pure renderer', () => {
   test('emits the canonical module-augmentation shape', () => {
     const out = renderDatabaseTypeFile([
       { table: 'judges', columns: { id: 'number', name: 'string' } },
@@ -56,7 +56,7 @@ describe('renderDatabaseTypeFile — pure renderer', () => {
   })
 })
 
-describe('buildDatabaseSchema — walks model files end-to-end', () => {
+describe('buildDatabaseSchema - walks model files end-to-end', () => {
   test('returns empty schema with no errors when no models exist', async () => {
     const root = mkScratch()
     const result = await buildDatabaseSchema({

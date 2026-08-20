@@ -85,7 +85,7 @@ function findEmitted(captured: Map<string, string>, fileNamePart: string): strin
     if (dest.includes(fileNamePart))
       return content
   }
-  throw new Error(`no emitted migration matching "${fileNamePart}" — captured: ${[...captured.keys()].join(', ')}`)
+  throw new Error(`no emitted migration matching "${fileNamePart}" - captured: ${[...captured.keys()].join(', ')}`)
 }
 
 const tmpModelsDir = mkdtempSync(join(tmpdir(), 'stacks-emitted-migrations-'))

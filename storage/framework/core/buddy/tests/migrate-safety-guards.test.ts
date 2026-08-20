@@ -35,7 +35,7 @@ describe('buddy migrate safety guards', () => {
     // non-interactive runs must not block a deploy pipeline
     expect(migrateSection).toContain('isCI || !hasTTY')
     // a declined prompt cancels without applying anything
-    expect(migrateSection).toContain('Migration cancelled — no changes applied.')
+    expect(migrateSection).toContain('Migration cancelled - no changes applied.')
     // a deploy refused by the destructive gate must fail its pre-start command
     expect(migrateSection).toContain('isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success')
   })

@@ -117,10 +117,10 @@ export class ScopedStorageAdapter implements StorageAdapter {
     if (path.length === 0) return this.scope
     if (path.includes('\0')) throw new Error('[storage/scoped] path contains a null byte')
     if (path.startsWith('/') || /^[A-Za-z]:[\\/]/.test(path))
-      throw new Error(`[storage/scoped] path '${path}' is absolute — refusing to escape scope`)
+      throw new Error(`[storage/scoped] path '${path}' is absolute - refusing to escape scope`)
     const segments = path.split(/[/\\]/)
     if (segments.some(s => s === '..'))
-      throw new Error(`[storage/scoped] path '${path}' contains a '..' segment — refusing to escape scope`)
+      throw new Error(`[storage/scoped] path '${path}' contains a '..' segment - refusing to escape scope`)
     return `${this.scope}/${path.replace(/^\/+/, '')}`
   }
 

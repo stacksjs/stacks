@@ -21,7 +21,7 @@ import { getRelations } from '../src/utils'
 // belongsToMany case intentionally resolves the framework's real Post and Tag
 // models so the modern record form is covered at the Stacks adapter boundary.
 
-describe('getRelations — polymorphic wiring (#6 audit fix)', () => {
+describe('getRelations - polymorphic wiring (#6 audit fix)', () => {
   it('processes morphTo declarations into a runtime-resolvable RelationConfig', async () => {
     const result = await getRelations(
       {

@@ -111,7 +111,7 @@ export function resolveDesktopLauncher(): string {
   const launcher = candidates.find(candidate => existsSync(candidate))
   if (!launcher) {
     throw new Error(
-      'Desktop launcher entrypoint not found. Reinstall @stacksjs/desktop — the package must ship dist/launcher.js.',
+      'Desktop launcher entrypoint not found. Reinstall @stacksjs/desktop - the package must ship dist/launcher.js.',
     )
   }
 

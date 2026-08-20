@@ -8,7 +8,7 @@ import { acquireSchedulerLock } from '../src/scheduler-lock'
 // behavior is the easiest to verify deterministically. PG/MySQL paths
 // are covered by mocked-db tests below.
 
-describe('acquireSchedulerLock (file-only) — stacksjs/stacks#1877 Cr-3', () => {
+describe('acquireSchedulerLock (file-only) - stacksjs/stacks#1877 Cr-3', () => {
   const testRoot = join(tmpdir(), `stacks-sched-lock-${Date.now()}`)
   const lockFile = join(testRoot, 'task.lock')
 

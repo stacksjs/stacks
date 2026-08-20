@@ -18,7 +18,7 @@ import { sqlHelpers } from '../src/sql-helpers'
  * `buddy migrate` after auth + notification tables.
  */
 
-describe('RBAC table DDL — cross-dialect (stacksjs/stacks#1941 Phase A)', () => {
+describe('RBAC table DDL - cross-dialect (stacksjs/stacks#1941 Phase A)', () => {
   test('exports the migrator + pure builders', () => {
     expect(typeof migrateRbacTables).toBe('function')
     expect(typeof rolesTableSql).toBe('function')

@@ -44,7 +44,7 @@ afterEach(() => {
   }
 })
 
-describe('SMTPDriver.getConfig — no stale cache (stacksjs/stacks#1925)', () => {
+describe('SMTPDriver.getConfig - no stale cache (stacksjs/stacks#1925)', () => {
   it('re-reads config.services.smtp on every call', () => {
     const driver = new SMTPDriver()
 
@@ -73,7 +73,7 @@ describe('SMTPDriver.getConfig — no stale cache (stacksjs/stacks#1925)', () =>
   })
 })
 
-describe('SMTPDriver.getConfig — env fallback (stacksjs/stacks#1925)', () => {
+describe('SMTPDriver.getConfig - env fallback (stacksjs/stacks#1925)', () => {
   it('falls back to process.env.MAIL_* when config is empty', () => {
     const driver = new SMTPDriver()
     if (config.services) config.services.smtp = undefined as any

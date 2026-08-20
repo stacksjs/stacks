@@ -44,7 +44,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingJobIdempotencyTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[queue/idempotency] job_idempotency table missing — idempotency keys are accepted but NOT enforced. '
+    '[queue/idempotency] job_idempotency table missing - idempotency keys are accepted but NOT enforced. '
     + 'Run migrations to enable dedup.',
   )
 }

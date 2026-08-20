@@ -40,7 +40,7 @@ async function refreshAppStoreScreenshots(): Promise<void> {
     await generateProjectImages({ only: ['app-store'] })
   }
   catch (error) {
-    log.warn(`[extension:publish] using the committed screenshots — could not regenerate: ${(error as Error).message}`)
+    log.warn(`[extension:publish] using the committed screenshots - could not regenerate: ${(error as Error).message}`)
   }
 }
 
@@ -154,7 +154,7 @@ export function extension(buddy: CLI): void {
     })
 
   buddy
-    .command('extension:publish', 'Publish to every store this project is set up for — the release-tag entry point')
+    .command('extension:publish', 'Publish to every store this project is set up for - the release-tag entry point')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .option('--targets <targets>', 'Comma-separated subset of chrome,firefox,safari')
     .option('--dry-run', 'Report the publish plan without uploading anything')
@@ -396,7 +396,7 @@ export function extension(buddy: CLI): void {
   buddy
     .command('extension:safari:app', 'Build the extension and its macOS, iPhone, and iPad Safari container apps')
     .option('--release', 'Build the Release configuration (default Debug)')
-    .option('--signed', 'Sign locally against the Apple ID in Xcode (local builds only — see below)')
+    .option('--signed', 'Sign locally against the Apple ID in Xcode (local builds only - see below)')
     .option('--skip-xcodebuild', 'Only build + sync the extension payload')
     .option('--version <version>', 'Override the extension version (defaults to package.json)')
     .option('--platform <platform>', 'Build macos, ios, or all (defaults to config safariPlatforms)')
@@ -474,7 +474,7 @@ export function extension(buddy: CLI): void {
           await generateProjectImages({ only: ['app-store'] })
         }
         catch (error) {
-          log.warn(`[extension:safari:publish] using the committed screenshots — could not regenerate: ${(error as Error).message}`)
+          log.warn(`[extension:safari:publish] using the committed screenshots - could not regenerate: ${(error as Error).message}`)
         }
       }
 

@@ -38,7 +38,7 @@ describe('stxPageAuthMiddleware', () => {
     expect(ctx.redirects).toEqual(['/login'])
   })
 
-  it('auth redirects a forged cookie — existence is not authentication', async () => {
+  it('auth redirects a forged cookie - existence is not authentication', async () => {
     // This is the #2274 scenario: `document.cookie = 'auth-token=x'`.
     const { auth } = stxPageAuthMiddleware({ validate: validatorAccepting('real') })
     const ctx = ctxWith({ 'auth-token': 'x' })

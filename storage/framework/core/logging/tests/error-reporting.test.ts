@@ -169,7 +169,7 @@ describe('flush drains in-flight struct writes (stacksjs/stacks#1934)', () => {
   })
 })
 
-describe('resolveLogSettings precedence — env > config > default (stacksjs/stacks#1935)', () => {
+describe('resolveLogSettings precedence - env > config > default (stacksjs/stacks#1935)', () => {
   it('env wins over config', () => {
     const s = resolveLogSettings({ envLevel: 'debug', cfgLevel: 'error', envFormat: 'json', cfgFormat: 'text' })
     expect(s.level).toBe('debug')

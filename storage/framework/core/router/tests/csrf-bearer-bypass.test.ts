@@ -29,7 +29,7 @@ function makeRequest(
   }) as EnhancedRequest
 }
 
-describe('CSRF middleware — bearer-token bypass (stacksjs/stacks#1922)', () => {
+describe('CSRF middleware - bearer-token bypass (stacksjs/stacks#1922)', () => {
   test('POST with valid Bearer token but no CSRF token → passes through', async () => {
     const csrf = new Csrf()
     const req = makeRequest('POST', {

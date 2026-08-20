@@ -74,7 +74,7 @@ function warnSecondsIgnored(expression: string, seconds: string): void {
   _warnedSecondsExprs.add(expression)
   log.warn(
     `[scheduler] Cron expression "${expression}" specifies seconds="${seconds}" but the scheduler `
-    + `ticks at minute granularity — the seconds field is being ignored. Use a 5-field expression `
+    + `ticks at minute granularity - the seconds field is being ignored. Use a 5-field expression `
     + `to avoid this warning, or wait for sub-minute scheduling support.`,
   )
 }

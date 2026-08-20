@@ -119,7 +119,7 @@ describe('validateConfig (stacksjs/stacks#1874 F-6)', () => {
     expect(issues.map(i => i.path).sort()).toEqual(['database.default', 'logging.level', 'ports.api'])
   })
 
-  test('allows unset fields (null) — only flags mistyped values', () => {
+  test('allows unset fields (null) - only flags mistyped values', () => {
     const issues = validateConfig({
       app: { name: 'Stacks' }, // env, debug, url all unset
     } as any)

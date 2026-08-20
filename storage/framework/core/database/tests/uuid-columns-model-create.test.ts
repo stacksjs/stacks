@@ -27,7 +27,7 @@ import { uuidColumnSql } from '../src/uuid-columns'
  * `storage/framework/defaults/app/Models/User.ts` and call `.create()`).
  */
 
-describe('Model.create() on a useUuid model — end-to-end regression (stacksjs/status#1 Phase 9)', () => {
+describe('Model.create() on a useUuid model - end-to-end regression (stacksjs/status#1 Phase 9)', () => {
   // `configureOrm()` mutates the same process-wide bun-query-builder config
   // singleton `initializeDbConfig()` does (stacksjs/stacks#1862) — hold the
   // lock for this file's entire lifetime so a sibling file's own config
@@ -60,7 +60,7 @@ describe('Model.create() on a useUuid model — end-to-end regression (stacksjs/
     },
   } as const)
 
-  it('pre-fix failure mode: Model.create() throws against a table missing the uuid column — the exact reported bug', async () => {
+  it('pre-fix failure mode: Model.create() throws against a table missing the uuid column - the exact reported bug', async () => {
     let thrown: unknown = null
     try {
       await (Widget as any).create({ name: 'a' })

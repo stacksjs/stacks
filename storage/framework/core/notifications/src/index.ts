@@ -98,7 +98,7 @@ export function useEmail(driver?: string): EmailTransport {
       return mail.use(driver) as unknown as EmailTransport
     }
     catch (err) {
-      log.warn(`[notifications] email driver '${driver}' not registered — falling back to default mail singleton (${(err as Error).message})`)
+      log.warn(`[notifications] email driver '${driver}' not registered - falling back to default mail singleton (${(err as Error).message})`)
     }
   }
   return mail as unknown as EmailTransport

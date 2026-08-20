@@ -17,7 +17,7 @@ async function getClient(): Promise<any> {
   const mod: any = await import('@stacksjs/ts-cloud/aws')
   if (!mod?.BedrockRuntimeClient) {
     throw new Error(
-      '@stacksjs/ts-cloud/aws does not export BedrockRuntimeClient — rebuild ts-cloud or remove the AI dependency.',
+      '@stacksjs/ts-cloud/aws does not export BedrockRuntimeClient - rebuild ts-cloud or remove the AI dependency.',
     )
   }
   _client = new mod.BedrockRuntimeClient(process.env.REGION || 'us-east-1')

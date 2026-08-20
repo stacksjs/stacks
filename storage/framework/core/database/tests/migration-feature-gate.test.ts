@@ -68,7 +68,7 @@ async function restoreHidden(hidden: Array<{ original: string, hidden: string }>
   }
 }
 
-describe('Migration feature-gate — filesystem pass', () => {
+describe('Migration feature-gate - filesystem pass', () => {
   test('hides migrations owned by disabled features and leaves the rest alone', async () => {
     const dir = join(root, 'database/migrations')
     await mkdir(dir, { recursive: true })
@@ -145,7 +145,7 @@ describe('Migration feature-gate — filesystem pass', () => {
     expect(existsSync(join(dir, '0000000098-revoke-legacy-long-lived-tokens.sql'))).toBe(true)
   })
 
-  test('hide + restore is idempotent — re-running leaves the directory clean', async () => {
+  test('hide + restore is idempotent - re-running leaves the directory clean', async () => {
     const dir = join(root, 'database/migrations')
     await mkdir(dir, { recursive: true })
     await writeFile(join(dir, '0000000045-create-posts-table.sql'), '-- cms')

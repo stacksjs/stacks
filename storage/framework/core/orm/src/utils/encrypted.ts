@@ -122,7 +122,7 @@ export async function encryptValue(value: unknown): Promise<unknown> {
 
   const key = await getKey()
   if (!key) {
-    log.warn('[orm] encrypted attribute: APP_KEY not set — storing value in plaintext')
+    log.warn('[orm] encrypted attribute: APP_KEY not set - storing value in plaintext')
     return value
   }
 
@@ -154,7 +154,7 @@ export async function decryptValue(value: unknown): Promise<unknown> {
   try {
     const key = await getKey()
     if (!key) {
-      log.warn('[orm] encrypted attribute: APP_KEY not set — cannot decrypt')
+      log.warn('[orm] encrypted attribute: APP_KEY not set - cannot decrypt')
       return null
     }
     const [, ivB64, tagB64, ctB64] = value.split(':')

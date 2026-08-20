@@ -83,7 +83,7 @@ describe('config proxy', () => {
     expect((config as any).ports).toBe(defaultPorts)
   })
 
-  it('is not sealed and isExtensible — the engine must not freeze it', () => {
+  it('is not sealed and isExtensible - the engine must not freeze it', () => {
     expect(Object.isSealed(config)).toBe(false)
     expect(Object.isExtensible(config)).toBe(true)
   })

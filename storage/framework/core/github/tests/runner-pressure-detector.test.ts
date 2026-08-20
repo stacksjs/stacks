@@ -36,7 +36,7 @@ function seriesFor(
   return samples
 }
 
-describe('detectRunnerPressure — fire path', () => {
+describe('detectRunnerPressure - fire path', () => {
   test('every sample in window above threshold + not alerting → fire', () => {
     // 10-minute window with 5 samples spaced 2.5 minutes apart, all
     // at queued=10 (> 8 threshold).
@@ -62,7 +62,7 @@ describe('detectRunnerPressure — fire path', () => {
     expect(result.length).toBe(0)
   })
 
-  test('insufficient sample history — span < windowMs → no fire', () => {
+  test('insufficient sample history - span < windowMs → no fire', () => {
     // Only 2 samples, spaced 1 minute. Window requires 10 minutes
     // of sustained pressure; we don't have enough history yet.
     const samples = seriesFor('org-a', 2, 60_000, () => 10)
@@ -98,7 +98,7 @@ describe('detectRunnerPressure — fire path', () => {
     expect(result[0].action).toBe('fire')
   })
 
-  test('multiple orgs — each evaluated independently', () => {
+  test('multiple orgs - each evaluated independently', () => {
     const aSamples = seriesFor('org-a', 5, 150_000, () => 10) // fire
     const bSamples = seriesFor('org-b', 5, 150_000, () => 2)  // calm
     const cSamples = seriesFor('org-c', 5, 150_000, i => (i === 2 ? 2 : 10)) // mixed → no fire
@@ -112,7 +112,7 @@ describe('detectRunnerPressure — fire path', () => {
   })
 })
 
-describe('detectRunnerPressure — clear path (hysteresis)', () => {
+describe('detectRunnerPressure - clear path (hysteresis)', () => {
   test('alerting + every sample below threshold → clear', () => {
     const samples = seriesFor('org-a', 5, 150_000, () => 2)
     const states = new Map<string, RunnerAlertState>([
@@ -179,7 +179,7 @@ describe('detectRunnerPressure — clear path (hysteresis)', () => {
   })
 })
 
-describe('detectRunnerPressure — edge cases', () => {
+describe('detectRunnerPressure - edge cases', () => {
   test('no samples → no actions', () => {
     const result = detectRunnerPressure([], new Map(), {
       queuedThreshold: 8,

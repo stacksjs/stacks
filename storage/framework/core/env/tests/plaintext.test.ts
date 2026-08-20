@@ -160,7 +160,7 @@ describe('trackedEnvFiles', () => {
     expect(trackedEnvFiles('.env.development')).toEqual(['.env.development'])
   })
 
-  it('excludes .env.example — it IS the placeholder reference', () => {
+  it('excludes .env.example - it IS the placeholder reference', () => {
     expect(trackedEnvFiles('.env.example\n.env.production')).toEqual(['.env.production'])
   })
 

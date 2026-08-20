@@ -52,7 +52,7 @@ export function queue(buddy: CLI): void {
         shuttingDown = true
         log.info(`[queue] Received ${signal}; waiting for the worker to drain…`)
         setTimeout(() => {
-          log.warn('[queue] Worker drain overran its window — forcing shutdown.')
+          log.warn('[queue] Worker drain overran its window - forcing shutdown.')
           process.exit(ExitCode.FatalError)
         }, PARENT_BACKSTOP_MS).unref()
       }

@@ -30,7 +30,7 @@ export function create(buddy: CLI): void {
     cache: 'Do you need caching?',
     email: 'Do you need email?',
     project: 'Target a specific project',
-    minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) — bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
+    minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
     withCore: 'Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm.',
     verbose: 'Enable verbose output',
   }
@@ -217,7 +217,7 @@ function applyAppVcsTemplate(path: string) {
   const destination = resolve(path, '.github')
 
   if (!existsSync(source)) {
-    log.warn('No app CI template found at storage/framework/defaults/vcs/github — leaving .github as downloaded.')
+    log.warn('No app CI template found at storage/framework/defaults/vcs/github - leaving .github as downloaded.')
     return
   }
 
@@ -443,5 +443,5 @@ async function stripFeatures(path: string) {
   if (!strippedAny)
     log.info('  → no feature scaffolding present; nothing to strip.')
   else
-    log.success('Minimal skeleton ready — run `./buddy <feature>:install` to add features back.')
+    log.success('Minimal skeleton ready - run `./buddy <feature>:install` to add features back.')
 }

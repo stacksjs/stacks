@@ -42,12 +42,12 @@ describe('uuid column guarantee (stacksjs/status#1 Phase 9)', () => {
   })
 
   describe('model-trait discovery (real model files, not mocked)', () => {
-    test('finds `users` among the resolved uuid tables — User declares `useUuid: true`', async () => {
+    test('finds `users` among the resolved uuid tables - User declares `useUuid: true`', async () => {
       const tables = await findUuidTables()
       expect(tables).toContain('users')
     })
 
-    test('finds a broad set of tables, not just `users` — this is a framework-wide trait, not a users-only fix', async () => {
+    test('finds a broad set of tables, not just `users` - this is a framework-wide trait, not a users-only fix', async () => {
       const tables = await findUuidTables()
       // 79 default models declare the trait as of this fix; assert generously
       // so the test doesn't churn every time a model is added/removed.
@@ -64,7 +64,7 @@ describe('uuid column guarantee (stacksjs/status#1 Phase 9)', () => {
       return db
     }
 
-    test('pre-fix failure mode: creating a user with a uuid value throws "has no column named uuid" — the exact reported bug', () => {
+    test('pre-fix failure mode: creating a user with a uuid value throws "has no column named uuid" - the exact reported bug', () => {
       const db = freshUsersDb()
       expect(() => db.run(
         `INSERT INTO users (uuid, name, email, password) VALUES (?, ?, ?, ?)`,
@@ -85,7 +85,7 @@ describe('uuid column guarantee (stacksjs/status#1 Phase 9)', () => {
       db.close()
     })
 
-    test('re-running the ALTER throws duplicate-column — the swallow ensureUuidColumns relies on', () => {
+    test('re-running the ALTER throws duplicate-column - the swallow ensureUuidColumns relies on', () => {
       const db = freshUsersDb()
       const ddl = uuidColumnSql('users', sqlHelpers('sqlite'))
       db.exec(ddl)

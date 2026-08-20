@@ -42,7 +42,7 @@ try {
   setConfig(projectQbConfig ?? defaultConfig)
 }
 catch {
-  log.debug(`[orm] No config/qb.ts override found — deriving config from DB_CONNECTION`)
+  log.debug(`[orm] No config/qb.ts override found - deriving config from DB_CONNECTION`)
   const dialect = (env.DB_CONNECTION as 'sqlite' | 'mysql' | 'postgres' | undefined) || 'sqlite'
   setConfig({
     ...defaultConfig,

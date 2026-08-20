@@ -107,7 +107,7 @@ export function signUrl(input: string, options: SignedUrlOptions = {}): string {
   if (options.ttl !== undefined && options.expiresAt !== undefined) {
     // ttl wins — documented above, but warn-once so the caller can fix
     // the duplication rather than wonder why one of the two was ignored.
-    warnOnce('dual-expiry', '[router] signUrl: both `ttl` and `expiresAt` provided — using `ttl`.')
+    warnOnce('dual-expiry', '[router] signUrl: both `ttl` and `expiresAt` provided - using `ttl`.')
   }
 
   if (options.ttl !== undefined) {

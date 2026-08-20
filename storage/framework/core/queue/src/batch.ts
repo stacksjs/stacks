@@ -1114,7 +1114,7 @@ function parsePersistentHandler(raw: string | null | undefined): PersistentBatch
     const parsed = JSON.parse(raw)
     if (parsed && (parsed.kind === 'job' || parsed.kind === 'module'))
       return parsed as PersistentBatchHandler
-    log.warn(`[Batch] handler JSON has unknown kind '${(parsed as { kind?: unknown })?.kind}' — skipping`)
+    log.warn(`[Batch] handler JSON has unknown kind '${(parsed as { kind?: unknown })?.kind}' - skipping`)
     return null
   }
   catch (err) {

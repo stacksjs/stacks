@@ -32,7 +32,7 @@ function warnOnceAboutMissingTable(): void {
   warnedAboutMissingTable = true
   // eslint-disable-next-line no-console
   console.warn(
-    '[email/webhook-dedup] email_webhook_events table missing — webhook idempotency NOT enforced. '
+    '[email/webhook-dedup] email_webhook_events table missing - webhook idempotency NOT enforced. '
     + 'Providers may double-deliver retries; run migrations to enable dedup.',
   )
 }

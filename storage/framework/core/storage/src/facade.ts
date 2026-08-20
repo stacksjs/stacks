@@ -263,7 +263,7 @@ class StorageManager {
   async getStream(path: string, options?: GetStreamOptions): Promise<ReadableStream<Uint8Array>> {
     const adapter = this.disk()
     if (typeof adapter.getStream !== 'function') {
-      throw new Error(`[storage] disk '${this.config.default}' does not support getStream — adapter is missing the optional method`)
+      throw new Error(`[storage] disk '${this.config.default}' does not support getStream - adapter is missing the optional method`)
     }
     return adapter.getStream(path, options)
   }
@@ -292,7 +292,7 @@ class StorageManager {
   async putStream(path: string, stream: ReadableStream<Uint8Array>, options?: PutStreamOptions): Promise<PutResult> {
     const adapter = this.disk()
     if (typeof adapter.putStream !== 'function') {
-      throw new Error(`[storage] disk '${this.config.default}' does not support putStream — adapter is missing the optional method`)
+      throw new Error(`[storage] disk '${this.config.default}' does not support putStream - adapter is missing the optional method`)
     }
     return adapter.putStream(path, stream, options)
   }
@@ -440,7 +440,7 @@ class StorageManager {
   async presignedUploadUrl(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl> {
     const adapter = this.disk()
     if (typeof adapter.presignedUploadUrl !== 'function') {
-      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadUrl — only S3-style adapters do. Use \`Storage.put(file, opts)\` for local/proxied uploads.`)
+      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadUrl - only S3-style adapters do. Use \`Storage.put(file, opts)\` for local/proxied uploads.`)
     }
     return adapter.presignedUploadUrl(options)
   }
@@ -476,7 +476,7 @@ class StorageManager {
   async presignedUploadPolicy(options: PresignedUploadPolicyOptions): Promise<PresignedUploadPolicy> {
     const adapter = this.disk()
     if (typeof adapter.presignedUploadPolicy !== 'function') {
-      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadPolicy — S3-only. Use \`presignedUploadUrl\` for the PUT-form, or \`Storage.put(file, opts)\` for server-proxied uploads.`)
+      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadPolicy - S3-only. Use \`presignedUploadUrl\` for the PUT-form, or \`Storage.put(file, opts)\` for server-proxied uploads.`)
     }
     return adapter.presignedUploadPolicy(options)
   }

@@ -440,7 +440,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     // (empirically: `users` was missing all four guarantee columns on a
     // fresh `buddy migrate` despite this function's own prior claim that
     // "users exists by now").
-    if (options.verbose) log.info('Ensuring users auth columns exist (users may not exist yet on a fresh install — see ensureUsersAuthColumns)...')
+    if (options.verbose) log.info('Ensuring users auth columns exist (users may not exist yet on a fresh install - see ensureUsersAuthColumns)...')
     await ensureUsersAuthColumns(sql, options)
 
     if (options.verbose) log.info('Ensuring personal access client exists...')

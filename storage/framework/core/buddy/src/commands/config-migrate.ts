@@ -70,7 +70,7 @@ export async function runConfigMigrations(opts: {
   }
 
   for (const cm of codemods) {
-    log.info(`Codemod ${italic(cm.id)} — ${cm.description}`)
+    log.info(`Codemod ${italic(cm.id)} - ${cm.description}`)
     for (const rel of cm.files) {
       const full = projectPath(`config/${rel}`)
       if (!existsSync(full)) {

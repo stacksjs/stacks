@@ -42,7 +42,7 @@ const dirs = allEntries.filter((entry) => {
   const name = basename(entry)
   const gate = FEATURE_GATED_PACKAGES[name]
   if (gate && !feature(gate)) {
-    log.info(`Skipping ${italic(dim(entry))} — feature '${gate}' is disabled`)
+    log.info(`Skipping ${italic(dim(entry))} - feature '${gate}' is disabled`)
     return false
   }
 

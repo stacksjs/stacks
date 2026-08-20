@@ -631,7 +631,7 @@ export function mailCommands(buddy: CLI): void {
       const { email: emailConfig } = await import('@stacksjs/config')
       const domain: string | undefined = (emailConfig as any)?.domain
       if (!domain) {
-        log.error('config/email.ts has no `domain` — set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
+        log.error('config/email.ts has no `domain` - set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -1453,7 +1453,7 @@ export function mailCommands(buddy: CLI): void {
 
       console.log('')
       console.log('==========================================================')
-      console.log(`  EMAIL CREDENTIALS — ${email}`)
+      console.log(`  EMAIL CREDENTIALS - ${email}`)
       console.log('==========================================================')
       console.log('')
       console.log(`  Email:       ${email}`)
@@ -1465,9 +1465,9 @@ export function mailCommands(buddy: CLI): void {
       if (password) {
         console.log(`  Password:    ${password}`)
       } else if (isCiphertext) {
-        console.log(`  Password:    (encrypted — this machine has no private key for .env.production)`)
+        console.log(`  Password:    (encrypted - this machine has no private key for .env.production)`)
       } else {
-        console.log(`  Password:    (not set — add ${envKey} to .env.production)`)
+        console.log(`  Password:    (not set - add ${envKey} to .env.production)`)
       }
 
       console.log('')

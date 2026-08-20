@@ -107,7 +107,7 @@ describe('inlineCss', () => {
     expect(out).toContain('color:red !important;')
   })
 
-  test('idempotent — running twice produces the same output', () => {
+  test('idempotent - running twice produces the same output', () => {
     const html = `<style>.btn { color: red; }</style><a class="btn">X</a>`
     const once = inlineCss(html)
     const twice = inlineCss(once)

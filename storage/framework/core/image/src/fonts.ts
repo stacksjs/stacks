@@ -50,7 +50,7 @@ export function resolveFontPath(value: string, root: string = process.cwd()): st
 export async function loadFonts(fonts: ImageFontConfig | undefined, root: string = process.cwd()): Promise<ResolvedFonts> {
   if (!fonts?.title) {
     throw new Error(
-      '[image] No font configured. Set `images.fonts.title` in config/images.ts to a TrueType (.ttf) file — '
+      '[image] No font configured. Set `images.fonts.title` in config/images.ts to a TrueType (.ttf) file - '
       + 'generated cards and screenshots draw real glyphs and cannot fall back to a system face.',
     )
   }

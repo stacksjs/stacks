@@ -79,7 +79,7 @@ loadRoutes(routeRegistry)
       await assertRouteMiddlewareResolvable()
       console.log('[START] Route middleware validated')
     } catch (middlewareError) {
-      console.error('[START] FATAL: unresolvable route middleware — refusing to serve unprotected routes:', middlewareError instanceof Error ? middlewareError.message : String(middlewareError))
+      console.error('[START] FATAL: unresolvable route middleware - refusing to serve unprotected routes:', middlewareError instanceof Error ? middlewareError.message : String(middlewareError))
       process.exit(1)
     }
 

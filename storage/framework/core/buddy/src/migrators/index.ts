@@ -35,7 +35,7 @@ export async function runMigrator(req: MigrateProjectRequest): Promise<Migration
  */
 export function renderReport(report: MigrationReport): string {
   const lines: string[] = []
-  lines.push(`# Migration report — ${report.from} → Stacks`)
+  lines.push(`# Migration report - ${report.from} → Stacks`)
   lines.push('')
   lines.push(`- **Source**: \`${report.source}\``)
   lines.push(`- **Target**: \`${report.target}\``)
@@ -56,7 +56,7 @@ export function renderReport(report: MigrationReport): string {
     lines.push('')
     for (const e of group) {
       const arrow = e.target ? ` → \`${e.target}\`` : ''
-      const note = e.note ? ` — ${e.note}` : ''
+      const note = e.note ? ` - ${e.note}` : ''
       lines.push(`- \`${e.source}\`${arrow}${note}`)
     }
     lines.push('')

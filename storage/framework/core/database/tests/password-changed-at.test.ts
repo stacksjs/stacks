@@ -61,7 +61,7 @@ describe('users.password_changed_at defensive ALTER (stacksjs/stacks#1957)', () 
       db.close()
     })
 
-    test('re-running the ALTER throws duplicate-column — the swallow both call sites rely on', () => {
+    test('re-running the ALTER throws duplicate-column - the swallow both call sites rely on', () => {
       const db = freshUsersDb()
       const ddl = usersPasswordChangedAtSql(sqlHelpers('sqlite'))
       db.exec(ddl)

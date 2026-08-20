@@ -77,7 +77,7 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
       return {
         success: false,
         to,
-        error: `Invalid E.164 phone number: ${to}. Expected +<country><number> with 8–15 digits.`,
+        error: `Invalid E.164 phone number: ${to}. Expected +<country><number> with 8-15 digits.`,
         provider: 'vonage',
       }
     }

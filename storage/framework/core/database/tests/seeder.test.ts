@@ -170,7 +170,7 @@ describe('isProtectedModel', () => {
     expect(isProtectedModel('Subscriber')).toBe(false)
   })
 
-  test('is case-sensitive — the list uses PascalCase class names', () => {
+  test('is case-sensitive - the list uses PascalCase class names', () => {
     // The seeder reads `modelDef.name` which is the model's class name
     // (PascalCase). Lower-cased table names are a different namespace
     // and should not match.

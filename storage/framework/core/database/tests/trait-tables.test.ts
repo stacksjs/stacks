@@ -62,7 +62,7 @@ function migratedSqlite(): Database {
   return db
 }
 
-describe('trait table DDL — cross-dialect', () => {
+describe('trait table DDL - cross-dialect', () => {
   test('exports the migrator + pure builders', () => {
     expect(typeof migrateTraitTables).toBe('function')
     expect(typeof commentablesTableSql).toBe('function')
@@ -106,7 +106,7 @@ describe('trait table DDL — cross-dialect', () => {
           expect(ddl).toContain(col)
       })
 
-      test('approved_at/rejected_at are BIGINT — epoch ms overflows a 32-bit INTEGER', () => {
+      test('approved_at/rejected_at are BIGINT - epoch ms overflows a 32-bit INTEGER', () => {
         const ddl = commentablesTableSql(sql)
         expect(ddl).toContain('approved_at BIGINT')
         expect(ddl).toContain('rejected_at BIGINT')
@@ -122,7 +122,7 @@ describe('trait table DDL — cross-dialect', () => {
           expect(ddl).not.toContain('VARCHAR(64)')
       })
 
-      test('carries no DEFAULT CURRENT_TIMESTAMP — the DB clock is a different format', () => {
+      test('carries no DEFAULT CURRENT_TIMESTAMP - the DB clock is a different format', () => {
         // The database clock renders space-separated while the app writes the
         // canonical `T` form; on SQLite these hold text and mixing the two
         // breaks ordering. Every writer sets the value explicitly.
@@ -210,7 +210,7 @@ describe('a model with commentable: true ends up with a usable commentables tabl
     db.close()
   })
 
-  test('addComment() then comments() round-trips — the exact statements the trait issues', () => {
+  test('addComment() then comments() round-trips - the exact statements the trait issues', () => {
     const db = migratedSqlite()
     const now = new Date().toISOString()
 
@@ -248,7 +248,7 @@ describe('a model with commentable: true ends up with a usable commentables tabl
     db.close()
   })
 
-  test('each owner gets its own comment row — nothing collides across ids or types', () => {
+  test('each owner gets its own comment row - nothing collides across ids or types', () => {
     const db = migratedSqlite()
     const now = new Date().toISOString()
     const insert = (id: number, type: string) => db.run(
@@ -266,7 +266,7 @@ describe('a model with commentable: true ends up with a usable commentables tabl
     db.close()
   })
 
-  test('migrate is idempotent — a second run changes nothing', () => {
+  test('migrate is idempotent - a second run changes nothing', () => {
     const db = migratedSqlite()
     const now = new Date().toISOString()
     db.run(
@@ -325,7 +325,7 @@ describe('taggable and categorizable tables are usable', () => {
     db.close()
   })
 
-  test('two owners can carry the same tag — the per-owner write no longer collides', () => {
+  test('two owners can carry the same tag - the per-owner write no longer collides', () => {
     // The index used to be UNIQUE (taggable_type, slug), which meant the
     // second record given a tag hit a constraint violation. It is now scoped
     // by owner as well.

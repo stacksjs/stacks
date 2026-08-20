@@ -47,7 +47,7 @@ describe('parseCursor', () => {
   })
 })
 
-describe('cursor round-trip — single column', () => {
+describe('cursor round-trip - single column', () => {
   test('serialize then parse a numeric cursor stays equivalent', () => {
     // What the adapter would emit:
     const result = toCursorPaginator({
@@ -62,7 +62,7 @@ describe('cursor round-trip — single column', () => {
   })
 })
 
-describe('cursor round-trip — composite cursor', () => {
+describe('cursor round-trip - composite cursor', () => {
   test('serialize composite, parse back to array (bqb-ready)', () => {
     // First-page result emits a composite next_cursor:
     const firstPage = toCursorPaginator({
@@ -94,7 +94,7 @@ describe('cursor round-trip — composite cursor', () => {
   })
 })
 
-describe('cursor round-trip — null cursor on the prev side', () => {
+describe('cursor round-trip - null cursor on the prev side', () => {
   test('prev_cursor null on first page; serializer keeps null', () => {
     const result = toCursorPaginator({
       data: [{ id: 1 }],

@@ -85,7 +85,7 @@ export async function startRepl(config: ReplConfig = {}): Promise<{ exitCode: nu
       const { listRegisteredRoutes } = await import('@stacksjs/router')
       const rows = listRegisteredRoutes()
       if (rows.length === 0) {
-        console.log('  (no routes registered yet — call route.importRoutes() first)')
+        console.log('  (no routes registered yet - call route.importRoutes() first)')
       } else {
         console.log('  Routes:')
         for (const r of rows) console.log('    ' + r.method.padEnd(6) + ' ' + r.path + (r.name ? ' (' + r.name + ')' : ''))

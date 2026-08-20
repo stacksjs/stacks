@@ -77,11 +77,11 @@ export function useStorage<T>(
       const msg = (err as { message?: string })?.message ?? String(err)
       if (name === 'QuotaExceededError' || /quota/i.test(msg)) {
         // eslint-disable-next-line no-console
-        console.warn(`[useStorage] ${key}: storage quota exceeded — value not persisted.`)
+        console.warn(`[useStorage] ${key}: storage quota exceeded - value not persisted.`)
       }
       else {
         // eslint-disable-next-line no-console
-        console.warn(`[useStorage] ${key}: failed to persist value — ${msg}`)
+        console.warn(`[useStorage] ${key}: failed to persist value - ${msg}`)
       }
     }
   })

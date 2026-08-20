@@ -47,7 +47,7 @@ const failures: string[] = []
 const successes: string[] = []
 
 if (targets.length === 0) {
-  console.log('[server/build] no STACKS_SERVER_TARGETS set — skipping standalone binary compile (library-only build)')
+  console.log('[server/build] no STACKS_SERVER_TARGETS set - skipping standalone binary compile (library-only build)')
 }
 
 for (const target of targets) {

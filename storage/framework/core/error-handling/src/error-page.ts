@@ -120,7 +120,7 @@ export const HTTP_ERRORS: Record<HttpStatusCode, HttpError> = {
       'A required field is absent from the payload',
       'Content-Type header does not match the body format',
     ],
-    suggestion: 'Inspect the request body and Content-Type — most 400s come from malformed JSON or a missing required field.',
+    suggestion: 'Inspect the request body and Content-Type - most 400s come from malformed JSON or a missing required field.',
   },
   401: {
     status: 401,
@@ -208,7 +208,7 @@ export const HTTP_ERRORS: Record<HttpStatusCode, HttpError> = {
       'Validation rules from the action / model rejected the payload',
       'A field value is outside the allowed range or shape',
     ],
-    suggestion: 'Inspect `errors` in the response body — each key maps to a failing field.',
+    suggestion: 'Inspect `errors` in the response body - each key maps to a failing field.',
   },
   429: {
     status: 429,
@@ -228,7 +228,7 @@ export const HTTP_ERRORS: Record<HttpStatusCode, HttpError> = {
       'A failing database connection or migration',
       'A misconfigured environment variable',
     ],
-    suggestion: 'Check server logs for the original stack trace — the error page above shows the throw site in dev.',
+    suggestion: 'Check server logs for the original stack trace - the error page above shows the throw site in dev.',
   },
   502: {
     status: 502,

@@ -37,7 +37,7 @@ import { resolveDefaultsResources } from '../src/dev/defaults-resources'
  */
 const VENDORED = resolve(import.meta.dir, '../../../defaults/resources')
 
-describe('resolveDefaultsResources — vendored branch (#2240)', () => {
+describe('resolveDefaultsResources - vendored branch (#2240)', () => {
   it('returns the vendored resources root when it exists', () => {
     expect(resolveDefaultsResources()).toBe(VENDORED)
   })

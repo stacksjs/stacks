@@ -272,7 +272,7 @@ describe('FEATURE_TABLES manifest (stacksjs/stacks#1854 migration gating)', () =
   })
 })
 
-describe('migrationTable() — filename → table parser', () => {
+describe('migrationTable() - filename → table parser', () => {
   it('parses standard create-<table>-table.sql', () => {
     expect(migrationTable('0000000045-create-posts-table.sql')).toBe('posts')
     expect(migrationTable('0000000099-create-comments-table.sql')).toBe('comments')
@@ -311,7 +311,7 @@ describe('appModelClaimsTable()', () => {
   })
 })
 
-describe('uninstallAllFeatures() — `./buddy new --minimal` (stacksjs/stacks#1854)', () => {
+describe('uninstallAllFeatures() - `./buddy new --minimal` (stacksjs/stacks#1854)', () => {
   async function stampConfig(feature: string, enabled: boolean): Promise<void> {
     const path = join(root, `config/${feature}.ts`)
     await mkdir(join(path, '..'), { recursive: true })
@@ -393,7 +393,7 @@ describe('uninstallAllFeatures() — `./buddy new --minimal` (stacksjs/stacks#18
     expect(body).toContain('enabled: false')
   })
 
-  it('is idempotent — re-running on a stripped project is a no-op', async () => {
+  it('is idempotent - re-running on a stripped project is a no-op', async () => {
     for (const name of FEATURE_NAMES) await stampConfig(name, true)
     await touch('app/Models/Tag.ts')
 
@@ -422,7 +422,7 @@ describe('uninstallAllFeatures() — `./buddy new --minimal` (stacksjs/stacks#18
   })
 })
 
-describe('migrationFeature() — filename → owning feature', () => {
+describe('migrationFeature() - filename → owning feature', () => {
   it('routes cms tables to the cms feature', () => {
     expect(migrationFeature('0000000045-create-posts-table.sql')).toBe('cms')
     expect(migrationFeature('0000000099-create-comments-table.sql')).toBe('cms')

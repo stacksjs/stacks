@@ -30,7 +30,7 @@ describe('mergeSiteDeployEnv', () => {
     expect(merged.main.env.DB_CONNECTION).toBe('sqlite')
   })
 
-  it("strips a general PORT when the site declares its own — the systemd unit's Environment=PORT is authoritative", () => {
+  it("strips a general PORT when the site declares its own - the systemd unit's Environment=PORT is authoritative", () => {
     const sites = { api: { root: '.', start: 'bun api', port: 3008, env: { HOST: '127.0.0.1', APP_ENV: 'production' } } }
     const resolved = { APP_NAME: 'UptimeStatus', PORT: '3000' } // PORT here is main's port, not api's
 

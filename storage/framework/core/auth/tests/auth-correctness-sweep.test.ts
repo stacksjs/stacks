@@ -162,7 +162,7 @@ describe('TOTP replay guard - migration column + verify wiring (#1985)', () => {
 
 // ─── #1985: opt-in session fingerprint enforcement ─────────────────────────
 
-describe('fingerprintMismatch — session hijack detection logic (#1985)', () => {
+describe('fingerprintMismatch - session hijack detection logic (#1985)', () => {
   const stored = { ip: '1.1.1.1', userAgent: 'Mozilla/5.0' }
   const same = { ip: '1.1.1.1', userAgent: 'Mozilla/5.0' }
   const otherIp = { ip: '9.9.9.9', userAgent: 'Mozilla/5.0' }

@@ -190,7 +190,7 @@ export class Broadcast {
     }
 
     if (!hasSubscribers(server, channelName)) {
-      log.debug(`[Broadcast] Skipping '${event}' on '${channelName}' — no subscribers`)
+      log.debug(`[Broadcast] Skipping '${event}' on '${channelName}' - no subscribers`)
       return
     }
 
