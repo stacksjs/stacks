@@ -62,11 +62,25 @@ describe('isGeneratedMigration (#2234)', () => {
     expect(isGeneratedMigration(TMP, 'late.sql')).toBe(false)
   })
 
-  it('the marker is a SQL comment, so a stamped file still parses', () => {
-    // If the header were not a comment it would become a syntax error in every
-    // generated migration.
-    expect(GENERATED_MIGRATION_MARKER.startsWith('--')).toBe(true)
-    expect(GENERATED_MIGRATION_MARKER).not.toContain('\n')
+  it('every line of the marker is a SQL comment, so a stamped file still parses', () => {
+    // If any header line were not a comment it would become a syntax error in
+    // every generated migration. The marker is two lines - `qb:generated` for the
+    // runner, which only recognizes it at the very start of the file, and the
+    // human-facing note under it - so this checks each line rather than just the
+    // first, which is what it used to do when the marker was one line.
+    const lines = GENERATED_MIGRATION_MARKER.split('\n')
+    expect(lines.length).toBeGreaterThan(1)
+    for (const line of lines)
+      expect(line.startsWith('--')).toBe(true)
+  })
+
+  it('leads with the runner\'s own marker, which it only reads at the start', () => {
+    // Ordering is load-bearing: bun-query-builder keeps its own record of which
+    // migrations it generated, and only honours `qb:generated` on the first line.
+    // Behind anything else, every file this generator writes reads as
+    // hand-authored, and MySQL - which has no `ADD CONSTRAINT IF NOT EXISTS` -
+    // stops the whole corpus on a foreign key that is already there.
+    expect(GENERATED_MIGRATION_MARKER.split('\n')[0]).toBe('-- qb:generated')
   })
 })
 
@@ -89,7 +103,9 @@ describe('a stamped file still yields its statements', () => {
     write('0000000001-create-users-table.sql', `${GENERATED_MIGRATION_MARKER}\nCREATE TABLE users (id INTEGER);\n`)
     const contents = readFileSync(join(TMP, '0000000001-create-users-table.sql'), 'utf8')
 
-    expect(contents.split('\n')[0]).toBe(GENERATED_MIGRATION_MARKER)
+    // The whole marker leads the file - not just its first line, and with the
+    // body still behind it.
+    expect(contents.startsWith(`${GENERATED_MIGRATION_MARKER}\n`)).toBe(true)
     expect(contents).toContain('CREATE TABLE users')
   })
 })
