@@ -2179,7 +2179,18 @@ export async function generateMigrations(options: GenerateMigrationsOptions = {}
     return ok('Migrations generated')
   }
   catch (error) {
-    return err(handleError('Migration generation failed', error))
+    /*
+     * The cause, in the message.
+     *
+     * `handleError` records the underlying error in the log and returns a
+     * `Error` whose message is the summary - so a caller that prints the result
+     * gets "Migration generation failed" and nothing about *what* failed. That
+     * is a sentence somebody debugs for an hour: the real answer is usually one
+     * Postgres line, and it was three frames away the whole time.
+     */
+    const because = error instanceof Error ? error.message : String(error)
+
+    return err(handleError(`Migration generation failed: ${because}`, error))
   }
 }
 
