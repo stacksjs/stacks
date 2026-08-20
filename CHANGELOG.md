@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.36...v0.72.37)
+
+## 🐛 Bug Fixes
+
+- **search-engine**: bind the driver without a top-level await ([a8cda6b](https://github.com/stacksjs/stacks/commit/a8cda6b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.35...v0.72.36)
 
 ## 🐛 Bug Fixes
