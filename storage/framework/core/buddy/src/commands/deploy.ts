@@ -1428,6 +1428,16 @@ function describeSiteClassification(sites: Record<string, any>): string {
  * untouched - the routes file is the signal, and an app without one has
  * nothing to serve.
  */
+/**
+ * ts-cloud's own dashboard site, which this project declares nothing about.
+ *
+ * Matches the naming the deploy path already keys off when it reconciles those
+ * sites' live ports: `dashboard`, or `dashboard-<host>`.
+ */
+function isDashboardSite(name: string): boolean {
+  return name === 'dashboard' || name.startsWith('dashboard-')
+}
+
 export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: boolean): string | undefined {
   if (!hasApiRoutes)
     return undefined
@@ -1438,8 +1448,16 @@ export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: b
     return undefined
 
   const api = entries.find(([name, site]) => servesApi(name, site))
-  // The page servers: every server app that is not the API itself.
-  const pages = appSites.filter(([name, site]) => !servesApi(name, site))
+  // The page servers: every server app that is not the API itself, and not
+  // ts-cloud's own dashboard.
+  //
+  // The dashboard is not this project's site. It is adopted from whatever is
+  // already running on the box - the same reason its port is reconciled from
+  // `livePorts` rather than declared here - and it serves ts-cloud's admin UI,
+  // not `routes/api.ts`. Holding it to "must proxy to the project's API" asks
+  // it to wire up routes it does not serve, and refuses every deploy of a box
+  // that has a dashboard on it.
+  const pages = appSites.filter(([name, site]) => !servesApi(name, site) && !isDashboardSite(name))
 
   // Somebody has pointed the proxy somewhere explicitly. That is intent, and
   // it covers the API living on another host entirely.

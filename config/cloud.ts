@@ -752,7 +752,12 @@ export const tsCloud: TsCloudConfig = {
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
         'bun --conditions development storage/framework/core/buddy/src/cli.ts migrate',
       ],
-      env: { APP_ENV: 'production', NODE_ENV: 'production' },
+      // PORT_API is how this site's same-origin `/api` proxy finds the API,
+      // which binds loopback-only on 3008 below. Without it the proxy has no
+      // upstream and `/api/**` answers 502 while this front page returns 200 -
+      // so the health check passes and the deploy reports success. That is the
+      // exact failure `apiDeploymentProblem` refuses to ship.
+      env: { APP_ENV: 'production', NODE_ENV: 'production', PORT_API: '3008' },
     },
 
     // API (bun-router) behind `buddy serve`'s same-origin /api proxy.

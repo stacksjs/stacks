@@ -129,3 +129,46 @@ describe('apiDeploymentProblem: classifying the API site (#2349)', () => {
   })
 })
 
+
+/**
+ * ts-cloud's dashboard is on the box but is not this project's site: it is
+ * adopted from whatever is already running there - which is why the deploy path
+ * reconciles its port from the live box rather than reading one from
+ * config/cloud.ts - and it serves ts-cloud's admin UI, not `routes/api.ts`.
+ *
+ * Holding it to "must proxy to the project's API" asked it to wire up routes it
+ * does not serve, and refused every deploy of a box that has a dashboard on it.
+ * That is what blocked stacksjs.com: `main` was genuinely missing `PORT_API`,
+ * and `dashboard-stacksjs-com` was never going to have it.
+ */
+describe('apiDeploymentProblem and the ts-cloud dashboard', () => {
+  const api = { start: 'bun cli.js serve:api', port: 3008 }
+
+  it('does not ask the dashboard to proxy to the API', () => {
+    expect(apiDeploymentProblem({
+      main: { ...pageSite, env: { PORT_API: '3008' } },
+      api,
+      'dashboard-stacksjs-com': { start: 'bun dashboard.js', port: 3009 },
+    }, true)).toBeUndefined()
+  })
+
+  it('covers the bare `dashboard` name too', () => {
+    expect(apiDeploymentProblem({
+      main: { ...pageSite, env: { PORT_API: '3008' } },
+      api,
+      dashboard: { start: 'bun dashboard.js', port: 3009 },
+    }, true)).toBeUndefined()
+  })
+
+  it('still catches a real page server that cannot reach the API', () => {
+    // The exemption is by name and must not become a way to miss the actual bug.
+    const problem = apiDeploymentProblem({
+      main: pageSite,
+      api,
+      'dashboard-stacksjs-com': { start: 'bun dashboard.js', port: 3009 },
+    }, true)
+
+    expect(problem).toContain('`main`')
+    expect(problem).not.toContain('dashboard-stacksjs-com` will not proxy')
+  })
+})
