@@ -344,6 +344,36 @@ buddy migrate
 buddy migrate --diff
 ```
 
+## The snapshot is the baseline
+
+`buddy migrate` works out what changed by diffing your models against a snapshot
+of the last known schema:
+
+```
+storage/framework/database/model-snapshot.<dialect>.json
+```
+
+Without that file there is no baseline, so the same change is derived again on
+every run. Applying it fixes exactly one run, and the next one proposes it back.
+
+That path sits inside the project, which is right for a checkout and wrong for a
+release-directory deploy. Capistrano-style layouts put every deploy in a fresh
+`releases/<sha>`, so the snapshot is never there, and a schema that is already
+correct keeps reporting a pending change.
+
+Point `DB_SNAPSHOT_PATH` at a directory that outlives the release:
+
+```bash
+# absolute, or relative to the release directory
+DB_SNAPSHOT_PATH=/srv/app/shared/db
+DB_SNAPSHOT_PATH=../../shared/db
+```
+
+The directory must be writable: migrate writes the new snapshot back after a
+successful run, and a read-only one leaves you where you started. When a
+destructive change is proposed and no snapshot exists, migrate now names the
+directory it looked in rather than leaving you to guess.
+
 ## Related Commands
 
 - [buddy seed](/guide/buddy/seed) - Seed database with test data

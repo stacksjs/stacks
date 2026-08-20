@@ -19,7 +19,7 @@ import type { FrameworkSchema } from './framework-schema'
 import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-config'
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
-import { relativeMigrationDirectory, resolveMigrationDirectory } from './migration-path'
+import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
 import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
@@ -266,6 +266,18 @@ function getDbConfig(): { database: string, username?: string, password?: string
 export const QB_SNAPSHOT_DIR = 'storage/framework/database'
 
 /**
+ * The snapshot directory to hand to `setConfig`, resolved at call time.
+ *
+ * Read fresh on every call rather than frozen into a module constant: on a
+ * Capistrano-style deploy `DB_SNAPSHOT_PATH` points at a shared directory that
+ * outlives the release, and a value captured at import time would miss an env
+ * loaded after this module (stacksjs/stacks#2351).
+ */
+export function qbSnapshotDir(): string {
+  return snapshotDirForQueryBuilder()
+}
+
+/**
  * Process-wide query-builder soft-delete filtering must stay disabled.
  *
  * The raw query builder has no model definition, so it cannot know whether
@@ -398,8 +410,8 @@ function updateQueryBuilderConfig(): void {
     // wholesale, so omitting this here silently reverts the snapshot to the
     // library default and writes a second copy to `.qb` in the project root -
     // the exact directory moving it was meant to remove.
-    snapshotDir: QB_SNAPSHOT_DIR,
-    migrationDir: relativeMigrationDirectory(resolveMigrationDirectory(toQueryBuilderDialect(dialect), { snapshotDir: QB_SNAPSHOT_DIR })),
+    snapshotDir: qbSnapshotDir(),
+    migrationDir: relativeMigrationDirectory(resolveMigrationDirectory(toQueryBuilderDialect(dialect), { snapshotDir: qbSnapshotDir() })),
     timestamps: {
       createdAt: 'created_at',
       updatedAt: 'updated_at',

@@ -332,13 +332,49 @@ function describeOp(op: MigrationOpLike): string {
     case 'modify_column':
       return `change type of "${op.table}"."${op.column}" (possible data loss)`
     case 'rebuild_table':
-      return `rebuild table "${op.table}" (type/constraint change)`
+      // Deliberately not "(type/constraint change)". SQLite rebuilds a table for
+      // several reasons — a changed column type, a changed foreign key, or the
+      // removal of a constrained column — and nothing here computed which one it
+      // was. Asserting the wrong one sent an operator looking for a type change
+      // that did not exist, against SQL that rebuilt the table byte-identically
+      // (stacksjs/stacks#2351). Name the operation, not a guess at its cause.
+      return `rebuild table "${op.table}" (SQLite rebuilds in place; compare the SQL below against the live schema)`
     case 'rename_column':
       return `rename "${op.table}"."${op.from}" → "${op.to}"`
     case 'rename_table':
       return `rename table "${op.from}" → "${op.to}"`
     default:
       return `${op.kind} on "${op.table}"${op.column ? `."${op.column}"` : ''}`
+  }
+}
+
+/**
+ * Explain a proposed change when there is no baseline to have proposed it from.
+ *
+ * The differ compares models against `<snapshotDir>/model-snapshot.<dialect>.json`.
+ * With that file absent it re-derives the baseline every run, so the same change
+ * is proposed on every deploy and applying it fixes exactly one release. On a
+ * Capistrano-style layout the snapshot is absent by construction: each deploy is a
+ * fresh `releases/<sha>` directory and the default path lives inside it.
+ *
+ * Nothing named the file, so the failure looked like a schema that would not
+ * converge rather than a baseline that was never there (stacksjs/stacks#2351).
+ */
+async function missingBaselineNote(): Promise<string | undefined> {
+  try {
+    const { resolveSnapshotDirectory, snapshotDirectoryIsShared } = await import('@stacksjs/database')
+    const dir = resolveSnapshotDirectory()
+    if (existsSync(dir) && readdirSync(dir).some(f => /^model-snapshot\.\w+\.json$/.test(f)))
+      return undefined
+
+    return `No model snapshot in ${dir}, so this change was derived without a baseline and will be `
+      + `proposed again on the next run.${snapshotDirectoryIsShared()
+        ? ' DB_SNAPSHOT_PATH points there; check the directory exists and is writable.'
+        : ' If each deploy runs from a new directory, point DB_SNAPSHOT_PATH at a shared one that survives the release.'}`
+  }
+  catch (error) {
+    log.debug(`[migrate] baseline check skipped: ${error instanceof Error ? error.message : String(error)}`)
+    return undefined
   }
 }
 
@@ -372,6 +408,10 @@ async function confirmDestructiveMigrations(opts: { force?: boolean, fromDb?: bo
   log.warn(`This migration includes ${destructive.length} potentially destructive change${destructive.length === 1 ? '' : 's'}:`)
   for (const op of destructive)
     log.warn(`  • ${describeOp(op)}`)
+
+  const baseline = await missingBaselineNote()
+  if (baseline)
+    log.warn(baseline)
 
   if (opts.force)
     return true
