@@ -87,13 +87,49 @@ let dbConfig: DbConfig = {
 // file keeps running fully concurrently.
 let dbConfigLockTail: Promise<void> = Promise.resolve()
 
+/**
+ * How long one file may hold the config lock before the queue moves on without
+ * it. Generous, because a holder is a whole test file: it should never be
+ * reached by a file that is merely slow, only by one that has stopped.
+ */
+const DB_CONFIG_LOCK_MAX_HOLD_MS = 60_000
+
 export function acquireDbConfigLock(): Promise<() => void> {
   let release: () => void = () => {}
   const held = new Promise<void>((resolve) => {
     release = resolve
   })
-  const acquired = dbConfigLockTail.then(() => release)
-  dbConfigLockTail = dbConfigLockTail.then(() => held)
+
+  const acquired = dbConfigLockTail.then(() => {
+    // Armed on acquisition rather than on request, so a long queue does not
+    // start the clock on files that are still waiting their turn.
+    //
+    // The advice above - always release from a `finally` - is still the right
+    // way to use this, but it cannot be the only thing standing between one
+    // file and every file after it. A holder that never releases, because it
+    // crashed or its own hook timed out before `afterAll` ran, used to strand
+    // the chain permanently: the next file's `beforeAll` waited on a promise
+    // nothing would ever resolve, and bun reported it as a hook timeout in a
+    // file that had done nothing wrong. That is what this watchdog is for.
+    const watchdog = setTimeout(() => {
+      console.warn(
+        `[database] the db config lock was held for over ${DB_CONFIG_LOCK_MAX_HOLD_MS / 1000}s. `
+        + 'Releasing it so the queue can proceed - a test file most likely failed before its afterAll ran.',
+      )
+      release()
+    }, DB_CONFIG_LOCK_MAX_HOLD_MS)
+    // Never keep the process alive just to watch a lock.
+    ;(watchdog as { unref?: () => void }).unref?.()
+
+    void held.then(() => clearTimeout(watchdog))
+
+    return release
+  })
+
+  // `catch` keeps the chain alive: a rejection anywhere in it would otherwise
+  // reject every future acquisition rather than just the file that failed.
+  dbConfigLockTail = dbConfigLockTail.then(() => held).catch(() => {})
+
   return acquired
 }
 
