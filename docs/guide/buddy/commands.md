@@ -96,7 +96,7 @@ Pull a registered stack and merge its project files into this Stacks application
 | `--force` | Overwrite existing files | boolean, optional | `false` |
 | `--dry-run` | Show which files would be installed without changing the project | boolean, optional | `false` |
 | `--conflict` | Resolve existing files with skip, overwrite, or backup | value, required | `"skip"` |
-| `-p`, `--project` | Target a specific Stacks project | value, required | — |
+| `-p`, `--project` | Target a specific Stacks project | value, required | - |
 | `--verbose` | Show every file copied or skipped | boolean, optional | `false` |
 
 Examples:
@@ -119,7 +119,7 @@ Generate compact deterministic project context for coding models
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-J`, `--json` | Emit the versioned machine-readable context contract | boolean, optional | `false` |
-| `-o`, `--output` | Write output to a file instead of stdout | value, optional | — |
+| `-o`, `--output` | Write output to a file instead of stdout | value, optional | - |
 | `--max-chars` | Maximum characters in the prompt context payload | value, optional | `4000` |
 | `--model` | Model family used for the heuristic token estimate | value, optional | `"gpt-4o"` |
 
@@ -205,17 +205,17 @@ Build any of your libraries (packages) for production use
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-c`, `--components` | Build your component library | boolean, optional | — |
-| `-w`, `--web-components` | Build your framework agnostic web component library | boolean, optional | — |
-| `-e`, `--elements` | An alias to the -w flag | boolean, optional | — |
-| `-f`, `--functions` | Build your function library | boolean, optional | — |
-| `-k`, `--desktop` | Build the Desktop Application | boolean, optional | — |
-| `-m`, `--mobile` | Build the native iOS and Android applications | boolean, optional | — |
-| `--android` | Build the native Android application | boolean, optional | — |
-| `--ios` | Build the native iOS application | boolean, optional | — |
-| `-p`, `--views` | Build your frontend | boolean, optional | — |
-| `--pages` | Build your frontend | boolean, optional | — |
-| `-d`, `--docs` | Build your documentation | boolean, optional | — |
+| `-c`, `--components` | Build your component library | boolean, optional | - |
+| `-w`, `--web-components` | Build your framework agnostic web component library | boolean, optional | - |
+| `-e`, `--elements` | An alias to the -w flag | boolean, optional | - |
+| `-f`, `--functions` | Build your function library | boolean, optional | - |
+| `-k`, `--desktop` | Build the Desktop Application | boolean, optional | - |
+| `-m`, `--mobile` | Build the native iOS and Android applications | boolean, optional | - |
+| `--android` | Build the native Android application | boolean, optional | - |
+| `--ios` | Build the native iOS application | boolean, optional | - |
+| `-p`, `--views` | Build your frontend | boolean, optional | - |
+| `--pages` | Build your frontend | boolean, optional | - |
+| `-d`, `--docs` | Build your documentation | boolean, optional | - |
 | `-b`, `--buddy` | Build the Buddy binary | boolean, optional | `false` |
 | `-s`, `--stacks` | Build Stacks framework | boolean, optional | `false` |
 | `--project` | Target a specific project | value, optional | `false` |
@@ -449,8 +449,8 @@ Print the absolute path of a Stacks project by name
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--eval` | Emit `cd "path"` instead of just the path — pair with `eval "$(buddy cd <name> --eval)"` for real shell-cd | boolean, optional | `false` |
-| `--root` | Search root for the project scan (overrides STACKS_PROJECTS_ROOT and the home-dir default) | value, required | — |
+| `--eval` | Emit `cd "path"` instead of just the path - pair with `eval "$(buddy cd <name> --eval)"` for real shell-cd | boolean, optional | `false` |
+| `--root` | Search root for the project scan (overrides STACKS_PROJECTS_ROOT and the home-dir default) | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `changelog`
@@ -467,9 +467,9 @@ Create a CHANGELOG.md file
 | `-q`, `--quiet` | Minimal output | boolean, optional | `false` |
 | `-d`, `--dry-run` | Do not write the file, just output the changes | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--from` | Start git revision for generated changelog | value, required | — |
-| `--to` | End git revision for generated changelog | value, required | — |
-| `--version` | Version heading to use for the generated changelog entry | value, required | — |
+| `--from` | Start git revision for generated changelog | value, required | - |
+| `--to` | End git revision for generated changelog | value, required | - |
+| `--version` | Version heading to use for the generated changelog entry | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `clean`
@@ -501,7 +501,7 @@ Interact with the Stacks Cloud
 | `--ssh` | SSH into the Stacks Cloud | boolean, optional | `false` |
 | `--connect` | SSH into the Stacks Cloud | boolean, optional | `false` |
 | `--invalidate-cache` | Invalidate the CloudFront cache | boolean, optional | `false` |
-| `--paths` | The paths to invalidate | value, optional | — |
+| `--paths` | The paths to invalidate | value, optional | - |
 | `--diff` | Show the diff of the current, undeployed cloud changes  | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -548,7 +548,7 @@ Run the local Stacks Cloud management cockpit (servers, sites, deploys)
 | --- | --- | --- | --- |
 | `--host` | Host to bind the dashboard to | value, optional | `"127.0.0.1"` |
 | `--port` | Port to bind the dashboard to | value, optional | `"7676"` |
-| `--env` | Environment to manage | value, optional | — |
+| `--env` | Environment to manage | value, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:diff`
@@ -623,7 +623,7 @@ Activate the cms feature bundle. Post/Page/Author/Comment/Tag models + content e
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing cms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing cms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `cms:uninstall`
 
@@ -636,7 +636,7 @@ Deactivate the cms feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the cms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the cms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `coming-soon`
 
@@ -687,7 +687,7 @@ Activate the commerce feature bundle. Order/Cart/Product/Customer/Coupon/GiftCar
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing commerce files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing commerce files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `commerce:uninstall`
 
@@ -700,7 +700,7 @@ Deactivate the commerce feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the commerce scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the commerce scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `commit`
 
@@ -727,7 +727,7 @@ Generate shell completion scripts
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-s`, `--shell` | Shell type (bash, zsh, fish) | value, optional | — |
+| `-s`, `--shell` | Shell type (bash, zsh, fish) | value, optional | - |
 
 Examples:
 
@@ -781,11 +781,11 @@ Configure the AWS connection
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--profile` | The AWS profile to use | boolean, optional | `"stacks"` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
-| `--access-key-id` | The AWS access key | boolean, optional | — |
-| `--secret-access-key` | The AWS secret access key | boolean, optional | — |
-| `--region` | The AWS region | boolean, optional | — |
-| `--output` | The AWS output format | boolean, optional | — |
-| `--quiet` | Suppress output | boolean, optional | — |
+| `--access-key-id` | The AWS access key | boolean, optional | - |
+| `--secret-access-key` | The AWS secret access key | boolean, optional | - |
+| `--region` | The AWS region | boolean, optional | - |
+| `--output` | The AWS output format | boolean, optional | - |
+| `--quiet` | Suppress output | boolean, optional | - |
 
 ### `core:status`
 
@@ -817,7 +817,7 @@ Activate the dashboard feature bundle. Admin SPA shell + Activity/Log/Request/De
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing dashboard files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing dashboard files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `dashboard:uninstall`
 
@@ -830,7 +830,7 @@ Deactivate the dashboard feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the dashboard scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the dashboard scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `db:backup`
 
@@ -843,7 +843,7 @@ Dump the application database to a file
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--out` | Where to write the dump (default: storage/backups/database) | value, optional | — |
+| `--out` | Where to write the dump (default: storage/backups/database) | value, optional | - |
 | `--retain` | How many dumps to keep | value, optional | `"7"` |
 | `--before-migrations` | Deploy mode: succeed quietly when there is no database yet | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -866,7 +866,7 @@ List the database dumps that have been taken
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | — |
+| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | - |
 
 Examples:
 
@@ -885,7 +885,7 @@ Restore the application database from a dump
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | — |
+| `--out` | Where dumps are kept (default: storage/backups/database) | value, optional | - |
 | `--force` | Skip the confirmation prompt | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -907,12 +907,12 @@ Deploy your project
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--domain` | Specify a domain to deploy to | value, required | — |
+| `--domain` | Specify a domain to deploy to | value, required | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--prod` | Deploy to production | boolean, optional | `false` |
 | `--dev` | Deploy to development | boolean, optional | `false` |
 | `--yes` | Confirm all prompts by default | boolean, optional | `false` |
-| `--site` | Deploy only this one site to the existing server (multi-tenant surgical add) | value, required | — |
+| `--site` | Deploy only this one site to the existing server (multi-tenant surgical add) | value, required | - |
 | `--staging` | Deploy to staging | boolean, optional | `false` |
 | `--docker` | Also build an OCI image with pantry (native, no Docker daemon) and push it to the pantry registry | boolean, optional | `false` |
 | `-J`, `--json` | Emit a machine-readable deployment preview | boolean, optional | `false` |
@@ -930,7 +930,7 @@ Roll back a deployment to a preserved release
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--env` | Environment to roll back | value, required | `"production"` |
-| `--to` | Preserved release id to activate | value, required | — |
+| `--to` | Preserved release id to activate | value, required | - |
 | `--dry-run` | Preview the rollback without changing the active release | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -945,8 +945,8 @@ Generate local private keys and CSRs for Mac App Store distribution certificates
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--common-name` | Certificate request common name | value, required | — |
-| `--output` | Directory for private keys and certificate requests | value, required | — |
+| `--common-name` | Certificate request common name | value, required | - |
+| `--output` | Directory for private keys and certificate requests | value, required | - |
 
 ### `desktop:apple:doctor`
 
@@ -959,15 +959,15 @@ Validate Mac App Store tooling, credentials, certificates, and project metadata
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--app-name` | Mac App Store display name | value, required | — |
-| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
-| `--team-id` | Apple Developer team ID | value, required | — |
-| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
-| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
-| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
+| `--app-name` | Mac App Store display name | value, required | - |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
+| `--team-id` | Apple Developer team ID | value, required | - |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | - |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | - |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | - |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
 
 ### `desktop:apple:init`
 
@@ -980,7 +980,7 @@ Create a GitHub Actions caller for the reusable Stacks Mac App Store workflow
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Replace an existing workflow | boolean, optional | — |
+| `--force` | Replace an existing workflow | boolean, optional | - |
 
 ### `desktop:apple:package`
 
@@ -993,18 +993,18 @@ Build, sandbox, sign, and package a Mac App Store desktop app
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--app-name` | Mac App Store display name | value, required | — |
-| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
-| `--team-id` | Apple Developer team ID | value, required | — |
-| `--app-version` | Marketing version | value, required | — |
-| `--build-number` | Unique App Store build number | value, required | — |
-| `--minimum-macos` | Minimum supported macOS version | value, required | — |
-| `--category` | LSApplicationCategoryType value | value, required | — |
-| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
-| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
-| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
-| `--icon` | Optional .icns app icon | value, required | — |
-| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | — |
+| `--app-name` | Mac App Store display name | value, required | - |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
+| `--team-id` | Apple Developer team ID | value, required | - |
+| `--app-version` | Marketing version | value, required | - |
+| `--build-number` | Unique App Store build number | value, required | - |
+| `--minimum-macos` | Minimum supported macOS version | value, required | - |
+| `--category` | LSApplicationCategoryType value | value, required | - |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | - |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | - |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | - |
+| `--icon` | Optional .icns app icon | value, required | - |
+| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | - |
 
 ### `desktop:apple:provision`
 
@@ -1017,18 +1017,18 @@ Plan or reconcile Apple Bundle ID, capabilities, certificates, and profile
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--app-name` | Mac App Store display name | value, required | — |
-| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
-| `--capabilities` | Comma-separated Apple capability types | value, required | — |
-| `--app-certificate-csr` | CSR for a missing Mac App Distribution certificate | value, required | — |
-| `--installer-certificate-csr` | CSR for a missing Mac Installer Distribution certificate | value, required | — |
-| `--profile-name` | Provisioning profile name | value, required | — |
-| `--output` | Directory for the plan and downloaded Apple assets | value, required | — |
-| `--plan` | Report the idempotent Apple resource diff without mutating it | boolean, optional | — |
-| `--apply` | Apply the Apple resource diff without revoking existing certificates | boolean, optional | — |
+| `--app-name` | Mac App Store display name | value, required | - |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
+| `--capabilities` | Comma-separated Apple capability types | value, required | - |
+| `--app-certificate-csr` | CSR for a missing Mac App Distribution certificate | value, required | - |
+| `--installer-certificate-csr` | CSR for a missing Mac Installer Distribution certificate | value, required | - |
+| `--profile-name` | Provisioning profile name | value, required | - |
+| `--output` | Directory for the plan and downloaded Apple assets | value, required | - |
+| `--plan` | Report the idempotent Apple resource diff without mutating it | boolean, optional | - |
+| `--apply` | Apply the Apple resource diff without revoking existing certificates | boolean, optional | - |
 
 ### `desktop:apple:publish`
 
@@ -1041,23 +1041,23 @@ Build and validate or upload a signed Mac App Store package
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--app-name` | Mac App Store display name | value, required | — |
-| `--bundle-id` | Reverse-DNS bundle identifier | value, required | — |
-| `--team-id` | Apple Developer team ID | value, required | — |
-| `--app-version` | Marketing version | value, required | — |
-| `--build-number` | Unique App Store build number | value, required | — |
-| `--minimum-macos` | Minimum supported macOS version | value, required | — |
-| `--category` | LSApplicationCategoryType value | value, required | — |
-| `--app-signing-identity` | Mac App Distribution signing identity | value, required | — |
-| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | — |
-| `--provisioning-profile` | Mac App Store provisioning profile | value, required | — |
-| `--icon` | Optional .icns app icon | value, required | — |
-| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | — |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | — |
-| `--validate-only` | Validate with App Store Connect without uploading | boolean, optional | — |
-| `--package-only` | Create the signed package without contacting App Store Connect | boolean, optional | — |
+| `--app-name` | Mac App Store display name | value, required | - |
+| `--bundle-id` | Reverse-DNS bundle identifier | value, required | - |
+| `--team-id` | Apple Developer team ID | value, required | - |
+| `--app-version` | Marketing version | value, required | - |
+| `--build-number` | Unique App Store build number | value, required | - |
+| `--minimum-macos` | Minimum supported macOS version | value, required | - |
+| `--category` | LSApplicationCategoryType value | value, required | - |
+| `--app-signing-identity` | Mac App Distribution signing identity | value, required | - |
+| `--installer-signing-identity` | Mac Installer Distribution signing identity | value, required | - |
+| `--provisioning-profile` | Mac App Store provisioning profile | value, required | - |
+| `--icon` | Optional .icns app icon | value, required | - |
+| `--skip-build` | Package existing storage/framework/desktop-dist artifacts | boolean, optional | - |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | App Store Connect AuthKey .p8 file | value, required | - |
+| `--validate-only` | Validate with App Store Connect without uploading | boolean, optional | - |
+| `--package-only` | Create the signed package without contacting App Store Connect | boolean, optional | - |
 
 ### `dev`
 
@@ -1070,14 +1070,14 @@ Start development server
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-f`, `--frontend` | Start the frontend development server | boolean, optional | — |
-| `-a`, `--api` | Start the local API development server | boolean, optional | — |
-| `-c`, `--components` | Start the Components development server | boolean, optional | — |
-| `-d`, `--dashboard` | Start the Dashboard development server | boolean, optional | — |
-| `-k`, `--desktop` | Start the Desktop App development server | boolean, optional | — |
-| `-n`, `--native` | Start the app in a native Craft window | boolean, optional | — |
-| `-o`, `--docs` | Start the Documentation development server | boolean, optional | — |
-| `-s`, `--system-tray` | Start the System Tray development server | boolean, optional | — |
+| `-f`, `--frontend` | Start the frontend development server | boolean, optional | - |
+| `-a`, `--api` | Start the local API development server | boolean, optional | - |
+| `-c`, `--components` | Start the Components development server | boolean, optional | - |
+| `-d`, `--dashboard` | Start the Dashboard development server | boolean, optional | - |
+| `-k`, `--desktop` | Start the Desktop App development server | boolean, optional | - |
+| `-n`, `--native` | Start the app in a native Craft window | boolean, optional | - |
+| `-o`, `--docs` | Start the Documentation development server | boolean, optional | - |
+| `-s`, `--system-tray` | Start the System Tray development server | boolean, optional | - |
 | `-i`, `--interactive` | Get asked which development server to start | boolean, optional | `false` |
 | `-l`, `--with-localhost` | Include the localhost URL in the output | boolean, optional | `false` |
 | `--browser` | Open the application in a browser instead of its configured native window | boolean, optional | `false` |
@@ -1210,14 +1210,14 @@ Lists the DNS records for a domain
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-q`, `--query` | Host name or IP address to query | value, required | — |
+| `-q`, `--query` | Host name or IP address to query | value, required | - |
 | `-t`, `--type` | Type of the DNS record being queried (A, MX, NS…) | value, required | `"A"` |
-| `-n`, `--nameserver` | Address of the nameserver to send packets to | value, required | — |
-| `--class` | Network class of the DNS record being queried (IN, CH, HS) | value, required | — |
-| `-U`, `--udp` | Use the DNS protocol over UDP | boolean, optional | — |
-| `-T`, `--tcp` | Use the DNS protocol over TCP | boolean, optional | — |
-| `-S`, `--tls` | Use the DNS-over-TLS protocol | boolean, optional | — |
-| `-H`, `--https` | Use the DNS-over-HTTPS protocol | boolean, optional | — |
+| `-n`, `--nameserver` | Address of the nameserver to send packets to | value, required | - |
+| `--class` | Network class of the DNS record being queried (IN, CH, HS) | value, required | - |
+| `-U`, `--udp` | Use the DNS protocol over UDP | boolean, optional | - |
+| `-T`, `--tcp` | Use the DNS protocol over TCP | boolean, optional | - |
+| `-S`, `--tls` | Use the DNS-over-TLS protocol | boolean, optional | - |
+| `-H`, `--https` | Use the DNS-over-HTTPS protocol | boolean, optional | - |
 | `-1`, `--short` | Short mode: display nothing but the first result | boolean, optional | `false` |
 | `-J`, `--json` | Display the output as JSON | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
@@ -1357,39 +1357,39 @@ Purchase a domain
 | `--years` | Number of years to purchase the domain for | value, required | `1` |
 | `--privacy` | Enable privacy protection | boolean, optional | `true` |
 | `--auto-renew` | Enable auto-renew | boolean, optional | `true` |
-| `--first-name` | Registrant first name | value, required | — |
-| `--last-name` | Registrant last name | value, required | — |
-| `--organization` | Registrant organization name | value, required | — |
-| `--address-line1` | Registrant address line 1 | value, required | — |
-| `--address-line2` | Registrant address line 2 | value, required | — |
-| `--city` | Registrant city | value, required | — |
-| `--state` | Registrant state | value, required | — |
-| `--country` | Registrant country code | value, required | — |
-| `--zip` | Registrant zip | value, required | — |
-| `--phone` | Registrant phone | value, required | — |
-| `--email` | Registrant email | value, required | — |
-| `--admin-first-name` | Admin first name | value, required | — |
-| `--admin-last-name` | Admin last name | value, required | — |
-| `--admin-organization` | Admin organization | value, required | — |
-| `--admin-address-line1` | Admin address line 1 | value, required | — |
-| `--admin-address-line2` | Admin address line 2 | value, required | — |
-| `--admin-city` | Admin city | value, required | — |
-| `--admin-state` | Admin state | value, required | — |
-| `--admin-country` | Admin country code | value, required | — |
-| `--admin-zip` | Admin zip | value, required | — |
-| `--admin-phone` | Admin phone number | value, required | — |
-| `--admin-email` | Admin email | value, required | — |
-| `--tech-first-name` | Tech first name | value, required | — |
-| `--tech-last-name` | Tech last name | value, required | — |
-| `--tech-organization` | Tech organization name | value, required | — |
-| `--tech-address-line1` | Tech address line 1 | value, required | — |
-| `--tech-address-line2` | Tech address line 2 | value, required | — |
-| `--tech-city` | Tech city | value, required | — |
-| `--tech-state` | Tech state | value, required | — |
-| `--tech-country` | Tech country | value, required | — |
-| `--tech-zip` | Tech zip | value, required | — |
-| `--tech-phone` | Tech phone | value, required | — |
-| `--tech-email` | Tech email | value, required | — |
+| `--first-name` | Registrant first name | value, required | - |
+| `--last-name` | Registrant last name | value, required | - |
+| `--organization` | Registrant organization name | value, required | - |
+| `--address-line1` | Registrant address line 1 | value, required | - |
+| `--address-line2` | Registrant address line 2 | value, required | - |
+| `--city` | Registrant city | value, required | - |
+| `--state` | Registrant state | value, required | - |
+| `--country` | Registrant country code | value, required | - |
+| `--zip` | Registrant zip | value, required | - |
+| `--phone` | Registrant phone | value, required | - |
+| `--email` | Registrant email | value, required | - |
+| `--admin-first-name` | Admin first name | value, required | - |
+| `--admin-last-name` | Admin last name | value, required | - |
+| `--admin-organization` | Admin organization | value, required | - |
+| `--admin-address-line1` | Admin address line 1 | value, required | - |
+| `--admin-address-line2` | Admin address line 2 | value, required | - |
+| `--admin-city` | Admin city | value, required | - |
+| `--admin-state` | Admin state | value, required | - |
+| `--admin-country` | Admin country code | value, required | - |
+| `--admin-zip` | Admin zip | value, required | - |
+| `--admin-phone` | Admin phone number | value, required | - |
+| `--admin-email` | Admin email | value, required | - |
+| `--tech-first-name` | Tech first name | value, required | - |
+| `--tech-last-name` | Tech last name | value, required | - |
+| `--tech-organization` | Tech organization name | value, required | - |
+| `--tech-address-line1` | Tech address line 1 | value, required | - |
+| `--tech-address-line2` | Tech address line 2 | value, required | - |
+| `--tech-city` | Tech city | value, required | - |
+| `--tech-state` | Tech state | value, required | - |
+| `--tech-country` | Tech country | value, required | - |
+| `--tech-zip` | Tech zip | value, required | - |
+| `--tech-phone` | Tech phone | value, required | - |
+| `--tech-email` | Tech email | value, required | - |
 | `--privacy-admin` | Enable privacy protection for admin | boolean, optional | `true` |
 | `--privacy-tech` | Enable privacy protection for tech | boolean, optional | `true` |
 | `--privacy-registrant` | Enable privacy protection for registrant | boolean, optional | `true` |
@@ -1461,8 +1461,8 @@ View inbox emails from S3
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-n`, `--limit` | Number of emails to show | value, required | `"20"` |
-| `--raw` | Show raw email content for a specific message ID | value, required | — |
-| `--bucket` | S3 bucket name override | value, required | — |
+| `--raw` | Show raw email content for a specific message ID | value, required | - |
+| `--bucket` | S3 bucket name override | value, required | - |
 
 ### `email:list`
 
@@ -1497,7 +1497,7 @@ Reprocess raw emails from S3 into mailbox structure
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--bucket` | S3 bucket name override | value, required | — |
+| `--bucket` | S3 bucket name override | value, required | - |
 | `--prefix` | S3 prefix to scan | value, required | `"inbox/"` |
 | `--domain` | Email domain | value, required | `"stacksjs.com"` |
 
@@ -1709,8 +1709,8 @@ Build the browser extension (Chrome + Firefox + Safari) from config/extension.ts
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--target` | Build a single target (chrome \| firefox \| safari); omit to build all | value, required | — |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
+| `--target` | Build a single target (chrome \| firefox \| safari); omit to build all | value, required | - |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
 
 ### `extension:chrome:publish`
 
@@ -1723,11 +1723,11 @@ Build, upload, and submit the Chrome extension through Web Store API v2
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
-| `--service-account-path` | Google service-account JSON key path | value, required | — |
-| `--access-token` | Short-lived Chrome Web Store OAuth access token | value, required | — |
-| `--upload-only` | Upload without submitting the item for review | boolean, optional | — |
-| `--allow-warnings` | Submit even when Chrome reports validation warnings | boolean, optional | — |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
+| `--service-account-path` | Google service-account JSON key path | value, required | - |
+| `--access-token` | Short-lived Chrome Web Store OAuth access token | value, required | - |
+| `--upload-only` | Upload without submitting the item for review | boolean, optional | - |
+| `--allow-warnings` | Submit even when Chrome reports validation warnings | boolean, optional | - |
 
 ### `extension:chrome:status`
 
@@ -1740,8 +1740,8 @@ Fetch the Chrome Web Store item status
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--service-account-path` | Google service-account JSON key path | value, required | — |
-| `--access-token` | Short-lived Chrome Web Store OAuth access token | value, required | — |
+| `--service-account-path` | Google service-account JSON key path | value, required | - |
+| `--access-token` | Short-lived Chrome Web Store OAuth access token | value, required | - |
 
 ### `extension:firefox:previews`
 
@@ -1754,9 +1754,9 @@ Sync the Firefox listing screenshots declared in config/extension.ts
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--api-key` | AMO JWT issuer | value, required | — |
-| `--api-secret` | AMO JWT secret | value, required | — |
-| `--dry-run` | Report what would change without touching the listing | boolean, optional | — |
+| `--api-key` | AMO JWT issuer | value, required | - |
+| `--api-secret` | AMO JWT secret | value, required | - |
+| `--dry-run` | Report what would change without touching the listing | boolean, optional | - |
 
 ### `extension:firefox:publish`
 
@@ -1769,11 +1769,11 @@ Build and submit the Firefox extension through Mozilla Add-ons
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
-| `--api-key` | AMO JWT issuer | value, required | — |
-| `--api-secret` | AMO JWT secret | value, required | — |
-| `--source-code` | Human-readable source archive for AMO review | value, required | — |
-| `--approval-timeout` | How long to wait for human approval (default 0) | value, required | — |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
+| `--api-key` | AMO JWT issuer | value, required | - |
+| `--api-secret` | AMO JWT secret | value, required | - |
+| `--source-code` | Human-readable source archive for AMO review | value, required | - |
+| `--approval-timeout` | How long to wait for human approval (default 0) | value, required | - |
 
 ### `extension:init`
 
@@ -1786,12 +1786,12 @@ Scaffold a Chrome, Firefox, or Safari extension, including the Safari Xcode app
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--name` | Extension display name | value, required | — |
-| `--target` | Scaffold chrome, firefox, safari, or all (default all) | value, required | — |
-| `--bundle-id` | Safari container bundle identifier | value, required | — |
-| `--team-id` | Apple Developer team used for Safari signing | value, required | — |
-| `--platform` | Safari platform: macos, ios, or all (default all) | value, required | — |
-| `--force` | Overwrite existing starter and Safari scaffold files | boolean, optional | — |
+| `--name` | Extension display name | value, required | - |
+| `--target` | Scaffold chrome, firefox, safari, or all (default all) | value, required | - |
+| `--bundle-id` | Safari container bundle identifier | value, required | - |
+| `--team-id` | Apple Developer team used for Safari signing | value, required | - |
+| `--platform` | Safari platform: macos, ios, or all (default all) | value, required | - |
+| `--force` | Overwrite existing starter and Safari scaffold files | boolean, optional | - |
 
 ### `extension:package`
 
@@ -1804,12 +1804,12 @@ Build + zip the browser extension into store-ready archives
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--target` | Package a single target (chrome \| firefox \| safari); omit to package all | value, required | — |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
+| `--target` | Package a single target (chrome \| firefox \| safari); omit to package all | value, required | - |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
 
 ### `extension:publish`
 
-Publish to every store this project is set up for — the release-tag entry point
+Publish to every store this project is set up for - the release-tag entry point
 
 - Usage: `$ buddy extension:publish`
 - Namespace: `extension`
@@ -1818,9 +1818,9 @@ Publish to every store this project is set up for — the release-tag entry poin
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
-| `--targets` | Comma-separated subset of chrome,firefox,safari | value, required | — |
-| `--dry-run` | Report the publish plan without uploading anything | boolean, optional | — |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
+| `--targets` | Comma-separated subset of chrome,firefox,safari | value, required | - |
+| `--dry-run` | Report the publish plan without uploading anything | boolean, optional | - |
 
 ### `extension:safari:app`
 
@@ -1833,11 +1833,11 @@ Build the extension and its macOS, iPhone, and iPad Safari container apps
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--release` | Build the Release configuration (default Debug) | boolean, optional | — |
-| `--signed` | Sign locally against the Apple ID in Xcode (local builds only — see below) | boolean, optional | — |
-| `--skip-xcodebuild` | Only build + sync the extension payload | boolean, optional | — |
-| `--version` | Override the extension version (defaults to package.json) | value, required | — |
-| `--platform` | Build macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
+| `--release` | Build the Release configuration (default Debug) | boolean, optional | - |
+| `--signed` | Sign locally against the Apple ID in Xcode (local builds only - see below) | boolean, optional | - |
+| `--skip-xcodebuild` | Only build + sync the extension payload | boolean, optional | - |
+| `--version` | Override the extension version (defaults to package.json) | value, required | - |
+| `--platform` | Build macos, ios, or all (defaults to config safariPlatforms) | value, required | - |
 
 ### `extension:safari:init`
 
@@ -1850,10 +1850,10 @@ Scaffold the Safari container app (Xcode project) from the template
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--bundle-id` | Base bundle identifier (defaults to config safariBundleId) | value, required | — |
-| `--dir` | Output directory for the Xcode project (default safari) | value, required | — |
-| `--force` | Overwrite existing scaffold files | boolean, optional | — |
-| `--team-id` | Apple Developer team used for signing | value, required | — |
+| `--bundle-id` | Base bundle identifier (defaults to config safariBundleId) | value, required | - |
+| `--dir` | Output directory for the Xcode project (default safari) | value, required | - |
+| `--force` | Overwrite existing scaffold files | boolean, optional | - |
+| `--team-id` | Apple Developer team used for signing | value, required | - |
 
 ### `extension:safari:provision`
 
@@ -1866,12 +1866,12 @@ Register Safari Bundle IDs and check the App Store Connect app record
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
-| `--check` | Report missing resources without creating Bundle IDs | boolean, optional | — |
-| `--version` | Create or align App Store versions (defaults to package.json) | value, required | — |
-| `--platform` | Provision macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | - |
+| `--check` | Report missing resources without creating Bundle IDs | boolean, optional | - |
+| `--version` | Create or align App Store versions (defaults to package.json) | value, required | - |
+| `--platform` | Provision macos, ios, or all (defaults to config safariPlatforms) | value, required | - |
 
 ### `extension:safari:publish`
 
@@ -1884,15 +1884,15 @@ Archive and validate or upload the Safari app to App Store Connect
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--version` | Override the marketing version (defaults to package.json) | value, required | — |
-| `--build-number` | CFBundleVersion (defaults to GITHUB_RUN_NUMBER or Unix time) | value, required | — |
-| `--team-id` | Apple Developer team (defaults to config safariTeamId) | value, required | — |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
-| `--validate-only` | Create and validate the archive without uploading it | boolean, optional | — |
-| `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
-| `--skip-screenshots` | Do not regenerate the App Store screenshot set before publishing | boolean, optional | — |
+| `--version` | Override the marketing version (defaults to package.json) | value, required | - |
+| `--build-number` | CFBundleVersion (defaults to GITHUB_RUN_NUMBER or Unix time) | value, required | - |
+| `--team-id` | Apple Developer team (defaults to config safariTeamId) | value, required | - |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | - |
+| `--validate-only` | Create and validate the archive without uploading it | boolean, optional | - |
+| `--platform` | Publish macos, ios, or all (defaults to config safariPlatforms) | value, required | - |
+| `--skip-screenshots` | Do not regenerate the App Store screenshot set before publishing | boolean, optional | - |
 
 ### `extension:safari:submit`
 
@@ -1905,12 +1905,12 @@ Synchronize metadata and submit an existing Safari version to App Review
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--version` | Marketing version to submit (defaults to package.json) | value, required | — |
-| `--api-key-id` | App Store Connect API key ID | value, required | — |
-| `--api-issuer-id` | App Store Connect API issuer ID | value, required | — |
-| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | — |
-| `--platform` | Submit macos, ios, or all (defaults to config safariPlatforms) | value, required | — |
-| `--prepare-only` | Synchronize the listing without submitting it for review | boolean, optional | — |
+| `--version` | Marketing version to submit (defaults to package.json) | value, required | - |
+| `--api-key-id` | App Store Connect API key ID | value, required | - |
+| `--api-issuer-id` | App Store Connect API issuer ID | value, required | - |
+| `--api-key-path` | Path to the App Store Connect AuthKey_*.p8 file | value, required | - |
+| `--platform` | Submit macos, ios, or all (defaults to config safariPlatforms) | value, required | - |
+| `--prepare-only` | Synchronize the listing without submitting it for review | boolean, optional | - |
 
 ### `format`
 
@@ -1951,7 +1951,7 @@ Activate the forms feature bundle. User-defined forms: builder models, condition
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing forms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing forms files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `forms:uninstall`
 
@@ -1964,7 +1964,7 @@ Deactivate the forms feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the forms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the forms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `fresh`
 
@@ -1992,17 +1992,17 @@ Automagically build any of your libraries/packages for production use. Select an
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-t`, `--types` | Generate your TypeScript types | boolean, optional | — |
-| `-e`, `--entries` | Generate your function & Component Library Entry Points | boolean, optional | — |
-| `-w`, `--web-types` | Generate web-types.json for IDEs | boolean, optional | — |
-| `-c`, `--custom-data` | Generate VS Code custom data (custom-elements.json) for IDEs | boolean, optional | — |
-| `-i`, `--ide-helpers` | Generate IDE helpers | boolean, optional | — |
-| `-c`, `--component-meta` | Generate component meta information | boolean, optional | — |
-| `-p`, `--pantry` | Generate the pantry configuration file | boolean, optional | — |
-| `-o`, `--openapi` | Generate the OpenAPI specification | boolean, optional | — |
-| `--images` | Generate every image declared in config/images.ts | boolean, optional | — |
+| `-t`, `--types` | Generate your TypeScript types | boolean, optional | - |
+| `-e`, `--entries` | Generate your function & Component Library Entry Points | boolean, optional | - |
+| `-w`, `--web-types` | Generate web-types.json for IDEs | boolean, optional | - |
+| `-c`, `--custom-data` | Generate VS Code custom data (custom-elements.json) for IDEs | boolean, optional | - |
+| `-i`, `--ide-helpers` | Generate IDE helpers | boolean, optional | - |
+| `-c`, `--component-meta` | Generate component meta information | boolean, optional | - |
+| `-p`, `--pantry` | Generate the pantry configuration file | boolean, optional | - |
+| `-o`, `--openapi` | Generate the OpenAPI specification | boolean, optional | - |
+| `--images` | Generate every image declared in config/images.ts | boolean, optional | - |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--core-symlink` | Generate symlink of the core framework to the project root | boolean, optional | — |
+| `--core-symlink` | Generate symlink of the core framework to the project root | boolean, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:app-icons`
@@ -2106,9 +2106,9 @@ Generate every image declared in config/images.ts
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--social` | Only build the social cards | boolean, optional | — |
-| `--app-store` | Only build the App Store screenshots | boolean, optional | — |
-| `--app-icons` | Only build the app icons and favicons | boolean, optional | — |
+| `--social` | Only build the social cards | boolean, optional | - |
+| `--app-store` | Only build the App Store screenshots | boolean, optional | - |
+| `--app-icons` | Only build the app icons and favicons | boolean, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `generate:migrations`
@@ -2312,7 +2312,7 @@ Point this app's @stacksjs/* at a local framework checkout
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--path` | Framework checkout to link against | value, required | — |
+| `--path` | Framework checkout to link against | value, required | - |
 | `--all` | Link every core package the app has installed | boolean, optional | `false` |
 
 Examples:
@@ -2364,8 +2364,8 @@ List all available Buddy commands
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `-f`, `--filter` | Filter commands by name or group | value, optional | — |
-| `-n`, `--namespace` | Filter commands by namespace (e.g., make, env, db) | value, optional | — |
+| `-f`, `--filter` | Filter commands by name or group | value, optional | - |
+| `-n`, `--namespace` | Filter commands by namespace (e.g., make, env, db) | value, optional | - |
 | `-g`, `--grouped` | Group commands by category | boolean, optional | `true` |
 | `--format` | Output format (text, json) | value, optional | `"text"` |
 | `-J`, `--json` | Output the complete command inventory as JSON | boolean, optional | `false` |
@@ -2403,8 +2403,8 @@ Compile and validate the live RFC 5228 forwarding script
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2420,8 +2420,8 @@ Show mail server logs from production
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-n`, `--lines` | Number of log lines to show | value, required | `"50"` |
-| `-f`, `--follow` | Follow log output (poll every 5s) | boolean, optional | — |
-| `--filter` | Filter logs by pattern (e.g. AUTH, LOGIN, error) | value, required | — |
+| `-f`, `--follow` | Follow log output (poll every 5s) | boolean, optional | - |
+| `--filter` | Filter logs by pattern (e.g. AUTH, LOGIN, error) | value, required | - |
 
 ### `mail:port25:request`
 
@@ -2435,11 +2435,11 @@ Request port 25 unblock for direct SMTP delivery
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--provider` | Cloud provider: aws or hetzner | value, required | `"aws"` |
-| `--instance-id` | AWS EC2 instance ID (auto-detected if not provided) | value, required | — |
-| `--server-id` | Hetzner server ID (auto-detected if not provided) | value, required | — |
-| `--elastic-ip` | AWS Elastic IP address | value, required | — |
-| `--rdns` | Reverse DNS hostname (e.g. mail.stacksjs.com) | value, required | — |
-| `--use-case` | Description of email use case | value, required | — |
+| `--instance-id` | AWS EC2 instance ID (auto-detected if not provided) | value, required | - |
+| `--server-id` | Hetzner server ID (auto-detected if not provided) | value, required | - |
+| `--elastic-ip` | AWS Elastic IP address | value, required | - |
+| `--rdns` | Reverse DNS hostname (e.g. mail.stacksjs.com) | value, required | - |
+| `--use-case` | Description of email use case | value, required | - |
 
 ### `mail:port25:status`
 
@@ -2466,7 +2466,7 @@ Open the dev-only Mailable preview UI in your browser
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--no-open` | Print the URL but skip the browser-open step | boolean, optional, negated | `false` |
-| `--port` | Override the API port (default: from config.ports.api / PORT_API) | value, required | — |
+| `--port` | Override the API port (default: from config.ports.api / PORT_API) | value, required | - |
 
 Examples:
 
@@ -2487,7 +2487,7 @@ Provision this app's mail from config/email.ts onto the shared mail server (doma
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--ip` | Mail server IP (defaults to the A record of config.email.domain) | value, required | — |
+| `--ip` | Mail server IP (defaults to the A record of config.email.domain) | value, required | - |
 
 ### `mail:proxy`
 
@@ -2501,7 +2501,7 @@ Start local IMAP proxy for Mail.app
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--port` | IMAP proxy port | value, required | `"1993"` |
-| `--api` | Mail API URL | value, required | — |
+| `--api` | Mail API URL | value, required | - |
 
 ### `mail:server`
 
@@ -2536,8 +2536,8 @@ Create and verify an encrypted local mail backup
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2552,8 +2552,8 @@ Copy the machine-bound LUKS key to AWS Secrets Manager
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 | `--force` | Replace a different existing secret | boolean, optional | `false` |
@@ -2569,8 +2569,8 @@ Move the LUKS key off-host and require external unlocks
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 | `--force` | Replace a different existing secret | boolean, optional | `false` |
@@ -2586,11 +2586,11 @@ Stream a LUKS header backup to S3 with KMS encryption
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
-| `--bucket` | Recovery bucket (defaults to <app>-<env>-s3-backups) | value, required | — |
+| `--bucket` | Recovery bucket (defaults to <app>-<env>-s3-backups) | value, required | - |
 
 ### `mail:storage:key:recovery:add`
 
@@ -2603,8 +2603,8 @@ Add an independent LUKS recovery key to macOS Keychain
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2619,8 +2619,8 @@ Verify the Keychain recovery key against the live LUKS header
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2635,11 +2635,11 @@ Remove an unusable non-primary LUKS keyslot
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
-| `--slot` | LUKS keyslot number to remove | value, required | — |
+| `--slot` | LUKS keyslot number to remove | value, required | - |
 
 ### `mail:storage:key:verify`
 
@@ -2652,8 +2652,8 @@ Verify the external key against the LUKS2 header
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2668,8 +2668,8 @@ Create and apply the customer-managed production mail KMS key
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2684,8 +2684,8 @@ Stop mail and lock external mail storage
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2700,8 +2700,8 @@ Migrate live mailboxes to canonical Maildir++ layout
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2716,8 +2716,8 @@ Configure client-encrypted Restic backups to S3
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 | `--force` | Rotate an existing dedicated IAM access key | boolean, optional | `false` |
@@ -2733,8 +2733,8 @@ Restore and validate the newest off-host mail snapshot
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2749,8 +2749,8 @@ Show encrypted mail storage and external-key status
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2765,8 +2765,8 @@ Unlock external mail storage and start mail
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 
@@ -2781,8 +2781,8 @@ Create a dedicated Hetzner volume and migrate encrypted mail storage
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--host` | Mail server hostname or IP | value, required | — |
-| `--secret` | AWS Secrets Manager secret ID | value, required | — |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
 | `--region` | AWS region | value, required | `"us-east-1"` |
 | `--profile` | AWS credential profile | value, required | `"default"` |
 | `--size` | Hetzner volume size in GiB | value, required | `"20"` |
@@ -2807,7 +2807,7 @@ Add a mail user
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--password` | User password (generated if not provided) | value, required | — |
+| `--password` | User password (generated if not provided) | value, required | - |
 
 ### `mail:user:delete`
 
@@ -3184,7 +3184,7 @@ Activate the marketing feature bundle. /api/email/subscribe, /api/contact, Campa
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing marketing files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing marketing files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `marketing:uninstall`
 
@@ -3197,7 +3197,7 @@ Deactivate the marketing feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the marketing scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the marketing scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `migrate`
 
@@ -3265,7 +3265,7 @@ Port an existing project (Laravel, Rails) into a Stacks project.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--from` | Source framework — one of: laravel, rails | value, required | `"laravel"` |
+| `--from` | Source framework - one of: laravel, rails | value, required | `"laravel"` |
 | `--source` | Path to the existing source project. Defaults to the current working directory. | value, required | `false` |
 | `--dry-run` | Show what would be translated without writing files. | boolean, optional | `false` |
 | `--verbose` | Print the per-entry table after the summary. | boolean, optional | `false` |
@@ -3321,7 +3321,7 @@ Activate the monitoring feature bundle. Error model + error-tracking views and a
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing monitoring files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing monitoring files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `monitoring:uninstall`
 
@@ -3334,7 +3334,7 @@ Deactivate the monitoring feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the monitoring scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the monitoring scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `new`
 
@@ -3358,7 +3358,7 @@ Create a new Stacks project
 | `--ca`, `--cache` | Do you need caching? | boolean, optional | `false` |
 | `-e`, `--email` | Do you need email? | boolean, optional | `false` |
 | `-P`, `--project` | Target a specific project | value, optional | `false` |
-| `-m`, `--minimal` | Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) — bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`. | boolean, optional | `false` |
+| `-m`, `--minimal` | Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) - bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`. | boolean, optional | `false` |
 | `--with-core` | Keep the framework vendored in `storage/framework/core` as a Bun workspace, for working ON Stacks. Apps that only work WITH Stacks want the default, which resolves every @stacksjs/* package from npm. | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -3451,7 +3451,7 @@ Let buddy check your project for potential issues and misconfigurations
 | --- | --- | --- | --- |
 | `-l`, `--list` | List the used ports | boolean, optional | `true` |
 | `-c`, `--check` | Check if the ports are available | boolean, optional | `false` |
-| `-p`, `--project` | Target a specific project | value, optional | — |
+| `-p`, `--project` | Target a specific project | value, optional | - |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -3481,7 +3481,7 @@ Check if the ports are available
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | — |
+| `-p`, `--project` | Target a specific project | value, optional | - |
 | `-q`, `--quiet` | Use minimal output | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -3603,7 +3603,7 @@ Publish a framework package source from node_modules/@stacksjs/<pkg>/ into stora
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--all` | Vendor the whole framework: copy storage/framework/core out of a local Stacks checkout and wire it up as a Bun workspace | boolean, optional | `false` |
-| `--path` | The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks) | value, required | — |
+| `--path` | The Stacks checkout to vendor from (defaults to $STACKS_FRAMEWORK_PATH, ../stacks, then ~/Code/stacks) | value, required | - |
 | `--force` | Overwrite an existing userland file | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -3763,7 +3763,7 @@ Activate the queue feature bundle. Job + FailedJob models + queue dashboard page
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing queue files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing queue files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `queue:list`
 
@@ -3925,7 +3925,7 @@ Deactivate the queue feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the queue scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the queue scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `queue:unquarantine`
 
@@ -3969,7 +3969,7 @@ Activate the realtime feature bundle. WebSocket broadcaster + Websocket model + 
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--force` | Overwrite any existing realtime files in the project (default skips existing paths so the install is idempotent). | boolean, optional | — |
+| `--force` | Overwrite any existing realtime files in the project (default skips existing paths so the install is idempotent). | boolean, optional | - |
 
 ### `realtime:uninstall`
 
@@ -3982,7 +3982,7 @@ Deactivate the realtime feature bundle.
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--keep-files` | Don't delete the realtime scaffolding (action/model/view files). Flip the flag only. | boolean, optional | — |
+| `--keep-files` | Don't delete the realtime scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
 
 ### `release`
 
@@ -3997,7 +3997,7 @@ Release a new version of your libraries/packages
 | --- | --- | --- | --- |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| x.y.z | value, required | — |
+| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| x.y.z | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `route:list`
@@ -4201,7 +4201,7 @@ Start the production HTTP server (STX views + /api proxy + coming-soon/maintenan
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--port` | Port to listen on (defaults to PORT env or 3000) | value, required | — |
+| `-p`, `--port` | Port to listen on (defaults to PORT env or 3000) | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `serve:api`
@@ -4215,7 +4215,7 @@ Start the production API server (bun-router routes the frontend proxies /api to)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--port` | Port to listen on (defaults to PORT env or 3008) | value, required | — |
+| `-p`, `--port` | Port to listen on (defaults to PORT env or 3008) | value, required | - |
 
 ### `setup`
 
@@ -4272,7 +4272,7 @@ Setup SSL certificates and hosts file for HTTPS development
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-d`, `--domain` | Custom domain to setup (defaults to APP_URL) | value, optional | — |
+| `-d`, `--domain` | Custom domain to setup (defaults to APP_URL) | value, optional | - |
 | `--skip-hosts` | Skip adding domain to hosts file | boolean, optional | `false` |
 | `--skip-trust` | Skip trusting the certificate | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -4288,9 +4288,9 @@ Share your local development server via a public tunnel
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--port` | Local port to share | value, required | — |
+| `-p`, `--port` | Local port to share | value, required | - |
 | `--server` | Tunnel server URL | value, required | `"api.localtunnel.dev"` |
-| `--subdomain` | Request a specific subdomain | value, required | — |
+| `--subdomain` | Request a specific subdomain | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `sms`
@@ -4331,7 +4331,7 @@ Send a test SMS
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--template` | Use a message template | value, required | — |
+| `--template` | Use a message template | value, required | - |
 
 ### `sms:setup`
 
@@ -4344,7 +4344,7 @@ Initialize SMS infrastructure
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--dry-run` | Show what would be done without making changes | boolean, optional | — |
+| `--dry-run` | Show what would be done without making changes | boolean, optional | - |
 
 ### `sms:status`
 
@@ -4378,7 +4378,7 @@ Install a stack into your project
 | `--force` | Force overwrite existing files | boolean, optional | `false` |
 | `--dry-run` | Show what would be installed without making changes | boolean, optional | `false` |
 | `--conflict` | Conflict resolution strategy: skip, overwrite, or backup | value, required | `"skip"` |
-| `-p`, `--project` | Target a specific Stacks project | value, required | — |
+| `-p`, `--project` | Target a specific Stacks project | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -4401,7 +4401,7 @@ List available and installed stacks
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific Stacks project | value, required | — |
+| `-p`, `--project` | Target a specific Stacks project | value, required | - |
 
 Examples:
 
@@ -4421,7 +4421,7 @@ Uninstall a stack from your project
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--force` | Force overwrite existing files | boolean, optional | `false` |
-| `-p`, `--project` | Target a specific Stacks project | value, required | — |
+| `-p`, `--project` | Target a specific Stacks project | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -4469,9 +4469,9 @@ Manage telemetry settings
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--enable` | Enable telemetry | boolean, optional | — |
-| `--disable` | Disable telemetry | boolean, optional | — |
-| `--status` | Show telemetry status | boolean, optional | — |
+| `--enable` | Enable telemetry | boolean, optional | - |
+| `--disable` | Disable telemetry | boolean, optional | - |
+| `--status` | Show telemetry status | boolean, optional | - |
 
 Examples:
 
@@ -4659,12 +4659,12 @@ Upgrade the Stacks framework to the latest version
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `-V`, `--version` | Install a specific version (e.g., 0.70.23) | value, required | — |
+| `-V`, `--version` | Install a specific version (e.g., 0.70.23) | value, required | - |
 | `--canary` | Upgrade to the latest canary (bleeding-edge `main`) build | boolean, optional | `false` |
 | `--stable` | Switch to the latest vetted stable release | boolean, optional | `false` |
 | `--dry-run` | Preview the upgrade (which dependencies would change) without writing or installing | boolean, optional | `false` |
 | `-f`, `--force` | Force re-download, bypassing cache and version checks | boolean, optional | `false` |
-| `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | — |
+| `--from` | Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub. | value, required | - |
 | `--no-postinstall` | Skip post-sync hooks (auto-imports, bun install, migrate) | boolean, optional, negated | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
@@ -4791,9 +4791,9 @@ Create a user account (optionally an admin)
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--name` | Display name. Defaults to the local part of the email. | value, required | — |
-| `--password` | Password. Generated and printed once if omitted. | value, required | — |
-| `--role` | Role to assign, e.g. admin. Seeds the default roles if the table is empty. | value, required | — |
+| `--name` | Display name. Defaults to the local part of the email. | value, required | - |
+| `--password` | Password. Generated and printed once if omitted. | value, required | - |
+| `--role` | Role to assign, e.g. admin. Seeds the default roles if the table is empty. | value, required | - |
 | `--update` | If the account already exists, reset its password and ensure the role | boolean, optional | `false` |
 
 Examples:
