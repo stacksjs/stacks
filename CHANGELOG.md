@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.37...v0.72.38)
+
+## 🐛 Bug Fixes
+
+- **deploy**: give the pages a route to the API, and stop asking the dashboard for one ([ebf437f](https://github.com/stacksjs/stacks/commit/ebf437f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: stop one stranded config lock hanging every file after it ([28c2617](https://github.com/stacksjs/stacks/commit/28c2617)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **database**: assert what the migration marker actually promises ([da6fa36](https://github.com/stacksjs/stacks/commit/da6fa36)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: dtsx 0.11.10 ([42d6285](https://github.com/stacksjs/stacks/commit/42d6285)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.36...v0.72.37)
 
 ## 🐛 Bug Fixes
