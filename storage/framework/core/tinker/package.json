@@ -2,7 +2,7 @@
   "name": "@stacksjs/tinker",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.39",
+  "version": "0.72.40",
   "description": "Interactive REPL with Stacks framework preloaded.",
   "author": "Chris Breuer",
   "contributors": [

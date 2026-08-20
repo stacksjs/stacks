@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.39...v0.72.40)
+
+## 🐛 Bug Fixes
+
+- **database**: say which half of `generate:migrations` failed, and why ([7f3276c](https://github.com/stacksjs/stacks/commit/7f3276c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.38...v0.72.39)
 
 ## 📝 Documentation
