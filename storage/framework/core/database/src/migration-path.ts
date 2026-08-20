@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
-import { isAbsolute, join } from 'node:path'
+import { isAbsolute, join, relative } from 'node:path'
 import process from 'node:process'
 
 const DEFAULT_MIGRATION_DIR = 'database/migrations'
@@ -106,4 +106,41 @@ function wireOf(dialect: string): 'postgres' | 'mysql' {
 export function relativeMigrationDirectory(directory: string, cwd = process.cwd()): string {
   const prefix = `${cwd}/`
   return directory.startsWith(prefix) ? directory.slice(prefix.length) : directory
+}
+
+/**
+ * Where the model snapshot lives, as an absolute path.
+ *
+ * `buddy migrate` diffs models against `<snapshotDir>/model-snapshot.<dialect>.json`.
+ * The default sits inside the project, which is correct for a checkout and wrong
+ * for a Capistrano-style deploy: every release is a fresh `releases/<sha>`
+ * directory, so the snapshot is absent on every deploy, the differ re-derives the
+ * baseline from scratch, and the same change is proposed forever. Applying it by
+ * hand fixes exactly one release (stacksjs/stacks#2351).
+ *
+ * `DB_SNAPSHOT_PATH` points it at a shared directory that survives the release
+ * flip, mirroring `DB_MIGRATIONS_PATH` above. Absolute paths are honoured.
+ */
+export function resolveSnapshotDirectory(cwd = process.cwd()): string {
+  const configured = process.env.DB_SNAPSHOT_PATH || DEFAULT_SNAPSHOT_DIR
+  return isAbsolute(configured) ? configured : join(cwd, configured)
+}
+
+/**
+ * The same directory, expressed the way bun-query-builder wants it.
+ *
+ * It resolves `snapshotDir` as `join(workspaceRoot, snapshotDir)`, and `join`
+ * does not honour an absolute second segment — `join('/app/current', '/srv/shared')`
+ * is `/app/current/srv/shared`. So an absolute `DB_SNAPSHOT_PATH` handed down
+ * verbatim would silently write back inside the release directory, which is the
+ * exact failure this is meant to remove. Relativising it first makes the library's
+ * own join land where the operator asked, including via `..`.
+ */
+export function snapshotDirForQueryBuilder(cwd = process.cwd()): string {
+  return relative(cwd, resolveSnapshotDirectory(cwd)) || '.'
+}
+
+/** True when the snapshot directory is not the in-project default. */
+export function snapshotDirectoryIsShared(): boolean {
+  return Boolean(process.env.DB_SNAPSHOT_PATH)
 }

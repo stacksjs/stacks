@@ -7,7 +7,7 @@
 
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
-import { dirname, isAbsolute, join } from 'node:path'
+import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized.
@@ -34,7 +34,7 @@ import {
   saveMigrationSnapshot,
   setConfig,
 } from '@stacksjs/query-builder'
-import { db, QB_SNAPSHOT_DIR, resetDatabaseConnection } from './utils'
+import { db, qbSnapshotDir, resetDatabaseConnection } from './utils'
 import {
   classifyConnectionError,
   createDatabase,
@@ -146,7 +146,7 @@ function getQbDialect(): 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgr
 function migrationDirectory(dialect: string = getQbDialect()): string {
   return resolveMigrationDirectory(dialect, {
     configured: (qbConfig as { migrationDir?: string }).migrationDir,
-    snapshotDir: QB_SNAPSHOT_DIR,
+    snapshotDir: qbSnapshotDir(),
   })
 }
 
@@ -179,7 +179,7 @@ function configureQueryBuilder(
     // dot-directory in every Stacks app holding something the app never chose
     // to place there. `storage/framework` is where generated framework state
     // already lives, so it belongs there.
-    snapshotDir: QB_SNAPSHOT_DIR,
+    snapshotDir: qbSnapshotDir(),
     migrationDir: relativeMigrationDirectory(migrationDirectory(targetDialect)),
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
@@ -1875,11 +1875,16 @@ export async function previewPendingMigrations(options: GenerateMigrationsOption
  * generated framework state out of the project root.
  */
 function snapshotDirLabel(): string {
-  return (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir || QB_SNAPSHOT_DIR
+  return (qbConfig as { snapshotDir?: string } | undefined)?.snapshotDir || qbSnapshotDir()
 }
 
 function resolveSnapshotDir(): string {
-  return join(process.cwd(), snapshotDirLabel())
+  const label = snapshotDirLabel()
+  // `snapshotDirLabel()` is whatever was handed to `setConfig`, which is already
+  // relativised for the library's own `join`. Resolving it the same way keeps
+  // reads and writes on the same directory even when it lives outside the
+  // release, which is the point of DB_SNAPSHOT_PATH (stacksjs/stacks#2351).
+  return isAbsolute(label) ? label : resolve(process.cwd(), label)
 }
 
 function snapshotPathFor(dialect: string): string {
