@@ -49,3 +49,48 @@ describe('@stacksjs/search-engine', () => {
     expect(content).toContain('./settings')
   })
 })
+
+/**
+ * The entry used to bind its driver with two top-level `await`s. That cost two
+ * things: a top-level await in a published entrypoint breaks a consumer's binary
+ * build, and it is a statement where a `.d.ts` may hold only declarations - so
+ * this package shipped a declaration file TypeScript rejected outright (TS1036),
+ * taking every type in it down with it.
+ *
+ * The driver now resolves in the background and `useSearchEngine()` hands back a
+ * proxy, so the composable stays synchronous and destructurable exactly as
+ * before. These cover both sides of that proxy, since the whole point is that
+ * callers could not tell the difference.
+ */
+describe('search engine driver binding', () => {
+  test('the entry has no top-level await', () => {
+    const content = readFileSync(join(PKG_SRC, 'index.ts'), 'utf-8')
+    const topLevel = content.split('\n').filter(l => /^(await |const .* = await )/.test(l))
+    expect(topLevel).toEqual([])
+  })
+
+  test('destructuring still works before the driver has resolved', async () => {
+    const { useSearchEngine } = await import('../src/index')
+    const { addDocument, updateSettings } = useSearchEngine()
+    expect(typeof addDocument).toBe('function')
+    expect(typeof updateSettings).toBe('function')
+  })
+
+  test('hands back the driver\'s own members once it has resolved', async () => {
+    const { useSearchEngine, searchEngineReady } = await import('../src/index')
+    const driver = await searchEngineReady()
+    const engine = useSearchEngine()
+
+    // identity, not just callability: after resolution the proxy stops wrapping
+    expect(engine.addDocument).toBe(driver.addDocument)
+    expect(engine.client).toBe(driver.client)
+  })
+
+  test('keeps the synchronous members synchronous', async () => {
+    const { useSearchEngine, searchEngineReady } = await import('../src/index')
+    await searchEngineReady()
+    // `client()` returns a client, not a promise for one - the reason the proxy
+    // forwards directly instead of deferring everything forever
+    expect(useSearchEngine().client()).not.toBeInstanceOf(Promise)
+  })
+})
