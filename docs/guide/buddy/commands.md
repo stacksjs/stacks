@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **302 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **303 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -41,7 +41,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `key` | 1 |
 | `link` | 1 |
 | `lint` | 1 |
-| `mail` | 30 |
+| `mail` | 31 |
 | `make` | 18 |
 | `marketing` | 2 |
 | `migrate` | 6 |
@@ -2391,6 +2391,28 @@ Show SMTP credentials for email access
 - Namespace: `mail`
 - Aliases: none
 - Arguments: `[email]`
+
+### `mail:dev`
+
+Run the local mail catcher: accepts every message, delivers none, shows them in the webmail UI
+
+- Usage: `$ buddy mail:dev`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--port` | SMTP port (default: 1025) | value, required | - |
+| `--ui-port` | Webmail UI port (default: 8025) | value, required | - |
+| `--no-open` | Do not open the webmail UI in a browser | boolean, optional, negated | `false` |
+
+Examples:
+
+```bash
+buddy mail:dev
+buddy mail:dev --port 2525 --ui-port 8080
+```
 
 ### `mail:forward:compile`
 
