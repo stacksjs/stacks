@@ -2684,6 +2684,21 @@ async function runHetznerDeploy(args: {
   if (ok)
     await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
 
+  // Put the frontends behind Cloudflare's edge, and bust the cache.
+  //
+  // Deliberately AFTER DNS and after TLS issuance above. Cloudflare's proxy is
+  // the DNS record, so orange-clouding a host makes it resolve to Cloudflare
+  // instead of the box — and an ACME http-01 challenge for a name that no
+  // longer reaches the box on :80 cannot complete. ts-cloud probes the origin
+  // before flipping each record for exactly this reason, but the probe can only
+  // pass if issuance has already had its turn.
+  //
+  // This is also where a release becomes visible: HTML is cached at the edge,
+  // so without the purge at the tail of this step a deploy would ship new
+  // assets that nobody is served until the TTL lapses.
+  if (ok)
+    await reconcileCloudflareCdnForDeploy(tsCloudConfig, ip, ipv6, log)
+
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
@@ -3890,6 +3905,94 @@ export function configDnsDomains(sites: Record<string, any>): string[] {
       domains.add(site.domain.replace(/^www\./, ''))
   }
   return [...domains]
+}
+
+/**
+ * Reconcile the Cloudflare proxy CDN in front of the box, and purge its cache.
+ *
+ * Opt-in through `infrastructure.compute.proxy.cdn.provider === 'cloudflare'`
+ * in the app's `config/cloud.ts`; a project without that block pays one config
+ * read and returns.
+ *
+ * Non-fatal throughout, like every reconciler around it. By the time this runs
+ * the release is already live and serving from the box — a zone setting gated
+ * behind a paid plan, or an API token missing the Cache Rules scope, is worth
+ * reporting loudly but is not worth turning a good deploy into a failed one.
+ */
+async function reconcileCloudflareCdnForDeploy(
+  tsCloudConfig: any,
+  ip: string | undefined,
+  ipv6: string | undefined,
+  logger: typeof log,
+): Promise<void> {
+  let resolveCloudflareCdnPlan: any
+  let reconcileCloudflareCdn: any
+  let CloudflareProvider: any
+  let normalizePublicIpv6: any
+
+  try {
+    ({ resolveCloudflareCdnPlan, reconcileCloudflareCdn, CloudflareProvider, normalizePublicIpv6 }
+      = await import('@stacksjs/ts-cloud') as any)
+  }
+  catch {
+    return
+  }
+
+  // An older ts-cloud has no CDN surface at all. Saying so beats throwing
+  // "resolveCloudflareCdnPlan is not a function" from inside a deploy that
+  // otherwise succeeded — and beats silently never proxying anything, which is
+  // what a bare optional-call would do.
+  if (typeof resolveCloudflareCdnPlan !== 'function' || typeof reconcileCloudflareCdn !== 'function') {
+    if (tsCloudConfig?.infrastructure?.compute?.proxy?.cdn?.provider === 'cloudflare')
+      logger.warn('Cloudflare CDN: installed @stacksjs/ts-cloud is too old to manage it — upgrade to ^0.9.4.')
+    return
+  }
+
+  const { plan, errors } = resolveCloudflareCdnPlan(tsCloudConfig)
+  for (const error of errors) logger.warn(`Cloudflare CDN: ${error}`)
+  if (!plan) return
+
+  if (!ip) {
+    logger.warn('Cloudflare CDN: no box IP resolved — skipping.')
+    return
+  }
+
+  logger.info(`Cloudflare CDN: reconciling ${plan.hosts.length} host(s) on ${plan.zone}...`)
+
+  try {
+    const provider = new CloudflareProvider(plan.apiToken, { zoneId: plan.zoneId, accountId: plan.accountId })
+    const report = await reconcileCloudflareCdn({
+      provider,
+      zone: plan.zone,
+      hosts: plan.hosts,
+      ipv4: ip,
+      ipv6: typeof normalizePublicIpv6 === 'function' ? normalizePublicIpv6(ipv6) : ipv6,
+      proxied: plan.proxied,
+      settings: plan.settings,
+      cache: plan.cache,
+      originGuard: plan.originGuard,
+      purge: plan.purge,
+      skipOriginProbe: plan.skipOriginProbe,
+    })
+
+    for (const record of report.records)
+      logger.success(`  ${record.host} ${record.type} → ${record.content}${record.proxied ? ' (proxied)' : ' (DNS-only)'}`)
+    for (const setting of report.settingsChanged)
+      logger.info(`  ${setting.id}: ${JSON.stringify(setting.from)} → ${JSON.stringify(setting.to)}`)
+    if (report.cacheRules > 0) logger.success(`  ${report.cacheRules} cache rule(s) applied`)
+    if (report.originGuard) logger.success('  origin guard header applied')
+    if (report.purged) logger.success('  edge cache purged')
+
+    // A host left grey because the origin could not yet prove a certificate is
+    // the normal first-deploy outcome, not an error — but it has to be said, or
+    // the site looks CDN-fronted when it is not.
+    for (const deferred of report.deferredProxy || [])
+      logger.warn(`  ${deferred.host} left DNS-only: ${deferred.reason} — re-run the deploy once TLS is issued.`)
+    for (const warning of report.warnings) logger.warn(`  ${warning}`)
+  }
+  catch (err: any) {
+    logger.warn(`Cloudflare CDN: ${err?.message || err}`)
+  }
 }
 
 /**

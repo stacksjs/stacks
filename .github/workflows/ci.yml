@@ -421,6 +421,16 @@ jobs:
           APP_ENV: ${{ env.DEPLOY_ENVIRONMENT }}
           DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Cloudflare, for projects whose `config/cloud.ts` declares a
+          # `compute.proxy.cdn` block. Absent, the deploy still ships and still
+          # publishes DNS; it just skips proxying, zone settings, cache rules
+          # and the post-deploy edge purge — so the release goes out and
+          # visitors keep being served the previously cached document.
+          #
+          # buddy resolves its DNS provider from the zone's live nameservers, so
+          # this is also what a zone delegated to Cloudflare reconciles through.
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           COPYFILE_DISABLE: '1'
 
   publish-commit:
