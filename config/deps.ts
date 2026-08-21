@@ -20,12 +20,18 @@ export const config: PantryConfig = {
     // `buddy setup` regenerates deps.yaml, so only one ever gets installed.
     sqlite: '^3.47.2',
     // The mail server, which is also the local mail catcher: `buddy mail:dev`
-    // runs this binary with delivery switched off and the webmail UI on 8025.
+    // runs this binary in trap mode - every recipient accepted, nothing
+    // delivered onward, all of it readable in the webmail UI on 8025.
+    //
+    // 0.3.2 or newer, and not as a preference: `catch_all` and the webmail
+    // database that does not depend on SMTP AUTH both arrived in it, and
+    // without them the catcher refuses almost every message and serves no
+    // inbox.
     // Declared rather than commented out because the framework's own mail
     // default points at it — an app whose `MAIL_MAILER=smtp` and whose machine
     // has no mail server is an app where every password reset fails silently
     // in development. Nothing starts it; `buddy mail:dev` does, when you want it.
-    'github.com/mail-os/mail': '^0.3.1',
+    'github.com/mail-os/mail': '^0.3.2',
     // craft is not declared here: it ships inside @stacksjs/stx (its `./craft`
     // export), so pantry installing it again is a second copy nothing uses.
     // Uncomment as needed:
