@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.43...v0.72.44)
+
+## 👷 Build System
+
+- take the ts-cloud release that fixes SRV and NS delegation ([03964bb](https://github.com/stacksjs/stacks/commit/03964bb)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.42...v0.72.43)
 
 ## ✨ Features
