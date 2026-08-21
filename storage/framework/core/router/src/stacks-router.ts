@@ -50,6 +50,76 @@ const MULTI_INSTANCE_WARNED_KEY = Symbol.for('@stacksjs/router:multi-instance-wa
  * worth surfacing. Called at serve() boot. Returns whether a split was detected
  * so callers/tests can assert on it without capturing logs.
  */
+/**
+ * Work to do once, after the routes are loaded and before the first request.
+ *
+ * An application has a place to declare routes, a place to declare middleware
+ * and - until now - nowhere to say "do this once when the process starts".
+ * `app/Routes.ts` is a config object, and a route file runs at import time,
+ * which is too early: it is before the router knows what it is serving and
+ * before anything the app configures at boot exists.
+ *
+ * So the shape people reach for instead is a module-level side effect in a file
+ * they hope is imported, which is a boot hook that runs at a time nobody chose
+ * and cannot be turned off. This is the one they wanted.
+ *
+ * ## What it is for, and what it is not
+ *
+ * **Preparation that is optional.** Warming a cache, loading grammars, opening
+ * a connection early so the first request does not pay for it. The case it was
+ * built for: a syntax highlighter whose first call in a process pays for
+ * grammar parsing and JIT, once, and hands that second to whichever reader
+ * happened to arrive first.
+ *
+ * **Not for anything the application requires.** A failing hook is logged and
+ * the boot continues, deliberately: refusing to start a server because a cache
+ * could not be pre-warmed is a worse failure than a slow first request.
+ * Anything that must succeed belongs before `serve()` in the application's own
+ * start path, where a rejection stops the process.
+ */
+export interface BootHook {
+  /** Named, so a failure says which one failed rather than "a hook". */
+  name: string
+  run: () => void | Promise<void>
+}
+
+const bootHooks: BootHook[] = []
+
+/** Hooks already run, so a second `serve()` in one process does not repeat them. */
+let bootHooksRun = false
+
+/**
+ * Run every registered boot hook, once per process.
+ *
+ * Sequential rather than concurrent: a hook that warms a cache and a hook that
+ * opens a connection are both doing work the first request would otherwise do,
+ * and running them at once on a cold process contends for the same core that
+ * is about to serve. Boot is the one moment where finishing sooner matters less
+ * than finishing.
+ */
+export async function runBootHooks(): Promise<void> {
+  if (bootHooksRun)
+    return
+
+  bootHooksRun = true
+
+  for (const hook of bootHooks) {
+    try {
+      await hook.run()
+    }
+    catch (error) {
+      // Logged and survived. See `BootHook` for why this is not fatal.
+      log.error(`[router] boot hook "${hook.name}" failed:`, error)
+    }
+  }
+}
+
+/** For tests, and for a process that genuinely re-boots. */
+export function resetBootHooks(): void {
+  bootHooks.length = 0
+  bootHooksRun = false
+}
+
 export function warnOnMultipleRouterInstances(): boolean {
   if (loadedRouterInstances.size <= 1)
     return false
@@ -3301,6 +3371,15 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return stacksRouter
     },
 
+    /**
+     * Register work to do once, after the routes load and before the first
+     * request. See `BootHook` for what belongs here and what does not.
+     */
+    booting(name: string, run: () => void | Promise<void>) {
+      bootHooks.push({ name, run })
+      return stacksRouter
+    },
+
     // Serve the router
     async serve(options: ServerOptions = {}): Promise<Server<unknown>> {
       // Warn (don't crash) on a split router (#1975/#1982). The route table is
@@ -3318,6 +3397,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // A view served from here never reaches the route pipeline, so the CSRF
       // cookie was only ever seeded on API responses. See the wrapper.
       wrapHandleRequestForCsrf(bunRouter)
+
+      // After the routes and the view configuration, before the first request:
+      // the one moment an application can do work once without racing a reader
+      // for it. See `BootHook`.
+      await runBootHooks()
 
       return bunRouter.serve(options)
     },
@@ -3705,6 +3789,14 @@ export interface StacksRouterInstance {
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
+  /**
+   * Work to do once, after the routes load and before the first request.
+   *
+   * The moment an application can prepare something without racing a reader
+   * for it - warming a cache, loading grammars, opening a connection. A hook
+   * that throws is logged and the boot continues; see `BootHook`.
+   */
+  booting: (name: string, run: () => void | Promise<void>) => StacksRouterInstance
   serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>
   /**
