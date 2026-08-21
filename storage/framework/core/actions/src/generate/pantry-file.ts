@@ -52,12 +52,12 @@ if (data.dependencies['info-zip.org/unzip'] === undefined) {
     throw new Error('info-zip.org/unzip dependency not found in pantry.yaml. To confirm, run `which unzip`')
 }
 
-if (data.dependencies['mailpit.axllent.org'] === undefined) {
-  log.info('mailpit.axllent.org dependency not found in pantry.yaml.')
+if (data.dependencies['github.com/mail-os/mail'] === undefined) {
+  log.info('github.com/mail-os/mail dependency not found in pantry.yaml.')
   // throw an error unless its installed locally
-  const result = await runCommand('which mailpit')
+  const result = await runCommand('which mail')
   if (result.isErr)
-    throw new Error('mailpit.axllent.org dependency not found in pantry.yaml. To confirm, run `which mailpit`')
+    throw new Error('github.com/mail-os/mail dependency not found in pantry.yaml. To confirm, run `which mail`')
 }
 
 if (data.dependencies['redis.io'] === undefined) {

@@ -19,11 +19,17 @@ export const config: PantryConfig = {
     // The database engine is swapped for the one DB_CONNECTION names when
     // `buddy setup` regenerates deps.yaml, so only one ever gets installed.
     sqlite: '^3.47.2',
+    // The mail server, which is also the local mail catcher: `buddy mail:dev`
+    // runs this binary with delivery switched off and the webmail UI on 8025.
+    // Declared rather than commented out because the framework's own mail
+    // default points at it — an app whose `MAIL_MAILER=smtp` and whose machine
+    // has no mail server is an app where every password reset fails silently
+    // in development. Nothing starts it; `buddy mail:dev` does, when you want it.
+    'github.com/mail-os/mail': '^0.3.1',
     // craft is not declared here: it ships inside @stacksjs/stx (its `./craft`
     // export), so pantry installing it again is a second copy nothing uses.
     // Uncomment as needed:
     // 'redis.io': '^7.4.1',
-    // 'mailpit.axllent.org': '^1.21.8',
     // 'openjdk.org': '^21.0.3.6',
     // 'rust-lang.org': '^1.74.1',
   },

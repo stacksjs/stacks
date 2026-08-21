@@ -360,7 +360,7 @@ onMount(() => void loadSettings())
     <section :if="driver() === 'smtp'" class="p-5 bg-white dark:bg-neutral-900 border border-stone-200 rounded-xl dark:border-neutral-700">
       <div class="mb-5">
         <h2 class="font-semibold text-stone-900 dark:text-white">SMTP transport</h2>
-        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use any SMTP relay, including local Mailpit, Postmark SMTP, or a hosted mail server.</p>
+        <p class="mt-1 text-sm text-stone-500 dark:text-neutral-400">Use any SMTP relay: the local catcher from <code>buddy mail:dev</code>, Postmark SMTP, or a hosted mail server.</p>
       </div>
       <div class="grid gap-4 md:grid-cols-2">
         <Input v-model:value="smtpHost" label="Host" placeholder="smtp.example.com" required :error="fieldError('smtp.host')" />

@@ -4,7 +4,7 @@
  * The driver used to cache `config.services.smtp` on first read. If
  * that first read happened before async config overrides finished
  * loading, it snapped the `127.0.0.1:587` fallback into the cache and
- * never re-read — so a correct `.env` (e.g. Mailpit on 2525) still
+ * never re-read — so a correct `.env` (e.g. the local catcher on 1025) still
  * produced ECONNREFUSED forever. These tests pin: (1) the config is
  * read fresh on every call, and (2) `process.env.MAIL_*` is used as a
  * fallback when the config layer hasn't surfaced the override yet.

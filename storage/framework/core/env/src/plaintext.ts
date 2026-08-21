@@ -16,7 +16,7 @@
  *
  * That rule sounds right and is unusable. `.env.production` at the time of
  * writing holds 26 non-empty plaintext values, nearly all of them things like
- * `APP_NAME=Stacks`, `DB_HOST=127.0.0.1` and `MAIL_HOST=mailpit`. Failing on
+ * `APP_NAME=Stacks`, `DB_HOST=127.0.0.1` and `MAIL_HOST=127.0.0.1`. Failing on
  * those trains people to pass `--force`, which is worse than not checking.
  *
  * So the question asked here is narrower and answerable: **does this key look

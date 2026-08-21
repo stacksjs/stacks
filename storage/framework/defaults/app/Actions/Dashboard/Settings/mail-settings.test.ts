@@ -20,7 +20,7 @@ describe('dashboard mail settings', () => {
       'APP_NAME=Stacks',
       'MAIL_MAILER=smtp',
       'MAIL_FROM_ADDRESS=hello@example.com',
-      'MAIL_HOST=mailpit',
+      'MAIL_HOST=127.0.0.1',
       'MAIL_PORT=1025',
       'MAIL_USERNAME=null',
       'MAIL_PASSWORD=super-secret',
@@ -34,7 +34,7 @@ describe('dashboard mail settings', () => {
       fromName: 'Stacks',
       fromAddress: 'hello@example.com',
       smtp: {
-        host: 'mailpit',
+        host: '127.0.0.1',
         port: 1025,
         username: '',
         encryption: '',

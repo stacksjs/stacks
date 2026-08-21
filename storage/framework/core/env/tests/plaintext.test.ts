@@ -67,7 +67,7 @@ describe('plaintextSecrets', () => {
       APP_ENV: 'production',
       APP_URL: 'https://example.com',
       DB_HOST: '127.0.0.1',
-      MAIL_HOST: 'mailpit',
+      MAIL_HOST: '127.0.0.1',
       DB_PORT: '5432',
     }
 

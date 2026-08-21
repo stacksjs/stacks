@@ -8,6 +8,56 @@ Stacks provides a fully serverless email infrastructure powered by AWS SES, S3, 
 
 > Just need to route outgoing mail through SES (no inbox needed)? See [Sending email via AWS SES](./email-ses.md) for the env-var + DNS + sandbox checklist.
 
+## Local development
+
+```bash
+buddy mail:dev
+```
+
+That runs the [mail server](https://github.com/mail-os/mail) as a **catcher**:
+it accepts every message your app sends, delivers none of them onward, and shows
+them all in its webmail UI.
+
+| | |
+| --- | --- |
+| SMTP | `127.0.0.1:1025` |
+| Webmail | `http://localhost:8025` |
+| Mailboxes | `storage/framework/mail/` |
+
+`.env.example` already points at it, so nothing else has to be configured:
+
+```bash
+MAIL_MAILER=smtp
+MAIL_HOST=127.0.0.1
+MAIL_PORT=1025
+```
+
+### Why not mailpit
+
+Because a development mail trap and a production mail server being two different
+programs is where mail breaks. A message that renders in mailpit has been
+through a parser nothing in production will ever run; a `From` header mailpit
+accepts is one no real MTA would. The bugs that costs are the ones nobody can
+reproduce locally, which is the worst kind to own.
+
+`buddy mail:dev` is the same binary that runs in production, with delivery
+switched off, authentication switched off, and bound to loopback — one parser,
+one Maildir, one UI, from a laptop to production. It listens on 1025 and serves
+its UI on 8025, which are mailpit's ports, so anything already pointed at a
+mailpit is already pointed at this.
+
+It binds `127.0.0.1` and does not offer that as an option. A process that accepts
+every message for every recipient and shows them in a UI with no password is an
+open relay and an open inbox at once.
+
+### Deploying one
+
+`ts-cloud` provisions the same server for real from
+`managedServices: { mail: true }` — see
+[its mail documentation](https://ts-cloud.stacksjs.com/features/mail). Production
+gets an MTA with DKIM and ACME TLS; every other environment gets the catcher
+above, on the same ports, with `MAIL_*` written into the app's `.env` for you.
+
 ## Configuration
 
 Configure your email settings in `config/email.ts`:
@@ -61,6 +111,9 @@ This creates:
 ## CLI Commands
 
 ```bash
+# Run the local mail catcher (SMTP 1025, webmail 8025)
+./buddy mail:dev
+
 # Check domain verification status
 ./buddy email:verify
 

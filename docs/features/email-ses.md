@@ -118,7 +118,7 @@ The driver pulls credentials in this order:
 MAIL_MAILER=log
 ```
 
-The `log` driver writes every send to the logger. Use `smtp` against [Mailpit](https://mailpit.axllent.org/) / [HELO](https://usehelo.com/) when you want to inspect rendered HTML:
+The `log` driver writes every send to the logger. To read the rendered HTML instead, run `buddy mail:dev` and use `smtp`. That starts the [mail server](https://github.com/mail-os/mail) as a local catcher — every message accepted, none delivered onward, all of them readable at `http://localhost:8025`. It is the same binary production runs, so what you look at locally has been through the code that will handle it for real:
 
 ```bash
 MAIL_MAILER=smtp

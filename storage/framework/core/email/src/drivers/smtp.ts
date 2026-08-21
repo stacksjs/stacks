@@ -56,7 +56,7 @@ export class SMTPDriver extends BaseEmailDriver {
    * `overridesReady` finished importing `~/config/services` — then
    * `config.services.smtp` read as `undefined`, the fallback snapped
    * `127.0.0.1:587` into the cache, and *every* subsequent send hit
-   * port 587 forever (ECONNREFUSED against a Mailpit on 2525, with no
+   * port 587 forever (ECONNREFUSED against the local catcher, with no
    * way to recover short of a restart).
    *
    * A property read is cheap next to a multi-RTT SMTP round-trip, so

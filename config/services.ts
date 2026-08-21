@@ -107,12 +107,26 @@ export default {
   },
 
   /**
-   * SMTP Configuration for local development
-   * Works with HELO, Mailtrap Desktop, Mailhog, Mailpit, etc.
+   * SMTP.
+   *
+   * The defaults are the local mail catcher `buddy mail:dev` runs — the mail
+   * server itself, with delivery switched off — so an application with no
+   * `.env` at all still sends somewhere it can be read, at
+   * http://localhost:8025.
+   *
+   * 1025 rather than the mail server's own 2525, because that is the port
+   * every development mail trap has used for a decade and `.env.example` names
+   * it too. The two disagreed before this: the example said 1025 and the
+   * fallback said 2525, so an app that had not copied `.env.example` sent into
+   * a closed port and failed with ECONNREFUSED at the moment somebody was
+   * trying to test a password reset.
+   *
+   * Any third-party SMTP works the same way — point `MAIL_HOST`/`MAIL_PORT`
+   * wherever you like.
    */
   smtp: {
     host: String(env.MAIL_HOST || '127.0.0.1'),
-    port: Number(env.MAIL_PORT || 2525),
+    port: Number(env.MAIL_PORT || 1025),
     // Handle "null" string from .env files (Laravel-style)
     username: String((env.MAIL_USERNAME && env.MAIL_USERNAME !== 'null') ? env.MAIL_USERNAME : ''),
     password: String((env.MAIL_PASSWORD && env.MAIL_PASSWORD !== 'null') ? env.MAIL_PASSWORD : ''),
