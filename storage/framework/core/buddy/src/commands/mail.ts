@@ -2088,6 +2088,21 @@ async function runLocalMailCatcher(options: { smtpPort: number, uiPort: number, 
     }
   }
 
+  /*
+   * A binary too old for trap mode fails *silently*, which is the one outcome
+   * worth writing code to prevent.
+   *
+   * TOML parsers ignore keys they do not recognise, so `catch_all = true`
+   * against a pre-0.3.2 mail server is not an error — the catcher simply
+   * answers "550 relay access denied" to everything the application sends and
+   * serves an inbox nobody can sign in to. Which looks, from the outside,
+   * exactly like the application not sending any mail.
+   *
+   * The server logs the trap mailbox line on first start when it understands
+   * the flag, so its absence is the signal. Checked after the fact rather than
+   * by parsing a version: there is no `--version` to parse (it is an unknown
+   * option), and the log line is the behaviour itself rather than a proxy.
+   */
   const child = Bun.spawn([binary, 'serve', '--config', configPath], {
     cwd: dir,
     env: {
