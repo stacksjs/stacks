@@ -1962,11 +1962,7 @@ export function resolveMailBinary(root: string = process.cwd()): string | undefi
 
   try {
     const found = execSync('command -v mail 2>/dev/null', { encoding: 'utf-8' }).trim()
-    // `mail` is also the name of a BSD mailx client that ships with macOS and
-    // most Linuxes, and it is on PATH almost everywhere. Running it instead of
-    // the mail server would open an interactive mail reader on a `buddy`
-    // command, so the candidate has to prove it is ours before it is used.
-    if (found && execSync(`${shellQuote(found)} --help 2>&1 || true`, { encoding: 'utf-8' }).includes('Mail server management CLI'))
+    if (found && isMailServer(found))
       return found
   }
   catch {
@@ -1974,6 +1970,37 @@ export function resolveMailBinary(root: string = process.cwd()): string | undefi
   }
 
   return undefined
+}
+
+/**
+ * Whether a `mail` on PATH is *our* mail server.
+ *
+ * `mail` is also BSD mailx, which ships with macOS and most Linuxes and is on
+ * PATH almost everywhere. Running that instead would open an interactive mail
+ * reader in the middle of a `buddy` command, so a candidate has to identify
+ * itself before it is used.
+ *
+ * Probed with **no arguments**, which is the only reliable signal: our CLI
+ * prints its banner when given none, and prints *nothing at all* for `--help`
+ * or `-h`. A probe written against `--help` therefore rejects the real binary
+ * every time — and worse, hands mailx a flag it reads as a recipient address,
+ * at which point it waits on stdin for a message body forever.
+ *
+ * So stdin is closed and the probe is bounded by a timeout. mailx with no
+ * arguments and stdin at EOF prints "No mail" and exits, which fails the match
+ * as it should.
+ */
+function isMailServer(binary: string): boolean {
+  try {
+    const probe = execSync(`${shellQuote(binary)} </dev/null 2>&1 || true`, { encoding: 'utf-8', timeout: 5000 })
+
+    return probe.includes('Mail server management CLI')
+  }
+  catch {
+    // A probe that timed out or could not be spawned is not our binary as far
+    // as this is concerned.
+    return false
+  }
 }
 
 /**
@@ -1993,14 +2020,24 @@ export function buildLocalMailConfig(options: { smtpPort: number }): string {
     'host = "127.0.0.1"',
     `port = ${options.smtpPort}`,
     'hostname = "localhost"',
+    // The line that makes this a trap rather than a very strict mail server.
+    // Unauthenticated mail to a domain the server does not host is correctly
+    // refused with 550, and for a catcher that is *every* message - an
+    // application sends to whatever addresses its fixtures contain. With this,
+    // every domain is local, so everything is accepted and filed into one
+    // mailbox you can read. The server refuses to start with it on unless the
+    // listener is bound to loopback, which the line above guarantees.
+    'catch_all = true',
     '',
     '[tls]',
     'enabled = false',
     '',
     '[auth]',
-    // Off, because there are no accounts. With auth on the server would
-    // advertise AUTH and then refuse every login, which reads to a mail client
-    // as a broken server rather than as a trap that needs no password.
+    // Off, because there are no accounts to authenticate. With auth on the
+    // server would advertise AUTH and then refuse every login, which reads to a
+    // mail client as a broken server rather than as a trap that needs no
+    // password. The webmail UI still runs: its database no longer depends on
+    // SMTP AUTH being enabled.
     'enabled = false',
     '',
     '[antispam]',
@@ -2034,10 +2071,11 @@ async function runLocalMailCatcher(options: { smtpPort: number, uiPort: number, 
   console.log('   Local mail catcher')
   console.log('  ──────────────────────────────────────────────────────')
   console.log(`   SMTP     127.0.0.1:${options.smtpPort}`)
-  console.log(`   Webmail  http://localhost:${options.uiPort}`)
+  console.log(`   Webmail  http://localhost:${options.uiPort}  (sign in: dev / dev)`)
   console.log(`   Mailbox  ${LOCAL_MAIL_DIR}`)
   console.log('')
-  console.log('   Nothing is delivered onward. Ctrl-C to stop.')
+  console.log('   Every recipient is accepted; nothing is delivered onward.')
+  console.log('   Ctrl-C to stop.')
   console.log('  ──────────────────────────────────────────────────────')
   console.log('')
 

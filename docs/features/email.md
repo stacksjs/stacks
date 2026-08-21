@@ -21,8 +21,11 @@ them all in its webmail UI.
 | | |
 | --- | --- |
 | SMTP | `127.0.0.1:1025` |
-| Webmail | `http://localhost:8025` |
+| Webmail | `http://localhost:8025` — sign in as `dev` / `dev` |
 | Mailboxes | `storage/framework/mail/` |
+
+Every recipient is accepted, whatever domain it is addressed to, and everything
+lands in one inbox — so what you see is the list of what your app just sent.
 
 `.env.example` already points at it, so nothing else has to be configured:
 
@@ -46,9 +49,10 @@ one Maildir, one UI, from a laptop to production. It listens on 1025 and serves
 its UI on 8025, which are mailpit's ports, so anything already pointed at a
 mailpit is already pointed at this.
 
-It binds `127.0.0.1` and does not offer that as an option. A process that accepts
-every message for every recipient and shows them in a UI with no password is an
-open relay and an open inbox at once.
+It binds `127.0.0.1` and does not offer that as an option — the server itself
+refuses to start in trap mode on any other interface. A process that accepts
+every message for every recipient and shows them in a UI is an open relay's more
+embarrassing cousin: it does not forward the spam, it files it.
 
 ### Deploying one
 
