@@ -1,5 +1,24 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.40...v0.72.41)
+
+## ✨ Features
+
+- **mail**: the local mail trap is the mail server, not mailpit ([8ee66ee](https://github.com/stacksjs/stacks/commit/8ee66ee)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **migrate**: give the schema diff a baseline that survives a release (#2351) (#2353) ([6bbcf31](https://github.com/stacksjs/stacks/commit/6bbcf31)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2351](https://github.com/stacksjs/stacks/issues/2351), [#2353](https://github.com/stacksjs/stacks/issues/2353), [#2351](https://github.com/stacksjs/stacks/issues/2351), [#2353](https://github.com/stacksjs/stacks/issues/2353))
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for mail:dev ([5d6477c](https://github.com/stacksjs/stacks/commit/5d6477c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.39...v0.72.40)
 
 ## 🐛 Bug Fixes
