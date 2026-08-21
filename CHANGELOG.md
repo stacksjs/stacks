@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.41...v0.72.42)
+
+## 🐛 Bug Fixes
+
+- **mail**: the catcher needed catch_all to catch anything ([b6b2f60](https://github.com/stacksjs/stacks/commit/b6b2f60)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **mail**: name the silent failure a pre-trap mail server produces ([0c00296](https://github.com/stacksjs/stacks/commit/0c00296)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **mail**: require the mail server release that makes the catcher work ([da67c47](https://github.com/stacksjs/stacks/commit/da67c47)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.40...v0.72.41)
 
 ## ✨ Features

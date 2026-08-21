@@ -2,7 +2,7 @@
   "name": "@stacksjs/server",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.41",
+  "version": "0.72.42",
   "description": "Local development and production-ready.",
   "author": "Chris Breuer",
   "contributors": [
