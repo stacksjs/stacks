@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.42...v0.72.43)
+
+## ✨ Features
+
+- **router**: somewhere to put the work an application does once ([3cc32f0](https://github.com/stacksjs/stacks/commit/3cc32f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: reconcile the Cloudflare CDN, and purge its cache on release ([09df445](https://github.com/stacksjs/stacks/commit/09df445)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.41...v0.72.42)
 
 ## 🐛 Bug Fixes
