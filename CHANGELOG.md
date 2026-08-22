@@ -1,5 +1,56 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.49...v0.72.50)
+
+## ✨ Features
+
+- **buddy**: simulator:doctor and simulator:open ([0fe5566](https://github.com/stacksjs/stacks/commit/0fe5566)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: serve the password reset page ([849357f](https://github.com/stacksjs/stacks/commit/849357f)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: serve the forgot-password page ([13948aa](https://github.com/stacksjs/stacks/commit/13948aa)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: serve the sign-in and sign-up pages ([eac5397](https://github.com/stacksjs/stacks/commit/eac5397)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: use the 404 illustration in the 404 layout ([2104bd2](https://github.com/stacksjs/stacks/commit/2104bd2)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: give the frontend an illustrated 404 page ([7443976](https://github.com/stacksjs/stacks/commit/7443976)) _(by Chris <chris@stacksjs.com>)_
+- **error-handling**: render illustrated production error pages ([86879bc](https://github.com/stacksjs/stacks/commit/86879bc)) _(by Chris <chris@stacksjs.com>)_
+- **error-handling**: ship the Laravel error illustrations inline ([1a68a1f](https://github.com/stacksjs/stacks/commit/1a68a1f)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: pin timestamp defaults to UTC on databases that already exist ([d0fdb5e](https://github.com/stacksjs/stacks/commit/d0fdb5e)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: make the magic-link page actually sign people in ([06014f7](https://github.com/stacksjs/stacks/commit/06014f7)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: route the reset-password links through Button ([182d91f](https://github.com/stacksjs/stacks/commit/182d91f)) _(by Chris <chris@stacksjs.com>)_
+- **sites**: redirect www.dashboard, and stop publishing names nothing serves ([7d6c54f](https://github.com/stacksjs/stacks/commit/7d6c54f)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: let the MTA-STS host past the API preflight ([c7a7d72](https://github.com/stacksjs/stacks/commit/c7a7d72)) _(by Chris <chris@stacksjs.com>)_
+- **mail**: actually serve the MTA-STS policy this zone advertises ([08b52ef](https://github.com/stacksjs/stacks/commit/08b52ef)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **defaults**: share the 403 illustration instead of pasting it ([1e01283](https://github.com/stacksjs/stacks/commit/1e01283)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **auth**: list the pages that ship with the framework ([2c0ceea](https://github.com/stacksjs/stacks/commit/2c0ceea)) _(by Chris <chris@stacksjs.com>)_
+- drop the stale premise from the coming-soon override ([551f3df](https://github.com/stacksjs/stacks/commit/551f3df)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: correct what the 404 view replaces ([6b7f0d6](https://github.com/stacksjs/stacks/commit/6b7f0d6)) _(by Chris <chris@stacksjs.com>)_
+- document the illustrated error pages ([a05b9b7](https://github.com/stacksjs/stacks/commit/a05b9b7)) _(by Chris <chris@stacksjs.com>)_
+- **public**: record the provenance of the error illustrations ([89715c7](https://github.com/stacksjs/stacks/commit/89715c7)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **error-handling**: cover the illustrated production error page ([88f4c2e](https://github.com/stacksjs/stacks/commit/88f4c2e)) _(by Chris <chris@stacksjs.com>)_
+
+## 👷 Build System
+
+- take the stx release that makes a template ref callable ([335e985](https://github.com/stacksjs/stacks/commit/335e985)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **defaults**: drop the unreachable demo views ([88fdca4](https://github.com/stacksjs/stacks/commit/88fdca4)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: drop the unreachable catch-all view ([0788949](https://github.com/stacksjs/stacks/commit/0788949)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.48...v0.72.49)
 
 ## 👷 Build System
