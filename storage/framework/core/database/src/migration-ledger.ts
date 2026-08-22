@@ -662,9 +662,40 @@ async function ensureLedgerTable(dialect: LedgerDialect, run: SqlRunner): Promis
       ? 'id INT AUTO_INCREMENT PRIMARY KEY'
       : 'id INTEGER PRIMARY KEY AUTOINCREMENT'
   const timestamp = dialect === 'postgres' ? 'TIMESTAMP' : 'DATETIME'
+
+  /*
+   * UTC, like every other timestamp default the framework writes.
+   *
+   * `executed_at` has no time zone in it, so a bare `CURRENT_TIMESTAMP` stores
+   * the database *session's* local clock and silently drops the offset - and
+   * the ledger then disagrees with every table it is a ledger for. SQLite's
+   * `CURRENT_TIMESTAMP` is already UTC and it cannot alter a default anyway.
+   */
+  const utcNow = dialect === 'postgres'
+    ? `(now() AT TIME ZONE 'utc')`
+    : dialect === 'mysql' ? '(UTC_TIMESTAMP)' : 'CURRENT_TIMESTAMP'
+
   await run(
-    `CREATE TABLE IF NOT EXISTS migrations (${id}, migration VARCHAR(255) NOT NULL UNIQUE, executed_at ${timestamp} DEFAULT CURRENT_TIMESTAMP)`,
+    `CREATE TABLE IF NOT EXISTS migrations (${id}, migration VARCHAR(255) NOT NULL UNIQUE, executed_at ${timestamp} DEFAULT ${utcNow})`,
   )
+
+  /*
+   * And fix a ledger that already exists.
+   *
+   * `IF NOT EXISTS` means the statement above does nothing on every database
+   * that has ever migrated, so without this the default above only ever reaches
+   * new installs. Tolerated rather than checked: on SQLite there is nothing to
+   * alter, and a runner that refuses is not a reason to fail a migrate.
+   */
+  if (dialect !== 'sqlite') {
+    try {
+      await run(`ALTER TABLE migrations ALTER COLUMN executed_at SET DEFAULT ${utcNow}`)
+    }
+    catch {
+      // Already correct, or a dialect that will not say so. Either way the
+      // ledger is readable and the migration can proceed.
+    }
+  }
 }
 
 export interface ReconcileResult {

@@ -90,6 +90,10 @@ export * from './custom'
 // Auth tables migration
 export * from './auth-tables'
 
+// Bringing an existing database's timestamp defaults up to UTC, which
+// `CREATE TABLE IF NOT EXISTS` cannot do on its own
+export * from './utc-defaults'
+
 // uuid column guarantee for `useUuid` models (stacksjs/status#1 Phase 9)
 export * from './uuid-columns'
 

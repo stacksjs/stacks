@@ -63,6 +63,9 @@ export function frameworkDatetimeTables(): string[] {
     // auth-tables.ts
     'passkeys',
     'password_resets',
+    // Created by `migrateAuthTables` alongside the rest and missing from this
+    // list until `utc-defaults.ts` derived its own from it and noticed.
+    'email_verifications',
     'oauth_clients',
     'oauth_access_tokens',
     'oauth_refresh_tokens',

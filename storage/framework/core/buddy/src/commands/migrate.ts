@@ -676,7 +676,7 @@ export function migrate(buddy: CLI): void {
       // guarantees are still attempted before the failure exit below (#1952).
       if (options.auth !== false) {
         try {
-          const { ensureUtcDatetimeColumns, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
+          const { ensureUtcDatetimeColumns, ensureUtcTimestampDefaults, migrateNotificationTables, migrateRbacTables, migrateTraitTables } = await import('@stacksjs/database')
           const notifResult = await migrateNotificationTables({ verbose: options.verbose })
           if (!notifResult.success) {
             log.error(`Failed to migrate notification tables: ${notifResult.error}`)
@@ -697,6 +697,14 @@ export function migrate(buddy: CLI): void {
           const datetimeResult = await ensureUtcDatetimeColumns({ verbose: options.verbose })
           if (!datetimeResult.success) {
             log.error(`Failed to convert TIMESTAMP columns to DATETIME: ${datetimeResult.error}`)
+          }
+
+          // Every framework table is `CREATE TABLE IF NOT EXISTS`, so a database
+          // created before those defaults were pinned to UTC still writes the
+          // session's local clock into a column with no zone to record it in.
+          const defaultsResult = await ensureUtcTimestampDefaults({ verbose: options.verbose })
+          if (!defaultsResult.success) {
+            log.error(`Failed to pin timestamp defaults to UTC: ${defaultsResult.error}`)
           }
         }
         catch (error) {

@@ -11,6 +11,7 @@ import {
   migrateRbacTables,
   migrateTraitTables,
   ensureUtcDatetimeColumns,
+  ensureUtcTimestampDefaults,
   runDatabaseMigration,
 } from '@stacksjs/database'
 import { path } from '@stacksjs/path'
@@ -63,6 +64,7 @@ async function migrateFrameworkTables(): Promise<void> {
     ['RBAC', migrateRbacTables],
     ['trait', migrateTraitTables],
     ['utc-datetime', ensureUtcDatetimeColumns],
+    ['utc-defaults', ensureUtcTimestampDefaults],
   ] as const
 
   for (const [name, migrateTables] of steps) {
