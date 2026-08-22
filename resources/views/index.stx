@@ -90,10 +90,13 @@ const platformCells = [
   },
 ]
 
+// The circle above each step used to render `step.label`, which no step ever
+// had, so all three came out as empty badges. A glyph says what the step is;
+// a number would only have said where it sits in a list you can already count.
 const workflowSteps = [
-  { title: 'Scaffold', text: 'buddy make:model Post generates the model, migration, factory, and REST actions in one pass.' },
-  { title: 'Build', text: 'buddy dev serves the app, docs, blog, and dashboard locally with hot reload and typed routes.' },
-  { title: 'Ship', text: 'buddy deploy builds every surface and publishes the AWS infrastructure from the same config.' },
+  { icon: 'i-hugeicons-magic-wand-01', title: 'Scaffold', text: 'buddy make:model Post generates the model, migration, factory, and REST actions in one pass.' },
+  { icon: 'i-hugeicons-computer-terminal-01', title: 'Build', text: 'buddy dev serves the app, docs, blog, and dashboard locally with hot reload and typed routes.' },
+  { icon: 'i-hugeicons-rocket-01', title: 'Ship', text: 'buddy deploy builds every surface and publishes the AWS infrastructure from the same config.' },
 ]
 
 const cmsResources = [
@@ -973,8 +976,14 @@ const deployRoutes = [
         background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
       }
 
-      .cell--gradient p {
-        color: rgba(244, 248, 255, 0.82);
+      /*
+       * Doubled class, so this beats `.cell p` below rather than tying with it.
+       * At equal specificity the later rule won, which painted this cell's copy
+       * in --muted: dark slate on a solid #1d4ed8 tile, about 1.7:1. The card
+       * looked blank unless you leaned in.
+       */
+      .cell--gradient.cell p {
+        color: rgba(244, 248, 255, 0.86);
       }
 
       .cell h3 {
@@ -1036,10 +1045,113 @@ const deployRoutes = [
         border-radius: 999px;
         color: var(--accent);
         font-style: normal;
-        font-family: var(--font-mono);
-        font-size: 0.85rem;
-        font-weight: 600;
         background: var(--badge-bg);
+      }
+
+      .step em i {
+        width: 20px;
+        height: 20px;
+      }
+
+      /* ── Horizon band ─────────────────────────────────────────────── */
+
+      .horizon {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        align-items: flex-end;
+        min-height: clamp(20rem, 34vw, 30rem);
+        margin: clamp(2.5rem, 5vw, 4.25rem) 0;
+        padding: clamp(2rem, 4vw, 3.25rem) 0;
+        border-block: 1px solid var(--line);
+        isolation: isolate;
+      }
+
+      /*
+       * Wider than the band and nudged left, so the slow drift below never
+       * exposes an edge. Painting the scene on its own layer is also what
+       * lets it move on `transform` alone.
+       */
+      .horizon-scene {
+        position: absolute;
+        z-index: -1;
+        inset: 0 -6% 0 -6%;
+        /* 62% down, chosen by looking: that lands the village and the rising
+           sun in frame once a 1024-square illustration is cropped to a wide
+           band. Anchored at `bottom` you get dunes and nothing to recognise;
+           at 52% a haze orb swells over the right half. */
+        background: url("/assets/images/coming-soon-dawn.svg") center 62% / cover no-repeat;
+        animation: horizon-drift 64s ease-in-out infinite;
+      }
+
+      /* Legibility over artwork: the copy sits on its own scrim rather than
+         trusting whichever part of the dune it lands on. Opaque where the text
+         starts, gone by the time the scene has anything worth seeing. */
+      .horizon-scene::after {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background: linear-gradient(
+          96deg,
+          var(--page-a) 0%,
+          var(--page-a) 26%,
+          rgba(var(--accent-rgb), 0.07) 58%,
+          transparent 78%
+        );
+      }
+
+      /*
+       * The sun, echoed as a soft glow rather than cut out of the artwork.
+       * Placed where the illustration's own sun sits once the scene is
+       * cover-cropped, so the two read as one light source.
+       */
+      .horizon-sun {
+        position: absolute;
+        top: 46%;
+        right: 22%;
+        width: clamp(7rem, 13vw, 12rem);
+        height: clamp(7rem, 13vw, 12rem);
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(var(--accent-rgb), 0.18) 45%, transparent 70%);
+        animation: horizon-sun 11s ease-in-out infinite;
+      }
+
+      .horizon-copy {
+        position: relative;
+        max-width: 34rem;
+      }
+
+      :root[data-theme='dark'] .horizon-scene {
+        background-image: url("/assets/images/coming-soon-dawn-dark.svg");
+      }
+
+      /*
+       * The illustration's atmospheric bloom is nearly invisible over a pale
+       * sky and blows out to white saucers over the midnight one. A veil across
+       * the right half seats it back without touching the artwork itself.
+       */
+      :root[data-theme='dark'] .horizon-scene::after {
+        background:
+          linear-gradient(96deg, var(--page-a) 0%, var(--page-a) 26%, rgba(7, 12, 23, 0.55) 62%, rgba(7, 12, 23, 0.42) 100%);
+      }
+
+      @keyframes horizon-drift {
+        0%, 100% { transform: translate3d(0, 0, 0); }
+        50% { transform: translate3d(2.5%, 0, 0); }
+      }
+
+      @keyframes horizon-sun {
+        0%, 100% { transform: scale(1); opacity: 0.85; }
+        50% { transform: scale(1.08); opacity: 1; }
+      }
+
+      /* Ambient motion only. Nothing here carries meaning, so reduced motion
+         loses nothing by stopping both. */
+      @media (prefers-reduced-motion: reduce) {
+        .horizon-scene,
+        .horizon-sun {
+          animation: none;
+        }
       }
 
       .step h3 {
@@ -1414,11 +1526,31 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
           <div class="steps">
             @foreach (workflowSteps as step)
               <div class="rise step">
-                <em aria-hidden="true">{{ step.label }}</em>
+                <em aria-hidden="true"><i class="{{ step.icon }}"></i></em>
                 <h3>{{ step.title }}</h3>
                 <p>{{ step.text }}</p>
               </div>
             @endforeach
+          </div>
+        </section>
+
+        <!--
+          The horizon. Full bleed on purpose: it is the one place the page
+          stops being panels on paper, and it breaks a run of six white
+          sections in half.
+
+          The scene is the same dawn illustration the holding page and the
+          error pages use (Laravel 5.7's, recolored to the Stacks blue), so
+          the marketing page, /coming-soon and a 404 all read as one product
+          rather than three unrelated designs.
+        -->
+        <section class="horizon" aria-labelledby="horizon-heading">
+          <div class="horizon-scene" aria-hidden="true"><span class="horizon-sun"></span></div>
+          <div class="site-shell">
+            <div class="horizon-copy">
+              <h2 id="horizon-heading" class="section-title">One repo, all the way to the edge.</h2>
+              <p class="section-copy">The site, the docs, the blog, the API, the queues, and the infrastructure they run on. Same config, same types, same deploy.</p>
+            </div>
           </div>
         </section>
 
