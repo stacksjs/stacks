@@ -836,6 +836,17 @@ export const tsCloud: TsCloudConfig = {
       domain: 'mta-sts.stacksjs.com',
       start: 'bun storage/framework/scripts/mta-sts-server.ts',
       port: 8461,
+      // PORT_API is here to satisfy the deploy's API-reachability preflight,
+      // which treats every non-API server app as a page server that must be
+      // able to proxy `/api/**`. This one cannot and never will: it answers
+      // exactly `/.well-known/mta-sts.txt` and 404s everything else.
+      //
+      // Set to the real API port rather than a placeholder so the value is at
+      // least true if anything ever does read it. The preflight is right to be
+      // strict — a page server missing this is a silent 502 — so it is fed
+      // rather than loosened; the classifier not having a way to express
+      // "serves neither pages nor the API" is the actual gap.
+      env: { PORT_API: '3008' },
     },
 
     wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
