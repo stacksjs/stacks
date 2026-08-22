@@ -1,14 +1,21 @@
 <script server>
-// App-level override of the framework holding page
-// (defaults/resources/views/coming-soon.stx -> <ComingSoon />). It began as a
-// workaround for that component failing to resolve <Logo />, which no longer
-// reproduces under stx-serve; it stays because this is the site's own design,
-// not because the default is broken. Concept: dawn at the trailhead. The scene
-// is Laravel 5.7's 503 illustration (MIT) recolored to the Stacks blue
-// palette, which turns its rising sun into a blue sun over the dunes; a dark
-// variant renders as a night camp under the same sun. The email form posts
-// to the same rate-limited endpoint the framework form used
-// (/api/email/subscribe).
+// The site's holding page, in the same design language as the marketing page
+// at / rather than a look of its own. Concept: dawn at the trailhead.
+//
+// It began as an app-level override of the framework default
+// (defaults/resources/views/coming-soon.stx -> <ComingSoon />), written around
+// that component failing to resolve <Logo />. That no longer reproduces under
+// stx-serve; the override stays because this is the site's own design.
+//
+// The horizon is the wide cut of the same illustration the marketing band and
+// the error pages use, so a visitor who arrives here, comes back after launch,
+// or hits a 404 sees one product rather than three. Tokens, type scale, brand
+// mark, button and field shapes are the ones index.stx defines; the three
+// themes share their storage key with / and /blog, so a choice made on any of
+// them follows the reader to the others.
+//
+// The email form posts to the same rate-limited endpoint the framework form
+// used (/api/email/subscribe).
 const appName = 'Stacks'
 const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment. The public launch is almost here.'
 </script>
@@ -22,149 +29,270 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
     <meta name="description" content="{{ siteDescription }}">
     <meta name="robots" content="noindex">
     <meta name="color-scheme" content="light dark">
-    <meta name="theme-color" content="#eef4ff" media="(prefers-color-scheme: light)">
-    <meta name="theme-color" content="#04070f" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#e9f1fb" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#070c17" media="(prefers-color-scheme: dark)">
     <link rel="icon" href="/images/logos/favicon.svg" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap">
 
+    <script>
+      /*
+       * Theme, applied before first paint so the page never flashes the wrong
+       * one. Shares its storage key with the blog (see blogChrome() in
+       * core/actions/src/blog.ts), so a choice made here follows the reader to
+       * /blog and back.
+       *
+       * Precedence: ?theme= override, then a saved choice, then the operating
+       * system preference. Only a visitor who has never chosen gets the OS
+       * answer, which is what `prefers-color-scheme` is for.
+       */
+      ;(function () {
+        var modes = ['colored', 'light', 'dark']
+        var ok = function (t) { return modes.indexOf(t) !== -1 }
+
+        var queryTheme = ''
+        try { queryTheme = new URLSearchParams(location.search).get('theme') || '' }
+        catch {}
+
+        var savedTheme = ''
+        try { savedTheme = localStorage.getItem('stacks-theme') || localStorage.getItem('stacks-blog-theme') || '' }
+        catch {}
+
+        var prefersDark = false
+        try { prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches }
+        catch {}
+
+        var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'light'))
+        document.documentElement.setAttribute('data-theme', theme)
+
+        window.stxTheme = function (next) {
+          if (!ok(next)) return
+          try { localStorage.setItem('stacks-theme', next) }
+          catch {}
+          document.documentElement.setAttribute('data-theme', next)
+          var group = document.querySelector('.theme-toggle')
+          if (group) {
+            group.querySelectorAll('button').forEach(function (b) {
+              b.setAttribute('aria-pressed', String(b.getAttribute('data-t') === next))
+            })
+          }
+        }
+      })()
+    </script>
     <style>
-      :root {
-        --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-        --bg: #eef4ff;
+      /*
+       * Same three themes as / and /blog, same token names, same values.
+       * Inlined per surface because that is how this site already works: the
+       * marketing page carries its own copy and mirrors the blog's
+       * content/blog/.theme.css. One palette, three places that state it.
+       */
+      :root[data-theme='colored'] {
+        color-scheme: light;
+        --bg: #e9f1fb;
         --surface: #ffffff;
-        --text: #0f1b2d;
-        --muted: #4a5568;
-        --brand: #2563eb;
-        --brand-strong: #1d4ed8;
-        --on-brand: #ffffff;
-        --line: rgba(15, 27, 45, 0.10);
-        --field-bg: rgba(255, 255, 255, 0.85);
-        --icon-bg: rgba(37, 99, 235, 0.10);
-        --icon-bg-hover: rgba(37, 99, 235, 0.18);
-        --icon-fg: #1d4ed8;
-        --card-shadow: 0 30px 90px rgba(30, 58, 138, 0.22);
+        --badge-bg: #d9e8fb;
+        --field-bg: #ffffff;
+        --text: #0d1f38;
+        --muted: #49607f;
+        --accent: #1d4ed8;
+        --accent-strong: #1e40af;
+        --button-bg: #1d4ed8;
+        --on-accent: #ffffff;
+        --on-field: #0d1f38;
+        --ink-rgb: 13, 31, 56;
+        --accent-rgb: 29, 78, 216;
+        --line: rgba(13, 31, 56, 0.12);
+        --line-strong: rgba(13, 31, 56, 0.22);
+        --shadow: 0 24px 60px rgba(30, 58, 138, 0.14);
+        --page-a: #e9f1fb;
+        --page-b: #ddeafa;
+        --page-c: #e9f1fb;
+        --panel-a: rgba(29, 78, 216, 0.07);
+        --panel-b: rgba(217, 232, 251, 0.55);
+        --nav-bg: rgba(233, 241, 251, 0.82);
+        --grad-a: #1e40af;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.28;
+        --topo-opacity: 0.05;
       }
 
-      @media (prefers-color-scheme: dark) {
-        :root {
-          --bg: #04070f;
-          --surface: #0b1220;
-          --text: #eaf0fb;
-          --muted: #9fb0c8;
-          --brand: #3b82f6;
-          --brand-strong: #60a5fa;
-          --on-brand: #ffffff;
-          --line: rgba(234, 240, 251, 0.12);
-          --field-bg: rgba(11, 18, 32, 0.72);
-          --icon-bg: rgba(59, 130, 246, 0.14);
-          --icon-bg-hover: rgba(59, 130, 246, 0.24);
-          --icon-fg: #93c5fd;
-          --card-shadow: 0 30px 90px rgba(2, 6, 23, 0.65);
-        }
+      :root[data-theme='light'] {
+        color-scheme: light;
+        --bg: #ffffff;
+        --surface: #f5f8fe;
+        --badge-bg: #e8f0fe;
+        --field-bg: #ffffff;
+        --text: #0c1626;
+        --muted: #4f5f7a;
+        --accent: #2563eb;
+        --accent-strong: #1d4ed8;
+        --button-bg: #2563eb;
+        --on-accent: #ffffff;
+        --on-field: #0c1626;
+        --ink-rgb: 12, 22, 38;
+        --accent-rgb: 37, 99, 235;
+        --line: rgba(12, 22, 38, 0.10);
+        --line-strong: rgba(12, 22, 38, 0.20);
+        --shadow: 0 24px 60px rgba(30, 58, 138, 0.10);
+        --page-a: #ffffff;
+        --page-b: #f2f6fe;
+        --page-c: #ffffff;
+        --panel-a: rgba(37, 99, 235, 0.05);
+        --panel-b: rgba(219, 231, 253, 0.50);
+        --nav-bg: rgba(255, 255, 255, 0.80);
+        --grad-a: #1d4ed8;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.20;
+        --topo-opacity: 0.035;
+      }
+
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --bg: #070c17;
+        --surface: #0e1728;
+        --badge-bg: #13203a;
+        --field-bg: #0c1424;
+        --text: #e9effc;
+        --muted: #97a6c4;
+        --accent: #60a5fa;
+        --accent-strong: #93c5fd;
+        --button-bg: #3b82f6;
+        --on-accent: #071021;
+        --on-field: #e9effc;
+        --ink-rgb: 233, 239, 252;
+        --accent-rgb: 96, 165, 250;
+        --line: rgba(233, 239, 252, 0.10);
+        --line-strong: rgba(233, 239, 252, 0.22);
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+        --page-a: #070c17;
+        --page-b: #0a1226;
+        --page-c: #060b14;
+        --panel-a: rgba(19, 32, 58, 0.85);
+        --panel-b: rgba(8, 14, 28, 0.92);
+        --nav-bg: rgba(7, 12, 23, 0.78);
+        --grad-a: #1e40af;
+        --grad-b: #2563eb;
+        --ridge-opacity: 0.22;
+        --topo-opacity: 0.05;
       }
 
       * { margin: 0; padding: 0; box-sizing: border-box; }
 
+      html { color-scheme: light; }
+
       body {
+        display: grid;
+        grid-template-rows: auto 1fr auto auto;
         min-height: 100dvh;
-        display: flex;
-        align-items: center;
-        padding: clamp(1.25rem, 5vw, 3rem);
         color: var(--text);
         font-family: var(--font-body);
-        background: var(--bg);
+        background: var(--page-a);
         -webkit-font-smoothing: antialiased;
       }
 
-      /* The dawn scene: Laravel 5.7's 503 illustration, recolored so its
-        rising sun is a Stacks blue sun over blue dunes. Dark mode swaps in
-        the night variant. Edges blend into the page background. */
+      :root {
+        --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .site-shell {
+        width: min(1180px, calc(100% - 48px));
+        margin: 0 auto;
+      }
+
+      /* ── The horizon ──────────────────────────────────────────────────
+         The wide cut, as the last row of the page rather than a fixed layer
+         behind it. The square scene used to cover the whole viewport behind a
+         glass card; at 3.2:1 the art has a horizon line of its own, and
+         standing the content above it says trailhead better than floating a
+         card over the middle of a dune.
+
+         In the flow rather than fixed because the footer was landing on the
+         artwork: pale link text over a lit dune, with the hairline above it
+         invisible. Now nothing overlaps it. `1fr` on the main row still holds
+         the horizon at the foot of the viewport when the content is short. */
       .scene {
-        position: fixed;
-        inset: 0;
-        z-index: -1;
-        background: url("/assets/images/coming-soon-dawn.svg") center bottom / cover no-repeat;
+        position: relative;
+        z-index: 0;
+        height: clamp(13rem, 34vh, 22rem);
+        background: url("/assets/images/horizon-dawn.svg") center bottom / cover no-repeat;
         animation: scene-in 1.4s ease-out both;
       }
 
+      /* Melts the top edge into the page so the band reads as distance rather
+         than a picture pasted on. Kept short: reaching further down washed
+         out the village, which is the only thing in the frame to recognise. */
       .scene::after {
         position: absolute;
         inset: 0;
         content: "";
-        background:
-          linear-gradient(90deg, var(--bg) 0%, transparent 36%),
-          linear-gradient(180deg, var(--bg) 0%, transparent 14%, transparent 86%, var(--bg) 100%);
+        background: linear-gradient(180deg, var(--page-a) 0%, rgba(var(--accent-rgb), 0.05) 22%, transparent 48%);
       }
 
-      @media (prefers-color-scheme: dark) {
-        .scene { background-image: url("/assets/images/coming-soon-dawn-dark.svg"); }
+      :root[data-theme='dark'] .scene {
+        background-image: url("/assets/images/horizon-dawn-dark.svg");
       }
 
-      .card {
+      .page-head {
         position: relative;
-        overflow: hidden;
-        width: min(560px, 100%);
-        margin-left: clamp(0rem, 6vw, 8rem);
-        padding: clamp(1.75rem, 4vw, 2.75rem);
-        border: 1px solid var(--line);
-        border-radius: 20px;
-        background: color-mix(in srgb, var(--surface) 86%, transparent);
-        box-shadow: var(--card-shadow);
-        backdrop-filter: blur(16px) saturate(1.15);
-        -webkit-backdrop-filter: blur(16px) saturate(1.15);
-        animation: card-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+        z-index: 1;
+        padding-top: clamp(1.5rem, 4vw, 2.5rem);
       }
 
-      /* The nature motif, tinted brand blue instead of gray: quiet contour
-        lines inside the card, behind its content. */
-      .card::before {
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        content: "";
-        background-image: url("/assets/images/topography-blue.svg");
-        background-size: 680px auto;
-        opacity: 0.05;
+      .page-main {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        padding: clamp(1.5rem, 4vw, 3rem) 0;
       }
+
+      .page-foot {
+        position: relative;
+        z-index: 1;
+        padding-bottom: clamp(1.25rem, 3vw, 2rem);
+      }
+
+      /* ── Brand ────────────────────────────────────────────────────── */
 
       .brand {
-        display: flex;
-        gap: 0.6rem;
+        display: inline-flex;
+        gap: 0.65rem;
         align-items: center;
-        width: 100%;
-        margin-bottom: 2.2rem;
+        min-width: 0;
+        color: inherit;
+        text-decoration: none;
       }
 
       .brand-mark {
         display: grid;
+        flex: 0 0 auto;
         place-items: center;
-        width: 40px;
-        height: 40px;
+        width: 34px;
+        height: 34px;
         border-radius: 10px;
-        color: #ffffff;
+        color: var(--on-accent);
         font-weight: 800;
-        font-size: 1.25rem;
-        line-height: 1;
-        background: linear-gradient(150deg, var(--brand), var(--brand-strong));
-        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+        font-size: 1rem;
+        background: linear-gradient(150deg, var(--accent), var(--accent-strong));
       }
 
       .brand-name {
-        font-size: 1.4rem;
-        font-weight: 800;
-        letter-spacing: -0.02em;
+        font-size: 1.05rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
       }
 
-      .eyebrow {
+      /* ── Hero ─────────────────────────────────────────────────────── */
+
+      .kicker {
         display: inline-flex;
         gap: 0.55rem;
         align-items: center;
-        margin-bottom: 1rem;
-        color: var(--brand);
+        margin-bottom: 1.1rem;
+        color: var(--accent);
         font-family: var(--font-mono);
         font-size: 0.74rem;
         font-weight: 600;
@@ -172,94 +300,100 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         text-transform: uppercase;
       }
 
-      /* A small echo of the blue sun from the scene behind the card. */
-      .eyebrow::before {
-        width: 9px;
-        height: 9px;
-        border-radius: 999px;
-        content: "";
-        background: var(--brand);
-        box-shadow: 0 0 12px 2px rgba(59, 130, 246, 0.65);
-      }
-
-      /* Class selector on purpose: the pipeline's preflight resets bare h1
-        typography, and a class always wins over an element selector. */
       .title {
-        font-size: clamp(2.4rem, 6vw, 3.6rem);
-        font-weight: 800;
+        max-width: 16ch;
+        margin: 0;
+        font-size: clamp(2.6rem, 4.2vw, 3.9rem);
+        font-weight: 780;
         letter-spacing: -0.035em;
-        line-height: 1.02;
+        line-height: 1.06;
       }
 
       .lead {
-        max-width: 44ch;
-        margin-top: 1.1rem;
+        max-width: 34rem;
+        margin: 1.25rem 0 0;
         color: var(--muted);
-        font-size: 1.06rem;
-        line-height: 1.65;
+        font-size: 1.08rem;
+        line-height: 1.62;
       }
 
-      form {
+      /* ── Subscribe ────────────────────────────────────────────────── */
+
+      .subscribe {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.6rem;
+        max-width: 30rem;
         margin-top: 2rem;
-        max-width: 460px;
       }
 
       .cs-input {
-        flex: 1 1 auto;
-        min-width: 0;
-        min-height: 50px;
-        padding: 0 1.15rem;
-        border: 1px solid var(--line);
+        flex: 1 1 15rem;
+        min-height: 46px;
+        padding: 0 1rem;
+        border: 1px solid var(--line-strong);
         border-radius: 999px;
-        color: var(--text);
+        color: var(--on-field);
         font: inherit;
+        font-size: 0.92rem;
         background: var(--field-bg);
       }
 
-      .cs-input::placeholder { color: var(--muted); opacity: 0.75; }
+      .cs-input::placeholder { color: var(--muted); }
 
       .cs-input:focus-visible {
-        outline: 2px solid var(--brand);
-        outline-offset: 1px;
-        border-color: var(--brand);
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
       }
 
-      .cs-btn {
-        flex: 0 0 auto;
-        min-height: 50px;
-        padding: 0 1.5rem;
-        border: 0;
+      .button {
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 1.35rem;
+        border: 1px solid var(--line-strong);
         border-radius: 999px;
-        color: var(--on-brand);
-        font: inherit;
-        font-weight: 700;
-        background: linear-gradient(150deg, var(--brand), var(--brand-strong));
-        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
+        color: var(--text);
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+        font-weight: 620;
+        white-space: nowrap;
+        background: transparent;
         cursor: pointer;
-        transition: box-shadow 0.16s ease, transform 0.12s ease, filter 0.16s ease;
+        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
       }
 
-      .cs-btn:hover { filter: brightness(1.08); box-shadow: 0 12px 28px rgba(37, 99, 235, 0.45); }
-      .cs-btn:active { transform: translateY(1px); }
+      .button.primary {
+        border-color: var(--button-bg);
+        color: var(--on-accent);
+        background: var(--button-bg);
+      }
+
+      .button:hover { transform: translateY(-1px); }
+      .button:active { transform: translateY(0); }
 
       .form-note {
-        min-height: 1.25rem;
-        margin-top: 0.7rem;
+        margin-top: 0.75rem;
+        min-height: 1.2rem;
         color: var(--muted);
-        font-size: 0.9rem;
+        font-size: 0.88rem;
       }
-      .form-note[data-state="ok"] { color: var(--brand); }
+
+      .form-note[data-state="ok"] { color: var(--accent); }
       .form-note[data-state="err"] { color: #dc2626; }
+      :root[data-theme='dark'] .form-note[data-state="err"] { color: #fca5a5; }
+
+      /* ── Footer ───────────────────────────────────────────────────── */
 
       .footer {
         display: flex;
+        flex-wrap: wrap;
         gap: 1rem;
         align-items: center;
         justify-content: space-between;
-        margin-top: 2.2rem;
-        padding-top: 1.5rem;
+        padding-top: 1.25rem;
         border-top: 1px solid var(--line);
       }
 
@@ -268,92 +402,128 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       .icon-btn {
         display: grid;
         place-items: center;
-        width: 42px;
-        height: 42px;
-        border: 1px solid transparent;
+        width: 36px;
+        height: 36px;
         border-radius: 999px;
-        color: var(--icon-fg);
-        background: var(--icon-bg);
-        transition: background 0.16s ease, transform 0.12s ease, border-color 0.16s ease;
+        color: var(--accent);
+        background: var(--badge-bg);
+        transition: background 0.16s ease, transform 0.16s ease;
       }
 
-      .icon-btn:hover {
-        border-color: var(--line);
-        background: var(--icon-bg-hover);
-        transform: translateY(-1px);
-      }
-
-      .icon-btn svg { width: 19px; height: 19px; fill: currentColor; }
+      .icon-btn:hover { transform: translateY(-1px); }
+      .icon-btn svg { width: 18px; height: 18px; fill: currentColor; }
 
       .docs-link {
-        color: var(--brand);
+        color: var(--accent);
         font-size: 0.92rem;
         font-weight: 600;
         text-decoration: none;
       }
-      .docs-link:hover { color: var(--brand-strong); text-decoration: underline; }
 
-      @keyframes card-in {
-        from { opacity: 0; transform: translateY(16px); }
+      .docs-link:hover { text-decoration: underline; }
+
+      /* ── Theme toggle, the same control / and /blog carry ─────────── */
+
+      .theme-toggle {
+        position: fixed;
+        right: 1.1rem;
+        bottom: 1.1rem;
+        z-index: 60;
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border: 1px solid var(--line-strong);
+        border-radius: 999px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+      }
+
+      .theme-toggle button {
+        display: grid;
+        place-items: center;
+        width: 30px;
+        height: 30px;
+        padding: 0;
+        border: 0;
+        border-radius: 999px;
+        color: inherit;
+        font-size: 0.85rem;
+        line-height: 1;
+        background: transparent;
+        cursor: pointer;
+        transition: background 0.18s ease, transform 0.18s ease;
+      }
+
+      .theme-toggle button[aria-pressed="true"] { background: var(--badge-bg); }
+
+      @keyframes scene-in {
+        from { opacity: 0; transform: translateY(14px); }
         to { opacity: 1; transform: none; }
       }
 
-      @keyframes scene-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-
       @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after { animation: none !important; transition: none !important; }
+        .scene { animation: none; }
+        .button:hover,
+        .icon-btn:hover { transform: none; }
       }
 
-      @media (max-width: 760px) {
-        body { display: grid; place-items: center; }
-        .card { margin-left: 0; }
-      }
-
-      @media (max-width: 520px) {
-        form { flex-direction: column; }
-        .cs-btn { width: 100%; }
+      @media (max-width: 640px) {
+        .site-shell { width: calc(100% - 32px); }
+        .title { max-width: none; }
       }
     </style>
   </head>
   <body>
-    <div class="scene" aria-hidden="true"></div>
+    <header class="page-head">
+      <div class="site-shell">
+        <a class="brand" href="/" aria-label="Stacks home">
+          <span class="brand-mark" aria-hidden="true">S</span>
+          <span class="brand-name">{{ appName }}</span>
+        </a>
+      </div>
+    </header>
 
-    <main class="card">
-      <span class="brand">
-        <span class="brand-mark" aria-hidden="true">S</span>
-        <span class="brand-name">{{ appName }}</span>
-      </span>
+    <main class="page-main">
+      <div class="site-shell">
+        <span class="kicker">Opening soon</span>
+        <h1 class="title">The trailhead is almost ready.</h1>
+        <p class="lead">
+          One typed codebase for routing, models, queues, mail, and deploys. We are clearing
+          the last stretch. Leave your email and we will write the moment the trail opens.
+        </p>
 
-      <span class="eyebrow">Opening soon</span>
-      <h1 class="title">The trailhead is almost ready.</h1>
-      <p class="lead">
-        Stacks is a full-stack TypeScript framework in the spirit of Laravel and Rails:
-        one typed codebase for routing, models, queues, mail, and deploys. We are clearing
-        the last stretch. Leave your email and we will write the moment the trail opens.
-      </p>
-
-      <form id="subscribe-form" novalidate>
-        <label for="subscribe-email" class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
-        <input id="subscribe-email" class="cs-input" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
-        <button class="cs-btn" type="submit">Notify me</button>
-      </form>
-      <p id="form-note" class="form-note" role="status" aria-live="polite"></p>
-
-      <div class="footer">
-        <div class="socials">
-          <a class="icon-btn" href="https://github.com/stacksjs/stacks" aria-label="Stacks on GitHub" title="GitHub">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
-          </a>
-          <a class="icon-btn" href="https://bsky.app/profile/stacksjs.com" aria-label="Stacks on Bluesky" title="Bluesky">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
-          </a>
-        </div>
-        <a class="docs-link" href="/docs" data-no-router>Read the docs</a>
+        <form id="subscribe-form" class="subscribe" novalidate>
+          <label for="subscribe-email" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">Email address</label>
+          <input id="subscribe-email" class="cs-input" type="email" name="email" autocomplete="email" placeholder="you@example.com" required>
+          <button class="button primary" type="submit">Notify me</button>
+        </form>
+        <p id="form-note" class="form-note" role="status" aria-live="polite"></p>
       </div>
     </main>
+
+    <footer class="page-foot">
+      <div class="site-shell">
+        <div class="footer">
+          <div class="socials">
+            <a class="icon-btn" href="https://github.com/stacksjs/stacks" aria-label="Stacks on GitHub" title="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          </a>
+            <a class="icon-btn" href="https://bsky.app/profile/stacksjs.com" aria-label="Stacks on Bluesky" title="Bluesky">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 0 1-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.478 0-.69-.139-1.861-.902-2.206-.659-.298-1.664-.62-4.3 1.24C16.046 4.748 13.087 8.687 12 10.8Z"/></svg>
+          </a>
+          </div>
+          <a class="docs-link" href="/docs" data-no-router>Read the docs</a>
+        </div>
+      </div>
+    </footer>
+
+    <div class="scene" aria-hidden="true"></div>
+
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button type="button" data-t="colored" title="Glacier theme" aria-label="Glacier theme" onclick="stxTheme('colored')">🌲</button>
+      <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>
+      <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')">🌙</button>
+    </div>
 
     <script>
       // Plain holding-page script (not an stx SFC block): posts the email to
