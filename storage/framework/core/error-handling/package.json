@@ -57,14 +57,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/stx": "^0.2.197",
-    "ts-error-handling": "^0.1.1",
-    "ts-syntax-highlighter": "^0.2.1"
+    "@stacksjs/stx": "^0.2.216",
+    "ts-error-handling": "^0.1.3",
+    "ts-syntax-highlighter": "^0.2.17"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*"

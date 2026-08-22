@@ -61,12 +61,12 @@
   "dependencies": {
     "@stacksjs/bun-router": "^0.1.0",
     "@stacksjs/collections": "workspace:*",
-    "ts-rate-limiter": "^0.4.2"
+    "ts-rate-limiter": "^0.4.8"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/orm": "workspace:*",

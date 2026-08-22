@@ -103,7 +103,7 @@
     "@stacksjs/build": "^0.72.49",
     "@stacksjs/cache": "^0.72.49",
     "@stacksjs/chat": "^0.72.49",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.13",
     "@stacksjs/cli": "^0.72.49",
     "@stacksjs/cloud": "^0.72.49",
     "@stacksjs/cms": "^0.72.49",
@@ -120,7 +120,7 @@
     "@stacksjs/git": "^0.72.49",
     "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/health": "^0.72.49",
-    "@stacksjs/httx": "^0.1.10",
+    "@stacksjs/httx": "^0.1.11",
     "@stacksjs/image": "^0.72.49",
     "@stacksjs/lint": "^0.72.49",
     "@stacksjs/logging": "^0.72.49",
@@ -131,7 +131,7 @@
     "@stacksjs/payments": "^0.72.49",
     "@stacksjs/realtime": "^0.72.49",
     "@stacksjs/router": "^0.72.49",
-    "@stacksjs/rpx": "^0.11.42",
+    "@stacksjs/rpx": "^0.11.45",
     "@stacksjs/search-engine": "^0.72.49",
     "@stacksjs/security": "^0.72.49",
     "@stacksjs/server": "^0.72.49",
@@ -140,7 +140,7 @@
     "@stacksjs/storage": "^0.72.49",
     "@stacksjs/strings": "^0.72.49",
     "@stacksjs/testing": "^0.72.49",
-    "@stacksjs/ts-cloud": "^0.11.4",
+    "@stacksjs/ts-cloud": "^0.11.5",
     "@stacksjs/tunnel": "^0.72.49",
     "@stacksjs/types": "^0.72.49",
     "@stacksjs/ui": "^0.72.49",
@@ -148,10 +148,10 @@
     "@stacksjs/validation": "^0.72.49",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.38"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "web-types": "./web-types.json"
 }

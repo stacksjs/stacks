@@ -61,12 +61,12 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.11.4",
-    "ts-images": "^0.2.11"
+    "@stacksjs/ts-cloud": "^0.11.5",
+    "ts-images": "^0.2.12"
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
