@@ -1,5 +1,8 @@
 <script server>
-const backgroundImage = props.backgroundImage || '/images/background-auth.jpg'
+// Laravel 5.7's 404 illustration (MIT), the same scene the framework's own
+// error pages use, so an app that opts into this layout matches them. Pass
+// `backgroundImage` to swap it for anything else.
+const backgroundImage = props.backgroundImage || '/svgs/404.svg'
 </script>
 
 <div class="flex relative justify-center shrink-0 md:px-12 lg:px-0 min-h-full">
