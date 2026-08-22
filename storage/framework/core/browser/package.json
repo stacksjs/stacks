@@ -84,6 +84,6 @@
   "devDependencies": {
     "better-dx": "^0.2.24",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.14.0"
   }
 }

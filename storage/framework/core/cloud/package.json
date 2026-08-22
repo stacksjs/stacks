@@ -60,7 +60,7 @@
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "^0.11.4",
-    "@stacksjs/ts-xml": "^0.1.0"
+    "@stacksjs/ts-xml": "^0.1.2"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
