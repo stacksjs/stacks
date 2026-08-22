@@ -42,6 +42,28 @@ const isAuthenticated = await Auth.check()
 
 The built-in API routes include `POST /login`, `POST /register`, `POST /auth/refresh`, `GET /auth/tokens`, `GET /me`, and `POST /logout`.
 
+## The pages that come with it
+
+Every app serves a working set of auth pages by default, so nothing has to be
+built before someone can sign in:
+
+| Page | What it does |
+| --- | --- |
+| `/login` | Sign in, plus buttons for whichever social providers `config/services.ts` has credentials for |
+| `/register` | Create an account, with the same social buttons |
+| `/forgot-password` | Request a reset link |
+| `/password/reset/{token}` | Where that emailed link lands. Change the address with `config.auth.passwordReset.url` |
+| `/auth/magic/{token}` | Where a magic link lands. It posts the token rather than consuming it on GET, because mail scanners prefetch links |
+
+`GET /login` renders the page while `POST /login` reaches the API, because the
+views server forwards every mutating verb to the router.
+
+Each page is a thin view over a component in
+`resources/components/Dashboard/Auth/`. Override any of them by creating the
+same path under your own `resources/views/` - yours wins. To replace only the
+markup, keep the container and pass your own component, or use the `social`
+slot on the sign-in and sign-up cards to change what sits under the form.
+
 ## Protect a route
 
 Register middleware by name instead of implementing authentication again:
