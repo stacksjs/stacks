@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-broadcasting": "^0.0.9"
+    "ts-broadcasting": "^0.0.10"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
