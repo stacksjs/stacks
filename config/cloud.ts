@@ -851,6 +851,13 @@ export const tsCloud: TsCloudConfig = {
 
     wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
 
+    // `www.dashboard` answered nothing: the record resolved here, no site
+    // claimed the name, so the gateway fell back to another tenant's
+    // certificate and returned 404 — a TLS warning followed by a dead end for
+    // anyone who typed the www. A redirect costs nothing and is what the name
+    // was always meant to do.
+    wwwDashboardStacksjs: { domain: 'www.dashboard.stacksjs.com', redirect: 'https://dashboard.stacksjs.com' },
+
     // Vanity invite link. Every README/doc links the community as
     // stacksjs.com/discord so the invite code lives in exactly one place (here)
     // and can be rotated without touching thousands of markdown files.
