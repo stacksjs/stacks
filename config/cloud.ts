@@ -822,6 +822,22 @@ export const tsCloud: TsCloudConfig = {
 
     // Redirect-only sites (gateway answers with a 301; nothing is shipped).
     // The alternate adblock domain → canonical, and www → apex for stacksjs.com.
+    // MTA-STS policy host. Its own site because RFC 8461 requires the policy at
+    // `https://mta-sts.<domain>/.well-known/mta-sts.txt`, served with a
+    // certificate valid for that name, and forbids redirects — so it cannot be
+    // answered by the main site or pointed anywhere more convenient. Joining
+    // the gateway as a site is what gets it into `certsDirServerNames`.
+    //
+    // The zone has advertised `_mta-sts.stacksjs.com` with nothing serving the
+    // policy behind it, which is worse than not advertising at all: senders
+    // fetched a 404 and fell back to opportunistic TLS, silently.
+    mtaSts: {
+      root: '.',
+      domain: 'mta-sts.stacksjs.com',
+      start: 'bun storage/framework/scripts/mta-sts-server.ts',
+      port: 8461,
+    },
+
     wwwStacksjs: { domain: 'www.stacksjs.com', redirect: 'https://stacksjs.com' },
 
     // Vanity invite link. Every README/doc links the community as
