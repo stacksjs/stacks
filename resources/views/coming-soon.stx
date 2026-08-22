@@ -1,8 +1,9 @@
 <script server>
-// App-level override of the framework holding page. The framework default
-// (defaults/resources/views/coming-soon.stx -> <ComingSoon />) could not
-// resolve its <Logo /> component in this app and rendered an error, so this
-// self-contained page replaces it. Concept: dawn at the trailhead. The scene
+// App-level override of the framework holding page
+// (defaults/resources/views/coming-soon.stx -> <ComingSoon />). It began as a
+// workaround for that component failing to resolve <Logo />, which no longer
+// reproduces under stx-serve; it stays because this is the site's own design,
+// not because the default is broken. Concept: dawn at the trailhead. The scene
 // is Laravel 5.7's 503 illustration (MIT) recolored to the Stacks blue
 // palette, which turns its rising sun into a blue sun over the dunes; a dark
 // variant renders as a night camp under the same sun. The email form posts
