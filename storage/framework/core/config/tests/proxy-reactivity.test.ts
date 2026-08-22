@@ -102,3 +102,64 @@ describe('section exports (live bindings)', () => {
     expect(mod.email).toEqual(mod.config.email as any)
   })
 })
+
+/**
+ * Writing to `config`.
+ *
+ * There was no `set` trap, so an assignment fell through to the proxy's
+ * function target - and on a function target that is not a silent no-op, it
+ * throws `TypeError: Proxy handler's 'get' result of a non-configurable and
+ * non-writable property should be the same value as the target's property`.
+ * `config.services = {...}` was an exception from a line that reads like
+ * ordinary assignment.
+ *
+ * The cost was not hypothetical. The socials suite worked around it by
+ * capturing `config.services` once and mutating that object in place - but
+ * `readMerged` returns `overrides[prop]` when it is a non-empty object and
+ * `defaults[prop]` otherwise, so the captured object is one of *two*, and which
+ * one wins depends on whether the project's config files have finished
+ * loading. On CI the other half became authoritative mid-run and every
+ * assertion expecting a configured provider failed, on a package whose source
+ * was correct.
+ */
+describe('writing through the proxy', () => {
+  const services = () => (config as any).services
+
+  afterEach(() => {
+    delete (overrides as any).__probe
+    delete (overrides as any).services
+  })
+
+  it('accepts an assignment instead of throwing', () => {
+    expect(() => { (config as any).__probe = { a: 1 } }).not.toThrow()
+    expect((config as any).__probe).toEqual({ a: 1 })
+  })
+
+  it('writes into overrides, which is the half a read prefers', () => {
+    ;(config as any).services = { apple: { clientId: 'org.example.web' } }
+
+    // Read back through the proxy, and present in `overrides` rather than
+    // having landed on the target where nothing would ever see it.
+    expect(Object.keys(services())).toEqual(['apple'])
+    expect((overrides as any).services).toEqual({ apple: { clientId: 'org.example.web' } })
+  })
+
+  it('and a delete falls back to the defaults rather than to nothing', () => {
+    ;(config as any).services = { apple: { clientId: 'org.example.web' } }
+    delete (config as any).services
+
+    // `readMerged` treats an absent or empty override as unset, so what is
+    // left is the framework default - not `undefined`, which would make every
+    // reader of a deleted section crash rather than see the shipped value.
+    expect(services()).toEqual((defaults as any).services)
+  })
+
+  it('an empty object is treated as unset, which is what a read falls back on', () => {
+    // Deliberate, and the socials suite depends on it: `{}` is what
+    // `defaultsForOverrides()` seeds every section with, so an empty override
+    // cannot be allowed to shadow the defaults.
+    ;(config as any).services = {}
+
+    expect(services()).toEqual((defaults as any).services)
+  })
+})

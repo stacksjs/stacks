@@ -49,6 +49,34 @@ export const config: StacksOptions = new Proxy(proxyTarget, {
   get(_t, prop: string) {
     return readMerged(prop)
   },
+  /*
+   * Writes land in `overrides`, which is the half `readMerged` prefers.
+   *
+   * Without this trap an assignment falls through to the function target, and
+   * on a function target that is not a silent no-op - it throws
+   * `TypeError: Proxy handler's 'get' result of a non-configurable and
+   * non-writable property should be the same value as the target's property`.
+   * So `config.services = {...}` was not "ignored", it was an exception from a
+   * line that reads like ordinary assignment.
+   *
+   * Writing into `overrides` rather than `defaults` is the only coherent
+   * choice: `readMerged` returns `overrides[prop]` whenever it is a non-empty
+   * object and falls back to `defaults[prop]` otherwise, so a value written
+   * here is a value read back here. Assigning into `defaults` instead would be
+   * read back only while `overrides` stayed empty - which is precisely the
+   * intermittency this fixes, and which failed the socials suite on CI while
+   * passing on every developer's machine.
+   */
+  set(_t, prop: string, value: unknown) {
+    ;(overrides as any)[prop] = value
+
+    return true
+  },
+  deleteProperty(_t, prop: string) {
+    delete (overrides as any)[prop]
+
+    return true
+  },
   has(_t, prop) {
     return prop in overrides || prop in defaults
   },

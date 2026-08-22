@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, test } from 'bun:test'
-import { config } from '@stacksjs/config'
+import { afterEach, beforeAll, describe, expect, test } from 'bun:test'
+import { config, overridesReady } from '@stacksjs/config'
 import { AppleProvider, GoogleProvider } from '../src/drivers'
 import {
   configuredSocialProviders,
@@ -16,12 +16,47 @@ import {
  * never be offered.
  */
 
-const services = (config as any).services ??= {}
-const original = { ...services }
+let original: Record<string, any> = {}
 
+/**
+ * Wait for the project's own config to land before touching anything.
+ *
+ * `overridesReady` loads every `~/config/*.ts` in the background and assigns
+ * the result over `overrides[key]` - a replacement, not a merge. So a suite
+ * that writes `config.services` while that is still in flight has its write
+ * thrown away the moment `config/services.ts` resolves, and the failure lands
+ * on whichever assertion happened to run after it. Awaiting once here removes
+ * the window rather than narrowing it.
+ */
+beforeAll(async () => {
+  await overridesReady.catch(() => undefined)
+  original = { ...((config as any).services ?? {}) }
+})
+
+/**
+ * Replace the services block, by assigning to `config` rather than by mutating
+ * the object it hands back.
+ *
+ * This used to capture `config.services` once and mutate that object in place,
+ * and it passed everywhere except CI. `config` is a Proxy whose `get` returns
+ * `overrides[prop]` when that is a non-empty object and `defaults[prop]`
+ * otherwise - so the object handed back is one of *two* objects, and which one
+ * depends on whether the project's `config/*.ts` files have finished loading.
+ * Capturing it binds the test to whichever half happened to win at import time;
+ * when the other half became authoritative mid-run, every mutation the test had
+ * made was on the object nobody was reading, and each assertion expecting a
+ * configured provider failed while each expecting an unconfigured one passed.
+ *
+ * Assigning goes through the `set` trap, which writes into `overrides` - the
+ * half `readMerged` prefers - so what is written is what is read.
+ *
+ * `setServices({})` is the one case that still falls through to `defaults`,
+ * because an empty object is exactly what `readMerged` treats as unset. That is
+ * the intended reading here: the framework defaults declare the same providers
+ * with blank credentials, so nothing is configured either way.
+ */
 function setServices(next: Record<string, any>): void {
-  for (const key of Object.keys(services)) delete services[key]
-  Object.assign(services, next)
+  ;(config as any).services = { ...next }
 }
 
 const APPLE = {
