@@ -148,6 +148,9 @@ const commandRegistry: Record<string, CommandLoader> = {
   'setup:oh-my-zsh': { path: './commands/setup.ts', exportName: 'setup' },
   'ai:setup': { path: './commands/setup.ts', exportName: 'setup' },
   'share': { path: './commands/share.ts', exportName: 'share' },
+  // simulator.ts registers both, and neither is useful without the other.
+  'simulator:doctor': { path: './commands/simulator.ts', exportName: 'simulator' },
+  'simulator:open': { path: './commands/simulator.ts', exportName: 'simulator' },
   'stack': { path: './commands/stacks.ts', exportName: 'stacks' },
   'sms': { path: './commands/sms.ts', exportName: 'sms' },
   'telemetry': { path: './commands/telemetry.ts', exportName: 'telemetryCommand' },

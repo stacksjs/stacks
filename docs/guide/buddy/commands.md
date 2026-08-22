@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **303 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **305 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -61,6 +61,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `seed` | 1 |
 | `serve` | 1 |
 | `setup` | 3 |
+| `simulator` | 2 |
 | `sms` | 6 |
 | `stack` | 3 |
 | `stripe` | 1 |
@@ -4314,6 +4315,31 @@ Share your local development server via a public tunnel
 | `--server` | Tunnel server URL | value, required | `"api.localtunnel.dev"` |
 | `--subdomain` | Request a specific subdomain | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `simulator:doctor`
+
+Whether an iOS simulator can run here, and what to do when it cannot
+
+- Usage: `$ buddy simulator:doctor`
+- Namespace: `simulator`
+- Aliases: none
+- Arguments: none
+
+### `simulator:open`
+
+Open a URL in Mobile Safari on a simulator, booting one if needed
+
+- Usage: `$ buddy simulator:open <url>`
+- Namespace: `simulator`
+- Aliases: none
+- Arguments: `<url>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--device` | Which device, by name. Defaults to the newest iPhone. | value, required | `""` |
+| `--screenshot` | Save a picture of the result here | value, required | `""` |
+| `--settle` | How long to let the page load before the screenshot | value, required | `8` |
+| `--fresh` | Quit Mobile Safari first, so this is not the last page again | boolean, optional | `false` |
 
 ### `sms`
 
