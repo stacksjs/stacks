@@ -199,33 +199,76 @@ async function createUser(data: CreateUserInput) {
 
 ## Error Pages
 
+In development, an unhandled error renders the debug page: the stack trace,
+source snippets around the throw site, request context and recent queries. In
+production none of that is shown. The illustrated error page renders instead.
+
+### The Built-in Page
+
+Every production error page is the same split layout. The status, its title and
+a one-line message sit on one side; an illustration fills the other. Four scenes
+cover every status, grouped by what the page is telling the visitor:
+
+| Scene | Statuses |
+| --- | --- |
+| A fortress keeping watch over moonlit dunes | 401, 403 |
+| A lone camel on an endless ridge at dusk | 404, 405, 410 |
+| A domed village at twilight | 408, 429, 502, 503, 504 |
+| Footprints trailing off under a midday sun | 400, 409, 422, 500 |
+
+Anything outside that list falls back by status class: a 4xx gets the camel,
+everything else gets the footprints.
+
+The page is self-contained. Its CSS is inlined, its illustration is inlined SVG
+and it fetches no webfont, so it cannot half-render on the one page guaranteed
+to be served while something is already broken. It follows the visitor's
+`prefers-color-scheme` and stacks the two halves on narrow screens.
+
+The illustrations were drawn by Steve Schoger for Laravel 5.7 and are used under
+Laravel's MIT licence. `public/svgs/` carries standalone copies of the same four
+scenes for your own templates to use.
+
 ### Custom Error Pages
 
-Create custom error pages in `resources/layouts/`:
+An HTML file at `resources/views/errors/<status>.html` replaces the built-in
+page for that status. `resources/views/errors/error.html` is the catch-all for
+every status without a file of its own, and a status-specific file always wins
+over it.
+
+Three variables are substituted into the file, HTML-escaped:
+
+| Variable | Example |
+| --- | --- |
+| `{{status}}` | `404` |
+| `{{title}}` | `Not Found` |
+| `{{message}}` | `The requested resource could not be found.` |
 
 ```html
-<!-- resources/layouts/404.stx -->
-<template>
-  <div class="error-page">
-    <h1>404</h1>
-    <h2>Page Not Found</h2>
-    <p>The page you're looking for doesn't exist.</p>
-    <a href="/">Go back home</a>
-  </div>
-</template>
+<!-- resources/views/errors/404.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>{{status}} {{title}}</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; }
+      .scene { height: 40vh; background: url("/svgs/404.svg") center / cover; }
+      .copy { padding: 2rem; }
+    </style>
+  </head>
+  <body>
+    <div class="scene"></div>
+    <div class="copy">
+      <h1>{{title}}</h1>
+      <p>{{message}}</p>
+      <a href="/">Go back home</a>
+    </div>
+  </body>
+</html>
 ```
 
-```html
-<!-- resources/layouts/500.stx -->
-<template>
-  <div class="error-page">
-    <h1>500</h1>
-    <h2>Something went wrong</h2>
-    <p>We're sorry, but something went wrong on our end.</p>
-    <button onclick="location.reload()">Try Again</button>
-  </div>
-</template>
-```
+If no file matches, the built-in page renders. So does an unreadable one, since
+a broken custom template must never be the reason an error page fails.
 
 ## Global Error Handler
 
