@@ -361,7 +361,7 @@
     "@stacksjs/storage": "^0.72.48",
     "@stacksjs/strings": "^0.72.48",
     "@stacksjs/tlsx": "^0.13.0",
-    "@stacksjs/ts-cloud": "^0.11.3",
+    "@stacksjs/ts-cloud": "^0.11.4",
     "@stacksjs/tunnel": "^0.72.48",
     "@stacksjs/types": "^0.72.48",
     "@stacksjs/ui": "^0.72.48",
