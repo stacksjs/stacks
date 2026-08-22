@@ -17,6 +17,15 @@ export {
   ok,
 } from 'ts-error-handling'
 
+// The four illustrations the production error page draws from
+export type { ErrorIllustration } from './error-illustrations'
+
+export {
+  ERROR_ILLUSTRATIONS,
+  errorIllustration,
+  illustrationForStatus,
+} from './error-illustrations'
+
 // Error page exports (Ignition-style) - local implementation
 export type {
   CodeSnippet,
