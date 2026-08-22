@@ -2,7 +2,7 @@
   "name": "@stacksjs/desktop-build",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.46",
+  "version": "0.72.47",
   "description": "Build and launch Craft desktop applications for Stacks",
   "author": "Chris Breuer",
   "contributors": [
