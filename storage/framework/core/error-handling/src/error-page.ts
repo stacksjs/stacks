@@ -263,6 +263,7 @@ import {
   wrapErrorPage,
   type ParsedFrame,
 } from './error-page-template'
+import { errorIllustration } from './error-illustrations'
 import { ERROR_PAGE_CSS } from './error-page-styles'
 
 export { ERROR_PAGE_CSS }
@@ -391,11 +392,17 @@ function loadCustomErrorPage(status: number, title: string, message: string): st
 }
 
 /**
- * Render a simple production error page.
+ * Render the production error page: the status and its message on one side,
+ * the illustration that fits it on the other.
  *
  * Checks for a userland override at `resources/views/errors/<status>.html`
  * (or `error.html` as a generic fallback) first; renders the built-in
  * template only when no custom page is provided. stacksjs/stacks#863.
+ *
+ * Everything the page needs is in the string it returns - the CSS, and the
+ * illustration as inline SVG. A production error page is served precisely
+ * when something is already wrong, so it never asks for a second request it
+ * cannot be sure will be answered.
  */
 export function renderProductionErrorPage(status: number): string {
   const httpError = HTTP_ERRORS[status as HttpStatusCode] || {
@@ -416,12 +423,16 @@ export function renderProductionErrorPage(status: number): string {
   <style>${ERROR_PAGE_CSS}</style>
 </head>
 <body>
-  <div class="production-page">
-    <div class="production-status">${httpError.status}</div>
-    <h1 class="production-title">${escapeHtml(httpError.title)}</h1>
-    <p class="production-message">${escapeHtml(httpError.message)}</p>
-    <a href="/" class="production-link">← Back to Home</a>
-  </div>
+  <main class="production-page">
+    <div class="production-scene">${errorIllustration(httpError.status)}</div>
+    <section class="production-panel">
+      <div class="production-status">${httpError.status}</div>
+      <div class="production-rule"></div>
+      <h1 class="production-title">${escapeHtml(httpError.title)}</h1>
+      <p class="production-message">${escapeHtml(httpError.message)}</p>
+      <a href="/" class="production-link">Back to home</a>
+    </section>
+  </main>
 </body>
 </html>`
 }

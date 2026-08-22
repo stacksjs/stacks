@@ -575,27 +575,75 @@ export const ERROR_PAGE_CSS = `
     }
   }
 
-  /* ── Production page ── */
+  /* ── Production page ──
+     Laravel 5.7's split layout, rebuilt on these tokens: the message on one
+     half, an illustration bled to the edge on the other. Stacked on narrow
+     screens, scene first, because a square-ish crop of it reads as artwork
+     while a 30vh-tall sliver of the copy would not. */
   .production-page {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    grid-template-rows: clamp(12rem, 34vh, 20rem) 1fr;
     min-height: 100dvh;
-    text-align: center;
-    padding: 2rem;
   }
 
-  .production-status {
-    font-size: 6rem;
-    font-weight: 700;
-    color: var(--neutral-200);
-    margin-bottom: 1rem;
-    line-height: 1;
+  .production-scene {
+    grid-row: 1;
+    overflow: hidden;
+    /* Behind the artwork while it paints, and all the visitor sees if a
+       userland page drops the illustration but keeps these class names. */
+    background: var(--neutral-200);
   }
 
   @media (prefers-color-scheme: dark) {
-    .production-status { color: var(--neutral-700); }
+    .production-scene { background: var(--neutral-800); }
+  }
+
+  .production-scene svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .production-panel {
+    display: flex;
+    flex-direction: column;
+    grid-row: 2;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(2rem, 6vw, 4rem);
+  }
+
+  @media (min-width: 48rem) {
+    .production-page {
+      grid-template-rows: 1fr;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .production-scene { grid-area: 1 / 2; }
+
+    .production-panel {
+      grid-area: 1 / 1;
+      padding-inline: clamp(2.5rem, 7vw, 6rem);
+    }
+  }
+
+  .production-status {
+    font-size: clamp(3.5rem, 11vw, 7rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+
+  .production-rule {
+    width: 3.5rem;
+    height: 0.25rem;
+    margin: 1.25rem 0 1.5rem;
+    border-radius: 999px;
+    background: var(--blue-600);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .production-rule { background: var(--blue-500); }
   }
 
   .production-title {
@@ -610,15 +658,33 @@ export const ERROR_PAGE_CSS = `
     max-width: 28rem;
   }
 
-  .production-link {
-    color: var(--blue-600);
-    text-decoration: none;
-    font-size: 0.875rem;
+  @media (prefers-color-scheme: dark) {
+    .production-message { color: var(--neutral-400); }
   }
 
-  .production-link:hover { text-decoration: underline; }
+  .production-link {
+    display: inline-block;
+    padding: 0.625rem 1.25rem;
+    border: 1px solid var(--neutral-300);
+    border-radius: var(--radius-lg);
+    color: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
+  }
+
+  .production-link:hover {
+    border-color: var(--neutral-400);
+    background: var(--neutral-100);
+  }
 
   @media (prefers-color-scheme: dark) {
-    .production-link { color: var(--blue-500); }
+    .production-link { border-color: var(--neutral-700); }
+
+    .production-link:hover {
+      border-color: var(--neutral-600);
+      background: var(--neutral-800);
+    }
   }
 `
