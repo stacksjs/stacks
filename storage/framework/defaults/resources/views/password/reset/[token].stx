@@ -1,0 +1,18 @@
+<script server>
+/**
+ * Where a mailed password-reset link lands, at `/password/reset/{token}`.
+ *
+ * The framework has been sending people here for as long as it has had a
+ * reset mailer - `core/auth/src/password/reset.ts` builds the link from
+ * `config.auth.passwordReset.url`, whose default is
+ * `/password/reset/{token}?email={email}` - and nothing has ever served the
+ * address. Every reset email ended at a 404, which made the whole flow
+ * (the send endpoint, the token store, the reset action, the mail template)
+ * unreachable from a browser.
+ *
+ * An app that points `config.auth.passwordReset.url` somewhere else is free
+ * to keep its own page; this is the page the default link needs.
+ */
+</script>
+
+<ResetPasswordDashboard />
