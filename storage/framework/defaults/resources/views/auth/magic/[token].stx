@@ -4,12 +4,16 @@ import { config } from '@stacksjs/config'
 /**
  * Where a magic sign-in link lands, at `/auth/magic/{token}`.
  *
- * The logic sits in the component rather than here. As a page-level
- * `<script client>` it combined `useRef` with a top-level `effect`, and that
- * pair leaves an stx page inert: the setup registers, no directive binds, and
- * the page renders perfectly while its button does nothing. Either alone is
- * fine, and a component's script binds regardless - which is also how every
- * other auth page here is built.
+ * The logic sits in the component, like every other auth page here.
+ *
+ * It used to sit in a page-level `<script client>` that read a `useRef` from
+ * inside a top-level `effect`, and that combination left the page inert: the
+ * setup registered, no directive bound, and the page rendered perfectly while
+ * its button did nothing. The cause was in stx - `useRef()` returned an object
+ * rather than a callable, so `shell()` threw out of the effect and out of the
+ * setup function, taking every binding with it. Fixed upstream in stx 0.2.217;
+ * the ref is also gone from here, because a template ref is not reactive and
+ * reading one during setup only ever answers null.
  *
  * `autoConsume` is passed as an attribute because it is a server decision a
  * client script cannot read.
