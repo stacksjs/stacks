@@ -1,8 +1,8 @@
 <script server>
 // The frontend's not-found page. When no view matches a URL, stx-serve looks
-// for a route at `/404` or `/errors/404` before giving up; without this file
-// it gives up, and an unknown URL on an otherwise finished app answers with
-// the string "Not Found".
+// for a route at `/404` or `/errors/404` first. Without this file it falls
+// through to its own generic page, which carries none of the app's design
+// (and, on the server `stx build` produces, to the bare string "Not Found").
 //
 // Same split as the framework's production error page in
 // @stacksjs/error-handling, so a 404 looks the same whether the router or the
