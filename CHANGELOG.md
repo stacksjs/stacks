@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.45...v0.72.46)
+
+## 👷 Build System
+
+- take the ts-cloud release that stops the edge rewriting HTML ([73e5803](https://github.com/stacksjs/stacks/commit/73e5803)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.44...v0.72.45)
 
 ## 👷 Build System
