@@ -60,6 +60,6 @@
     "localtunnels": "^0.2.13"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

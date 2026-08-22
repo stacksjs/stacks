@@ -60,8 +60,8 @@
     "prepublishOnly": "bun run build"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.10.0",
-    "stripe": "22.3.2"
+    "@stripe/stripe-js": "^9.14.0",
+    "stripe": "22.5.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -73,9 +73,9 @@
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0",
-    "stripe": "22.3.2"
+    "@stripe/stripe-js": "^9.14.0",
+    "stripe": "22.5.0"
   }
 }

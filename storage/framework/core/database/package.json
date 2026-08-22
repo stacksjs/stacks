@@ -61,15 +61,15 @@
   },
   "dependencies": {
     "@stacksjs/ts-validation": "^0.5.5",
-    "bun-query-builder": "^0.2.53",
-    "dynamodb-tooling": "^0.3.2"
+    "bun-query-builder": "^0.2.60",
+    "dynamodb-tooling": "^0.3.6"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/storage": "workspace:*",

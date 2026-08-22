@@ -58,10 +58,10 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "pickier": "^0.1.58"
+    "pickier": "^0.1.62"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "publishConfig": {
     "exports": {

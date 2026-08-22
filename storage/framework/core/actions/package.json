@@ -60,20 +60,20 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.6",
-    "@stacksjs/bunpress": "^0.2.8",
-    "@stacksjs/logsmith": "^0.2.3",
+    "@stacksjs/bumpx": "^0.2.17",
+    "@stacksjs/bunpress": "^0.2.13",
+    "@stacksjs/logsmith": "^0.2.11",
     "@stacksjs/registry": "workspace:*",
-    "@stacksjs/stx": "^0.2.197",
-    "@stacksjs/ts-cloud": "^0.11.4",
+    "@stacksjs/stx": "^0.2.216",
+    "@stacksjs/ts-cloud": "^0.11.5",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
     "@stacksjs/api": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/tlsx": "^0.13.2",
-    "better-dx": "^0.2.24",
+    "@stacksjs/tlsx": "^0.13.17",
+    "better-dx": "^0.2.25",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
@@ -90,7 +90,7 @@
     "@stacksjs/validation": "workspace:*"
   },
   "peerDependencies": {
-    "pickier": "^0.1.58",
+    "pickier": "^0.1.62",
     "craft-native": "^0.0.67"
   },
   "peerDependenciesMeta": {

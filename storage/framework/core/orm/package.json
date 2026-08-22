@@ -64,11 +64,11 @@
   },
   "dependencies": {
     "@stacksjs/ts-validation": "^0.5.5",
-    "bun-query-builder": "^0.2.53"
+    "bun-query-builder": "^0.2.60"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/query-builder": "workspace:*",
     "@stacksjs/types": "workspace:*"
   }
