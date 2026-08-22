@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -67,7 +67,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -144,7 +144,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -248,7 +248,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -290,7 +290,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -350,7 +350,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -381,7 +381,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
@@ -439,7 +439,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
