@@ -1,0 +1,68 @@
+<script server>
+/**
+ * The site's sign-in page, at `/login`.
+ *
+ * It lived at `defaults/views/auth/login.stx` and was one line mounting the
+ * presentational `Login` component, from a directory no server serves. That
+ * component only emits `submit`, so even reachable it would have rendered a
+ * form that swallowed every sign-in. The container below is what listens: it
+ * calls `useAuth().login`, surfaces the error, and honours `?redirect=`. Its
+ * name is where the auth components happen to live, not where it can run.
+ *
+ * `POST /login` reaches the API without a proxy rule of its own, because the
+ * views server forwards every mutating verb to bun-router (DEFAULT_API_METHODS
+ * in core/server/src/proxy.ts). GET `/login` is this page.
+ *
+ * The social buttons go in through the card's `social` slot rather than after
+ * it, so they sit with the credentials instead of below the sign-up line.
+ * `configuredSocialProviders()` knows each provider's own required config, so
+ * a provider missing credentials never reaches a visitor as a button that
+ * fails at the redirect. Adding credentials to `config/services.ts` is the
+ * whole of what turns one on. Icons come from hugeicons, the collection Stacks
+ * defaults to; swap the map if your app standardises on another.
+ */
+import { configuredSocialProviders } from '@stacksjs/socials'
+
+const PROVIDER_ICONS = {
+  apple: 'i-hugeicons-apple',
+  facebook: 'i-hugeicons-facebook-01',
+  github: 'i-hugeicons-github',
+  google: 'i-hugeicons-google',
+  twitter: 'i-hugeicons-new-twitter',
+}
+
+const socialSignIn = configuredSocialProviders().map(provider => ({
+  label: provider.label,
+  href: `/auth/${provider.name}/redirect`,
+  icon: PROVIDER_ICONS[provider.name] ?? 'i-hugeicons-user-circle',
+}))
+</script>
+
+<LoginDashboard>
+  <template #social>
+    @if (socialSignIn.length)
+      <div class="mt-6">
+        <div class="relative">
+          <div class="flex absolute inset-0 items-center" aria-hidden="true">
+            <div class="w-full border-neutral-200 border-t dark:border-neutral-700"></div>
+          </div>
+          <div class="flex relative justify-center text-sm">
+            <span class="px-4 text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-800">Or continue with</span>
+          </div>
+        </div>
+
+        <div class="grid gap-3 mt-6 {{ socialSignIn.length > 1 ? 'grid-cols-2' : 'grid-cols-1' }}">
+          @foreach (socialSignIn as provider)
+            <a
+              href="{{ provider.href }}"
+              class="flex gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 rounded-lg dark:border-neutral-600"
+            >
+              <i class="h-5 w-5 {{ provider.icon }}" aria-hidden="true"></i>
+              <span>{{ provider.label }}</span>
+            </a>
+          @endforeach
+        </div>
+      </div>
+    @endif
+  </template>
+</LoginDashboard>

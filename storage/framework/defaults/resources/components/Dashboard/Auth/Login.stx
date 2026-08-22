@@ -129,6 +129,14 @@ function handleSubmit(): void {
           <span :if="!isLoading()">Sign in</span>
         </Button>
       </form>
+
+      {{--
+        Anything that belongs with the credentials, inside the same card:
+        the social sign-in buttons the /login page fills this with. It is a
+        slot because the provider list has to be computed server-side by
+        `configuredSocialProviders()`, and this component is client-only.
+      --}}
+      <slot name="social" />
     </div>
 
     <p :if="showSignUp()" class="mt-6 text-center text-neutral-500 text-sm dark:text-neutral-400">

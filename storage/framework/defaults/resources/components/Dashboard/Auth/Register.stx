@@ -225,6 +225,13 @@ function handleSubmit(): void {
         </Button>
       </form>
 
+      {{--
+        Anything that belongs with the credentials, inside the same card:
+        the social sign-in buttons the /register page fills this with. It is
+        a slot because the provider list has to be computed server-side by
+        `configuredSocialProviders()`, and this component is client-only.
+      --}}
+      <slot name="social" />
     </div>
 
     <!-- Login Link -->

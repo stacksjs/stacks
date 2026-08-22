@@ -41,5 +41,9 @@ async function handleLogin(credentials) {
     :isLoading="isLoading()"
     :error="error()"
     :data-auth-status="isLoading() ? 'loading' : 'ready'"
-  />
+  >
+    <!-- Forwarded so the page mounting this container can put social
+         sign-in inside the card. -->
+    <template #social><slot name="social" /></template>
+  </Login>
 </template>

@@ -1,0 +1,64 @@
+<script server>
+/**
+ * The site's sign-up page, at `/register`.
+ *
+ * It lived at `defaults/views/auth/signup.stx`, in a directory no server
+ * serves, and carried its own hand-written form whose `action="#"` posted
+ * nowhere. It also declared `id="password"` twice and named the confirmation
+ * field `password` as well, so the two inputs collided. The container below is
+ * what actually registers: it calls `useAuth().register`, surfaces the error,
+ * and honours `?redirect=`. Its name is where the auth components happen to
+ * live, not where it can run.
+ *
+ * The social block is what that page did get right, kept here and moved inside
+ * the card through its `social` slot. `configuredSocialProviders()` knows each
+ * provider's own required config (Apple has no clientSecret and is validated
+ * on its signing key instead), so what renders is exactly the set that will
+ * complete a sign-in. Adding credentials to `config/services.ts` is the whole
+ * of what turns one on.
+ */
+import { configuredSocialProviders } from '@stacksjs/socials'
+
+const PROVIDER_ICONS = {
+  apple: 'i-hugeicons-apple',
+  facebook: 'i-hugeicons-facebook-01',
+  github: 'i-hugeicons-github',
+  google: 'i-hugeicons-google',
+  twitter: 'i-hugeicons-new-twitter',
+}
+
+const socialSignUp = configuredSocialProviders().map(provider => ({
+  label: provider.label,
+  href: `/auth/${provider.name}/redirect`,
+  icon: PROVIDER_ICONS[provider.name] ?? 'i-hugeicons-user-circle',
+}))
+</script>
+
+<RegisterDashboard>
+  <template #social>
+    @if (socialSignUp.length)
+      <div class="mt-6">
+        <div class="relative">
+          <div class="flex absolute inset-0 items-center" aria-hidden="true">
+            <div class="w-full border-neutral-200 border-t dark:border-neutral-700"></div>
+          </div>
+          <div class="flex relative justify-center text-sm">
+            <span class="px-4 text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-800">Or continue with</span>
+          </div>
+        </div>
+
+        <div class="grid gap-3 mt-6 {{ socialSignUp.length > 1 ? 'grid-cols-2' : 'grid-cols-1' }}">
+          @foreach (socialSignUp as provider)
+            <a
+              href="{{ provider.href }}"
+              class="flex gap-2 items-center justify-center px-3 py-2 font-medium text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 rounded-lg dark:border-neutral-600"
+            >
+              <i class="h-5 w-5 {{ provider.icon }}" aria-hidden="true"></i>
+              <span>{{ provider.label }}</span>
+            </a>
+          @endforeach
+        </div>
+      </div>
+    @endif
+  </template>
+</RegisterDashboard>
