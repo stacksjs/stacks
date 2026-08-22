@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.48...v0.72.49)
+
+## 👷 Build System
+
+- take the ts-cloud release that makes emailObfuscation configurable ([4ce92d7](https://github.com/stacksjs/stacks/commit/4ce92d7)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.45...v0.72.48)
 
 ## 👷 Build System
