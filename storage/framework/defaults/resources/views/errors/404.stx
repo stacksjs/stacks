@@ -1,0 +1,36 @@
+<script server>
+// The frontend's not-found page. When no view matches a URL, stx-serve looks
+// for a route at `/404` or `/errors/404` before giving up; without this file
+// it gives up, and an unknown URL on an otherwise finished app answers with
+// the string "Not Found".
+//
+// Same split as the framework's production error page in
+// @stacksjs/error-handling, so a 404 looks the same whether the router or the
+// views server answered it. The scene is Laravel 5.7's 404 illustration (MIT),
+// served from public/svgs.
+</script>
+
+<div class="flex flex-col md:flex-row min-h-screen bg-neutral-50 dark:bg-neutral-900">
+  <div class="overflow-hidden md:order-2 h-56 sm:h-72 md:h-auto md:w-1/2 bg-neutral-200 dark:bg-neutral-800">
+    <img src="/svgs/404.svg" alt="" class="object-cover h-full w-full">
+  </div>
+
+  <section class="flex md:order-1 flex-1 flex-col items-start justify-center md:flex-none px-8 py-12 md:px-16 md:w-1/2">
+    <div class="font-extrabold text-6xl text-neutral-950 tracking-tight md:text-8xl dark:text-white">404</div>
+
+    <div class="my-6 h-1 w-14 bg-blue-600 dark:bg-blue-500 rounded-full"></div>
+
+    <h1 class="mb-2 font-semibold text-2xl text-neutral-950 dark:text-white">Page not found</h1>
+
+    <p class="mb-8 max-w-md text-neutral-500 dark:text-neutral-400">
+      The page you are looking for does not exist, or it has moved.
+    </p>
+
+    <a
+      href="/"
+      class="inline-block px-5 py-2.5 font-medium text-neutral-950 text-sm dark:text-white hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-700"
+    >
+      Back to home
+    </a>
+  </section>
+</div>
