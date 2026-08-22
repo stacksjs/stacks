@@ -1,0 +1,94 @@
+<script client>
+/**
+ * The magic-link interstitial.
+ *
+ * The email's GET lands on the page that mounts this, and this posts the token
+ * to the consume endpoint - a GET must never consume, because mail-security
+ * scanners prefetch links and would burn the single-use token before the
+ * person ever taps it. When `autoConsume` is off it waits for a tap instead,
+ * for environments whose scanners execute page scripts too.
+ *
+ * `autoConsume` arrives as a string because it is decided server-side, from
+ * `config.auth.magicLink.confirmInteraction`, and a client script cannot read
+ * config directly.
+ */
+const autoConsume = useReactiveProp<string>('autoConsume', 'true')
+const route = useRoute()
+const status = state('ready') // ready | working | done | failed
+const message = state('')
+
+async function consume() {
+  if (status() === 'working' || status() === 'done')
+    return
+
+  status.set('working')
+  try {
+    const reply = await fetch('/auth/magic-link/consume', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ token: String(route.params.token || '') }),
+    })
+    const body = await reply.json().catch(() => ({}))
+
+    if (!reply.ok) {
+      status.set('failed')
+      message.set(body.message || body.error || 'That sign-in link is not valid.')
+      return
+    }
+
+    status.set('done')
+    const redirect = String(body.redirect_to || '/')
+    navigate(redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/')
+  }
+  catch {
+    status.set('failed')
+    message.set('Something went wrong. Request a new link and try again.')
+  }
+}
+
+// `consume` reads `status()`, so calling it from inside the effect makes the
+// effect depend on `status` - and every set inside `consume` schedules another
+// run. Its own early return covers 'working' and 'done', but not 'failed', so a
+// link that fails to consume would be retried forever. A plain flag, which is
+// not a signal and so not a dependency, is what makes this fire once.
+let autoStarted = false
+
+effect(() => {
+  if (autoStarted || autoConsume() !== 'true')
+    return
+
+  autoStarted = true
+  consume()
+})
+</script>
+
+<template>
+  <main class="flex items-center justify-center px-6 min-h-[100dvh]">
+    <div class="max-w-sm w-full text-center">
+      <div :if="status() === 'failed'">
+        <div class="flex items-center justify-center mx-auto h-12 w-12 bg-red-50 rounded-full">
+          <span class="h-6 w-6 text-red-500 i-hugeicons-alert-02"></span>
+        </div>
+        <h1 class="mt-5 font-semibold text-xl tracking-tight">Sign-in link problem</h1>
+        <p class="mt-2 text-[15px] text-gray-600">{{ message() }}</p>
+        <a href="/login" class="inline-block mt-6 px-5 py-2.5 font-medium text-white bg-gray-900 rounded-lg">Back to sign in</a>
+      </div>
+      <div :else-if="status() === 'working' || status() === 'done'">
+        <div class="flex items-center justify-center mx-auto h-12 w-12 bg-gray-100 rounded-full">
+          <span class="h-6 w-6 text-gray-500 animate-spin i-hugeicons-loading-03"></span>
+        </div>
+        <h1 class="mt-5 font-semibold text-xl tracking-tight">Signing you in</h1>
+        <p class="mt-2 text-[15px] text-gray-600">One moment.</p>
+      </div>
+      <div :else>
+        <div class="flex items-center justify-center mx-auto h-12 w-12 bg-gray-100 rounded-full">
+          <span class="h-6 w-6 text-gray-600 i-hugeicons-mail-open-01"></span>
+        </div>
+        <h1 class="mt-5 font-semibold text-xl tracking-tight">Continue to sign in</h1>
+        <p class="mt-2 text-[15px] text-gray-600">Tap below to finish signing in with your emailed link.</p>
+        <button type="button" @click="consume" class="mt-6 px-6 py-3 font-medium text-white bg-gray-900 rounded-lg transition-transform active:scale-[0.98]">Continue</button>
+      </div>
+    </div>
+  </main>
+</template>
