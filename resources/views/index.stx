@@ -1076,11 +1076,12 @@ const deployRoutes = [
         position: absolute;
         z-index: -1;
         inset: 0 -6% 0 -6%;
-        /* 62% down, chosen by looking: that lands the village and the rising
-           sun in frame once a 1024-square illustration is cropped to a wide
-           band. Anchored at `bottom` you get dunes and nothing to recognise;
-           at 52% a haze orb swells over the right half. */
-        background: url("/assets/images/coming-soon-dawn.svg") center 62% / cover no-repeat;
+        /* The 1600x500 cut, not the 1024 square. Cropping the square into a
+           band this wide magnified it about 1.6x, which pushed the village
+           half out of frame and swelled the atmospheric bloom into white
+           saucers. The wide variant is composed for these proportions, so
+           `cover` now trims a few pixels top and bottom and nothing else. */
+        background: url("/assets/images/horizon-dawn.svg") center / cover no-repeat;
         animation: horizon-drift 64s ease-in-out infinite;
       }
 
@@ -1105,14 +1106,21 @@ const deployRoutes = [
        * Placed where the illustration's own sun sits once the scene is
        * cover-cropped, so the two read as one light source.
        */
+      /*
+       * Aligned to the sun the artwork already draws, at 86% across and 31%
+       * down its 1600x500 frame. Left at the old coordinates it sat a
+       * quarter-width to the left of the disc and the band read as two
+       * separate light sources. Centring lives inside the keyframes because
+       * the animation owns `transform`.
+       */
       .horizon-sun {
         position: absolute;
-        top: 46%;
-        right: 22%;
+        top: 31%;
+        left: 86%;
         width: clamp(7rem, 13vw, 12rem);
         height: clamp(7rem, 13vw, 12rem);
         border-radius: 999px;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.55), rgba(var(--accent-rgb), 0.18) 45%, transparent 70%);
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(var(--accent-rgb), 0.16) 45%, transparent 70%);
         animation: horizon-sun 11s ease-in-out infinite;
       }
 
@@ -1122,18 +1130,9 @@ const deployRoutes = [
       }
 
       :root[data-theme='dark'] .horizon-scene {
-        background-image: url("/assets/images/coming-soon-dawn-dark.svg");
+        background-image: url("/assets/images/horizon-dawn-dark.svg");
       }
 
-      /*
-       * The illustration's atmospheric bloom is nearly invisible over a pale
-       * sky and blows out to white saucers over the midnight one. A veil across
-       * the right half seats it back without touching the artwork itself.
-       */
-      :root[data-theme='dark'] .horizon-scene::after {
-        background:
-          linear-gradient(96deg, var(--page-a) 0%, var(--page-a) 26%, rgba(7, 12, 23, 0.55) 62%, rgba(7, 12, 23, 0.42) 100%);
-      }
 
       @keyframes horizon-drift {
         0%, 100% { transform: translate3d(0, 0, 0); }
@@ -1141,8 +1140,8 @@ const deployRoutes = [
       }
 
       @keyframes horizon-sun {
-        0%, 100% { transform: scale(1); opacity: 0.85; }
-        50% { transform: scale(1.08); opacity: 1; }
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.8; }
+        50% { transform: translate(-50%, -50%) scale(1.09); opacity: 1; }
       }
 
       /* Ambient motion only. Nothing here carries meaning, so reduced motion
@@ -1151,6 +1150,12 @@ const deployRoutes = [
         .horizon-scene,
         .horizon-sun {
           animation: none;
+        }
+
+        /* The keyframes carry the centring, so switching them off would drop
+           the glow half its own width down and right of the disc. */
+        .horizon-sun {
+          transform: translate(-50%, -50%);
         }
       }
 
