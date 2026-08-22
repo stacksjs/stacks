@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.44...v0.72.45)
+
+## 👷 Build System
+
+- take the ts-cloud release that refuses to proxy an uncovered host ([bd6a714](https://github.com/stacksjs/stacks/commit/bd6a714)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.43...v0.72.44)
 
 ## 👷 Build System
