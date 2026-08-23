@@ -24,7 +24,7 @@ const siteUrl = 'https://stacksjs.com'
 // Read by the shared marketing-head partial.
 const pageTitle = 'Stacks - Full-stack TypeScript framework'
 const canonicalPath = '/'
-const siteDescription = 'Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment.'
+const siteDescription = 'Stacks is a full-stack TypeScript framework. One UI ships to web, desktop, and mobile, with CMS, commerce, AI, auth, queues, and cloud deployment built in.'
 
 // Structured data. Built as a string here so the @-prefixed schema.org keys
 // (@context, @type) never reach the stx directive scanner; emitted raw in the
@@ -64,6 +64,7 @@ const jsonLd = JSON.stringify({
 // Features is not in this list: it is the mega-menu trigger, rendered by
 // the nav partial from the shared feature data rather than as a flat link.
 const navLinks = [
+  { label: 'Get started', url: '#start' },
   { label: 'CMS', url: '#cms' },
   { label: 'Cloud', url: '#deploy' },
   { label: 'Docs', url: '/docs', native: true },
@@ -88,6 +89,14 @@ const workflowSteps = [
   { icon: 'i-hugeicons-computer-terminal-01', title: 'Build', text: 'buddy dev serves the app, docs, blog, and dashboard locally with hot reload and typed routes.' },
   { icon: 'i-hugeicons-rocket-01', title: 'Ship', text: 'buddy deploy builds every surface and publishes the AWS infrastructure from the same config.' },
 ]
+
+const startSteps = [
+  { title: 'Install Pantry', text: 'One installer provisions Bun, Git, SQLite, and every tool a Stacks project declares.' },
+  { title: 'Create a project', text: 'panx runs Buddy in an isolated environment and sets up the generated project’s toolchain.' },
+  { title: 'Start building', text: 'buddy dev serves the frontend, API, and dashboard together, with hot reload.' },
+]
+
+const buildTargets = ['Web', 'macOS desktop', 'System tray', 'iOS', 'Android']
 
 const cmsResources = [
   { title: 'Posts', text: 'Markdown body, excerpt, author, tags, and a generated API.' },
@@ -150,10 +159,10 @@ const deployRoutes = [
             <span class="kicker">Full-stack TypeScript framework</span>
             <h1 class="hero-title">The whole stack, <em>one framework.</em></h1>
             <p class="hero-copy">
-              Routing, views, models, auth, CMS, queues, mail, and cloud deploys. First-party, fully typed, and designed to work together.
+              Routing, views, models, auth, CMS, commerce, AI, and cloud deploys. The same UI ships to web, desktop, and mobile, first-party and fully typed throughout.
             </p>
             <div class="hero-actions">
-              <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+              <a class="button primary" href="#start">Get started</a>
               <a class="button" href="#platform">Explore features</a>
             </div>
           </div>
@@ -185,6 +194,30 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
           </aside>
         </section>
 
+        <section id="start" class="section site-shell" aria-labelledby="start-heading">
+          <div class="rise start-panel">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="start-heading" class="section-title">Running in a few minutes.</h2>
+              <p class="section-copy">Pantry provisions Bun, SQLite, and everything else the project declares. Install it once, then Buddy takes over.</p>
+              <ol class="start-steps">
+                @foreach (startSteps as step)
+                  <li><strong>{{ step.title }}</strong><span>{{ step.text }}</span></li>
+                @endforeach
+              </ol>
+              <div class="hero-actions">
+                <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+                <a class="button" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+              </div>
+            </div>
+            <div class="deploy-terminal">$ curl -fsSL https://pantry.dev | bash
+<span class="term-ok">✓</span> pantry installed
+$ panx &#64;stacksjs/buddy new my-project
+<span class="term-ok">✓</span> project scaffolded
+$ cd my-project &amp;&amp; buddy dev
+<span class="term-ok">✓</span> web · api · dashboard  <span class="term-dim">hot reload on</span></div>
+          </div>
+        </section>
+
         <section id="platform" class="section site-shell" aria-labelledby="platform-heading">
           <div class="rise section-head">
             <h2 id="platform-heading" class="section-title">One install, every layer.</h2>
@@ -192,7 +225,7 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
           </div>
           <div class="bento">
             @foreach (features as cell)
-              <a class="cell rise {{ cell.span === 'wide' ? 'cell--wide' : '' }} {{ cell.tone === 'tint' ? 'cell--tint' : '' }} {{ cell.tone === 'gradient' ? 'cell--gradient' : '' }}" href="/features/{{ cell.slug }}">
+              <a class="cell rise {{ cell.span === 'wide' ? 'cell--wide' : '' }} {{ cell.span === 'tall' ? 'cell--tall' : '' }} {{ cell.tone === 'tint' ? 'cell--tint' : '' }} {{ cell.tone === 'gradient' ? 'cell--gradient' : '' }}" href="/features/{{ cell.slug }}">
                 @if (cell.image)
                   <span class="cell-art" aria-hidden="true"><img src="{{ cell.image }}" alt="" width="240" height="240" loading="lazy" decoding="async"></span>
                 @endif
@@ -201,6 +234,26 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
                 <span class="cell-more">Read more<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
               </a>
             @endforeach
+          </div>
+        </section>
+
+        <section id="builds" class="section site-shell" aria-labelledby="builds-heading">
+          <div class="rise builds-panel">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="builds-heading" class="section-title">One UI. Web, desktop, and mobile.</h2>
+              <p class="section-copy">The STX views, components, and routes already written for the web are the application. Craft wraps that same UI in a desktop window with a system tray, or a native iOS and Android shell, so a feature built once ships everywhere.</p>
+              <div class="route-chips" aria-label="Build targets">
+                @foreach (buildTargets as target)
+                  <span class="chip">{{ target }}</span>
+                @endforeach
+              </div>
+            </div>
+            <div class="deploy-terminal">$ buddy dev:desktop
+<span class="term-ok">✓</span> Craft window   <span class="term-dim">dashboard, hot reload</span>
+$ buddy build:ios
+<span class="term-ok">✓</span> Xcode project  <span class="term-dim">config/mobile.ts</span>
+$ buddy build:android
+<span class="term-ok">✓</span> Gradle project <span class="term-dim">config/mobile.ts</span></div>
           </div>
         </section>
 
@@ -226,7 +279,7 @@ $ buddy deploy       <span class="term-com"># web, docs, blog, API, cloud</span>
           sections in half.
 
           The scene is the same dawn illustration the holding page and the
-          error pages use (Laravel 5.7's, recolored to the Stacks blue), so
+          error pages use (Laravel 5.7's, recolored to the Stacks sunset), so
           the marketing page, /coming-soon and a 404 all read as one product
           rather than three unrelated designs.
         -->
