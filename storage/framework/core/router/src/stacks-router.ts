@@ -679,6 +679,30 @@ interface MiddlewareHandler {
   priority?: number
 }
 
+/**
+ * How long the whole middleware chain gets before the router gives up on it
+ * and answers 500, so a hung layer frees the worker instead of holding it.
+ */
+const MIDDLEWARE_TIMEOUT_MS = 30_000
+
+/**
+ * Whether `log.debug` would print, cached.
+ *
+ * `process.env` is a live view of the real environment in Bun, so reading
+ * `LOG_LEVEL` is not a plain property access - and this gate sits on the
+ * request path of every middleware-bearing route. The level is a boot-time
+ * setting; re-asking per request only spends time discovering it has not
+ * changed. Mirrors what `security-headers.ts` already does with its own flags.
+ */
+let _debugLoggingCache: boolean | undefined
+function isDebugLogging(): boolean {
+  if (_debugLoggingCache === undefined) {
+    const level = (process.env.LOG_LEVEL || 'info').toLowerCase()
+    _debugLoggingCache = level !== 'info' && level !== 'warn' && level !== 'error'
+  }
+  return _debugLoggingCache
+}
+
 const DEFAULT_MIDDLEWARE_PRIORITY = 10
 
 /**
@@ -1074,12 +1098,27 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   // benefit. Measured ~90ms of dev-boot time across a route-heavy app;
   // safe-method actions now resolve lazily on first request instead.
   // Idempotent: subsequent resolutions are served from the import cache.
+  /*
+   * Everything about this route that a request cannot change, decided here.
+   *
+   * The method is in the route key, the handler is the argument, and the
+   * group-level `apiResponse` flag is written by `registerRoute` before this
+   * function is called - so all three were being re-derived per request from
+   * data that was already fixed. The registries that the chainable API can
+   * still mutate after registration (`.middleware()`, `.skipCsrf()`,
+   * `.rateLimit()`) are deliberately NOT hoisted; those are read per request
+   * because they can genuinely change.
+   */
+  const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
+  const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
+  const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
+  // The string a route was registered with, straight from the argument rather
+  // than back out of a registry that `clearMiddlewareCache()` empties.
+  const handlerKey = typeof handler === 'string' ? handler : undefined
+
   let actionPrefetch: Promise<void> | null = null
-  if (typeof handler === 'string') {
-    const method = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-    if (CSRF_PROTECTED_METHODS.has(method)) {
-      actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
-    }
+  if (handlerKey && routeAcceptsCsrf) {
+    actionPrefetch = resolveStringHandler(handlerKey).then(() => undefined).catch(() => undefined)
   }
 
   return async (req: EnhancedRequest) => {
@@ -1121,7 +1160,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // negotiation and always returns JSON. Action-level apiResponse is
     // applied later (inside the action wrapper) and wins by also setting
     // the same flag.
-    if (routeApiResponseRegistry.has(routeKey)) {
+    if (forcesJsonByGroup) {
       ;req._forceJson = true
     }
 
@@ -1160,47 +1199,49 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       //     middleware itself bails when it sees that flag)
       // The bearer-token bypass and safe-method bypass live inside the
       // CSRF middleware itself, so they don't need to be re-checked here.
-      const method = req.method.toUpperCase()
-      const middlewareEntries: string[] = [...userMiddleware]
-      const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
-      const routeSkipped = csrfSkipRegistry.has(routeKey)
-      const routeRequired = csrfRequireRegistry.has(routeKey)
-      // Check action-level cache: an action exporting `skipCsrf: true`
-      // means we should NOT inject the middleware at all (rather than
-      // injecting it and having it self-bail). Skipping at injection
-      // time avoids the import + parse cost of csrf.ts entirely on
-      // hot webhook paths.
-      const handlerKey = routeHandlerKeyRegistry.get(routeKey)
-      const actionSkipped = handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false
-      // Decision order (stacksjs/stacks#1870 R-9):
-      //   1. `.requireCsrf()` on the route wins over EVERYTHING — used to
-      //      re-enable CSRF for a browser-facing route that shares an
-      //      action with API/webhook routes that legitimately skip.
-      //   2. Otherwise the union of the route- and action-level skip
-      //      flags decides — either one is enough to bypass.
-      const shouldInjectCsrf
-        = CSRF_PROTECTED_METHODS.has(method)
-        && !alreadyHasCsrf
-        && (routeRequired || (!routeSkipped && !actionSkipped))
-      if (shouldInjectCsrf) {
-        // Prepend so CSRF runs before auth/etc. — a request that fails
-        // CSRF should never reach the rest of the chain.
-        middlewareEntries.unshift('csrf')
+      // A route's method is fixed at registration, so whether CSRF could
+      // apply at all was already known before this request arrived. HEAD is
+      // served by the GET route and is not CSRF-protected either way, so
+      // reading it off the route rather than the request changes nothing.
+      let shouldInjectCsrf = false
+      if (routeAcceptsCsrf) {
+        const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
+        const routeSkipped = csrfSkipRegistry.has(routeKey)
+        const routeRequired = csrfRequireRegistry.has(routeKey)
+        // Check action-level cache: an action exporting `skipCsrf: true`
+        // means we should NOT inject the middleware at all (rather than
+        // injecting it and having it self-bail). Skipping at injection
+        // time avoids the import + parse cost of csrf.ts entirely on
+        // hot webhook paths.
+        const actionSkipped = handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false
+        // Decision order (stacksjs/stacks#1870 R-9):
+        //   1. `.requireCsrf()` on the route wins over EVERYTHING — used to
+        //      re-enable CSRF for a browser-facing route that shares an
+        //      action with API/webhook routes that legitimately skip.
+        //   2. Otherwise the union of the route- and action-level skip
+        //      flags decides — either one is enough to bypass.
+        shouldInjectCsrf = !alreadyHasCsrf && (routeRequired || (!routeSkipped && !actionSkipped))
       }
+
+      // Only build a chain when there is one to build. A route with no
+      // middleware and no CSRF injection - every GET that is not behind auth -
+      // used to copy an empty array before sorting and walking it. When
+      // nothing is prepended this aliases the registry's own array, which is
+      // read-only from here on.
+      const middlewareEntries: readonly string[] = shouldInjectCsrf
+        ? ['csrf', ...userMiddleware]
+        : userMiddleware
 
       // Only pay for pathname extraction when debug logging is actually on —
       // this runs per request on every middleware-bearing route. The level
       // gate mirrors `log.debug`'s own cheap-exit, and the cheap string slice
       // avoids a full `new URL()` parse on the hot path in production.
-      if (middlewareEntries.length > 0) {
-        const lvl = (process.env.LOG_LEVEL || 'info').toLowerCase()
-        if (lvl !== 'info' && lvl !== 'warn' && lvl !== 'error') {
-          const schemeEnd = req.url.indexOf('://')
-          const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
-          const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
-          const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
-          log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
-        }
+      if (middlewareEntries.length > 0 && isDebugLogging()) {
+        const schemeEnd = req.url.indexOf('://')
+        const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
+        const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
+        const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
+        log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${routeMethod} ${urlPath}`)
       }
 
       // Pre-resolve every entry to its handler + priority. Each
@@ -1264,27 +1305,54 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
       // Run middleware in priority order
       const middlewareTimings: Array<{ name: string, ms: number }> = []
-      for (const { name: middlewareName, handler: middleware } of resolved) {
-        // Per-middleware timing is appended to the request's
-        // Server-Timing trail so devtools (and Chrome's network panel)
-        // can show exactly which middleware spent how long. Cheap —
-        // hrtime delta per layer.
-        const mwStart = process.hrtime.bigint()
-        let mwTimer: ReturnType<typeof setTimeout> | undefined
+
+      /*
+       * One budget for the chain, armed at most once per request.
+       *
+       * A misbehaving middleware that hangs - waiting forever on a deadlocked
+       * external service - used to lock the request handler indefinitely, so
+       * every layer got a 30s `setTimeout` plus a `Promise.race`, set and
+       * cleared per middleware per request. Under load that is a lot of timers
+       * and event-loop wakeups for a guard that fires approximately never.
+       *
+       * The budget now belongs to the chain rather than to each layer: it is
+       * created lazily by the first middleware that actually returns a promise,
+       * reused by the rest, and cleared once. A chain that spends 29s across
+       * three layers and then hangs in a fourth surfaces at 30s instead of
+       * 120s, which is closer to what the client's own timeout does anyway.
+       * A middleware that finishes synchronously never arms anything.
+       */
+      let chainTimer: ReturnType<typeof setTimeout> | undefined
+      let chainBudget: Promise<never> | undefined
+      let runningMiddleware = ''
+      const armChainBudget = (): Promise<never> => {
+        if (!chainBudget) {
+          chainBudget = new Promise<never>((_, reject) => {
+            chainTimer = setTimeout(
+              () => reject(new Error(`Middleware '${runningMiddleware}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)),
+              MIDDLEWARE_TIMEOUT_MS,
+            )
+          })
+          // Marks the budget handled so a chain that finishes normally does not
+          // leave an unhandled rejection behind when the timer eventually fires.
+          chainBudget.catch(() => {})
+        }
+        return chainBudget
+      }
+
+      try {
+        for (const { name: middlewareName, handler: middleware } of resolved) {
+          // Per-middleware timing is appended to the request's
+          // Server-Timing trail so devtools (and Chrome's network panel)
+          // can show exactly which middleware spent how long. Cheap —
+          // hrtime delta per layer.
+          const mwStart = process.hrtime.bigint()
+          runningMiddleware = middlewareName
           try {
-            // 30s middleware budget. A misbehaving middleware that hangs
-            // (e.g. waits forever on a deadlocked external service) used
-            // to lock the entire request handler indefinitely; the
-            // timeout surfaces it as a 500 instead, freeing the worker
-            // to keep serving other requests. The timer is cleared in the
-            // `finally` below — otherwise a settled race leaves a dangling
-            // 30s timer per middleware per request, and they pile up under
-            // load (memory + needless event-loop wakeups).
-            const MIDDLEWARE_TIMEOUT_MS = 30_000
-            const timeoutPromise = new Promise<never>((_, reject) => {
-              mwTimer = setTimeout(() => reject(new Error(`Middleware '${middlewareName}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)), MIDDLEWARE_TIMEOUT_MS)
-            })
-            await Promise.race([middleware.handle(enhancedReq), timeoutPromise])
+            const outcome = middleware.handle(enhancedReq)
+            // Nothing to time out when the layer already finished.
+            if (outcome && typeof (outcome as Promise<void>).then === 'function')
+              await Promise.race([outcome as Promise<void>, armChainBudget()])
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
             middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
           }
@@ -1349,11 +1417,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             catch { /* immutable headers — leave the response alone */ }
             return await applyCorsIfConfigured(enhancedReq, errorResponse)
           }
-          finally {
-            // Clear the budget timer so a resolved/rejected race doesn't
-            // leave a dangling 30s timer per middleware per request.
-            clearTimeout(mwTimer)
-          }
+        }
+      }
+      finally {
+        // One timer, cleared on every way out of the chain - including the
+        // early returns above - so a settled request leaves nothing pending.
+        clearTimeout(chainTimer)
       }
 
       // Call the actual handler with the enhanced request.
@@ -1910,6 +1979,18 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     // flag (which `createMiddlewareHandler` already applied).
     const actionForcesJson = action.apiResponse === true
 
+    /*
+     * The rules `request.validate()` falls back to, derived once.
+     *
+     * An action with a model attached and no explicit `validations` gets its
+     * rules by reflecting over `Object.entries(model.attributes)` - and that
+     * was happening per request, for an action object that does not change
+     * between them. Every default `useApi`-generated CRUD action pays it, on
+     * every call, to rebuild the same object.
+     */
+    const requestValidationRules = action.validations
+      ?? modelValidationRules(action.modelDefinition ?? action.model)
+
     return async (req: EnhancedRequest) => {
       if (actionSkipsCsrf) {
         ;req._skipCsrf = true
@@ -1917,8 +1998,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       if (actionForcesJson) {
         ;req._forceJson = true
       }
-      ;(req as any)._requestValidationRules = action.validations
-        ?? modelValidationRules(action.modelDefinition ?? action.model)
+      ;(req as any)._requestValidationRules = requestValidationRules
       try {
         // A precognition request answers "would this be accepted?" and must
         // never reach handle() — that is the whole point, and it is why this
@@ -2861,7 +2941,8 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     else {
       routeParams = {}
       for (const key in matched) {
-        const value = matched[key]
+        // `for...in` only yields keys the object has, so the value is present.
+        const value = matched[key]!
         try {
           routeParams[key] = decodeURIComponent(value)
         }
