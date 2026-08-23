@@ -10,6 +10,8 @@
 // served from public/svgs.
 </script>
 
+@title('Page not found')
+
 <div class="flex flex-col md:flex-row min-h-screen bg-neutral-50 dark:bg-neutral-900">
   <div class="overflow-hidden md:order-2 h-56 sm:h-72 md:h-auto md:w-1/2 bg-neutral-200 dark:bg-neutral-800">
     <img src="/svgs/404.svg" alt="" class="object-cover h-full w-full">
