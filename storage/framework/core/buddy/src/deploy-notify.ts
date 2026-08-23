@@ -204,6 +204,29 @@ export async function notifyDeployOutcome(
 }
 
 /**
+ * A message for the terminal, however the failure was thrown.
+ *
+ * A thrown string, a rejected promise carrying an object, and an Error with an
+ * empty message all reach here, and "undefined" on the way out is barely
+ * better than the silence this replaced.
+ */
+export function getDeployErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message)
+    return error.message
+  if (typeof error === 'string' && error)
+    return error
+
+  try {
+    const rendered = JSON.stringify(error)
+    if (rendered && rendered !== '{}' && rendered !== 'null')
+      return rendered
+  }
+  catch {}
+
+  return `${String(error)} (no message; re-run with --verbose for the stack)`
+}
+
+/**
  * Wrap a deploy command handler so its outcome is announced exactly once,
  * whatever provider ran and however it failed.
  *
@@ -233,6 +256,21 @@ export function withDeployNotification<A extends unknown[]>(
       await action(...args)
     }
     catch (error) {
+      // Say what went wrong, on the terminal, before anything else.
+      //
+      // This used to notify and exit(1) without printing a word, so a deploy
+      // that threw anywhere in the handler produced an empty terminal and a
+      // bare exit code — no message, no stack, nothing to search for. A
+      // notification is not a substitute: it goes to whatever channel is
+      // configured, and on a machine with none configured it goes nowhere,
+      // which is precisely the case where the operator is watching the
+      // terminal and sees a black box.
+      log.error(`Deploy to ${environment} failed: ${getDeployErrorMessage(error)}`)
+
+      const stack = error instanceof Error ? error.stack : undefined
+      if (stack)
+        log.debug(stack)
+
       await notifyDeployOutcome({ ...context, status: 'failed', durationMs: Date.now() - startedAt, error })
       // Preserve the previous behaviour of the inline exits this replaced.
       process.exit(ExitCode.FatalError)
