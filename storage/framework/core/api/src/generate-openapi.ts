@@ -492,7 +492,14 @@ export async function generateOpenApi(options: {
      * is a lookup rather than a guess. An inline function handler has no file
      * to read, and reports nothing, which is honest.
      */
-    const action = r.handler ? await loadAction(r.handler) : null
+    /*
+     * A route registered with the action object itself - the typed-router form
+     * - already has it in hand and there is no file to look for. Preferred
+     * over the handler string for exactly that reason, and it is what keeps
+     * typed routes from being documented as taking no input at all.
+     */
+    const action = (r as { action?: Record<string, unknown> }).action
+      ?? (r.handler ? await loadAction(r.handler) : null)
     const validations = action && typeof action.validations === 'object' && action.validations !== null
       ? action.validations as Record<string, unknown>
       : null

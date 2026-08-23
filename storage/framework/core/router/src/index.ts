@@ -55,6 +55,14 @@ export {
 // Export route introspection helpers
 export { listRegisteredRoutes, routeParams } from './stacks-router'
 
+// Registering an action by import rather than by name: the seam that lets a
+// route hand over the action object it already has, instead of a string that
+// only a runtime `import()` can make sense of. `listRegisteredRoutes()` reports
+// it, which is how the OpenAPI generator reads such a route's schema without a
+// file path to import.
+export { isRouterAction, wrapAction } from './stacks-router'
+export type { ChainableRoute, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
+
 // Route-model binding (stacksjs/stacks#2231): what lets `can:view,site`
 // reach `SitePolicy.view(user, site)` instead of handing the policy layer a
 // raw path string it can never match a policy against.

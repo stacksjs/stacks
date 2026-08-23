@@ -193,7 +193,17 @@ import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm
 import type { StacksActionPath } from './action-paths'
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
-type StacksHandler = string | RouteHandlerFn
+/*
+ * Three forms, one dispatch path.
+ *
+ * A string names an action to import when it is first needed - lazy, hot-
+ * reload friendly, and completely opaque to the compiler. An action object is
+ * the same action, imported by the route file itself, which is what lets a
+ * typed client see its input and output types (see `typed-router.ts`). An
+ * inline function is an escape hatch for the cases that are not worth an
+ * action. All three end up in the same wrapper.
+ */
+export type StacksHandler = string | RouteHandlerFn | RouterAction
 
 interface StacksRouterConfig {
   verbose?: boolean
@@ -225,7 +235,7 @@ interface ResourceRouteOptions {
 /**
  * Chainable route interface for middleware and naming support
  */
-interface ChainableRoute {
+export interface ChainableRoute {
   /**
    * One middleware alias, or an array of them applied in order.
    *
@@ -485,6 +495,17 @@ const actionSkipsCsrfCache = new BoundedMap<string, boolean>(ACTION_CACHE_MAX)
  */
 const routeHandlerKeyRegistry = new BoundedMap<string, string>(ACTION_CACHE_MAX)
 
+/**
+ * Actions registered by import rather than by name, keyed by route.
+ *
+ * A route registered as `'Actions/ShowProject'` tells the OpenAPI generator
+ * where to read the action's `validations` from. A route registered with the
+ * action object itself has no such path - so without this the typed form would
+ * silently document every one of its endpoints as accepting nothing, which is
+ * the exact failure the handler registry was added to fix for the string form.
+ */
+const routeActionRegistry = new Map<string, RouterAction>()
+
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
@@ -644,8 +665,8 @@ export function routeParams(routeName: string): string[] {
  * taking no input at all. The registry has known the real answer the whole
  * time; it was simply not being reported.
  */
-export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string }> {
-  const out: Array<{ method: string, path: string, name?: string, handler?: string }> = []
+export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> {
+  const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> = []
   // routeMiddlewareRegistry keys look like 'METHOD:/path'. We intentionally
   // walk it (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
@@ -660,7 +681,13 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
     for (const [n, named] of namedRouteRegistry.entries()) {
       if (named.path === path) { routeName = n; break }
     }
-    out.push({ method, path, name: routeName, handler: routeHandlerKeyRegistry.get(key) })
+    out.push({
+      method,
+      path,
+      name: routeName,
+      handler: routeHandlerKeyRegistry.get(key),
+      action: routeActionRegistry.get(key),
+    })
   }
   return out.sort((a, b) => a.path.localeCompare(b.path))
 }
@@ -930,6 +957,7 @@ export function clearMiddlewareCache(): void {
   // than serving from a stale answer (stacksjs/stacks#1863 T-8).
   actionSkipsCsrfCache.clear()
   routeHandlerKeyRegistry.clear()
+  routeActionRegistry.clear()
   // Same reasoning for the resolved CSRF middleware module: editing
   // `app/Middleware/Csrf.ts` in dev has to be picked up without a restart, and
   // it is now held as a module reference rather than re-imported per request.
@@ -1085,19 +1113,8 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
  */
 function createMiddlewareHandler(routeKey: string, handler: StacksHandler): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
-  const wrappedBase = wrapHandler(handler, true)
+  const wrappedBase = wrapHandler(handler, true, routeKey)
 
-  // Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
-  // cached before the middleware chain runs. Without this, the first
-  // request to a skipCsrf webhook would inject CSRF, fail, and only the
-  // SECOND request would see the populated cache and skip injection.
-  //
-  // This only matters for CSRF-protected methods — GET/HEAD/OPTIONS never
-  // get CSRF injected, so prefetching their actions would just front-load
-  // every action import (and its model graph) at registration time for no
-  // benefit. Measured ~90ms of dev-boot time across a route-heavy app;
-  // safe-method actions now resolve lazily on first request instead.
-  // Idempotent: subsequent resolutions are served from the import cache.
   /*
    * Everything about this route that a request cannot change, decided here.
    *
@@ -1112,13 +1129,33 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
   const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
-  // The string a route was registered with, straight from the argument rather
-  // than back out of a registry that `clearMiddlewareCache()` empties.
-  const handlerKey = typeof handler === 'string' ? handler : undefined
+  // What identifies this action to the CSRF skip cache: the handler string
+  // when the route was registered by name (straight from the argument rather
+  // than back out of a registry that `clearMiddlewareCache()` empties), and
+  // the route key when an action object was handed over directly.
+  const handlerKey = typeof handler === 'string'
+    ? handler
+    : (isRouterAction(handler) ? routeKey : undefined)
 
+  /*
+   * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
+   * cached before the middleware chain runs. Without this, the first request
+   * to a skipCsrf webhook would inject CSRF, fail, and only the SECOND request
+   * would see the populated cache and skip injection.
+   *
+   * Only for CSRF-protected methods: GET/HEAD/OPTIONS never get CSRF injected,
+   * so prefetching their actions would front-load every action import (and its
+   * model graph) at registration time for no benefit. Measured ~90ms of
+   * dev-boot time across a route-heavy app; safe-method actions resolve lazily
+   * on first request instead. Idempotent - later resolutions come from the
+   * import cache.
+   *
+   * An action handed over directly needs none of this: `wrapHandler` above
+   * already read its flags, synchronously, before this line.
+   */
   let actionPrefetch: Promise<void> | null = null
-  if (handlerKey && routeAcceptsCsrf) {
-    actionPrefetch = resolveStringHandler(handlerKey).then(() => undefined).catch(() => undefined)
+  if (typeof handler === 'string' && routeAcceptsCsrf) {
+    actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
   }
 
   return async (req: EnhancedRequest) => {
@@ -1966,112 +2003,161 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
       throw new Error(`Action '${handlerPath}' has no handle() method. Got: ${typeof action.handle}`)
     }
 
-    // Action-level CSRF opt-out flag. Read once at resolve time and
-    // memoize against the original handler path so the CSRF gate can
-    // skip lookups without re-importing the action on every request.
-    // Accept both spellings: `skipCsrf: true` (intent-explicit) and
-    // `csrf: false` (group-config-shaped).
-    const actionSkipsCsrf = action.skipCsrf === true || action.csrf === false
-    actionSkipsCsrfCache.set(handlerPath, actionSkipsCsrf)
-
-    // Action-level apiResponse: when `true`, force JSON responses for this
-    // route regardless of content negotiation. Wins over the group-level
-    // flag (which `createMiddlewareHandler` already applied).
-    const actionForcesJson = action.apiResponse === true
-
-    /*
-     * The rules `request.validate()` falls back to, derived once.
-     *
-     * An action with a model attached and no explicit `validations` gets its
-     * rules by reflecting over `Object.entries(model.attributes)` - and that
-     * was happening per request, for an action object that does not change
-     * between them. Every default `useApi`-generated CRUD action pays it, on
-     * every call, to rebuild the same object.
-     */
-    const requestValidationRules = action.validations
-      ?? modelValidationRules(action.modelDefinition ?? action.model)
-
-    return async (req: EnhancedRequest) => {
-      if (actionSkipsCsrf) {
-        ;req._skipCsrf = true
-      }
-      if (actionForcesJson) {
-        ;req._forceJson = true
-      }
-      ;(req as any)._requestValidationRules = requestValidationRules
-      try {
-        // A precognition request answers "would this be accepted?" and must
-        // never reach handle() — that is the whole point, and it is why this
-        // returns before authorize/before/handle rather than after validation
-        // falls through. An action with no validations still returns early:
-        // running the handler because there was nothing to check would make
-        // the probe itself the side effect (#2226).
-        const precognition = precognitionRequest(req)
-        if (precognition) {
-          if (!action.validations)
-            return precognitionSuccess()
-
-          const rules = precognition.only.length > 0
-            ? Object.fromEntries(
-                Object.entries(action.validations).filter(([field]) => precognition.only.includes(field)),
-              )
-            : action.validations
-
-          const precognitionResult = await validateActionInput(req, rules)
-          return precognitionResult.valid
-            ? precognitionSuccess()
-            : validationFailureResponse(precognitionResult.errors)
-        }
-
-        // Validate action input if validations are defined. Always returns
-        // JSON — validation failures are 100% an API-shape signal and HTML
-        // pages would be useless here.
-        if (action.validations) {
-          const validationResult = await validateActionInput(req, action.validations)
-          if (!validationResult.valid) {
-            return validationFailureResponse(validationResult.errors)
-          }
-        }
-
-        // Action lifecycle hooks (stacksjs/stacks#1870 R-5).
-        // `authorize` runs after validation so the handler can rely on
-        // a typed, validated payload when deciding access. A literal
-        // `false` short-circuits with a generic 403 (intentionally
-        // opaque to avoid info-disclosure); returning a Response lets
-        // the caller customise the status/body.
-        if (typeof action.authorize === 'function') {
-          const auth = await action.authorize(req)
-          if (auth instanceof Response) return auth
-          if (auth === false) {
-            return Response.json({ error: 'Forbidden' }, { status: 403 })
-          }
-        }
-
-        // `before` runs after authorize; returning a Response still
-        // short-circuits, returning void continues into `handle()`.
-        if (typeof action.before === 'function') {
-          const pre = await action.before(req)
-          if (pre instanceof Response) return pre
-        }
-
-        const result = await action.handle(req)
-        return formatResult(result, req)
-      }
-      catch (handleError) {
-        // Single chokepoint (stacksjs/stacks#1933) — normalizes the
-        // error (stack + cause), keeps thrown 4xx HttpErrors out of the
-        // error stream, and folds in the full stack. Replaces the old
-        // hand-rolled stack-concat workaround that existed because the
-        // logger's `LogErrorOptions | any` typing silently dropped the
-        // error (stacksjs/stacks#1932, now fixed).
-        report(handleError, { label: `[Router] action.handle() for '${handlerPath}'` })
-        throw handleError
-      }
-    }
+    return wrapAction(action, handlerPath)
   }
   catch (importError) {
     log.error(`[Router] Failed to import action '${fullPath}':`, importError)
     throw importError
+  }
+}
+
+/**
+ * Anything the router is willing to treat as an action.
+ *
+ * Structural rather than `instanceof Action`, because an action can also be a
+ * plain object with a `handle()` - the framework's own defaults include both
+ * shapes - and because a duplicated install would make an `instanceof` check
+ * reject a perfectly good action from the other copy of the package.
+ */
+export interface RouterAction {
+  handle: (req: any) => unknown
+  validations?: ActionValidations
+  authorize?: (req: any) => unknown
+  before?: (req: any) => unknown
+  skipCsrf?: boolean
+  csrf?: boolean
+  apiResponse?: boolean
+  model?: unknown
+  modelDefinition?: unknown
+  name?: string
+  responses?: unknown
+  responseHeaders?: unknown
+  requestHeaders?: unknown
+}
+
+/** Whether a route handler is an action rather than a plain function. */
+export function isRouterAction(handler: unknown): handler is RouterAction {
+  return typeof handler === 'object'
+    && handler !== null
+    && typeof (handler as RouterAction).handle === 'function'
+}
+
+/**
+ * Turn a resolved action into the function the route actually runs.
+ *
+ * Split out of the string-resolution path so registering an action by import
+ * (`createTypedRouter().get('/x', ShowAction)`) and registering it by name
+ * (`route.get('/x', 'Actions/ShowAction')`) share one runtime path. The two
+ * forms differ only in when the module is loaded and in what the compiler can
+ * see; everything below - validation, precognition, `authorize`, `before`,
+ * result formatting, error reporting - is the same code for both.
+ *
+ * `handlerKey` identifies the action for the CSRF skip cache and for error
+ * labels. It is the handler string when there is one, and the route key
+ * otherwise.
+ */
+export function wrapAction(action: RouterAction, handlerKey: string): RouteHandlerFn {
+  // Action-level CSRF opt-out flag. Read once at resolve time and
+  // memoize against the original handler path so the CSRF gate can
+  // skip lookups without re-importing the action on every request.
+  // Accept both spellings: `skipCsrf: true` (intent-explicit) and
+  // `csrf: false` (group-config-shaped).
+  const actionSkipsCsrf = action.skipCsrf === true || action.csrf === false
+  actionSkipsCsrfCache.set(handlerKey, actionSkipsCsrf)
+
+  // Action-level apiResponse: when `true`, force JSON responses for this
+  // route regardless of content negotiation. Wins over the group-level
+  // flag (which `createMiddlewareHandler` already applied).
+  const actionForcesJson = action.apiResponse === true
+
+  /*
+   * The rules `request.validate()` falls back to, derived once.
+   *
+   * An action with a model attached and no explicit `validations` gets its
+   * rules by reflecting over `Object.entries(model.attributes)` - and that
+   * was happening per request, for an action object that does not change
+   * between them. Every default `useApi`-generated CRUD action pays it, on
+   * every call, to rebuild the same object.
+   */
+  const requestValidationRules = action.validations
+    ?? modelValidationRules(action.modelDefinition ?? action.model)
+
+  return async (req: EnhancedRequest) => {
+    if (actionSkipsCsrf) {
+      ;req._skipCsrf = true
+    }
+    if (actionForcesJson) {
+      ;req._forceJson = true
+    }
+    ;(req as any)._requestValidationRules = requestValidationRules
+    try {
+      // A precognition request answers "would this be accepted?" and must
+      // never reach handle() — that is the whole point, and it is why this
+      // returns before authorize/before/handle rather than after validation
+      // falls through. An action with no validations still returns early:
+      // running the handler because there was nothing to check would make
+      // the probe itself the side effect (#2226).
+      const precognition = precognitionRequest(req)
+      if (precognition) {
+        if (!action.validations)
+          return precognitionSuccess()
+
+        const rules = precognition.only.length > 0
+          ? Object.fromEntries(
+              Object.entries(action.validations).filter(([field]) => precognition.only.includes(field)),
+            )
+          : action.validations
+
+        const precognitionResult = await validateActionInput(req, rules)
+        return precognitionResult.valid
+          ? precognitionSuccess()
+          : validationFailureResponse(precognitionResult.errors)
+      }
+
+      // Validate action input if validations are defined. Always returns
+      // JSON — validation failures are 100% an API-shape signal and HTML
+      // pages would be useless here.
+      if (action.validations) {
+        const validationResult = await validateActionInput(req, action.validations)
+        if (!validationResult.valid) {
+          return validationFailureResponse(validationResult.errors)
+        }
+      }
+
+      // Action lifecycle hooks (stacksjs/stacks#1870 R-5).
+      // `authorize` runs after validation so the handler can rely on
+      // a typed, validated payload when deciding access. A literal
+      // `false` short-circuits with a generic 403 (intentionally
+      // opaque to avoid info-disclosure); returning a Response lets
+      // the caller customise the status/body.
+      if (typeof action.authorize === 'function') {
+        const auth = await action.authorize(req)
+        if (auth instanceof Response) return auth
+        if (auth === false) {
+          return Response.json({ error: 'Forbidden' }, { status: 403 })
+        }
+      }
+
+      // `before` runs after authorize; returning a Response still
+      // short-circuits, returning void continues into `handle()`.
+      if (typeof action.before === 'function') {
+        const pre = await action.before(req)
+        if (pre instanceof Response) return pre
+      }
+
+      const result = await action.handle(req)
+      return formatResult(result, req)
+    }
+    catch (handleError) {
+      // Single chokepoint (stacksjs/stacks#1933) — normalizes the
+      // error (stack + cause), keeps thrown 4xx HttpErrors out of the
+      // error stream, and folds in the full stack. Replaces the old
+      // hand-rolled stack-concat workaround that existed because the
+      // logger's `LogErrorOptions | any` typing silently dropped the
+      // error (stacksjs/stacks#1932, now fixed).
+      report(handleError, { label: `[Router] action.handle() for '${handlerKey}'` })
+      throw handleError
+    }
   }
 }
 
@@ -3025,7 +3111,12 @@ function incomingRequestId(req: EnhancedRequest): string | undefined {
   return undefined
 }
 
-function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerFn {
+function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = ''): RouteHandlerFn {
+  // An action handed over directly is already resolved; there is nothing to
+  // import and nothing to wait for.
+  if (isRouterAction(handler))
+    return wrapAction(handler, handlerKey)
+
   if (typeof handler === 'string') {
     const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
@@ -3285,6 +3376,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // handler that never runs.
     if (!shadowed && typeof _handler === 'string') {
       routeHandlerKeyRegistry.set(routeKey, _handler)
+    }
+
+    // Same purpose for an action registered by import: `listRegisteredRoutes()`
+    // hands it straight to the OpenAPI generator, which would otherwise have
+    // no file to read the schema out of.
+    if (!shadowed && isRouterAction(_handler)) {
+      routeActionRegistry.set(routeKey, _handler)
     }
 
     return { fullPath, routeKey, shadowed }
