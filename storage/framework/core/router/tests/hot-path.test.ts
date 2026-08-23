@@ -101,6 +101,16 @@ describe('params and query, only when there are any', () => {
     expect(await (await get('/_hot/query?a=1&b=two')).json()).toEqual({ query: { a: '1', b: 'two' } })
   })
 
+  /*
+   * `query` comes from the router now, and a repeated key collects into an
+   * array - what `EnhancedRequest` has always declared. The fallback that used
+   * to live in `enhanceRequest` kept only the last value, so the shape depended
+   * on which layer filled it in.
+   */
+  it('collects a repeated key into an array', async () => {
+    expect(await (await get('/_hot/query?a=1&a=2')).json()).toEqual({ query: { a: ['1', '2'] } })
+  })
+
   it('keeps a plain path param verbatim', async () => {
     expect(await (await get('/_hot/param/42')).json()).toEqual({ id: '42' })
   })

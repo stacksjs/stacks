@@ -3139,25 +3139,16 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
 
   /*
-   * Query string, without parsing a URL to find out there isn't one.
+   * `query` comes from the router (bun-router 0.1.7), as a lazy accessor that
+   * parses on first access and caches - so a request that never reads it still
+   * costs nothing, which is what the fallback that used to live here was for.
    *
-   * `new URL(req.url)` allocates a full parsed URL - origin, pathname,
-   * a `URLSearchParams` - to answer a question that the presence of a `?` in
-   * the raw string already answers. A route hit without a query string is the
-   * common case and now costs one `indexOf`.
+   * Keeping the fallback would be worse than redundant. It built a
+   * `Record<string, string>` where a repeated key kept only the LAST value,
+   * while the router collects `?a=1&a=2` into `['1', '2']` as the declared type
+   * has always promised - so the shape of `req.query` would have depended on
+   * which layer happened to fill it in.
    */
-  if (!req.query) {
-    const url = req.url
-    const mark = url.indexOf('?')
-    const query: Record<string, string> = {}
-    if (mark !== -1) {
-      const params = new URLSearchParams(url.slice(mark + 1))
-      params.forEach((value, key) => {
-        query[key] = value
-      })
-    }
-    ;req.query = query
-  }
 
   // Assign the shared Laravel-style request helpers by reference (a single
   // Object.assign), instead of allocating ~25 closures per request. Per-request
