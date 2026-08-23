@@ -15,24 +15,24 @@
  * Stacks marketing design system, 2026 refresh.
  *
  * Direction: minimal modern developer-framework page with a nature
- * motif. ONE accent, the deep rose #B63E59, across every theme and
- * section; the nature reads come from the line-art (topography + park
- * ridge) and the tinted surfaces, never from a second hue.
+ * motif. ONE accent across every theme and section: the golden-hour
+ * ember #C14A15, a California-sunset red-orange. The nature reads come
+ * from the line-art (topography + park ridge) and the tinted surfaces,
+ * never from a second hue.
  *
- * That rose is not a colour picked for the site. It is lifted out of
- * Laravel 5.7's error illustrations, which the error pages already
- * show, so the page and the artwork on it share one palette instead of
- * arguing. The rest of the ramp (#68126F plum, #A22A50, #EE7566 coral,
- * #FFF6CB cream) is where the warm surfaces and tints come from.
+ * The ramp is a sunset at the coast: ember #C14A15 through burnt
+ * sienna #9C3510 on light grounds, cooling to the last-light coral
+ * glow #FF8A4C on dark ones, over creams (#FFF4E4, #FBE2CF) and warm
+ * umbers rather than plums.
  *
  * Three themes, switched by `data-theme` on <html>, matching the blog
  * (content/blog/.theme.css) so / and /blog stay one product:
  *
  *   colored - dusk: warm cream paper, the default.
- *   light   - clean paper-white with the same rose accent.
- *   dark    - after sundown: plum ground, coral accent. Coral only
- *             carries contrast on a dark ground (white on #EE7566 is
- *             2.85:1), so it never labels anything in a light theme.
+ *   light   - clean paper-white with the same ember accent.
+ *   dark    - after sundown: burnt-umber ground, coral-glow accent.
+ *             Coral only carries contrast on a dark ground, so it
+ *             never labels anything in a light theme.
  *
  * Shape rule (one radius system): panels and cards 16px, code windows
  * and chips 10px, buttons and the theme toggle full pill. Nothing else.
@@ -40,95 +40,95 @@
 
 :root[data-theme='colored'] {
   color-scheme: light;
-  --bg: #fff7ec;
-  --surface: #ffffff;
-  --badge-bg: #fce7e2;
+  --bg: #fff4e4;
+  --surface: #fffbf5;
+  --badge-bg: #fbe2cf;
   --field-bg: #ffffff;
-  --text: #2a1720;
-  --muted: #6e4e57;
-  --accent: #b63e59;
-  --accent-strong: #a22a50;
-  --button-bg: #b63e59;
+  --text: #2b180e;
+  --muted: #75503c;
+  --accent: #c14a15;
+  --accent-strong: #9c3510;
+  --button-bg: #c14a15;
   --on-accent: #ffffff;
-  --on-field: #2a1720;
-  --ink-rgb: 42, 23, 32;
-  --accent-rgb: 182, 62, 89;
-  --line: rgba(42, 23, 32, 0.12);
-  --line-strong: rgba(42, 23, 32, 0.22);
-  --shadow: 0 24px 60px rgba(142, 44, 21, 0.14);
-  --page-a: #fff7ec;
-  --page-b: #fdeee0;
-  --page-c: #fff7ec;
-  --panel-a: rgba(182, 62, 89, 0.07);
-  --panel-b: rgba(252, 231, 226, 0.55);
-  --nav-bg: rgba(255, 247, 236, 0.82);
-  --grad-a: #a22a50;
-  --grad-b: #b63e59;
+  --on-field: #2b180e;
+  --ink-rgb: 43, 24, 14;
+  --accent-rgb: 193, 74, 21;
+  --line: rgba(43, 24, 14, 0.12);
+  --line-strong: rgba(43, 24, 14, 0.22);
+  --shadow: 0 24px 60px rgba(158, 62, 16, 0.14);
+  --page-a: #fff4e4;
+  --page-b: #fce8d2;
+  --page-c: #fff4e4;
+  --panel-a: rgba(193, 74, 21, 0.07);
+  --panel-b: rgba(251, 226, 207, 0.55);
+  --nav-bg: rgba(255, 244, 228, 0.82);
+  --grad-a: #a83a10;
+  --grad-b: #e06a28;
   --ridge-opacity: 0.28;
   --topo-opacity: 0.05;
 }
 
 /*
- * Light (white + the rose accent) is the no-JS default: the bare :root
+ * Light (white + the ember accent) is the no-JS default: the bare :root
  * carries these values so a first paint is already on-brand.
  */
 :root,
 :root[data-theme='light'] {
   color-scheme: light;
-  --bg: #fffdfa;
-  --surface: #fff8f2;
-  --badge-bg: #fdece7;
+  --bg: #fffaf2;
+  --surface: #fdf3ea;
+  --badge-bg: #fae5d6;
   --field-bg: #ffffff;
-  --text: #24141c;
-  --muted: #6e4e57;
-  --accent: #b63e59;
-  --accent-strong: #a22a50;
-  --button-bg: #b63e59;
+  --text: #271710;
+  --muted: #75503c;
+  --accent: #c14a15;
+  --accent-strong: #9c3510;
+  --button-bg: #c14a15;
   --on-accent: #ffffff;
-  --on-field: #24141c;
-  --ink-rgb: 36, 20, 28;
-  --accent-rgb: 182, 62, 89;
-  --line: rgba(36, 20, 28, 0.10);
-  --line-strong: rgba(36, 20, 28, 0.20);
-  --shadow: 0 24px 60px rgba(142, 44, 21, 0.10);
-  --page-a: #fffdfa;
-  --page-b: #fff6ef;
-  --page-c: #fffdfa;
-  --panel-a: rgba(182, 62, 89, 0.05);
-  --panel-b: rgba(253, 236, 231, 0.50);
-  --nav-bg: rgba(255, 253, 250, 0.80);
-  --grad-a: #a22a50;
-  --grad-b: #b63e59;
+  --on-field: #271710;
+  --ink-rgb: 39, 23, 16;
+  --accent-rgb: 193, 74, 21;
+  --line: rgba(39, 23, 16, 0.10);
+  --line-strong: rgba(39, 23, 16, 0.20);
+  --shadow: 0 24px 60px rgba(158, 62, 16, 0.10);
+  --page-a: #fffaf2;
+  --page-b: #fdf0e4;
+  --page-c: #fffaf2;
+  --panel-a: rgba(193, 74, 21, 0.05);
+  --panel-b: rgba(250, 229, 214, 0.50);
+  --nav-bg: rgba(255, 250, 242, 0.80);
+  --grad-a: #a83a10;
+  --grad-b: #c14a15;
   --ridge-opacity: 0.20;
   --topo-opacity: 0.035;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #1c1016;
-  --surface: #271822;
-  --badge-bg: #3a2029;
-  --field-bg: #1f1219;
-  --text: #f7e9e4;
-  --muted: #c3a2a8;
-  --accent: #ee7566;
-  --accent-strong: #f09b7f;
-  --button-bg: #ee7566;
-  --on-accent: #2a1720;
-  --on-field: #f7e9e4;
-  --ink-rgb: 247, 233, 228;
-  --accent-rgb: 238, 117, 102;
-  --line: rgba(247, 233, 228, 0.10);
-  --line-strong: rgba(247, 233, 228, 0.22);
+  --bg: #1d110b;
+  --surface: #291910;
+  --badge-bg: #3d2415;
+  --field-bg: #20130c;
+  --text: #f9ecdf;
+  --muted: #cba78e;
+  --accent: #ff8a4c;
+  --accent-strong: #ffb37e;
+  --button-bg: #ff8a4c;
+  --on-accent: #2b180e;
+  --on-field: #f9ecdf;
+  --ink-rgb: 249, 236, 223;
+  --accent-rgb: 255, 138, 76;
+  --line: rgba(249, 236, 223, 0.10);
+  --line-strong: rgba(249, 236, 223, 0.22);
   --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  --page-a: #1c1016;
-  --page-b: #241520;
-  --page-c: #180d13;
-  --panel-a: rgba(58, 32, 41, 0.85);
-  --panel-b: rgba(24, 13, 19, 0.92);
-  --nav-bg: rgba(28, 16, 22, 0.78);
-  --grad-a: #a22a50;
-  --grad-b: #ee7566;
+  --page-a: #1d110b;
+  --page-b: #26160d;
+  --page-c: #170d08;
+  --panel-a: rgba(61, 36, 21, 0.85);
+  --panel-b: rgba(23, 13, 8, 0.92);
+  --nav-bg: rgba(29, 17, 11, 0.78);
+  --grad-a: #a83a10;
+  --grad-b: #ff8a4c;
   --ridge-opacity: 0.22;
   --topo-opacity: 0.05;
 }
@@ -143,11 +143,11 @@
 }
 
 /* The code window and terminal stay dark in every theme, the way an
-  editor and a shell are. Dark, but on the page's own plum rather than
-  the usual editor navy: a cool code block on a warm page is the one
-  place the palette used to break. */
+   editor and a shell are. Dark, but on the page's own burnt umber
+   rather than the usual editor navy: a cool code block on a warm page
+   is the one place the palette used to break. */
 :root {
-  --term-bg: #170c13;
+  --term-bg: #190d07;
   --term-fg: #f0a07e;
 }
 

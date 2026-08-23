@@ -5,8 +5,8 @@
  * layout (lead story + hairline index) carried by type, rules, and whitespace
  * alone. No illustration chrome. Three themes via `data-theme`:
  *   - colored - dusk: warm cream paper.
- *   - light   - clean paper-white with the same rose accent.
- *   - dark    - after sundown: plum ground, coral accent.
+ *   - light   - clean paper-white with the same ember accent.
+ *   - dark    - after sundown: burnt-umber ground, coral-glow accent.
  *
  * The values below mirror public/assets/styles/theme.css token for token.
  * BunPress owns this file and names things `--vp-*`, so the blog cannot link
@@ -22,66 +22,66 @@
 
 /* ── Themes ─────────────────────────────────────────────────────────────── */
 :root[data-theme='colored'] {
-  --vp-c-bg: #fff7ec;
-  --vp-c-bg-alt: #ffffff;
-  --vp-c-bg-soft: #fdeee0;
+  --vp-c-bg: #fff4e4;
+  --vp-c-bg-alt: #fffbf5;
+  --vp-c-bg-soft: #fce8d2;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #2a1720;
-  --vp-c-text-2: #6e4e57;
-  --vp-c-text-3: #8a6870;
-  --vp-c-brand-1: #b63e59;
-  --vp-c-brand-2: #a22a50;
-  --vp-c-brand-3: #8e2c15;
-  --vp-c-brand-soft: rgba(182, 62, 89, 0.12);
-  --vp-c-divider: #f0d8cd;
-  --vp-c-gutter: #fbe7d9;
-  --vp-code-color: #a22a50;
-  --vp-code-bg: #fce7e2;
-  --vp-code-block-bg: #1e1018;
-  --shadow-rgb: 42, 23, 32;
+  --vp-c-text-1: #2b180e;
+  --vp-c-text-2: #75503c;
+  --vp-c-text-3: #96684f;
+  --vp-c-brand-1: #c14a15;
+  --vp-c-brand-2: #9c3510;
+  --vp-c-brand-3: #7f2b0d;
+  --vp-c-brand-soft: rgba(193, 74, 21, 0.12);
+  --vp-c-divider: #f2ddc8;
+  --vp-c-gutter: #fbe6d1;
+  --vp-code-color: #9c3510;
+  --vp-code-bg: #fbe2cf;
+  --vp-code-block-bg: #1f1109;
+  --shadow-rgb: 43, 24, 14;
 }
 
-/* Light (white + the rose accent) is the default brand look for the blog too,
+/* Light (white + the ember accent) is the default brand look for the blog too,
    so / and /blog match. The bare :root carries it. */
 :root,
 :root[data-theme='light'] {
-  --vp-c-bg: #fffdfa;
-  --vp-c-bg-alt: #fff8f2;
-  --vp-c-bg-soft: #fdece7;
+  --vp-c-bg: #fffaf2;
+  --vp-c-bg-alt: #fdf3ea;
+  --vp-c-bg-soft: #fae5d6;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #24141c;
-  --vp-c-text-2: #6e4e57;
-  --vp-c-text-3: #8a6870;
-  --vp-c-brand-1: #b63e59;
-  --vp-c-brand-2: #a22a50;
-  --vp-c-brand-3: #8e2c15;
-  --vp-c-brand-soft: rgba(182, 62, 89, 0.10);
-  --vp-c-divider: #f2e2da;
-  --vp-c-gutter: #fdf4ee;
-  --vp-code-color: #a22a50;
-  --vp-code-bg: #fdece7;
-  --vp-code-block-bg: #1e1018;
-  --shadow-rgb: 36, 20, 28;
+  --vp-c-text-1: #271710;
+  --vp-c-text-2: #75503c;
+  --vp-c-text-3: #96684f;
+  --vp-c-brand-1: #c14a15;
+  --vp-c-brand-2: #9c3510;
+  --vp-c-brand-3: #7f2b0d;
+  --vp-c-brand-soft: rgba(193, 74, 21, 0.10);
+  --vp-c-divider: #f4e4d5;
+  --vp-c-gutter: #fdf1e6;
+  --vp-code-color: #9c3510;
+  --vp-code-bg: #fae5d6;
+  --vp-code-block-bg: #1f1109;
+  --shadow-rgb: 39, 23, 16;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --vp-c-bg: #1c1016;
-  --vp-c-bg-alt: #271822;
-  --vp-c-bg-soft: #3a2029;
-  --vp-c-bg-elv: #271822;
-  --vp-c-text-1: #f7e9e4;
-  --vp-c-text-2: #c3a2a8;
-  --vp-c-text-3: #9d7f86;
-  --vp-c-brand-1: #ee7566;
-  --vp-c-brand-2: #f09b7f;
+  --vp-c-bg: #1d110b;
+  --vp-c-bg-alt: #291910;
+  --vp-c-bg-soft: #3d2415;
+  --vp-c-bg-elv: #291910;
+  --vp-c-text-1: #f9ecdf;
+  --vp-c-text-2: #cba78e;
+  --vp-c-text-3: #a58267;
+  --vp-c-brand-1: #ff8a4c;
+  --vp-c-brand-2: #ffb37e;
   --vp-c-brand-3: #f0a07e;
-  --vp-c-brand-soft: rgba(238, 117, 102, 0.14);
-  --vp-c-divider: #3a2029;
-  --vp-c-gutter: #241019;
+  --vp-c-brand-soft: rgba(255, 138, 76, 0.14);
+  --vp-c-divider: #3d2415;
+  --vp-c-gutter: #26160d;
   --vp-code-color: #f0a07e;
-  --vp-code-bg: #3a2029;
-  --vp-code-block-bg: #140611;
+  --vp-code-bg: #3d2415;
+  --vp-code-block-bg: #170d08;
   --shadow-rgb: 0, 0, 0;
 }
 
