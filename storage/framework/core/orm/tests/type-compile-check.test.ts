@@ -602,23 +602,45 @@ describe('old generated files are removed', () => {
   })
 })
 
-// ─── 11. Stacks router uses StacksActionPath (not plain string) ───────
+// ─── 11. Stacks router types its handler strings ─────────────────────
 
-describe('stacks-router uses StacksActionPath type', () => {
+/*
+ * This block used to assert `type StacksHandler = string | RouteHandlerFn` and
+ * an import of `StacksActionPath` - an alias declared as `export type
+ * StacksActionPath = string`, above a comment promising it "will be narrowed as
+ * actions are added". It never was, it was imported and used nowhere, and the
+ * tests here pinned the placeholder in place: they asserted the router's
+ * handler position WAS `string`, which is the state the narrowing was meant to
+ * end.
+ *
+ * It ended by a different route. `buddy generate:types` writes every action
+ * this application has into bun-router's type registry, so `ActionPath` is the
+ * real list and `route.get(path, 'Actions/Typo')` does not compile. The
+ * placeholder and its dead import are gone, and these assert the property that
+ * replaced them.
+ */
+
+describe('stacks-router types its handler strings', () => {
   const routerFile = join(routerDir, 'stacks-router.ts')
 
   test('stacks-router.ts exists', () => {
     expect(existsSync(routerFile)).toBe(true)
   })
 
-  test('imports StacksActionPath from action-paths', () => {
+  test('the handler union is built from ActionPath, not string', () => {
     const content = readFileSync(routerFile, 'utf-8')
-    expect(content).toContain("import type { StacksActionPath } from './action-paths'")
+    expect(content).toContain('export type StacksHandler = ActionPath |')
+    expect(content).not.toContain('type StacksHandler = string')
   })
 
-  test('StacksHandler uses string | RouteHandlerFn', () => {
+  test('ActionPath comes from the router that reads the type registry', () => {
     const content = readFileSync(routerFile, 'utf-8')
-    expect(content).toContain('type StacksHandler = string | RouteHandlerFn')
+    expect(content).toMatch(/import type \{[^}]*\bActionPath\b[^}]*\} from '@stacksjs\/bun-router'/)
+  })
+
+  test('the superseded StacksActionPath placeholder is gone', () => {
+    expect(existsSync(join(routerDir, 'action-paths.ts'))).toBe(false)
+    expect(readFileSync(routerFile, 'utf-8')).not.toContain('StacksActionPath')
   })
 
   test('does NOT use StringHandler = string', () => {

@@ -190,7 +190,6 @@ import { rateLimit as enforceRateLimit } from './rate-limit'
 import { applySecurityHeaders } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm'
 
-import type { StacksActionPath } from './action-paths'
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
 
