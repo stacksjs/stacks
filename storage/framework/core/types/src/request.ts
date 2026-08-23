@@ -4,7 +4,7 @@ import type { AuthToken} from '@stacksjs/types'
 // `Infer<T extends Validator<U>>` resolves to the validator's output
 // type — `Infer<typeof schema.string()> → string`. Type-only import
 // keeps this package free of a runtime ts-validation dependency.
-import type { Infer } from '@stacksjs/ts-validation'
+import type { Infer, IsRequired } from '@stacksjs/ts-validation'
 
 // Trait methods are attached dynamically by the Stacks model proxy. The
 // open member bag reflects application-level traits that the framework's
@@ -219,9 +219,24 @@ export type ActionRequest<
  */
 export type Resolved<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
-export type InferValidations<V extends Record<string, { rule: any }>> = Resolved<{
-  [K in keyof V]: Infer<V[K]['rule']>
-}>
+/**
+ * The shape a set of validation rules describes.
+ *
+ * Optionality comes from the rules themselves: a field whose rule went through
+ * `.required()` is a required key, and everything else is optional. Before
+ * ts-validation 0.5.6 there was nothing to read - `required()` returned `this`
+ * and `isRequired` was a runtime boolean - so every field typed as present,
+ * including the ones a handler has to guard. `user.name` was `string` on a
+ * payload where it could be absent, which is the type saying something the
+ * runtime does not.
+ *
+ * Written as two mapped types rather than one with an optional modifier,
+ * because `?` cannot be applied conditionally per key.
+ */
+export type InferValidations<V extends Record<string, { rule: any }>> = Resolved<
+  & { [K in keyof V as IsRequired<V[K]['rule']> extends true ? K : never]: Infer<V[K]['rule']> }
+  & { [K in keyof V as IsRequired<V[K]['rule']> extends true ? never : K]?: Infer<V[K]['rule']> }
+>
 
 /**
  * What `get()` and `input()` can actually be asked for.

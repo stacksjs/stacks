@@ -24,9 +24,15 @@ export default new Action({
    * `to` is an address, and `name` carries the User model's own length bounds -
    * the payload is built from a User row, so the two should not disagree about
    * what a name is.
+   *
+   * `to` is `.required()` and `name` is not, which is what `RegisterAction`
+   * actually dispatches: the address always resolves (it falls back to the one
+   * being registered) while `name` reads `user?.name` and can be absent. So
+   * `user.name` types as `string | undefined`, and the `|| 'there'` below stops
+   * being defensive habit and starts being the thing the type asks for.
    */
   validations: {
-    to: { rule: schema.string().email() },
+    to: { rule: schema.string().email().required() },
     name: { rule: schema.string().min(5).max(100) },
   },
 

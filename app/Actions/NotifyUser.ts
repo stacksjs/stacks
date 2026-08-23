@@ -26,10 +26,14 @@ export default new Action({
    * `id` is its auto-incrementing primary key - a positive integer, never a
    * float and never negative - and `name` carries the model's own length
    * bounds. `schema.number()` alone would have accepted `-1.5`.
+   *
+   * Both `.required()`, because a row that has been created has both, and
+   * `.required()` is what makes them non-optional in the payload type rather
+   * than `number | undefined` for the handler to guard.
    */
   validations: {
-    id: { rule: schema.number().integer().positive() },
-    name: { rule: schema.string().min(5).max(100) },
+    id: { rule: schema.number().integer().positive().required() },
+    name: { rule: schema.string().min(5).max(100).required() },
   },
 
   async handle(user) {
