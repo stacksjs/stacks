@@ -122,12 +122,13 @@ export default defineModel({
     page: {
       kicker: 'Run',
       headline: 'Work that outlives the request that started it.',
-      lede: 'Queues, schedules, events, and mail are one subsystem here rather than four packages with four config formats. A job dispatched in a request and a job fired by the scheduler are the same class, run by the same worker, against the same driver.',
+      lede: 'Queues, schedules, events, and mail are one subsystem here rather than four packages with four config formats. A job dispatched in a request and a job fired by the scheduler are the same class, run by the same worker, against the same driver. Mail can mean sending through SES or Mailgun, or it can mean running the mailbox itself: a self-hostable SMTP and IMAP server for real inboxes on your own domain.',
       capabilities: [
         { title: 'Jobs and queues', text: 'Classes in app/Jobs/ dispatched from anywhere, run by a worker, with retries, backoff, and batches. Drivers cover memory, database, and SQS.' },
         { title: 'Scheduling', text: 'app/Scheduler.ts declares recurring work in TypeScript instead of a crontab, so it ships and reviews with the code.' },
         { title: 'Events and listeners', text: 'app/Events.ts maps events to listeners in app/Listeners/. Models with the observe trait emit created, updated, and deleted for free.' },
         { title: 'Mail', text: 'Mail classes in app/Mail/ render STX templates and send through SES, SendGrid, Mailgun, or plain SMTP behind one interface.' },
+        { title: 'Your own mail server', text: 'A self-hostable SMTP and IMAP mail server for real mailboxes on your own domain, opt-in and deployed alongside the app, for teams that would rather not pay for Google Workspace or Fastmail just to receive mail.' },
         { title: 'Notifications', text: 'One notification, several channels: email, SMS, push, chat, or a database row the dashboard can read.' },
         { title: 'Batches', text: 'Group jobs, track progress as a unit, and hang a completion callback off the batch rather than off the last job.' },
       ],
@@ -195,7 +196,7 @@ export default {
   },
   android: {
     appName: 'My App',
-    applicationId: 'com.example.app',
+    packageName: 'com.example.app',
   },
 } satisfies MobileConfig`,
       },
@@ -271,20 +272,22 @@ export default defineModel({
   {
     slug: 'auth',
     title: 'Auth',
-    blurb: 'Sessions, tokens, passkeys, policies, guards, and rate limiting.',
+    blurb: 'Sessions, tokens, passkeys, social login, magic links, policies, guards, and rate limiting.',
     icon: 'i-hugeicons-shield-key',
     group: 'build',
     page: {
       kicker: 'Build',
       headline: 'Who is asking, and may they.',
-      lede: 'Authentication and authorization are one subsystem, not an auth package next to a permissions package that disagree about what a user is. Turn on the useAuth trait and the columns, the passkey tables, and the guards arrive together.',
+      lede: 'Authentication and authorization are one subsystem, not an auth package next to a permissions package that disagree about what a user is. Turn on the useAuth trait and the columns, the passkey tables, the social providers, and the guards arrive together, whether a user signs in with a password, a passkey, a social account, or a magic link.',
       capabilities: [
         { title: 'Sessions and tokens', text: 'Cookie sessions for the browser and API tokens for everything else, both resolving to the same authenticated user.' },
+        { title: 'Social login', text: 'GitHub, Google, Facebook, and X sign-in over OAuth2 with PKCE, with account linking so a social login and a password resolve to the same user.' },
+        { title: 'Magic links', text: 'Passwordless email sign-in with single-use, rate-limited tokens, for the products that would rather not ask for a password at all.' },
         { title: 'Passkeys', text: 'WebAuthn registration and assertion, with the credential tables added by the useAuth trait rather than by hand.' },
         { title: 'Two-factor', text: 'TOTP enrolment, verification, and recovery codes, on the same model as the password.' },
         { title: 'Gates and policies', text: 'app/Gates.ts holds the checks; policies put per-model rules next to the model they guard.' },
         { title: 'Roles and permissions', text: 'RBAC with roles, permissions, and the relations already migrated.' },
-        { title: 'Rate limiting', text: 'Per-route and per-identity limits as middleware, so a login endpoint is throttled where it is declared.' },
+        { title: 'Request protection', text: 'CSRF tokens on every state-mutating route by default, plus per-route and per-identity rate limits and account lockout after repeated failed logins.' },
       ],
       code: {
         file: 'app/Gates.ts',
@@ -304,7 +307,7 @@ Auth.define('access-dashboard', (user) => {
       commands: [
         'buddy migrate --auth',
         'buddy make:policy PostPolicy',
-        'buddy make:middleware EnsureVerified',
+        'buddy make middleware EnsureVerified',
       ],
       docs: '/docs',
       related: ['application-core', 'testing', 'cms'],
@@ -320,7 +323,7 @@ Auth.define('access-dashboard', (user) => {
     page: {
       kicker: 'Build',
       headline: 'A store is not a second application.',
-      lede: 'Products, orders, customers, coupons, gift cards, shipping, and tax are twenty-plus models in the same ORM as everything else, with the dashboard, the generated API, and the migrations that come with any model here. Checkout is a payment driver, not a rewrite.',
+      lede: 'Products, orders, customers, coupons, gift cards, shipping, and tax are 35-plus models in the same ORM as everything else, with the dashboard, the generated API, and the migrations that come with any model here. Checkout is a payment driver, not a rewrite.',
       capabilities: [
         { title: 'Catalog', text: 'Products, variants, units, manufacturers, categories, and reviews, related the way a catalog actually nests.' },
         { title: 'Orders and customers', text: 'Order line items, order export, and customer profiles and history, queryable with the same builder as any other model.' },
@@ -463,20 +466,21 @@ export default new Action({
   {
     slug: 'ai',
     title: 'AI',
-    blurb: 'Anthropic, OpenAI, Bedrock, and Ollama behind one driver, plus RAG, embeddings, and MCP.',
+    blurb: 'Anthropic, OpenAI, and Ollama behind one chat driver, Bedrock alongside for AWS-hosted models, plus RAG, embeddings, and MCP.',
     icon: 'i-hugeicons-ai-chat-02',
     group: 'run',
     page: {
       kicker: 'Run',
-      headline: 'Four providers, one interface.',
-      lede: 'Chat, vision, image generation, and embeddings are the same call whether the driver is Claude, GPT, a Bedrock model, or Ollama running locally, so swapping providers is a config change. RAG, vector search, and an MCP client are the same package, not a separate integration to bolt on.',
+      headline: 'One driver for chat. The right tool for the rest.',
+      lede: 'Chat and streaming are the same call whether the driver is Claude, GPT, or Ollama running locally, so swapping providers is a config change. Vision runs on Claude and GPT, image generation runs through DALL-E, and Bedrock sits alongside as its own driver for teams standardised on AWS-hosted models. RAG, vector search, and an MCP client are the same package, not a separate integration to bolt on.',
       capabilities: [
-        { title: 'Chat and streaming', text: 'anthropic.chat(), openai.chat(), and their streaming counterparts share a message shape, so a prompt written for one driver runs on the others.' },
-        { title: 'Vision and image generation', text: 'Analyze an uploaded image or generate one from a prompt, through the same drivers as chat.' },
-        { title: 'RAG and embeddings', text: 'Embed content, build a vector index, and retrieve context for a prompt without a separate vector database to run.' },
+        { title: 'Chat and streaming', text: 'anthropic.chat(), openai.chat(), ollama.chat(), and their streaming counterparts share a message shape, so a prompt written for one driver runs on the others, including a local model for development or for data that should not leave the box.' },
+        { title: 'Vision', text: 'Analyze an uploaded image through the Claude or GPT drivers, using the same message shape as chat.' },
+        { title: 'Image generation', text: 'Generate an image from a prompt through the OpenAI driver, using DALL-E.' },
+        { title: 'Bedrock', text: 'A separate driver for Amazon Titan and other AWS-hosted models, with fine-tuning and model management for teams standardised on Bedrock.' },
+        { title: 'RAG and embeddings', text: 'Embed content with OpenAI or Ollama, then query an in-memory vector index for retrieval, without a separate vector database to run.' },
         { title: 'MCP client', text: 'Call tools on a Model Context Protocol server from an action or a job, the same way the buddy assistant does.' },
         { title: 'Personalization', text: 'Sentiment, classification, and recommendation helpers over content and event data already in the app.' },
-        { title: 'Local models', text: 'The Ollama driver runs the same interface against a local model, for development or for data that should not leave the box.' },
       ],
       code: {
         file: 'app/Actions/SummarizeArticleAction.ts',
@@ -499,7 +503,7 @@ export default new Action({
 })`,
       },
       commands: [
-        'buddy env:set ANTHROPIC_API_KEY',
+        'buddy env:set ANTHROPIC_API_KEY sk-ant-...',
         'buddy make:action SummarizeArticle',
       ],
       docs: '/docs',
@@ -570,7 +574,7 @@ describe('posts API', () => {
         { title: 'Channels', text: 'Public, private, and presence channels with authorization that reuses the app gates rather than its own rules.' },
         { title: 'Broadcasts', text: 'An event dispatched server-side arrives on the channel, so the same event can queue a job and update a screen.' },
         { title: 'WebSocket drivers', text: 'A first-party driver for development and pluggable transports for production.' },
-        { title: 'Search engines', text: 'The useSearch trait indexes into Meilisearch or Algolia, with searchable and filterable declared on the model.' },
+        { title: 'Search engines', text: 'The useSearch trait indexes into Meilisearch, Algolia, or Typesense, with searchable and filterable declared on the model.' },
         { title: 'Index sync', text: 'Model writes update the index through observers, so a record and its index entry do not disagree after an edit.' },
         { title: 'Client composables', text: 'STX composables subscribe in a script client block, leaving the server render untouched.' },
       ],

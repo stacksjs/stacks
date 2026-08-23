@@ -758,6 +758,9 @@ export const comparisons: Comparison[] = [
         { title: 'Front end in the box', text: 'STX components and signals are part of the framework, so there is no Livewire or Inertia decision to make.' },
         { title: 'Infrastructure in the repository', text: 'DNS, TLS, CDN, and mail records are declared in config and applied by buddy deploy, without a paid platform.' },
         { title: 'One runtime for everything', text: 'The server, the CLI, the tests, and the build all run on Bun, so there is no separate Node toolchain beside the PHP one.' },
+        { title: 'No deploy platform subscription', text: 'Forge runs $12 to $39 a month and Vapor $39 a month, both before the AWS bill. buddy deploy ships in the framework itself, so the only recurring cost is the same AWS bill either way.' },
+        { title: 'A mail server, not just a mail sender', text: 'Laravel pairs with SES or Postmark for sending and Google Workspace or Fastmail for real mailboxes. Stacks can run its own self-hostable SMTP and IMAP server, so a custom mailbox on your domain is infrastructure you already have rather than another subscription.' },
+        { title: 'Real products, not a demo', text: 'BugHQ, StatusHQ, AnalyticsHQ, and LogHQ are Stacks applications running in production today, at bughq.org, statushq.org, analyticshq.org, and loghq.org, and all four are open source you can self-host rather than a SaaS you rent. CommsHQ, a marketing and communications platform built the same way, goes further either direction: self-host it for free or take one of its own hosted subscription plans.' },
       ],
       rows: [
         { dimension: 'Language', stacks: 'TypeScript end to end', other: 'PHP on the server, JavaScript on the client' },
@@ -765,8 +768,9 @@ export const comparisons: Comparison[] = [
         { dimension: 'Views', stacks: 'STX components with signals', other: 'Blade, plus Livewire or Inertia' },
         { dimension: 'Queues', stacks: 'Included, dashboard for failures', other: 'Included, Horizon for monitoring' },
         { dimension: 'Realtime', stacks: 'Included', other: 'Echo with Reverb or Pusher' },
-        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament or Nova' },
-        { dimension: 'Deploy', stacks: 'buddy deploy into your AWS account', other: 'Forge, Vapor, Cloud, or your own' },
+        { dimension: 'Admin', stacks: 'Dashboard generated from models', other: 'Filament (free) or Nova (paid, per project)' },
+        { dimension: 'Deploy', stacks: 'buddy deploy into your AWS account, no platform fee', other: 'Forge $12-39/mo, Vapor $39/mo+, or Cloud from $5/mo+usage' },
+        { dimension: 'Mailboxes', stacks: 'Optional self-hosted SMTP and IMAP server', other: 'A hosted inbox provider, billed separately' },
         { dimension: 'Ecosystem age', stacks: 'Young', other: 'Mature' },
       ],
       migration: [
@@ -791,7 +795,7 @@ export const comparisons: Comparison[] = [
     language: 'Ruby',
     icon: 'i-hugeicons-train-01',
     group: 'ecosystems',
-    matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial' },
+    matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'built-in' },
     page: {
       headline: 'Rails proved the case. Stacks argues it again in TypeScript.',
       lede: 'Every framework on this page owes Rails something: convention over configuration, generators, migrations, an ORM with opinions, and the idea that one person should be able to build a whole product. Stacks agrees with all of it and differs on the two things Rails cannot change, which are the language and the runtime.',
@@ -799,7 +803,7 @@ export const comparisons: Comparison[] = [
       theirStrengths: [
         { title: 'Two decades of refinement', text: 'The libraries, the patterns, and the answers to your problem all exist already. Stacks has years of that ahead of it.' },
         { title: 'Hotwire', text: 'Turbo and Stimulus deliver interactivity with almost no client-side state, and the approach is very well proven.' },
-        { title: 'Kamal', text: 'Deploying containers to plain servers with zero downtime, on any host, with no platform lock-in.' },
+        { title: 'Kamal', text: 'Generated into every new Rails 8 app by default. Deploying containers to plain servers with zero downtime, on any host, with no platform lock-in.' },
         { title: 'Culture and hiring', text: 'A large community with strong shared conventions and a deep pool of experienced engineers.' },
       ],
       ourStrengths: [
@@ -900,7 +904,7 @@ export const comparisons: Comparison[] = [
       ],
       ourStrengths: [
         { title: 'Business logic has a home', text: 'Anything beyond CRUD ends up in database functions, triggers, or edge functions in a BaaS. Here it is actions, jobs, and events in one typed codebase.' },
-        { title: 'Authorisation you can read', text: 'Row level security policies are powerful and easy to get subtly wrong. Gates and policies are ordinary reviewable TypeScript.' },
+        { title: 'Auth and authorisation you can read', text: 'Social login, magic links, and two-factor come from the same auth package as password login, just as code rather than a dashboard toggle. Row level security policies are powerful and easy to get subtly wrong; gates and policies are ordinary reviewable TypeScript instead.' },
         { title: 'Background work and mail', text: 'Queues, schedules, retries, transactional mail, and notifications, rather than cron extensions and a mail provider.' },
         { title: 'You own the deployment', text: 'Your AWS account, your database, your bill, and no platform between you and it.' },
       ],

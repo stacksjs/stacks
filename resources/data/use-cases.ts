@@ -119,7 +119,7 @@ export default defineModel({
     page: {
       kicker: 'Products',
       headline: 'A storefront where the cart and the admin share one schema.',
-      lede: 'The commerce package is not a plugin bolted to the side of the framework. It is twenty-odd models with the same defineModel() shape as everything else, which is why a product page, the checkout, the fulfilment screen, and the nightly report all read the same rows without an integration layer between them.',
+      lede: 'The commerce package is not a plugin bolted to the side of the framework. It is 35-plus models with the same defineModel() shape as everything else, which is why a product page, the checkout, the fulfilment screen, and the nightly report all read the same rows without an integration layer between them.',
       challenges: [
         { title: 'Money is unforgiving', text: 'Totals, discounts, tax, and refunds have to agree across the storefront, the receipt, the payment provider, and the ledger.' },
         { title: 'Checkout is a state machine', text: 'Stock reservation, payment intents, webhook confirmation, and failure recovery all have to survive a browser closing mid-flow.' },
@@ -512,7 +512,7 @@ export default async function (order) {
 }`,
       },
       commands: [
-        'buddy make:listener BroadcastOrder',
+        'buddy make:action BroadcastOrder',
         'buddy dev',
         'buddy queue:work',
       ],
@@ -589,12 +589,12 @@ export default async function (order) {
         { title: 'Providers change', text: 'Being locked to one vendor SDK makes evaluating a cheaper or better model a rewrite.' },
       ],
       capabilities: [
-        { title: 'One driver interface', text: 'Anthropic, OpenAI, AWS Bedrock, and Ollama behind the same API, chosen in config/ai.ts.' },
-        { title: 'Embeddings and RAG', text: 'Generate embeddings from model changes and query them for retrieval, using the same events as everything else.' },
+        { title: 'One driver interface', text: 'Anthropic, OpenAI, and Ollama share one chat API, chosen in config/ai.ts, with Bedrock alongside as its own driver for AWS-hosted models.' },
+        { title: 'Embeddings and RAG', text: 'Generate embeddings from model changes and query an in-memory vector index for retrieval, using the same events as everything else.' },
         { title: 'Queued generation', text: 'Long calls run as jobs with retries and timeouts, and results stream back over realtime channels.' },
         { title: 'MCP client', text: 'Talk to Model Context Protocol servers from the application, so tools and data sources are configuration.' },
         { title: 'Caching and limits', text: 'Cache-aside for repeated prompts, rate limits per user or team, and usage recorded like any other model.' },
-        { title: 'Vision and images', text: 'Image generation and analysis are part of the same package, not a second integration.' },
+        { title: 'Vision and images', text: 'Image analysis runs on Claude or GPT and image generation runs through DALL-E, both part of the same package rather than a second integration.' },
       ],
       stack: ['ai', 'queues-and-mail', 'realtime-and-search', 'application-core'],
       code: {
@@ -712,7 +712,7 @@ export default new Middleware({
 })`,
       },
       commands: [
-        'buddy make:middleware ResolveTenant',
+        'buddy make middleware ResolveTenant',
         'buddy domains:add customer.example',
         'buddy deploy',
       ],
@@ -744,6 +744,7 @@ export default new Middleware({
         { title: 'Conventions to hire into', text: 'Files land where the framework says, so a new engineer reads the same layout every Stacks app has.' },
         { title: 'Cost control', text: 'Server or serverless is a config choice, and SQLite is a legitimate production database until it is not.' },
         { title: 'Tests from the start', text: 'Database test utilities and feature tests ship with the project, so coverage is not a later initiative.' },
+        { title: 'Real companies run on it', text: 'BugHQ, StatusHQ, AnalyticsHQ, and LogHQ are production Stacks applications today, at bughq.org, statushq.org, analyticshq.org, and loghq.org, and all four are open source. CommsHQ, a marketing and communications platform, is built the same way and ships as either a self-hosted install or a paid subscription.' },
       ],
       stack: ['application-core', 'auth', 'testing', 'cloud-deploys'],
       code: {
