@@ -2828,16 +2828,52 @@ function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): void | 
 }
 
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
-  const routeParams = Object.fromEntries(
-    Object.entries(req.params || {}).map(([key, value]) => {
-      try {
-        return [key, decodeURIComponent(value)]
+  /*
+   * Params, without rebuilding them for a route that has none.
+   *
+   * This used to be an unconditional `Object.fromEntries(Object.entries(...)
+   * .map(decodeURIComponent))` - two intermediate arrays, a closure per param
+   * and a fresh object - and the overwhelming majority of routes reach it with
+   * either no params at all or params that carry nothing to decode. A `%` is
+   * the only thing `decodeURIComponent` can possibly change, so its absence is
+   * a complete answer, and the matched object is reused as-is rather than
+   * copied. Anything that needs decoding still gets a fresh object, so the
+   * matcher's own record is never mutated underneath it.
+   */
+  const matched = req.params
+  let routeParams: Record<string, string>
+  if (!matched) {
+    routeParams = {}
+  }
+  else {
+    let needsDecoding = false
+    for (const key in matched) {
+      const value = matched[key]
+      if (typeof value === 'string' && value.includes('%')) {
+        needsDecoding = true
+        break
       }
-      catch {
-        return [key, value]
+    }
+
+    if (!needsDecoding) {
+      routeParams = matched
+    }
+    else {
+      routeParams = {}
+      for (const key in matched) {
+        const value = matched[key]
+        try {
+          routeParams[key] = decodeURIComponent(value)
+        }
+        catch {
+          // A malformed escape is the client's problem to explain, not a
+          // reason to fail the request before the handler has seen it.
+          routeParams[key] = value
+        }
       }
-    }),
-  )
+    }
+  }
+
   req.params = routeParams
   applyRequestEnhancements(req as unknown as Request, routeParams)
 
@@ -2858,14 +2894,24 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   if (!req._requestId)
     req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
 
-  // Parse query string if not present
-  let query = req.query
-  if (!query) {
-    const url = new URL(req.url)
-    query = {} as Record<string, string>
-    url.searchParams.forEach((value, key) => {
-      query[key] = value
-    })
+  /*
+   * Query string, without parsing a URL to find out there isn't one.
+   *
+   * `new URL(req.url)` allocates a full parsed URL - origin, pathname,
+   * a `URLSearchParams` - to answer a question that the presence of a `?` in
+   * the raw string already answers. A route hit without a query string is the
+   * common case and now costs one `indexOf`.
+   */
+  if (!req.query) {
+    const url = req.url
+    const mark = url.indexOf('?')
+    const query: Record<string, string> = {}
+    if (mark !== -1) {
+      const params = new URLSearchParams(url.slice(mark + 1))
+      params.forEach((value, key) => {
+        query[key] = value
+      })
+    }
     ;req.query = query
   }
 
