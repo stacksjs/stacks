@@ -1,0 +1,7 @@
+{{-- Shared footer and theme control for every marketing page. --}}
+<footer class="site-footer site-shell">
+  <div class="footer-inner">
+    <span>© 2026 Stacks</span>
+    <a class="footer-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+  </div>
+</footer>

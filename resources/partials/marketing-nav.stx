@@ -1,0 +1,66 @@
+{{-- Shared nav. The Features item opens a mega menu built from the one
+  feature list in resources/data/features.ts, so the menu cannot offer a
+  section that no longer exists.
+
+  Hover is not the only way in: the panel opens on :hover AND :focus-within,
+  which is what makes it reachable by keyboard without a line of JavaScript.
+  The trigger is a real link to /features, so a tap on a touch device (where
+  there is no hover) goes somewhere useful rather than nowhere. --}}
+<nav class="site-nav">
+  <div class="nav-inner site-shell">
+    <a class="brand" href="/" aria-label="Stacks home">
+      <span class="brand-mark">S</span>
+      <span class="brand-name">{{ appName }}</span>
+    </a>
+
+    <div class="nav-links" aria-label="Primary navigation">
+      <div class="nav-item">
+        <a class="nav-trigger" href="/features" aria-haspopup="true">
+          Features
+          <i class="nav-caret i-hugeicons-arrow-down-01" aria-hidden="true"></i>
+        </a>
+
+        <div class="mega">
+          <div class="mega-inner">
+            <div class="mega-groups">
+              @foreach (megaGroups as group)
+                <section class="mega-group">
+                  <h2 class="mega-group-title">{{ group.title }}</h2>
+                  <p class="mega-group-copy">{{ group.text }}</p>
+                  <ul class="mega-list">
+                    @foreach (group.items as feature)
+                      <li>
+                        <a class="mega-link" href="/features/{{ feature.slug }}">
+                          <span class="mega-icon"><i class="{{ feature.icon }}" aria-hidden="true"></i></span>
+                          <span class="mega-text">
+                            <strong>{{ feature.title }}</strong>
+                            <span>{{ feature.blurb }}</span>
+                          </span>
+                        </a>
+                      </li>
+                    @endforeach
+                  </ul>
+                </section>
+              @endforeach
+            </div>
+
+            <aside class="mega-aside">
+              <span class="kicker">Start here</span>
+              <p class="mega-aside-copy">Every one of these ships in the same install, typed against the others. Nothing above is a plugin you add later.</p>
+              <div class="mega-aside-actions">
+                <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+                <a class="button" href="/features">All features</a>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      @foreach (navLinks as link)
+        <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
+      @endforeach
+    </div>
+
+    <a class="nav-cta" href="https://github.com/stacksjs/stacks">GitHub</a>
+  </div>
+</nav>

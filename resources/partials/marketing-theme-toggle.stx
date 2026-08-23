@@ -1,0 +1,17 @@
+{{-- Same control, position, and glyphs as the blog's, so switching theme
+  feels like one site rather than two that happen to share a palette. --}}
+<div class="theme-toggle" role="group" aria-label="Theme">
+  <button type="button" data-t="colored" title="Dusk theme" aria-label="Dusk theme" onclick="stxTheme('colored')">🌲</button>
+  <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>
+  <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')">🌙</button>
+</div>
+<script>
+  // Mark the active button once the toggle exists (the theme itself was
+  // applied pre-paint by the head script).
+  ;(function () {
+    var current = document.documentElement.getAttribute('data-theme')
+    document.querySelectorAll('.theme-toggle button').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.getAttribute('data-t') === current))
+    })
+  })()
+</script>
