@@ -1,0 +1,24 @@
+{
+  // Type-level tests. `tsconfig.framework.json` excludes every `tests/`
+  // directory - correctly, since the framework check has no business compiling
+  // test files - which would leave these never checked by anything. Wired into
+  // the root `typecheck` script, the same way the ORM's inference tests are.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "noEmit": true
+  },
+  "include": [
+    "tests/*.test-d.ts",
+    // The generated framework declarations (ORM globals, auto-imports, model
+    // attributes). `tsconfig.framework.json` picks these up by including the
+    // whole tree; this config includes one directory, so it has to say so - or
+    // every transitively-reached file that uses `ModelRow` fails to compile.
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": [
+    "dist/**"
+  ]
+}
