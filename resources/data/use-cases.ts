@@ -744,7 +744,7 @@ export default new Middleware({
         { title: 'Conventions to hire into', text: 'Files land where the framework says, so a new engineer reads the same layout every Stacks app has.' },
         { title: 'Cost control', text: 'Server or serverless is a config choice, and SQLite is a legitimate production database until it is not.' },
         { title: 'Tests from the start', text: 'Database test utilities and feature tests ship with the project, so coverage is not a later initiative.' },
-        { title: 'Real companies run on it', text: 'BugHQ (bughq.org), UptimeStatus (statushq.org), and LogHQ (loghq.org) are production Stacks applications today, and all three are open source. CommsHQ, a marketing and communications platform, is built the same way and ships as either a self-hosted install or a paid subscription.' },
+        { title: 'Real companies run on it', text: 'BugHQ (bughq.org), StatusHQ (statushq.org), AnalyticsHQ (analyticshq.org), and LogHQ (loghq.org) are production Stacks applications today, and all four are open source. CommsHQ, a marketing and communications platform, is built the same way and ships as either a self-hosted install or a paid subscription.' },
       ],
       stack: ['application-core', 'auth', 'testing', 'cloud-deploys'],
       code: {
