@@ -263,5 +263,10 @@ export async function scaffoldCrud(name: string, options: MakeOptions & { fields
   }
 
   log.success(`CRUD scaffold complete: model + migration + 5 actions for ${Model}`)
-  log.info(`Next: register \`route.resource('${pluralize(snakeCase(name))}', '${Model}')\` in routes/api.ts`)
+  // `generate:types` first: the five actions above are brand new, and
+  // `route.resource()` checks its base against the actions this app has. Until
+  // the union is regenerated, the call below is a compile error about a file
+  // that is sitting right there.
+  log.info('Next: run `buddy generate:types`, then register '
+    + `\`route.resource('${pluralize(snakeCase(name))}', '${Model}')\` in routes/api.ts`)
 }
