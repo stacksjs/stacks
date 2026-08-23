@@ -1,0 +1,10 @@
+<script server>
+// Application core. The page itself is resources/partials/feature-page.stx, shared
+// by all eight; its content is the 'application-core' entry in
+// resources/data/features.ts. This file exists so that /features/application-core is
+// a real route and anything else under /features is a real 404 - see the note
+// in the partial.
+const featureSlug = 'application-core'
+</script>
+
+@include('feature-page')

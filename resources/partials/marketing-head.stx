@@ -11,14 +11,6 @@
 <title>{{ pageTitle }}</title>
 
 <link rel="canonical" href="https://stacksjs.com{{ canonicalPath }}">
-@if (typeof noindex !== 'undefined' && noindex)
-  {{-- A view rendered by stx always answers 200: there is no way for a
-    template to set a status code, so an unknown /features/:slug renders a
-    not-found body under a 200. noindex is the part of a real 404 that can
-    be expressed from here, and keeps the soft 404 out of search results
-    until stx can carry the status. --}}
-  <meta name="robots" content="noindex">
-@endif
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#fff7ec" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1c1016" media="(prefers-color-scheme: dark)">

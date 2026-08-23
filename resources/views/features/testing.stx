@@ -1,0 +1,10 @@
+<script server>
+// Testing. The page itself is resources/partials/feature-page.stx, shared
+// by all eight; its content is the 'testing' entry in
+// resources/data/features.ts. This file exists so that /features/testing is
+// a real route and anything else under /features is a real 404 - see the note
+// in the partial.
+const featureSlug = 'testing'
+</script>
+
+@include('feature-page')
