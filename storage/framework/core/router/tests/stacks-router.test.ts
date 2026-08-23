@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
-import { createStacksRouter, url, clearMiddlewareCache } from '../src/stacks-router'
+import { path as p } from '@stacksjs/path'
+import { clearMiddlewareCache, createStacksRouter, listRegisteredRoutes, url } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
 // Reset state between tests
@@ -153,7 +154,7 @@ describe('createStacksRouter - group()', () => {
 describe('createStacksRouter - resource()', () => {
   test('resource() generates all 5 CRUD routes by default', () => {
     const router = createStacksRouter()
-    router.resource('posts', 'PostAction')
+    router.resource('posts', 'Actions/Blog/Blog')
     const routes = router.bunRouter.routes
     const methods = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(methods).toContain('GET:/posts')       // index
@@ -165,7 +166,7 @@ describe('createStacksRouter - resource()', () => {
 
   test('resource() with only option limits routes', () => {
     const router = createStacksRouter()
-    router.resource('tags', 'TagAction', { only: ['index', 'show'] })
+    router.resource('tags', 'Actions/Blog/Blog', { only: ['index', 'show'] })
     const routes = router.bunRouter.routes
     const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/tags')
@@ -177,7 +178,7 @@ describe('createStacksRouter - resource()', () => {
 
   test('resource() with except option excludes routes', () => {
     const router = createStacksRouter()
-    router.resource('comments', 'CommentAction', { except: ['destroy'] })
+    router.resource('comments', 'Actions/Blog/Blog', { except: ['destroy'] })
     const routes = router.bunRouter.routes
     const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/comments')
@@ -187,18 +188,85 @@ describe('createStacksRouter - resource()', () => {
     expect(paths).not.toContain('DELETE:/comments/:id')
   })
 
-  test('resource() strips trailing "Action" from handler for naming', () => {
+  /*
+   * The composed handler PATH, not just the route count.
+   *
+   * This test used to assert `routes.length >= 5` with a comment saying handler
+   * resolution was covered at the integration level. It was not covered
+   * anywhere - a string handler is resolved lazily, when the route is first
+   * hit, so five registered routes pointing at five nonexistent files looked
+   * exactly like five working ones. `resource()` composed a bare
+   * `'PostIndexAction'`, which the resolver's generic branch looks for at
+   * `app/PostIndexAction.ts`, while `buddy make:crud` writes to
+   * `app/Actions/` - so the scaffolded, documented happy path 500'd on first
+   * request for the life of the feature.
+   */
+  test('resource() composes handler paths under Actions/', () => {
     const router = createStacksRouter()
-    router.resource('users', 'UserAction')
-    // The handler names registered internally should be like UserIndexAction, UserStoreAction, etc.
-    // We verify routes are created — the handler resolution is tested at integration level
-    const routes = router.bunRouter.routes
-    expect(routes.length).toBeGreaterThanOrEqual(5)
+    router.resource('resource_paths', 'Actions/Blog/Blog')
+
+    const handlers = listRegisteredRoutes()
+      .filter(r => r.path.startsWith('/resource_paths'))
+      .map(r => r.handler)
+
+    expect(handlers).toContain('Actions/Blog/BlogIndexAction')
+    expect(handlers).toContain('Actions/Blog/BlogStoreAction')
+    expect(handlers).toContain('Actions/Blog/BlogShowAction')
+    expect(handlers).toContain('Actions/Blog/BlogUpdateAction')
+    expect(handlers).toContain('Actions/Blog/BlogDestroyAction')
+  })
+
+  test('resource() adds the Actions/ prefix to a bare base', () => {
+    const router = createStacksRouter()
+    router.resource('bare_base', 'Blog/Blog')
+
+    const handlers = listRegisteredRoutes()
+      .filter(r => r.path.startsWith('/bare_base'))
+      .map(r => r.handler)
+
+    // Not 'Blog/BlogIndexAction', which resolves to app/Blog/BlogIndexAction.ts.
+    expect(handlers).toContain('Actions/Blog/BlogIndexAction')
+  })
+
+  test('resource() strips a trailing Action from the base', () => {
+    const router = createStacksRouter()
+    router.resource('stripped', 'Actions/Blog/BlogAction')
+
+    const handlers = listRegisteredRoutes()
+      .filter(r => r.path.startsWith('/stripped'))
+      .map(r => r.handler)
+
+    expect(handlers).toContain('Actions/Blog/BlogIndexAction')
+    expect(handlers).not.toContain('Actions/Blog/BlogActionIndexAction')
+  })
+
+  /*
+   * The composed paths name files that are really there. Pins the router's
+   * naming convention to the one `buddy make:crud` writes, which is the pair
+   * that had silently drifted apart.
+   */
+  test('the composed paths resolve to real action files', async () => {
+    const router = createStacksRouter()
+    // A BARE base, the form `buddy make:crud` tells you to write. This is the
+    // one that resolved to `app/Blog/BlogIndexAction.ts` and 500'd.
+    router.resource('real_files', 'Blog/Blog')
+
+    const handlers = listRegisteredRoutes()
+      .filter(r => r.path.startsWith('/real_files'))
+      .map(r => r.handler)
+      .filter((h): h is string => typeof h === 'string')
+
+    expect(handlers.length).toBe(5)
+
+    for (const handler of handlers) {
+      const file = p.storagePath(`framework/defaults/app/${handler}.ts`)
+      expect(await Bun.file(file).exists()).toBe(true)
+    }
   })
 
   test('resource() returns the router for chaining', () => {
     const router = createStacksRouter()
-    const result = router.resource('items', 'ItemAction')
+    const result = router.resource('items', 'Actions/Blog/Blog')
     expect(result).toBe(router)
   })
 })

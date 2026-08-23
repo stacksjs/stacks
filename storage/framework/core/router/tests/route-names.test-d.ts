@@ -50,6 +50,35 @@ export function badMiddleware(): void {
   route.get('/typed/admin', () => ({ ok: true })).middleware('atuh')
 }
 
+// ── inline handler requests ───────────────────────────────────────────────
+
+// `request.params` is narrowed to what the path declares. Without the typed
+// overload the whole handler parameter was implicitly `any`, so every key -
+// including the ones that are not there - read as valid and returned undefined.
+route.get('/typed/users/{id}', req => ({ id: req.params.id }))
+route.match(['GET', 'POST'], '/typed/c/{slug}', req => req.params.slug)
+
+export function badParams(): void {
+  // @ts-expect-error `/typed/users/{id}` has no `slug`
+  route.get('/typed/users/{id}', req => ({ x: req.params.slug }))
+}
+
+// An inline handler may return what `formatResult` handles, not only a
+// `Response` - an object becomes JSON, a string text, `null` a 204.
+route.get('/typed/data', () => ({ ok: true }))
+route.get('/typed/text', () => 'hello')
+
+// ── resource() ────────────────────────────────────────────────────────────
+
+// A base that really has actions behind it, in every spelling.
+route.resource('typed_blog', 'Actions/Blog/Blog')
+route.resource('typed_blog2', 'Blog/BlogAction')
+
+export function badResource(): void {
+  // @ts-expect-error no action is composed from this base
+  route.resource('typed_psots', 'Psot')
+}
+
 // ── named routes ──────────────────────────────────────────────────────────
 
 export const unsubscribe: string = url('email.unsubscribe', { token: 'abc-123' })

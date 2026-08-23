@@ -73,7 +73,18 @@ describe('request input contract', () => {
     expect(requestWith({}, { url: 'https://example.test/items' }).isEmpty()).toBe(true)
   })
 
-  test('decodes route parameters once before actions read them', () => {
+  /*
+   * This layer does NOT decode. It used to, because bun-router handed back the
+   * raw path segment; bun-router 0.1.6 decodes where it assigns the param, so
+   * decoding again here would be the second pass - and `%2520` would reach an
+   * action as a space. A double decode is how a filter that rejects `../` gets
+   * walked past, so "exactly once" is the property worth pinning, and this is
+   * the layer that has to not do it.
+   *
+   * The end-to-end behaviour - a real request, decoded once - is covered in
+   * `hot-path.test.ts`.
+   */
+  test('passes route parameters through without decoding them again', () => {
     const request = requestWith({}, {
       params: {
         id: 'disk%3Amessage%2520name.html',
@@ -82,10 +93,10 @@ describe('request input contract', () => {
     })
 
     expect(request.getParams()).toEqual({
-      id: 'disk:message%20name.html',
+      id: 'disk%3Amessage%2520name.html',
       malformed: 'value%2',
     })
-    expect(request.get('id')).toBe('disk:message%20name.html')
+    expect(request.get('id')).toBe('disk%3Amessage%2520name.html')
   })
 
   test('flashes all, selected, and excluded input on the request', () => {

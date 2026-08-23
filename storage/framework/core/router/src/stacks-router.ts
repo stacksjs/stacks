@@ -7,7 +7,7 @@
 
 import type { Server } from 'bun'
 import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareReference, PathForRouteName, Route, ServerOptions } from '@stacksjs/bun-router'
+import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
@@ -208,21 +208,19 @@ type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
  * by then `formatResult` has already run.
  */
 type InlineRouteHandler = (_req: EnhancedRequest) => ActionResult | Promise<ActionResult>
-/*
- * Three forms, one dispatch path.
+
+/**
+ * The same, with `request.params` narrowed to what the path declares.
  *
- * A string names an action to import when it is first needed - lazy and
- * hot-reload friendly. It is no longer opaque to the compiler: it is typed as
- * bun-router's `ActionPath`, which `buddy generate:types` fills in with every
- * action this application actually has (see `generate/action-types.ts`), so
- * `'Actions/Auth/LogniAction'` stops compiling instead of 500ing on whoever
- * hits that endpoint first.
- *
- * An action object is the same action, imported by the route file itself,
- * which is what lets a typed client see its input and output types (see
- * `typed-router.ts`). An inline function is an escape hatch for the cases that
- * are not worth an action. All three end up in the same wrapper.
+ * Declared as the FIRST overload on every route method so an inline arrow is
+ * contextually typed by it. A single parameter typed as the whole
+ * {@link StacksHandler} union gives TypeScript nothing to type an arrow with -
+ * `route.get('/users/{id}', req => req.params.slugTypo)` compiled and returned
+ * `undefined`, which is the failure a typed router exists to prevent.
  */
+type TypedInlineRouteHandler<TPath extends string>
+  = (_req: RequestFor<TPath>) => ActionResult | Promise<ActionResult>
+
 export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 
 interface StacksRouterConfig {
@@ -251,6 +249,47 @@ interface ResourceRouteOptions {
   except?: ResourceAction[]
   middleware?: MiddlewareReference | MiddlewareReference[]
 }
+
+/** `'PostAction'` → `'Post'`; anything else is left alone. */
+type StripActionSuffix<T extends string> = T extends `${infer Base}Action` ? Base : T
+
+/** `'Post'` → `'Actions/Post'`; an explicit `'Actions/…'` base is left alone. */
+type WithActionsPrefix<T extends string> = T extends `Actions/${string}` ? T : `Actions/${T}`
+
+/** The kinds `resource()` composes. */
+type ResourceKind = 'Index' | 'Store' | 'Show' | 'Update' | 'Destroy'
+
+/**
+ * The base an existing action was composed from.
+ *
+ * `'Actions/Blog/BlogIndexAction'` → `'Actions/Blog/Blog'`. Note it strips the
+ * KIND as well as the `Action` suffix - stripping only `Action` would yield
+ * `'Actions/Blog/BlogIndex'`, a base whose siblings
+ * (`'Actions/Blog/BlogIndexIndexAction'`) exist nowhere.
+ */
+type ResourceBaseOf<T extends string>
+  = T extends `${infer Base}${ResourceKind}Action` ? Base : never
+
+/**
+ * A `resource()` base name, checked as far as it honestly can be.
+ *
+ * `resource('posts', 'Post')` promises up to five files - `PostIndexAction`,
+ * `PostStoreAction`, and so on - that no single expression names, and `only`
+ * and `except` mean the required set is not even fixed. So the union is built
+ * from the bases that DO have at least one action on disk, which rejects a
+ * wholly wrong base (`'Psot'`, a model nobody scaffolded) without rejecting a
+ * deliberate `{ only: ['index'] }`.
+ *
+ * Each base is offered in all four forms a call site might write it:
+ * with or without the `Actions/` prefix, with or without a trailing `Action`.
+ */
+type ResourceBase = ResourceBaseOf<Extract<ActionPath, string>> extends infer TBase
+  ? TBase extends string
+    ? | TBase
+      | `${TBase}Action`
+      | (TBase extends `Actions/${infer Rest}` ? Rest | `${Rest}Action` : never)
+    : never
+  : never
 
 /**
  * Chainable route interface for middleware and naming support
@@ -3067,51 +3106,17 @@ function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): void | 
 
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   /*
-   * Params, without rebuilding them for a route that has none.
+   * Params arrive decoded. This used to decode them here, because the router
+   * handed back the raw path segment - so `/users/{name}` given `caf%C3%A9`
+   * reached a handler as `caf%C3%A9` unless something in between fixed it.
    *
-   * This used to be an unconditional `Object.fromEntries(Object.entries(...)
-   * .map(decodeURIComponent))` - two intermediate arrays, a closure per param
-   * and a fresh object - and the overwhelming majority of routes reach it with
-   * either no params at all or params that carry nothing to decode. A `%` is
-   * the only thing `decodeURIComponent` can possibly change, so its absence is
-   * a complete answer, and the matched object is reused as-is rather than
-   * copied. Anything that needs decoding still gets a fresh object, so the
-   * matcher's own record is never mutated underneath it.
+   * bun-router 0.1.6 decodes at the two places it assigns a path param, which
+   * is where it belongs: every consumer gets it, not just the ones that
+   * remembered. Keeping this layer as well would mean decoding TWICE, and
+   * `%2520` arriving as a space - a double decode is how a filter that rejects
+   * `../` gets walked past. So the correct amount of work here is none.
    */
-  const matched = req.params
-  let routeParams: Record<string, string>
-  if (!matched) {
-    routeParams = {}
-  }
-  else {
-    let needsDecoding = false
-    for (const key in matched) {
-      const value = matched[key]
-      if (typeof value === 'string' && value.includes('%')) {
-        needsDecoding = true
-        break
-      }
-    }
-
-    if (!needsDecoding) {
-      routeParams = matched
-    }
-    else {
-      routeParams = {}
-      for (const key in matched) {
-        // `for...in` only yields keys the object has, so the value is present.
-        const value = matched[key]!
-        try {
-          routeParams[key] = decodeURIComponent(value)
-        }
-        catch {
-          // A malformed escape is the client's problem to explain, not a
-          // reason to fail the request before the handler has seen it.
-          routeParams[key] = value
-        }
-      }
-    }
-  }
+  const routeParams: Record<string, string> = req.params ?? {}
 
   req.params = routeParams
   applyRequestEnhancements(req as unknown as Request, routeParams)
@@ -3564,7 +3569,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Resource route helper - generates standard CRUD routes like Laravel's Route::resource()
-    resource(name: string, handler: ActionPath, options?: ResourceRouteOptions) {
+    resource(name: string, handler: ResourceBase, options?: ResourceRouteOptions) {
       const actions: ResourceAction[] = ['index', 'store', 'show', 'update', 'destroy']
 
       const activeActions = options?.only
@@ -3573,16 +3578,28 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           ? actions.filter(a => !options.except!.includes(a))
           : actions
 
-      const handlerBase = handler.replace(/Action$/, '')
-      log.debug(`[router] Resource: /${name} → ${handler} [${activeActions.join(', ')}]`)
+      /*
+       * `'Post'` → `'Actions/Post'`, and an explicit `'Actions/Blog/Blog'` is
+       * left alone.
+       *
+       * Without the prefix the composed name went through the resolver's
+       * generic branch and looked for `app/PostIndexAction.ts` - the project
+       * root, not `app/Actions/`. `buddy make:crud` writes its five actions to
+       * `app/Actions/` and then prints `route.resource('posts', 'Post')` as the
+       * next step, so the documented, scaffolded happy path resolved to a file
+       * that had just been written somewhere else and 500'd on first request.
+       * Nothing caught it: the tests asserted five routes were REGISTERED, and
+       * a string handler is not resolved until the route is hit.
+       */
+      const stripped = handler.replace(/Action$/, '')
+      const handlerBase = stripped.startsWith('Actions/') ? stripped : `Actions/${stripped}`
+      log.debug(`[router] Resource: /${name} → ${handlerBase}*Action [${activeActions.join(', ')}]`)
 
       /*
-       * The five sibling actions are composed at runtime from the base, so they
-       * cannot be checked against the action union: `resource('posts',
-       * 'Actions/PostIndexAction')` promises four more files that no expression
-       * here can name. Asserted once, at the single point of composition,
-       * rather than five times at the call sites below - and the promise is
-       * kept or broken when the route is first hit, exactly as before.
+       * The siblings are composed at runtime, so they cannot be listed at the
+       * call site - and `only`/`except` mean the required set is not even fixed.
+       * The type below checks that the base names at least ONE real action;
+       * which of the five exist is settled when the route is hit, as before.
        */
       const sibling = (suffix: string): ActionPath => `${handlerBase}${suffix}` as ActionPath
 
@@ -4220,15 +4237,42 @@ export function disableViewRouting(bunRouter: Router): boolean {
 export interface StacksRouterInstance {
   bunRouter: Router
   routes: Route[]
-  get: (path: string, handler: StacksHandler) => ChainableRoute
-  post: (path: string, handler: StacksHandler) => ChainableRoute
-  put: (path: string, handler: StacksHandler) => ChainableRoute
-  patch: (path: string, handler: StacksHandler) => ChainableRoute
-  delete: (path: string, handler: StacksHandler) => ChainableRoute
-  options: (path: string, handler: StacksHandler) => ChainableRoute
+  /*
+   * Two call signatures each, and the order matters. The first types an inline
+   * arrow's request from the path literal; the second accepts every other
+   * handler form unchanged. One parameter typed as the union would type
+   * neither - see `TypedInlineRouteHandler`.
+   */
+  get: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  post: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  put: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  patch: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  delete: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  options: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
-  resource: (name: string, handler: ActionPath, options?: ResourceRouteOptions) => StacksRouterInstance
-  match: (methods: string[], path: string, handler: StacksHandler) => ChainableRoute
+  resource: (name: string, handler: ResourceBase, options?: ResourceRouteOptions) => StacksRouterInstance
+  match: {
+    <TPath extends string>(methods: string[], path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (methods: string[], path: string, handler: StacksHandler): ChainableRoute
+  }
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }) => Promise<StacksRouterInstance>

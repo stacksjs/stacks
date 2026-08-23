@@ -113,6 +113,17 @@ describe('params and query, only when there are any', () => {
     expect(await (await get('/_hot/encoded/100%25')).json()).toEqual({ slug: '100%' })
     expect(await (await get('/_hot/encoded/broken%ZZ')).json()).toEqual({ slug: 'broken%ZZ' })
   })
+
+  /*
+   * Decoding moved into bun-router (0.1.6), where the param is assigned, and
+   * came OUT of `enhanceRequest`. Two layers each calling `decodeURIComponent`
+   * would turn `%2520` into a space, and a double decode is how a filter that
+   * rejects `../` gets walked past.
+   */
+  it('decodes exactly once, so a double-encoded sequence stays encoded', async () => {
+    expect(await (await get('/_hot/encoded/%2520')).json()).toEqual({ slug: '%20' })
+    expect(await (await get('/_hot/encoded/%252e%252e%252f')).json()).toEqual({ slug: '%2e%2e%2f' })
+  })
 })
 
 /**
