@@ -78,7 +78,7 @@ Read the skill before building. The full list lives in `storage/framework/defaul
 | Task | Skill |
 |---|---|
 | End-to-end new feature (model to migration to action to route to test) | `stacks-new-feature` |
-| API endpoints, routes, request/response, middleware, OpenAPI, HTTP client | `stacks-api`, `stacks-router`, `stacks-routes` |
+| API endpoints, routes, request/response, middleware, OpenAPI, HTTP client, the zero-generation typed client | `stacks-api`, `stacks-router`, `stacks-routes` |
 | Server actions in `app/Actions/`, auto-generated API actions (`useApi` trait), default actions | `stacks-actions` |
 | Data models: `defineModel()`, attributes, relationships, traits, factories, computed | `stacks-models`, `stacks-orm` |
 | Database: connections, queries, SQL helpers, SQLite/MySQL/Postgres/DynamoDB | `stacks-database`, `stacks-query-builder` |

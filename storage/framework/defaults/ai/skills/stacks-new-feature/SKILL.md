@@ -121,6 +121,33 @@ route.group({ prefix: '/articles', middleware: ['auth'] }, () => {
 
 Or rely on auto-generated routes from `useApi` trait — they're created automatically.
 
+### When a TypeScript client will call these
+
+Register through `createTypedRouter()` instead, and the client gets full
+input/output inference with no `buddy generate:openapi` step in between:
+
+```typescript
+// routes/api.ts
+import CreateArticle from '../app/Actions/CreateArticle'
+import ListArticles from '../app/Actions/ListArticles'
+import { createTypedRouter } from '@stacksjs/router'
+
+export const api = createTypedRouter()
+  .get('/articles', ListArticles, { middleware: 'auth' })
+  .post('/articles', CreateArticle, { middleware: 'auth' })
+
+export type AppRoutes = typeof api
+```
+
+```typescript
+const client = createTypedClient<AppRoutes>({ baseUrl })
+const created = await client.post('/articles', { title: 'x', content: 'y' })
+```
+
+Same runtime path, same middleware, same OpenAPI document — the difference is
+entirely at compile time. Keep the string form for routes no TypeScript consumer
+calls; it stays lazily imported. See the `stacks-api` and `stacks-router` skills.
+
 ## Step 5: Add Event Listeners (Optional)
 
 ```typescript

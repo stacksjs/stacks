@@ -48,8 +48,56 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 
 ### Handler Types
 - Function: `(req: EnhancedRequest) => Response | Promise<Response>`
-- Action string: `'Actions/CreateUser'` — auto-loads action
+- Action string: `'Actions/CreateUser'` — auto-loads action, lazily
+- Action object: an imported action, passed directly — see typed routes below
 - Controller: `'Controllers/UserController@index'` — calls controller method
+
+## Typed Routes (zero generation)
+
+`route.get('/x', 'Actions/Foo')` resolves its action by a dynamic `import()` of a
+string. Good for the runtime — lazy, hot-reload friendly — and completely opaque
+to the compiler, so no client can be typed from it without a generation step.
+
+`createTypedRouter()` registers through the same router while accumulating a
+route map into its own type:
+
+```typescript
+import IndexAction from '../app/Actions/Project/IndexAction'
+import StoreAction from '../app/Actions/Project/StoreAction'
+import { createTypedRouter } from '@stacksjs/router'
+
+export const api = createTypedRouter()
+  .get('/v1/projects', IndexAction)
+  .post('/v1/projects', StoreAction, { middleware: 'auth', rateLimit: { max: 10 } })
+
+export type AppRoutes = typeof api
+```
+
+Any TypeScript consumer then gets full inference with **no CLI step**:
+
+```typescript
+import { createTypedClient } from '@stacksjs/router'
+
+const client = createTypedClient<AppRoutes>({ baseUrl })
+const projects = await client.get('/v1/projects')   // typed from the action
+```
+
+Facts worth knowing before using it:
+
+- **One runtime path.** A directly-registered action goes through the same
+  `wrapAction` as a string-registered one — validation, `authorize`, `before`,
+  `formatResult`, error reporting. Only the compile-time story differs.
+- **Input from `validations`, output from `handle`'s return type.** An action
+  returning a `Response` is typed `unknown`; it took over the wire format.
+- **Options are an argument**, not chained — chaining would return the route and
+  lose the accumulated type.
+- **No `.group()`.** A runtime-only prefix makes every path type wrong; a
+  type-only prefix is a second place for the URL to live.
+- **Both forms feed OpenAPI.** Directly-registered actions are reported by
+  `listRegisteredRoutes()`, so the generator reads their schema with no file
+  path to import.
+- The builder, the client and the contract live in `@stacksjs/bun-router` and
+  are re-exported here. See the `stacks-api` skill for the full client story.
 
 ## Route Registry (app/Routes.ts)
 

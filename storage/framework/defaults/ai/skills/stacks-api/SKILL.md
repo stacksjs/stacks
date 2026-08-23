@@ -340,9 +340,96 @@ route.get('/admin', handler).middleware('abilities:admin,write')
 // Params accessible in middleware via: (request as any)._middlewareParams.abilities === 'admin,write'
 ```
 
+## Which client to reach for
+
+Stacks has three, and they answer different questions. Pick by who is calling.
+
+| Caller | Client | Why |
+|---|---|---|
+| TypeScript in this repo or a workspace package | **Typed client** (below) | Full input/output inference with **no generation step**. Change a route, the call site stops compiling. |
+| Anything that is not TypeScript here - native iOS/Android via the Craft bridge, third-party integrators, Swagger UI | **Generated REST client** (`buddy generate:openapi`) | Needs a real spec. That pipeline is unchanged and permanent. |
+| One-off calls to any URL | **`Fetcher`** (below) | No route awareness, and none intended. |
+
+The first two are both permanent. This is not a migration off REST.
+
+## Typed client (zero generation)
+
+Register routes with `createTypedRouter()` and the compiler can see both ends —
+no `buddy generate:openapi`, no committed file to go stale.
+
+```typescript
+// routes/api.ts
+import IndexAction from '../app/Actions/Project/IndexAction'
+import StoreAction from '../app/Actions/Project/StoreAction'
+import { createTypedRouter } from '@stacksjs/router'
+
+export const api = createTypedRouter()
+  .get('/v1/projects', IndexAction)
+  .get('/v1/projects/{id}', ShowAction)
+  .post('/v1/projects', StoreAction, { middleware: 'auth' })
+
+export type AppRoutes = typeof api
+```
+
+```typescript
+// any TypeScript consumer
+import type { AppRoutes } from '../routes/api'
+import { createTypedClient } from '@stacksjs/router'
+
+const client = createTypedClient<AppRoutes>({ baseUrl: 'https://api.example.com' })
+
+const projects = await client.get('/v1/projects')
+const one = await client.get('/v1/projects/{id}', { params: { id: '42' } })
+const created = await client.post('/v1/projects', { name: 'apollo', budget: 1200 })
+```
+
+An unknown path is a compile error. A body that does not match the action's
+`validations` is a compile error. The result is the action's own return type.
+
+**How it infers.** Input comes from the action's `validations` — the same object
+the validator runs, so the two cannot drift. Output comes from `handle`'s return
+type. An action returning a `Response` or a stream is typed `unknown`, honestly:
+it took over the wire format.
+
+**Per-route settings are an argument**, not a chained call — chaining
+`.middleware()` would return the route and lose the accumulated type:
+
+```typescript
+.post('/v1/projects', StoreAction, {
+  middleware: ['auth', 'can:create,project'],
+  name: 'projects.store',
+  skipCsrf: true,
+  rateLimit: { max: 10, window: 'minute' },
+})
+```
+
+**No `.group()`.** A prefix applied only at runtime makes every accumulated path
+type wrong; one applied only in the type is a second place for the URL to live.
+Write the full path.
+
+**The string form is untouched.** `route.get('/x', 'Actions/Foo')` stays exactly
+as it is — lazy import, hot-reload friendly — and simply produces no inferred
+types. A route wanting inference opts in by using the builder instead. Routes
+registered either way still land in the generated OpenAPI document.
+
+**Generated CRUD.** A `useApi` model's endpoints are describable too, without
+touching them:
+
+```typescript
+import type { ApiRoutesFor } from '@stacksjs/orm'
+import type Product from '../app/Models/Product'
+
+type AppRoutes = RoutesOf<typeof api> & ApiRoutesFor<typeof Product>
+await client.get('/api/products')  // typed listing envelope
+```
+
+The builder, the client and the route-map contract all live in
+`@stacksjs/bun-router` and are re-exported by `@stacksjs/router`. Import
+`createTypedClient` from `@stacksjs/bun-router` directly in a browser bundle.
+
 ## Fetcher (HTTP Client)
 
-A fluent HTTP client for making API requests:
+A fluent HTTP client for ad hoc requests, with no route awareness:
 
 ```typescript
 import { fetcher } from '@stacksjs/api'
