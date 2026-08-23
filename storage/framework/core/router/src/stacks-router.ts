@@ -145,20 +145,42 @@ export function warnOnMultipleRouterInstances(): boolean {
 // default Actions/Middleware/Controllers on a node_modules deploy and the API
 // server fails to boot.
 let __defaultsPkgRoot: string | null | undefined
+/*
+ * Memoized, because the answer cannot change while the process runs and the
+ * question was being asked on the hot path.
+ *
+ * `existsSync` is a synchronous stat, and the CSRF seeding below called this
+ * three times on every GET - once to mint a render token, twice more to seed
+ * the cookie - so a trivial JSON route paid three filesystem round trips
+ * before it answered anything. Whether this checkout is vendored or installed
+ * from node_modules is decided at install time, not at request time.
+ */
+const __defaultsPathCache = new Map<string, string>()
 function resolveDefaultsPath(rel: string): string {
+  const cached = __defaultsPathCache.get(rel)
+  if (cached !== undefined)
+    return cached
+
   const vendored = p.storagePath(`framework/defaults/${rel}`)
-  if (existsSync(vendored))
-    return vendored
-  if (__defaultsPkgRoot === undefined) {
-    try {
-      const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
-      __defaultsPkgRoot = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
-    }
-    catch {
-      __defaultsPkgRoot = null
-    }
+  let resolved: string
+  if (existsSync(vendored)) {
+    resolved = vendored
   }
-  return __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
+  else {
+    if (__defaultsPkgRoot === undefined) {
+      try {
+        const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+        __defaultsPkgRoot = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
+      }
+      catch {
+        __defaultsPkgRoot = null
+      }
+    }
+    resolved = __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
+  }
+
+  __defaultsPathCache.set(rel, resolved)
+  return resolved
 }
 
 import { runWithRequest } from './request-context'
@@ -884,6 +906,10 @@ export function clearMiddlewareCache(): void {
   // than serving from a stale answer (stacksjs/stacks#1863 T-8).
   actionSkipsCsrfCache.clear()
   routeHandlerKeyRegistry.clear()
+  // Same reasoning for the resolved CSRF middleware module: editing
+  // `app/Middleware/Csrf.ts` in dev has to be picked up without a restart, and
+  // it is now held as a module reference rather than re-imported per request.
+  clearCsrfModuleCache()
 }
 
 /**
@@ -1086,7 +1112,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // seeding below then reuses this exact value rather than generating a
     // second one, so what the page embedded and what the browser stores are
     // the same string.
-    await seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
+    const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
+    if (renderTokenSeeding) await renderTokenSeeding
 
     if (actionPrefetch) await actionPrefetch
 
@@ -1349,13 +1376,16 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         const safeMethod = req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS'
         if (safeMethod) {
           try {
-            const { seedCsrfCookieIfMissing } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
-            response = (seedCsrfCookieIfMissing as (req: Request, res: Response, token?: string) => Response)(
-              enhancedReq as unknown as Request,
-              response,
-              // The value the render already embedded, when there was one.
-              (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
-            )
+            const mod = loadCsrfModule()
+            const csrf = mod instanceof Promise ? await mod : mod
+            if (csrf) {
+              response = csrf.seedCsrfCookieIfMissing(
+                enhancedReq as unknown as Request,
+                response,
+                // The value the render already embedded, when there was one.
+                (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
+              )
+            }
           }
           catch (err) {
             log.warn('[router] CSRF cookie seeding failed', { error: err })
@@ -2704,7 +2734,78 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
  * Anything else is somebody's live session and must not have its token
  * rotated mid-flight.
  */
-async function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): Promise<void> {
+/**
+ * The CSRF middleware module, resolved once.
+ *
+ * It used to be a `await import()` on the request path - three of them per GET,
+ * counting the two response-side seedings - and while the module cache makes
+ * the second import cheap, the promise, the property lookups and the
+ * `resolveDefaultsPath` stat in front of it were all being paid per request for
+ * a module whose identity is fixed at boot.
+ *
+ * Three states, and the distinction matters: `undefined` means nobody has
+ * looked yet, `null` means this project ships no CSRF middleware and never
+ * will, and a module means the fast path is available synchronously. Only the
+ * first request through here awaits anything.
+ */
+interface CsrfModule {
+  generateCsrfToken: () => string
+  CSRF_COOKIE_NAME: string
+  seedCsrfCookieIfMissing: (req: Request, res: Response, token?: string) => Response
+}
+
+let csrfModule: CsrfModule | null | undefined
+let csrfModuleLoad: Promise<CsrfModule | null> | undefined
+
+function loadCsrfModule(): CsrfModule | null | Promise<CsrfModule | null> {
+  if (csrfModule !== undefined)
+    return csrfModule
+
+  csrfModuleLoad ??= import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
+    .then((mod) => {
+      csrfModule = mod as CsrfModule
+      return csrfModule
+    })
+    .catch(() => {
+      // No CSRF middleware in this project's defaults. Nothing to seed, ever.
+      csrfModule = null
+      return null
+    })
+
+  return csrfModuleLoad
+}
+
+/** Test / hot-reload seam: forget the resolved module. */
+export function clearCsrfModuleCache(): void {
+  csrfModule = undefined
+  csrfModuleLoad = undefined
+}
+
+function applyCsrfRenderToken(req: Request & { _csrfToken?: string }, cookieHeader: string, mod: CsrfModule): void {
+  const token = mod.generateCsrfToken()
+  req._csrfToken = token
+
+  // Headers on an incoming Request are immutable in some runtimes, so a
+  // failure here is not fatal: the response still seeds the cookie and the
+  // next page load carries it. It only costs the very first submit.
+  try {
+    const merged = cookieHeader
+      ? `${cookieHeader}; ${mod.CSRF_COOKIE_NAME}=${token}`
+      : `${mod.CSRF_COOKIE_NAME}=${token}`
+    req.headers.set('cookie', merged)
+  }
+  catch {
+    // Immutable headers; the response seeding below still applies.
+  }
+}
+
+/**
+ * Returns a promise ONLY when it has to wait for the module's first load.
+ * Every other call - the overwhelming majority - finishes synchronously, so
+ * callers write `const seeding = seedCsrfTokenForRender(req); if (seeding) await seeding`
+ * and a request that has nothing to seed never allocates a promise at all.
+ */
+function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): void | Promise<void> {
   const method = req.method?.toUpperCase?.() ?? 'GET'
   if (method !== 'GET' && method !== 'HEAD')
     return
@@ -2713,28 +2814,17 @@ async function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): P
   if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
     return
 
-  try {
-    const { generateCsrfToken, CSRF_COOKIE_NAME } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
-    const token = (generateCsrfToken as () => string)()
-
-    req._csrfToken = token
-
-    // Headers on an incoming Request are immutable in some runtimes, so a
-    // failure here is not fatal: the response still seeds the cookie and the
-    // next page load carries it. It only costs the very first submit.
-    try {
-      const merged = cookieHeader
-        ? `${cookieHeader}; ${CSRF_COOKIE_NAME}=${token}`
-        : `${CSRF_COOKIE_NAME}=${token}`
-      req.headers.set('cookie', merged)
-    }
-    catch {
-      // Immutable headers; the response seeding below still applies.
-    }
+  const mod = loadCsrfModule()
+  if (mod === null)
+    return
+  if (mod instanceof Promise) {
+    return mod.then((resolved) => {
+      if (resolved)
+        applyCsrfRenderToken(req, cookieHeader, resolved)
+    })
   }
-  catch {
-    // No CSRF middleware in this project's defaults. Nothing to seed.
-  }
+
+  applyCsrfRenderToken(req, cookieHeader, mod)
 }
 
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
@@ -3621,8 +3711,10 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
      * on the request first is what makes that first form usable; the response
      * half below then stores the same value in the browser.
      */
-    if (safe)
-      await seedCsrfTokenForRender(request as Request & { _csrfToken?: string })
+    if (safe) {
+      const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string })
+      if (seeding) await seeding
+    }
 
     const response = await original(request)
 
@@ -3630,9 +3722,12 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
       return response
 
     try {
-      const { seedCsrfCookieIfMissing } = await import(resolveDefaultsPath('app/Middleware/Csrf.ts'))
+      const mod = loadCsrfModule()
+      const csrf = mod instanceof Promise ? await mod : mod
+      if (!csrf)
+        return response
 
-      return (seedCsrfCookieIfMissing as (req: Request, res: Response, token?: string) => Response)(
+      return csrf.seedCsrfCookieIfMissing(
         request,
         response,
         // The value a render already embedded, when the route pipeline ran and
