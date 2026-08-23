@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.55...v0.72.56)
+
+## 🐛 Bug Fixes
+
+- **buddy**: let `env:*` run outside a Stacks project ([da2700d](https://github.com/stacksjs/stacks/commit/da2700d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.54...v0.72.55)
 
 ## ✨ Features
