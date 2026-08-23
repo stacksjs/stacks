@@ -70,7 +70,7 @@ const money = (cents) => (Number(cents) / 100).toFixed(2)
 
               <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 32px 0 0;">
                 <tr>
-                  <td style="background-color: #3451b2; border-radius: 8px;">
+                  <td style="background-color: #c14a15; border-radius: 8px;">
                     <a href="{{ orderUrl }}" style="display: inline-block; padding: 12px 24px; color: #ffffff; font-size: 15px; font-weight: 600; text-decoration: none;">View your order</a>
                   </td>
                 </tr>

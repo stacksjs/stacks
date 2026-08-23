@@ -54,7 +54,7 @@ const config: BlogConfig = {
     github: 'stacksjs/stacks',
   },
   theme: {
-    primaryColor: '#2563eb',
+    primaryColor: '#c14a15',
     logo: '/images/logos/logo-transparent.svg',
   },
 }

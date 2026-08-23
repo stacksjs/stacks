@@ -3,7 +3,7 @@ const email = props.email || ''
 const unsubscribeUrl = props.unsubscribeUrl || '#'
 const appName = props.appName || 'Stacks'
 const appUrl = props.appUrl || 'https://stacksjs.com'
-const primaryColor = props.primaryColor || '#3451b2'
+const primaryColor = props.primaryColor || '#c14a15'
 const year = props.year || new Date().getFullYear()
 </script>
 

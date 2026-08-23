@@ -586,10 +586,10 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 
 .code-window {
   overflow: hidden;
-  border: 1px solid rgba(238, 117, 102, 0.20);
+  border: 1px solid rgba(255, 138, 76, 0.20);
   border-radius: 10px;
-  background: #1e1018;
-  box-shadow: 0 24px 60px rgba(20, 6, 17, 0.45);
+  background: #1f1109;
+  box-shadow: 0 24px 60px rgba(26, 9, 3, 0.45);
 }
 
 .code-titlebar {
@@ -617,7 +617,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 .code-dots i:nth-child(3) { background: #28c840; }
 
 .code-file {
-  color: #b79aa2;
+  color: #bd9f90;
   font-family: var(--font-mono);
   font-size: 0.76rem;
   font-weight: 500;
@@ -628,7 +628,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   margin: 0;
   padding: 1.05rem 1.15rem;
   overflow-x: auto;
-  color: #ece0e2;
+  color: #efe2d6;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   line-height: 1.62;
@@ -636,19 +636,19 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   tab-size: 2;
 }
 
-/* Syntax on the warm ramp: rose keywords, wheat strings, coral calls.
-  Every one of these clears 4.5:1 on the window's #1e1018. */
-.tok-key { color: #f2879a; }
+/* Syntax on the sunset ramp: ember keywords, wheat strings, coral calls.
+   Every one of these clears 4.5:1 on the window's #1f1109. */
+.tok-key { color: #ff9d72; }
 .tok-str { color: #dcc47f; }
 .tok-fn { color: #f0a07e; }
-.tok-prop { color: #e4d6da; }
+.tok-prop { color: #ecdcd0; }
 .tok-bool { color: #d79ad2; }
-.tok-com { color: #9a7a84; font-style: italic; }
+.tok-com { color: #9c7f70; font-style: italic; }
 
 .terminal-strip {
   margin-top: 0.85rem;
   padding: 0.8rem 0.9rem;
-  border: 1px solid rgba(238, 117, 102, 0.22);
+  border: 1px solid rgba(255, 138, 76, 0.22);
   border-radius: 10px;
   color: var(--term-fg);
   font-family: var(--font-mono);
@@ -694,6 +694,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 .bento {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: minmax(168px, auto);
   gap: 0.9rem;
 }
 
@@ -768,6 +769,10 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   grid-column: span 8;
 }
 
+.cell--tall {
+  grid-row: span 2;
+}
+
 .cell--tint {
   background:
     radial-gradient(120% 120% at 100% 0%, rgba(var(--accent-rgb), 0.12), transparent 55%),
@@ -776,7 +781,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 
 .cell--gradient {
   border-color: transparent;
-  color: #f4f8ff;
+  color: #fff3e8;
   background: linear-gradient(135deg, var(--grad-a), var(--grad-b));
 }
 
@@ -787,7 +792,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
  * looked blank unless you leaned in.
  */
 .cell--gradient.cell p {
-  color: rgba(244, 248, 255, 0.86);
+  color: rgba(255, 243, 232, 0.88);
 }
 
 .cell h3 {
@@ -988,6 +993,85 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   background: var(--badge-bg);
 }
 
+/* Get started: split copy + numbered steps, terminal proof on the right.
+  Same split-panel shape as CMS and deploy below it, so all three read as
+  one family of "claim, then prove it" sections. */
+.start-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+  gap: clamp(1.5rem, 3.5vw, 3rem);
+  align-items: center;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(140% 130% at 100% 0%, rgba(var(--accent-rgb), 0.10), transparent 52%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.start-steps {
+  display: grid;
+  gap: 0.65rem;
+  margin: 1.4rem 0 1.6rem;
+  padding: 0;
+  list-style: none;
+  counter-reset: start-step;
+}
+
+.start-steps li {
+  position: relative;
+  padding: 0.15rem 0 0.15rem 2.35rem;
+}
+
+.start-steps li::before {
+  counter-increment: start-step;
+  content: counter(start-step);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-grid;
+  width: 1.6rem;
+  height: 1.6rem;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: var(--badge-bg);
+}
+
+.start-steps strong {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 650;
+}
+
+.start-steps span {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+/* One UI, many builds: same split-panel shape, device chips instead of
+  route chips, terminal proof for the native build commands. */
+.builds-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.95fr);
+  gap: clamp(1.5rem, 3.5vw, 3rem);
+  align-items: center;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(140% 120% at 0% 0%, rgba(var(--accent-rgb), 0.08), transparent 50%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
 /* CMS: split copy + compact resource grid. */
 .cms-panel {
   display: grid;
@@ -1069,9 +1153,9 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 
 .deploy-terminal {
   padding: 1.1rem 1.2rem;
-  border: 1px solid rgba(96, 165, 250, 0.25);
+  border: 1px solid rgba(255, 138, 76, 0.25);
   border-radius: 10px;
-  color: #ccd6e6;
+  color: #e8dbcd;
   font-family: var(--font-mono);
   font-size: 0.8rem;
   line-height: 1.75;
@@ -1080,7 +1164,7 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 }
 
 .term-ok { color: #7fdca4; }
-.term-dim { color: #5f7488; }
+.term-dim { color: #6f5b4d; }
 
 /* Signup: one quiet centered band. */
 .signup-panel {
@@ -1249,6 +1333,8 @@ input[type="email"]:focus {
   }
 
   .hero,
+  .start-panel,
+  .builds-panel,
   .cms-panel,
   .deploy-panel,
   .signup-panel {
@@ -1268,6 +1354,10 @@ input[type="email"]:focus {
   .cell,
   .cell--wide {
     grid-column: span 6;
+  }
+
+  .cell--tall {
+    grid-row: span 1;
   }
 
   .steps {
@@ -1436,7 +1526,7 @@ input[type="email"]:focus {
   display: grid;
   gap: 0.55rem;
   padding: 1.2rem 1.3rem;
-  border: 1px solid rgba(238, 117, 102, 0.22);
+  border: 1px solid rgba(255, 138, 76, 0.22);
   border-radius: 12px;
   color: var(--term-fg);
   font-family: var(--font-mono);
@@ -1562,6 +1652,16 @@ input[type="email"]:focus {
  * less air between rows. Nothing about the open/close behaviour changes.
  */
 
+/* Eighteen entries want a little more width than twelve do, so the
+  compact panel is wider and its aside narrower. */
+.mega--compact {
+  width: min(1040px, calc(100vw - 48px));
+}
+
+.mega--compact .mega-inner {
+  grid-template-columns: 1fr 230px;
+}
+
 .mega--compact .mega-link {
   gap: 0.5rem;
   padding: 0.36rem 0.5rem;
@@ -1582,11 +1682,17 @@ input[type="email"]:focus {
   font-size: 0.8rem;
 }
 
+/* Two lines, clamped. A single line with an ellipsis turned every row of
+  the Use cases menu into a truncated sentence, which reads as broken
+  rather than terse; the Compare entries are short labels and never reach
+  the second line. */
 .mega--compact .mega-text span {
+  display: -webkit-box;
   overflow: hidden;
   font-size: 0.71rem;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .mega--compact .mega-group-copy {
