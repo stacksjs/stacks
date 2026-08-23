@@ -88,7 +88,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -173,7 +173,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -240,7 +240,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -358,7 +358,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -549,7 +549,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -657,7 +657,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -767,7 +767,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -984,7 +984,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1095,7 +1095,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1265,7 +1265,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1368,7 +1368,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1458,7 +1458,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1571,7 +1571,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1694,7 +1694,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1779,7 +1779,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -1923,7 +1923,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2057,7 +2057,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2163,7 +2163,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2289,7 +2289,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2442,7 +2442,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2622,7 +2622,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2789,7 +2789,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -2901,7 +2901,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3258,7 +3258,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3428,7 +3428,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3607,7 +3607,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -3880,7 +3880,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4012,7 +4012,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4266,7 +4266,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4348,7 +4348,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4457,7 +4457,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4662,7 +4662,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4779,7 +4779,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -4872,7 +4872,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5007,7 +5007,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5149,7 +5149,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5257,7 +5257,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5455,7 +5455,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5635,7 +5635,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5843,7 +5843,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -5971,7 +5971,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6225,7 +6225,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6315,7 +6315,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6430,7 +6430,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6533,7 +6533,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6621,7 +6621,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6730,7 +6730,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -6830,7 +6830,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7111,7 +7111,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7244,7 +7244,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7332,7 +7332,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7392,7 +7392,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7478,7 +7478,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7575,7 +7575,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7670,7 +7670,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7825,7 +7825,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -7990,7 +7990,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8099,7 +8099,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8281,7 +8281,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8379,7 +8379,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8460,7 +8460,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8554,7 +8554,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8712,7 +8712,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8809,7 +8809,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -8879,7 +8879,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9044,7 +9044,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9177,7 +9177,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9279,7 +9279,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9459,7 +9459,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9579,7 +9579,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9678,7 +9678,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9748,7 +9748,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9819,7 +9819,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -9961,7 +9961,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10158,7 +10158,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10288,7 +10288,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10453,7 +10453,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10588,7 +10588,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10767,7 +10767,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -10897,7 +10897,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11063,7 +11063,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11080,6 +11080,15 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "idempotency_key",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
           }
         ],
         "indexes": [
@@ -11097,6 +11106,14 @@
             "name": "consent_events_uuid_unique",
             "columns": [
               "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "consent_events_idempotency_unique",
+            "columns": [
+              "team_id",
+              "idempotency_key"
             ],
             "type": "unique"
           }
@@ -11150,7 +11167,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11274,7 +11291,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11372,7 +11389,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11472,7 +11489,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11583,7 +11600,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11693,7 +11710,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11809,7 +11826,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -11915,7 +11932,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12015,7 +12032,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12130,7 +12147,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12283,7 +12300,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12421,7 +12438,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12530,7 +12547,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12603,7 +12620,7 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": true,
-            "defaultValue": "CURRENT_TIMESTAMP"
+            "defaultValue": "UTC_TIMESTAMP"
           },
           {
             "name": "updated_at",
@@ -12633,7 +12650,7 @@
       }
     ]
   },
-  "hash": "3c75d785cb57998372cee125810c292a128e0fcfadefee973e6d4f7697f1a6cd",
+  "hash": "19cf334eb0a53c8a0e2306eafb17c189459a5cef7ffeab31efb42ea3a0407ca8",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-16T21:06:40.619Z"
+  "updatedAt": "2026-08-23T02:00:06.305Z"
 }
