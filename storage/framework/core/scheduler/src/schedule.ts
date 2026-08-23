@@ -1,7 +1,7 @@
 import type { CatchCallbackFn } from '@stacksjs/cron'
 import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'

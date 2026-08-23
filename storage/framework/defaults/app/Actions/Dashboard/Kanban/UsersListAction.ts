@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
-import { kanbanActionError, kanbanError } from './kanban-response'
+import { kanbanActionError } from './kanban-response'
 
 /**
  * `GET /api/dashboard/kanban/users`.

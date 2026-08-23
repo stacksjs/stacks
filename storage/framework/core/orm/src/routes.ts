@@ -12,7 +12,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 
 // Initialize the query builder config from the project's optional

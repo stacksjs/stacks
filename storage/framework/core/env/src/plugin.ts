@@ -7,7 +7,7 @@ import type { BunPlugin } from 'bun'
 import { existsSync } from 'node:fs'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { decryptValue, getPrivateKey, parseEnvFromKey } from './crypto'
+import { decryptValue, getPrivateKey } from './crypto'
 import { parse } from './parser'
 
 export interface EnvPluginOptions {

@@ -1,5 +1,4 @@
 import { faker as baseFaker } from '@stacksjs/ts-faker'
-import type { Faker as BaseFaker } from '@stacksjs/ts-faker'
 
 /**
  * Compatibility layer for @faker-js/faker API

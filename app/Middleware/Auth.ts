@@ -1,5 +1,4 @@
 import { Auth, authCookieName } from '@stacksjs/auth'
-import { config } from '@stacksjs/config'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { Middleware } from '@stacksjs/router'

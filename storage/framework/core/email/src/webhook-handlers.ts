@@ -19,7 +19,6 @@
  * appropriate HTTP response.
  */
 
-import { Buffer } from 'node:buffer'
 import { suppress } from './suppression'
 import { recordWebhookEventOrSkip } from './webhook-dedup'
 import type { EmailEventClassification, EmailEventPayload } from './webhook-events'
@@ -30,7 +29,6 @@ import {
   emitEmailUnsubscribe,
   suppressionTypeFor,
 } from './webhook-events'
-import type { SignatureVerification } from './webhook-signatures'
 import {
   verifyMailgunSignature,
   verifyPostmarkAuth,

@@ -5,7 +5,7 @@ import process from 'node:process'
 import { confirm, intro, log, onUnknownSubcommand, outro, text } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { hasTTY, isCI } from '@stacksjs/env'
-import { appPath, frameworkPath, frameworkRuntimePath, projectPath } from '@stacksjs/path'
+import { appPath, frameworkPath, frameworkRuntimePath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { preflightDatabase } from '../database-preflight'
 import { DDL_CONSTRAINT_OVERRIDE_ENV, DIALECT_OVERRIDE_ENV, auditDdlConstraints, auditMigrationCorpus, dialectCapabilities, formatDdlConstraintError, formatMigrationDialectError, relativeMigrationDirectory, resolveMigrationDirectory, stripSqlNoise } from '@stacksjs/database'

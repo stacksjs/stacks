@@ -1,4 +1,4 @@
-import { frameworkExternal, intro, outro } from '../build/src'
+import { intro, outro } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,

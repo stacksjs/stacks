@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { computed, ref, watch } from '@stacksjs/stx'
+import { ref, watch } from '@stacksjs/stx'
 import type { MaybeRef } from './_shared'
 import { isRef, unref } from './_shared'
 

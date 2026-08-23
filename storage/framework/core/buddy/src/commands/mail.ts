@@ -2,7 +2,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { getErrorMessage } from '@stacksjs/utils'
 import { CLI } from '@stacksjs/clapp'
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'crypto'
+import { createHash, randomBytes, timingSafeEqual } from 'crypto'
 import { readFileSync, existsSync } from 'node:fs'
 import { execSync, spawnSync } from 'node:child_process'
 

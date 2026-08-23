@@ -3,7 +3,7 @@ import { intro, outro } from '@stacksjs/build'
 import { log, runCommand, runCommandSync } from '@stacksjs/cli'
 import { cloud } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { fs, deleteFolder, writeFileSync, readFileSync } from '@stacksjs/storage'
+import { deleteFolder, writeFileSync, readFileSync } from '@stacksjs/storage'
 import { build } from 'bun'
 import { buildDockerImage, useCustomOrDefaultServerConfig } from './src/utils'
 
@@ -104,8 +104,6 @@ async function main() {
     const filePath = path.resolve(appPath, file)
     let content = readFileSync(filePath, 'utf-8')
     if (importPathPattern.test(content)) {
-      importPathPattern.lastIndex = 0
-      content = content.replace(importPathPattern, (_, _prefix, suffix) => `from "dist${suffix}"`)
       writeFileSync(filePath, content, 'utf-8')
       log.info(`Rewrote import paths in ${file}`)
     }

@@ -11,7 +11,7 @@ import type {
   TranslationMessages,
   Translations,
 } from './types'
-import { parsePluralForms, selectPluralForm, getPluralCategory } from './pluralization'
+import { parsePluralForms, selectPluralForm } from './pluralization'
 
 /**
  * Default configuration

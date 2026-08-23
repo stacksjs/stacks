@@ -1,6 +1,5 @@
 import type { CLI } from '@stacksjs/types'
 import { $ } from 'bun'
-import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import { onUnknownSubcommand } from "@stacksjs/cli"

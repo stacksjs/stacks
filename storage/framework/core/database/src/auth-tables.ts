@@ -16,7 +16,6 @@
  * across drivers.
  */
 
-import process from 'node:process'
 import { randomBytes } from 'node:crypto'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'

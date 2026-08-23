@@ -1,4 +1,4 @@
-import type { BuildOptions, ContentScript, ExtensionConfig, ExtensionPage, ExtensionPages, ExtensionTarget } from './types'
+import type { BuildOptions, ExtensionConfig, ExtensionPage, ExtensionPages, ExtensionTarget } from './types'
 import { Glob } from 'bun'
 import { cp, mkdir, rm } from 'node:fs/promises'
 import { existsSync } from 'node:fs'

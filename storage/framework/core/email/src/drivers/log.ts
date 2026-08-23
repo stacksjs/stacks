@@ -1,6 +1,6 @@
 import type { EmailMessage, EmailResult } from '@stacksjs/types'
 import { mkdir, writeFile } from 'node:fs/promises'
-import { dirname, join, resolve } from 'node:path'
+import { join, resolve } from 'node:path'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { template } from '../template'

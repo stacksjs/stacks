@@ -16,7 +16,7 @@
  */
 
 import process from 'node:process'
-import { response, route } from '@stacksjs/router'
+import { route } from '@stacksjs/router'
 
 // ============================================================================
 // Email

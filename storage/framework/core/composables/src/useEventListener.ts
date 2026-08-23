@@ -1,5 +1,5 @@
 import { onUnmounted, watch } from '@stacksjs/stx'
-import { type MaybeRef, isRef, unref, noop, defaultWindow } from './_shared'
+import { type MaybeRef, isRef, unref, noop } from './_shared'
 
 type EventTarget = Window | Document | HTMLElement | Element
 

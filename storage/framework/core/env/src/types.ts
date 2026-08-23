@@ -1,5 +1,4 @@
 import type { BooleanValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
-import type { schema } from '@stacksjs/validation'
 import type { EnvKey } from '../../../env'
 
 interface EnumObject {

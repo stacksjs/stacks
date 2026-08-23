@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { file, write as bunWrite } from 'bun'
 import { chmod, lstat } from 'node:fs/promises'
-import { basename, dirname, join, relative } from 'node:path'
+import { dirname, join, relative } from 'node:path'
 import type {
   ChecksumOptions,
   DirectoryEntry,

@@ -29,7 +29,7 @@
 
 import { Buffer } from 'node:buffer'
 import { createHash } from 'node:crypto'
-import { closeSync, openSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { closeSync, openSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import process from 'node:process'
 import { userDatabasePath } from '@stacksjs/path'
 
