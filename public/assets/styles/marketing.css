@@ -11,7 +11,6 @@ body {
   min-width: 320px;
   min-height: 100dvh;
   margin: 0;
-  overflow-x: hidden;
   color: var(--text);
   font-family: var(--font-body);
   background:
@@ -489,6 +488,16 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   content laid out for a small screen. */
 @media (max-width: 900px) {
   .mega {
+    display: none;
+  }
+
+  /* With no panel to open, a caret promises a menu that cannot appear.
+    The trigger is simply a link to the overview page at this width.
+
+    Two classes, not one: the caret also carries its Iconify class, and
+    crosswind's generated icon CSS (which sets display: inline-block)
+    loads after this file. At equal specificity that one would win. */
+  .nav-trigger .nav-caret {
     display: none;
   }
 }
