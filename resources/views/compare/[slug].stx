@@ -1,0 +1,254 @@
+<script server>
+/*
+ * One template, every comparison page.
+ *
+ * Content comes from resources/data/comparisons.ts, which the Compare mega
+ * menu and the /compare table read too.
+ *
+ * The section order is deliberate and is the whole editorial policy of these
+ * pages: what the other framework is, where it wins, where Stacks wins, the
+ * dimension table, how a move would actually go, and only then a verdict
+ * that names both answers. Where-they-win comes first and gets the same
+ * amount of room, because a comparison that concedes nothing is an
+ * advertisement wearing a table.
+ *
+ * As with /features/:slug and /use-cases/:slug, this route matches every URL
+ * under /compare, so the view declares its own 404 rather than serving the
+ * not-found body under a 200.
+ */
+import { comparisonBySlug, matrixDimensions } from '../../data/comparisons'
+
+const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const comparison = comparisonBySlug(requestedSlug)
+
+if (!comparison)
+  notFound()
+
+const pageTitle = comparison
+  ? `Stacks vs ${comparison.name} - Stacks`
+  : 'Comparison not found - Stacks'
+
+const pageDescription = comparison
+  ? `${comparison.blurb} What ships in the box on each side, where ${comparison.name} is the better choice, and how a move would actually go.`
+  : 'That comparison page does not exist.'
+
+const canonicalPath = comparison ? `/compare/${comparison.slug}` : '/compare'
+
+const levelLabel = {
+  'built-in': 'In the box',
+  'partial': 'Partly',
+  'byo': 'Bring your own',
+  'hosted': 'Hosted',
+}
+
+// Flattened here rather than indexed in the template, so the at-a-glance card
+// is a plain list to render.
+const glance = comparison
+  ? matrixDimensions.map(dimension => ({
+      title: dimension.title,
+      level: comparison.matrix[dimension.id],
+      label: levelLabel[comparison.matrix[dimension.id]],
+    }))
+  : []
+
+const related = comparison
+  ? comparison.page.related.map(comparisonBySlug).filter(Boolean)
+  : []
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        @if (comparison)
+          <section class="page-hero site-shell">
+            <div>
+              <div class="breadcrumb">
+                <a href="/compare">Compare</a>
+                <i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i>
+                <span>{{ comparison.name }}</span>
+              </div>
+
+              <span class="kicker">Stacks vs {{ comparison.name }}</span>
+              <h1 class="page-title">{{ comparison.page.headline }}</h1>
+              <p class="page-lede">{{ comparison.page.lede }}</p>
+
+              <div class="hero-actions">
+                <a class="button primary" href="/features">See what ships</a>
+                <a class="button" href="/compare">All comparisons</a>
+              </div>
+            </div>
+
+            <aside class="glance-card" aria-label="{{ comparison.name }} at a glance">
+              <div class="glance-head">
+                <i class="{{ comparison.icon }}" aria-hidden="true"></i>
+                <span>
+                  <span class="glance-name">{{ comparison.name }}</span>
+                  <span class="glance-kind">{{ comparison.kind }} · {{ comparison.language }}</span>
+                </span>
+              </div>
+
+              <ul class="glance-rows">
+                @foreach (glance as row)
+                  <li>
+                    <span>{{ row.title }}</span>
+                    <span class="level level--{{ row.level }}">{{ row.label }}</span>
+                  </li>
+                @endforeach
+              </ul>
+            </aside>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="summary-heading">
+            <div class="section-head">
+              <h2 id="summary-heading" class="section-title">What {{ comparison.name }} is.</h2>
+              <p class="section-copy">In its own terms, not ours.</p>
+            </div>
+
+            <p class="compare-summary rise">{{ comparison.page.summary }}</p>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="wins-heading">
+            <div class="section-head">
+              <h2 id="wins-heading" class="section-title">Where each one wins.</h2>
+              <p class="section-copy">Same amount of room on both sides, on purpose.</p>
+            </div>
+
+            <div class="versus-grid">
+              <article class="versus versus--them rise">
+                <h3 class="versus-title">
+                  <i class="i-hugeicons-balance-scale" aria-hidden="true"></i>
+                  Pick {{ comparison.name }} for
+                </h3>
+                <ul>
+                  @foreach (comparison.page.theirStrengths as point)
+                    <li>
+                      <strong>{{ point.title }}</strong>
+                      <p>{{ point.text }}</p>
+                    </li>
+                  @endforeach
+                </ul>
+              </article>
+
+              <article class="versus versus--us rise">
+                <h3 class="versus-title">
+                  <i class="i-hugeicons-layers-01" aria-hidden="true"></i>
+                  Pick Stacks for
+                </h3>
+                <ul>
+                  @foreach (comparison.page.ourStrengths as point)
+                    <li>
+                      <strong>{{ point.title }}</strong>
+                      <p>{{ point.text }}</p>
+                    </li>
+                  @endforeach
+                </ul>
+              </article>
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="table-heading">
+            <div class="section-head">
+              <h2 id="table-heading" class="section-title">Side by side.</h2>
+              <p class="section-copy">The dimensions teams actually decide on.</p>
+            </div>
+
+            <div class="table-scroll rise">
+              <table class="compare-table">
+                <thead>
+                  <tr>
+                    <th scope="col">Dimension</th>
+                    <th scope="col">Stacks</th>
+                    <th scope="col">{{ comparison.name }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach (comparison.page.rows as row)
+                    <tr>
+                      <th scope="row">{{ row.dimension }}</th>
+                      <td class="col-stacks">{{ row.stacks }}</td>
+                      <td>{{ row.other }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="migration-heading">
+            <div class="section-head">
+              <h2 id="migration-heading" class="section-title">If you did move.</h2>
+              <p class="section-copy">What ports cleanly, what does not, and where to start.</p>
+            </div>
+
+            <div class="capability-grid">
+              @foreach (comparison.page.migration as step)
+                <article class="capability rise">
+                  <h3>{{ step.title }}</h3>
+                  <p>{{ step.text }}</p>
+                </article>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="verdict-heading">
+            <div class="section-head">
+              <h2 id="verdict-heading" class="section-title">The verdict.</h2>
+              <p class="section-copy">Both answers are real. Most teams already know which paragraph is theirs.</p>
+            </div>
+
+            <div class="verdict-grid">
+              <article class="verdict rise">
+                <h3>Choose {{ comparison.name }} when</h3>
+                <p>{{ comparison.page.verdict.pickThem }}</p>
+              </article>
+
+              <article class="verdict verdict--stacks rise">
+                <h3>Choose Stacks when</h3>
+                <p>{{ comparison.page.verdict.pickStacks }}</p>
+              </article>
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="related-heading">
+            <div class="section-head">
+              <h2 id="related-heading" class="section-title">Also weighed against this.</h2>
+              <p class="section-copy">The frameworks that usually come up in the same conversation.</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (related as other)
+                <a class="related-card rise" href="/compare/{{ other.slug }}">
+                  <h3><i class="{{ other.icon }}" aria-hidden="true"></i>Stacks vs {{ other.name }}</h3>
+                  <p>{{ other.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @else
+          <section class="page-hero page-hero--solo site-shell">
+            <div class="not-found-panel">
+              <span class="kicker">Not found</span>
+              <h1 class="page-title">No comparison by that name.</h1>
+              <p class="page-lede">That framework does not have a page here yet. The ones that do are one click away.</p>
+              <div class="hero-actions">
+                <a class="button primary" href="/compare">All comparisons</a>
+                <a class="button" href="/">Back to home</a>
+              </div>
+            </div>
+          </section>
+        @endif
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>

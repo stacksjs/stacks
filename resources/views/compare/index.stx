@@ -1,0 +1,183 @@
+<script server>
+/*
+ * The overview at /compare: the whole matrix in one table, then the
+ * eighteen comparisons grouped the way the mega menu groups them.
+ *
+ * The table is the point of the page. It states, for each framework, which
+ * of seven capabilities ship in the box, which need an add-on, and which are
+ * yours to choose, which is checkable in a way that "faster" and "better"
+ * are not.
+ */
+import {
+  comparisonGroups,
+  comparisons,
+  comparisonsInGroup,
+  matrixDimensions,
+  matrixLegend,
+  stacksMatrix,
+} from '../../data/comparisons'
+
+const pageTitle = 'Compare - Stacks'
+const pageDescription = 'How Stacks compares to Next.js, Nuxt, SvelteKit, Remix, Astro, NestJS, AdonisJS, Hono, Elysia, Laravel, Rails, Django, Supabase, and more. What ships in the box, and where each one is the better choice.'
+const canonicalPath = '/compare'
+
+const groups = comparisonGroups.map(group => ({
+  ...group,
+  items: comparisonsInGroup(group.id),
+}))
+
+// Stacks first, then the rest in list order. Each row is pre-flattened into
+// { level, label } cells so the template does not index an object by a
+// dimension id, which stx would have to resolve at render time.
+const levelLabel = {
+  'built-in': 'In the box',
+  'partial': 'Partly',
+  'byo': 'Bring your own',
+  'hosted': 'Hosted',
+}
+
+function cellsFor(matrix) {
+  return matrixDimensions.map(dimension => ({
+    id: dimension.id,
+    level: matrix[dimension.id],
+    label: levelLabel[matrix[dimension.id]],
+  }))
+}
+
+const matrixRows = [
+  {
+    slug: '',
+    name: 'Stacks',
+    kind: 'Full-stack TypeScript framework',
+    icon: 'i-hugeicons-layers-01',
+    isStacks: true,
+    cells: cellsFor(stacksMatrix),
+  },
+  ...comparisons.map(comparison => ({
+    slug: comparison.slug,
+    name: comparison.name,
+    kind: comparison.kind,
+    icon: comparison.icon,
+    isStacks: false,
+    cells: cellsFor(comparison.matrix),
+  })),
+]
+
+const total = comparisons.length
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        <section class="page-hero page-hero--solo site-shell">
+          <div>
+            <span class="kicker">Compare</span>
+            <h1 class="page-title">{{ total }} honest comparisons.</h1>
+            <p class="page-lede">
+              Every page here says where the other framework is the better choice before it says where Stacks is, because a comparison that never concedes anything is an advertisement. The table below is about what ships in the box, which you can check, rather than which is faster, which depends on what you build.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="/features">All features</a>
+              <a class="button" href="/use-cases">All use cases</a>
+            </div>
+          </div>
+        </section>
+
+        <section class="section site-shell" aria-labelledby="matrix-heading">
+          <div class="section-head">
+            <h2 id="matrix-heading" class="section-title">What arrives with the install.</h2>
+            <p class="section-copy">Almost anything can be added to almost anything given enough time. This is the default path a team takes, not the theoretical ceiling.</p>
+          </div>
+
+          <div class="table-scroll rise">
+            <table class="compare-table">
+              <thead>
+                <tr>
+                  <th scope="col">Framework</th>
+                  @foreach (matrixDimensions as dimension)
+                    <th scope="col">{{ dimension.title }}</th>
+                  @endforeach
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (matrixRows as row)
+                  <tr class="{{ row.isStacks ? 'matrix-row--stacks' : '' }}">
+                    <th scope="row">
+                      @if (row.isStacks)
+                        <span class="matrix-name">
+                          <i class="{{ row.icon }}" aria-hidden="true"></i>
+                          <span>{{ row.name }}<small>{{ row.kind }}</small></span>
+                        </span>
+                      @else
+                        <a class="matrix-name" href="/compare/{{ row.slug }}">
+                          <i class="{{ row.icon }}" aria-hidden="true"></i>
+                          <span>{{ row.name }}<small>{{ row.kind }}</small></span>
+                        </a>
+                      @endif
+                    </th>
+                    @foreach (row.cells as cell)
+                      <td>
+                        <span class="level level--{{ cell.level }}">{{ cell.label }}</span>
+                      </td>
+                    @endforeach
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="legend-grid">
+            @foreach (matrixLegend as entry)
+              <div class="legend-item">
+                <span class="level level--{{ entry.level }}">{{ entry.label }}</span>
+                <p>{{ entry.text }}</p>
+              </div>
+            @endforeach
+          </div>
+        </section>
+
+        @foreach (groups as group)
+          <section class="feature-group site-shell" aria-labelledby="group-{{ group.id }}">
+            <div class="feature-group-head">
+              <h2 id="group-{{ group.id }}">{{ group.title }}</h2>
+              <p>{{ group.text }}</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (group.items as comparison)
+                <a class="related-card rise" href="/compare/{{ comparison.slug }}">
+                  <h3><i class="{{ comparison.icon }}" aria-hidden="true"></i>Stacks vs {{ comparison.name }}</h3>
+                  <p>{{ comparison.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @endforeach
+
+        <section class="section site-shell" aria-labelledby="fair-heading">
+          <div class="rise signup-panel">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="fair-heading" class="section-title">Found something wrong here?</h2>
+              <p class="section-copy">These pages describe other people's work, and frameworks move. If something is out of date or unfair, the fastest fix is an issue or a pull request.</p>
+            </div>
+            <div class="hero-actions">
+              <a class="button primary" href="https://github.com/stacksjs/stacks/issues">Open an issue</a>
+              <a class="button" href="/features">All features</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>
