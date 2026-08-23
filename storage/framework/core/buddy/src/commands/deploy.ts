@@ -3164,47 +3164,76 @@ if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
       ENV_CHANGED=1 ;;
   esac
 fi
-# 2) Per-domain DKIM key: generate on first sight, register in DKIM_EXTRA_KEYS.
+# 2) DKIM: decide which key signs THIS domain, then register and publish that
+#    one key. Read the server's global signer first, because it wins.
+#
+#    mail's \`configureDkim\` registers the DKIM_DOMAIN signer before any
+#    DKIM_EXTRA_KEYS entry and *silently drops* an entry for a domain that
+#    already has one. So for the domain that IS DKIM_DOMAIN, the global key
+#    signs and nothing this script generates is ever used.
+#
+#    This used to generate a per-domain key anyway and register it anyway,
+#    leaving a dead 2048-bit key on disk, an inert env entry, and a warning on
+#    every deploy that no action could clear. Worse, the entry named a key
+#    whose public half was never published: the moment DKIM_DOMAIN moved to
+#    another domain, this entry would start signing with a key no record
+#    matched, and every message would fail DKIM with nothing in the logs.
+#    Registering the key that actually signs makes the handover a no-op.
 if [ -n "$DOMAIN" ] && [ -f "$ENVF" ]; then
   mkdir -p "$DKIMDIR"
-  KEY="$DKIMDIR/$DOMAIN.private"
-  if [ ! -f "$KEY" ]; then
-    openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$KEY" 2>/dev/null
-    chown mail-server:mail-server "$KEY" 2>/dev/null || true
-    chmod 600 "$KEY" 2>/dev/null || true
-  fi
-  ex=$(grep -E '^DKIM_EXTRA_KEYS=' "$ENVF" | head -1 | cut -d= -f2- || true)
-  ENTRY="$DOMAIN:mail:$KEY"
-  case ",$ex," in
-    *"$DOMAIN:mail:"*) : ;;
-    *) if grep -qE '^DKIM_EXTRA_KEYS=' "$ENVF"; then
-        sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=\${ex:+$ex,}$ENTRY|" "$ENVF"
-      else
-        echo "DKIM_EXTRA_KEYS=$ENTRY" >> "$ENVF"
-      fi
-      ENV_CHANGED=1 ;;
-  esac
-  # Publish the key the server will actually sign with, which is not always the
-  # one registered above. mail's \`configureDkim\` registers the global
-  # DKIM_DOMAIN signer first and then *silently drops* any DKIM_EXTRA_KEYS entry
-  # for a domain that already has a signer. So when this domain is DKIM_DOMAIN,
-  # the effective key stays DKIM_PRIVATE_KEY_PATH under DKIM_SELECTOR, and the
-  # per-domain file above is dead on disk. Advertising it would publish a key
-  # the server never signs with — every message failing DKIM while the record
-  # looks perfectly well-formed. Mirror the server's precedence instead of
-  # assuming ours won.
-  EFF_KEY="$KEY"
-  EFF_SEL=mail
   gdom=$(grep -E '^DKIM_DOMAIN=' "$ENVF" | head -1 | cut -d= -f2- || true)
-  if [ -n "$gdom" ] && [ "$gdom" = "$DOMAIN" ]; then
-    gkey=$(grep -E '^DKIM_PRIVATE_KEY_PATH=' "$ENVF" | head -1 | cut -d= -f2- || true)
-    gsel=$(grep -E '^DKIM_SELECTOR=' "$ENVF" | head -1 | cut -d= -f2- || true)
-    [ -n "$gkey" ] && [ -f "$gkey" ] && EFF_KEY="$gkey"
-    [ -n "$gsel" ] && EFF_SEL="$gsel"
-    echo "DKIMGLOBAL:$EFF_KEY"
+  gkey=$(grep -E '^DKIM_PRIVATE_KEY_PATH=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  gsel=$(grep -E '^DKIM_SELECTOR=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  PERDOMAIN_KEY="$DKIMDIR/$DOMAIN.private"
+
+  if [ -n "$gdom" ] && [ "$gdom" = "$DOMAIN" ] && [ -n "$gkey" ] && [ -f "$gkey" ]; then
+    KEY="$gkey"
+    SEL="\${gsel:-mail}"
+    echo "DKIMGLOBAL:$KEY"
+    # An earlier deploy may have left the unused per-domain key behind. Say
+    # where it is; removing a private key is the operator's call, not ours.
+    [ -f "$PERDOMAIN_KEY" ] && echo "DKIMSTALE:$PERDOMAIN_KEY"
+  else
+    KEY="$PERDOMAIN_KEY"
+    SEL=mail
+    if [ ! -f "$KEY" ]; then
+      openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$KEY" 2>/dev/null
+      chown mail-server:mail-server "$KEY" 2>/dev/null || true
+      chmod 600 "$KEY" 2>/dev/null || true
+    fi
   fi
-  echo "DKIMSEL:$EFF_SEL"
-  echo "DKIMPUB:$(openssl rsa -in "$EFF_KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
+
+  # Register the effective key, replacing any earlier entry for this domain
+  # (which may name the dead per-domain file). Rebuilt as a list rather than
+  # appended, so the domain can never hold two entries.
+  ex=$(grep -E '^DKIM_EXTRA_KEYS=' "$ENVF" | head -1 | cut -d= -f2- || true)
+  ENTRY="$DOMAIN:$SEL:$KEY"
+  # Split on commas with IFS and glob-match the domain. A tr/grep pipeline is
+  # the obvious way to write this and the wrong one here: the separator would
+  # have to be a newline written as \\n inside a JS template literal, and the
+  # domain would become a regex whose dots match anything.
+  OTHERS=""
+  OLDIFS="$IFS"
+  IFS=','
+  for entry in $ex; do
+    case "$entry" in
+      "$DOMAIN:"*|"") : ;;
+      *) OTHERS="\${OTHERS:+$OTHERS,}$entry" ;;
+    esac
+  done
+  IFS="$OLDIFS"
+  NEWEX="\${OTHERS:+$OTHERS,}$ENTRY"
+  if [ "$NEWEX" != "$ex" ]; then
+    if grep -qE '^DKIM_EXTRA_KEYS=' "$ENVF"; then
+      sed -i "s|^DKIM_EXTRA_KEYS=.*|DKIM_EXTRA_KEYS=$NEWEX|" "$ENVF"
+    else
+      echo "DKIM_EXTRA_KEYS=$NEWEX" >> "$ENVF"
+    fi
+    ENV_CHANGED=1
+  fi
+
+  echo "DKIMSEL:$SEL"
+  echo "DKIMPUB:$(openssl rsa -in "$KEY" -pubout -outform DER 2>/dev/null | base64 -w0)"
 fi
 # 3) Create the configured mailboxes as per-domain isolated users (skip existing).
 if [ -n "$BOXES_B64" ] && [ -x "$MS" ]; then
@@ -3457,19 +3486,21 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
     const dkimPubB64 = (out.match(/DKIMPUB:([^\n]*)/) || [])[1]?.trim() || undefined
     const dkimSelector = (out.match(/DKIMSEL:([^\n]*)/) || [])[1]?.trim() || undefined
 
-    // This domain is the server's global DKIM_DOMAIN, so the mail daemon keeps
-    // signing it with the global key and ignores the per-domain entry we just
-    // registered (`configureDkim` returns early on a duplicate domain, without
-    // logging). Nothing is broken — the DNS step publishes the global key to
-    // match — but the per-domain file on disk is dead, and anyone who later
-    // rotates it will be baffled when signatures do not change. Say so.
+    // This domain is the server's global DKIM_DOMAIN, so the mail daemon signs
+    // it with the global key; the script registers and publishes that same key
+    // rather than minting a second one. Stating which key signs is useful (it
+    // is the one to rotate); it is not a warning, because there is nothing to
+    // fix — that used to fire on every deploy with no action that could clear
+    // it, which is how a log trains people to ignore it.
     const dkimGlobalKey = (out.match(/DKIMGLOBAL:([^\n]*)/) || [])[1]?.trim()
-    if (dkimGlobalKey) {
-      logger.warn(
-        `Mail: ${domain} is the mail server's global DKIM_DOMAIN, so it signs with ${dkimGlobalKey} `
-        + `and the per-domain key at /opt/mail/dkim/${domain}.private is unused. Rotate the global key, not that one.`,
-      )
-    }
+    if (dkimGlobalKey)
+      logger.info(`Mail: ${domain} signs with the server's global DKIM key (${dkimGlobalKey}) — rotate that one.`)
+
+    // A dead per-domain key from before the above: nothing reads it, and it is
+    // a private key sitting on disk. Removing one is the operator's call.
+    const dkimStaleKey = (out.match(/DKIMSTALE:([^\n]*)/) || [])[1]?.trim()
+    if (dkimStaleKey)
+      logger.warn(`Mail: ${dkimStaleKey} is an unused DKIM key left by an earlier deploy — nothing signs with it. Remove it with: rm ${dkimStaleKey}`)
     const madeAddrs = new Set([...out.matchAll(/MADE:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const migratedAddrs = new Set([...out.matchAll(/MIGRATED:([^\n]+)/g)].flatMap(m => m[1] ? [m[1].trim()] : []))
     const created = boxes.filter(b => madeAddrs.has(b.address)).map(b => ({ address: b.address, password: b.password }))
