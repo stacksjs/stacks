@@ -1,7 +1,55 @@
-{{-- Shared footer and theme control for every marketing page. --}}
-<footer class="site-footer site-shell">
-  <div class="footer-inner">
-    <span>© 2026 Stacks</span>
-    <a class="footer-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+{{-- Shared footer. Like the nav, it reads resources/data/nav.ts and therefore
+  needs nothing from the including page.
+
+  It is the only navigation left on a page a reader has finished, so it
+  carries the whole site rather than one link: the three menus as columns,
+  the resources, and where to ask for help. --}}
+<script server>
+import { footerColumns, footerNote } from '../data/nav'
+
+const footerYear = 2026
+</script>
+
+<footer class="site-footer">
+  <div class="site-shell">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a class="brand" href="/" aria-label="Stacks home">
+          <span class="brand-mark">S</span>
+          <span class="brand-name">Stacks</span>
+        </a>
+        <p class="footer-blurb">
+          The full-stack TypeScript framework. Routing, models, auth, CMS, commerce, queues, mail, storage, realtime, search, tests, and cloud deploys in one install.
+        </p>
+        <div class="footer-actions">
+          <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+          <a class="button" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+        </div>
+      </div>
+
+      <nav class="footer-columns" aria-label="Footer navigation">
+        @foreach (footerColumns as column)
+          <section class="footer-column">
+            <h2 class="footer-column-title">{{ column.title }}</h2>
+            <ul>
+              @foreach (column.links as link)
+                <li>
+                  <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
+                </li>
+              @endforeach
+            </ul>
+          </section>
+        @endforeach
+      </nav>
+    </div>
+
+    <div class="footer-inner">
+      <span>© {{ footerYear }} Stacks. {{ footerNote }}</span>
+      <span class="footer-meta">
+        <a class="footer-link" href="https://github.com/stacksjs/stacks">GitHub</a>
+        <a class="footer-link" href="https://stacksjs.com/discord">Discord</a>
+        <a class="footer-link" href="https://bsky.app/profile/stacksjs.com">Bluesky</a>
+      </span>
+    </div>
   </div>
 </footer>

@@ -1,60 +1,72 @@
-{{-- Shared nav. The Features item opens a mega menu built from the one
-  feature list in resources/data/features.ts, so the menu cannot offer a
-  section that no longer exists.
+{{-- Shared nav. Three mega menus, all built from resources/data/nav.ts, which
+  builds them from the feature, use case, and comparison lists. A menu
+  therefore cannot offer a page that does not exist, and a page does not have
+  to declare menu data to include this partial: the script below is the
+  partial's own scope, so every view gets the same nav for free.
 
-  Hover is not the only way in: the panel opens on :hover AND :focus-within,
+  Hover is not the only way in: a panel opens on :hover AND :focus-within,
   which is what makes it reachable by keyboard without a line of JavaScript.
-  The trigger is a real link to /features, so a tap on a touch device (where
-  there is no hover) goes somewhere useful rather than nowhere. --}}
+  Each trigger is a real link to the overview page, so a tap on a touch
+  device (where there is no hover) goes somewhere useful rather than
+  nowhere. --}}
+<script server>
+import { navLinks, navMenus } from '../data/nav'
+
+const brandName = 'Stacks'
+</script>
+
 <nav class="site-nav">
   <div class="nav-inner site-shell">
     <a class="brand" href="/" aria-label="Stacks home">
       <span class="brand-mark">S</span>
-      <span class="brand-name">{{ appName }}</span>
+      <span class="brand-name">{{ brandName }}</span>
     </a>
 
     <div class="nav-links" aria-label="Primary navigation">
-      <div class="nav-item">
-        <a class="nav-trigger" href="/features" aria-haspopup="true">
-          Features
-          <i class="nav-caret i-hugeicons-arrow-down-01" aria-hidden="true"></i>
-        </a>
+      @foreach (navMenus as menu)
+        <div class="nav-item">
+          <a class="nav-trigger" href="{{ menu.url }}" aria-haspopup="true">
+            {{ menu.label }}
+            <i class="nav-caret i-hugeicons-arrow-down-01" aria-hidden="true"></i>
+          </a>
 
-        <div class="mega">
-          <div class="mega-inner">
-            <div class="mega-groups">
-              @foreach (megaGroups as group)
-                <section class="mega-group">
-                  <h2 class="mega-group-title">{{ group.title }}</h2>
-                  <p class="mega-group-copy">{{ group.text }}</p>
-                  <ul class="mega-list">
-                    @foreach (group.items as feature)
-                      <li>
-                        <a class="mega-link" href="/features/{{ feature.slug }}">
-                          <span class="mega-icon"><i class="{{ feature.icon }}" aria-hidden="true"></i></span>
-                          <span class="mega-text">
-                            <strong>{{ feature.title }}</strong>
-                            <span>{{ feature.blurb }}</span>
-                          </span>
-                        </a>
-                      </li>
-                    @endforeach
-                  </ul>
-                </section>
-              @endforeach
-            </div>
-
-            <aside class="mega-aside">
-              <span class="kicker">Start here</span>
-              <p class="mega-aside-copy">Every one of these ships in the same install, typed against the others. Nothing above is a plugin you add later.</p>
-              <div class="mega-aside-actions">
-                <a class="button primary" href="/docs" data-no-router>Read the docs</a>
-                <a class="button" href="/features">All features</a>
+          <div class="mega {{ menu.variant === 'compact' ? 'mega--compact' : '' }}">
+            <div class="mega-inner">
+              <div class="mega-groups">
+                @foreach (menu.columns as column)
+                  <section class="mega-group">
+                    <h2 class="mega-group-title">{{ column.title }}</h2>
+                    <p class="mega-group-copy">{{ column.text }}</p>
+                    <ul class="mega-list">
+                      @foreach (column.links as link)
+                        <li>
+                          <a class="mega-link" href="{{ link.url }}">
+                            <span class="mega-icon"><i class="{{ link.icon }}" aria-hidden="true"></i></span>
+                            <span class="mega-text">
+                              <strong>{{ link.title }}</strong>
+                              <span>{{ link.blurb }}</span>
+                            </span>
+                          </a>
+                        </li>
+                      @endforeach
+                    </ul>
+                  </section>
+                @endforeach
               </div>
-            </aside>
+
+              <aside class="mega-aside">
+                <span class="kicker">{{ menu.aside.kicker }}</span>
+                <p class="mega-aside-copy">{{ menu.aside.copy }}</p>
+                <div class="mega-aside-actions">
+                  @foreach (menu.aside.actions as action)
+                    <a class="button {{ action.primary ? 'primary' : '' }}" href="{{ action.url }}" {{ action.native ? 'data-no-router' : '' }}>{{ action.label }}</a>
+                  @endforeach
+                </div>
+              </aside>
+            </div>
           </div>
         </div>
-      </div>
+      @endforeach
 
       @foreach (navLinks as link)
         <a href="{{ link.url }}" {{ link.native ? 'data-no-router' : '' }}>{{ link.label }}</a>
