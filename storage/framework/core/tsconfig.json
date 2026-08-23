@@ -14,11 +14,6 @@
       // "Cannot find module" on a clean checkout and in CI, and are four of the
       // six errors that have kept the typecheck job red.
       "@stacksjs/actions/*": ["./actions/src/*"],
-      // `@stacksjs/api/typed-client` is a documented entrypoint - the import a
-      // browser bundle should use, so it does not drag the OpenAPI generator in
-      // with it - and the wildcard below would send it looking for
-      // `./api/typed-client/src`.
-      "@stacksjs/api/*": ["./api/src/*"],
       // The ORM route generator is a package entrypoint of its own, so the
       // vendored `storage/framework/orm/routes.ts` can reach it from an app
       // that has no `core/` directory. Mapped explicitly because `@stacksjs/*`
