@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.52...v0.72.53)
+
+## ✨ Features
+
+- **marketing**: add the /compare pages ([af13b94](https://github.com/stacksjs/stacks/commit/af13b94)) _(by Chris <chris@stacksjs.com>)_
+- **branding**: finish the sunset pass on the remaining surfaces ([eab6a9c](https://github.com/stacksjs/stacks/commit/eab6a9c)) _(by Chris <chris@stacksjs.com>)_ ([#3451](https://github.com/stacksjs/stacks/issues/3451), [#2563](https://github.com/stacksjs/stacks/issues/2563))
+- **marketing**: add the /use-cases pages ([7c6b3ef](https://github.com/stacksjs/stacks/commit/7c6b3ef)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: build the nav and footer from one shared list ([d599348](https://github.com/stacksjs/stacks/commit/d599348)) _(by Chris <chris@stacksjs.com>)_
+- **branding**: shift the brand accent to a golden-hour sunset ([8c30cef](https://github.com/stacksjs/stacks/commit/8c30cef)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: add get-started and one-UI-many-builds sections ([590f5f2](https://github.com/stacksjs/stacks/commit/590f5f2)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: add native apps, commerce, dashboard, and AI features ([ac8bca9](https://github.com/stacksjs/stacks/commit/ac8bca9)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: add the framework comparison data ([62edc71](https://github.com/stacksjs/stacks/commit/62edc71)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: add the use-case list ([e9bce80](https://github.com/stacksjs/stacks/commit/e9bce80)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **marketing**: fit the menu and footer to their contents ([7346f77](https://github.com/stacksjs/stacks/commit/7346f77)) _(by Chris <chris@stacksjs.com>)_
+
+## 💄 Styles
+
+- **marketing**: dress the new footer, menus, and pages ([285827c](https://github.com/stacksjs/stacks/commit/285827c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **marketing**: update feature-page copy for the twelve-feature list ([ce8be14](https://github.com/stacksjs/stacks/commit/ce8be14)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.51...v0.72.52)
 
 ## 🐛 Bug Fixes
