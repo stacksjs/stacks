@@ -1124,10 +1124,91 @@ input[type="email"]:focus {
   outline: 3px solid rgba(var(--accent-rgb), 0.22);
 }
 
+/* ── Footer ───────────────────────────────────────────────────────
+ *
+ * A site map rather than a copyright line: the brand column, then the
+ * three menus flattened into link columns beside the resources and the
+ * community links. It is the only navigation left on a page a reader has
+ * finished, which is the argument for it carrying the whole site.
+ *
+ * The columns are `auto-fit` with a 150px floor, so they reflow from five
+ * across to two on a phone without a breakpoint per step.
+ */
+
 .site-footer {
-  padding: 1.5rem 0 3rem;
+  margin-top: clamp(3rem, 7vw, 5.5rem);
+  padding: clamp(2.5rem, 5vw, 4rem) 0 2.5rem;
+  border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 0.84rem;
+  background:
+    linear-gradient(180deg, transparent, rgba(var(--accent-rgb), 0.04));
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.4fr);
+  gap: clamp(1.75rem, 4vw, 3.5rem);
+  padding-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: flex-start;
+  max-width: 34ch;
+}
+
+.footer-blurb {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.6;
+}
+
+.footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.footer-actions .button {
+  min-height: 38px;
+  padding: 0 1rem;
+  font-size: 0.82rem;
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.6rem 1.4rem;
+}
+
+.footer-column-title {
+  margin-bottom: 0.75rem;
+  color: var(--text);
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.footer-column ul {
+  display: grid;
+  gap: 0.4rem;
+  list-style: none;
+}
+
+.footer-column a {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  transition: color 0.15s ease;
+}
+
+.footer-column a:hover {
+  color: var(--accent);
 }
 
 .footer-inner {
@@ -1139,6 +1220,12 @@ input[type="email"]:focus {
   padding-top: 1.25rem;
 }
 
+.footer-meta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .footer-link {
   color: var(--muted);
   font-weight: 550;
@@ -1146,6 +1233,12 @@ input[type="email"]:focus {
 
 .footer-link:hover {
   color: var(--accent);
+}
+
+@media (max-width: 920px) {
+  .footer-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 /* ── Responsive ───────────────────────────────────────────────── */
@@ -1458,5 +1551,479 @@ input[type="email"]:focus {
   .feature-group-head {
     flex-direction: column;
     gap: 0.3rem;
+  }
+}
+
+/* ── Compact mega menu ────────────────────────────────────────────
+ *
+ * The Use cases and Compare menus carry eighteen entries each, where
+ * Features carries twelve. Same panel, tighter rows: smaller icons, one
+ * line of supporting text that truncates rather than wraps, and a little
+ * less air between rows. Nothing about the open/close behaviour changes.
+ */
+
+.mega--compact .mega-link {
+  gap: 0.5rem;
+  padding: 0.36rem 0.5rem;
+}
+
+.mega--compact .mega-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+}
+
+.mega--compact .mega-icon i {
+  width: 13px;
+  height: 13px;
+}
+
+.mega--compact .mega-text strong {
+  font-size: 0.8rem;
+}
+
+.mega--compact .mega-text span {
+  overflow: hidden;
+  font-size: 0.71rem;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mega--compact .mega-group-copy {
+  margin-bottom: 0.6rem;
+}
+
+/* Three menus plus three links needs the room back before the layout
+  wraps. Below 900px the panels are hidden anyway and the triggers are
+  plain links to their overview pages. */
+@media (max-width: 1180px) {
+  .nav-links {
+    gap: 1rem;
+    font-size: 0.82rem;
+  }
+}
+
+/* ── Use case pages ───────────────────────────────────────────────
+ *
+ * Same furniture as the feature pages (page-hero, capability-grid,
+ * command-strip, related-grid) plus two pieces of their own: the numbered
+ * "what is hard about this" cards, and the strip of feature links that
+ * says which layers a build of this shape leans on.
+ */
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  counter-reset: challenge;
+}
+
+.challenge {
+  position: relative;
+  padding: 1.25rem 1.25rem 1.25rem 3.35rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.challenge::before {
+  position: absolute;
+  top: 1.25rem;
+  left: 1.15rem;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: rgba(var(--accent-rgb), 0.12);
+  counter-increment: challenge;
+  content: counter(challenge);
+}
+
+.challenge h3 {
+  margin-bottom: 0.4rem;
+  font-size: 0.98rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.challenge p {
+  color: var(--muted);
+  font-size: 0.87rem;
+  line-height: 1.6;
+}
+
+.stack-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.stack-chip {
+  display: inline-flex;
+  gap: 0.45rem;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 0.9rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 0.83rem;
+  font-weight: 560;
+  transition: border-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.stack-chip i {
+  width: 15px;
+  height: 15px;
+  color: var(--accent);
+}
+
+.stack-chip:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-1px);
+}
+
+/* ── Comparison pages ─────────────────────────────────────────────
+ *
+ * Three shapes carry these pages: the two-column "where each one wins"
+ * panels, the dimension table, and the verdict pair. The panels are
+ * deliberately symmetrical, because a comparison where the other side
+ * gets a smaller box has already told you how honest it is.
+ */
+
+.glance-card {
+  display: grid;
+  gap: 0.9rem;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(130% 120% at 100% 0%, rgba(var(--accent-rgb), 0.10), transparent 55%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.glance-head {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.glance-head i {
+  width: 20px;
+  height: 20px;
+  color: var(--accent);
+}
+
+.glance-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.glance-kind {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.glance-rows {
+  display: grid;
+  gap: 0.35rem;
+  border-top: 1px solid var(--line);
+  padding-top: 0.9rem;
+  list-style: none;
+}
+
+.glance-rows li {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.glance-rows span:first-child {
+  color: var(--muted);
+}
+
+.level {
+  display: inline-flex;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.level::before {
+  width: 7px;
+  height: 7px;
+  border: 1.5px solid currentColor;
+  border-radius: 999px;
+  content: "";
+}
+
+.level--built-in {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+
+.level--built-in::before {
+  background: currentColor;
+}
+
+.level--partial {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.level--partial::before {
+  background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+}
+
+.level--hosted {
+  color: var(--muted);
+  border-color: var(--line-strong);
+  border-style: dashed;
+}
+
+.level--byo {
+  color: var(--muted);
+}
+
+.versus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.1rem;
+}
+
+.versus {
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.versus--us {
+  background:
+    radial-gradient(120% 130% at 0% 0%, rgba(var(--accent-rgb), 0.09), transparent 50%),
+    var(--surface);
+}
+
+.versus-title {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-size: 1.02rem;
+  font-weight: 680;
+  letter-spacing: -0.01em;
+}
+
+.versus-title i {
+  width: 17px;
+  height: 17px;
+  color: var(--accent);
+}
+
+.versus ul {
+  display: grid;
+  gap: 0.9rem;
+  list-style: none;
+}
+
+.versus strong {
+  display: block;
+  margin-bottom: 0.2rem;
+  font-size: 0.9rem;
+  font-weight: 640;
+}
+
+.versus p {
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+
+/* Tables scroll inside their own box; the page never scrolls sideways. */
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.compare-table th,
+.compare-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+.compare-table thead th {
+  position: sticky;
+  top: 0;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  background: var(--surface);
+}
+
+.compare-table tbody tr:last-child th,
+.compare-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.compare-table tbody th {
+  color: var(--text);
+  font-weight: 620;
+  white-space: nowrap;
+}
+
+.compare-table td {
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.compare-table .col-stacks {
+  color: var(--text);
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.compare-table tbody tr:hover td,
+.compare-table tbody tr:hover th {
+  background: rgba(var(--ink-rgb), 0.03);
+}
+
+.compare-table tbody tr:hover .col-stacks {
+  background: rgba(var(--accent-rgb), 0.08);
+}
+
+.matrix-name {
+  display: inline-flex;
+  gap: 0.55rem;
+  align-items: center;
+  color: var(--text);
+  font-weight: 640;
+}
+
+.matrix-name i {
+  width: 15px;
+  height: 15px;
+  color: var(--accent);
+}
+
+.matrix-name small {
+  display: block;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.72rem;
+}
+
+.matrix-row--stacks th,
+.matrix-row--stacks td {
+  background: rgba(var(--accent-rgb), 0.06);
+}
+
+.legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 0.9rem;
+  margin-top: 1.1rem;
+}
+
+.legend-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+.legend-item p {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.verdict-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.1rem;
+}
+
+.verdict {
+  display: grid;
+  gap: 0.6rem;
+  align-content: start;
+  padding: clamp(1.25rem, 3vw, 1.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.verdict--stacks {
+  border-color: rgba(var(--accent-rgb), 0.35);
+  background:
+    radial-gradient(120% 130% at 100% 0%, rgba(var(--accent-rgb), 0.10), transparent 55%),
+    var(--surface);
+}
+
+.verdict h3 {
+  font-size: 1rem;
+  font-weight: 680;
+  letter-spacing: -0.01em;
+}
+
+.verdict p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+
+.compare-summary {
+  padding: clamp(1.25rem, 3vw, 1.9rem);
+  border: 1px solid var(--line);
+  border-left: 3px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: 16px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+  background: var(--surface);
+}
+
+@media (max-width: 700px) {
+  .challenge {
+    padding-left: 1.25rem;
+  }
+
+  .challenge::before {
+    position: static;
+    margin-bottom: 0.6rem;
   }
 }
