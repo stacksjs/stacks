@@ -70,12 +70,36 @@ route.get('/typed/text', () => 'hello')
 
 // ── resource() ────────────────────────────────────────────────────────────
 
-// A base that really has actions behind it, in every spelling.
+/*
+ * Every action a call will register has to exist - not just one of them.
+ *
+ * `Actions/Cms/Page` is the case that makes the difference concrete: it has
+ * Index, Store, Update and Destroy, and no Show. A bare
+ * `resource('pages', 'Actions/Cms/Page')` therefore registers a
+ * `GET /pages/{id}` that 500s the first time anybody opens a page, while
+ * `{ except: ['show'] }` is completely fine. Only reading `only`/`except` can
+ * tell those apart, which is why they are inferred as literals.
+ */
+
+// All five exist, in every spelling of the base.
 route.resource('typed_blog', 'Actions/Blog/Blog')
 route.resource('typed_blog2', 'Blog/BlogAction')
 
+// Four of five, with the missing one excluded.
+route.resource('typed_pages', 'Actions/Cms/Page', { except: ['show'] })
+route.resource('typed_pages2', 'Actions/Cms/Page', { only: ['index', 'store'] })
+
 export function badResource(): void {
-  // @ts-expect-error no action is composed from this base
+  // @ts-expect-error registers GET /pages/{id} against an action that is not there
+  route.resource('typed_pages3', 'Actions/Cms/Page')
+
+  // @ts-expect-error `show` is asked for by name, and is the one that is missing
+  route.resource('typed_pages4', 'Actions/Cms/Page', { only: ['index', 'show'] })
+
+  // @ts-expect-error `only` wins over `except` at runtime, so it does here too
+  route.resource('typed_pages5', 'Actions/Cms/Page', { only: ['show'], except: ['show'] })
+
+  // @ts-expect-error no action is composed from this base at all
   route.resource('typed_psots', 'Psot')
 }
 

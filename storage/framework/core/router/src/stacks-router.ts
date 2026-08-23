@@ -245,8 +245,11 @@ interface GroupOptions {
 type ResourceAction = 'index' | 'store' | 'show' | 'update' | 'destroy'
 
 interface ResourceRouteOptions {
-  only?: ResourceAction[]
-  except?: ResourceAction[]
+  // `readonly`, so the declared signature's `readonly TOnly[]` - which is what
+  // makes `only: ['index', 'show']` infer as literals rather than widening to
+  // `ResourceAction[]` - is assignable to it. The implementation only reads.
+  only?: readonly ResourceAction[]
+  except?: readonly ResourceAction[]
   middleware?: MiddlewareReference | MiddlewareReference[]
 }
 
@@ -256,40 +259,52 @@ type StripActionSuffix<T extends string> = T extends `${infer Base}Action` ? Bas
 /** `'Post'` → `'Actions/Post'`; an explicit `'Actions/…'` base is left alone. */
 type WithActionsPrefix<T extends string> = T extends `Actions/${string}` ? T : `Actions/${T}`
 
-/** The kinds `resource()` composes. */
-type ResourceKind = 'Index' | 'Store' | 'Show' | 'Update' | 'Destroy'
+/** The file-name half each CRUD action is composed from. */
+interface ResourceKindOf {
+  index: 'Index'
+  store: 'Store'
+  show: 'Show'
+  update: 'Update'
+  destroy: 'Destroy'
+}
 
 /**
- * The base an existing action was composed from.
+ * The actions a call actually registers.
  *
- * `'Actions/Blog/BlogIndexAction'` → `'Actions/Blog/Blog'`. Note it strips the
- * KIND as well as the `Action` suffix - stripping only `Action` would yield
- * `'Actions/Blog/BlogIndex'`, a base whose siblings
- * (`'Actions/Blog/BlogIndexIndexAction'`) exist nowhere.
+ * `only` wins over `except`, matching the runtime: it checks `options.only`
+ * first and never looks at `except` when both are given.
  */
-type ResourceBaseOf<T extends string>
-  = T extends `${infer Base}${ResourceKind}Action` ? Base : never
+type ActiveResourceActions<TOnly extends ResourceAction, TExcept extends ResourceAction>
+  = [TOnly] extends [never]
+    ? ([TExcept] extends [never] ? ResourceAction : Exclude<ResourceAction, TExcept>)
+    : TOnly
+
+/** The action files a call needs, given its base and its active actions. */
+type RequiredResourceActions<TBase extends string, TActive extends ResourceAction>
+  = `${WithActionsPrefix<StripActionSuffix<TBase>>}${ResourceKindOf[TActive]}Action`
+
+/** Of those, the ones that do not exist. */
+type MissingResourceActions<TBase extends string, TActive extends ResourceAction>
+  = Exclude<RequiredResourceActions<TBase, TActive>, ActionPath>
 
 /**
- * A `resource()` base name, checked as far as it honestly can be.
+ * Every action a `resource()` call will register has to exist.
  *
- * `resource('posts', 'Post')` promises up to five files - `PostIndexAction`,
- * `PostStoreAction`, and so on - that no single expression names, and `only`
- * and `except` mean the required set is not even fixed. So the union is built
- * from the bases that DO have at least one action on disk, which rejects a
- * wholly wrong base (`'Psot'`, a model nobody scaffolded) without rejecting a
- * deliberate `{ only: ['index'] }`.
+ * Not "at least one of them" - that waves through the case this is really for.
+ * `Actions/Cms/Page` has Index, Store, Update and Destroy but no Show, so
+ * `route.resource('pages', 'Actions/Cms/Page')` registers a `GET /pages/{id}`
+ * that 500s the first time anybody opens a page, while
+ * `{ except: ['show'] }` is completely fine. Only the exact set answers that,
+ * which is why `only` and `except` are inferred as literals and read here.
  *
- * Each base is offered in all four forms a call site might write it:
- * with or without the `Actions/` prefix, with or without a trailing `Action`.
+ * Resolves to `unknown` when nothing is missing - an intersection with
+ * `unknown` is the base itself - and otherwise to an object the base cannot
+ * satisfy, whose property name puts the missing files in the error message.
  */
-type ResourceBase = ResourceBaseOf<Extract<ActionPath, string>> extends infer TBase
-  ? TBase extends string
-    ? | TBase
-      | `${TBase}Action`
-      | (TBase extends `Actions/${infer Rest}` ? Rest | `${Rest}Action` : never)
-    : never
-  : never
+type ResourceBaseCheck<TBase extends string, TActive extends ResourceAction>
+  = [MissingResourceActions<TBase, TActive>] extends [never]
+    ? unknown
+    : { 'these actions do not exist': MissingResourceActions<TBase, TActive> }
 
 /**
  * Chainable route interface for middleware and naming support
@@ -3560,7 +3575,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Resource route helper - generates standard CRUD routes like Laravel's Route::resource()
-    resource(name: string, handler: ResourceBase, options?: ResourceRouteOptions) {
+    resource(name: string, handler: string, options?: ResourceRouteOptions) {
       const actions: ResourceAction[] = ['index', 'store', 'show', 'update', 'destroy']
 
       const activeActions = options?.only
@@ -4259,7 +4274,21 @@ export interface StacksRouterInstance {
     (path: string, handler: StacksHandler): ChainableRoute
   }
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
-  resource: (name: string, handler: ResourceBase, options?: ResourceRouteOptions) => StacksRouterInstance
+  /*
+   * Generic in the base AND in `only`/`except`, so the check can ask about the
+   * exact set of files this call will register. `readonly TOnly[]` rather than
+   * `ResourceAction[]` is what makes `only: ['index', 'show']` infer as the
+   * literals `'index' | 'show'` instead of widening to the whole union.
+   */
+  resource: <TBase extends string, TOnly extends ResourceAction = never, TExcept extends ResourceAction = never>(
+    name: string,
+    handler: TBase & ResourceBaseCheck<TBase, ActiveResourceActions<TOnly, TExcept>>,
+    options?: {
+      only?: readonly TOnly[]
+      except?: readonly TExcept[]
+      middleware?: MiddlewareReference | MiddlewareReference[]
+    },
+  ) => StacksRouterInstance
   match: {
     <TPath extends string>(methods: string[], path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
     (methods: string[], path: string, handler: StacksHandler): ChainableRoute

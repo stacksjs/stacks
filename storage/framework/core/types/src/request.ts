@@ -17,12 +17,23 @@ interface RequestData {
 
 /**
  * Cookie-access helper exposed via `request.cookies` on
- * {@link RequestInstance}. The methods mirror bun-router's
- * `CookieAccessor` — duplicated locally so this package doesn't
- * have to depend on bun-router for a single type. Keep the surface
- * in sync if bun-router extends its accessor.
+ * {@link RequestInstance}. Mirrors bun-router's `CookieAccessor` —
+ * duplicated locally so this package doesn't have to depend on bun-router
+ * for a single type.
+ *
+ * "Keep the surface in sync" used to be the whole instruction here, and it
+ * drifted the moment bun-router's accessor grew: the runtime object is
+ * callable and carries its entries directly, and this said it was four
+ * methods. A comment cannot notice that. `cookie-accessor-parity.test-d.ts`
+ * in `@stacksjs/router` — a package that already depends on bun-router — now
+ * asserts the two are mutually assignable, so drift is a build failure
+ * instead of a note.
  */
 export interface RequestCookies {
+  /** The whole parsed cookie map: `request.cookies()`. */
+  (): Record<string, string>
+  /** Direct access by name: `request.cookies.session`. */
+  [name: string]: unknown
   get: (name: string) => string | undefined
   set: (name: string, value: string, options?: {
     path?: string
