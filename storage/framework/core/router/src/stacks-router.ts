@@ -2351,8 +2351,35 @@ export async function validateActionInput(req: EnhancedRequest, validations: Act
     }
   }
 
+  const valid = Object.keys(errors).length === 0
+
+  /*
+   * Record what passed, so `request.getValidated()` and `request.safe()` have
+   * something to return.
+   *
+   * They are Laravel's `$request->validated()` under different names, and they
+   * returned `{}` after a request the router had just validated: the only way
+   * to populate them was to call `request.validate()` again inside the handler,
+   * redoing work that had already been done a few frames up. Meanwhile the
+   * declared return type promised the validated fields, so a handler reading
+   * `getValidated().email` type-checked and got `undefined`.
+   *
+   * Only the declared fields, and only the ones actually present - an absent
+   * optional field is absent here too, which matches both Laravel and the
+   * optional keys the inferred type now produces. The values are the coerced
+   * ones the rules were tested against, not the raw wire strings.
+   */
+  if (valid) {
+    const validated: Record<string, unknown> = {}
+    for (const field of Object.keys(validations)) {
+      if (input[field] !== undefined)
+        validated[field] = input[field]
+    }
+    ;(req as EnhancedRequest & { _validatedInput?: Record<string, unknown> })._validatedInput = validated
+  }
+
   return {
-    valid: Object.keys(errors).length === 0,
+    valid,
     errors,
   }
 }
