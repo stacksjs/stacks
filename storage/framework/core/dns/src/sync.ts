@@ -26,8 +26,31 @@ function ttlNumber(ttl: number | 'auto' | undefined): number {
   return Math.max(600, n) // registrars such as Porkbun enforce a 600s minimum
 }
 
+/**
+ * Resolve a `config/dns.ts` record name to the FQDN it names inside `domain`.
+ *
+ * `@` and `''` are the apex, which is the documented way to write it. Two
+ * other spellings reach here from real configs and used to be treated as
+ * relative labels, which silently doubled the zone: the framework's own
+ * scaffold wrote `name: env.APP_DOMAIN`, and `stacksjs.com` under zone
+ * `stacksjs.com` became `stacksjs.com.stacksjs.com`. A name already inside the
+ * zone, or written absolute with a trailing dot, is taken as-is.
+ */
 function toFqdn(domain: string, name: string): string {
-  return name === '@' || name === '' ? domain : `${name}.${domain}`
+  const zone = normalizeName(domain)
+
+  if (name === '@' || name === '')
+    return domain
+
+  // Trailing dot is the DNS convention for "this is already absolute".
+  if (name.endsWith('.'))
+    return normalizeName(name)
+
+  const normalized = normalizeName(name)
+  if (normalized === zone || normalized.endsWith(`.${zone}`))
+    return normalized
+
+  return `${name}.${domain}`
 }
 
 function normalizeName(name: string): string {
@@ -50,19 +73,49 @@ function isPublishable(record: DnsRecord): boolean {
 }
 
 /**
+ * The address `@` copies: the apex A (or AAAA) declared in the same config.
+ *
+ * `{ name: 'www', address: '@' }` means "www points where the apex points",
+ * which is how registrar UIs spell it and how the framework scaffold shipped
+ * it. It is NOT valid record content: sent verbatim, a registrar API rejects
+ * `@` as an address, which is exactly what happened on every deploy of an app
+ * that kept the scaffold. Resolve it here, or leave it in place for the
+ * planner to skip with a reason.
+ */
+function apexAddress(domain: string, cfg: DnsConfig, type: 'A' | 'AAAA'): string | null {
+  const entries = (type === 'A' ? cfg.a : cfg.aaaa) ?? []
+
+  for (const entry of entries) {
+    if (toFqdn(domain, entry.name) !== normalizeName(domain))
+      continue
+    if (!entry.address || entry.address === '@')
+      continue
+
+    return entry.address
+  }
+
+  return null
+}
+
+/**
  * Flatten a `config/dns.ts` `DnsConfig` into the provider's record shape.
  * `nameservers` are delegation, not zone records, so they are not included.
  */
 export function desiredDnsRecords(domain: string, cfg: DnsConfig): DnsRecord[] {
   const out: DnsRecord[] = []
+  const address = (value: string, type: 'A' | 'AAAA'): string =>
+    value === '@' ? (apexAddress(domain, cfg, type) ?? '@') : value
+
   for (const r of cfg.txt ?? [])
     out.push({ name: toFqdn(domain, r.name), type: 'TXT', content: r.content, ttl: ttlNumber(r.ttl) })
   for (const r of cfg.a ?? [])
-    out.push({ name: toFqdn(domain, r.name), type: 'A', content: r.address, ttl: ttlNumber(r.ttl) })
+    out.push({ name: toFqdn(domain, r.name), type: 'A', content: address(r.address, 'A'), ttl: ttlNumber(r.ttl) })
   for (const r of cfg.aaaa ?? [])
-    out.push({ name: toFqdn(domain, r.name), type: 'AAAA', content: r.address, ttl: ttlNumber(r.ttl) })
+    out.push({ name: toFqdn(domain, r.name), type: 'AAAA', content: address(r.address, 'AAAA'), ttl: ttlNumber(r.ttl) })
   for (const r of cfg.cname ?? [])
-    out.push({ name: toFqdn(domain, r.name), type: 'CNAME', content: r.target, ttl: ttlNumber(r.ttl) })
+    // A CNAME to `@` is an alias to the apex, and the apex is a name, so this
+    // one resolves without needing an address to copy.
+    out.push({ name: toFqdn(domain, r.name), type: 'CNAME', content: r.target === '@' ? domain : r.target, ttl: ttlNumber(r.ttl) })
   for (const r of cfg.mx ?? [])
     out.push({ name: toFqdn(domain, r.name), type: 'MX', content: r.mailServer, ttl: ttlNumber(r.ttl), priority: r.priority })
   return out
@@ -70,35 +123,76 @@ export function desiredDnsRecords(domain: string, cfg: DnsConfig): DnsRecord[] {
 
 export interface DnsPlanItem {
   record: DnsRecord
-  action: 'create' | 'keep'
+  action: 'create' | 'keep' | 'skip'
+  /** Why a skipped record cannot be published. Set only for `skip`. */
+  reason?: string
+}
+
+export interface DnsSkippedRecord {
+  record: DnsRecord
+  reason: string
 }
 
 export interface DnsPlan {
   items: DnsPlanItem[]
   create: DnsRecord[]
   keep: DnsRecord[]
+  /** Declared records that cannot be published, each with the reason why. */
+  skip: DnsSkippedRecord[]
+}
+
+/**
+ * Why a declared record cannot be published, or null when it can.
+ *
+ * These used to be folded into `keep`, which reads as "already present" and is
+ * how a placeholder address and a genuinely-satisfied record became
+ * indistinguishable in the summary line. A record nobody can publish is its own
+ * outcome and says so.
+ */
+function skipReason(record: DnsRecord, zone?: string): string | null {
+  if ((record.type === 'A' || record.type === 'AAAA') && record.content === '@')
+    return `address "@" copies the apex ${record.type} record, and config/dns.ts declares none`
+
+  if (!isPublishable(record))
+    return `${record.content} is a private, loopback or placeholder address and is never published`
+
+  if (zone) {
+    const name = normalizeName(record.name)
+    const normalizedZone = normalizeName(zone)
+    if (name !== normalizedZone && !name.endsWith(`.${normalizedZone}`))
+      return `${record.name} is outside the ${zone} zone`
+  }
+
+  return null
 }
 
 /**
  * Build the additive reconciliation plan: which declared records are missing
- * (create) and which are already satisfied (keep). Never plans a delete or an
- * overwrite.
+ * (create), which are already satisfied (keep), and which cannot be published
+ * at all (skip). Never plans a delete or an overwrite.
  */
-export function planDnsSync(desired: DnsRecord[], current: DnsRecord[]): DnsPlan {
+export function planDnsSync(desired: DnsRecord[], current: DnsRecord[], options: { zone?: string } = {}): DnsPlan {
   const items: DnsPlanItem[] = desired.map((want) => {
+    const reason = skipReason(want, options.zone)
+    if (reason)
+      return { record: want, action: 'skip' as const, reason }
+
     const name = normalizeName(want.name)
     const sameNameType = current.filter(c => c.type === want.type && normalizeName(c.name) === name)
     const present = SINGLE_VALUED.has(want.type)
       ? sameNameType.length > 0
       : sameNameType.some(c => unquote(c.content) === unquote(want.content))
-    // Only create a genuinely-missing, publishable record; everything else is
-    // left untouched (never delete, never overwrite, never publish a private IP).
-    return { record: want, action: !present && isPublishable(want) ? 'create' : 'keep' }
+
+    // Only create a genuinely-missing record; an existing one is left exactly
+    // as it is (never delete, never overwrite).
+    return { record: want, action: present ? 'keep' as const : 'create' as const }
   })
+
   return {
     items,
     create: items.filter(i => i.action === 'create').map(i => i.record),
     keep: items.filter(i => i.action === 'keep').map(i => i.record),
+    skip: items.filter(i => i.action === 'skip').map(i => ({ record: i.record, reason: i.reason ?? 'not publishable' })),
   }
 }
 
@@ -199,11 +293,21 @@ export function renderDnsConfig(domain: string, records: DnsRecord[]): string {
   return lines.join('\n')
 }
 
+export interface DnsSyncFailure {
+  record: DnsRecord
+  /** What the registrar said, or the thrown error. Never empty. */
+  reason: string
+}
+
 export interface DnsSyncResult {
   plan: DnsPlan
   created: number
   kept: number
   failed: number
+  /** One entry per failed create, with the registrar's own reason. */
+  failures: DnsSyncFailure[]
+  /** Declared records that could not be published at all, and why. */
+  skipped: DnsSkippedRecord[]
   applied: boolean
   provider: string | null
 }
@@ -223,23 +327,47 @@ export async function syncDnsConfig(
   // dry runs read current state from public DNS, so they need no credentials.
   const provider = options.dryRun ? null : (options.provider ?? (await dnsProviderForDomain(domain)))
   const current = provider ? (await provider.listRecords(domain)).records ?? [] : await resolveLiveRecords(domain)
-  const plan = planDnsSync(desired, current)
+  const plan = planDnsSync(desired, current, { zone: domain })
 
-  if (options.dryRun || !provider)
-    return { plan, created: 0, kept: plan.keep.length, failed: 0, applied: false, provider: provider?.name ?? null }
-
-  let created = 0
-  let failed = 0
-  for (const record of plan.create) {
-    try {
-      const result = await provider.createRecord(domain, record)
-      if (result.success) created += 1
-      else { failed += 1 }
-    }
-    catch {
-      failed += 1
+  if (options.dryRun || !provider) {
+    return {
+      plan,
+      created: 0,
+      kept: plan.keep.length,
+      failed: 0,
+      failures: [],
+      skipped: plan.skip,
+      applied: false,
+      provider: provider?.name ?? null,
     }
   }
 
-  return { plan, created, kept: plan.keep.length, failed, applied: true, provider: provider.name }
+  let created = 0
+  // A count alone cannot be acted on. This used to be `catch { failed += 1 }`,
+  // so a deploy could only ever say "1 failed" - not which record, not why -
+  // and the one thing needed to fix it was the thing being discarded.
+  const failures: DnsSyncFailure[] = []
+  for (const record of plan.create) {
+    try {
+      const result = await provider.createRecord(domain, record)
+      if (result.success)
+        created += 1
+      else
+        failures.push({ record, reason: result.message?.trim() || `${provider.name} rejected the record without a message` })
+    }
+    catch (err) {
+      failures.push({ record, reason: err instanceof Error ? err.message : String(err) })
+    }
+  }
+
+  return {
+    plan,
+    created,
+    kept: plan.keep.length,
+    failed: failures.length,
+    failures,
+    skipped: plan.skip,
+    applied: true,
+    provider: provider.name,
+  }
 }
