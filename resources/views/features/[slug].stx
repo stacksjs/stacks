@@ -19,10 +19,9 @@
  * could not set its own status at all, and the workaround was eight concrete
  * views so that an unknown slug matched no route.
  */
-import { featureBySlug, featureGroups, featuresInGroup } from '../../data/features'
+import { featureBySlug } from '../../data/features'
 import { highlight } from '../../data/highlight'
 
-const appName = 'Stacks'
 
 const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
 const feature = featureBySlug(requestedSlug)
@@ -45,18 +44,6 @@ const related = feature
   ? feature.page.related.map(featureBySlug).filter(Boolean)
   : []
 
-const navLinks = [
-  { label: 'Get started', url: '/#start' },
-  { label: 'CMS', url: '/#cms' },
-  { label: 'Cloud', url: '/#deploy' },
-  { label: 'Docs', url: '/docs', native: true },
-  { label: 'Blog', url: '/blog', native: true },
-]
-
-const megaGroups = featureGroups.map(group => ({
-  ...group,
-  items: featuresInGroup(group.id),
-}))
 </script>
 
 <!DOCTYPE html>

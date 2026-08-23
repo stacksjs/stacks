@@ -1,5 +1,5 @@
 <script server>
-import { featureGroups, features, featuresInGroup } from '../data/features'
+import { features } from '../data/features'
 
 const appName = 'Stacks'
 
@@ -60,21 +60,6 @@ const jsonLd = JSON.stringify({
     },
   ],
 })
-
-// Features is not in this list: it is the mega-menu trigger, rendered by
-// the nav partial from the shared feature data rather than as a flat link.
-const navLinks = [
-  { label: 'Get started', url: '#start' },
-  { label: 'CMS', url: '#cms' },
-  { label: 'Cloud', url: '#deploy' },
-  { label: 'Docs', url: '/docs', native: true },
-  { label: 'Blog', url: '/blog', native: true },
-]
-
-const megaGroups = featureGroups.map(group => ({
-  ...group,
-  items: featuresInGroup(group.id),
-}))
 
 // Platform bento. The eight cells ARE the eight features: same titles, same
 // blurbs, same order as the mega menu and the /features pages, because all

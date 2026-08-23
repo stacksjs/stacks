@@ -6,19 +6,10 @@
  */
 import { featureGroups, featuresInGroup } from '../../data/features'
 
-const appName = 'Stacks'
 
 const pageTitle = 'Features - Stacks'
 const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, and cloud deploys. Every layer of a Stacks app, first-party and typed against the others.'
 const canonicalPath = '/features'
-
-const navLinks = [
-  { label: 'Get started', url: '/#start' },
-  { label: 'CMS', url: '/#cms' },
-  { label: 'Cloud', url: '/#deploy' },
-  { label: 'Docs', url: '/docs', native: true },
-  { label: 'Blog', url: '/blog', native: true },
-]
 
 const megaGroups = featureGroups.map(group => ({
   ...group,
