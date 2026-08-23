@@ -15,7 +15,7 @@ export default new Action({
   // the request object is optional, but if it is provided, it will be used for validation
   validations: {
     message: {
-      rule: schema.string().min(3).max(255),
+      rule: schema.string().min(3).max(255).required(),
       message: 'The message must be between 3 and 255 characters long.',
     },
 
@@ -25,7 +25,7 @@ export default new Action({
       // is not a function" at module evaluation. Use `schema.enum([...])`
       // — that's the working enum primitive used throughout the framework
       // defaults and in the typical project's models.
-      rule: schema.enum(['info', 'warn', 'error']),
+      rule: schema.enum(['info', 'warn', 'error']).required(),
       message: 'The log level must be one of "info", "warn", or "error".',
     },
   },

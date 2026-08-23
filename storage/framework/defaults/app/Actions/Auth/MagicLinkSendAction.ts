@@ -11,7 +11,7 @@ export default new Action({
 
   validations: {
     email: {
-      rule: schema.string().email(),
+      rule: schema.string().email().required(),
       message: 'Email must be a valid email address.',
     },
   },

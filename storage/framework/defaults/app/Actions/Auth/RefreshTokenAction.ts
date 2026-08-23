@@ -12,7 +12,7 @@ export default new Action({
 
     await request.validate({
       refresh_token: {
-        rule: schema.string().min(1),
+        rule: schema.string().min(1).required(),
         message: {
           min: 'Refresh token is required',
         },

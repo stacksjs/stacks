@@ -11,7 +11,7 @@ export default new Action({
 
   validations: {
     token: {
-      rule: schema.string().min(16).max(255),
+      rule: schema.string().min(16).max(255).required(),
       message: 'Token is required.',
     },
   },

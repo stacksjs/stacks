@@ -8,11 +8,17 @@ export default new Action({
   description: 'Updates the view count for a post',
   method: 'PATCH',
   async handle(request: RequestInstance) {
+    /*
+     * PATCH, so these are NOT required: a partial update sends the fields it
+     * means to change. The messages used to say "X is required", which fires on
+     * a type failure and never on absence - a message describing a rule the
+     * block does not have.
+     */
     await request.validate({
       views: {
         rule: schema.number(),
         message: {
-          views: 'Views is required',
+          views: 'Views must be a number.',
         },
       },
     })
