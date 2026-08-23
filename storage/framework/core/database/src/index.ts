@@ -161,7 +161,7 @@ export * from './ensure-database'
 
 // Foreign-key audit (stacksjs/stacks#1916) — compare declared
 // `belongsTo` relationships against live FKs.
-export { auditForeignKeys, findFkOrphans, getDeclaredFKs, getLiveFKs } from './fk-audit'
+export { auditForeignKeys, classifyDeclaredFKs, findFkOrphans, fkKey, getDeclaredFKs, getLiveFKs, getLiveTables } from './fk-audit'
 
 // Schema drift audit — compare live column types against what the models
 // declare. `migrate` only tracks which files have run, so a database built from

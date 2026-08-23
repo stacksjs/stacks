@@ -1,5 +1,6 @@
+import type { DeclaredFK, LiveFK } from '../src/fk-audit'
 import { describe, expect, it } from 'bun:test'
-import { getDeclaredFKs, getDeclaredFKsFromModels } from '../src/fk-audit'
+import { classifyDeclaredFKs, fkKey, getDeclaredFKs, getDeclaredFKsFromModels } from '../src/fk-audit'
 
 // stacksjs/stacks#1916 — Declared-FK enumeration smoke test.
 //
@@ -127,5 +128,62 @@ describe('declared FKs mirror the generator\'s belongsTo rule', () => {
       },
     ] as any)
     expect(fks.map(fk => `${fk.fromColumn}→${fk.toTable}`)).toContain('turn_id→turns')
+  })
+})
+
+/**
+ * A declared FK on a table that is not in the database is not a missing
+ * constraint.
+ *
+ * `buddy migrate` gates out the migrations of features an app has not
+ * installed - it says so, by name, on every run. The FK audit then reported
+ * the foreign keys belonging to those very tables as "missing from the live
+ * schema", suggesting `migrate:fresh` to fix a database that was correct.
+ * Four false warnings on every migrate is how a warning stops being read.
+ *
+ * The distinction has to survive: the audit exists to catch a table that IS
+ * there with no constraint enforcing its references, and that finding must
+ * still come through.
+ */
+describe('auditForeignKeys, absent tables vs missing constraints', () => {
+  const declared: DeclaredFK[] = [
+    { fromTable: 'posts', fromColumn: 'author_id', toTable: 'authors', toColumn: 'id', model: 'Post' },
+    { fromTable: 'forms', fromColumn: 'site_id', toTable: 'sites', toColumn: 'id', model: 'Form' },
+  ]
+
+  /**
+   * The real classifier, over injected inputs. auditForeignKeys() itself needs
+   * a live database and every model file; this is the rule it delegates to, so
+   * the test moves when the shipped code does rather than restating it.
+   */
+  const classify = (liveFks: LiveFK[], liveTables: Set<string>) =>
+    classifyDeclaredFKs(declared, new Set(liveFks.map(fkKey)), liveTables)
+
+  it('does not report a gated feature table as a missing FK', () => {
+    // posts exists and has its FK; forms was never migrated.
+    const result = classify(
+      [{ fromTable: 'posts', fromColumn: 'author_id', toTable: 'authors', toColumn: 'id' }],
+      new Set(['posts', 'authors', 'sites']),
+    )
+
+    expect(result.missing).toHaveLength(0)
+    expect(result.absentTable.map(fk => fk.fromTable)).toEqual(['forms'])
+  })
+
+  it('still reports a table that exists but carries no constraint', () => {
+    // The finding the audit is for: posts is present, its FK is not.
+    const result = classify([], new Set(['posts', 'authors', 'sites']))
+
+    expect(result.missing.map(fk => fk.fromTable)).toEqual(['posts'])
+    expect(result.absentTable.map(fk => fk.fromTable)).toEqual(['forms'])
+  })
+
+  it('reports nothing as absent when the table list could not be read', () => {
+    // An empty catalog means "could not check", not "no tables exist" - the
+    // latter would file every declared FK as absent and hide real findings.
+    const result = classify([], new Set())
+
+    expect(result.absentTable).toHaveLength(0)
+    expect(result.missing).toHaveLength(2)
   })
 })

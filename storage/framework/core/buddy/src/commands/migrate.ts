@@ -261,6 +261,18 @@ async function reportMissingForeignKeys(): Promise<void> {
   try {
     const { auditForeignKeys } = await import('@stacksjs/database')
     const result = await auditForeignKeys()
+
+    // FKs on tables that were never created are not a migrate-time finding:
+    // the commonest cause is a disabled feature, whose migrations this very
+    // command gated out and already logged. Kept at debug so the set is still
+    // reachable when something else is going on.
+    if (result.absentTable.length > 0) {
+      log.debug(
+        `[migrate] ${result.absentTable.length} declared foreign key(s) belong to tables that are not in this database `
+        + `(${[...new Set(result.absentTable.map(fk => fk.fromTable))].join(', ')}); not reported as missing.`,
+      )
+    }
+
     if (result.missing.length === 0) return
 
     const sample = result.missing

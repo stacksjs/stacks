@@ -63,8 +63,28 @@ export interface LiveFK {
 export interface FkAuditResult {
   declared: DeclaredFK[]
   live: LiveFK[]
-  /** Declared FKs that are NOT present in the live database. */
+  /**
+   * Declared FKs whose table EXISTS in the live database but which carry no
+   * matching constraint. These are the real finding: the table is there, rows
+   * are going into it, and nothing is enforcing the reference.
+   */
   missing: DeclaredFK[]
+  /**
+   * Declared FKs whose table is not in the live database at all.
+   *
+   * A constraint on a table that was never created is not an unenforced
+   * reference, it is an absent table, and reporting it as the former sends the
+   * reader looking for a broken migration that is working correctly. The
+   * common cause is a feature the app has not installed: `buddy migrate` gates
+   * those migrations out on purpose and then this audit warned about the four
+   * foreign keys belonging to the tables it had just decided to skip, on every
+   * single run. A warning that cries wolf every time is a warning nobody reads
+   * the day it is right.
+   *
+   * A table that SHOULD exist and does not is drift, and schema-drift.ts is
+   * what reports that.
+   */
+  absentTable: DeclaredFK[]
 }
 
 function modelTable(model: Model): string {
@@ -231,6 +251,45 @@ export async function getLiveFKs(): Promise<LiveFK[]> {
 }
 
 /**
+ * The tables that exist in the live database, lowercased.
+ *
+ * Used to tell "this table has no such constraint" apart from "there is no
+ * such table", which are different findings with different fixes.
+ */
+export async function getLiveTables(): Promise<Set<string>> {
+  const { db } = await import('./utils')
+  const dialect = await currentDialect()
+
+  const query = dialect === 'sqlite'
+    ? `SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`
+    : dialect === 'mysql'
+      ? `SELECT TABLE_NAME AS name FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()`
+      : dialect === 'postgres'
+        ? `SELECT table_name AS name FROM information_schema.tables WHERE table_schema = current_schema()`
+        : ''
+
+  if (!query)
+    return new Set()
+
+  try {
+    const rows = await db.unsafe(query)
+    return new Set(
+      (Array.isArray(rows) ? rows : [])
+        .map(row => (row as { name?: string }).name)
+        .filter((name): name is string => Boolean(name))
+        .map(name => name.toLowerCase()),
+    )
+  }
+  catch {
+    // An unreadable catalog must not turn every declared FK into a finding.
+    // An empty set would classify all of them as absent-table; undefined
+    // behaviour here is better expressed as "we could not check", which the
+    // caller gets by seeing both lists empty.
+    return new Set()
+  }
+}
+
+/**
  * Diff declared FKs against live FKs. Returns the declared FKs that
  * have no matching row in the live database — these are the silent
  * "FK should be enforcing referential integrity but isn't" cases that
@@ -248,12 +307,46 @@ export async function auditForeignKeys(): Promise<FkAuditResult> {
     live.map(fk => `${fk.fromTable.toLowerCase()}.${fk.fromColumn.toLowerCase()}→${fk.toTable.toLowerCase()}.${fk.toColumn.toLowerCase()}`),
   )
 
-  const missing = declared.filter((d) => {
-    const key = `${d.fromTable.toLowerCase()}.${d.fromColumn.toLowerCase()}→${d.toTable.toLowerCase()}.${d.toColumn.toLowerCase()}`
-    return !liveKeys.has(key)
-  })
+  const liveTables = await getLiveTables()
 
-  return { declared, live, missing }
+  return { declared, live, ...classifyDeclaredFKs(declared, liveKeys, liveTables) }
+}
+
+/**
+ * Split declared FKs into the ones a live table is missing and the ones whose
+ * table is not there at all. Pure, and exported, so the rule can be tested
+ * against inputs instead of against a database.
+ *
+ * `liveTables` empty means the catalog could not be read. Treating that as
+ * "no tables exist" would file every declared FK as absent-table and hide
+ * every real finding, so nothing is classified absent in that case.
+ */
+export function classifyDeclaredFKs(
+  declared: DeclaredFK[],
+  liveKeys: Set<string>,
+  liveTables: Set<string>,
+): { missing: DeclaredFK[], absentTable: DeclaredFK[] } {
+  const canClassify = liveTables.size > 0
+  const missing: DeclaredFK[] = []
+  const absentTable: DeclaredFK[] = []
+
+  for (const d of declared) {
+    const key = `${d.fromTable.toLowerCase()}.${d.fromColumn.toLowerCase()}→${d.toTable.toLowerCase()}.${d.toColumn.toLowerCase()}`
+    if (liveKeys.has(key))
+      continue
+
+    if (canClassify && !liveTables.has(d.fromTable.toLowerCase()))
+      absentTable.push(d)
+    else
+      missing.push(d)
+  }
+
+  return { missing, absentTable }
+}
+
+/** The match key `auditForeignKeys` compares on, for callers building one. */
+export function fkKey(fk: { fromTable: string, fromColumn: string, toTable: string, toColumn: string }): string {
+  return `${fk.fromTable.toLowerCase()}.${fk.fromColumn.toLowerCase()}→${fk.toTable.toLowerCase()}.${fk.toColumn.toLowerCase()}`
 }
 
 // stacksjs/stacks#1951 — FK orphan detection. FK enforcement flipped

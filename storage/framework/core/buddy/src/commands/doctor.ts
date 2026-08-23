@@ -314,7 +314,12 @@ export function doctor(buddy: CLI): void {
         const { auditForeignKeys } = await import('@stacksjs/database')
         const result = await auditForeignKeys()
         if (result.declared.length === 0) return 'No belongsTo declarations'
-        if (result.missing.length === 0) return `${result.declared.length} declared FKs all present`
+        // Same shape as the unique-index probe below: a constraint on a table
+        // that was never migrated is noted, not counted as a failure.
+        const skipped = result.absentTable.length > 0
+          ? `, ${result.absentTable.length} on tables not migrated`
+          : ''
+        if (result.missing.length === 0) return `${result.declared.length} declared FKs all present${skipped}`
         // Compact list of the worst offenders — full output would
         // dwarf the rest of the doctor results on a large app.
         const sample = result.missing
@@ -322,7 +327,7 @@ export function doctor(buddy: CLI): void {
           .map(fk => `${fk.fromTable}.${fk.fromColumn} → ${fk.toTable}.${fk.toColumn}`)
           .join(', ')
         const more = result.missing.length > 5 ? ` (+${result.missing.length - 5} more)` : ''
-        throw new Error(`${result.missing.length}/${result.declared.length} declared FKs missing from live schema: ${sample}${more}. Run \`buddy migrate:fresh\` (will reset data) or \`buddy migrate\` against a clean DB.`)
+        throw new Error(`${result.missing.length}/${result.declared.length} declared FKs missing from live schema: ${sample}${more}${skipped}. Run \`buddy migrate:fresh\` (will reset data) or \`buddy migrate\` against a clean DB.`)
       })
 
       // Unique-index drift (stacksjs/stacks#1952). Compares each
