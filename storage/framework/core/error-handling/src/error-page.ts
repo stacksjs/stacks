@@ -457,7 +457,7 @@ export function renderHttpErrorHints(status: number): string {
     : ''
   const suggestion = hasSuggestion ? `<p class="error-hint-suggestion">${escapeHtml(info.suggestion!)}</p>` : ''
   const doc = hasDoc
-    ? `<a class="text-blue-600 text-sm dark:text-blue-500 hover:underline" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
+    ? `<a class="text-[#a22a50] text-sm dark:text-[#f0a07e] hover:underline" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
     : ''
 
   return `<section class="p-4 bg-amber-200/30 dark:bg-amber-950/40 border border-amber-200 rounded-xl dark:border-amber-800 shadow-xs">
