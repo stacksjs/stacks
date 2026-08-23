@@ -804,6 +804,33 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   color: rgba(255, 243, 232, 0.88);
 }
 
+/* Every cell carries the feature's own glyph now, not only the three with
+  illustration art - eight of the twelve had nothing but a title and a
+  paragraph, which is the generic-card look the rest of the page avoids.
+  The data already had an icon per feature (the nav menu and the feature
+  page both use it); this was the one surface not reading it. */
+.cell-icon {
+  position: relative;
+  display: inline-grid;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 0.85rem;
+  place-items: center;
+  border-radius: 999px;
+  color: var(--accent);
+  background: var(--badge-bg);
+}
+
+.cell-icon i {
+  width: 18px;
+  height: 18px;
+}
+
+.cell--gradient .cell-icon {
+  color: #f4f8ff;
+  background: rgba(255, 255, 255, 0.16);
+}
+
 .cell h3 {
   position: relative;
   margin: 0 0 0.5rem;
@@ -1081,6 +1108,26 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   box-shadow: var(--shadow);
 }
 
+/* DX/AX: same split-panel shape as the ones above, copy plus a compact
+  capability grid on the left, a buddy setup:ai proof terminal on the right. */
+.dx-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+  gap: clamp(1.5rem, 3.5vw, 3rem);
+  align-items: center;
+  padding: clamp(1.5rem, 3.5vw, 2.75rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(140% 130% at 100% 0%, rgba(var(--accent-rgb), 0.09), transparent 52%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.dx-panel .resource-grid {
+  margin: 1.4rem 0 1.6rem;
+}
+
 /* CMS: split copy + compact resource grid. */
 .cms-panel {
   display: grid;
@@ -1344,6 +1391,7 @@ input[type="email"]:focus {
   .hero,
   .start-panel,
   .builds-panel,
+  .dx-panel,
   .cms-panel,
   .deploy-panel,
   .signup-panel {

@@ -85,6 +85,13 @@ const startSteps = [
 
 const buildTargets = ['Web', 'macOS desktop', 'System tray', 'iOS', 'Android']
 
+const dxCapabilities = [
+  { title: 'AGENTS.md, checked in', text: 'The one file a coding agent reads first, versioned with the code it describes instead of living in someone’s head.' },
+  { title: '140-plus dedicated skills', text: 'One per subsystem, from auth to deploys, so an agent reaches for the real API instead of guessing one.' },
+  { title: 'Typed the whole way down', text: 'A model, its migration, its API, and its view are typed against each other, so a rename is either everywhere or it does not compile.' },
+  { title: 'One CLI, one way', text: 'buddy lint, buddy typecheck, buddy test: the same commands an agent runs are the ones that gate a human’s pull request.' },
+]
+
 /*
  * The two hubs the nav opens as mega menus, given a landing on the page
  * itself: someone who scrolls rather than hovers should still meet them.
@@ -229,6 +236,7 @@ $ cd my-project &amp;&amp; buddy dev
                 @if (cell.image)
                   <span class="cell-art" aria-hidden="true"><img src="{{ cell.image }}" alt="" width="240" height="240" loading="lazy" decoding="async"></span>
                 @endif
+                <span class="cell-icon" aria-hidden="true"><i class="{{ cell.icon }}"></i></span>
                 <h3>{{ cell.title }}</h3>
                 <p>{{ cell.blurb }}</p>
                 <span class="cell-more">Read more<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
@@ -313,6 +321,32 @@ $ buddy build:android
                 <p>{{ step.text }}</p>
               </div>
             @endforeach
+          </div>
+        </section>
+
+        <section id="dx" class="section site-shell" aria-labelledby="dx-heading">
+          <div class="rise dx-panel">
+            <div>
+              <span class="kicker">Developer experience, agent experience</span>
+              <h2 id="dx-heading" class="section-title">Written for you. Legible to the agent next to you.</h2>
+              <p class="section-copy">AGENTS.md is the one file a coding agent already knows how to read, checked into the repo like everything else. buddy setup:ai generates CLAUDE.md, .claude/skills/, and .cursor/rules/ from it, so Claude Code, Codex, and Cursor all work from the same source instead of three drifting sets of instructions.</p>
+
+              <div class="resource-grid">
+                @foreach (dxCapabilities as capability)
+                  <div class="resource"><strong>{{ capability.title }}</strong><span>{{ capability.text }}</span></div>
+                @endforeach
+              </div>
+
+              <div class="hero-actions">
+                <a class="button primary" href="https://github.com/stacksjs/stacks/blob/main/AGENTS.md">Read AGENTS.md</a>
+                <a class="button" href="https://github.com/stacksjs/stacks/tree/main/storage/framework/defaults/ai/skills">Browse the skills</a>
+              </div>
+            </div>
+            <div class="deploy-terminal">$ buddy setup:ai
+<span class="term-ok">✓</span> CLAUDE.md generated
+<span class="term-ok">✓</span> skills written to .claude/skills/
+$ buddy lint &amp;&amp; buddy typecheck
+<span class="term-ok">✓</span> 0 errors  <span class="term-dim">· 0 warnings</span></div>
           </div>
         </section>
 
