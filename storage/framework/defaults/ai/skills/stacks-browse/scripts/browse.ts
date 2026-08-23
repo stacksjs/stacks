@@ -8,7 +8,7 @@
  *
  * Commands:
  *   bun browse.ts navigate   <url>
- *   bun browse.ts screenshot <url> [--viewport WxH] [--full] [--element SEL] [--scale N] [--out PATH]
+ *   bun browse.ts screenshot <url> [--viewport WxH] [--full | --element SEL | --scroll-y N] [--scale N] [--out PATH]
  *   bun browse.ts responsive <url> [--out-dir DIR]
  *   bun browse.ts monitor    <url> [--ms 5000]
  *   bun browse.ts snapshot   <url>
@@ -403,7 +403,39 @@ async function title(cdp: Cdp): Promise<string> {
   return r.result?.value ?? ''
 }
 
-async function captureScreenshot(cdp: Cdp, opts: { full?: boolean, element?: string } = {}): Promise<Buffer> {
+/**
+ * Scroll the real page to `y` and let one frame settle before the caller
+ * screenshots it.
+ *
+ * `--full` captures the whole document through `captureBeyondViewport`,
+ * which paints content at its full-page layout position without ever
+ * moving `scrollY` - correct for a top-to-bottom review, but useless for
+ * checking anything that depends on an actual mid-scroll viewport: a
+ * `position: sticky` nav overlapping content beneath it, a CSS
+ * `animation-timeline: view()` reveal mid-transition, or simply "what does
+ * the fold look like 800px down". `window.scrollTo(..., { behavior:
+ * 'instant' })` forces the jump synchronously even when the page sets
+ * `scroll-behavior: smooth`, which would otherwise animate the scroll and
+ * leave a screenshot taken immediately after mid-flight. The two rAF
+ * round-trips that follow give the compositor one full frame to repaint
+ * sticky/fixed layers and any scroll-driven animation at the new offset
+ * before `Page.captureScreenshot` reads back pixels, which
+ * `Runtime.evaluate` returning does not by itself guarantee.
+ */
+async function scrollTo(cdp: Cdp, y: number): Promise<void> {
+  const r = await cdp.send('Runtime.evaluate', {
+    expression: `(() => {
+      window.scrollTo({ top: ${y}, left: 0, behavior: 'instant' })
+      return new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(window.scrollY))))
+    })()`,
+    returnByValue: true,
+    awaitPromise: true,
+  })
+  if (r.exceptionDetails)
+    throw new Error(r.exceptionDetails.exception?.description || r.exceptionDetails.text || 'scrollTo failed')
+}
+
+async function captureScreenshot(cdp: Cdp, opts: { full?: boolean, element?: string, scrollY?: number } = {}): Promise<Buffer> {
   let clip: any
   let captureBeyondViewport = false
 
@@ -422,6 +454,9 @@ async function captureScreenshot(cdp: Cdp, opts: { full?: boolean, element?: str
     const size = m.cssContentSize || m.contentSize
     clip = { x: 0, y: 0, width: Math.ceil(size.width), height: Math.ceil(size.height), scale: 1 }
     captureBeyondViewport = true
+  }
+  else if (opts.scrollY != null) {
+    await scrollTo(cdp, opts.scrollY)
   }
 
   const r = await cdp.send('Page.captureScreenshot', { format: 'png', ...(clip ? { clip, captureBeyondViewport } : {}) })
@@ -521,6 +556,22 @@ function parseViewport(value: string | undefined): { w: number, h: number } {
     throw new TypeError(`Invalid viewport "${value}". Expected WIDTHxHEIGHT, for example 1280x900.`)
 
   return { w, h }
+}
+
+/** `--scroll-y` on `screenshot`: an explicit document Y to jump to before
+ *  capturing just the viewport, for content a full-page capture cannot show
+ *  (sticky/fixed elements, scroll-linked animation) at a specific fold. */
+function parseScrollY(value: string | boolean | Array<string | boolean> | undefined): number | null {
+  if (value === undefined)
+    return null
+  if (typeof value !== 'string')
+    throw new TypeError('--scroll-y requires a value, for example --scroll-y 800.')
+
+  const y = Number(value)
+  if (!Number.isFinite(y) || y < 0)
+    throw new TypeError(`Invalid --scroll-y "${value}". Expected a non-negative number of pixels.`)
+
+  return y
 }
 
 type ScenarioAction = 'assert' | 'click' | 'evaluate' | 'fill' | 'focus' | 'press' | 'wait'
@@ -703,6 +754,10 @@ async function main() {
     console.log('  --cookie "name=value"   repeatable; pre-seeds cookies (e.g. coming-soon bypass)')
     console.log('  --settle 1500           ms to wait after load before acting (default 700; stretch for entrance animations)')
     console.log('  --scheme dark           emulate prefers-color-scheme (light|dark) for QA of theme-aware pages')
+    console.log('  --scroll-y 800          screenshot: jump to this document Y first, then capture just the viewport')
+    console.log('                          (--full renders beyond-viewport without ever scrolling, so it cannot show a')
+    console.log('                          position:sticky/fixed element overlapping content, or a scroll-linked')
+    console.log('                          animation mid-transition, at a specific fold - --scroll-y can)')
     process.exit(url ? 0 : 1)
   }
 
@@ -733,12 +788,16 @@ async function main() {
       const cdp = await openPage(session.port)
       const viewport = parseViewport(typeof flags.viewport === 'string' ? flags.viewport : undefined)
       const scale = flags.scale ? Number(flags.scale) : 1
+      const scrollY = parseScrollY(flags['scroll-y'])
+      const modes = [flags.full && 'full', flags.element && 'element', scrollY != null && 'scroll-y'].filter(Boolean)
+      if (modes.length > 1)
+        throw new TypeError(`--full, --element, and --scroll-y are mutually exclusive; got ${modes.join(', ')}.`)
       const out = (flags.out as string) || `storage/framework/runtime/shots/${new URL(url).pathname.replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '') || 'home'}.png`
       mkdirSync(out.split('/').slice(0, -1).join('/') || '.', { recursive: true })
       const state = await gotoAndInstrument(cdp, url, { viewport, scale, cookies, settleMs, scheme })
-      const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined })
+      const png = await captureScreenshot(cdp, { full: !!flags.full, element: flags.element as string | undefined, scrollY: scrollY ?? undefined })
       await Bun.write(out, png)
-      console.log(JSON.stringify({ url, out, viewport: `${viewport.w}x${viewport.h}`, scale, full: !!flags.full, element: flags.element ?? null, bytes: png.length }, null, 2))
+      console.log(JSON.stringify({ url, out, viewport: `${viewport.w}x${viewport.h}`, scale, full: !!flags.full, element: flags.element ?? null, scrollY: scrollY ?? null, bytes: png.length }, null, 2))
       state.dispose()
       cdp.close()
     }
