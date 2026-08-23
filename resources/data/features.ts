@@ -1,5 +1,5 @@
 /**
- * The eight platform features, in one place.
+ * The platform features, in one place.
  *
  * Three surfaces render this list: the bento grid on the home page, the
  * Features mega menu in the nav, and the /features pages. They used to be
@@ -117,6 +117,7 @@ export default defineModel({
     blurb: 'Jobs, batches, schedules, events, notifications, and worker-ready background workflows.',
     icon: 'i-hugeicons-mail-send-01',
     group: 'run',
+    image: '/assets/images/marketing-park-geyser.svg',
     span: 'tall',
     page: {
       kicker: 'Run',
@@ -160,6 +161,51 @@ export default new Job({
       ],
       docs: '/docs',
       related: ['realtime-and-search', 'application-core', 'cloud-deploys'],
+    },
+  },
+
+  {
+    slug: 'native-apps',
+    title: 'Native apps',
+    blurb: 'The same STX UI ships as a web app, an iOS or Android app, and a desktop app with a system tray, from one codebase.',
+    icon: 'i-hugeicons-smart-phone-01',
+    group: 'ship',
+    image: '/assets/images/marketing-park-summit.svg',
+    span: 'wide',
+    page: {
+      kicker: 'Ship',
+      headline: 'One UI. Web, desktop, and mobile.',
+      lede: 'The views, components, routes, and API already written for the web are the application. Craft, the native runtime Stacks builds on, wraps that same STX UI in a desktop window with a system tray, or a native iOS and Android shell, so a feature built once ships to every device without a second codebase to keep in sync.',
+      capabilities: [
+        { title: 'Desktop', text: 'buddy dev:desktop opens the dashboard or app in a native Craft window; buddy build:desktop compiles a launcher with the runtime pinned and checksummed alongside it.' },
+        { title: 'System tray', text: 'Tray-only builds ship from the same views, for a menu-bar utility instead of a full window.' },
+        { title: 'iOS and Android', text: 'buddy build:ios and buddy build:android generate the native Xcode and Gradle projects from config/mobile.ts and the app’s existing STX views.' },
+        { title: 'Native capabilities', text: 'Safe areas, haptics, and native sharing are STX composables, called the same way from a component that also renders on the web.' },
+        { title: 'One config, many targets', text: 'App name, bundle ID, icons, and permissions live in config/mobile.ts, read by every native build.' },
+        { title: 'Store delivery', text: 'Builds are provenance-stamped and ready for the App Store, Google Play, or the Mac App Store.' },
+      ],
+      code: {
+        file: 'config/mobile.ts',
+        code: `import type { MobileConfig } from '@stacksjs/types'
+
+export default {
+  ios: {
+    appName: 'My App',
+    bundleId: 'com.example.app',
+  },
+  android: {
+    appName: 'My App',
+    applicationId: 'com.example.app',
+  },
+} satisfies MobileConfig`,
+      },
+      commands: [
+        'buddy dev:desktop',
+        'buddy build:ios',
+        'buddy build:android',
+      ],
+      docs: '/docs',
+      related: ['application-core', 'dashboard', 'cloud-deploys'],
     },
   },
 
@@ -266,6 +312,104 @@ Auth.define('access-dashboard', (user) => {
   },
 
   {
+    slug: 'commerce',
+    title: 'Commerce',
+    blurb: 'Products, orders, customers, coupons, payments, shipping, tax, and gift cards, as models you already know how to query.',
+    icon: 'i-hugeicons-shopping-bag-02',
+    group: 'build',
+    page: {
+      kicker: 'Build',
+      headline: 'A store is not a second application.',
+      lede: 'Products, orders, customers, coupons, gift cards, shipping, and tax are twenty-plus models in the same ORM as everything else, with the dashboard, the generated API, and the migrations that come with any model here. Checkout is a payment driver, not a rewrite.',
+      capabilities: [
+        { title: 'Catalog', text: 'Products, variants, units, manufacturers, categories, and reviews, related the way a catalog actually nests.' },
+        { title: 'Orders and customers', text: 'Order line items, order export, and customer profiles and history, queryable with the same builder as any other model.' },
+        { title: 'Payments', text: 'A payment driver behind checkout, with receipts and refund state tracked alongside the order.' },
+        { title: 'Coupons and gift cards', text: 'Discount rules and stored-value cards as first-class models, not a string parsed at checkout.' },
+        { title: 'Shipping and tax', text: 'Shipping methods and tax rates configured per region, applied the same way in the API and the dashboard.' },
+        { title: 'Waitlists and POS', text: 'Product and restaurant waitlists, plus a point-of-sale view in the dashboard for in-person orders.' },
+      ],
+      code: {
+        file: 'app/Actions/Commerce/CreateOrderAction.ts',
+        code: `import { Action } from '@stacksjs/actions'
+import { commerce } from '@stacksjs/commerce'
+
+export default new Action({
+  name: 'CreateOrder',
+  description: 'Create an order from a cart and charge it',
+
+  async handle(request) {
+    const cart = request.input('cart')
+
+    const order = await commerce.orders.store({
+      customerId: request.user.id,
+      items: cart.items,
+    })
+
+    await commerce.payments.charge(order.id, {
+      method: request.input('paymentMethod'),
+    })
+
+    return order
+  },
+})`,
+      },
+      commands: [
+        'buddy make:model Product',
+        'buddy migrate --diff',
+        'buddy dev dashboard',
+      ],
+      docs: '/docs',
+      related: ['dashboard', 'application-core', 'auth'],
+    },
+  },
+
+  {
+    slug: 'dashboard',
+    title: 'Dashboard',
+    blurb: 'A generated admin panel for every model, plus analytics, jobs, and settings, in 250-plus components.',
+    icon: 'i-hugeicons-dashboard-square-01',
+    group: 'build',
+    page: {
+      kicker: 'Build',
+      headline: 'An admin panel that already knows your models.',
+      lede: 'A model with the useApi trait is a CRUD screen in the dashboard, not a second implementation of the same list, form, and filters. Analytics, job monitoring, and commerce and content management ship as part of the same install.',
+      capabilities: [
+        { title: 'Model views', text: 'List, create, edit, and delete screens generated from a model’s attributes, so a new field shows up without a hand-built form.' },
+        { title: 'Analytics', text: 'Web, page, referrer, device, and browser breakdowns, plus event and blog analytics, from first-party tracking.' },
+        { title: 'Jobs and queues', text: 'Watch queue depth, retries, and job history from the same dashboard that runs the app.' },
+        { title: 'Commerce and content panels', text: 'Orders, products, customers, posts, and pages get their own dashboard sections without extra setup.' },
+        { title: 'Settings', text: 'App, team, and environment settings editable from the UI instead of a config file only a deploy can change.' },
+        { title: 'Its own server', text: 'The dashboard runs on its own dev server, so buddy dev dashboard iterates on it without rebuilding the main app.' },
+      ],
+      code: {
+        file: 'app/Models/Product.ts',
+        code: `import { defineModel } from '@stacksjs/orm'
+
+export default defineModel({
+  name: 'Product',
+  table: 'products',
+
+  traits: {
+    useApi: { uri: 'products' }, // CRUD screen, free
+  },
+
+  attributes: {
+    name: { fillable: true, required: true },
+    price: { fillable: true },
+  },
+})`,
+      },
+      commands: [
+        'buddy dev dashboard',
+        'buddy make:model Product',
+      ],
+      docs: '/docs',
+      related: ['application-core', 'commerce', 'auth'],
+    },
+  },
+
+  {
     slug: 'storage',
     title: 'Storage',
     blurb: 'Local, S3, signed URLs, uploads, visibility, and file utilities.',
@@ -313,6 +457,53 @@ export default new Action({
       ],
       docs: '/docs',
       related: ['cms', 'cloud-deploys', 'application-core'],
+    },
+  },
+
+  {
+    slug: 'ai',
+    title: 'AI',
+    blurb: 'Anthropic, OpenAI, Bedrock, and Ollama behind one driver, plus RAG, embeddings, and MCP.',
+    icon: 'i-hugeicons-ai-chat-02',
+    group: 'run',
+    page: {
+      kicker: 'Run',
+      headline: 'Four providers, one interface.',
+      lede: 'Chat, vision, image generation, and embeddings are the same call whether the driver is Claude, GPT, a Bedrock model, or Ollama running locally, so swapping providers is a config change. RAG, vector search, and an MCP client are the same package, not a separate integration to bolt on.',
+      capabilities: [
+        { title: 'Chat and streaming', text: 'anthropic.chat(), openai.chat(), and their streaming counterparts share a message shape, so a prompt written for one driver runs on the others.' },
+        { title: 'Vision and image generation', text: 'Analyze an uploaded image or generate one from a prompt, through the same drivers as chat.' },
+        { title: 'RAG and embeddings', text: 'Embed content, build a vector index, and retrieve context for a prompt without a separate vector database to run.' },
+        { title: 'MCP client', text: 'Call tools on a Model Context Protocol server from an action or a job, the same way the buddy assistant does.' },
+        { title: 'Personalization', text: 'Sentiment, classification, and recommendation helpers over content and event data already in the app.' },
+        { title: 'Local models', text: 'The Ollama driver runs the same interface against a local model, for development or for data that should not leave the box.' },
+      ],
+      code: {
+        file: 'app/Actions/SummarizeArticleAction.ts',
+        code: `import { Action } from '@stacksjs/actions'
+import { anthropic } from '@stacksjs/ai'
+
+export default new Action({
+  name: 'SummarizeArticle',
+  description: 'Summarize an article with Claude',
+
+  async handle(request) {
+    const article = await Article.find(request.input('id'))
+
+    const summary = await anthropic.prompt(
+      \`Summarize in two sentences:\n\n\${article.body}\`,
+    )
+
+    return { summary }
+  },
+})`,
+      },
+      commands: [
+        'buddy env:set ANTHROPIC_API_KEY',
+        'buddy make:action SummarizeArticle',
+      ],
+      docs: '/docs',
+      related: ['application-core', 'realtime-and-search', 'queues-and-mail'],
     },
   },
 
