@@ -1,12 +1,20 @@
 /*
  * Stacks Blog - custom BunPress theme, matching the 2026 marketing design
- * system: minimal modern developer-framework look. Same blue palette + Geist
- * type as the marketing site, one accent across all three themes, and an
- * editorial layout (lead story + hairline index) carried by type, rules, and
- * whitespace alone. No illustration chrome. Three themes via `data-theme`:
- *   - colored - glacier: misty blue paper.
- *   - light   - clean paper-white with the same blue accent.
- *   - dark    - midnight lake: deep navy, brighter blue accent.
+ * system: minimal modern developer-framework look. Same palette + Geist type
+ * as the marketing site, one accent across all three themes, and an editorial
+ * layout (lead story + hairline index) carried by type, rules, and whitespace
+ * alone. No illustration chrome. Three themes via `data-theme`:
+ *   - colored - dusk: warm cream paper.
+ *   - light   - clean paper-white with the same rose accent.
+ *   - dark    - after sundown: plum ground, coral accent.
+ *
+ * The values below mirror public/assets/styles/theme.css token for token.
+ * BunPress owns this file and names things `--vp-*`, so the blog cannot link
+ * the site's stylesheet; what it can do is carry the same numbers. The blog
+ * shares the marketing site's theme storage key, so a reader who picks dark on
+ * / arrives on /blog in dark - which is exactly when a different palette shows
+ * up as leaving the brand mid-click. That is what this is here to prevent, and
+ * it means a colour change on the site is a colour change here too.
  */
 
 /* ── Brand type: Geist + Geist Mono (matches the marketing site) ────────── */
@@ -14,66 +22,66 @@
 
 /* ── Themes ─────────────────────────────────────────────────────────────── */
 :root[data-theme='colored'] {
-  --vp-c-bg: #e9f1fb;
+  --vp-c-bg: #fff7ec;
   --vp-c-bg-alt: #ffffff;
-  --vp-c-bg-soft: #ddeafa;
+  --vp-c-bg-soft: #fdeee0;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #0d1f38;
-  --vp-c-text-2: #49607f;
-  --vp-c-text-3: #6e82a0;
-  --vp-c-brand-1: #1d4ed8;
-  --vp-c-brand-2: #2563eb;
-  --vp-c-brand-3: #1e40af;
-  --vp-c-brand-soft: rgba(29, 78, 216, 0.12);
-  --vp-c-divider: #c8d9f0;
-  --vp-c-gutter: #dce8f8;
-  --vp-code-color: #1d4ed8;
-  --vp-code-bg: #dbe9fb;
-  --vp-code-block-bg: #0b1220;
-  --shadow-rgb: 30, 58, 138;
+  --vp-c-text-1: #2a1720;
+  --vp-c-text-2: #6e4e57;
+  --vp-c-text-3: #8a6870;
+  --vp-c-brand-1: #b63e59;
+  --vp-c-brand-2: #a22a50;
+  --vp-c-brand-3: #8e2c15;
+  --vp-c-brand-soft: rgba(182, 62, 89, 0.12);
+  --vp-c-divider: #f0d8cd;
+  --vp-c-gutter: #fbe7d9;
+  --vp-code-color: #a22a50;
+  --vp-code-bg: #fce7e2;
+  --vp-code-block-bg: #1e1018;
+  --shadow-rgb: 42, 23, 32;
 }
 
-/* Light (white + Stacks blue) is the default brand look for the blog too, so /
-   and /blog match. The bare :root carries it. */
+/* Light (white + the rose accent) is the default brand look for the blog too,
+   so / and /blog match. The bare :root carries it. */
 :root,
 :root[data-theme='light'] {
-  --vp-c-bg: #ffffff;
-  --vp-c-bg-alt: #f5f8fe;
-  --vp-c-bg-soft: #eef3fe;
+  --vp-c-bg: #fffdfa;
+  --vp-c-bg-alt: #fff8f2;
+  --vp-c-bg-soft: #fdece7;
   --vp-c-bg-elv: #ffffff;
-  --vp-c-text-1: #0c1626;
-  --vp-c-text-2: #4f5f7a;
-  --vp-c-text-3: #7787a0;
-  --vp-c-brand-1: #2563eb;
-  --vp-c-brand-2: #1d4ed8;
-  --vp-c-brand-3: #1e40af;
-  --vp-c-brand-soft: rgba(37, 99, 235, 0.10);
-  --vp-c-divider: #e3e9f5;
-  --vp-c-gutter: #eef2fb;
-  --vp-code-color: #2563eb;
-  --vp-code-bg: #eef3fe;
-  --vp-code-block-bg: #0b1220;
-  --shadow-rgb: 30, 58, 138;
+  --vp-c-text-1: #24141c;
+  --vp-c-text-2: #6e4e57;
+  --vp-c-text-3: #8a6870;
+  --vp-c-brand-1: #b63e59;
+  --vp-c-brand-2: #a22a50;
+  --vp-c-brand-3: #8e2c15;
+  --vp-c-brand-soft: rgba(182, 62, 89, 0.10);
+  --vp-c-divider: #f2e2da;
+  --vp-c-gutter: #fdf4ee;
+  --vp-code-color: #a22a50;
+  --vp-code-bg: #fdece7;
+  --vp-code-block-bg: #1e1018;
+  --shadow-rgb: 36, 20, 28;
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --vp-c-bg: #070c17;
-  --vp-c-bg-alt: #0e1728;
-  --vp-c-bg-soft: #13203a;
-  --vp-c-bg-elv: #0e1728;
-  --vp-c-text-1: #e9effc;
-  --vp-c-text-2: #97a6c4;
-  --vp-c-text-3: #6b7c98;
-  --vp-c-brand-1: #60a5fa;
-  --vp-c-brand-2: #93c5fd;
-  --vp-c-brand-3: #7cb2ff;
-  --vp-c-brand-soft: rgba(96, 165, 250, 0.14);
-  --vp-c-divider: #1c2942;
-  --vp-c-gutter: #101b31;
-  --vp-code-color: #93c5fd;
-  --vp-code-bg: #13203a;
-  --vp-code-block-bg: #060b14;
+  --vp-c-bg: #1c1016;
+  --vp-c-bg-alt: #271822;
+  --vp-c-bg-soft: #3a2029;
+  --vp-c-bg-elv: #271822;
+  --vp-c-text-1: #f7e9e4;
+  --vp-c-text-2: #c3a2a8;
+  --vp-c-text-3: #9d7f86;
+  --vp-c-brand-1: #ee7566;
+  --vp-c-brand-2: #f09b7f;
+  --vp-c-brand-3: #f0a07e;
+  --vp-c-brand-soft: rgba(238, 117, 102, 0.14);
+  --vp-c-divider: #3a2029;
+  --vp-c-gutter: #241019;
+  --vp-code-color: #f0a07e;
+  --vp-code-bg: #3a2029;
+  --vp-code-block-bg: #140611;
   --shadow-rgb: 0, 0, 0;
 }
 
