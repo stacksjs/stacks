@@ -53,7 +53,8 @@ export {
 } from './error-handler'
 
 // Export route introspection helpers
-export { listRegisteredRoutes, routeParams } from './stacks-router'
+export { listNamedRoutes, listRegisteredRoutes, routeParams } from './stacks-router'
+export type { UrlParams } from './stacks-router'
 
 // Registering an action by import rather than by name: the seam that lets a
 // route hand over the action object it already has, instead of a string that

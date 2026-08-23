@@ -47,10 +47,39 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 ```
 
 ### Handler Types
-- Function: `(req: EnhancedRequest) => Response | Promise<Response>`
+- Function: `(req) => …` — return a `Response`, or any value `formatResult`
+  handles: an object/array becomes JSON, a string becomes text, `null` becomes
+  204, a `ReadableStream` streams
 - Action string: `'Actions/CreateUser'` — auto-loads action, lazily
 - Action object: an imported action, passed directly — see typed routes below
 - Controller: `'Controllers/UserController@index'` — calls controller method
+
+## The strings are typed (run `buddy generate:types`)
+
+Action paths, middleware aliases and route names are all checked at compile
+time against what this application actually has. `buddy generate:types`
+discovers them and writes them into the router's type registry
+(`storage/framework/types/actions.d.ts`); nothing is maintained by hand.
+
+```typescript
+route.get('/login', 'Actions/Auth/LogniAction')   // ✗ no such action
+route.get('/admin', handler).middleware('atuh')   // ✗ no such middleware alias
+url('email.unsubscrbe', { token })                // ✗ no such route name
+url('user.post', { id: 42 })                      // params come from the path
+```
+
+The middleware one is the one that matters most: a typo'd alias used to serve
+the route **without** the protection, silently.
+
+Notes:
+- Controllers stay a pattern (`'Controllers/X@method'`) — the method half is a
+  member name, not a filename.
+- Negated (`'!auth'`) and parameterised (`'throttle:60,1'`) middleware forms are
+  both accepted.
+- Regenerate after adding an action, a middleware alias, or a `.name()`. A stale
+  file rejects code that is correct.
+- `resource()` composes sibling action names at runtime, so those four are not
+  checked — only the base you pass it.
 
 ## Typed Routes (zero generation)
 

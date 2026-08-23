@@ -6,8 +6,8 @@
  */
 
 import type { Server } from 'bun'
-import type { ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, ActionPath, EnhancedRequest, MiddlewareReference, Route, ServerOptions } from '@stacksjs/bun-router'
+import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
+import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareReference, PathForRouteName, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
@@ -193,6 +193,21 @@ import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm
 import type { StacksActionPath } from './action-paths'
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
+
+/**
+ * An inline handler, as a route file writes one.
+ *
+ * Wider than {@link RouteHandlerFn} on purpose: a function handler's return
+ * value goes through `formatResult`, which turns an object into JSON, a string
+ * into text, `null` into a 204 and a stream into a streamed response. The type
+ * said `Response`, so `route.get('/x', () => ({ ok: true }))` - which works,
+ * and is the shape most handlers actually want - did not compile, and the
+ * workaround was to reach for `Response.json` or an `any`.
+ *
+ * `RouteHandlerFn` stays as it is: that is what a WRAPPED handler returns, and
+ * by then `formatResult` has already run.
+ */
+type InlineRouteHandler = (_req: EnhancedRequest) => ActionResult | Promise<ActionResult>
 /*
  * Three forms, one dispatch path.
  *
@@ -208,7 +223,7 @@ type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
  * `typed-router.ts`). An inline function is an escape hatch for the cases that
  * are not worth an action. All three end up in the same wrapper.
  */
-export type StacksHandler = ActionPath | RouteHandlerFn | RouterAction
+export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 
 interface StacksRouterConfig {
   verbose?: boolean
@@ -585,6 +600,39 @@ function extractRouteParamNames(routePath: string): string[] {
  * // → https://stacksjs.com/users/42/posts/7
  * ```
  */
+/**
+ * The params a named route needs, plus anything else that becomes query string.
+ *
+ * The required half comes from the path the name resolves to, so
+ * `url('user.post', { id: 42 })` against `/users/{id}/posts/{postId}` stops
+ * compiling instead of throwing at call time. Extra keys stay allowed: the
+ * implementation appends whatever it did not consume as a query string, which
+ * is what `url('email.unsubscribe', { token })` relies on.
+ */
+export type UrlParams<TName extends string>
+  = { [K in keyof ExtractRouteParams<PathForRouteName<TName>>]: string | number }
+    & Record<string, string | number>
+
+/** The keys of `T` that are not optional. */
+type RequiredParamKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? never : K }[keyof T]
+
+/**
+ * Whether `url()` must be given a second argument.
+ *
+ * Keyed on REQUIRED params: a path whose only placeholder is optional is
+ * reachable with nothing at all, and demanding an empty object for it would be
+ * the type getting in the way of the truth.
+ */
+type RequiresUrlParams<TName extends string>
+  = [RequiredParamKeys<ExtractRouteParams<PathForRouteName<TName>>>] extends [never] ? false : true
+
+// False positive: this is an overload signature, which has no body for its
+// parameters to be used in. The implementation below uses them.
+// eslint-disable-next-line unused-imports/no-unused-vars
+export function url<TName extends KnownRouteName>(
+  routeName: TName,
+  ...params: RequiresUrlParams<TName> extends true ? [params: UrlParams<TName>] : [params?: UrlParams<TName>]
+): string
 export function url(routeName: string, params: Record<string, string | number> = {}): string {
   const named = namedRouteRegistry.get(routeName)
   if (!named) {
@@ -654,6 +702,25 @@ export function url(routeName: string, params: Record<string, string | number> =
 export function routeParams(routeName: string): string[] {
   const named = namedRouteRegistry.get(routeName)
   return named ? [...named.paramNames] : []
+}
+
+/**
+ * Every named route, as `name → path`.
+ *
+ * `listRegisteredRoutes()` reports a name by searching the named registry for a
+ * matching path, which answers "what is this route called" and cannot answer
+ * "what routes are there names for" - two routes on one path give the first
+ * name found, and a name whose route was never registered is invisible.
+ *
+ * The type generator needs the second question: it writes this map into the
+ * router's type registry so `url('users.shwo')` stops compiling. Reading the
+ * registry directly is the only way to get every name.
+ */
+export function listNamedRoutes(): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [name, named] of namedRouteRegistry.entries())
+    out[name] = named.path
+  return out
 }
 
 /**

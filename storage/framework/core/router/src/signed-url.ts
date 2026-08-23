@@ -14,7 +14,8 @@
  * See stacksjs/stacks#1870 R-7.
  */
 
-import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { EnhancedRequest, KnownRouteName } from '@stacksjs/bun-router'
+import type { UrlParams } from './stacks-router'
 import { timingSafeEqual } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
@@ -141,12 +142,15 @@ function warnOnce(key: string, message: string): void {
  * // → https://app.example.com/api/email/verify?user=42&expires=1716470400&signature=…
  * ```
  */
-export function signedUrl(
-  routeName: string,
-  params: Record<string, string | number> = {},
+export function signedUrl<TName extends KnownRouteName>(
+  routeName: TName,
+  params: UrlParams<TName> = {} as UrlParams<TName>,
   options: SignedUrlOptions = {},
 ): string {
-  return signUrl(buildUrl(routeName, params), options)
+  // `url()` is overloaded so a route with required params demands them; this
+  // wrapper takes them as one optional argument and hands them straight over,
+  // so the cast is only about reconciling the two call shapes.
+  return signUrl((buildUrl as (name: string, params: Record<string, string | number>) => string)(routeName, params), options)
 }
 
 /**

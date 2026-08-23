@@ -741,6 +741,21 @@ export type MiddlewareAlias =
   | '!verified'
 
 /**
+ * Every named route, and the path it resolves to.
+ *
+ * A type alias, NOT an interface: only aliases of object literals get an
+ * implicit index signature, so an interface here fails the router's
+ * `extends Record<string, string>` shape check and the whole map is quietly
+ * ignored.
+ */
+export type NamedRoutes = {
+  'contact.send': '/api/contact'
+  'email.subscribe': '/api/email/subscribe'
+  'email.unsubscribe': '/api/email/unsubscribe'
+  'email.unsubscribe.oneclick': '/api/email/unsubscribe'
+}
+
+/**
  * Handed to the router, so `route.get(path, 'Actions/…')` and
  * `.middleware('auth')` are checked against the lists above rather than
  * against a string. A controller reference stays a pattern - the method half is
@@ -750,5 +765,6 @@ declare module '@stacksjs/bun-router' {
   interface RouterTypeRegistry {
     actions: ActionPath | `${string}Controller@${string}`
     middleware: MiddlewareAlias
+    routes: NamedRoutes
   }
 }
