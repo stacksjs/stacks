@@ -162,7 +162,7 @@ export const comparisons: Comparison[] = [
     blurb: 'Vue meta-framework with a strong module ecosystem. Stacks brings the application layer under it.',
     kind: 'Vue meta-framework',
     language: 'TypeScript',
-    icon: 'i-hugeicons-layers-01',
+    icon: 'i-hugeicons-layers-02',
     group: 'fullstack',
     matrix: { auth: 'partial', orm: 'byo', jobs: 'byo', mail: 'partial', admin: 'byo', realtime: 'partial', deploy: 'partial' },
     page: {
@@ -210,7 +210,7 @@ export const comparisons: Comparison[] = [
     blurb: 'Small bundles and a lovely reactivity model. Stacks adds everything behind the load function.',
     kind: 'Svelte meta-framework',
     language: 'TypeScript',
-    icon: 'i-hugeicons-layers-01',
+    icon: 'i-hugeicons-flash',
     group: 'fullstack',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial' },
     page: {
@@ -258,7 +258,7 @@ export const comparisons: Comparison[] = [
     blurb: 'Web fundamentals and nested routing. Stacks agrees with the philosophy and ships more of the stack.',
     kind: 'React meta-framework',
     language: 'TypeScript',
-    icon: 'i-hugeicons-layers-01',
+    icon: 'i-hugeicons-structure-03',
     group: 'fullstack',
     matrix: { auth: 'byo', orm: 'byo', jobs: 'byo', mail: 'byo', admin: 'byo', realtime: 'byo', deploy: 'partial' },
     page: {
@@ -498,7 +498,7 @@ export const comparisons: Comparison[] = [
     blurb: 'The other Laravel-inspired TypeScript framework. The closest comparison on this page.',
     kind: 'Backend framework',
     language: 'TypeScript',
-    icon: 'i-hugeicons-server-stack-01',
+    icon: 'i-hugeicons-server-stack-02',
     group: 'backends',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'partial', mail: 'built-in', admin: 'byo', realtime: 'partial', deploy: 'byo' },
     page: {
@@ -739,7 +739,7 @@ export const comparisons: Comparison[] = [
     blurb: 'The framework Stacks is modelled on, rebuilt in TypeScript on Bun.',
     kind: 'Full-stack framework',
     language: 'PHP',
-    icon: 'i-hugeicons-layers-01',
+    icon: 'i-hugeicons-gem',
     group: 'ecosystems',
     matrix: { auth: 'built-in', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial' },
     page: {
@@ -789,7 +789,7 @@ export const comparisons: Comparison[] = [
     blurb: 'Convention over configuration, the original. Same convictions, different runtime and type story.',
     kind: 'Full-stack framework',
     language: 'Ruby',
-    icon: 'i-hugeicons-layers-01',
+    icon: 'i-hugeicons-train-01',
     group: 'ecosystems',
     matrix: { auth: 'partial', orm: 'built-in', jobs: 'built-in', mail: 'built-in', admin: 'partial', realtime: 'built-in', deploy: 'partial' },
     page: {
