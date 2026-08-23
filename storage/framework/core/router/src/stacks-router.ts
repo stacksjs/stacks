@@ -3002,6 +3002,53 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerF
 }
 
 /**
+ * Read a JSON body once, and leave the request readable afterwards.
+ *
+ * This used to be `req.clone()` then `.text()` on the clone, which tees the
+ * body stream and allocates a second Request on every JSON request that
+ * arrives - purely so a handler calling `request.json()` later would still
+ * find a body to read. The stream is read directly now, and the readers that
+ * would have found it consumed are backed by the string instead: same answers,
+ * one read, no clone.
+ *
+ * `clone()` is replaced too, because the default one throws once the body has
+ * been used, and `rawBody()` in bun-router reaches for it when `_rawBody` is
+ * not already set.
+ */
+async function readJsonBodyOnce(req: EnhancedRequest, contentType: string): Promise<string> {
+  const raw = await (req as unknown as Request).text()
+
+  // The exact unparsed bytes, so `request.rawBody()` can return them for
+  // webhook signature verification (Stripe/GitHub/Slack). A re-serialized
+  // `jsonBody` is NOT byte-identical and fails HMAC checks.
+  ;req._rawBody = raw
+
+  const target = req as unknown as Record<string, unknown>
+  target.text = () => Promise.resolve(raw)
+  target.json = () => {
+    try {
+      return Promise.resolve(raw.length === 0 ? null : JSON.parse(raw))
+    }
+    catch (err) {
+      return Promise.reject(err)
+    }
+  }
+  target.bytes = () => Promise.resolve(new TextEncoder().encode(raw))
+  target.arrayBuffer = () => {
+    const bytes = new TextEncoder().encode(raw)
+    return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
+  }
+  target.blob = () => Promise.resolve(new Blob([raw], { type: contentType }))
+  target.clone = () => new Request(req.url, {
+    method: req.method,
+    headers: req.headers,
+    body: raw,
+  })
+
+  return raw
+}
+
+/**
  * Parse request body and attach to request object
  */
 async function parseRequestBody(req: EnhancedRequest): Promise<void> {
@@ -3012,7 +3059,6 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
   const contentType = req.headers.get('content-type') || ''
 
   try {
-    // Clone once up front — only the branch that matches content-type will use it
     if (JSON_CONTENT_TYPE.test(contentType)) {
       // Empty body on a JSON-typed POST is common (clients sending only
       // query/path params). Land as `{}` so `request.get('x')` returns
@@ -3024,12 +3070,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
       // the middleware chain returns a proper "Invalid JSON body"
       // response. Empty body is still allowed (Content-Length: 0 →
       // empty string → no parse attempt). See stacksjs/stacks#1859 H-5.
-      const cloned = req.clone()
-      const raw = await cloned.text()
-      // Stash the exact unparsed bytes so `request.rawBody()` can return them
-      // for webhook signature verification (Stripe/GitHub/Slack). A
-      // re-serialized `jsonBody` is NOT byte-identical and fails HMAC checks.
-      ;req._rawBody = raw
+      const raw = await readJsonBodyOnce(req, contentType)
       if (raw.length === 0) {
         ;req.jsonBody = {}
       }

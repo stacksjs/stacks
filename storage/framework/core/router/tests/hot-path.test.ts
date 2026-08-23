@@ -25,6 +25,18 @@ beforeAll(async () => {
   route.get('/_hot/encoded/{slug}', (request: any) => ({ slug: request.params.slug }))
   route.get('/_hot/query', (request: any) => ({ query: request.query }))
 
+  // `.skipCsrf()` so the body contract can be tested without also asserting the
+  // double-submit dance, which has its own tests.
+  route.post('/_hot/body', async (request: any) => ({
+    jsonBody: request.jsonBody,
+    json: await request.json(),
+    text: await request.text(),
+    raw: await request.rawBody(),
+    cloned: await request.clone().text(),
+  })).skipCsrf()
+
+  route.post('/_hot/empty', (request: any) => ({ jsonBody: request.jsonBody })).skipCsrf()
+
   server = await route.serve({ port: 0, hostname: '127.0.0.1' })
   port = Number(server?.port ?? server?.server?.port ?? 0)
 })
@@ -100,5 +112,44 @@ describe('params and query, only when there are any', () => {
   it('leaves a malformed percent-escape as-is instead of throwing', async () => {
     expect(await (await get('/_hot/encoded/100%25')).json()).toEqual({ slug: '100%' })
     expect(await (await get('/_hot/encoded/broken%ZZ')).json()).toEqual({ slug: 'broken%ZZ' })
+  })
+})
+
+/**
+ * The body is read once now, not cloned. Everything that used to reach for the
+ * un-consumed stream has to keep working, or a webhook signature check quietly
+ * starts failing in production and nothing in a test suite notices.
+ */
+describe('a JSON body stays readable after the router has parsed it', () => {
+  const body = JSON.stringify({ name: 'ada', nested: { n: 1 } })
+
+  async function post(path: string, payload: string): Promise<Response> {
+    return fetch(`http://127.0.0.1:${port}${path}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: payload,
+    })
+  }
+
+  it('gives every reader the same bytes', async () => {
+    const answer = await (await post('/_hot/body', body)).json() as Record<string, unknown>
+
+    expect(answer.jsonBody).toEqual({ name: 'ada', nested: { n: 1 } })
+    expect(answer.json).toEqual({ name: 'ada', nested: { n: 1 } })
+    expect(answer.text).toBe(body)
+    // Byte-identical, which is the whole point: a re-serialized body fails an
+    // HMAC check that the original passes.
+    expect(answer.raw).toBe(body)
+    expect(answer.cloned).toBe(body)
+  })
+
+  it('lands an empty body as an empty object', async () => {
+    expect(await (await post('/_hot/empty', '')).json()).toEqual({ jsonBody: {} })
+  })
+
+  it('still rejects malformed JSON with a 400 rather than an empty object', async () => {
+    const answer = await post('/_hot/empty', '{"truncated":')
+
+    expect(answer.status).toBe(400)
   })
 })
