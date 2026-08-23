@@ -80,6 +80,22 @@ interface ActionOptions<
    * which leaves every HTTP action typed exactly as before.
    */
   TPayload = never,
+  /**
+   * What `handle` answers with, inferred from the handler body.
+   *
+   * `handle` used to be declared as returning the whole {@link ActionResult}
+   * union, which is a complete description of what the router will accept and
+   * a useless one for anybody downstream: the concrete shape an action
+   * actually returns was erased the moment it was written down. A typed client
+   * asking "what comes back from this endpoint" got the union back and could
+   * say nothing more.
+   *
+   * Inferred, so nothing has to be annotated, and constrained to
+   * {@link ActionResult} so the router's contract is unchanged. Defaults to
+   * the full union, which is what an action whose return type cannot be
+   * inferred falls back to - the behaviour every action had before.
+   */
+  TResult extends ActionResult = ActionResult,
 > {
   name?: string
   description?: string
@@ -205,7 +221,7 @@ interface ActionOptions<
   handle: {
     bivarianceHack: (
       request: [TPayload] extends [never] ? InferRequest<TModel, TValidations, TPath> : TPayload,
-    ) => ActionResult | Promise<ActionResult>
+    ) => TResult | Promise<TResult>
   }['bivarianceHack']
   /**
    * Lightweight dependency factory (stacksjs/stacks#1870 R-6).
@@ -271,6 +287,8 @@ export class Action<
   TValidations extends ActionValidations | undefined = undefined,
   TPath extends string = '',
   TPayload = never,
+  /** @see {@link ActionOptions} - inferred from `handle`'s return type. */
+  TResult extends ActionResult = ActionResult,
 > {
   name?: string
   description?: string
@@ -297,7 +315,7 @@ export class Action<
   authorize?: ActionOptions<TModel, TValidations, TPath>['authorize']
   /** @see {@link ActionOptions.before} */
   before?: ActionOptions<TModel, TValidations, TPath>['before']
-  handle: ActionOptions<TModel, TValidations, TPath, TPayload>['handle']
+  handle: ActionOptions<TModel, TValidations, TPath, TPayload, TResult>['handle']
   model?: string
   /**
    * Original model definition used for request validation.
@@ -345,7 +363,7 @@ export class Action<
     authorize,
     before,
     dependencies,
-  }: ActionOptions<TModel, TValidations, TPath, TPayload>) {
+  }: ActionOptions<TModel, TValidations, TPath, TPayload, TResult>) {
     this.name = name
     this.description = description
     this.apiResponse = apiResponse
