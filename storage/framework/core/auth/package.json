@@ -56,7 +56,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "^0.1.2",
+    "@stacksjs/bun-router": "^0.1.5",
     "@stacksjs/ts-auth": "^0.4.4"
   },
   "devDependencies": {

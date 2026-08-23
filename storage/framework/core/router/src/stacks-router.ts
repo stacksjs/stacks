@@ -7,7 +7,7 @@
 
 import type { Server } from 'bun'
 import type { ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from '@stacksjs/bun-router'
+import type { ActionHandler, ActionPath, EnhancedRequest, MiddlewareReference, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
@@ -196,14 +196,19 @@ type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
 /*
  * Three forms, one dispatch path.
  *
- * A string names an action to import when it is first needed - lazy, hot-
- * reload friendly, and completely opaque to the compiler. An action object is
- * the same action, imported by the route file itself, which is what lets a
- * typed client see its input and output types (see `typed-router.ts`). An
- * inline function is an escape hatch for the cases that are not worth an
- * action. All three end up in the same wrapper.
+ * A string names an action to import when it is first needed - lazy and
+ * hot-reload friendly. It is no longer opaque to the compiler: it is typed as
+ * bun-router's `ActionPath`, which `buddy generate:types` fills in with every
+ * action this application actually has (see `generate/action-types.ts`), so
+ * `'Actions/Auth/LogniAction'` stops compiling instead of 500ing on whoever
+ * hits that endpoint first.
+ *
+ * An action object is the same action, imported by the route file itself,
+ * which is what lets a typed client see its input and output types (see
+ * `typed-router.ts`). An inline function is an escape hatch for the cases that
+ * are not worth an action. All three end up in the same wrapper.
  */
-export type StacksHandler = string | RouteHandlerFn | RouterAction
+export type StacksHandler = ActionPath | RouteHandlerFn | RouterAction
 
 interface StacksRouterConfig {
   verbose?: boolean
@@ -212,7 +217,7 @@ interface StacksRouterConfig {
 
 interface GroupOptions {
   prefix?: string
-  middleware?: string | string[]
+  middleware?: MiddlewareReference | MiddlewareReference[]
   /**
    * When `true`, every route registered inside the group forces a JSON
    * response regardless of content negotiation — `formatResult()` skips
@@ -229,7 +234,7 @@ type ResourceAction = 'index' | 'store' | 'show' | 'update' | 'destroy'
 interface ResourceRouteOptions {
   only?: ResourceAction[]
   except?: ResourceAction[]
-  middleware?: string | string[]
+  middleware?: MiddlewareReference | MiddlewareReference[]
 }
 
 /**
@@ -244,7 +249,7 @@ export interface ChainableRoute {
    * interface said `string`, so `.middleware(['auth', 'can:x'])` was a type
    * error at every call site despite working.
    */
-  middleware: (name: string | readonly string[]) => ChainableRoute
+  middleware: (name: MiddlewareReference | readonly MiddlewareReference[]) => ChainableRoute
   name: (routeName: string) => ChainableRoute
   /**
    * Opt this route out of the default-on CSRF check.
@@ -1701,7 +1706,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
      * registration, before anything is served, so a loud throw here is the
      * cheapest possible place to learn about it.
      */
-    middleware(name: string | readonly string[]) {
+    middleware(name: MiddlewareReference | readonly MiddlewareReference[]) {
       const middlewareList = routeMiddlewareRegistry.get(routeKey)
       if (!middlewareList)
         return chain
@@ -3492,7 +3497,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Resource route helper - generates standard CRUD routes like Laravel's Route::resource()
-    resource(name: string, handler: string, options?: ResourceRouteOptions) {
+    resource(name: string, handler: ActionPath, options?: ResourceRouteOptions) {
       const actions: ResourceAction[] = ['index', 'store', 'show', 'update', 'destroy']
 
       const activeActions = options?.only
@@ -3504,23 +3509,33 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const handlerBase = handler.replace(/Action$/, '')
       log.debug(`[router] Resource: /${name} → ${handler} [${activeActions.join(', ')}]`)
 
+      /*
+       * The five sibling actions are composed at runtime from the base, so they
+       * cannot be checked against the action union: `resource('posts',
+       * 'Actions/PostIndexAction')` promises four more files that no expression
+       * here can name. Asserted once, at the single point of composition,
+       * rather than five times at the call sites below - and the promise is
+       * kept or broken when the route is first hit, exactly as before.
+       */
+      const sibling = (suffix: string): ActionPath => `${handlerBase}${suffix}` as ActionPath
+
       const registerResourceRoutes = () => {
         for (const action of activeActions) {
           switch (action) {
             case 'index':
-              stacksRouter.get(`/${name}`, `${handlerBase}IndexAction`)
+              stacksRouter.get(`/${name}`, sibling('IndexAction'))
               break
             case 'store':
-              stacksRouter.post(`/${name}`, `${handlerBase}StoreAction`)
+              stacksRouter.post(`/${name}`, sibling('StoreAction'))
               break
             case 'show':
-              stacksRouter.get(`/${name}/:id`, `${handlerBase}ShowAction`)
+              stacksRouter.get(`/${name}/:id`, sibling('ShowAction'))
               break
             case 'update':
-              stacksRouter.put(`/${name}/:id`, `${handlerBase}UpdateAction`)
+              stacksRouter.put(`/${name}/:id`, sibling('UpdateAction'))
               break
             case 'destroy':
-              stacksRouter.delete(`/${name}/:id`, `${handlerBase}DestroyAction`)
+              stacksRouter.delete(`/${name}/:id`, sibling('DestroyAction'))
               break
           }
         }
@@ -3775,7 +3790,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Register routes from a package or module file within an optional group
-    async register(routePath: string, options?: { prefix?: string, middleware?: string | string[] }): Promise<StacksRouterInstance> {
+    async register(routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }): Promise<StacksRouterInstance> {
       log.debug(`[router] Register: ${routePath} prefix=${options?.prefix || 'none'}`)
       const callback = async () => {
         await import(routePath)
@@ -4145,11 +4160,11 @@ export interface StacksRouterInstance {
   delete: (path: string, handler: StacksHandler) => ChainableRoute
   options: (path: string, handler: StacksHandler) => ChainableRoute
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
-  resource: (name: string, handler: string, options?: ResourceRouteOptions) => StacksRouterInstance
+  resource: (name: string, handler: ActionPath, options?: ResourceRouteOptions) => StacksRouterInstance
   match: (methods: string[], path: string, handler: StacksHandler) => ChainableRoute
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
-  register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
+  register: (routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }) => Promise<StacksRouterInstance>
   /**
    * Work to do once, after the routes load and before the first request.
    *
