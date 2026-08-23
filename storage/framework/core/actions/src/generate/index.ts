@@ -11,6 +11,7 @@ import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
 import { generateActionTypes } from './action-types'
+import { generateEventTypes } from './event-types'
 import { generateEnvFiles } from './env-files'
 
 export { generateProjectImages } from './images'
@@ -140,6 +141,11 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   // ran it, so `route.get(path, 'Actions/…')` was checked against a stale
   // hand-written file that had been neutered with `| string`.
   await generateActionTypes()
+
+  // Model events, for the same reason: the declaration said it defined them and
+  // nothing wrote it, so it listed three of the eight and typed every payload
+  // as `Record<string, any>`.
+  await generateEventTypes()
 
   const entry = frameworkPath('core/actions/src/generate/types.ts')
 

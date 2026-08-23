@@ -20,8 +20,20 @@ import type { ModelEvents } from '@stacksjs/types'
 
 export type EventType = string | symbol
 
-export type Handler<T = unknown> = (_event: T) => void | Promise<void>
-export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void | Promise<void>
+/**
+ * An event listener.
+ *
+ * `false` is part of the contract, not a leak: `dispatchBeforeEvent` in the ORM
+ * awaits every handler and cancels the write if any returned exactly `false` -
+ * which is how `'user:saving'` refuses a save. The type said `void`, so the
+ * documented way to cancel one did not compile and the only way to write it was
+ * to annotate around the type.
+ *
+ * Anything else a handler returns is ignored, as before.
+ */
+export type Handler<T = unknown> = (_event: T) => void | false | Promise<void | false>
+/** The same contract as {@link Handler}, for a listener registered on `'*'`. */
+export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void | false | Promise<void | false>
 
 export type EventHandlerList<T = unknown> = Array<Handler<T>>
 export type WildCardEventHandlerList<T = Record<string, unknown>> = Array<WildcardHandler<T>>
@@ -457,17 +469,66 @@ export interface UserPasswordEvent {
 }
 
 /**
+ * What an application declares about its own events.
+ *
+ * Model events are the bulk of them and their payloads are the model rows,
+ * which only the application's own compilation can name. `@stacksjs/types`
+ * cannot carry them: it is reached by the ORM's type-test project, where naming
+ * a model drags all 97 model modules into a compilation that resolves
+ * `@stacksjs/orm` to a built dist and cannot compile them at all.
+ *
+ * So the precise map is generated into the application's declarations
+ * (`storage/framework/types/model-events.d.ts`, written by
+ * `buddy generate:types`) and augments this:
+ *
+ * ```ts
+ * declare module '@stacksjs/events' {
+ *   interface AppEvents {
+ *     'user:created': ModelRow<typeof User>
+ *   }
+ * }
+ * ```
+ *
+ * Declare your own events the same way. An application that declares nothing
+ * keeps exactly the behaviour it had before.
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface AppEvents {}
+
+/**
  * Application-wide event types. Listeners and dispatchers below are
  * pre-typed to this map; user-defined event names land here via
  * `ModelEvents` (model-emitted events) + the explicit auth events listed.
  */
-export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
+export interface AuthEvents {
   'user:registered': UserRegisteredEvent
   'user:logged-in': UserLoggedInEvent
   'user:logged-out': UserLoggedOutEvent
   'user:password-reset': UserPasswordEvent
   'user:password-changed': UserPasswordEvent
 }
+
+/**
+ * Application-wide event types, in precedence order.
+ *
+ * An intersection rather than an `extends` chain, because `AppEvents` and
+ * `ModelEvents` deliberately declare the same keys: the generated map types
+ * `'user:created'` as the User row where the hand-maintained fallback typed it
+ * `Record<string, any>`, and an interface cannot extend two parents that
+ * disagree about a member. `Omit` lets the precise one win instead of making
+ * the conflict an error.
+ *
+ * The trailing index signature is what keeps an undeclared event name legal.
+ * Removing it would type-check every `dispatch()` against the known set - which
+ * is the stricter and better behaviour, and a breaking change for any
+ * application dispatching an event it has not declared. `AppEvents` is the
+ * place to declare one; see the note there.
+ */
+export type StacksEvents =
+  & Omit<ModelEvents, keyof AppEvents>
+  & AppEvents
+  & AuthEvents
+  & Record<EventType, unknown>
 
 /**
  * The application's emitter, one per *process* rather than one per copy of this
