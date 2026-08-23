@@ -3894,9 +3894,17 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
 // safe to run on every deploy; a no-op when config/dns.ts declares no records.
 /**
  * Return the application zones that should receive config/dns.ts records.
+ *
  * Redirect-only domains still receive their managed apex/www A records through
  * reconcileHetznerDns, but must not inherit the primary app's MX, SPF, or site
  * verification records.
+ *
+ * Neither may a site that is a HOST inside a zone this app already owns.
+ * config/dns.ts describes one zone; applying it to every site hostname made
+ * the deploy try to create `www.mta-sts.stacksjs.com` from the scaffold's
+ * `{ name: 'www' }` entry, which is a record for a zone that does not exist
+ * and a host nobody asked for. A site whose domain sits under another site's
+ * domain gets its records from that parent zone's reconcile, not its own.
  */
 export function configDnsDomains(sites: Record<string, any>): string[] {
   const domains = new Set<string>()
@@ -3904,7 +3912,9 @@ export function configDnsDomains(sites: Record<string, any>): string[] {
     if (!site?.redirect && site?.domain && typeof site.domain === 'string')
       domains.add(site.domain.replace(/^www\./, ''))
   }
-  return [...domains]
+
+  const all = [...domains]
+  return all.filter(domain => !all.some(other => other !== domain && domain.endsWith(`.${other}`)))
 }
 
 /**
@@ -4033,6 +4043,14 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
         continue // no registrar credentials resolved for this domain; skip quietly
       if (result.created || result.failed)
         logger.info(`DNS (config/dns.ts) ${domain}: ${result.created} created, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}`)
+
+      // The count is the headline; these are the two lines that can be acted
+      // on. A summary saying "1 failed" and nothing else was a bug report with
+      // the evidence removed.
+      for (const failure of result.failures)
+        logger.warn(`  ${failure.record.type} ${failure.record.name} → ${failure.record.content}: ${failure.reason}`)
+      for (const skipped of result.skipped)
+        logger.info(`  skipped ${skipped.record.type} ${skipped.record.name}: ${skipped.reason}`)
     }
     catch (err) {
       logger.warn(`DNS (config/dns.ts) reconcile for ${domain} failed: ${err instanceof Error ? err.message : String(err)}`)

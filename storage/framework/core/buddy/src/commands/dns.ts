@@ -150,9 +150,14 @@ export function dns(buddy: CLI): void {
       const { plan, provider } = await syncDnsConfig(target, dnsConfig, { dryRun: true })
       for (const item of plan.items) {
         const detail = item.record.type === 'TXT' || item.record.type === 'MX' ? ` ${item.record.content}` : ` → ${item.record.content}`
-        console.log(`  ${item.action === 'create' ? '+ create' : '  keep  '} ${item.record.type.padEnd(5)} ${item.record.name}${detail}`)
+        const label = item.action === 'create' ? '+ create' : item.action === 'skip' ? '- skip  ' : '  keep  '
+        // The reason belongs on the line: a record shown as skipped with no
+        // explanation is the same puzzle as one silently dropped.
+        const why = item.action === 'skip' ? `  (${item.reason})` : ''
+        console.log(`  ${label} ${item.record.type.padEnd(5)} ${item.record.name}${detail}${why}`)
       }
-      console.log(`\n${plan.create.length} to create, ${plan.keep.length} already present (${provider ? `registrar: ${provider}` : 'public DNS'})`)
+      const skipped = plan.skip.length ? `, ${plan.skip.length} unpublishable` : ''
+      console.log(`\n${plan.create.length} to create, ${plan.keep.length} already present${skipped} (${provider ? `registrar: ${provider}` : 'public DNS'})`)
       process.exit(ExitCode.Success)
     })
 
@@ -172,12 +177,23 @@ export function dns(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
 
-      for (const record of result.plan.create)
-        console.log(`  ${result.applied ? 'created' : 'would create'} ${record.type.padEnd(5)} ${record.name} → ${record.content}`)
+      // Print the outcome per record, not the plan: this used to say "created"
+      // for every record it attempted, including the ones the registrar refused
+      // on the very same run.
+      const failedNames = new Set(result.failures.map(failure => `${failure.record.type} ${failure.record.name}`))
+      for (const record of result.plan.create) {
+        const verb = !result.applied ? 'would create' : failedNames.has(`${record.type} ${record.name}`) ? 'FAILED ' : 'created'
+        console.log(`  ${verb} ${record.type.padEnd(5)} ${record.name} → ${record.content}`)
+      }
+      for (const failure of result.failures)
+        console.log(`    ${failure.record.type} ${failure.record.name}: ${failure.reason}`)
+      for (const skipped of result.skipped)
+        console.log(`  skipped ${skipped.record.type.padEnd(5)} ${skipped.record.name}: ${skipped.reason}`)
 
       const verb = result.applied ? 'created' : 'to create'
       const count = result.applied ? result.created : result.plan.create.length
-      console.log(`\ndns:sync ${target}: ${count} ${verb}, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}${result.provider ? ` (${result.provider})` : ''}`)
+      const skippedNote = result.skipped.length ? `, ${result.skipped.length} unpublishable` : ''
+      console.log(`\ndns:sync ${target}: ${count} ${verb}, ${result.kept} kept${result.failed ? `, ${result.failed} failed` : ''}${skippedNote}${result.provider ? ` (${result.provider})` : ''}`)
       process.exit(result.failed > 0 ? ExitCode.FatalError : ExitCode.Success)
     })
 
