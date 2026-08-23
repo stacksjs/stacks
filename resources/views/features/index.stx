@@ -9,10 +9,11 @@ import { featureGroups, featuresInGroup } from '../../data/features'
 const appName = 'Stacks'
 
 const pageTitle = 'Features - Stacks'
-const pageDescription = 'Routing, views, models, auth, CMS, queues, mail, storage, realtime, search, testing, and cloud deploys. Every layer of a Stacks app, first-party and typed against the others.'
+const pageDescription = 'Routing, views, models, auth, CMS, commerce, AI, native apps, storage, realtime, search, testing, and cloud deploys. Every layer of a Stacks app, first-party and typed against the others.'
 const canonicalPath = '/features'
 
 const navLinks = [
+  { label: 'Get started', url: '/#start' },
   { label: 'CMS', url: '/#cms' },
   { label: 'Cloud', url: '/#deploy' },
   { label: 'Docs', url: '/docs', native: true },
@@ -38,7 +39,7 @@ const megaGroups = featureGroups.map(group => ({
         <section class="page-hero page-hero--solo site-shell">
           <div>
             <span class="kicker">Every layer</span>
-            <h1 class="page-title">Eight subsystems, one install.</h1>
+            <h1 class="page-title">Twelve subsystems, one install.</h1>
             <p class="page-lede">
               None of these is a plugin you add later or a service you host separately. They ship together, share the same models and config, and are typed against each other, which is the only reason a rename can be safe across all of them.
             </p>

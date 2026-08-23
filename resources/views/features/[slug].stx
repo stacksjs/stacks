@@ -1,6 +1,6 @@
 <script server>
 /*
- * One template, eight pages.
+ * One template, every feature page.
  *
  * Every feature reads its content out of resources/data/features.ts, which
  * the home page bento and the nav mega menu read too. A new feature is one
@@ -46,6 +46,7 @@ const related = feature
   : []
 
 const navLinks = [
+  { label: 'Get started', url: '/#start' },
   { label: 'CMS', url: '/#cms' },
   { label: 'Cloud', url: '/#deploy' },
   { label: 'Docs', url: '/docs', native: true },
