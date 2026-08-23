@@ -28,14 +28,19 @@ export interface Scenario {
 }
 
 /**
- * The token the "warm client" profile echoes back.
+ * The CSRF token the client echoes, and the cookie carrying it.
  *
- * A browser has a CSRF cookie from its first response onward, so every request
- * after that one carries it. A load generator that never sends one measures a
- * cold first visit repeated a million times, which is not the traffic anybody
- * actually serves. Both are worth knowing; see the README's profile table.
+ * Two uses. On safe methods it marks the "warm client" profile: a browser has
+ * the cookie from its first response onward, so every request after that one
+ * carries it, and a generator that never sends one is measuring a cold first
+ * visit repeated a million times rather than the traffic anybody serves.
+ *
+ * On unsafe methods every profile sends it, because that is what the
+ * double-submit pattern requires - a client with no token cannot POST through
+ * a CSRF gate at all, so without this scenario 3 measures a 403.
  */
-export const CSRF_COOKIE = 'X-CSRF-Token=bench-fixed-token-0123456789abcdef'
+export const CSRF_TOKEN = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+export const CSRF_COOKIE = `X-CSRF-Token=${CSRF_TOKEN}`
 
 export const SCENARIOS: readonly Scenario[] = [
   {

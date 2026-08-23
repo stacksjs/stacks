@@ -24,7 +24,7 @@ import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { createFixture } from './fixture'
 import { renderReport } from './report'
-import { CSRF_COOKIE, SCENARIOS } from './scenarios'
+import { CSRF_COOKIE, CSRF_TOKEN, SCENARIOS } from './scenarios'
 import { TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -145,7 +145,15 @@ async function stop(server: BootedServer): Promise<void> {
 function headersFor(target: Target, scenario: Scenario): Record<string, string> {
   const headers: Record<string, string> = {}
   if (scenario.body != null) headers['content-type'] = 'application/json'
-  if (target.cookie) headers.cookie = CSRF_COOKIE
+
+  // Unsafe methods always carry the double-submit pair. The cold-client
+  // profile is about what a first-time GET costs; it is not a claim that a
+  // client can mutate state without a token, and pretending otherwise would
+  // measure a 403 instead of a route.
+  const unsafe = scenario.method !== 'GET'
+  if (target.cookie || unsafe) headers.cookie = CSRF_COOKIE
+  if (unsafe) headers['x-csrf-token'] = CSRF_TOKEN
+
   return headers
 }
 
