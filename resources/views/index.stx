@@ -235,30 +235,30 @@ const deployRoutes = [
 
       :root[data-theme='colored'] {
         color-scheme: light;
-        --bg: #e9f1fb;
+        --bg: #fff7ec;
         --surface: #ffffff;
-        --badge-bg: #d9e8fb;
+        --badge-bg: #fce7e2;
         --field-bg: #ffffff;
-        --text: #0d1f38;
-        --muted: #49607f;
-        --accent: #1d4ed8;
-        --accent-strong: #1e40af;
-        --button-bg: #1d4ed8;
+        --text: #2a1720;
+        --muted: #6e4e57;
+        --accent: #b63e59;
+        --accent-strong: #a22a50;
+        --button-bg: #b63e59;
         --on-accent: #ffffff;
-        --on-field: #0d1f38;
-        --ink-rgb: 13, 31, 56;
-        --accent-rgb: 29, 78, 216;
-        --line: rgba(13, 31, 56, 0.12);
-        --line-strong: rgba(13, 31, 56, 0.22);
-        --shadow: 0 24px 60px rgba(30, 58, 138, 0.14);
-        --page-a: #e9f1fb;
-        --page-b: #ddeafa;
-        --page-c: #e9f1fb;
-        --panel-a: rgba(29, 78, 216, 0.07);
-        --panel-b: rgba(217, 232, 251, 0.55);
-        --nav-bg: rgba(233, 241, 251, 0.82);
-        --grad-a: #1e40af;
-        --grad-b: #2563eb;
+        --on-field: #2a1720;
+        --ink-rgb: 42, 23, 32;
+        --accent-rgb: 182, 62, 89;
+        --line: rgba(42, 23, 32, 0.12);
+        --line-strong: rgba(42, 23, 32, 0.22);
+        --shadow: 0 24px 60px rgba(142, 44, 21, 0.14);
+        --page-a: #fff7ec;
+        --page-b: #fdeee0;
+        --page-c: #fff7ec;
+        --panel-a: rgba(182, 62, 89, 0.07);
+        --panel-b: rgba(252, 231, 226, 0.55);
+        --nav-bg: rgba(255, 247, 236, 0.82);
+        --grad-a: #a22a50;
+        --grad-b: #b63e59;
         --ridge-opacity: 0.28;
         --topo-opacity: 0.05;
       }
@@ -270,60 +270,60 @@ const deployRoutes = [
       :root,
       :root[data-theme='light'] {
         color-scheme: light;
-        --bg: #ffffff;
-        --surface: #f5f8fe;
-        --badge-bg: #e8f0fe;
+        --bg: #fffdfa;
+        --surface: #fff8f2;
+        --badge-bg: #fdece7;
         --field-bg: #ffffff;
-        --text: #0c1626;
-        --muted: #4f5f7a;
-        --accent: #2563eb;
-        --accent-strong: #1d4ed8;
-        --button-bg: #2563eb;
+        --text: #24141c;
+        --muted: #6e4e57;
+        --accent: #b63e59;
+        --accent-strong: #a22a50;
+        --button-bg: #b63e59;
         --on-accent: #ffffff;
-        --on-field: #0c1626;
-        --ink-rgb: 12, 22, 38;
-        --accent-rgb: 37, 99, 235;
-        --line: rgba(12, 22, 38, 0.10);
-        --line-strong: rgba(12, 22, 38, 0.20);
-        --shadow: 0 24px 60px rgba(30, 58, 138, 0.10);
-        --page-a: #ffffff;
-        --page-b: #f2f6fe;
-        --page-c: #ffffff;
-        --panel-a: rgba(37, 99, 235, 0.05);
-        --panel-b: rgba(219, 231, 253, 0.50);
-        --nav-bg: rgba(255, 255, 255, 0.80);
-        --grad-a: #1d4ed8;
-        --grad-b: #2563eb;
+        --on-field: #24141c;
+        --ink-rgb: 36, 20, 28;
+        --accent-rgb: 182, 62, 89;
+        --line: rgba(36, 20, 28, 0.10);
+        --line-strong: rgba(36, 20, 28, 0.20);
+        --shadow: 0 24px 60px rgba(142, 44, 21, 0.10);
+        --page-a: #fffdfa;
+        --page-b: #fff6ef;
+        --page-c: #fffdfa;
+        --panel-a: rgba(182, 62, 89, 0.05);
+        --panel-b: rgba(253, 236, 231, 0.50);
+        --nav-bg: rgba(255, 253, 250, 0.80);
+        --grad-a: #a22a50;
+        --grad-b: #b63e59;
         --ridge-opacity: 0.20;
         --topo-opacity: 0.035;
       }
 
       :root[data-theme='dark'] {
         color-scheme: dark;
-        --bg: #070c17;
-        --surface: #0e1728;
-        --badge-bg: #13203a;
-        --field-bg: #0c1424;
-        --text: #e9effc;
-        --muted: #97a6c4;
-        --accent: #60a5fa;
-        --accent-strong: #93c5fd;
-        --button-bg: #3b82f6;
-        --on-accent: #071021;
-        --on-field: #e9effc;
-        --ink-rgb: 233, 239, 252;
-        --accent-rgb: 96, 165, 250;
-        --line: rgba(233, 239, 252, 0.10);
-        --line-strong: rgba(233, 239, 252, 0.22);
-        --shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
-        --page-a: #070c17;
-        --page-b: #0a1226;
-        --page-c: #060b14;
-        --panel-a: rgba(19, 32, 58, 0.85);
-        --panel-b: rgba(8, 14, 28, 0.92);
-        --nav-bg: rgba(7, 12, 23, 0.78);
-        --grad-a: #1e40af;
-        --grad-b: #2563eb;
+        --bg: #1c1016;
+        --surface: #271822;
+        --badge-bg: #3a2029;
+        --field-bg: #1f1219;
+        --text: #f7e9e4;
+        --muted: #c3a2a8;
+        --accent: #ee7566;
+        --accent-strong: #f09b7f;
+        --button-bg: #ee7566;
+        --on-accent: #2a1720;
+        --on-field: #f7e9e4;
+        --ink-rgb: 247, 233, 228;
+        --accent-rgb: 238, 117, 102;
+        --line: rgba(247, 233, 228, 0.10);
+        --line-strong: rgba(247, 233, 228, 0.22);
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+        --page-a: #1c1016;
+        --page-b: #241520;
+        --page-c: #180d13;
+        --panel-a: rgba(58, 32, 41, 0.85);
+        --panel-b: rgba(24, 13, 19, 0.92);
+        --nav-bg: rgba(28, 16, 22, 0.78);
+        --grad-a: #a22a50;
+        --grad-b: #ee7566;
         --ridge-opacity: 0.22;
         --topo-opacity: 0.05;
       }
@@ -338,10 +338,12 @@ const deployRoutes = [
       }
 
       /* The code window and terminal stay dark in every theme, the way an
-        editor and a shell are. */
+        editor and a shell are. Dark, but on the page's own plum rather than
+        the usual editor navy: a cool code block on a warm page is the one
+        place the palette used to break. */
       :root {
-        --term-bg: #0b1220;
-        --term-fg: #93c5fd;
+        --term-bg: #170c13;
+        --term-fg: #f0a07e;
       }
 
       /* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
@@ -551,7 +553,7 @@ const deployRoutes = [
         width: clamp(58px, 8vw, 108px);
         height: clamp(58px, 8vw, 108px);
         border-radius: 50%;
-        background: radial-gradient(circle at 38% 34%, #cfe4ff, var(--accent) 62%, var(--accent-strong));
+        background: radial-gradient(circle at 38% 34%, #fff6cb, var(--accent) 62%, var(--accent-strong));
         box-shadow: 0 0 64px rgba(var(--accent-rgb), 0.38);
         opacity: 0.9;
         z-index: 0;
@@ -846,10 +848,10 @@ const deployRoutes = [
 
       .code-window {
         overflow: hidden;
-        border: 1px solid rgba(96, 165, 250, 0.22);
+        border: 1px solid rgba(238, 117, 102, 0.20);
         border-radius: 10px;
-        background: #0b1220;
-        box-shadow: 0 24px 60px rgba(3, 8, 22, 0.35);
+        background: #1e1018;
+        box-shadow: 0 24px 60px rgba(20, 6, 17, 0.45);
       }
 
       .code-titlebar {
@@ -877,7 +879,7 @@ const deployRoutes = [
       .code-dots i:nth-child(3) { background: #28c840; }
 
       .code-file {
-        color: #8aa0b8;
+        color: #b79aa2;
         font-family: var(--font-mono);
         font-size: 0.76rem;
         font-weight: 500;
@@ -888,7 +890,7 @@ const deployRoutes = [
         margin: 0;
         padding: 1.05rem 1.15rem;
         overflow-x: auto;
-        color: #ccd6e6;
+        color: #ece0e2;
         font-family: var(--font-mono);
         font-size: 0.8rem;
         line-height: 1.62;
@@ -896,17 +898,19 @@ const deployRoutes = [
         tab-size: 2;
       }
 
-      .tok-key { color: #6ea8fe; }
-      .tok-str { color: #7fdca4; }
-      .tok-fn { color: #e6b673; }
-      .tok-prop { color: #d7e0ec; }
-      .tok-bool { color: #c792ea; }
-      .tok-com { color: #5f7488; font-style: italic; }
+      /* Syntax on the warm ramp: rose keywords, wheat strings, coral calls.
+        Every one of these clears 4.5:1 on the window's #1e1018. */
+      .tok-key { color: #f2879a; }
+      .tok-str { color: #dcc47f; }
+      .tok-fn { color: #f0a07e; }
+      .tok-prop { color: #e4d6da; }
+      .tok-bool { color: #d79ad2; }
+      .tok-com { color: #9a7a84; font-style: italic; }
 
       .terminal-strip {
         margin-top: 0.85rem;
         padding: 0.8rem 0.9rem;
-        border: 1px solid rgba(96, 165, 250, 0.25);
+        border: 1px solid rgba(238, 117, 102, 0.22);
         border-radius: 10px;
         color: var(--term-fg);
         font-family: var(--font-mono);
@@ -916,7 +920,7 @@ const deployRoutes = [
         white-space: pre-wrap;
       }
 
-      .term-com { color: #5f7488; }
+      .term-com { color: #9a7a84; }
 
       /* ── Sections ─────────────────────────────────────────────────── */
 
@@ -992,7 +996,7 @@ const deployRoutes = [
       /*
        * Doubled class, so this beats `.cell p` below rather than tying with it.
        * At equal specificity the later rule won, which painted this cell's copy
-       * in --muted: dark slate on a solid #1d4ed8 tile, about 1.7:1. The card
+       * in --muted: dark slate on the solid accent tile, about 1.7:1. The card
        * looked blank unless you leaned in.
        */
       .cell--gradient.cell p {
