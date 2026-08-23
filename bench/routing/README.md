@@ -117,6 +117,31 @@ zero.
 --no-db        skip the SQLite fixture and the db-roundtrip scenario
 ```
 
+## Recorded numbers
+
+**There is no recorded baseline yet.** No run has been made on a machine that
+meets the bar above, so this directory deliberately contains no results, and
+nothing in the marketing copy quotes a routing throughput figure.
+
+Direction-only figures from the optimization work are in the git log, on the
+commits that produced them - `git log --grep="perf(router)"`. They were taken
+with the built-in generator on a developer laptop, they are labelled as such in
+every message, and they exist to say "that change helped", not "this is how fast
+Stacks is".
+
+To record a real baseline:
+
+1. Get a dedicated or reserved instance, and a second machine for the generator.
+2. Install `oha` there (`brew install oha` / `cargo install oha`).
+3. `bun add -d elysia hono` so the comparison targets are not skipped.
+4. `bun bench/routing/run.ts` with the defaults (5s warm-up, 30s measured, 3 runs).
+5. Commit the whole `results/<timestamp>/` directory - report, measurements, and
+   the raw per-run output. The spread column is the honesty check: if it is
+   wide, the run is noise and the median means nothing.
+
+Only then does any public-facing comparison get to quote a number, and only with
+the profile it came from named beside it.
+
 ## Regression watching
 
 Once a baseline exists on known hardware, re-run `static-json` on a schedule and
