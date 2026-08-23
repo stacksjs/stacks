@@ -3,6 +3,11 @@
   "type": "module",
   "sideEffects": false,
   "version": "0.72.53",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/defaults"
+  },
   "description": "The complete managed Stacks application scaffold, including runtime defaults, AI guidance, editor metadata, and npm-backed project support files.",
   "author": "Chris Breuer",
   "license": "MIT",
