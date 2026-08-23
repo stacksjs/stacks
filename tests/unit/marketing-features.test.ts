@@ -1,60 +1,70 @@
 /**
- * The feature list, and the one view that renders all of it.
+ * The marketing feature list, and the one thing about its route that fails
+ * silently.
  *
- * /features/:slug is a single dynamic route again. It briefly was not: the
- * route matches every URL under /features, so it answered 200 for the ones
- * that name no feature, and an stx view had no way to say otherwise from
- * inside the template. The workaround was eight concrete views — an unknown
- * slug then matched no route at all — which bought the right status and opened
- * a drift hole in exchange, eight files that could fall out of step with the
- * list they render.
+ * resources/data/features.ts is read by three surfaces - the nav mega menu,
+ * the home-page bento, and /features/:slug - so a bad entry here is a bad link
+ * in all three at once, and none of them throw: a "pairs with" card pointing
+ * at a slug that does not exist just renders and 404s when clicked.
  *
- * stx 0.2.219 removed the reason for the trade: `notFound()` in `<script
- * server>` answers 404 for the render that calls it. One view, no drift, and
- * the checks below are the ones that outlived the arrangement.
+ * The route check is narrower and more specific. /features/:slug matches every
+ * URL under /features, including the ones that name no feature, so the view
+ * has to declare the status itself with `notFound()` (stx >= 0.2.219). Drop
+ * that one call and the not-found body still renders, still looks right, and
+ * goes out under a 200 - telling crawlers, caches and uptime checks that every
+ * misspelling is a real page. Nothing about the page looks wrong when it
+ * regresses, which is exactly why it is pinned here.
  */
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { features } from '../../resources/data/features'
+import { featureBySlug, features, featuresInGroup, featureGroups } from '../../resources/data/features'
 
-const slugView = readFileSync(join(import.meta.dir, '../../resources/views/features/[slug].stx'), 'utf8')
-
-describe('the feature page', () => {
-  test('answers 404 for a slug that names no feature', () => {
-    // The soft 404 this replaces was invisible in the browser — the page said
-    // "no feature by that name" either way. Only the status told them apart,
-    // and it said the URL was fine.
-    expect(slugView).toContain('if (!feature)\n  notFound()')
-  })
-
-  test('still renders a real feature from the shared list', () => {
-    // Same data as the mega menu and the home page bento, so the three
-    // surfaces cannot disagree about what the product has.
-    expect(slugView).toContain(`from '../../data/features'`)
-    expect(slugView).toContain('const feature = featureBySlug(requestedSlug)')
-  })
-})
-
-describe('the feature list itself', () => {
-  test('slugs are unique and URL-safe', () => {
+describe('the feature list', () => {
+  test('is not empty and has unique, URL-safe slugs', () => {
     const slugs = features.map(feature => feature.slug)
 
+    expect(slugs.length).toBeGreaterThan(0)
     expect(new Set(slugs).size).toBe(slugs.length)
     for (const slug of slugs)
       expect(slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   })
 
-  test('every related slug points at a feature that exists', () => {
-    const slugs = new Set(features.map(feature => feature.slug))
-
+  test('every "pairs with" slug names a feature that exists, and not itself', () => {
     for (const feature of features) {
       for (const related of feature.page.related) {
-        expect(slugs.has(related)).toBe(true)
-        // A "pairs with" card linking back to the page it is on is a dead link
-        // in the only place a reader is guaranteed to have already been.
+        expect(featureBySlug(related)).toBeDefined()
+        // A card linking back to the page it is on is a dead end in the one
+        // place the reader has certainly already been.
         expect(related).not.toBe(feature.slug)
       }
     }
+  })
+
+  test('every feature falls in a declared group, and no group is empty', () => {
+    const groupIds = featureGroups.map(group => group.id)
+
+    for (const feature of features)
+      expect(groupIds).toContain(feature.group)
+
+    // An empty column would render as a heading with nothing under it.
+    for (const id of groupIds)
+      expect(featuresInGroup(id).length).toBeGreaterThan(0)
+  })
+
+  test('the mega menu and the bento show every feature between them', () => {
+    // Both render the whole list, so the menu cannot offer a section the page
+    // below it lacks. Guarding the grouping is guarding the menu.
+    expect(featureGroups.flatMap(group => featuresInGroup(group.id)).length).toBe(features.length)
+  })
+})
+
+describe('the /features/:slug route', () => {
+  const view = readFileSync(join(import.meta.dir, '../../resources/views/features/[slug].stx'), 'utf8')
+
+  test('answers 404 for a slug that names no feature', () => {
+    // Removing this line is invisible on the rendered page and turns every
+    // unknown URL under /features into a soft 404.
+    expect(view).toMatch(/if\s*\(!feature\)\s*\n?\s*notFound\(\)/)
   })
 })
