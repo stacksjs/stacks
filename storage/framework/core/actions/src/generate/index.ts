@@ -147,6 +147,28 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   // as `Record<string, any>`.
   await generateEventTypes()
 
+  /*
+   * The server auto-import declarations, which describe every global the
+   * runtime injects.
+   *
+   * These have always been derived from disk - the problem was WHEN. The header
+   * says "regenerated automatically when the API starts", and that was the only
+   * thing that regenerated them, so a fresh checkout, a CI typecheck or any
+   * `buddy typecheck` before the first `buddy dev` read whatever the last
+   * developer's API run happened to leave behind. Generating types is exactly
+   * when they should be rebuilt.
+   *
+   * Best-effort: a project without models still has a types directory, and
+   * failing to refresh a declaration is not a reason to fail the whole command.
+   */
+  try {
+    const { generateServerAutoImportTypes } = await import('@stacksjs/server')
+    await generateServerAutoImportTypes()
+  }
+  catch (error) {
+    log.debug('[generate:types] Could not refresh server auto-import types', { error })
+  }
+
   const entry = frameworkPath('core/actions/src/generate/types.ts')
 
   if (!fs.existsSync(entry)) {
