@@ -1,6 +1,19 @@
 <script server>
 const appName = 'Stacks'
-const siteMode = 'coming-soon'
+
+/*
+ * Launched. Two gates gated this page and both had to open:
+ *
+ *   APP_COMING_SOON in .env.production   the server gate, which 302'd / to
+ *                                        /coming-soon before this file ran
+ *   siteMode here                        the in-page gate, which hides
+ *                                        .site-content and shows .mode-screen
+ *
+ * Flipping only the env var would have served this page with its own holding
+ * card over it. Set siteMode back to 'coming-soon' to close it again; the
+ * bypass token below is what /?preview= expects while it is closed.
+ */
+const siteMode = 'live'
 const comingSoonBypassEnabled = true
 const comingSoonBypassToken = 'trailhead'
 
