@@ -1,5 +1,41 @@
 import { existsSync } from 'node:fs'
-import { dirname, join, resolve } from 'node:path'
+import { dirname, join } from 'node:path'
+
+/**
+ * The nearest ancestor of `start` that carries `marker`, or undefined.
+ *
+ * Counting `..` was the old approach and it only held for one call site.
+ * `dev/defaults-resources.ts` sits six levels under the project root, so
+ * `resolve(import.meta.dir, '../../../../../..')` was right for the dev server
+ * and wrong for anything else that ends up importing it. A deployed app starts
+ * from a BUNDLE at `storage/framework/runtime/production/serve.js`, four levels
+ * down, where six levels up lands two directories ABOVE the project. The
+ * vendored check then missed, the published `@stacksjs/defaults` was taken
+ * instead, and production served the last release's default views rather than
+ * the app's own: every default view, layout and component added since that
+ * release silently absent, with nothing logged. That is how stacksjs.com came
+ * to answer a 404 with stx's generic page while its own errors/404.stx sat
+ * shipped on the box, unread.
+ *
+ * Searching for the marker has no depth to get wrong. The walk starts inside
+ * the framework being used, so the first checkout it finds is the one whose
+ * code is running.
+ */
+function nearestContaining(start: string, marker: string): string | undefined {
+  let dir = start
+
+  while (true) {
+    const candidate = join(dir, marker)
+    if (existsSync(candidate))
+      return candidate
+
+    const parent = dirname(dir)
+    if (parent === dir)
+      return undefined
+
+    dir = parent
+  }
+}
 
 /**
  * Resolve the framework's default resources root — the fallback views, layouts
@@ -25,10 +61,10 @@ import { dirname, join, resolve } from 'node:path'
  * surface a clear missing-directory error rather than a silent empty glob.
  */
 export function resolveDefaultsRoot(): string {
-  const projectRoot = resolve(import.meta.dir, '../../../../../..')
-  const vendored = join(projectRoot, 'storage/framework/defaults')
+  const vendored = nearestContaining(import.meta.dir, 'storage/framework/defaults')
+    ?? nearestContaining(process.cwd(), 'storage/framework/defaults')
 
-  if (existsSync(vendored))
+  if (vendored)
     return vendored
 
   try {
@@ -36,7 +72,9 @@ export function resolveDefaultsRoot(): string {
     return dirname(pkgJson)
   }
   catch {
-    return vendored
+    // Neither resolved. Naming a path under the working directory at least
+    // points the missing-directory error somewhere the reader recognises.
+    return join(process.cwd(), 'storage/framework/defaults')
   }
 }
 
@@ -52,13 +90,14 @@ export function resolveDefaultsResources(): string {
    * than the source of truth it was pointed at. Running the suite from inside
    * `core/actions` is enough to see it.
    *
-   * This file lives at `storage/framework/core/actions/src/dev/`, so six
-   * levels up is the project root in a full checkout.
+   * Found by looking for the directory rather than by counting levels up from
+   * this file: this module gets bundled, and the bundle does not sit where the
+   * source does. See `nearestContaining` above.
    */
-  const projectRoot = resolve(import.meta.dir, '../../../../../..')
-  const vendored = join(projectRoot, 'storage/framework/defaults/resources')
+  const vendored = nearestContaining(import.meta.dir, 'storage/framework/defaults/resources')
+    ?? nearestContaining(process.cwd(), 'storage/framework/defaults/resources')
 
-  if (existsSync(vendored))
+  if (vendored)
     return vendored
 
   try {
@@ -66,6 +105,6 @@ export function resolveDefaultsResources(): string {
     return join(dirname(pkgJson), 'resources')
   }
   catch {
-    return vendored
+    return join(process.cwd(), 'storage/framework/defaults/resources')
   }
 }
