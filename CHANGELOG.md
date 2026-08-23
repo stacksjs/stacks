@@ -1,5 +1,49 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.50...v0.72.51)
+
+## ✨ Features
+
+- **ui**: bring the blog onto the site palette ([c8c3c2d](https://github.com/stacksjs/stacks/commit/c8c3c2d)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: give every feature its own page ([e686341](https://github.com/stacksjs/stacks/commit/e686341)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: add a Features mega menu, and one feature list behind it ([c6b18c2](https://github.com/stacksjs/stacks/commit/c6b18c2)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: rebrand onto the Laravel illustrations' own dusk palette ([7e78615](https://github.com/stacksjs/stacks/commit/7e78615)) _(by Chris <chris@stacksjs.com>)_ ([#68126](https://github.com/stacksjs/stacks/issues/68126), [#2](https://github.com/stacksjs/stacks/issues/2), [#1](https://github.com/stacksjs/stacks/issues/1), [#0](https://github.com/stacksjs/stacks/issues/0))
+- launch ([5206d78](https://github.com/stacksjs/stacks/commit/5206d78)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: push to deploy in the scaffolded CI workflow ([31abb45](https://github.com/stacksjs/stacks/commit/31abb45)) _(by Chris <chris@stacksjs.com>)_
+- **coming-soon**: the wide horizon, and one design language with the site ([fd3347f](https://github.com/stacksjs/stacks/commit/fd3347f)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: a wide cut of the dawn scene for the horizon band ([3403b79](https://github.com/stacksjs/stacks/commit/3403b79)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: a horizon band, and two bugs the page was hiding ([d091366](https://github.com/stacksjs/stacks/commit/d091366)) _(by Chris <chris@stacksjs.com>)_ ([#1](https://github.com/stacksjs/stacks/issues/1))
+
+## 🐛 Bug Fixes
+
+- **buddy,database**: declare the packages they actually import ([29dc6b5](https://github.com/stacksjs/stacks/commit/29dc6b5)) _(by Chris <chris@stacksjs.com>)_
+- **errors**: take the accent from the illustration, not from blue ([bc944f7](https://github.com/stacksjs/stacks/commit/bc944f7)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: make an unknown /features URL a real 404 ([4b29785](https://github.com/stacksjs/stacks/commit/4b29785)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: stop the nav overlapping the brand on a phone ([f8686d5](https://github.com/stacksjs/stacks/commit/f8686d5)) _(by Chris <chris@stacksjs.com>)_
+- **views**: give the default 404 view a title ([c73b8e2](https://github.com/stacksjs/stacks/commit/c73b8e2)) _(by Chris <chris@stacksjs.com>)_
+- **actions**: find the vendored defaults from a bundle, not by counting levels ([94b0ede](https://github.com/stacksjs/stacks/commit/94b0ede)) _(by Chris <chris@stacksjs.com>)_
+- **scene**: stand the village on the dune, and give the palette its range back ([31a4b0a](https://github.com/stacksjs/stacks/commit/31a4b0a)) _(by Chris <chris@stacksjs.com>)_ ([#1](https://github.com/stacksjs/stacks/issues/1), [#3](https://github.com/stacksjs/stacks/issues/3), [#1](https://github.com/stacksjs/stacks/issues/1))
+- **config**: let an assignment to `config` actually land ([7586bea](https://github.com/stacksjs/stacks/commit/7586bea)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **ui**: one /features/:slug view again, now that it can 404 ([f5646c7](https://github.com/stacksjs/stacks/commit/f5646c7)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: state the palette once, in theme.css ([ed9fe9c](https://github.com/stacksjs/stacks/commit/ed9fe9c)) _(by Chris <chris@stacksjs.com>)_
+- **ui**: lift the marketing CSS out of index.stx into one stylesheet ([ec71970](https://github.com/stacksjs/stacks/commit/ec71970)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **ui**: pin the feature list, and the one call that makes 404s real ([cb0b9e8](https://github.com/stacksjs/stacks/commit/cb0b9e8)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: bump onto stx 0.2.219 ([6f71fe8](https://github.com/stacksjs/stacks/commit/6f71fe8)) _(by Chris <chris@stacksjs.com>)_
+- **env**: give production a coming-soon bypass secret ([132f784](https://github.com/stacksjs/stacks/commit/132f784)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.49...v0.72.50)
 
 ## ✨ Features
