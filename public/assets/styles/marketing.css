@@ -1453,12 +1453,30 @@ input[type="email"]:focus {
 
 @media (max-width: 600px) {
   .nav-inner {
+    gap: 0.7rem;
     min-height: 58px;
   }
 
+  /* Five links plus the wordmark do not fit at 375px, and shrinking the
+    type further only makes them unreadable. The row scrolls instead, with
+    no visible scrollbar: nothing is dropped from the navigation and
+    nothing overlaps the brand. */
   .nav-links {
+    flex: 1;
     gap: 0.9rem;
+    min-width: 0;
+    overflow-x: auto;
     font-size: 0.78rem;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-links a {
+    white-space: nowrap;
   }
 
   .nav-cta {
