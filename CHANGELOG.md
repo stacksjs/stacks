@@ -1,5 +1,28 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.53...v0.72.54)
+
+## ✨ Features
+
+- **stacks-browse**: add --scroll-y to the screenshot command ([a45f17c](https://github.com/stacksjs/stacks/commit/a45f17c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **defaults**: declare the repository, which OIDC publishing verifies against ([0e84d8c](https://github.com/stacksjs/stacks/commit/0e84d8c)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: hide the menu caret where no menu can open ([a1eae60](https://github.com/stacksjs/stacks/commit/a1eae60)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **marketing**: drop the per-page nav consts ([1ab2af2](https://github.com/stacksjs/stacks/commit/1ab2af2)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **marketing**: pin the use-case, comparison, and chrome lists ([ecd8a18](https://github.com/stacksjs/stacks/commit/ecd8a18)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.52...v0.72.53)
 
 ## ✨ Features
