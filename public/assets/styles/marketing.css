@@ -2142,3 +2142,65 @@ input[type="email"]:focus {
     margin-bottom: 0.6rem;
   }
 }
+
+/* ── Home: the two hubs ───────────────────────────────────────────
+ *
+ * The Use cases and Compare menus are a hover away in the nav, which is
+ * no help to someone who scrolls. These two cards are that landing on the
+ * page itself, sitting under the bento: a sample of each list as chips,
+ * and a way into the whole thing.
+ */
+
+.paths {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 1.1rem;
+}
+
+.path-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  align-items: flex-start;
+  padding: clamp(1.4rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background:
+    radial-gradient(130% 120% at 100% 0%, rgba(var(--accent-rgb), 0.09), transparent 55%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.path-card .kicker {
+  margin-bottom: 0;
+}
+
+.path-card h3 {
+  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.path-card p {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.65;
+}
+
+/* The chips are a sample, not the list, so the strip fills the space it
+  has and the button below it is the way to the rest. */
+.path-card .stack-strip {
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.path-card .stack-chip {
+  min-height: 34px;
+  padding: 0 0.75rem;
+  font-size: 0.79rem;
+}
+
+.path-card .button {
+  margin-top: 0.35rem;
+}

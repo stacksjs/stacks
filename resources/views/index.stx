@@ -1,5 +1,7 @@
 <script server>
+import { comparisonGroups, comparisons, comparisonsInGroup } from '../data/comparisons'
 import { features } from '../data/features'
+import { useCases } from '../data/use-cases'
 
 const appName = 'Stacks'
 
@@ -82,6 +84,19 @@ const startSteps = [
 ]
 
 const buildTargets = ['Web', 'macOS desktop', 'System tray', 'iOS', 'Android']
+
+/*
+ * The two hubs the nav opens as mega menus, given a landing on the page
+ * itself: someone who scrolls rather than hovers should still meet them.
+ *
+ * Both samples are derived rather than listed, so neither can name a page
+ * that stopped existing. The comparisons take the first two of each group
+ * so the sample spans full-stack JS, TypeScript backends, and the other
+ * ecosystems instead of showing six flavours of one.
+ */
+const homeUseCases = useCases.slice(0, 6)
+
+const homeComparisons = comparisonGroups.flatMap(group => comparisonsInGroup(group.id).slice(0, 2))
 
 const cmsResources = [
   { title: 'Posts', text: 'Markdown body, excerpt, author, tags, and a generated API.' },
@@ -219,6 +234,49 @@ $ cd my-project &amp;&amp; buddy dev
                 <span class="cell-more">Read more<i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i></span>
               </a>
             @endforeach
+          </div>
+        </section>
+
+        <section id="paths" class="section site-shell" aria-labelledby="paths-heading">
+          <div class="rise section-head">
+            <h2 id="paths-heading" class="section-title">Two ways to size it up.</h2>
+            <p class="section-copy">What people build with it, and how it lines up against whatever you are using today.</p>
+          </div>
+
+          <div class="paths">
+            <article class="path-card rise">
+              <span class="kicker">Use cases</span>
+              <h3>Same install, {{ useCases.length }} shapes of project.</h3>
+              <p>SaaS, storefronts, content sites, APIs, internal tools, native apps. Not editions or plans: the same framework pointed at a different problem, with the layers each one leans on spelled out.</p>
+
+              <div class="stack-strip">
+                @foreach (homeUseCases as useCase)
+                  <a class="stack-chip" href="/use-cases/{{ useCase.slug }}">
+                    <i class="{{ useCase.icon }}" aria-hidden="true"></i>
+                    {{ useCase.title }}
+                  </a>
+                @endforeach
+              </div>
+
+              <a class="button primary" href="/use-cases">All {{ useCases.length }} use cases</a>
+            </article>
+
+            <article class="path-card rise">
+              <span class="kicker">Compare</span>
+              <h3>{{ comparisons.length }} honest comparisons.</h3>
+              <p>Every one says where the other framework is the better choice before it says where this one is, and the table is about what ships in the box rather than which is faster.</p>
+
+              <div class="stack-strip">
+                @foreach (homeComparisons as comparison)
+                  <a class="stack-chip" href="/compare/{{ comparison.slug }}">
+                    <i class="{{ comparison.icon }}" aria-hidden="true"></i>
+                    vs {{ comparison.name }}
+                  </a>
+                @endforeach
+              </div>
+
+              <a class="button primary" href="/compare">See the comparison table</a>
+            </article>
           </div>
         </section>
 
