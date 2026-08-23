@@ -1,5 +1,58 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.56...v0.72.57)
+
+## ✨ Features
+
+- **router**: check every action a resource() call will register ([9721bbf](https://github.com/stacksjs/stacks/commit/9721bbf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: type named routes, and let a handler return what it already can ([b244f0f](https://github.com/stacksjs/stacks/commit/b244f0f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: type action paths and middleware aliases, from what exists ([6e59380](https://github.com/stacksjs/stacks/commit/6e59380)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: run the validated-POST scenario through a real action ([4462ad6](https://github.com/stacksjs/stacks/commit/4462ad6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: describe a useApi model's generated endpoints as a type ([44f0179](https://github.com/stacksjs/stacks/commit/44f0179)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: add the zero-generation typed client ([426016f](https://github.com/stacksjs/stacks/commit/426016f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: add createTypedRouter for zero-codegen typed routes ([ba0abd7](https://github.com/stacksjs/stacks/commit/ba0abd7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: let a route register the action it already imported ([cca0018](https://github.com/stacksjs/stacks/commit/cca0018)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: infer what an action returns ([2ec6e28](https://github.com/stacksjs/stacks/commit/2ec6e28)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: add a routing benchmark harness ([935e8ae](https://github.com/stacksjs/stacks/commit/935e8ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: DX/AX section, and an icon on every bento cell ([8b4c15c](https://github.com/stacksjs/stacks/commit/8b4c15c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: take query from the router, and drop the layer that disagreed ([789dc5f](https://github.com/stacksjs/stacks/commit/789dc5f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: narrow inline handler params, and fix resource() path composition ([7c0840a](https://github.com/stacksjs/stacks/commit/7c0840a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: print why a deploy failed instead of exiting silently ([f0b9924](https://github.com/stacksjs/stacks/commit/f0b9924)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: send the CSRF double-submit pair on unsafe methods ([4eefb99](https://github.com/stacksjs/stacks/commit/4eefb99)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **marketing**: StatusHQ is the current name, and AnalyticsHQ is serving again ([dd58909](https://github.com/stacksjs/stacks/commit/dd58909)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: drop AnalyticsHQ from the live-products claim, fix StatusHQ's name ([d35543e](https://github.com/stacksjs/stacks/commit/d35543e)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: correct AI/mobile/auth claims, add cost and mail-server angles ([685be16](https://github.com/stacksjs/stacks/commit/685be16)) _(by Chris <chris@stacksjs.com>)_
+- **stacks-browse**: resolve scroll-linked reveals for --full/--element ([2682895](https://github.com/stacksjs/stacks/commit/2682895)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: stop re-deriving per-route facts on every request ([701fa13](https://github.com/stacksjs/stacks/commit/701fa13)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: read a JSON body once instead of cloning the request ([67e3dc6](https://github.com/stacksjs/stacks/commit/67e3dc6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: stop rebuilding params and re-parsing the URL per request ([c9c1789](https://github.com/stacksjs/stacks/commit/c9c1789)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: resolve the CSRF middleware once, not three times per GET ([a174a18](https://github.com/stacksjs/stacks/commit/a174a18)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **router**: move the typed route layer down into bun-router ([aee7999](https://github.com/stacksjs/stacks/commit/aee7999)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **skills**: document typed routes and which client to reach for ([b6d8412](https://github.com/stacksjs/stacks/commit/b6d8412)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: say plainly that no baseline has been recorded ([3688eaa](https://github.com/stacksjs/stacks/commit/3688eaa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **router**: remove the StacksActionPath placeholder the registry replaced ([f76a4d9](https://github.com/stacksjs/stacks/commit/f76a4d9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **scaffold**: tell make:crud users to regenerate types first ([3e0f894](https://github.com/stacksjs/stacks/commit/3e0f894)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **tsconfig**: drop the path mapping for an entrypoint that moved ([fe027ff](https://github.com/stacksjs/stacks/commit/fe027ff)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.55...v0.72.56)
 
 ## 🐛 Bug Fixes
