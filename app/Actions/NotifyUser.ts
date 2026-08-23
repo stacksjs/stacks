@@ -21,9 +21,15 @@ export default new Action({
   description: 'Notify User After Creation',
   invocation: 'event',
 
+  /*
+   * The payload is a User row, so these mirror what the model says about one:
+   * `id` is its auto-incrementing primary key - a positive integer, never a
+   * float and never negative - and `name` carries the model's own length
+   * bounds. `schema.number()` alone would have accepted `-1.5`.
+   */
   validations: {
-    id: { rule: schema.number() },
-    name: { rule: schema.string() },
+    id: { rule: schema.number().integer().positive() },
+    name: { rule: schema.string().min(5).max(100) },
   },
 
   async handle(user) {

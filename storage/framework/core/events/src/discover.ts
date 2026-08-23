@@ -348,12 +348,67 @@ async function registerFromMap(
         continue
 
       const handle = resolved.handle
-      listen(event as never, ((payload: unknown) => handle(payload, event)) as never)
+      const validations = resolved.validations
+      listen(event as never, ((payload: unknown) => {
+        warnOnPayloadMismatch(event, name, payload, validations, logger)
+        return handle(payload, event)
+      }) as never)
       registered++
     }
   }
 
   return registered
+}
+
+/** An action's `validations:`, as much of it as this module needs. */
+type PayloadValidations = Record<string, { rule?: { validate?: (_value: unknown) => { valid: boolean } } }>
+
+/**
+ * Say something when a dispatched payload does not match what the action says
+ * it takes.
+ *
+ * An action declaring `invocation: 'event'` describes its payload with
+ * `validations`, and that is what types `handle`'s parameter. Nothing ran them,
+ * though - the router validates a REQUEST, and there is no request on this
+ * path - so the declaration typed the payload and checked nothing, and a
+ * dispatcher that sent `{ userId }` where the action reads `id` produced
+ * `undefined` inside the handler with nothing said anywhere.
+ *
+ * Warns rather than throws, deliberately. A mismatch is a bug worth surfacing,
+ * and a listener is not the place to decide that a registration flow should
+ * fail: the dispatcher has already committed the thing the event is announcing.
+ */
+function warnOnPayloadMismatch(
+  event: string,
+  name: string,
+  payload: unknown,
+  validations: PayloadValidations | undefined,
+  logger: { warn: (_message: string) => void },
+): void {
+  if (!validations || typeof payload !== 'object' || payload === null)
+    return
+
+  const bag = payload as Record<string, unknown>
+  const bad: string[] = []
+
+  for (const [key, entry] of Object.entries(validations)) {
+    const validate = entry?.rule?.validate
+    if (typeof validate !== 'function')
+      continue
+
+    try {
+      if (!validate(bag[key]).valid)
+        bad.push(key)
+    }
+    catch {
+      // A rule that throws on an unexpected value is telling us the same
+      // thing, and is not a reason to take the dispatch down with it.
+      bad.push(key)
+    }
+  }
+
+  if (bad.length)
+    logger.warn(`[events] ${event}: payload does not match what ${name} declares (${bad.join(', ')})`)
 }
 
 /**
@@ -367,7 +422,7 @@ async function registerFromMap(
 async function resolveListener(
   base: string,
   name: string,
-): Promise<{ id: string, handle: (_payload: unknown, _event?: string) => unknown } | null> {
+): Promise<{ id: string, handle: (_payload: unknown, _event?: string) => unknown, validations?: PayloadValidations } | null> {
   const candidates: string[] = []
 
   for (const directory of ['Listeners', 'Actions']) {
@@ -387,7 +442,11 @@ async function resolveListener(
       if (typeof handle !== 'function')
         continue
 
-      return { id: candidate, handle: handle.bind(exported) as (_payload: unknown, _event?: string) => unknown }
+      return {
+        id: candidate,
+        handle: handle.bind(exported) as (_payload: unknown, _event?: string) => unknown,
+        validations: (exported as { validations?: PayloadValidations })?.validations,
+      }
     }
     catch {
       // Tried the next candidate. The warning for "nothing resolved" is the

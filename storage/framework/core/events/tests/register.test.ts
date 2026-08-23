@@ -184,3 +184,71 @@ describe('discoverListeners with an array', () => {
     expect(await discoverListeners({ dir: join(root, 'app', 'Listeners'), log: quiet })).toBe(3)
   })
 })
+
+/**
+ * An action that declares `invocation: 'event'` describes its payload with
+ * `validations`, and that declaration is what types `handle`'s parameter.
+ * Nothing ran them: the router validates a REQUEST, and there is no request on
+ * this path. So the declaration typed the payload and checked nothing, and a
+ * dispatcher sending `{ userId }` where the action reads `id` produced
+ * `undefined` inside the handler with nothing said anywhere.
+ *
+ * It warns rather than throws on purpose - the dispatcher has already committed
+ * the thing the event announces, and a listener is not the place to decide that
+ * should fail - so these assert the warning AND that the handler still runs.
+ */
+describe('event payloads are checked against what the action declares', () => {
+  function writeValidatedAction(name: string): void {
+    writeFileSync(join(root, 'app', 'Actions', `${name}.ts`), `
+      export default {
+        invocation: 'event',
+        validations: {
+          id: { rule: { validate: (v) => ({ valid: typeof v === 'number' && Number.isInteger(v) && v > 0 }) } },
+        },
+        handle: (payload, event) => {
+          globalThis.__register_test_fired.push({ event, payload })
+        },
+      }
+    `)
+  }
+
+  test('says nothing when the payload matches', async () => {
+    const warnings: string[] = []
+    writeValidatedAction('Checked')
+    writeEventMap({ [topic]: ['Checked'] })
+
+    await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })
+    await dispatch(topic as never, { id: 7 } as never)
+
+    expect(warnings).toEqual([])
+    expect(fired()).toHaveLength(1)
+  })
+
+  test('warns when it does not, and still runs the handler', async () => {
+    const warnings: string[] = []
+    writeValidatedAction('Checked')
+    writeEventMap({ [topic]: ['Checked'] })
+
+    await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })
+    // `-1` is a number and not a positive integer: the shape a plain
+    // `schema.number()` would have waved through.
+    await dispatch(topic as never, { id: -1 } as never)
+
+    expect(warnings).toHaveLength(1)
+    expect(warnings[0]).toContain('does not match what Checked declares')
+    expect(warnings[0]).toContain('id')
+    expect(fired()).toHaveLength(1)
+  })
+
+  test('says nothing for an action that declares no validations', async () => {
+    const warnings: string[] = []
+    writeListener('Actions', 'Plain', '')
+    writeEventMap({ [topic]: ['Plain'] })
+
+    await registerAppListeners({ base: root, log: { ...quiet, warn: (m: string) => { warnings.push(m) } } })
+    await dispatch(topic as never, { anything: true } as never)
+
+    expect(warnings).toEqual([])
+    expect(fired()).toHaveLength(1)
+  })
+})

@@ -20,9 +20,14 @@ export default new Action({
   description: 'Sends a welcome email to newly registered users',
   invocation: 'event',
 
+  /*
+   * `to` is an address, and `name` carries the User model's own length bounds -
+   * the payload is built from a User row, so the two should not disagree about
+   * what a name is.
+   */
   validations: {
     to: { rule: schema.string().email() },
-    name: { rule: schema.string() },
+    name: { rule: schema.string().min(5).max(100) },
   },
 
   async handle(user) {

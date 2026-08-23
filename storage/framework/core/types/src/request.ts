@@ -201,9 +201,27 @@ export type ActionRequest<
  *   type Body = InferValidations<typeof validations>
  *   // → { email: string, password: string, remember: boolean }
  */
-export type InferValidations<V extends Record<string, { rule: any }>> = {
+/**
+ * Resolve a computed type to its final shape, for display.
+ *
+ * A named alias over a generic is shown by TypeScript as the alias: hovering
+ * `handle`'s parameter reported
+ *
+ *   InferValidations<{ id: { rule: WithConditionals<NumberValidatorType> }; … }>
+ *
+ * which is the machinery, not the answer. It says nothing about what `id`
+ * actually is - the reader has to go and resolve it themselves, which is
+ * exactly the work the inference was supposed to save. Mapping the type through
+ * a fresh object literal forces it to be displayed evaluated, so the same hover
+ * reports `{ id: number, name: string }`.
+ *
+ * Display only: `Resolved<T>` and `T` are the same type.
+ */
+export type Resolved<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+export type InferValidations<V extends Record<string, { rule: any }>> = Resolved<{
   [K in keyof V]: Infer<V[K]['rule']>
-}
+}>
 
 /**
  * What `get()` and `input()` can actually be asked for.
