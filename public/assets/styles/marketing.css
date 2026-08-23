@@ -7,205 +7,6 @@
  * view, is the whole reason this is not still inline.
  */
 
-/*
- * Stacks marketing design system, 2026 refresh.
- *
- * Direction: minimal modern developer-framework page with a nature
- * motif. ONE accent, the deep rose #B63E59, across every theme and
- * section; the nature reads come from the line-art (topography + park
- * ridge) and the tinted surfaces, never from a second hue.
- *
- * That rose is not a colour picked for the site. It is lifted out of
- * Laravel 5.7's error illustrations, which the error pages already
- * show, so the page and the artwork on it share one palette instead of
- * arguing. The rest of the ramp (#68126F plum, #A22A50, #EE7566 coral,
- * #FFF6CB cream) is where the warm surfaces and tints come from.
- *
- * Three themes, switched by `data-theme` on <html>, matching the blog
- * (content/blog/.theme.css) so / and /blog stay one product:
- *
- *   colored - dusk: warm cream paper, the default.
- *   light   - clean paper-white with the same rose accent.
- *   dark    - after sundown: plum ground, coral accent. Coral only
- *             carries contrast on a dark ground (white on #EE7566 is
- *             2.85:1), so it never labels anything in a light theme.
- *
- * Shape rule (one radius system): panels and cards 16px, code windows
- * and chips 10px, buttons and the theme toggle full pill. Nothing else.
- */
-
-:root[data-theme='colored'] {
-  color-scheme: light;
-  --bg: #fff7ec;
-  --surface: #ffffff;
-  --badge-bg: #fce7e2;
-  --field-bg: #ffffff;
-  --text: #2a1720;
-  --muted: #6e4e57;
-  --accent: #b63e59;
-  --accent-strong: #a22a50;
-  --button-bg: #b63e59;
-  --on-accent: #ffffff;
-  --on-field: #2a1720;
-  --ink-rgb: 42, 23, 32;
-  --accent-rgb: 182, 62, 89;
-  --line: rgba(42, 23, 32, 0.12);
-  --line-strong: rgba(42, 23, 32, 0.22);
-  --shadow: 0 24px 60px rgba(142, 44, 21, 0.14);
-  --page-a: #fff7ec;
-  --page-b: #fdeee0;
-  --page-c: #fff7ec;
-  --panel-a: rgba(182, 62, 89, 0.07);
-  --panel-b: rgba(252, 231, 226, 0.55);
-  --nav-bg: rgba(255, 247, 236, 0.82);
-  --grad-a: #a22a50;
-  --grad-b: #b63e59;
-  --ridge-opacity: 0.28;
-  --topo-opacity: 0.05;
-}
-
-/*
- * Light (white + the rose accent) is the no-JS default: the bare :root
- * carries these values so a first paint is already on-brand.
- */
-:root,
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #fffdfa;
-  --surface: #fff8f2;
-  --badge-bg: #fdece7;
-  --field-bg: #ffffff;
-  --text: #24141c;
-  --muted: #6e4e57;
-  --accent: #b63e59;
-  --accent-strong: #a22a50;
-  --button-bg: #b63e59;
-  --on-accent: #ffffff;
-  --on-field: #24141c;
-  --ink-rgb: 36, 20, 28;
-  --accent-rgb: 182, 62, 89;
-  --line: rgba(36, 20, 28, 0.10);
-  --line-strong: rgba(36, 20, 28, 0.20);
-  --shadow: 0 24px 60px rgba(142, 44, 21, 0.10);
-  --page-a: #fffdfa;
-  --page-b: #fff6ef;
-  --page-c: #fffdfa;
-  --panel-a: rgba(182, 62, 89, 0.05);
-  --panel-b: rgba(253, 236, 231, 0.50);
-  --nav-bg: rgba(255, 253, 250, 0.80);
-  --grad-a: #a22a50;
-  --grad-b: #b63e59;
-  --ridge-opacity: 0.20;
-  --topo-opacity: 0.035;
-}
-
-:root[data-theme='dark'] {
-  color-scheme: dark;
-  --bg: #1c1016;
-  --surface: #271822;
-  --badge-bg: #3a2029;
-  --field-bg: #1f1219;
-  --text: #f7e9e4;
-  --muted: #c3a2a8;
-  --accent: #ee7566;
-  --accent-strong: #f09b7f;
-  --button-bg: #ee7566;
-  --on-accent: #2a1720;
-  --on-field: #f7e9e4;
-  --ink-rgb: 247, 233, 228;
-  --accent-rgb: 238, 117, 102;
-  --line: rgba(247, 233, 228, 0.10);
-  --line-strong: rgba(247, 233, 228, 0.22);
-  --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-  --page-a: #1c1016;
-  --page-b: #241520;
-  --page-c: #180d13;
-  --panel-a: rgba(58, 32, 41, 0.85);
-  --panel-b: rgba(24, 13, 19, 0.92);
-  --nav-bg: rgba(28, 16, 22, 0.78);
-  --grad-a: #a22a50;
-  --grad-b: #ee7566;
-  --ridge-opacity: 0.22;
-  --topo-opacity: 0.05;
-}
-
-/* Font roles: Geist carries display and body (weight builds the
-  hierarchy); Geist Mono carries the kicker, chips, code, terminal. */
-:root {
-  --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-  --font-hero: "Geist", var(--font-body);
-  --font-head: "Geist", var(--font-body);
-}
-
-/* The code window and terminal stay dark in every theme, the way an
-  editor and a shell are. Dark, but on the page's own plum rather than
-  the usual editor navy: a cool code block on a warm page is the one
-  place the palette used to break. */
-:root {
-  --term-bg: #170c13;
-  --term-fg: #f0a07e;
-}
-
-/* Theme toggle. Mirrors .blog-theme-toggle in content/blog/.theme.css. */
-.theme-toggle {
-  position: fixed;
-  right: 1.1rem;
-  bottom: 1.1rem;
-  z-index: 60;
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.theme-toggle button {
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  border: 0;
-  border-radius: 999px;
-  color: inherit;
-  font-size: 0.85rem;
-  line-height: 1;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.18s ease, transform 0.18s ease;
-}
-
-.theme-toggle button:hover {
-  background: rgba(var(--ink-rgb), 0.1);
-}
-
-.theme-toggle button:active {
-  transform: scale(0.94);
-}
-
-/* The active mode reads as pressed, not just hovered. */
-.theme-toggle button[aria-pressed='true'] {
-  background: rgba(var(--ink-rgb), 0.16);
-}
-
-.theme-toggle button:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  background: var(--bg);
-  overflow-x: hidden;
-  scroll-behavior: smooth;
-}
-
 body {
   min-width: 320px;
   min-height: 100dvh;
@@ -439,11 +240,6 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 .mode-social svg { width: 19px; height: 19px; fill: currentColor; }
 
 /* ── Chrome: nav, shell, footer ───────────────────────────────── */
-
-.site-shell {
-  width: min(1180px, calc(100% - 48px));
-  margin: 0 auto;
-}
 
 .site-nav {
   position: sticky;
@@ -738,26 +534,6 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   padding: clamp(2.5rem, 4.5vw, 4.5rem) 0 clamp(2.25rem, 3.5vw, 3.5rem);
 }
 
-.kicker {
-  display: inline-flex;
-  gap: 0.55rem;
-  align-items: center;
-  margin-bottom: 1.1rem;
-  color: var(--accent);
-  font-family: var(--font-mono);
-  font-size: 0.74rem;
-  font-weight: 600;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
-
-.kicker::before {
-  width: 34px;
-  height: 2px;
-  content: "";
-  background: var(--accent);
-}
-
 .hero-title {
   max-width: 18ch;
   margin: 0;
@@ -787,46 +563,6 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 1.9rem;
-}
-
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  min-height: 46px;
-  padding: 0 1.35rem;
-  border: 1px solid var(--line-strong);
-  border-radius: 999px;
-  color: var(--text);
-  font-family: var(--font-body);
-  font-size: 0.9rem;
-  font-weight: 620;
-  white-space: nowrap;
-  background: transparent;
-  cursor: pointer;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-}
-
-.button.primary {
-  border-color: var(--button-bg);
-  color: var(--on-accent);
-  background: var(--button-bg);
-}
-
-.button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.22);
-}
-
-.button:not(.primary):hover {
-  border-color: var(--accent);
-  color: var(--accent);
-  box-shadow: none;
-}
-
-.button:active {
-  transform: translateY(0) scale(0.98);
 }
 
 /* Real code, not a fake dashboard: an authentic defineModel() as you
@@ -1200,7 +936,6 @@ body:not([data-site-mode="coming-soon"]) .mode-screen {
 :root[data-theme='dark'] .horizon-scene {
   background-image: url("/assets/images/horizon-dawn-dark.svg");
 }
-
 
 @keyframes horizon-drift {
   0%, 100% { transform: translate3d(0, 0, 0); }

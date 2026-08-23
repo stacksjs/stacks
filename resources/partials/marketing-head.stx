@@ -87,4 +87,7 @@
     }
   })()
 </script>
+{{-- theme.css first: marketing.css builds on its tokens and primitives, and
+  the holding page links theme.css on its own. --}}
+<link rel="stylesheet" href="/assets/styles/theme.css">
 <link rel="stylesheet" href="/assets/styles/marketing.css">

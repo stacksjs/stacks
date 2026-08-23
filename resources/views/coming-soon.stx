@@ -81,106 +81,12 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         }
       })()
     </script>
+    {{-- The palette, the theme control, the reset and the shared
+      primitives. This page used to restate all of it inline, which made a
+      colour change two edits with one easy to forget. What is left below is
+      only what the holding page itself needs. --}}
+    <link rel="stylesheet" href="/assets/styles/theme.css">
     <style>
-      /*
-       * Same three themes as / and /blog, same token names, same values.
-       * Inlined per surface because that is how this site already works: the
-       * marketing page carries its own copy and mirrors the blog's
-       * content/blog/.theme.css. One palette, three places that state it.
-       */
-      :root[data-theme='colored'] {
-        color-scheme: light;
-        --bg: #fff7ec;
-        --surface: #ffffff;
-        --badge-bg: #fce7e2;
-        --field-bg: #ffffff;
-        --text: #2a1720;
-        --muted: #6e4e57;
-        --accent: #b63e59;
-        --accent-strong: #a22a50;
-        --button-bg: #b63e59;
-        --on-accent: #ffffff;
-        --on-field: #2a1720;
-        --ink-rgb: 42, 23, 32;
-        --accent-rgb: 182, 62, 89;
-        --line: rgba(42, 23, 32, 0.12);
-        --line-strong: rgba(42, 23, 32, 0.22);
-        --shadow: 0 24px 60px rgba(142, 44, 21, 0.14);
-        --page-a: #fff7ec;
-        --page-b: #fdeee0;
-        --page-c: #fff7ec;
-        --panel-a: rgba(182, 62, 89, 0.07);
-        --panel-b: rgba(252, 231, 226, 0.55);
-        --nav-bg: rgba(255, 247, 236, 0.82);
-        --grad-a: #a22a50;
-        --grad-b: #b63e59;
-        --ridge-opacity: 0.28;
-        --topo-opacity: 0.05;
-      }
-
-      :root[data-theme='light'] {
-        color-scheme: light;
-        --bg: #fffdfa;
-        --surface: #fff8f2;
-        --badge-bg: #fdece7;
-        --field-bg: #ffffff;
-        --text: #24141c;
-        --muted: #6e4e57;
-        --accent: #b63e59;
-        --accent-strong: #a22a50;
-        --button-bg: #b63e59;
-        --on-accent: #ffffff;
-        --on-field: #24141c;
-        --ink-rgb: 36, 20, 28;
-        --accent-rgb: 182, 62, 89;
-        --line: rgba(36, 20, 28, 0.10);
-        --line-strong: rgba(36, 20, 28, 0.20);
-        --shadow: 0 24px 60px rgba(142, 44, 21, 0.10);
-        --page-a: #fffdfa;
-        --page-b: #fff6ef;
-        --page-c: #fffdfa;
-        --panel-a: rgba(182, 62, 89, 0.05);
-        --panel-b: rgba(253, 236, 231, 0.50);
-        --nav-bg: rgba(255, 253, 250, 0.80);
-        --grad-a: #a22a50;
-        --grad-b: #b63e59;
-        --ridge-opacity: 0.20;
-        --topo-opacity: 0.035;
-      }
-
-      :root[data-theme='dark'] {
-        color-scheme: dark;
-        --bg: #1c1016;
-        --surface: #271822;
-        --badge-bg: #3a2029;
-        --field-bg: #1f1219;
-        --text: #f7e9e4;
-        --muted: #c3a2a8;
-        --accent: #ee7566;
-        --accent-strong: #f09b7f;
-        --button-bg: #ee7566;
-        --on-accent: #2a1720;
-        --on-field: #f7e9e4;
-        --ink-rgb: 247, 233, 228;
-        --accent-rgb: 238, 117, 102;
-        --line: rgba(247, 233, 228, 0.10);
-        --line-strong: rgba(247, 233, 228, 0.22);
-        --shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
-        --page-a: #1c1016;
-        --page-b: #241520;
-        --page-c: #180d13;
-        --panel-a: rgba(58, 32, 41, 0.85);
-        --panel-b: rgba(24, 13, 19, 0.92);
-        --nav-bg: rgba(28, 16, 22, 0.78);
-        --grad-a: #a22a50;
-        --grad-b: #ee7566;
-        --ridge-opacity: 0.22;
-        --topo-opacity: 0.05;
-      }
-
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-
-      html { color-scheme: light; }
 
       body {
         display: grid;
@@ -190,16 +96,6 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         font-family: var(--font-body);
         background: var(--page-a);
         -webkit-font-smoothing: antialiased;
-      }
-
-      :root {
-        --font-body: "Geist", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
-      }
-
-      .site-shell {
-        width: min(1180px, calc(100% - 48px));
-        margin: 0 auto;
       }
 
       /* ── The horizon ──────────────────────────────────────────────────
@@ -287,19 +183,6 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
 
       /* ── Hero ─────────────────────────────────────────────────────── */
 
-      .kicker {
-        display: inline-flex;
-        gap: 0.55rem;
-        align-items: center;
-        margin-bottom: 1.1rem;
-        color: var(--accent);
-        font-family: var(--font-mono);
-        font-size: 0.74rem;
-        font-weight: 600;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-
       .title {
         max-width: 16ch;
         margin: 0;
@@ -345,34 +228,6 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         outline: 2px solid var(--accent);
         outline-offset: 2px;
       }
-
-      .button {
-        display: inline-flex;
-        gap: 0.5rem;
-        align-items: center;
-        justify-content: center;
-        min-height: 46px;
-        padding: 0 1.35rem;
-        border: 1px solid var(--line-strong);
-        border-radius: 999px;
-        color: var(--text);
-        font-family: var(--font-body);
-        font-size: 0.9rem;
-        font-weight: 620;
-        white-space: nowrap;
-        background: transparent;
-        cursor: pointer;
-        transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-      }
-
-      .button.primary {
-        border-color: var(--button-bg);
-        color: var(--on-accent);
-        background: var(--button-bg);
-      }
-
-      .button:hover { transform: translateY(-1px); }
-      .button:active { transform: translateY(0); }
 
       .form-note {
         margin-top: 0.75rem;
@@ -424,38 +279,6 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
 
       /* ── Theme toggle, the same control / and /blog carry ─────────── */
 
-      .theme-toggle {
-        position: fixed;
-        right: 1.1rem;
-        bottom: 1.1rem;
-        z-index: 60;
-        display: inline-flex;
-        gap: 2px;
-        padding: 3px;
-        border: 1px solid var(--line-strong);
-        border-radius: 999px;
-        background: var(--surface);
-        box-shadow: var(--shadow);
-      }
-
-      .theme-toggle button {
-        display: grid;
-        place-items: center;
-        width: 30px;
-        height: 30px;
-        padding: 0;
-        border: 0;
-        border-radius: 999px;
-        color: inherit;
-        font-size: 0.85rem;
-        line-height: 1;
-        background: transparent;
-        cursor: pointer;
-        transition: background 0.18s ease, transform 0.18s ease;
-      }
-
-      .theme-toggle button[aria-pressed="true"] { background: var(--badge-bg); }
-
       @keyframes scene-in {
         from { opacity: 0; transform: translateY(14px); }
         to { opacity: 1; transform: none; }
@@ -463,12 +286,8 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
 
       @media (prefers-reduced-motion: reduce) {
         .scene { animation: none; }
-        .button:hover,
-        .icon-btn:hover { transform: none; }
-      }
 
       @media (max-width: 640px) {
-        .site-shell { width: calc(100% - 32px); }
         .title { max-width: none; }
       }
     </style>
@@ -520,7 +339,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
     <div class="scene" aria-hidden="true"></div>
 
     <div class="theme-toggle" role="group" aria-label="Theme">
-      <button type="button" data-t="colored" title="Glacier theme" aria-label="Glacier theme" onclick="stxTheme('colored')">🌲</button>
+      <button type="button" data-t="colored" title="Dusk theme" aria-label="Dusk theme" onclick="stxTheme('colored')">🌲</button>
       <button type="button" data-t="light" title="Light theme" aria-label="Light theme" onclick="stxTheme('light')">☀</button>
       <button type="button" data-t="dark" title="Dark theme" aria-label="Dark theme" onclick="stxTheme('dark')">🌙</button>
     </div>
