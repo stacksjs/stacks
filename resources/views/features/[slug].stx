@@ -1,0 +1,157 @@
+<script server>
+/*
+ * One template, eight pages.
+ *
+ * Every feature reads its content out of resources/data/features.ts, which
+ * the home page bento and the nav mega menu read too. A new feature is one
+ * entry there and no new file, and the three surfaces cannot disagree about
+ * what the product has.
+ *
+ * `slug` arrives as a bare global from the [slug] segment, the same way
+ * orders/[id].stx receives `id`.
+ */
+import { featureBySlug, featureGroups, featuresInGroup } from '../../data/features'
+import { highlight } from '../../data/highlight'
+
+const appName = 'Stacks'
+
+const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const feature = featureBySlug(requestedSlug)
+
+const pageTitle = feature
+  ? `${feature.title} - Stacks`
+  : 'Feature not found - Stacks'
+
+const pageDescription = feature ? feature.blurb : 'That feature page does not exist.'
+const canonicalPath = feature ? `/features/${feature.slug}` : '/features'
+
+// See the note in marketing-head: this is a soft 404 by necessity.
+const noindex = !feature
+
+// The code panel holds plain source in the data file; it becomes tok-* spans
+// here rather than being written as markup by hand.
+const codeHtml = feature ? highlight(feature.page.code.code) : ''
+
+const related = feature
+  ? feature.page.related.map(featureBySlug).filter(Boolean)
+  : []
+
+const navLinks = [
+  { label: 'CMS', url: '/#cms' },
+  { label: 'Cloud', url: '/#deploy' },
+  { label: 'Docs', url: '/docs', native: true },
+  { label: 'Blog', url: '/blog', native: true },
+]
+
+const megaGroups = featureGroups.map(group => ({
+  ...group,
+  items: featuresInGroup(group.id),
+}))
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        @if (feature)
+          <section class="page-hero site-shell">
+            <div>
+              <div class="breadcrumb">
+                <a href="/features">Features</a>
+                <i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i>
+                <span>{{ feature.title }}</span>
+              </div>
+
+              <div class="page-glyph"><i class="{{ feature.icon }}" aria-hidden="true"></i></div>
+              <span class="kicker">{{ feature.page.kicker }}</span>
+              <h1 class="page-title">{{ feature.page.headline }}</h1>
+              <p class="page-lede">{{ feature.page.lede }}</p>
+
+              <div class="hero-actions">
+                <a class="button primary" href="{{ feature.page.docs }}" data-no-router>Read the docs</a>
+                <a class="button" href="/features">All features</a>
+              </div>
+            </div>
+
+            <aside class="product-preview" aria-label="{{ feature.title }} in code">
+              <div class="code-window">
+                <div class="code-titlebar">
+                  <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="code-file">{{ feature.page.code.file }}</span>
+                </div>
+                <pre class="code-body"><code>{!! codeHtml !!}</code></pre>
+              </div>
+            </aside>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="capabilities-heading">
+            <div class="section-head">
+              <h2 id="capabilities-heading" class="section-title">What you get.</h2>
+              <p class="section-copy">All of it in the same install, with nothing to wire together first.</p>
+            </div>
+
+            <div class="capability-grid">
+              @foreach (feature.page.capabilities as capability)
+                <article class="capability rise">
+                  <h3>{{ capability.title }}</h3>
+                  <p>{{ capability.text }}</p>
+                </article>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="commands-heading">
+            <div class="section-head">
+              <h2 id="commands-heading" class="section-title">From the command line.</h2>
+              <p class="section-copy">Buddy scaffolds, runs, and ships this the same way it does the rest of the app.</p>
+            </div>
+
+            <div class="command-strip rise">
+              @foreach (feature.page.commands as command)
+                <span>{{ command }}</span>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="related-heading">
+            <div class="section-head">
+              <h2 id="related-heading" class="section-title">Pairs with.</h2>
+              <p class="section-copy">These share the same models, config, and types, so using them together costs nothing extra.</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (related as other)
+                <a class="related-card rise" href="/features/{{ other.slug }}">
+                  <h3><i class="{{ other.icon }}" aria-hidden="true"></i>{{ other.title }}</h3>
+                  <p>{{ other.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @else
+          <section class="page-hero page-hero--solo site-shell">
+            <div class="not-found-panel">
+              <span class="kicker">Not found</span>
+              <h1 class="page-title">No feature by that name.</h1>
+              <p class="page-lede">The URL does not match anything Stacks ships. The full list is one click away.</p>
+              <div class="hero-actions">
+                <a class="button primary" href="/features">All features</a>
+                <a class="button" href="/">Back to home</a>
+              </div>
+            </div>
+          </section>
+        @endif
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>

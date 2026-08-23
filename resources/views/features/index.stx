@@ -1,0 +1,89 @@
+<script server>
+/*
+ * The overview at /features: all eight, grouped the way the mega menu
+ * groups them, from the same data. It is also where the menu's trigger
+ * lands on a touch device, which has no hover to open a panel with.
+ */
+import { featureGroups, featuresInGroup } from '../../data/features'
+
+const appName = 'Stacks'
+
+const pageTitle = 'Features - Stacks'
+const pageDescription = 'Routing, views, models, auth, CMS, queues, mail, storage, realtime, search, testing, and cloud deploys. Every layer of a Stacks app, first-party and typed against the others.'
+const canonicalPath = '/features'
+
+const navLinks = [
+  { label: 'CMS', url: '/#cms' },
+  { label: 'Cloud', url: '/#deploy' },
+  { label: 'Docs', url: '/docs', native: true },
+  { label: 'Blog', url: '/blog', native: true },
+]
+
+const megaGroups = featureGroups.map(group => ({
+  ...group,
+  items: featuresInGroup(group.id),
+}))
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        <section class="page-hero page-hero--solo site-shell">
+          <div>
+            <span class="kicker">Every layer</span>
+            <h1 class="page-title">Eight subsystems, one install.</h1>
+            <p class="page-lede">
+              None of these is a plugin you add later or a service you host separately. They ship together, share the same models and config, and are typed against each other, which is the only reason a rename can be safe across all of them.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+              <a class="button" href="/">Back to home</a>
+            </div>
+          </div>
+        </section>
+
+        @foreach (megaGroups as group)
+          <section class="feature-group site-shell" aria-labelledby="group-{{ group.id }}">
+            <div class="feature-group-head">
+              <h2 id="group-{{ group.id }}">{{ group.title }}</h2>
+              <p>{{ group.text }}</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (group.items as feature)
+                <a class="related-card rise" href="/features/{{ feature.slug }}">
+                  <h3><i class="{{ feature.icon }}" aria-hidden="true"></i>{{ feature.title }}</h3>
+                  <p>{{ feature.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @endforeach
+
+        <section class="section site-shell" aria-labelledby="start-heading">
+          <div class="rise signup-panel">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="start-heading" class="section-title">One install, then pick a layer.</h2>
+              <p class="section-copy">buddy new gets you the whole list above. Nothing here is added later.</p>
+            </div>
+            <div class="hero-actions">
+              <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+              <a class="button" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>
