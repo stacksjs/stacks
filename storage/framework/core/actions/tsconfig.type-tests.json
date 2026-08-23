@@ -1,0 +1,23 @@
+{
+  // Type-level tests, for the same reason the router has one:
+  // `tsconfig.framework.json` excludes every `tests/` directory, so a
+  // `.test-d.ts` left there is compiled by nothing and asserts nothing. Wired
+  // into the root `typecheck` script.
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "noEmit": true
+  },
+  "include": [
+    "tests/*.test-d.ts",
+    // The generated framework declarations (ORM globals, auto-imports, model
+    // attributes), which this config has to name because it includes one
+    // directory rather than the whole tree.
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": [
+    "dist/**"
+  ]
+}

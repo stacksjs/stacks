@@ -1,6 +1,6 @@
 import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
-import type { AuthToken, RouteParam } from '@stacksjs/types'
+import type { AuthToken} from '@stacksjs/types'
 // `Infer<T extends Validator<U>>` resolves to the validator's output
 // type — `Infer<typeof schema.string()> → string`. Type-only import
 // keeps this package free of a runtime ts-validation dependency.
@@ -205,6 +205,33 @@ export type InferValidations<V extends Record<string, { rule: any }>> = {
   [K in keyof V]: Infer<V[K]['rule']>
 }
 
+/**
+ * What `get()` and `input()` can actually be asked for.
+ *
+ * They read one merged bag — `getAllInputFor` folds query, then body, then
+ * route params, in that order — so a path param is as reachable through
+ * `request.get('id')` as a validated body field is. The declarations were keyed
+ * on `TFields` alone, which meant `request.params.id` was `string` while
+ * `request.get('id')` right beside it was `any`: the same value, typed on one
+ * route and not the other.
+ *
+ * Params override fields where the names collide, because that is the order the
+ * runtime merges in.
+ */
+export type TInput<
+  TFields extends Record<string, any>,
+  TParams extends Record<string, string>,
+> = string extends keyof TParams
+  /*
+   * No path was declared, so `TParams` is the wide `Record<string, string>`
+   * default and its `keyof` is `string`. Merging that would `Omit` every key
+   * from `TFields` and leave the fields typed as strings - so an action with
+   * validations but no `path:` would have had its inferred body erased. When
+   * nothing is known about the params, the fields are the whole answer.
+   */
+  ? TFields
+  : Omit<TFields, keyof TParams> & TParams
+
 export type RequestValidationRules = Record<string, string | {
   rule: { validate: (value: any) => any }
   message?: string | Record<string, string>
@@ -276,14 +303,15 @@ export interface RequestInstance<
    * Get input value from any source (query, body, params)
    * @example request.get('title')           // returns string (when model-aware)
    * @example request.get('views', 0)        // returns number with default
+   * @example request.get('id')              // path params count too
    */
-  get<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  get<K extends keyof TInput<TFields, TParams> & string>(key: K, defaultValue?: TInput<TFields, TParams>[K]): TInput<TFields, TParams>[K]
   get<T = any>(key: string, defaultValue?: T): T
 
   /**
    * Alias for get() - Laravel compatibility
    */
-  input<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  input<K extends keyof TInput<TFields, TParams> & string>(key: K, defaultValue?: TInput<TFields, TParams>[K]): TInput<TFields, TParams>[K]
   input<T = any>(key: string, defaultValue?: T): T
 
   /**

@@ -5,10 +5,13 @@ import type { ExtractParams, InferValidations, JobOptions, RequestInstance } fro
  * ts-validation `Validator<T>` rule with an optional error message.
  *
  * Kept loose at the index-signature level so existing actions with
- * untyped validation objects keep compiling. New code that wants the
- * body-inference benefit (stacksjs/stacks#1851 Phase 2b) declares
- * validations `as const` so {@link InferValidations} can read the
- * concrete rule types.
+ * untyped validation objects keep compiling. Anything that declares
+ * `validations` gets the body inference (stacksjs/stacks#1851 Phase 2b) for
+ * free - this used to say `as const` was needed for
+ * {@link InferValidations} to read the concrete rule types, and it is not:
+ * a `Validator<T>` carries its own output type, so an ordinary object
+ * literal infers exactly the same. The note sent people adding an `as const`
+ * that changed nothing.
  *
  * Exported so the router can run validations without redeclaring the
  * type (stacksjs/stacks#1870 R-3 — the previous copy in
@@ -96,10 +99,35 @@ interface ActionOptions<
    * inferred falls back to - the behaviour every action had before.
    */
   TResult extends ActionResult = ActionResult,
+  /**
+   * How this action is invoked, which decides what `handle` is handed.
+   *
+   * `'http'` (the default) means the router calls it with a request.
+   * `'event'` means something dispatches to it with a payload - the
+   * `app/Events.ts` map does exactly that, calling `handle(payload, event)`
+   * with the event object and no request anywhere near it.
+   *
+   * The distinction was already real and only expressible as the fourth
+   * positional type argument (`new Action<string, undefined, '', Payload>`),
+   * so almost nothing declared it - and an action wired to an event while
+   * written against a request threw `request.get is not a function` the first
+   * time its event fired. Saying `invocation: 'event'` types `handle`'s
+   * parameter as the payload, inferred from `validations`.
+   */
+  TInvocation extends 'http' | 'event' = 'http',
 > {
   name?: string
   description?: string
   apiResponse?: boolean
+  /**
+   * How this action is invoked. See {@link TInvocation}.
+   *
+   * Declaring `'event'` types `handle`'s parameter as the payload described by
+   * `validations`, instead of as a request. It documents the action, and it is
+   * what `app/Events.ts` actually does with it - it does not itself register
+   * anything, which the map is still responsible for.
+   */
+  invocation?: TInvocation
   validations?: TValidations
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   rate?: JobOptions['rate']
@@ -220,7 +248,17 @@ interface ActionOptions<
   ) => void | Response | Promise<void | Response>
   handle: {
     bivarianceHack: (
-      request: [TPayload] extends [never] ? InferRequest<TModel, TValidations, TPath> : TPayload,
+      request: [TPayload] extends [never]
+        ? (TInvocation extends 'event'
+            /*
+             * Dispatched to, not requested. The payload is whatever the
+             * dispatcher sent, described by `validations` - the same
+             * declaration that validates it, so the shape and the check
+             * cannot drift apart.
+             */
+            ? ResolveBody<TModel, TValidations>
+            : InferRequest<TModel, TValidations, TPath>)
+        : TPayload,
     ) => TResult | Promise<TResult>
   }['bivarianceHack']
   /**
@@ -289,10 +327,14 @@ export class Action<
   TPayload = never,
   /** @see {@link ActionOptions} - inferred from `handle`'s return type. */
   TResult extends ActionResult = ActionResult,
+  /** @see {@link ActionOptions} - `'event'` types `handle` with the payload. */
+  TInvocation extends 'http' | 'event' = 'http',
 > {
   name?: string
   description?: string
   apiResponse?: boolean
+  /** @see {@link ActionOptions.invocation} */
+  invocation?: TInvocation
   rate?: ActionOptions['rate']
   tries?: ActionOptions['tries']
   backoff?: ActionOptions['backoff']
@@ -315,7 +357,7 @@ export class Action<
   authorize?: ActionOptions<TModel, TValidations, TPath>['authorize']
   /** @see {@link ActionOptions.before} */
   before?: ActionOptions<TModel, TValidations, TPath>['before']
-  handle: ActionOptions<TModel, TValidations, TPath, TPayload, TResult>['handle']
+  handle: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>['handle']
   model?: string
   /**
    * Original model definition used for request validation.
@@ -345,6 +387,7 @@ export class Action<
     name,
     description,
     apiResponse,
+    invocation,
     validations,
     handle,
     rate,
@@ -363,8 +406,9 @@ export class Action<
     authorize,
     before,
     dependencies,
-  }: ActionOptions<TModel, TValidations, TPath, TPayload, TResult>) {
+  }: ActionOptions<TModel, TValidations, TPath, TPayload, TResult, TInvocation>) {
     this.name = name
+    this.invocation = invocation
     this.description = description
     this.apiResponse = apiResponse
     this.validations = validations

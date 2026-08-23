@@ -463,14 +463,24 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
     expect(content).toContain('= Record<string, any>>')
   })
 
-  test('get() method narrows key to keyof TFields', () => {
+  /*
+   * Keyed on `TInput`, not `TFields` alone.
+   *
+   * `get()` and `input()` read one merged bag - `getAllInputFor` folds query,
+   * then body, then route params - so a path param is as reachable through
+   * `request.get('id')` as a validated body field is. Keyed on `TFields`,
+   * `request.params.id` was `string` while `request.get('id')` beside it was
+   * `any`: the same value, typed on one route in and not the other. These
+   * asserted the narrower form, which is why widening it showed up here.
+   */
+  test('get() narrows the key across fields AND path params', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('get<K extends keyof TFields & string>(key: K')
+    expect(content).toContain('get<K extends keyof TInput<TFields, TParams> & string>(key: K')
   })
 
-  test('input() method narrows key to keyof TFields', () => {
+  test('input() narrows the key across fields AND path params', () => {
     const content = readFileSync(requestFile, 'utf-8')
-    expect(content).toContain('input<K extends keyof TFields & string>(key: K')
+    expect(content).toContain('input<K extends keyof TInput<TFields, TParams> & string>(key: K')
   })
 
   test('only() method returns Pick<TFields, K>', () => {

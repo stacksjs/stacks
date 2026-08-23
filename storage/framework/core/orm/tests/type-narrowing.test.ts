@@ -147,7 +147,9 @@ describe('RequestInstance<TFields> narrowing structure', () => {
   test('get() return type is TFields[K] (not any)', () => {
     // Method-shorthand, because `get` is overloaded (narrow + wide forms);
     // an arrow property cannot carry overloads.
-    expect(content).toContain('get<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]')
+    // See the note in `type-compile-check.test.ts`: keyed on the merged
+    // input bag, so a path param is as typed as a validated body field.
+    expect(content).toContain('get<K extends keyof TInput<TFields, TParams> & string>(key: K, defaultValue?: TInput<TFields, TParams>[K]): TInput<TFields, TParams>[K]')
   })
 
   test('validate() return type is TFields (not any)', () => {
