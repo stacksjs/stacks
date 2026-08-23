@@ -1,0 +1,185 @@
+<script server>
+/*
+ * One template, every use case page.
+ *
+ * Content comes from resources/data/use-cases.ts, which the mega menu and
+ * the /use-cases overview read too, so a new use case is one entry there and
+ * no new file.
+ *
+ * Like /features/:slug, this route matches every URL under /use-cases,
+ * including the ones that name nothing, so the view declares the status
+ * itself with notFound(). Without it the not-found body still renders and
+ * still looks right, but goes out under a 200, which tells crawlers, caches,
+ * and uptime checks that every misspelling is a real page.
+ */
+import { featureBySlug } from '../../data/features'
+import { highlight } from '../../data/highlight'
+import { useCaseBySlug } from '../../data/use-cases'
+
+const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const useCase = useCaseBySlug(requestedSlug)
+
+if (!useCase)
+  notFound()
+
+const pageTitle = useCase
+  ? `${useCase.title} - Stacks`
+  : 'Use case not found - Stacks'
+
+const pageDescription = useCase ? useCase.blurb : 'That use case page does not exist.'
+const canonicalPath = useCase ? `/use-cases/${useCase.slug}` : '/use-cases'
+
+// The data file holds plain source; it becomes tok-* spans here rather than
+// being written as markup by hand.
+const codeHtml = useCase ? highlight(useCase.page.code.code) : ''
+
+// Feature slugs into feature records, so a layer named here links to the
+// page that describes it. The filter is what keeps a stale slug from
+// rendering an empty chip.
+const stack = useCase
+  ? useCase.page.stack.map(featureBySlug).filter(Boolean)
+  : []
+
+const related = useCase
+  ? useCase.page.related.map(useCaseBySlug).filter(Boolean)
+  : []
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        @if (useCase)
+          <section class="page-hero site-shell">
+            <div>
+              <div class="breadcrumb">
+                <a href="/use-cases">Use cases</a>
+                <i class="i-hugeicons-arrow-right-01" aria-hidden="true"></i>
+                <span>{{ useCase.title }}</span>
+              </div>
+
+              <div class="page-glyph"><i class="{{ useCase.icon }}" aria-hidden="true"></i></div>
+              <span class="kicker">{{ useCase.page.kicker }}</span>
+              <h1 class="page-title">{{ useCase.page.headline }}</h1>
+              <p class="page-lede">{{ useCase.page.lede }}</p>
+
+              <div class="hero-actions">
+                <a class="button primary" href="{{ useCase.page.docs }}" data-no-router>Read the docs</a>
+                <a class="button" href="/use-cases">All use cases</a>
+              </div>
+            </div>
+
+            <aside class="product-preview" aria-label="{{ useCase.title }} in code">
+              <div class="code-window">
+                <div class="code-titlebar">
+                  <span class="code-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                  <span class="code-file">{{ useCase.page.code.file }}</span>
+                </div>
+                <pre class="code-body"><code>{!! codeHtml !!}</code></pre>
+              </div>
+            </aside>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="challenges-heading">
+            <div class="section-head">
+              <h2 id="challenges-heading" class="section-title">What this always turns out to involve.</h2>
+              <p class="section-copy">The work that arrives whether you planned for it or not.</p>
+            </div>
+
+            <div class="challenge-grid">
+              @foreach (useCase.page.challenges as challenge)
+                <article class="challenge rise">
+                  <h3>{{ challenge.title }}</h3>
+                  <p>{{ challenge.text }}</p>
+                </article>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="capabilities-heading">
+            <div class="section-head">
+              <h2 id="capabilities-heading" class="section-title">What is already in the box.</h2>
+              <p class="section-copy">All of it in the same install, typed against the rest of your application.</p>
+            </div>
+
+            <div class="capability-grid">
+              @foreach (useCase.page.capabilities as capability)
+                <article class="capability rise">
+                  <h3>{{ capability.title }}</h3>
+                  <p>{{ capability.text }}</p>
+                </article>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="stack-heading">
+            <div class="section-head">
+              <h2 id="stack-heading" class="section-title">The layers it leans on.</h2>
+              <p class="section-copy">Every one of these ships in the same install. Follow one to see what it covers.</p>
+            </div>
+
+            <div class="stack-strip rise">
+              @foreach (stack as feature)
+                <a class="stack-chip" href="/features/{{ feature.slug }}">
+                  <i class="{{ feature.icon }}" aria-hidden="true"></i>
+                  {{ feature.title }}
+                </a>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="commands-heading">
+            <div class="section-head">
+              <h2 id="commands-heading" class="section-title">From the command line.</h2>
+              <p class="section-copy">Buddy scaffolds, runs, and ships this the same way it does the rest of the app.</p>
+            </div>
+
+            <div class="command-strip rise">
+              @foreach (useCase.page.commands as command)
+                <span>{{ command }}</span>
+              @endforeach
+            </div>
+          </section>
+
+          <section class="section site-shell" aria-labelledby="related-heading">
+            <div class="section-head">
+              <h2 id="related-heading" class="section-title">Next door to this.</h2>
+              <p class="section-copy">Projects of this shape usually grow into one of these.</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (related as other)
+                <a class="related-card rise" href="/use-cases/{{ other.slug }}">
+                  <h3><i class="{{ other.icon }}" aria-hidden="true"></i>{{ other.title }}</h3>
+                  <p>{{ other.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @else
+          <section class="page-hero page-hero--solo site-shell">
+            <div class="not-found-panel">
+              <span class="kicker">Not found</span>
+              <h1 class="page-title">No use case by that name.</h1>
+              <p class="page-lede">The URL does not match anything on this site. The full list is one click away.</p>
+              <div class="hero-actions">
+                <a class="button primary" href="/use-cases">All use cases</a>
+                <a class="button" href="/">Back to home</a>
+              </div>
+            </div>
+          </section>
+        @endif
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>

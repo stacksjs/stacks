@@ -1,0 +1,82 @@
+<script server>
+/*
+ * The overview at /use-cases: all eighteen, grouped the way the mega menu
+ * groups them, from the same data. It is also where the menu's trigger
+ * lands on a touch device, which has no hover to open a panel with.
+ */
+import { useCaseGroups, useCases, useCasesInGroup } from '../../data/use-cases'
+
+const pageTitle = 'Use cases - Stacks'
+const pageDescription = 'SaaS, commerce, marketplaces, content sites, docs, APIs, realtime, background work, AI, admin tools, and multi-tenant platforms. What teams build with Stacks, and what ships in the box for each.'
+const canonicalPath = '/use-cases'
+
+const groups = useCaseGroups.map(group => ({
+  ...group,
+  items: useCasesInGroup(group.id),
+}))
+
+const total = useCases.length
+</script>
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    @include('marketing-head')
+  </head>
+  <body>
+    <div class="site-content">
+      @include('marketing-nav')
+
+      <main>
+        <section class="page-hero page-hero--solo site-shell">
+          <div>
+            <span class="kicker">Use cases</span>
+            <h1 class="page-title">One framework, {{ total }} shapes of project.</h1>
+            <p class="page-lede">
+              These are not editions, tiers, or starter templates. They are the same install pointed at a different problem, which is the whole argument: the SaaS you build next year and the store you build after it share a schema, a queue, a mailer, and a deploy command.
+            </p>
+            <div class="hero-actions">
+              <a class="button primary" href="/docs" data-no-router>Read the docs</a>
+              <a class="button" href="/compare">Compare frameworks</a>
+            </div>
+          </div>
+        </section>
+
+        @foreach (groups as group)
+          <section class="feature-group site-shell" aria-labelledby="group-{{ group.id }}">
+            <div class="feature-group-head">
+              <h2 id="group-{{ group.id }}">{{ group.title }}</h2>
+              <p>{{ group.text }}</p>
+            </div>
+
+            <div class="related-grid">
+              @foreach (group.items as useCase)
+                <a class="related-card rise" href="/use-cases/{{ useCase.slug }}">
+                  <h3><i class="{{ useCase.icon }}" aria-hidden="true"></i>{{ useCase.title }}</h3>
+                  <p>{{ useCase.blurb }}</p>
+                </a>
+              @endforeach
+            </div>
+          </section>
+        @endforeach
+
+        <section class="section site-shell" aria-labelledby="start-heading">
+          <div class="rise signup-panel">
+            <div class="section-head" style="margin-bottom: 0">
+              <h2 id="start-heading" class="section-title">Whichever one you are building.</h2>
+              <p class="section-copy">buddy new gets you the whole framework. Nothing on this page is an add-on.</p>
+            </div>
+            <div class="hero-actions">
+              <a class="button primary" href="/features">All features</a>
+              <a class="button" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      @include('marketing-footer')
+    </div>
+
+    @include('marketing-theme-toggle')
+  </body>
+</html>
