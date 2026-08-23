@@ -124,3 +124,39 @@ export interface RouterInstance {
   ip: () => string | null
   ipForRateLimit: () => string | null
 }
+
+/*
+ * ── Typed routes ──────────────────────────────────────────────────────────
+ *
+ * The contract between `createTypedRouter()` in `@stacksjs/router` and
+ * `createTypedClient()` in `@stacksjs/api`. It lives here rather than in
+ * either of them so neither has to import the other to describe a route, and
+ * so the two halves cannot drift into disagreeing about what a route is.
+ */
+
+/** One route: what a client sends, what it gets back, what the path needs. */
+export interface TypedRoute {
+  input: unknown
+  output: unknown
+  params: Record<string, string>
+}
+
+/** A whole API, keyed `"METHOD /path"` (e.g. `"GET /v1/projects"`). */
+export type TypedRouteMap = Record<string, TypedRoute>
+
+/**
+ * The route map behind a typed router, or the map itself.
+ *
+ * `createTypedRouter()` accumulates its map into a phantom `__routes`
+ * property, so `typeof api` carries it and this reads it back out. Passing a
+ * map type directly works too - which is what `RoutesOf<typeof api>` gives
+ * you, and what an application that would rather name its API explicitly will
+ * export.
+ */
+export type RouteMapOf<T> = T extends { __routes?: infer R }
+  ? ([R] extends [TypedRouteMap | undefined] ? NonNullable<R> : never)
+  : (T extends TypedRouteMap ? T : never)
+
+/** The paths one method serves, as a union of path literals. */
+export type PathsForMethod<R extends TypedRouteMap, M extends string>
+  = Extract<keyof R, `${M} ${string}`> extends `${M} ${infer P}` ? P : never

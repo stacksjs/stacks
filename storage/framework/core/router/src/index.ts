@@ -63,6 +63,29 @@ export { listRegisteredRoutes, routeParams } from './stacks-router'
 export { isRouterAction, wrapAction } from './stacks-router'
 export type { ChainableRoute, RouterAction, StacksHandler, StacksRouterInstance } from './stacks-router'
 
+/*
+ * Zero-generation typed routes.
+ *
+ * `createTypedRouter()` registers through the ordinary router - one runtime
+ * dispatch path - while accumulating a route map into its own type, so a
+ * TypeScript consumer gets input and output inference with no CLI step between
+ * changing a route and seeing the type change. See `typed-router.ts` for what
+ * this is and, just as importantly, what it is not; `@stacksjs/api`'s
+ * `createTypedClient` is the other half.
+ */
+export { createTypedRouter } from './typed-router'
+export type {
+  ActionInput,
+  ActionOutput,
+  AnyAction,
+  PathsFor,
+  RoutesOf,
+  TypedRoute,
+  TypedRouteMap,
+  TypedRouteOptions,
+  TypedRouter,
+} from './typed-router'
+
 // Route-model binding (stacksjs/stacks#2231): what lets `can:view,site`
 // reach `SitePolicy.view(user, site)` instead of handing the policy layer a
 // raw path string it can never match a policy against.
