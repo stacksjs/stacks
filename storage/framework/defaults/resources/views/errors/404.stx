@@ -24,7 +24,7 @@
       framework accent: it sits inches from the artwork, and a blue mark
       against a warm dusk scene reads as a mistake in any app's brand. The
       dark value is the same ramp's coral, from the scene's night variant. -->
-    <div class="my-6 h-1 w-14 bg-[#b63e59] dark:bg-[#ee7566] rounded-full"></div>
+    <div class="my-6 h-1 w-14 bg-[#c14a15] dark:bg-[#ff8a4c] rounded-full"></div>
 
     <h1 class="mb-2 font-semibold text-2xl text-neutral-950 dark:text-white">Page not found</h1>
 

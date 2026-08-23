@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 560" role="img" aria-label="Stacks National Park — trail at dawn">
   <defs>
     <linearGradient id="t-sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#5a1436"/>
+      <stop offset="0" stop-color="#6e3014"/>
       <stop offset="0.45" stop-color="#d5812f"/>
       <stop offset="0.72" stop-color="#e7ad4f"/>
       <stop offset="1" stop-color="#f5dfb8"/>
@@ -30,12 +30,12 @@
     <path d="M262 312 l15 21 l-7 -1 l-8 3 l-8 -3 l-7 1 Z" fill="#fbf3df" opacity="0.9"/>
     <path d="M110 318 l13 18 l-6 -1 l-7 3 l-7 -3 l-6 1 Z" fill="#fbf3df" opacity="0.85"/>
     <!-- front hills -->
-    <path d="M26 470 C120 420 150 470 240 452 C320 436 360 472 414 452 V534 H26 Z" fill="#3c1030"/>
+    <path d="M26 470 C120 420 150 470 240 452 C320 436 360 472 414 452 V534 H26 Z" fill="#2b1309"/>
     <!-- winding trail -->
     <path d="M214 534 C206 500 250 486 244 458 C238 432 196 430 206 404 C214 384 246 384 240 366" fill="none" stroke="url(#t-trail)" stroke-width="22" stroke-linecap="round"/>
     <path d="M214 534 C206 500 250 486 244 458 C238 432 196 430 206 404 C214 384 246 384 240 366" fill="none" stroke="#fbf3df" stroke-width="22" stroke-linecap="round" stroke-dasharray="2 20" opacity="0.5"/>
     <!-- pines -->
-    <g fill="#2a1720">
+    <g fill="#2a160c">
       <path d="M70 500 l16 34 h-32 z M70 480 l13 26 h-26 z M70 466 l10 20 h-20 z"/>
       <path d="M360 506 l18 38 h-36 z M360 484 l14 30 h-28 z M360 468 l11 22 h-22 z"/>
       <path d="M120 514 l12 26 h-24 z M120 500 l9 18 h-18 z"/>
@@ -44,7 +44,7 @@
 
   <!-- banner -->
   <g>
-    <rect x="56" y="468" width="328" height="58" rx="8" fill="#3c1030"/>
+    <rect x="56" y="468" width="328" height="58" rx="8" fill="#2b1309"/>
     <rect x="56" y="468" width="328" height="58" rx="8" fill="none" stroke="#df9a2f" stroke-width="2"/>
     <text x="220" y="496" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="700" letter-spacing="6" fill="#fbf3df">STACKS</text>
     <text x="220" y="514" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="9" letter-spacing="4" fill="#df9a2f">· EST. 2026 · TYPESCRIPT &amp; BUN ·</text>

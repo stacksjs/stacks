@@ -26,9 +26,9 @@ const backgroundImage = props.backgroundImage || '/svgs/404.svg'
         Sorry, we couldn't find the page you're looking for.
       </p>
 
-      <!-- Same deep rose as the illustration beside it. White on #b63e59 is
-        5.49:1 and on the #a22a50 hover 7.04:1, so both states clear AA. -->
-      <a href="/" class="inline-block mt-10 px-4 py-2 text-white bg-[#b63e59] hover:bg-[#a22a50] rounded">
+      <!-- Same ember as the illustration beside it. White on #c14a15 is
+        4.93:1 and on the #9c3510 hover 7.17:1, so both states clear AA. -->
+      <a href="/" class="inline-block mt-10 px-4 py-2 text-white bg-[#c14a15] hover:bg-[#9c3510] rounded">
         Go back home
       </a>
     </main>
