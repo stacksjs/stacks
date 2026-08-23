@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.54...v0.72.55)
+
+## ✨ Features
+
+- **marketing**: link the two hubs from the home page ([a67aec5](https://github.com/stacksjs/stacks/commit/a67aec5)) _(by Chris <chris@stacksjs.com>)_
+- **branding**: repaint the illustrations in the sunset ramp ([338fbc1](https://github.com/stacksjs/stacks/commit/338fbc1)) _(by Chris <chris@stacksjs.com>)_ ([#71230](https://github.com/stacksjs/stacks/issues/71230), [#9](https://github.com/stacksjs/stacks/issues/9), [#180](https://github.com/stacksjs/stacks/issues/180), [#2](https://github.com/stacksjs/stacks/issues/2))
+
+## 🐛 Bug Fixes
+
+- **deploy**: register the DKIM key that actually signs the domain ([49ba7e7](https://github.com/stacksjs/stacks/commit/49ba7e7)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: say which DNS record was refused, and which were ignored ([289f7e2](https://github.com/stacksjs/stacks/commit/289f7e2)) _(by Chris <chris@stacksjs.com>)_
+- **dns**: make the sync plan say what it will and will not publish ([192efd9](https://github.com/stacksjs/stacks/commit/192efd9)) _(by Chris <chris@stacksjs.com>)_
+
+## 💄 Styles
+
+- **marketing**: give every comparison its own glyph ([0dc36e2](https://github.com/stacksjs/stacks/commit/0dc36e2)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **deploy**: pin that the dead DKIM key is never minted again ([7e30fe0](https://github.com/stacksjs/stacks/commit/7e30fe0)) _(by Chris <chris@stacksjs.com>)_
+- **marketing**: pin the hardcoded links and fragments ([357af53](https://github.com/stacksjs/stacks/commit/357af53)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **config**: drop the DNS scaffold sample from this app ([a86bc84](https://github.com/stacksjs/stacks/commit/a86bc84)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.53...v0.72.54)
 
 ## ✨ Features
