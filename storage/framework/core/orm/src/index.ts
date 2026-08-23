@@ -41,6 +41,12 @@ export * from './db'
 export * from './subquery'
 export * from './transaction'
 export * from './model-types'
+/*
+ * The endpoints a `useApi` model publishes, derived from the model definition
+ * at compile time so a typed client can call generated CRUD with no generation
+ * step. Type-only; nothing here runs.
+ */
+export type * from './api-routes'
 export * from './types'
 export * from './utils'
 export * from './define-model'
