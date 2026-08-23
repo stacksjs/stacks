@@ -15,7 +15,8 @@
  */
 
 import process from 'node:process'
-import { createStacksRouter } from '@stacksjs/router'
+import { Action } from '@stacksjs/actions'
+import { createStacksRouter, createTypedRouter } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
@@ -28,15 +29,27 @@ router.get('/bench/json', () => ({ hello: 'world' }))
 
 router.get('/bench/users/{id}', (req: any) => ({ id: req.params.id }))
 
-const echo = router.post('/bench/echo', async (req: any) => {
-  const validated = await req.validate({
+/*
+ * A real action, registered by import through the typed router.
+ *
+ * Scenario 3 is meant to price "a JSON body through the framework's schema
+ * validation", and in Stacks that means the action pipeline: declared
+ * `validations`, the `authorize`/`before` hooks, `formatResult`. An inline
+ * handler calling `request.validate()` skips most of it and would flatter the
+ * number.
+ */
+const EchoAction = new Action({
+  name: 'BenchEcho',
+  validations: {
     name: { rule: schema.string() },
     count: { rule: schema.number() },
-  })
-  return { name: validated.name, count: validated.count }
+  },
+  handle(request: any) {
+    return { name: request.get('name'), count: request.get('count') }
+  },
 })
-if (minimal)
-  echo.skipCsrf()
+
+createTypedRouter(router).post('/bench/echo', EchoAction, minimal ? { skipCsrf: true } : undefined)
 
 if (withDb) {
   // Imported lazily so the two DB-free profiles never pay for the database
