@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.51...v0.72.52)
+
+## 🐛 Bug Fixes
+
+- **database**: stop the FK audit warning about tables it never migrated ([d13fae3](https://github.com/stacksjs/stacks/commit/d13fae3)) _(by Chris <chris@stacksjs.com>)_
+- **database**: commit the consent_events migrations de2cd4bfa7 left out ([7a1dc2f](https://github.com/stacksjs/stacks/commit/7a1dc2f)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.50...v0.72.51)
 
 ## ✨ Features
