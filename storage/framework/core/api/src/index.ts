@@ -4,10 +4,12 @@ export * from './generate-openapi'
 export * from './generate-types'
 export * from './resource'
 
+
 /*
- * The zero-generation typed client. Also reachable as
- * `@stacksjs/api/typed-client`, which is the import a browser bundle should
- * use - this barrel pulls in the OpenAPI generator, which has no business in
- * one.
+ * The zero-generation typed client is NOT here. It lives in
+ * `@stacksjs/bun-router` (re-exported by `@stacksjs/router`), because nothing
+ * in it is specific to Stacks and a client has no business being reachable
+ * only through a barrel that pulls in the OpenAPI generator. Import
+ * `createTypedClient` from `@stacksjs/router`, or from `@stacksjs/bun-router`
+ * directly in a browser bundle.
  */
-export * from './typed-client'

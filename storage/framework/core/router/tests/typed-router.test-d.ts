@@ -12,8 +12,7 @@
  */
 
 import { Action } from '@stacksjs/actions'
-import { createTypedClient } from '@stacksjs/api/typed-client'
-import { createTypedRouter } from '@stacksjs/router'
+import { createTypedClient, createTypedRouter } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
 type Equal<TLeft, TRight>

@@ -10,7 +10,7 @@
 import { Action } from '@stacksjs/actions'
 import { schema } from '@stacksjs/validation'
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { createTypedClient, TypedClientError } from '../../api/src/typed-client'
+import { createTypedClient, TypedClientError } from '@stacksjs/bun-router'
 import { createStacksRouter } from '../src/stacks-router'
 import { createTypedRouter } from '../src/typed-router'
 
