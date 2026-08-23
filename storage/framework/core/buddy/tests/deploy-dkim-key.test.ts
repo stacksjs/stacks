@@ -211,6 +211,24 @@ describe('the domain that IS the global DKIM_DOMAIN', () => {
   })
 })
 
+describe('the global DKIM_DOMAIN after the leftover key is gone', () => {
+  const runs = runDkim({
+    DKIM_DOMAIN: 'example.com',
+    DKIM_SELECTOR: 'mail',
+    DKIM_PRIVATE_KEY_PATH: '/opt/mail/dkim/mail.private',
+    DKIM_EXTRA_KEYS: 'example.com:mail:/opt/mail/dkim/mail.private',
+  }, { runs: 2 })
+
+  it('never mints the per-domain key again', () => {
+    // The state a box is in once the operator removes the dead key. A deploy
+    // that quietly recreated it would put the warning back forever.
+    expect(runs[0].files).toEqual(['mail.private'])
+    expect(runs[0].keys.DKIMSTALE).toBeUndefined()
+    expect(runs[0].envChanged).toBe(false)
+    expect(runs[1].files).toEqual(['mail.private'])
+  })
+})
+
 describe('a domain when another domain holds the global signer', () => {
   const runs = runDkim({
     DKIM_DOMAIN: 'other.com',
