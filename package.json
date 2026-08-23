@@ -58,6 +58,7 @@
     "typecheck:clean": "bunx --bun rimraf storage/framework/.cache/typescript",
     "types:check": "bun run typecheck",
     "types:fix": "./buddy types:fix",
+    "bench:routing": "bun bench/routing/run.ts",
     "test": "./buddy test",
     "test:ui": "./buddy test:ui",
     "test:coverage": "./buddy test:coverage",
