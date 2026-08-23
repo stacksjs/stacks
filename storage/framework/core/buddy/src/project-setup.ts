@@ -1,4 +1,15 @@
 const APP_KEY_OPTIONAL_COMMANDS = [
+  /*
+   * `env:*` reads and writes an encrypted `.env` file and touches nothing else.
+   *
+   * It needs no application key — it *is* how a key gets set — and no
+   * scaffolded project: encryption is useful in any repository that has
+   * credentials to keep, which is what a standalone `bunx @stacksjs/buddy
+   * env:get` is for. Requiring a Stacks app to decrypt a value made buddy
+   * unusable as the env CLI for every project that is not one, and each of them
+   * then wrote its own wrapper around the same `@stacksjs/env` functions.
+   */
+  'env',
   'build',
   'lint',
   'lint:fix',
