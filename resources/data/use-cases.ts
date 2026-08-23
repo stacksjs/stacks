@@ -59,7 +59,7 @@ export const useCases: UseCase[] = [
   {
     slug: 'saas',
     title: 'SaaS applications',
-    blurb: 'Accounts, teams, billing, jobs, and an admin dashboard from the first commit.',
+    blurb: 'Accounts, teams, billing, jobs, and an admin panel on day one.',
     icon: 'i-hugeicons-rocket-01',
     group: 'products',
     page: {
@@ -113,7 +113,7 @@ export default defineModel({
   {
     slug: 'ecommerce',
     title: 'Online stores',
-    blurb: 'Products, carts, checkout, payments, shipping, tax, and receipts as first-party models.',
+    blurb: 'Products, carts, checkout, payments, shipping, tax, and receipts.',
     icon: 'i-hugeicons-shopping-cart-01',
     group: 'products',
     page: {
@@ -166,7 +166,7 @@ export default new Action({
   {
     slug: 'marketplaces',
     title: 'Marketplaces',
-    blurb: 'Two-sided products where sellers, payouts, and moderation matter as much as the storefront.',
+    blurb: 'Two-sided products where sellers and payouts matter as much as sales.',
     icon: 'i-hugeicons-store-01',
     group: 'products',
     page: {
@@ -219,7 +219,7 @@ export default {
   {
     slug: 'content-sites',
     title: 'Content sites and blogs',
-    blurb: 'Posts, authors, categories, comments, feeds, and sitemaps without a separate CMS to host.',
+    blurb: 'Posts, authors, categories, comments, feeds, and sitemaps.',
     icon: 'i-hugeicons-note-edit',
     group: 'products',
     page: {
@@ -274,7 +274,7 @@ export default defineModel({
   {
     slug: 'marketing-sites',
     title: 'Marketing sites',
-    blurb: 'Fast static-feeling pages with forms, analytics, and a CMS behind them when you need one.',
+    blurb: 'Fast pages with forms, analytics, and a CMS behind them.',
     icon: 'i-hugeicons-megaphone-02',
     group: 'products',
     page: {
@@ -326,7 +326,7 @@ const pageTitle = 'Stacks'
   {
     slug: 'documentation',
     title: 'Documentation sites',
-    blurb: 'Markdown docs, search, versioning, and API references that deploy with the code they describe.',
+    blurb: 'Markdown docs, search, and API references that ship with the code.',
     icon: 'i-hugeicons-book-open-01',
     group: 'products',
     page: {
@@ -380,7 +380,7 @@ const pageTitle = 'Stacks'
   {
     slug: 'mobile-and-desktop',
     title: 'Mobile and desktop apps',
-    blurb: 'Native iOS, Android, and desktop builds sharing the API, models, and types of the web app.',
+    blurb: 'Native iOS, Android, and desktop builds on the same typed API.',
     icon: 'i-hugeicons-smart-phone-01',
     group: 'products',
     page: {
@@ -429,7 +429,7 @@ const pageTitle = 'Stacks'
   {
     slug: 'apis',
     title: 'APIs and backends',
-    blurb: 'Typed REST endpoints, validation, auth, rate limits, and an OpenAPI spec generated from the routes.',
+    blurb: 'Typed REST endpoints, validation, auth, and a generated spec.',
     icon: 'i-hugeicons-share-08',
     group: 'workloads',
     page: {
@@ -476,7 +476,7 @@ route.group({ prefix: '/v1', middleware: ['auth'] }, () => {
   {
     slug: 'realtime',
     title: 'Realtime apps',
-    blurb: 'WebSocket channels, presence, and live dashboards driven by the models that changed.',
+    blurb: 'WebSocket channels, presence, and live dashboards.',
     icon: 'i-hugeicons-satellite-02',
     group: 'workloads',
     page: {
@@ -524,7 +524,7 @@ export default async function (order) {
   {
     slug: 'background-jobs',
     title: 'Background workloads',
-    blurb: 'Queues, batches, schedules, retries, and workers that scale without a separate scheduler.',
+    blurb: 'Queues, batches, schedules, retries, and workers.',
     icon: 'i-hugeicons-time-schedule',
     group: 'workloads',
     page: {
@@ -575,7 +575,7 @@ export default async function (order) {
   {
     slug: 'ai-apps',
     title: 'AI applications',
-    blurb: 'Anthropic, OpenAI, Bedrock, and Ollama drivers with RAG, embeddings, and MCP in the framework.',
+    blurb: 'Anthropic, OpenAI, Bedrock, and Ollama, with RAG and embeddings.',
     icon: 'i-hugeicons-ai-chat-02',
     group: 'workloads',
     page: {
@@ -628,7 +628,7 @@ export default {
   {
     slug: 'internal-tools',
     title: 'Internal tools and admin',
-    blurb: 'Dashboards, back offices, and operations screens generated from the models you already have.',
+    blurb: 'Dashboards and back offices generated from your models.',
     icon: 'i-hugeicons-dashboard-square-01',
     group: 'workloads',
     page: {
@@ -675,7 +675,7 @@ export default {
   {
     slug: 'multi-tenant-platforms',
     title: 'Multi-tenant platforms',
-    blurb: 'One deploy serving many customers, with scoping, custom domains, and per-tenant mail.',
+    blurb: 'One deploy serving many customers, domains, and mail senders.',
     icon: 'i-hugeicons-building-03',
     group: 'workloads',
     page: {
@@ -724,7 +724,7 @@ export default new Middleware({
   {
     slug: 'startups',
     title: 'Startups',
-    blurb: 'Ship the first version in days, and still be able to change it in year two.',
+    blurb: 'Ship in days, and still be able to change it in year two.',
     icon: 'i-hugeicons-bulb',
     group: 'teams',
     page: {
@@ -770,7 +770,7 @@ buddy deploy`,
   {
     slug: 'agencies',
     title: 'Agencies and studios',
-    blurb: 'The same stack on every client project, with a handover that does not need you afterwards.',
+    blurb: 'One stack on every client project, and a clean handover.',
     icon: 'i-hugeicons-briefcase-01',
     group: 'teams',
     page: {
@@ -820,7 +820,7 @@ buddy deploy`,
   {
     slug: 'enterprise',
     title: 'Enterprise teams',
-    blurb: 'Typed boundaries, auditability, RBAC, and infrastructure that lives in code review.',
+    blurb: 'Typed boundaries, auditability, RBAC, and reviewable infrastructure.',
     icon: 'i-hugeicons-building-06',
     group: 'teams',
     page: {
@@ -866,7 +866,7 @@ gate.define('report.export', user => user.hasRole('analyst'))`,
   {
     slug: 'solo-developers',
     title: 'Solo developers',
-    blurb: 'One person, one stack, and no glue code to maintain in your spare time.',
+    blurb: 'One person, one stack, and no glue code to maintain.',
     icon: 'i-hugeicons-user-group',
     group: 'teams',
     page: {
@@ -916,7 +916,7 @@ export default new Action({
   {
     slug: 'open-source-libraries',
     title: 'Open-source libraries',
-    blurb: 'Build, type, document, test, and publish framework-agnostic packages from one project.',
+    blurb: 'Build, type, document, test, and publish framework-agnostic packages.',
     icon: 'i-hugeicons-package',
     group: 'teams',
     page: {

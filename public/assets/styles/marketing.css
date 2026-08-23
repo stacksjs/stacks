@@ -1231,7 +1231,7 @@ input[type="email"]:focus {
 
 .footer-top {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.4fr);
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 3fr);
   gap: clamp(1.75rem, 4vw, 3.5rem);
   padding-bottom: clamp(2rem, 4vw, 3rem);
 }
@@ -1264,7 +1264,7 @@ input[type="email"]:focus {
 
 .footer-columns {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 1.6rem 1.4rem;
 }
 
