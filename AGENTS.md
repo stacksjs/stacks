@@ -145,9 +145,24 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 60+ models (`User`, `Product`, `Order`, ...) with their `Model` / `Request` / `RequestModel`
-  variants, so `await User.find(1)` works with no import.
-- Everything exported from `app/Jobs/` and `resources/functions/`.
+- All 90+ models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
+
+Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to
+claim otherwise. `UserModel` is a TYPE, an interface exported from `@stacksjs/orm`, so it
+cannot be a runtime global and has to be imported; `UserRequest` and `UserRequestModel` do
+not exist at all, under any name, anywhere in the framework. Prefer `ModelRow<typeof User>`
+over `UserModel` in any case - it follows the model you actually have, including columns
+you added.
+
+A model whose name would shadow a built-in is skipped rather than injected. There are
+`Error` and `Request` models, and a global `Error` would mean `throw new Error(…)`
+constructing a database row. Import those two directly.
+
+What is actually injected is verifiable rather than a matter of documentation:
+`storage/framework/types/server-auto-imports.d.ts` is generated from the models, jobs and
+controllers on disk, and `storage/framework/core/server/tests/generated-declarations.test.ts`
+fails if it ever declares a name the runtime does not provide.
 
 **Import these explicitly (the framework does).** `types/auto-imports.d.ts` also declares `Action`,
 `route`, `response`, `schema`, `slug`, `path`, `storage`, `log`, and `Auth` as ambient global types,

@@ -11,7 +11,6 @@ import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
 import { generateActionTypes } from './action-types'
-import { generateEventTypes } from './event-types'
 import { generateEnvFiles } from './env-files'
 
 export { generateProjectImages } from './images'
@@ -142,10 +141,13 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   // hand-written file that had been neutered with `| string`.
   await generateActionTypes()
 
-  // Model events, for the same reason: the declaration said it defined them and
-  // nothing wrote it, so it listed three of the eight and typed every payload
-  // as `Record<string, any>`.
-  await generateEventTypes()
+  /*
+   * Model events are NOT generated. `types/model-events.d.ts` derives them from
+   * the models barrel with a mapped type, so `User` becoming a model is the
+   * same fact as `'user:created'` existing rather than two things that have to
+   * be kept in agreement. There was a generator here; 817 lines of output that
+   * a mapped type produces for free.
+   */
 
   /*
    * The server auto-import declarations, which describe every global the
