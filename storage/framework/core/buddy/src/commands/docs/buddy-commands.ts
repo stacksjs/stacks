@@ -134,10 +134,31 @@ export function loadBuddyInventory(): BuddyInventory {
     stdout: 'pipe',
     stderr: 'pipe',
   })
+  const stdout = result.stdout.toString()
+  const stderr = result.stderr.toString().trim()
   if (result.exitCode !== 0)
-    throw new Error(`Buddy command inventory failed (${result.exitCode}): ${result.stderr.toString().trim()}`)
+    throw new Error(`Buddy command inventory failed (${result.exitCode}): ${stderr}`)
 
-  const inventory = JSON.parse(result.stdout.toString()) as BuddyInventory
+  // A first run in a fresh checkout prints startup notices — env warnings, an
+  // APP_KEY being generated — and some of them land on stdout, ahead of the
+  // payload. Reading the whole stream as JSON turned that into `JSON Parse
+  // error: Unexpected EOF`, which named neither the command that misbehaved
+  // nor what it actually printed. Take the JSON document out of the stream,
+  // and when there isn't one, say what we got instead.
+  const start = stdout.indexOf('{')
+  const end = stdout.lastIndexOf('}')
+  if (start === -1 || end <= start) {
+    const noise = (stdout.trim() || stderr || '(no output)').split('\n').slice(0, 10).join('\n')
+    throw new Error(`Buddy command inventory printed no JSON payload. \`buddy list --json\` said:\n${noise}`)
+  }
+
+  let inventory: BuddyInventory
+  try {
+    inventory = JSON.parse(stdout.slice(start, end + 1)) as BuddyInventory
+  }
+  catch (error) {
+    throw new Error(`Buddy command inventory returned unparseable JSON: ${(error as Error).message}`)
+  }
   if (!Array.isArray(inventory.commands) || !Number.isInteger(inventory.total))
     throw new Error('Buddy command inventory returned an invalid payload')
   return inventory

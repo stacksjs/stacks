@@ -61,7 +61,7 @@ export function list(buddy: CLI): void {
 
       if (filteredCommands.length === 0) {
         if (usesJsonOutput(options)) {
-          console.log(JSON.stringify({ commands: [], total: 0 }, null, 2))
+          await writeJson({ commands: [], total: 0 })
         }
         else {
           console.log(dim('No commands found'))
@@ -77,7 +77,7 @@ export function list(buddy: CLI): void {
         const jsonOutput = filteredCommands
           .map(commandInventoryEntry)
           .sort((a, b) => a.name.localeCompare(b.name))
-        console.log(JSON.stringify({ commands: jsonOutput, total: jsonOutput.length }, null, 2))
+        await writeJson({ commands: jsonOutput, total: jsonOutput.length })
         return
       }
 
@@ -230,6 +230,22 @@ function canonicalCommandName(command: Command): string {
 
 function declaredOptionFlags(rawName: string): string[] {
   return [...rawName.matchAll(/-{1,2}([\w-]+)/g)].map(match => match[1]!)
+}
+
+/**
+ * Write the inventory and WAIT for it to land.
+ *
+ * The full inventory is a few hundred kilobytes. `console.log` hands that to
+ * an async pipe write, so a caller that exits promptly after the action
+ * returns can lose the tail — or, on a slow runner, all of it. That is how the
+ * release gate came to fail with `JSON Parse error: Unexpected EOF` while the
+ * same check passed locally. Awaiting the write removes the race.
+ */
+async function writeJson(payload: unknown): Promise<void> {
+  const text = `${JSON.stringify(payload, null, 2)}\n`
+  await new Promise<void>((resolve, reject) => {
+    process.stdout.write(text, error => (error ? reject(error) : resolve()))
+  })
 }
 
 function usesJsonOutput(options: CliOptions): boolean {
