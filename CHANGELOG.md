@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.58...v0.72.59)
+
+## 🐛 Bug Fixes
+
+- **mobile**: bundle Craft's browser runtime into the package ([6776621](https://github.com/stacksjs/stacks/commit/6776621)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: complete Redis-backed batches (#2357) ([4c288d6](https://github.com/stacksjs/stacks/commit/4c288d6)) _(by mikemikimike <13286568797@163.com>)_ ([#2357](https://github.com/stacksjs/stacks/issues/2357), [#2357](https://github.com/stacksjs/stacks/issues/2357))
+- **payments**: make constructEvent async, so the obvious export is the working one (#2355) (#2358) ([1e79346](https://github.com/stacksjs/stacks/commit/1e79346)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2355](https://github.com/stacksjs/stacks/issues/2355), [#2358](https://github.com/stacksjs/stacks/issues/2358), [#2355](https://github.com/stacksjs/stacks/issues/2355), [#2358](https://github.com/stacksjs/stacks/issues/2358))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _mikemikimike <13286568797@163.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.57...v0.72.58)
 
 ## ✨ Features
