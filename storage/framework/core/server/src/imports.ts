@@ -571,6 +571,34 @@ export async function generateServerAutoImportTypes(): Promise<void> {
 
   lines.push('}', '')
   await Bun.write(outputPath, lines.join('\n'))
+
+  /*
+   * The eslint globals manifest, from the same filtered list.
+   *
+   * It is written here rather than left to the bundler plugin for two reasons,
+   * both learned the hard way. The plugin only writes it when the server boots,
+   * so the committed copy had drifted to listing 176 names that exist under no
+   * scheme - `AuthorModel`, `AuthorRequest`, `AuthorRequestModel` for every
+   * model - while missing 387 that do. And the plugin does not apply
+   * `GLOBAL_SHADOW_BLOCKLIST`, so letting it write meant `Error` and `Request`
+   * being announced as globals when the barrel deliberately does not inject
+   * them.
+   *
+   * Deriving both files from one list is what makes them agree by construction
+   * rather than by whoever ran last.
+   */
+  const globals: Record<string, true> = {}
+  for (const { as } of primitiveAutoImportEntries()) {
+    if (!declaredValues.has(as))
+      globals[as] = true
+  }
+  for (const exp of valueExports)
+    globals[exp.name] = true
+
+  await Bun.write(
+    path.storagePath('framework/server-auto-imports.json'),
+    `${JSON.stringify({ globals: Object.fromEntries(Object.keys(globals).sort().map(k => [k, true])) }, null, 2)}\n`,
+  )
 }
 
 /**

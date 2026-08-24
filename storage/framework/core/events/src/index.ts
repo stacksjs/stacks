@@ -16,7 +16,6 @@
  * gets you the same emitter you'd get from `createEmitter()`.
  */
 
-import type { ModelEvents } from '@stacksjs/types'
 
 export type EventType = string | symbol
 
@@ -31,6 +30,16 @@ export type EventType = string | symbol
  *
  * Anything else a handler returns is ignored, as before.
  */
+/**
+ * A map of event name to payload.
+ *
+ * `Record<EventType, unknown>` was the constraint, and it requires an index
+ * signature - which a precise event map deliberately does not have, because an
+ * index signature is exactly what made every misspelled event name legal. The
+ * constraint only ever needed the keys to be event names.
+ */
+export type EventMap = object
+
 export type Handler<T = unknown> = (_event: T) => void | false | Promise<void | false>
 /** The same contract as {@link Handler}, for a listener registered on `'*'`. */
 export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void | false | Promise<void | false>
@@ -38,12 +47,12 @@ export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _eve
 export type EventHandlerList<T = unknown> = Array<Handler<T>>
 export type WildCardEventHandlerList<T = Record<string, unknown>> = Array<WildcardHandler<T>>
 
-export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
+export type EventHandlerMap<Events extends EventMap> = Map<
   keyof Events | '*',
   EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>
 >
 
-export interface Emitter<Events extends Record<EventType, unknown>> {
+export interface Emitter<Events extends EventMap> {
   /** Underlying handler map. Mutating it directly is supported but rarely needed. */
   all: EventHandlerMap<Events>
 
@@ -150,7 +159,7 @@ function isPromiseLike(v: unknown): v is Promise<unknown> {
  * (tests, child workers, plugin sandboxes).
  */
 // eslint-disable-next-line pickier/no-unused-vars
-export function createEmitter<Events extends Record<EventType, unknown>>(
+export function createEmitter<Events extends EventMap>(
   all?: EventHandlerMap<Events>,
 ): Emitter<Events> {
   const map = all ?? new Map<keyof Events | '*', any>()
@@ -306,7 +315,9 @@ export function createEmitter<Events extends Record<EventType, unknown>>(
       if (matchPattern(keyStr, typeStr)) patternKeys.push(keyStr)
     })
     for (const key of patternKeys)
-      await runAll(map.get(key) as WildcardHandler<any>[] | undefined, true)
+      // `patternKeys` are matched at runtime, so they are strings rather than
+      // members of the event union - the map is keyed on the union.
+      await runAll(map.get(key as keyof Events) as WildcardHandler<any>[] | undefined, true)
 
     await runAll(map.get('*') as WildcardHandler<any>[] | undefined, true)
 
@@ -356,7 +367,9 @@ export function createEmitter<Events extends Record<EventType, unknown>>(
       if (matchPattern(keyStr, typeStr)) patternKeys.push(keyStr)
     })
     for (const key of patternKeys)
-      await runAll(map.get(key) as WildcardHandler<any>[] | undefined, true)
+      // `patternKeys` are matched at runtime, so they are strings rather than
+      // members of the event union - the map is keyed on the union.
+      await runAll(map.get(key as keyof Events) as WildcardHandler<any>[] | undefined, true)
 
     await runAll(map.get('*') as WildcardHandler<any>[] | undefined, true)
 
@@ -402,7 +415,7 @@ export default createEmitter
  * // the prefix is mandatory.
  * ```
  */
-export function scope<Events extends Record<EventType, unknown>>(
+export function scope<Events extends EventMap>(
   underlying: Emitter<Events>,
   prefix: string,
 ): {
@@ -511,24 +524,23 @@ export interface AuthEvents {
 /**
  * Application-wide event types, in precedence order.
  *
- * An intersection rather than an `extends` chain, because `AppEvents` and
- * `ModelEvents` deliberately declare the same keys: the generated map types
- * `'user:created'` as the User row where the hand-maintained fallback typed it
- * `Record<string, any>`, and an interface cannot extend two parents that
- * disagree about a member. `Omit` lets the precise one win instead of making
- * the conflict an error.
+ * `ModelEvents` from `@stacksjs/types` is deliberately NOT in here. It was
+ * hand-maintained, and it named its events in kebab-case - `'cart-item:created'`
+ * - while `define-model.ts` dispatches `definition.name.toLowerCase()`, which
+ * for a model named `CartItem` is `'cartitem:created'`. Every compound-named
+ * model therefore had a documented, type-checked event that is never emitted:
+ * `listen('cart-item:created', …)` compiled and could not fire. `AppEvents` is
+ * derived from the models themselves and gets the name right, so keeping the
+ * old map in the union would only re-admit the 130-odd names that do not exist.
  *
- * The trailing index signature is what keeps an undeclared event name legal.
- * Removing it would type-check every `dispatch()` against the known set - which
- * is the stricter and better behaviour, and a breaking change for any
- * application dispatching an event it has not declared. `AppEvents` is the
- * place to declare one; see the note there.
+ * There is no trailing index signature, deliberately. One used to be here, and
+ * it made every event name legal: `dispatch('user:creatd', …)` type-checked and
+ * reached nobody, which is the failure an event bus is most prone to and least
+ * able to report - a dispatch to a name nothing listens for looks exactly like
+ * a dispatch that had nothing to do. Declare an application's own events on
+ * `AppEvents` and the typo becomes a compile error.
  */
-export type StacksEvents =
-  & Omit<ModelEvents, keyof AppEvents>
-  & AppEvents
-  & AuthEvents
-  & Record<EventType, unknown>
+export type StacksEvents = AppEvents & AuthEvents
 
 /**
  * The application's emitter, one per *process* rather than one per copy of this

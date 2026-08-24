@@ -2355,7 +2355,13 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
     if (eventsAreSuppressed()) return
     try {
       const { dispatch } = await import('@stacksjs/events')
-      await dispatch(event, data)
+      /*
+       * Composed at runtime - `${modelName}:created` - so it cannot be a
+       * literal member of the event union here, though every name it produces
+       * IS one: `types/model-events.d.ts` derives the union from the same
+       * models. Asserted once, at the single point of composition.
+       */
+      await dispatch(event as Parameters<typeof dispatch>[0], data)
     }
     catch (err) {
       // MODULE_NOT_FOUND is the expected shape when the events package

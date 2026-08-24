@@ -164,18 +164,8 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
    * failing to refresh a declaration is not a reason to fail the whole command.
    */
   try {
-    const { generateServerAutoImportTypes, initiateImports } = await import('@stacksjs/server')
+    const { generateServerAutoImportTypes } = await import('@stacksjs/server')
     await generateServerAutoImportTypes()
-
-    /*
-     * And the eslint globals manifest beside it, which had gone stale in a way
-     * nothing could see: it listed 176 names that do not exist under any
-     * scheme - `AuthorModel`, `AuthorRequest`, `AuthorRequestModel` and the
-     * same three for every model - while missing 387 that do. Nothing rewrote
-     * it, because the only thing that does is the bundler plugin registration
-     * at server boot, and a manifest is not something anybody opens.
-     */
-    initiateImports()
   }
   catch (error) {
     log.debug('[generate:types] Could not refresh server auto-import declarations', { error })

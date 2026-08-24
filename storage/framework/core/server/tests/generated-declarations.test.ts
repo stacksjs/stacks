@@ -71,6 +71,20 @@ describe('the auto-import declarations describe the runtime', () => {
     expect(missing).toEqual([])
   })
 
+  it('agrees with the eslint globals manifest, name for name', () => {
+    /*
+     * Two files describing the same set. They are written from one filtered
+     * list now, so a disagreement means something has started writing one of
+     * them on its own - which is how the manifest came to list 176 names that
+     * exist under no scheme while missing 387 that do, and how it came to
+     * announce `Error` as a global that the barrel deliberately never injects.
+     */
+    const manifest = JSON.parse(readFileSync(path.storagePath('framework/server-auto-imports.json'), 'utf8'))
+    const listed = Object.keys(manifest.globals ?? {}).sort()
+
+    expect(listed).toEqual(declaredGlobals().sort())
+  })
+
   it('does not declare a name that would shadow a built-in', () => {
     /*
      * A model called `Error` or `Request` must not become a global: the type
