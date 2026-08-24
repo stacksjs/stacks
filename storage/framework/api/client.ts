@@ -123,14 +123,14 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /ai/ask
    */
-  postAiAsk(input?: { body?: { "question"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postAiAsk(input: { body: { "question": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/ai/ask", input ?? {}, [], true, options)
   },
 
   /**
    * POST /ai/summary
    */
-  postAiSummary(input?: { body?: { "text"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postAiSummary(input: { body: { "text": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/ai/summary", input ?? {}, [], true, options)
   },
 
@@ -6969,14 +6969,14 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /auth/magic-link
    */
-  postAuthMagicLink(input?: { body?: { "email"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postAuthMagicLink(input: { body: { "email": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/auth/magic-link", input ?? {}, [], true, options)
   },
 
   /**
    * POST /auth/magic-link/consume
    */
-  postAuthMagicLinkConsume(input?: { body?: { "token"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postAuthMagicLinkConsume(input: { body: { "token": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/auth/magic-link/consume", input ?? {}, [], true, options)
   },
 
@@ -7452,14 +7452,14 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /disable-two-factor
    */
-  postDisableTwoFactor(input?: { body?: { "password"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postDisableTwoFactor(input: { body: { "password": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/disable-two-factor", input ?? {}, [], true, options)
   },
 
   /**
    * POST /enable-two-factor
    */
-  postEnableTwoFactor(input?: { body?: { "code"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postEnableTwoFactor(input: { body: { "code": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/enable-two-factor", input ?? {}, [], true, options)
   },
 
@@ -7662,7 +7662,7 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /login
    */
-  postLogin(input?: { body?: { "email"?: string; "password"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postLogin(input: { body: { "email": string; "password": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/login", input ?? {}, [], true, options)
   },
 
@@ -7921,7 +7921,7 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /register
    */
-  postRegister(input?: { body?: { "email"?: string; "password"?: string; "name"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postRegister(input: { body: { "email": string; "password": string; "name": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/register", input ?? {}, [], true, options)
   },
 
@@ -7977,7 +7977,7 @@ export function createClient(config: ClientConfig) {
   /**
    * POST /verify-two-factor-login
    */
-  postVerifyTwoFactorLogin(input?: { body?: { "challenge_token"?: string; "code"?: string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+  postVerifyTwoFactorLogin(input: { body: { "challenge_token": string; "code": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "POST", "/verify-two-factor-login", input ?? {}, [], true, options)
   },
 
