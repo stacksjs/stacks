@@ -33,14 +33,7 @@
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
-    "better-dx": "^0.2.24"
-  },
-  "peerDependencies": {
-    "craft-native": "^0.0.67"
-  },
-  "peerDependenciesMeta": {
-    "craft-native": {
-      "optional": true
-    }
+    "better-dx": "^0.2.24",
+    "craft-native": "^0.0.76"
   }
 }

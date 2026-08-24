@@ -1,38 +1,20 @@
 /**
- * `craft-native` is an OPTIONAL peer: it only exists in a project that is
- * actually building a mobile app. Importing it at module scope made merely
- * importing this package throw for everyone else — `Cannot find module
- * 'craft-native/mobile'` — including test runs that never touch a native
- * surface, because `@stacksjs/defaults` pulls this package in transitively.
+ * Craft's mobile runtime is BUNDLED into this package's `dist`, not resolved
+ * from the consumer at runtime.
  *
- * Resolved on first use instead. A project without craft-native can import
- * this module, and only a call into a native surface asks for the module that
- * is genuinely missing, with a message that says so.
+ * `craft-native/mobile` is the browser-safe half of the SDK: it talks to the
+ * `globalThis.craft` bridge when the page runs inside a native WebView, and
+ * falls back to web equivalents (or no-ops) everywhere else. Because it is
+ * pure browser code, inlining it here is what makes `@stacksjs/mobile` import
+ * cleanly from an STX client bundle, a plain web build, and a server render
+ * alike — with no optional peer to install and nothing left to resolve.
+ *
+ * The previous shape lazily `require`d the peer on first property access,
+ * which meant every application that wanted native surfaces in the browser had
+ * to vendor a pre-bundled copy of this file into its own repository.
  */
-let craftMobileModule: Record<string, unknown> | undefined
+import * as craftMobile from 'craft-native/mobile'
 
-function craftNative(): Record<string, unknown> {
-  if (craftMobileModule)
-    return craftMobileModule
-  try {
-    // eslint-disable-next-line ts/no-require-imports
-    craftMobileModule = require('craft-native/mobile') as Record<string, unknown>
-  }
-  catch {
-    throw new Error(
-      'craft-native is required for the native mobile surfaces. Install it with `bun add craft-native` (>=0.0.65, the first release exporting ./mobile).',
-    )
-  }
-  return craftMobileModule
-}
-
-/** Lazily proxy one native namespace, so nothing resolves until it is used. */
-function nativeSurface<T extends object>(name: string): T {
-  return new Proxy({} as T, {
-    get: (_t, prop) => (craftNative()[name] as Record<string | symbol, unknown>)?.[prop],
-    has: (_t, prop) => prop in ((craftNative()[name] as object) ?? {}),
-  })
-}
 import type {
   AppReviewApi,
   BiometricsApi,
@@ -56,19 +38,38 @@ import type {
 
 export * from './types'
 
+const {
+  biometrics: craftBiometrics,
+  camera: craftCamera,
+  device: craftDevice,
+  haptics: craftHaptics,
+  lifecycle: craftLifecycle,
+  location: craftLocation,
+  notifications: craftNotifications,
+  permissions: craftPermissions,
+  secureStorage: craftSecureStorage,
+  share: craftShare,
+  appReview: craftAppReview,
+  deepLinks: craftDeepLinks,
+  keepAwake: craftKeepAwake,
+  network: craftNetwork,
+  pushNotifications: craftPushNotifications,
+  health: craftHealth,
+  liveActivities: craftLiveActivities,
+  watchConnectivity: craftWatchConnectivity,
+} = craftMobile
 
-export const biometrics: BiometricsApi = nativeSurface<BiometricsApi>('biometrics')
-export const camera: CameraApi = nativeSurface<CameraApi>('camera')
-export const device: DeviceApi = nativeSurface<DeviceApi>('device')
-export const haptics: HapticsApi = nativeSurface<HapticsApi>('haptics')
-export const lifecycle: LifecycleApi = nativeSurface<LifecycleApi>('lifecycle')
-export const location: LocationApi = nativeSurface<LocationApi>('location')
-export const notifications: NotificationsApi = nativeSurface<NotificationsApi>('notifications')
-export const permissions: PermissionsApi = nativeSurface<PermissionsApi>('permissions')
-export const secureStorage: SecureStorageApi = nativeSurface<SecureStorageApi>('secureStorage')
-export const share: ShareApi = nativeSurface<ShareApi>('share')
-export const appReview: AppReviewApi = nativeSurface<AppReviewApi>('appReview')
-const craftDeepLinks: DeepLinksApi = nativeSurface<DeepLinksApi>('deepLinks')
+export const biometrics: BiometricsApi = craftBiometrics
+export const camera: CameraApi = craftCamera
+export const device: DeviceApi = craftDevice
+export const haptics: HapticsApi = craftHaptics
+export const lifecycle: LifecycleApi = craftLifecycle
+export const location: LocationApi = craftLocation
+export const notifications: NotificationsApi = craftNotifications
+export const permissions: PermissionsApi = craftPermissions
+export const secureStorage: SecureStorageApi = craftSecureStorage
+export const share: ShareApi = craftShare
+export const appReview: AppReviewApi = craftAppReview
 export function normalizeDeepLinkURL(value: unknown): string | null {
   if (typeof value === 'string') return value.trim() || null
   if (!value || typeof value !== 'object') return null
@@ -87,12 +88,12 @@ export const deepLinks: DeepLinksApi = {
     }) ?? (() => {})
   },
 }
-export const keepAwake: KeepAwakeApi = nativeSurface<KeepAwakeApi>('keepAwake')
-export const network: NetworkApi = nativeSurface<NetworkApi>('network')
-export const pushNotifications: PushNotificationsApi = nativeSurface<PushNotificationsApi>('pushNotifications')
-export const health: HealthApi = nativeSurface<HealthApi>('health')
-export const liveActivities: LiveActivitiesApi = nativeSurface<LiveActivitiesApi>('liveActivities')
-export const watchConnectivity: WatchConnectivityApi = nativeSurface<WatchConnectivityApi>('watchConnectivity')
+export const keepAwake: KeepAwakeApi = craftKeepAwake
+export const network: NetworkApi = craftNetwork
+export const pushNotifications: PushNotificationsApi = craftPushNotifications
+export const health: HealthApi = craftHealth
+export const liveActivities: LiveActivitiesApi = craftLiveActivities
+export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
 
 interface CraftReadyEvent extends Event {
   detail?: { platform?: string }
