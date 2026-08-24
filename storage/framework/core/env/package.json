@@ -2,7 +2,7 @@
   "name": "@stacksjs/env",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.57",
+  "version": "0.72.58",
   "description": "Stacks env helper methods.",
   "author": "Chris Breuer",
   "contributors": [

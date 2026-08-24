@@ -2,7 +2,7 @@
   "name": "@stacksjs/defaults",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.57",
+  "version": "0.72.58",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
@@ -51,7 +51,7 @@
   "dependencies": {
     "@iconify-json/f7": "^1.2.2",
     "@iconify-json/hugeicons": "^1.2.27",
-    "@stacksjs/mobile": "^0.72.57",
+    "@stacksjs/mobile": "^0.72.58",
     "@stacksjs/sanitizer": "^0.2.113"
   },
   "scripts": {

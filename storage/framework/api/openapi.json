@@ -156,7 +156,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -167,7 +167,10 @@
                     "minLength": 3,
                     "maxLength": 255
                   }
-                }
+                },
+                "required": [
+                  "question"
+                ]
               }
             }
           }
@@ -198,7 +201,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -208,7 +211,10 @@
                     "type": "string",
                     "minLength": 3
                   }
-                }
+                },
+                "required": [
+                  "text"
+                ]
               }
             }
           }
@@ -56493,7 +56499,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -56503,7 +56509,10 @@
                     "type": "string",
                     "format": "email"
                   }
-                }
+                },
+                "required": [
+                  "email"
+                ]
               }
             }
           }
@@ -56534,7 +56543,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -56545,7 +56554,10 @@
                     "minLength": 16,
                     "maxLength": 255
                   }
-                }
+                },
+                "required": [
+                  "token"
+                ]
               }
             }
           }
@@ -58384,7 +58396,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -58394,7 +58406,10 @@
                     "type": "string",
                     "minLength": 1
                   }
-                }
+                },
+                "required": [
+                  "password"
+                ]
               }
             }
           }
@@ -58425,7 +58440,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -58436,7 +58451,10 @@
                     "minLength": 6,
                     "maxLength": 6
                   }
-                }
+                },
+                "required": [
+                  "code"
+                ]
               }
             }
           }
@@ -59181,7 +59199,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -59196,7 +59214,11 @@
                     "minLength": 1,
                     "maxLength": 255
                   }
-                }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
               }
             }
           }
@@ -60365,7 +60387,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -60385,7 +60407,12 @@
                     "minLength": 2,
                     "maxLength": 255
                   }
-                }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "name"
+                ]
               }
             }
           }
@@ -60591,7 +60618,7 @@
           }
         },
         "requestBody": {
-          "required": false,
+          "required": true,
           "content": {
             "application/json": {
               "schema": {
@@ -60606,7 +60633,11 @@
                     "minLength": 6,
                     "maxLength": 6
                   }
-                }
+                },
+                "required": [
+                  "challenge_token",
+                  "code"
+                ]
               }
             }
           }
