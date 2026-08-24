@@ -1,4 +1,4 @@
-import type { ChatMessage, ChatResult, RenderOptions } from '@stacksjs/types'
+import type { ChatMessage, ChatResult } from '@stacksjs/types'
 import * as discord from './drivers/discord'
 import * as slack from './drivers/slack'
 import * as teams from './drivers/teams'

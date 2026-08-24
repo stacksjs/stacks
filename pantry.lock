@@ -2609,19 +2609,10 @@
       "source": "pantry",
       "resolved": "registry:perl.org@5.42.1"
     },
-    "pickier@0.1.62": {
+    "pickier@0.1.65": {
       "name": "pickier",
-      "version": "0.1.62",
-      "source": "npm",
-      "resolved": "https://registry.npmjs.org/pickier/-/pickier-0.1.62.tgz",
-      "integrity": "sha512-QgFE7mUXjFsR0c2n5j2vhJjO7GxUZuIE7DjFAB7V3GIdKoTbp22Z9rfqKV8v6fugmV59eOfY+CtTV53zfnYFCw==",
-      "dependencies": {
-        "@stacksjs/clapp": "^0.2.3",
-        "@stacksjs/clarity": "^0.3.24"
-      },
-      "bin": {
-        "pickier": "./dist/bin/cli.js"
-      }
+      "version": "0.1.65",
+      "source": "npm"
     },
     "postal-mime@2.7.6": {
       "name": "postal-mime",

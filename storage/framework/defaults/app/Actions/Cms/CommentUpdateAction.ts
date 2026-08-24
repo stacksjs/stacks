@@ -8,17 +8,23 @@ export default new Action({
   description: 'Comment Update ORM Action',
   method: 'PATCH',
   async handle(request: RequestInstance) {
+    /*
+     * PATCH, so these are NOT required: a partial update sends the fields it
+     * means to change. The messages used to say "X is required", which fires on
+     * a type failure and never on absence - a message describing a rule the
+     * block does not have.
+     */
     await request.validate({
       title: {
         rule: schema.string(),
         message: {
-          title: 'Title is required',
+          title: 'Title must be a string.',
         },
       },
       body: {
         rule: schema.string(),
         message: {
-          body: 'Body is required',
+          body: 'Body must be a string.',
         },
       },
     })

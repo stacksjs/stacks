@@ -5,11 +5,11 @@ import { dirname, isAbsolute, join, relative, resolve } from 'node:path'
 import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions'
-import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
+import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { app, dns as dnsConfig, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
-import { encryptEnv, env } from '@stacksjs/env'
+import { env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'

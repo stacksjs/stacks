@@ -1,4 +1,4 @@
-import type { PushMessage, PushResult, PushTicket } from '@stacksjs/types'
+import type { PushResult } from '@stacksjs/types'
 import { log } from '@stacksjs/cli'
 
 const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'

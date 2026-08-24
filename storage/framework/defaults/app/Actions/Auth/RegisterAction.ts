@@ -12,15 +12,15 @@ export default new Action({
 
   validations: {
     email: {
-      rule: schema.string().email(),
+      rule: schema.string().email().required(),
       message: 'Email must be a valid email address.',
     },
     password: {
-      rule: schema.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH),
+      rule: schema.string().min(PASSWORD_MIN_LENGTH).max(PASSWORD_MAX_LENGTH).required(),
       message: PASSWORD_POLICY_MESSAGE,
     },
     name: {
-      rule: schema.string().min(2).max(255),
+      rule: schema.string().min(2).max(255).required(),
       message: 'Name must be between 2 and 255 characters.',
     },
   },

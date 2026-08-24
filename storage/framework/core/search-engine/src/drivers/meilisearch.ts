@@ -1,7 +1,6 @@
 import type { Dictionary, DocumentOptions, EnqueuedTask, Faceting, Index, IndexesResults, IndexOptions, Meilisearch, PaginationSettings, SearchResponse, Settings, Synonyms, TypoTolerance } from 'meilisearch'
 import type { SearchEngineDriver } from '@stacksjs/types'
 import { searchEngine } from '@stacksjs/config'
-import { log } from '@stacksjs/logging'
 
 // `meilisearch` is an opt-in dependency: it is only installed when the
 // `meilisearch` search driver is selected in `config/search-engine.ts`.

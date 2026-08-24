@@ -10,7 +10,7 @@ export default new Action({
 
   validations: {
     code: {
-      rule: schema.string().min(6).max(6),
+      rule: schema.string().min(6).max(6).required(),
       message: 'Code must be a 6-digit TOTP code.',
     },
   },

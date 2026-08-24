@@ -1,7 +1,7 @@
 {
   "name": "stacks-orm",
   "type": "module",
-  "version": "0.72.56",
+  "version": "0.72.57",
   "description": "Your custom ORM.",
   "author": "Chris Breuer",
   "contributors": [
@@ -45,7 +45,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "^0.1.2",
+    "@stacksjs/bun-router": "^0.1.7",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*"

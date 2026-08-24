@@ -1,7 +1,7 @@
 import type { RequestContextSnapshot } from '@stacksjs/config'
 import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
+import { join } from 'node:path'
 import process from 'node:process'
 import { installRequestContext, parseCookieHeader } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'

@@ -1,4 +1,3 @@
-import type { Subprocess } from '@stacksjs/types'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import process from 'node:process'
 import { runCommand, spinner } from '@stacksjs/cli'

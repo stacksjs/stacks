@@ -13,7 +13,7 @@ export default new Action({
 
   validations: {
     text: {
-      rule: schema.string().min(3),
+      rule: schema.string().min(3).required(),
       message: 'The text must be at least 3 characters long.',
     },
   },

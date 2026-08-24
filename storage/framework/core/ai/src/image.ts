@@ -5,7 +5,7 @@
  * Supports OpenAI DALL-E, Anthropic Claude Vision, and Ollama multimodal models.
  */
 
-import type { AIMessage, AIResult, ChatCompletionOptions } from './types'
+import type { AIMessage, AIResult } from './types'
 
 // ============================================================================
 // Types

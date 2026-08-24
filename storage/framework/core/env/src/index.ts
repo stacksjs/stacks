@@ -24,7 +24,15 @@ function warnUndecryptable(key: string): void {
 
 const handler: ProxyHandler<StacksEnv> = {
   get: (target: StacksEnv, key: string) => {
-    let value = target[key]
+    /*
+     * The proxy is handed whatever key was read, so it indexes dynamically -
+     * which `StacksEnv` no longer allows, because the catch-all index signature
+     * that used to permit it also made `env.GITHUB_CLEINT_ID` a valid read.
+     * The dynamic view belongs in the implementation of the proxy, which is
+     * here, rather than in the type every caller sees.
+     */
+    const bag = target as unknown as Record<string, string | number | boolean | undefined>
+    let value = bag[key]
 
     // Decrypt dotenvx-style ciphertext (`encrypted:` / `enc:`) on read. The
     // preloader's autoLoadEnv bulk-decrypts into process.env at boot, but fast
@@ -39,10 +47,10 @@ const handler: ProxyHandler<StacksEnv> = {
       const decrypted = decryptEnvValue(value)
       if (decrypted === undefined) {
         warnUndecryptable(key)
-        delete target[key]
+        delete bag[key]
         return undefined
       }
-      target[key] = decrypted
+      bag[key] = decrypted
       value = decrypted
     }
 
@@ -105,8 +113,11 @@ export function writeEnv(key: EnvKey, value: string, options?: { path: string })
 export function validateEnv(envProxy: StacksEnv = env): string[] {
   const errors: string[] = []
 
+  // Validating every declared key, so the read is dynamic by nature - see the
+  // note on the proxy handler above.
+  const bag = envProxy as unknown as Record<string, string | number | boolean | undefined>
   for (const [key, allowedValues] of Object.entries(envEnum)) {
-    const value = envProxy[key]
+    const value = bag[key]
     if (value !== undefined && value !== '' && !allowedValues.includes(String(value))) {
       errors.push(`${key}="${value}" is not valid. Allowed values: ${allowedValues.join(', ')}`)
     }
@@ -126,8 +137,9 @@ export function validateEnv(envProxy: StacksEnv = env): string[] {
  */
 export function requireEnv(keys: ReadonlyArray<string>, envProxy: StacksEnv = env): StacksEnv {
   const missing: string[] = []
+  const bag = envProxy as unknown as Record<string, string | number | boolean | undefined>
   for (const key of keys) {
-    const value = envProxy[key]
+    const value = bag[key]
     if (value === undefined || value === '' || value === null) missing.push(key)
   }
   if (missing.length > 0) {

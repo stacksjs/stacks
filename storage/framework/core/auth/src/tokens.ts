@@ -17,12 +17,9 @@ import type {
   OAuthClient,
   OAuthClientRow,
   PersonalAccessTokenResult,
-  RefreshToken,
   RefreshTokenResult,
-  TokenCreateOptions,
   TokenScopes,
 } from '@stacksjs/types'
-import process from 'node:process'
 import { createHash, randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'

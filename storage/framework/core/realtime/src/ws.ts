@@ -1,6 +1,5 @@
 import type { Server } from 'bun'
-import type { BroadcastServer } from 'ts-broadcasting'
-import { getServer, setServer } from './server-instance'
+import { getServer } from './server-instance'
 
 /**
  * Store WebSocket event in the database

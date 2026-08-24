@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { computed, ref } from '@stacksjs/stx'
+import { computed } from '@stacksjs/stx'
 
 type MaybeRef<T> = T | Ref<T>
 

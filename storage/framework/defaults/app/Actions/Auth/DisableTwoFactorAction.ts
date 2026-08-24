@@ -10,7 +10,7 @@ export default new Action({
 
   validations: {
     password: {
-      rule: schema.string().min(1),
+      rule: schema.string().min(1).required(),
       message: 'Password is required to disable two-factor authentication.',
     },
   },

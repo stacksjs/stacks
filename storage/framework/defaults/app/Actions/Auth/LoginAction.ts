@@ -12,7 +12,7 @@ export default new Action({
 
   validations: {
     email: {
-      rule: schema.string().email(),
+      rule: schema.string().email().required(),
       message: 'Email must be a valid email address.',
     },
     // Presence only, NOT the creation policy. Enforcing a minimum length on
@@ -21,7 +21,7 @@ export default new Action({
     // credentials are ever checked. The policy belongs on the paths that SET a
     // password (#2226).
     password: {
-      rule: schema.string().min(1).max(PASSWORD_MAX_LENGTH),
+      rule: schema.string().min(1).max(PASSWORD_MAX_LENGTH).required(),
       message: PASSWORD_PRESENCE_MESSAGE,
     },
   },

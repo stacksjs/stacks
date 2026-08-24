@@ -6,8 +6,8 @@
  */
 
 import type { Server } from 'bun'
-import type { ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from '@stacksjs/bun-router'
+import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
+import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
@@ -190,20 +190,37 @@ import { rateLimit as enforceRateLimit } from './rate-limit'
 import { applySecurityHeaders } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm'
 
-import type { StacksActionPath } from './action-paths'
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
-/*
- * Three forms, one dispatch path.
+
+/**
+ * An inline handler, as a route file writes one.
  *
- * A string names an action to import when it is first needed - lazy, hot-
- * reload friendly, and completely opaque to the compiler. An action object is
- * the same action, imported by the route file itself, which is what lets a
- * typed client see its input and output types (see `typed-router.ts`). An
- * inline function is an escape hatch for the cases that are not worth an
- * action. All three end up in the same wrapper.
+ * Wider than {@link RouteHandlerFn} on purpose: a function handler's return
+ * value goes through `formatResult`, which turns an object into JSON, a string
+ * into text, `null` into a 204 and a stream into a streamed response. The type
+ * said `Response`, so `route.get('/x', () => ({ ok: true }))` - which works,
+ * and is the shape most handlers actually want - did not compile, and the
+ * workaround was to reach for `Response.json` or an `any`.
+ *
+ * `RouteHandlerFn` stays as it is: that is what a WRAPPED handler returns, and
+ * by then `formatResult` has already run.
  */
-export type StacksHandler = string | RouteHandlerFn | RouterAction
+type InlineRouteHandler = (_req: EnhancedRequest) => ActionResult | Promise<ActionResult>
+
+/**
+ * The same, with `request.params` narrowed to what the path declares.
+ *
+ * Declared as the FIRST overload on every route method so an inline arrow is
+ * contextually typed by it. A single parameter typed as the whole
+ * {@link StacksHandler} union gives TypeScript nothing to type an arrow with -
+ * `route.get('/users/{id}', req => req.params.slugTypo)` compiled and returned
+ * `undefined`, which is the failure a typed router exists to prevent.
+ */
+type TypedInlineRouteHandler<TPath extends string>
+  = (_req: RequestFor<TPath>) => ActionResult | Promise<ActionResult>
+
+export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 
 interface StacksRouterConfig {
   verbose?: boolean
@@ -212,7 +229,7 @@ interface StacksRouterConfig {
 
 interface GroupOptions {
   prefix?: string
-  middleware?: string | string[]
+  middleware?: MiddlewareReference | MiddlewareReference[]
   /**
    * When `true`, every route registered inside the group forces a JSON
    * response regardless of content negotiation — `formatResult()` skips
@@ -227,10 +244,66 @@ interface GroupOptions {
 type ResourceAction = 'index' | 'store' | 'show' | 'update' | 'destroy'
 
 interface ResourceRouteOptions {
-  only?: ResourceAction[]
-  except?: ResourceAction[]
-  middleware?: string | string[]
+  // `readonly`, so the declared signature's `readonly TOnly[]` - which is what
+  // makes `only: ['index', 'show']` infer as literals rather than widening to
+  // `ResourceAction[]` - is assignable to it. The implementation only reads.
+  only?: readonly ResourceAction[]
+  except?: readonly ResourceAction[]
+  middleware?: MiddlewareReference | MiddlewareReference[]
 }
+
+/** `'PostAction'` → `'Post'`; anything else is left alone. */
+type StripActionSuffix<T extends string> = T extends `${infer Base}Action` ? Base : T
+
+/** `'Post'` → `'Actions/Post'`; an explicit `'Actions/…'` base is left alone. */
+type WithActionsPrefix<T extends string> = T extends `Actions/${string}` ? T : `Actions/${T}`
+
+/** The file-name half each CRUD action is composed from. */
+interface ResourceKindOf {
+  index: 'Index'
+  store: 'Store'
+  show: 'Show'
+  update: 'Update'
+  destroy: 'Destroy'
+}
+
+/**
+ * The actions a call actually registers.
+ *
+ * `only` wins over `except`, matching the runtime: it checks `options.only`
+ * first and never looks at `except` when both are given.
+ */
+type ActiveResourceActions<TOnly extends ResourceAction, TExcept extends ResourceAction>
+  = [TOnly] extends [never]
+    ? ([TExcept] extends [never] ? ResourceAction : Exclude<ResourceAction, TExcept>)
+    : TOnly
+
+/** The action files a call needs, given its base and its active actions. */
+type RequiredResourceActions<TBase extends string, TActive extends ResourceAction>
+  = `${WithActionsPrefix<StripActionSuffix<TBase>>}${ResourceKindOf[TActive]}Action`
+
+/** Of those, the ones that do not exist. */
+type MissingResourceActions<TBase extends string, TActive extends ResourceAction>
+  = Exclude<RequiredResourceActions<TBase, TActive>, ActionPath>
+
+/**
+ * Every action a `resource()` call will register has to exist.
+ *
+ * Not "at least one of them" - that waves through the case this is really for.
+ * `Actions/Cms/Page` has Index, Store, Update and Destroy but no Show, so
+ * `route.resource('pages', 'Actions/Cms/Page')` registers a `GET /pages/{id}`
+ * that 500s the first time anybody opens a page, while
+ * `{ except: ['show'] }` is completely fine. Only the exact set answers that,
+ * which is why `only` and `except` are inferred as literals and read here.
+ *
+ * Resolves to `unknown` when nothing is missing - an intersection with
+ * `unknown` is the base itself - and otherwise to an object the base cannot
+ * satisfy, whose property name puts the missing files in the error message.
+ */
+type ResourceBaseCheck<TBase extends string, TActive extends ResourceAction>
+  = [MissingResourceActions<TBase, TActive>] extends [never]
+    ? unknown
+    : { 'these actions do not exist': MissingResourceActions<TBase, TActive> }
 
 /**
  * Chainable route interface for middleware and naming support
@@ -244,7 +317,7 @@ export interface ChainableRoute {
    * interface said `string`, so `.middleware(['auth', 'can:x'])` was a type
    * error at every call site despite working.
    */
-  middleware: (name: string | readonly string[]) => ChainableRoute
+  middleware: (name: MiddlewareReference | readonly MiddlewareReference[]) => ChainableRoute
   name: (routeName: string) => ChainableRoute
   /**
    * Opt this route out of the default-on CSRF check.
@@ -580,6 +653,39 @@ function extractRouteParamNames(routePath: string): string[] {
  * // → https://stacksjs.com/users/42/posts/7
  * ```
  */
+/**
+ * The params a named route needs, plus anything else that becomes query string.
+ *
+ * The required half comes from the path the name resolves to, so
+ * `url('user.post', { id: 42 })` against `/users/{id}/posts/{postId}` stops
+ * compiling instead of throwing at call time. Extra keys stay allowed: the
+ * implementation appends whatever it did not consume as a query string, which
+ * is what `url('email.unsubscribe', { token })` relies on.
+ */
+export type UrlParams<TName extends string>
+  = { [K in keyof ExtractRouteParams<PathForRouteName<TName>>]: string | number }
+    & Record<string, string | number>
+
+/** The keys of `T` that are not optional. */
+type RequiredParamKeys<T> = { [K in keyof T]-?: object extends Pick<T, K> ? never : K }[keyof T]
+
+/**
+ * Whether `url()` must be given a second argument.
+ *
+ * Keyed on REQUIRED params: a path whose only placeholder is optional is
+ * reachable with nothing at all, and demanding an empty object for it would be
+ * the type getting in the way of the truth.
+ */
+type RequiresUrlParams<TName extends string>
+  = [RequiredParamKeys<ExtractRouteParams<PathForRouteName<TName>>>] extends [never] ? false : true
+
+// False positive: this is an overload signature, which has no body for its
+// parameters to be used in. The implementation below uses them.
+// eslint-disable-next-line unused-imports/no-unused-vars
+export function url<TName extends KnownRouteName>(
+  routeName: TName,
+  ...params: RequiresUrlParams<TName> extends true ? [params: UrlParams<TName>] : [params?: UrlParams<TName>]
+): string
 export function url(routeName: string, params: Record<string, string | number> = {}): string {
   const named = namedRouteRegistry.get(routeName)
   if (!named) {
@@ -649,6 +755,25 @@ export function url(routeName: string, params: Record<string, string | number> =
 export function routeParams(routeName: string): string[] {
   const named = namedRouteRegistry.get(routeName)
   return named ? [...named.paramNames] : []
+}
+
+/**
+ * Every named route, as `name → path`.
+ *
+ * `listRegisteredRoutes()` reports a name by searching the named registry for a
+ * matching path, which answers "what is this route called" and cannot answer
+ * "what routes are there names for" - two routes on one path give the first
+ * name found, and a name whose route was never registered is invisible.
+ *
+ * The type generator needs the second question: it writes this map into the
+ * router's type registry so `url('users.shwo')` stops compiling. Reading the
+ * registry directly is the only way to get every name.
+ */
+export function listNamedRoutes(): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [name, named] of namedRouteRegistry.entries())
+    out[name] = named.path
+  return out
 }
 
 /**
@@ -1701,7 +1826,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
      * registration, before anything is served, so a loud throw here is the
      * cheapest possible place to learn about it.
      */
-    middleware(name: string | readonly string[]) {
+    middleware(name: MiddlewareReference | readonly MiddlewareReference[]) {
       const middlewareList = routeMiddlewareRegistry.get(routeKey)
       if (!middlewareList)
         return chain
@@ -2226,8 +2351,35 @@ export async function validateActionInput(req: EnhancedRequest, validations: Act
     }
   }
 
+  const valid = Object.keys(errors).length === 0
+
+  /*
+   * Record what passed, so `request.getValidated()` and `request.safe()` have
+   * something to return.
+   *
+   * They are Laravel's `$request->validated()` under different names, and they
+   * returned `{}` after a request the router had just validated: the only way
+   * to populate them was to call `request.validate()` again inside the handler,
+   * redoing work that had already been done a few frames up. Meanwhile the
+   * declared return type promised the validated fields, so a handler reading
+   * `getValidated().email` type-checked and got `undefined`.
+   *
+   * Only the declared fields, and only the ones actually present - an absent
+   * optional field is absent here too, which matches both Laravel and the
+   * optional keys the inferred type now produces. The values are the coerced
+   * ones the rules were tested against, not the raw wire strings.
+   */
+  if (valid) {
+    const validated: Record<string, unknown> = {}
+    for (const field of Object.keys(validations)) {
+      if (input[field] !== undefined)
+        validated[field] = input[field]
+    }
+    ;(req as EnhancedRequest & { _validatedInput?: Record<string, unknown> })._validatedInput = validated
+  }
+
   return {
-    valid: Object.keys(errors).length === 0,
+    valid,
     errors,
   }
 }
@@ -2995,51 +3147,17 @@ function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): void | 
 
 export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   /*
-   * Params, without rebuilding them for a route that has none.
+   * Params arrive decoded. This used to decode them here, because the router
+   * handed back the raw path segment - so `/users/{name}` given `caf%C3%A9`
+   * reached a handler as `caf%C3%A9` unless something in between fixed it.
    *
-   * This used to be an unconditional `Object.fromEntries(Object.entries(...)
-   * .map(decodeURIComponent))` - two intermediate arrays, a closure per param
-   * and a fresh object - and the overwhelming majority of routes reach it with
-   * either no params at all or params that carry nothing to decode. A `%` is
-   * the only thing `decodeURIComponent` can possibly change, so its absence is
-   * a complete answer, and the matched object is reused as-is rather than
-   * copied. Anything that needs decoding still gets a fresh object, so the
-   * matcher's own record is never mutated underneath it.
+   * bun-router 0.1.6 decodes at the two places it assigns a path param, which
+   * is where it belongs: every consumer gets it, not just the ones that
+   * remembered. Keeping this layer as well would mean decoding TWICE, and
+   * `%2520` arriving as a space - a double decode is how a filter that rejects
+   * `../` gets walked past. So the correct amount of work here is none.
    */
-  const matched = req.params
-  let routeParams: Record<string, string>
-  if (!matched) {
-    routeParams = {}
-  }
-  else {
-    let needsDecoding = false
-    for (const key in matched) {
-      const value = matched[key]
-      if (typeof value === 'string' && value.includes('%')) {
-        needsDecoding = true
-        break
-      }
-    }
-
-    if (!needsDecoding) {
-      routeParams = matched
-    }
-    else {
-      routeParams = {}
-      for (const key in matched) {
-        // `for...in` only yields keys the object has, so the value is present.
-        const value = matched[key]!
-        try {
-          routeParams[key] = decodeURIComponent(value)
-        }
-        catch {
-          // A malformed escape is the client's problem to explain, not a
-          // reason to fail the request before the handler has seen it.
-          routeParams[key] = value
-        }
-      }
-    }
-  }
+  const routeParams: Record<string, string> = req.params ?? {}
 
   req.params = routeParams
   applyRequestEnhancements(req as unknown as Request, routeParams)
@@ -3062,25 +3180,16 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
 
   /*
-   * Query string, without parsing a URL to find out there isn't one.
+   * `query` comes from the router (bun-router 0.1.7), as a lazy accessor that
+   * parses on first access and caches - so a request that never reads it still
+   * costs nothing, which is what the fallback that used to live here was for.
    *
-   * `new URL(req.url)` allocates a full parsed URL - origin, pathname,
-   * a `URLSearchParams` - to answer a question that the presence of a `?` in
-   * the raw string already answers. A route hit without a query string is the
-   * common case and now costs one `indexOf`.
+   * Keeping the fallback would be worse than redundant. It built a
+   * `Record<string, string>` where a repeated key kept only the LAST value,
+   * while the router collects `?a=1&a=2` into `['1', '2']` as the declared type
+   * has always promised - so the shape of `req.query` would have depended on
+   * which layer happened to fill it in.
    */
-  if (!req.query) {
-    const url = req.url
-    const mark = url.indexOf('?')
-    const query: Record<string, string> = {}
-    if (mark !== -1) {
-      const params = new URLSearchParams(url.slice(mark + 1))
-      params.forEach((value, key) => {
-        query[key] = value
-      })
-    }
-    ;req.query = query
-  }
 
   // Assign the shared Laravel-style request helpers by reference (a single
   // Object.assign), instead of allocating ~25 closures per request. Per-request
@@ -3501,26 +3610,48 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           ? actions.filter(a => !options.except!.includes(a))
           : actions
 
-      const handlerBase = handler.replace(/Action$/, '')
-      log.debug(`[router] Resource: /${name} → ${handler} [${activeActions.join(', ')}]`)
+      /*
+       * `'Post'` → `'Actions/Post'`, and an explicit `'Actions/Blog/Blog'` is
+       * left alone.
+       *
+       * Without the prefix the composed name went through the resolver's
+       * generic branch and looked for `app/PostIndexAction.ts` - the project
+       * root, not `app/Actions/`. `buddy make:crud` writes its five actions to
+       * `app/Actions/` and then prints `route.resource('posts', 'Post')` as the
+       * next step, so the documented, scaffolded happy path resolved to a file
+       * that had just been written somewhere else and 500'd on first request.
+       * Nothing caught it: the tests asserted five routes were REGISTERED, and
+       * a string handler is not resolved until the route is hit.
+       */
+      const stripped = handler.replace(/Action$/, '')
+      const handlerBase = stripped.startsWith('Actions/') ? stripped : `Actions/${stripped}`
+      log.debug(`[router] Resource: /${name} → ${handlerBase}*Action [${activeActions.join(', ')}]`)
+
+      /*
+       * The siblings are composed at runtime, so they cannot be listed at the
+       * call site - and `only`/`except` mean the required set is not even fixed.
+       * The type below checks that the base names at least ONE real action;
+       * which of the five exist is settled when the route is hit, as before.
+       */
+      const sibling = (suffix: string): ActionPath => `${handlerBase}${suffix}` as ActionPath
 
       const registerResourceRoutes = () => {
         for (const action of activeActions) {
           switch (action) {
             case 'index':
-              stacksRouter.get(`/${name}`, `${handlerBase}IndexAction`)
+              stacksRouter.get(`/${name}`, sibling('IndexAction'))
               break
             case 'store':
-              stacksRouter.post(`/${name}`, `${handlerBase}StoreAction`)
+              stacksRouter.post(`/${name}`, sibling('StoreAction'))
               break
             case 'show':
-              stacksRouter.get(`/${name}/:id`, `${handlerBase}ShowAction`)
+              stacksRouter.get(`/${name}/:id`, sibling('ShowAction'))
               break
             case 'update':
-              stacksRouter.put(`/${name}/:id`, `${handlerBase}UpdateAction`)
+              stacksRouter.put(`/${name}/:id`, sibling('UpdateAction'))
               break
             case 'destroy':
-              stacksRouter.delete(`/${name}/:id`, `${handlerBase}DestroyAction`)
+              stacksRouter.delete(`/${name}/:id`, sibling('DestroyAction'))
               break
           }
         }
@@ -3775,7 +3906,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Register routes from a package or module file within an optional group
-    async register(routePath: string, options?: { prefix?: string, middleware?: string | string[] }): Promise<StacksRouterInstance> {
+    async register(routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }): Promise<StacksRouterInstance> {
       log.debug(`[router] Register: ${routePath} prefix=${options?.prefix || 'none'}`)
       const callback = async () => {
         await import(routePath)
@@ -4138,18 +4269,59 @@ export function disableViewRouting(bunRouter: Router): boolean {
 export interface StacksRouterInstance {
   bunRouter: Router
   routes: Route[]
-  get: (path: string, handler: StacksHandler) => ChainableRoute
-  post: (path: string, handler: StacksHandler) => ChainableRoute
-  put: (path: string, handler: StacksHandler) => ChainableRoute
-  patch: (path: string, handler: StacksHandler) => ChainableRoute
-  delete: (path: string, handler: StacksHandler) => ChainableRoute
-  options: (path: string, handler: StacksHandler) => ChainableRoute
+  /*
+   * Two call signatures each, and the order matters. The first types an inline
+   * arrow's request from the path literal; the second accepts every other
+   * handler form unchanged. One parameter typed as the union would type
+   * neither - see `TypedInlineRouteHandler`.
+   */
+  get: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  post: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  put: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  patch: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  delete: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
+  options: {
+    <TPath extends string>(path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (path: string, handler: StacksHandler): ChainableRoute
+  }
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
-  resource: (name: string, handler: string, options?: ResourceRouteOptions) => StacksRouterInstance
-  match: (methods: string[], path: string, handler: StacksHandler) => ChainableRoute
+  /*
+   * Generic in the base AND in `only`/`except`, so the check can ask about the
+   * exact set of files this call will register. `readonly TOnly[]` rather than
+   * `ResourceAction[]` is what makes `only: ['index', 'show']` infer as the
+   * literals `'index' | 'show'` instead of widening to the whole union.
+   */
+  resource: <TBase extends string, TOnly extends ResourceAction = never, TExcept extends ResourceAction = never>(
+    name: string,
+    handler: TBase & ResourceBaseCheck<TBase, ActiveResourceActions<TOnly, TExcept>>,
+    options?: {
+      only?: readonly TOnly[]
+      except?: readonly TExcept[]
+      middleware?: MiddlewareReference | MiddlewareReference[]
+    },
+  ) => StacksRouterInstance
+  match: {
+    <TPath extends string>(methods: string[], path: TPath, handler: TypedInlineRouteHandler<TPath>): ChainableRoute
+    (methods: string[], path: string, handler: StacksHandler): ChainableRoute
+  }
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
-  register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
+  register: (routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }) => Promise<StacksRouterInstance>
   /**
    * Work to do once, after the routes load and before the first request.
    *

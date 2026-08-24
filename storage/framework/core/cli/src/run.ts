@@ -2,7 +2,6 @@ import type { Ok, Result } from '@stacksjs/error-handling'
 import type { CliOptions, CommandError, Readable, Subprocess, Writable } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { exec, execSync } from './exec'
-import { log } from '@stacksjs/logging'
 
 /**
  * Run a command.

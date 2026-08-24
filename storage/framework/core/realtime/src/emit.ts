@@ -1,4 +1,3 @@
-import type { ChannelType } from 'ts-broadcasting'
 import { getServer } from './server-instance'
 
 export interface EmitOptions {

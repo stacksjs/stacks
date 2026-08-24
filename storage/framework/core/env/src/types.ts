@@ -1,5 +1,4 @@
 import type { BooleanValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
-import type { schema } from '@stacksjs/validation'
 import type { EnvKey } from '../../../env'
 
 interface EnumObject {
@@ -205,8 +204,110 @@ export interface StacksEnv {
   AUTH_PASSWORD_RESET_EXPIRE: number | undefined
   AUTH_PASSWORD_RESET_THROTTLE: number | undefined
 
-  // Catch-all for custom env vars
-  [key: string]: string | number | boolean | undefined
+  /*
+   * Integration credentials the framework's own `config/` files read.
+   *
+   * These were reachable only through a catch-all `[key: string]` on this
+   * interface, which typed every name - real, misspelled or imaginary - as
+   * `string | number | boolean | undefined`. So `env.GITHUB_CLEINT_ID` was a
+   * valid read returning undefined, and the set of variables the shipped
+   * integrations actually look for was written down nowhere a person could
+   * find it. Naming them is what lets the catch-all go.
+   */
+  ANTHROPIC_API_KEY: string | undefined
+  ANTHROPIC_MAX_TOKENS: string | undefined
+  ANTHROPIC_MODEL: string | undefined
+  APPLE_CLIENT_ID: string | undefined
+  APPLE_KEY_ID: string | undefined
+  APPLE_PRIVATE_KEY: string | undefined
+  APPLE_REDIRECT_URL: string | undefined
+  APPLE_TEAM_ID: string | undefined
+  AWS_ENDPOINT: string | undefined
+  AWS_USE_PATH_STYLE_ENDPOINT: boolean | undefined
+  DB_SSL: string | undefined
+  DISCORD_BOT_TOKEN: string | undefined
+  DISCORD_MAX_RETRIES: string | undefined
+  DISCORD_RETRY_TIMEOUT: string | undefined
+  DISCORD_WEBHOOK_URL: string | undefined
+  EXPO_ACCESS_TOKEN: string | undefined
+  FACEBOOK_CLIENT_ID: string | undefined
+  FACEBOOK_CLIENT_SECRET: string | undefined
+  FACEBOOK_REDIRECT_URL: string | undefined
+  FCM_CLIENT_EMAIL: string | undefined
+  FCM_PRIVATE_KEY: string | undefined
+  FCM_PROJECT_ID: string | undefined
+  FCM_SERVER_KEY: string | undefined
+  GITHUB_CLIENT_ID: string | undefined
+  GITHUB_CLIENT_SECRET: string | undefined
+  GITHUB_REDIRECT_URL: string | undefined
+  GOOGLE_CLIENT_ID: string | undefined
+  GOOGLE_CLIENT_SECRET: string | undefined
+  GOOGLE_REDIRECT_URL: string | undefined
+  MAILGUN_API_KEY: string | undefined
+  MAILGUN_DOMAIN: string | undefined
+  MAILGUN_ENDPOINT: string | undefined
+  MAILGUN_MAX_RETRIES: string | undefined
+  MAILGUN_RETRY_TIMEOUT: string | undefined
+  MAILTRAP_HOST: string | undefined
+  MAILTRAP_INBOX_ID: string | undefined
+  MAILTRAP_MAX_RETRIES: string | undefined
+  MAILTRAP_RETRY_TIMEOUT: string | undefined
+  MAILTRAP_TOKEN: string | undefined
+  MAIL_MAX_RETRIES: string | undefined
+  MAIL_RETRY_TIMEOUT: string | undefined
+  OLLAMA_EMBEDDING_MODEL: string | undefined
+  OLLAMA_HOST: string | undefined
+  OLLAMA_MODEL: string | undefined
+  OPENAI_API_KEY: string | undefined
+  OPENAI_BASE_URL: string | undefined
+  OPENAI_EMBEDDING_MODEL: string | undefined
+  OPENAI_MODEL: string | undefined
+  PREDICTHQ_DB_PASSWORD: string | undefined
+  QUEUE_CONCURRENCY: string | undefined
+  QUEUE_DLQ_ENABLED: string | undefined
+  QUEUE_DLQ_MAX_RETRIES: string | undefined
+  QUEUE_FAILED_DRIVER: string | undefined
+  QUEUE_HORIZONTAL_SCALING_ENABLED: string | undefined
+  QUEUE_JOBS_PER_WORKER: string | undefined
+  QUEUE_LOG_LEVEL: string | undefined
+  QUEUE_MAX_WORKERS: string | undefined
+  QUEUE_METRICS_ENABLED: string | undefined
+  QUEUE_PREFIX: string | undefined
+  QUEUE_RATE_LIMIT_DURATION: string | undefined
+  QUEUE_RATE_LIMIT_ENABLED: string | undefined
+  QUEUE_RATE_LIMIT_MAX: string | undefined
+  QUEUE_WORKER_CONCURRENCY: string | undefined
+  REDIS_DB: string | undefined
+  REDIS_URL: string | undefined
+  SENDGRID_API_KEY: string | undefined
+  SENDGRID_MAX_RETRIES: string | undefined
+  SENDGRID_RETRY_TIMEOUT: string | undefined
+  SLACK_APP_ID: string | undefined
+  SLACK_BOT_TOKEN: string | undefined
+  SLACK_CLIENT_ID: string | undefined
+  SLACK_MAX_RETRIES: string | undefined
+  SLACK_RETRY_TIMEOUT: string | undefined
+  SLACK_SECRET_KEY: string | undefined
+  SLACK_WEBHOOK_URL: string | undefined
+  SMS_FROM_NUMBER: string | undefined
+  SMS_ORIGINATION_NUMBER: string | undefined
+  SMS_SENDER_ID: string | undefined
+  SQS_PREFIX: string | undefined
+  SQS_SUFFIX: string | undefined
+  TEAMS_MAX_RETRIES: string | undefined
+  TEAMS_RETRY_TIMEOUT: string | undefined
+  TEAMS_WEBHOOK_URL: string | undefined
+  TWILIO_ACCOUNT_SID: string | undefined
+  TWILIO_AUTH_TOKEN: string | undefined
+  TWILIO_FROM_NUMBER: string | undefined
+  TWILIO_MESSAGING_SERVICE_SID: string | undefined
+  TWILIO_VERIFY_SERVICE_SID: string | undefined
+  TWITTER_CLIENT_ID: string | undefined
+  TWITTER_CLIENT_SECRET: string | undefined
+  TWITTER_REDIRECT_URL: string | undefined
+  VONAGE_API_KEY: string | undefined
+  VONAGE_API_SECRET: string | undefined
+  VONAGE_FROM_NUMBER: string | undefined
 }
 
 export type EnvSchema = EnvConfig

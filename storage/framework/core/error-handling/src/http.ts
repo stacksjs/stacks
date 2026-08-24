@@ -1,11 +1,9 @@
 import {
   createErrorHandler,
-  HTTP_ERRORS,
   renderProductionErrorPage,
 } from './error-page'
 import type {
   ErrorPageConfig,
-  HttpStatusCode,
   RequestContext,
   RoutingContext,
 } from './error-page'

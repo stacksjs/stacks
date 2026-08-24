@@ -2,7 +2,7 @@
   "name": "@stacksjs/validation",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.56",
+  "version": "0.72.57",
   "description": "The Stacks Validation ways.",
   "author": "Chris Breuer",
   "contributors": [
@@ -59,7 +59,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.5.5"
+    "@stacksjs/ts-validation": "^0.5.6"
   },
   "devDependencies": {
     "better-dx": "^0.2.24",

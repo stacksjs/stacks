@@ -1,5 +1,4 @@
 import { Action } from '@stacksjs/actions'
-import { Storage } from '@stacksjs/storage'
 
 interface Request {
   file: (key: string) => any

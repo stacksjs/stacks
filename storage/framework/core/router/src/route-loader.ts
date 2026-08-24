@@ -19,6 +19,7 @@
  * routes naturally override framework routes.
  */
 
+import type { MiddlewareReference } from '@stacksjs/bun-router'
 import type { RouteDefinition, RouteRegistry } from './route-types'
 import { log } from '@stacksjs/logging'
 import { route } from './stacks-router'
@@ -334,7 +335,7 @@ function normalizeDefinition(def: string | RouteDefinition): RouteDefinition {
 /**
  * Normalize middleware to array form
  */
-function normalizeMiddleware(middleware: string | string[] | undefined): string[] {
+function normalizeMiddleware(middleware: MiddlewareReference | MiddlewareReference[] | undefined): MiddlewareReference[] {
   if (!middleware) return []
   if (typeof middleware === 'string') return [middleware]
   return middleware

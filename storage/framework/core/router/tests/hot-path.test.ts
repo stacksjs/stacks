@@ -101,6 +101,16 @@ describe('params and query, only when there are any', () => {
     expect(await (await get('/_hot/query?a=1&b=two')).json()).toEqual({ query: { a: '1', b: 'two' } })
   })
 
+  /*
+   * `query` comes from the router now, and a repeated key collects into an
+   * array - what `EnhancedRequest` has always declared. The fallback that used
+   * to live in `enhanceRequest` kept only the last value, so the shape depended
+   * on which layer filled it in.
+   */
+  it('collects a repeated key into an array', async () => {
+    expect(await (await get('/_hot/query?a=1&a=2')).json()).toEqual({ query: { a: ['1', '2'] } })
+  })
+
   it('keeps a plain path param verbatim', async () => {
     expect(await (await get('/_hot/param/42')).json()).toEqual({ id: '42' })
   })
@@ -112,6 +122,17 @@ describe('params and query, only when there are any', () => {
   it('leaves a malformed percent-escape as-is instead of throwing', async () => {
     expect(await (await get('/_hot/encoded/100%25')).json()).toEqual({ slug: '100%' })
     expect(await (await get('/_hot/encoded/broken%ZZ')).json()).toEqual({ slug: 'broken%ZZ' })
+  })
+
+  /*
+   * Decoding moved into bun-router (0.1.6), where the param is assigned, and
+   * came OUT of `enhanceRequest`. Two layers each calling `decodeURIComponent`
+   * would turn `%2520` into a space, and a double decode is how a filter that
+   * rejects `../` gets walked past.
+   */
+  it('decodes exactly once, so a double-encoded sequence stays encoded', async () => {
+    expect(await (await get('/_hot/encoded/%2520')).json()).toEqual({ slug: '%20' })
+    expect(await (await get('/_hot/encoded/%252e%252e%252f')).json()).toEqual({ slug: '%2e%2e%2f' })
   })
 })
 

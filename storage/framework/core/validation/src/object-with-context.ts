@@ -19,7 +19,7 @@
  * change.
  */
 
-import type { ValidationResult, Validator } from '@stacksjs/ts-validation'
+import type { RequiredMarker, ValidationResult, Validator } from '@stacksjs/ts-validation'
 import { applyConditionals, withConditionals } from './conditional'
 import type { ConditionalAPI } from './conditional'
 
@@ -54,8 +54,15 @@ export interface ObjectWithContextValidator<TShape extends ValidatorShape> exten
   validate: (value: InferObjectShape<TShape>) => ValidationResult
   /** Surface the shape map for introspection. */
   getShape: () => TShape
-  /** Mark the whole object as required (mirrors ts-validation). */
-  required: () => this
+  /**
+   * Mark the whole object as required (mirrors ts-validation).
+   *
+   * The `RequiredMarker` is what makes required-ness readable at the type
+   * level - `IsRequired<typeof rule>` - so a shape inferred from a rule set
+   * knows which keys are optional. Mirroring the interface without it would
+   * make this validator the one that always reads as optional.
+   */
+  required: () => this & RequiredMarker
   /** Mark the whole object as optional (mirrors ts-validation). */
   optional: () => this
   /** Internal flag set when nested inside another object's shape. */
@@ -111,7 +118,9 @@ export function objectWithContext<const TShape extends ValidatorShape = Record<s
 
     required() {
       isRequired = true
-      return augmented
+      // The marker is phantom - nothing is added here. The cast IS the marker,
+      // in the one place it can be, exactly as ts-validation's base does it.
+      return augmented as ObjectChain & RequiredMarker
     },
 
     optional() {

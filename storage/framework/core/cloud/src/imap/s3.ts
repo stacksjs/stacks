@@ -5,7 +5,7 @@
 
 import * as crypto from 'node:crypto'
 import { AWSClient } from './client'
-import { readdir, stat } from 'node:fs/promises'
+import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { readFileSync } from 'node:fs'
 

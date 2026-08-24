@@ -1,0 +1,117 @@
+/**
+ * The strings that are really identifiers, checked at compile time.
+ *
+ * An action path names a file, a middleware alias names a class, a route name
+ * names a route. All three were `string`, so a typo in the first is a 500 on
+ * one endpoint, a typo in the third throws when the URL is built, and a typo in
+ * the second serves the route WITHOUT the middleware you thought was on it.
+ *
+ * `buddy generate:types` discovers all three from what the application actually
+ * has and writes them into the router's type registry
+ * (`storage/framework/types/actions.d.ts`). This asserts the wiring holds -
+ * that the generated declaration reaches the call sites and bites.
+ *
+ * Checked by `bun run typecheck` via `tsconfig.type-tests.json`; nothing here
+ * executes. The `@ts-expect-error` lines are the load-bearing half: each fails
+ * the build if the error it expects stops happening, which is what catches the
+ * failure mode this whole feature kept hitting - a registry that looks wired up
+ * and checks nothing.
+ */
+
+import { route, url } from '@stacksjs/router'
+
+// ── action paths ──────────────────────────────────────────────────────────
+
+route.get('/typed/login', 'Actions/Auth/LoginAction')
+// Not every action file ends in `Action`; the union is the real list, not a
+// pattern, so these have to work too.
+route.get('/typed/models', 'Actions/Dashboard/Models/GetModels')
+// Controllers stay a pattern - the method half is a member name, not a file.
+route.get('/typed/query', 'Controllers/QueryController@getStats')
+
+export function badActions(): void {
+  // @ts-expect-error typo'd action: no such file
+  route.get('/typed/x', 'Actions/Auth/LogniAction')
+
+  // @ts-expect-error right shape, still not an action this app has
+  route.get('/typed/y', 'Actions/Totally/MadeUpAction')
+}
+
+// ── middleware aliases ────────────────────────────────────────────────────
+
+route.get('/typed/dash', () => ({ ok: true })).middleware('auth')
+route.get('/typed/dash2', () => ({ ok: true })).middleware(['auth', 'team'])
+// Parameterised and negated forms are both real.
+route.get('/typed/dash3', () => ({ ok: true })).middleware('throttle:60,1')
+route.get('/typed/dash4', () => ({ ok: true })).middleware('!auth')
+
+export function badMiddleware(): void {
+  // @ts-expect-error the typo that silently serves a route unprotected
+  route.get('/typed/admin', () => ({ ok: true })).middleware('atuh')
+}
+
+// ── inline handler requests ───────────────────────────────────────────────
+
+// `request.params` is narrowed to what the path declares. Without the typed
+// overload the whole handler parameter was implicitly `any`, so every key -
+// including the ones that are not there - read as valid and returned undefined.
+route.get('/typed/users/{id}', req => ({ id: req.params.id }))
+route.match(['GET', 'POST'], '/typed/c/{slug}', req => req.params.slug)
+
+export function badParams(): void {
+  // @ts-expect-error `/typed/users/{id}` has no `slug`
+  route.get('/typed/users/{id}', req => ({ x: req.params.slug }))
+}
+
+// An inline handler may return what `formatResult` handles, not only a
+// `Response` - an object becomes JSON, a string text, `null` a 204.
+route.get('/typed/data', () => ({ ok: true }))
+route.get('/typed/text', () => 'hello')
+
+// ── resource() ────────────────────────────────────────────────────────────
+
+/*
+ * Every action a call will register has to exist - not just one of them.
+ *
+ * `Actions/Cms/Page` is the case that makes the difference concrete: it has
+ * Index, Store, Update and Destroy, and no Show. A bare
+ * `resource('pages', 'Actions/Cms/Page')` therefore registers a
+ * `GET /pages/{id}` that 500s the first time anybody opens a page, while
+ * `{ except: ['show'] }` is completely fine. Only reading `only`/`except` can
+ * tell those apart, which is why they are inferred as literals.
+ */
+
+// All five exist, in every spelling of the base.
+route.resource('typed_blog', 'Actions/Blog/Blog')
+route.resource('typed_blog2', 'Blog/BlogAction')
+
+// Four of five, with the missing one excluded.
+route.resource('typed_pages', 'Actions/Cms/Page', { except: ['show'] })
+route.resource('typed_pages2', 'Actions/Cms/Page', { only: ['index', 'store'] })
+
+export function badResource(): void {
+  // @ts-expect-error registers GET /pages/{id} against an action that is not there
+  route.resource('typed_pages3', 'Actions/Cms/Page')
+
+  // @ts-expect-error `show` is asked for by name, and is the one that is missing
+  route.resource('typed_pages4', 'Actions/Cms/Page', { only: ['index', 'show'] })
+
+  // @ts-expect-error `only` wins over `except` at runtime, so it does here too
+  route.resource('typed_pages5', 'Actions/Cms/Page', { only: ['show'], except: ['show'] })
+
+  // @ts-expect-error no action is composed from this base at all
+  route.resource('typed_psots', 'Psot')
+}
+
+// ── named routes ──────────────────────────────────────────────────────────
+
+export const unsubscribe: string = url('email.unsubscribe', { token: 'abc-123' })
+export const contact: string = url('contact.send')
+
+export function badNames(): void {
+  // @ts-expect-error no route is called this
+  url('email.unsubscrbe')
+
+  // @ts-expect-error nor this
+  url('users.show')
+}

@@ -23,7 +23,7 @@ export { default as PaymentTransaction } from '../defaults/app/Models/PaymentTra
 export { default as EmailIdempotency } from '../defaults/app/Models/EmailIdempotency'
 export { default as Team } from '../defaults/app/Models/Team'
 export { default as UsageEvent } from '../defaults/app/Models/UsageEvent'
-// Skipped 'Request' — would shadow a built-in global. Import directly if needed.
+// Skipped 'Request' - would shadow a built-in global. Import directly if needed.
 // export { default as Request } from '../defaults/app/Models/Request'
 export { default as AutomationRun } from '../defaults/app/Models/AutomationRun'
 export { default as Activity } from '../defaults/app/Models/Activity'
@@ -41,7 +41,7 @@ export { default as TeamInvitation } from '../defaults/app/Models/TeamInvitation
 export { default as EmailWebhookEvent } from '../defaults/app/Models/EmailWebhookEvent'
 export { default as Subscription } from '../defaults/app/Models/Subscription'
 export { default as Deployment } from '../defaults/app/Models/Deployment'
-// Skipped 'Error' — would shadow a built-in global. Import directly if needed.
+// Skipped 'Error' - would shadow a built-in global. Import directly if needed.
 // export { default as Error } from '../defaults/app/Models/Error'
 export { default as SocialAccount } from '../defaults/app/Models/SocialAccount'
 export { default as Release } from '../defaults/app/Models/Release'

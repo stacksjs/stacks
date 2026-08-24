@@ -20,7 +20,7 @@
 import type { Driver, MigrateProjectRequest, ReportEntry } from '../types'
 import { existsSync, readdirSync } from 'node:fs'
 import { copyFile, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { basename, join } from 'node:path'
+import { join } from 'node:path'
 import { laravelFilenameToStacks, parseLaravelMigration } from './migrations'
 import { parseLaravelModel } from './models'
 

@@ -122,12 +122,57 @@ The `Record<EventType, unknown>` intersection allows arbitrary event names beyon
 
 ## Model Events
 
-Every model with `observe: true` trait (in defineModel) emits via `afterCreate`/`afterUpdate`/`afterDelete` hooks:
-- `'{model}:created'` -- after insert
-- `'{model}:updated'` -- after update
-- `'{model}:deleted'` -- after delete
+Every model with the `observe: true` trait emits **eight** events:
 
-Model name is lowercased: `'user:created'`, `'post:updated'`, `'order:deleted'`
+| Event | When | Payload |
+|---|---|---|
+| `{model}:saving` | before any write | the model object |
+| `{model}:creating` / `:updating` / `:deleting` | before that write | the model object |
+| `{model}:created` / `:updated` / `:deleted` | after that write | the row |
+| `{model}:saved` | after insert OR update | the row |
+
+Model name is lowercased: `'user:created'`, `'post:updated'`, `'teammember:saved'`.
+
+A **before** listener can cancel the write by returning `false`:
+
+```ts
+listen('user:deleting', (model) => {
+  if (model.attributes.email.endsWith('@example.com'))
+    return false   // the delete does not happen
+})
+```
+
+Before-events carry the model object (`.attributes` holds the row); after-events
+carry the row itself.
+
+### The payloads are typed, and nothing generates them
+
+`listen('user:created', user => user.emial)` is a compile error - the payload is
+the User row, with the columns your model declares.
+
+`storage/framework/types/model-events.d.ts` derives the whole map from the models
+barrel with a mapped type:
+
+```ts
+type ModelAfterEvents = {
+  [K in keyof Models & string as `${Lowercase<K>}:${AfterEvent}`]: ModelRow<Models[K]>
+}
+```
+
+So a model existing IS its events existing - there is no generated list to keep in
+agreement, and nothing to re-run after adding a model. (It replaced an 817-line
+generated file, and before that a hand-maintained one that listed three events per
+model and typed every payload `Record<string, any>`.)
+
+Declare your own events by augmenting `AppEvents`:
+
+```ts
+declare module '@stacksjs/events' {
+  interface AppEvents {
+    'invoice:overdue': { id: number, daysLate: number }
+  }
+}
+```
 
 Events are dispatched via lazy `import('@stacksjs/events').then(({ dispatch }) => dispatch(...))` to avoid circular dependencies. If the import fails (e.g., browser context), errors are silently caught.
 
@@ -136,8 +181,9 @@ The `observe` trait can be:
 - `['create', 'update']` -- emits only specified events
 - `false` / undefined -- no events
 
-Full model list (45+ with events defined in `storage/framework/types/events.ts`):
-Author, Page, Post, User, Activity, Campaign, Cart, CartItem, Category, Comment, Coupon, Customer, DeliveryRoute, DigitalDelivery, Driver, EmailList, GiftCard, LicenseKey, LoyaltyPoint, LoyaltyReward, Manufacturer, Notification, Order, OrderItem, Payment, PrintDevice, Product, ProductUnit, ProductVariant, Receipt, Review, ShippingMethod, ShippingRate, ShippingZone, SocialPost, Subscription, Tag, TaxRate, Transaction, WaitlistProduct, WaitlistRestaurant, Websocket
+There is no model list to keep here. Every model in `storage/framework/auto-imports/models.ts`
+has its eight events, and that barrel is generated from disk for the runtime, so the
+answer to "which models emit events" is "the ones that exist".
 
 ## Event-to-Listener Mapping (app/Events.ts)
 

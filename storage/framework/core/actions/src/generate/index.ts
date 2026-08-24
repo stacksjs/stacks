@@ -10,6 +10,7 @@ import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
+import { generateActionTypes } from './action-types'
 import { generateEnvFiles } from './env-files'
 
 export { generateProjectImages } from './images'
@@ -134,6 +135,41 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   // any variable added after the file was last written by hand fell through to
   // the index signature and typed as `string | number | true`.
   await generateEnvFiles()
+
+  // Action paths, for the same reason: the generator existed and nothing ever
+  // ran it, so `route.get(path, 'Actions/…')` was checked against a stale
+  // hand-written file that had been neutered with `| string`.
+  await generateActionTypes()
+
+  /*
+   * Model events are NOT generated. `types/model-events.d.ts` derives them from
+   * the models barrel with a mapped type, so `User` becoming a model is the
+   * same fact as `'user:created'` existing rather than two things that have to
+   * be kept in agreement. There was a generator here; 817 lines of output that
+   * a mapped type produces for free.
+   */
+
+  /*
+   * The server auto-import declarations, which describe every global the
+   * runtime injects.
+   *
+   * These have always been derived from disk - the problem was WHEN. The header
+   * says "regenerated automatically when the API starts", and that was the only
+   * thing that regenerated them, so a fresh checkout, a CI typecheck or any
+   * `buddy typecheck` before the first `buddy dev` read whatever the last
+   * developer's API run happened to leave behind. Generating types is exactly
+   * when they should be rebuilt.
+   *
+   * Best-effort: a project without models still has a types directory, and
+   * failing to refresh a declaration is not a reason to fail the whole command.
+   */
+  try {
+    const { generateServerAutoImportTypes } = await import('@stacksjs/server')
+    await generateServerAutoImportTypes()
+  }
+  catch (error) {
+    log.debug('[generate:types] Could not refresh server auto-import declarations', { error })
+  }
 
   const entry = frameworkPath('core/actions/src/generate/types.ts')
 

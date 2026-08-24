@@ -1,5 +1,6 @@
 import type { Err, Ok } from '@stacksjs/error-handling'
 import type { JobOptions } from '@stacksjs/types'
+import type { SchedulableJobName } from './schedule'
 import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
@@ -43,7 +44,12 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
         continue
       }
 
-      executeJobRate(jobName, job.rate)
+      /*
+       * `jobName` comes from reading the jobs directory, so it is a string
+       * here - every name it can hold IS a schedulable one, since the union is
+       * derived from that same directory.
+       */
+      executeJobRate(jobName as SchedulableJobName, job.rate)
     }
     catch (error) {
       console.error(error)
@@ -71,7 +77,7 @@ async function runSchedulerInstance(): Promise<void> {
   }
 }
 
-function executeJobRate(jobName: string, rate: string): void {
+function executeJobRate(jobName: SchedulableJobName, rate: string): void {
   switch (rate) {
     case Every.Minute:
       schedule.job(jobName).everyMinute()

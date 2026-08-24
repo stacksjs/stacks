@@ -38,7 +38,14 @@
   },
   "include": [
     "./types/**/*.d.ts",
-    "./defaults/app/**/*.ts"
+    "./defaults/app/**/*.ts",
+    // The default route files. `tsconfig.framework.json` excludes `./defaults/**`
+    // and this config only listed `./defaults/app/**`, so 500+ route
+    // registrations - every action string the framework ships - were checked by
+    // nothing at all. The only reason a broken one ever surfaced was the
+    // gitignored build copy under `core/defaults/routes/`, which slips past that
+    // config's exclude by accident.
+    "./defaults/routes/**/*.ts"
   ],
   "exclude": [
     "./defaults/app/**/*.test.ts",

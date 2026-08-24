@@ -10,11 +10,11 @@ export default new Action({
 
   validations: {
     challenge_token: {
-      rule: schema.string().min(1),
+      rule: schema.string().min(1).required(),
       message: 'A challenge token is required.',
     },
     code: {
-      rule: schema.string().min(6).max(6),
+      rule: schema.string().min(6).max(6).required(),
       message: 'Code must be a 6-digit TOTP code.',
     },
   },

@@ -47,10 +47,55 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 ```
 
 ### Handler Types
-- Function: `(req: EnhancedRequest) => Response | Promise<Response>`
+- Function: `(req) => …` — return a `Response`, or any value `formatResult`
+  handles: an object/array becomes JSON, a string becomes text, `null` becomes
+  204, a `ReadableStream` streams. `req.params` is narrowed to the path's own
+  placeholders, so `req.params.slugTypo` is a compile error rather than
+  `undefined` at runtime.
 - Action string: `'Actions/CreateUser'` — auto-loads action, lazily
 - Action object: an imported action, passed directly — see typed routes below
 - Controller: `'Controllers/UserController@index'` — calls controller method
+
+## The strings are typed (run `buddy generate:types`)
+
+Action paths, middleware aliases and route names are all checked at compile
+time against what this application actually has. `buddy generate:types`
+discovers them and writes them into the router's type registry
+(`storage/framework/types/actions.d.ts`); nothing is maintained by hand.
+
+```typescript
+route.get('/login', 'Actions/Auth/LogniAction')   // ✗ no such action
+route.get('/admin', handler).middleware('atuh')   // ✗ no such middleware alias
+url('email.unsubscrbe', { token })                // ✗ no such route name
+url('user.post', { id: 42 })                      // params come from the path
+```
+
+The middleware one is the one that matters most: a typo'd alias used to serve
+the route **without** the protection, silently.
+
+Notes:
+- Controllers stay a pattern (`'Controllers/X@method'`) — the method half is a
+  member name, not a filename.
+- Negated (`'!auth'`) and parameterised (`'throttle:60,1'`) middleware forms are
+  both accepted.
+- Regenerate after adding an action, a middleware alias, or a `.name()`. A stale
+  file rejects code that is correct.
+- `resource()` takes a BASE, and composes `Actions/<Base><Kind>Action` from it.
+  `route.resource('posts', 'Post')` → `Actions/PostIndexAction`, matching where
+  `buddy make:crud` writes. The base is checked against the actions that exist;
+  which of the five siblings you need depends on `only`/`except`, so that part
+  is settled when the route is hit.
+
+### Path params arrive decoded
+
+`/users/{name}` given `/users/caf%C3%A9` hands the handler `café`, and `%2F`
+becomes a real `/`. Decoded exactly once, in bun-router — do NOT decode again in
+an action or middleware: two passes turn `%2520` into a space, which is how a
+filter that rejects `../` gets walked past. A malformed escape (`%ZZ`) passes
+through raw rather than failing the request.
+
+A decoded param can contain `/`, so anything joining one into a filesystem path
+still has to sanitise. Decoding makes the value correct, not safe.
 
 ## Typed Routes (zero generation)
 

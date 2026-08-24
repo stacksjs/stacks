@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.56",
+  "version": "0.72.57",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -56,6 +56,7 @@
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
+    "typecheck:types": "bun tsc --noEmit -p tsconfig.type-tests.json --pretty false",
     "prepublishOnly": "bun run build"
   },
   "dependencies": {

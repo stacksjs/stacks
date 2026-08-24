@@ -108,7 +108,7 @@ describe('Group prefixing', () => {
 describe('Resource routes', () => {
   test('resource registers all 5 CRUD routes', () => {
     const router = createStacksRouter()
-    router.resource('posts', 'PostAction')
+    router.resource('posts', 'Actions/Blog/Blog')
 
     const routes = router.routes
     const paths = routes.map(r => `${r.method}:${r.path}`)
@@ -122,7 +122,7 @@ describe('Resource routes', () => {
 
   test('resource with only option limits routes', () => {
     const router = createStacksRouter()
-    router.resource('comments', 'CommentAction', { only: ['index', 'show'] })
+    router.resource('comments', 'Actions/Blog/Blog', { only: ['index', 'show'] })
 
     const routes = router.routes
     const paths = routes.map(r => `${r.method}:${r.path}`)
@@ -136,7 +136,7 @@ describe('Resource routes', () => {
 
   test('resource with except option excludes routes', () => {
     const router = createStacksRouter()
-    router.resource('tags', 'TagAction', { except: ['destroy'] })
+    router.resource('tags', 'Actions/Blog/Blog', { except: ['destroy'] })
 
     const routes = router.routes
     const paths = routes.map(r => `${r.method}:${r.path}`)

@@ -1,7 +1,7 @@
 import type { CatchCallbackFn } from '@stacksjs/cron'
 import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './types'
 import { spawn } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
@@ -26,6 +26,39 @@ import { acquireSchedulerLock } from './scheduler-lock'
  * schedule.command('echo "maintenance"').daily()
  * ```
  */
+/**
+ * The jobs an application has, for `schedule.job(…)` to be checked against.
+ *
+ * Empty here and augmented by the application's own declarations, which derive
+ * it from the jobs barrel - see `storage/framework/types/scheduled.d.ts`. The
+ * scheduler cannot name them itself: importing the barrel from this package
+ * would drag every job module into every compilation that touches the
+ * scheduler.
+ *
+ * Empty means any string, so an application that declares nothing is unchanged.
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface SchedulableJobs {}
+
+/** The same, for `schedule.action(…)`. @see {@link SchedulableJobs} */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface SchedulableActions {}
+
+/**
+ * A job name `schedule.job()` accepts.
+ *
+ * `schedule.job('Inpsire')` used to type-check and fail at the scheduled hour,
+ * with the misspelling visible only in a log line nobody was reading at 3am.
+ */
+export type SchedulableJobName = keyof SchedulableJobs extends never
+  ? string
+  : Extract<keyof SchedulableJobs, string>
+
+/** An action path `schedule.action()` accepts. @see {@link SchedulableJobName} */
+export type SchedulableActionName = keyof SchedulableActions extends never
+  ? string
+  : Extract<keyof SchedulableActions, string>
+
 export class Schedule implements UntimedSchedule {
   private static jobs = new Map<string, ScheduledJob>()
   // Dedupe registry: normalized job name + cron pattern → the timer already
@@ -795,7 +828,7 @@ export class Schedule implements UntimedSchedule {
 
   // --- Static factory methods ---
 
-  static job(name: string): UntimedSchedule {
+  static job(name: SchedulableJobName): UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running job: ${name}`)
       try {
@@ -808,7 +841,7 @@ export class Schedule implements UntimedSchedule {
     }).withName(name) as UntimedSchedule
   }
 
-  static action(name: string): UntimedSchedule {
+  static action(name: SchedulableActionName): UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running action: ${name}`)
       try {

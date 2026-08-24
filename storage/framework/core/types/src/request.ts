@@ -1,10 +1,10 @@
 import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
-import type { AuthToken, RouteParam } from '@stacksjs/types'
+import type { AuthToken} from '@stacksjs/types'
 // `Infer<T extends Validator<U>>` resolves to the validator's output
 // type — `Infer<typeof schema.string()> → string`. Type-only import
 // keeps this package free of a runtime ts-validation dependency.
-import type { Infer } from '@stacksjs/ts-validation'
+import type { Infer, IsRequired } from '@stacksjs/ts-validation'
 
 // Trait methods are attached dynamically by the Stacks model proxy. The
 // open member bag reflects application-level traits that the framework's
@@ -17,12 +17,23 @@ interface RequestData {
 
 /**
  * Cookie-access helper exposed via `request.cookies` on
- * {@link RequestInstance}. The methods mirror bun-router's
- * `CookieAccessor` — duplicated locally so this package doesn't
- * have to depend on bun-router for a single type. Keep the surface
- * in sync if bun-router extends its accessor.
+ * {@link RequestInstance}. Mirrors bun-router's `CookieAccessor` —
+ * duplicated locally so this package doesn't have to depend on bun-router
+ * for a single type.
+ *
+ * "Keep the surface in sync" used to be the whole instruction here, and it
+ * drifted the moment bun-router's accessor grew: the runtime object is
+ * callable and carries its entries directly, and this said it was four
+ * methods. A comment cannot notice that. `cookie-accessor-parity.test-d.ts`
+ * in `@stacksjs/router` — a package that already depends on bun-router — now
+ * asserts the two are mutually assignable, so drift is a build failure
+ * instead of a note.
  */
 export interface RequestCookies {
+  /** The whole parsed cookie map: `request.cookies()`. */
+  (): Record<string, string>
+  /** Direct access by name: `request.cookies.session`. */
+  [name: string]: unknown
   get: (name: string) => string | undefined
   set: (name: string, value: string, options?: {
     path?: string
@@ -190,9 +201,69 @@ export type ActionRequest<
  *   type Body = InferValidations<typeof validations>
  *   // → { email: string, password: string, remember: boolean }
  */
-export type InferValidations<V extends Record<string, { rule: any }>> = {
-  [K in keyof V]: Infer<V[K]['rule']>
-}
+/**
+ * Resolve a computed type to its final shape, for display.
+ *
+ * A named alias over a generic is shown by TypeScript as the alias: hovering
+ * `handle`'s parameter reported
+ *
+ *   InferValidations<{ id: { rule: WithConditionals<NumberValidatorType> }; … }>
+ *
+ * which is the machinery, not the answer. It says nothing about what `id`
+ * actually is - the reader has to go and resolve it themselves, which is
+ * exactly the work the inference was supposed to save. Mapping the type through
+ * a fresh object literal forces it to be displayed evaluated, so the same hover
+ * reports `{ id: number, name: string }`.
+ *
+ * Display only: `Resolved<T>` and `T` are the same type.
+ */
+export type Resolved<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+/**
+ * The shape a set of validation rules describes.
+ *
+ * Optionality comes from the rules themselves: a field whose rule went through
+ * `.required()` is a required key, and everything else is optional. Before
+ * ts-validation 0.5.6 there was nothing to read - `required()` returned `this`
+ * and `isRequired` was a runtime boolean - so every field typed as present,
+ * including the ones a handler has to guard. `user.name` was `string` on a
+ * payload where it could be absent, which is the type saying something the
+ * runtime does not.
+ *
+ * Written as two mapped types rather than one with an optional modifier,
+ * because `?` cannot be applied conditionally per key.
+ */
+export type InferValidations<V extends Record<string, { rule: any }>> = Resolved<
+  & { [K in keyof V as IsRequired<V[K]['rule']> extends true ? K : never]: Infer<V[K]['rule']> }
+  & { [K in keyof V as IsRequired<V[K]['rule']> extends true ? never : K]?: Infer<V[K]['rule']> }
+>
+
+/**
+ * What `get()` and `input()` can actually be asked for.
+ *
+ * They read one merged bag — `getAllInputFor` folds query, then body, then
+ * route params, in that order — so a path param is as reachable through
+ * `request.get('id')` as a validated body field is. The declarations were keyed
+ * on `TFields` alone, which meant `request.params.id` was `string` while
+ * `request.get('id')` right beside it was `any`: the same value, typed on one
+ * route and not the other.
+ *
+ * Params override fields where the names collide, because that is the order the
+ * runtime merges in.
+ */
+export type TInput<
+  TFields extends Record<string, any>,
+  TParams extends Record<string, string>,
+> = string extends keyof TParams
+  /*
+   * No path was declared, so `TParams` is the wide `Record<string, string>`
+   * default and its `keyof` is `string`. Merging that would `Omit` every key
+   * from `TFields` and leave the fields typed as strings - so an action with
+   * validations but no `path:` would have had its inferred body erased. When
+   * nothing is known about the params, the fields are the whole answer.
+   */
+  ? TFields
+  : Omit<TFields, keyof TParams> & TParams
 
 export type RequestValidationRules = Record<string, string | {
   rule: { validate: (value: any) => any }
@@ -265,14 +336,15 @@ export interface RequestInstance<
    * Get input value from any source (query, body, params)
    * @example request.get('title')           // returns string (when model-aware)
    * @example request.get('views', 0)        // returns number with default
+   * @example request.get('id')              // path params count too
    */
-  get<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  get<K extends keyof TInput<TFields, TParams> & string>(key: K, defaultValue?: TInput<TFields, TParams>[K]): TInput<TFields, TParams>[K]
   get<T = any>(key: string, defaultValue?: T): T
 
   /**
    * Alias for get() - Laravel compatibility
    */
-  input<K extends keyof TFields & string>(key: K, defaultValue?: TFields[K]): TFields[K]
+  input<K extends keyof TInput<TFields, TParams> & string>(key: K, defaultValue?: TInput<TFields, TParams>[K]): TInput<TFields, TParams>[K]
   input<T = any>(key: string, defaultValue?: T): T
 
   /**
