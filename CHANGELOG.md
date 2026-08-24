@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.59...v0.72.60)
+
+## 🐛 Bug Fixes
+
+- **buddy**: flush the JSON command inventory before returning ([16d253b](https://github.com/stacksjs/stacks/commit/16d253b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.58...v0.72.59)
 
 ## 🐛 Bug Fixes
