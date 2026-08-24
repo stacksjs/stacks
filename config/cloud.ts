@@ -251,7 +251,7 @@ export const tsCloud: TsCloudConfig = {
           keyspaces: [{ name: 'predicthq', sharded: false }],
           vtgatePort: 15306,
           username: 'predicthq',
-          password: String((env as Record<string, string | number | boolean | undefined>).PREDICTHQ_DB_PASSWORD || ''),
+          password: String(env.PREDICTHQ_DB_PASSWORD || ''),
           bindAddress: '127.0.0.1',
         },
       },

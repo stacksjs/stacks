@@ -408,7 +408,7 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
         username: env.DB_USERNAME || 'root',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
-        ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
+        ssl: env.DB_SSL === 'true' || env.DB_SSL === '1',
       } as SinglestoreConfig
 
     case 'vitess':
@@ -419,8 +419,8 @@ export function getConfigFromEnv(driver: StacksDialect): DatabaseConnections[key
         username: env.DB_USERNAME || 'root',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
-        ssl: ((env as Record<string, string | undefined>).DB_SSL) === 'true' || ((env as Record<string, string | undefined>).DB_SSL) === '1',
-        sharded: !['0', 'false', 'no', 'off'].includes(String((env as Record<string, string | undefined>).DB_VITESS_SHARDED ?? 'true').toLowerCase()),
+        ssl: env.DB_SSL === 'true' || env.DB_SSL === '1',
+        sharded: !['0', 'false', 'no', 'off'].includes(String(env.DB_VITESS_SHARDED ?? 'true').toLowerCase()),
       } as VitessConfig
 
     case 'postgres':
