@@ -1056,15 +1056,17 @@ async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Pr
 }
 
 async function decrementBatchInRedis(id: string, failed: boolean, allowFailures: boolean): Promise<boolean> {
+  const client = await connectBatchRedis()
   try {
-    const client = await connectBatchRedis()
     const key = `${REDIS_BATCH_PREFIX}${id}`
-    await client.hincrby(key, 'pending_jobs', -1)
+    const decrementedPending = await client.hincrby(key, 'pending_jobs', -1)
+    const pending = Math.max(decrementedPending, 0)
+    if (decrementedPending < 0)
+      await client.hset(key, { pending_jobs: '0' })
     if (failed)
       await client.hincrby(key, 'failed_jobs', 1)
 
     const data = await client.hgetall(key)
-    const pending = Number(data.pending_jobs)
     const shouldFinish = !data.finished_at && (!failed || allowFailures ? pending === 0 : true)
     const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
     // `finished_at` is stored as an empty string for unfinished hashes, so it
@@ -1074,36 +1076,10 @@ async function decrementBatchInRedis(id: string, failed: boolean, allowFailures:
       await client.hset(key, { finished_at: finishedAt })
     if (completed && failed && !allowFailures)
       await client.hset(key, { cancelled_at: finishedAt })
-    client.close()
     return completed
   }
-  catch {
-    const { db, sql } = await import('@stacksjs/database')
-    await (db as any)
-      .updateTable('job_batches')
-      .set(failed
-        ? {
-            pending_jobs: sql`GREATEST(pending_jobs - 1, 0)`,
-            failed_jobs: sql`failed_jobs + 1`,
-          }
-        : { pending_jobs: sql`GREATEST(pending_jobs - 1, 0)` })
-      .where('id', '=', id)
-      .where('pending_jobs', '>', 0)
-      .execute()
-
-    const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
-    let finalize = (db as any)
-      .updateTable('job_batches')
-      .set(failed && !allowFailures
-        ? { finished_at: finishedAt, cancelled_at: finishedAt }
-        : { finished_at: finishedAt })
-      .where('id', '=', id)
-      .whereNull('finished_at')
-    if (!failed || allowFailures)
-      finalize = finalize.where('pending_jobs', '=', 0)
-
-    const result = await finalize.executeTakeFirst()
-    return updatedRowCount(result) > 0
+  finally {
+    client.close()
   }
 }
 
