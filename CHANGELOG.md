@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.57...v0.72.58)
+
+## ✨ Features
+
+- **scheduler**: check job and action names ([b2c2b9d](https://github.com/stacksjs/stacks/commit/b2c2b9d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: derive the event map instead of generating it, and correct the docs ([54433e6](https://github.com/stacksjs/stacks/commit/54433e6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: type model events from the models ([3f5b18f](https://github.com/stacksjs/stacks/commit/3f5b18f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: infer optionality from the rules, and show the shape on hover ([ae997b0](https://github.com/stacksjs/stacks/commit/ae997b0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **env**: name the variables instead of accepting any name ([e865a1e](https://github.com/stacksjs/stacks/commit/e865a1e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: reject event names nothing emits, and correct the ones that were wrong ([5532138](https://github.com/stacksjs/stacks/commit/5532138)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auto-imports**: refresh the globals manifest, which had gone quietly stale ([49e5e0b](https://github.com/stacksjs/stacks/commit/49e5e0b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: delete the declarations nothing reads, and check the rest against the runtime ([94c425c](https://github.com/stacksjs/stacks/commit/94c425c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auto-imports**: delete the declarations that were not true, refresh the ones that are ([fc91abd](https://github.com/stacksjs/stacks/commit/fc91abd)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: say which fields are required, because none of them did ([7d4eb18](https://github.com/stacksjs/stacks/commit/7d4eb18)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: record what validateActionInput validated ([b8e6fd8](https://github.com/stacksjs/stacks/commit/b8e6fd8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: show the inferred payload, and mean what the rules say ([cb56bf2](https://github.com/stacksjs/stacks/commit/cb56bf2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: type what handle() actually receives, and stop two actions throwing ([679816c](https://github.com/stacksjs/stacks/commit/679816c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- take the pantry release that stops calling a landed publish a failure ([c182368](https://github.com/stacksjs/stacks/commit/c182368)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **api**: regenerate the API artifacts against the current rules ([23cce8b](https://github.com/stacksjs/stacks/commit/23cce8b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- remove 73 imports nothing uses ([9896a03](https://github.com/stacksjs/stacks/commit/9896a03)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.56...v0.72.57)
 
 ## ✨ Features
