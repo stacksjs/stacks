@@ -1055,6 +1055,34 @@ async function updateBatchInRedis(id: string, updates: Partial<BatchRecord>): Pr
   }
 }
 
+async function decrementBatchInRedis(id: string, failed: boolean, allowFailures: boolean): Promise<boolean> {
+  const client = await connectBatchRedis()
+  try {
+    const key = `${REDIS_BATCH_PREFIX}${id}`
+    const decrementedPending = await client.hincrby(key, 'pending_jobs', -1)
+    const pending = Math.max(decrementedPending, 0)
+    if (decrementedPending < 0)
+      await client.hset(key, { pending_jobs: '0' })
+    if (failed)
+      await client.hincrby(key, 'failed_jobs', 1)
+
+    const data = await client.hgetall(key)
+    const shouldFinish = !data.finished_at && (!failed || allowFailures ? pending === 0 : true)
+    const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+    // `finished_at` is stored as an empty string for unfinished hashes, so it
+    // cannot itself be used with HSETNX as the terminal claim field.
+    const completed = shouldFinish && await client.hsetnx(key, 'terminal_claimed', '1')
+    if (completed)
+      await client.hset(key, { finished_at: finishedAt })
+    if (completed && failed && !allowFailures)
+      await client.hset(key, { cancelled_at: finishedAt })
+    return completed
+  }
+  finally {
+    client.close()
+  }
+}
+
 async function deleteBatchFromRedis(id: string): Promise<void> {
   try {
     const client = await connectBatchRedis()
@@ -1182,6 +1210,13 @@ async function firePersistentHandler(
  * driver doesn't expose atomic SQL.
  */
 export async function recordBatchJobCompletion(batchId: string): Promise<void> {
+  const driver = getQueueDriver()
+  let completed = false
+
+  if (driver === 'redis') {
+    completed = await decrementBatchInRedis(batchId, false, false)
+  }
+  else {
   const { db, sql } = await import('@stacksjs/database')
 
   // Step 1: atomic decrement. `GREATEST` clamps at 0 so a stray
@@ -1208,7 +1243,8 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     .where('pending_jobs', '=', 0)
     .whereNull('finished_at')
     .executeTakeFirst()
-  const completed = updatedRowCount(completeResult) > 0
+  completed = updatedRowCount(completeResult) > 0
+  }
 
   // Progress callbacks fire on EVERY observed job completion. The
   // callback map is in-process; each worker fires its own copy
@@ -1302,11 +1338,49 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
  * Called by the worker when a batch job fails its final attempt.
  */
 export async function recordBatchJobFailure(batchId: string, jobId: string, error: Error): Promise<void> {
-  const { db, sql } = await import('@stacksjs/database')
-
   const record = await getBatchRecord(batchId)
   if (!record) return
   const opts = JSON.parse(record.options || '{}')
+  const dispatched = new DispatchedBatch(batchId)
+  const callbacks = getBatchCallbacks(batchId)
+
+  let completed = false
+  if (getQueueDriver() === 'redis') {
+    completed = await decrementBatchInRedis(batchId, true, !!opts.allowFailures)
+    const fresh = await getBatchRecord(batchId)
+    if (fresh) {
+      let failedIds: string[] = []
+      try {
+        failedIds = JSON.parse(fresh.failed_job_ids || '[]')
+      }
+      catch {
+        failedIds = []
+      }
+      failedIds.push(jobId)
+      await updateBatchInRedis(batchId, { failed_job_ids: JSON.stringify(failedIds) })
+    }
+
+    if (callbacks) {
+      for (const cb of callbacks.catchCallbacks) {
+        try {
+          await cb(dispatched, error)
+        }
+        catch (e) {
+          log.error(`[Batch] Error in catch callback for batch ${batchId}:`, e)
+        }
+      }
+    }
+
+    try {
+      const { emitQueueEvent } = await import('./events')
+      await emitQueueEvent('batch:failed', { jobId: batchId, error })
+    }
+    catch {
+      // Events are optional
+    }
+  }
+  else {
+  const { db, sql } = await import('@stacksjs/database')
 
   // Step 1: atomic decrement pending + increment failed. This path used to
   // read pending_jobs and write back an ABSOLUTE value, which clobbered a
@@ -1346,9 +1420,6 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
     // diagnostic-only field
   }
 
-  const dispatched = new DispatchedBatch(batchId)
-  const callbacks = getBatchCallbacks(batchId)
-
   // Per-failure `catch` callbacks fire on every observed failure (analogous to
   // the completion path's per-observe progress callbacks).
   if (callbacks) {
@@ -1387,7 +1458,10 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
   if (opts.allowFailures)
     finalize = finalize.where('pending_jobs', '=', 0)
   const finalizeResult = await finalize.executeTakeFirst()
-  if (updatedRowCount(finalizeResult) === 0)
+  completed = updatedRowCount(finalizeResult) > 0
+  }
+
+  if (!completed)
     return
 
   // Terminal winner: fire terminal in-memory callbacks + persistent handlers,
