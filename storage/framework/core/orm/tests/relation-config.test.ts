@@ -139,3 +139,65 @@ describe('getRelations - polymorphic wiring (#6 audit fix)', () => {
     expect(result).toEqual([])
   })
 })
+
+/**
+ * A `belongsTo` entry may name the column it uses. Two halves of the framework
+ * already honoured that - `deriveFkColumns` in generate-database-schema.ts and
+ * `belongsToColumn` in @stacksjs/database, which is what emits the column and
+ * protects it from the migration differ - while `getRelations` derived
+ * `<related>_id` regardless and read a column no migration had created.
+ *
+ * It also decides whether a model can point at the same model twice: a herd
+ * move from one field to another, an edge between two nodes, a transfer
+ * between two accounts. Both entries resolved to one `modelKey` and the second
+ * silently shadowed the first.
+ */
+describe('getRelations - belongsTo foreign keys', () => {
+  it('honours a declared foreignKey on belongsTo', async () => {
+    const result = await getRelations(
+      {
+        name: 'Order',
+        table: 'orders' as any,
+        belongsTo: [{ model: 'User', foreignKey: 'placed_by_id', relationName: 'placedBy' }] as any,
+      } as any,
+      'Order',
+    )
+
+    expect(result).toHaveLength(1)
+    // The key lives on the declaring table, so it lands on modelKey. Pre-fix
+    // this was 'user_id'.
+    expect(result[0].modelKey).toBe('placed_by_id')
+    expect(result[0].relationName).toBe('placedBy')
+    // The other direction has nothing to point at on a belongsTo.
+    expect(result[0].foreignKey).toBe('')
+  })
+
+  it('keeps two belongsTo to the same model distinct', async () => {
+    const result = await getRelations(
+      {
+        name: 'Order',
+        table: 'orders' as any,
+        belongsTo: [
+          { model: 'User', foreignKey: 'from_user_id', relationName: 'fromUser' },
+          { model: 'User', foreignKey: 'to_user_id', relationName: 'toUser' },
+        ] as any,
+      } as any,
+      'Order',
+    )
+
+    expect(result).toHaveLength(2)
+    // Pre-fix both came back as 'user_id'.
+    expect(result.map(r => r.modelKey)).toEqual(['from_user_id', 'to_user_id'])
+    expect(result.map(r => r.relationName)).toEqual(['fromUser', 'toUser'])
+  })
+
+  it('still derives <related>_id when no foreignKey is declared', async () => {
+    const result = await getRelations(
+      { name: 'Order', table: 'orders' as any, belongsTo: ['User'] } as any,
+      'Order',
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0].modelKey).toBe('user_id')
+  })
+})

@@ -429,12 +429,14 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
   const modelRelationName = snakeCase(getModelName(modelRelation, modelRelationPath))
   const formattedModelName = snakeCase(modelName)
 
+  const declaredKey = typeof relationInstance === 'string' ? '' : relationInstance.foreignKey || ''
+
   const relationshipData: RelationConfig = {
     relationship: relation,
     model: relationModel,
     table: modelRelationTable as TableNames,
     relationTable: table as TableNames,
-    foreignKey: typeof relationInstance === 'string' ? `${formattedModelName}_id` : relationInstance.foreignKey || `${formattedModelName}_id`,
+    foreignKey: declaredKey || `${formattedModelName}_id`,
     modelKey: `${modelRelationName}_id`,
     relationName,
     relationModel: modelName,
@@ -445,8 +447,30 @@ async function processHasOneAndMany(relationInstance: ModelNames | Relation<Mode
     pivotTable: table as TableNames,
   }
 
-  if (relation === 'belongsTo')
+  if (relation === 'belongsTo') {
+    /*
+     * On a `belongsTo` the key lives on the DECLARING table, which is what
+     * `modelKey` names - `foreignKey` describes the other direction and has
+     * nothing to point at here, so it is blanked.
+     *
+     * Which means an entry's declared `foreignKey` belongs on `modelKey`, not
+     * on `foreignKey`. Without this it was dropped entirely and the column was
+     * always derived as `<related>_id`, while `deriveFkColumns` in
+     * generate-database-schema.ts and `belongsToColumn` in
+     * @stacksjs/database both honoured the declaration: the schema and the
+     * generated types got `from_field_id`, and the ORM then read `field_id`, a
+     * column no migration had ever created.
+     *
+     * It is also what makes two relations to the same model expressible. A
+     * move from one field to another, an edge between two nodes, a transfer
+     * between two accounts: both entries collapsed onto one `modelKey` and the
+     * second silently shadowed the first.
+     */
     relationshipData.foreignKey = ''
+
+    if (declaredKey)
+      relationshipData.modelKey = declaredKey
+  }
 
   return relationshipData
 }
