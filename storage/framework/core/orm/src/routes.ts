@@ -2,7 +2,19 @@
  * ORM-generated routes
  *
  * Auto-generates CRUD REST API routes based on model `useApi` trait definitions.
- * User-defined routes in ./routes/ are loaded first and always take priority.
+ *
+ * User-defined routes in `./routes/` are loaded first and take priority: every
+ * generated route is registered only if no user route already answers that
+ * method and path SHAPE, so a hand-written `/api/sites/{siteId}` claims the
+ * endpoint a generated `/api/sites/{id}` would otherwise take. Each skip is
+ * logged, naming the route that won.
+ *
+ * That contract holds for the generator in this file. It does NOT hold for a
+ * vendored `storage/framework/orm/routes.ts` old enough to compare paths
+ * literally, which sees two different strings and registers alongside the
+ * hand-written route (stacksjs/stacks#2364). Nothing re-vendors that file, so
+ * every loader resolves this package first and falls back to the vendored copy
+ * only when the package is unreachable.
  */
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
@@ -12,7 +24,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 
 // Initialize the query builder config from the project's optional
@@ -71,11 +83,32 @@ const models = await loadModelRegistry({
 const db = createQueryBuilder()
 
 // Helper: check if a route is already registered (user-defined routes take priority)
+/**
+ * Is a user route already serving this method and path shape?
+ *
+ * Compared by shape, not by literal path, because a hand-written
+ * `/api/sites/{siteId}` and a generated `/api/sites/{id}` address the same URLs
+ * and differ only in the parameter's name. A literal comparison sees two
+ * different strings, registers the generated route anyway, and whichever won
+ * registration serves: the hand-written handler's authorization check simply
+ * stops running (stacksjs/stacks#2364).
+ *
+ * The skip is logged. Silence previously meant both "skipped correctly" and
+ * "compared literally and skipped nothing", and those are indistinguishable
+ * from outside the process. Naming the route that won also surfaces the
+ * parameter-name mismatch that makes this confusing in the first place.
+ */
 function routeExists(method: string, path: string): boolean {
-  const shape = routeShape(path)
-  return route.routes.some(
-    (r: any) => r.method === method && routeShape(String(r.path ?? '')) === shape,
+  const existing = findShadowingRoute(route.routes as any[], method, path)
+  if (!existing)
+    return false
+
+  const existingPath = String((existing as any).path ?? '')
+  log.info(
+    `[orm] Skipping generated ${method} ${path} - already defined`
+    + `${existingPath && existingPath !== path ? ` as ${existingPath}` : ''}.`,
   )
+  return true
 }
 
 // Helper: get hidden attribute names from a model

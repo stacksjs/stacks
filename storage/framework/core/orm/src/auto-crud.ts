@@ -476,6 +476,32 @@ export function validateWriteBody(
  * The parameter's NAME is the app's business. The shape is what decides whether
  * this URL is already claimed.
  */
+/** The subset of a registered route this matching needs. */
+export interface RegisteredRouteLike {
+  method?: string
+  path?: unknown
+}
+
+/**
+ * The already-registered route that would shadow a generated `method` + `path`,
+ * or undefined when the generated route is free to register.
+ *
+ * Pure, and separate from the logging wrapper in `../routes.ts`, so the rule can
+ * be tested without booting a router. The rule itself is the whole of
+ * stacksjs/stacks#2364: match on SHAPE, because a hand-written
+ * `/api/sites/{siteId}` and a generated `/api/sites/{id}` address the same URLs
+ * and a literal comparison sees two different strings, registers both, and lets
+ * the generated handler answer without the hand-written one's authorization.
+ */
+export function findShadowingRoute<T extends RegisteredRouteLike>(
+  routes: readonly T[],
+  method: string,
+  path: string,
+): T | undefined {
+  const shape = routeShape(path)
+  return routes.find(r => r.method === method && routeShape(String(r.path ?? '')) === shape)
+}
+
 export function routeShape(path: string): string {
   // Both spellings the router accepts, so `/sites/:siteId` matches too.
   return path.replace(/\{[^}]*\}/g, '{}').replace(/:[^/]+/g, '{}')

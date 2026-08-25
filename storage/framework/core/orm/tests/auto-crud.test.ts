@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -766,5 +766,65 @@ describe('buildIndexPaginator (flat Laravel index shape)', () => {
     expect(p.from).toBe(expected.from)
     expect(p.to).toBe(expected.to)
     expect(p.has_more_pages).toBe(expected.has_more_pages)
+  })
+})
+
+// stacksjs/stacks#2364 — the shape rule from #2224 was correct in this package
+// and absent from the vendored `storage/framework/orm/routes.ts` an app actually
+// ran, so a generated PATCH registered alongside a hand-written one and answered
+// without its authorization check. The rule lives here, pure, so it can be
+// asserted directly rather than inferred from the generator's source.
+describe('findShadowingRoute (which generated routes must not register) (#2364)', () => {
+  const userRoutes = [
+    { method: 'GET', path: '/api/sites' },
+    { method: 'PATCH', path: '/api/sites/{siteId}' },
+    { method: 'DELETE', path: '/api/sites/:siteId' },
+    { method: 'GET', path: '/api/sites/{siteId}/stats' },
+  ]
+
+  it('finds a hand-written route whose parameter is named differently', () => {
+    expect(findShadowingRoute(userRoutes, 'PATCH', '/api/sites/{id}')?.path)
+      .toBe('/api/sites/{siteId}')
+  })
+
+  // The reported blast radius was wider than PATCH: DELETE collided too, and a
+  // probe asserting only "not 200" could not tell a 403 guard from the generated
+  // handler's 400.
+  it('covers every item-level verb, not just the one that was noticed', () => {
+    expect(findShadowingRoute(userRoutes, 'DELETE', '/api/sites/{id}')).toBeDefined()
+  })
+
+  it('matches the colon spelling the router also accepts', () => {
+    expect(findShadowingRoute([{ method: 'PUT', path: '/api/sites/:siteId' }], 'PUT', '/api/sites/{id}'))
+      .toBeDefined()
+  })
+
+  it('matches a collection route, which literal comparison also got right', () => {
+    expect(findShadowingRoute(userRoutes, 'GET', '/api/sites')?.path).toBe('/api/sites')
+  })
+
+  it('does not treat a different verb on the same path as a collision', () => {
+    expect(findShadowingRoute(userRoutes, 'POST', '/api/sites/{id}')).toBeUndefined()
+  })
+
+  it('does not treat a longer path as a collision', () => {
+    // `/api/sites/{siteId}/stats` has one more segment, so the item route is free.
+    expect(findShadowingRoute(
+      [{ method: 'GET', path: '/api/sites/{siteId}/stats' }],
+      'GET',
+      '/api/sites/{id}',
+    )).toBeUndefined()
+  })
+
+  it('does not treat a different resource as a collision', () => {
+    expect(findShadowingRoute(userRoutes, 'PATCH', '/api/users/{id}')).toBeUndefined()
+  })
+
+  it('returns nothing when the app registered no routes at all', () => {
+    expect(findShadowingRoute([], 'PATCH', '/api/sites/{id}')).toBeUndefined()
+  })
+
+  it('tolerates a route whose path is missing rather than throwing', () => {
+    expect(findShadowingRoute([{ method: 'PATCH' }], 'PATCH', '/api/sites/{id}')).toBeUndefined()
   })
 })
