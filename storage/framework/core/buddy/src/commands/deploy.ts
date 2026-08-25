@@ -3150,7 +3150,10 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
       for (const box of generated) {
         await setEnv(`MAIL_PASSWORD_${box.localPart.replace(/[^A-Z0-9]/g, '_')}`, box.password, {
           file: '.env.production',
-          encrypt: true,
+          // No `encrypt` option: `setEnv` encrypts by default and `plain: true`
+          // is how you opt OUT. Passing `encrypt` did not typecheck, and would
+          // have been a no-op if it had - the value was already written
+          // encrypted, which is what the log line below promises.
         })
       }
       logger.success(`Mail: generated and saved ${generated.length} mailbox password(s) to .env.production (encrypted)`)
