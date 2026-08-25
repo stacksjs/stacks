@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.66...v0.72.67)
+
+## 🐛 Bug Fixes
+
+- **seeder**: let a seeder declare when it runs; scope tab-bar clearance ([ccde6d3](https://github.com/stacksjs/stacks/commit/ccde6d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.63...v0.72.66)
 
 ## ✨ Features

@@ -2,7 +2,7 @@
   "name": "@stacksjs/events",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.66",
+  "version": "0.72.67",
   "description": "Functional event emitting.",
   "author": "Chris Breuer",
   "contributors": [
