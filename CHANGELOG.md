@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.67...v0.72.68)
+
+## 🐛 Bug Fixes
+
+- **deploy**: take ts-cloud 0.12.2, which stops a stale slice capping a site ([cca0ca1](https://github.com/stacksjs/stacks/commit/cca0ca1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.66...v0.72.67)
 
 ## 🐛 Bug Fixes
