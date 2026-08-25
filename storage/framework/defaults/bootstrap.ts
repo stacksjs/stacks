@@ -134,7 +134,27 @@ if (mounts('dashboard', feature('dashboard'))) {
   await route.register(frameworkPath('defaults/routes/dashboard-api.ts'))
   // The dev dashboard boots through this file rather than the application
   // router's importRoutes() path, so load model-declared useApi routes here too.
-  await import(frameworkPath('orm/routes.ts'))
+  //
+  // Package first, vendored second, matching importRoutes() and start.ts. This
+  // line used to import the vendored copy only, and nothing re-vendors that
+  // file: `@stacksjs/orm` publishes `dist/routes.js` and no `routes.ts`, so an
+  // app kept whatever generator its copy froze at however often it upgraded.
+  // An old enough copy compares route paths literally, so a generated
+  // `PATCH /api/sites/{id}` does not recognise a hand-written
+  // `/api/sites/{siteId}` as the same endpoint and registers alongside it,
+  // and the hand-written handler's authorization check stops running
+  // (stacksjs/stacks#2364).
+  //
+  // Held in a variable so the specifier resolves at runtime rather than while
+  // transpiling, where an unresolvable literal would fail this module instead
+  // of throwing where it can be caught.
+  const ormRoutesPackage = '@stacksjs/orm/routes'
+  try {
+    await import(ormRoutesPackage)
+  }
+  catch {
+    await import(frameworkPath('orm/routes.ts'))
+  }
 }
 
 // Email webhook + unsubscribe routes (stacksjs/stacks#1881, #1880).

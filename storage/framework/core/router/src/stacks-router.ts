@@ -3944,23 +3944,56 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         throw error
       }
 
-      // Load ORM-generated API routes. The generator writes a project-local
-      // routes file; we accept both locations:
-      //   - `storage/framework/orm/routes.ts` (canonical, outside the core
-      //     package so it survives when @stacksjs/orm is npm-installed)
-      //   - `storage/framework/core/orm/routes.ts` (legacy, inside the core
-      //     workspace package)
+      // Load ORM-generated API routes.
+      //
+      // The PACKAGE is tried first, and that ordering is load-bearing. The
+      // vendored `storage/framework/orm/routes.ts` is copied into an app once
+      // and nothing re-vendors it: `@stacksjs/orm` publishes `dist/routes.js`
+      // and no `routes.ts`, so an app that upgrades the package keeps running
+      // whatever generator its vendored copy froze at. One app was serving a
+      // copy old enough to compare route paths literally, so a generated
+      // `PATCH /api/sites/{id}` did not recognise a hand-written
+      // `/api/sites/{siteId}` as the same endpoint, registered alongside it,
+      // and the hand-written handler's authorization check stopped running
+      // (stacksjs/stacks#2364).
+      //
+      // `core/server/src/start.ts` and `core/api/src/generate-openapi.ts`
+      // already resolve it package-first; this path and `defaults/bootstrap.ts`
+      // were the two that did not, which is why the same app could be correct
+      // under one entrypoint and shadowed under another.
+      //
+      // The vendored paths remain as fallbacks for a checkout with no built
+      // package behind the specifier.
       log.debug('[router] Loading ORM routes...')
-      const ormRoutesCandidates = [
-        p.frameworkPath('orm/routes.ts'),
-        p.frameworkPath('core/orm/routes.ts'),
-      ]
+      // Held in a variable so the specifier resolves at runtime: a literal one
+      // is resolved while transpiling, and an unresolvable literal fails the
+      // module rather than throwing where it can be caught.
+      const ormRoutesPackage = '@stacksjs/orm/routes'
       let ormRoutesLoaded = false
+      try {
+        await import(ormRoutesPackage)
+        ormRoutesLoaded = true
+        log.debug(`[router] ORM routes loaded from ${ormRoutesPackage}`)
+      }
+      catch (error) {
+        log.debug('[router] ORM routes not available from the package, trying the vendored copy\n', error)
+      }
+
+      const ormRoutesCandidates = ormRoutesLoaded
+        ? []
+        : [
+            p.frameworkPath('orm/routes.ts'),
+            p.frameworkPath('core/orm/routes.ts'),
+          ]
       for (const candidate of ormRoutesCandidates) {
         try {
           if (await Bun.file(candidate).exists()) {
             await import(candidate)
             ormRoutesLoaded = true
+            // Which generator is running is the one fact that made #2364
+            // undiagnosable from outside, so say it rather than debug it.
+            log.info(`[router] ORM routes loaded from the vendored copy at ${candidate}. `
+              + `This file is not refreshed by upgrading @stacksjs/orm - delete it to use the package.`)
             break
           }
         }
@@ -3974,25 +4007,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           log.warn(`[router] ORM routes candidate failed to load, falling back to next: ${candidate}\n`, error)
         }
       }
-      // Last resort: the package itself. An app scaffolded before the vendored
-      // shim was fixed still has one that re-exports `../core/orm/routes`, a
-      // directory that exists in this repository and nowhere else — so both
-      // file candidates above fail and the app serves no model endpoints at
-      // all. `@stacksjs/orm/routes` is the same generator, resolved the way an
-      // installed app can actually reach it.
-      if (!ormRoutesLoaded) {
-        try {
-          // Variable, not a literal — see generate-openapi.ts: a literal
-          // specifier that cannot resolve fails this module at transpile time
-          // rather than throwing where it can be caught.
-          const ormRoutesPackage = '@stacksjs/orm/routes'
-          await import(ormRoutesPackage)
-          ormRoutesLoaded = true
-        }
-        catch (error) {
-          log.warn('[router] ORM routes could not be loaded from @stacksjs/orm either\n', error)
-        }
-      }
+      // The package was already tried first, above: an app scaffolded before the
+      // vendored shim was fixed carries one that re-exports `../core/orm/routes`,
+      // a directory that exists in this repository and nowhere else, and the
+      // package is what it can actually reach.
 
       if (!ormRoutesLoaded)
         log.warn('[router] No ORM routes candidate loaded - model useApi endpoints are unavailable.')
