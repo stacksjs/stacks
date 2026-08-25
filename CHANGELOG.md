@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.61...v0.72.62)
+
+## 🐛 Bug Fixes
+
+- **orm**: honour a declared foreignKey on belongsTo ([075ca70](https://github.com/stacksjs/stacks/commit/075ca70)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.60...v0.72.61)
 
 ## 🐛 Bug Fixes
