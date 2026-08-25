@@ -20,6 +20,17 @@ export interface SubscriptionManager {
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>
 }
 
+/**
+ * The provider statuses that mean the customer currently has what they paid for.
+ *
+ * Kept as one list because `isValid` is the question every entitlement check
+ * ultimately asks, and the answer has to be the same everywhere it is asked.
+ */
+export const ENTITLING_STATUSES = ['active', 'trialing'] as const
+
+/** Statuses meaning payment was started but never completed. */
+export const INCOMPLETE_STATUSES = ['incomplete'] as const
+
 export const manageSubscription: SubscriptionManager = (() => {
   async function create(
     user: UserModel,
@@ -177,25 +188,41 @@ export const manageSubscription: SubscriptionManager = (() => {
     return (subscription as Record<string, unknown>).provider_status === 'trialing'
   }
 
+  /**
+   * Does this user hold a subscription of `type` in any of `statuses`?
+   *
+   * Asked of the database rather than answered in memory, because a user can
+   * legitimately have several rows for one `type`. The webhook path upserts on
+   * `provider_id`, and Stripe issues a new id per subscription, so a cancelled
+   * row stays behind with `provider_status: 'canceled'` and resubscribing adds
+   * another. Fetching one row with `executeTakeFirst()` and no `ORDER BY` then
+   * inspects whichever row the planner happened to return, and told a paying
+   * customer they were not paying (stacksjs/stacks#2361).
+   *
+   * There is no ordering to fall back on either: `Subscription` carries no
+   * `useTimestamps`, so there is no `created_at` and `id` is the only proxy for
+   * recency. Matching on status avoids needing one, and stays correct however
+   * many historical rows accumulate.
+   */
+  async function hasSubscriptionInStatus(user: UserModel, type: string, statuses: readonly string[]): Promise<boolean> {
+    const match = await db
+      .selectFrom('subscriptions')
+      .where('user_id', '=', user.id)
+      .where('type', '=', type)
+      .whereIn('provider_status', [...statuses])
+      .select(['id'])
+      .limit(1)
+      .executeTakeFirst()
+
+    return Boolean(match)
+  }
+
   async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
-    const subscription = await db.selectFrom('subscriptions').where('user_id', '=', user.id).where('type', '=', type).selectAll().executeTakeFirst()
-
-    if (!subscription)
-      return false
-
-    return (subscription as Record<string, unknown>).provider_status === 'incomplete'
+    return await hasSubscriptionInStatus(user, type, INCOMPLETE_STATUSES)
   }
 
   async function isValid(user: UserModel, type: string): Promise<boolean> {
-    const subscription = await db.selectFrom('subscriptions').where('user_id', '=', user.id).where('type', '=', type).selectAll().executeTakeFirst()
-
-    if (!subscription)
-      return false
-
-    const active = await isActive(subscription as unknown as SubscriptionsTable)
-    const trial = await isTrial(subscription as unknown as SubscriptionsTable)
-
-    return active || trial
+    return await hasSubscriptionInStatus(user, type, ENTITLING_STATUSES)
   }
 
   async function storeSubscription(user: UserModel, type: string, _lookupKey: string, options: Stripe.Subscription): Promise<SubscriptionsTable | undefined> {
