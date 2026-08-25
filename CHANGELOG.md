@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.62...v0.72.63)
+
+## 🐛 Bug Fixes
+
+- **serve**: let an app override a framework component ([79a1adc](https://github.com/stacksjs/stacks/commit/79a1adc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.61...v0.72.62)
 
 ## 🐛 Bug Fixes
