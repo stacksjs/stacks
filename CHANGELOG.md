@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.68...v0.72.69)
+
+## 🐛 Bug Fixes
+
+- **deploy**: take ts-cloud 0.12.3, which sizes memoryHigh to the box ([fd972f7](https://github.com/stacksjs/stacks/commit/fd972f7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.67...v0.72.68)
 
 ## 🐛 Bug Fixes
