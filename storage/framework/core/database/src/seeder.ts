@@ -26,6 +26,23 @@ import { fs } from '@stacksjs/storage'
  * work such as creating an initial workspace or assigning roles.
  */
 export abstract class Seeder {
+  /**
+   * When this seeder runs, relative to its siblings. Lower runs first.
+   *
+   * Seeders otherwise run in path order, which is alphabetical and has nothing
+   * to do with what depends on what. A `ClubSeeder` that needs a user to own
+   * the club sorted before `UserSeeder` and quietly seeded nothing — the kind
+   * of failure that looks like the seeder being broken rather than early, and
+   * that a second `db:seed` "fixes" without explaining anything.
+   *
+   * Give anything that reads rows another seeder writes a higher number than
+   * the one that writes them. Equal values keep their path order, so existing
+   * seeders that never set this behave exactly as before.
+   *
+   * @default 0
+   */
+  static order = 0
+
   abstract run(): Promise<void> | void
 }
 
@@ -96,14 +113,53 @@ export async function runApplicationSeeders(config: ApplicationSeederConfig = {}
   const verbose = config.verbose ?? true
   const results: ApplicationSeederResult[] = []
 
-  for (const file of applicationSeederFiles(directory)) {
-    const startedAt = Date.now()
-    const displayFile = relative(directory, file)
-    let seeder = displayFile.replace(/\.(?:m?js|ts)$/, '')
+  /*
+   * Load every seeder before running any of them, so `Seeder.order` can sort
+   * them. Path order alone is alphabetical, which is unrelated to what depends
+   * on what: a ClubSeeder needing a user to own the club sorted before
+   * UserSeeder and seeded nothing.
+   *
+   * A module that fails to import is kept in the list with its error so it
+   * still reports as a failure rather than vanishing from the summary.
+   */
+  interface LoadedSeeder {
+    file: string
+    displayFile: string
+    name: string
+    order: number
+    SeederClass?: any
+    loadError?: unknown
+  }
 
+  const loaded: LoadedSeeder[] = []
+  for (const file of applicationSeederFiles(directory)) {
+    const displayFile = relative(directory, file)
+    const fallbackName = displayFile.replace(/\.(?:m?js|ts)$/, '')
     try {
       const module = await import(pathToFileURL(file).href)
       const SeederClass = module.default
+      const order = typeof SeederClass?.order === 'number' ? SeederClass.order : 0
+      loaded.push({ file, displayFile, name: SeederClass?.name || fallbackName, order, SeederClass })
+    }
+    catch (error) {
+      loaded.push({ file, displayFile, name: fallbackName, order: 0, loadError: error })
+    }
+  }
+
+  // Stable: equal orders keep path order, so seeders that never set `order`
+  // behave exactly as they did before this existed.
+  loaded.sort((a, b) => a.order - b.order)
+
+  for (const entry of loaded) {
+    const startedAt = Date.now()
+    const { displayFile } = entry
+    let seeder = entry.name
+
+    try {
+      if (entry.loadError)
+        throw entry.loadError
+
+      const SeederClass = entry.SeederClass
 
       if (typeof SeederClass !== 'function')
         throw new TypeError('The default export must be a Seeder class.')

@@ -54,8 +54,23 @@ const className = useReactiveProp<string>('class', '')
     padding-bottom: var(--native-safe-area-bottom);
   }
 
-  .native-app-shell:has(.native-app-tab-slot) .native-app-content {
-    padding-bottom: calc(5rem + var(--native-safe-area-bottom));
+  /*
+   * Clearance for the fixed tab bar, and ONLY where a tab bar can appear.
+   *
+   * The slot element exists in the DOM whenever `tabBar` is set, but a bottom
+   * tab bar is a mobile control — apps hide its contents at desktop widths
+   * (`md:hidden`). `:has()` matches the slot either way, so this reserved 5rem
+   * on desktop too: eighty pixels of empty, scrollable nothing below the
+   * footer that a visitor could scroll into, which reads as a broken page.
+   *
+   * Scoped to below `md` (768px, the framework's own breakpoint and where
+   * NativeTabBar stops being shown) so the clearance exists exactly when the
+   * thing it is clearing does.
+   */
+  @media (max-width: 767.98px) {
+    .native-app-shell:has(.native-app-tab-slot) .native-app-content {
+      padding-bottom: calc(5rem + var(--native-safe-area-bottom));
+    }
   }
 
   .native-app-sticky-top {
