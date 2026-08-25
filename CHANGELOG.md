@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.60...v0.72.61)
+
+## 🐛 Bug Fixes
+
+- **deps**: require the STX and router releases that fix slot includes ([75e3192](https://github.com/stacksjs/stacks/commit/75e3192)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.59...v0.72.60)
 
 ## 🐛 Bug Fixes
