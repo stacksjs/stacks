@@ -32,7 +32,16 @@ export function saas(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await outro(`Stripe products created successfully`, {
+      // `--dry-run` is a global flag, so it arrives here whether or not this
+      // command opts in. It used to be advertised and ignored, which made the
+      // preview write real billing objects (stacksjs/stacks#2359); the closing
+      // line has to tell the truth about which of the two just happened.
+      const dryRun = Boolean((options as { dryRun?: boolean, 'dry-run'?: boolean }).dryRun
+        ?? (options as { 'dry-run'?: boolean })['dry-run'])
+
+      await outro(dryRun
+        ? 'Dry run complete. Nothing was written to Stripe.'
+        : 'Stripe products are up to date', {
         startTime: perf,
         useSeconds: true,
       })

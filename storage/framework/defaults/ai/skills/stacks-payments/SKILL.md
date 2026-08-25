@@ -276,14 +276,31 @@ Supported webhook event types: `payment_intent.succeeded`, `payment_intent.payme
 
 ### Setup Products from SaaS Config
 
-```typescript
-import { createStripeProduct } from '@stacksjs/payments'
+Prefer the command; it is what an app author can discover:
 
-const result = await createStripeProduct()
-// Creates Stripe products and prices from config/saas.ts plans
+```bash
+buddy stripe:setup --dry-run   # report the plan of record, write nothing
+buddy stripe:setup             # apply it
 ```
 
-This iterates `saas.plans`, creates a Stripe product per plan, then creates prices for each pricing option using `lookup_key` from the `key` field.
+```typescript
+import { createStripeProduct, formatSetupReport } from '@stacksjs/payments'
+
+const result = await createStripeProduct({ dryRun: true })
+if (!result.isErr)
+  console.log(formatSetupReport(result.value).join('\n'))
+```
+
+This iterates `saas.plans` and reconciles each one against the live account: a
+product is matched by name and reused, and each pricing option is matched by its
+`lookup_key` (from the `key` field). Prices are immutable in Stripe, so a changed
+amount is applied by creating a new price with `transfer_lookup_key: true`, which
+moves the key atomically and leaves the superseded price active so existing
+subscriptions keep billing.
+
+Re-running is safe and converges. It does not use `products.search` on purpose:
+that index is eventually consistent, so a second run inside the lag window would
+find nothing and create a duplicate.
 
 ### Utility Functions
 
