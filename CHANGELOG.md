@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.63...v0.72.66)
+
+## ✨ Features
+
+- **email**: declare the cloud@ mailbox ([0fc06d5](https://github.com/stacksjs/stacks/commit/0fc06d5)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: honor the declared DNS provider, and manage mailbox passwords ([4d18726](https://github.com/stacksjs/stacks/commit/4d18726)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: stop rewriting source during a release ([cbd5d8e](https://github.com/stacksjs/stacks/commit/cbd5d8e)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **orm**: resolve the route generator from the package, and say when a generated route is skipped (#2364) (#2365) ([d544738](https://github.com/stacksjs/stacks/commit/d544738)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2364](https://github.com/stacksjs/stacks/issues/2364), [#2365](https://github.com/stacksjs/stacks/issues/2365), [#2364](https://github.com/stacksjs/stacks/issues/2364), [#2365](https://github.com/stacksjs/stacks/issues/2365), [#2224](https://github.com/stacksjs/stacks/issues/2224), [#2224](https://github.com/stacksjs/stacks/issues/2224))
+- **stripe**: make stripe:setup idempotent and honour --dry-run (#2359) (#2360) ([9f7a98c](https://github.com/stacksjs/stacks/commit/9f7a98c)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2359](https://github.com/stacksjs/stacks/issues/2359), [#2360](https://github.com/stacksjs/stacks/issues/2360), [#2359](https://github.com/stacksjs/stacks/issues/2359), [#2360](https://github.com/stacksjs/stacks/issues/2360))
+- **payments**: ask the database whether a subscription is valid (#2361) (#2363) ([5876d0d](https://github.com/stacksjs/stacks/commit/5876d0d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2361](https://github.com/stacksjs/stacks/issues/2361), [#2363](https://github.com/stacksjs/stacks/issues/2363), [#2361](https://github.com/stacksjs/stacks/issues/2361), [#2363](https://github.com/stacksjs/stacks/issues/2363))
+- **queue**: stop the redis batch test poisoning every other queue test (#2362) ([69a800d](https://github.com/stacksjs/stacks/commit/69a800d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2362](https://github.com/stacksjs/stacks/issues/2362), [#2362](https://github.com/stacksjs/stacks/issues/2362), [#2357](https://github.com/stacksjs/stacks/issues/2357))
+
+## 🔧 Chores
+
+- release v0.72.65 ([9182d38](https://github.com/stacksjs/stacks/commit/9182d38)) _(by Chris <chrisbreuer93@gmail.com>)_
+- release v0.72.64 ([a105ce1](https://github.com/stacksjs/stacks/commit/a105ce1)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.63...v0.72.65)
 
 ## ✨ Features
