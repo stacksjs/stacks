@@ -75,7 +75,7 @@
   },
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.12.2"
+    "@stacksjs/ts-cloud": "^0.12.3"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",

@@ -60,7 +60,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.12.2",
+    "@stacksjs/ts-cloud": "^0.12.3",
     "postal-mime": "^2.7.6"
   },
   "devDependencies": {
