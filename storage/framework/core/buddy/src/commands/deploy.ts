@@ -2774,12 +2774,23 @@ interface ResolvedMailbox {
  * provisioning runs and an SSH session to find out otherwise, and the docstring
  * above this function claimed the opposite behaviour while it did.
  */
-function resolveMailboxes(mailboxes: unknown, domain: string): ResolvedMailbox[] {
-  return resolveMailboxesWithSkipped(mailboxes, domain).boxes
+function resolveMailboxes(mailboxes: unknown, domain: string, generatePassword = false): ResolvedMailbox[] {
+  return resolveMailboxesWithSkipped(mailboxes, domain, generatePassword).boxes
+}
+
+/**
+ * A password for a mailbox the project asked us to generate.
+ *
+ * From the platform CSPRNG, because this IS the credential for a real mailbox
+ * on a real server. Base64url so it survives being pasted into a mail client,
+ * a systemd unit, and a dovecot userdb without quoting rules mangling it.
+ */
+function generateMailboxPassword(): string {
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(24))).toString('base64url')
 }
 
 /** `resolveMailboxes`, plus the addresses left out for want of a password. */
-function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string): { boxes: ResolvedMailbox[], skipped: string[] } {
+function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, generatePassword = false): { boxes: ResolvedMailbox[], skipped: string[] } {
   if (!Array.isArray(mailboxes))
     return { boxes: [], skipped: [] }
   const out: ResolvedMailbox[] = []
@@ -2792,6 +2803,8 @@ function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string): { boxe
     else if (entry && typeof entry === 'object') {
       raw = (entry as any).email ?? (entry as any).username
       explicitPw = (entry as any).password
+      if ((entry as any).generate === true)
+        generatePassword = true
     }
     if (!raw || typeof raw !== 'string')
       continue
@@ -2799,12 +2812,28 @@ function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string): { boxe
     if (!localPart)
       continue
     const address = `${localPart}@${domain}`
-    const envPw = explicitPw || process.env[`MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`]
+    const envKey = `MAIL_PASSWORD_${localPart.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`
+    const envPw = explicitPw || process.env[envKey]
     // Only provision a mailbox whose password is explicitly supplied (config
     // object or MAIL_PASSWORD_<LOCALPART> env). A routine deploy must never
     // conjure random-password mailboxes the operator never asked for and can't
     // retrieve — declare the password to opt a mailbox in.
+    //
+    // `generate: true` IS that declaration. The objection above is retrieval,
+    // not randomness: a generated password the operator can never read is a
+    // mailbox nobody can open. So a generated one is written straight back to
+    // the environment file as MAIL_PASSWORD_<LOCALPART>, encrypted, before it
+    // is used — which also makes the next deploy a no-op instead of a rotation.
     if (!envPw) {
+      if (generatePassword) {
+        out.push({
+          address,
+          localPart: localPart.toUpperCase(),
+          password: generateMailboxPassword(),
+          generated: true,
+        })
+        continue
+      }
       skipped.push(address)
       continue
     }
@@ -3099,8 +3128,37 @@ export async function provisionMailTenant(ip: string, logger: typeof log): Promi
     forwards[localPart] = targets
   }
   const hasForwards = Object.keys(forwards).length > 0
-  const resolved = domain ? resolveMailboxesWithSkipped(cfg.mailboxes, domain) : { boxes: [], skipped: [] }
+  // `email.server.generatePasswords: true` opts every declared mailbox into a
+  // generated password, so a project does not have to invent five secrets by
+  // hand before its first deploy can create the addresses it already declared.
+  // Each one is persisted (encrypted) below, which is what makes it safe.
+  const generatePasswords = cfg.server?.generatePasswords === true
+  const resolved = domain ? resolveMailboxesWithSkipped(cfg.mailboxes, domain, generatePasswords) : { boxes: [], skipped: [] }
   const boxes = resolved.boxes
+
+  // Persist generated passwords BEFORE provisioning uses them.
+  //
+  // A generated credential nobody can read is a mailbox nobody can open, and
+  // one that is regenerated every deploy silently rotates the password out
+  // from under every configured client. Writing it back to .env.production
+  // encrypted fixes both: it is retrievable, and the next deploy reads it back
+  // as an explicit password and changes nothing.
+  const generated = boxes.filter(box => box.generated)
+  if (generated.length > 0) {
+    try {
+      const { setEnv } = await import('@stacksjs/env')
+      for (const box of generated) {
+        await setEnv(`MAIL_PASSWORD_${box.localPart.replace(/[^A-Z0-9]/g, '_')}`, box.password, {
+          file: '.env.production',
+          encrypt: true,
+        })
+      }
+      logger.success(`Mail: generated and saved ${generated.length} mailbox password(s) to .env.production (encrypted)`)
+    }
+    catch (err) {
+      logger.warn(`Mail: could not save the generated password(s) to .env.production - they are printed below and will otherwise be regenerated next deploy: ${getErrorMessage(err)}`)
+    }
+  }
 
   // Said out loud. A mailbox declared in config and not created is the sort of
   // thing somebody discovers weeks later, when the address they printed on a
@@ -3556,7 +3614,44 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
  * directly and was therefore the one path that could not publish to a Route53,
  * Cloudflare or GoDaddy zone.
  */
-export function dnsProviderConfigsFromEnv(): any[] {
+/** The env vars each DNS provider needs, for messages that name the fix. */
+const DNS_PROVIDER_CREDENTIALS: Record<string, string[]> = {
+  porkbun: ['PORKBUN_API_KEY', 'PORKBUN_SECRET_KEY'],
+  cloudflare: ['CLOUDFLARE_API_TOKEN'],
+  godaddy: ['GODADDY_API_KEY', 'GODADDY_API_SECRET'],
+  route53: ['AWS_ACCESS_KEY_ID (or AWS_PROFILE)'],
+}
+
+/**
+ * The DNS provider the project declared, if any.
+ *
+ * `config/cloud.ts` can say `infrastructure.dns.provider`, and that statement
+ * is about who actually administers the zone — it is not a preference to be
+ * weighed against whatever credentials happen to be in the environment.
+ */
+export function declaredDnsProvider(config: any): string | undefined {
+  const provider = config?.tsCloud?.infrastructure?.dns?.provider
+    ?? config?.infrastructure?.dns?.provider
+  return typeof provider === 'string' && provider ? provider.toLowerCase() : undefined
+}
+
+/**
+ * Build the DNS provider credentials to try, in priority order.
+ *
+ * When the project declares a provider, ONLY that provider is returned. It
+ * used to return every provider whose credentials happened to be present and
+ * probe them in array order, which meant a project that had declared Porkbun
+ * but whose production environment carried AWS keys (for S3, SES, anything)
+ * silently tried Route53, failed with `InvalidClientTokenId`, and reported
+ * "ignoring a configured provider ... credentials were rejected" — naming an
+ * AWS error for a provider the project never asked for. The domain was at
+ * Porkbun the whole time; nothing was misconfigured except this function.
+ *
+ * A declared provider with no credentials returns an empty list rather than
+ * falling through to a different registrar. Writing DNS into the wrong zone
+ * is not a lesser failure than writing none.
+ */
+export function dnsProviderConfigsFromEnv(declared?: string): any[] {
   const configs: any[] = []
   if (process.env.PORKBUN_API_KEY && process.env.PORKBUN_SECRET_KEY)
     configs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
@@ -3566,7 +3661,28 @@ export function dnsProviderConfigsFromEnv(): any[] {
     configs.push({ provider: 'godaddy', apiKey: process.env.GODADDY_API_KEY, apiSecret: process.env.GODADDY_API_SECRET, environment: process.env.GODADDY_ENVIRONMENT })
   if (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_PROFILE)
     configs.push({ provider: 'route53' })
-  return configs
+
+  if (!declared)
+    return configs
+
+  return configs.filter(config => config.provider === declared)
+}
+
+/**
+ * Why a declared provider produced no usable credentials, phrased as the fix.
+ * Returns undefined when nothing is wrong.
+ */
+export function declaredDnsProviderProblem(declared: string | undefined, configs: any[]): string | undefined {
+  if (!declared || configs.length > 0)
+    return undefined
+
+  const needed = DNS_PROVIDER_CREDENTIALS[declared]
+  if (!needed)
+    return `config/cloud.ts declares the DNS provider '${declared}', which is not one this deploy knows how to drive (${Object.keys(DNS_PROVIDER_CREDENTIALS).join(', ')}).`
+
+  return `config/cloud.ts declares '${declared}' as the DNS provider for this project, but ${needed.join(' and ')} ${needed.length > 1 ? 'are' : 'is'} not set in this environment. `
+    + `Set ${needed.length > 1 ? 'them' : 'it'} in .env.production (\`buddy env:set\`) so the records land at the registrar that actually administers the zone. `
+    + `Refusing to try another provider: writing DNS into the wrong zone is not better than writing none.`
 }
 
 /**
@@ -3783,7 +3899,13 @@ export async function reconcileMailDns(res: MailTenantResult, ip: string, logger
     logger.info(`  A     mail              ${ip}`)
   }
 
-  const providerConfigs = dnsProviderConfigsFromEnv()
+  const declared = declaredDnsProvider(await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))
+  const providerConfigs = dnsProviderConfigsFromEnv(declared)
+  const declaredProblem = declaredDnsProviderProblem(declared, providerConfigs)
+  if (declaredProblem) {
+    logger.warn(`  DNS: ${declaredProblem}`)
+    return byHand(`the declared provider '${declared}' has no credentials in this environment`)
+  }
   if (providerConfigs.length === 0)
     return byHand('no DNS provider credentials are configured')
 
@@ -4122,10 +4244,15 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return published
 
   // Candidate provider configs, built from whatever credentials are present.
-  const providerConfigs = dnsProviderConfigsFromEnv()
+  const declared = declaredDnsProvider(await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))
+  const providerConfigs = dnsProviderConfigsFromEnv(declared)
+  const declaredProblem = declaredDnsProviderProblem(declared, providerConfigs)
+  if (declaredProblem)
+    logger.warn(`DNS: ${declaredProblem}`)
 
   if (providerConfigs.length === 0) {
-    logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
+    if (!declaredProblem)
+      logger.warn('DNS: no DNS provider credentials found (PORKBUN_API_KEY/…); skipping DNS reconciliation.')
     for (const fqdn of hostnames)
       logger.info(`  Point manually:  A ${fqdn} → ${ip}`)
     return published

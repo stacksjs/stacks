@@ -212,6 +212,21 @@ export interface EmailServerConfig {
   scan?: boolean // spam/virus scanning
 
   /**
+   * Generate a password for every declared mailbox that does not have one.
+   *
+   * A deploy will not otherwise create a mailbox whose password it had to
+   * invent — an unretrievable credential is a mailbox nobody can open. With
+   * this on, each generated password is written back to `.env.production` as
+   * `MAIL_PASSWORD_<LOCALPART>`, encrypted, before it is used. So it IS
+   * retrievable, and the next deploy reads it back as an explicit password
+   * rather than rotating it out from under every configured client.
+   *
+   * Leave it off to declare each password yourself.
+   * @default false
+   */
+  generatePasswords?: boolean
+
+  /**
    * Reconcile this application's domains, mailboxes, and forwarding rules on
    * another ts-cloud project's Hetzner server instead of the application box.
    * This keeps application compute dedicated while sharing one mail daemon.
