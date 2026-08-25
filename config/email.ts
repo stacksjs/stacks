@@ -30,6 +30,10 @@ export default {
     'chris',
     'blake',
     'glenn',
+    // Deployments send as `cloud@`, so the mailbox is declared here rather than
+    // created by hand on the server: this repo's deploy provisions it, and a
+    // bounce or a reply has somewhere to land.
+    'cloud',
   ],
 
   /**
