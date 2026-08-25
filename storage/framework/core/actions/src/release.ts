@@ -18,14 +18,31 @@ for (const [k, v] of Object.entries(raw)) {
   passthrough[k] = v
 }
 
-// LintFix is a pre-publish quality gate (formats and fixes everything that
-// can be auto-fixed). It's skipped on dry-runs because dry-runs are meant
-// to verify the bump+publish plumbing, not the working tree's lint state —
-// running it would also block CI on transient pickier scan timeouts.
+// LintFix used to run here as a pre-publish quality gate. It does not any more,
+// because a release must publish what was reviewed rather than rewrite it.
+//
+// `Action.LintFix` runs pickier with `fix: true` over the whole tree, so it
+// WROTE to source on the way to tagging, and its writes were not safe:
+//
+//   - markdown mangling, `'hello_world'` -> `'hello*world'` across SKILL.md,
+//     because `_` is read as emphasis markup
+//   - `let cur = {}` -> `const cur = {}` inside a shell heredoc in
+//     `commands/deploy.ts`, with `cur = JSON.parse(...)` still assigning to it
+//     two lines later: a runtime TypeError on the box
+//   - used parameters renamed to `_name` while the body still refers to them,
+//     e.g. `createMiddlewareHandler(routeKey, handler)`
+//
+// Reproduced at 65 files rewritten in a single run, which then still failed on
+// findings it could not fix, so the operator got a corrupted tree AND no
+// release. Auto-fixing at release time also means shipping edits nobody read.
+//
+// The gate is not lost. CI runs `buddy lint` on every push and blocks merge,
+// and `release.yml` gates publishing on the same checks after the tag lands.
+// The cost of dropping it here is that a lint failure surfaces at publish
+// rather than before the tag, which is a re-tag: strictly cheaper than
+// corrupting the working tree.
 const isDryRun = passthrough.dryRun === true || passthrough.dryRun === 'true'
-const actions: Action[] = isDryRun
-  ? [Action.GenerateLibraryEntries, Action.Bump]
-  : [Action.GenerateLibraryEntries, Action.LintFix, Action.Bump]
+const actions: Action[] = [Action.GenerateLibraryEntries, Action.Bump]
 
 // Pre-flight BEFORE anything mutates the tree or creates a tag.
 //
