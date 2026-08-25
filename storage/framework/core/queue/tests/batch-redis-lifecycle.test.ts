@@ -1,24 +1,25 @@
-import { afterAll, beforeAll, describe, expect, mock, test } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { RedisClient } from 'bun'
+import { env } from '@stacksjs/env'
+import { queue as queueConfig } from '@stacksjs/config'
 
 const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379/0'
 
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    debug() {},
-    error() {},
-    info() {},
-    warn() {},
-  },
-}))
-mock.module('@stacksjs/env', () => ({ env: { QUEUE_DRIVER: 'redis' } }))
-mock.module('@stacksjs/config', () => ({
-  queue: {
-    connections: {
-      redis: { redis: { url: redisUrl } },
-    },
-  },
-}))
+// Deliberately NOT `mock.module('@stacksjs/env', ...)`.
+//
+// Bun loads every test file before running any of them, and `src/batch.ts` binds
+// `envVars` from `@stacksjs/env` at import time. A module mock applied at the top
+// of this file therefore replaces the module for the ONE cached `batch.ts`
+// instance that every other queue test shares, so `getQueueDriver()` returned
+// 'redis' repo-wide and the seven `batch-add-races` cases failed with
+// "Batch batch-2282 not found" — reading Redis instead of their own database.
+// `mock.restore()` does not undo `mock.module`, so the afterAll here could not
+// have saved it either.
+//
+// `getQueueDriver()` and `batchRedisUrl()` both read their values at call time,
+// so overriding the live objects inside beforeAll/afterAll gets the same effect
+// scoped to this file's own run.
+const original: { driver: unknown, redis: unknown } = { driver: undefined, redis: undefined }
 
 const redis = new RedisClient(redisUrl)
 const batchId = `batch-redis-lifecycle-${process.pid}`
@@ -27,13 +28,26 @@ const key = `stacks:batch:${batchId}`
 const { recordBatchJobCompletion } = await import('../src/batch')
 
 beforeAll(async () => {
+  original.driver = (env as Record<string, unknown>).QUEUE_DRIVER
+  ;(env as Record<string, unknown>).QUEUE_DRIVER = 'redis'
+
+  const connections = (queueConfig as { connections?: Record<string, unknown> })?.connections
+  if (connections) {
+    original.redis = connections.redis
+    connections.redis = { redis: { url: redisUrl } }
+  }
+
   await redis.connect()
 })
 
 afterAll(async () => {
   await redis.del(key)
   redis.close()
-  mock.restore()
+
+  ;(env as Record<string, unknown>).QUEUE_DRIVER = original.driver
+  const connections = (queueConfig as { connections?: Record<string, unknown> })?.connections
+  if (connections && original.redis !== undefined)
+    connections.redis = original.redis
 })
 
 describe('Redis batch lifecycle accounting (#2354)', () => {
