@@ -259,6 +259,12 @@ export async function startProductionServer(options?: { port?: string | number, 
       const defaultsResources = resolveDefaultsResources()
       const defaultViewsPath = join(defaultsResources, 'views')
       const userLayoutsPath = existsSync('resources/views/layouts') ? 'resources/views/layouts' : 'resources/layouts'
+      // Same override-by-name rule as layouts: the app's directory wins, the
+      // framework defaults sit behind it. Both scaffold locations are checked,
+      // matching how userLayoutsPath picks its own.
+      const userComponentsPath = existsSync('resources/views/components')
+        ? 'resources/views/components'
+        : 'resources/components'
       const userPartialsPath = resolveUserPartialsPath(process.cwd(), await loadStxPartialsDir())
 
       // Same-origin API target. Scaffolded client code fetches relative
@@ -327,7 +333,21 @@ export async function startProductionServer(options?: { port?: string | number, 
         // fail loudly. Ignored harmlessly by older stx versions.
         reusePort: ['production', 'staging', 'development']
           .includes((process.env.APP_ENV || '').toLowerCase()),
-        componentsDir: join(defaultsResources, 'components'),
+        // The APP's components, with the framework's behind them.
+        //
+        // This was `join(defaultsResources, 'components')` — the framework
+        // defaults passed as THE components directory, with the app's own
+        // never consulted. An app that had written its own NativeAppShell.stx
+        // still rendered the framework's copy, and the symptom pointed
+        // nowhere near the cause: the framework file's relative includes
+        // resolved against the defaults tree, so the page came back with
+        // ENOENT banners naming a directory the author had never written a
+        // path to, where its header, nav, and footer should have been.
+        //
+        // Layouts three lines down always had this right. Components did not,
+        // because stx had no component-side fallback until 0.2.230.
+        componentsDir: userComponentsPath,
+        fallbackComponentsDir: join(defaultsResources, 'components'),
         layoutsDir: userLayoutsPath,
         // Omit the override only when the app has no Stacks include directory,
         // allowing bun-plugin-stx to fall back to its own project config.
