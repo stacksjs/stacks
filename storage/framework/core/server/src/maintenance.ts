@@ -491,6 +491,10 @@ export function bypassCookieValue(secret: string, mode: SiteMode = 'maintenance'
  * - Static assets used by the holding page (favicon, logo, etc.) so it
  *   renders correctly. The dev server serves these directly; in prod
  *   they're typically CDN'd — the allowlist is the safety net.
+ *
+ * Matched by prefix AND by extension, because a holding page that cannot load
+ * its own stylesheet is the failure this list exists to prevent, and not every
+ * project keeps its CSS under `/css/`.
  */
 const ALWAYS_ALLOWED_PATHS = new Set([
   '/coming-soon',
@@ -504,16 +508,57 @@ const ALWAYS_ALLOWED_PREFIXES = [
   '/images/',
   '/fonts/',
   '/assets/',
+  '/_stx/',
   '/_modules/',
   '/@vite/',
   '/@fs/',
   '/__deps/',
 ]
 
-function isAlwaysAllowed(path: string): boolean {
+/**
+ * Static assets, wherever they are served from.
+ *
+ * The prefix list above assumes a tidy `/css/…` layout, and a real application
+ * does not always have one: a stylesheet linked as `/tokens.css` sits at the
+ * document root and matched nothing, so the gate redirected it to the holding
+ * page. The page then answered 200 with every `var()` falling back to its
+ * initial value - unstyled, in a serif, on a live domain - and no status-code
+ * check noticed, because the HTML was fine.
+ *
+ * An extension allowlist rather than "anything with a dot": `/about.html` and
+ * `/report.pdf` are pages and documents, and coming-soon mode is meant to
+ * withhold those.
+ */
+const ALWAYS_ALLOWED_EXTENSIONS = [
+  '.css',
+  '.js',
+  '.mjs',
+  '.map',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.otf',
+  '.eot',
+  '.svg',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.webp',
+  '.avif',
+  '.ico',
+]
+
+export function isAlwaysAllowed(path: string): boolean {
   if (ALWAYS_ALLOWED_PATHS.has(path))
     return true
-  return ALWAYS_ALLOWED_PREFIXES.some(p => path.startsWith(p))
+
+  if (ALWAYS_ALLOWED_PREFIXES.some(p => path.startsWith(p)))
+    return true
+
+  const lower = path.toLowerCase()
+
+  return ALWAYS_ALLOWED_EXTENSIONS.some(ext => lower.endsWith(ext))
 }
 
 /**
