@@ -150,10 +150,23 @@ if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE
   run_buddy "$(command -v bun)" "$@"
 fi
 
-# node_modules layout (framework from npm, not vendored): there is no per-project
-# pantry to bootstrap and none is needed to run the CLI — if a bun runtime is on
-# PATH and the pantry installer is absent, just use it.
-if command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ] && [ ! -x "${PANTRY_INSTALLER}" ]; then
+# A bun on PATH is enough. Pantry exists to PROVIDE a runtime and system
+# dependencies where none are installed; when the machine already has bun, there
+# is nothing for it to do here and bootstrapping one costs a great deal.
+#
+# This used to also require the pantry installer to be absent, which made the
+# check "is this a node_modules app" rather than "can we already run". Any
+# project shipping storage/framework/scripts/ therefore bootstrapped a
+# per-project pantry on first `./buddy` — including on a production box during
+# deploy, where it installed its own PostgreSQL into the release and prepended
+# that bin directory to PATH. Those binaries shadowed the box's working
+# wrappers and could not load libpq, so `db:backup` and `migrate` both died with
+# `error while loading shared libraries: libpq.so.5` on a machine whose psql had
+# been working the whole time.
+#
+# Provisioning system dependencies stays an explicit act: `pantry install`, or
+# `buddy install`.
+if command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
   run_buddy "$(command -v bun)" "$@"
 fi
 
