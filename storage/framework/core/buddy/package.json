@@ -145,7 +145,7 @@
     "@stacksjs/strings": "^0.72.69",
     "@stacksjs/testing": "^0.72.69",
     "@stacksjs/tinker": "^0.72.69",
-    "@stacksjs/ts-cloud": "^0.12.3",
+    "@stacksjs/ts-cloud": "^0.12.4",
     "@stacksjs/tunnel": "^0.72.69",
     "@stacksjs/types": "^0.72.69",
     "@stacksjs/ui": "^0.72.69",
