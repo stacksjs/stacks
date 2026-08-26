@@ -293,19 +293,40 @@ jobs:
               break
             fi
 
-            cat install.log
-
             # A protocol or resolution error means the published artifact is
             # broken. Retrying cannot fix it, and waiting twelve minutes to say
             # so helps nobody.
             if grep -qiE 'workspace:|EUNSUPPORTEDPROTOCOL|unsupported URL type' install.log; then
+              cat install.log
               echo "::error::stacks@$version published a manifest that cannot be installed (workspace protocol leaked into the artifact)"
               exit 1
             fi
 
             if [ "$attempt" -eq "$attempts" ]; then
+              cat install.log
               echo "::error::stacks@$version is published but still could not be installed from a clean project after $attempts attempts"
               exit 1
+            fi
+
+            # Report a retry as ONE line, and dump the log only when the
+            # release actually fails.
+            #
+            # This loop used to `cat install.log` on every attempt. Publishing
+            # ~180 packages means the metadata for `stacks` can be visible
+            # before its dependencies are, so bun emits several `error:` lines
+            # per attempt about versions that do exist and are simply not
+            # readable from this edge yet. Thirty attempts of that turns a
+            # release that is working exactly as designed into a wall of red,
+            # and someone reasonably reads it as a broken publish and starts
+            # debugging a non-problem.
+            #
+            # The waiting is normal. Only the giving up is news.
+            if grep -q 'No version matching' install.log; then
+              waiting_on="$(grep -oE 'for specifier "[^"]+"' install.log | sed 's/for specifier //; s/"//g' | sort -u | paste -sd' ' -)"
+              echo "attempt $attempt/$attempts: registry has not propagated ${waiting_on:-stacks@$version} yet - retrying"
+            else
+              echo "attempt $attempt/$attempts: install failed, first line was:"
+              head -1 install.log
             fi
 
             # 10s for the first minute, then 30s: quick when the registry is
