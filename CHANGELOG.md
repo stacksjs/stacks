@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.83...v0.72.84)
+
+## 🐛 Bug Fixes
+
+- **buddy**: stop bootstrapping a pantry when bun is already installed ([f24b9cd](https://github.com/stacksjs/stacks/commit/f24b9cd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.82...v0.72.83)
 
 ## 🐛 Bug Fixes

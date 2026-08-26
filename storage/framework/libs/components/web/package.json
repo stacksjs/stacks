@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/hello-world-elements",
   "type": "module",
-  "version": "0.72.83",
+  "version": "0.72.84",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
   "contributors": [
