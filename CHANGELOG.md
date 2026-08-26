@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.77...v0.72.78)
+
+## ✨ Features
+
+- **cli**: type commands in the framework, drop the generated app/Commands.ts ([2591f33](https://github.com/stacksjs/stacks/commit/2591f33)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.76...v0.72.77)
 
 ## ✨ Features
