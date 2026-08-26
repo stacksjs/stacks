@@ -66,7 +66,7 @@
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
     "@stacksjs/stx": "^0.2.230",
-    "@stacksjs/ts-cloud": "^0.12.6",
+    "@stacksjs/ts-cloud": "^0.12.7",
     "@stacksjs/ts-md": "^0.1.1"
   },
   "devDependencies": {
