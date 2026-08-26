@@ -24,7 +24,7 @@ afterEach(async () => {
 describe('captured dashboard mail', () => {
   it('returns an empty list when the capture directory does not exist', async () => {
     const root = await temporaryDirectory()
-    expect(await listCapturedMail(join(root, 'missing'))).toEqual([])
+    expect(await listCapturedMail(join(root, 'missing'))).toEqual({ messages: [], problems: [] })
   })
 
   it('lists and reads a valid disk capture', async () => {
@@ -41,7 +41,8 @@ describe('captured dashboard mail', () => {
 `
     await writeFile(join(directory, filename), html)
 
-    const messages = await listCapturedMail(directory)
+    const { messages, problems } = await listCapturedMail(directory)
+    expect(problems).toEqual([])
     expect(messages).toHaveLength(1)
     expect(messages[0]).toMatchObject({
       id: `disk:${filename}`,
@@ -62,10 +63,59 @@ describe('captured dashboard mail', () => {
     expect(message?.text).toBe('')
   })
 
-  it('rejects malformed capture files instead of fabricating metadata', async () => {
+  it('reports a malformed capture instead of fabricating metadata for it', async () => {
     const directory = await temporaryDirectory()
     await writeFile(join(directory, 'broken.html'), '<p>No capture header</p>')
-    await expect(listCapturedMail(directory)).rejects.toThrow('missing its log-driver header')
+
+    const { messages, problems } = await listCapturedMail(directory)
+    expect(messages).toEqual([])
+    expect(problems).toEqual([
+      { capture: 'broken.html', reason: expect.stringContaining('missing its log-driver header') },
+    ])
+  })
+
+  it('still lists the readable captures when one file alongside them is broken', async () => {
+    // The bug this pins: `storage/logs/mail` held 29 captures, one of them
+    // written before the header format settled, and the single bad file made
+    // the whole endpoint 503 - the dashboard inbox showed nothing at all.
+    const directory = await temporaryDirectory()
+    const good = '2026-07-29T12-00-00-000Z-Welcome.html'
+    await writeFile(join(directory, good), `<!--
+  Captured by @stacksjs/email log driver at 2026-07-29T12:00:00.000Z
+  From:    Stacks <hello@example.com>
+  To:      Chris <chris@example.com>
+  Subject: Welcome
+-->
+<main><p>Your account is ready.</p></main>
+`)
+    await writeFile(join(directory, 'legacy-no-header.html'), '<p>Written before the header existed</p>')
+    await writeFile(join(directory, 'headers-missing-subject.html'), `<!--
+  Captured by @stacksjs/email log driver at 2026-07-29T12:00:00.000Z
+  From:    Stacks <hello@example.com>
+  To:      Chris <chris@example.com>
+-->
+<main><p>No subject line.</p></main>
+`)
+
+    const { messages, problems } = await listCapturedMail(directory)
+
+    expect(messages).toHaveLength(1)
+    expect(messages[0]?.id).toBe(`disk:${good}`)
+    expect(problems.map(problem => problem.capture)).toEqual([
+      'headers-missing-subject.html',
+      'legacy-no-header.html',
+    ])
+    expect(problems[0]?.reason).toContain('missing required message headers')
+    expect(problems[1]?.reason).toContain('missing its log-driver header')
+  })
+
+  it('still throws when a broken capture is the one being asked for by id', async () => {
+    // Listing skips it; fetching it by id must not answer with an empty
+    // result, because there the broken file IS what the caller asked about.
+    const directory = await temporaryDirectory()
+    await writeFile(join(directory, 'broken.html'), '<p>No capture header</p>')
+    await expect(showCapturedMail('disk:broken.html', directory))
+      .rejects.toThrow('missing its log-driver header')
   })
 
   it('rejects disk ids that could escape the capture directory', async () => {

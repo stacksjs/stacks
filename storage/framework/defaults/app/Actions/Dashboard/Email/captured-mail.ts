@@ -25,6 +25,17 @@ export interface CapturedMailMessage extends CapturedMailSummary {
   text: string
 }
 
+export interface CapturedMailProblem {
+  /** The capture that could not be read: a disk filename, or `mem:<index>`. */
+  capture: string
+  reason: string
+}
+
+export interface CapturedMailListing {
+  messages: CapturedMailSummary[]
+  problems: CapturedMailProblem[]
+}
+
 function capturedMailDirectory(): string {
   return process.env.LOG_MAIL_DIR || logsPath('mail')
 }
@@ -63,6 +74,10 @@ function validTimestamp(value: string, source: string): string {
   if (!Number.isFinite(time))
     throw new TypeError(`${source} contains an invalid capture timestamp.`)
   return new Date(time).toISOString()
+}
+
+function reasonFor(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 function headerValue(header: string, label: string): string {
@@ -123,48 +138,69 @@ async function diskMessage(name: string, directory: string): Promise<CapturedMai
   }
 }
 
+type CapturedLogEmail = ReturnType<typeof LogEmailDriver.captured>[number]
+
+function memoryMessage(email: CapturedLogEmail, index: number): CapturedMailMessage {
+  if (!(email.sentAt instanceof Date) || !Number.isFinite(email.sentAt.getTime()))
+    throw new TypeError('Captured in-memory email contains an invalid timestamp.')
+  if (typeof email.subject !== 'string' || !email.subject.trim())
+    throw new TypeError('Captured in-memory email is missing its subject.')
+
+  const html = email.rendered?.html ?? email.html ?? ''
+  const text = email.rendered?.text ?? email.text ?? ''
+  if (typeof html !== 'string' || typeof text !== 'string')
+    throw new TypeError('Captured in-memory email bodies must be strings.')
+
+  const from = formatAddress(email.from)
+  const to = formatAddress(email.to)
+  if (!from || !to)
+    throw new TypeError('Captured in-memory email is missing its sender or recipient.')
+
+  const sentAt = email.sentAt.toISOString()
+  return {
+    id: `mem:${email.sentAt.getTime()}:${index}`,
+    source: 'memory',
+    from,
+    to,
+    cc: formatAddress(email.cc),
+    bcc: formatAddress(email.bcc),
+    subject: email.subject,
+    preview: previewFor(html || text),
+    sentAt,
+    hasHtml: Boolean(html),
+    hasText: Boolean(text),
+    size: Buffer.byteLength(html, 'utf8') + Buffer.byteLength(text, 'utf8'),
+    html,
+    text,
+  }
+}
+
 function memoryMessages(): CapturedMailMessage[] {
-  return LogEmailDriver.captured().map((email, index) => {
-    if (!(email.sentAt instanceof Date) || !Number.isFinite(email.sentAt.getTime()))
-      throw new TypeError('Captured in-memory email contains an invalid timestamp.')
-    if (typeof email.subject !== 'string' || !email.subject.trim())
-      throw new TypeError('Captured in-memory email is missing its subject.')
-
-    const html = email.rendered?.html ?? email.html ?? ''
-    const text = email.rendered?.text ?? email.text ?? ''
-    if (typeof html !== 'string' || typeof text !== 'string')
-      throw new TypeError('Captured in-memory email bodies must be strings.')
-
-    const from = formatAddress(email.from)
-    const to = formatAddress(email.to)
-    if (!from || !to)
-      throw new TypeError('Captured in-memory email is missing its sender or recipient.')
-
-    const sentAt = email.sentAt.toISOString()
-    return {
-      id: `mem:${email.sentAt.getTime()}:${index}`,
-      source: 'memory',
-      from,
-      to,
-      cc: formatAddress(email.cc),
-      bcc: formatAddress(email.bcc),
-      subject: email.subject,
-      preview: previewFor(html || text),
-      sentAt,
-      hasHtml: Boolean(html),
-      hasText: Boolean(text),
-      size: Buffer.byteLength(html, 'utf8') + Buffer.byteLength(text, 'utf8'),
-      html,
-      text,
-    }
-  })
+  return LogEmailDriver.captured().map(memoryMessage)
 }
 
 function dedupeKey(message: CapturedMailSummary): string {
   return `${message.sentAt}|${message.from}|${message.to}|${message.subject}`
 }
 
-export async function listCapturedMail(directory = capturedMailDirectory()): Promise<CapturedMailSummary[]> {
+/**
+ * List every capture the log mail driver has taken.
+ *
+ * One unreadable capture must not take down the listing. A stale or
+ * hand-edited file in the capture directory is an ordinary condition, and
+ * failing the whole request over it returned a 503 that hid every other
+ * captured email - on a real directory of 29 files, a single one written
+ * before the header format settled was enough to empty the inbox.
+ *
+ * Skipping it silently would be the other wrong answer, so the capture is
+ * reported in `problems` and the dashboard says what it could not read.
+ * Nothing is fabricated for it, which is what the strict parse was for.
+ *
+ * `showCapturedMail` still throws for a capture the caller asked for by id:
+ * there the broken file IS the answer, so the reason belongs in the response
+ * rather than behind an empty result.
+ */
+export async function listCapturedMail(directory = capturedMailDirectory()): Promise<CapturedMailListing> {
   let names: string[]
   try {
     names = await readdir(directory)
@@ -176,12 +212,33 @@ export async function listCapturedMail(directory = capturedMailDirectory()): Pro
       throw error
   }
 
+  const problems: CapturedMailProblem[] = []
+
   const disk = await Promise.all(
-    names.filter(name => name.endsWith('.html')).map(name => diskMessage(name, directory)),
+    names.filter(name => name.endsWith('.html')).map(async (name) => {
+      try {
+        return await diskMessage(name, directory)
+      }
+      catch (error) {
+        problems.push({ capture: name, reason: reasonFor(error) })
+        return null
+      }
+    }),
   )
+
+  const memory: CapturedMailMessage[] = []
+  LogEmailDriver.captured().forEach((email, index) => {
+    try {
+      memory.push(memoryMessage(email, index))
+    }
+    catch (error) {
+      problems.push({ capture: `mem:${index}`, reason: reasonFor(error) })
+    }
+  })
+
   const seen = new Set<string>()
   const messages: CapturedMailSummary[] = []
-  for (const message of [...disk.filter((entry): entry is CapturedMailMessage => entry !== null), ...memoryMessages()]) {
+  for (const message of [...disk.filter((entry): entry is CapturedMailMessage => entry !== null), ...memory]) {
     const key = dedupeKey(message)
     if (seen.has(key))
       continue
@@ -202,9 +259,14 @@ export async function listCapturedMail(directory = capturedMailDirectory()): Pro
     })
   }
 
-  return messages.sort((left, right) =>
-    new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime(),
-  )
+  return {
+    messages: messages.sort((left, right) =>
+      new Date(right.sentAt).getTime() - new Date(left.sentAt).getTime(),
+    ),
+    // Settled in filename order rather than whichever read rejected first, so
+    // the same directory always produces the same response.
+    problems: problems.sort((left, right) => left.capture.localeCompare(right.capture)),
+  }
 }
 
 export async function showCapturedMail(id: string, directory = capturedMailDirectory()): Promise<CapturedMailMessage | null> {

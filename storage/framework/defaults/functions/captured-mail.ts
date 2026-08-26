@@ -20,11 +20,20 @@ export interface CapturedMailMessage extends CapturedMailSummary {
   text: string
 }
 
+export interface CapturedMailProblem {
+  /** The capture that could not be read: a disk filename, or `mem:<index>`. */
+  capture: string
+  reason: string
+}
+
 export interface CapturedMailIndex {
   captureDriver: 'log'
   activeDriver: string
   total: number
   messages: CapturedMailSummary[]
+  /** How many captures were skipped because they could not be parsed. */
+  unreadable: number
+  problems: CapturedMailProblem[]
 }
 
 export async function fetchCapturedMail(): Promise<CapturedMailIndex> {
