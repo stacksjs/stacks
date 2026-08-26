@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.71...v0.72.72)
+
+## 🐛 Bug Fixes
+
+- **ledger**: apply the legacy index lookup to already-prefixed names too ([ca87469](https://github.com/stacksjs/stacks/commit/ca87469)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.70...v0.72.71)
 
 ## 🐛 Bug Fixes
