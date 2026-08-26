@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.69...v0.72.70)
+
+## 🐛 Bug Fixes
+
+- **deploy**: take ts-cloud 0.12.4, so a deploy can tell you what it did ([eca17fc](https://github.com/stacksjs/stacks/commit/eca17fc)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.68...v0.72.69)
 
 ## 🐛 Bug Fixes
