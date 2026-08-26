@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.79...v0.72.80)
+
+## ✨ Features
+
+- **env**: type env from config/env.ts instead of generating it from .env ([470e9af](https://github.com/stacksjs/stacks/commit/470e9af)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.78...v0.72.79)
 
 ## 🐛 Bug Fixes
