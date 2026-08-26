@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.74...v0.72.75)
+
+## 🐛 Bug Fixes
+
+- **ledger**: match a dropped index to the CREATE that carries a table ([ecdc092](https://github.com/stacksjs/stacks/commit/ecdc092)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💚 Continuous Integration
+
+- **release**: stop making normal propagation lag look like a failed publish ([be7252b](https://github.com/stacksjs/stacks/commit/be7252b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.73...v0.72.74)
 
 ## 🐛 Bug Fixes
