@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.81...v0.72.82)
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.12.6 ([d6a4399](https://github.com/stacksjs/stacks/commit/d6a4399)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.80...v0.72.81)
 
 ## 🔧 Chores
