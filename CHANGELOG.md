@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.78...v0.72.79)
+
+## 🐛 Bug Fixes
+
+- **buddy**: stop shipping imports that only resolve inside this repository ([08971b8](https://github.com/stacksjs/stacks/commit/08971b8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.77...v0.72.78)
 
 ## ✨ Features
