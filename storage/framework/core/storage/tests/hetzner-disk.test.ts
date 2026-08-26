@@ -5,9 +5,9 @@ import { hetznerDisk } from '../src/types/filesystem'
 // reuses the s3 adapter. hetznerDisk makes it a first-class preset.
 describe('hetznerDisk', () => {
   it('defaults to Falkenstein and resolves the location endpoint', () => {
-    expect(hetznerDisk('nsdap-archive')).toEqual({
+    expect(hetznerDisk('example-archive')).toEqual({
       driver: 's3',
-      bucket: 'nsdap-archive',
+      bucket: 'example-archive',
       region: 'fsn1',
       endpoint: 'https://fsn1.your-objectstorage.com',
       usePathStyleEndpoint: true,

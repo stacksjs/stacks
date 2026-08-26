@@ -27,11 +27,11 @@ describe('ensureBucket', () => {
       createBucket: async (b: string) => { created.push(b) },
     })
 
-    const result = await ensureBucket('nsdap-archive')
+    const result = await ensureBucket('example-archive')
 
     expect(result.status).toBe('created')
-    expect(created).toEqual(['nsdap-archive'])
-    expect(result.publicUrl).toBe('https://nsdap-archive.fsn1.your-objectstorage.com')
+    expect(created).toEqual(['example-archive'])
+    expect(result.publicUrl).toBe('https://example-archive.fsn1.your-objectstorage.com')
   })
 
   it('reports an existing bucket without creating it', async () => {
@@ -41,7 +41,7 @@ describe('ensureBucket', () => {
       createBucket: async () => { createCalls++ },
     })
 
-    expect((await ensureBucket('nsdap-archive')).status).toBe('exists')
+    expect((await ensureBucket('example-archive')).status).toBe('exists')
     expect(createCalls).toBe(0)
   })
 
@@ -56,7 +56,7 @@ describe('ensureBucket', () => {
       createBucket: async () => { throw new Error('BucketAlreadyOwnedByYou: already exists') },
     })
 
-    expect((await ensureBucket('nsdap-archive')).status).toBe('exists')
+    expect((await ensureBucket('example-archive')).status).toBe('exists')
   })
 
   it('surfaces a real failure with the provider named', async () => {
@@ -65,7 +65,7 @@ describe('ensureBucket', () => {
       createBucket: async () => { throw new Error('AccessDenied') },
     })
 
-    expect(ensureBucket('nsdap-archive')).rejects.toThrow(/hetzner.*AccessDenied/)
+    expect(ensureBucket('example-archive')).rejects.toThrow(/hetzner.*AccessDenied/)
   })
 
   it('refuses an empty bucket name rather than asking the provider', async () => {
