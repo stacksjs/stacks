@@ -1,5 +1,5 @@
 <script client>
-import type { CapturedMailMessage, CapturedMailSummary } from '../../../../functions/captured-mail'
+import type { CapturedMailMessage, CapturedMailProblem, CapturedMailSummary } from '../../../../functions/captured-mail'
 import { fetchCapturedMail, fetchCapturedMailMessage } from '../../../../functions/captured-mail'
 import { pushToast } from '../../../../functions/toasts'
 
@@ -7,11 +7,21 @@ const messages = state<CapturedMailSummary[]>([])
 const selectedId = state('')
 const selectedMessage = state<CapturedMailMessage | null>(null)
 const activeDriver = state('')
+const unreadable = state<CapturedMailProblem[]>([])
 const loading = state(true)
 const detailLoading = state(false)
 const error = state('')
 const detailError = state('')
 let selectionVersion = 0
+
+// The thrown reason already names the file, and the row prints it in mono
+// right before this, so the prefix would read the filename out twice.
+function problemReason(problem: CapturedMailProblem): string {
+  const prefix = `Captured mail file ${problem.capture} is `
+  return problem.reason.startsWith(prefix)
+    ? problem.reason.slice(prefix.length)
+    : problem.reason
+}
 
 function eventValue<T>(value: T | CustomEvent<T>): T {
   return value instanceof CustomEvent ? value.detail : value
@@ -50,6 +60,9 @@ async function loadCapturedMail(): Promise<void> {
     const result = await fetchCapturedMail()
     messages.set(result.messages)
     activeDriver.set(result.activeDriver)
+    // A capture the server could not parse is skipped rather than failing the
+    // whole listing, so it has to be said out loud here or it disappears.
+    unreadable.set(result.problems ?? [])
 
     const current = result.messages.find(message => message.id === selectedId())
     const next = current || result.messages[0]
@@ -67,6 +80,7 @@ async function loadCapturedMail(): Promise<void> {
     const message = cause instanceof Error ? cause.message : 'Captured mail could not be loaded.'
     error.set(message)
     messages.set([])
+    unreadable.set([])
     selectedId.set('')
     selectedMessage.set(null)
     pushToast('error', 'Could not load captured mail', { detail: message })
@@ -92,6 +106,19 @@ onMount(() => {
         <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
           Outbound messages recorded by the local log driver. Active mailer: {{ activeDriver() || 'log' }}.
         </p>
+        <div :if="unreadable().length > 0" class="mt-2 flex gap-2 items-start px-3 py-2 bg-amber-50 border border-amber-200 rounded-md text-amber-800 text-xs dark:bg-amber-900/20 dark:border-amber-800/40 dark:text-amber-200">
+          <span class="mt-0.5 h-3.5 w-3.5 shrink-0 i-hugeicons-alert-02"></span>
+          <div>
+            <p class="font-medium">
+              {{ unreadable().length }} capture{{ unreadable().length === 1 ? '' : 's' }} could not be read and {{ unreadable().length === 1 ? 'was' : 'were' }} left out of this list.
+            </p>
+            <ul class="mt-1 space-y-0.5">
+              <template :for="problem in unreadable()">
+                <li class="break-all"><span class="font-mono">{{ problem.capture }}</span> is {{ problemReason(problem) }}</li>
+              </template>
+            </ul>
+          </div>
+        </div>
       </div>
       <Button variant="secondary" :loading="loading()" @click="loadCapturedMail">
         <span :if="!loading()" class="h-4 w-4 i-hugeicons-refresh"></span>
