@@ -216,6 +216,74 @@ export function logicalName(file: string): string {
   return file.replace(/^\d+[-_]/, '').replace(/\.sql$/i, '')
 }
 
+/**
+ * Schema objects a migration file explicitly REMOVES.
+ *
+ * The audit checks each migration against the live schema in isolation, which
+ * cannot see that a later migration undid an earlier one on purpose. A widened
+ * index is the ordinary case: one migration creates `(country, state)`, a
+ * later one drops it, a third creates `(country, state, state_name)` in its
+ * place. The schema is exactly right, and the first migration nonetheless
+ * reported as REVERTED — "the effects are gone" — forever, because they are
+ * gone, deliberately.
+ *
+ * Only drops in a LATER file count when this is applied; an earlier drop is
+ * unrelated history.
+ */
+export function migrationRemovals(sql: string): MigrationEffect[] {
+  const removals: MigrationEffect[] = []
+  const seen = new Set<string>()
+
+  const push = (effect: MigrationEffect): void => {
+    const key = effectKey(effect)
+    if (seen.has(key)) return
+    seen.add(key)
+    removals.push(effect)
+  }
+
+  for (const statement of statementsOf(sql)) {
+    const index = new RegExp(String.raw`^DROP\s+INDEX\s+(?:CONCURRENTLY\s+)?(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
+    if (index?.[1]) {
+      push({ kind: 'index', name: index[1] })
+      continue
+    }
+
+    const table = new RegExp(String.raw`^DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
+    if (table?.[1]) {
+      push({ kind: 'table', name: table[1] })
+      continue
+    }
+
+    const enumType = new RegExp(String.raw`^DROP\s+TYPE\s+(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
+    if (enumType?.[1]) {
+      push({ kind: 'enum', name: enumType[1] })
+      continue
+    }
+
+    const alter = new RegExp(String.raw`^ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?${IDENT}\s+(.*)$`, 'is').exec(statement)
+    if (!alter?.[1]) continue
+    const owner = alter[1]
+    for (const clause of (alter[2] ?? '').split(',')) {
+      // Constraints first, and the COLUMN keyword is optional in the pattern
+      // below: `DROP CONSTRAINT x` otherwise matches it too, with the literal
+      // word "CONSTRAINT" captured as the column name.
+      const constraint = new RegExp(String.raw`^\s*DROP\s+CONSTRAINT\s+(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(clause)
+      if (constraint?.[1]) {
+        push({ kind: 'constraint', table: owner, name: constraint[1] })
+        continue
+      }
+
+      const column = new RegExp(String.raw`^\s*DROP\s+(?:COLUMN\s+)?(?:IF\s+EXISTS\s+)?${IDENT}`, 'i').exec(clause)
+      // Anything else that can follow DROP in an ALTER TABLE is a different
+      // kind of object, not a bare column name.
+      if (column?.[1] && !/^(?:constraint|index|key|primary|foreign|unique|check|default|partition)$/i.test(column[1]))
+        push({ kind: 'column', table: owner, name: column[1] })
+    }
+  }
+
+  return removals
+}
+
 /** Schema changes a migration file makes that the live database can confirm. */
 export function migrationEffects(sql: string): MigrationEffect[] {
   const effects: MigrationEffect[] = []
@@ -677,19 +745,53 @@ export async function auditMigrationLedger(options: {
   const recorded = new Set(ledger)
   const schema = await readLiveSchema(dialect, run)
 
-  const entries: MigrationLedgerEntry[] = []
+  // Read once: the classification below needs every file's REMOVALS, not just
+  // its own, to tell a deliberate later drop from a lost effect.
+  const sources = new Map<string, string>()
   for (const file of files) {
-    let sql = ''
     try {
-      sql = readFileSync(join(dir, file), 'utf8')
+      sources.set(file, readFileSync(join(dir, file), 'utf8'))
     }
     catch {
       continue
     }
+  }
+
+  // Files sort by their numeric prefix, so everything after a file in this
+  // list ran after it. Keyed by effect so the lookup is exact — dropping
+  // `trails_country_state_index` must not excuse a missing table of the same
+  // name, nor an index of that name on a different migration's behalf.
+  const readFiles = [...sources.keys()]
+  const removedLater = new Map<string, Set<string>>()
+  for (let i = 0; i < readFiles.length; i++) {
+    const laterKeys = new Set<string>()
+    for (let j = i + 1; j < readFiles.length; j++) {
+      for (const removal of migrationRemovals(sources.get(readFiles[j]!)!))
+        laterKeys.add(effectKey(removal))
+    }
+    removedLater.set(readFiles[i]!, laterKeys)
+  }
+
+  const entries: MigrationLedgerEntry[] = []
+  for (const file of readFiles) {
+    const sql = sources.get(file)!
 
     const effects = verifiableEffects(migrationEffects(sql), dialect)
-    const present = effects.filter(effect => effectPresent(effect, schema))
-    const absent = effects.filter(effect => !effectPresent(effect, schema))
+    const dropped = removedLater.get(file) ?? new Set<string>()
+    /*
+     * An effect a LATER migration explicitly drops counts as present.
+     *
+     * Not a fudge: the question this audit answers is "did this migration
+     * run", and an effect that a subsequent migration deliberately removed is
+     * evidence that it did. Widening an index is the ordinary case — create
+     * (country, state), drop it, create (country, state, state_name) — and
+     * treating the first as REVERTED reported healthy, intentional history as
+     * drift that no command could ever clear.
+     */
+    const survives = (effect: MigrationEffect): boolean =>
+      effectPresent(effect, schema) || dropped.has(effectKey(effect))
+    const present = effects.filter(survives)
+    const absent = effects.filter(effect => !survives(effect))
     const isRecorded = recorded.has(file)
     const status = classifyMigration(isRecorded, present, absent)
     counts[status] += 1
