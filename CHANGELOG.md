@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.72...v0.72.73)
+
+## 🐛 Bug Fixes
+
+- **ledger**: prune duplicate rows a renumbering left behind ([c2aba7e](https://github.com/stacksjs/stacks/commit/c2aba7e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.71...v0.72.72)
 
 ## 🐛 Bug Fixes
