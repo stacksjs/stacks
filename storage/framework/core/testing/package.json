@@ -2,7 +2,7 @@
   "name": "@stacksjs/testing",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.82",
+  "version": "0.72.83",
   "description": "The Stacks way of testing.",
   "author": "Chris Breuer",
   "contributors": [

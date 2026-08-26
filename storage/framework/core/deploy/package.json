@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/deploy",
-  "version": "0.72.82",
+  "version": "0.72.83",
   "type": "module",
   "sideEffects": false,
   "description": "Deployment module for Stacks using ts-cloud",

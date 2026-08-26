@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.82...v0.72.83)
+
+## 🐛 Bug Fixes
+
+- **deploy**: stop the pre-migration backup splicing a shell fragment ([a663195](https://github.com/stacksjs/stacks/commit/a663195)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.81...v0.72.82)
 
 ## 🔧 Chores
