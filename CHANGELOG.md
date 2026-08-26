@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.76...v0.72.77)
+
+## ✨ Features
+
+- **deploy**: let a project retire a domain on purpose ([b886a20](https://github.com/stacksjs/stacks/commit/b886a20)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: load a published middleware override instead of the default ([91ad192](https://github.com/stacksjs/stacks/commit/91ad192)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: stop `setup:ai --force` deleting a hand-written CLAUDE.md ([c0bb2f8](https://github.com/stacksjs/stacks/commit/c0bb2f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: make unvendoring survive a pantry-installed app ([a2c4401](https://github.com/stacksjs/stacks/commit/a2c4401)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: never redirect a stylesheet to the holding page ([1304fe7](https://github.com/stacksjs/stacks/commit/1304fe7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **git**: ignore the site-mode markers ([971eebe](https://github.com/stacksjs/stacks/commit/971eebe)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.75...v0.72.76)
 
 ## 🐛 Bug Fixes
