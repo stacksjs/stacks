@@ -275,9 +275,9 @@ async function ensureMailStorageVolume(
 
 async function ensureMailKmsKey(options: MailStorageOptions): Promise<{ alias: string; arn: string }> {
   const { region } = loadMailStorageAws(options)
-  const { AWSClient } = await import('../../../cloud/src/imap/client')
-  const { S3Client } = await import('../../../cloud/src/imap/s3')
-  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const { AWSClient } = await import('@stacksjs/cloud')
+  const { S3Client } = await import('@stacksjs/cloud')
+  const { SecretsManagerClient } = await import('@stacksjs/cloud')
   const client = new AWSClient()
   const request = async (target: string, body: Record<string, unknown>): Promise<any> => client.request({
     service: 'kms',
@@ -345,8 +345,8 @@ async function configureMailRestic(options: MailStorageOptions): Promise<{ repos
   if (!/^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$/.test(bucket))
     throw new Error(`Unsafe S3 bucket name: ${bucket}`)
   const kms = await ensureMailKmsKey(options)
-  const { AWSClient } = await import('../../../cloud/src/imap/client')
-  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const { AWSClient } = await import('@stacksjs/cloud')
+  const { SecretsManagerClient } = await import('@stacksjs/cloud')
   const iam = new AWSClient()
   const iamRequest = async (action: string, params: Record<string, string> = {}): Promise<any> => iam.request({
     service: 'iam',
@@ -512,7 +512,7 @@ async function getMailStorageSecret(
 ): Promise<{ key: Buffer; secretId: string }> {
   const { profile, region } = loadMailStorageAws(options)
   const secretId = mailStorageSecretId(options)
-  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const { SecretsManagerClient } = await import('@stacksjs/cloud')
   const secrets = new SecretsManagerClient(region, profile)
   const value = await secrets.getSecretValue({ SecretId: secretId })
   return { key: decodeMailStorageSecret(value.SecretString), secretId }
@@ -524,7 +524,7 @@ async function escrowMailStorageKey(
   const { profile, region } = loadMailStorageAws(options)
   const host = await mailStorageHost(options)
   const secretId = mailStorageSecretId(options)
-  const { SecretsManagerClient } = await import('../../../cloud/src/imap/secrets-manager')
+  const { SecretsManagerClient } = await import('@stacksjs/cloud')
   const secrets = new SecretsManagerClient(region, profile)
 
   const key = runMailStorageSsh(
@@ -1097,8 +1097,8 @@ export function mailCommands(buddy: CLI): void {
 
         const timestamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z')
         const objectKey = `luks-headers/mail-storage-${timestamp}.header`
-        const { AWSClient } = await import('../../../cloud/src/imap/client')
-        const { S3Client } = await import('../../../cloud/src/imap/s3')
+        const { AWSClient } = await import('@stacksjs/cloud')
+        const { S3Client } = await import('@stacksjs/cloud')
         const kms = await ensureMailKmsKey(options)
         const s3 = new S3Client(region)
         await s3.putBucketEncryption(bucket, 'aws:kms', kms.arn)
@@ -1852,7 +1852,7 @@ export function mailCommands(buddy: CLI): void {
       console.log('')
 
       try {
-        const { SmtpServer } = await import('../../../cloud/src/imap/smtp-server')
+        const { SmtpServer } = await import('@stacksjs/cloud')
         const server = new SmtpServer({
           port,
           host: '0.0.0.0',

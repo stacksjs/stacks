@@ -99,6 +99,7 @@
     "@stacksjs/ai": "^0.72.78",
     "@stacksjs/alias": "^0.72.78",
     "@stacksjs/analytics": "^0.72.78",
+    "@stacksjs/api": "^0.72.78",
     "@stacksjs/arrays": "^0.72.78",
     "@stacksjs/auth": "^0.72.78",
     "@stacksjs/browser-extension": "^0.72.78",

@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { assertFrameworkRepo } from './framework-repo'
 // Type-only: erased at compile time, so it costs nothing at runtime.
-import type { OpenApiDocument } from '../../../../api/src/generate-types'
+import type { OpenApiDocument } from '@stacksjs/api'
 
 /**
  * The generators live in a sibling package, reached by a relative path that
@@ -12,26 +12,21 @@ import type { OpenApiDocument } from '../../../../api/src/generate-types'
  * command ran, and this module is reachable from the package root.
  *
  * So importing `@stacksjs/buddy` from an installed copy threw
- * `Cannot find module '../../../../api/src/generate-client'` before any guard
+ * `Cannot find module '@stacksjs/api'` before any guard
  * could explain itself. Resolving them on use puts the failure back where the
  * guard already handles it: an application gets the message about running from
  * a framework checkout, and a framework checkout gets the generators.
  */
 async function generators(): Promise<{
-  renderApiClient: typeof import('../../../../api/src/generate-client').renderApiClient
-  generateOpenApi: typeof import('../../../../api/src/generate-openapi').generateOpenApi
-  renderOpenApiTypes: typeof import('../../../../api/src/generate-types').renderOpenApiTypes
+  renderApiClient: typeof import('@stacksjs/api').renderApiClient
+  generateOpenApi: typeof import('@stacksjs/api').generateOpenApi
+  renderOpenApiTypes: typeof import('@stacksjs/api').renderOpenApiTypes
 }> {
-  const [client, openapi, types] = await Promise.all([
-    import('../../../../api/src/generate-client'),
-    import('../../../../api/src/generate-openapi'),
-    import('../../../../api/src/generate-types'),
-  ])
-  return {
-    renderApiClient: client.renderApiClient,
-    generateOpenApi: openapi.generateOpenApi,
-    renderOpenApiTypes: types.renderOpenApiTypes,
-  }
+  // All three come from the same barrel — they used to be three relative paths
+  // into `api/src`, which resolved only inside this repository and left the
+  // published package importing files that were never shipped.
+  const { renderApiClient, generateOpenApi, renderOpenApiTypes } = await import('@stacksjs/api')
+  return { renderApiClient, generateOpenApi, renderOpenApiTypes }
 }
 
 const root = resolve(import.meta.dir, '../../../../../../..')
