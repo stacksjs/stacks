@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.84...v0.72.85)
+
+## 🐛 Bug Fixes
+
+- **storage**: keep http:// on S3 endpoints, so local endpoints are reachable ([18e68c7](https://github.com/stacksjs/stacks/commit/18e68c7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **storage**: rename the example bucket in the object-storage tests ([b5782dd](https://github.com/stacksjs/stacks/commit/b5782dd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.12.7 ([d9a7b92](https://github.com/stacksjs/stacks/commit/d9a7b92)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.83...v0.72.84)
 
 ## 🐛 Bug Fixes
