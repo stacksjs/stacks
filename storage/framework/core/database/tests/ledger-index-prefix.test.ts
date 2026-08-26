@@ -45,12 +45,14 @@ describe('index effects across the legacy table-prefix convention', () => {
     expect(effectPresent(effect, schema([]))).toBe(false)
   })
 
-  it('does not double a prefix the name already carries', () => {
-    // `trails_country_state_index` already starts with the table, so the
-    // fallback must not go looking for `trails_trails_country_state_index`
-    // and report a different index as this one.
-    const effect = { kind: 'index' as const, name: 'trails_country_state_index', table: 'trails' }
-    expect(effectPresent(effect, schema(['trails_trails_country_state_index']))).toBe(false)
+  it('doubles the prefix even when the name already carries it', () => {
+    // The real case from production: the file declares
+    // `saved_trails_user_trail_unique` — which already starts with the table —
+    // and the database stores `saved_trails_saved_trails_user_trail_unique`.
+    // An earlier version of this fix skipped the lookup for already-prefixed
+    // names and therefore missed every case that motivated it.
+    const effect = { kind: 'index' as const, name: 'saved_trails_user_trail_unique', table: 'saved_trails' }
+    expect(effectPresent(effect, schema(['saved_trails_saved_trails_user_trail_unique']))).toBe(true)
   })
 
   it('handles an index effect with no table at all', () => {

@@ -148,3 +148,4 @@ storage/framework/core/defaults/*
 !storage/framework/core/defaults/package.json
 !storage/framework/core/defaults/tests/
 !storage/framework/core/defaults/tests/**
+/storage/framework/stacks/storage/framework/stx/bundle-tmp

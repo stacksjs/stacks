@@ -463,10 +463,20 @@ export function effectPresent(effect: MigrationEffect, schema: LiveSchema): bool
        * that does not exist.
        */
       const table = (effect.table ?? '').toLowerCase()
-      if (table && !name.startsWith(`${table}_`))
-        return schema.indexes.has(`${table}_${name}`)
+      if (!table)
+        return false
 
-      return false
+      // Unconditionally, including when the declared name already begins with
+      // the table: the legacy generator prefixed regardless, which is how
+      // `saved_trails_user_trail_unique` came to be stored as
+      // `saved_trails_saved_trails_user_trail_unique`. Skipping the lookup for
+      // names that look already-prefixed was the first attempt at this fix and
+      // it missed every real case in the database that prompted it.
+      //
+      // This stays honest: `<table>_<name>` is one specific string. Finding it
+      // means that exact index exists under the older spelling, not that some
+      // other index on the table will do.
+      return schema.indexes.has(`${table}_${name}`)
     }
     case 'constraint':
       return schema.constraints.has(name)
