@@ -242,9 +242,11 @@ export function migrationEffects(sql: string): MigrationEffect[] {
       continue
     }
 
-    const index = new RegExp(String.raw`^CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?${IDENT}`, 'i').exec(statement)
+    const index = new RegExp(String.raw`^CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?${IDENT}(?:\s+ON\s+${IDENT})?`, 'i').exec(statement)
     if (index?.[1]) {
-      push({ kind: 'index', name: index[1] })
+      // The owning table is captured so `effectPresent` can recognise the
+      // legacy `<table>_<name>` spelling of the same index.
+      push(index[2] ? { kind: 'index', name: index[1], table: index[2] } : { kind: 'index', name: index[1] })
       continue
     }
 
@@ -441,8 +443,31 @@ export function effectPresent(effect: MigrationEffect, schema: LiveSchema): bool
       return schema.tables.has(name)
     case 'column':
       return schema.columns.get((effect.table ?? '').toLowerCase())?.has(name) ?? false
-    case 'index':
-      return schema.indexes.has(name)
+    case 'index': {
+      if (schema.indexes.has(name))
+        return true
+
+      /*
+       * Older generators prefixed an index with its table even when the
+       * declared name already began with it, producing
+       * `saved_trails_saved_trails_user_trail_unique` for what the current
+       * generator emits as `saved_trails_user_trail_unique`. The index is the
+       * same index; only the spelling changed.
+       *
+       * Matching literally meant every such index read as ABSENT, so the
+       * migration that created it was classified `pending` — "not applied yet,
+       * will run on the next `buddy migrate`" — about a migration that had
+       * demonstrably run, against tables holding thousands of rows. That is
+       * the worst possible direction for this tool to be wrong in: it invites
+       * an operator to run a migration on a production database to fix drift
+       * that does not exist.
+       */
+      const table = (effect.table ?? '').toLowerCase()
+      if (table && !name.startsWith(`${table}_`))
+        return schema.indexes.has(`${table}_${name}`)
+
+      return false
+    }
     case 'constraint':
       return schema.constraints.has(name)
     case 'enum':
