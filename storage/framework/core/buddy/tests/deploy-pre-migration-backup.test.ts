@@ -275,3 +275,58 @@ describe('finding the migrate step among the noise', () => {
     expect(backup).not.toContain('echo')
   })
 })
+
+/**
+ * A migrate step is often wrapped — a retry loop, a `cd &&`, a guard. Taking
+ * everything ahead of the subcommand swallowed that wrapper and produced a
+ * fragment: `ok=0; for i in 1 2 3; do ./buddy`. The backup command built from it
+ * opened a `for … do` nothing closed, and splicing that into the deploy script
+ * made bash reject the entire script with `syntax error: unexpected end of
+ * file` — reported against the last line, hundreds of lines from the cause, and
+ * only after the release had installed, built and bundled.
+ */
+describe('buddyInvocationFrom: the shell around the invocation', () => {
+  it('takes the invocation out of a retry loop rather than the loop', () => {
+    const migrate = 'ok=0; for i in 1 2 3; do ./buddy migrate < /dev/null && ok=1 && break; echo retrying; sleep 10; done; [ "$ok" = 1 ]'
+
+    expect(buddyInvocationFrom(migrate)).toBe('./buddy')
+  })
+
+  it('never returns a fragment that opens a compound command', () => {
+    const wrapped = [
+      'ok=0; for i in 1 2 3; do ./buddy migrate; done',
+      'cd /srv/app && ./buddy migrate',
+      'if [ -f .env ]; then ./buddy migrate; fi',
+      'APP_ENV=production ./buddy migrate',
+      './buddy db:wait && ./buddy migrate',
+    ]
+
+    for (const command of wrapped) {
+      const invocation = buddyInvocationFrom(command)
+      expect(invocation).toBeDefined()
+      // Whatever comes back has to be a command on its own.
+      expect(invocation).not.toMatch(/[;&|<>()`]/)
+      expect(invocation!.split(/\s+/)).not.toContain('do')
+      expect(invocation!.split(/\s+/)).not.toContain('then')
+    }
+  })
+
+  it('keeps a multi-token invocation that is genuinely all argument', () => {
+    expect(buddyInvocationFrom('bun --conditions development storage/framework/core/buddy/src/cli.ts migrate'))
+      .toBe('bun --conditions development storage/framework/core/buddy/src/cli.ts')
+  })
+
+  it('still refuses a migrate step that is not a buddy call', () => {
+    expect(buddyInvocationFrom('bun run migrate')).toBeUndefined()
+    expect(buddyInvocationFrom('./deploy.sh')).toBeUndefined()
+  })
+
+  it('produces a backup command bash can parse', () => {
+    const migrate = 'ok=0; for i in 1 2 3; do ./buddy migrate && ok=1 && break; sleep 10; done; [ "$ok" = 1 ]'
+    const backup = preMigrationBackupCommand('/var/backups', migrate)!
+
+    expect(backup).toBe('./buddy db:backup --before-migrations --out /var/backups')
+    expect(() => Bun.spawnSync(['bash', '-n', '-c', backup])).not.toThrow()
+    expect(Bun.spawnSync(['bash', '-n', '-c', backup]).exitCode).toBe(0)
+  })
+})

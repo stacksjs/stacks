@@ -1602,23 +1602,79 @@ const migrateToken = /(?:^|:)migrate(?::|$)/
  * Returns undefined when the migrate step is not a buddy call at all (`bun run
  * migrate`, a shell script, a container exec). Guessing there is how the
  * hard-coded path failed in the first place.
+ *
+ * Only the invocation, never the shell around it. A migrate step is often
+ * wrapped — a retry loop, a `cd &&`, a guard — and taking *everything* before
+ * the subcommand used to swallow that wrapper: `ok=0; for i in 1 2 3; do
+ * ./buddy migrate` yielded the invocation `ok=0; for i in 1 2 3; do ./buddy`,
+ * and the backup command built from it opened a `for … do` that nothing closed.
+ * Spliced into the deploy script, that made bash reject the whole thing with
+ * `syntax error: unexpected end of file` — pointing at the end of the file,
+ * hundreds of lines from the fragment responsible, after the release had
+ * already installed and built. So walk back from the subcommand and stop at the
+ * first thing that is shell rather than argument.
  */
 export function buddyInvocationFrom(migrateCommand: unknown): string | undefined {
   if (typeof migrateCommand !== 'string')
     return undefined
 
   const tokens = migrateCommand.trim().split(/\s+/)
-  const at = tokens.findIndex(token => migrateToken.test(token))
+  // `./buddy migrate; done` and `./buddy migrate && echo ok` are ordinary ways
+  // to write the step. Matching the bare word only meant those sites quietly
+  // got no pre-migration dump at all.
+  const at = tokens.findIndex(token => migrateToken.test(token.replace(/[;&|]+$/, '')))
   if (at < 1)
     return undefined
 
-  const invocation = tokens.slice(0, at)
+  let from = at
+  while (from > 0 && !isShellToken(tokens[from - 1]!))
+    from--
+
+  const invocation = tokens.slice(from, at)
   const entrypoint = invocation[invocation.length - 1]
   if (!entrypoint || !buddyEntrypoint.test(entrypoint))
     return undefined
 
   return invocation.join(' ')
 }
+
+/**
+ * Does this token belong to the shell rather than to the command?
+ *
+ * Operators and separators (`;`, `&&`, `|`, redirections, subshells), the
+ * keywords that open a compound command, and leading `VAR=value` assignments —
+ * everything that makes a line more than one invocation. Copying any of them
+ * into a new command produces a fragment, not a command.
+ */
+function isShellToken(token: string): boolean {
+  if (/[;&|<>()`]/.test(token))
+    return true
+
+  if (/^[A-Za-z_][\w]*=/.test(token))
+    return true
+
+  return SHELL_KEYWORDS.has(token)
+}
+
+const SHELL_KEYWORDS = new Set([
+  'do',
+  'done',
+  'then',
+  'else',
+  'elif',
+  'fi',
+  'if',
+  'for',
+  'while',
+  'until',
+  'case',
+  'esac',
+  'in',
+  'function',
+  '{',
+  '}',
+  '!',
+])
 
 /**
  * The command a site's preStart runs to dump the database before `migrate`
