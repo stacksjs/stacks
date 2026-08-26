@@ -379,6 +379,22 @@ function effectKey(effect: MigrationEffect): string {
 }
 
 /**
+ * Key for matching a CREATE against a later DROP.
+ *
+ * Indexes, tables and enum types are named globally, and `DROP INDEX` names no
+ * table at all — so keying an index removal by table can never match the
+ * CREATE that carries one, which is how the widened-index case went on
+ * reporting as REVERTED after removals were already being parsed. Columns and
+ * constraints keep their table, where it genuinely disambiguates two
+ * same-named columns on different tables.
+ */
+function removalKey(effect: MigrationEffect): string {
+  if (effect.kind === 'column' || effect.kind === 'constraint')
+    return effectKey(effect)
+  return `${effect.kind}:${effect.name.toLowerCase()}`
+}
+
+/**
  * Effects this dialect can actually confirm.
  *
  * SQLite has no named constraints reachable by introspection (foreign keys are
@@ -767,7 +783,7 @@ export async function auditMigrationLedger(options: {
     const laterKeys = new Set<string>()
     for (let j = i + 1; j < readFiles.length; j++) {
       for (const removal of migrationRemovals(sources.get(readFiles[j]!)!))
-        laterKeys.add(effectKey(removal))
+        laterKeys.add(removalKey(removal))
     }
     removedLater.set(readFiles[i]!, laterKeys)
   }
@@ -789,7 +805,7 @@ export async function auditMigrationLedger(options: {
      * drift that no command could ever clear.
      */
     const survives = (effect: MigrationEffect): boolean =>
-      effectPresent(effect, schema) || dropped.has(effectKey(effect))
+      effectPresent(effect, schema) || dropped.has(removalKey(effect))
     const present = effects.filter(survives)
     const absent = effects.filter(effect => !survives(effect))
     const isRecorded = recorded.has(file)
