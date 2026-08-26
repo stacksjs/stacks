@@ -6,7 +6,6 @@ PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
 PANTRY_DIR="${ROOT_DIR}/pantry"
 USER_LOCAL_BIN="${HOME}/.local/bin"
 PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
-PANTRY_SETUP_DONE="${PANTRY_DIR}/.postsetup-done"
 PANTRY_BOOTSTRAP_TIMEOUT_SECONDS="${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS:-600}"
 PANTRY_DEPENDENCIES_TIMEOUT_SECONDS="${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS:-1200}"
 
@@ -16,9 +15,13 @@ PANTRY_DEPENDENCIES_TIMEOUT_SECONDS="${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS:-1200
 #   1. `storage/framework/core/buddy/src/cli.ts`  — userland override (legacy
 #      "framework lives in the project" layout). Kept FIRST so projects that
 #      have published buddy via `buddy publish:core buddy` still win.
-#   2. `node_modules/@stacksjs/buddy/src/cli.ts`  — installed package, TS source
+#   2. `<deps>/@stacksjs/buddy/src/cli.ts`  — installed package, TS source
 #      (workspace symlink or a real npm install with `src/` shipped).
-#   3. `node_modules/@stacksjs/buddy/dist/cli.js` — published JS-only build.
+#   3. `<deps>/@stacksjs/buddy/dist/cli.js` — published JS-only build.
+#
+# `<deps>` is node_modules or pantry: an app installed with pantry has no
+# node_modules at all, so a node_modules-only list finds nothing and the shim
+# refuses to run the CLI that is sitting right there in ./pantry.
 #
 # If none of these are present the script bails with a clear message instead
 # of `bun` exploding on a missing file.
@@ -27,6 +30,8 @@ resolve_buddy_entry() {
     "${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts" \
     "${ROOT_DIR}/node_modules/@stacksjs/buddy/src/cli.ts" \
     "${ROOT_DIR}/node_modules/@stacksjs/buddy/dist/cli.js" \
+    "${PANTRY_DIR}/@stacksjs/buddy/src/cli.ts" \
+    "${PANTRY_DIR}/@stacksjs/buddy/dist/cli.js" \
   ; do
     if [ -f "${candidate}" ]; then
       echo "${candidate}"
@@ -38,8 +43,8 @@ resolve_buddy_entry() {
 
 if ! BUDDY_ENTRY=$(resolve_buddy_entry); then
   echo "buddy: could not locate CLI entrypoint." >&2
-  echo "  Tried: storage/framework/core/buddy/src/cli.ts, node_modules/@stacksjs/buddy/{src/cli.ts,dist/cli.js}." >&2
-  echo "  Run \`bun install\` or \`buddy publish:core buddy\` to make the CLI available." >&2
+  echo "  Tried: storage/framework/core/buddy/src/cli.ts, {node_modules,pantry}/@stacksjs/buddy/{src/cli.ts,dist/cli.js}." >&2
+  echo "  Run \`bun install\` (or \`pantry install\`), or \`buddy publish:core buddy\`, to make the CLI available." >&2
   exit 1
 fi
 
@@ -106,17 +111,26 @@ run_buddy() {
   # preload not found "@stacksjs/env/plugin.js"`, then Cannot-find-module for
   # every other import). In that case omit the flag and let bun/import/default
   # resolve the dist.
+  # The probe has to look wherever this project actually installs: pantry-only
+  # apps have no node_modules, so a node_modules-only probe reports "no src"
+  # for a vendored checkout and drops the flag — and then every import resolves
+  # to a ./dist the vendored source has never built.
   CONDITIONS=""
-  if [ -d "${ROOT_DIR}/storage/framework/core" ] && [ -f "${ROOT_DIR}/node_modules/@stacksjs/env/src/index.ts" ]; then
+  if [ -d "${ROOT_DIR}/storage/framework/core" ] \
+    && { [ -f "${ROOT_DIR}/node_modules/@stacksjs/env/src/index.ts" ] || [ -f "${PANTRY_DIR}/@stacksjs/env/src/index.ts" ]; }; then
     CONDITIONS="--conditions development"
   fi
 
   # Installed dependencies are authoritative; Pantry is a fallback for tools
   # the app does not install. Keeping node_modules first prevents a stale local
   # Pantry snapshot from changing migrations, builds, or production commands.
-  # Only add Pantry after setup completed so a partial bootstrap cannot affect
-  # module resolution.
-  if [ -f "${PANTRY_SETUP_DONE}" ]; then
+  #
+  # Add Pantry only once it holds packages. An empty (or absent) directory on
+  # NODE_PATH is what a half-finished bootstrap leaves behind, and pointing at
+  # it buys nothing; a directory with packages in it is the whole module root
+  # for a pantry-installed app, and leaving it off is what makes `buddy` die on
+  # `Cannot find module '@stacksjs/env'` from a preload.
+  if [ -d "${PANTRY_DIR}" ] && [ -n "$(ls -A "${PANTRY_DIR}" 2>/dev/null)" ]; then
     exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${ROOT_DIR}/node_modules:${PANTRY_DIR}${NODE_PATH:+:${NODE_PATH}}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
   fi
   exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"

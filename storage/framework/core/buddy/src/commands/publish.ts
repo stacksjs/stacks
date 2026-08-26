@@ -8,6 +8,7 @@ import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
+import { detectInstaller, findCoreReferences, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports } from '../unvendor-rewrite'
 import { ExitCode } from '@stacksjs/types'
 
 interface PublishOptions {
@@ -910,21 +911,49 @@ async function unvendorFramework(force: boolean): Promise<void> {
     await fs.promises.writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
   }
 
-  // 3c. CI jobs that build, test or compile the vendored packages. They fail by
+  // 3c. Shell commands that RUN a framework action or the CLI by path
+  //     (`bun storage/framework/core/actions/src/migrate/database.ts`). Every
+  //     one has an exact `./buddy` equivalent that works in both layouts.
+  //
+  //     This runs BEFORE the workflow prune on purpose. The prune deletes any
+  //     CI step that names the vendored core, which is right for a step that
+  //     builds the framework's own packages and catastrophic for an app step
+  //     that just happened to call `migrate` the long way round — that one
+  //     gets silently deleted, and the smoke suite two steps later starts
+  //     testing an API nothing ever booted. Repairing first leaves the prune
+  //     nothing to match on, so those steps survive with a working command.
+  const rewrittenCommands = await rewriteCoreCommandPaths(process.cwd())
+
+  // 3d. CI jobs that build, test or compile the vendored packages. They fail by
   //     construction once the directory is gone, and nobody connects a red
   //     pipeline to an unvendor that happened weeks earlier — so it just stays
   //     red, and stops meaning anything.
   const prunedWorkflows = await pruneVendoredCoreFromWorkflows(process.cwd())
 
-  // 4. The vendored source itself, and any node_modules symlink still
+  // 3e. Project code that imports the vendored source by PATH rather than by
+  //     package name (`import { serve } from
+  //     './storage/framework/core/buddy/src/commands/serve'`). A package
+  //     specifier resolves in both layouts; a relative path into core resolves
+  //     in exactly one, and the app stops booting the moment the directory
+  //     goes. The two are the same module — `./src/<rest>.ts` is what the
+  //     package's `./*` export maps onto `./dist/<rest>.js`.
+  const rewrittenImports = await rewriteCoreSourceImports(process.cwd())
+
+  // 4. The vendored source itself, and any dependency-tree symlink still
   //    pointing into it. Those links survive the directory they point at and
   //    then resolve to nothing, so an import of that package fails with a
   //    missing module rather than falling back to the published copy.
   await fs.promises.rm(coreDir, { recursive: true, force: true })
 
-  const scopedDir = resolve(process.cwd(), 'node_modules/@stacksjs')
+  // Both layouts, not just node_modules: a pantry-installed app keeps the same
+  // workspace symlinks under ./pantry, and leaving those dangling is the exact
+  // failure this step exists to prevent.
   let danglingRemoved = 0
-  if (existsSync(scopedDir)) {
+  for (const depsDir of ['node_modules', 'pantry']) {
+    const scopedDir = resolve(process.cwd(), depsDir, '@stacksjs')
+    if (!existsSync(scopedDir))
+      continue
+
     for (const entry of await readdir(scopedDir, { withFileTypes: true })) {
       if (!entry.isSymbolicLink())
         continue
@@ -934,6 +963,13 @@ async function unvendorFramework(force: boolean): Promise<void> {
         continue
 
       await fs.promises.rm(link, { force: true })
+      danglingRemoved++
+    }
+
+    // `stacks` itself is linked at the top level, not under the scope.
+    const rootLink = resolve(process.cwd(), depsDir, depName)
+    if (existsSync(dirname(rootLink)) && isDanglingLink(rootLink)) {
+      await fs.promises.rm(rootLink, { force: true })
       danglingRemoved++
     }
   }
@@ -960,11 +996,38 @@ async function unvendorFramework(force: boolean): Promise<void> {
     log.info(`${pruned.file}: removed ${parts.join(' and ')} that ran against the vendored core`)
   }
 
-  log.info('Installing the published packages...')
-  const install = Bun.spawn(['bun', 'install'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
+  if (rewrittenCommands.length > 0) {
+    log.info(`Repointed vendored-CLI commands to ./buddy in ${rewrittenCommands.length} file${rewrittenCommands.length === 1 ? '' : 's'}:`)
+    for (const file of rewrittenCommands)
+      log.info(`  ${file}`)
+  }
+
+  if (rewrittenImports.length > 0) {
+    log.info(`Repointed vendored-source imports to package specifiers in ${rewrittenImports.length} file${rewrittenImports.length === 1 ? '' : 's'}:`)
+    for (const file of rewrittenImports)
+      log.info(`  ${file}`)
+  }
+
+  // Anything still naming the directory is a path this command could not turn
+  // into a package specifier on its own — a shell command that runs a source
+  // file (`bun storage/framework/core/actions/src/dev/api.ts`), a CI path
+  // filter, a bundler entrypoint. Rewriting those blind would be guesswork, so
+  // name them instead: a listed file is a five-minute fix now, while an
+  // unlisted one is a container that boots for the last time at 3am.
+  const stragglers = await findCoreReferences(process.cwd())
+  if (stragglers.length > 0) {
+    log.warn(`${stragglers.length} file${stragglers.length === 1 ? '' : 's'} still reference storage/framework/core, which no longer exists:`)
+    for (const { file, line, text } of stragglers)
+      log.warn(`  ${file}:${line}  ${text}`)
+    log.info('Run those through `./buddy <command>` or a package specifier before deploying.')
+  }
+
+  const installer = detectInstaller(process.cwd())
+  log.info(`Installing the published packages with \`${installer.join(' ')}\`...`)
+  const install = Bun.spawn(installer, { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
   const code = await install.exited
   if (code !== 0) {
-    log.error('`bun install` failed. package.json and bunfig.toml were updated; re-run the install once the failure is resolved.')
+    log.error(`\`${installer.join(' ')}\` failed. package.json and bunfig.toml were updated; re-run the install once the failure is resolved.`)
     process.exit(ExitCode.FatalError)
   }
 
