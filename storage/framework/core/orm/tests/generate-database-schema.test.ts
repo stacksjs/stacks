@@ -114,7 +114,7 @@ describe('buildDatabaseSchema - walks model files end-to-end', () => {
 
     // Judge columns: system + attrs + FK
     expect(file).toContain('court_id: number')   // FK from belongsTo
-    expect(file).toContain('is_active: boolean | null')
+    expect(file).toContain('is_active: number | null')
     expect(file).toContain('name: string')
 
     // CourtHouse: uuid + soft-delete columns

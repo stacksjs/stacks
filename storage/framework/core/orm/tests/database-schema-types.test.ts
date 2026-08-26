@@ -40,6 +40,7 @@ export default defineModel({
     active: { fillable: true, default: false },
     state: { fillable: true, validation: { rule: schema.enum(['draft', 'live', 'retired']) } },
     notes: { fillable: true },
+    shippedAt: { fillable: true, nullable: true, validation: { rule: schema.string() } },
   },
 })
 `)
@@ -78,8 +79,9 @@ describe('a column\'s type', () => {
     const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true })
     const widgets = result.tables.find(one => one.table === 'widgets')!
 
-    // `default: false` and no rule is a boolean whatever else is missing.
-    expect(widgets.columns.active).toBe('boolean')
+    // `default: false` and no rule is a boolean whatever else is missing -
+    // written as the type the driver answers with, `number` on sqlite.
+    expect(widgets.columns.active).toBe('number')
     // And an attribute with neither says so, rather than guessing.
     expect(widgets.columns.notes).toBe('unknown')
   })
@@ -170,12 +172,61 @@ export default defineModel({
        * narrowing overload and got an unknown-valued row back.
        */
       expect(users.columns.two_factor_secret).toBe('string | null')
-      expect(users.columns.two_factor_enabled).toBe('boolean | null')
+      expect(users.columns.two_factor_enabled).toBe('number | null')
       expect(users.columns.email_verified_at).toBe('string | null')
       expect(users.columns.stripe_id).toBe('string | null')
     }
     finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+})
+
+describe('a boolean column', () => {
+  /*
+   * `DatabaseSchema` types the raw query builder, so a boolean column has to be
+   * written as what the DRIVER answers, not as what the model meant. SQLite has
+   * no boolean type and reads back 0/1 from an INTEGER; MySQL's BOOLEAN is a
+   * TINYINT(1) and does the same. Typing those `boolean` compiled fine and then
+   * `row.all_day === true` was false on a row whose flag was set.
+   */
+  test('is a number on sqlite, because that is what comes back', async () => {
+    const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true, dialect: 'sqlite' })
+    const widgets = result.tables.find(one => one.table === 'widgets')!
+
+    expect(widgets.columns.active).toBe('number')
+  })
+
+  test('is a number on mysql, where BOOLEAN is TINYINT(1)', async () => {
+    const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true, dialect: 'mysql' })
+    const widgets = result.tables.find(one => one.table === 'widgets')!
+
+    expect(widgets.columns.active).toBe('number')
+  })
+
+  test('is a boolean on postgres, the one dialect with a real boolean', async () => {
+    const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true, dialect: 'postgres' })
+    const widgets = result.tables.find(one => one.table === 'widgets')!
+
+    expect(widgets.columns.active).toBe('boolean')
+  })
+})
+
+describe('a multi-word column', () => {
+  /*
+   * The generator used to also emit a camelCase alias for every snake_case
+   * column, on the grounds that a model row exposes both spellings. A model row
+   * does - through the ORM's accessor proxy - but `DatabaseSchema` types `db`,
+   * and a raw row carries only the database's own column names. The alias made
+   * `row.shippedAt` compile and read `undefined`.
+   */
+  test('is emitted under its column name only, with no camelCase alias', async () => {
+    const result = await buildDatabaseSchema({ modelsDir: models, defaultsDir: join(models, 'none'), dryRun: true })
+    const widgets = result.tables.find(one => one.table === 'widgets')!
+
+    expect(widgets.columns.shipped_at).toBe('string | null')
+    expect(widgets.columns).not.toHaveProperty('shippedAt')
+    expect(widgets.columns).not.toHaveProperty('createdAt')
+    expect(widgets.columns).not.toHaveProperty('updatedAt')
   })
 })

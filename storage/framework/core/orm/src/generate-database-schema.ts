@@ -16,9 +16,43 @@
  */
 
 import type { Attribute, Model } from '@stacksjs/types'
+import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+
+/**
+ * What a boolean column reads back as, per dialect.
+ *
+ * `DatabaseSchema` types the RAW query builder - `db.selectFrom('events')` -
+ * and a raw row is whatever the driver hands back, not what the model meant.
+ * SQLite has no boolean type and stores 0/1 in an INTEGER; MySQL's BOOLEAN is
+ * a TINYINT(1) and reads back the same way. Only Postgres answers a real
+ * boolean.
+ *
+ * Emitting `boolean` everywhere made every flag column *almost* right: it
+ * typechecks, and then `row.all_day === true` is false on a row whose flag is
+ * set, which is the failure this exists to prevent.
+ *
+ * The ORM is unaffected - a model row goes through the attribute casts, so
+ * `ModelRow<typeof Event>` keeps its `boolean`.
+ */
+type Dialect = 'sqlite' | 'mysql' | 'postgres'
+
+function resolveDialect(explicit?: Dialect): Dialect {
+  if (explicit)
+    return explicit
+
+  // The same signal `@stacksjs/orm` derives its own connection from, so the
+  // generated types and the running query builder cannot disagree.
+  const configured = String(process.env.DB_CONNECTION ?? '').toLowerCase()
+
+  return configured === 'postgres' || configured === 'mysql' ? configured : 'sqlite'
+}
+
+function booleanType(dialect: Dialect): string {
+  return dialect === 'postgres' ? 'boolean' : 'number'
+}
 
 export interface GenerateSchemaOptions {
   modelsDir?: string
@@ -31,6 +65,12 @@ export interface GenerateSchemaOptions {
    * framework's own `FrameworkSchema`.
    */
   target?: SchemaTarget
+  /**
+   * Which database the generated rows describe. Defaults to `DB_CONNECTION`,
+   * falling back to sqlite - the same resolution the query builder uses - so
+   * the types match the driver that will actually answer the query.
+   */
+  dialect?: 'sqlite' | 'mysql' | 'postgres'
 }
 
 export interface GenerateSchemaResult {
@@ -61,11 +101,11 @@ function snakeCase(str: string): string {
  * missing, and one with `default: 0` is a number. Only literals count - a
  * function default is computed at runtime and says nothing here.
  */
-function fromDefault(attr: Attribute): string {
+function fromDefault(attr: Attribute, dialect: Dialect): string {
   const value = (attr as { default?: unknown }).default
 
   if (typeof value === 'boolean')
-    return 'boolean'
+    return booleanType(dialect)
 
   if (typeof value === 'number')
     return 'number'
@@ -134,7 +174,7 @@ function enumUnion(rule: ValidationRuleShape | null): string | null {
  * than a guess - a silently-wrong column type is worse than one the call site
  * has to narrow.
  */
-function attributeToTsType(attr: Attribute): string {
+function attributeToTsType(attr: Attribute, dialect: Dialect): string {
   const rule = ruleOf(attr)
   const literals = enumUnion(rule)
 
@@ -185,7 +225,7 @@ function attributeToTsType(attr: Attribute): string {
         return 'number | bigint'
       case 'boolean':
       case 'bool':
-        return 'boolean'
+        return booleanType(dialect)
       case 'json':
       case 'jsonb':
         return 'unknown'
@@ -205,7 +245,7 @@ function attributeToTsType(attr: Attribute): string {
       case 'object':
         return 'Record<string, unknown>'
       default:
-        return fromDefault(attr)
+        return fromDefault(attr, dialect)
     }
   })()
   return attr.nullable === true ? `${base} | null` : base
@@ -263,14 +303,14 @@ function pivotTableName(a: string, b: string): string {
   return `${first}_${second}`
 }
 
-function pivotColumnToTsType(attribute: { default?: unknown, nullable?: boolean }): string {
+function pivotColumnToTsType(attribute: { default?: unknown, nullable?: boolean }, dialect: Dialect): string {
   const value = attribute.default
   const base = typeof value === 'string'
     ? 'string'
     : typeof value === 'number'
       ? 'number'
       : typeof value === 'boolean'
-        ? 'boolean'
+        ? booleanType(dialect)
         : value instanceof Date
           ? 'string'
           : 'unknown'
@@ -284,7 +324,7 @@ function pivotColumnToTsType(attribute: { default?: unknown, nullable?: boolean 
  * names) and the explicit `BaseBelongsToMany` form (with
  * `pivotTable` / `firstForeignKey` / `secondForeignKey` overrides).
  */
-function derivePivotTables(modelName: string, model: Model): Array<{ table: string, columns: Record<string, string> }> {
+function derivePivotTables(modelName: string, model: Model, dialect: Dialect): Array<{ table: string, columns: Record<string, string> }> {
   const rel = (model as Model).belongsToMany
   if (!rel) return []
   const out: Array<{ table: string, columns: Record<string, string> }> = []
@@ -341,7 +381,7 @@ function derivePivotTables(modelName: string, model: Model): Array<{ table: stri
     }
 
     for (const [column, attribute] of Object.entries(pivotColumns))
-      columns[column] = pivotColumnToTsType(attribute)
+      columns[column] = pivotColumnToTsType(attribute, dialect)
 
     if (timestamps) {
       columns.created_at = 'string'
@@ -367,16 +407,18 @@ function derivePivotTables(modelName: string, model: Model): Array<{ table: stri
  * `USERS_GUARANTEED_COLUMNS` guards in the migration differ; kept here rather
  * than imported so this codegen stays free of the database package's graph.
  */
-const USERS_GUARANTEED: Record<string, string> = {
-  email_verified_at: 'string | null',
-  password_changed_at: 'string | null',
-  two_factor_secret: 'string | null',
-  two_factor_enabled: 'boolean | null',
-  two_factor_last_used_step: 'number | null',
-  stripe_id: 'string | null',
+function usersGuaranteed(dialect: Dialect): Record<string, string> {
+  return {
+    email_verified_at: 'string | null',
+    password_changed_at: 'string | null',
+    two_factor_secret: 'string | null',
+    two_factor_enabled: `${booleanType(dialect)} | null`,
+    two_factor_last_used_step: 'number | null',
+    stripe_id: 'string | null',
+  }
 }
 
-function deriveSystemColumns(model: Model): Record<string, string> {
+function deriveSystemColumns(model: Model, dialect: Dialect): Record<string, string> {
   const out: Record<string, string> = { id: 'number' }
   const traits = model.traits ?? {}
   if (traits.useUuid) out.uuid = 'string'
@@ -391,45 +433,36 @@ function deriveSystemColumns(model: Model): Record<string, string> {
   }
 
   if ((model.table ?? '') === 'users' || model.name === 'User')
-    Object.assign(out, USERS_GUARANTEED)
+    Object.assign(out, usersGuaranteed(dialect))
 
   return out
 }
 
-function deriveAttributeColumns(model: Model): Record<string, string> {
+function deriveAttributeColumns(model: Model, dialect: Dialect): Record<string, string> {
   const out: Record<string, string> = {}
   const attributes = model.attributes ?? {}
   for (const [name, attr] of Object.entries(attributes)) {
-    out[snakeCase(name)] = attributeToTsType(attr as Attribute)
+    out[snakeCase(name)] = attributeToTsType(attr as Attribute, dialect)
   }
   return out
 }
 
-/** `meta_description` -> `metaDescription`, for the aliases the ORM also exposes. */
-function camelCase(column: string): string {
-  return column.replace(/_([a-z0-9])/g, (_, char: string) => char.toUpperCase())
-}
-
-/**
- * A table's columns, plus the camelCase aliases a row actually carries.
+/*
+ * No camelCase aliases here, deliberately.
  *
- * `ModelRow<typeof Page>` has both `meta_description` and `metaDescription`,
- * because that is what the ORM presents - and a generated schema that listed
- * only one of them made every row *almost* the right type, which is worse than
- * useless: it typechecks until somebody reads the other spelling.
+ * `DatabaseSchema` types the RAW query builder, and a raw row carries exactly
+ * the column names the database has: `db.selectFrom('pages').selectAll()`
+ * answers `meta_description` and no `metaDescription`. The ORM is the layer
+ * that exposes both spellings, through the accessor proxy on a model row -
+ * and even there only property access and `in` see the camel spelling, never
+ * `Object.keys`, so it is not the raw shape either (see
+ * `camel-case-accessors.test.ts`, "leaves serialization on column names").
+ *
+ * Listing the aliases here typed a property that is `undefined` at runtime as
+ * present and required, so `row.metaDescription` compiled and read nothing.
+ * `ModelRow<typeof Page>` remains the type to reach for when the value came
+ * from the ORM rather than from `db`.
  */
-function withAliases(columns: Record<string, string>): Record<string, string> {
-  const out: Record<string, string> = { ...columns }
-
-  for (const [column, type] of Object.entries(columns)) {
-    const alias = camelCase(column)
-
-    if (alias !== column && !(alias in out))
-      out[alias] = type
-  }
-
-  return out
-}
 
 function renderTableEntry(table: string, columns: Record<string, string>, indent = 2): string {
   const outer = '  '.repeat(indent)
@@ -558,6 +591,7 @@ async function loadModelsFrom(
  * the CLI can render.
  */
 export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): Promise<GenerateSchemaResult> {
+  const dialect = resolveDialect(options.dialect)
   const modelsDir = options.modelsDir ?? path.userModelsPath()
   const defaultsDir = options.defaultsDir ?? path.frameworkPath('defaults/app/Models')
   const outFile = options.outFile ?? path.projectPath('database/types.d.ts')
@@ -590,11 +624,11 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
   const tables: GenerateSchemaResult['tables'] = []
   for (const [name, { model }] of byName) {
     const tableName = model.table ?? `${snakeCase(name)}s`
-    const columns: Record<string, string> = withAliases({
-      ...deriveSystemColumns(model),
-      ...deriveAttributeColumns(model),
+    const columns: Record<string, string> = {
+      ...deriveSystemColumns(model, dialect),
+      ...deriveAttributeColumns(model, dialect),
       ...deriveFkColumns(model),
-    })
+    }
     tables.push({ table: tableName, model: name, columns })
   }
 
@@ -604,7 +638,7 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
   // 'Role' on User` both target `role_user`.
   const pivotByTable = new Map<string, { table: string, model: string, columns: Record<string, string> }>()
   for (const [name, { model }] of byName) {
-    for (const pivot of derivePivotTables(name, model)) {
+    for (const pivot of derivePivotTables(name, model, dialect)) {
       if (pivotByTable.has(pivot.table)) continue
       pivotByTable.set(pivot.table, { table: pivot.table, model: `(${pivot.table} pivot)`, columns: pivot.columns })
     }

@@ -1353,8 +1353,8 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
           log.info(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
         if (fixed.recorded.length > 0)
           log.info(`Recorded ${fixed.recorded.length} migration(s) already present in the schema.`)
-          if (fixed.pruned.length)
-            log.info(`Pruned ${fixed.pruned.length} duplicate ledger row(s).`)
+        if (fixed.pruned.length > 0)
+          log.info(`Pruned ${fixed.pruned.length} duplicate ledger row(s).`)
         if (fixed.skipped.length > 0) {
           log.warn(`${fixed.skipped.length} ledger entr(ies) need a look - run \`./buddy migrate:status\`.`)
         }
@@ -1479,7 +1479,10 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         console.log(fixed.skipped.slice(0, 8).map(s => `      ${s.file} - ${s.reason}`).join('\n')
           + (fixed.skipped.length > 8 ? `\n      … +${fixed.skipped.length - 8} more` : ''))
       }
-      if (fixed.remapped.length === 0 && fixed.recorded.length === 0)
+      // Pruning counts as a repair. Without it here, a run that deleted four
+      // duplicate rows reported "Pruned 4 duplicate ledger row(s)" and then
+      // "Nothing could be repaired automatically" two lines later.
+      if (fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0)
         log.info('Nothing could be repaired automatically.')
 
       await outro('Reconciled.', { startTime: perf!, useSeconds: true })
