@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.75...v0.72.76)
+
+## 🐛 Bug Fixes
+
+- **ledger**: count pruning as a repair in the reconcile summary ([1ec644d](https://github.com/stacksjs/stacks/commit/1ec644d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.74...v0.72.75)
 
 ## 🐛 Bug Fixes
