@@ -119,6 +119,16 @@ export interface LedgerRemapPlan {
   ambiguous: string[]
   /** Rows with no disk counterpart at all — the migration is simply gone. */
   dropped: string[]
+  /**
+   * Rows left over from a renumbering: the same migration is already recorded
+   * under its current filename, so this row is a duplicate of a correct one.
+   *
+   * Distinct from `dropped`, which means the migration is genuinely gone. A
+   * duplicate is safe to delete precisely because the row it duplicates is
+   * still there, and leaving it reports drift that no amount of reconciling
+   * can ever clear.
+   */
+  superseded: string[]
 }
 
 /**
@@ -580,13 +590,31 @@ export function planLedgerRemap(ledger: string[], diskFiles: string[]): LedgerRe
   const remap: LedgerRemap[] = []
   const ambiguous: string[] = []
   const dropped: string[] = []
+  const superseded: string[] = []
   const targets = new Map<string, string[]>()
 
   for (const row of ledger) {
     if (onDisk.has(row)) continue
-    const candidates = (byLogical.get(logicalName(row)) ?? []).filter(f => !claimed.has(f))
+    const sameLogical = byLogical.get(logicalName(row)) ?? []
+    const candidates = sameLogical.filter(f => !claimed.has(f))
     if (candidates.length === 0) {
-      dropped.push(row)
+      /*
+       * No FREE candidate is two different situations, and calling both
+       * "the migration is gone" was wrong for one of them.
+       *
+       * If a file with this row's logical name exists but is already claimed
+       * by another ledger row, the migration is not gone at all — it is
+       * recorded twice, once under each numbering, because a renumbering
+       * added the new spelling without removing the old. The row is a
+       * duplicate of a correct one and can go.
+       *
+       * Only when NO file carries the logical name is the migration really
+       * missing from disk, which is a human's call, not a reconciler's.
+       */
+      if (sameLogical.length > 0)
+        superseded.push(row)
+      else
+        dropped.push(row)
       continue
     }
     if (candidates.length > 1) {
@@ -603,12 +631,13 @@ export function planLedgerRemap(ledger: string[], diskFiles: string[]): LedgerRe
   // can be trusted.
   const contested = new Set([...targets.entries()].filter(([, rows]) => rows.length > 1).flatMap(([, rows]) => rows))
   if (contested.size === 0)
-    return { remap, ambiguous, dropped }
+    return { remap, ambiguous, dropped, superseded }
 
   return {
     remap: remap.filter(r => !contested.has(r.from)),
     ambiguous: [...ambiguous, ...contested].sort(),
     dropped,
+    superseded,
   }
 }
 
@@ -638,7 +667,7 @@ export async function auditMigrationLedger(options: {
     reverted: 0,
   }
 
-  const emptyPlan: LedgerRemapPlan = { remap: [], ambiguous: [], dropped: [] }
+  const emptyPlan: LedgerRemapPlan = { remap: [], ambiguous: [], dropped: [], superseded: [] }
   if (dialect === 'other') {
     return { supported: false, dialect, dir, entries: [], orphans: [], counts, recordedCount: 0, remapPlan: emptyPlan, drift: false }
   }
@@ -738,6 +767,8 @@ export interface ReconcileResult {
   remapped: LedgerRemap[]
   /** Files recorded as applied because every effect was already present. */
   recorded: string[]
+  /** Duplicate ledger rows deleted — the migration stays recorded under its current name. */
+  pruned: string[]
   /** Things the reconciler refused to touch, with why. */
   skipped: Array<{ file: string, reason: string }>
 }
@@ -759,6 +790,13 @@ export interface ReconcileResult {
  * that never ran. Those are exactly the cases worth a human's attention, which
  * is why they are listed rather than silently handled.
  */
+/** The disk file a superseded ledger row duplicates, by logical name. */
+function byLogicalOnDisk(row: string, diskFiles: string[]): string | undefined {
+  const key = logicalName(row)
+  const matches = diskFiles.filter(f => logicalName(f) === key)
+  return matches.length === 1 ? matches[0] : undefined
+}
+
 export async function reconcileMigrationLedger(options: {
   dir?: string
   /** Report what would change without writing. */
@@ -772,7 +810,7 @@ export async function reconcileMigrationLedger(options: {
 } = {}): Promise<ReconcileResult> {
   const run = options.run ?? await defaultRunner()
   const audit = await auditMigrationLedger({ dir: options.dir, dialect: options.dialect, run })
-  const result: ReconcileResult = { remapped: [], recorded: [], skipped: [] }
+  const result: ReconcileResult = { remapped: [], recorded: [], pruned: [], skipped: [] }
   if (!audit.supported) {
     result.skipped.push({ file: '*', reason: `dialect "${audit.dialect}" is not audited` })
     return result
@@ -784,6 +822,12 @@ export async function reconcileMigrationLedger(options: {
     result.skipped.push({ file: row, reason: 'ledger row matches more than one file by logical name' })
   for (const row of plan.dropped)
     result.skipped.push({ file: row, reason: 'recorded migration no longer exists on disk' })
+
+  // Safe because the migration remains recorded under its current filename:
+  // this deletes the stale spelling, never the last record of a migration.
+  const prunable = plan.superseded.filter(row => SAFE_MIGRATION_FILE.test(row))
+  for (const row of plan.superseded.filter(row => !SAFE_MIGRATION_FILE.test(row)))
+    result.skipped.push({ file: row, reason: 'ledger row is not safe to write to the ledger' })
 
   const toRecord: string[] = []
   for (const entry of audit.entries) {
@@ -830,6 +874,7 @@ export async function reconcileMigrationLedger(options: {
   if (options.dryRun) {
     result.remapped = remapped
     result.recorded = recordable
+    result.pruned = prunable
     return result
   }
 
@@ -847,6 +892,28 @@ export async function reconcileMigrationLedger(options: {
     if (existing.length > 0) continue
     await run(`INSERT INTO migrations (migration) VALUES ('${file}')`)
     result.recorded.push(file)
+  }
+
+  /*
+   * Deletions go LAST, and each one re-checks that the row it duplicates is
+   * really present first.
+   *
+   * The planner already established that, but it read the ledger before the
+   * writes above; re-reading here means a delete can only ever remove the
+   * second record of a migration, never the only one. Getting this wrong
+   * would silently queue a migration to re-run against a live database, which
+   * is the exact failure this whole command exists to prevent.
+   */
+  for (const row of prunable) {
+    const survivor = byLogicalOnDisk(row, audit.entries.map(e => e.file))
+    if (!survivor) continue
+    const kept = await run(`SELECT migration FROM migrations WHERE migration = '${survivor}'`)
+    if (kept.length === 0) {
+      result.skipped.push({ file: row, reason: `would leave ${survivor} unrecorded` })
+      continue
+    }
+    await run(`DELETE FROM migrations WHERE migration = '${row}'`)
+    result.pruned.push(row)
   }
 
   return result

@@ -1353,6 +1353,8 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
           log.info(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
         if (fixed.recorded.length > 0)
           log.info(`Recorded ${fixed.recorded.length} migration(s) already present in the schema.`)
+          if (fixed.pruned.length)
+            log.info(`Pruned ${fixed.pruned.length} duplicate ledger row(s).`)
         if (fixed.skipped.length > 0) {
           log.warn(`${fixed.skipped.length} ledger entr(ies) need a look - run \`./buddy migrate:status\`.`)
         }
@@ -1432,7 +1434,16 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       if (orphans.length > 0) {
         section(
           `${orphans.length} orphaned ledger row(s) - recorded, but no such file on disk:`,
-          orphans.map(o => `${o.migration}${o.renamedTo ? `  -> renumbered to ${o.renamedTo}` : '  (no counterpart; migration deleted?)'}`),
+          orphans.map((o) => {
+            if (o.renamedTo)
+              return `${o.migration}  -> renumbered to ${o.renamedTo}`
+            // A superseded row is the SAME migration recorded twice, once under
+            // each numbering — saying "migration deleted?" about it sent readers
+            // looking for a file that was never missing.
+            if (audit.remapPlan.superseded.includes(o.migration))
+              return `${o.migration}  (duplicate; already recorded under its current name)`
+            return `${o.migration}  (no counterpart; migration deleted?)`
+          }),
         )
       }
 
@@ -1460,6 +1471,8 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
         log.success(`Repointed ${fixed.remapped.length} ledger row(s) at their renumbered file.`)
       if (fixed.recorded.length > 0)
         log.success(`Recorded ${fixed.recorded.length} migration(s) the schema already reflects.`)
+        if (fixed.pruned.length)
+          log.success(`Pruned ${fixed.pruned.length} duplicate ledger row(s) left by a renumbering.`)
       if (fixed.skipped.length > 0) {
         log.warn(`Left ${fixed.skipped.length} entr(ies) alone:`)
         // eslint-disable-next-line no-console
