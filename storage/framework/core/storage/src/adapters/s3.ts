@@ -105,11 +105,19 @@ interface S3ClientOptions {
 
 /**
  * Build ts-cloud `S3ClientOptions` from adapter config, or `undefined` for a
- * plain AWS S3 client. The config endpoint may carry a scheme
- * (`https://s3.filebase.com`); ts-cloud wants a scheme-less host, so it's
- * stripped here. This is what routes the adapter to S3-compatible providers -
- * Filebase, Backblaze B2, Cloudflare R2, Hetzner Object Storage
+ * plain AWS S3 client. This is what routes the adapter to S3-compatible
+ * providers - Filebase, Backblaze B2, Cloudflare R2, Hetzner Object Storage
  * (stacksjs/stacks#938, #1897, #1896).
+ *
+ * `https://` is stripped because it carries no information: ts-cloud's
+ * `S3ClientOptions.endpoint` takes an "HTTP(S) endpoint origin or host", and a
+ * bare host is served over TLS. `http://` is KEPT, because there it is the
+ * only thing saying "not TLS". Stripping it too, as this used to, left
+ * ts-cloud connecting to `https://localhost:9000` for a plain-http endpoint,
+ * which simply fails: it made MinIO and every other local or self-hosted
+ * S3 endpoint unreachable, and with them any offline test of this adapter.
+ *
+ * The trailing slash goes either way; ts-cloud joins paths itself.
  */
 export function resolveS3ClientOptions(config: {
   endpoint?: string
@@ -117,8 +125,11 @@ export function resolveS3ClientOptions(config: {
   credentials?: { accessKeyId: string, secretAccessKey: string, sessionToken?: string }
 }): S3ClientOptions | undefined {
   const options: S3ClientOptions = {}
-  if (config.endpoint)
-    options.endpoint = config.endpoint.replace(/^https?:\/\//i, '').replace(/\/+$/, '')
+  if (config.endpoint) {
+    options.endpoint = config.endpoint
+      .replace(/^https:\/\//i, '')
+      .replace(/\/+$/, '')
+  }
   if (config.usePathStyleEndpoint)
     options.forcePathStyle = true
   if (config.credentials)
