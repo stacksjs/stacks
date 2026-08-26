@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.73...v0.72.74)
+
+## 🐛 Bug Fixes
+
+- **ledger**: stop reporting deliberately-dropped effects as reverted ([fe31b51](https://github.com/stacksjs/stacks/commit/fe31b51)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.72...v0.72.73)
 
 ## 🐛 Bug Fixes
