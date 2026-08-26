@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.70...v0.72.71)
+
+## 🐛 Bug Fixes
+
+- **ledger**: stop reporting renamed indexes as unapplied migrations ([c58b03d](https://github.com/stacksjs/stacks/commit/c58b03d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.69...v0.72.70)
 
 ## 🐛 Bug Fixes
