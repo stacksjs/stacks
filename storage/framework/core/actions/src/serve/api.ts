@@ -20,17 +20,27 @@ import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { frameworkPath } from '@stacksjs/path'
+import { appPath, frameworkPath } from '@stacksjs/path'
 import { disableViewRouting, route } from '@stacksjs/router'
 import { resolveApiHost } from '../helpers/api-host'
 
 /**
- * Resolve a file from the scaffold defaults tree. A vendored checkout has it at
- * `storage/framework/defaults/<rel>` (source of truth) which wins; an app that
- * consumes the framework from node_modules has no vendored copy, so fall back to
- * the published `@stacksjs/defaults` package (which ships `app/` + `resources/`).
+ * Resolve a file from the scaffold defaults tree.
+ *
+ * A published userland copy wins first: `buddy publish:middleware Cors` exists
+ * so an app can own its CORS policy, and an override that the production API
+ * server ignores is the worst of both worlds — the file reads as authoritative
+ * and changes nothing. Then a vendored checkout's `storage/framework/defaults`;
+ * then the published `@stacksjs/defaults` package (which ships `app/` +
+ * `resources/`), which is all a node_modules app has.
  */
 function resolveDefaultsFile(rel: string): string {
+  if (rel.startsWith('app/')) {
+    const published = appPath(rel.slice('app/'.length))
+    if (existsSync(published))
+      return published
+  }
+
   const vendored = frameworkPath(`defaults/${rel}`)
   if (existsSync(vendored))
     return vendored

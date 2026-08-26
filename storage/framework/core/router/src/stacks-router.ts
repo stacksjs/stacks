@@ -138,12 +138,23 @@ export function warnOnMultipleRouterInstances(): boolean {
   return true
 }
 
-// Resolve a scaffold-defaults file (under storage/framework/defaults). A
-// vendored checkout has it on disk and wins; a node_modules app has no
-// storage/framework, so fall back to the published @stacksjs/defaults package
-// (which ships the app/ + resources/ trees). Without this the router can't load
-// default Actions/Middleware/Controllers on a node_modules deploy and the API
-// server fails to boot.
+// Resolve a scaffold-defaults file (under storage/framework/defaults).
+//
+// Userland first: `buddy publish:middleware Csrf` copies the default into
+// `app/Middleware/Csrf.ts` precisely so the app can change it, and named
+// middleware already resolves that way (resolveMiddlewareClass below tries
+// appPath before the defaults). The framework's own built-ins — Csrf, Cors,
+// Compress — used to skip straight to the defaults tree, so a published
+// override of exactly those three was loaded by nothing: the file sat in
+// app/Middleware looking authoritative while every request ran the stock copy.
+// A security policy that silently does not apply is worse than one that was
+// never edited.
+//
+// Then a vendored checkout's storage/framework/defaults; then the published
+// @stacksjs/defaults package (which ships the app/ + resources/ trees). Without
+// that last fallback the router can't load default
+// Actions/Middleware/Controllers on a node_modules deploy and the API server
+// fails to boot.
 let __defaultsPkgRoot: string | null | undefined
 /*
  * Memoized, because the answer cannot change while the process runs and the
@@ -160,6 +171,17 @@ function resolveDefaultsPath(rel: string): string {
   const cached = __defaultsPathCache.get(rel)
   if (cached !== undefined)
     return cached
+
+  // `app/Middleware/Csrf.ts` → `app/Middleware/Csrf.ts` in the project root.
+  // Only the `app/` tree is publishable to userland; `resources/` and the rest
+  // of the defaults package have no userland counterpart.
+  if (rel.startsWith('app/')) {
+    const published = p.appPath(rel.slice('app/'.length))
+    if (existsSync(published)) {
+      __defaultsPathCache.set(rel, published)
+      return published
+    }
+  }
 
   const vendored = p.storagePath(`framework/defaults/${rel}`)
   let resolved: string

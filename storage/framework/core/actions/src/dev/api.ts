@@ -117,6 +117,13 @@ catch (err) {
 // Vendored checkout wins; a node_modules app falls back to @stacksjs/defaults
 // (which ships the `app/` scaffold) — see resolveDefaultsCorsPath below.
 function resolveDefaultsCorsPath(): string {
+  // A published `app/Middleware/Cors.ts` wins — that is what publishing it is
+  // for, and dev silently running the stock policy while production runs the
+  // published one is a difference nobody finds until it matters.
+  const published = path.appPath('Middleware/Cors.ts')
+  if (existsSync(published))
+    return published
+
   const vendored = path.frameworkPath('defaults/app/Middleware/Cors.ts')
   if (existsSync(vendored))
     return vendored
