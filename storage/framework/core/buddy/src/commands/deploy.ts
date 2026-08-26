@@ -819,6 +819,46 @@ async function resolveDeclaredTenants(): Promise<string[]> {
  * @param environment - Which `.env.<environment>` to read.
  * @param tsCloudConfig - The deploy target's ts-cloud config, read for `project.slug`.
  */
+/** Trim, lowercase and drop the empties from a list of hostnames. */
+export function normalizeDomains(domains: readonly unknown[]): string[] {
+  return domains
+    .map(domain => String(domain ?? '').trim().toLowerCase())
+    .filter(Boolean)
+}
+
+/**
+ * The domains an existing gateway fragment serves that this project has not
+ * accounted for - neither declared as a site nor listed as retired.
+ *
+ * Pure, because the interesting part is the decision and the rest of
+ * `assertFragmentIsOurs` is an ssh call. `www.` is matched loosely in both
+ * directions: the gateway adds a `www` route for an apex on its own, so a
+ * project that declares (or retires) `example.com` has accounted for
+ * `www.example.com` too.
+ *
+ * @param fragment - Raw contents of `/etc/rpx/sites.d/<slug>.json`.
+ * @param ours - Domains this project declares as sites.
+ * @param retired - Domains this project used to serve and deliberately no longer does.
+ */
+export function orphanedFragmentDomains(
+  fragment: string,
+  ours: Iterable<string>,
+  retired: Iterable<string> = [],
+): string[] {
+  const declared = new Set(normalizeDomains([...ours]))
+  const givenUp = new Set(normalizeDomains([...retired]))
+  const accountedFor = (domain: string, set: Set<string>): boolean =>
+    set.has(domain) || set.has(domain.replace(/^www\./, ''))
+
+  const existing = new Set(
+    [...fragment.matchAll(/"(?:domain|to|from)"\s*:\s*"([a-z0-9.*-]+\.[a-z]{2,})"/gi)]
+      .map(match => String(match[1]).toLowerCase())
+      .filter(Boolean),
+  )
+
+  return [...existing].filter(domain => !accountedFor(domain, declared) && !accountedFor(domain, givenUp))
+}
+
 /**
  * Refuse to overwrite a gateway fragment that is serving somebody else.
  *
@@ -829,6 +869,14 @@ async function resolveDeclaredTenants(): Promise<string[]> {
  * Best-effort on the read (an unreachable box or an absent fragment is the
  * normal first-deploy case and must not block it) but hard on the answer: a
  * fragment that clearly belongs to someone else stops the deploy.
+ *
+ * `cloud.retiredDomains` is how a project says "this host WAS ours and
+ * deliberately is not any more". Without it the guard has no false branch:
+ * declaring the domain keeps serving it and not declaring it is refused, so
+ * retiring a hostname is unexpressible and the only ways through are a hand
+ * edit of the fragment on the box or renaming the slug - which strands the old
+ * fragment still serving a dead release. It is config rather than a flag so
+ * the decision stays in git, next to the sites it used to sit among.
  */
 export async function assertFragmentIsOurs(
   ip: string,
@@ -861,22 +909,24 @@ export async function assertFragmentIsOurs(
   if (!remote.trim())
     return
 
-  // Domains the existing fragment serves, from its route table.
-  const existing = new Set(
-    [...remote.matchAll(/"(?:domain|to|from)"\s*:\s*"([a-z0-9.*-]+\.[a-z]{2,})"/gi)]
-      .map(match => String(match[1]).toLowerCase())
-      .filter(Boolean),
+  const retired = normalizeDomains(
+    Array.isArray(tsCloudConfig.cloud?.retiredDomains) ? tsCloudConfig.cloud.retiredDomains : [],
   )
+  const orphaned = orphanedFragmentDomains(remote, ours, retired)
 
-  const orphaned = [...existing].filter(domain => !ours.has(domain) && !ours.has(domain.replace(/^www\./, '')))
-  if (orphaned.length === 0)
+  if (orphaned.length === 0) {
+    if (retired.length > 0)
+      log.info(`Retiring ${retired.length} domain(s) this project no longer serves: ${retired.join(', ')}`)
+
     return
+  }
 
   log.error(`/etc/rpx/sites.d/${slug}.json on the box already serves ${orphaned.length} domain(s) this project does not declare:`)
   for (const domain of orphaned.slice(0, 8))
     log.error(`  ${domain}`)
   log.error(`Deploying would replace that fragment and take those domains down.`)
   log.info(`Either the slug '${slug}' belongs to another project (pick a different project.slug), or those domains belong here and should be in config/cloud.ts sites.`)
+  log.info(`If you mean to stop serving them, list them in \`cloud.retiredDomains\` in config/cloud.ts.`)
   process.exit(ExitCode.FatalError)
 }
 
