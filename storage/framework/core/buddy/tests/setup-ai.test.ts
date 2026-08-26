@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'bun:test'
-import { existsSync } from 'node:fs'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
+import { existsSync, lstatSync, mkdirSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import process from 'node:process'
 import { frameworkPath, join } from '@stacksjs/path'
-import { AI_PROVIDERS, isAiProvider } from '../src/commands/setup-ai'
+import { AI_PROVIDERS, isAiProvider, materialize, setupAiProvider } from '../src/commands/setup-ai'
 import { commandInventoryEntry } from '../src/commands/list'
 import { setup } from '../src/commands/setup'
 import { shouldSkipAppKeyCheck } from '../src/project-setup'
@@ -113,5 +115,82 @@ describe('AI defaults', () => {
 
   it('ships the cursor rules the cursor provider links to', () => {
     expect(existsSync(frameworkPath('defaults/ide/cursor/rules'))).toBeTrue()
+  })
+})
+
+/**
+ * `buddy upgrade` runs the AI setup with `--force` so the generated per-agent
+ * files get refreshed. A project that had written its own CLAUDE.md instead of
+ * AGENTS.md lost the entire file to a symlink in that step, and the upgrade's
+ * own output said "AGENTS.md (already present, left alone)" while it happened.
+ *
+ * The rule these pin: a symlink is ours to re-point, a real file is the
+ * developer's, and no flag changes that for CLAUDE.md.
+ */
+describe('materialize: what --force is allowed to replace', () => {
+  const scratch = join(tmpdir(), `stacks-setup-ai-${process.pid}-${Math.trunc(performance.now())}`)
+
+  beforeEach(() => {
+    rmSync(scratch, { recursive: true, force: true })
+    mkdirSync(scratch, { recursive: true })
+    writeFileSync(join(scratch, 'AGENTS.md'), '# AGENTS\n')
+  })
+
+  afterEach(() => {
+    rmSync(scratch, { recursive: true, force: true })
+  })
+
+  it('creates the link when nothing is there', () => {
+    const claude = join(scratch, 'CLAUDE.md')
+    expect(materialize(join(scratch, 'AGENTS.md'), claude, { copy: false })).toBe(true)
+    expect(lstatSync(claude).isSymbolicLink()).toBe(true)
+  })
+
+  it('re-points an existing symlink without --force', () => {
+    const claude = join(scratch, 'CLAUDE.md')
+    symlinkSync('OLD-TARGET.md', claude)
+
+    expect(materialize(join(scratch, 'AGENTS.md'), claude, { copy: false })).toBe(true)
+    expect(readlinkSync(claude)).toBe('AGENTS.md')
+  })
+
+  it('leaves a real file alone when force is off', () => {
+    const claude = join(scratch, 'CLAUDE.md')
+    const authored = '# Claude Code Guidelines\n\nProject rules nobody wants deleted.\n'
+    writeFileSync(claude, authored)
+
+    expect(materialize(join(scratch, 'AGENTS.md'), claude, { copy: false })).toBe(false)
+    expect(lstatSync(claude).isSymbolicLink()).toBe(false)
+    expect(readFileSync(claude, 'utf-8')).toBe(authored)
+  })
+
+  // The regression itself: `buddy upgrade` passes --force, and the claude
+  // branch has to drop it before touching CLAUDE.md. Run the real provider
+  // setup against a throwaway project rather than re-asserting materialize's
+  // own semantics, which are correct — --force is meant to replace the skills
+  // directory and the per-agent rule files; it was never meant to reach this.
+  it('setupAiProvider(claude, --force) does not replace an authored CLAUDE.md', () => {
+    const previousCwd = process.cwd()
+    const authored = '# Claude Code Guidelines\n\nProject rules nobody wants deleted.\n'
+    writeFileSync(join(scratch, 'CLAUDE.md'), authored)
+
+    // The templates the claude branch copies, so the run reaches the end
+    // instead of stopping at the first missing file and passing by accident.
+    const templates = join(scratch, 'storage/framework/defaults/ai')
+    mkdirSync(join(templates, 'claude'), { recursive: true })
+    writeFileSync(join(templates, 'AGENTS.md'), '# AGENTS template\n')
+    writeFileSync(join(templates, 'claude/launch.json'), '{}\n')
+
+    try {
+      process.chdir(scratch)
+      setupAiProvider('claude', { force: true })
+    }
+    finally {
+      process.chdir(previousCwd)
+    }
+
+    const claude = join(scratch, 'CLAUDE.md')
+    expect(lstatSync(claude).isSymbolicLink()).toBe(false)
+    expect(readFileSync(claude, 'utf-8')).toBe(authored)
   })
 })

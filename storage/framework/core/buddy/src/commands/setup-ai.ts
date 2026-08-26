@@ -66,7 +66,7 @@ export interface SetupAiResult {
  * a hand-edited `CLAUDE.md` or a customized skill should never be clobbered by
  * a setup command.
  */
-function materialize(target: string, path: string, options: SetupAiOptions): boolean {
+export function materialize(target: string, path: string, options: SetupAiOptions): boolean {
   const existing = lstatSync(path, { throwIfNoEntry: false })
 
   if (existing) {
@@ -172,8 +172,25 @@ export function setupAiProvider(provider: AiProvider, options: SetupAiOptions = 
   switch (provider) {
     case 'claude': {
       // CLAUDE.md is a symlink so the two files can never drift apart.
+      //
+      // `force: false` regardless of what the caller asked for. `materialize`
+      // refreshes an existing symlink either way, so re-pointing still works;
+      // what --force would otherwise buy is deleting a REAL CLAUDE.md, and
+      // that file is authored, committed content a team edits over months —
+      // the same reason AGENTS.md above pins force off.
+      //
+      // This mattered: `buddy upgrade` runs the AI setup with --force so the
+      // generated per-agent files get refreshed, and a project that had
+      // written its own CLAUDE.md instead of AGENTS.md lost the whole file to
+      // a symlink, inside an upgrade whose output said "AGENTS.md (already
+      // present, left alone)". Converting a real CLAUDE.md into the symlink
+      // layout is a deliberate act: delete it and re-run, and the note below
+      // says so.
       const claudeMd = projectPath('CLAUDE.md')
-      record(claudeMd, materialize(agents, claudeMd, { ...options, copy: false }))
+      const linked = materialize(agents, claudeMd, { ...options, copy: false, force: false })
+      record(claudeMd, linked)
+      if (!linked && existsSync(claudeMd) && !lstatSync(claudeMd, { throwIfNoEntry: false })?.isSymbolicLink())
+        log.info(`  · ${rel(claudeMd)} is a real file, so it is left as-is. Move its content into AGENTS.md and delete it to have both agents read one file.`)
 
       const launch = projectPath('.claude/launch.json')
       record(launch, materializeFile(join(defaults, 'claude/launch.json'), launch, options))
