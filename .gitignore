@@ -68,6 +68,11 @@ discovered-packages.json
 #   storage/cloud              cloud driver state + dashboard credentials
 storage/framework/stx/
 storage/framework/runtime/
+# Site-mode markers written by `buddy down` / `buddy coming-soon` on THIS
+# machine. Committing one puts every checkout - and the next deploy - behind
+# the holding page, and taking it back off is a `git rm` rather than a command.
+storage/framework/down
+storage/framework/coming-soon
 storage/cloud/
 
 # Same cache, in the wrong place. stx falls back to `.stx` beside the working
