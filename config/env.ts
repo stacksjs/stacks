@@ -1,4 +1,5 @@
-import type { EnvConfig } from '@stacksjs/env'
+import type { InferEnv } from '@stacksjs/env'
+import { defineEnv } from '@stacksjs/env'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -7,8 +8,14 @@ import { schema } from '@stacksjs/validation'
  * This configuration defines all of your Env validations. Because Stacks is fully-typed, you
  * may hover any of the options below and the definitions will be provided. In case you
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
+ *
+ * This file is also where `env` gets its types. Declare a variable here and
+ * `env.YOUR_VARIABLE` is typed everywhere, from its validator - `schema.number()`
+ * is a `number`, `schema.enum([...])` is the union of those literals. There is
+ * nothing to generate and nothing to keep in step: a variable set only in your
+ * deploy secrets is typed exactly like one in your local `.env`.
  */
-export default {
+const envSchema = defineEnv({
   APP_NAME: {
     validation: schema.string(),
     default: 'Stacks',
@@ -248,4 +255,18 @@ export default {
     validation: schema.string(),
     default: '',
   },
-} satisfies EnvConfig
+})
+
+/**
+ * Teach `env` about the variables declared above.
+ *
+ * Interface declaration merging: this adds the schema's keys to `StacksEnv`,
+ * which is the type of the `env` every `config/` file and action reads. Keys
+ * the framework already declares are left alone by `InferEnv`, so redeclaring
+ * `APP_NAME` here cannot conflict with the framework's own.
+ */
+declare module '@stacksjs/env' {
+  interface StacksEnv extends InferEnv<typeof envSchema> {}
+}
+
+export default envSchema

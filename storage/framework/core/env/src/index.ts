@@ -1,5 +1,4 @@
-import type { EnvKey } from '../../../env'
-import type { StacksEnv } from './types'
+import type { EnvKey, StacksEnv } from './types'
 import p from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import fs from 'node:fs'

@@ -1,5 +1,4 @@
-import type { BooleanValidatorType, NumberValidatorType, StringValidatorType } from '@stacksjs/ts-validation'
-import type { EnvKey } from '../../../env'
+import type { BooleanValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, Validator } from '@stacksjs/ts-validation'
 
 interface EnumObject {
   [key: string]: string[]
@@ -35,19 +34,39 @@ interface BooleanEnvConfig {
   default: boolean
 }
 
-interface EnumEnvConfig {
-  validation: {
-    readonly name: 'enum'
-    getAllowedValues: () => readonly string[]
-  }
-  default: string
+interface EnumEnvConfig<TValues extends string = string> {
+  // The validator itself, rather than a structural stand-in for it. The
+  // stand-in had `getAllowedValues(): readonly string[]`, which erased the
+  // literals `schema.enum(['local', 'production'])` carries - so an enum
+  // variable typed as a bare `string` and `env.APP_ENV === 'production'` was
+  // just a string comparison.
+  validation: EnumValidatorType<TValues>
+  default: TValues | string
 }
 
-type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | EnumEnvConfig
+export type EnvValueConfig = StringEnvConfig | NumberEnvConfig | BooleanEnvConfig | EnumEnvConfig<any>
 
-export type EnvConfig = Partial<Record<EnvKey, EnvValueConfig>>
+/**
+ * The shape of `config/env.ts`.
+ *
+ * Keyed by plain string rather than by a generated `EnvKey` union. That union
+ * came from `storage/framework/env.ts` - a file this package cannot see from an
+ * installed app, so the import resolved to `any` and the constraint silently
+ * did nothing anyway. More importantly it had the dependency backwards: an
+ * application could not declare its own variable until a generator had scraped
+ * that variable out of `.env` first.
+ */
+export type EnvConfig = Record<string, EnvValueConfig>
 
-export interface StacksEnv {
+/**
+ * The variables the framework itself defines.
+ *
+ * Closed on purpose: `StacksEnv` is what module augmentation extends, and
+ * {@link InferEnv} subtracts the keys named here. Were those keys read off
+ * `StacksEnv` instead, an augmentation built from `InferEnv` would reference
+ * the interface it is augmenting and TypeScript would reject the cycle.
+ */
+export interface FrameworkEnv {
   // App
   APP_NAME: string | undefined
   // Must match `envEnum.APP_ENV` above, which is what the runtime validates
@@ -65,6 +84,18 @@ export interface StacksEnv {
   APP_COMING_SOON_SECRET: string | undefined
   APP_ROOT: string | undefined
   DEBUG: boolean | undefined
+
+  // Storage
+  FILESYSTEM_DISK: string | undefined
+
+  // Hetzner Cloud, read by `buddy mail` and the deploy commands
+  HCLOUD_TOKEN: string | undefined
+  HETZNER_API_TOKEN: string | undefined
+
+  // dotenvx key material and the sudo escalation used by `buddy setup`
+  DOTENV_PRIVATE_KEY: string | undefined
+  DOTENV_PUBLIC_KEY: string | undefined
+  SUDO_PASSWORD: string | undefined
 
   // Ports (proxy auto-converts numeric strings to numbers)
   PORT: number | undefined
@@ -120,6 +151,14 @@ export interface StacksEnv {
   AWS_REGION: string | undefined
   AWS_HOSTED_ZONE_ID: string | undefined
   AWS_S3_BUCKET: string | undefined
+  // Read by the framework itself, in `@stacksjs/storage`'s filesystem config.
+  // They used to reach it only through the generated declarations, which are
+  // built from whichever `.env` the generator saw - so `bun run typecheck`
+  // passed on a machine that had them set and failed on a fresh clone. A
+  // variable the framework reads is declared by the framework.
+  AWS_BUCKET: string | undefined
+  AWS_URL: string | undefined
+  AWS_PROFILE: string | undefined
   AWS_S3_PREFIX: string | undefined
   AWS_SES_REGION: string | undefined
 
@@ -309,6 +348,74 @@ export interface StacksEnv {
   VONAGE_API_SECRET: string | undefined
   VONAGE_FROM_NUMBER: string | undefined
 }
+
+/**
+ * Every environment variable the application can read through `env`.
+ *
+ * Extends the framework's own set; an application adds its variables by
+ * augmenting this interface from `config/env.ts`, which is the file that
+ * already declares them:
+ *
+ * ```ts
+ * const envSchema = defineEnv({
+ *   STRIPE_WEBHOOK_SECRET: { validation: schema.string(), default: '' },
+ * })
+ *
+ * declare module '@stacksjs/env' {
+ *   interface StacksEnv extends InferEnv<typeof envSchema> {}
+ * }
+ *
+ * export default envSchema
+ * ```
+ *
+ * Nothing is generated: the types follow the schema, so they are the same on a
+ * fresh clone, in CI, and in production. They used to come from a generated
+ * `storage/framework/types/env.d.ts` whose key set was scraped from whichever
+ * `.env` happened to be on the machine running the generator, and whose types
+ * were read off each variable's live value there - so a production-only
+ * variable could never be typed at all, and one that was set locally could be
+ * `number` on one machine and `string` on another.
+ */
+export interface StacksEnv extends FrameworkEnv {}
+
+/**
+ * A key that can be written back to an `.env` file.
+ *
+ * Every declared variable, with autocompletion, without rejecting one the
+ * types do not know about yet.
+ */
+export type EnvKey = keyof StacksEnv | (string & {})
+
+/** The value type a single `config/env.ts` entry describes. */
+type EnvValueOf<TEntry> = TEntry extends { validation: Validator<infer TValue> }
+  ? TValue
+  : TEntry extends { default: infer TDefault }
+    ? TDefault
+    : string
+
+/**
+ * The `StacksEnv` members an application's `config/env.ts` contributes.
+ *
+ * Each entry is typed by its validator, so `schema.number()` is a `number` and
+ * `schema.enum(['a', 'b'])` is `'a' | 'b'`, and every variable is optional
+ * because the process may simply not have it set. Keys the framework already
+ * declares are dropped: re-stating one with a different type is what makes a
+ * merged declaration fail to compile.
+ */
+export type InferEnv<TSchema> = {
+  [K in Exclude<keyof TSchema, keyof FrameworkEnv>]: EnvValueOf<TSchema[K]> | undefined
+}
+
+/**
+ * Declare the application's environment variables.
+ *
+ * Returns the schema with its literal type intact, which is what lets
+ * {@link InferEnv} read each entry's validator.
+ */
+export function defineEnv<const TSchema extends EnvConfig>(schema: TSchema): TSchema {
+  return schema
+}
+
 
 export type EnvSchema = EnvConfig
 

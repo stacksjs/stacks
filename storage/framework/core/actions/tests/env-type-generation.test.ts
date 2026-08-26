@@ -1,21 +1,20 @@
 /**
  * The declarations for a project's environment variables.
  *
- * Three separate faults met here, and each one on its own was invisible:
+ * This generator now owns exactly one surface: Bun's `env` namespace, typed
+ * from the project's `.env` files. It used to also augment `StacksEnv` - the
+ * type behind the `env` that `config/` reads - and that was the wrong source
+ * for it twice over:
  *
- *   1. Nothing called the generator. `env-files.ts` was a top-level script
- *      with no importer anywhere in the repo, so the declarations it owns were
- *      whatever the last person to run it by hand had produced.
- *   2. It seeded its key list from `storage/framework/env.ts` — the file it
- *      writes at the end, from that same list. The set could only ever stay
- *      the same size, so a variable added to `.env` was never declared.
- *   3. It only augmented Bun's `env` namespace, while `config/` reads the
- *      `env` exported by '@stacksjs/env', whose catch-all index signature
- *      types an unlisted variable `string | number | boolean | undefined`.
+ *   1. The key set was scraped from whichever `.env` was on the machine
+ *      running the generator, so a variable set only in deploy secrets could
+ *      never be typed. loghq had 14 in that state.
+ *   2. Each type was read off the variable's live value, so the same variable
+ *      could be `number` on one checkout and `string` on another, and the
+ *      output was gitignored, so it did not survive a clone.
  *
- * Together: erbamarkets had 29 of 58 variables undeclared, and reading one in
- * `config/` failed against a plain `string` field with a type that names no
- * variable and points at no cause.
+ * `StacksEnv` is extended from `config/env.ts` instead, which declares those
+ * variables anyway and is committed - see `InferEnv` in '@stacksjs/env'.
  */
 
 import { describe, expect, it } from 'bun:test'
@@ -23,51 +22,47 @@ import { renderEnvTypes } from '../src/generate/env-files'
 
 const typeOf = (key: string): string => (key.endsWith('_PORT') ? 'number' : 'string')
 
-const render = (keys: string[], declared: string[] = []): string =>
-  renderEnvTypes(keys, new Set(declared), typeOf)
+const render = (keys: string[]): string => renderEnvTypes(keys, typeOf)
 
 describe('generated env declarations', () => {
-  it('is a module, so the blocks augment rather than shadow', () => {
+  it('is a module, so the block augments rather than shadows', () => {
     /*
-     * Without this, `declare module '@stacksjs/env'` is an ambient module
-     * declaration that replaces the real one, and the package appears to
-     * export only the members named here — every `import { env }` in config/
-     * fails with "has no exported member 'env'".
+     * Without this, `declare module 'bun'` is an ambient module declaration
+     * that replaces the real one, and the package appears to export only the
+     * members named here.
      */
     expect(render(['TYPESENSE_HOST'])).toContain('export {}')
   })
 
-  it('declares a variable on both the Bun namespace and StacksEnv', () => {
-    const dts = render(['TYPESENSE_HOST'])
-
-    expect(dts).toContain('const TYPESENSE_HOST: string')
-    expect(dts).toContain('TYPESENSE_HOST: string | undefined')
+  it('declares a variable on the Bun namespace', () => {
+    expect(render(['TYPESENSE_HOST'])).toContain('const TYPESENSE_HOST: string')
   })
 
   it('gives a numeric variable a numeric type', () => {
     expect(render(['TYPESENSE_PORT'])).toContain('const TYPESENSE_PORT: number')
   })
 
-  it('does not restate a property the framework interface already declares', () => {
+  it('no longer augments StacksEnv', () => {
     /*
-     * A merged interface must repeat a property's type exactly. `APP_NAME` is
-     * `string | undefined` in StacksEnv and would be `string` here, so
-     * restating it makes the whole declaration file an error.
+     * Two declarations of one variable is how this breaks: `config/env.ts`
+     * types STRIPE_WEBHOOK_SECRET as `string` from its validator while this
+     * file would type it from whatever the local `.env` holds, and a merged
+     * interface whose property types disagree fails to compile.
      */
-    const dts = render(['APP_NAME', 'TYPESENSE_HOST'], ['APP_NAME'])
-    const augmentation = dts.slice(dts.indexOf("declare module '@stacksjs/env'"))
+    // Comment lines dropped: the header shows the config/env.ts migration,
+    // which names '@stacksjs/env' without declaring anything.
+    const code = render(['APP_NAME', 'TYPESENSE_HOST'])
+      .split('\n')
+      .filter(line => !line.trim().startsWith('//'))
+      .join('\n')
 
-    expect(augmentation).not.toContain('APP_NAME')
-    expect(augmentation).toContain('TYPESENSE_HOST')
-
-    // Still declared for Bun, which is a namespace of consts, not a merge.
-    expect(dts).toContain('const APP_NAME: string')
+    expect(code).toContain(`declare module 'bun'`)
+    expect(code).not.toContain(`declare module '@stacksjs/env'`)
+    expect(code).not.toContain('interface StacksEnv')
   })
 
-  it('emits both augmentations even with nothing left to add to StacksEnv', () => {
-    const dts = render(['APP_NAME'], ['APP_NAME'])
-
-    expect(dts).toContain(`declare module 'bun'`)
-    expect(dts).toContain(`declare module '@stacksjs/env'`)
+  it('points at config/env.ts for the variables it does not type', () => {
+    // The migration has to be findable from the file someone is staring at.
+    expect(render(['TYPESENSE_HOST'])).toContain('config/env.ts')
   })
 })
