@@ -2926,7 +2926,7 @@ Create a new CLI command
 | `-n`, `--name` | The name of the action | value, optional | `false` |
 | `-s`, `--signature` | The command signature (CLI name) | value, optional | `false` |
 | `-d`, `--description` | The command description | value, optional | `false` |
-| `--no-register` | Do not register in Commands.ts | boolean, optional, negated | `true` |
+| `--register` | Also add an entry to app/Commands.ts (optional - commands are auto-discovered) | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

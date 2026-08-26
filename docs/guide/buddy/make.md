@@ -138,7 +138,7 @@ Creates a new CLI command that can be run with Buddy.
 | `--name` | `-n` | The name of the command |
 | `--signature` | `-s` | The command signature (CLI name) |
 | `--description` | `-d` | The command description |
-| `--no-register` | | Do not register in Commands.ts |
+| `--register` | | Also add an entry to `app/Commands.ts` (optional - commands are auto-discovered) |
 | `--project` | `-p` | Target a specific project |
 | `--verbose` | | Enable verbose output |
 

@@ -1,15 +1,10 @@
 import { Action } from '@stacksjs/actions'
+import { resolveCommands } from '@stacksjs/cli'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
 import process from 'node:process'
 import { parseCommandSource } from '../Source/source-inventory'
 import { dashboardOperationalError } from '../dashboard-response'
-
-interface CommandConfig {
-  file: string
-  enabled?: boolean
-  aliases?: string[]
-}
 
 export default new Action({
   name: 'CommandIndexAction',
@@ -18,23 +13,27 @@ export default new Action({
   async handle() {
     try {
       const projectRoot = process.cwd()
-      const registryPath = join(projectRoot, 'app/Commands.ts')
-      const registryModule = await import(registryPath)
-      const registry = (registryModule.default || {}) as Record<string, string | CommandConfig>
-      const items = Object.entries(registry).flatMap(([signature, value]) => {
-        const config = typeof value === 'string'
-          ? { file: value, enabled: true, aliases: [] }
-          : { enabled: true, aliases: [], ...value }
-        const file = join(projectRoot, 'app/Commands', `${config.file}.ts`)
-        if (!existsSync(file))
+      const commandsDir = join(projectRoot, 'app/Commands')
+
+      // Every file under app/Commands is a command; app/Commands.ts is an
+      // optional overlay. Listing only registry entries used to hide any
+      // command the project never bothered to register - which, now that
+      // registering is unnecessary, would have been most of them.
+      const commands = await resolveCommands({
+        commandsDir,
+        registryPath: join(projectRoot, 'app/Commands.ts'),
+      })
+
+      const items = commands.flatMap((command) => {
+        if (!existsSync(command.path))
           return []
 
         return [parseCommandSource(
-          readFileSync(file, 'utf8'),
-          relative(projectRoot, file),
-          signature,
-          config.aliases,
-          statSync(file).mtime.toISOString(),
+          readFileSync(command.path, 'utf8'),
+          relative(projectRoot, command.path),
+          command.signature ?? command.file,
+          command.aliases,
+          statSync(command.path).mtime.toISOString(),
         )]
       })
 
@@ -44,7 +43,7 @@ export default new Action({
           total: items.length,
           aliases: items.reduce((sum, item) => sum + (item.aliases?.length || 0), 0),
           options: items.reduce((sum, item) => sum + (item.options?.length || 0), 0),
-          registered: Object.keys(registry).length,
+          registered: commands.filter(command => command.source === 'registry').length,
         },
       }
     }

@@ -221,114 +221,32 @@ async function parseOrExit(buddy: CLI): Promise<void> {
 await main()
 
 /**
- * Attach aliases to the command a just-loaded file registered.
+ * Attach aliases to a command the CLI already knows about.
  *
- * The registry key may carry arguments (`'send-emails <type>'`) while the
- * registered command is named by its first word, so the lookup matches on
- * that. Nothing is thrown when no command matches: a registry entry whose
- * file registers a differently-named command is a mistake worth a log
- * line, not a reason to take the whole CLI down.
+ * The implementation moved to `@stacksjs/cli` along with the rest of command
+ * loading, so buddy, an application's own binary, and the dashboard all share
+ * one loader. Re-exported here to keep the historical import path.
  */
-export function applyAliases(buddy: CLI, signature: string, aliases: string[]): void {
-  const name = signature.trim().split(/\s+/)[0]
-  const commands = (buddy as any).commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
-  const command = commands?.find(c => c.name === name)
+export { applyAliases } from '@stacksjs/cli'
 
-  if (!command || typeof command.alias !== 'function') {
-    log.debug(`Could not alias '${name}': no matching command was registered.`)
-    return
-  }
-
-  for (const alias of aliases)
-    command.alias(alias)
-}
-
+/**
+ * Register the application's own commands.
+ *
+ * Every `.ts` file under `app/Commands/` is a command - no registration step,
+ * no generated file. `app/Commands.ts` remains supported and purely additive:
+ * it orders the listing, adds aliases, and can disable a command. A file it
+ * does not mention still loads, which is what `buddy make:command` has always
+ * promised.
+ */
 async function dynamicImports(buddy: CLI) {
-  const { fs } = await import('@stacksjs/storage')
-  const commandsDir = p.appPath('Commands')
+  const { loadCommands } = await import('@stacksjs/cli')
 
-  // Try to load command registry from Commands.ts
-  try {
-    const registryPath = p.appPath('Commands.ts')
-    const registryImport = await import(registryPath)
-    const registry = registryImport.default || {}
-
-    // Load commands from registry
-    for (const [signature, config] of Object.entries(registry)) {
-      // Skip if config is a string (simple registration) - will be loaded below
-      // Or handle config object
-      const commandConfig = typeof config === 'string'
-        ? { file: config, enabled: true }
-        : config as { file: string, enabled?: boolean, aliases?: string[] }
-
-      // Skip disabled commands
-      if (commandConfig.enabled === false) {
-        continue
-      }
-
-      const commandPath = `${commandsDir}/${commandConfig.file}.ts`
-
-      // Check if file exists
-      if (!fs.existsSync(commandPath)) {
-        log.debug(`Command file not found: ${commandPath} (registered as '${signature}')`)
-        continue
-      }
-
-      try {
-        const dynamicImport = await import(commandPath)
-
-        if (typeof dynamicImport.default === 'function') {
-          dynamicImport.default(buddy)
-
-          // Register aliases if specified.
-          //
-          // Aliases belong to the command, not to the CLI: there is no
-          // `cli.alias()`. The previous `(buddy as any).alias(...)` threw
-          // `buddy.alias is not a function` on the first alias anyone
-          // declared, and the throw was swallowed by the catch below and
-          // logged as "Failed to load command X" — so a command with an
-          // alias looked like a broken command file rather than a broken
-          // alias, and every command registered after it in the same pass
-          // still loaded, which made it look intermittent.
-          if (commandConfig.aliases?.length)
-            applyAliases(buddy, signature, commandConfig.aliases)
-        }
-        else {
-          log.error(`Expected a default export function in ${commandConfig.file}.ts, but got:`, dynamicImport.default)
-        }
-      }
-      catch (error) {
-        log.error(`Failed to load command ${commandConfig.file}:`, error)
-      }
-    }
-  }
-  catch {
-    // If Commands.ts doesn't exist, fall back to auto-discovery
-    if (!fs.existsSync(commandsDir)) {
-      log.debug('app/Commands directory not found, skipping user commands')
-      return
-    }
-
-    log.debug('Commands.ts not found, using auto-discovery')
-
-    const commandFiles = fs.readdirSync(commandsDir).filter((file: string) => file.endsWith('.ts'))
-
-    for (const file of commandFiles) {
-      const commandPath = `${commandsDir}/${file}`
-
-      try {
-        const dynamicImport = await import(commandPath)
-
-        if (typeof dynamicImport.default === 'function')
-          dynamicImport.default(buddy)
-        else
-          log.debug(`Skipping ${file} - no default export function`)
-      }
-      catch (error) {
-        log.error(`Failed to load command ${file}:`, error)
-      }
-    }
-  }
+  await loadCommands(buddy, {
+    commandsDir: p.appPath('Commands'),
+    registryPath: p.appPath('Commands.ts'),
+    onError: (message, error) => log.error(`${message}:`, error as any),
+    onDebug: message => log.debug(message),
+  })
 
   // Load console listeners
   try {

@@ -49,7 +49,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 
 | Path | What lives here |
 |---|---|
-| `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, `Skills/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Commands.ts`, `Listener.ts` |
+| `app/` | Your application code (see the override model below): `Actions/`, `Jobs/`, `Listeners/`, `Middleware/`, `Mail/`, `Commands/`, `Models/`, `Skills/`, and top-level `Routes.ts`, `Events.ts`, `Gates.ts`, `Scheduler.ts`, `Middleware.ts`, `Listener.ts` |
 | `routes/` | Route files (`api.ts`, `web`, `v1.ts`, `users.ts`, ...), registered via `app/Routes.ts` |
 | `config/` | ~44 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `crosswind.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
@@ -310,8 +310,11 @@ template engine, not buddy - see stacksjs/stacks#2081.) Run `buddy list` for eve
 - `buddy upgrade[:all|:dependencies|:bun|:shell|:binary]` upgrade framework, deps, or Bun
 - `buddy about` / `buddy doctor` / `buddy list` info and health checks
 
-Custom commands live in `app/Commands/` and register via `app/Commands.ts` (`make:command` scaffolds
-one). See `stacks-cli` for building commands.
+Custom commands live in `app/Commands/` and need no registration: every `.ts` file there is a
+command (`make:command` scaffolds one). Write them with `defineCommand()` from `@stacksjs/cli` - the
+declarative form infers the handler's `options` from the flags it declares, so there is no
+hand-written options interface. `app/Commands.ts` is optional and purely additive (ordering, aliases,
+disabling a command). See `stacks-cli` for building commands.
 
 ---
 

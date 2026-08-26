@@ -1,5 +1,6 @@
 export * from './actions'
 export * from './cli'
+export * from './commands'
 export * from './exec'
 export * from './helpers'
 export * from './parse'

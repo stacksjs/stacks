@@ -7,60 +7,71 @@ Stacks allows you to easily create & manage CLIs. This is done through the use o
 
 ## Get Started
 
-The following command will bootstrap a new action file in the `app/Commands` directory.
+The following command will bootstrap a new command file in the `app/Commands` directory.
 
 ```sh
 buddy make:command SendEmails
 ```
 
-Because commands are automatically registered, you can use them in your CLI immediately.
-
-```sh
+Every `.ts` file in this directory is a command. There is no registration step and no generated
+registry file - drop the file in and it is live, nested directories included
+(`app/Commands/Archive/Run.ts`).
 
 ### Example
 
-A simple example of a command that prints a random quote to the console. _For a closer look, take a peak at the [Inspire.ts](./Inspire.ts) command._
+`defineCommand()` infers the handler's `options` from the flags declared above it, so there is no
+hand-written options interface to keep in step.
 
 ```ts
+import { defineCommand, log } from '@stacksjs/cli'
 
-interface InspireOptions {
-  two: boolean
-}
+export default defineCommand({
+  name: 'send-emails <type>',
+  description: 'Send the queued emails of one type',
+  aliases: ['emails'],
+  options: {
+    '--dry-run': { description: 'Report what would be sent, send nothing', default: false },
+    '--limit <n>': { description: 'Stop after this many', default: 100, type: [Number] },
+  },
+  async handle(options, type) {
+    // options.dryRun -> boolean, options.limit -> number, type -> string
+    log.info(`Sending ${options.limit} ${type} emails${options.dryRun ? ' (dry run)' : ''}`)
+  },
+})
+```
 
-export default function (cli: CLI) {
-  cli
-    .command('inspire', 'Inspire yourself with a random quote')
-    .option('--two, -t', 'Inspire yourself with two random quotes', { default: false })
-    .alias('insp')
-    .action((options: InspireOptions) => {
-      if (options.two)
-        // @ts-expect-error - this is safe because we hard-coded the quotes
-        quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
-      else
-        log.info(quotes.random())
+For a file that registers several commands, or needs `cli.on()`, take the CLI directly - it is typed
+either way:
 
-      log.success('Have a great day!')
-      process.exit(ExitCode.Success)
-    })
+```ts
+import { defineCommand, log } from '@stacksjs/cli'
 
-  cli
-    .command('inspire:two', 'Inspire yourself with two random quotes')
-    .action(() => {
-      // @ts-expect-error - this is safe because we hard-coded the quotes
-      quotes.random(2).map((quote, index) => log.info(`${index + 1}. ${quote}`))
+export default defineCommand((cli) => {
+  cli.command('inspire', 'Inspire yourself with a random quote').alias('insp').action(() => {})
+  cli.command('inspire:two', 'Inspire yourself with two random quotes').action(() => {})
 
-      log.success('Have a great day!')
-      process.exit(ExitCode.Success)
-    })
+  cli.on('inspire:*', () => log.error('Invalid command.'))
+})
+```
 
-  cli.on('inspire:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
-    process.exit(1)
-  })
+### Configuring a command
 
-  return cli
-}
+Named exports beside the default one, so a command owns its own configuration:
 
+```ts
+export const aliases = ['emails', 'mail'] // extra aliases
+export const enabled = false              // keep the file, hide the command
+```
+
+`app/Commands.ts` is optional. Keep one only to control the order commands are listed in, or to
+alias or disable a command without editing its file - a command it never mentions still loads.
+
+```ts
+import { defineCommands } from '@stacksjs/cli'
+
+export default defineCommands({
+  'send-emails <type>': { file: 'SendEmails', aliases: ['emails'] },
+})
 ```
 
 ## 🚜 Contributing

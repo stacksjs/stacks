@@ -17,8 +17,8 @@ The complete CLI runtime for the Stacks framework with 50+ commands, lazy-loaded
 - Lazy command registry: `storage/framework/core/buddy/src/lazy-commands.ts`
 - Config system: `storage/framework/core/buddy/src/config.ts`
 - Shell entry: `buddy` (shell script at project root that invokes `bun run ./storage/framework/core/buddy/src/cli.ts`)
-- Application commands: `app/Commands/`
-- Command registry: `app/Commands.ts`
+- Application commands: `app/Commands/` (auto-discovered; no registration step)
+- Optional registry: `app/Commands.ts`
 - Make templates: `storage/framework/defaults/`
 
 ## CLI Aliases
@@ -250,7 +250,7 @@ buddy make:certificate        # generate SSL certificate (alias: make:cert)
 buddy make:command [name]     # create CLI command in app/Commands/
   --signature [sig]           # CLI command name
   --description [desc]        # command description
-  --no-register               # skip registering in Commands.ts
+  --register                  # also add an entry to app/Commands.ts (optional)
 buddy make:component [name]   # create STX component
 buddy make:database [name]    # create database
 buddy make:factory [name]     # create model factory (stub)
@@ -622,34 +622,63 @@ buddy stacks                 # Stacks framework commands (registered as 'stack' 
 
 ## Adding Custom Commands
 
-### Method 1: Commands.ts Registry (preferred)
+### Method 1: Drop a file in `app/Commands/` (preferred)
 
-```typescript
-// app/Commands.ts
-export default {
-  'inspire': 'Inspire',                              // simple: maps to app/Commands/Inspire.ts
-  'deploy-hooks': { file: 'DeployHooks', enabled: true, aliases: ['dh'] },  // with options
-  'disabled-cmd': { file: 'Disabled', enabled: false }, // disabled command
-}
-```
+Every `.ts` file there is a command - no registration, no generated file.
+Nested directories work too (`app/Commands/Archive/Run.ts`).
 
 ```typescript
 // app/Commands/Inspire.ts
-import type { CLI } from '@stacksjs/cli'
+import { defineCommand } from '@stacksjs/cli'
 
-export default function (buddy: CLI) {
-  buddy
-    .command('inspire', 'Display inspirational quote')
-    .option('-t, --two', 'Show two quotes')
-    .action(async (options: { two?: boolean }) => {
+// Declarative: `options` is inferred from the flags declared above it.
+export default defineCommand({
+  name: 'inspire',
+  description: 'Display inspirational quote',
+  aliases: ['insp'],
+  options: {
+    '--two, -t': { description: 'Show two quotes', default: false },
+  },
+  handle(options) {
+    console.log(randomQuote())
+    if (options.two)
       console.log(randomQuote())
-      if (options.two) console.log(randomQuote())
-    })
-}
+  },
+})
 ```
 
-### Method 2: Auto-discovery (fallback)
-If `app/Commands.ts` does not exist, all `.ts` files in `app/Commands/` are auto-discovered and loaded. Each must export a default function that receives the CLI instance.
+```typescript
+// Imperative, for a file that registers several commands or uses cli.on()
+import { defineCommand } from '@stacksjs/cli'
+
+export default defineCommand((buddy) => {
+  buddy.command('inspire', 'Display inspirational quote').action(() => {})
+  buddy.command('inspire:two', 'Two quotes').action(() => {})
+})
+```
+
+A command file can also configure itself with named exports:
+
+```typescript
+export const aliases = ['emails', 'mail'] // extra aliases
+export const enabled = false              // keep the file, hide the command
+```
+
+### Method 2: `app/Commands.ts` (optional overlay)
+
+Only worth keeping to control listing order, or to alias/disable a command
+without editing its file. Files it does not mention still load.
+
+```typescript
+// app/Commands.ts
+import { defineCommands } from '@stacksjs/cli'
+
+export default defineCommands({
+  'inspire': 'Inspire',                                                    // maps to app/Commands/Inspire.ts
+  'deploy-hooks': { file: 'DeployHooks', enabled: true, aliases: ['dh'] }, // with options
+  'disabled-cmd': { file: 'Disabled', enabled: false },                    // disabled command
+})
+```
 
 ### Method 3: buddy.config.ts
 ```typescript

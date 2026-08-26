@@ -83,18 +83,18 @@ describe('makeCommand', () => {
 
       const content = await get(filePath)
 
-      // Should have proper imports
-      expect(content).toContain("import type { CLI } from '@stacksjs/types'")
-      expect(content).toContain("import { log } from '@stacksjs/cli'")
+      // Should import the typed authoring helper
+      expect(content).toContain("import { defineCommand, log } from '@stacksjs/cli'")
 
-      // Should have default function export
-      expect(content).toContain('export default function (cli: CLI)')
+      // Should default-export a definition, not a bare function
+      expect(content).toContain('export default defineCommand({')
 
       // Should use kebab-case for the command signature
-      expect(content).toContain("command('generate-report'")
+      expect(content).toContain("name: 'generate-report'")
 
-      // Should have the command name in the interface
-      expect(content).toContain('interface GenerateReportOptions')
+      // Options are inferred from the flags, so there is no hand-written interface
+      expect(content).not.toContain('interface GenerateReportOptions')
+      expect(content).toContain('async handle(options)')
     })
 
     it('should use custom signature when provided', async () => {
@@ -108,7 +108,7 @@ describe('makeCommand', () => {
       createdFiles.push(filePath)
 
       const content = await get(filePath)
-      expect(content).toContain("command('custom:cmd'")
+      expect(content).toContain("name: 'custom:cmd'")
     })
 
     it('should use custom description when provided', async () => {
@@ -135,10 +135,10 @@ describe('makeCommand', () => {
       createdFiles.push(filePath)
 
       const content = await get(filePath)
-      expect(content).toContain("option('--verbose'")
+      expect(content).toContain("'--verbose': { description: 'Enable verbose output', default: false }")
     })
 
-    it('should handle unknown subcommands', async () => {
+    it('should read the declared option in the handler', async () => {
       await makeCommand({
         name: 'SubCmd',
         register: false,
@@ -148,7 +148,23 @@ describe('makeCommand', () => {
       createdFiles.push(filePath)
 
       const content = await get(filePath)
-      expect(content).toContain("cli.on('sub-cmd:*'")
+      expect(content).toContain('if (options.verbose)')
+    })
+  })
+
+  describe('registration', () => {
+    // The registry is optional now: a command file is live on disk. Creating
+    // one where the project has none would put the generated file back.
+    it('does not create app/Commands.ts when the project has none', async () => {
+      const registryPath = p.appPath('Commands.ts')
+
+      if (existsSync(registryPath))
+        return
+
+      await makeCommand({ name: 'NoRegistryCmd' })
+      createdFiles.push(p.commandsPath('NoRegistryCmd.ts'))
+
+      expect(existsSync(registryPath)).toBe(false)
     })
   })
 
@@ -166,7 +182,7 @@ describe('makeCommand', () => {
       createdFiles.push(filePath)
 
       const content = await get(filePath)
-      expect(content).toContain("command('send-notification'")
+      expect(content).toContain("name: 'send-notification'")
     })
 
     it('should convert snake_case to PascalCase for filenames', async () => {

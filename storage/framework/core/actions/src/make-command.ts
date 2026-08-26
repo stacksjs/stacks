@@ -4,7 +4,13 @@ import * as p from '@stacksjs/path'
 import { get, writeFile } from '@stacksjs/storage'
 
 export interface MakeCommandOptions extends MakeOptions {
-  /** Whether to register the command in Commands.ts */
+  /**
+   * Add an entry to `app/Commands.ts`.
+   *
+   * Off by default: commands are discovered from `app/Commands/`, so the
+   * registry is only worth touching when it already exists and the project
+   * uses it to order or alias commands.
+   */
   register?: boolean
   /** Command description */
   description?: string
@@ -31,15 +37,18 @@ export async function makeCommand(options: MakeCommandOptions): Promise<boolean>
 
   // Write the file
   const filePath = p.commandsPath(`${commandName}.ts`)
+  const signature = options.signature || toKebabCase(name)
 
   try {
     await writeFile(filePath, content)
     log.success(`Created command: ${filePath}`)
 
-    // Register in Commands.ts if requested
-    if (options.register !== false) {
-      await registerCommand(commandName, options.signature || toKebabCase(name))
-    }
+    // The registry is optional - the file is live either way. It is only
+    // updated when the project keeps one and asked for the entry.
+    if (options.register)
+      await registerCommand(commandName, signature)
+    else
+      log.info(`Run it with: buddy ${signature}`)
 
     return true
   }
@@ -51,52 +60,47 @@ export async function makeCommand(options: MakeCommandOptions): Promise<boolean>
 
 /**
  * Generate command file content
+ *
+ * The declarative form: the flags are declared once and the handler's
+ * `options` are inferred from them, so there is no hand-written options
+ * interface to drift out of step with the flags above it.
  */
 function generateCommandContent(name: string, options: MakeCommandOptions): string {
   const signature = options.signature || toKebabCase(name)
   const description = options.description || `The ${signature} command`
 
-  return `import type { CLI } from '@stacksjs/types'
-import { log } from '@stacksjs/cli'
+  return `import { defineCommand, log } from '@stacksjs/cli'
 
 /**
  * ${name} Command
  *
  * ${description}
+ *
+ * Registered automatically - every file in app/Commands is a command.
  */
+export default defineCommand({
+  name: '${signature}',
+  description: '${description}',
+  options: {
+    '--verbose': { description: 'Enable verbose output', default: false },
+    // Add more options here. Their types flow into \`handle\`:
+    // '--name <name>': 'Who to greet',
+  },
+  async handle(options) {
+    try {
+      if (options.verbose)
+        log.info('Running ${signature} command...')
 
-interface ${name}Options {
-  verbose: boolean
-  // Add your command options here
-}
+      log.info('No command logic implemented yet. Update this command to add behavior.')
 
-export default function (cli: CLI) {
-  cli
-    .command('${signature}', '${description}')
-    .option('--verbose', 'Enable verbose output', { default: false })
-    // Add more options here
-    // .option('-n, --name <name>', 'Your name')
-    .action(async (options: ${name}Options) => {
-      try {
-        if (options.verbose) {
-          log.info('Running ${signature} command...')
-        }
-
-        log.info('No command logic implemented yet. Update this command action to add behavior.')
-
-        log.success('${signature} completed successfully!')
-      }
-      catch (error) {
-        log.error('${signature} failed:', error)
-        throw error
-      }
-    })
-
-  // Handle unknown subcommands
-  cli.on('${signature}:*', () => {
-    log.error('Invalid command: %s\\nSee --help for a list of available commands.', cli.args.join(' '))
-  })
-}
+      log.success('${signature} completed successfully!')
+    }
+    catch (error) {
+      log.error('${signature} failed:', error)
+      throw error
+    }
+  },
+})
 `
 }
 
@@ -106,38 +110,43 @@ export default function (cli: CLI) {
 async function registerCommand(name: string, signature: string): Promise<void> {
   const commandsPath = p.appPath('Commands.ts')
 
+  // Both registry shapes: `export default { ... } satisfies CommandRegistry`
+  // and `export default defineCommands({ ... })`. `[\s\S]*` matches across
+  // lines so commented-out braces in the file header do not end the match
+  // early.
+  const patterns = [
+    { match: /export default \{([\s\S]*)\} satisfies/, open: 'export default {', close: '} satisfies' },
+    { match: /export default defineCommands\(\{([\s\S]*)\}\)/, open: 'export default defineCommands({', close: '})' },
+  ]
+
   try {
-    let content = await get(commandsPath)
+    const content = await get(commandsPath)
+    const pattern = patterns.find(candidate => candidate.match.test(content))
 
-    // Find the default export object and add the new command
-    // Use [\s\S]* to match across lines including commented-out braces
-    const exportMatch = content.match(/export default \{([\s\S]*)\} satisfies/)
-
-    if (exportMatch) {
-      const existingCommands = exportMatch[1] ?? ''
-
-      // Check if command already exists
-      if (existingCommands.includes(`'${signature}'`)) {
-        log.info(`Command '${signature}' already registered in Commands.ts`)
-        return
-      }
-
-      // Add the new command before the closing brace
-      const newCommand = `  '${signature}': '${name}',\n`
-      const updatedCommands = `${existingCommands.trimEnd()}\n${newCommand}`
-
-      content = content.replace(
-        /export default \{[\s\S]*\} satisfies/,
-        `export default {${updatedCommands}} satisfies`,
-      )
-
-      await writeFile(commandsPath, content)
-      log.success(`Registered command '${signature}' in Commands.ts`)
+    if (!pattern) {
+      log.info(`Command '${signature}' is live without a registry entry.`)
+      return
     }
+
+    const existingCommands = content.match(pattern.match)?.[1] ?? ''
+
+    if (existingCommands.includes(`'${signature}'`)) {
+      log.info(`Command '${signature}' already registered in Commands.ts`)
+      return
+    }
+
+    const updatedCommands = `${existingCommands.trimEnd()}\n  '${signature}': '${name}',\n`
+
+    await writeFile(commandsPath, content.replace(
+      pattern.match,
+      `${pattern.open}${updatedCommands}${pattern.close}`,
+    ))
+
+    log.success(`Registered command '${signature}' in Commands.ts`)
   }
-  catch (error) {
-    log.warn(`Could not register command in Commands.ts: ${(error as Error).message}`)
-    log.info('You may need to manually add it to app/Commands.ts')
+  catch {
+    // No registry is the normal case: commands are discovered from disk.
+    log.info(`Command '${signature}' is live without a registry entry.`)
   }
 }
 
