@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.95...v0.72.96)
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.235 and crosswind 0.2.18 ([bb01924](https://github.com/stacksjs/stacks/commit/bb01924)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.94...v0.72.95)
 
 ## 🐛 Bug Fixes
