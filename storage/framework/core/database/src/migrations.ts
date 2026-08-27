@@ -1142,21 +1142,84 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
  * Only the forms the generator emits are recognised; anything unrecognised
  * comes back null and is therefore kept, which is the safe direction.
  */
+/**
+ * Drop the leading `WITH ... AS (...)` list so the statement's real verb is
+ * first.
+ *
+ * A common table expression pushes the verb past the CTE body, so a pattern
+ * anchored at the start of the statement sees `WITH` and nothing it
+ * recognises. `0000000133-normalize-tag-uniques.sql` is written that way, and
+ * it is why the gate let it through (stacksjs/stacks#2323).
+ */
+function afterCommonTableExpressions(statement: string): string {
+  if (!/^\s*WITH\b/i.test(statement))
+    return statement
+
+  let depth = 0
+  for (let index = 0; index < statement.length; index++) {
+    const char = statement[index]
+    if (char === '(') {
+      depth++
+      continue
+    }
+    if (char !== ')')
+      continue
+
+    depth--
+    if (depth !== 0)
+      continue
+
+    const rest = statement.slice(index + 1)
+    // A comma means another CTE follows; keep walking to the next body.
+    if (/^\s*,/.test(rest))
+      continue
+    return rest
+  }
+
+  return statement
+}
+
+/**
+ * The table a statement acts on, or null when it acts on none we can name.
+ *
+ * DDL was the whole list here, which meant a `UPDATE tags` read as "no table"
+ * and was kept by every caller that filters on this. Data statements are the
+ * ones a feature gate most needs to see: a disabled feature's CREATE is
+ * hidden, so anything that later writes to that table has nothing to write to.
+ */
 export function statementTable(statement: string): string | null {
+  const body = afterCommonTableExpressions(statement)
   const patterns = [
     /^\s*ALTER\s+TABLE\s+["`]?([a-z0-9_]+)["`]?/i,
     /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
     /^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["`]?([a-z0-9_]+)["`]?/i,
     /^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?[a-z0-9_]+["`]?\s+ON\s+["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*UPDATE\s+["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*INSERT\s+(?:OR\s+\w+\s+)?INTO\s+["`]?([a-z0-9_]+)["`]?/i,
+    /^\s*DELETE\s+FROM\s+["`]?([a-z0-9_]+)["`]?/i,
   ]
 
   for (const pattern of patterns) {
-    const match = pattern.exec(statement)
+    const match = pattern.exec(body)
     if (match)
       return match[1]!.toLowerCase()
   }
 
   return null
+}
+
+/**
+ * Whether a statement names a table anywhere, not just as its target.
+ *
+ * The target alone is not enough. `0000000133` reads `FROM tags` inside a CTE
+ * before updating it, and a statement that reads a table which was never
+ * created fails exactly as loudly as one that writes to it. There is no case
+ * where naming a missing table succeeds, so matching a reference anywhere is
+ * the conservative direction.
+ */
+export function statementReferencesTable(statement: string, table: string): boolean {
+  const escaped = table.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return new RegExp(`\\b(?:FROM|JOIN|UPDATE|INTO)\\s+["\`\\[]?${escaped}["\`\\]]?\\b`, 'i').test(statement)
 }
 
 /**
@@ -1177,8 +1240,16 @@ export function withoutGatedStatements(sql: string, gated: ReadonlySet<string>):
   const statements = sql.split(';').map(s => s.trim()).filter(Boolean)
   const kept = statements.filter((statement) => {
     const table = statementTable(statement)
+    if (table && gated.has(table))
+      return false
 
-    return !table || !gated.has(table)
+    // Not only the target: a gated table read in a subquery is just as absent.
+    for (const candidate of gated) {
+      if (statementReferencesTable(statement, candidate))
+        return false
+    }
+
+    return true
   })
 
   if (kept.length === statements.length)
