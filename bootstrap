@@ -92,10 +92,16 @@ ensure_pantry() {
   echo "Pantry installed to ${INSTALL_DIR}/pantry"
 }
 
+is_stacks_app() {
+  [ -f "package.json" ] \
+    && [ -x "buddy" ] \
+    && grep -Eq '"stacks"[[:space:]]*:' package.json
+}
+
 # --- Main ---
 
 # If we are outside a project, create one from the latest stable release.
-if [ ! -d "storage/framework/core" ]; then
+if [ ! -d "storage/framework/core" ] && ! is_stacks_app; then
   if [ -z "$PROJECT_NAME" ]; then
     PROJECT_NAME="${STACKS_PROJECT:-stacks}"
 
@@ -142,7 +148,7 @@ if [ ! -d "storage/framework/core" ]; then
 fi
 
 # Detect if we're in a Stacks project
-if [ ! -d "storage/framework/core" ]; then
+if [ ! -d "storage/framework/core" ] && ! is_stacks_app; then
   echo "Error: not inside a Stacks project."
   exit 1
 fi
