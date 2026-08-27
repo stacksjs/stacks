@@ -67,21 +67,45 @@ export const authMiddlewareHandler = {
  *
  * Resolving it here means every caller agrees on what "the user" is, and the
  * answer is a user rather than a callable.
+ *
+ * It is also the answer to "is this a user at all". An object with no usable
+ * `id` is not one, and returning it anyway pushed the failure downstream into
+ * RBAC, which validates its input and throws a TypeError — so an authorization
+ * middleware answered 500 rather than 401, to signed-in and anonymous callers
+ * alike. Deciding it here means every caller's own `if (!user) throw 401` is
+ * the check that fires.
  */
 export async function authenticatedUser(request: any): Promise<any | undefined> {
   const cached = request?._authenticatedUser
-  if (cached && typeof cached === 'object')
+  if (isUserLike(cached))
     return cached
 
   const macro = request?.user
   if (typeof macro === 'function') {
     const resolved = await macro()
-    return resolved && typeof resolved === 'object' ? resolved : undefined
+    return isUserLike(resolved) ? resolved : undefined
   }
 
   // A middleware upstream may have stamped a plain object on `user` instead.
-  if (macro && typeof macro === 'object')
+  if (isUserLike(macro))
     return macro
 
   return undefined
+}
+
+/**
+ * Whether a resolved value can stand in for the signed-in user.
+ *
+ * The id is what every authorization path goes on to key off, so a value
+ * without one is rejected here rather than halfway through a role lookup.
+ * Numeric ids are the framework's own shape; a string id is accepted when it
+ * is non-empty, since a custom user provider may issue one.
+ */
+function isUserLike(value: unknown): boolean {
+  if (!value || typeof value !== 'object')
+    return false
+  const id = (value as { id?: unknown }).id
+  if (typeof id === 'number')
+    return Number.isFinite(id) && id > 0
+  return typeof id === 'string' && id.trim().length > 0
 }
