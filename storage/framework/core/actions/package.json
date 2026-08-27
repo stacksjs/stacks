@@ -65,7 +65,7 @@
     "@stacksjs/bunpress": "^0.2.8",
     "@stacksjs/logsmith": "^0.2.3",
     "@stacksjs/registry": "workspace:*",
-    "@stacksjs/stx": "^0.2.235",
+    "@stacksjs/stx": "^0.2.236",
     "@stacksjs/ts-cloud": "^0.12.7",
     "@stacksjs/ts-md": "^0.1.1"
   },
