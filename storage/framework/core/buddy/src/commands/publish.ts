@@ -8,7 +8,7 @@ import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
-import { detectInstaller, findCoreReferences, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports } from '../unvendor-rewrite'
+import { detectInstaller, findCoreReferences, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
 import { ExitCode } from '@stacksjs/types'
 
 interface PublishOptions {
@@ -857,6 +857,11 @@ async function unvendorFramework(force: boolean): Promise<void> {
     }
   }
 
+  // Standalone framework runtime/build packages are not root workspace
+  // members, but they survive the core deletion and still carry workspace
+  // ranges from the monorepo template. Repoint those too.
+  const survivingManifests = await rewriteSurvivingFrameworkManifests(process.cwd(), provided, range)
+
   // 2. bunfig.toml preloads point at source files inside core. Rewrite them to
   //    package specifiers: `storage/framework/core/env/plugin.ts` is the same
   //    module as `@stacksjs/env/plugin.js`, which the package's `./*` export
@@ -945,6 +950,13 @@ async function unvendorFramework(force: boolean): Promise<void> {
   //    missing module rather than falling back to the published copy.
   await fs.promises.rm(coreDir, { recursive: true, force: true })
 
+  // This lock records the old monorepo workspace graph by path. Pantry does
+  // not infer that hundreds of deleted entries should disappear, so force the
+  // next install to resolve the package-layout graph from scratch.
+  const pantryLock = resolve(process.cwd(), 'pantry.lock')
+  const removedPantryLock = existsSync(pantryLock)
+  await fs.promises.rm(pantryLock, { force: true })
+
   // Both layouts, not just node_modules: a pantry-installed app keeps the same
   // workspace symlinks under ./pantry, and leaving those dangling is the exact
   // failure this step exists to prevent.
@@ -978,6 +990,10 @@ async function unvendorFramework(force: boolean): Promise<void> {
   log.info(`package.json now depends on ${depName}@${range}`)
   if (repointed > 0)
     log.info(`Repointed ${repointed} workspace: range${repointed === 1 ? '' : 's'} to ${range}`)
+  if (survivingManifests.ranges > 0)
+    log.info(`Repointed ${survivingManifests.ranges} workspace: range${survivingManifests.ranges === 1 ? '' : 's'} across ${survivingManifests.files.length} surviving framework manifest${survivingManifests.files.length === 1 ? '' : 's'}`)
+  if (removedPantryLock)
+    log.info('Removed the legacy Pantry workspace lock; the install will resolve a package-layout graph')
   if (danglingRemoved > 0)
     log.info(`Removed ${danglingRemoved} node_modules symlink${danglingRemoved === 1 ? '' : 's'} left pointing into it`)
   if (rewrittenScripts > 0)

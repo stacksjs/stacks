@@ -57,6 +57,72 @@ export function detectInstaller(cwd: string): string[] {
 }
 
 /**
+ * Repoint package manifests that remain under `storage/framework` after core
+ * is removed. These directories are standalone build/runtime packages rather
+ * than root workspace members, so walking only `package.json#workspaces`
+ * misses them and leaves `workspace:*` ranges that no longer resolve.
+ */
+export async function rewriteSurvivingFrameworkManifests(
+  cwd: string,
+  provided: Set<string>,
+  range: string,
+): Promise<{ files: string[], ranges: number }> {
+  const framework = resolve(cwd, 'storage/framework')
+  const files: string[] = []
+  let ranges = 0
+
+  const walk = async (dir: string): Promise<void> => {
+    let entries
+    try {
+      entries = await readdir(dir, { withFileTypes: true })
+    }
+    catch {
+      return
+    }
+
+    for (const entry of entries) {
+      if (entry.name === 'core' || entry.name === 'node_modules' || entry.name === 'dist')
+        continue
+
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) {
+        await walk(full)
+        continue
+      }
+      if (!entry.isFile() || entry.name !== 'package.json')
+        continue
+
+      const raw = await fs.promises.readFile(full, 'utf-8')
+      const pkg = JSON.parse(raw) as Record<string, Record<string, string> | undefined>
+      let touched = false
+
+      for (const field of ['dependencies', 'devDependencies', 'peerDependencies']) {
+        const dependencies = pkg[field]
+        if (!dependencies)
+          continue
+
+        for (const [name, spec] of Object.entries(dependencies)) {
+          if (!spec.startsWith('workspace:') || !provided.has(name))
+            continue
+          dependencies[name] = range
+          ranges++
+          touched = true
+        }
+      }
+
+      if (!touched)
+        continue
+
+      await fs.promises.writeFile(full, `${JSON.stringify(pkg, null, 2)}\n`)
+      files.push(full.replace(`${cwd}/`, ''))
+    }
+  }
+
+  await walk(framework)
+  return { files, ranges }
+}
+
+/**
  * Files worth rewriting or scanning: the project's own code and config, never
  * the dependency trees or build output (which are reinstalled/regenerated) and
  * never storage/framework itself (the generated half stays, and the vendored
