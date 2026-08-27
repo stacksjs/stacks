@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.94...v0.72.95)
+
+## 🐛 Bug Fixes
+
+- **auth**: an authorization middleware must answer 401, never 500 ([ed3c7f4](https://github.com/stacksjs/stacks/commit/ed3c7f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.93...v0.72.94)
 
 ## 🐛 Bug Fixes
