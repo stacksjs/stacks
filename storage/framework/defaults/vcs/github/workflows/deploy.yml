@@ -38,30 +38,56 @@ jobs:
     environment: ${{ github.event.inputs.environment || 'production' }}
 
     steps:
+      # A fresh app has nowhere to deploy to, and a red X on day one is worse
+      # than no deploy, so every step below is gated on the two secrets that
+      # cannot be defaulted. Without them this finishes green with a notice
+      # saying exactly what to add.
+      #
+      # Checked here rather than in `if:` on the job, because a job-level
+      # condition cannot read `secrets`.
+      - name: Is deployment configured?
+        id: check
+        env:
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+        run: |
+          if [ -n "$DOTENV_PRIVATE_KEY_PRODUCTION" ] && [ -n "$DEPLOY_SSH_KEY" ]; then
+            echo 'configured=true' >> "$GITHUB_OUTPUT"
+          else
+            echo 'configured=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Deployment is not configured, so this run did nothing. Add DEPLOY_SSH_KEY (a private key the target server trusts) and DOTENV_PRIVATE_KEY_PRODUCTION (from .env.keys) to deploy on every green push to main.'
+          fi
+
       - name: Checkout
+        if: steps.check.outputs.configured == 'true'
         uses: actions/checkout@v6
         with:
           # The exact commit CI approved, not whatever main points at now.
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - name: Setup Bun
+        if: steps.check.outputs.configured == 'true'
         uses: oven-sh/setup-bun@v2
 
       - name: Setup Pantry
+        if: steps.check.outputs.configured == 'true'
         uses: home-lang/pantry/packages/action@main
 
       - name: Install dependencies
+        if: steps.check.outputs.configured == 'true'
         run: bun install --frozen-lockfile
 
       # The deploy talks to the server as root over SSH with BatchMode on, so
       # the key has to be in an agent before it runs — there is no prompt to
       # fall back to.
       - name: Load the deploy key
+        if: steps.check.outputs.configured == 'true'
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_SSH_KEY }}
 
       - name: Deploy
+        if: steps.check.outputs.configured == 'true'
         run: ./buddy deploy --${{ github.event.inputs.environment == 'staging' && 'staging' || github.event.inputs.environment == 'development' && 'dev' || 'prod' }} --yes
         env:
           # Decrypts .env.production. Without it the encrypted values silently
@@ -75,3 +101,6 @@ jobs:
           PORKBUN_API_KEY: ${{ secrets.PORKBUN_API_KEY }}
           PORKBUN_SECRET_KEY: ${{ secrets.PORKBUN_SECRET_KEY }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # macOS resource forks in a tarball built on a developer machine make
+          # the extraction on the server noisy and occasionally fatal.
+          COPYFILE_DISABLE: '1'
