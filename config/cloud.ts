@@ -906,6 +906,7 @@ const config: CloudConfig = {
     'pantry',
     'postline',
     'predicthq',
+    'rappid',
     'reveal',
     'training',
     'verygoodadblock',
