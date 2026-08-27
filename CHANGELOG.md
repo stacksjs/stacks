@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.93...v0.72.94)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: write the deploy key to disk, not just into an agent ([adc75f4](https://github.com/stacksjs/stacks/commit/adc75f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.92...v0.72.93)
 
 ## 🐛 Bug Fixes
