@@ -94,26 +94,70 @@ const stripeKey = config.services.stripe.secret_key
 ### Direct Environment Access
 
 ```ts
-// Using process.env (not recommended for app code)
-const appEnv = process.env.APP_ENV
+import { env } from '@stacksjs/env'
 
-// Using Bun's env
-const dbPassword = Bun.env.DB_PASSWORD
+const appEnv = env.APP_ENV // typed, validated, defaulted
 ```
 
-### Type-Safe Configuration
+Reach for `process.env` only outside the app (a build script, a bin entry).
+Inside the app, `env` is the same values after validation and defaulting, and
+it is the only one that carries types.
+
+### Declaring your own variables
+
+`config/env.ts` is where an application declares the variables it uses. A
+declaration is what gives a variable its validation, its default, and its type:
 
 ```ts
-// config/app.ts
-export default {
-  name: process.env.APP_NAME || 'Stacks',
-  env: process.env.APP_ENV || 'production',
-  debug: process.env.APP_DEBUG === 'true',
-  url: process.env.APP_URL || 'http://localhost:3000',
-  key: process.env.APP_KEY,
-  timezone: process.env.APP_TIMEZONE || 'UTC',
-}
+// config/env.ts
+const envSchema = defineEnv({
+  SSO_OKTA_ISSUER: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  BILLING_RETRIES: {
+    validation: schema.number(),
+    default: 3,
+  },
+
+  DEPLOY_TARGET: {
+    validation: schema.enum(['staging', 'production']),
+    default: 'staging',
+  },
+})
 ```
+
+The type comes from the validator, so `env.BILLING_RETRIES` is a `number` and
+`env.DEPLOY_TARGET` is `'staging' | 'production'`, not a loose `string`.
+
+### How those declarations become types
+
+The bottom of `config/env.ts` carries a `declare module` block that hands the
+schema to the `env` type:
+
+```ts
+declare module '@stacksjs/env' {
+  interface StacksEnv extends InferEnv<typeof envSchema> {}
+}
+
+export default envSchema
+```
+
+This is the supported extension point, and it ships in the scaffold. Interface
+declaration merging adds your schema's keys to `StacksEnv`, which is the type
+of the `env` that every `config/` file and action reads. `InferEnv` subtracts
+the keys the framework already declares, so redeclaring `APP_NAME` in your own
+schema cannot conflict with the framework's.
+
+Nothing generates this and there is no second list to maintain: adding a key to
+`defineEnv` types it everywhere, and a variable that only ever exists in your
+deploy secrets is typed exactly like one in your local `.env`.
+
+Do not hand-write a parallel augmentation listing your keys a second time. It
+typechecks, which is the problem: a key that reaches the augmentation but not
+`defineEnv` is typed while going unvalidated and undefaulted, which is the
+failure `config/env.ts` exists to prevent.
 
 ## Configuration Files
 
