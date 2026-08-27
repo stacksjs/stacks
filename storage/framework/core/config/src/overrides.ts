@@ -128,6 +128,15 @@ const userConfigs: Array<[keyof StacksConfig, string]> = [
   ['cloud', 'cloud'],
   ['cms', 'cms'],
   ['commerce', 'commerce'],
+  // `config/cors.ts` is the file app/Middleware/Cors.ts documents as the
+  // place to configure CORS, but it was missing from this list, so it was
+  // read by nothing. The middleware fell back to its defaults —
+  // `origin: '*'`, `credentials: false` — no matter what the app wrote.
+  // A browser refuses a credentialed cross-origin request answered with a
+  // wildcard origin, so an app whose frontend and API sit on different
+  // origins could not log in at all, while its config file sat there
+  // looking authoritative. `StacksConfig` already declared `cors?`.
+  ['cors', 'cors'],
   ['dashboard', 'dashboard'],
   ['database', 'database'],
   ['dns', 'dns'],
