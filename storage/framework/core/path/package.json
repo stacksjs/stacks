@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/path",
   "type": "module",
-  "version": "0.72.91",
+  "version": "0.72.92",
   "description": "The Stacks path.",
   "author": "Chris Breuer",
   "contributors": [

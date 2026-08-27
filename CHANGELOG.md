@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.91...v0.72.92)
+
+## 🔧 Chores
+
+- **cloud**: register rappid as a tenant of the production box ([cc59f7e](https://github.com/stacksjs/stacks/commit/cc59f7e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.89...v0.72.91)
 
 ## 🐛 Bug Fixes

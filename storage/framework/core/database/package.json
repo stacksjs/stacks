@@ -2,7 +2,7 @@
   "name": "@stacksjs/database",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.91",
+  "version": "0.72.92",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "contributors": [
@@ -60,8 +60,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/faker": "^0.72.91",
-    "@stacksjs/query-builder": "^0.72.91",
+    "@stacksjs/faker": "^0.72.92",
+    "@stacksjs/query-builder": "^0.72.92",
     "@stacksjs/ts-validation": "^0.5.6",
     "bun-query-builder": "^0.2.53",
     "dynamodb-tooling": "^0.3.2"
