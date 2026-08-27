@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.89...v0.72.91)
+
+## 🐛 Bug Fixes
+
+- **migrations**: gate data statements, not just DDL (#2376) ([a4385fb](https://github.com/stacksjs/stacks/commit/a4385fb)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2323](https://github.com/stacksjs/stacks/issues/2323), [#2376](https://github.com/stacksjs/stacks/issues/2376), [#2376](https://github.com/stacksjs/stacks/issues/2376), [#2373](https://github.com/stacksjs/stacks/issues/2373))
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.233 ([f7e286a](https://github.com/stacksjs/stacks/commit/f7e286a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stx 0.2.233 ([84a73d3](https://github.com/stacksjs/stacks/commit/84a73d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.89...v0.72.90)
 
 ## 🐛 Bug Fixes
