@@ -1434,6 +1434,24 @@ function servesApi(name: string, site: any): boolean {
 }
 
 /**
+ * Whether a site can receive an HTTP request at all.
+ *
+ * A server app is only reachable if something routes to it: its own listening
+ * port, or a domain the gateway sends traffic to. `bun buddy queue:work` and
+ * `bun buddy schedule:run` have neither - they are long-running processes with
+ * no listener, so nothing can request `/api/**` from them and nothing can 502.
+ *
+ * The classifier used to treat any site with a `start` string as a page
+ * server, which refused whole deploys over a proxy relationship a headless
+ * worker cannot have (stacksjs/stacks#2367). Note that the API site itself is
+ * deliberately domain-less, loopback-only on its own port, so a port alone has
+ * to count.
+ */
+function servesHttp(site: any): boolean {
+  return Boolean(site?.port || site?.domain)
+}
+
+/**
  * How each site was classified, for the error message.
  *
  * The old messages asserted a conclusion the operator could see was false ("no
@@ -1448,6 +1466,8 @@ function describeSiteClassification(sites: Record<string, any>): string {
     .map(([name, site]) => {
       if (servesApi(name, site))
         return `\`${name}\` (api)`
+      if (!servesHttp(site))
+        return `\`${name}\` (headless, no HTTP surface)`
       const env = (site?.env ?? {}) as Record<string, unknown>
       const wiring = env.API_URL ? 'API_URL set' : env.PORT_API ? 'PORT_API set' : 'no API_URL or PORT_API'
       return `\`${name}\` (page, ${wiring})`
@@ -1507,7 +1527,13 @@ export function apiDeploymentProblem(sites: Record<string, any>, hasApiRoutes: b
   // not `routes/api.ts`. Holding it to "must proxy to the project's API" asks
   // it to wire up routes it does not serve, and refuses every deploy of a box
   // that has a dashboard on it.
-  const pages = appSites.filter(([name, site]) => !servesApi(name, site) && !isDashboardSite(name))
+  //
+  // And not a headless process. A site with no port and no domain has no HTTP
+  // surface to proxy from, so requiring it to declare `PORT_API` records a
+  // relationship that does not exist and refuses deploys that were correct
+  // (stacksjs/stacks#2367).
+  const pages = appSites.filter(([name, site]) =>
+    !servesApi(name, site) && !isDashboardSite(name) && servesHttp(site))
 
   // Somebody has pointed the proxy somewhere explicitly. That is intent, and
   // it covers the API living on another host entirely.
