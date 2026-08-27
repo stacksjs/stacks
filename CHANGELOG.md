@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.85...v0.72.86)
+
+## ✨ Features
+
+- **config**: resolve site config from config directory ([b6a7bbf](https://github.com/stacksjs/stacks/commit/b6a7bbf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **bootstrap**: recognize package-based apps ([690443d](https://github.com/stacksjs/stacks/commit/690443d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **unvendor**: remove remaining workspace dependencies ([3068337](https://github.com/stacksjs/stacks/commit/3068337)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.84...v0.72.85)
 
 ## 🐛 Bug Fixes
