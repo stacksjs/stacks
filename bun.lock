@@ -1133,7 +1133,7 @@
       "name": "@stacksjs/ui",
       "version": "0.72.96",
       "dependencies": {
-        "@cwcss/crosswind": "^0.2.18",
+        "@cwcss/crosswind": "^0.2.19",
         "@stacksjs/components": "^0.2.219",
       },
       "devDependencies": {
@@ -1225,7 +1225,7 @@
 
     "@babel/runtime": ["@babel/runtime@7.29.7", "", {}, "sha512-Nq8OhGWiZIZGV6hLHoyAKLLcJihP/xFeBMGJoUrxTX2psI8dCifzLhZISFb+VWS3wFMRDmCGw5R+dOySCqPLhw=="],
 
-    "@cwcss/crosswind": ["@cwcss/crosswind@0.2.18", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-Xg0jHHh5c0bw6vYl3uHMtFSFeaMOzjfd3CASf8iCVbCHK09oyLQboMrPgdDGuhMUVQCkwVpeYS2o6XuhD3eZ5Q=="],
+    "@cwcss/crosswind": ["@cwcss/crosswind@0.2.19", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-NswUZPNHbdkW4rxvmwjjIM7jyfQ/rr0X1J1uwjTUwixc3BXQs1Fk7pP5cC7MxkGGnmRTFs2O9J+U9tJ36ZJ7fQ=="],
 
     "@hono/node-server": ["@hono/node-server@2.1.1", "", { "peerDependencies": { "hono": "^4" } }, "sha512-ELuehkj5VCBdgEw9zs+ivkKwyzzUCSQuE96YmiPvn1ECBoZCczbFXJLeEGMTYjphP6gydh4pHMqEYPVMYUVgQg=="],
 
@@ -1827,9 +1827,15 @@
 
     "zod-to-json-schema": ["zod-to-json-schema@3.25.2", "", { "peerDependencies": { "zod": "^3.25.28 || ^4" } }, "sha512-O/PgfnpT1xKSDeQYSCfRI5Gy3hPf91mKVDuYLUHZJMiDFptvP41MSnWofm8dnCm0256ZNfZIM7DSzuSMAFnjHA=="],
 
+    "@stacksjs/bunpress/@cwcss/crosswind": ["@cwcss/crosswind@0.2.18", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-Xg0jHHh5c0bw6vYl3uHMtFSFeaMOzjfd3CASf8iCVbCHK09oyLQboMrPgdDGuhMUVQCkwVpeYS2o6XuhD3eZ5Q=="],
+
+    "@stacksjs/components/@cwcss/crosswind": ["@cwcss/crosswind@0.2.18", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-Xg0jHHh5c0bw6vYl3uHMtFSFeaMOzjfd3CASf8iCVbCHK09oyLQboMrPgdDGuhMUVQCkwVpeYS2o6XuhD3eZ5Q=="],
+
     "@stacksjs/desktop/craft-native": ["craft-native@0.0.76", "", { "bin": { "craft-sdk": "./dist/cli.js" } }, "sha512-NQ8taXw0GTpH6fKc3i+KF1Yj5CbIDiViK0UZ69P4kewRfo337E2lzH8NZ8/ohz1aZ97+h6zKaHztCyB/2+1hQQ=="],
 
     "@stacksjs/mobile/craft-native": ["craft-native@0.0.76", "", { "bin": { "craft-sdk": "./dist/cli.js" } }, "sha512-NQ8taXw0GTpH6fKc3i+KF1Yj5CbIDiViK0UZ69P4kewRfo337E2lzH8NZ8/ohz1aZ97+h6zKaHztCyB/2+1hQQ=="],
+
+    "@stacksjs/stx/@cwcss/crosswind": ["@cwcss/crosswind@0.2.18", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "crosswind": "./dist/cli.js" } }, "sha512-Xg0jHHh5c0bw6vYl3uHMtFSFeaMOzjfd3CASf8iCVbCHK09oyLQboMrPgdDGuhMUVQCkwVpeYS2o6XuhD3eZ5Q=="],
 
     "body-parser/content-type": ["content-type@2.1.0", "", {}, "sha512-mj7UPXE0jaqaOsukNZRUEfEi2AcL7C/vwmwcHV0O97eO1E1pxBZuyjlZrx5seTaNBg1U6+o35wpa35Qfcc+7ag=="],
 
