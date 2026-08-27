@@ -374,12 +374,21 @@ export interface SeederModel {
   attributes: Record<string, Attribute>
   model: Model
   filePath: string
+  /**
+   * Whether this model opted into the model pass via `traits.useSeeder`.
+   *
+   * A model that did not is still LOADED when the caller asks for it, because
+   * overriding a framework default is decided by a model's identity, not by
+   * whether it wants seeding — see `loadAllModels`. Non-seeding entries are
+   * filtered out once the merge is done.
+   */
+  seedable: boolean
 }
 
 /**
  * Load all models from a directory (including subdirectories)
  */
-async function loadModelsFromDir(modelsDir: string, recursive: boolean = false): Promise<SeederModel[]> {
+async function loadModelsFromDir(modelsDir: string, recursive: boolean = false, includeNonSeeding: boolean = false): Promise<SeederModel[]> {
   const models: SeederModel[] = []
 
   if (!fs.existsSync(modelsDir)) {
@@ -393,7 +402,7 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
 
     // Handle subdirectories recursively if enabled
     if (entry.isDirectory() && recursive) {
-      const subModels = await loadModelsFromDir(fullPath, true)
+      const subModels = await loadModelsFromDir(fullPath, true, includeNonSeeding)
       models.push(...subModels)
       continue
     }
@@ -413,9 +422,10 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
 
       // Check if model has seeding enabled
       const useSeeder = modelDef.traits?.useSeeder ?? modelDef.traits?.seedable
-      if (!useSeeder) {
+      if (!useSeeder && !includeNonSeeding) {
         continue
       }
+      const seedable = Boolean(useSeeder)
 
       // Get seed count + optional fixture rows (merged over factories)
       let count = 10 // default
@@ -438,6 +448,7 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
         attributes: modelDef.attributes || {},
         model: modelDef,
         filePath: fullPath,
+        seedable,
       })
     }
     catch (err) {
@@ -455,11 +466,20 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
 async function loadAllModels(userModelsDir: string, verbose: boolean = false, includeDefaults: boolean = false): Promise<SeederModel[]> {
   const defaultDir = defaultModelsPath()
 
-  // Load user models (flat directory)
-  const userModels = await loadModelsFromDir(userModelsDir, false)
+  // User models are loaded INCLUDING the ones that never opted into seeding.
+  //
+  // Overriding a framework default is decided by a model's identity, not by
+  // whether it wants seeding. Filtering on `useSeeder` before the merge below
+  // meant an app model that overrode a default but left seeding to an
+  // application seeder never entered the map — so the DEFAULT of the same name
+  // survived, and the model pass inserted the framework's shape into the app's
+  // table. An app whose `User` carried no `avatar` column failed with
+  // `table users has no column named avatar`, naming a column its own model
+  // does not define and pointing at a file the app never wrote.
+  const userModels = await loadModelsFromDir(userModelsDir, false, true)
 
   if (userModels.length > 0 && !includeDefaults) {
-    return userModels
+    return userModels.filter(model => model.seedable)
   }
 
   // Load default models when explicitly requested, or as a fallback for apps
@@ -476,12 +496,16 @@ async function loadAllModels(userModelsDir: string, verbose: boolean = false, in
   // User models override defaults
   for (const model of userModels) {
     if (modelMap.has(model.name) && verbose) {
-      log.info(`  User model "${model.name}" overrides default`)
+      log.info(model.seedable
+        ? `  User model "${model.name}" overrides default`
+        : `  User model "${model.name}" overrides default and opts out of the model pass`)
     }
     modelMap.set(model.name, model)
   }
 
-  return Array.from(modelMap.values())
+  // Now that identity has decided the winner, drop whatever did not ask to be
+  // seeded — including a default that an opted-out user model displaced.
+  return Array.from(modelMap.values()).filter(model => model.seedable)
 }
 
 /**
