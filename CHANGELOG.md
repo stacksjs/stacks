@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.92...v0.72.93)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: one push-to-deploy path, not two ([e8060da](https://github.com/stacksjs/stacks/commit/e8060da)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: say at boot which root-mounted routes can never be reached (#2377) ([ccc347c](https://github.com/stacksjs/stacks/commit/ccc347c)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2326](https://github.com/stacksjs/stacks/issues/2326), [#2377](https://github.com/stacksjs/stacks/issues/2377), [#2377](https://github.com/stacksjs/stacks/issues/2377))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.91...v0.72.92)
 
 ## 🔧 Chores
