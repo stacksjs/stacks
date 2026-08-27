@@ -83,6 +83,26 @@ route.use(corsMiddleware.toRouterHandler())
 // Import routes
 await route.importRoutes()
 
+// Say which of the app's own root-mounted routes the views server will never
+// forward, before this process starts answering. The route is registered here
+// and the request is answered there, so a root `GET` that no proxy rule
+// matches renders as a page, finds no page, and 404s - with the handler that
+// would have answered it sitting in this process, unreached and unmentioned
+// (stacksjs/stacks#2326). Best-effort: a diagnostic must never stop a boot.
+try {
+  const { describeUnforwardableRoutes, resolveApiProxyRules, unforwardableRoutes } = await import('@stacksjs/server')
+  const { listRootMountedAppRoutes } = await import('@stacksjs/router')
+  const unreachable = unforwardableRoutes(
+    listRootMountedAppRoutes().filter(entry => entry.method === 'GET' || entry.method === 'HEAD'),
+    resolveApiProxyRules((config as { server?: { proxy?: any } }).server?.proxy),
+  )
+  if (unreachable.length > 0)
+    log.warn(describeUnforwardableRoutes(unreachable))
+}
+catch (error) {
+  log.debug(`[Stacks API] Route reachability check skipped: ${error instanceof Error ? error.message : String(error)}`)
+}
+
 // This process answers JSON. Without this it also mounts a GET route for every
 // `.stx` under `resources/views` — bun-router finds the directory on its own —
 // and serves the whole site with no stylesheet and with every image 404ing,

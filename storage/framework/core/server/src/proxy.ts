@@ -114,10 +114,24 @@ function matchesPrefix(pathname: string, prefix: string): boolean {
  * configuration pass it in.
  */
 export function isApiBoundRequest(req: Request, pathname: string, rules?: ApiProxyRules): boolean {
-  if (!rules)
-    return pathname.startsWith(DEFAULT_API_PREFIX) || DEFAULT_API_METHODS.includes(req.method)
+  return isApiBoundPath(req.method, pathname, rules)
+}
 
-  if (rules.methods.has(req.method))
+/**
+ * The same decision, without a `Request` to ask.
+ *
+ * Boot-time checks want to know whether a route the API registered can ever
+ * be reached through the views server, and constructing a `Request` per route
+ * to find out would be silly. More to the point, a second implementation of
+ * this rule would drift from the one that actually routes traffic, and a
+ * diagnostic that disagrees with the thing it describes is worse than none.
+ */
+export function isApiBoundPath(method: string, pathname: string, rules?: ApiProxyRules): boolean {
+  const verb = method.toUpperCase()
+  if (!rules)
+    return pathname.startsWith(DEFAULT_API_PREFIX) || DEFAULT_API_METHODS.includes(verb)
+
+  if (rules.methods.has(verb))
     return true
   if (rules.paths.includes(pathname))
     return true
@@ -142,6 +156,49 @@ export function describeApiProxyRules(rules: ApiProxyRules): string {
     parts.push(`paths ${rules.paths.join(' ')}`)
 
   return parts.join(', ')
+}
+
+export interface RoutePathLike {
+  method: string
+  path: string
+}
+
+/**
+ * Which of these routes the views server will never forward.
+ *
+ * A route the API process registers is only reachable through the views
+ * server if these rules send it there. `/api/**` and the mutating verbs go by
+ * default, which is why `route.post('/subscribe', …)` at the root works and
+ * `route.get('/sitemap.xml', …)` does not: the GET is not forwarded, stx
+ * renders it as a page, finds no page, and answers its own 404. The handler
+ * never runs and nothing says so (stacksjs/stacks#2326).
+ *
+ * Give this the app's own root-mounted routes, not the whole table. The
+ * framework registers around a hundred non-`/api` GETs that are reached in
+ * topologies of their own, and listing those buries the one that is broken.
+ */
+export function unforwardableRoutes<T extends RoutePathLike>(routes: readonly T[], rules: ApiProxyRules): T[] {
+  return routes.filter(route => !isApiBoundPath(route.method, route.path, rules))
+}
+
+/**
+ * The boot warning for routes that cannot be reached, naming the fix.
+ *
+ * The silence is the part the report called worst: the route is declared, it
+ * reads correctly in review, and it 404s in production the same way a typo
+ * would.
+ */
+export function describeUnforwardableRoutes(routes: readonly (RoutePathLike & { file?: string })[]): string {
+  const lines = routes.map((route) => {
+    const origin = route.file ? ` (${route.file})` : ''
+    return `  ${route.method} ${route.path}${origin}`
+  })
+
+  return [
+    `${routes.length} root-mounted route${routes.length === 1 ? '' : 's'} the views server will not forward, so ${routes.length === 1 ? 'it' : 'they'} will answer the view 404 rather than reaching the handler:`,
+    ...lines,
+    `Add them to \`proxy.paths\` in config/server.ts (or their prefix to \`proxy.prefixes\`) so the views server forwards them to the API.`,
+  ].join('\n')
 }
 
 export async function proxyToBackend(req: Request, backendBase: string, stripPrefix?: string): Promise<Response> {

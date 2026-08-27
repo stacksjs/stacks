@@ -34,6 +34,34 @@ import { route } from './stacks-router'
  */
 const NO_PREFIX_KEYS = ['web']
 
+export interface RootMountedAppRoute {
+  method: string
+  path: string
+  /** The registry entry's route file, for the message that names the fix. */
+  file: string
+}
+
+/**
+ * Routes this app registered from its own route files at the document root.
+ *
+ * Recorded because they are the ones that can silently not exist. The views
+ * server forwards `/api/**` and mutating verbs to the API process and answers
+ * everything else itself, so a root-mounted `GET` is rendered as a page,
+ * found to be no page, and 404s - while the handler that would have answered
+ * it sits registered in another process (stacksjs/stacks#2326).
+ *
+ * Scoped to the app's own files on purpose. The framework registers around a
+ * hundred non-`/api` GET routes, and most are reached in a topology of their
+ * own: `/dashboard/**` through the dashboard server, `/__routes` on the API
+ * process itself. Reporting those would bury the one route the developer just
+ * wrote in a list of ninety-nine that are fine.
+ */
+const rootMountedAppRoutes: RootMountedAppRoute[] = []
+
+export function listRootMountedAppRoutes(): readonly RootMountedAppRoute[] {
+  return rootMountedAppRoutes
+}
+
 /**
  * Load all routes from the registry
  */
@@ -60,7 +88,21 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
         })
       }
       else {
+        // Root-mounted, and this is one of the app's own files rather than a
+        // framework default (those load later, from loadFrameworkRoutes).
+        // Diff the table around the import so we know which routes came from
+        // it, since the registry entry names a file and not its contents.
+        const before = registeredRouteKeys()
         await importRouteFile(config.path)
+        for (const entry of currentRouteTable()) {
+          const method = String(entry.method ?? '').toUpperCase()
+          const path = String(entry.path ?? '')
+          if (!method || !path || before.has(`${method} ${path}`))
+            continue
+          // The registry names a file relative to routes/, so print the
+          // path a reader can actually open.
+          rootMountedAppRoutes.push({ method, path, file: `routes/${config.path}.ts` })
+        }
       }
     }
     catch (error) {
@@ -339,4 +381,23 @@ function normalizeMiddleware(middleware: MiddlewareReference | MiddlewareReferen
   if (!middleware) return []
   if (typeof middleware === 'string') return [middleware]
   return middleware
+}
+
+/**
+ * The live route table.
+ *
+ * Reads `route.routes` rather than the middleware registry: the latter only
+ * holds routes that registered middleware, so it answers empty for a plain
+ * route file.
+ */
+function currentRouteTable(): Array<{ method?: string, path?: unknown }> {
+  return (route as unknown as { routes?: Array<{ method?: string, path?: unknown }> }).routes ?? []
+}
+
+/** The table keyed as `METHOD /path`, for diffing one import's effect. */
+function registeredRouteKeys(): Set<string> {
+  const keys = new Set<string>()
+  for (const entry of currentRouteTable())
+    keys.add(`${String(entry.method ?? '').toUpperCase()} ${String(entry.path ?? '')}`)
+  return keys
 }
