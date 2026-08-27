@@ -12,7 +12,10 @@ export default new Action({
   apiResponse: true,
   async handle(request: RequestInstance) {
     const input = request.all() as Record<string, unknown>
-    const plan = await migrationPlan()
+    // Fresh, not cached: the revision below is an optimistic-concurrency gate,
+    // and checking a caller's token against a plan computed up to a TTL ago
+    // would admit exactly the drift the gate is here to catch.
+    const plan = await migrationPlan({ fresh: true })
     if (stringValue(input.revision) !== plan.revision)
       return response.json({ message: 'The migration state changed. Refresh before reconciling.' }, 409)
     if (stringValue(input.confirmation) !== `reconcile ${plan.environment}`)
