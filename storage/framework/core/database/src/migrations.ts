@@ -3149,6 +3149,64 @@ export async function regenerateMigrationCorpus(options: {
   }
 }
 
+/**
+ * The table a `CREATE TABLE` statement creates, lowercased, or undefined.
+ *
+ * Quoting varies by dialect and by whoever wrote the committed file, so all
+ * four spellings have to reach the same name.
+ */
+export function createdTableName(statement: string): string | undefined {
+  const match = /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["'`[]?([\w$]+)["'`\]]?/i.exec(statement)
+  return match?.[1]?.toLowerCase()
+}
+
+export interface CommittedMigrationIndex {
+  /** Every committed statement, whitespace-normalized, for exact matching. */
+  sql: string
+  /** Tables the committed corpus already creates. */
+  createdTables: Set<string>
+}
+
+export function indexCommittedMigrations(fileContents: readonly string[]): CommittedMigrationIndex {
+  const createdTables = new Set<string>()
+  for (const contents of fileContents) {
+    for (const statement of contents.split(';')) {
+      const table = createdTableName(statement)
+      if (table)
+        createdTables.add(table)
+    }
+  }
+  return { sql: normalizeSqlForComparison(fileContents.join('\n')), createdTables }
+}
+
+function normalizeSqlForComparison(sql: string): string {
+  return sql.replace(/\s+/g, ' ').trim()
+}
+
+/**
+ * Whether a generated statement is already represented in the committed corpus.
+ *
+ * Text matching alone is too weak for `CREATE TABLE`. The generator's
+ * formatting does not have to agree with whatever wrote the committed file - a
+ * hand-authored migration, an older generator, one of the guarantee helpers -
+ * and a single differing space means the statement reads as new. The result is
+ * a SECOND `CREATE TABLE notification_deliveries` written next to the one the
+ * corpus already had, which is what `migrate:fresh` was leaving behind on a
+ * freshly scaffolded app: a failed migration, a half-built database, and
+ * fifteen untracked files to notice and delete (stacksjs/stacks#2323).
+ *
+ * So a `CREATE TABLE` is matched on the table it creates rather than on how it
+ * is written. Everything else still compares text, because an `ALTER` or an
+ * `UPDATE` is only redundant if it is genuinely the same statement.
+ */
+export function generatedStatementIsRedundant(statement: string, index: CommittedMigrationIndex): boolean {
+  const table = createdTableName(statement)
+  if (table)
+    return index.createdTables.has(table)
+
+  return index.sql.includes(normalizeSqlForComparison(statement))
+}
+
 function persistGeneratedMigrations(sqlStatements: string[]): number {
   if (!sqlStatements?.length)
     return 0
@@ -3160,21 +3218,30 @@ function persistGeneratedMigrations(sqlStatements: string[]): number {
   // Skip statements already represented in committed migrations. The qb
   // diff will sometimes restate things after the snapshot gets rewritten,
   // and we'd rather no-op than create a duplicate file.
-  let existingSql = ''
+  const committed: string[] = []
   try {
     for (const f of readdirSync(migrationsDir).filter(f => f.endsWith('.sql')))
-      existingSql += `\n${readFileSync(join(migrationsDir, f), 'utf8')}`
+      committed.push(readFileSync(join(migrationsDir, f), 'utf8'))
   }
   catch { /* nothing committed yet */ }
-  const normalize = (s: string): string => s.replace(/\s+/g, ' ').trim()
-  const haystack = normalize(existingSql)
+  const index = indexCommittedMigrations(committed)
 
   const groups = groupGeneratedStatements(sqlStatements)
   let written = 0
   let cursor = nextMigrationNumber(migrationsDir)
 
   for (const group of groups) {
-    const fresh = group.statements.filter(stmt => !haystack.includes(normalize(stmt)))
+    const fresh = group.statements.filter((stmt) => {
+      if (!generatedStatementIsRedundant(stmt, index))
+        return true
+      // Named rather than dropped in silence: if the corpus creates a table
+      // whose shape has since moved on, this line is the breadcrumb, and
+      // `migrate:regenerate` is the command that rebuilds it properly.
+      const table = createdTableName(stmt)
+      if (table)
+        log.debug(`[migration] Skipping generated CREATE for "${table}" - the committed corpus already creates it.`)
+      return false
+    })
     if (fresh.length === 0)
       continue
 
