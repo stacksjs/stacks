@@ -17,6 +17,7 @@ import {
   projectPath,
   resolve,
   resourcesPath,
+  siteConfigPath,
   storagePath,
   userActionsPath,
   userModelsPath,
@@ -103,6 +104,20 @@ describe('configPath', () => {
   it('should join a subpath', () => {
     const result = configPath('app.ts')
     expect(result).toContain('core/config/app.ts')
+  })
+})
+
+describe('siteConfigPath', () => {
+  it('prefers config/site.ts and falls back to site.config.ts', async () => {
+    const { mkdirSync, mkdtempSync, writeFileSync } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+
+    const root = mkdtempSync(join(tmpdir(), 'stacks-site-config-'))
+    expect(siteConfigPath(root)).toBe(join(root, 'site.config.ts'))
+
+    mkdirSync(join(root, 'config'))
+    writeFileSync(join(root, 'config/site.ts'), 'export default {}\n')
+    expect(siteConfigPath(root)).toBe(join(root, 'config/site.ts'))
   })
 })
 

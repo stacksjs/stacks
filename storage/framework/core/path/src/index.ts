@@ -609,6 +609,17 @@ export function configPath(path?: string): string {
 }
 
 /**
+ * Resolve the application site configuration.
+ *
+ * Modern Stacks applications keep every application config under `config/`.
+ * The root-level fallback preserves compatibility with older projects.
+ */
+export function siteConfigPath(root = projectPath()): string {
+  const configured = join(root, 'config/site.ts')
+  return existsSync(configured) ? configured : join(root, 'site.config.ts')
+}
+
+/**
  * Returns the path to the `core` directory within the framework directory.
  *
  * @param path - The relative path to the file or directory within the core directory.
@@ -1854,6 +1865,7 @@ export interface Path {
   commandsPath: (path?: string) => string
   componentsPath: (path?: string) => string
   configPath: (path?: string) => string
+  siteConfigPath: (root?: string) => string
   projectConfigPath: (path?: string) => string
   corePath: (path?: string) => string
   customElementsDataPath: (path?: string) => string
@@ -2003,6 +2015,7 @@ export const path: Path = {
   commandsPath,
   componentsPath,
   configPath,
+  siteConfigPath,
   projectConfigPath,
   corePath,
   customElementsDataPath,

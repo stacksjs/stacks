@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { installRequestContext, parseCookieHeader } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import { siteConfigPath } from '@stacksjs/path'
 
 /**
  * Request-scoped context (query string + parsed cookies) for `<script
@@ -571,13 +572,13 @@ async function resolveSiteI18n(site: any): Promise<any> {
 }
 
 async function loadStxSiteConfig(): Promise<{ site?: any, i18n?: any }> {
-  const sitePath = join(process.cwd(), 'site.config.ts')
+  const sitePath = siteConfigPath()
   if (!existsSync(sitePath))
     return {}
 
   try {
     const mod = await import(sitePath)
-    const site = mod.default
+    const site = mod.default ?? mod.site ?? mod.config
     if (!site)
       return {}
     if (!site.i18n)

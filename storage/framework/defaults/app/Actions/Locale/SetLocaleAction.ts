@@ -1,9 +1,9 @@
 import { createLocaleSwitchResponse } from '@stacksjs/i18n'
 import { existsSync } from 'node:fs'
-import { projectPath } from '@stacksjs/path'
+import { siteConfigPath } from '@stacksjs/path'
 
 async function loadSiteI18n(): Promise<{ locales: string[], defaultLocale: string } | null> {
-  const sitePath = projectPath('site.config.ts')
+  const sitePath = siteConfigPath()
   if (!existsSync(sitePath))
     return null
 

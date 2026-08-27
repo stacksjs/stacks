@@ -4,7 +4,7 @@ import type { RequestContextSnapshot } from '@stacksjs/config'
 import { join } from 'node:path'
 import { config, installRequestContext, overridesReady, parseCookieHeader, resolveViewPatterns } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { projectPath } from '@stacksjs/path'
+import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
@@ -96,6 +96,10 @@ async function startDefaultServer() {
   const defaultsResources = resolveDefaultsResources()
   const userViewsPath = 'resources/views'
   const defaultViewsPath = join(defaultsResources, 'views')
+  const userComponentsPath = await firstExistingPath([
+    'resources/components',
+    'components',
+  ]) ?? 'resources/components'
   // Layouts and partials are distinct resources. Prefer the
   // framework-standard resources/* paths while retaining the older
   // resources/views/* and root partials locations for existing apps.
@@ -195,7 +199,8 @@ async function startDefaultServer() {
     // Storefront/* (and any future <Namespace>/Component.stx) get
     // resolved. stx-serve walks one subdirectory deep, so this
     // gives us discovery without enumerating every namespace.
-    componentsDir: join(defaultsResources, 'components'),
+    componentsDir: userComponentsPath,
+    fallbackComponentsDir: join(defaultsResources, 'components'),
     layoutsDir: userLayoutsPath,
     // Modern Stacks apps keep include fragments in resources/components;
     // omit only when no conventional include directory exists.
@@ -430,13 +435,13 @@ async function resolveSiteI18n(site: { i18n: { locales: string[], defaultLocale?
 }
 
 async function loadStxSiteConfig(): Promise<{ site?: any, i18n?: any }> {
-  const sitePath = projectPath('site.config.ts')
+  const sitePath = siteConfigPath()
   if (!existsSync(sitePath))
     return {}
 
   try {
     const mod = await import(sitePath)
-    const site = mod.default
+    const site = mod.default ?? mod.site ?? mod.config
     if (!site)
       return {}
 
