@@ -1,5 +1,37 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.86...v0.72.88)
+
+## 🐛 Bug Fixes
+
+- **config**: actually read config/cors.ts ([3211572](https://github.com/stacksjs/stacks/commit/3211572)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **migrations**: match a generated CREATE on its table, not its formatting (#2373) ([8f6d996](https://github.com/stacksjs/stacks/commit/8f6d996)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2323](https://github.com/stacksjs/stacks/issues/2323), [#2373](https://github.com/stacksjs/stacks/issues/2373), [#2373](https://github.com/stacksjs/stacks/issues/2373))
+- **deploy**: stop counting headless sites as page servers (#2372) ([6dae1eb](https://github.com/stacksjs/stacks/commit/6dae1eb)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2367](https://github.com/stacksjs/stacks/issues/2367), [#2372](https://github.com/stacksjs/stacks/issues/2372), [#2372](https://github.com/stacksjs/stacks/issues/2372), [#2349](https://github.com/stacksjs/stacks/issues/2349))
+- **seeder**: let a user model override a default without opting into seeding ([2992a25](https://github.com/stacksjs/stacks/commit/2992a25)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: write the control-char class as escapes so the module parses ([0abf4b7](https://github.com/stacksjs/stacks/commit/0abf4b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **serve**: stop the production server preferring an untracked stx copy (#2371) ([675163d](https://github.com/stacksjs/stacks/commit/675163d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2369](https://github.com/stacksjs/stacks/issues/2369), [#2371](https://github.com/stacksjs/stacks/issues/2371), [#2371](https://github.com/stacksjs/stacks/issues/2371))
+
+## ⚡ Performance Improvements
+
+- **dashboard**: stop rebuilding the migration plan on every operations request (#2370) ([f354e7f](https://github.com/stacksjs/stacks/commit/f354e7f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2370](https://github.com/stacksjs/stacks/issues/2370), [#2370](https://github.com/stacksjs/stacks/issues/2370))
+
+## 📝 Documentation
+
+- **env**: document how config/env.ts becomes the type of `env` (#2374) ([06127c2](https://github.com/stacksjs/stacks/commit/06127c2)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2368](https://github.com/stacksjs/stacks/issues/2368), [#2374](https://github.com/stacksjs/stacks/issues/2374), [#2374](https://github.com/stacksjs/stacks/issues/2374))
+
+## 🔧 Chores
+
+- release v0.72.87 ([3b2b3fe](https://github.com/stacksjs/stacks/commit/3b2b3fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🎉 Miscellaneous
+
+- Merge fix/seeder-override-and-path-sanitize: seeder model override + parseable control-char class ([32933bf](https://github.com/stacksjs/stacks/commit/32933bf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.86...v0.72.87)
 
 ## 🐛 Bug Fixes
