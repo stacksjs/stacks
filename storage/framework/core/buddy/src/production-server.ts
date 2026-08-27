@@ -1,11 +1,12 @@
 import type { RequestContextSnapshot } from '@stacksjs/config'
 import { existsSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { installRequestContext, parseCookieHeader } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
+import { resolveStxSource } from './stx-source'
 
 /**
  * Request-scoped context (query string + parsed cookies) for `<script
@@ -225,26 +226,44 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
   await injectGlobalAutoImports()
 
-      // Resolve the stx `serve` implementation: local STX worktree first
-      // (dev machines), then the project's pantry-vendored copy, then the
-      // installed npm package.
+      // Resolve the stx `serve` implementation.
+      //
+      // The installed dependency, unless someone asked for a different copy by
+      // name. This used to check a hardcoded STX worktree in `~/Code` and the
+      // project's `pantry/` directory FIRST, and take either one silently.
+      //
+      // That made an untracked directory outrank the declared dependency in
+      // the production server. It is how stacksjs/stacks#2369 happened: an app
+      // on `bun-plugin-stx@0.2.231` served every page through a
+      // `pantry/bun-plugin-stx@0.2.76` copy left over from July, which predates
+      // the page-response read-back (added in 0.2.219). So `notFound()` and
+      // `definePageMeta({ status })` recorded a 404 that nothing read, and a
+      // deleted status page answered 200 with its own not-found body - to a
+      // crawler, a cache, and a customer's uptime monitor.
+      //
+      // Nothing about that was visible: no log said which copy had loaded.
+      // A stale checkout is now something you opt into, by path, and the
+      // server says what it loaded either way.
       let stxServe: any
-      const serveCandidates = [
-        join(homedir(), 'Code/Tools/stx/packages/bun-plugin/dist/serve.js'),
-        join(process.cwd(), 'pantry/bun-plugin-stx/dist/serve.js'),
-      ]
-      for (const entry of serveCandidates) {
-        try {
-          if (existsSync(entry)) {
-            ;({ serve: stxServe } = await import(entry))
-            break
-          }
-        }
-        catch { /* try next */ }
+      const serveSource = resolveStxSource({ value: process.env.BUN_PLUGIN_STX_SRC })
+      if (serveSource.kind === 'missing') {
+        // `log.exit`, not `log.error` + `process.exit`: the error write is
+        // async and `process.exit` does not wait for it, so the one line
+        // explaining the refusal is dropped on the way out.
+        await log.exit(
+          `BUN_PLUGIN_STX_SRC points at ${serveSource.path}, which does not exist. `
+          + `Unset it to use the installed bun-plugin-stx.`,
+          ExitCode.FatalError,
+        )
       }
-      if (!stxServe) {
+      if (serveSource.kind === 'override') {
+        ;({ serve: stxServe } = await import(serveSource.path))
+        log.warn(`Serving views through ${serveSource.path} instead of the installed bun-plugin-stx.`)
+      }
+      else {
         ;({ serve: stxServe } = await import('bun-plugin-stx/serve'))
       }
+      log.debug(`stx serve implementation: ${serveSource.kind === 'override' ? serveSource.path : 'bun-plugin-stx/serve'}`)
 
       // Pre-resolve the vendored stx module + site/i18n config so `{t:…}`
       // translation tokens and the lang picker render in production exactly
@@ -504,21 +523,30 @@ export async function startProductionServer(options?: { port?: string | number, 
   log.success(`Production server listening on http://0.0.0.0:${port}`)
 }
 
+/**
+ * The stx module used to render `{t:…}` tokens and the lang picker.
+ *
+ * The installed dependency, unless `STACKS_STX_SRC` names another copy. Same
+ * reasoning as the `serve` resolution above: a hardcoded `~/Code` worktree and
+ * the project's `pantry/` used to win silently over the declared dependency,
+ * which meant a directory nobody tracks decided what the production server
+ * ran. See stacksjs/stacks#2369 for what that cost.
+ */
 async function resolveVendoredStxModule(): Promise<any | undefined> {
-  const candidates = [
-    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
-    join(process.cwd(), 'pantry/@stacksjs/stx/dist/index.js'),
-  ]
-  for (const entry of candidates) {
-    try {
-      if (existsSync(entry))
-        return await import(entry)
-    }
-    catch { /* try next */ }
+  const source = resolveStxSource({ value: process.env.STACKS_STX_SRC })
+  if (source.kind === 'missing') {
+    // See the BUN_PLUGIN_STX_SRC branch above: `log.error` then
+    // `process.exit` prints nothing, because the write never lands.
+    await log.exit(
+      `STACKS_STX_SRC points at ${source.path}, which does not exist. Unset it to use the installed @stacksjs/stx.`,
+      ExitCode.FatalError,
+    )
   }
-  // Production fallback: the installed npm package (resolved from node_modules).
-  // On a deployed server there is no dev worktree or `pantry/` dir — deps are
-  // installed via `bun install`, so this is the path that actually resolves.
+  if (source.kind === 'override') {
+    log.warn(`Rendering through ${source.path} instead of the installed @stacksjs/stx.`)
+    return await import(source.path)
+  }
+
   try {
     return await import('@stacksjs/stx')
   }
@@ -538,36 +566,24 @@ function fallbackI18nFromSite(site: any) {
   }
 }
 
+/**
+ * `resolveI18n` from whichever stx copy this server renders through, so
+ * `{t:…}` tokens and the lang picker behave the same as the pages around them.
+ *
+ * Shares `resolveVendoredStxModule`'s resolution rather than repeating a
+ * candidate list: two lists that were supposed to agree is how one of them
+ * ends up pointing somewhere the other does not.
+ */
 async function resolveSiteI18n(site: any): Promise<any> {
-  const resolverPaths = [
-    join(homedir(), 'Code/Tools/stx/packages/stx/src/site-builder/i18n.ts'),
-    join(homedir(), 'Code/Tools/stx/packages/stx/dist/index.js'),
-    join(process.cwd(), 'pantry/@stacksjs/stx/dist/index.js'),
-  ]
-  for (const resolverPath of resolverPaths) {
-    try {
-      if (!existsSync(resolverPath))
-        continue
-      const resolved = await import(resolverPath)
-      if (typeof resolved.resolveI18n !== 'function')
-        continue
-      const i18n = resolved.resolveI18n(site, process.cwd())
-      if (i18n)
-        return i18n
-    }
-    catch { /* try next */ }
-  }
-  // Production fallback: resolve `resolveI18n` from the installed npm package so
-  // `{t:…}` tokens render on a deployed server (no dev worktree / pantry dir).
   try {
-    const resolved = await import('@stacksjs/stx')
-    if (typeof (resolved as any).resolveI18n === 'function') {
+    const resolved = await resolveVendoredStxModule()
+    if (typeof (resolved as any)?.resolveI18n === 'function') {
       const i18n = (resolved as any).resolveI18n(site, process.cwd())
       if (i18n)
         return i18n
     }
   }
-  catch { /* not installed */ }
+  catch { /* fall back to the site config below */ }
   return fallbackI18nFromSite(site)
 }
 
