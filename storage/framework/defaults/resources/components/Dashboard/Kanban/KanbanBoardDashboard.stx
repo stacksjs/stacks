@@ -29,7 +29,7 @@
   const columns = derived(() => kanban.currentColumns())
   // Inline composer state. Each column has its own (independent) "add
   // card" composer; the boolean tracks whether the input is open.
-  const composingCardForColumnId = state(null)
+  const composingCardForColumnId = state<number | null>(null)
   const draftCardTitle = state('')
   const composingNewColumn = state(false)
   const draftColumnName = state('')
@@ -111,7 +111,7 @@
   // Column color → header accent class. Free-form string in the
   // model, mapped here so a new hue without an explicit mapping
   // falls back to slate.
-  function columnAccentClass(color) {
+  function columnAccentClass(color: string) {
     const swatches: Record<string, string> = {
       slate: 'bg-slate-100 dark:bg-slate-800',
       amber: 'bg-amber-100 dark:bg-amber-900/40',
@@ -131,7 +131,7 @@
 
   // ─── Composer handlers ────────────────────────────────────────────
 
-  function openCardComposer(columnId) {
+  function openCardComposer(columnId: number) {
     composingCardForColumnId.set(columnId)
     draftCardTitle.set('')
   }
@@ -139,7 +139,7 @@
     composingCardForColumnId.set(null)
     draftCardTitle.set('')
   }
-  async function submitCard(columnId) {
+  async function submitCard(columnId: number) {
     const title = draftCardTitle().trim()
     if (!title) {
       closeCardComposer()
@@ -148,7 +148,7 @@
     await kanban.createCard({ columnId, title })
     closeCardComposer()
   }
-  function isComposingFor(columnId) {
+  function isComposingFor(columnId: number) {
     return composingCardForColumnId() === columnId
   }
 
@@ -166,21 +166,22 @@
       closeColumnComposer()
       return
     }
-    if (!board()) return
-    await kanban.createColumn({ boardId: board().id, name })
+    const current = board()
+    if (!current) return
+    await kanban.createColumn({ boardId: current.id, name })
     closeColumnComposer()
   }
 
   // ─── Card detail launcher ─────────────────────────────────────────
 
-  function openDetail(cardId) {
+  function openDetail(cardId: number) {
     kanban.loadUsers() // background-fetch for assignee picker
     kanban.openCardDetail(cardId)
   }
 
   // Label color → tailwind hue. Mirrors the column-accent map but
   // returns a more saturated chip class.
-  function labelChipClass(color) {
+  function labelChipClass(color: string) {
     return ({
       slate:   'bg-slate-100   text-slate-700   dark:bg-slate-800/60  dark:text-slate-200',
       amber:   'bg-amber-100   text-amber-700   dark:bg-amber-900/40  dark:text-amber-200',
@@ -192,7 +193,7 @@
     })[color] || 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200'
   }
 
-  function initialsOf(name, email) {
+  function initialsOf(name: string | null | undefined, email: string | null | undefined) {
     const source = (name || email || '?').trim()
     const parts = source.split(/\s+/).filter(Boolean)
     if (parts.length === 0) return '?'
@@ -200,7 +201,7 @@
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
   }
 
-  function formatDueDate(iso) {
+  function formatDueDate(iso: string | null | undefined) {
     if (!iso) return ''
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return ''

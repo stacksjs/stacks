@@ -47,7 +47,7 @@ const classes = getClasses()
     >
       <!-- Leading icon slot -->
       <span class="flex items-center justify-center h-4 w-4 text-current opacity-70">
-        {{ iconSlot }}
+        <slot name="icon" />
       </span>
 
       <!-- Content -->
@@ -56,7 +56,7 @@ const classes = getClasses()
       </span>
 
       <!-- Trailing content slot (for shortcuts, badges, etc.) -->
-      {{ trailingSlot }}
+      <slot name="trailing" />
     </a>
   @else
     <button
@@ -66,7 +66,7 @@ const classes = getClasses()
     >
       <!-- Leading icon slot -->
       <span class="flex items-center justify-center h-4 w-4 text-current opacity-70">
-        {{ iconSlot }}
+        <slot name="icon" />
       </span>
 
       <!-- Content -->
@@ -75,6 +75,6 @@ const classes = getClasses()
       </span>
 
       <!-- Trailing content slot (for shortcuts, badges, etc.) -->
-      {{ trailingSlot }}
+      <slot name="trailing" />
     </button>
   @endif

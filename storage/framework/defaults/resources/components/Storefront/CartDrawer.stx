@@ -63,24 +63,44 @@
 
 <script data-stx-scoped>
 ;(() => {
+  /*
+   * The two properties this block puts on `window`, named in one place.
+   *
+   * A cast rather than a `declare global`: an ambient declaration has to sit at
+   * the top level of a module, and this block is not one. A cast is an ordinary
+   * annotation, which is what the rest of this script already relies on.
+   */
+  const w = window as Window & {
+    /** Set by this block so a fragment swap cannot stack a second set of listeners. */
+    __stxCartWired?: boolean
+    /** The hooks this drawer publishes for other components to drive it. */
+    stxCart?: { open: () => void, shut: () => void, refresh: () => Promise<void> }
+  }
+
   // Idempotency guard. SPA fragment swaps re-inject scoped scripts when
   // the cart link is followed; without this, every navigation stacked
   // another set of click listeners on [data-stx-add-to-cart] buttons,
   // and a single click would fire two/three/N XHRs — the user-visible
   // tell was a brief flicker as the drawer opened, refreshed, then
   // refreshed again from the duplicate handlers.
-  if (window.__stxCartWired) return
-  window.__stxCartWired = true
+  if (w.__stxCartWired) return
+  w.__stxCartWired = true
 
-  const root = document.querySelector('[data-stx-cart-drawer]')
+  const root = document.querySelector<HTMLElement>('[data-stx-cart-drawer]')
   if (!root) return
-  const backdrop = root.querySelector('[data-stx-cart-backdrop]')
-  const panel = root.querySelector('[data-stx-cart-panel]')
-  const closeBtn = root.querySelector('[data-stx-cart-close]')
-  const list = root.querySelector('[data-stx-cart-list]')
-  const empty = root.querySelector('[data-stx-cart-empty]')
-  const footer = root.querySelector('[data-stx-cart-footer]')
-  const subtotalEl = root.querySelector('[data-stx-cart-subtotal]')
+  const backdrop = root.querySelector<HTMLElement>('[data-stx-cart-backdrop]')
+  const panel = root.querySelector<HTMLElement>('[data-stx-cart-panel]')
+  const closeBtn = root.querySelector<HTMLElement>('[data-stx-cart-close]')
+  const list = root.querySelector<HTMLElement>('[data-stx-cart-list]')
+  const empty = root.querySelector<HTMLElement>('[data-stx-cart-empty]')
+  const footer = root.querySelector<HTMLElement>('[data-stx-cart-footer]')
+  const subtotalEl = root.querySelector<HTMLElement>('[data-stx-cart-subtotal]')
+
+  // `open()` and `shut()` drive both of these on every call. A drawer missing
+  // either is not a drawer, so this leaves rather than throwing halfway
+  // through the first open.
+  if (!backdrop || !panel)
+    return
 
   // Reserve the scrollbar gutter on <html> so locking page scroll while
   // the drawer is open doesn't cause the page width to jump (~17px on
@@ -89,10 +109,10 @@
   // because the scrollbar disappeared.
   document.documentElement.style.scrollbarGutter = 'stable'
 
-  let lastFocus = null
+  let lastFocus: HTMLElement | null = null
 
-  function open() {
-    lastFocus = document.activeElement
+  const open = () => {
+    lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null
     root.style.pointerEvents = 'auto'
     root.setAttribute('aria-hidden', 'false')
     backdrop.style.opacity = '1'
@@ -101,7 +121,7 @@
     // Move focus into the panel so Esc + Tab work as expected.
     requestAnimationFrame(() => { panel.focus({ preventScroll: true }) })
   }
-  function shut() {
+  const shut = () => {
     root.style.pointerEvents = 'none'
     root.setAttribute('aria-hidden', 'true')
     backdrop.style.opacity = '0'
@@ -119,10 +139,11 @@
   })
 
   function escapeHtml(s: string) {
-    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+    const entities: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }
+    return String(s ?? '').replace(/[&<>"']/g, c => entities[c] ?? c)
   }
 
-  function render(items, subtotal) {
+  const render = (items: Array<{ slug?: string, name?: string, image?: string, qty?: number | string, price?: number | string, lineTotal?: number | string }> | null | undefined, subtotal: number | string) => {
     if (!list || !empty || !footer) return
     if (!items || items.length === 0) {
       list.classList.add('hidden')
@@ -156,13 +177,14 @@
     if (subtotalEl) subtotalEl.textContent = '$' + (Number(subtotal) || 0).toFixed(2)
   }
 
-  let inflightRefresh = null
-  async function refresh() {
+  let inflightRefresh: Promise<void> | null = null
+  const refresh = async (): Promise<void> => {
     // Coalesce concurrent refreshes — if a click fires two refresh() in a
     // row (e.g. add-to-cart + open both call refresh), they reuse the
     // same network request and the drawer doesn't briefly toggle between
     // empty and populated.
-    if (inflightRefresh) return inflightRefresh
+    if (inflightRefresh)
+      return inflightRefresh
     inflightRefresh = (async () => {
       try {
         const res = await fetch('/api/cart', {
@@ -174,7 +196,7 @@
         render(data.items || [], data.subtotal || 0)
         const badge = document.querySelector('[data-stx-cart-count]')
         if (badge) {
-          const total = (data.items || []).reduce((s: string, i) => s + (Number(i.qty) || 0), 0)
+          const total = (data.items || []).reduce((sum: number, item: { qty?: number | string }) => sum + (Number(item.qty) || 0), 0)
           badge.textContent = String(total)
           badge.classList.toggle('hidden', total === 0)
         }
@@ -186,7 +208,7 @@
   }
 
   // Public hooks for other components to call.
-  window.stxCart = {
+  w.stxCart = {
     open: () => { open(); refresh() },
     shut,
     refresh,

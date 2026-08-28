@@ -43,8 +43,13 @@ const {
   //      = two listeners per button = doubled increments per click.
   //   2. SPA fragment swaps that re-inject our scoped script don't
   //      keep multiplying handlers; the guard below early-returns.
-  if (window.__stxQtyWired) return
-  window.__stxQtyWired = true
+  const w = window as Window & {
+    /** Set by this block so a fragment swap cannot stack a second set of listeners. */
+    __stxQtyWired?: boolean
+  }
+
+  if (w.__stxQtyWired) return
+  w.__stxQtyWired = true
 
   // Default min/max chosen to match the component's defineProps fallbacks.
   // STX SSR doesn't reliably propagate defineProps default values into
@@ -53,13 +58,13 @@ const {
   // these fallbacks Math.min(0, qty+1) capped every increment at 0 and
   // the +/- buttons appeared dead. Read either the data-* on the wrapper
   // or the input attribute, whichever is non-empty.
-  function bound(wrap, kind: string, fallback) {
+  function bound(wrap: HTMLElement, kind: string, fallback: number) {
     const fromData = wrap.getAttribute('data-' + kind)
     if (fromData && fromData.trim() !== '') {
       const n = Number(fromData)
       if (Number.isFinite(n)) return n
     }
-    const input = wrap.querySelector('input[type="number"]')
+    const input = wrap.querySelector<HTMLInputElement>('input[type="number"]')
     const fromAttr = input && input.getAttribute(kind)
     if (fromAttr && fromAttr.trim() !== '') {
       const n = Number(fromAttr)
@@ -68,8 +73,8 @@ const {
     return fallback
   }
 
-  function step(wrap, delta) {
-    const input = wrap.querySelector('input[type="number"]')
+  function step(wrap: HTMLElement, delta: number) {
+    const input = wrap.querySelector<HTMLInputElement>('input[type="number"]')
     if (!input) return
     const min = bound(wrap, 'min', 1)
     const max = bound(wrap, 'max', 99)
@@ -88,7 +93,7 @@ const {
     const dec = target.closest('[data-stx-qty-dec]')
     const inc = target.closest('[data-stx-qty-inc]')
     if (!dec && !inc) return
-    const wrap = (dec || inc).closest('[data-stx-qty]')
+    const wrap = (dec ?? inc)?.closest<HTMLElement>('[data-stx-qty]')
     if (!wrap) return
     e.preventDefault()
     step(wrap, dec ? -1 : 1)

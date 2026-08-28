@@ -84,15 +84,15 @@ defineProps<ComingSoonProps>()
 // Client-side wiring for the holding-page email form. The endpoint
 // itself (/api/email/subscribe) is rate-limited server-side; this
 // handler just gives the visitor immediate feedback.
-const form = document.getElementById('coming-soon-form')
-const emailInput = document.getElementById('coming-soon-email')
-const submitBtn = document.getElementById('coming-soon-submit')
+const form = document.getElementById('coming-soon-form') as HTMLFormElement | null
+const emailInput = document.getElementById('coming-soon-email') as HTMLInputElement | null
+const submitBtn = document.getElementById('coming-soon-submit') as HTMLButtonElement | null
 const submitLabel = document.getElementById('coming-soon-submit-label')
 const spinner = document.getElementById('coming-soon-spinner')
 const errorEl = document.getElementById('coming-soon-error')
 const successEl = document.getElementById('coming-soon-success')
 
-function setLoading(loading) {
+function setLoading(loading: boolean) {
   if (!submitBtn || !submitLabel || !spinner) return
   submitBtn.disabled = loading
   submitBtn.classList.toggle('opacity-50', loading)
@@ -100,7 +100,7 @@ function setLoading(loading) {
   spinner.classList.toggle('hidden', !loading)
 }
 
-function showError(message) {
+function showError(message: string) {
   if (!errorEl) return
   errorEl.textContent = message
   errorEl.classList.remove('hidden')

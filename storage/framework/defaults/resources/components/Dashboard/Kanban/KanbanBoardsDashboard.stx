@@ -121,7 +121,7 @@
   // Color → tailwind class. Free-form string in the model, mapped here
   // so the UI stays stable when a new hue is added without an explicit
   // mapping (falls back to violet).
-  function accentClass(color) {
+  function accentClass(color: string) {
     const swatches: Record<string, string> = {
       violet: 'bg-violet-500',
       blue: 'bg-blue-500',

@@ -214,7 +214,7 @@ function initialsOf(name: string | null, email: string | null): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-function formatTimestamp(iso: string | null): string {
+function formatTimestamp(iso: string | null | undefined): string {
   if (!iso)
     return ''
   const date = new Date(iso)
@@ -286,7 +286,7 @@ function formatTimestamp(iso: string | null): string {
             </div>
           </div>
 
-          <div :if="openCard().comments.length === 0 && !loadingCard()" class="italic text-zinc-400 text-xs">No comments yet.</div>
+          <div :if="cardComments().length === 0 && !loadingCard()" class="italic text-zinc-400 text-xs">No comments yet.</div>
           <ul class="space-y-3">
             <li :for="comment in cardComments" class="flex gap-3">
               <span class="inline-flex flex-shrink-0 items-center justify-center h-7 w-7 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(comment.authorName, comment.authorEmail)"></span>
@@ -334,14 +334,14 @@ function formatTimestamp(iso: string | null): string {
 
           <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
             <span :for="label in cardLabels" :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(label.color)}`" :text="label.name"></span>
-            <span :if="openCard().labels.length === 0" class="italic text-zinc-400 text-xs">None</span>
+            <span :if="cardLabels().length === 0" class="italic text-zinc-400 text-xs">None</span>
           </div>
 
           <div :if="showLabelPicker()" class="space-y-2">
             <div :for="label in allLabels" :class="`flex items-center gap-1 px-1 py-0.5 w-full rounded ${labelChipClass(label.color)}`">
-              <button type="button" class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90" :aria-pressed="String(openCard().labels.some(cardLabel => cardLabel.id === label.id))" @click="toggleLabel(label.id)">
+              <button type="button" class="flex flex-1 items-center justify-between px-1 py-0.5 min-w-0 text-left text-xs rounded hover:opacity-90" :aria-pressed="String(cardLabels().some(cardLabel => cardLabel.id === label.id))" @click="toggleLabel(label.id)">
                 <span class="truncate" :text="label.name"></span>
-                <span :if="openCard().labels.some(cardLabel => cardLabel.id === label.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
+                <span :if="cardLabels().some(cardLabel => cardLabel.id === label.id)" class="h-3 w-3 i-hugeicons-tick-02"></span>
               </button>
               <Button variant="ghost" size="xs" iconOnly :ariaLabel="'Delete label ' + label.name" @click="requestDelete('label', label.id)">
                 <span class="block h-3 w-3 text-red-500 i-hugeicons-cancel-01"></span>
@@ -376,15 +376,15 @@ function formatTimestamp(iso: string | null): string {
               <span class="inline-flex items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(assignee.name, assignee.email)"></span>
               <span :text="assignee.name || assignee.email || 'Unknown'"></span>
             </div>
-            <span :if="openCard().assignees.length === 0" class="italic text-zinc-400 text-xs">Unassigned</span>
+            <span :if="cardAssignees().length === 0" class="italic text-zinc-400 text-xs">Unassigned</span>
           </div>
 
           <div :if="showAssigneePicker()" class="overflow-y-auto space-y-1 max-h-48">
             <p :if="kanban.users().length === 0" class="italic text-zinc-400 text-xs">No users to assign.</p>
-            <button :for="user in kanban.users" type="button" :aria-pressed="String(openCard().assignees.some(assignee => assignee.userId === user.id))" @click="toggleAssignee(user.id)" class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded">
+            <button :for="user in kanban.users" type="button" :aria-pressed="String(cardAssignees().some(assignee => assignee.userId === user.id))" @click="toggleAssignee(user.id)" class="flex gap-2 items-center px-2 py-1.5 w-full text-left text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded">
               <span class="inline-flex flex-shrink-0 items-center justify-center h-6 w-6 font-medium text-[10px] text-white bg-violet-500 rounded-full" :text="initialsOf(user.name, user.email)"></span>
               <span class="flex-1 text-zinc-700 truncate dark:text-zinc-200" :text="user.name || user.email"></span>
-              <span :if="openCard().assignees.some(assignee => assignee.userId === user.id)" class="h-3.5 w-3.5 text-violet-500 i-hugeicons-tick-02"></span>
+              <span :if="cardAssignees().some(assignee => assignee.userId === user.id)" class="h-3.5 w-3.5 text-violet-500 i-hugeicons-tick-02"></span>
             </button>
           </div>
         </section>
@@ -395,8 +395,8 @@ function formatTimestamp(iso: string | null): string {
         </section>
 
         <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-          <p class="text-[10px] text-zinc-400">Created <span :text="formatTimestamp(openCard().createdAt)"></span></p>
-          <p :if="openCard().updatedAt && openCard().updatedAt !== openCard().createdAt" class="text-[10px] text-zinc-400">Updated <span :text="formatTimestamp(openCard().updatedAt)"></span></p>
+          <p class="text-[10px] text-zinc-400">Created <span :text="formatTimestamp(openCard()?.createdAt)"></span></p>
+          <p :if="openCard()?.updatedAt && openCard()?.updatedAt !== openCard()?.createdAt" class="text-[10px] text-zinc-400">Updated <span :text="formatTimestamp(openCard()?.updatedAt)"></span></p>
         </section>
       </aside>
     </div>

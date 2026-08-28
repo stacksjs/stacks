@@ -198,6 +198,7 @@ export const blogUrl = publicApplicationUrl('/blog')
 <script client>
 // Plain async transport for /api/dashboard/blog, which reads and writes the
 // markdown files in content/blog. It owns no state; the signals below do.
+import type { BlogPost, BlogPostDraft } from '~/storage/framework/defaults/functions/blog'
 import { deleteBlogPost, fetchBlogPost, fetchBlogPosts, saveBlogPost } from '~/storage/framework/defaults/functions/blog'
 
 const publicBlogBaseUrl = {{ blogUrl }}
@@ -205,7 +206,7 @@ const publicBlogBaseUrl = {{ blogUrl }}
 // Fixed-length list purely to render the loading skeleton rows.
 const skeletonRows = [1, 2, 3, 4]
 
-const posts = state([])
+const posts = state<BlogPost[]>([])
 const isLoading = state(true)
 const isSaving = state(false)
 const loadError = state('')
@@ -213,18 +214,29 @@ const searchQuery = state('')
 const statusFilter = state('all')
 
 const isEditorOpen = state(false)
-const editingPost = state(null)
+const editingPost = state<BlogPost | null>(null)
 const loadedBody = state('')
 const bodyLoading = state(false)
 const bodyLoadFailed = state(false)
 const formError = state('')
 
-const postToDelete = state(null)
+const postToDelete = state<BlogPost | null>(null)
 const isDeleting = state(false)
 const deleteError = state('')
 let editorRequestId = 0
 
-function publicPostUrl(slug) {
+/**
+ * A caught value's message.
+ *
+ * `catch (error)` binds `unknown`, and reading `.message` off it assumes every
+ * throw is an `Error` - a rejected fetch or a thrown string would render
+ * `undefined` into the banner the user reads.
+ */
+function messageOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function publicPostUrl(slug: string) {
   return `${publicBlogBaseUrl}/${encodeURIComponent(String(slug))}`
 }
 
@@ -256,7 +268,7 @@ const filteredPosts = derived(() => {
   })
 })
 
-function statusClass(draft) {
+function statusClass(draft: boolean) {
   return draft
     ? 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
     : 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
@@ -278,7 +290,7 @@ function clearFilters() {
   statusFilter.set('all')
 }
 
-async function openEditor(post) {
+async function openEditor(post: BlogPost) {
   const requestId = ++editorRequestId
   formError.set('')
   editingPost.set(post)
@@ -293,7 +305,7 @@ async function openEditor(post) {
   await loadEditorBody(post, requestId)
 }
 
-async function loadEditorBody(post, requestId = ++editorRequestId) {
+async function loadEditorBody(post: BlogPost, requestId = ++editorRequestId) {
   bodyLoading.set(true)
   bodyLoadFailed.set(false)
   formError.set('')
@@ -307,7 +319,7 @@ async function loadEditorBody(post, requestId = ++editorRequestId) {
   catch (error) {
     if (requestId === editorRequestId) {
       bodyLoadFailed.set(true)
-      formError.set(`Couldn't load this post's content: ${error.message}`)
+      formError.set(`Couldn't load this post's content: ${messageOf(error)}`)
     }
   }
   finally {
@@ -335,7 +347,7 @@ function closeEditor() {
   formError.set('')
 }
 
-async function submit(draft) {
+async function submit(draft: BlogPostDraft) {
   isSaving.set(true)
   formError.set('')
 
@@ -351,14 +363,14 @@ async function submit(draft) {
   }
   catch (error) {
     // Keep the editor open on failure so the author's work is not thrown away.
-    formError.set(error.message)
+    formError.set(messageOf(error))
   }
   finally {
     isSaving.set(false)
   }
 }
 
-function askDelete(post) {
+function askDelete(post: BlogPost) {
   deleteError.set('')
   postToDelete.set(post)
 }
@@ -384,7 +396,7 @@ async function confirmDelete() {
     postToDelete.set(null)
   }
   catch (error) {
-    deleteError.set(`Couldn't delete "${post.title}": ${error.message}`)
+    deleteError.set(`Couldn't delete "${post.title}": ${messageOf(error)}`)
   }
   finally {
     isDeleting.set(false)
@@ -399,7 +411,7 @@ async function load() {
     posts.set(list)
   }
   catch (error) {
-    loadError.set(error.message)
+    loadError.set(messageOf(error))
   }
   finally {
     isLoading.set(false)
@@ -408,5 +420,11 @@ async function load() {
 
 // onMount, not effect: load() writes the same `posts` signal the derived signals
 // read, so an effect would re-trigger itself on every load.
-onMount(load)
+//
+// Wrapped rather than passed directly. `onMount` takes `() => void | StxCleanup`,
+// and an async function returns a promise - which stx would treat as the
+// cleanup value if it took one, and which hides a rejection either way. `load`
+// handles its own errors into `loadError`, so the promise is deliberately
+// dropped here.
+onMount(() => { void load() })
 </script>

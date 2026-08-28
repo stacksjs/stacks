@@ -15,6 +15,7 @@ export const navSections = buildWebSidebarSections()
 </script>
 
 <script client>
+import type { ColorMode, SidebarStyle } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
 import {
   COLOR_MODE_OPTIONS,
   SIDEBAR_STYLE_OPTIONS,
@@ -37,20 +38,20 @@ const hiddenSections = appearance.hiddenSections
 
 const hiddenCount = derived(() => hiddenSections().length)
 
-function selectStyle(id) {
+function selectStyle(id: SidebarStyle) {
   appearance.setSidebarStyle(id)
 }
 
-function selectColorMode(id) {
+function selectColorMode(id: ColorMode) {
   appearance.setColorMode(id)
 }
 
-function isVisible(id) {
+function isVisible(id: string) {
   return !hiddenSections().includes(id)
 }
 
-function toggleSection(id, event) {
-  appearance.toggleSection(id, event.target.checked)
+function toggleSection(id: string, event: Event) {
+  appearance.toggleSection(id, (event.target as HTMLInputElement).checked)
 }
 
 function resetAll() {
@@ -64,7 +65,7 @@ function resetAll() {
 // upstream. It stays because it is the better shape regardless: one selector
 // per state in the block below, rather than two class strings kept in sync by
 // hand inside a ternary.
-const selected = (a: number, b) => String(a === b)
+const selected = (a: unknown, b: unknown) => String(a === b)
 </script>
 
 <style>
