@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.100...v0.72.101)
+
+## 🐛 Bug Fixes
+
+- **desktop**: an app declaring LSMinimumSystemVersion produced a duplicate key ([a13c9c0](https://github.com/stacksjs/stacks/commit/a13c9c0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.99...v0.72.100)
 
 ## ✨ Features
