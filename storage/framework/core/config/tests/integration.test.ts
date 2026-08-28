@@ -37,7 +37,6 @@ import {
   defineEmail,
   defineHashing,
   defineLibrary,
-  defineModel,
   definePayment,
   defineQueue,
   defineSearchEngine,
@@ -365,9 +364,18 @@ describe('define* config helpers', () => {
     expect(defineLibrary(input)).toBe(input)
   })
 
-  test('defineModel returns the same config object', () => {
-    const input = { name: 'User' } as any
-    expect(defineModel(input)).toBe(input)
+  /*
+   * There is no `defineModel` here, deliberately. `@stacksjs/orm` owns that
+   * name, and its version is `<const TDef extends ModelDefinition>` returning a
+   * model. The one this package exported was `(config: Model) => Model`, which
+   * shares the name and nothing else: it handed back the definition and widened
+   * every literal in it - the table name, the attribute names - so a model that
+   * imported the wrong one silently lost the typing the ORM version exists to
+   * provide.
+   */
+  test('defineModel is not exported from @stacksjs/config', async () => {
+    const helpers = await import('../src/helpers') as Record<string, unknown>
+    expect(helpers.defineModel).toBeUndefined()
   })
 
   test('definePayment returns the same config object', () => {
