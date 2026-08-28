@@ -722,7 +722,7 @@ export {
 // Boot-time listener auto-discovery (stacksjs/stacks#1878 E-3,
 // closing F-3 from #1874). Scans `app/Listeners/**/*.ts` for
 // default-exported `{ listensTo, handle }` modules and registers them.
-export { defineListener, discoverListeners, registerAppListeners, resetListenerRegistry } from './discover'
+export { defineListener, discoverListeners, registerAppListeners, resetListenerRegistry, resetNameRegistries } from './discover'
 export type { EventSubscription, ListenerModule, SubscriptionPayload } from './discover'
 
 // Singleton-friendly scope alias (#1878 E-5). Use to create a

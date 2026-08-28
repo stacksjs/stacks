@@ -46,7 +46,7 @@
  */
 
 import { existsSync, readdirSync, statSync } from 'node:fs'
-import { extname, join } from 'node:path'
+import { extname, join, resolve } from 'node:path'
 import process from 'node:process'
 import type { EventName, StacksEvents } from './index'
 import { listen } from './index'
@@ -478,6 +478,74 @@ function warnOnPayloadMismatch(
 }
 
 /**
+ * The generated name registries: listener name to file, and action path to
+ * file, both resolved absolute.
+ *
+ * `buddy generate` writes `storage/framework/auto-imports/{listeners,actions}.ts`
+ * from the same directories this module used to walk - and they are the same
+ * maps `EventListeners` is `keyof`'d from, so a name that type-checks in
+ * `app/Events.ts` is a name that resolves here.
+ *
+ * Returns null when they are absent, and every caller falls back to walking the
+ * directories, so a project that has not run `buddy generate` still works.
+ * Keyed on `base` because `registerAppListeners({ base })` may be pointed at a
+ * different project - the tests do exactly that.
+ */
+const registryCache = new Map<string, Promise<Record<string, string> | null>>()
+
+async function loadNameRegistry(base: string, file: string, exportName: string): Promise<Record<string, string> | null> {
+  const key = `${base}:${file}`
+  const cached = registryCache.get(key)
+  if (cached)
+    return cached
+
+  const loading = (async () => {
+    try {
+      const dir = join(base, 'storage', 'framework', 'auto-imports')
+      const module = await import(join(dir, `${file}.ts`)) as Record<string, unknown>
+      const map = module[exportName] as Record<string, string> | undefined
+      if (!map)
+        return null
+
+      return Object.fromEntries(
+        Object.entries(map).map(([name, relativePath]) => [name, resolve(dir, relativePath)]),
+      )
+    }
+    catch {
+      return null
+    }
+  })()
+
+  registryCache.set(key, loading)
+
+  return loading
+}
+
+/**
+ * A listener name to the file it resolves to, from the registries.
+ *
+ * `app/Events.ts` names listeners WITHOUT the `Actions/` prefix - the map holds
+ * `'SendWelcomeEmail'`, and the action registry holds
+ * `'Actions/SendWelcomeEmail'` - so the action half is looked up with the
+ * prefix put back on. Listeners win over actions, which is the order
+ * `resolveListener` documents and the order applications rely on.
+ */
+async function registeredListenerFile(base: string, name: string): Promise<string | null> {
+  const listeners = await loadNameRegistry(base, 'listeners', 'listeners')
+  const actions = await loadNameRegistry(base, 'actions', 'actions')
+
+  if (!listeners && !actions)
+    return null
+
+  return listeners?.[name] ?? actions?.[`Actions/${name}`] ?? null
+}
+
+/** For tests, and for a dev server that regenerated the registries. */
+export function resetNameRegistries(): void {
+  registryCache.clear()
+}
+
+/**
  * Where a listener name is looked up, in override order.
  *
  * The application's own `app/` first, the framework defaults behind it - the
@@ -521,6 +589,13 @@ async function resolveListener(
   name: string,
 ): Promise<{ id: string, handle: (_payload: unknown, _event?: string) => unknown, validations?: PayloadValidations } | null> {
   const candidates: string[] = []
+
+  // The registry first: it is exact, it is the same list the compiler checked
+  // the name against, and it works inside a compiled binary where probing
+  // source directories finds nothing.
+  const registered = await registeredListenerFile(base, name)
+  if (registered)
+    candidates.push(registered)
 
   for (const root of listenerRoots(base)) {
     for (const directory of ['Listeners', 'Actions']) {

@@ -139,6 +139,44 @@ import * as p from '@stacksjs/path'
 import { policy as registerPolicy } from './gate'
 
 /**
+ * The generated policy registry: name to file, resolved absolute.
+ *
+ * `buddy generate` writes `storage/framework/auto-imports/policies.ts` from
+ * `app/Policies/` and the framework defaults behind it - the same map
+ * `PolicyClasses` is `keyof`'d from, so a name that type-checks is a name that
+ * resolves here.
+ *
+ * Returns null when the file is absent, and the callers fall back to walking
+ * the directories, so a project that has not run `buddy generate` still works.
+ */
+let policyRegistry: Promise<Record<string, string> | null> | null = null
+
+async function loadPolicyRegistry(): Promise<Record<string, string> | null> {
+  if (policyRegistry)
+    return policyRegistry
+
+  policyRegistry = (async () => {
+    try {
+      const dir = p.storagePath('framework/auto-imports')
+      const module = await import(`${dir}/policies.ts`) as { policies?: Record<string, string> }
+      if (!module.policies)
+        return null
+
+      const { resolve } = await import('node:path')
+
+      return Object.fromEntries(
+        Object.entries(module.policies).map(([name, file]) => [name, resolve(dir, file)]),
+      )
+    }
+    catch {
+      return null
+    }
+  })()
+
+  return policyRegistry
+}
+
+/**
  * Where policies live, in override order: the application's own first, the
  * framework defaults behind it.
  */
@@ -151,6 +189,10 @@ function policyDirectories(): string[] {
 
 /** Locate a policy file by name, application first. */
 async function findPolicyFile(name: string): Promise<string | null> {
+  const registry = await loadPolicyRegistry()
+  if (registry)
+    return registry[name] ?? null
+
   const { fs } = await import('@stacksjs/storage')
 
   for (const dir of policyDirectories()) {
@@ -160,6 +202,11 @@ async function findPolicyFile(name: string): Promise<string | null> {
   }
 
   return null
+}
+
+/** For tests, and for a dev server that regenerated the registry. */
+export function resetPolicyRegistry(): void {
+  policyRegistry = null
 }
 
 /**
@@ -209,17 +256,33 @@ export async function discoverPolicies(): Promise<void> {
     }
   }
 
-  // Auto-discover policies by convention (ModelPolicy for Model)
-  const policiesDir = p.appPath('Policies')
-  if (!fs.existsSync(policiesDir)) {
-    log.debug('No Policies directory found')
-    return
+  // Auto-discover policies by convention (ModelPolicy for Model).
+  //
+  // From the registry when there is one, and by reading the directory when
+  // there is not. The directory read is the fallback rather than the path,
+  // because `readdirSync` on a source directory finds nothing inside a compiled
+  // binary - where the registry, being a module, is bundled in.
+  const registry = await loadPolicyRegistry()
+  let discovered: Array<{ policyName: string, policyPath: string }>
+
+  if (registry) {
+    discovered = Object.entries(registry)
+      .filter(([name]) => name.endsWith('Policy'))
+      .map(([policyName, policyPath]) => ({ policyName, policyPath }))
+  }
+  else {
+    const policiesDir = p.appPath('Policies')
+    if (!fs.existsSync(policiesDir)) {
+      log.debug('No Policies directory found')
+      return
+    }
+
+    discovered = fs.readdirSync(policiesDir)
+      .filter((file: string) => file.endsWith('Policy.ts'))
+      .map((file: string) => ({ policyName: file.replace('.ts', ''), policyPath: `${policiesDir}/${file}` }))
   }
 
-  const policyFiles = fs.readdirSync(policiesDir).filter((file: string) => file.endsWith('Policy.ts'))
-
-  for (const file of policyFiles) {
-    const policyName = file.replace('.ts', '')
+  for (const { policyName, policyPath } of discovered) {
     const modelName = policyName.replace('Policy', '')
 
     // Skip if already registered via Gates.ts. The comment saying so was here
@@ -228,8 +291,6 @@ export async function discoverPolicies(): Promise<void> {
     // by `PostPolicy` because a file of that name happened to exist.
     if (explicit.has(modelName))
       continue
-
-    const policyPath = `${policiesDir}/${file}`
 
     try {
       const policyModule = await import(policyPath)

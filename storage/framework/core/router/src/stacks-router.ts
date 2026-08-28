@@ -1040,6 +1040,45 @@ async function resolveMiddlewareName(name: string): Promise<string> {
 }
 
 /**
+ * The generated middleware registry: class name to file, resolved absolute.
+ *
+ * `buddy generate` writes `storage/framework/auto-imports/middleware.ts` from
+ * `app/Middleware/` and the framework defaults behind it - the same map
+ * `MiddlewareClasses` is `keyof`'d from, so a class name that type-checks in
+ * `app/Middleware.ts` is one that resolves here.
+ *
+ * Null when the file is absent, and `loadMiddleware` falls back to the two
+ * paths it always tried, so a project that has not run `buddy generate` still
+ * works.
+ */
+let middlewareRegistryPromise: Promise<Record<string, string> | null> | null = null
+
+async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
+  if (middlewareRegistryPromise)
+    return middlewareRegistryPromise
+
+  middlewareRegistryPromise = (async () => {
+    try {
+      const dir = p.storagePath('framework/auto-imports')
+      const module = await import(`${dir}/middleware.ts`) as { middleware?: Record<string, string> }
+      if (!module.middleware)
+        return null
+
+      const { resolve } = await import('node:path')
+
+      return Object.fromEntries(
+        Object.entries(module.middleware).map(([name, file]) => [name, resolve(dir, file)]),
+      )
+    }
+    catch {
+      return null
+    }
+  })()
+
+  return middlewareRegistryPromise
+}
+
+/**
  * Load a middleware by name.
  *
  * Returns null when the alias cannot be resolved to a module with a
@@ -1055,6 +1094,31 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   }
 
   const className = await resolveMiddlewareName(name)
+
+  // The registry first: it is exact, it already encodes the app-over-defaults
+  // override, and it works inside a compiled binary where probing source
+  // directories finds nothing.
+  const registry = await getMiddlewareRegistry()
+  const registered = registry?.[className]
+  if (registered) {
+    try {
+      const middleware = await import(registered)
+      const handler = (middleware.default ?? null) as MiddlewareHandler | null
+      if (!handler || typeof handler.handle !== 'function') {
+        log.error(`[Router] Middleware '${name}' resolved to ${registered}, but the file has no default export with a handle() method`)
+        middlewareCache.set(name, null)
+        return null
+      }
+      middlewareCache.set(name, handler)
+      return handler
+    }
+    catch (err: unknown) {
+      // A registry entry that fails to IMPORT is a broken file, not a missing
+      // one, and the path fallback below would only find the same file again.
+      log.error(`[Router] Failed to load middleware '${name}' from ${registered}:`, err)
+      return null
+    }
+  }
 
   // Try loading from app/Middleware first (user overrides)
   let userPathError: unknown
@@ -1200,6 +1264,8 @@ export function clearMiddlewareCache(): void {
   middlewareCache.clear()
   negatedMiddlewareCache.clear()
   middlewareAliasesPromise = null
+  middlewareRegistryPromise = null
+  actionRegistryPromise = null
   // Action-level CSRF skip cache + route-handler key registry are
   // populated lazily when actions load; they should be flushed in
   // lockstep with the middleware cache so a hot-reloaded action that
@@ -2215,6 +2281,40 @@ export function precognitionSuccess(): Response {
   })
 }
 
+/**
+ * The generated action registry: action path to file, resolved absolute.
+ *
+ * The same map `ActionPath` is `keyof`'d from, so a handler string that
+ * type-checks is one that resolves. Null when the file is absent, and the
+ * path-probing below runs instead.
+ */
+let actionRegistryPromise: Promise<Record<string, string> | null> | null = null
+
+async function getActionRegistry(): Promise<Record<string, string> | null> {
+  if (actionRegistryPromise)
+    return actionRegistryPromise
+
+  actionRegistryPromise = (async () => {
+    try {
+      const dir = p.storagePath('framework/auto-imports')
+      const module = await import(`${dir}/actions.ts`) as { actions?: Record<string, string> }
+      if (!module.actions)
+        return null
+
+      const { resolve } = await import('node:path')
+
+      return Object.fromEntries(
+        Object.entries(module.actions).map(([name, file]) => [name, resolve(dir, file)]),
+      )
+    }
+    catch {
+      return null
+    }
+  })()
+
+  return actionRegistryPromise
+}
+
 async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteHandlerFn> {
   assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
@@ -2266,10 +2366,20 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     fullPath = p.storagePath(`framework/actions/src/${modulePath}.ts`)
   }
   else if (modulePath.includes('Actions')) {
-    // Try user path first, then fall back to defaults
-    const userPath = p.projectPath(`app/${modulePath}.ts`)
-    const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
-    fullPath = await fileExists(userPath) ? userPath : defaultPath
+    // The registry first: it already encodes the app-over-defaults override,
+    // it is the same list the compiler checked the handler string against, and
+    // it works inside a compiled binary where probing source paths does not.
+    const registered = (await getActionRegistry())?.[modulePath]
+
+    if (registered) {
+      fullPath = registered
+    }
+    else {
+      // Try user path first, then fall back to defaults
+      const userPath = p.projectPath(`app/${modulePath}.ts`)
+      const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
+      fullPath = await fileExists(userPath) ? userPath : defaultPath
+    }
   }
   else {
     // Generic app path - try user first, then defaults
