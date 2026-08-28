@@ -747,7 +747,16 @@ export const defaults: StacksOptions = {
   } as any,
 
   filesystems: {
-    driver: 's3',
+    /*
+     * `local`, which is the only disk that always exists.
+     *
+     * This defaulted to `'s3'`, and the s3 disk is built only once
+     * `filesystems.s3.bucket` is set - so a project falling back to these
+     * defaults got `Disk [s3] is not configured. Available: local, public` from
+     * the no-argument `Storage.disk()`, which is the call almost everything
+     * makes.
+     */
+    driver: 'local',
   },
 
   team: {

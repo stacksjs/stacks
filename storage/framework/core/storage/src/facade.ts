@@ -145,7 +145,21 @@ class StorageManager {
     const diskConfig = this.config.disks[diskName]
     if (!diskConfig) {
       const available = Object.keys(this.config.disks).join(', ')
-      throw new Error(`Disk [${diskName}] is not configured. Available: ${available}`)
+
+      /*
+       * The s3 case is called out by name because it is the one that reads as a
+       * bug in the caller rather than in configuration: `s3` is a legal value
+       * for `filesystems.driver`, and the disk is built only when a bucket is
+       * set - so asking for it without one produced "not configured" about a
+       * disk the config plainly names.
+       */
+      const hint = diskName === 's3'
+        ? ' Set `filesystems.s3.bucket` in config/filesystems.ts - the s3 disk is only built once a bucket is configured.'
+        : name === undefined
+          ? ' This is the DEFAULT disk, from `filesystems.driver`; it has to name one of the disks above.'
+          : ''
+
+      throw new Error(`Disk [${diskName}] is not configured. Available: ${available}.${hint}`)
     }
 
     const adapter = this.createAdapter(diskName, diskConfig)

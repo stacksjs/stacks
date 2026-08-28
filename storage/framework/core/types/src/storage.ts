@@ -68,14 +68,25 @@ export interface MimeTypeOptions {
 
 export interface StorageOptions {
   /**
-   * **Storage Driver**
+   * **Default Disk**
    *
-   * The storage driver to utilize.
+   * Which disk `Storage.disk()` returns when called with no name.
+   *
+   * A DISK name, not an adapter name - `buildConfig()` in the storage facade
+   * assigns this straight to `config.default` and then looks it up in
+   * `config.disks`. The union used to be `'s3' | 'efs' | 'local' | 'bun' |
+   * 'memory'`, which is a list of adapters, and two of those are not disks at
+   * all. The scaffolded config picked `'bun'` from it, so `Storage.disk()` threw
+   * `Disk [bun] is not configured. Available: local, public` in a stock app -
+   * with an `as any` in `config/filesystems.ts` standing exactly where the
+   * mismatch would otherwise have been reported.
+   *
+   * `s3` exists as a disk only when `s3.bucket` is configured.
    *
    * @default 'local'
    * @see https://stacksjs.com/docs/storage
    */
-  driver: 's3' | 'efs' | 'local' | 'bun' | 'memory'
+  driver: 'local' | 'public' | 's3'
 
   /**
    * **Root Directory**

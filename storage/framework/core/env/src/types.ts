@@ -227,7 +227,8 @@ export interface FrameworkEnv {
   PHONE_FORWARD_NUMBER: string | undefined
 
   // Storage
-  STORAGE_DRIVER: string | undefined
+  /** A DISK name, read by `config/filesystems.ts` as the default disk. */
+  STORAGE_DRIVER: 'local' | 'public' | 's3' | undefined
   STORAGE_ROOT: string | undefined
   STORAGE_PUBLIC_URL: string | undefined
 

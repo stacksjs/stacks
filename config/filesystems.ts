@@ -12,15 +12,19 @@ import { env } from '@stacksjs/env'
  */
 export default {
   /**
-   * Storage driver to use
+   * Which disk `Storage.disk()` returns when called with no name.
    *
-   * Options: 'local', 'bun', 's3', 'memory'
-   * - 'local': Node.js fs-based storage (compatible, slower)
-   * - 'bun': Bun-native storage (fastest, recommended when using Bun)
-   * - 's3': AWS S3 or S3-compatible storage
-   * - 'memory': In-memory storage (for testing)
+   * Options: 'local', 'public', 's3'
+   * - 'local':  private storage under `storage/app`
+   * - 'public': web-accessible storage under `public/`
+   * - 's3':     AWS S3 or S3-compatible storage; exists only once `s3.bucket`
+   *             below is set
+   *
+   * This is a DISK, not an adapter. It defaulted to `'bun'` - an adapter name,
+   * cast through `as any` because the type said adapters - so `Storage.disk()`
+   * threw `Disk [bun] is not configured` in a stock app.
    */
-  driver: (env.STORAGE_DRIVER || 'bun') as any,
+  driver: env.STORAGE_DRIVER || 'local',
 
   /**
    * Root directory for local/bun drivers
