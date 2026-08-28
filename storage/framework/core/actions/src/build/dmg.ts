@@ -105,26 +105,34 @@ const iconFile = await buildIcon()
  * reads in a macOS permission prompt. The serialiser and the reserved-key list
  * live in `@stacksjs/desktop-build` so they can be tested directly.
  */
-function userlandPlistEntries(): string {
+function readUserlandPlist(): Record<string, unknown> {
   const declared = appPath('Desktop/Info.plist.json')
-  if (!existsSync(declared)) return ''
+  if (!existsSync(declared)) return {}
 
-  let parsed: Record<string, unknown>
   try {
-    parsed = JSON.parse(readFileSync(declared, 'utf8')) as Record<string, unknown>
+    return JSON.parse(readFileSync(declared, 'utf8')) as Record<string, unknown>
   }
   catch (error) {
     throw new Error(`app/Desktop/Info.plist.json is not valid JSON: ${error instanceof Error ? error.message : error}`)
   }
-
-  const { xml, ignored } = renderUserlandPlistEntries(parsed)
-  if (ignored.length > 0)
-    log.info(`Ignoring reserved Info.plist keys from app/Desktop/Info.plist.json: ${ignored.join(', ')}`)
-
-  return xml
 }
 
-const extraPlistEntries = userlandPlistEntries()
+const declaredPlist = readUserlandPlist()
+const { xml: extraPlistEntries, ignored: ignoredPlistKeys } = renderUserlandPlistEntries(declaredPlist)
+if (ignoredPlistKeys.length > 0)
+  log.info(`Ignoring reserved Info.plist keys from app/Desktop/Info.plist.json: ${ignoredPlistKeys.join(', ')}`)
+
+/**
+ * Keys below that the application has taken over.
+ *
+ * A plist with the same key twice is malformed, and these are exactly the ones
+ * an app has reason to set: a utility raising its minimum macOS, or an app
+ * needing transport rules of its own. The app's value wins and the default is
+ * left out, rather than both being emitted.
+ */
+function overriddenByApp(key: string): boolean {
+  return Object.hasOwn(declaredPlist, key)
+}
 
 writeFileSync(join(appDir, 'Contents/Info.plist'), `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -138,9 +146,9 @@ writeFileSync(join(appDir, 'Contents/Info.plist'), `<?xml version="1.0" encoding
   <key>CFBundleExecutable</key><string>${launcherName}</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-  <key>LSMinimumSystemVersion</key><string>11.0</string>
-  <key>NSHighResolutionCapable</key><true/>
-${ownsLauncher
+${overriddenByApp('LSMinimumSystemVersion') ? '' : '  <key>LSMinimumSystemVersion</key><string>11.0</string>\n'}${overriddenByApp('NSHighResolutionCapable') ? '' : '  <key>NSHighResolutionCapable</key><true/>\n'}${overriddenByApp('NSAppTransportSecurity')
+  ? ''
+  : `${ownsLauncher
   ? `  <!-- The window talks to something this app started on loopback, so an
        exception for 127.0.0.1 is all it needs. NSAllowsArbitraryLoads would
        additionally permit every unencrypted host on the internet. -->
@@ -154,7 +162,7 @@ ${ownsLauncher
     </dict>
   </dict>`
   : `  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
-  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`}${iconFile ? `
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`}`}${iconFile ? `
   <key>CFBundleIconFile</key><string>${iconFile}</string>` : ''}${extraPlistEntries}
 </dict>
 </plist>
