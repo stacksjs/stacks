@@ -136,9 +136,28 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
   // the index signature and typed as `string | number | true`.
   await generateEnvFiles()
 
-  // Action paths, for the same reason: the generator existed and nothing ever
-  // ran it, so `route.get(path, 'Actions/…')` was checked against a stale
-  // hand-written file that had been neutered with `| string`.
+  /*
+   * The name registries: actions, listeners, policies, middleware, jobs,
+   * models, email templates.
+   *
+   * These are runtime maps under `storage/framework/auto-imports/`, and the
+   * name types are `keyof` over them - so this IS generating the types, by the
+   * only means that keeps them honest. Refreshing them here matters: they were
+   * written at dev-server boot and nowhere else, so somebody who added an
+   * action and ran `buddy generate:types` would have been told it does not
+   * exist, which is the drift the generated `actions.d.ts` used to have,
+   * reintroduced one level down.
+   */
+  try {
+    const { generateAutoImportFiles } = await import('@stacksjs/server')
+    await generateAutoImportFiles()
+  }
+  catch (error) {
+    log.debug('[generate:types] Could not refresh the auto-import registries', { error })
+  }
+
+  // Route names last, because loading the route table needs the registries
+  // above: a route file names an action, and the resolver reads the map.
   await generateRouteNames()
 
   /*
