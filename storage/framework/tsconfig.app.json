@@ -35,7 +35,19 @@
       "Models/*": ["../../app/Models/*"],
       "Notifications/*": ["../../app/Notifications/*"],
       "~/*": ["../../*"],
-      "@/*": ["../../resources/*"]
+      "@/*": ["../../resources/*"],
+      // Dashboard browser dependencies. The dev server bundles each of these
+      // entrypoints on demand and serves it at the URL on the left, so a
+      // dashboard component reaches its charting runtime with
+      // `await import('/__deps/charts.js')` and never through node_modules.
+      // Without the mapping that specifier is just an unresolvable module, so
+      // every chart in the dashboard was typed `any` behind a TS2307.
+      //
+      // `/__deps/ts-charts.js` is deliberately absent: the dev server finds its
+      // entrypoint at one of three locations depending on the machine, so a
+      // single mapping would resolve here and nowhere else. Nothing imports it
+      // today; give it a mapping when something does and the location settles.
+      "/__deps/charts.js": ["./core/charts/src/index.ts"]
     }
   },
   // Only the four directories you author, plus the generated framework
