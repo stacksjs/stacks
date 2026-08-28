@@ -693,9 +693,62 @@ export type ActionPath =
   | 'Actions/UploadTestAction'
 
 /**
- * Every middleware alias this application registers, and its negated form.
+ * Every middleware alias and class this application can reference, and the
+ * negated form of each.
  */
 export type MiddlewareAlias =
+  | 'Abilities'
+  | '!Abilities'
+  | 'Api'
+  | '!Api'
+  | 'Auth'
+  | '!Auth'
+  | 'Can'
+  | '!Can'
+  | 'Compress'
+  | '!Compress'
+  | 'Cors'
+  | '!Cors'
+  | 'Csrf'
+  | '!Csrf'
+  | 'EnsureEmailIsVerified'
+  | '!EnsureEmailIsVerified'
+  | 'Env'
+  | '!Env'
+  | 'EnvDevelopment'
+  | '!EnvDevelopment'
+  | 'EnvLocal'
+  | '!EnvLocal'
+  | 'EnvNotDevelopment'
+  | '!EnvNotDevelopment'
+  | 'EnvNotLocal'
+  | '!EnvNotLocal'
+  | 'EnvNotProduction'
+  | '!EnvNotProduction'
+  | 'EnvNotStaging'
+  | '!EnvNotStaging'
+  | 'EnvProduction'
+  | '!EnvProduction'
+  | 'EnvStaging'
+  | '!EnvStaging'
+  | 'Guest'
+  | '!Guest'
+  | 'Logger'
+  | '!Logger'
+  | 'Maintenance'
+  | '!Maintenance'
+  | 'Permission'
+  | '!Permission'
+  | 'Role'
+  | '!Role'
+  | 'Signed'
+  | '!Signed'
+  | 'Site'
+  | '!Site'
+  | 'Team'
+  | '!Team'
+  | 'Throttle'
+  | '!Throttle'
   | 'abilities'
   | '!abilities'
   | 'api'
@@ -734,6 +787,8 @@ export type MiddlewareAlias =
   | '!permission'
   | 'role'
   | '!role'
+  | 'signed'
+  | '!signed'
   | 'site'
   | '!site'
   | 'team'
@@ -742,6 +797,38 @@ export type MiddlewareAlias =
   | '!throttle'
   | 'verified'
   | '!verified'
+
+/**
+ * Every middleware class on disk, by the filename the router imports. This is
+ * what an alias in `app/Middleware.ts` may point at.
+ */
+export type MiddlewareClassName =
+  | 'Abilities'
+  | 'Api'
+  | 'Auth'
+  | 'Can'
+  | 'Compress'
+  | 'Cors'
+  | 'Csrf'
+  | 'EnsureEmailIsVerified'
+  | 'Env'
+  | 'EnvDevelopment'
+  | 'EnvLocal'
+  | 'EnvNotDevelopment'
+  | 'EnvNotLocal'
+  | 'EnvNotProduction'
+  | 'EnvNotStaging'
+  | 'EnvProduction'
+  | 'EnvStaging'
+  | 'Guest'
+  | 'Logger'
+  | 'Maintenance'
+  | 'Permission'
+  | 'Role'
+  | 'Signed'
+  | 'Site'
+  | 'Team'
+  | 'Throttle'
 
 /**
  * Every listener `app/Events.ts` can name against an event: the application's
@@ -1393,4 +1480,12 @@ declare module '@stacksjs/bun-router' {
  */
 declare module '@stacksjs/events' {
   interface EventListeners extends Record<EventListenerName, true> {}
+}
+
+/**
+ * Handed to the router, so the alias map in `app/Middleware.ts` is checked
+ * against the middleware that exist rather than against `string`.
+ */
+declare module '@stacksjs/router' {
+  interface MiddlewareClasses extends Record<MiddlewareClassName, true> {}
 }

@@ -123,6 +123,52 @@ async function collectListenerNames(): Promise<string[]> {
 }
 
 /**
+ * Where middleware classes live, in the order `loadMiddleware` searches them.
+ *
+ * The application's own first, the framework defaults behind it.
+ */
+function middlewareDirectories(): string[] {
+  const candidates = [
+    p.appPath('Middleware'),
+    p.storagePath('framework/defaults/app/Middleware'),
+  ]
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    candidates.push(`${pkgJson.slice(0, pkgJson.lastIndexOf('/'))}/app/Middleware`)
+  }
+  catch {
+    // No published defaults package; a vendored checkout has them on disk.
+  }
+
+  return candidates.filter(dir => existsSync(dir))
+}
+
+/**
+ * Every middleware class an alias may name, by the filename `loadMiddleware`
+ * imports: `'Auth'`, `'EnsureEmailIsVerified'`.
+ *
+ * This is what makes the VALUE side of `app/Middleware.ts` checkable. The keys
+ * were already collected below; the values were `string`, so an alias pointing
+ * at a class that does not exist compiled and then failed at the one moment it
+ * mattered - on a request to the route it was supposed to be guarding.
+ */
+async function collectMiddlewareClasses(): Promise<string[]> {
+  const found = new Set<string>()
+
+  for (const dir of middlewareDirectories()) {
+    const files = await readdir(dir, { recursive: true })
+    for (const file of files) {
+      if (!file.endsWith('.ts') || file.endsWith('.d.ts') || file.endsWith('.test.ts'))
+        continue
+      found.add(file.slice(0, -3))
+    }
+  }
+
+  return [...found].sort()
+}
+
+/**
  * The middleware aliases this application can reference.
  *
  * Read from the alias maps themselves - `app/Middleware.ts` first, the
@@ -206,6 +252,7 @@ export async function generateActionTypes(): Promise<void> {
   }
 
   const aliases = await collectMiddlewareAliases()
+  const middlewareClasses = await collectMiddlewareClasses()
   const listeners = await collectListenerNames()
   const namedRoutes = await collectNamedRoutes()
   const union = actions.map(action => `\n  | '${action}'`).join('')
@@ -215,9 +262,19 @@ export async function generateActionTypes(): Promise<void> {
    * it would reject working code. Parameterised forms (`'throttle:60,1'`) are
    * covered by bun-router's own `${alias}:${string}` branch.
    */
-  const middlewareUnion = aliases
+  /*
+   * Aliases and class names both, each with its negated form.
+   *
+   * Class names are in here because they resolve: an unaliased middleware is
+   * reached by name through `toPascalCase`, which is how `Signed.ts` documents
+   * itself (`.middleware('signed')`) without ever having had an alias. Leaving
+   * them out made the type reject references that work.
+   */
+  const middlewareUnion = [...new Set([...aliases, ...middlewareClasses])]
+    .sort()
     .flatMap(alias => [`\n  | '${alias}'`, `\n  | '!${alias}'`])
     .join('')
+  const middlewareClassUnion = middlewareClasses.map(name => `\n  | '${name}'`).join('')
   /*
    * Emitted as `never` when nothing is on disk rather than as `string`. The
    * consumer (`ListenerName` in `@stacksjs/events`) reads an empty registry as
@@ -248,9 +305,16 @@ export async function generateActionTypes(): Promise<void> {
 export type ActionPath =${union}
 
 /**
- * Every middleware alias this application registers, and its negated form.
+ * Every middleware alias and class this application can reference, and the
+ * negated form of each.
  */
 export type MiddlewareAlias =${middlewareUnion || '\n  | string'}
+
+/**
+ * Every middleware class on disk, by the filename the router imports. This is
+ * what an alias in \`app/Middleware.ts\` may point at.
+ */
+export type MiddlewareClassName =${middlewareClassUnion || '\n  | never'}
 
 /**
  * Every listener \`app/Events.ts\` can name against an event: the application's
@@ -289,8 +353,16 @@ declare module '@stacksjs/bun-router' {
 declare module '@stacksjs/events' {
   interface EventListeners extends Record<EventListenerName, true> {}
 }
+
+/**
+ * Handed to the router, so the alias map in \`app/Middleware.ts\` is checked
+ * against the middleware that exist rather than against \`string\`.
+ */
+declare module '@stacksjs/router' {
+  interface MiddlewareClasses extends Record<MiddlewareClassName, true> {}
+}
 `
 
   await storage.writeFile(p.frameworkPath('types/actions.d.ts'), contents)
-  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${listeners.length} listener names and ${Object.keys(namedRoutes).length} named routes`)
+  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${middlewareClasses.length} middleware classes, ${listeners.length} listener names and ${Object.keys(namedRoutes).length} named routes`)
 }
