@@ -55,6 +55,7 @@
     "generate": "./buddy generate",
     "typecheck": "bun x --bun tsc --noEmit -p storage/framework/tsconfig.framework.json --pretty false && bun x --bun tsc --noEmit -p storage/framework/tsconfig.defaults.json --pretty false && (cd storage/framework/core/orm && bun run typecheck:inference) && (cd storage/framework/core/router && bun run typecheck:types) && (cd storage/framework/core/actions && bun run typecheck:types) && (cd storage/framework/core/cli && bun run typecheck:types) && (cd storage/framework/core/env && bun run typecheck:types) && (cd storage/framework/core/events && bun run typecheck:types) && (cd storage/framework/core/auth && bun run typecheck:types)",
     "typecheck:app": "bun x --bun tsc --noEmit -p tsconfig.json --pretty false",
+    "typecheck:views": "bun x --bun stx typecheck 'resources/**/*.stx' 'storage/framework/defaults/views/**/*.stx' 'storage/framework/defaults/resources/components/**/*.stx'",
     "typecheck:clean": "bunx --bun rimraf storage/framework/.cache/typescript",
     "types:check": "bun run typecheck",
     "types:fix": "./buddy types:fix",
