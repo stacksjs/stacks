@@ -6,10 +6,13 @@
  * one endpoint, a typo in the third throws when the URL is built, and a typo in
  * the second serves the route WITHOUT the middleware you thought was on it.
  *
- * `buddy generate:types` discovers all three from what the application actually
- * has and writes them into the router's type registry
- * (`storage/framework/types/actions.d.ts`). This asserts the wiring holds -
- * that the generated declaration reaches the call sites and bites.
+ * All three are DERIVED from what the application actually has, in
+ * `storage/framework/types/registries.d.ts`, by reading the same name maps the
+ * resolvers read (`storage/framework/auto-imports/*.ts`). Nothing writes a
+ * union any more: the 1500-line generated `types/actions.d.ts` this replaces
+ * was correct only until somebody added a file without re-running
+ * `generate:types`. This asserts the wiring holds - that the derivation reaches
+ * the call sites and bites.
  *
  * Checked by `bun run typecheck` via `tsconfig.type-tests.json`; nothing here
  * executes. The `@ts-expect-error` lines are the load-bearing half: each fails
