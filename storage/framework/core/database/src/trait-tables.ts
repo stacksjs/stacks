@@ -45,6 +45,7 @@
  * what filled these columns. Read them back with `parseSqlDateTime()`.
  */
 
+import type { TraitTableName } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import { db } from './utils'
@@ -78,7 +79,7 @@ function updatedAt(sql: SqlHelpers): string {
  * `drivers/defaults/traits.ts` drop exactly these, so a table added here is
  * dropped by `migrate:fresh` without a second list to remember.
  */
-export function traitTableNames(): string[] {
+export function traitTableNames(): TraitTableName[] {
   return [
     'commentables',
     'taggables',
