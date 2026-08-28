@@ -1,5 +1,98 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.98...v0.72.99)
+
+## ✨ Features
+
+- **env**: the framework reads config/env.ts, instead of the app declaring it ([c786e79](https://github.com/stacksjs/stacks/commit/c786e79)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: check template names against the templates that exist ([917a14a](https://github.com/stacksjs/stacks/commit/917a14a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: one name-to-file map per registry, generated for the runtime ([dcd0749](https://github.com/stacksjs/stacks/commit/dcd0749)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: check dispatched job names against the jobs on disk ([8255ca9](https://github.com/stacksjs/stacks/commit/8255ca9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2225](https://github.com/stacksjs/stacks/issues/2225))
+- **auth**: derive the gate and model registries from what exists ([196c1c7](https://github.com/stacksjs/stacks/commit/196c1c7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: defineGates, and a policy map typed against models and policies ([0fa7e53](https://github.com/stacksjs/stacks/commit/0fa7e53)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: generate the middleware class registry into actions.d.ts ([3f0cc27](https://github.com/stacksjs/stacks/commit/3f0cc27)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: type the middleware alias map against the classes on disk ([793562c](https://github.com/stacksjs/stacks/commit/793562c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: generate the listener-name registry into actions.d.ts ([01371f0](https://github.com/stacksjs/stacks/commit/01371f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: type app/Events.ts against real event and listener names ([9a09f21](https://github.com/stacksjs/stacks/commit/9a09f21)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: check an attach against the box before deploying onto it (#2379) ([f102f57](https://github.com/stacksjs/stacks/commit/f102f57)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2379](https://github.com/stacksjs/stacks/issues/2379), [#2379](https://github.com/stacksjs/stacks/issues/2379), [#191](https://github.com/stacksjs/stacks/issues/191))
+- **cloud**: a read-only inventory of what each server is hosting (#2378) ([6730837](https://github.com/stacksjs/stacks/commit/6730837)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2378](https://github.com/stacksjs/stacks/issues/2378), [#2378](https://github.com/stacksjs/stacks/issues/2378), [#2342](https://github.com/stacksjs/stacks/issues/2342))
+
+## 🐛 Bug Fixes
+
+- **dashboard**: the sidebar role map reached the client double-encoded ([a081cf8](https://github.com/stacksjs/stacks/commit/a081cf8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **forms,cms**: type the two contracts these templates render against ([60cd01a](https://github.com/stacksjs/stacks/commit/60cd01a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storefront**: the cart, checkout and order pages never read their own request ([133a6c6](https://github.com/stacksjs/stacks/commit/133a6c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **typecheck**: check every view tree, not just the first ([0f4dbd6](https://github.com/stacksjs/stacks/commit/0f4dbd6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: declare the values crossing the server-to-client bridge ([aa1b37e](https://github.com/stacksjs/stacks/commit/aa1b37e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: narrow the values a call site cannot narrow itself ([3e9e93f](https://github.com/stacksjs/stacks/commit/3e9e93f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: type the implicitly-any parameters across the default components ([5fa7263](https://github.com/stacksjs/stacks/commit/5fa7263)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: map /__deps/charts.js to the module the dev server bundles ([e275bec](https://github.com/stacksjs/stacks/commit/e275bec)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: type the component script blocks, and fix two dead slots ([428e326](https://github.com/stacksjs/stacks/commit/428e326)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: leave the traffic lights to the platform ([fe1b1cb](https://github.com/stacksjs/stacks/commit/fe1b1cb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: type the script blocks in the default components ([9a9a421](https://github.com/stacksjs/stacks/commit/9a9a421)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **views**: type the app's stx script blocks, and fix a dead route param ([a7a717d](https://github.com/stacksjs/stacks/commit/a7a717d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: regenerate the name registries when their sources change ([db4208e](https://github.com/stacksjs/stacks/commit/db4208e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: let stx declare its own globals, and delete our copy of them ([34f42f3](https://github.com/stacksjs/stacks/commit/34f42f3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: type the crosswind config, which was checked against nothing ([c028b60](https://github.com/stacksjs/stacks/commit/c028b60)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **storage**: Storage.disk() threw in a stock app ([50958c3](https://github.com/stacksjs/stacks/commit/50958c3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: delete the attributes union nothing writes and nothing reads ([8377193](https://github.com/stacksjs/stacks/commit/8377193)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser**: drop 291 declared globals that do not exist ([d193fab](https://github.com/stacksjs/stacks/commit/d193fab)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: the global declarations describe what actually gets injected ([b65f30a](https://github.com/stacksjs/stacks/commit/b65f30a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: stop calling the env type generator ([ad0a73e](https://github.com/stacksjs/stacks/commit/ad0a73e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: sort the registries by bytes, not by locale ([3b28ce6](https://github.com/stacksjs/stacks/commit/3b28ce6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: buddy generate:types refreshes the name registries ([ba06849](https://github.com/stacksjs/stacks/commit/ba06849)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: Gate.policy takes a model that exists ([f723782](https://github.com/stacksjs/stacks/commit/f723782)) _(by Chris <chrisbreuer93@gmail.com>)_
+- three framework jobs were dispatched under names that do not exist ([38b374c](https://github.com/stacksjs/stacks/commit/38b374c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: drop the second defineModel, and type defineSms ([e14e591](https://github.com/stacksjs/stacks/commit/e14e591)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: ModelNames listed half the models, TableNames listed two twice ([ef0e468](https://github.com/stacksjs/stacks/commit/ef0e468)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: app/Gates.ts was read by a function nothing called ([510c242](https://github.com/stacksjs/stacks/commit/510c242)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: three ways a middleware reference did not mean what it said ([1003183](https://github.com/stacksjs/stacks/commit/1003183)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **events**: stop registering app/Events.ts listeners twice in dev ([d34e78a](https://github.com/stacksjs/stacks/commit/d34e78a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **resolvers**: resolve names through the registry instead of probing disk ([ca8446e](https://github.com/stacksjs/stacks/commit/ca8446e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **components**: rewrite the Counter example in signals ([3e02017](https://github.com/stacksjs/stacks/commit/3e02017)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **charts**: derive the dashboard chart types from the Chart class ([a5c76ca](https://github.com/stacksjs/stacks/commit/a5c76ca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: drop 35 casts that no longer suppress anything ([a3c5d96](https://github.com/stacksjs/stacks/commit/a3c5d96)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: derive every name type, and stop generating declarations ([d081fd7](https://github.com/stacksjs/stacks/commit/d081fd7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **app**: define authorization with defineGates ([3dd0dca](https://github.com/stacksjs/stacks/commit/3dd0dca)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **app**: define middleware aliases with defineMiddleware ([f10c2f9](https://github.com/stacksjs/stacks/commit/f10c2f9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **app**: define the event map with defineEvents ([d3d7309](https://github.com/stacksjs/stacks/commit/d3d7309)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: let @stacksjs/events own the event types ([11dfd2a](https://github.com/stacksjs/stacks/commit/11dfd2a)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **env**: declaring a variable in config/env.ts is the whole step ([5c33d81](https://github.com/stacksjs/stacks/commit/5c33d81)) _(by Chris <chrisbreuer93@gmail.com>)_
+- the name types are derived, not written into a declaration ([600187a](https://github.com/stacksjs/stacks/commit/600187a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- middleware references, gates, and checked job names ([ba5fccf](https://github.com/stacksjs/stacks/commit/ba5fccf)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1863](https://github.com/stacksjs/stacks/issues/1863))
+- **events**: document defineEvents, defineListener and the typed map ([076662b](https://github.com/stacksjs/stacks/commit/076662b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **desktop**: cover the app-owned launcher, and document it ([d3fe6ae](https://github.com/stacksjs/stacks/commit/d3fe6ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: fix the two failing contract tests ([144b8fe](https://github.com/stacksjs/stacks/commit/144b8fe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: a declared global has to exist, both ways round ([142a757](https://github.com/stacksjs/stacks/commit/142a757)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: assert the name maps and the resolvers cannot disagree ([1800aad](https://github.com/stacksjs/stacks/commit/1800aad)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: assert defineModel is not exported here ([c74d4c2](https://github.com/stacksjs/stacks/commit/c74d4c2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 👷 Build System
+
+- add typecheck:views, so the .stx surface is checked at all ([74e38ef](https://github.com/stacksjs/stacks/commit/74e38ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- **deps**: stx 0.2.245 ([6305ffa](https://github.com/stacksjs/stacks/commit/6305ffa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: stx 0.2.244 ([cbc7084](https://github.com/stacksjs/stacks/commit/cbc7084)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.97...v0.72.98)
 
 ## 🔧 Chores
