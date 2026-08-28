@@ -11,7 +11,8 @@
   JavaScript or can flash.
 
   Use them for a frameless window, where the page really does own its chrome,
-  and for a web dashboard that wants the look of one.
+  and for a web dashboard that wants the look of one. In both the variable is
+  unset, and these are what the viewer sees.
 -->
 <script client>
 import { useWindowControls } from '../../../../functions/craft'
