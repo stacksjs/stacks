@@ -43,10 +43,10 @@ describe('useForm is reachable (stx#1843)', () => {
 })
 
 describe('a declared browser global is actually exported (stx#1843)', () => {
-  // Narrow on purpose. The generated declaration currently names 243 symbols
-  // from this module and the module exports 13, so asserting the whole set
-  // would just be red — that gap is real but it is its own issue, not this
-  // change. These are the ones this commit is responsible for.
+  // These are the ones this change is responsible for. The whole set is
+  // asserted elsewhere now: the declaration named 243 symbols from this module
+  // against 15 exports, and `name-registries.test.ts` in @stacksjs/server
+  // fails if a name that resolves to nothing is declared again.
   const OWNED = ['useForm', 'useScrollLock', 'useTimeoutFn']
 
   it('every name this change touched resolves', async () => {
