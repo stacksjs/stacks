@@ -21,9 +21,9 @@ const { menuItems = [
   { divider: true },
   { icon: 'i-hugeicons-trash-20-solid', label: 'Delete', variant: 'danger' },
 ], isOpen = false } = defineProps<DropdownDemoProps>()
-function getMenuSections(items) {
-  const sections = []
-  let currentSection = []
+function getMenuSections(items: DropdownMenuItem[]): DropdownMenuItem[][] {
+  const sections: DropdownMenuItem[][] = []
+  let currentSection: DropdownMenuItem[] = []
 
   for (const item of items) {
     if (item.divider) {

@@ -11,15 +11,15 @@ function formatTimestampDate(timestamp: number) {
     return date.toLocaleDateString()
   }
 
-  function getTransactionType(lineData) {
-    return lineData[0]?.plan?.interval || ''
+  function getTransactionType(lineData: Array<{ plan?: { interval?: string } }> | undefined) {
+    return lineData?.[0]?.plan?.interval || ''
   }
 
-  function getUnitPrice(lineData) {
-    return (Number(lineData[0]?.price?.unit_amount || 0) / 100).toFixed(2)
+  function getUnitPrice(lineData: Array<{ price?: { unit_amount?: number | string } }> | undefined) {
+    return (Number(lineData?.[0]?.price?.unit_amount || 0) / 100).toFixed(2)
   }
 
-  function getLastDigits(paymentIntent) {
+  function getLastDigits(paymentIntent: { payment_method?: { card?: { last4?: string } } } | undefined) {
     return paymentIntent?.payment_method?.card?.last4 || ''
   }
 </script>

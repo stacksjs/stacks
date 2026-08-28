@@ -63,14 +63,14 @@
 
   const activeTab = state('roles')
 
-  function tabClass(id) {
+  function tabClass(id: string) {
     const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
     return activeTab() === id
       ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
       : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
   }
 
-  function selectTab(id) {
+  function selectTab(id: string) {
     activeTab.set(id)
     selectedUser.set(null)
     selectedRole.set(null)
@@ -315,7 +315,7 @@
 
   // ─── Tiny formatters ──────────────────────────────────────────
 
-  function formatDate(iso) {
+  function formatDate(iso: string | null | undefined) {
     if (!iso) return ''
     const d = new Date(iso)
     if (Number.isNaN(d.getTime())) return ''

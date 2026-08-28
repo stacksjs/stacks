@@ -41,14 +41,14 @@
     return 'Runners: ' + r.running + ' running, ' + r.queued + ' queued / ' + r.cap + ' cap'
   })
 
-  function tabClass(id) {
+  function tabClass(id: string) {
     const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
     return activeTab() === id
       ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
       : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
   }
 
-  function filterClass(id) {
+  function filterClass(id: string) {
     const base = 'px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer '
     return statusFilter() === id
       ? base + 'bg-violet-500 border-violet-500 text-white'
@@ -67,7 +67,7 @@
   function isPending(status: string) { return status === 'pending' }
   function isNoRuns(status: string) { return status === 'no_runs' }
 
-  function timeAgo(dateStr) {
+  function timeAgo(dateStr: string | null | undefined) {
     if (!dateStr) return ''
     const diff = Date.now() - new Date(dateStr).getTime()
     const mins = Math.floor(diff / 60000)
@@ -78,7 +78,7 @@
     return days + 'd ago'
   }
 
-  function truncate(str: string, len) {
+  function truncate(str: string, len: number) {
     if (!str) return ''
     return str.length > len ? str.slice(0, len) + '...' : str
   }

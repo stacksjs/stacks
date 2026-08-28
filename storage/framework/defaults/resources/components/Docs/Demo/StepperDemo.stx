@@ -10,7 +10,7 @@ const { currentStep = 0, steps = [
   { title: 'Step 3', description: 'Third step', icon: 'i-heroicons-check' },
 ] } = defineProps<StepperDemoProps>()
 
-function getStepContent(step) {
+function getStepContent(step: number): { title: string, description: string } {
   switch (step) {
     case 0:
       return { title: 'Personal Information', description: 'Please provide your basic details' }

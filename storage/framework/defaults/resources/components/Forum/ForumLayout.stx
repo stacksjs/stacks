@@ -5,7 +5,7 @@ interface ForumLayoutProps {
 
 const { route = 'forum' } = defineProps<ForumLayoutProps>()
 
-function isActiveRoute(currentRoute, targetRoute) {
+function isActiveRoute(currentRoute: string, targetRoute: string): boolean {
   return currentRoute === targetRoute
 }
 </script>

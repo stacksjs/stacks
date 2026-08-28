@@ -1,7 +1,12 @@
 <script>
+interface ComboboxItem {
+  id: number
+  name: string
+}
+
 interface ComboboxDemoProps {
-  listItems?: Array<{ id: number, name: string }>
-  selected?: any
+  listItems?: ComboboxItem[]
+  selected?: ComboboxItem | null
   query?: string
   isOpen?: boolean
 }
@@ -13,7 +18,7 @@ const { listItems = [
   { id: 4, name: 'Michael Vincent' },
   { id: 5, name: 'Blake Ayer' },
 ], selected = null, query = '', isOpen = false } = defineProps<ComboboxDemoProps>()
-function filterItems(items, query: string) {
+function filterItems(items: ComboboxItem[], query: string): ComboboxItem[] {
   if (query === '') return items
   return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
 }

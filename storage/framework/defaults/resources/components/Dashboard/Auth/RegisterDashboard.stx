@@ -1,4 +1,5 @@
 <script client>
+import type { RegisterCredentials } from '../../../../types/dashboard'
 import { describeAuthError, useAuth } from '../../../../functions/auth'
 
 const { register } = useAuth()
@@ -12,7 +13,7 @@ function safeRedirect(): string {
   return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
 }
 
-async function handleRegister(credentials) {
+async function handleRegister(credentials: RegisterCredentials): Promise<void> {
   isLoading.set(true)
   error.set('')
 

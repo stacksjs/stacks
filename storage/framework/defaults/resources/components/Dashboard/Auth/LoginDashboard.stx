@@ -1,4 +1,5 @@
 <script client>
+import type { AuthUser } from '../../../../types/dashboard'
 import { describeAuthError, useAuth } from '../../../../functions/auth'
 
 const { login } = useAuth()
@@ -12,7 +13,7 @@ function safeRedirect(): string {
   return redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
 }
 
-async function handleLogin(credentials) {
+async function handleLogin(credentials: AuthUser): Promise<void> {
   isLoading.set(true)
   error.set('')
 

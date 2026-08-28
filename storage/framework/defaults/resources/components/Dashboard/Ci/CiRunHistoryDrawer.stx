@@ -38,7 +38,7 @@ function formatDuration(ms: number) {
   return hours + 'h ' + (minutes % 60) + 'm'
 }
 
-function timeAgo(dateStr) {
+function timeAgo(dateStr: string | null | undefined) {
   if (!dateStr) return ''
   const diff = Date.now() - new Date(dateStr).getTime()
   const minutes = Math.floor(diff / 60000)
@@ -53,11 +53,11 @@ function truncate(value: string, length: number) {
   return value.length > length ? value.slice(0, length) + '...' : value
 }
 
-function jobsForRun(runId) {
+function jobsForRun(runId: number) {
   return jobsByRunId()[runId] || []
 }
 
-function failedJobs(runId) {
+function failedJobs(runId: number) {
   return jobsForRun(runId).filter(job => job.conclusion && job.conclusion !== 'success' && job.conclusion !== 'skipped' && job.conclusion !== 'neutral')
 }
 </script>
