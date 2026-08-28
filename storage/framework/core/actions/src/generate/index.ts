@@ -4,7 +4,7 @@ import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
-import { frameworkPath, projectPath, storagePath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
@@ -270,12 +270,47 @@ export async function watchTypes(options?: GeneratorOptions): Promise<void> {
     // run; the per-trigger try/catch below will surface the failure.
   }
 
+  /*
+   * Every directory a generated type is built from.
+   *
+   * `autoImportSourceDirs()` is the same list the staleness check uses, so the
+   * watcher and the "is it out of date" check cannot disagree about what the
+   * registries are derived from. It covers actions, listeners, policies,
+   * middleware, jobs, models and email templates.
+   *
+   * `routes/` and `app/Routes.ts` are added on top: route NAMES are the one
+   * thing that cannot be read off the filesystem - a name is attached by a
+   * chained `.name()` whose path may come from a group prefix - so
+   * `generateRouteNames()` loads the route table, and it has to re-load it when
+   * a route file changes. Without this, adding `.name('users.show')` and then
+   * writing `url('users.show')` was a type error until somebody ran
+   * `buddy generate:types` by hand.
+   *
+   * Nothing here is written to by the regeneration, which writes into
+   * `storage/framework/{auto-imports,types}/` - so there is no loop.
+   */
+  const registrySources = await (async (): Promise<string[]> => {
+    try {
+      const { autoImportSourceDirs } = await import('@stacksjs/server')
+      return autoImportSourceDirs()
+    }
+    catch {
+      // Without the server package there are no registries to refresh; the
+      // model/config/route watchers below still apply.
+      return []
+    }
+  })()
+
   const watched = [
-    projectPath('app/Models'),
-    storagePath('framework/defaults/app/Models'),
+    ...registrySources,
     projectPath('config'),
     projectPath('database/migrations'),
-  ]
+    // `app/` recursively, which covers `app/Routes.ts` and anything the
+    // registries are built from that `autoImportSourceDirs()` did not name.
+    // The 200ms debounce coalesces the overlap into one regeneration.
+    projectPath('app'),
+    projectPath('routes'),
+  ].filter((dir, index, all) => all.indexOf(dir) === index)
 
   log.info(`[generate:types --watch] watching ${watched.length} directories`)
 
