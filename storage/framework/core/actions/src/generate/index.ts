@@ -11,7 +11,6 @@ import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
 import { generateRouteNames } from './action-types'
-import { generateEnvFiles } from './env-files'
 
 export { generateProjectImages } from './images'
 export type { GenerateImagesActionOptions } from './images'
@@ -130,11 +129,21 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
    * `types.ts` does its work at module scope, and a plain re-import would be
    * served from the module cache and silently do nothing the second time.
    */
-  // Environment declarations are part of "generate the project's types", and
-  // until now nothing ran the generator that produces them — so `env.X` for
-  // any variable added after the file was last written by hand fell through to
-  // the index signature and typed as `string | number | true`.
-  await generateEnvFiles()
+  /*
+   * Environment variables are NOT generated. `config/env.ts` declares them with
+   * `defineEnv`, and `storage/framework/types/env.d.ts` reads that schema to
+   * extend `StacksEnv` - so a variable is typed from its validator, the same on
+   * a fresh clone, in CI and in production.
+   *
+   * There was a generator here. It wrote a `Bun.env` namespace whose key set
+   * came from whichever `.env` happened to be on the machine that ran it, and
+   * whose types were read off each variable's LIVE VALUE - so the same variable
+   * could be `number` here and `string` on a colleague's checkout, a
+   * production-only variable could never be typed at all, and `DEBUG` was
+   * declared `boolean` when `Bun.env.DEBUG` is the string `'false'`, which is
+   * truthy. Nothing in the framework or the application read `Bun.env.X`
+   * through it.
+   */
 
   /*
    * The name registries: actions, listeners, policies, middleware, jobs,

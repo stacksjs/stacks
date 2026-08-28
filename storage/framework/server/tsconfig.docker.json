@@ -11,8 +11,7 @@
       "Actions/*": ["../app/Actions/*"],
       "Jobs/*": ["../app/Jobs/*"],
       "./app/*": ["../app/*"], // it's outside the dist folder
-      "~/*": ["../*"],
-      "../../../env": ["../storage/framework/env.ts"]
+      "~/*": ["../*"]
     },
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
