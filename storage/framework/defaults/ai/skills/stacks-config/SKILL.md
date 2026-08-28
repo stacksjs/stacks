@@ -44,7 +44,17 @@ export default defineApp({
 }) satisfies AppConfig
 ```
 
-All builders: `defineApp`, `defineCache`, `defineCdn`, `defineChat`, `defineCli`, `defineDatabase`, `defineDependencies`, `defineDns`, `defineEmailConfig`, `defineEmail`, `defineGit`, `defineHashing`, `defineLibrary`, `defineNotification`, `definePayment`, `defineQueue`, `defineSearchEngine`, `defineSecurity`, `defineServices`, `defineSms`, `defineFilesystems`, `defineUi`, `defineModel`, `defineEvents`
+All builders: `defineApp`, `defineCache`, `defineCdn`, `defineChat`, `defineCli`, `defineDatabase`, `defineDependencies`, `defineDns`, `defineEmailConfig`, `defineEmail`, `defineGit`, `defineHashing`, `defineLibrary`, `defineNotification`, `definePayment`, `defineQueue`, `defineSearchEngine`, `defineSecurity`, `defineServices`, `defineSms`, `defineFilesystems`, `defineUi`, `defineEvents`
+
+`defineModel` is NOT among them: it comes from `@stacksjs/orm`, and it builds a
+model rather than returning a config object. `@stacksjs/config` used to export a
+second one typed `(config: Model) => Model`, which widened every literal a model
+declared - its table name, its attribute names - so a model that imported the
+wrong one silently lost the typing the ORM version exists to provide.
+
+The app-level registries have their own helpers, in the packages that own what
+they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
+`defineMiddleware` from `@stacksjs/router`, `defineGates` from `@stacksjs/auth`.
 
 ## Helper Functions
 - `determineAppEnv(): 'dev' | 'stage' | 'prod' | string`

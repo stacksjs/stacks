@@ -14,13 +14,13 @@ import type {
   HashingConfig,
   ImagesConfig,
   LibraryConfig,
-  Model,
   NotificationConfig,
   PaymentConfig,
   QueueConfig,
   SearchEngineConfig,
   SecurityConfig,
   ServicesConfig,
+  SmsConfig,
   StacksConfig,
   StorageConfig,
   UiConfig,
@@ -209,7 +209,7 @@ export function defineServices(config: ServicesConfig): ServicesConfig {
   return config
 }
 
-export function defineSms(config: any): any {
+export function defineSms(config: SmsConfig): SmsConfig {
   return config
 }
 
@@ -226,10 +226,6 @@ export function defineFeatureFlags(config: FeatureFlagsConfig): FeatureFlagsConf
 }
 
 export function defineUi(config: UiConfig): UiConfig {
-  return config
-}
-
-export function defineModel(config: Model): Model {
   return config
 }
 
