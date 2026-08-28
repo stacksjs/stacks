@@ -21,15 +21,25 @@ export const sidebarSections = buildWebSidebarSections()
 // viewers who hold none of them. Emitted as an id-keyed map rather than a
 // `data-required-roles` attribute on each row, which keeps the generic
 // Sidebar component free of Stacks-specific attributes.
-export const sidebarRoleMap = JSON.stringify(
-  Object.fromEntries(
-    sidebarSections.flatMap(section =>
-      section.items
-        .filter(item => item.roles && item.roles.length > 0)
-        .map(item => [item.id, item.roles]),
+// Published as an object, not as JSON text. The server-to-client bridge
+// serializes what it publishes, so a value stringified here arrived on the
+// client double-encoded - as the JSON string rather than the map. The client
+// then ran `Object.entries` over that string, which yields index/character
+// pairs, and called `.some()` on a single character. Every dashboard load
+// threw inside applyRoleFilter before it could filter anything.
+export const sidebarRoleMap: Record<string, string[]> = Object.fromEntries(
+  sidebarSections.flatMap(section =>
+    section.items.flatMap(item =>
+      item.roles && item.roles.length > 0
+        ? [[item.id, item.roles] as const]
+        : [],
     ),
   ),
 )
+
+// Declared, so the client block below gets the map typed rather than inferred
+// off the implicit bridge - which is what let the mismatch above go unseen.
+defineClientPayload({ sidebarRoleMap })
 </script>
 
 @head
@@ -389,6 +399,8 @@ html[data-appearance="arc"] [data-sidebar-section] > div:first-child {
 // fixed-position container below the <main> slot. Mounted in the
 // layout so every dashboard page picks it up without opting in.
 // `~/`-anchored for the same reason as the sidebar import above.
+import type { ToastType } from '~/storage/framework/defaults/functions/toasts'
+import type { CraftSidebarSelectEvent } from '~/storage/framework/defaults/functions/craft'
 import { useToasts, dismissToast } from '~/storage/framework/defaults/functions/toasts'
 import { ensureCraftNativeSidebarMarker, useCraftSidebarSelection } from '~/storage/framework/defaults/functions/craft'
 import { readStoredAppearance, useAppearance } from '~/storage/framework/defaults/views/dashboard/composables/useAppearance'
@@ -401,14 +413,14 @@ registerStoresClient({ authStore, kanbanStore, rbacStore })
 // Helpers below return COMPLETE class strings (static + dynamic) and are
 // applied via `:class="fn(...)"` because stx's `{{ ... }}` placeholder is
 // not reactively bound inside a `class` attribute - only inside text content.
-const toastIconClass = (type) => `flex-shrink-0 h-5 w-5 mt-0.5 ${({
+const toastIconClass = (type: ToastType) => `flex-shrink-0 h-5 w-5 mt-0.5 ${({
   success: 'i-hugeicons-checkmark-circle-02 text-green-500 dark:text-green-400',
   error: 'i-hugeicons-alert-02 text-red-500 dark:text-red-400',
   warning: 'i-hugeicons-alert-circle text-yellow-500 dark:text-yellow-400',
   info: 'i-hugeicons-information-circle text-blue-500 dark:text-blue-400',
 }[type] || 'i-hugeicons-information-circle text-gray-500 dark:text-neutral-400')}`
 
-const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-white dark:bg-neutral-800 ring-1 ${({
+const toastWrapperClass = (type: ToastType) => `pointer-events-auto overflow-hidden bg-white dark:bg-neutral-800 ring-1 ${({
   success: 'ring-green-500/20',
   error: 'ring-red-500/30',
   warning: 'ring-yellow-500/20',
@@ -434,10 +446,10 @@ let removeCraftSidebarSelection = () => {}
 ensureCraftNativeSidebarMarker()
 auth.load()
 
-function sidebarPanes() {
+function sidebarPanes(): HTMLElement[] {
   return [sidebarHost.current, mobileSidebarHost.current]
-    .map(host => host?.querySelector('[data-stx-sidebar]'))
-    .filter(Boolean)
+    .map(host => host?.querySelector<HTMLElement>('[data-stx-sidebar]'))
+    .filter((pane): pane is HTMLElement => Boolean(pane))
 }
 
 function applyRoleFilter() {
@@ -445,7 +457,7 @@ function applyRoleFilter() {
   const unauth = auth.unauthenticated()
   for (const pane of sidebarPanes()) {
     for (const [itemId, required] of Object.entries(sidebarRoles)) {
-      const row = pane.querySelector(`[data-sidebar-row][data-item-id="${itemId}"]`)
+      const row = pane.querySelector<HTMLElement>(`[data-sidebar-row][data-item-id="${itemId}"]`)
       if (!row) continue
       // Unauthenticated viewers see everything, which keeps the dev dashboard
       // usable. Once authenticated, role membership is authoritative. CSS
@@ -495,7 +507,7 @@ function applySectionVisibility() {
   // do nothing until a reload.
   const hidden = appearance.hiddenSections()
   for (const pane of sidebarPanes()) {
-    for (const section of pane.querySelectorAll('[data-sidebar-section]')) {
+    for (const section of pane.querySelectorAll<HTMLElement>('[data-sidebar-section]')) {
       const id = section.dataset.sectionId || ''
       section.setAttribute('data-viewer-hidden', String(hidden.includes(id)))
     }
@@ -522,14 +534,14 @@ useEventListener('storage', (event) => {
   appearance.apply()
 })
 
-function normalizeRoutePath(path) {
+function normalizeRoutePath(path: string | null | undefined): string {
   return (path || '/').replace(/\/+$/, '') || '/'
 }
 
 // Highlight the current route. Longest-prefix matching keeps a detail page
 // such as /commerce/products/42 attached to its /commerce/products row while
 // preventing /health from matching /health-check.
-function syncActiveSidebarRow(url) {
+function syncActiveSidebarRow(url?: string): void {
   let path = route.path
   if (url) {
     try {
@@ -566,7 +578,7 @@ function syncActiveSidebarRow(url) {
   }
 }
 
-function handleSidebarItemClick(payload) {
+function handleSidebarItemClick(payload: { item?: { href?: string }, event?: { preventDefault: () => void } } | undefined): void {
   const href = payload?.item?.href
   if (!href || href.startsWith('http')) return
   payload.event?.preventDefault()
@@ -578,10 +590,10 @@ function syncMobileSidebar() {
   syncActiveSidebarRow()
 }
 
-function handleCraftSidebarSelection(event) {
+function handleCraftSidebarSelection(event: CraftSidebarSelectEvent | undefined): void {
   if (!event?.itemId) return
   for (const pane of sidebarPanes()) {
-    const row = [...pane.querySelectorAll('[data-sidebar-row]')].find(
+    const row = [...pane.querySelectorAll<HTMLElement>('[data-sidebar-row]')].find(
       candidate => candidate.dataset.itemId === event.itemId,
     )
     const link = row?.querySelector('a[data-sidebar-item][href]')
@@ -598,7 +610,7 @@ function attachCraftSidebarSelection() {
   removeCraftSidebarSelection = useCraftSidebarSelection(handleCraftSidebarSelection)
 }
 
-useEventListener('stx:navigate', event => syncActiveSidebarRow(event?.detail?.url))
+useEventListener('stx:navigate', (event: Event) => syncActiveSidebarRow((event as CustomEvent<{ url?: string }>).detail?.url))
 useEventListener('stx:hydrated', () => syncActiveSidebarRow(), { once: true })
 useEventListener('craft:ready', () => {
   ensureCraftNativeSidebarMarker()
