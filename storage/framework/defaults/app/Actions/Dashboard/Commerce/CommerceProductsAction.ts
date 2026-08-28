@@ -52,7 +52,7 @@ export default new Action({
         summary: summarizeCommerceProducts(records),
         categories: categoryOptions,
         manufacturers: manufacturerOptions,
-        defaultCurrency: normalizeCommerceCurrency((config as any).commerce?.currency),
+        defaultCurrency: normalizeCommerceCurrency(config.commerce?.currency),
       }
     }
     catch (error) {

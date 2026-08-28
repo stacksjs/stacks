@@ -285,7 +285,7 @@ export default new Action({
       return dashboardOperationalError(error, 'Sale totals could not be calculated.', 'CommercePosCheckoutAction')
     }
 
-    const currency = normalizeCommerceCurrency((config as any).commerce?.currency)
+    const currency = normalizeCommerceCurrency(config.commerce?.currency)
     const transactionId = randomUUIDv7()
     const referenceNumber = `POS-${transactionId.slice(0, 12).toUpperCase()}`
     let result

@@ -21,7 +21,7 @@ export default new Action({
       return {
         records,
         summary: summarizeCommerceCustomers(records),
-        currency: normalizeCommerceCustomerCurrency((config as any).commerce?.currency),
+        currency: normalizeCommerceCustomerCurrency(config.commerce?.currency),
       }
     }
     catch (error) {

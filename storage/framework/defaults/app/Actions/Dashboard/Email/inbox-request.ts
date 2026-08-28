@@ -5,7 +5,7 @@ import { response } from '@stacksjs/router'
 import { defaultMailbox } from './mail-preference'
 
 function configuredMailDomain(): string {
-  const email = (config as any)?.email || {}
+  const email = config?.email || {}
   const fromAddress = String(email.from?.address || '').trim()
   const fromDomain = fromAddress.includes('@') ? fromAddress.split('@').at(-1) : ''
   return String(email.domain || fromDomain || 'stacksjs.com').trim().toLowerCase()

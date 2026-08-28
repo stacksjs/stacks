@@ -32,7 +32,7 @@ export default new Action({
 
     try {
       const [members, invitations] = await Promise.all([
-        (db as any)
+        db
           .selectFrom('team_members')
           .innerJoin('users', 'users.id', '=', 'team_members.user_id')
           .where('team_members.team_id', '=', teamId)
@@ -47,7 +47,7 @@ export default new Action({
           ])
           .orderBy('users.name', 'asc')
           .execute(),
-        (db as any)
+        db
           .selectFrom('team_invitations')
           .where('team_id', '=', teamId)
           .where('status', '=', 'pending')

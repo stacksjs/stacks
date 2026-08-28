@@ -54,12 +54,12 @@ export function slugify(value: string): string {
  * query builder's types want a table union rather than a `string`.
  */
 export async function findRow(table: string, id: number, database: typeof db = db): Promise<unknown> {
-  return await (database as any).selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
+  return await database.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
 }
 
 /** Whether a row with this id exists — the 404 check every write shares. */
 export async function rowExists(table: string, id: number, database: typeof db = db): Promise<boolean> {
-  const row = await (database as any).selectFrom(table).select(['id']).where('id', '=', id).executeTakeFirst()
+  const row = await database.selectFrom(table).select(['id']).where('id', '=', id).executeTakeFirst()
 
   return Boolean(row)
 }

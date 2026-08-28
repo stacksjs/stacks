@@ -50,7 +50,7 @@ export default new Action({
           .sort((left, right) => left.label.localeCompare(right.label)),
         statuses: [...new Set([...defaultStatuses, ...records.map(record => record.status)])],
         orderTypes: [...new Set([...defaultTypes, ...records.map(record => record.orderType)])],
-        defaultCurrency: commerceCurrency((config as any).commerce?.currency, 'Commerce configuration'),
+        defaultCurrency: commerceCurrency(config.commerce?.currency, 'Commerce configuration'),
       }
     }
     catch (error) {

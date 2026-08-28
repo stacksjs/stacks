@@ -55,7 +55,7 @@ export default new Action({
         sendRows,
         openedRows,
         clickedRows,
-        String((config as any).commerce?.currency || 'USD').toUpperCase(),
+        String(config.commerce?.currency || 'USD').toUpperCase(),
       )
     }
     catch (error) {

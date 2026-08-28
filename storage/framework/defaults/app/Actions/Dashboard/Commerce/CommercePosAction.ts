@@ -53,7 +53,7 @@ export default new Action({
           .filter(isCommercePosCustomerActive)
           .map(normalizeCommercePosCustomer),
         taxRate: selectCommercePosTaxRate(taxRates),
-        defaultCurrency: normalizeCommerceCurrency((config as any).commerce?.currency),
+        defaultCurrency: normalizeCommerceCurrency(config.commerce?.currency),
         paymentMethods: [{ id: 'cash', label: 'Cash' }],
         summary: {
           products: records.length,

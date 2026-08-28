@@ -15,7 +15,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const data = campaignWriteData(
       await request.all(),
-      String((config as any).commerce?.currency || 'USD').toUpperCase(),
+      String(config.commerce?.currency || 'USD').toUpperCase(),
     )
     const validationError = validateCampaignWriteData(data)
     if (validationError)

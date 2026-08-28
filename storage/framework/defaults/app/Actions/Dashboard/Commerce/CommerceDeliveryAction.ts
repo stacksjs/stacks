@@ -24,7 +24,7 @@ export default new Action({
         allRoutes,
         allZones,
         allDrivers,
-        (config as any).commerce?.currency,
+        config.commerce?.currency,
       )
     }
     catch (error) {

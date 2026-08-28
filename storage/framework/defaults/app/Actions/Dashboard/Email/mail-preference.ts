@@ -26,7 +26,7 @@ export interface MailPreferenceInput {
 }
 
 export function defaultMailbox(): string {
-  const email = (config as any)?.email || {}
+  const email = config?.email || {}
   const domain = String(email.domain || 'stacksjs.com')
   const configured = Array.isArray(email.mailboxes) ? email.mailboxes[0] : undefined
   const mailbox = typeof configured === 'string' ? configured : configured?.email

@@ -58,7 +58,7 @@ export default new Action({
         reviews: summarizeProductReviews(reviews),
         categories: categoryOptions,
         manufacturers: manufacturerOptions,
-        defaultCurrency: normalizeCommerceCurrency((config as any).commerce?.currency),
+        defaultCurrency: normalizeCommerceCurrency(config.commerce?.currency),
       }
     }
     catch (error) {

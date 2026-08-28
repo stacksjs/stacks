@@ -116,7 +116,7 @@ async function replacePostPivot(
   relatedIds: number[],
   now: string,
 ): Promise<void> {
-  await (database as any)
+  await database
     .deleteFrom(table)
     .where(ownerKey, '=', postId)
     .where(typeKey, '=', 'posts')
@@ -125,7 +125,7 @@ async function replacePostPivot(
   if (relatedIds.length === 0)
     return
 
-  await (database as any)
+  await database
     .insertInto(table)
     .values(relatedIds.map(relatedId => ({
       [foreignKey]: relatedId,
@@ -146,12 +146,12 @@ export async function syncPostRelations(database: typeof db, postId: number, pay
 
 /** Removes both post pivot sets on the caller's database or transaction. */
 export async function detachPostRelations(database: typeof db, postId: number): Promise<void> {
-  await (database as any)
+  await database
     .deleteFrom('categorizable_models')
     .where('categorizable_id', '=', postId)
     .where('categorizable_type', '=', 'posts')
     .execute()
-  await (database as any)
+  await database
     .deleteFrom('taggable_models')
     .where('taggable_id', '=', postId)
     .where('taggable_type', '=', 'posts')

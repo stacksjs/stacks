@@ -69,7 +69,7 @@ export default new Action({
             .where('email', '=', email)
             .select(['id'])
             .executeTakeFirst(),
-          (trx as any)
+          trx
             .selectFrom('team_invitations')
             .where('team_id', '=', teamId)
             .where('email', '=', email)
@@ -78,7 +78,7 @@ export default new Action({
             .executeTakeFirst(),
         ])
         if (existingUser) {
-          const membership = await (trx as any)
+          const membership = await trx
             .selectFrom('team_members')
             .where('team_id', '=', teamId)
             .where('user_id', '=', Number(existingUser.id))
@@ -92,7 +92,7 @@ export default new Action({
           return response.json({ message: 'A pending invitation already exists. Resend or revoke it from the invitation list.' }, 409)
         }
         if (pending) {
-          const expired = await (trx as any)
+          const expired = await trx
             .updateTable('team_invitations')
             .set({ status: 'expired', pending_key: null, updated_at: sqlTimestamp() })
             .where('id', '=', Number(pending.id))
@@ -103,7 +103,7 @@ export default new Action({
             throw new TeamStateConflictError('The pending invitation changed before it could be replaced.')
         }
 
-        await (trx as any)
+        await trx
           .insertInto('team_invitations')
           .values({
             team_id: teamId,
@@ -119,7 +119,7 @@ export default new Action({
           })
           .execute()
 
-        const invitation = await (trx as any)
+        const invitation = await trx
           .selectFrom('team_invitations')
           .where('token_hash', '=', tokenHash)
           .select(['id'])

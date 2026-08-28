@@ -27,7 +27,7 @@ export default new Action({
     try {
       return await db.transaction(async (rawTrx) => {
         const trx = rawTrx as unknown as typeof db
-        const member = await (trx as any)
+        const member = await trx
           .selectFrom('team_members')
           .where('id', '=', memberId)
           .where('team_id', '=', teamId)
@@ -45,7 +45,7 @@ export default new Action({
         if (!['active', 'suspended'].includes(status))
           return response.json({ message: 'Choose a valid member status.' }, 422)
 
-        const updated = await (trx as any)
+        const updated = await trx
           .updateTable('team_members')
           .set({ role, status, updated_at: sqlTimestamp() })
           .where('id', '=', memberId)
