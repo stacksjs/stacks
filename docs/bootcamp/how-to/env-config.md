@@ -133,22 +133,27 @@ The type comes from the validator, so `env.BILLING_RETRIES` is a `number` and
 
 ### How those declarations become types
 
-The bottom of `config/env.ts` carries a `declare module` block that hands the
-schema to the `env` type:
+There is nothing to write. `config/env.ts` ends at its `export default`, and
+the framework reads the schema from there:
 
 ```ts
-declare module '@stacksjs/env' {
-  interface StacksEnv extends InferEnv<typeof envSchema> {}
-}
+// storage/framework/types/env.d.ts
+type EnvSchema = typeof import('../../../config/env')['default']
 
-export default envSchema
+declare module '@stacksjs/env' {
+  interface StacksEnv extends InferEnv<EnvSchema> {}
+}
 ```
 
-This is the supported extension point, and it ships in the scaffold. Interface
-declaration merging adds your schema's keys to `StacksEnv`, which is the type
-of the `env` that every `config/` file and action reads. `InferEnv` subtracts
-the keys the framework already declares, so redeclaring `APP_NAME` in your own
-schema cannot conflict with the framework's.
+Interface declaration merging adds your schema's keys to `StacksEnv`, which is
+the type of the `env` that every `config/` file and action reads. `InferEnv`
+subtracts the keys the framework already declares, so redeclaring `APP_NAME` in
+your own schema cannot conflict with the framework's.
+
+Applications used to carry that `declare module` block themselves, at the
+bottom of the file they had just filled in. It is boilerplate with exactly one
+correct spelling and nothing to say when it is missing: leave it out and every
+variable in your schema is simply untyped, with no error anywhere.
 
 Nothing generates this and there is no second list to maintain: adding a key to
 `defineEnv` types it everywhere, and a variable that only ever exists in your

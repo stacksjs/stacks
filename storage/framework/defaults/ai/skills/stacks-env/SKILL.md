@@ -57,6 +57,30 @@ The `env` proxy auto-coerces: `'true'` → `true`, `'123'` → `123`, etc.
 ## StacksEnv Type (100+ typed variables)
 App, Ports, API, Database, AWS, Mail, Services (Stripe, Meilisearch), Frontend, Realtime, Redis, Pusher, Auth, Storage, Queue, plus `[key: string]` catch-all.
 
+## Adding your own variables
+
+Declare them in `config/env.ts`. That is the whole step:
+
+```typescript
+// config/env.ts
+export default defineEnv({
+  STRIPE_WEBHOOK_SECRET: { validation: schema.string(), default: '' },
+  BILLING_RETRIES: { validation: schema.number(), default: 3 },
+  DEPLOY_TARGET: { validation: schema.enum(['staging', 'production']), default: 'staging' },
+})
+```
+
+`env.BILLING_RETRIES` is a `number` and `env.DEPLOY_TARGET` is
+`'staging' | 'production'` everywhere, from the validator - nothing is
+generated, so a variable that exists only in your deploy secrets is typed
+exactly like one in your local `.env`.
+
+`storage/framework/types/env.d.ts` reads the schema and extends `StacksEnv`.
+Do NOT write a `declare module '@stacksjs/env'` block of your own: the
+framework already has one, and a second augmentation listing your keys again
+typechecks while letting a key be typed without being validated or defaulted -
+which is the failure `config/env.ts` exists to prevent.
+
 ## Runtime Detection
 
 ```typescript
@@ -199,3 +223,5 @@ calls or raw client-side `fetch`.
 - Runtime detection uses Bun globals and process properties
 - CI provider detection checks environment variables specific to each CI system
 - The `StacksEnv` type provides autocomplete for 100+ known variables
+- Every variable is `| undefined` - the process may simply not have it set
+- `Bun.env.X` is NOT typed, and holds raw strings. `Bun.env.DEBUG` is `'false'`, which is truthy; use `env.DEBUG`, which coerces. A generator used to declare `Bun.env` from whichever `.env` was on the machine that ran it, typing `DEBUG` as `boolean` - it was removed, and nothing read it
