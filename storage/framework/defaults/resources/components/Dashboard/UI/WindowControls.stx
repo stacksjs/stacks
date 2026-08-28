@@ -1,3 +1,18 @@
+<!--
+  Replica window controls, for chrome the page draws itself.
+
+  They yield to the real thing. Wherever the platform already drew its own
+  close/minimise/zoom buttons — which on macOS is every Craft window that is not
+  frameless — rendering these as well puts six circles in the corner, three of
+  them the wrong shade, without hover glyphs, and dead to the keyboard. Craft
+  says so by setting `--craft-window-controls-replicas: none` before the
+  document is parsed, and both variants below read it as a fallback, so a
+  browser (where nothing is published) still shows them and neither case needs
+  JavaScript or can flash.
+
+  Use them for a frameless window, where the page really does own its chrome,
+  and for a web dashboard that wants the look of one.
+-->
 <script client>
 import { useWindowControls } from '../../../../functions/craft'
 
@@ -41,7 +56,7 @@ async function handleMaximize(): Promise<void> {
 }
 </script>
 
-<div :if="liveVariant() === 'macos'" class="flex items-center" :class="config().gap" data-window-controls>
+<div :if="liveVariant() === 'macos'" class="items-center" style="display: var(--craft-window-controls-replicas, flex)" :class="config().gap" data-window-controls>
   <span class="flex gap-1.5 items-center">
     <button
       type="button"
@@ -85,7 +100,7 @@ async function handleMaximize(): Promise<void> {
   </span>
 </div>
 
-<div :else class="flex items-center">
+<div :else class="items-center" style="display: var(--craft-window-controls-replicas, flex)" data-window-controls>
   <button
     type="button"
     class="flex items-center justify-center h-8 w-12 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"

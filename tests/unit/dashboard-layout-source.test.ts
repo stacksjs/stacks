@@ -26,6 +26,17 @@ describe('dashboard layout client architecture', () => {
     expect(guestLayoutSource).toContain('@yield(\'content\')')
   })
 
+  test('leaves the traffic lights to the platform', () => {
+    // The window's buttons are AppKit's in every Craft window that is not
+    // frameless. The sidebar header draws none and reserves whatever room the
+    // host says they need — which is nothing in a browser, and nothing in a
+    // window that keeps them in a titlebar of their own.
+    expect(layoutSource).toContain('<SidebarHeader windowControls="native" />')
+    // The mobile drawer is not the window edge; no buttons land on it.
+    expect(layoutSource).toContain('<SidebarHeader windowControls="none" />')
+    expect(layoutSource).not.toContain('showWindowControls')
+  })
+
   test('returns missing dashboard routes to the canonical home route', () => {
     expect(notFoundSource).toContain('<Button tag="a" href="/">')
     expect(notFoundSource).toContain('<StxLink to="/"')

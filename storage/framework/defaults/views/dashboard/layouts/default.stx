@@ -629,11 +629,14 @@ onDestroy(() => {
     @itemClick="handleSidebarItemClick($event)"
   >
     <template #header>
-      <!-- Chrome strip. The traffic lights are native (the Craft window is
-          titlebarHidden), so this reserves their space and acts as the window
-          drag region; in a plain browser it is the same empty strip macOS
-          sidebars carry above their first row. -->
-      <SidebarHeader :showWindowControls="false" />
+      <!-- Chrome strip. The traffic lights are the platform's, so this draws
+          none and reserves whatever room the host says they need — 62px in a
+          titlebarHidden window where they float over this sidebar, nothing in
+          a window that keeps them in a titlebar, and nothing in a browser,
+          which has no window buttons at all. It is also the window drag
+          region, and in a browser it is the same empty strip macOS sidebars
+          carry above their first row. -->
+      <SidebarHeader windowControls="native" />
     </template>
   </Sidebar>
 </div>
@@ -649,7 +652,9 @@ onDestroy(() => {
       @itemClick="handleSidebarItemClick($event)"
     >
       <template #header>
-        <SidebarHeader :show-window-controls="false" />
+        <!-- A drawer, not the window edge: no window buttons land on it, so
+            there is nothing to draw and nothing to reserve. -->
+        <SidebarHeader windowControls="none" />
       </template>
     </Sidebar>
   </div>

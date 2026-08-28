@@ -582,6 +582,12 @@ describe('dashboard native STX bindings', () => {
     expect(windowControls).not.toContain('<script server>')
     expect(existsSync(resolve(dashboardComponents, 'WindowControls.stx'))).toBe(false)
 
+    // Replicas yield to the platform's own buttons. Craft sets
+    // `--craft-window-controls-replicas: none` on every window that has real
+    // ones, so drawing these there would put six circles in the corner; a
+    // browser publishes nothing and still gets the fallback.
+    expect(windowControls.match(/display: var\(--craft-window-controls-replicas, flex\)/g)).toHaveLength(2)
+
     const deliveryComponents = resolve(dashboardComponents, 'Commerce/Delivery')
     for (const file of readdirSync(deliveryComponents).filter(file => file.endsWith('.stx'))) {
       const source = readFileSync(resolve(deliveryComponents, file), 'utf8')
