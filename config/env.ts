@@ -1,4 +1,3 @@
-import type { InferEnv } from '@stacksjs/env'
 import { defineEnv } from '@stacksjs/env'
 import { schema } from '@stacksjs/validation'
 
@@ -256,17 +255,5 @@ const envSchema = defineEnv({
     default: '',
   },
 })
-
-/**
- * Teach `env` about the variables declared above.
- *
- * Interface declaration merging: this adds the schema's keys to `StacksEnv`,
- * which is the type of the `env` every `config/` file and action reads. Keys
- * the framework already declares are left alone by `InferEnv`, so redeclaring
- * `APP_NAME` here cannot conflict with the framework's own.
- */
-declare module '@stacksjs/env' {
-  interface StacksEnv extends InferEnv<typeof envSchema> {}
-}
 
 export default envSchema

@@ -352,21 +352,20 @@ export interface FrameworkEnv {
 /**
  * Every environment variable the application can read through `env`.
  *
- * Extends the framework's own set; an application adds its variables by
- * augmenting this interface from `config/env.ts`, which is the file that
- * already declares them:
+ * Extends the framework's own set. An application adds its variables by
+ * declaring them in `config/env.ts` and nothing else:
  *
  * ```ts
- * const envSchema = defineEnv({
+ * export default defineEnv({
  *   STRIPE_WEBHOOK_SECRET: { validation: schema.string(), default: '' },
  * })
- *
- * declare module '@stacksjs/env' {
- *   interface StacksEnv extends InferEnv<typeof envSchema> {}
- * }
- *
- * export default envSchema
  * ```
+ *
+ * `storage/framework/types/env.d.ts` reads that schema and augments this
+ * interface. It cannot live in this package: a published `.d.ts` naming
+ * `../../../config/env` resolves to nothing under `node_modules/`. Applications
+ * used to write the augmentation themselves, which is boilerplate with one
+ * correct spelling that silently types nothing when omitted.
  *
  * Nothing is generated: the types follow the schema, so they are the same on a
  * fresh clone, in CI, and in production. They used to come from a generated
