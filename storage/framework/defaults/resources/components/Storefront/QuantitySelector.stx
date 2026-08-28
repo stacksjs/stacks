@@ -53,7 +53,7 @@ const {
   // these fallbacks Math.min(0, qty+1) capped every increment at 0 and
   // the +/- buttons appeared dead. Read either the data-* on the wrapper
   // or the input attribute, whichever is non-empty.
-  function bound(wrap, kind, fallback) {
+  function bound(wrap, kind: string, fallback) {
     const fromData = wrap.getAttribute('data-' + kind)
     if (fromData && fromData.trim() !== '') {
       const n = Number(fromData)

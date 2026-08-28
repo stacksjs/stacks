@@ -11,7 +11,7 @@ const jobsByRunId = derived(() => ci.drilldownJobsByRunId())
 const loadingJobsRunId = derived(() => ci.loadingJobsForRunId())
 const title = derived(() => target()?.fullName || 'Run history')
 
-function runRowClass(conclusion, status) {
+function runRowClass(conclusion: string, status: string) {
   const base = 'px-3 py-2 -mx-3 border-l-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors '
   if (status !== 'completed') return base + 'border-yellow-400'
   if (conclusion === 'success') return base + 'border-emerald-400'
@@ -20,14 +20,14 @@ function runRowClass(conclusion, status) {
   return base + 'border-zinc-200 dark:border-zinc-800'
 }
 
-function runStatusBadge(conclusion, status) {
+function runStatusBadge(conclusion: string, status: string) {
   if (status !== 'completed') return { label: status, cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' }
   if (conclusion === 'success') return { label: 'success', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }
   if (conclusion === 'failure') return { label: 'failure', cls: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
   return { label: conclusion || 'unknown', cls: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300' }
 }
 
-function formatDuration(ms) {
+function formatDuration(ms: number) {
   if (ms == null) return ''
   const seconds = Math.floor(ms / 1000)
   if (seconds < 60) return seconds + 's'
@@ -48,7 +48,7 @@ function timeAgo(dateStr) {
   return Math.floor(hours / 24) + 'd ago'
 }
 
-function truncate(value, length) {
+function truncate(value: string, length: number) {
   if (!value) return ''
   return value.length > length ? value.slice(0, length) + '...' : value
 }

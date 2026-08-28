@@ -6,7 +6,7 @@ interface ForumReplyFormProps {
 
 const { replyContent = '', notifyOnReply = true } = defineProps<ForumReplyFormProps>()
 
-function canSubmit(content) {
+function canSubmit(content: string) {
   return content.trim().length > 0
 }
 </script>

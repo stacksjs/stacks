@@ -5,7 +5,7 @@ interface indexProps {
 
 const { transactionHistory = [] } = defineProps<indexProps>()
 
-function formatTimestampDate(timestamp) {
+function formatTimestampDate(timestamp: number) {
     if (!timestamp) return ''
     const date = new Date(timestamp * 1000)
     return date.toLocaleDateString()

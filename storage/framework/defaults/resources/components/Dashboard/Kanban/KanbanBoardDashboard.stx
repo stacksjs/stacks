@@ -112,14 +112,15 @@
   // model, mapped here so a new hue without an explicit mapping
   // falls back to slate.
   function columnAccentClass(color) {
-    return ({
+    const swatches: Record<string, string> = {
       slate: 'bg-slate-100 dark:bg-slate-800',
       amber: 'bg-amber-100 dark:bg-amber-900/40',
       blue: 'bg-blue-100 dark:bg-blue-900/40',
       emerald: 'bg-emerald-100 dark:bg-emerald-900/40',
       red: 'bg-red-100 dark:bg-red-900/40',
       violet: 'bg-violet-100 dark:bg-violet-900/40',
-    })[color] || 'bg-slate-100 dark:bg-slate-800'
+    }
+    return swatches[color] || 'bg-slate-100 dark:bg-slate-800'
   }
 
   // Pull the id from the URL through the navigation composable.

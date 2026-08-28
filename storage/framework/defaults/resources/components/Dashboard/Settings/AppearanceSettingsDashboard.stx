@@ -64,7 +64,7 @@ function resetAll() {
 // upstream. It stays because it is the better shape regardless: one selector
 // per state in the block below, rather than two class strings kept in sync by
 // hand inside a ternary.
-const selected = (a, b) => String(a === b)
+const selected = (a: number, b) => String(a === b)
 </script>
 
 <style>

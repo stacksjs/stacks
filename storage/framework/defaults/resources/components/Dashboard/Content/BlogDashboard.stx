@@ -262,7 +262,7 @@ function statusClass(draft) {
     : 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
 }
 
-function formatDate(value) {
+function formatDate(value: string | number | Date | null | undefined) {
   if (!value)
     return 'No date'
 

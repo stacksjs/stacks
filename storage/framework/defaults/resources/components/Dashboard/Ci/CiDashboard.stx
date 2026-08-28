@@ -55,17 +55,17 @@
       : base + 'bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400'
   }
 
-  function borderColor(status) {
+  function borderColor(status: string) {
     if (status === 'success') return 'border-color: rgba(16,185,129,0.3)'
     if (status === 'failure' || status === 'error') return 'border-color: rgba(239,68,68,0.3)'
     if (status === 'pending') return 'border-color: rgba(234,179,8,0.3)'
     return 'border-color: rgba(39,39,42,1)'
   }
 
-  function isSuccess(status) { return status === 'success' }
-  function isFailing(status) { return status === 'failure' || status === 'error' }
-  function isPending(status) { return status === 'pending' }
-  function isNoRuns(status) { return status === 'no_runs' }
+  function isSuccess(status: string) { return status === 'success' }
+  function isFailing(status: string) { return status === 'failure' || status === 'error' }
+  function isPending(status: string) { return status === 'pending' }
+  function isNoRuns(status: string) { return status === 'no_runs' }
 
   function timeAgo(dateStr) {
     if (!dateStr) return ''
@@ -78,7 +78,7 @@
     return days + 'd ago'
   }
 
-  function truncate(str, len) {
+  function truncate(str: string, len) {
     if (!str) return ''
     return str.length > len ? str.slice(0, len) + '...' : str
   }

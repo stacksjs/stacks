@@ -118,7 +118,7 @@
     if (e.key === 'Escape' && root.getAttribute('aria-hidden') === 'false') shut()
   })
 
-  function escapeHtml(s) {
+  function escapeHtml(s: string) {
     return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
   }
 
@@ -174,7 +174,7 @@
         render(data.items || [], data.subtotal || 0)
         const badge = document.querySelector('[data-stx-cart-count]')
         if (badge) {
-          const total = (data.items || []).reduce((s, i) => s + (Number(i.qty) || 0), 0)
+          const total = (data.items || []).reduce((s: string, i) => s + (Number(i.qty) || 0), 0)
           badge.textContent = String(total)
           badge.classList.toggle('hidden', total === 0)
         }

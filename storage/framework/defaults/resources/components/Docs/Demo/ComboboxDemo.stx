@@ -13,7 +13,7 @@ const { listItems = [
   { id: 4, name: 'Michael Vincent' },
   { id: 5, name: 'Blake Ayer' },
 ], selected = null, query = '', isOpen = false } = defineProps<ComboboxDemoProps>()
-function filterItems(items, query) {
+function filterItems(items, query: string) {
   if (query === '') return items
   return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
 }

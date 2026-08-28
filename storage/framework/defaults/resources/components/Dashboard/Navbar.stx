@@ -9,7 +9,7 @@ interface NavbarProps {
 
 const { isSidebarCollapsed = false, currentPath = '/' } = defineProps<NavbarProps>()
 
-function isActiveRoute(path) {
+function isActiveRoute(path: string) {
   return currentPath === path || currentPath.startsWith(path + '/')
 }
 

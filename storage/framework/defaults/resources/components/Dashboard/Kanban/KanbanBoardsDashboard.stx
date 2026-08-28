@@ -99,18 +99,19 @@
     }
   }
 
-  function colorSwatchClass(c) {
-    return ({
+  function colorSwatchClass(c: string) {
+    const swatches: Record<string, string> = {
       violet: 'bg-violet-500',
       blue: 'bg-blue-500',
       emerald: 'bg-emerald-500',
       amber: 'bg-amber-500',
       rose: 'bg-rose-500',
       slate: 'bg-slate-500',
-    })[c] || 'bg-violet-500'
+    }
+    return swatches[c] || 'bg-violet-500'
   }
 
-  function colorButtonClass(c) {
+  function colorButtonClass(c: string) {
     const base = `w-6 h-6 rounded-full ${colorSwatchClass(c)} cursor-pointer transition-all `
     return draftColor() === c
       ? base + 'ring-2 ring-offset-2 ring-violet-500 dark:ring-offset-zinc-950'
@@ -121,17 +122,18 @@
   // so the UI stays stable when a new hue is added without an explicit
   // mapping (falls back to violet).
   function accentClass(color) {
-    return ({
+    const swatches: Record<string, string> = {
       violet: 'bg-violet-500',
       blue: 'bg-blue-500',
       emerald: 'bg-emerald-500',
       amber: 'bg-amber-500',
       rose: 'bg-rose-500',
       slate: 'bg-slate-500',
-    })[color] || 'bg-violet-500'
+    }
+    return swatches[color] || 'bg-violet-500'
   }
 
-  function cardCountText(n) {
+  function cardCountText(n: number) {
     if (n === 0) return 'No cards'
     if (n === 1) return '1 card'
     return n + ' cards'

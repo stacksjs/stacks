@@ -43,7 +43,7 @@ const statusSizes = {
 }
 
 // Generate initials from name
-function getInitials(fullName) {
+function getInitials(fullName: string) {
   if (!fullName) return ''
   const parts = fullName.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
@@ -66,7 +66,7 @@ const bgColors = [
   'bg-pink-500/15 text-pink-600 dark:bg-pink-400/20 dark:text-pink-400'
 ]
 
-function getBgColorIndex(fullName) {
+function getBgColorIndex(fullName: string) {
   if (!fullName) return 0
   let hash = 0
   for (let i = 0; i < fullName.length; i++) {
