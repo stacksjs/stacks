@@ -67,14 +67,13 @@ catch (err) {
   log.warn(`[api:dev] search engine bootstrap skipped: ${(err as Error).message}`)
 }
 
-// Boot the user's event listener registry. Without this, every dispatch()
-// inside an action (booking:created, payment:succeeded, car:updated, etc.)
-// is fire-and-silently-forgotten — emitter.on('*') is never registered.
-// The legacy `storage/framework/api/dev.ts` had this call, but the current
-// dev API entrypoint (this file) was missing it, so all listener-driven
-// flows (welcome emails, booking confirmations, search reindex) were
-// silently broken in dev. Wrap in try/catch so a missing/broken
-// app/Listener.ts can't crash the API boot.
+// Boot the user's event listener registry, so a dispatch() inside an action
+// (booking:created, payment:succeeded, car:updated, etc.) reaches something.
+// `injectGlobalAutoImports()` above already registers what `app/Events.ts` and
+// `app/Listeners/` declare; this is the hook an app has overridden if it
+// registers listeners of its own, and the registry behind it makes the second
+// pass a no-op rather than a second copy of every listener. Wrap in try/catch
+// so a missing/broken app/Listener.ts can't crash the API boot.
 try {
   const listenerPath = path.appPath('Listener.ts')
   if (existsSync(listenerPath)) {

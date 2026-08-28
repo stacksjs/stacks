@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { dispatch, emitter } from '../src'
+import { resetListenerRegistry } from '../src/discover'
 import { appPath, listenersPath } from '@stacksjs/path'
 
 describe('Event Listener System', () => {
@@ -79,19 +80,39 @@ describe('Event Listener System', () => {
       expect(typeof listener.handleEvents).toBe('function')
     })
 
-    it('handleEvents should register a wildcard handler', async () => {
-      const sizeBefore = (emitter.all.get('*') || []).length
+    it('handleEvents should register the listeners named in app/Events.ts', async () => {
+      resetListenerRegistry()
+
+      const sizeBefore = (emitter.all.get('user:registered') || []).length
       const { handleEvents } = await import(appPath('Listener.ts'))
       await handleEvents()
-      const sizeAfter = (emitter.all.get('*') || []).length
+      const handlers = emitter.all.get('user:registered') || []
 
-      expect(sizeAfter).toBeGreaterThan(sizeBefore)
+      expect(handlers.length).toBeGreaterThan(sizeBefore)
 
-      // Clean up: remove the last wildcard handler we added
-      const handlers = emitter.all.get('*') || []
-      if (handlers.length > 0) {
-        handlers.pop()
-      }
+      // Clean up: drop the handler we just added, and the claim behind it.
+      handlers.pop()
+      resetListenerRegistry()
+    })
+
+    /*
+     * The dev API entrypoint calls `handleEvents()` and `injectGlobalAutoImports()`
+     * calls `registerAppListeners()`, both on the same boot. When this file carried
+     * its own wildcard implementation, that meant every listener in the map ran
+     * twice per event with nothing to show for it but duplicate work.
+     */
+    it('handleEvents should not register a second time', async () => {
+      resetListenerRegistry()
+
+      const { handleEvents } = await import(appPath('Listener.ts'))
+      const first = await handleEvents()
+
+      expect(first).toBeGreaterThan(0)
+      expect(await handleEvents()).toBe(0)
+
+      const handlers = emitter.all.get('user:registered') || []
+      handlers.pop()
+      resetListenerRegistry()
     })
   })
 

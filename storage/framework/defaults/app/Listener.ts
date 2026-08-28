@@ -1,84 +1,37 @@
-import type { StacksEvents, WildcardHandler } from '@stacksjs/events'
-import { handleError } from '@stacksjs/error-handling'
-import { emitter } from '@stacksjs/events'
+import { registerAppListeners } from '@stacksjs/events'
 import { path as p } from '@stacksjs/path'
-import events from './Events'
 
-// Cache resolved action modules to avoid repeated dynamic imports
-const actionCache = new Map<string, { handle: (event: any) => Promise<any> | any }>()
-
-// Deduplicate in-flight imports to prevent concurrent import races
-const pendingImports = new Map<string, Promise<{ handle: (event: any) => Promise<any> | any } | null>>()
-
-// Pre-compute which event types have listeners for O(1) lookup
-const eventTypes = new Set(Object.keys(events))
-
-export async function handleEvents() {
-  emitter.on('*', listenEvents as WildcardHandler<StacksEvents>)
-}
-
-function listenEvents(type: keyof typeof events, event: any) {
-  // Fast path: skip events with no registered listeners
-  if (!eventTypes.has(type as string))
-    return
-
-  const eventListeners = events[type]
-  if (!eventListeners || eventListeners.length === 0)
-    return
-
-  // Fire-and-forget with error handling — mitt doesn't await wildcard handlers
-  processListeners(type as string, eventListeners, event)
-}
-
-async function resolveAction(listener: string): Promise<{ handle: (event: any) => Promise<any> | any } | null> {
-  // Check cache first
-  const cached = actionCache.get(listener)
-  if (cached) return cached
-
-  // Check if an import is already in-flight
-  let pending = pendingImports.get(listener)
-  if (pending) return pending
-
-  // Start the import and cache the promise to deduplicate concurrent calls
-  pending = (async () => {
-    try {
-      const imported = await import(p.appPath(`Actions/${listener}.ts`))
-      const actionModule = imported.default
-      if (actionModule && typeof actionModule.handle === 'function') {
-        actionCache.set(listener, actionModule)
-        return actionModule
-      }
-      handleError(`Action "${listener}" does not export a handle method`)
-      return null
-    }
-    catch (error) {
-      handleError(`Failed to import action "${listener}"`, error)
-      return null
-    }
-    finally {
-      pendingImports.delete(listener)
-    }
-  })()
-
-  pendingImports.set(listener, pending)
-  return pending
-}
-
-async function processListeners(type: string, listeners: string[], event: any) {
-  for (const listener of listeners) {
-    try {
-      if (typeof listener === 'function') {
-        await (listener as any)(event)
-        continue
-      }
-
-      const action = await resolveAction(listener)
-      if (action) {
-        await action.handle(event)
-      }
-    }
-    catch (error) {
-      handleError(`Failed to execute listener "${listener}" for event "${type}"`, error)
-    }
-  }
+/**
+ * **Event Listener Bootstrap**
+ *
+ * Registers every listener the application declares: the `app/Events.ts` map of
+ * event name to listener names, and any module under `app/Listeners/` that
+ * declares its own `listensTo`.
+ *
+ * This file used to carry its own implementation of the first half - a wildcard
+ * handler that read the map on every dispatch and imported the named action out
+ * of `app/Actions/`. It was a second implementation of what
+ * `registerAppListeners` already does, and having two was worse than having the
+ * wrong one:
+ *
+ *   - In dev they both ran. `injectGlobalAutoImports()` calls
+ *     `registerAppListeners()` and the dev API entrypoint then called
+ *     `handleEvents()`, so every listener named in the map fired TWICE per
+ *     event - two welcome emails, two rows, and no error anywhere to say so.
+ *   - The copy resolved names against `app/Actions/` alone, so a listener under
+ *     `app/Listeners/` and any of the framework's default actions were
+ *     unreachable from the map.
+ *   - It matched events by exact name only, dropping the glob subscriptions
+ *     (`user:*`) the emitter supports.
+ *
+ * Delegating keeps this file as the app's hook into boot - override it to
+ * register listeners of your own - with one implementation behind it, whose
+ * registry also makes the call idempotent across a dev-server reload.
+ */
+export async function handleEvents(): Promise<number> {
+  // Anchored to the project root rather than left to `process.cwd()`. A buddy
+  // command, a test runner or a worker started from a subdirectory would
+  // otherwise look for `app/Events.ts` beside wherever it happened to be
+  // launched, find nothing, and register no listeners without saying so.
+  return registerAppListeners({ base: p.projectPath() })
 }
