@@ -967,25 +967,37 @@ const middlewareCache = new Map<string, MiddlewareHandler | null>()
 let middlewareAliasesPromise: Promise<Record<string, string>> | null = null
 
 /**
- * Load the middleware alias map from app/Middleware.ts
- * Maps short names (e.g., 'auth') to class names (e.g., 'Auth')
+ * Load the middleware alias map, defaults first and the application's own on
+ * top. Maps short names (e.g., 'auth') to class names (e.g., 'Auth').
+ *
+ * MERGED rather than either/or. The app's file used to replace the defaults
+ * wholesale, which reads as an override and behaves as a deletion: every alias
+ * the framework adds after a project was scaffolded is missing from that
+ * project, silently, and the only symptom is a route whose guard resolves to
+ * something else or to nothing. `generate:types` already unions both files into
+ * `MiddlewareAlias`, so the type said those aliases existed while the runtime
+ * had never heard of them.
  */
 async function getMiddlewareAliases(): Promise<Record<string, string>> {
   if (middlewareAliasesPromise) return middlewareAliasesPromise
   middlewareAliasesPromise = (async (): Promise<Record<string, string>> => {
-    try {
-      const aliasModule = await import(p.appPath('Middleware.ts'))
-      return aliasModule.default || {}
-    }
-    catch {
+    const merged: Record<string, string> = {}
+
+    for (const load of [
+      () => import(resolveDefaultsPath('app/Middleware.ts')),
+      () => import(p.appPath('Middleware.ts')),
+    ]) {
       try {
-        const defaultModule = await import(resolveDefaultsPath('app/Middleware.ts'))
-        return defaultModule.default || {}
+        const module = await load()
+        Object.assign(merged, module.default ?? {})
       }
       catch {
-        return {}
+        // A project without an `app/Middleware.ts`, or a checkout without the
+        // defaults on disk, is normal. Only both missing leaves this empty.
       }
     }
+
+    return merged
   })()
   return middlewareAliasesPromise
 }
@@ -1089,6 +1101,96 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
 }
 
 /**
+ * The merged middleware alias map: the framework defaults, with the
+ * application's own map on top.
+ *
+ * Exported for diagnostics and tests. A copy, so a caller cannot edit the
+ * cached map out from under the router.
+ */
+export async function middlewareAliases(): Promise<Record<string, string>> {
+  return { ...(await getMiddlewareAliases()) }
+}
+
+/**
+ * Negated middleware, by the name of the middleware being negated.
+ *
+ * Kept separate from `middlewareCache` so `'auth'` and `'!auth'` never collide,
+ * and cleared alongside it on hot reload.
+ */
+const negatedMiddlewareCache = new Map<string, MiddlewareHandler>()
+
+/**
+ * Whether a thrown value is a middleware saying "no" rather than crashing.
+ *
+ * The `Middleware` contract is "return to continue, throw a `Response` or an
+ * HTTP error to short-circuit", so a refusal is recognisable: a `Response`, or
+ * an error carrying a status. A `TypeError` from a bug inside the middleware is
+ * neither, and must not be read as a refusal - that is the difference between
+ * `!auth` letting a guest through and `!auth` letting everyone through because
+ * `Auth` happened to throw on a malformed header.
+ */
+function isShortCircuit(thrown: unknown): boolean {
+  if (thrown instanceof Response)
+    return true
+
+  return typeof thrown === 'object'
+    && thrown !== null
+    && ('status' in thrown || 'statusCode' in thrown)
+}
+
+/**
+ * Invert a middleware: pass when it refuses, refuse when it passes.
+ *
+ * `!auth` (a route for guests only) and `!env:production` are documented in
+ * `app/Middleware.ts`, are legal in the `MiddlewareReference` type, and have a
+ * type-level test asserting `.middleware('!auth')` compiles. Nothing
+ * implemented them. `resolveMiddlewareName('!auth')` looked up an alias that
+ * was not there, PascalCased the string into `'!auth'`, failed to find
+ * `app/Middleware/!auth.ts`, and returned null - which the router correctly
+ * treats as fatal, so the documented syntax aborted boot with "Unresolvable
+ * middleware alias(es)".
+ */
+function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHandler {
+  const cached = negatedMiddlewareCache.get(name)
+  if (cached)
+    return cached
+
+  const negated: MiddlewareHandler = {
+    priority: inner.priority,
+    async handle(req) {
+      try {
+        await inner.handle(req)
+      }
+      catch (thrown) {
+        if (isShortCircuit(thrown))
+          return
+
+        throw thrown
+      }
+
+      const { HttpError } = await import('@stacksjs/error-handling')
+      throw new HttpError(403, `Access denied. This route requires "${name}" not to apply.`)
+    },
+  }
+
+  negatedMiddlewareCache.set(name, negated)
+
+  return negated
+}
+
+/**
+ * Load the handler a parsed reference names, negated when it asked to be.
+ */
+async function loadParsedMiddleware(parsed: ParsedMiddleware): Promise<MiddlewareHandler | null> {
+  const handler = await loadMiddleware(parsed.name)
+
+  if (!handler || !parsed.negated)
+    return handler
+
+  return negateMiddleware(parsed.name, handler)
+}
+
+/**
  * Clear the middleware cache (useful for hot-reload in development).
  *
  * `installMiddlewareHotReload()` will wire this up automatically when
@@ -1096,6 +1198,7 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
  */
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
+  negatedMiddlewareCache.clear()
   middlewareAliasesPromise = null
   // Action-level CSRF skip cache + route-handler key registry are
   // populated lazily when actions load; they should be flushed in
@@ -1190,18 +1293,49 @@ export function clearRouteMiddlewareRegistry(): void {
  */
 const routeApiResponseRegistry = new Set<string>()
 
+/** One middleware reference, taken apart. */
+interface ParsedMiddleware {
+  /** The alias or class name to load, with any leading `!` removed. */
+  name: string
+  /** Whether the reference was negated with a leading `!`. */
+  negated: boolean
+  /** Whatever followed the first `:`, when the reference is not itself an alias. */
+  params?: string
+}
+
 /**
- * Parse middleware name and parameters
- * e.g., 'abilities:read,write' -> { name: 'abilities', params: 'read,write' }
+ * Parse a middleware reference into the name to load, its parameters, and
+ * whether it was negated.
+ *
+ * The WHOLE reference is checked against the alias map before the colon is read
+ * as a parameter separator, and that ordering is the fix for a guard that did
+ * nothing. `app/Middleware.ts` ships `'env:production': 'EnvProduction'`, and
+ * splitting first turned `.middleware('env:production')` into the alias `'env'`
+ * with a parameter `'production'` - so it loaded `Env`, which accepts any of
+ * the six known environments and ignores parameters outright. A route marked
+ * production-only was open in local, dev and staging, and every one of the six
+ * `env:*` aliases was unreachable. `'throttle:60,1'` is not an alias, so it
+ * still splits and still passes `60,1` to `throttle`.
+ *
+ * Async because the alias map is loaded by dynamic import. The old sync
+ * version could not consult it, which is why it did not.
  */
-function parseMiddlewareName(middleware: string): { name: string, params?: string } {
-  const colonIndex = middleware.indexOf(':')
-  if (colonIndex === -1) {
-    return { name: middleware }
-  }
+async function parseMiddlewareEntry(middleware: string): Promise<ParsedMiddleware> {
+  const negated = middleware.startsWith('!')
+  const bare = negated ? middleware.slice(1) : middleware
+  const aliases = await getMiddlewareAliases()
+
+  if (Object.hasOwn(aliases, bare))
+    return { name: bare, negated }
+
+  const colonIndex = bare.indexOf(':')
+  if (colonIndex === -1)
+    return { name: bare, negated }
+
   return {
-    name: middleware.substring(0, colonIndex),
-    params: middleware.substring(colonIndex + 1),
+    name: bare.substring(0, colonIndex),
+    negated,
+    params: bare.substring(colonIndex + 1),
   }
 }
 
@@ -1218,21 +1352,25 @@ function parseMiddlewareName(middleware: string): { name: string, params?: strin
  * effectively registration-time validation. See stacksjs/stacks#1957.
  */
 export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: string, routes: string[] }>> {
-  const usage = new Map<string, string[]>()
+  const usage = new Map<string, { parsed: ParsedMiddleware, routes: string[] }>()
   for (const [routeKey, entries] of routeMiddlewareRegistry) {
     for (const entry of entries) {
-      const { name } = parseMiddlewareName(entry)
-      const routes = usage.get(name) ?? []
-      routes.push(routeKey)
-      usage.set(name, routes)
+      const parsed = await parseMiddlewareEntry(entry)
+      // Reported without the parameters - those are the middleware's argument,
+      // not part of what has to resolve - but WITH the `!`, because `auth` and
+      // `!auth` are two different things to look up.
+      const alias = parsed.negated ? `!${parsed.name}` : parsed.name
+      const seen = usage.get(alias) ?? { parsed, routes: [] }
+      seen.routes.push(routeKey)
+      usage.set(alias, seen)
     }
   }
   if (!usage.has('csrf'))
-    usage.set('csrf', ['(auto-injected on POST/PUT/PATCH/DELETE)'])
+    usage.set('csrf', { parsed: { name: 'csrf', negated: false }, routes: ['(auto-injected on POST/PUT/PATCH/DELETE)'] })
 
   const unresolvable: Array<{ alias: string, routes: string[] }> = []
-  for (const [alias, routes] of usage) {
-    const handler = await loadMiddleware(alias)
+  for (const [alias, { parsed, routes }] of usage) {
+    const handler = await loadParsedMiddleware(parsed)
     if (!handler || typeof handler.handle !== 'function')
       unresolvable.push({ alias, routes })
   }
@@ -1442,7 +1580,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
       const resolved: ResolvedMiddleware[] = []
       for (const middlewareEntry of middlewareEntries) {
-        const { name: middlewareName, params } = parseMiddlewareName(middlewareEntry)
+        const parsed = await parseMiddlewareEntry(middlewareEntry)
+        const { name: middlewareName, params } = parsed
 
         // Store middleware params on request for middleware to access.
         // Params are keyed by middleware name so this is order-independent.
@@ -1451,7 +1590,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           ;enhancedReq._middlewareParams[middlewareName] = params
         }
 
-        const middleware = await loadMiddleware(middlewareName)
+        const middleware = await loadParsedMiddleware(parsed)
         if (!middleware || typeof middleware.handle !== 'function') {
           // Fail CLOSED. The previous `continue` served the route WITHOUT
           // the middleware — a typo'd `auth` alias silently unprotected the
@@ -1460,8 +1599,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           // Boot-time validation (assertRouteMiddlewareResolvable) catches
           // these earlier and louder; this branch is the request-time
           // guarantee. See stacksjs/stacks#1957.
-          log.error(`[Router] Middleware '${middlewareName}' on ${routeKey} could not be resolved - failing closed`)
-          const failClosedError = new Error(`Middleware '${middlewareName}' could not be resolved`)
+          log.error(`[Router] Middleware '${middlewareEntry}' on ${routeKey} could not be resolved - failing closed`)
+          const failClosedError = new Error(`Middleware '${middlewareEntry}' could not be resolved`)
           const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
           return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
         }
@@ -1477,9 +1616,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           priority = rawPriority
         }
         else if (rawPriority !== undefined) {
-          warnInvalidMiddlewarePriority(middlewareName, rawPriority)
+          warnInvalidMiddlewarePriority(middlewareEntry, rawPriority)
         }
-        resolved.push({ name: middlewareName, handler: middleware, priority })
+        // Named by the reference as written, not by what it resolved to, so
+        // `[middleware] Blocked by: !auth` says which entry in the chain
+        // refused rather than naming the middleware it inverts.
+        resolved.push({ name: middlewareEntry, handler: middleware, priority })
       }
 
       // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
@@ -1839,7 +1981,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
      *
      * The array form is accepted because it is the obvious way to write a
      * route with two guards, and it used to be a trap: the array was pushed
-     * whole, `parseMiddlewareName` found no colon in it, and the failure
+     * whole, the reference parser found no colon in it, and the failure
      * surfaced at boot as `input.split is not a function` from inside a case
      * converter — an error that names nothing about routes or middleware and
      * sends the reader into the router's internals.
