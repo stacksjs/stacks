@@ -83,16 +83,20 @@ throw new Response(JSON.stringify({ error: 'Rate limited' }), {
 Maps short names to middleware class filenames:
 
 ```typescript
-export default {
+import { defineMiddleware } from '@stacksjs/router'
+
+export default defineMiddleware({
   'maintenance': 'Maintenance',
   'auth': 'Auth',
   'guest': 'Guest',
   'api': 'Api',
   'team': 'Team',
+  'site': 'Site',
   'logger': 'Logger',
   'abilities': 'Abilities',
   'can': 'Can',
   'throttle': 'Throttle',
+  'signed': 'Signed',
   'env': 'Env',
   'env:local': 'EnvLocal',
   'env:development': 'EnvDevelopment',
@@ -103,8 +107,35 @@ export default {
   'role': 'Role',
   'permission': 'Permission',
   'verified': 'EnsureEmailIsVerified',
-} satisfies Middleware
+})
 ```
+
+The alias is yours to invent; the class name is checked against
+`app/Middleware/` and the framework defaults, so `{ auth: 'Auht' }` is a
+compile error rather than a route whose guard resolves to nothing.
+
+This map is **merged over** the framework defaults, not a replacement for them,
+so an alias Stacks adds later is available without editing the file.
+
+## Reference forms
+
+Three shapes are read off a reference, in this order:
+
+| Written | Means |
+|---|---|
+| `'auth'` | the alias, or a class name if no alias matches (`'signed'` → `Signed`) |
+| `'!auth'` | inverted: the route passes only when `auth` refuses |
+| `'throttle:60,1'` | `throttle` with `60,1` in `request._middlewareParams.throttle` |
+
+The **whole** reference is looked up as an alias before the colon is treated as
+a parameter separator. That is what makes `'env:production'` its own alias
+rather than `env` with a parameter - `Env` ignores parameters and accepts every
+known environment, so splitting first turned a production-only route into an
+unguarded one.
+
+Inversion counts a `Response` or a status-carrying error as a refusal, and
+nothing else. A `TypeError` from a bug inside `Auth` is a crash, not a
+declination, and must not let `!auth` through.
 
 ## Applying Middleware
 
@@ -163,18 +194,24 @@ Parameters are stored on `request._middlewareParams[middlewareName]` and parsed 
 
 ### Environment Negation Variants
 
-Files exist for `EnvNotLocal`, `EnvNotDevelopment`, `EnvNotStaging`, `EnvNotProduction` — but they have **no aliases registered** in `app/Middleware.ts`.
+`EnvNotLocal`, `EnvNotDevelopment`, `EnvNotStaging` and `EnvNotProduction` exist
+as classes with no alias. Reference them by class name, or write the negated
+form of the positive alias - `'!env:production'` is `EnvNotProduction`.
 
 ## Middleware Loading Flow
 
 ```
-1. Parse middleware name: 'throttle:60,1' → { name: 'throttle', params: '60,1' }
-2. Check middleware cache (loaded once, cached for performance)
-3. Resolve alias: 'throttle' → 'Throttle' (via app/Middleware.ts)
-4. Try loading from app/Middleware/Throttle.ts (user overrides)
-5. Fall back to storage/framework/defaults/app/Middleware/Throttle.ts
-6. Store params on request: request._middlewareParams.throttle = '60,1'
-7. Execute: await middleware.handle(enhancedRequest)
+1. Strip a leading '!', if any, and remember it
+2. Look the WHOLE remainder up in the merged alias map
+   'env:production' is an alias      → { name: 'env:production' }
+   'throttle:60,1' is not            → { name: 'throttle', params: '60,1' }
+3. Check middleware cache (loaded once, cached for performance)
+4. Resolve alias: 'throttle' → 'Throttle'; unaliased names PascalCase
+5. Try loading from app/Middleware/Throttle.ts (user overrides)
+6. Fall back to storage/framework/defaults/app/Middleware/Throttle.ts
+7. Store params on request: request._middlewareParams.throttle = '60,1'
+8. Wrap in the inverter if step 1 saw a '!'
+9. Sort the chain by priority, then execute: await middleware.handle(req)
 ```
 
 User middleware in `app/Middleware/` always takes precedence over framework defaults.
@@ -239,10 +276,11 @@ import { authMiddleware, authMiddlewareHandler } from '@stacksjs/auth'
 ```
 
 ## Gotchas
-- **Priority exists but isn't used for ordering** — the router executes middleware in registration order, not priority order
+- **Priority DOES order the chain** — entries are sorted by `priority` (lower first, default 10) before execution, so CORS can precede auth regardless of the order they were attached in. An earlier version of this file said otherwise. A non-finite or negative value is clamped to the default and warned about once
 - **`terminate()` doesn't exist** — some docs reference it, but it's not in the actual `MiddlewareConfig` interface
 - **Two auth middleware implementations** — defaults version (basic token check) and `@stacksjs/auth` version (full user loading)
-- **EnvNot* files have no aliases** — `EnvNotLocal.ts`, etc. exist but aren't registered in `app/Middleware.ts`
+- **EnvNot* files have no aliases** — reachable by class name, or as `'!env:production'` and friends
+- **The alias map merges over the defaults** — an app's `app/Middleware.ts` adds to and overrides them rather than replacing the set
 - **Middleware is cached after first load** — changes require server restart
 - **User overrides take precedence** — `app/Middleware/Auth.ts` replaces the framework default completely
 - **Group middleware accumulates** — nested groups combine all parent middleware

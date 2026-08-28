@@ -363,15 +363,43 @@ await authUser.authorize('edit-post', post)  // throws if denied
 
 ## Middleware Aliases (app/Middleware.ts)
 
-Available middleware names: `maintenance`, `auth`, `guest`, `api`, `team`, `logger`, `abilities`, `can`, `throttle`, `local`, `development`, `staging`, `production`, `env.local`, `env.development`, `env.staging`, `env.production`, `role`, `permission`, `verified` (EnsureEmailIsVerified)
+Auth-relevant aliases: `auth`, `guest`, `verified` (EnsureEmailIsVerified),
+`abilities`, `can`, `role`, `permission`, `team`, `signed`, `throttle`. The
+environment aliases are `env`, `env:local`, `env:development` / `env:dev`,
+`env:staging`, `env:production` / `env:prod` — with a COLON, not a dot; an
+earlier version of this list wrote `env.local` and those never existed. See
+`stacks-middleware` for the full set and for the `!alias` and `alias:params`
+forms.
 
-## Application Gates Example (app/Gates.ts)
+## Application Gates (app/Gates.ts)
 
 ```typescript
-Gate.define('access-admin', (user) => user?.email?.endsWith('@stacksjs.org') ?? false)
-Gate.define('edit-settings', (user) => !!user)
-Gate.define('view-dashboard', (user) => !!user)
+import { defineGates } from '@stacksjs/auth'
+
+export default defineGates({
+  gates: {
+    'access-admin': user => user?.email?.endsWith('@stacksjs.org') ?? false,
+    'edit-settings': user => !!user,
+    'view-dashboard': user => !!user,
+  },
+  policies: {
+    Post: 'PostPolicy',
+  },
+})
 ```
+
+Registered at boot by `initializeAuthorization()`, from
+`injectGlobalAutoImports()` — the one place every entry point comes through, so
+HTTP, `buddy seed`, a scheduled job and a console command all get the same
+gates.
+
+Both halves of `policies` are checked: the key names a model the ORM exposes,
+the value a policy file under `app/Policies/` or the framework defaults. An
+explicit mapping WINS over the `<Model>Policy` naming convention, which is the
+reason to write one.
+
+`Gate.define(...)` still works for a gate registered at runtime; `defineGates`
+is the declarative form and the one the ability-name completions come from.
 
 ## Default API Routes
 
@@ -409,6 +437,8 @@ traits: {
 - RBAC has an internal cache (`userRoles`, `userPermissions`, `rolePermissions`) — call `Rbac.flushCache()` after direct DB changes
 - `syncRoles()` and `syncPermissions()` are guard-scoped replacements: they preserve assignments belonging to other guards
 - Gate `before` callbacks can short-circuit — return `true` to allow, `null` to continue checking
+- An ability with no gate and no policy method **denies**. That is the right default, and it means a gate that was never registered is indistinguishable from one that says no — which is how `initializeAuthorization()` went unnoticed while nothing called it
+- `allows()` and friends take `Ability`, which is open (`GateName | PolicyAbility | (string & {})`). A `/can/:ability` route passes an ability straight through, so narrowing it would reject correct code; the union is for completions
 - `withRbac()` and `withAuthorization()` return new objects with methods mixed in
 - The `RbacStore` interface must be implemented and set via `Rbac.setStore()` for RBAC to work
 - Password reset tokens expire after 60 minutes by default

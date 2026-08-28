@@ -47,7 +47,7 @@ The `Schedule` class is the core scheduling API. The lowercase `schedule` export
 import { schedule } from '@stacksjs/scheduler'
 
 // Static factory methods — each returns UntimedSchedule
-schedule.job(name: string): UntimedSchedule      // Runs a job by name via runJob()
+schedule.job(name: JobName): UntimedSchedule     // Runs a job by name via runJob()
 schedule.action(name: string): UntimedSchedule    // Runs an action by name via runAction()
 schedule.command(cmd: string): UntimedSchedule    // Runs a shell command via runCommand()
 

@@ -82,6 +82,9 @@ await SendWelcomeEmail.dispatchNow({ email, name })
 ```typescript
 import { job } from '@stacksjs/queue'
 
+// Checked against `app/Jobs/` AND the framework defaults - the same three
+// directories `resolveJobFile` searches, so the jobs Stacks ships are
+// dispatchable and schedulable by name too.
 await job('SendWelcomeEmail', { email, name })
   .onQueue('emails')
   .delay(60)

@@ -20,6 +20,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 queue/src/
 ├── action.ts          # Job class with dispatch/dispatchIf/dispatchAfter/dispatchNow
 ├── job.ts             # JobBuilder fluent API + job() helper + jobBatch() + runJob()
+│                     # also `Jobs` (the JobName registry) and `resolveJobFile`
 ├── discovery.ts       # Job auto-discovery from app/Jobs/ via Bun.Glob
 ├── scheduler.ts       # Cron-based job scheduling with overlap prevention
 ├── worker.ts          # Queue worker (database polling & Redis processing)
@@ -75,6 +76,10 @@ export class Job {
 ```typescript
 import { job } from '@stacksjs/queue'
 
+// The name is checked: `job('SendWelcomeEmial')` is a compile error, not a
+// queue row no worker can resolve. `dispatch()` does not look the job up - only
+// the worker does - so an unresolvable name used to enqueue successfully and
+// fail later, out of sight of the caller.
 await job('SendWelcomeEmail', { email, name })
   .onQueue('emails')
   .delay(60)           // seconds
