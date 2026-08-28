@@ -572,7 +572,7 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
  * Returns undefined if the project has no ts-cloud config (older projects /
  * pure AWS setups that only export the legacy `CloudConfig`).
  */
-async function loadTsCloudConfig(envName?: string): Promise<any | undefined> {
+export async function loadTsCloudConfig(envName?: string): Promise<any | undefined> {
   try {
     const base = p.projectPath('config/cloud.ts')
     // Always cache-bust when an environment is known so the config module

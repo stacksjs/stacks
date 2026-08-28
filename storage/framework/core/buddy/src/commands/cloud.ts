@@ -1,3 +1,4 @@
+import type { HostProbe } from '../cloud-inventory'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, text, underline } from "@stacksjs/cli"
@@ -206,6 +207,10 @@ export function cloud(buddy: CLI): void {
     invalidateCache: 'Invalidate the CloudFront cache',
     diff: 'Show the diff of the current, undeployed cloud changes ',
     dashboard: 'Run the local Stacks Cloud management cockpit (servers, sites, deploys)',
+    sites: 'List every server and what each one is hosting, across projects',
+    sitesEnv: 'Environment to take the inventory for',
+    remote: 'Skip the SSH read of each box\'s gateway registry (co-tenants are then not listed)',
+    json: 'Emit the inventory as JSON',
     host: 'Host to bind the dashboard to',
     port: 'Port to bind the dashboard to',
     env: 'Environment to manage',
@@ -819,6 +824,89 @@ export function cloud(buddy: CLI): void {
         )
         process.exit(ExitCode.FatalError)
       }
+    })
+
+  buddy
+    .command('cloud:sites', descriptions.sites)
+    .option('--env [env]', descriptions.sitesEnv)
+    .option('--no-remote', descriptions.remote)
+    .option('-J, --json', descriptions.json, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions & { env?: string, remote?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:sites` ...', options)
+
+      const {
+        declaredSites,
+        describeInventory,
+        listProviderServers,
+        probeHostRoutes,
+      } = await import('../cloud-inventory')
+      const { loadTsCloudConfig, resolveHetznerApiToken } = await import('./deploy')
+
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      const slug = tsCloudConfig?.project?.slug || 'app'
+
+      // Only the Hetzner listing is implemented, and saying so beats printing
+      // an empty fleet that reads as "you have no servers".
+      const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
+      if (provider !== 'hetzner') {
+        log.error(`\`buddy cloud:sites\` can only list Hetzner servers, and this project's provider is '${provider}'.`)
+        log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      // ts-cloud owns both of these rules: `resolveSiteKind` decides what a
+      // site IS, and `siteInstallBase` is documented as the single source of
+      // truth for where it lands. Re-deriving either here would be free to
+      // drift from what the deploy actually does.
+      let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
+      try {
+        const deployApi = await import('@stacksjs/ts-cloud/deploy') as any
+        helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
+      }
+      catch (error) {
+        log.debug('Could not load @stacksjs/ts-cloud/deploy for site classification:', error)
+      }
+
+      const declared = declaredSites(tsCloudConfig?.sites, helpers, slug)
+      const listing = await listProviderServers(resolveHetznerApiToken(tsCloudConfig))
+
+      const probes: HostProbe[] = []
+      if (options.remote !== false) {
+        const { sshExec } = await import('@stacksjs/ts-cloud')
+        // Batched rather than one Promise.all over the fleet: each probe opens
+        // an SSH connection, and a large project should not fire forty at once.
+        const batchSize = 6
+        for (let index = 0; index < listing.servers.length; index += batchSize) {
+          probes.push(...await Promise.all(
+            listing.servers.slice(index, index + batchSize).map(server =>
+              probeHostRoutes(server, (host, command) => sshExec(host, command, { user: 'root', connectTimeoutSec: 10 })),
+            ),
+          ))
+        }
+      }
+
+      const inventory = {
+        slug,
+        environment,
+        servers: listing.servers,
+        probes,
+        declared,
+        providerFailure: listing.failure,
+      }
+
+      if (options.json) {
+        console.log(JSON.stringify(inventory, null, 2))
+      }
+      else {
+        for (const line of describeInventory(inventory))
+          console.log(line)
+      }
+
+      // An empty fleet is a fine answer; an empty fleet BECAUSE the lookup
+      // failed is not, and the two must not exit the same way.
+      process.exit(listing.failure && listing.servers.length === 0 ? ExitCode.FatalError : ExitCode.Success)
     })
 
   onUnknownSubcommand(buddy, "cloud")

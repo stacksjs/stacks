@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **305 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **306 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 1 |
 | `auth` | 4 |
 | `build` | 15 |
-| `cloud` | 7 |
+| `cloud` | 8 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `commerce` | 2 |
@@ -611,6 +611,22 @@ Remove the Stacks Cloud. In case it fails, try again
 | `--force` | Force deletion of stack in bad state | boolean, optional | `false` |
 | `--yes` | Skip confirmation prompts | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:sites`
+
+List every server and what each one is hosting, across projects
+
+- Usage: `$ buddy cloud:sites`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment to take the inventory for | value, optional | - |
+| `--no-remote` | Skip the SSH read of each box's gateway registry (co-tenants are then not listed) | boolean, optional, negated | `true` |
+| `-J`, `--json` | Emit the inventory as JSON | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cms:install`
