@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { path } from '@stacksjs/path'
 
@@ -164,5 +164,168 @@ describe('the generated name registries', () => {
     // The 1500-line union this replaces. Its absence is the point.
     expect(existsSync(path.storagePath('framework/types/actions.d.ts'))).toBe(false)
     expect(existsSync(path.storagePath('framework/types/scheduled.d.ts'))).toBe(false)
+  })
+})
+
+/**
+ * The global declarations and the globals themselves.
+ *
+ * `server-auto-imports.d.ts` is one of the two files the framework still
+ * generates, and it is generated for a reason TypeScript imposes rather than a
+ * choice: `declare global` takes literal identifiers, and there is no way to
+ * spread a type into the global scope. What CAN be removed is the second
+ * derivation - and it was there. The declaration scanned the model, job and
+ * controller directories itself while `injectGlobalAutoImports` read the
+ * barrels, so the two worked the same fact out twice and disagreed about jobs:
+ * every job the framework ships was a global at runtime with no type at all.
+ */
+describe('the generated global declarations', () => {
+  const declarations = path.storagePath('framework/types/server-auto-imports.d.ts')
+
+  function declaredNames(): Set<string> {
+    const source = readFileSync(declarations, 'utf8')
+
+    return new Set([...source.matchAll(/^ {2}const (\w+):/gm)].map(match => match[1]!))
+  }
+
+  async function barrelNames(barrel: string): Promise<string[]> {
+    const file = `${registryDir}/${barrel}.ts`
+    if (!existsSync(file))
+      return []
+
+    return [...readFileSync(file, 'utf8').matchAll(/^export \{ default as (\w+) \}/gm)].map(match => match[1]!)
+  }
+
+  it('declares every name the barrels put on globalThis', async () => {
+    const declared = declaredNames()
+    const undeclared: string[] = []
+
+    for (const barrel of ['models', 'jobs', 'controllers']) {
+      for (const name of await barrelNames(barrel)) {
+        if (!declared.has(name))
+          undeclared.push(`${barrel}: ${name}`)
+      }
+    }
+
+    // A global with no declaration is the quieter half of the failure: the
+    // name works at runtime and the compiler says it does not exist, so people
+    // add an import that was never needed, or an `as any`.
+    expect(undeclared).toEqual([])
+  })
+
+  it('declares every model @stacksjs/orm injects as a lazy proxy', async () => {
+    const { modelGlobalNames } = await import('@stacksjs/orm') as { modelGlobalNames: readonly string[] }
+    const declared = declaredNames()
+
+    expect(modelGlobalNames.length).toBeGreaterThan(0)
+
+    /*
+     * The ORM injects the COMPLETE framework model surface, feature-gated or
+     * not, which is why the declaration cannot come from the barrel alone: an
+     * app without the CMS enabled has no `Post` in its barrel and can still
+     * call `await Post.all()`.
+     *
+     * Names that would shadow a JavaScript built-in are the exception, and are
+     * skipped on both sides: the ORM only assigns when the global is undefined,
+     * and `globalThis.Request` is a Response/Request pair the platform already
+     * provides.
+     */
+    const shadowsBuiltIn = new Set(['Error', 'Request', 'Response'])
+    const undeclared = modelGlobalNames.filter(name => !shadowsBuiltIn.has(name) && !declared.has(name))
+
+    expect(undeclared).toEqual([])
+  })
+
+  it('declares nothing that no barrel and no proxy provides', async () => {
+    const { modelGlobalNames } = await import('@stacksjs/orm') as { modelGlobalNames: readonly string[] }
+    const provided = new Set<string>(modelGlobalNames)
+
+    for (const barrel of ['models', 'jobs', 'controllers']) {
+      for (const name of await barrelNames(barrel))
+        provided.add(name)
+    }
+
+    // The framework primitives (`path`, `log`, `schema`, …) come from
+    // `primitiveAutoImportEntries()` and are declared by package specifier, so
+    // only the file-backed half is checked here.
+    const source = readFileSync(declarations, 'utf8')
+    const fileBacked = [...source.matchAll(/^ {2}const (\w+): typeof import\('\.[^']*'\)/gm)].map(match => match[1]!)
+
+    /*
+     * The louder half: a declared name that nothing provides type-checks and
+     * then throws `X is not defined`. A previous declaration file carried 36 of
+     * these, including nine models from a different application.
+     */
+    expect(fileBacked.filter(name => !provided.has(name))).toEqual([])
+  })
+})
+
+/**
+ * The browser globals, and whether they exist.
+ *
+ * `types/browser-auto-imports.d.ts` tells the compiler which names an stx
+ * script block can use bare. It is a committed artifact of
+ * `unplugin-auto-import`, which nothing in this repository runs, and it had
+ * drifted to declaring 405 globals of which 291 were not exported by the module
+ * named beside them - 229 from a single file that exports 15.
+ *
+ * It survived because the file opened with `@ts-nocheck`, so every
+ * `typeof import(...)['name']` in it went unchecked. A declaration nothing
+ * checks is believed by everything: `charIn(...)` type-checked and threw
+ * `charIn is not defined`.
+ */
+describe('the browser global declarations', () => {
+  const declarations = path.storagePath('framework/types/browser-auto-imports.d.ts')
+
+  function declared(): Array<{ name: string, from: string, exported: string }> {
+    const source = readFileSync(declarations, 'utf8')
+
+    return [...source.matchAll(/^ {2}const (\w+): typeof import\('([^']+)'\)\['(\w+)'\]/gm)]
+      .map(match => ({ name: match[1]!, from: match[2]!, exported: match[3]! }))
+  }
+
+  it('declares only names the module beside them exports', async () => {
+    const cache = new Map<string, Set<string> | null>()
+    const phantom: string[] = []
+
+    for (const entry of declared()) {
+      if (!cache.has(entry.from)) {
+        try {
+          const specifier = entry.from.startsWith('.')
+            ? resolve(path.storagePath('framework/types'), entry.from)
+            : entry.from
+          cache.set(entry.from, new Set(Object.keys(await import(specifier) as Record<string, unknown>)))
+        }
+        catch {
+          // Unresolvable here is not the same as absent everywhere; a module
+          // this install lacks is not evidence against the declaration.
+          cache.set(entry.from, null)
+        }
+      }
+
+      const exported = cache.get(entry.from)
+      if (exported && !exported.has(entry.exported))
+        phantom.push(`${entry.name} from ${entry.from}`)
+    }
+
+    expect(phantom).toEqual([])
+  })
+
+  it('carries no @ts-nocheck, so the declarations are checked', () => {
+    // The whole reason 291 of them went unnoticed. Without this the file can
+    // silently stop being checked again and nothing would say so.
+    expect(readFileSync(declarations, 'utf8')).not.toContain('@ts-nocheck')
+  })
+
+  it('agrees with the eslint globals manifest beside it', () => {
+    const manifest = JSON.parse(readFileSync(path.storagePath('framework/browser-auto-imports.json'), 'utf8')) as {
+      globals: Record<string, true>
+    }
+
+    // Two files, one list. They are written together for the same reason the
+    // server pair is: derived separately, they drift, and the lint config
+    // starts flagging a real global as undefined.
+    const missing = declared().map(entry => entry.name).filter(name => !(name in manifest.globals))
+    expect(missing).toEqual([])
   })
 })
