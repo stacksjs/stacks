@@ -145,6 +145,21 @@ describe('the generated name registries', () => {
       expect(existsSync(resolve(dirname(declarations), '../auto-imports', `${file}.ts`))).toBe(true)
   })
 
+  it('generates the same bytes twice, so a commit does not churn', async () => {
+    /*
+     * The order was `localeCompare` for one commit, which is locale-dependent:
+     * the same directory produced a different file order on two machines, and
+     * the committed map churned for no reason. A byte comparison is the same
+     * everywhere.
+     */
+    const before = await Bun.file(`${registryDir}/actions.ts`).text()
+    const { generateAutoImportFiles } = await import('../src/imports')
+    await generateAutoImportFiles()
+    const after = await Bun.file(`${registryDir}/actions.ts`).text()
+
+    expect(after).toBe(before)
+  })
+
   it('has no generated declaration file left to go stale', () => {
     // The 1500-line union this replaces. Its absence is the point.
     expect(existsSync(path.storagePath('framework/types/actions.d.ts'))).toBe(false)

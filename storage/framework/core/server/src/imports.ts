@@ -314,12 +314,22 @@ async function generatePathIndex(
       continue
     }
 
-    // Sorted by name first and extension preference second, so `welcome.stx`
-    // is seen before `welcome.html` and claims the key.
+    /*
+     * Extension preference first, then a plain byte comparison.
+     *
+     * `welcome.stx` has to be seen before `welcome.html` so it claims the key,
+     * which is the order `resolveTemplatePath` probes in. The tiebreak is `<`
+     * rather than `localeCompare`, which is locale-dependent: the same
+     * directory produced a different file order on two machines, so the
+     * committed map churned for no reason.
+     */
     const rank = (file: string): number => extensions.findIndex(extension => file.endsWith(extension))
     files = files.sort((left, right) => {
       const byRank = rank(left) - rank(right)
-      return byRank !== 0 ? byRank : left.localeCompare(right)
+      if (byRank !== 0)
+        return byRank
+
+      return left < right ? -1 : left > right ? 1 : 0
     })
 
     /*
