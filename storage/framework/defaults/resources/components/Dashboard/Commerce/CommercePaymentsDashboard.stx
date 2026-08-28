@@ -1,5 +1,5 @@
 <script client>
-import type { PaymentRecord } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
+import type { PaymentRecord, PaymentSummary } from '../../../../app/Actions/Dashboard/Commerce/payment-records'
 import {
   paymentsToCsv,
   summarizePayments,

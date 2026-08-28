@@ -12,6 +12,10 @@ export const navSections = buildWebSidebarSections()
     label: section.label,
     count: section.items.length,
   }))
+
+// Declared so the client block below gets `navSections` typed rather than
+// inferred off the implicit bridge.
+defineClientPayload({ navSections })
 </script>
 
 <script client>
