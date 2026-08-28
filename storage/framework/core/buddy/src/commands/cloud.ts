@@ -208,6 +208,9 @@ export function cloud(buddy: CLI): void {
     diff: 'Show the diff of the current, undeployed cloud changes ',
     dashboard: 'Run the local Stacks Cloud management cockpit (servers, sites, deploys)',
     sites: 'List every server and what each one is hosting, across projects',
+    attach: 'Attach this project to a server another project owns, after checking it is safe',
+    attachServer: 'Server to attach to, by provider name or by owning project slug',
+    dryRun: 'Print the plan and change nothing',
     sitesEnv: 'Environment to take the inventory for',
     remote: 'Skip the SSH read of each box\'s gateway registry (co-tenants are then not listed)',
     json: 'Emit the inventory as JSON',
@@ -851,9 +854,11 @@ export function cloud(buddy: CLI): void {
       // an empty fleet that reads as "you have no servers".
       const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
       if (provider !== 'hetzner') {
-        log.error(`\`buddy cloud:sites\` can only list Hetzner servers, and this project's provider is '${provider}'.`)
-        log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
-        process.exit(ExitCode.FatalError)
+        // `log.exit`, not `log.error` + `process.exit`: the write is async and
+        // `process.exit` does not wait for it, so the refusal printed nothing
+        // at all and exited 1.
+        await log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
+        await log.exit(`\`buddy cloud:sites\` can only list Hetzner servers, and this project's provider is '${provider}'.`, ExitCode.FatalError)
       }
 
       // ts-cloud owns both of these rules: `resolveSiteKind` decides what a
@@ -907,6 +912,113 @@ export function cloud(buddy: CLI): void {
       // An empty fleet is a fine answer; an empty fleet BECAUSE the lookup
       // failed is not, and the two must not exit the same way.
       process.exit(listing.failure && listing.servers.length === 0 ? ExitCode.FatalError : ExitCode.Success)
+    })
+
+  buddy
+    .command('cloud:attach', descriptions.attach)
+    .option('--server <server>', descriptions.attachServer)
+    .option('--env [env]', descriptions.sitesEnv)
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('-J, --json', descriptions.json, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: CloudCliOptions & { server?: string, env?: string, dryRun?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:attach` ...', options)
+
+      const { declaredSites, listProviderServers, probeHostRoutes } = await import('../cloud-inventory')
+      const {
+        attachConflicts,
+        attachPreconditions,
+        describeAttachPlan,
+        resolveAttachTarget,
+        setAttachTo,
+      } = await import('../cloud-attach')
+      const { loadTsCloudConfig, resolveHetznerApiToken } = await import('./deploy')
+
+      // `log.error` writes asynchronously and `process.exit` does not wait for
+      // it, so the plain pairing printed the refusal nowhere and exited 1 - a
+      // blocked command that looks like a broken one. Every line is awaited and
+      // the last one exits.
+      const refuse = async (...messages: string[]): Promise<never> => {
+        for (const message of messages.slice(0, -1))
+          await log.error(message)
+        return log.exit(messages[messages.length - 1], ExitCode.FatalError)
+      }
+
+      if (!options.server)
+        return await refuse('Which server? Pass --server <name|owner-slug>. `buddy cloud:sites` lists them.')
+
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      const slug = tsCloudConfig?.project?.slug || 'app'
+
+      const listing = await listProviderServers(resolveHetznerApiToken(tsCloudConfig))
+      if (listing.failure) {
+        const { describeProviderFailure } = await import('../cloud-inventory')
+        return await refuse(describeProviderFailure(listing.failure))
+      }
+
+      const target = resolveAttachTarget(listing.servers, String(options.server), environment)
+      if ('problem' in target)
+        return await refuse(target.problem)
+
+      const server = target.server
+      const preconditions = attachPreconditions(slug, server)
+      if (preconditions.length > 0)
+        return await refuse(...preconditions)
+
+      let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
+      try {
+        const deployApi = await import('@stacksjs/ts-cloud/deploy') as any
+        helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
+      }
+      catch (error) {
+        log.debug('Could not load @stacksjs/ts-cloud/deploy for site classification:', error)
+      }
+
+      const declared = declaredSites(tsCloudConfig?.sites, helpers, slug)
+      const { sshExec } = await import('@stacksjs/ts-cloud')
+      const probe = await probeHostRoutes(server, (host, command) => sshExec(host, command, { user: 'root', connectTimeoutSec: 10 }))
+      const conflicts = probe.unavailable ? [] : attachConflicts(slug, declared, probe.routes)
+
+      // The config is only edited once the box has been asked and answered
+      // clean. Writing first and checking after would leave a repo claiming an
+      // attach that must not happen.
+      const blocked = Boolean(probe.unavailable) || conflicts.length > 0
+      let edit: ReturnType<typeof setAttachTo> | undefined
+
+      if (!blocked) {
+        const configPath = p.projectPath('config/cloud.ts')
+        const { readFileSync, writeFileSync } = await import('node:fs')
+        edit = setAttachTo(readFileSync(configPath, 'utf8'), server.project!)
+
+        if (!options.dryRun && 'text' in edit && edit.changed)
+          writeFileSync(configPath, edit.text)
+      }
+
+      const plan = {
+        slug,
+        owner: server.project!,
+        server,
+        declared,
+        conflicts,
+        registryRead: !probe.unavailable,
+        registryProblem: probe.unavailable,
+        edit,
+        dryRun: Boolean(options.dryRun),
+      }
+
+      if (options.json) {
+        const edited = !edit ? undefined : 'problem' in edit ? edit : { changed: edit.changed }
+        console.log(JSON.stringify({ ...plan, edit: edited }, null, 2))
+      }
+      else {
+        for (const line of describeAttachPlan(plan))
+          console.log(line)
+      }
+
+      // An unchecked attach is not a successful one: exiting 0 after failing to
+      // read the box would let a CI job proceed on a check that never ran.
+      process.exit(blocked ? ExitCode.FatalError : ExitCode.Success)
     })
 
   onUnknownSubcommand(buddy, "cloud")

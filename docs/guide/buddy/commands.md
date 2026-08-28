@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **306 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **307 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 1 |
 | `auth` | 4 |
 | `build` | 15 |
-| `cloud` | 8 |
+| `cloud` | 9 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `commerce` | 2 |
@@ -520,6 +520,23 @@ Add a resource to the Stacks Cloud
 | --- | --- | --- | --- |
 | `--jump-box` | Remove the jump-box | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:attach`
+
+Attach this project to a server another project owns, after checking it is safe
+
+- Usage: `$ buddy cloud:attach`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--server` | Server to attach to, by provider name or by owning project slug | value, required | - |
+| `--env` | Environment to take the inventory for | value, optional | - |
+| `--dry-run` | Print the plan and change nothing | boolean, optional | `false` |
+| `-J`, `--json` | Emit the inventory as JSON | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:cleanup`
