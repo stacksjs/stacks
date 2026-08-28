@@ -133,60 +133,102 @@ export abstract class BasePolicy<T = any> {
  * Policy discovery and registration
  */
 
+import type { GateAfterCallback, GateBeforeCallback, GateCallback } from './gate'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { policy as registerPolicy } from './gate'
 
-interface PolicyMapping {
-  [modelName: string]: string | { policy: string, model?: string }
+/**
+ * Where policies live, in override order: the application's own first, the
+ * framework defaults behind it.
+ */
+function policyDirectories(): string[] {
+  return [
+    p.appPath('Policies'),
+    p.storagePath('framework/defaults/app/Policies'),
+  ]
+}
+
+/** Locate a policy file by name, application first. */
+async function findPolicyFile(name: string): Promise<string | null> {
+  const { fs } = await import('@stacksjs/storage')
+
+  for (const dir of policyDirectories()) {
+    const candidate = `${dir}/${name}.ts`
+    if (fs.existsSync(candidate))
+      return candidate
+  }
+
+  return null
 }
 
 /**
- * Discover and register policies from app/Policies directory
+ * Discover and register policies: the explicit mappings in `app/Gates.ts`
+ * first, then anything under `app/Policies/` that follows the `ModelPolicy`
+ * convention.
  */
 export async function discoverPolicies(): Promise<void> {
   const { fs } = await import('@stacksjs/storage')
-  const policiesDir = p.appPath('Policies')
 
-  // Check if policies directory exists
+  // Explicitly mapped policies first, and NOT gated on `app/Policies/`
+  // existing. A mapping may name a policy that ships with the framework, and
+  // returning early when the application has no policies directory of its own
+  // meant those were never registered.
+  const explicit = new Set<string>()
+
+  const authorization = await loadGatesModule()
+  const mappings = (authorization?.policies ?? {}) as Record<string, string | { policy: string, model?: string }>
+
+  for (const [modelName, config] of Object.entries(mappings)) {
+    const policyFile = typeof config === 'string' ? config : config.policy
+    const policyPath = await findPolicyFile(policyFile)
+
+    if (!policyPath) {
+      // Said out loud. A mapping that resolves to nothing registers nothing,
+      // and an unregistered policy denies every check against that model -
+      // which looks exactly like a policy that means to say no.
+      log.warn(`[auth] app/Gates.ts maps ${modelName} to ${policyFile}, and no such policy exists`)
+      continue
+    }
+
+    try {
+      const policyModule = await import(policyPath)
+      const PolicyClass = policyModule.default || policyModule[policyFile]
+
+      if (!PolicyClass) {
+        log.warn(`[auth] ${policyPath} has no default export, so ${modelName} has no policy`)
+        continue
+      }
+
+      registerPolicy(modelName, PolicyClass)
+      explicit.add(modelName)
+      log.debug(`Registered policy: ${policyFile} for ${modelName}`)
+    }
+    catch (error) {
+      log.error(`Failed to load policy ${policyFile}:`, error)
+    }
+  }
+
+  // Auto-discover policies by convention (ModelPolicy for Model)
+  const policiesDir = p.appPath('Policies')
   if (!fs.existsSync(policiesDir)) {
     log.debug('No Policies directory found')
     return
   }
 
-  // Try to load Gates.ts for explicit mappings first
-  try {
-    const gatesPath = p.appPath('Gates.ts')
-    const gatesImport = await import(gatesPath)
-    const mappings: PolicyMapping = gatesImport.policies || {}
-
-    for (const [modelName, config] of Object.entries(mappings)) {
-      const policyFile = typeof config === 'string' ? config : config.policy
-      const policyPath = `${policiesDir}/${policyFile}.ts`
-
-      if (fs.existsSync(policyPath)) {
-        const policyModule = await import(policyPath)
-        const PolicyClass = policyModule.default || policyModule[policyFile]
-
-        if (PolicyClass) {
-          registerPolicy(modelName, PolicyClass)
-          log.debug(`Registered policy: ${policyFile} for ${modelName}`)
-        }
-      }
-    }
-  }
-  catch {
-    log.debug('No Gates.ts found, using convention-based discovery')
-  }
-
-  // Auto-discover policies by convention (ModelPolicy for Model)
   const policyFiles = fs.readdirSync(policiesDir).filter((file: string) => file.endsWith('Policy.ts'))
 
   for (const file of policyFiles) {
     const policyName = file.replace('.ts', '')
     const modelName = policyName.replace('Policy', '')
 
-    // Skip if already registered via Gates.ts
+    // Skip if already registered via Gates.ts. The comment saying so was here
+    // and the check was not, so convention silently overwrote every explicit
+    // mapping: `{ Post: 'CustomPostPolicy' }` registered, and was then replaced
+    // by `PostPolicy` because a file of that name happened to exist.
+    if (explicit.has(modelName))
+      continue
+
     const policyPath = `${policiesDir}/${file}`
 
     try {
@@ -205,53 +247,101 @@ export async function discoverPolicies(): Promise<void> {
 }
 
 /**
+ * Load `app/Gates.ts`, as `{ gates, policies, before, after }`.
+ *
+ * Returns null when the file is absent, and THROWS when it exists and cannot be
+ * loaded. Both used to be swallowed into `log.debug('No Gates.ts found or
+ * failed to load')`: a syntax error in `Gates.ts` disabled every gate and
+ * policy in the application, silently, and the resulting behaviour - deny
+ * everything - is what a working authorization layer also looks like from the
+ * outside when it says no.
+ */
+async function loadGatesModule(): Promise<{
+  gates?: Record<string, unknown>
+  policies?: Record<string, unknown>
+  before?: unknown[]
+  after?: unknown[]
+} | null> {
+  const { fs } = await import('@stacksjs/storage')
+  const gatesPath = p.appPath('Gates.ts')
+
+  if (!fs.existsSync(gatesPath))
+    return null
+
+  const module = await import(gatesPath)
+
+  // `defineGates` produces a default export; the named exports are the older
+  // shape. Read both so either compiles and either works.
+  return {
+    gates: module.default?.gates ?? module.gates,
+    policies: module.default?.policies ?? module.policies,
+    before: module.default?.before ?? module.before,
+    after: module.default?.after ?? module.after,
+  }
+}
+
+/**
  * Register inline gates from Gates.ts
  */
 export async function registerGates(): Promise<void> {
   const { define, before, after } = await import('./gate')
 
-  try {
-    const gatesPath = p.appPath('Gates.ts')
-    const gatesModule = await import(gatesPath)
-
-    // Register gates
-    const gates = gatesModule.gates || gatesModule.default?.gates || {}
-    for (const [ability, callback] of Object.entries(gates)) {
-      if (typeof callback === 'function') {
-        define(ability, callback as any)
-        log.debug(`Registered gate: ${ability}`)
-      }
-    }
-
-    // Register before callbacks
-    const beforeCallbacks = gatesModule.before || gatesModule.default?.before || []
-    for (const callback of beforeCallbacks) {
-      if (typeof callback === 'function') {
-        before(callback)
-      }
-    }
-
-    // Register after callbacks
-    const afterCallbacks = gatesModule.after || gatesModule.default?.after || []
-    for (const callback of afterCallbacks) {
-      if (typeof callback === 'function') {
-        after(callback)
-      }
-    }
-
-    log.debug('Gates registered successfully')
+  const authorization = await loadGatesModule()
+  if (!authorization) {
+    log.debug('No Gates.ts found')
+    return
   }
-  catch {
-    log.debug('No Gates.ts found or failed to load')
+
+  for (const [ability, callback] of Object.entries(authorization.gates ?? {})) {
+    if (typeof callback === 'function') {
+      define(ability, callback as GateCallback)
+      log.debug(`Registered gate: ${ability}`)
+    }
   }
+
+  for (const callback of authorization.before ?? []) {
+    if (typeof callback === 'function')
+      before(callback as GateBeforeCallback)
+  }
+
+  for (const callback of authorization.after ?? []) {
+    if (typeof callback === 'function')
+      after(callback as GateAfterCallback)
+  }
+
+  log.debug('Gates registered successfully')
 }
 
 /**
- * Initialize authorization system
+ * Initialize the authorization system: register the gates and before/after
+ * callbacks from `app/Gates.ts`, then the policies.
+ *
+ * Called from `injectGlobalAutoImports()`, which is the one place every entry
+ * point comes through - HTTP, `buddy seed`, a scheduled job, a console command.
+ * Nothing called it before. It was exported, documented, and dead, so every
+ * gate an application defined was never registered and every `Gate.allows(...)`
+ * fell through to the default deny. That is the failure mode authorization is
+ * least able to report, because a gate that denies everything and a gate that
+ * was never registered are the same answer.
+ *
+ * Never throws: an application that cannot boot over a typo in a gate is worse
+ * than one that logs the typo. A `Gates.ts` that fails to load is reported at
+ * error level, not swallowed at debug.
  */
 export async function initializeAuthorization(): Promise<void> {
-  await registerGates()
-  await discoverPolicies()
+  try {
+    await registerGates()
+  }
+  catch (error) {
+    log.error('[auth] app/Gates.ts failed to load - no gates are registered and every Gate check will deny:', error)
+  }
+
+  try {
+    await discoverPolicies()
+  }
+  catch (error) {
+    log.error('[auth] policy discovery failed - model authorization will deny:', error)
+  }
 }
 
 export { AuthorizationResponse }

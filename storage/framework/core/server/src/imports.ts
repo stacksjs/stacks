@@ -736,6 +736,20 @@ export async function injectGlobalAutoImports(): Promise<void> {
     errors.push(err as Error)
   }
 
+  // Authorization, for the same reason and in the same place. `app/Gates.ts`
+  // was read by `initializeAuthorization()`, which was exported and called by
+  // nothing - so every gate an application defined was never registered, and
+  // `Gate.allows('access-admin', user)` fell through to the default deny.
+  // Fail-closed, so nothing was unguarded; but the whole feature did nothing,
+  // and "denies everything" is what a working gate looks like when it says no.
+  try {
+    const { initializeAuthorization } = await import('@stacksjs/auth')
+    await initializeAuthorization()
+  }
+  catch (err) {
+    errors.push(err as Error)
+  }
+
   if (errors.length) {
     // Non-fatal — framework parts the project doesn't install can be missing.
     for (const err of errors)
