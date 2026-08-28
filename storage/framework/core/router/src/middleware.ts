@@ -40,10 +40,10 @@ export interface MiddlewareConfig {
  *
  * The keys are class names as they appear on disk without the extension -
  * `'Auth'`, `'EnsureEmailIsVerified'` - under `app/Middleware/` or the
- * framework defaults behind it. `buddy generate:types` writes the
- * augmentation into `storage/framework/types/actions.d.ts`, from the same
- * directories `loadMiddleware` searches, so an alias map cannot name a class
- * that is not there.
+ * framework defaults behind it. Filled by
+ * `storage/framework/types/registries.d.ts`, which reads the same name map
+ * `loadMiddleware` resolves through, so an alias map cannot name a class that
+ * is not there.
  *
  * @example
  * ```ts

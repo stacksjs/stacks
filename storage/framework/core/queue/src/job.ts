@@ -483,8 +483,8 @@ class JobBuilder {
  *
  * The keys are job filenames without the extension - `'SendWelcomeEmail'`,
  * `'SendPasswordResetEmailJob'` - under `app/Jobs/` or the framework defaults
- * behind it. `buddy generate:types` writes the augmentation from the same three
- * directories {@link resolveJobFile} searches.
+ * behind it. Filled by `storage/framework/types/registries.d.ts` from the jobs
+ * barrel, which covers the same directories {@link resolveJobFile} searches.
  */
 // eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
 export interface Jobs {}

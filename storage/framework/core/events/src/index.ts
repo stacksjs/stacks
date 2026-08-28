@@ -556,10 +556,9 @@ export type EventName = keyof StacksEvents & string
  * The keys are listener names as they are written in the map - `'NotifyUser'`,
  * `'Auth/LoginAction'` - which is a name relative to `app/Listeners/` or
  * `app/Actions/` (or the framework defaults behind them), without the
- * extension. `buddy generate:types` writes the augmentation into
- * `storage/framework/types/actions.d.ts`, from the same directories
- * `resolveListener` searches at runtime, so the type and the resolution cannot
- * disagree about what exists.
+ * extension. Filled by `storage/framework/types/registries.d.ts`, which reads
+ * the same name maps `resolveListener` resolves through - so the type and the
+ * resolution cannot disagree about what exists, because there is one list.
  *
  * An interface rather than a union alias because a union cannot be reopened,
  * and this one has to be: the framework declares it empty and the application's

@@ -15,7 +15,8 @@ Built on `@stacksjs/bun-router` with `ts-rate-limiter`.
 - Route files: `routes/` (api.ts, v1.ts, buddy.ts, users.ts)
 - Route registry: `app/Routes.ts`
 - Generated route manifest: `storage/framework/stx/routes.ts` (written by the dev server)
-- Generated action paths: `storage/framework/types/actions.d.ts`
+- Derived name types: `storage/framework/types/registries.d.ts`
+- The maps they read: `storage/framework/auto-imports/{actions,listeners,policies,middleware,emails,routes}.ts`
 
 ## Route Definition
 
@@ -56,12 +57,20 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 - Action object: an imported action, passed directly — see typed routes below
 - Controller: `'Controllers/UserController@index'` — calls controller method
 
-## The strings are typed (run `buddy generate:types`)
+## The strings are typed
 
 Action paths, middleware aliases and route names are all checked at compile
-time against what this application actually has. `buddy generate:types`
-discovers them and writes them into the router's type registry
-(`storage/framework/types/actions.d.ts`); nothing is maintained by hand.
+time against what this application actually has, and nothing is maintained by
+hand - or generated as a type.
+
+Each of them is `keyof` over a map the RESOLVER reads:
+`storage/framework/auto-imports/{actions,middleware,routes}.ts`, name to file,
+written by `buddy generate` alongside the models and jobs barrels. So a name
+that type-checks is a name that resolves; there is no second list to go stale.
+`storage/framework/types/registries.d.ts` is where the derivation lives.
+
+Middleware aliases need no map at all - `app/Middleware.ts` and the framework's
+own are ordinary modules, and `defineMiddleware` keeps their literal keys.
 
 ```typescript
 route.get('/login', 'Actions/Auth/LogniAction')   // ✗ no such action
@@ -78,8 +87,9 @@ Notes:
   member name, not a filename.
 - Negated (`'!auth'`) and parameterised (`'throttle:60,1'`) middleware forms are
   both accepted.
-- Regenerate after adding an action, a middleware alias, or a `.name()`. A stale
-  file rejects code that is correct.
+- The maps refresh on `buddy generate`, `buddy generate:types` and dev-server
+  boot, and the staleness check watches the directories they are built from. A
+  map written before a file was added rejects code that is correct.
 - `resource()` takes a BASE, and composes `Actions/<Base><Kind>Action` from it.
   `route.resource('posts', 'Post')` → `Actions/PostIndexAction`, matching where
   `buddy make:crud` writes. The base is checked against the actions that exist;

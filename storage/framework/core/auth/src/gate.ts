@@ -60,6 +60,9 @@ export type Ability = GateName | PolicyAbility | (string & {})
 /**
  * Augmentation target: the policy classes under `app/Policies/`, and the
  * framework defaults behind it, by filename.
+ *
+ * Filled by `storage/framework/types/registries.d.ts`, which reads the same
+ * name map `findPolicyFile` resolves through.
  */
 // eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
 export interface PolicyClasses {}
