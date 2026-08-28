@@ -1446,6 +1446,13 @@ export type EventListenerName =
   | 'UploadTestAction'
 
 /**
+ * Every policy class an `app/Gates.ts` mapping can name: the application's own
+ * policies, plus the framework defaults behind them.
+ */
+export type PolicyClassName =
+  | 'PostPolicy'
+
+/**
  * Every named route, and the path it resolves to.
  *
  * A type alias, NOT an interface: only aliases of object literals get an
@@ -1488,4 +1495,12 @@ declare module '@stacksjs/events' {
  */
 declare module '@stacksjs/router' {
   interface MiddlewareClasses extends Record<MiddlewareClassName, true> {}
+}
+
+/**
+ * Handed to the authorization gate, so a policy mapping in `app/Gates.ts` is
+ * checked against the policies that exist rather than against `string`.
+ */
+declare module '@stacksjs/auth' {
+  interface PolicyClasses extends Record<PolicyClassName, true> {}
 }

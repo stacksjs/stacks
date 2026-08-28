@@ -169,6 +169,40 @@ async function collectMiddlewareClasses(): Promise<string[]> {
 }
 
 /**
+ * Every policy class an `app/Gates.ts` mapping may name, by filename.
+ *
+ * The application's own `app/Policies/` first, the framework defaults behind
+ * it - the same order `discoverPolicies` resolves in.
+ */
+async function collectPolicyNames(): Promise<string[]> {
+  const found = new Set<string>()
+
+  const candidates = [
+    p.appPath('Policies'),
+    p.storagePath('framework/defaults/app/Policies'),
+  ]
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    candidates.push(`${pkgJson.slice(0, pkgJson.lastIndexOf('/'))}/app/Policies`)
+  }
+  catch {
+    // No published defaults package; a vendored checkout has them on disk.
+  }
+
+  for (const dir of candidates.filter(directory => existsSync(directory))) {
+    const files = await readdir(dir, { recursive: true })
+    for (const file of files) {
+      if (!file.endsWith('.ts') || file.endsWith('.d.ts') || file.endsWith('.test.ts'))
+        continue
+      found.add(file.slice(0, -3))
+    }
+  }
+
+  return [...found].sort()
+}
+
+/**
  * The middleware aliases this application can reference.
  *
  * Read from the alias maps themselves - `app/Middleware.ts` first, the
@@ -254,6 +288,7 @@ export async function generateActionTypes(): Promise<void> {
   const aliases = await collectMiddlewareAliases()
   const middlewareClasses = await collectMiddlewareClasses()
   const listeners = await collectListenerNames()
+  const policies = await collectPolicyNames()
   const namedRoutes = await collectNamedRoutes()
   const union = actions.map(action => `\n  | '${action}'`).join('')
   /*
@@ -282,6 +317,7 @@ export async function generateActionTypes(): Promise<void> {
    * would only hide the difference between "no listeners" and "not generated".
    */
   const listenerUnion = listeners.map(listener => `\n  | '${listener}'`).join('')
+  const policyUnion = policies.map(policy => `\n  | '${policy}'`).join('')
   /*
    * `name: path`, so the router can pull a route's params out of its path and
    * demand them. Emitted as an empty object when nothing is named, which the
@@ -323,6 +359,12 @@ export type MiddlewareClassName =${middlewareClassUnion || '\n  | never'}
 export type EventListenerName =${listenerUnion || '\n  | never'}
 
 /**
+ * Every policy class an \`app/Gates.ts\` mapping can name: the application's own
+ * policies, plus the framework defaults behind them.
+ */
+export type PolicyClassName =${policyUnion || '\n  | never'}
+
+/**
  * Every named route, and the path it resolves to.
  *
  * A type alias, NOT an interface: only aliases of object literals get an
@@ -361,8 +403,16 @@ declare module '@stacksjs/events' {
 declare module '@stacksjs/router' {
   interface MiddlewareClasses extends Record<MiddlewareClassName, true> {}
 }
+
+/**
+ * Handed to the authorization gate, so a policy mapping in \`app/Gates.ts\` is
+ * checked against the policies that exist rather than against \`string\`.
+ */
+declare module '@stacksjs/auth' {
+  interface PolicyClasses extends Record<PolicyClassName, true> {}
+}
 `
 
   await storage.writeFile(p.frameworkPath('types/actions.d.ts'), contents)
-  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${middlewareClasses.length} middleware classes, ${listeners.length} listener names and ${Object.keys(namedRoutes).length} named routes`)
+  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${middlewareClasses.length} middleware classes, ${listeners.length} listener names, ${policies.length} policies and ${Object.keys(namedRoutes).length} named routes`)
 }
