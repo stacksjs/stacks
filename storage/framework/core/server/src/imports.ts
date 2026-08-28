@@ -904,6 +904,18 @@ export async function pruneBrowserAutoImportTypes(): Promise<string[]> {
     }
 
     const [, declaredAs, specifier, exported] = match
+
+    /*
+     * The stx globals are stx's to declare. It ships `stx.d.ts` and references
+     * it from its own types entry, so TypeScript picks all of them up on
+     * install. Listing them here as well was a copy, and it had drifted both
+     * ways: 59 ambient names missing and 14 declared that stx does not inject.
+     */
+    if (specifier === '@stacksjs/stx') {
+      removed.push(declaredAs!)
+      continue
+    }
+
     const names = await moduleExports(specifier!)
 
     if (names && !names.has(exported!)) {

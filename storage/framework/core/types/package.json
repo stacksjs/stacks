@@ -59,7 +59,7 @@
     "@stacksjs/bunpress": "^0.2.8",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/clapp": "^0.2.12",
-    "@stacksjs/stx": "^0.2.236",
+    "@stacksjs/stx": "^0.2.238",
     "@stacksjs/ts-validation": "^0.5.6",
     "bun-query-builder": "^0.2.53"
   },
