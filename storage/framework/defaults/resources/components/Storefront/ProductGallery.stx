@@ -64,8 +64,9 @@ const {
   //      so clicking a thumb in gallery B updated gallery A's hero.
   //   2. SPA fragment swaps re-injected the scoped script and stacked
   //      a duplicate listener on every existing thumb.
-  if (window.__stxGalleryWired) return
-  window.__stxGalleryWired = true
+  const w = window as Window & { __stxGalleryWired?: boolean }
+  if (w.__stxGalleryWired) return
+  w.__stxGalleryWired = true
 
   document.addEventListener('click', (e) => {
     const target = e.target instanceof Element ? e.target : null

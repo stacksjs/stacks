@@ -9,7 +9,10 @@ const liveAbortText = useReactiveProp('abortText', 'Cancel')
 const liveShow = useReactiveProp('show', true)
 const emit = defineEmits()
 
-const normalizedType = derived(() => liveType() === 'danger' ? 'error' : liveType())
+const normalizedType = derived((): Exclude<AlertType, 'danger'> => {
+  const type = liveType()
+  return type === 'danger' ? 'error' : type
+})
 const iconClass = derived(() => ({
   info: 'i-hugeicons-information-circle text-blue-600',
   warning: 'i-hugeicons-alert-02 text-yellow-600',

@@ -27,6 +27,14 @@ const envValues = state('')
 const revision = state('')
 const backupContent = state('')
 const backupUpdatedAt = state<string | null>(null)
+
+// Formatted here rather than in the template: `:if` is a sibling attribute on
+// the same element, not a wrapper around the expression, so it cannot narrow
+// `backupUpdatedAt()` away from null for the `:text` beside it.
+const backupSavedLabel = derived(() => {
+  const savedAt = backupUpdatedAt()
+  return savedAt ? `Saved ${new Date(savedAt).toLocaleString()}` : ''
+})
 const showAddModal = state(false)
 const showBackupModal = state(false)
 const isLoading = state(true)
@@ -287,7 +295,7 @@ onMount(() => void loadEnvironment())
     @close="showBackupModal.set(false)"
   >
     <div class="space-y-3">
-      <p :if="backupUpdatedAt()" class="text-stone-500 text-xs dark:text-neutral-400" :text="`Saved ${new Date(backupUpdatedAt()).toLocaleString()}`"></p>
+      <p :if="backupUpdatedAt()" class="text-stone-500 text-xs dark:text-neutral-400" :text="backupSavedLabel()"></p>
       <textarea readonly rows="18" class="block p-4 w-full font-mono leading-6 text-[#c9d1d9] text-xs bg-[#0d1117] border border-[#30363d] rounded-lg resize-y" :value="backupContent()"></textarea>
     </div>
     <template #footer>
