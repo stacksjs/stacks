@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
+import { renderUserlandPlistEntries } from '@stacksjs/desktop-build'
 
 /**
  * Package the `build:desktop` output as a macOS `.app` inside a `.dmg`.
@@ -98,6 +99,33 @@ async function buildIcon(): Promise<string | undefined> {
 
 const iconFile = await buildIcon()
 
+/**
+ * Extra `Info.plist` entries this application declares, as JSON — the
+ * `NS*UsageDescription` strings above all, which are the sentences a person
+ * reads in a macOS permission prompt. The serialiser and the reserved-key list
+ * live in `@stacksjs/desktop-build` so they can be tested directly.
+ */
+function userlandPlistEntries(): string {
+  const declared = appPath('Desktop/Info.plist.json')
+  if (!existsSync(declared)) return ''
+
+  let parsed: Record<string, unknown>
+  try {
+    parsed = JSON.parse(readFileSync(declared, 'utf8')) as Record<string, unknown>
+  }
+  catch (error) {
+    throw new Error(`app/Desktop/Info.plist.json is not valid JSON: ${error instanceof Error ? error.message : error}`)
+  }
+
+  const { xml, ignored } = renderUserlandPlistEntries(parsed)
+  if (ignored.length > 0)
+    log.info(`Ignoring reserved Info.plist keys from app/Desktop/Info.plist.json: ${ignored.join(', ')}`)
+
+  return xml
+}
+
+const extraPlistEntries = userlandPlistEntries()
+
 writeFileSync(join(appDir, 'Contents/Info.plist'), `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -127,7 +155,7 @@ ${ownsLauncher
   </dict>`
   : `  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
   <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`}${iconFile ? `
-  <key>CFBundleIconFile</key><string>${iconFile}</string>` : ''}
+  <key>CFBundleIconFile</key><string>${iconFile}</string>` : ''}${extraPlistEntries}
 </dict>
 </plist>
 `)

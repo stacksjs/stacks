@@ -142,6 +142,84 @@ export function resolveDesktopLauncher(projectRoot: string = process.cwd()): str
   return launcher
 }
 
+/**
+ * Keys the bundle itself must control.
+ *
+ * Letting an app rewrite its own identifier or executable from `Info.plist.json`
+ * produces a bundle that does not match what was signed — which fails at
+ * launch, long after the build said it succeeded.
+ */
+export const RESERVED_PLIST_KEYS: ReadonlySet<string> = new Set([
+  'CFBundleName',
+  'CFBundleDisplayName',
+  'CFBundleIdentifier',
+  'CFBundleVersion',
+  'CFBundleShortVersionString',
+  'CFBundleExecutable',
+  'CFBundlePackageType',
+  'CFBundleInfoDictionaryVersion',
+  'CFBundleIconFile',
+])
+
+export function xmlEscape(value: string): string {
+  return value
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll('\'', '&apos;')
+}
+
+/**
+ * Serialise a JSON value as a plist fragment.
+ *
+ * Applications declare extra `Info.plist` entries as JSON rather than XML so a
+ * typo cannot produce a bundle macOS silently refuses to launch. The keys that
+ * matter most are the `NS*UsageDescription` strings: they are the sentences a
+ * person reads in a permission prompt, and without them macOS shows a generic
+ * prompt or refuses the request outright.
+ */
+export function plistValue(value: unknown, indent = ''): string {
+  if (typeof value === 'string') return `<string>${xmlEscape(value)}</string>`
+  if (typeof value === 'boolean') return value ? '<true/>' : '<false/>'
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new Error(`Unsupported Info.plist number: ${value}`)
+    return Number.isInteger(value) ? `<integer>${value}</integer>` : `<real>${value}</real>`
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return '<array/>'
+    const items = value.map(item => `${indent}  ${plistValue(item, `${indent}  `)}`).join('\n')
+    return `<array>\n${items}\n${indent}</array>`
+  }
+  if (value && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+    if (entries.length === 0) return '<dict/>'
+    const body = entries
+      .map(([key, val]) => `${indent}  <key>${xmlEscape(key)}</key>${plistValue(val, `${indent}  `)}`)
+      .join('\n')
+    return `<dict>\n${body}\n${indent}</dict>`
+  }
+  throw new Error(`Unsupported Info.plist value: ${JSON.stringify(value) ?? String(value)}`)
+}
+
+/**
+ * Render an application's declared `Info.plist` entries, dropping any key the
+ * bundle must own. Returns the ignored keys so the caller can say so.
+ */
+export function renderUserlandPlistEntries(
+  declared: Record<string, unknown>,
+): { xml: string, ignored: string[] } {
+  const ignored = Object.keys(declared).filter(key => RESERVED_PLIST_KEYS.has(key))
+  const kept = Object.entries(declared).filter(([key]) => !RESERVED_PLIST_KEYS.has(key))
+
+  if (kept.length === 0) return { xml: '', ignored }
+
+  const xml = `\n${kept
+    .map(([key, value]) => `  <key>${xmlEscape(key)}</key>${plistValue(value, '  ')}`)
+    .join('\n')}`
+  return { xml, ignored }
+}
+
 export function resolveDevWindowUrl(port: number, options: OpenDevWindowOptions = {}): string {
   if (!Number.isInteger(port) || port < 1 || port > 65_535)
     throw new RangeError(`Invalid desktop development port: ${port}`)

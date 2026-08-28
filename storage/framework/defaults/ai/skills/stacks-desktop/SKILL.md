@@ -116,6 +116,30 @@ Two things follow from declaring your own launcher:
 for `127.0.0.1` rather than `NSAllowsArbitraryLoads`, which would additionally
 permit every unencrypted host on the internet.
 
+### Info.plist entries
+
+`app/Desktop/Info.plist.json` is merged into the generated `Info.plist`. The
+entries that matter most are the `NS*UsageDescription` strings — they are the
+sentences a person reads when macOS asks whether your app may look in their
+Downloads folder or drive Finder, and without them the prompt is generic or the
+request is refused outright.
+
+```json
+{
+  "LSApplicationCategoryType": "public.app-category.utilities",
+  "NSDownloadsFolderUsageDescription": "MyApp scans your Downloads for large files.",
+  "NSAppleEventsUsageDescription": "MyApp asks Finder to move items to the Trash so deletions stay recoverable."
+}
+```
+
+JSON, not XML: a malformed plist produces a bundle macOS silently refuses to
+launch, which surfaces long after the build reported success. Strings, numbers,
+booleans, arrays, and nested objects all render.
+
+Keys the bundle must own — `CFBundleIdentifier`, `CFBundleExecutable`,
+`CFBundleVersion`, and the rest of the identity — are ignored with a note.
+Rewriting those produces a bundle that does not match what was signed.
+
 Application data belongs in `~/Library/Application Support/<AppName>`, never
 inside the bundle — `/Applications` is not writable by the user, and the bundle
 is replaced wholesale on update.
