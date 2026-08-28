@@ -8,6 +8,7 @@
  * yours to choose, which is checkable in a way that "faster" and "better"
  * are not.
  */
+import type { ComparisonMatrix } from '../../data/comparisons'
 import {
   comparisonGroups,
   comparisons,
@@ -36,7 +37,7 @@ const levelLabel = {
   'hosted': 'Hosted',
 }
 
-function cellsFor(matrix) {
+function cellsFor(matrix: ComparisonMatrix) {
   return matrixDimensions.map(dimension => ({
     id: dimension.id,
     level: matrix[dimension.id],

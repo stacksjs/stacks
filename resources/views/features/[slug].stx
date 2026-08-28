@@ -7,8 +7,13 @@
  * entry there and no new file, and the three surfaces cannot disagree about
  * what the product has.
  *
- * `slug` arrives as a bare global from the [slug] segment, the same way
- * orders/[id].stx receives `id`.
+ * The slug comes off `params`, which is the only place it is. A bare `slug`
+ * global was read here for as long as this page existed and never resolved:
+ * the render context is `{ __filename, __dirname, params, __stx_runtime_head }`,
+ * so `typeof slug !== 'undefined'` was always false and every URL under
+ * /features rendered the not-found body. The guard is what hid it - it made a
+ * page that never found anything look like a page that handles a missing
+ * feature. `stx typecheck` reports it as `Cannot find name 'slug'`.
  *
  * This route matches every URL under /features, including the ones that name
  * no feature, so it is the page's job to say which it is. `notFound()` is that
@@ -23,7 +28,7 @@ import { featureBySlug } from '../../data/features'
 import { highlight } from '../../data/highlight'
 
 
-const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const requestedSlug = String(params?.slug || '')
 const feature = featureBySlug(requestedSlug)
 
 if (!feature)
@@ -41,7 +46,7 @@ const canonicalPath = feature ? `/features/${feature.slug}` : '/features'
 const codeHtml = feature ? highlight(feature.page.code.code) : ''
 
 const related = feature
-  ? feature.page.related.map(featureBySlug).filter(Boolean)
+  ? feature.page.related.map(featureBySlug).filter(entry => entry !== undefined)
   : []
 
 </script>

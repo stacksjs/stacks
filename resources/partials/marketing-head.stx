@@ -54,9 +54,21 @@
    * system preference. Only a visitor who has never chosen gets the OS
    * answer, which is what `prefers-color-scheme` is for.
    */
+  /*
+   * `window.stxTheme` is installed here and called from the theme toggle in the
+   * markup, so it has to be declared for the checker to know the property
+   * exists on `Window` - `stx typecheck` reported it as TS2339 in every file
+   * that includes this partial.
+   */
+  declare global {
+    interface Window {
+      stxTheme?: (next: string) => void
+    }
+  }
+
   ;(function () {
     var modes = ['colored', 'light', 'dark']
-    var ok = function (t) { return modes.indexOf(t) !== -1 }
+    var ok = function (t: string) { return modes.indexOf(t) !== -1 }
 
     var queryTheme = ''
     try { queryTheme = new URLSearchParams(location.search).get('theme') || '' }
@@ -73,7 +85,7 @@
     var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'light'))
     document.documentElement.setAttribute('data-theme', theme)
 
-    window.stxTheme = function (next) {
+    window.stxTheme = function (next: string) {
       if (!ok(next)) return
       try { localStorage.setItem('stacks-theme', next) }
       catch {}

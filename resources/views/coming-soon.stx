@@ -48,9 +48,15 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
        * system preference. Only a visitor who has never chosen gets the OS
        * answer, which is what `prefers-color-scheme` is for.
        */
+      declare global {
+        interface Window {
+          stxTheme?: (next: string) => void
+        }
+      }
+
       ;(function () {
         var modes = ['colored', 'light', 'dark']
-        var ok = function (t) { return modes.indexOf(t) !== -1 }
+        var ok = function (t: string) { return modes.indexOf(t) !== -1 }
 
         var queryTheme = ''
         try { queryTheme = new URLSearchParams(location.search).get('theme') || '' }
@@ -67,7 +73,7 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
         var theme = ok(queryTheme) ? queryTheme : (ok(savedTheme) ? savedTheme : (prefersDark ? 'dark' : 'light'))
         document.documentElement.setAttribute('data-theme', theme)
 
-        window.stxTheme = function (next) {
+        window.stxTheme = function (next: string) {
           if (!ok(next)) return
           try { localStorage.setItem('stacks-theme', next) }
           catch {}
@@ -348,12 +354,30 @@ const siteDescription = 'Stacks is a full-stack TypeScript framework for web app
       // Plain holding-page script (not an stx SFC block): posts the email to
       // the same rate-limited endpoint the framework form used.
       ;(function () {
-        var form = document.getElementById('subscribe-form')
-        var input = document.getElementById('subscribe-email')
-        var note = document.getElementById('form-note')
+        /*
+         * `const`, not `var`, and the element types named.
+         *
+         * The `if (!form || !input || !note) return` guard below narrows all
+         * three - but only for straight-line code. A `var` can be reassigned,
+         * so TypeScript drops the narrowing inside the closures underneath and
+         * every use came back "possibly null". `const` cannot be reassigned, so
+         * the narrowing survives into them.
+         *
+         * `getElementById` answers `HTMLElement`, which has neither `.value`
+         * nor `.reset()`. Naming the real elements is what makes those reads
+         * checked rather than asserted.
+         */
+        const form = document.getElementById('subscribe-form') as HTMLFormElement | null
+        const input = document.getElementById('subscribe-email') as HTMLInputElement | null
+        const note = document.getElementById('form-note')
         if (!form || !input || !note) return
 
-        function setNote(message, state) {
+        /*
+         * An arrow assigned after the guard, not a hoisted `function`.
+         * A function declaration is callable before the `if (!note) return`
+         * above it, so TypeScript will not carry that narrowing inside it.
+         */
+        const setNote = (message: string, state: string) => {
           note.textContent = message
           note.setAttribute('data-state', state)
         }

@@ -10,7 +10,7 @@ const total = props.total || 0
 const shippingAddress = props.shippingAddress || ''
 const year = new Date().getFullYear()
 
-const money = (cents) => (Number(cents) / 100).toFixed(2)
+const money = (cents: number | string) => (Number(cents) / 100).toFixed(2)
 </script>
 
 <!DOCTYPE html>

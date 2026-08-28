@@ -16,7 +16,7 @@ import { featureBySlug } from '../../data/features'
 import { highlight } from '../../data/highlight'
 import { useCaseBySlug } from '../../data/use-cases'
 
-const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const requestedSlug = String(params?.slug || '')
 const useCase = useCaseBySlug(requestedSlug)
 
 if (!useCase)
@@ -37,11 +37,11 @@ const codeHtml = useCase ? highlight(useCase.page.code.code) : ''
 // page that describes it. The filter is what keeps a stale slug from
 // rendering an empty chip.
 const stack = useCase
-  ? useCase.page.stack.map(featureBySlug).filter(Boolean)
+  ? useCase.page.stack.map(featureBySlug).filter(entry => entry !== undefined)
   : []
 
 const related = useCase
-  ? useCase.page.related.map(useCaseBySlug).filter(Boolean)
+  ? useCase.page.related.map(useCaseBySlug).filter(entry => entry !== undefined)
   : []
 </script>
 

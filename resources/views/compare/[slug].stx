@@ -18,7 +18,7 @@
  */
 import { comparisonBySlug, matrixDimensions } from '../../data/comparisons'
 
-const requestedSlug = String((typeof slug !== 'undefined' && slug) || '')
+const requestedSlug = String(params?.slug || '')
 const comparison = comparisonBySlug(requestedSlug)
 
 if (!comparison)
@@ -52,7 +52,7 @@ const glance = comparison
   : []
 
 const related = comparison
-  ? comparison.page.related.map(comparisonBySlug).filter(Boolean)
+  ? comparison.page.related.map(comparisonBySlug).filter(entry => entry !== undefined)
   : []
 </script>
 
