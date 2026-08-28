@@ -247,22 +247,50 @@ listen('user:password-changed', handlePasswordChange)
 
 ## Creating Custom Event Types
 
-### Extending StacksEvents
+### Extending AppEvents
+
+`StacksEvents` is `AppEvents & AuthEvents`, and `AppEvents` is the half meant to
+be reopened. Declare your own events on it and they are known everywhere:
 
 ```typescript
-// types/events.ts
-import type { StacksEvents } from '@stacksjs/events'
-
-// Extend the base events interface
+// types/events.d.ts
 declare module '@stacksjs/events' {
-  interface StacksEvents {
-    'order:placed': { orderId: number; userId: number }
-    'order:shipped': { orderId: number; trackingNumber: string }
-    'order:delivered': { orderId: number; deliveredAt: Date }
-    'payment:failed': { orderId: number; error: string }
+  interface AppEvents {
+    'order:placed': { orderId: number, userId: number }
+    'order:shipped': { orderId: number, trackingNumber: string }
+    'order:delivered': { orderId: number, deliveredAt: Date }
+    'payment:failed': { orderId: number, error: string }
   }
 }
 ```
+
+There is no index signature behind these, deliberately. An event name that has
+not been declared is a compile error rather than a `dispatch` that succeeds and
+reaches nobody - which is the one failure an event bus cannot report, because it
+looks exactly like an event nothing needed to do anything about.
+
+### Mapping events to listeners
+
+`app/Events.ts` is the map of event name to the listeners that handle it. Use
+`defineEvents` so both halves are checked and the literal names are kept:
+
+```typescript
+// app/Events.ts
+import { defineEvents } from '@stacksjs/events'
+
+export default defineEvents({
+  'user:registered': ['SendWelcomeEmail'],
+  'order:placed': ['ChargeCard', 'SendOrderConfirmation'],
+})
+```
+
+A key must be an event that exists; a listener must name a module under
+`app/Listeners/` or `app/Actions/`, or one of the framework defaults behind them.
+`satisfies Events` accepts the same map, and `defineEvents` is preferred for the
+same reason every other `define*` helper is: it applies the constraint where the
+object is written, and its `const` type parameter keeps
+`events['order:placed']` as `readonly ['ChargeCard', 'SendOrderConfirmation']`
+rather than widening it.
 
 ### Type-Safe Event Handling
 

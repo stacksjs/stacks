@@ -18,23 +18,30 @@ Application-level event listeners in `app/Listeners/`.
 ## Event → Listener Mapping (app/Events.ts)
 
 ```typescript
-export default {
+import { defineEvents } from '@stacksjs/events'
+
+export default defineEvents({
   'user:registered': ['SendWelcomeEmail'],    // triggers app/Actions/SendWelcomeEmail.ts
   'user:created': ['NotifyUser'],             // triggers app/Actions/NotifyUser.ts
   'order:created': ['ProcessPayment', 'SendOrderConfirmation'],  // multiple listeners
-} satisfies Events
+})
 ```
 
-Keys are event names. Values are arrays of Action names from `app/Actions/`.
+Keys must be event names that exist; values must name listeners that exist. Both
+are compile errors otherwise, which matters here more than most places: a name
+that resolves to nothing produces one line in boot output and then behaves
+exactly like an event nobody cared about.
 
 ## How Listeners Work
 
 1. Events are dispatched: `dispatch('user:registered', { id: 1 })`
-2. The wildcard handler in `app/Listener.ts` catches ALL events
-3. Checks if the event has registered listeners in `app/Events.ts`
-4. For each listener, dynamically imports `app/Actions/{listener}.ts`
-5. Calls `action.handle(eventData)`
-6. Action modules are cached after first import
+2. At boot, `registerAppListeners()` reads `app/Events.ts` and subscribes each
+   named listener to its event directly
+3. Each name resolves against `app/Listeners/`, then `app/Actions/`, then the
+   same two under the framework defaults - first match wins
+4. Modules under `app/Listeners/` that declare their own `listensTo` are
+   registered by the same call, from a directory scan
+5. A listener that appears in both is registered once
 
 ## Creating a Listener Action
 
@@ -43,13 +50,36 @@ Keys are event names. Values are arrays of Action names from `app/Actions/`.
 export default {
   name: 'SendWelcomeEmail',
 
-  async handle(event: { id: number; email: string; name: string }) {
+  async handle(event: { id: number, email: string, name: string }) {
     // event contains the data passed to dispatch()
     await sendWelcomeEmail({ to: event.email, name: event.name })
     return { success: true }
   }
 }
 ```
+
+## Creating a Standalone Listener
+
+A module under `app/Listeners/` that declares its own `listensTo` is registered
+by the boot scan, with no entry in `app/Events.ts`. Use `defineListener` so the
+event name is checked and the payload is inferred from it:
+
+```typescript
+// app/Listeners/SendWelcomeEmail.ts
+import { defineListener } from '@stacksjs/events'
+
+export default defineListener({
+  listensTo: 'user:registered',        // or ['user:created', 'user:updated']
+  handle: async (user, event) => {     // `user` is typed from the event name
+    await sendWelcomeEmail({ to: user.email })
+    void event                         // which event fired, for multi-event listeners
+  },
+})
+```
+
+A glob (`'user:*'`, `'*'`) is a legal subscription and receives the union of
+what the bus carries. A listener that appears here *and* in `app/Events.ts` is
+registered once.
 
 ## CLI Event Listeners (app/Listeners/Console.ts)
 
