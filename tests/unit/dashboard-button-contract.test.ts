@@ -433,11 +433,15 @@ describe('dashboard button contract', () => {
     const indexButtons = [...index.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
     const detailSource = `${detail}\n${cardDialog}`
     const detailButtons = [...detailSource.matchAll(/<button\b[^>]*>/g)].map(match => match[0])
+    // The dialog reads its labels and assignees through the cardLabels() /
+    // cardAssignees() derived signals rather than reaching into openCard()
+    // twice. What this test guards is unchanged: every native button in the
+    // dialog still carries the aria that makes it a real control.
     const semanticDetailControls = [
       ':aria-label="\'Open \' + card.title"',
-      ':aria-pressed="String(openCard().labels.some',
+      ':aria-pressed="String(cardLabels().some',
       ':aria-label="\'Use \' + color + \' label color\'"',
-      ':aria-pressed="String(openCard().assignees.some',
+      ':aria-pressed="String(cardAssignees().some',
     ]
 
     expect((index.match(/<Button/g) || []).length).toBeGreaterThanOrEqual(4)

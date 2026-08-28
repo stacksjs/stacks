@@ -630,7 +630,7 @@ onDestroy(() => {
   >
     <template #header>
       <!-- Chrome strip. The traffic lights are the platform's, so this draws
-          none and reserves whatever room the host says they need — 62px in a
+          none and reserves whatever room the host says they need: 62px in a
           titlebarHidden window where they float over this sidebar, nothing in
           a window that keeps them in a titlebar, and nothing in a browser,
           which has no window buttons at all. It is also the window drag
