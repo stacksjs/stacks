@@ -68,6 +68,61 @@ async function collectActionPaths(): Promise<string[]> {
 }
 
 /**
+ * Where listeners live, in the order `resolveListener` searches them.
+ *
+ * `app/Listeners/` first and `app/Actions/` second, then the framework defaults
+ * behind each - the same four directories, in the same order, that
+ * `@stacksjs/events` walks when it resolves a name out of `app/Events.ts`. The
+ * union below is only worth having if it lists exactly what that resolution can
+ * find, so it is built from the same list rather than from a second guess at it.
+ */
+function listenerDirectories(): string[] {
+  const candidates = [
+    p.appPath('Listeners'),
+    p.appPath('Actions'),
+    p.storagePath('framework/defaults/app/Listeners'),
+    p.storagePath('framework/defaults/app/Actions'),
+  ]
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    const root = pkgJson.slice(0, pkgJson.lastIndexOf('/'))
+    candidates.push(`${root}/app/Listeners`, `${root}/app/Actions`)
+  }
+  catch {
+    // No published defaults package; a vendored checkout has them on disk.
+  }
+
+  return candidates.filter(dir => existsSync(dir))
+}
+
+/**
+ * Every name `app/Events.ts` may list against an event.
+ *
+ * The name is the path under the directory, without the extension, because that
+ * is what the map holds and what `resolveListener` joins back on:
+ * `'SendWelcomeEmail'`, `'Auth/LoginAction'`.
+ *
+ * Tests are excluded. `Actions/Auth/token-request.test` is a file in the
+ * actions tree and is not a listener, and a union that offers it invites
+ * exactly one kind of bug report.
+ */
+async function collectListenerNames(): Promise<string[]> {
+  const found = new Set<string>()
+
+  for (const dir of listenerDirectories()) {
+    const files = await readdir(dir, { recursive: true })
+    for (const file of files) {
+      if (!file.endsWith('.ts') || file.endsWith('.d.ts') || file.endsWith('.test.ts'))
+        continue
+      found.add(file.slice(0, -3))
+    }
+  }
+
+  return [...found].sort()
+}
+
+/**
  * The middleware aliases this application can reference.
  *
  * Read from the alias maps themselves - `app/Middleware.ts` first, the
@@ -151,6 +206,7 @@ export async function generateActionTypes(): Promise<void> {
   }
 
   const aliases = await collectMiddlewareAliases()
+  const listeners = await collectListenerNames()
   const namedRoutes = await collectNamedRoutes()
   const union = actions.map(action => `\n  | '${action}'`).join('')
   /*
@@ -162,6 +218,13 @@ export async function generateActionTypes(): Promise<void> {
   const middlewareUnion = aliases
     .flatMap(alias => [`\n  | '${alias}'`, `\n  | '!${alias}'`])
     .join('')
+  /*
+   * Emitted as `never` when nothing is on disk rather than as `string`. The
+   * consumer (`ListenerName` in `@stacksjs/events`) reads an empty registry as
+   * "not generated yet" and falls back to `string` itself, so widening here
+   * would only hide the difference between "no listeners" and "not generated".
+   */
+  const listenerUnion = listeners.map(listener => `\n  | '${listener}'`).join('')
   /*
    * `name: path`, so the router can pull a route's params out of its path and
    * demand them. Emitted as an empty object when nothing is named, which the
@@ -190,6 +253,12 @@ export type ActionPath =${union}
 export type MiddlewareAlias =${middlewareUnion || '\n  | string'}
 
 /**
+ * Every listener \`app/Events.ts\` can name against an event: the application's
+ * own listeners and actions, plus the framework defaults behind them.
+ */
+export type EventListenerName =${listenerUnion || '\n  | never'}
+
+/**
  * Every named route, and the path it resolves to.
  *
  * A type alias, NOT an interface: only aliases of object literals get an
@@ -212,8 +281,16 @@ declare module '@stacksjs/bun-router' {
     routes: NamedRoutes
   }
 }
+
+/**
+ * Handed to the event bus, so \`app/Events.ts\` is checked against the listeners
+ * that are actually on disk rather than against \`string\`.
+ */
+declare module '@stacksjs/events' {
+  interface EventListeners extends Record<EventListenerName, true> {}
+}
 `
 
   await storage.writeFile(p.frameworkPath('types/actions.d.ts'), contents)
-  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases and ${Object.keys(namedRoutes).length} named routes`)
+  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${listeners.length} listener names and ${Object.keys(namedRoutes).length} named routes`)
 }
