@@ -30,8 +30,8 @@ export type { BootHook } from './stacks-router'
 export { cacheRequestQuery, clearCurrentRequest, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'
 
 // Export Middleware class for defining route middleware
-export { Middleware } from './middleware'
-export type { MiddlewareConfig, Request } from './middleware'
+export { defineMiddleware, Middleware } from './middleware'
+export type { MiddlewareAliases, MiddlewareClasses, MiddlewareClassName, MiddlewareConfig, Request } from './middleware'
 
 // Export route loader
 export type { RootMountedAppRoute } from './route-loader'
