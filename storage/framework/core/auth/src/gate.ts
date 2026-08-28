@@ -313,7 +313,7 @@ export function define<T = any>(ability: string, callback: GateCallback<T>): voi
  * policy('Post', PostPolicy)
  * policy(Post, PostPolicy)
  */
-export function policy(model: string | { name: string }, policyClass: new () => Policy): void {
+export function policy(model: PolicyModelName | { name: PolicyModelName }, policyClass: new () => Policy): void {
   const modelName = typeof model === 'string' ? model : model.name
   state.policies.set(modelName, policyClass)
 }

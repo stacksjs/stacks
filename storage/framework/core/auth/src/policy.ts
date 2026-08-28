@@ -133,7 +133,7 @@ export abstract class BasePolicy<T = any> {
  * Policy discovery and registration
  */
 
-import type { GateAfterCallback, GateBeforeCallback, GateCallback } from './gate'
+import type { GateAfterCallback, GateBeforeCallback, GateCallback, PolicyModelName } from './gate'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { policy as registerPolicy } from './gate'
@@ -247,7 +247,9 @@ export async function discoverPolicies(): Promise<void> {
         continue
       }
 
-      registerPolicy(modelName, PolicyClass)
+      // `modelName` came out of the `app/Gates.ts` map, where it IS checked
+      // against the models; it arrives here as a plain object key.
+      registerPolicy(modelName as PolicyModelName, PolicyClass)
       explicit.add(modelName)
       log.debug(`Registered policy: ${policyFile} for ${modelName}`)
     }
@@ -297,7 +299,11 @@ export async function discoverPolicies(): Promise<void> {
       const PolicyClass = policyModule.default || policyModule[policyName]
 
       if (PolicyClass) {
-        registerPolicy(modelName, PolicyClass)
+        // Derived from a filename by convention, so there is nothing here for
+        // the compiler to check it against - a `FooPolicy.ts` with no `Foo`
+        // model registers a policy nothing will ever ask for, and that is the
+        // convention working as documented rather than an error.
+        registerPolicy(modelName as PolicyModelName, PolicyClass)
         log.debug(`Auto-discovered policy: ${policyName} for ${modelName}`)
       }
     }
