@@ -70,6 +70,41 @@ export interface FormDefinition {
   fields: FormFieldDefinition[]
 }
 
+/**
+ * A field as the public renderer receives it.
+ *
+ * The same field minus what only the server needs. Derived from
+ * `FormFieldDefinition` rather than restated, so adding a field property
+ * cannot leave the two out of step.
+ */
+export type PublicFormField
+  = Pick<FormFieldDefinition, 'name' | 'label' | 'type' | 'required' | 'width' | 'conditions'>
+    & { options: Pick<FieldOptions, 'placeholder' | 'choices' | 'min' | 'max' | 'accept'> }
+
+/**
+ * What `GET /api/forms/:uuid` returns: everything a renderer needs, nothing an
+ * attacker wants.
+ *
+ * `publicDefinition` used to be typed `Record<string, unknown>`, so the one
+ * contract between the server projection and the CMS form block was described
+ * nowhere. The block rendered a `state(null)` it then indexed freely, and the
+ * server could have dropped a key without anything noticing.
+ */
+export interface PublicFormDefinition {
+  uuid: string
+  name: string
+  status: FormDefinition['status']
+  submitLabel: string
+  confirmation: string | null
+  payment: {
+    mode: NonNullable<FormSettings['payment']>['mode']
+    amountCents?: number
+    currency: string
+    minAmountCents?: number
+  } | null
+  fields: PublicFormField[]
+}
+
 export interface SubmissionErrors {
   [fieldName: string]: string
 }

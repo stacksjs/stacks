@@ -18,6 +18,8 @@ export type {
   FormFieldDefinition,
   FormFieldType,
   FormSettings,
+  PublicFormDefinition,
+  PublicFormField,
   SubmissionErrors,
   ValidateSubmissionResult,
 } from './types'

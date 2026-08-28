@@ -10,6 +10,34 @@
   Deliberately minimal chrome: real sites override this to add their own
   navigation (fetchMenuTree), theme tokens and footer.
 --}}
+<script server>
+/*
+ * The bindings `renderCmsPage` puts in this template's context, declared so
+ * the checker sees the same contract the docblock above describes. They are
+ * supplied by the renderer rather than imported, so `declare` is the accurate
+ * spelling: it types them and emits nothing.
+ *
+ * See `storage/framework/core/cms/src/public/render.ts`.
+ */
+declare const site: {
+  id: number
+  name: string
+  subdomain: string | null
+  settings: Record<string, unknown>
+}
+
+declare const page: {
+  id: number
+  title: string
+  path: string
+  template: string
+  metaDescription: string
+}
+
+/** Pre-rendered, sanitized block HTML. */
+declare const content: string
+</script>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

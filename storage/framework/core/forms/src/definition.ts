@@ -1,4 +1,4 @@
-import type { FieldConditions, FieldOptions, FormDefinition, FormFieldDefinition, FormFieldType, FormSettings } from './types'
+import type { FieldConditions, FieldOptions, FormDefinition, FormFieldDefinition, FormFieldType, FormSettings, PublicFormDefinition } from './types'
 import { db } from '@stacksjs/database'
 
 function parseJson<T>(raw: unknown, fallback: T): T {
@@ -92,7 +92,7 @@ export async function loadFormByUuid(uuid: string, siteId: number | null): Promi
  * attacker wants (notify addresses, payment internals beyond what the UI
  * must show).
  */
-export function publicDefinition(form: FormDefinition): Record<string, unknown> {
+export function publicDefinition(form: FormDefinition): PublicFormDefinition {
   return {
     uuid: form.uuid,
     name: form.name,
