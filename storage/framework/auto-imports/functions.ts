@@ -41,7 +41,7 @@ export type { RealtimeEvent, RealtimeDashboardResponse, RealtimeStats, ActiveCon
 export { isCraftNative, ensureCraftNativeSidebarMarker, useCraft, useCraftSidebarSelection, useWindowControls, useAppControls } from '../defaults/functions/craft'
 export type { CraftSidebarSelectEvent } from '../defaults/functions/craft'
 export { fetchCapturedMail, fetchCapturedMailMessage } from '../defaults/functions/captured-mail'
-export type { CapturedMailSummary, CapturedMailMessage, CapturedMailIndex } from '../defaults/functions/captured-mail'
+export type { CapturedMailSummary, CapturedMailMessage, CapturedMailProblem, CapturedMailIndex } from '../defaults/functions/captured-mail'
 export { useAuth, describeAuthError, authGuard } from '../defaults/functions/auth'
 export type { AuthComposable } from '../defaults/functions/auth'
 export { dashboardApi, dashboardDownload, DashboardApiError } from '../defaults/functions/dashboard-api'
