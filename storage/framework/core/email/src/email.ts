@@ -247,7 +247,7 @@ export class Mail {
   public async queue(message: EmailMessage): Promise<void> {
     await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', { message, driver: this.defaultDriver })
+      await job('SendEmailJob', { message, driver: this.defaultDriver })
         .onQueue('emails')
         .dispatch()
     }, { context: 'queue' })
@@ -259,7 +259,7 @@ export class Mail {
   public async later(delaySeconds: number, message: EmailMessage): Promise<void> {
     await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', { message, driver: this.defaultDriver })
+      await job('SendEmailJob', { message, driver: this.defaultDriver })
         .onQueue('emails')
         .delay(delaySeconds)
         .dispatch()
@@ -272,7 +272,7 @@ export class Mail {
   public async queueOn(queueName: string, message: EmailMessage): Promise<void> {
     await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', { message, driver: this.defaultDriver })
+      await job('SendEmailJob', { message, driver: this.defaultDriver })
         .onQueue(queueName)
         .dispatch()
     }, { context: 'queueOn', queueName })

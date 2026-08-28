@@ -2678,7 +2678,7 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
     if (config.queueable) {
       try {
         const { Jobs } = await import('@stacksjs/queue')
-        await Jobs.dispatch('SyncSearchIndex', { index: indexName, op: 'upsert', doc })
+        await Jobs.dispatch('SyncSearchIndexJob', { index: indexName, op: 'upsert', doc })
       }
       catch (err) {
         log.warn(`[orm/search] queue dispatch failed for ${definition.name}; falling back to inline: ${(err as Error).message}`)
@@ -2697,7 +2697,7 @@ function buildSearchHooks(definition: BQBModelDefinition): BQBModelDefinition['h
     if (config.queueable) {
       try {
         const { Jobs } = await import('@stacksjs/queue')
-        await Jobs.dispatch('SyncSearchIndex', { index: indexName, op: 'delete', id: Number(id) })
+        await Jobs.dispatch('SyncSearchIndexJob', { index: indexName, op: 'delete', id: Number(id) })
       }
       catch (err) {
         log.warn(`[orm/search] queue dispatch failed for ${definition.name}#${id}; falling back to inline: ${(err as Error).message}`)

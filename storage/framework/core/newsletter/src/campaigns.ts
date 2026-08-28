@@ -177,7 +177,7 @@ async function dispatchCampaign(
   const mode = scheduledAt ? 'scheduled' : 'immediate'
 
   try {
-    await job('SendCampaign', {
+    await job('SendCampaignJob', {
       campaignId: id,
       chunkSize: options.chunkSize ?? 50,
       dryRun: options.dryRun ?? false,
