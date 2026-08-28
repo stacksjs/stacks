@@ -580,6 +580,20 @@ for (const [name, M] of Object.entries(_allExports)) {
   if (M && g[name] === undefined) g[name] = M
 }
 
+/**
+ * The names this module puts on `globalThis`.
+ *
+ * Exported so the declaration generator can describe exactly this set rather
+ * than guessing at it from the models directory. The two used to be worked out
+ * separately - `server-auto-imports.d.ts` scanned the framework's model files,
+ * this list is the module's own exports - and separate derivations of one fact
+ * are how a global comes to be typed but absent, or present but untyped.
+ *
+ * Names only. Reading the values would instantiate every lazy proxy, which is
+ * the opposite of what they are for.
+ */
+export const modelGlobalNames: readonly string[] = Object.keys(_allExports)
+
 // Tiny safety helpers that pair with the model globals. They live on
 // globalThis too so a page can do `const orders = await safeAll(Order)`
 // or `const name = safeGet(user, 'name')` without an import. Assigned

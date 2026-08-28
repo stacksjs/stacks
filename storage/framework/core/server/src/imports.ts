@@ -1,6 +1,6 @@
 import type { AutoImportsOptions } from 'bun-plugin-auto-imports'
-import { existsSync, statSync } from 'node:fs'
-import { dirname, relative } from 'node:path'
+import { existsSync, readFileSync, statSync } from 'node:fs'
+import { dirname, relative, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { plugin } from 'bun'
 import { log } from '@stacksjs/logging'
@@ -463,8 +463,6 @@ export function autoImportsAreStale(): boolean {
  * including defineModel()-based model definitions and resource functions.
  */
 export async function generateAutoImportFiles(): Promise<void> {
-  await generateServerAutoImportTypes()
-
   const userFunctionsPath = path.resourcesPath('functions')
   // Framework-default functions (e.g. defaults/functions/commerce/coupons.ts →
   // useCoupons) are also auto-importable so dashboard pages can call them
@@ -588,6 +586,21 @@ export * from './controllers'
     `${outputDir}/index.ts`,
   )
 
+  /*
+   * The global declarations LAST, because they are read off the barrels above.
+   * This used to run first, back when it scanned the source directories itself
+   * - which is exactly how it came to describe a different set than the one
+   * that gets injected.
+   */
+  await generateServerAutoImportTypes()
+
+  // The browser declaration is pruned rather than written: which names are
+  // ambient in a template is the stx plugin's decision, and it does not export
+  // that list. What can be established here is that a declared name resolves.
+  const pruned = await pruneBrowserAutoImportTypes()
+  if (pruned.length > 0)
+    log.debug(`[auto-imports] dropped ${pruned.length} browser globals that resolve to nothing`)
+
   log.debug('Auto-import files generated successfully')
 }
 
@@ -696,25 +709,35 @@ export function initiateImports(): void {
 
 /** Generate TypeScript declarations for the globals injected by the server. */
 export async function generateServerAutoImportTypes(): Promise<void> {
-  const userModelsPath = path.userModelsPath()
-  const defaultModelsPath = frameworkDefaultsDir('app/Models')
-  const modelExports = [
-    ...scanDefineModelExports(userModelsPath),
-    // Declarations describe the complete framework model surface. Runtime
-    // registration above remains feature-gated, but lazy ORM proxies exist
-    // for opt-in modules too, so their globals need stable types before an app
-    // enables the feature and regenerates its files.
-    ...(defaultModelsPath ? scanDefineModelExports(defaultModelsPath) : []),
-  ]
-  const jobExports = scanDefineModelExports(path.userJobsPath())
-  const defaultControllersPath = frameworkDefaultsDir('app/Controllers')
-  const controllerExports = [
-    ...scanDefineModelExports(path.userControllersPath()),
-    ...(defaultControllersPath ? scanDefineModelExports(defaultControllersPath) : []),
-  ]
-
+  /*
+   * Read from the BARRELS, not by scanning the directories a second time.
+   *
+   * `injectGlobalAutoImports` puts a name on `globalThis` by importing
+   * `auto-imports/{models,jobs,controllers}.ts` and assigning what comes out.
+   * This file declares what is there. Two independent scans of the same
+   * directories are two chances to disagree, and they did: the barrels took
+   * user + defaults for models and controllers, and this took user + defaults
+   * for models and controllers and user ONLY for jobs - so every job the
+   * framework ships was a global at runtime with no type at all.
+   *
+   * There is nothing to keep in step now. What the barrel exports is what gets
+   * injected and what gets declared, because it is one list read once.
+   */
   const seen = new Set<string>()
-  const valueExports = [...modelExports, ...jobExports, ...controllerExports]
+  const valueExports = [
+    // The barrels first, so a user model is described by its own file rather
+    // than by the framework's lazy proxy of the same name.
+    ...barrelExports('models'),
+    ...barrelExports('jobs'),
+    ...barrelExports('controllers'),
+    // Then the models `@stacksjs/orm` puts on `globalThis` itself. These are
+    // lazy proxies for the COMPLETE framework model surface, injected whether
+    // or not the feature module that owns them is enabled - so they are global
+    // even when the barrel, which is feature-gated, does not carry them.
+    // Leaving them out would type `Post` as unknown in an app that has not
+    // enabled the CMS, where `await Post.all()` works.
+    ...(await ormModelGlobals()),
+  ]
     .filter(exp => !GLOBAL_SHADOW_BLOCKLIST.has(exp.name))
     .filter((exp) => {
       if (seen.has(exp.name)) return false
@@ -738,6 +761,14 @@ export async function generateServerAutoImportTypes(): Promise<void> {
   }
 
   for (const exp of valueExports) {
+    // A package specifier is used as written; a file is made relative to this
+    // declaration. The ORM's proxies are typed through the package, because
+    // that is the module a caller's `Post` actually came from.
+    if (!exp.isDefault) {
+      lines.push(`  const ${exp.name}: typeof import('${exp.file}')['${exp.name}']`)
+      continue
+    }
+
     const importPath = relative(outputDir, exp.file).replace(/\\/g, '/').replace(/\.ts$/, '')
     const relativePath = importPath.startsWith('.') ? importPath : `./${importPath}`
     lines.push(`  const ${exp.name}: typeof import('${relativePath}')['default']`)
@@ -773,6 +804,161 @@ export async function generateServerAutoImportTypes(): Promise<void> {
     path.storagePath('framework/server-auto-imports.json'),
     `${JSON.stringify({ globals: Object.fromEntries(Object.keys(globals).sort().map(k => [k, true])) }, null, 2)}\n`,
   )
+}
+
+/**
+ * The names a generated barrel exports, and where each one comes from.
+ *
+ * Parsed from the file's text rather than imported: this runs during
+ * generation, when the barrel may have just been rewritten, and importing it
+ * would serve the previous version out of the module cache. Both forms the
+ * generators emit are read - the eager `export { default as X } from '...'`
+ * and the commented-out line the shadow blocklist leaves behind, which is
+ * skipped because it is not an export.
+ */
+function barrelExports(barrel: 'models' | 'jobs' | 'controllers'): ExportInfo[] {
+  const file = path.storagePath(`framework/auto-imports/${barrel}.ts`)
+
+  if (!existsSync(file))
+    return []
+
+  const source = readFileSync(file, 'utf8')
+  const outputDir = dirname(file)
+  const found: ExportInfo[] = []
+
+  for (const line of source.split('\n')) {
+    const match = /^export \{ default as (\w+) \} from '([^']+)'/.exec(line.trim())
+    if (!match)
+      continue
+
+    const [, name, relativePath] = match
+    found.push({ name: name!, file: resolvePath(outputDir, `${relativePath!}.ts`), isDefault: true })
+  }
+
+  return found
+}
+
+/**
+ * Drop every browser global that the module beside it does not export.
+ *
+ * `types/browser-auto-imports.d.ts` tells the compiler which names an stx
+ * script block can use bare. It is a committed artifact of
+ * `unplugin-auto-import`, which nothing in this repository runs, and it had
+ * drifted badly: of 405 declared globals, 291 are not exported by the module
+ * named beside them - 229 of those from one file that exports 15. `charIn(...)`
+ * type-checks and throws `charIn is not defined`.
+ *
+ * It survived because the file opens with `@ts-nocheck`, so every
+ * `typeof import(...)['name']` in it went unchecked. A declaration nothing
+ * checks is believed by everything.
+ *
+ * This PRUNES rather than regenerates, deliberately. Which names are ambient in
+ * a template is decided by the stx plugin, and stx does not export that list -
+ * so "every export of these modules" would be a different set, roughly three
+ * times larger, announcing globals the runtime does not inject. Removing the
+ * ones that provably resolve to nothing needs no such guess.
+ *
+ * Returns the names removed.
+ */
+export async function pruneBrowserAutoImportTypes(): Promise<string[]> {
+  const outputPath = path.storagePath('framework/types/browser-auto-imports.d.ts')
+
+  if (!existsSync(outputPath))
+    return []
+
+  const source = readFileSync(outputPath, 'utf8')
+  const outputDir = dirname(outputPath)
+  const exportsOf = new Map<string, Set<string> | null>()
+
+  async function moduleExports(specifier: string): Promise<Set<string> | null> {
+    const cached = exportsOf.get(specifier)
+    if (cached !== undefined)
+      return cached
+
+    let names: Set<string> | null
+    try {
+      const resolved = specifier.startsWith('.') ? resolvePath(outputDir, specifier) : specifier
+      names = new Set(Object.keys(await import(resolved) as Record<string, unknown>))
+    }
+    catch {
+      // A module this install cannot resolve is left alone: absent is not the
+      // same as "does not export it", and pruning on that would delete
+      // declarations that are correct wherever the module IS installed.
+      names = null
+    }
+
+    exportsOf.set(specifier, names)
+
+    return names
+  }
+
+  const removed: string[] = []
+  const kept: string[] = []
+
+  for (const line of source.split('\n')) {
+    const match = /^ {2}const (\w+): typeof import\('([^']+)'\)\['(\w+)'\]/.exec(line)
+
+    if (!match) {
+      kept.push(line)
+      continue
+    }
+
+    const [, declaredAs, specifier, exported] = match
+    const names = await moduleExports(specifier!)
+
+    if (names && !names.has(exported!)) {
+      removed.push(declaredAs!)
+      continue
+    }
+
+    kept.push(line)
+  }
+
+  if (removed.length === 0)
+    return []
+
+  // `@ts-nocheck` goes with them. It is what let the file declare names that
+  // resolve to nothing, and keeping it would let the next 291 in. The
+  // provenance line goes too: `unplugin-auto-import` has not written this file
+  // in a long time, and a header naming a tool nobody runs is why nobody
+  // thought to check it.
+  const pruned = kept
+    .filter(line => line.trim() !== '// @ts-nocheck')
+    .map(line => line.trim() === '// Generated by unplugin-auto-import'
+      ? '// Pruned by Stacks: every name below is exported by the module beside it.'
+      : line)
+    .join('\n')
+
+  await Bun.write(outputPath, pruned)
+
+  const globals = [...pruned.matchAll(/^ {2}const (\w+):/gm)].map(match => match[1]!).sort()
+  await Bun.write(
+    path.storagePath('framework/browser-auto-imports.json'),
+    `${JSON.stringify({ globals: Object.fromEntries(globals.map(name => [name, true])) }, null, 2)}\n`,
+  )
+
+  return removed
+}
+
+/**
+ * The model names `@stacksjs/orm` injects onto `globalThis` as lazy proxies.
+ *
+ * Read from the package rather than restated here, and typed through the
+ * package rather than through a file path: `typeof import('@stacksjs/orm')[X]`
+ * is the proxy's own type, which is what a caller actually gets.
+ *
+ * Best-effort. An install without the ORM simply contributes nothing, which
+ * leaves the barrel-derived half exactly as it was.
+ */
+async function ormModelGlobals(): Promise<ExportInfo[]> {
+  try {
+    const { modelGlobalNames } = await import('@stacksjs/orm') as { modelGlobalNames?: readonly string[] }
+
+    return (modelGlobalNames ?? []).map(name => ({ name, file: '@stacksjs/orm', isDefault: false }))
+  }
+  catch {
+    return []
+  }
 }
 
 /**
