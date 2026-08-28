@@ -3,13 +3,24 @@
 @section('title', 'Checkout — Contact')
 
 <script server>
+const { cartTokenFromRequest } = require('../../../functions/storefront/cart-cookie')
+// The columns this query selects. bun:sqlite returns `any`, so nothing
+// downstream of the map was checked either.
+interface CartSummaryRow {
+  product_name: string
+  quantity: number | string
+  total_price: number | string
+}
+
+interface StorefrontLineItem { lineTotal: number }
+
 const Database = require('bun:sqlite').Database
 const path = require('path')
 
 const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
 const db = new Database(dbPath, { readonly: true })
 
-const token = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+const token = cartTokenFromRequest(request)
 let items = []
 let cart = null
 
@@ -19,7 +30,7 @@ if (token) {
     items = db.query(`
       SELECT product_name, quantity, total_price
       FROM cart_items WHERE cart_id = ?1 ORDER BY id ASC
-    `).all(cart.id).map((row) => {
+    `).all(cart.id).map((row: CartSummaryRow) => {
       const qty = Number(row.quantity)
       const lineTotal = Number(row.total_price)
       return {
@@ -36,7 +47,7 @@ if (token) {
 // totals on every checkout step match what gets charged.
 const FREE_SHIPPING_THRESHOLD = Number(process.env.STOREFRONT_FREE_SHIPPING_THRESHOLD ?? 40) || 40
 const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
-const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
+const subtotal = items.reduce((s: number, i: StorefrontLineItem) => s + i.lineTotal, 0)
 const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
 const total = subtotal + shipping
 const remainingForFree = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)

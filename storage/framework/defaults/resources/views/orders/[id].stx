@@ -3,13 +3,29 @@
 @section('title', 'Order confirmed')
 
 <script server>
+// The columns this query selects. bun:sqlite returns `any`, so nothing
+// downstream of the map was checked either.
+interface OrderItemRow {
+  quantity: number | string
+  price: number | string
+  name: string
+  image_url: string | null
+  slug: string
+  weight_grams: number | null
+}
+
+interface StorefrontLineItem { lineTotal: number }
+
 const Database = require('bun:sqlite').Database
 const path = require('path')
 
 const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
 const db = new Database(dbPath, { readonly: true })
 
-const orderId = Number((typeof id !== 'undefined' && id) || 0)
+// From `params`, which is what stx puts in a server script's scope for a
+// `[id]` route. A bare `id` has never been a binding, so the `typeof` guard
+// was always false and this page rendered "order not found" for every order.
+const orderId = Number(params?.id ?? 0) || 0
 
 const order = orderId
   ? db.query(`
@@ -27,7 +43,7 @@ const items = order
       LEFT JOIN products p ON p.id = oi.product_id
       WHERE oi.order_id = ?1
       ORDER BY oi.id ASC
-    `).all(order.id).map((row) => ({
+    `).all(order.id).map((row: OrderItemRow) => ({
       name: row.name,
       slug: row.slug,
       image: row.image_url,
@@ -38,7 +54,7 @@ const items = order
     }))
   : []
 
-const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
+const subtotal = items.reduce((s: number, i: StorefrontLineItem) => s + i.lineTotal, 0)
 const shipping = order ? Number(order.delivery_fee || 0) : 0
 const total = order ? Number(order.total_amount || 0) : 0
 </script>

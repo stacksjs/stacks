@@ -22,6 +22,7 @@
  * badge is correct on first paint, before any client-side JS runs.
  */
 
+const { cartTokenFromRequest } = require('../functions/storefront/cart-cookie')
 const Database = require('bun:sqlite').Database
 const path = require('path')
 
@@ -29,7 +30,7 @@ const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'data
 
 let cartCount = 0
 try {
-  const sessionToken = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+  const sessionToken = cartTokenFromRequest(request)
   if (sessionToken) {
     const db = new Database(dbPath, { readonly: true })
     const cart = db.query(`SELECT total_items FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(sessionToken)
@@ -52,7 +53,7 @@ catch { /* schema not migrated yet, or db missing — render an empty header */ 
       injects __stxRouterConfig with container:'body', which would erase
       the header/footer on every navigation. STX_ROUTER_OPTIONS is checked
       last by the router's Object.assign, so this wins. --}}
-  <script>window.STX_ROUTER_OPTIONS = { container: 'main' };</script>
+  <script>(window as Window & { STX_ROUTER_OPTIONS?: { container: string } }).STX_ROUTER_OPTIONS = { container: 'main' };</script>
 </head>
 <body class="antialiased font-serif text-stone-900 bg-stone-50">
 
