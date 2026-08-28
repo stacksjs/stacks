@@ -1,28 +1,37 @@
-<script>
+<script client>
+/*
+ * A counter, in signals.
+ *
+ * This used to be a `<script client>` that ran `document.querySelector` on
+ * mount, read the count back out of `textContent`, `parseInt`ed it and wrote a
+ * number back into that string property. It worked, but as the component every
+ * new app has in `Buttons/`, it taught the one pattern the stx guidance rules
+ * out: reaching for the DOM instead of state. It also only ever bound the
+ * first `[data-counter]` on the page, so a second `<Counter />` was inert.
+ */
 interface CounterProps {
   count?: number
 }
 
 const { count = 0 } = defineProps<CounterProps>()
+
+const total = state(count)
+
+function increase(): void {
+  total.set(total() + 1)
+}
 </script>
+
 <div>
-    <button
-      type="button"
-      class="text-white text-xs bg-blue-500 hover:bg-blue-600 btn"
-      data-counter
-    >
-      <i
-        class="-ml-1 mr-3 h-4 w-4 i-hugeicons-outline-plus"
-        aria-hidden="true"
-      ></i>
-      Counter: <span data-count>{{ count }}</span>
-    </button>
-  </div>
-<script client>
-document.querySelector('[data-counter]')?.addEventListener('click', function() {
-  const countEl = document.querySelector('[data-count]')
-  if (countEl) {
-    countEl.textContent = parseInt(countEl.textContent || '0') + 1
-  }
-})
-</script>
+  <button
+    type="button"
+    class="text-white text-xs bg-blue-500 hover:bg-blue-600 btn"
+    @click="increase"
+  >
+    <i
+      class="-ml-1 mr-3 h-4 w-4 i-hugeicons-outline-plus"
+      aria-hidden="true"
+    ></i>
+    Counter: <span>{{ total() }}</span>
+  </button>
+</div>
