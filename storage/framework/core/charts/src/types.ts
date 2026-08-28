@@ -21,17 +21,37 @@ export interface ChartData {
   datasets: ChartDataset[]
 }
 
+/*
+ * These describe the Chart.js configuration this package ACCEPTS, which is
+ * wider than what it renders: the class deliberately treats what it has not
+ * implemented as a no-op rather than a crash, so a dashboard can be written
+ * against Chart.js and simply get less chrome here.
+ *
+ * So a key being declared below is not a promise that it draws - `drawBorder`
+ * has been declared and inert from the start. It is a promise that passing it
+ * is legal and harmless. Keys were being left out of these types on the
+ * accident of which dashboard was written first, which made honest Chart.js
+ * config a type error at four call sites.
+ */
 export interface ScaleConfig {
   beginAtZero?: boolean
   display?: boolean
   stacked?: boolean
-  grid?: { display?: boolean, color?: string, drawBorder?: boolean }
+  grid?: { display?: boolean, color?: string, drawBorder?: boolean, borderDash?: number[] }
   ticks?: {
     color?: string
     font?: { size?: number, family?: string }
     callback?: (value: number, index: number, ticks: any[]) => string
     stepSize?: number
     maxTicksLimit?: number
+    /** Decimal places on a numeric tick. */
+    precision?: number
+    /** Degrees a label may rotate to fit. */
+    maxRotation?: number
+    minRotation?: number
+    /** Drop labels rather than overlap them. */
+    autoSkip?: boolean
+    padding?: number
   }
   min?: number
   max?: number

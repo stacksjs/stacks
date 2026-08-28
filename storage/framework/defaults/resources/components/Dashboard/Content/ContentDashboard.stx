@@ -1,6 +1,7 @@
 <script client>
 import { dashboardApi } from '../../../../functions/dashboard-api'
 import { pushToast } from '../../../../functions/toasts'
+import type { ChartCtor, ChartDataset, ChartLike, ChartOptions } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 import { useChart } from '~/storage/framework/defaults/views/dashboard/composables/useChart'
 
 interface ContentPostSummary {
@@ -48,30 +49,6 @@ interface ContentOverview {
     categories: { labels: string[], data: number[] }
   }
 }
-
-interface ChartDataset {
-  data: number[]
-  label?: string
-  backgroundColor?: string | string[]
-  borderColor?: string | string[]
-  borderWidth?: number
-  fill?: boolean
-  tension?: number
-}
-
-interface ChartLike {
-  data: {
-    labels: string[]
-    datasets: ChartDataset[]
-  }
-  destroy: () => void
-  update: () => void
-}
-
-type ChartCtor = new (
-  canvas: HTMLElement,
-  config: { type: string, data: unknown, options?: unknown },
-) => ChartLike
 
 const emptyOverview = (): ContentOverview => ({
   rangeDays: 30,
@@ -162,7 +139,7 @@ function categoriesChartData() {
   }
 }
 
-const chartOptions = {
+const chartOptions: ChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
@@ -178,7 +155,7 @@ const chartOptions = {
   },
 }
 
-const categoryChartOptions = {
+const categoryChartOptions: ChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {

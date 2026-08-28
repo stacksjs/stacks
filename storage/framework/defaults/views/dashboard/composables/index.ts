@@ -30,7 +30,7 @@ export {
   sidebarThemeFor,
   useAppearance,
 } from './useAppearance'
-export type { ChartCtor, ChartHandle, ChartLike, LazyChartsHandle, UseChartOptions } from './useChart'
+export type { ChartConfig, ChartCtor, ChartData, ChartDataset, ChartHandle, ChartLike, ChartOptions, ChartType, LazyChartsHandle, UseChartOptions } from './useChart'
 export { useChart, useCharts, useLazyCharts } from './useChart'
 export type { NavigationSnapshot } from './useNavigation'
 export { useNavigation } from './useNavigation'

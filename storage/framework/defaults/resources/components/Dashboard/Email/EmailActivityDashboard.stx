@@ -1,21 +1,8 @@
 <script client>
 import type { InboxActivity, InboxActivityRange } from '../../../../functions/inbox'
 import { fetchInboxActivity } from '../../../../functions/inbox'
+import type { ChartCtor, ChartLike, ChartOptions } from '../../../../views/dashboard/composables/useChart'
 import { useChart } from '../../../../views/dashboard/composables/useChart'
-
-interface ChartLike {
-  destroy: () => void
-  update: () => void
-  data: {
-    labels: string[]
-    datasets: Array<{ data: number[] }>
-  }
-}
-
-type ChartCtor = new (
-  canvas: HTMLElement,
-  config: { type: string, data: unknown, options?: unknown },
-) => ChartLike
 
 const folders = [
   { id: 'inbox', name: 'Inbox', icon: 'inbox' },
@@ -165,7 +152,7 @@ function chartData(data: InboxActivity) {
   }
 }
 
-const chartOptions = {
+const chartOptions: ChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   interaction: { mode: 'index', intersect: false },

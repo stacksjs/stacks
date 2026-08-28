@@ -1,5 +1,6 @@
 <script client>
 import type { CommerceDashboardChartSeries } from '../../../../app/Actions/Dashboard/Commerce/commerce-dashboard'
+import type { ChartOptions } from '../../../../views/dashboard/composables'
 import { useLazyCharts } from '../../../../views/dashboard/composables'
 
 const series = useReactiveProp('series', {
@@ -41,7 +42,7 @@ const ordersData = {
     data: [] as number[],
   }],
 }
-const chartOptions = {
+const chartOptions: ChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: { legend: { display: true, position: 'top' } },
