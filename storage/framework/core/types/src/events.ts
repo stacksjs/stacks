@@ -1,9 +1,14 @@
 /**
  * **Events**
  *
- * This configuration defines all of your events. Because Stacks is fully-typed, you may
- * hover any of the options below and the definitions will be provided. In case you
- * have any questions, feel free to reach out via Discord or GitHub Discussions.
+ * The `app/Events.ts` map, re-exported from `@stacksjs/events` so that the
+ * event bus stays the single place an event name is defined. It used to be
+ * declared here as `interface Events { [key: string]: string[] }`, which is an
+ * index signature over two things that are not open sets: an event name comes
+ * from `AppEvents`/`AuthEvents`, and a listener name is a file on disk. Both
+ * halves being `string` meant a typo in either one type-checked and then did
+ * nothing at runtime, which is the failure mode an event map is least able to
+ * report.
  *
  * @example To fire an event, you may use any of the following approaches:
  * ```ts
@@ -25,13 +30,4 @@
  * useEvents.on('user:registered', (user) => sendWelcomeEmail(user))
  * ```
  */
-export interface Events {
-  [key: string]: string[]
-}
-
-// `storage/framework/types/events.ts` is a project-generated declaration
-// (one entry per model: `'<name>:created' | '<name>:updated' | …`). Use
-// `export type *` so Bun erases the import at runtime — the file lives in
-// the consumer project, not in the published `@stacksjs/types` package, so
-// a value-level `export *` would fail to resolve once the package ships.
-export type * from '../../../types/events'
+export type { EventListeners, EventName, Events, ListenerName, StacksEvents } from '@stacksjs/events'

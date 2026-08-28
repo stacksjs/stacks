@@ -8,7 +8,6 @@ import type {
   DependenciesConfig,
   DnsConfig,
   EmailConfig,
-  Events,
   FilesystemsConfig,
   FeatureFlagsConfig,
   GitConfig,
@@ -234,6 +233,12 @@ export function defineModel(config: Model): Model {
   return config
 }
 
-export function defineEvents(config: Events): Events {
-  return config
-}
+/**
+ * Re-exported rather than redeclared. The local version took `Events` and
+ * returned `Events`, which widens: the literal keys and listener names an
+ * application writes were thrown away at the boundary, so `keyof typeof events`
+ * came back as `string` and every consumer of the map was back to unchecked
+ * names. `@stacksjs/events` owns the event types, and its version preserves
+ * them.
+ */
+export { defineEvents } from '@stacksjs/events'
