@@ -292,9 +292,12 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
 async function generatePathIndex(
   entries: ScanEntry[],
   outputPath: string,
-  options: { exportName: string, prefix?: string },
+  options: { exportName: string, prefix?: string, extensions?: string[] },
 ): Promise<void> {
   const prefix = options.prefix ?? ''
+  // In preference order: the first extension that exists for a name wins, the
+  // same way `resolveTemplatePath` prefers `.stx` over `.html`.
+  const extensions = options.extensions ?? ['.ts']
   const found = new Map<string, string>()
 
   for (const entry of entries) {
@@ -302,12 +305,22 @@ async function generatePathIndex(
     const recursive = typeof entry === 'string' ? true : entry.recursive
     let files: string[] = []
     try {
-      const pattern = recursive ? `${dir}/**/*.ts` : `${dir}/*.ts`
-      files = globSync(pattern)
+      for (const extension of extensions) {
+        const pattern = recursive ? `${dir}/**/*${extension}` : `${dir}/*${extension}`
+        files.push(...globSync(pattern))
+      }
     }
     catch {
       continue
     }
+
+    // Sorted by name first and extension preference second, so `welcome.stx`
+    // is seen before `welcome.html` and claims the key.
+    const rank = (file: string): number => extensions.findIndex(extension => file.endsWith(extension))
+    files = files.sort((left, right) => {
+      const byRank = rank(left) - rank(right)
+      return byRank !== 0 ? byRank : left.localeCompare(right)
+    })
 
     /*
      * Filtered here rather than through the glob's `ignore`, which did not
@@ -316,12 +329,13 @@ async function generatePathIndex(
      * moment the type is `keyof` over it. The old generated union had the same
      * entries for the same reason.
      */
-    for (const file of files.sort()) {
+    for (const file of files) {
       const basename = file.split('/').pop() ?? ''
       if (basename.endsWith('.d.ts') || basename.endsWith('.test.ts') || basename.endsWith('.spec.ts') || basename === 'index.ts')
         continue
 
-      const key = prefix + relative(dir, file).replace(/\.ts$/, '')
+      const extension = extensions.find(candidate => file.endsWith(candidate)) ?? ''
+      const key = prefix + relative(dir, file).slice(0, extension.length ? -extension.length : undefined)
       if (found.has(key))
         continue
       found.set(key, relative(dirname(outputPath), file))
@@ -371,6 +385,8 @@ export function autoImportSourceDirs(): string[] {
     frameworkDefaultsDir('app/Policies'),
     path.appPath('Middleware'),
     frameworkDefaultsDir('app/Middleware'),
+    path.resourcesPath('emails'),
+    frameworkDefaultsDir('resources/emails'),
   ])
 }
 
@@ -530,6 +546,15 @@ export async function generateAutoImportFiles(): Promise<void> {
     existingDirs([path.appPath('Middleware'), frameworkDefaultsDir('app/Middleware')]),
     `${outputDir}/middleware.ts`,
     { exportName: 'middleware' },
+  )
+
+  // Email templates are named the same way and resolved the same way, with two
+  // extensions instead of one and `.stx` preferred - which is exactly the order
+  // `resolveTemplatePath` probes them in.
+  await generatePathIndex(
+    existingDirs([path.resourcesPath('emails'), frameworkDefaultsDir('resources/emails')]),
+    `${outputDir}/emails.ts`,
+    { exportName: 'emails', extensions: ['.stx', '.html'] },
   )
 
   // Generate runtime index for controllers (default exports, user overrides defaults)

@@ -4,6 +4,35 @@ import { mail } from './email'
 import { template as renderTemplate } from './template'
 
 /**
+ * Augmentation target: every email template this application can render.
+ *
+ * The keys are template names as `template(...)` takes them - `'welcome'`,
+ * `'layouts/base'` - without the extension. `buddy generate` writes the
+ * augmentation from `resources/emails/` and the framework defaults behind it,
+ * the same two roots `resolveTemplatePath` probes.
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface EmailTemplates {}
+
+/** A template name, as narrow as the application has made it. */
+export type EmailTemplateName = keyof EmailTemplates extends never
+  ? string
+  : keyof EmailTemplates & string
+
+/**
+ * A template name, with or without the extension.
+ *
+ * `resolveTemplatePath` accepts `'welcome'`, `'welcome.stx'` and
+ * `'welcome.html'` - a bare name preferring `.stx` - so the type has to as
+ * well, or it would reject calls that work.
+ */
+export type EmailTemplateReference =
+  | EmailTemplateName
+  | `${EmailTemplateName}.stx`
+  | `${EmailTemplateName}.html`
+
+
+/**
  * Allowed recipient input — accepts a single address, an array of addresses,
  * or already-shaped {@link EmailAddress} objects. Strings are treated as
  * `address` only (no display name).
@@ -263,7 +292,7 @@ export abstract class Mailable<TProps extends Record<string, unknown> = Record<s
    * }
    * ```
    */
-  template(name: string, ...rest: TemplateArgs<TProps>): this {
+  template(name: EmailTemplateReference, ...rest: TemplateArgs<TProps>): this {
     const props = (rest[0] ?? {}) as TProps
     this._template = { name, props }
     return this

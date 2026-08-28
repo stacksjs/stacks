@@ -30,6 +30,7 @@ const REGISTRIES = [
   { file: 'listeners', exportName: 'listeners' },
   { file: 'policies', exportName: 'policies' },
   { file: 'middleware', exportName: 'middleware' },
+  { file: 'emails', exportName: 'emails' },
 ] as const
 
 describe('the generated name registries', () => {
@@ -109,6 +110,18 @@ describe('the generated name registries', () => {
     // Both ship with Stacks and neither exists in this app's own directories.
     expect(middleware.Signed).toBeDefined()
     expect(policies.PostPolicy).toBeDefined()
+  })
+
+  it('email templates prefer .stx over .html, as the resolver does', async () => {
+    const emails = await load('emails', 'emails')
+
+    // `welcome` ships as `.stx`; the key is bare, so `template('welcome')`
+    // and `template('welcome.stx')` both mean this file.
+    expect(emails.welcome).toEndWith('.stx')
+    for (const name of Object.keys(emails)) {
+      expect(name.endsWith('.stx')).toBe(false)
+      expect(name.endsWith('.html')).toBe(false)
+    }
   })
 
   it('routeNames maps a name to the path it resolves to', async () => {

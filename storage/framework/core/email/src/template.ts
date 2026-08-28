@@ -1,8 +1,8 @@
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
-import { defaultsResourcesPath, resourcesPath } from '@stacksjs/path'
-import { join } from 'node:path'
+import { defaultsResourcesPath, resourcesPath, storagePath } from '@stacksjs/path'
+import { join, resolve as resolvePath } from 'node:path'
 import { inlineCss, shouldInlineByDefault } from './css-inliner'
 
 export interface TemplateResult {
@@ -180,7 +180,70 @@ const templateRoots: Array<(relativePath: string) => string> = [
  * the framework defaults (see {@link templateRoots}).
  * Returns { path, type } where type is 'stx' or 'html'
  */
+/**
+ * The generated template registry: name to file, resolved absolute.
+ *
+ * `buddy generate` writes `storage/framework/auto-imports/emails.ts` from the
+ * same two roots this module probes, preferring `.stx` the same way - and it is
+ * the map `EmailTemplates` is `keyof`'d from, so a name that type-checks in
+ * `template(...)` is one that resolves here.
+ *
+ * Read synchronously through a cached slot rather than `await`ed, because
+ * `resolveTemplatePath` is sync and its callers are. `null` until the first
+ * async warm-up completes or if the file is absent; either way the probing
+ * below runs, so a project that has not run `buddy generate` is unchanged.
+ */
+let templateRegistry: Record<string, { path: string, type: 'stx' | 'html' }> | null = null
+let templateRegistryLoaded = false
+
+function loadTemplateRegistry(): Record<string, { path: string, type: 'stx' | 'html' }> | null {
+  if (templateRegistryLoaded)
+    return templateRegistry
+
+  templateRegistryLoaded = true
+
+  try {
+    const dir = storagePath('framework/auto-imports')
+    // eslint-disable-next-line ts/no-require-imports
+    const module = require(`${dir}/emails.ts`) as { emails?: Record<string, string> }
+    if (!module.emails)
+      return null
+
+    templateRegistry = Object.fromEntries(
+      Object.entries(module.emails).map(([name, file]) => [
+        name,
+        { path: resolvePath(dir, file), type: file.endsWith('.stx') ? 'stx' as const : 'html' as const },
+      ]),
+    )
+  }
+  catch {
+    templateRegistry = null
+  }
+
+  return templateRegistry
+}
+
+/** For tests, and for a dev server that regenerated the registry. */
+export function resetTemplateRegistry(): void {
+  templateRegistry = null
+  templateRegistryLoaded = false
+}
+
 function resolveTemplatePath(templateName: string): { path: string, type: 'stx' | 'html' } | null {
+  // The registry first: exact, already ordered userland-over-defaults, and the
+  // same list the compiler checked the name against.
+  const registry = loadTemplateRegistry()
+  if (registry) {
+    const bare = templateName.replace(/\.(?:stx|html)$/, '')
+    const hit = registry[bare]
+    if (hit) {
+      // An explicit extension still means that extension, not the preferred one.
+      if (templateName.endsWith('.stx') && hit.type !== 'stx') { /* fall through to probing */ }
+      else if (templateName.endsWith('.html') && hit.type !== 'html') { /* fall through to probing */ }
+      else if (fs.existsSync(hit.path)) return hit
+    }
+  }
+
   for (const root of templateRoots) {
     // If already has extension, use as-is
     if (templateName.endsWith('.stx')) {

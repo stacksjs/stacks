@@ -29,6 +29,9 @@ type Policies = typeof import('../auto-imports/policies')['policies']
 /** Every middleware class under `app/Middleware/`, and the defaults behind it. */
 type Middlewares = typeof import('../auto-imports/middleware')['middleware']
 
+/** Every email template under `resources/emails/`, and the defaults behind it. */
+type EmailTemplates = typeof import('../auto-imports/emails')['emails']
+
 /** Every job, by the name `resolveJobFile` finds it under. */
 type Jobs = typeof import('../auto-imports/jobs')
 
@@ -41,6 +44,7 @@ type ListenerModuleName = keyof Listeners & string
 type PolicyClassName = keyof Policies & string
 type MiddlewareClassName = keyof Middlewares & string
 type JobName = keyof Jobs & string
+type EmailTemplateName = keyof EmailTemplates & string
 
 /**
  * `'Actions/Auth/LoginAction'` → `'Auth/LoginAction'`.
@@ -95,6 +99,10 @@ declare module '@stacksjs/events' {
 
 declare module '@stacksjs/auth' {
   interface PolicyClasses extends Record<PolicyClassName, true> {}
+}
+
+declare module '@stacksjs/email' {
+  interface EmailTemplates extends Record<EmailTemplateName, true> {}
 }
 
 declare module '@stacksjs/queue' {
