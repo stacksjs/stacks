@@ -1453,6 +1453,23 @@ export type PolicyClassName =
   | 'PostPolicy'
 
 /**
+ * Every job that can be dispatched or scheduled by name: the application's own,
+ * plus the framework defaults behind them.
+ */
+export type JobName =
+  | 'ExampleJob'
+  | 'ExampleTwoJob'
+  | 'Inspire'
+  | 'PruneModelsJob'
+  | 'PruneQueryLogsJob'
+  | 'PublishScheduledPagesJob'
+  | 'SendCampaignJob'
+  | 'SendEmailJob'
+  | 'SendPasswordResetEmailJob'
+  | 'SendWelcomeEmail'
+  | 'SyncSearchIndexJob'
+
+/**
  * Every named route, and the path it resolves to.
  *
  * A type alias, NOT an interface: only aliases of object literals get an
@@ -1503,4 +1520,16 @@ declare module '@stacksjs/router' {
  */
 declare module '@stacksjs/auth' {
   interface PolicyClasses extends Record<PolicyClassName, true> {}
+}
+
+/**
+ * Handed to the queue and the scheduler, so `job('SendWelcomeEmial')` and
+ * `schedule.job(…)` are checked against the jobs `resolveJobFile` can find.
+ */
+declare module '@stacksjs/queue' {
+  interface Jobs extends Record<JobName, true> {}
+}
+
+declare module '@stacksjs/scheduler' {
+  interface SchedulableJobs extends Record<JobName, true> {}
 }

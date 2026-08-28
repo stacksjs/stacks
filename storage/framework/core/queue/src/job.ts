@@ -478,7 +478,28 @@ class JobBuilder {
  * await job('SendNotification', { message: 'Hello' }).dispatchNow()
  * ```
  */
-export function job(name: string, payload?: any): JobBuilder {
+/**
+ * Augmentation target: every job that can be dispatched by name.
+ *
+ * The keys are job filenames without the extension - `'SendWelcomeEmail'`,
+ * `'SendPasswordResetEmailJob'` - under `app/Jobs/` or the framework defaults
+ * behind it. `buddy generate:types` writes the augmentation from the same three
+ * directories {@link resolveJobFile} searches.
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface Jobs {}
+
+/**
+ * A job name, as narrow as the application has made it.
+ *
+ * Falls back to `string` while the registry is empty, so a project that has not
+ * run `generate:types` yet still compiles. Once it is filled,
+ * `job('SendWelcomeEmial')` is a compile error rather than a dispatch that
+ * resolves to nothing.
+ */
+export type JobName = keyof Jobs extends never ? string : keyof Jobs & string
+
+export function job(name: JobName, payload?: any): JobBuilder {
   return new JobBuilder(name, payload)
 }
 
@@ -510,32 +531,32 @@ export function job(name: string, payload?: any): JobBuilder {
  */
 export const Jobs = {
   /** Construct a builder without dispatching — for chained option calls. */
-  make(name: string, payload?: any): JobBuilder {
+  make(name: JobName, payload?: any): JobBuilder {
     return new JobBuilder(name, payload)
   },
 
   /** Dispatch a job in one call. Equivalent to `job(name, payload).dispatch()`. */
-  async dispatch(name: string, payload?: any): Promise<void> {
+  async dispatch(name: JobName, payload?: any): Promise<void> {
     await new JobBuilder(name, payload).dispatch()
   },
 
   /** Dispatch only if `condition` is truthy. */
-  async dispatchIf(condition: boolean, name: string, payload?: any): Promise<void> {
+  async dispatchIf(condition: boolean, name: JobName, payload?: any): Promise<void> {
     if (condition) await new JobBuilder(name, payload).dispatch()
   },
 
   /** Dispatch unless `condition` is truthy. */
-  async dispatchUnless(condition: boolean, name: string, payload?: any): Promise<void> {
+  async dispatchUnless(condition: boolean, name: JobName, payload?: any): Promise<void> {
     if (!condition) await new JobBuilder(name, payload).dispatch()
   },
 
   /** Run the job synchronously, bypassing the queue. */
-  async dispatchNow(name: string, payload?: any): Promise<void> {
+  async dispatchNow(name: JobName, payload?: any): Promise<void> {
     await new JobBuilder(name, payload).dispatchNow()
   },
 
   /** Schedule the job to run after `seconds` of delay. */
-  dispatchAfter(seconds: number, name: string, payload?: any): JobBuilder {
+  dispatchAfter(seconds: number, name: JobName, payload?: any): JobBuilder {
     return new JobBuilder(name, payload).delay(seconds)
   },
 
@@ -544,7 +565,7 @@ export const Jobs = {
    * (stacksjs/stacks#1872 Q-8). Equivalent to
    * `Jobs.make(name, payload).withIdempotencyKey(key).dispatch()`.
    */
-  async dispatchOnce(key: string, name: string, payload?: any): Promise<void> {
+  async dispatchOnce(key: string, name: JobName, payload?: any): Promise<void> {
     await new JobBuilder(name, payload).withIdempotencyKey(key).dispatch()
   },
 
@@ -556,7 +577,7 @@ export const Jobs = {
    * helper exists for callers that want the intent visible at the
    * call site for readability.
    */
-  async dispatchAfterCommit(name: string, payload?: any): Promise<void> {
+  async dispatchAfterCommit(name: JobName, payload?: any): Promise<void> {
     await new JobBuilder(name, payload).afterCommit().dispatch()
   },
 }

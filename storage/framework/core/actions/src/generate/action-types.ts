@@ -169,6 +169,45 @@ async function collectMiddlewareClasses(): Promise<string[]> {
 }
 
 /**
+ * Every job that can be dispatched or scheduled by name.
+ *
+ * The application's own `app/Jobs/` first, then the framework defaults - the
+ * three candidates `resolveJobFile` tries, in the order it tries them.
+ *
+ * NOT read from the jobs barrel, which is what the scheduler's declaration used
+ * to do: the barrel is generated for the runtime and holds only `app/Jobs/`, so
+ * the nine jobs that ship with the framework were unschedulable by type while
+ * `resolveJobFile` resolved every one of them.
+ */
+async function collectJobNames(): Promise<string[]> {
+  const found = new Set<string>()
+
+  const candidates = [
+    p.appPath('Jobs'),
+    p.storagePath('framework/defaults/app/Jobs'),
+  ]
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    candidates.push(`${pkgJson.slice(0, pkgJson.lastIndexOf('/'))}/app/Jobs`)
+  }
+  catch {
+    // No published defaults package; a vendored checkout has them on disk.
+  }
+
+  for (const dir of candidates.filter(directory => existsSync(directory))) {
+    const files = await readdir(dir, { recursive: true })
+    for (const file of files) {
+      if (!file.endsWith('.ts') || file.endsWith('.d.ts') || file.endsWith('.test.ts'))
+        continue
+      found.add(file.slice(0, -3))
+    }
+  }
+
+  return [...found].sort()
+}
+
+/**
  * Every policy class an `app/Gates.ts` mapping may name, by filename.
  *
  * The application's own `app/Policies/` first, the framework defaults behind
@@ -289,6 +328,7 @@ export async function generateActionTypes(): Promise<void> {
   const middlewareClasses = await collectMiddlewareClasses()
   const listeners = await collectListenerNames()
   const policies = await collectPolicyNames()
+  const jobs = await collectJobNames()
   const namedRoutes = await collectNamedRoutes()
   const union = actions.map(action => `\n  | '${action}'`).join('')
   /*
@@ -318,6 +358,7 @@ export async function generateActionTypes(): Promise<void> {
    */
   const listenerUnion = listeners.map(listener => `\n  | '${listener}'`).join('')
   const policyUnion = policies.map(policy => `\n  | '${policy}'`).join('')
+  const jobUnion = jobs.map(job => `\n  | '${job}'`).join('')
   /*
    * `name: path`, so the router can pull a route's params out of its path and
    * demand them. Emitted as an empty object when nothing is named, which the
@@ -363,6 +404,12 @@ export type EventListenerName =${listenerUnion || '\n  | never'}
  * policies, plus the framework defaults behind them.
  */
 export type PolicyClassName =${policyUnion || '\n  | never'}
+
+/**
+ * Every job that can be dispatched or scheduled by name: the application's own,
+ * plus the framework defaults behind them.
+ */
+export type JobName =${jobUnion || '\n  | never'}
 
 /**
  * Every named route, and the path it resolves to.
@@ -411,8 +458,20 @@ declare module '@stacksjs/router' {
 declare module '@stacksjs/auth' {
   interface PolicyClasses extends Record<PolicyClassName, true> {}
 }
+
+/**
+ * Handed to the queue and the scheduler, so \`job('SendWelcomeEmial')\` and
+ * \`schedule.job(…)\` are checked against the jobs \`resolveJobFile\` can find.
+ */
+declare module '@stacksjs/queue' {
+  interface Jobs extends Record<JobName, true> {}
+}
+
+declare module '@stacksjs/scheduler' {
+  interface SchedulableJobs extends Record<JobName, true> {}
+}
 `
 
   await storage.writeFile(p.frameworkPath('types/actions.d.ts'), contents)
-  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${middlewareClasses.length} middleware classes, ${listeners.length} listener names, ${policies.length} policies and ${Object.keys(namedRoutes).length} named routes`)
+  log.debug(`[generate:types] Wrote ${actions.length} action paths, ${aliases.length} middleware aliases, ${middlewareClasses.length} middleware classes, ${listeners.length} listener names, ${policies.length} policies, ${jobs.length} jobs and ${Object.keys(namedRoutes).length} named routes`)
 }

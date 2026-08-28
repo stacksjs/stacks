@@ -30,6 +30,7 @@
  * ```
  */
 
+import type { JobName } from './job'
 import { RedisClient } from 'bun'
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
@@ -1171,7 +1172,10 @@ async function firePersistentHandler(
   try {
     if (handler.kind === 'job') {
       const { Jobs } = await import('./job')
-      await Jobs.dispatch(handler.name, { ...(handler.payload as object | undefined ?? {}), _batchId: batchId })
+      // `handler.name` came out of the batch row, so it is a string the
+      // compiler cannot check against the jobs on disk. Unresolvable names are
+      // reported by the worker, which is the only place that can know.
+      await Jobs.dispatch(handler.name as JobName, { ...(handler.payload as object | undefined ?? {}), _batchId: batchId })
       return
     }
 
