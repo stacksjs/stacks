@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
-import { assertDesktopReleaseChannel, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { assertDesktopReleaseChannel, hasUserlandDesktopLauncher, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
 
 const outputDir = storagePath('framework/desktop-dist')
 const launcherName = process.platform === 'win32' ? 'stacks-desktop.exe' : 'stacks-desktop'
@@ -13,10 +13,22 @@ const appUrl = process.env.DESKTOP_URL || process.env.APP_URL
 const releaseChannel = process.env.DESKTOP_RELEASE_CHANNEL === 'stable' ? 'stable' : 'experimental'
 const support = assertDesktopReleaseChannel(releaseChannel)
 
-if (!appUrl)
-  throw new Error('Desktop builds require APP_URL or DESKTOP_URL so the native app knows which Stacks application to open')
+// An app that owns its launcher decides for itself what the window opens —
+// typically a server it starts on loopback, whose port is not known until it
+// runs. Demanding a URL up front is only meaningful for the framework launcher,
+// which has nothing else to go on.
+const ownsLauncher = hasUserlandDesktopLauncher(projectPath())
 
-const url = new URL(/^https?:\/\//.test(appUrl) ? appUrl : `https://${appUrl}`)
+if (!appUrl && !ownsLauncher) {
+  throw new Error(
+    'Desktop builds require APP_URL or DESKTOP_URL so the native app knows which Stacks application to open. '
+    + 'An app that opens something local instead can supply its own app/Desktop/launcher.ts.',
+  )
+}
+
+const url = appUrl
+  ? new URL(/^https?:\/\//.test(appUrl) ? appUrl : `https://${appUrl}`)
+  : null
 const craftBinary = resolveCraftExecutable()
 
 // The runtime is copied verbatim into the bundle, so it has to be the native
@@ -42,7 +54,7 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 // Argv form, not a command string: runCommand splits a string on whitespace,
 // so a quoted path arrived at bun with its quotes still attached and any path
 // containing a space would have split in half.
-const launcherEntry = resolveDesktopLauncher()
+const launcherEntry = resolveDesktopLauncher(projectPath())
 await runCommand(
   ['bun', 'build', '--compile', launcherEntry, '--outfile', join(outputDir, launcherName)],
   { cwd: projectPath() },
@@ -55,7 +67,7 @@ if (process.platform !== 'win32') {
 }
 
 writeFileSync(join(outputDir, 'desktop.json'), `${JSON.stringify({
-  url: url.toString().replace(/\/$/, ''),
+  url: url ? url.toString().replace(/\/$/, '') : '',
   title: process.env.APP_NAME || 'Stacks',
   width: 1400,
   height: 900,
@@ -65,6 +77,10 @@ writeFileSync(join(outputDir, 'desktop.json'), `${JSON.stringify({
   releaseChannel,
   platform: process.platform,
   architecture: process.arch,
+  // Read by `build:dmg`, which cannot otherwise tell a bundle that talks to a
+  // remote origin from one that only ever talks to itself — and the two want
+  // very different App Transport Security.
+  launcher: ownsLauncher ? 'userland' : 'framework',
 }, null, 2)}\n`)
 
 const gitResult = Bun.spawnSync(['git', 'rev-parse', 'HEAD'], { cwd: projectPath() })
@@ -93,3 +109,5 @@ writeFileSync(join(outputDir, 'provenance.json'), `${JSON.stringify({
 writeFileSync(join(outputDir, 'checksums.sha256'), `${artifacts.map(artifact => `${artifact.sha256}  ${artifact.name}`).join('\n')}\n`)
 
 log.success(`Built Craft desktop application in ${outputDir}`)
+if (ownsLauncher)
+  log.info(`Using this application's own launcher (${launcherEntry}).`)

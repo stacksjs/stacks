@@ -1,9 +1,9 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
-import { projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
+import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
 
 /**
  * Package the `build:desktop` output as a macOS `.app` inside a `.dmg`.
@@ -25,7 +25,12 @@ const manifestPath = join(desktopDist, 'desktop.json')
 if (!existsSync(manifestPath))
   throw new Error('Run `buddy build:desktop` before packaging a DMG')
 
-const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { title?: string, url?: string }
+const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
+  title?: string
+  url?: string
+  launcher?: 'framework' | 'userland'
+}
+const ownsLauncher = manifest.launcher === 'userland'
 const appName = process.env.DESKTOP_APP_NAME || manifest.title || process.env.APP_NAME || 'Stacks'
 const bundleId = process.env.DESKTOP_BUNDLE_ID || `sh.stacks.${appName.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
 const version = process.env.DESKTOP_APP_VERSION || '0.0.0'
@@ -48,10 +53,24 @@ mkdirSync(macosDir, { recursive: true })
 mkdirSync(resourcesDir, { recursive: true })
 
 // The launcher resolves its manifest and the Craft runtime relative to its own
-// executable, so all three have to sit together in Contents/MacOS.
+// executable, so everything build:desktop emitted goes together in
+// Contents/MacOS. Copying the whole directory rather than three names lets an
+// app with its own launcher ship the sibling binaries it needs — a server, a
+// worker — which a fixed list silently dropped.
 const launcherName = 'stacks-desktop'
-for (const file of [launcherName, 'craft-runtime', 'desktop.json'])
+const bundledFiles = readdirSync(desktopDist).filter(name => statSync(join(desktopDist, name)).isFile())
+for (const file of bundledFiles)
   await runCommand(['cp', join(desktopDist, file), join(macosDir, file)], { cwd: projectPath() })
+
+if (!existsSync(join(macosDir, launcherName)))
+  throw new Error(`build:desktop did not produce ${launcherName}`)
+
+// Anything an app puts in `app/Desktop/Resources/` — a prerendered UI, a
+// schema, seed data — travels into the bundle. A local-first app has a payload
+// to carry and nowhere else to put it.
+const userlandResources = appPath('Desktop/Resources')
+if (existsSync(userlandResources))
+  cpSync(userlandResources, resourcesDir, { recursive: true })
 
 /** Build an .icns from a square PNG, if one is available. */
 async function buildIcon(): Promise<string | undefined> {
@@ -93,16 +112,35 @@ writeFileSync(join(appDir, 'Contents/Info.plist'), `<?xml version="1.0" encoding
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>NSHighResolutionCapable</key><true/>
-  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
-  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>${iconFile ? `
+${ownsLauncher
+  ? `  <!-- The window talks to something this app started on loopback, so an
+       exception for 127.0.0.1 is all it needs. NSAllowsArbitraryLoads would
+       additionally permit every unencrypted host on the internet. -->
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key><true/>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>127.0.0.1</key>
+      <dict><key>NSExceptionAllowsInsecureHTTPLoads</key><true/></dict>
+    </dict>
+  </dict>`
+  : `  <!-- The window loads a remote URL, so the app has to be allowed to reach it. -->
+  <key>NSAppTransportSecurity</key><dict><key>NSAllowsArbitraryLoads</key><true/></dict>`}${iconFile ? `
   <key>CFBundleIconFile</key><string>${iconFile}</string>` : ''}
 </dict>
 </plist>
 `)
 
 if (signingIdentity) {
-  // The runtime is a separate executable and must be signed before the parent.
-  for (const target of [join(macosDir, 'craft-runtime'), join(macosDir, launcherName), appDir])
+  // Inside-out: every nested executable, then the launcher, then the bundle.
+  // Signing the parent first invalidates its seal the moment an inner binary is
+  // signed after it — and an app-owned launcher may ship several.
+  const nested = bundledFiles
+    .filter(name => name !== launcherName && !name.endsWith('.json') && !name.endsWith('.sha256'))
+    .map(name => join(macosDir, name))
+
+  for (const target of [...nested, join(macosDir, launcherName), appDir])
     await runCommand(['codesign', '--force', '--options', 'runtime', '--sign', signingIdentity, target], { cwd: staging })
 }
 

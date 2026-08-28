@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { craftBinaryNotFoundMessage, resolveCraftBinary as resolveCraftNativeBinary } from 'craft-native'
 
@@ -90,16 +91,39 @@ export function resolveCraftExecutable(
   return executable
 }
 
+/** Where an application puts a launcher of its own. */
+export const USERLAND_LAUNCHER = 'app/Desktop/launcher.ts'
+
+/**
+ * Whether this application supplies its own desktop launcher.
+ *
+ * The framework launcher opens a Craft window on a URL from `desktop.json`,
+ * which is right for a hosted Stacks app and wrong for a local-first one — a
+ * disk cleaner, a log viewer, anything whose data is the machine it runs on.
+ * Those need to start something locally and open a window on that, and until
+ * an app could replace the launcher its only option was to reimplement
+ * `build:desktop` and `build:dmg` outside the framework.
+ */
+export function hasUserlandDesktopLauncher(projectRoot: string = process.cwd()): boolean {
+  return existsSync(join(projectRoot, USERLAND_LAUNCHER))
+}
+
 /**
  * The launcher entrypoint `buddy build:desktop` compiles into the native
  * bundle.
  *
- * Inside this monorepo the TypeScript source is right there. A consumer app
- * only has the published package, which ships `dist/launcher.js` — so resolve
- * whichever exists rather than assuming the monorepo layout, which is what
- * previously made desktop builds impossible outside this repo.
+ * `app/Desktop/launcher.ts` wins when present, the same way anything else
+ * under `app/` overrides its framework default. Otherwise: inside this monorepo
+ * the TypeScript source is right there, while a consumer app only has the
+ * published package, which ships `dist/launcher.js` — so resolve whichever
+ * exists rather than assuming the monorepo layout, which is what previously
+ * made desktop builds impossible outside this repo.
  */
-export function resolveDesktopLauncher(): string {
+export function resolveDesktopLauncher(projectRoot: string = process.cwd()): string {
+  const userland = join(projectRoot, USERLAND_LAUNCHER)
+  if (existsSync(userland))
+    return userland
+
   const here = dirname(fileURLToPath(import.meta.url))
   const candidates = [
     // Monorepo: src/index.ts sits next to src/launcher.ts.
