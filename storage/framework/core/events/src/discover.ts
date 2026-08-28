@@ -16,15 +16,19 @@
  *
  * ```ts
  * // app/Listeners/SendWelcomeEmail.ts
- * export default {
+ * import { defineListener } from '@stacksjs/events'
+ *
+ * export default defineListener({
  *   listensTo: 'user:registered',
- *   handle: async (event) => {
- *     await mail.send({ to: event.user.email, ... })
+ *   handle: async (user) => {
+ *     await mail.send({ to: user.email, ... })
  *   },
- *   // optional: 'high' | 'normal' | 'low' — higher runs first
- *   priority: 'normal',
- * }
+ * })
  * ```
+ *
+ * A plain object literal still works - the scan checks the shape at runtime -
+ * but `defineListener` is what checks the event name and types the payload
+ * from it.
  *
  * Errors during import (syntax errors, missing default export,
  * malformed listener shape) are logged but don't halt discovery —
@@ -44,15 +48,42 @@
 import { existsSync, readdirSync, statSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import process from 'node:process'
+import type { EventName, StacksEvents } from './index'
 import { listen } from './index'
 
 /**
- * Shape of a listener module's default export. The `listensTo`
- * field is the event name (matches the strict type of
- * `StacksEvents` keys via `unknown` for cross-pkg flexibility);
- * `handle` is the actual listener function.
+ * What a listener may subscribe to: an event that exists, or a glob the
+ * emitter matches against every event name (`'user:*'`, `'*'`).
+ *
+ * The glob branch is why this is not simply `EventName`. `registerFromMap` and
+ * the scan both hand their names to `emitter.on`, which matches patterns as
+ * well as exact names, so a union without them would reject a subscription
+ * that works.
  */
-export interface ListenerModule<T = unknown> {
+export type EventSubscription = EventName | '*' | `${string}:*`
+
+/**
+ * The payload a subscription carries.
+ *
+ * Exact for an exact event name. A glob can fire for any event, so it gets the
+ * union of what the bus can carry rather than a guess at which one.
+ */
+export type SubscriptionPayload<T extends EventSubscription> = T extends EventName
+  ? StacksEvents[T]
+  : StacksEvents[EventName]
+
+/**
+ * Shape of a listener module's default export.
+ *
+ * `listensTo` was `string | string[]`, with a comment explaining that the loose
+ * type bought "cross-pkg flexibility". What it actually bought was a listener
+ * file that compiles while subscribing to an event that does not exist: the
+ * scan registers it, the emitter never matches it, and the file looks like it
+ * is doing its job forever. The names are checked now, and the payload follows
+ * from the name rather than being `unknown` for the handler to assert its way
+ * out of.
+ */
+export interface ListenerModule<T extends EventSubscription = EventSubscription> {
   /**
    * Event name to subscribe to, or several. Required.
    *
@@ -63,7 +94,7 @@ export interface ListenerModule<T = unknown> {
    * listener declaring an array failed the shape check and was skipped with a
    * warning nobody reads at boot.
    */
-  listensTo: string | string[]
+  listensTo: T | readonly T[]
   /**
    * Listener function. Required.
    *
@@ -71,9 +102,38 @@ export interface ListenerModule<T = unknown> {
    * The second argument is what makes one handler over several events
    * possible without the emitter's payload having to carry its own name.
    */
-  handle: (_payload: T, _eventName?: string) => void | Promise<void>
+  handle: (_payload: SubscriptionPayload<T>, _eventName?: EventName) => void | Promise<void>
   /** Optional human-readable name for logging. Defaults to filename. */
   name?: string
+}
+
+/**
+ * Define a listener module, with the event names checked and the payload
+ * inferred from them.
+ *
+ * The same helper `defineEvents` is for `app/Events.ts`, for the other half of
+ * the convention: a plain object literal cannot infer `T` from `listensTo`, so
+ * without this the handler's payload widens to the union of everything the bus
+ * carries and the event names go unchecked.
+ *
+ * @example
+ * ```ts
+ * // app/Listeners/SendWelcomeEmail.ts
+ * import { defineListener } from '@stacksjs/events'
+ *
+ * export default defineListener({
+ *   listensTo: 'user:registered',
+ *   handle: async (user) => {
+ *     // `user` is the registration payload, not `unknown`
+ *     await mail.send({ to: user.email })
+ *   },
+ * })
+ * ```
+ */
+export function defineListener<const T extends EventSubscription>(
+  listener: ListenerModule<T>,
+): ListenerModule<T> {
+  return listener
 }
 
 interface DiscoverOptions {
@@ -166,7 +226,7 @@ export async function discoverListeners(options: DiscoverOptions = {}): Promise<
         // so without this wrapper a multi-event listener has to be told which
         // event fired by whoever emitted it - which every emitter then has to
         // remember, and one of them will not.
-        listen(event as never, ((payload: unknown) => exported.handle(payload as never, event)) as never)
+        listen(event as never, ((payload: unknown) => exported.handle(payload as never, event as EventName)) as never)
         registered++
       }
     }
@@ -214,8 +274,14 @@ function isListenerModule(v: unknown): v is ListenerModule {
   )
 }
 
-/** One event, or several, as a list either way. Blank names are dropped. */
-function eventsOf(listensTo: string | string[]): string[] {
+/**
+ * One event, or several, as a list either way. Blank names are dropped.
+ *
+ * Takes `unknown` rather than the declared type because this runs on a module
+ * that was just imported off disk: `isListenerModule` has checked the shape at
+ * runtime, and nothing has checked that the file was compiled at all.
+ */
+function eventsOf(listensTo: unknown): string[] {
   const names = Array.isArray(listensTo) ? listensTo : [listensTo]
 
   return names.map(name => String(name).trim()).filter(Boolean)
@@ -412,6 +478,37 @@ function warnOnPayloadMismatch(
 }
 
 /**
+ * Where a listener name is looked up, in override order.
+ *
+ * The application's own `app/` first, the framework defaults behind it - the
+ * same order everything else in Stacks resolves in. Only `app/` was searched
+ * before, which made every one of the 80+ default actions unnameable from
+ * `app/Events.ts`: `'Auth/LoginAction'` warned "no listener or action called"
+ * and the event went unhandled, even though the file is exactly where the
+ * override model says it is.
+ *
+ * A vendored checkout has the defaults on disk under `storage/framework`; an
+ * installed app has them inside the published `@stacksjs/defaults` package, so
+ * both are tried and whichever exists is read.
+ */
+function listenerRoots(base: string): string[] {
+  const roots = [
+    join(base, 'app'),
+    join(base, 'storage', 'framework', 'defaults', 'app'),
+  ]
+
+  try {
+    const pkgJson = Bun.resolveSync('@stacksjs/defaults/package.json', base)
+    roots.push(join(pkgJson.slice(0, pkgJson.lastIndexOf('/')), 'app'))
+  }
+  catch {
+    // No published defaults package; a vendored checkout has them on disk.
+  }
+
+  return roots.filter(root => existsSync(root))
+}
+
+/**
  * A listener name, as something callable.
  *
  * Accepts both shapes an application already has: a listener module with
@@ -425,9 +522,11 @@ async function resolveListener(
 ): Promise<{ id: string, handle: (_payload: unknown, _event?: string) => unknown, validations?: PayloadValidations } | null> {
   const candidates: string[] = []
 
-  for (const directory of ['Listeners', 'Actions']) {
-    for (const extension of ['ts', 'js'])
-      candidates.push(join(base, 'app', directory, `${name}.${extension}`))
+  for (const root of listenerRoots(base)) {
+    for (const directory of ['Listeners', 'Actions']) {
+      for (const extension of ['ts', 'js'])
+        candidates.push(join(root, directory, `${name}.${extension}`))
+    }
   }
 
   for (const candidate of candidates) {

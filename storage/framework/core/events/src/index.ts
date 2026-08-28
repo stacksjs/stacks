@@ -543,6 +543,112 @@ export interface AuthEvents {
 export type StacksEvents = AppEvents & AuthEvents
 
 /**
+ * Every event name this application can dispatch or listen for.
+ *
+ * `& string` because `keyof` on an object type also yields `number | symbol`
+ * for an index signature, and an event name in `app/Events.ts` is a string key.
+ */
+export type EventName = keyof StacksEvents & string
+
+/**
+ * Augmentation target: every listener name `app/Events.ts` may reference.
+ *
+ * The keys are listener names as they are written in the map - `'NotifyUser'`,
+ * `'Auth/LoginAction'` - which is a name relative to `app/Listeners/` or
+ * `app/Actions/` (or the framework defaults behind them), without the
+ * extension. `buddy generate:types` writes the augmentation into
+ * `storage/framework/types/actions.d.ts`, from the same directories
+ * `resolveListener` searches at runtime, so the type and the resolution cannot
+ * disagree about what exists.
+ *
+ * An interface rather than a union alias because a union cannot be reopened,
+ * and this one has to be: the framework declares it empty and the application's
+ * generated declarations fill it in.
+ *
+ * @example
+ * ```ts
+ * declare module '@stacksjs/events' {
+ *   interface EventListeners {
+ *     'SendWelcomeEmail': true
+ *   }
+ * }
+ * ```
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface EventListeners {}
+
+/**
+ * A listener name, as narrow as the application has made it.
+ *
+ * Falls back to `string` while `EventListeners` is empty. That is not a
+ * loophole left open: `generate:types` has not run yet in a project that has
+ * just been created, and rejecting every listener name until it does would make
+ * a fresh app fail to compile over a file it has never been told to generate.
+ * Once the registry exists, a misspelled listener is a compile error.
+ */
+export type ListenerName = keyof EventListeners extends never
+  ? string
+  : keyof EventListeners & string
+
+/**
+ * The `app/Events.ts` map: an event name to the listeners that handle it.
+ *
+ * Both halves are checked. The key must be an event that exists - a name only
+ * `AppEvents` or `AuthEvents` declares - and the value must name listeners that
+ * are on disk. Neither used to be: the type was `{ [key: string]: string[] }`,
+ * which accepts `{ 'user:registerd': ['SendWelcomEmail'] }` in full, and both
+ * halves of that fail at runtime by doing nothing at all.
+ */
+export type Events = {
+  readonly [K in EventName]?: readonly ListenerName[]
+}
+
+/**
+ * Define the application's event-to-listener map, with the literal names kept.
+ *
+ * Identical in effect to `satisfies Events`, and preferred for the same reason
+ * every other `define*` helper in the framework is: the constraint is applied
+ * where the object is written, so the error points at the misspelled event name
+ * rather than at whatever consumed the map later.
+ *
+ * `const` on the type parameter is what makes it *narrower* than `satisfies`:
+ * the returned type keeps `readonly ['SendWelcomeEmail']` rather than widening
+ * to `ListenerName[]`, so `keyof typeof events` and `events['user:registered']`
+ * are exactly what the file declares.
+ *
+ * @example
+ * ```ts
+ * // app/Events.ts
+ * import { defineEvents } from '@stacksjs/events'
+ *
+ * export default defineEvents({
+ *   'user:registered': ['SendWelcomeEmail'],
+ *   'user:created': ['NotifyUser'],
+ * })
+ * ```
+ *
+ * The `Record<Exclude<keyof T, EventName>, never>` half of the constraint is
+ * what rejects an event name that does not exist, and it is not redundant with
+ * `Events`. Excess-property checking is a freshness rule on the object literal,
+ * and it stops applying as soon as inference has something to work with: a map
+ * of one bad key is caught by it, and the same bad key sitting next to one good
+ * one is not, because `T` infers happily and a type with extra properties is
+ * assignable to a mapped type whose keys are all optional. Requiring every key
+ * outside `EventName` to hold something no listener list can be makes the check
+ * structural, so it holds however many entries the map has - and the shape it
+ * demands is an object with one impossible property, so the compiler's message
+ * is the sentence naming the fix rather than `not assignable to never`.
+ */
+export function defineEvents<
+  const T extends Events & Record<
+    Exclude<keyof T, EventName>,
+    { 'this event name is not declared on AppEvents or AuthEvents': never }
+  >,
+>(events: T): T {
+  return events
+}
+
+/**
  * The application's emitter, one per *process* rather than one per copy of this
  * package.
  *
@@ -616,8 +722,8 @@ export {
 // Boot-time listener auto-discovery (stacksjs/stacks#1878 E-3,
 // closing F-3 from #1874). Scans `app/Listeners/**/*.ts` for
 // default-exported `{ listensTo, handle }` modules and registers them.
-export { discoverListeners, registerAppListeners, resetListenerRegistry } from './discover'
-export type { ListenerModule } from './discover'
+export { defineListener, discoverListeners, registerAppListeners, resetListenerRegistry } from './discover'
+export type { EventSubscription, ListenerModule, SubscriptionPayload } from './discover'
 
 // Singleton-friendly scope alias (#1878 E-5). Use to create a
 // per-tenant / per-plugin wrapper that auto-prefixes event names.
