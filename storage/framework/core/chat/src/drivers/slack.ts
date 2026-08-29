@@ -156,7 +156,10 @@ export class SlackDriver extends BaseChatDriver {
 
     const payload: SlackMessage = {
       text,
-      username: message.from as any,
+      // `from` is an object - `{ id?, name?, avatar? }` - and `username` is a
+      // string, so the whole object was being handed over and arrived as
+      // "[object Object]". The sender's name is what this field is for.
+      username: message.from?.name,
       mrkdwn: true,
     }
 

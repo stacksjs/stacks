@@ -106,7 +106,13 @@ export class TeamsDriver extends BaseChatDriver {
   }
 
   private async sendMessage(message: ChatMessage, _options?: RenderOptions): Promise<void> {
-    const webhookUrl = config.webhookUrl || message.to
+    // `message.to` may be a list, and a Teams webhook targets exactly one URL.
+    // Left as `string | string[]`, the guard below ran `.includes(...)` on an
+    // array - which asks whether an ELEMENT equals 'webhook.office.com', never
+    // true - so a message addressed with a list failed as "not configured"
+    // rather than being sent. The cast on `fetch` is what let that through.
+    const configured = config.webhookUrl
+    const webhookUrl = configured || (Array.isArray(message.to) ? message.to[0] : message.to)
 
     if (!webhookUrl || !webhookUrl.includes('webhook.office.com')) {
       throw new Error('Teams webhook URL not configured or invalid')
@@ -114,7 +120,7 @@ export class TeamsDriver extends BaseChatDriver {
 
     const payload = this.buildPayload(message)
 
-    const response = await (fetch as any)(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

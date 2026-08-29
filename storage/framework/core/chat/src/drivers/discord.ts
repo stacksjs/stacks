@@ -139,7 +139,10 @@ export class DiscordDriver extends BaseChatDriver {
   private async sendViaWebhook(message: ChatMessage): Promise<{ id?: string }> {
     const payload: DiscordMessage = {
       content: message.content,
-      username: message.from as any,
+      // `from` is an object - `{ id?, name?, avatar? }` - and `username` is a
+      // string, so the whole object was being handed over and arrived as
+      // "[object Object]". The sender's name is what this field is for.
+      username: message.from?.name,
     }
 
     // Add embeds if template or subject provided
