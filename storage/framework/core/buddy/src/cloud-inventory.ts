@@ -108,7 +108,25 @@ function text(value: unknown): string | undefined {
  * in the deploy command already reads), but only touches fields any provider
  * listing carries, so an AWS/local-box listing can be mapped onto it too.
  */
-export function toInventoryServer(raw: any): InventoryServer {
+/**
+ * One provider server record, as the listing returns it.
+ *
+ * Written against the Hetzner payload and naming only the fields this function
+ * reads, so another provider's listing satisfies it too. Every field is
+ * optional and `unknown` because it is JSON from an external API: `text()` is
+ * what turns each one into a string or nothing.
+ */
+export interface ProviderServerPayload {
+  id?: unknown
+  name?: unknown
+  status?: unknown
+  labels?: Record<string, unknown>
+  public_net?: { ipv4?: { ip?: unknown }, ipv6?: { ip?: unknown } }
+  server_type?: { name?: unknown }
+  datacenter?: { name?: unknown, location?: { name?: unknown } }
+}
+
+export function toInventoryServer(raw: ProviderServerPayload | null | undefined): InventoryServer {
   const labels: Record<string, string> = {}
   for (const [key, value] of Object.entries(raw?.labels ?? {})) {
     if (typeof value === 'string')
@@ -168,13 +186,38 @@ export function declaredSites(
  * of `from` / `static` / `redirect` says where it goes. A fragment written by
  * an older ts-cloud may have no `slug`, which the writer defaults to `app`.
  */
-export function routesFromFragments(fragments: readonly any[]): HostedRoute[] {
+/**
+ * One `/etc/rpx/sites.d` fragment, as parsed off the box.
+ *
+ * Every field is optional and `unknown`, because this is JSON written by
+ * another machine and read here defensively - `text()` and the `typeof` tests
+ * below are what turn it into something usable. As `any` those checks were
+ * indistinguishable from probing for fields that never existed.
+ */
+export interface HostRouteFragment {
+  slug?: unknown
+  proxies?: unknown
+}
+
+/** One proxy entry inside a fragment, in the same spirit. */
+export interface HostRouteProxy {
+  to?: unknown
+  path?: unknown
+  from?: unknown
+  static?: unknown
+  redirect?: unknown
+}
+
+export function routesFromFragments(fragments: readonly HostRouteFragment[]): HostedRoute[] {
   const routes: HostedRoute[] = []
 
   for (const fragment of fragments) {
     const slug = text(fragment?.slug) ?? 'app'
 
-    for (const proxy of (Array.isArray(fragment?.proxies) ? fragment.proxies : [])) {
+    // One cast, at the boundary where remote JSON becomes a known shape.
+    const proxies: HostRouteProxy[] = Array.isArray(fragment?.proxies) ? fragment.proxies as HostRouteProxy[] : []
+
+    for (const proxy of proxies) {
       const host = text(proxy?.to)
       if (!host)
         continue
@@ -191,7 +234,7 @@ export function routesFromFragments(fragments: readonly any[]): HostedRoute[] {
   return routes.sort((a, b) => a.slug.localeCompare(b.slug) || a.host.localeCompare(b.host) || a.path.localeCompare(b.path))
 }
 
-function describeRouteTarget(proxy: any): { target: string, kind: HostedRoute['kind'] } {
+function describeRouteTarget(proxy: HostRouteProxy | null | undefined): { target: string, kind: HostedRoute['kind'] } {
   const from = proxy?.from
   if (typeof from === 'string' && from.trim())
     return { target: from.trim(), kind: 'app' }
@@ -201,10 +244,13 @@ function describeRouteTarget(proxy: any): { target: string, kind: HostedRoute['k
   const staticRoute = proxy?.static
   if (typeof staticRoute === 'string' && staticRoute.trim())
     return { target: staticRoute.trim(), kind: 'static' }
-  if (staticRoute && typeof staticRoute === 'object' && text(staticRoute.dir))
-    return { target: text(staticRoute.dir)!, kind: 'static' }
+  if (staticRoute && typeof staticRoute === 'object') {
+    const dir = text((staticRoute as { dir?: unknown }).dir)
+    if (dir)
+      return { target: dir, kind: 'static' }
+  }
 
-  const redirect = text(proxy?.redirect?.to) ?? text(proxy?.redirect)
+  const redirect = text((proxy?.redirect as { to?: unknown } | null | undefined)?.to) ?? text(proxy?.redirect)
   if (redirect)
     return { target: redirect, kind: 'redirect' }
 
@@ -395,8 +441,8 @@ done`
  * take the listing down. The cost is that its routes are invisible here, which
  * is still strictly more than the nothing this command could see before.
  */
-export function parseHostRoutesOutput(stdout: string): any[] {
-  const fragments: any[] = []
+export function parseHostRoutesOutput(stdout: string): HostRouteFragment[] {
+  const fragments: HostRouteFragment[] = []
 
   for (const line of stdout.split('\n')) {
     const encoded = line.trim()

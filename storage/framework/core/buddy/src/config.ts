@@ -83,7 +83,7 @@ interface ValidationError {
 /**
  * Validate the buddy config structure
  */
-export function validateConfig(config: any): ValidationError[] {
+export function validateConfig(config: unknown): ValidationError[] {
   const errors: ValidationError[] = []
 
   if (typeof config !== 'object' || config === null) {
@@ -95,38 +95,44 @@ export function validateConfig(config: any): ValidationError[] {
     return errors
   }
 
+  // Narrowed once, using the guard the function already performed. This reads
+  // a user-authored config file, so `unknown` is what actually arrives; the
+  // guard is what earns the right to index it, and as `any` that guard proved
+  // nothing to anybody.
+  const candidate = config as Record<string, unknown>
+
   // Validate theme
-  if (config.theme !== undefined) {
+  if (candidate.theme !== undefined) {
     const validThemes = ['default', 'dracula', 'nord', 'solarized', 'monokai']
-    if (typeof config.theme !== 'string' || !validThemes.includes(config.theme)) {
+    if (typeof candidate.theme !== 'string' || !validThemes.includes(candidate.theme)) {
       errors.push({
         path: 'theme',
         message: `Theme must be one of: ${validThemes.join(', ')}`,
-        value: config.theme,
+        value: candidate.theme,
       })
     }
   }
 
   // Validate emoji
-  if (config.emoji !== undefined && typeof config.emoji !== 'boolean') {
+  if (candidate.emoji !== undefined && typeof candidate.emoji !== 'boolean') {
     errors.push({
       path: 'emoji',
       message: 'Emoji must be a boolean',
-      value: config.emoji,
+      value: candidate.emoji,
     })
   }
 
   // Validate commands
-  if (config.commands !== undefined) {
-    if (!Array.isArray(config.commands)) {
+  if (candidate.commands !== undefined) {
+    if (!Array.isArray(candidate.commands)) {
       errors.push({
         path: 'commands',
         message: 'Commands must be an array',
-        value: config.commands,
+        value: candidate.commands,
       })
     }
     else {
-      config.commands.forEach((cmd: any, index: number) => {
+      candidate.commands.forEach((cmd: any, index: number) => {
         if (typeof cmd !== 'function') {
           errors.push({
             path: `commands[${index}]`,
@@ -139,29 +145,31 @@ export function validateConfig(config: any): ValidationError[] {
   }
 
   // Validate defaultFlags
-  if (config.defaultFlags !== undefined) {
-    if (typeof config.defaultFlags !== 'object' || config.defaultFlags === null) {
+  if (candidate.defaultFlags !== undefined) {
+    if (typeof candidate.defaultFlags !== 'object' || candidate.defaultFlags === null) {
       errors.push({
         path: 'defaultFlags',
         message: 'Default flags must be an object',
-        value: config.defaultFlags,
+        value: candidate.defaultFlags,
       })
     }
     else {
+      // Proven an object by the branch above, so its members can be read.
+      const defaultFlags = candidate.defaultFlags as Record<string, unknown>
       const flagKeys = ['verbose', 'quiet', 'debug']
-      for (const key of Object.keys(config.defaultFlags)) {
+      for (const key of Object.keys(defaultFlags)) {
         if (!flagKeys.includes(key)) {
           errors.push({
             path: `defaultFlags.${key}`,
             message: `Unknown flag. Valid flags are: ${flagKeys.join(', ')}`,
-            value: config.defaultFlags[key],
+            value: defaultFlags[key],
           })
         }
-        else if (typeof config.defaultFlags[key] !== 'boolean') {
+        else if (typeof defaultFlags[key] !== 'boolean') {
           errors.push({
             path: `defaultFlags.${key}`,
             message: 'Flag value must be a boolean',
-            value: config.defaultFlags[key],
+            value: defaultFlags[key],
           })
         }
       }
@@ -169,16 +177,16 @@ export function validateConfig(config: any): ValidationError[] {
   }
 
   // Validate aliases
-  if (config.aliases !== undefined) {
-    if (typeof config.aliases !== 'object' || config.aliases === null || Array.isArray(config.aliases)) {
+  if (candidate.aliases !== undefined) {
+    if (typeof candidate.aliases !== 'object' || candidate.aliases === null || Array.isArray(candidate.aliases)) {
       errors.push({
         path: 'aliases',
         message: 'Aliases must be an object mapping alias names to command names',
-        value: config.aliases,
+        value: candidate.aliases,
       })
     }
     else {
-      for (const [alias, command] of Object.entries(config.aliases)) {
+      for (const [alias, command] of Object.entries(candidate.aliases)) {
         if (typeof command !== 'string') {
           errors.push({
             path: `aliases.${alias}`,
@@ -191,16 +199,16 @@ export function validateConfig(config: any): ValidationError[] {
   }
 
   // Validate plugins
-  if (config.plugins !== undefined) {
-    if (!Array.isArray(config.plugins)) {
+  if (candidate.plugins !== undefined) {
+    if (!Array.isArray(candidate.plugins)) {
       errors.push({
         path: 'plugins',
         message: 'Plugins must be an array',
-        value: config.plugins,
+        value: candidate.plugins,
       })
     }
     else {
-      config.plugins.forEach((plugin: any, index: number) => {
+      candidate.plugins.forEach((plugin: any, index: number) => {
         if (typeof plugin === 'string') {
           // String plugins are module paths, which is valid
           return
@@ -247,7 +255,7 @@ export function validateConfig(config: any): ValidationError[] {
       errors.push({
         path: key,
         message: `Unknown configuration key. Valid keys are: ${validKeys.join(', ')}`,
-        value: config[key],
+        value: candidate[key],
       })
     }
   }

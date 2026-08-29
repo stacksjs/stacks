@@ -53,7 +53,17 @@ export class CampaignStateConflictError extends Error {
   }
 }
 
-function campaignValue(campaign: any, snakeKey: string, camelKey: string): unknown {
+/**
+ * A campaign as this module receives it: a model instance that answers
+ * `get(key)`, or a plain row indexed by column. Both are read below, which is
+ * why both are described rather than the parameter being `any`.
+ */
+export interface CampaignLike {
+  get?: (_key: string) => unknown
+  [column: string]: unknown
+}
+
+function campaignValue(campaign: CampaignLike | null | undefined, snakeKey: string, camelKey: string): unknown {
   if (typeof campaign?.get === 'function') {
     const snakeValue = campaign.get(snakeKey)
     if (snakeValue !== undefined)
@@ -64,7 +74,7 @@ function campaignValue(campaign: any, snakeKey: string, camelKey: string): unkno
   return campaign?.[snakeKey] ?? campaign?.[camelKey]
 }
 
-export function campaignDeliverySnapshot(campaign: any): CampaignDeliverySnapshot {
+export function campaignDeliverySnapshot(campaign: CampaignLike | null | undefined): CampaignDeliverySnapshot {
   const scheduledAt = campaignValue(campaign, 'scheduled_at', 'scheduledAt')
   const updatedAt = campaignValue(campaign, 'updated_at', 'updatedAt')
   return {

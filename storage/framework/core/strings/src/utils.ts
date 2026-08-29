@@ -67,11 +67,15 @@ export function ensureSuffix(suffix: string, str: string): string {
  * ) // Hello Buddy! My name is Chris.
  * ```
  */
-export function template(str: string, ...args: any[]): string {
+export function template(str: string, ...args: unknown[]): string {
   return str.replace(/\{(\d+)\}/g, (match, key) => {
     const index = Number(key)
 
-    return Number.isNaN(index) || args[index] === undefined ? match : args[index]
+    // `String(...)` rather than handing the value back raw: `replace` coerces
+    // whatever it is given, so this is the same result, written down. As
+    // `any[]` the substitution was unchecked and `template('{0}', {})`
+    // silently produced "[object Object]".
+    return Number.isNaN(index) || args[index] === undefined ? match : String(args[index])
   })
 }
 
