@@ -1,4 +1,4 @@
-import type { Ok } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
@@ -52,7 +52,7 @@ export async function dropPostgresTables(): Promise<void> {
 
 
 
-export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
+export async function resetPostgresDatabase(): Promise<Result<string, never>> {
   await dropPostgresTables()
   await deleteFrameworkModels()
   await deleteMigrationFiles()
@@ -61,7 +61,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.unsafe('CREATE TABLE IF NOT EXISTS "migration_locks" (id SERIAL PRIMARY KEY)').execute()
   await db.unsafe('CREATE TABLE IF NOT EXISTS "activities" (id SERIAL PRIMARY KEY)').execute()
 
-  return ok('All tables dropped successfully!') as any
+  return ok('All tables dropped successfully!')
 }
 
 export async function generatePostgresMigration(modelPath: string): Promise<void> {

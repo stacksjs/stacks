@@ -723,7 +723,9 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
       console.log('✓ Queue safeguard tables ready')
     }
 
-    return ok('Migration created and executed.') as any
+    // `Result` is invariant in its success type, so the literal has to be
+    // widened to the union this function declares.
+    return ok<string | MigrationResult[], Error>('Migration created and executed.')
   }
   catch (error) {
     return err(error instanceof Error ? error : new Error(String(error)))

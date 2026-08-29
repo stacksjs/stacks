@@ -1,4 +1,4 @@
-import type { Ok } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 
@@ -33,12 +33,12 @@ import {
 } from './helpers'
 import { dropCommonTables } from './defaults/traits'
 
-export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
+export async function resetSqliteDatabase(): Promise<Result<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
   await dropSqliteTables()
 
-  return ok('All tables dropped successfully!') as any
+  return ok('All tables dropped successfully!')
 }
 
 /**
