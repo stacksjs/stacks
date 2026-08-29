@@ -195,7 +195,7 @@ export interface Reviews {
 
 export type NewReview = Omit<Reviews, 'id'>
 
-export interface Drivers {
+export interface Couriers {
   id: number
   user_id: number
   name: string
@@ -207,7 +207,7 @@ export interface Drivers {
 
 }
 
-export type NewDriver = Omit<Drivers, 'id'>
+export type NewCourier = Omit<Couriers, 'id'>
 
 export interface LicenseKeys {
   id: number
@@ -242,7 +242,7 @@ export interface LicenseTemplates {
 
 export interface DeliveryRoutes {
   id: number
-  driver: string
+  courier: string
   vehicle: string
   stops: number
   delivery_time: number
