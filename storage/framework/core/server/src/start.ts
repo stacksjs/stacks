@@ -87,8 +87,12 @@ loadRoutes(routeRegistry)
     try {
       serve({
         port: config.server.port,
-        host: config.server.host,
-      } as any)
+        // `hostname`, which is what Bun's serve options declare. This passed
+        // `host`, a key nothing reads, so `config.server.host` was discarded
+        // and the server always bound to the default interface - and the cast
+        // on the options object is what kept that quiet.
+        hostname: config.server.host,
+      })
       console.log('[START] serve() called successfully')
     } catch (error) {
       console.error('[START] ERROR calling serve():', error)
