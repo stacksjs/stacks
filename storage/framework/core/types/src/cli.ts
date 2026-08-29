@@ -224,6 +224,8 @@ export type ActionOptions = {
   domains?: boolean
   count?: number
   dryRun?: boolean // used in buddy release
+  /** The job or record an action targets, used by `queue:retry` / `queue:inspect`. */
+  id?: string | number
 } & CliOptions &
 DomainsOptions
 
