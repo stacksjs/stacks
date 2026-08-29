@@ -3796,6 +3796,20 @@ if [ "$ENV_CHANGED" = 1 ]; then systemctl restart mail 2>/dev/null || true; echo
  * directly and was therefore the one path that could not publish to a Route53,
  * Cloudflare or GoDaddy zone.
  */
+/**
+ * One registrar's credentials, as this deploy builds them from the
+ * environment. The credential fields differ per provider, so each is optional
+ * and `provider` is what says which of them to expect.
+ */
+export interface DnsProviderConfig {
+  provider: 'porkbun' | 'cloudflare' | 'godaddy' | 'route53'
+  apiKey?: string
+  secretKey?: string
+  apiToken?: string
+  apiSecret?: string
+  environment?: string
+}
+
 /** The env vars each DNS provider needs, for messages that name the fix. */
 const DNS_PROVIDER_CREDENTIALS: Record<string, string[]> = {
   porkbun: ['PORKBUN_API_KEY', 'PORKBUN_SECRET_KEY'],
@@ -3837,8 +3851,8 @@ export function declaredDnsProvider(config: TsCloudConfig | null | undefined): s
  * falling through to a different registrar. Writing DNS into the wrong zone
  * is not a lesser failure than writing none.
  */
-export function dnsProviderConfigsFromEnv(declared?: string): any[] {
-  const configs: any[] = []
+export function dnsProviderConfigsFromEnv(declared?: string): DnsProviderConfig[] {
+  const configs: DnsProviderConfig[] = []
   if (process.env.PORKBUN_API_KEY && process.env.PORKBUN_SECRET_KEY)
     configs.push({ provider: 'porkbun', apiKey: process.env.PORKBUN_API_KEY, secretKey: process.env.PORKBUN_SECRET_KEY })
   if (process.env.CLOUDFLARE_API_TOKEN)
@@ -3858,7 +3872,7 @@ export function dnsProviderConfigsFromEnv(declared?: string): any[] {
  * Why a declared provider produced no usable credentials, phrased as the fix.
  * Returns undefined when nothing is wrong.
  */
-export function declaredDnsProviderProblem(declared: string | undefined, configs: any[]): string | undefined {
+export function declaredDnsProviderProblem(declared: string | undefined, configs: readonly DnsProviderConfig[]): string | undefined {
   if (!declared || configs.length > 0)
     return undefined
 

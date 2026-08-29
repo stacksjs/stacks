@@ -238,13 +238,22 @@ export function isArrayEqual(arr1: (number | undefined)[], arr2: (number | undef
   return true
 }
 
-export function findDifferingKeys(obj1: any, obj2: any): { key: string, max: number, min: number }[] {
+/** An attribute map, keyed by name, as a model definition carries it. */
+type AttributesWithRules = Record<string, { validation: { rule: ValidationType } } | undefined>
+
+export function findDifferingKeys(obj1: AttributesWithRules, obj2: AttributesWithRules): { key: string, max: number, min: number }[] {
   const differingKeys: { key: string, max: number, min: number }[] = []
 
   for (const key in obj1) {
-    if (Object.prototype.hasOwnProperty.call(obj1, key) && Object.prototype.hasOwnProperty.call(obj2, key)) {
-      const lastCharacterLength = findCharacterLength(obj1[key].validation.rule)
-      const latestCharacterLength = findCharacterLength(obj2[key].validation.rule)
+    // Bound to locals rather than indexed twice: `hasOwnProperty` proves the
+    // key is present to a reader but not to the compiler, and these were
+    // reaching into `.validation.rule` on a value it could not vouch for.
+    const before = obj1[key]
+    const after = obj2[key]
+
+    if (before && after) {
+      const lastCharacterLength = findCharacterLength(before.validation.rule)
+      const latestCharacterLength = findCharacterLength(after.validation.rule)
 
       if (lastCharacterLength !== undefined && latestCharacterLength !== undefined) {
         if (

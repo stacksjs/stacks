@@ -108,7 +108,16 @@ export async function activeTaxRates(options: BreakdownOptions = {}): Promise<an
  * and that is a bigger claim than this should make quietly; an app that needs
  * it should compose two calls.
  */
-export function breakdownFor(taxable: number, rates: any[], options: BreakdownOptions = {}): TaxBreakdown {
+/** One tax rate row, in the terms the breakdown reads it. */
+export interface TaxRateRow {
+  id?: number | string
+  name?: string
+  code?: string
+  rate?: number | string
+  exemptible?: boolean
+}
+
+export function breakdownFor(taxable: number, rates: readonly TaxRateRow[], options: BreakdownOptions = {}): TaxBreakdown {
   const base = Math.max(0, Math.round(taxable))
   const components: TaxComponent[] = []
 
