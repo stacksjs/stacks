@@ -14,7 +14,14 @@ import { stacksIdempotencyKey } from '../idempotency'
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   update: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionUpdateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
-  cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
+  /**
+   * Cancel params, not create params. The interface said
+   * `SubscriptionCreateParams` while the implementation below declares
+   * `SubscriptionCancelParams` - so `cancelSubscription` had to cast its
+   * perfectly valid `{ prorate, invoice_now }` through `as any` to get past
+   * the mismatch.
+   */
+  cancel: (subscriptionId: string, params?: Partial<Stripe.SubscriptionCancelParams>) => Promise<Stripe.Response<Stripe.Subscription>>
   retrieve: (user: UserModel, subscriptionId: string) => Promise<Stripe.Response<Stripe.Subscription>>
   isValid: (user: UserModel, type: string) => Promise<boolean>
   isIncomplete: (user: UserModel, type: string) => Promise<boolean>

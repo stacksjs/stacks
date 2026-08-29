@@ -48,6 +48,6 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
       const Stripe = StripeCtor()
       _stripe = new Stripe(apiKey, { apiVersion })
     }
-    return (_stripe as any)[prop]
+    return (_stripe as unknown as Record<string | symbol, unknown>)[prop]
   },
 })

@@ -49,18 +49,25 @@ export function decompress(paths: string | string[]): Promise<Result<Subprocess,
   return unzip(paths)
 }
 
+/*
+ * Bun's zlib bindings take `Uint8Array<ArrayBuffer>` - a view over a real
+ * ArrayBuffer - while `Uint8Array` alone defaults to `ArrayBufferLike`, which
+ * also admits a SharedArrayBuffer. These wrappers keep the wider parameter so
+ * callers need not care, and name the narrowing here rather than reaching for
+ * `any`, which also unchecked the options object beside it.
+ */
 export function gzipSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.gzipSync(data as any, options)
+  return Bun.gzipSync(data as Uint8Array<ArrayBuffer>, options)
 }
 
 export function gunzipSync(data: Uint8Array): Uint8Array {
-  return Bun.gunzipSync(data as any)
+  return Bun.gunzipSync(data as Uint8Array<ArrayBuffer>)
 }
 
 export function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.deflateSync(data as any, options)
+  return Bun.deflateSync(data as Uint8Array<ArrayBuffer>, options)
 }
 
 export function inflateSync(data: Uint8Array): Uint8Array {
-  return Bun.inflateSync(data as any)
+  return Bun.inflateSync(data as Uint8Array<ArrayBuffer>)
 }
