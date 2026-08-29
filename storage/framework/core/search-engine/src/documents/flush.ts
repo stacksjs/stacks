@@ -1,4 +1,4 @@
-import type { Err, Ok } from '@stacksjs/error-handling'
+import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
 import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -7,7 +7,7 @@ import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 
-export async function flushModelDocuments(modelOption?: string): Promise<Ok<string, never> | Err<string, any>> {
+export async function flushModelDocuments(modelOption?: string): Promise<Result<string, string>> {
   try {
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
     const { deleteIndex } = useSearchEngine()
@@ -26,7 +26,7 @@ export async function flushModelDocuments(modelOption?: string): Promise<Ok<stri
         await deleteIndex(tableName)
     }
 
-    return ok('Successfully flushed all model data from search engine!') as any
+    return ok('Successfully flushed all model data from search engine!')
   }
   catch (err: any) {
     log.error(err)

@@ -1,3 +1,4 @@
+import './types/dom-vendor'
 import type { Ref } from '@stacksjs/stx'
 import { onUnmounted, ref } from '@stacksjs/stx'
 import type { MaybeRef } from './_shared'
@@ -43,7 +44,7 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
     if (!doc)
       return null
     return (doc).fullscreenElement
-      ?? (doc as any).webkitFullscreenElement
+      ?? doc.webkitFullscreenElement
       ?? null
   }
 
@@ -81,8 +82,8 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       if (doc.exitFullscreen) {
         await doc.exitFullscreen()
       }
-      else if ((doc as any).webkitExitFullscreen) {
-        await (doc as any).webkitExitFullscreen()
+      else if (doc.webkitExitFullscreen) {
+        await doc.webkitExitFullscreen()
       }
       isFullscreen.value = false
     }

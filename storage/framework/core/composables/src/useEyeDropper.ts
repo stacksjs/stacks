@@ -1,3 +1,4 @@
+import './types/dom-vendor'
 import type { Ref } from '@stacksjs/stx'
 import { ref } from '@stacksjs/stx'
 
@@ -16,7 +17,11 @@ export function useEyeDropper(): UseEyeDropperReturn {
 
   async function open(): Promise<{ sRGBHex: string } | undefined> {
     if (!isSupported.value) return undefined
-    const dropper = new (window as any).EyeDropper()
+    // `isSupported` above already proved the constructor is present; this is
+    // what says so to the compiler.
+    const Picker = window.EyeDropper
+    if (!Picker) return undefined
+    const dropper = new Picker()
     try {
       const result = await dropper.open()
       sRGBHex.value = result.sRGBHex

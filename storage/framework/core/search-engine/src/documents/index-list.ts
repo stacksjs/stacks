@@ -1,4 +1,4 @@
-import type { Err, Ok } from '@stacksjs/error-handling'
+import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
 import { ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -6,7 +6,7 @@ import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { useSearchEngine } from '@stacksjs/search-engine'
 
-export async function listIndexSettings(modelName: string): Promise<Ok<string, never> | Err<string, any>> {
+export async function listIndexSettings(modelName: string): Promise<Result<string, string>> {
   try {
     const modelFile = path.userModelsPath(`${modelName}.ts`)
     const modelInstance = (await import(modelFile)).default as Model
@@ -26,7 +26,7 @@ export async function listIndexSettings(modelName: string): Promise<Ok<string, n
       console.table({ displayedAttributes, filterableAttributes, sortableAttributes, searchableAttributes })
     }
 
-    return ok('Successfully update index settings!') as any
+    return ok('Successfully update index settings!')
   }
   catch (err: any) {
     log.error(err)

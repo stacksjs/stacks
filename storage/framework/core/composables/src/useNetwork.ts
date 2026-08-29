@@ -1,3 +1,4 @@
+import './types/dom-vendor'
 import type { Ref } from '@stacksjs/stx'
 import { onUnmounted, ref } from '@stacksjs/stx'
 
@@ -33,11 +34,12 @@ export function useNetwork(): UseNetworkReturn {
 
   function updateNetworkInfo(): void {
     if (!isSupported.value) return
-    const conn = (navigator as any).connection
+    const conn = navigator.connection
     if (conn) {
       downlink.value = conn.downlink
       downlinkMax.value = conn.downlinkMax
-      effectiveType.value = conn.effectiveType
+      // The API reports a free-form string; the ref holds the known set.
+      effectiveType.value = conn.effectiveType as NetworkEffectiveType | undefined
       rtt.value = conn.rtt
       saveData.value = conn.saveData
       type.value = conn.type
@@ -69,12 +71,12 @@ export function useNetwork(): UseNetworkReturn {
     }
 
     if (isSupported.value) {
-      const conn = (navigator as any).connection
+      const conn = navigator.connection
       if (conn?.addEventListener) {
         conn.addEventListener('change', updateNetworkInfo)
         try {
           onUnmounted(() => {
-            conn.removeEventListener('change', updateNetworkInfo)
+            conn.removeEventListener?.('change', updateNetworkInfo)
           })
         }
         catch {

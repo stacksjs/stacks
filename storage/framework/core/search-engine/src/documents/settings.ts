@@ -1,4 +1,4 @@
-import type { Err, Ok } from '@stacksjs/error-handling'
+import type {Result} from '@stacksjs/error-handling'
 import type { Model } from '@stacksjs/types'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -8,7 +8,7 @@ import { useSearchEngine } from '@stacksjs/search-engine'
 import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 
-export async function updateIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
+export async function updateIndexSettings(): Promise<Result<string, string>> {
   try {
     const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
     const { updateSettings } = useSearchEngine()
@@ -28,11 +28,11 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
       }
     }
 
-    return ok('Successfully update index settings!') as any
+    return ok('Successfully update index settings!')
   }
   catch (error: any) {
     log.error(error)
 
-    return err(error?.message || String(error)) as any
+    return err(error?.message || String(error))
   }
 }
