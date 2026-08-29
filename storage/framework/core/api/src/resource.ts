@@ -215,7 +215,10 @@ export abstract class JsonResource<T = unknown> {
     value?: V | (() => V),
     defaultValue?: any,
   ): V | any[] | MissingValue {
-    const resource = this.resource as any
+    // The relationship name arrives as a runtime string, so the resource is
+    // read by key. `Record<string, unknown>` says that; `any` also unchecked
+    // the value handed back to the caller.
+    const resource = this.resource as Record<string, unknown>
 
     // Check if the relationship exists and is loaded
     const isLoaded = relationship in resource && resource[relationship] !== undefined
@@ -228,18 +231,19 @@ export abstract class JsonResource<T = unknown> {
       return typeof value === 'function' ? (value as () => V)() : value
     }
 
-    return resource[relationship]
+    // The loaded relationship, whatever the model put there.
+    return resource[relationship] as V | unknown[]
   }
 
   /**
    * Include a count when it's available
    */
   protected whenCounted(relationship: string, defaultValue?: number): number | MissingValue {
-    const resource = this.resource as any
+    const resource = this.resource as Record<string, unknown>
     const countKey = `${relationship}_count`
 
     if (countKey in resource) {
-      return resource[countKey]
+      return Number(resource[countKey])
     }
 
     return defaultValue !== undefined ? defaultValue : MissingValue.instance

@@ -18,6 +18,10 @@ export * from './dev'
 
 export * from './generate'
 export * from './helpers'
+// Library packages built out of resources/functions and resources/components.
+// The config-level surface only — `./library/build` and `./library/publish`
+// stay out so importing this barrel never pulls the stx compiler.
+export * from './library'
 // Code-style actions, exported so commands import + call them directly
 // (`import { lintProject, lintFix } from '@stacksjs/actions'`) instead of
 // spawning a deep dist path. Exported from ./lint/lint — the pure module — so

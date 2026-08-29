@@ -232,6 +232,7 @@ export type BuildOption =
   | 'webComponents'
   | 'elements'
   | 'functions'
+  | 'libs'
   | 'desktop'
   | 'mobile'
   | 'android'

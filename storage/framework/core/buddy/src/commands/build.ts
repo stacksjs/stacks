@@ -24,6 +24,7 @@ export function build(buddy: CLI): void {
     elements: 'An alias to the -w flag',
     buddy: 'Build the Buddy binary',
     functions: 'Build your function library',
+    libs: 'Build every package configured in config/library.ts',
     desktop: 'Build the Desktop Application',
     mobile: 'Build the native iOS and Android applications',
     android: 'Build the native Android application',
@@ -46,6 +47,7 @@ export function build(buddy: CLI): void {
     .option('-w, --web-components', descriptions.webComponents) // also automatically built via the -c flag
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
+    .option('-l, --libs', descriptions.libs)
     .option('-k, --desktop', descriptions.desktop)
     .option('-m, --mobile', descriptions.mobile)
     .option('--android', descriptions.android)
@@ -78,6 +80,7 @@ export function build(buddy: CLI): void {
               { label: 'Components', value: 'components' },
               { label: 'Web Components', value: 'webComponents' },
               { label: 'Functions', value: 'functions' },
+              { label: 'All library packages', value: 'libs' },
               { label: 'Desktop application', value: 'desktop' },
               { label: 'Mobile applications (iOS + Android)', value: 'mobile' },
               { label: 'Android application', value: 'android' },
@@ -94,6 +97,7 @@ export function build(buddy: CLI): void {
           if (selected.has('components')) options.components = true
           if (selected.has('webComponents')) options.webComponents = true
           if (selected.has('functions')) options.functions = true
+          if (selected.has('libs')) options.libs = true
           if (selected.has('desktop')) options.desktop = true
           if (selected.has('mobile')) {
             options.mobile = true
@@ -127,6 +131,8 @@ export function build(buddy: CLI): void {
         succeeded = (await runBuildAction(Action.BuildWebComponentLib, 'web component library', options)) && succeeded
       if (options.functions)
         succeeded = (await runBuildAction(Action.BuildFunctionLib, 'function library', options)) && succeeded
+      if (options.libs)
+        succeeded = (await runBuildAction(Action.BuildLibs, 'library packages', options)) && succeeded
       if (options.desktop)
         succeeded = (await runBuildAction(Action.BuildDesktop, 'desktop application', options)) && succeeded
       if (options.android)
@@ -189,7 +195,25 @@ export function build(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:functions` ...', options)
-      await runAction(Action.BuildFunctionLib, options)
+
+      // Discarding this Result is what made `buddy build:functions` exit 0
+      // while building nothing: the action file it names did not exist, and
+      // the resulting error went straight into the void.
+      if (!await runBuildAction(Action.BuildFunctionLib, 'function library', options))
+        process.exit(ExitCode.FatalError)
+    })
+
+  buddy
+    .command('build:libs', descriptions.libs)
+    .alias('build:libraries')
+    .alias('prod:libs')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:libs` ...', options)
+
+      if (!await runBuildAction(Action.BuildLibs, 'library packages', options))
+        process.exit(ExitCode.FatalError)
     })
 
   buddy
@@ -398,6 +422,7 @@ function hasNoOptions(options: BuildOptions) {
     && !options.webComponents
     && !options.elements
     && !options.functions
+    && !options.libs
     && !options.desktop
     && !options.mobile
     && !options.android
@@ -420,6 +445,10 @@ export function applyBuildTarget(target: string | undefined, options: BuildOptio
       break
     case 'functions':
       options.functions = true
+      break
+    case 'libs':
+    case 'libraries':
+      options.libs = true
       break
     case 'desktop':
       options.desktop = true

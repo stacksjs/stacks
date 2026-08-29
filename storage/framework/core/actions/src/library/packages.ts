@@ -219,7 +219,10 @@ export function normalizeLibraryPackages(config: LibraryConfig | undefined): Lib
  * an empty tarball to npm is worse than failing the build, and a typo'd glob
  * is by far the likeliest cause.
  */
-export async function resolveLibraryPackages(config: LibraryConfig | undefined): Promise<ResolvedLibraryPackage[]> {
+export async function resolveLibraryPackages(
+  config: LibraryConfig | undefined,
+  options: { onUnmatched?: 'error' | 'skip' } = {},
+): Promise<ResolvedLibraryPackage[]> {
   const definitions = normalizeLibraryPackages(config)
   const resolved: ResolvedLibraryPackage[] = []
 
@@ -228,6 +231,12 @@ export async function resolveLibraryPackages(config: LibraryConfig | undefined):
     const sources = await matchSources(sourceDir, definition.include, definition.exclude)
 
     if (!sources.length) {
+      // `skip` exists for the release path. The framework defaults always name
+      // a `functions` package, so an app that never added one would otherwise
+      // have every release blocked by a library it does not have.
+      if (options.onUnmatched === 'skip')
+        continue
+
       throw new LibraryConfigError(
         `Package "${definition.name}" matched no files in ${relative(process.cwd(), sourceDir)} `
         + `(include: ${definition.include.join(', ')}${definition.exclude.length ? `; exclude: ${definition.exclude.join(', ')}` : ''}).`,

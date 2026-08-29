@@ -254,7 +254,8 @@ export const request: RequestInstance & StacksRequestMarkers = new Proxy(
       // statically (rate-limit headers, span ids, etc.). The proxy
       // forwards those verbatim — callers that need them can widen
       // via `(request as EnhancedRequest)` for the rare cases.
-      const value = (currentRequest as any)[prop]
+      // A Proxy trap forwarding to the live request by runtime key.
+      const value = (currentRequest as unknown as Record<string | symbol, unknown>)[prop]
       if (typeof value === 'function') {
         return value.bind(currentRequest)
       }

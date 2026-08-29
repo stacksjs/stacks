@@ -13,7 +13,7 @@ export function extendRef<T, E extends Record<string, any>>(
 ): Ref<T> & E {
   for (const [key, value] of Object.entries(extend)) {
     if (key !== 'value')
-      (r as any)[key] = value
+      (r as unknown as Record<string, unknown>)[key] = value
   }
   return r as Ref<T> & E
 }

@@ -89,7 +89,8 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "@stacksjs/build": "workspace:*"
   },
   "peerDependencies": {
     "pickier": "^0.1.58",

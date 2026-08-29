@@ -20,21 +20,42 @@ export interface LibraryBuildReport {
   sources: number
 }
 
+export interface LibraryPackageBuildOptions {
+  /** Restrict the run to these kinds. Omitted means every configured package. */
+  kinds?: Array<ResolvedLibraryPackage['kind']>
+  config?: LibraryConfig
+  /**
+   * Compile to `dist/`. When false, sources are staged and manifests written
+   * but nothing is built — what `buddy generate:entries` needs, and what makes
+   * a release validate its library config before it tags anything.
+   */
+  compile?: boolean
+  /**
+   * Treat "no packages configured" as nothing to do rather than an error. True
+   * for the release path (most apps ship no library); false for an explicit
+   * `buddy build:functions`, where silence is the bug being fixed.
+   */
+  allowEmpty?: boolean
+}
+
 /**
  * Stage, generate and build every configured library package of the given
  * kinds. Returns one report per package so callers can say what they built
  * instead of exiting 0 in silence.
  */
-export async function buildLibraryPackages(options: {
-  kinds?: Array<ResolvedLibraryPackage['kind']>
-  config?: LibraryConfig
-} = {}): Promise<LibraryBuildReport[]> {
+export async function buildLibraryPackages(options: LibraryPackageBuildOptions = {}): Promise<LibraryBuildReport[]> {
   const config = options.config ?? library
   const kinds = options.kinds
-  const all = await resolveLibraryPackages(config)
+  const compile = options.compile ?? true
+  const all = await resolveLibraryPackages(config, { onUnmatched: options.allowEmpty ? 'skip' : 'error' })
   const packages = kinds ? all.filter(pkg => kinds.includes(pkg.kind)) : all
 
   if (!packages.length) {
+    if (options.allowEmpty) {
+      log.info('No library packages are configured. Nothing to build.')
+      return []
+    }
+
     throw new LibraryConfigError(
       kinds
         ? `No ${kinds.join('/')} packages are configured. Add one to \`packages\` in config/library.ts.`
@@ -46,21 +67,31 @@ export async function buildLibraryPackages(options: {
   const reports: LibraryBuildReport[] = []
 
   for (const pkg of packages) {
-    log.info(`Building ${pkg.name} (${pkg.kind}, ${pkg.sources.length} source${pkg.sources.length === 1 ? '' : 's'})...`)
+    const verb = compile ? 'Building' : 'Generating'
+    log.info(`${verb} ${pkg.name} (${pkg.kind}, ${pkg.sources.length} source${pkg.sources.length === 1 ? '' : 's'})...`)
 
-    await rm(resolve(pkg.dir, 'dist'), { recursive: true, force: true })
+    if (compile)
+      await rm(resolve(pkg.dir, 'dist'), { recursive: true, force: true })
+
     await mkdir(pkg.dir, { recursive: true })
 
     if (pkg.kind === 'functions')
-      await buildFunctionPackage(pkg, config, version)
+      await buildFunctionPackage(pkg, config, version, compile)
     else
-      await buildComponentPackage(pkg, config, version)
+      await buildComponentPackage(pkg, config, version, compile)
 
     reports.push({ name: pkg.name, kind: pkg.kind, dir: pkg.dir, sources: pkg.sources.length })
-    log.success(`Built ${pkg.name} → ${relative(projectPath(), pkg.dir)}/dist`)
+
+    if (compile)
+      log.success(`Built ${pkg.name} → ${relative(projectPath(), pkg.dir)}/dist`)
   }
 
   return reports
+}
+
+/** Stage sources and write manifests without compiling. */
+export async function generateLibraryPackages(options: Omit<LibraryPackageBuildOptions, 'compile'> = {}): Promise<LibraryBuildReport[]> {
+  return buildLibraryPackages({ ...options, compile: false })
 }
 
 /**
@@ -73,7 +104,7 @@ export async function buildLibraryPackages(options: {
  * consumer's disk — the exact shape of failure that took three releases to
  * spot the last time it shipped.
  */
-async function buildFunctionPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string): Promise<void> {
+async function buildFunctionPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string, compile: boolean): Promise<void> {
   await assertPublishable(pkg)
 
   const srcDir = resolve(pkg.dir, 'src')
@@ -100,6 +131,9 @@ async function buildFunctionPackage(pkg: ResolvedLibraryPackage, config: Library
   await Bun.write(entry, functionEntryData(pkg, staged))
   await writeManifest(pkg, config, version)
 
+  if (!compile)
+    return
+
   await transpilePackage({
     dir: pkg.dir,
     pkgName: pkg.name,
@@ -117,7 +151,12 @@ async function buildFunctionPackage(pkg: ResolvedLibraryPackage, config: Library
  * each component registers its tag on import, so the `web-components` flavor
  * is the same build published through `bundle.js` instead of `index.js`.
  */
-async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string): Promise<void> {
+async function buildComponentPackage(pkg: ResolvedLibraryPackage, config: LibraryConfig | undefined, version: string, compile: boolean): Promise<void> {
+  if (!compile) {
+    await writeManifest(pkg, config, version)
+    return
+  }
+
   const result = await buildComponentLibrary({
     inputDir: pkg.sourceDir,
     outputDir: resolve(pkg.dir, 'dist'),

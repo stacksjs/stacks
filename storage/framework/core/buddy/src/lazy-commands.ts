@@ -85,6 +85,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   // lint.ts also registers the `format` pair (pickier formatter).
   'format': { path: './commands/lint.ts', exportName: 'lint' },
   'format:check': { path: './commands/lint.ts', exportName: 'lint' },
+  'libs': { path: './commands/libs.ts', exportName: 'libs' },
+  'libraries': { path: './commands/libs.ts', exportName: 'libs' },
   'list': { path: './commands/list.ts', exportName: 'list' },
   'mail': { path: './commands/mail.ts', exportName: 'mailCommands' },
   'mail:preview': { path: './commands/mail.ts', exportName: 'mailCommands' },
