@@ -57,10 +57,15 @@ export interface ChartHandle {
   update: () => void
 }
 
+/** A handle that renders nothing, for the cases where there is no canvas to draw on. */
+function inertHandle(): ChartHandle {
+  return { instance: null, destroy: () => {}, update: () => {} }
+}
+
 export function useChart(opts: UseChartOptions): ChartHandle {
   // SSR-safe — no document means no canvas.
   if (typeof document === 'undefined')
-    return { instance: null, destroy: () => {}, update: () => {} }
+    return inertHandle()
 
   const el = document.getElementById(opts.id)
   if (!el) {
@@ -69,7 +74,16 @@ export function useChart(opts: UseChartOptions): ChartHandle {
     // missing chart and can grep the id.
     // eslint-disable-next-line no-console
     console.warn(`[useChart] no element with id "${opts.id}". Chart not initialised.`)
-    return { instance: null, destroy: () => {}, update: () => {} }
+    return inertHandle()
+  }
+
+  // Chart draws on a canvas, and an id that resolves to a `<div>` is the same
+  // class of page mistake as an id that resolves to nothing: worth the same
+  // warning rather than a stack trace from inside the chart library.
+  if (!(el instanceof HTMLCanvasElement)) {
+    // eslint-disable-next-line no-console
+    console.warn(`[useChart] element with id "${opts.id}" is a <${el.tagName.toLowerCase()}>, not a <canvas>. Chart not initialised.`)
+    return inertHandle()
   }
 
   const instance = new opts.Chart(el, { type: opts.type, data: opts.data, options: opts.options })
