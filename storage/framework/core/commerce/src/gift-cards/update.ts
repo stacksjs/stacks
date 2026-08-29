@@ -1,3 +1,4 @@
+import type { DbWriteResult } from '@stacksjs/database'
 import type { GiftCard, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -80,7 +81,7 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
   // builder binds every `.set()` value (raw expressions arrive as
   // unbindable objects) and silently drops where-callbacks, which
   // would lose the over-spend guard entirely.
-  const statement = await (db as any).unsafe(
+  const statement = await db.unsafe(
     `UPDATE gift_cards
     SET current_balance = current_balance + ?,
         last_used_date = ?,
@@ -92,7 +93,13 @@ export async function updateBalance(id: number, amount: number): Promise<GiftCar
       AND current_balance + ? >= 0`,
     [amount, now, amount, now, id, amount],
   )
-  const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
+  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
+  // result: the ternary that used to be here always took its else branch. What
+  // a write statement resolves to is a driver result carrying an affected-row
+  // count, which `UnsafeReturn` does not describe - it is declared as the rows
+  // a SELECT returns. Narrowed to what is actually read, at the boundary where
+  // the declared type and the driver disagree.
+  const result = statement as unknown as DbWriteResult
 
   const affected = Number(result?.changes ?? result?.numUpdatedRows ?? result?.affectedRows ?? 0)
   if (affected > 0) {

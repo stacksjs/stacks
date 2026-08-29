@@ -284,7 +284,7 @@ async function getAllQueues(): Promise<string[]> {
     // at runtime but bypasses every type check, so a `jobs` schema
     // rename would silently break here. The Kysely builder handles
     // DISTINCT directly and stays typed end-to-end.
-    const rows = await (db as any)
+    const rows = await db
       .selectFrom('jobs')
       .select('queue')
       .distinct()

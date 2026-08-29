@@ -38,7 +38,7 @@ export async function aggregateStats<TKeys extends string>(
   descriptors: Record<TKeys, StatsDescriptor>,
   applyWhere?: (qb: any) => any,
 ): Promise<Record<TKeys, number>> {
-  let query: any = (db as any).selectFrom(table)
+  let query: any = db.selectFrom(table)
   if (applyWhere) query = applyWhere(query)
 
   query = query.select((Object.entries(descriptors) as [TKeys, StatsDescriptor][]).map(([alias, d]) => {

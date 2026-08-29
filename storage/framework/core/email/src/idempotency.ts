@@ -73,7 +73,7 @@ function isMissingTableError(err: unknown): boolean {
  */
 export async function findEmailByIdempotencyKey(key: string): Promise<EmailResult | null> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('email_idempotency')
       .where('idempotency_key', '=', key)
       .selectAll()
@@ -83,7 +83,10 @@ export async function findEmailByIdempotencyKey(key: string): Promise<EmailResul
       success: Boolean(row.success),
       message: `Idempotent replay - original send recorded ${row.created_at}`,
       provider: String(row.provider ?? 'cache'),
-      messageId: row.message_id ?? undefined,
+      // Coerced like the fields beside it: this table is not in the generated
+      // `database/types.d.ts`, so every column comes back `unknown`, and
+      // `?? undefined` left it that way rather than making it a string.
+      messageId: row.message_id == null ? undefined : String(row.message_id),
     } satisfies EmailResult
   }
   catch (err) {
@@ -120,7 +123,7 @@ export async function recordEmailIdempotency(
       : (message.to as { address: string }).address
 
   try {
-    await (db as any)
+    await db
       .insertInto('email_idempotency')
       .values({
         idempotency_key: key,

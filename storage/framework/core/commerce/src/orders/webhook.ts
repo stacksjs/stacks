@@ -62,13 +62,13 @@ import { emitOrderCancelled, emitOrderPaid, emitOrderRefunded } from './events'
  * landing.
  */
 async function findOrderByPaymentIntent(paymentIntentId: string): Promise<Record<string, unknown> | null> {
-  const payment = await (db as any)
+  const payment = await db
     .selectFrom('payments')
     .where('transaction_id', '=', paymentIntentId)
     .selectAll()
     .executeTakeFirst()
   if (!payment) return null
-  const order = await (db as any)
+  const order = await db
     .selectFrom('orders')
     .where('id', '=', payment.order_id)
     .selectAll()

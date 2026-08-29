@@ -15,6 +15,7 @@
  * matching the opt-in / degrade-when-missing pattern the rest of the queue uses.
  */
 
+import type { UnsafeRowsResult } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
 
 let ensured = false
@@ -30,7 +31,7 @@ async function ensureTable(): Promise<boolean> {
     const { db } = await import('@stacksjs/database')
     // `VARCHAR(255) PRIMARY KEY` is the framework's portable PK pattern across
     // sqlite / mysql / postgres; no dialect-specific bits are needed here.
-    await (db as any).unsafe(
+    await db.unsafe(
       'CREATE TABLE IF NOT EXISTS scheduled_job_runs ('
       + 'job_name VARCHAR(255) PRIMARY KEY, '
       + 'last_run_at VARCHAR(64) NOT NULL)',
@@ -54,7 +55,7 @@ export async function loadPersistedLastRun(jobName: string): Promise<Date | null
     return null
   try {
     const { db } = await import('@stacksjs/database')
-    const row = await (db as any)
+    const row = await db
       .selectFrom('scheduled_job_runs')
       .where('job_name', '=', jobName)
       .select(['last_run_at'])
@@ -81,8 +82,8 @@ export async function persistLastRun(jobName: string, when: Date): Promise<void>
   try {
     const { db } = await import('@stacksjs/database')
     const iso = when.toISOString()
-    await (db as any).deleteFrom('scheduled_job_runs').where('job_name', '=', jobName).execute()
-    await (db as any).insertInto('scheduled_job_runs').values({ job_name: jobName, last_run_at: iso }).execute()
+    await db.deleteFrom('scheduled_job_runs').where('job_name', '=', jobName).execute()
+    await db.insertInto('scheduled_job_runs').values({ job_name: jobName, last_run_at: iso }).execute()
   }
   catch {
     // best-effort — a failed persist just means the in-memory guard is the only
@@ -124,13 +125,18 @@ export function overlapPayloadPattern(jobName: string): string {
 export async function hasUnfinishedRun(jobName: string): Promise<boolean> {
   try {
     const { db } = await import('@stacksjs/database')
-    const rows = await (db as any).unsafe(
+    const rows = await db.unsafe(
       `SELECT 1 AS present FROM jobs WHERE payload LIKE ? ESCAPE '\\' LIMIT 1`,
       [overlapPayloadPattern(jobName)],
     ).execute()
     // Drivers disagree on the empty-result shape (`[]`, `{ rows: [] }`, or a
     // bare undefined), so ask only whether anything came back.
-    const list = Array.isArray(rows) ? rows : (rows?.rows ?? [])
+    // Drivers disagree on the shape of an empty result - `[]`, `{ rows: [] }`, or
+    // a bare undefined - which `UnsafeReturn` does not express: it is declared as
+    // the rows alone, so the `.rows` branch narrowed to `never` the moment the
+    // `(db as any)` came off. The union says what the callers already handle.
+    const raw = rows as UnsafeRowsResult
+    const list = Array.isArray(raw) ? raw : (raw?.rows ?? [])
     return Array.isArray(list) && list.length > 0
   }
   catch (err) {

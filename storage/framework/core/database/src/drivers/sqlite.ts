@@ -209,7 +209,7 @@ async function createTableMigration(modelPath: string) {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   // eslint-disable-next-line pickier/no-unused-vars -- `db` is the parameter name in the generated migration's exported `up()`, not in this scope
   migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await (db as any).schema\n`
+  migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
@@ -320,7 +320,7 @@ async function createTableMigration(modelPath: string) {
       // can't write to the generated table (see getLikeableForeignKey).
       const foreignKey = getLikeableForeignKey(model, tableName)
       migrationContent += `\n  // Create upvote table\n`
-      migrationContent += `  await (db as any).schema\n`
+      migrationContent += `  await db.schema\n`
       migrationContent += `    .createTable('${upvoteTable}')\n`
       migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
       migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
@@ -329,12 +329,12 @@ async function createTableMigration(modelPath: string) {
       migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_${foreignKey}_index').on('${upvoteTable}').column('${foreignKey}').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_${foreignKey}_index').on('${upvoteTable}').column('${foreignKey}').execute()\n`
       // Composite UNIQUE (user_id, fk) — backs the trait's idempotent
       // like(): duplicate inserts throw SQLITE_CONSTRAINT_UNIQUE and the
       // catch returns the existing row instead of double-counting.
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_user_${foreignKey}_unique').on('${upvoteTable}').columns(['user_id', '${foreignKey}']).unique().execute()\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_user_${foreignKey}_unique').on('${upvoteTable}').columns(['user_id', '${foreignKey}']).unique().execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
     }
   }
 
@@ -365,7 +365,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     // eslint-disable-next-line pickier/no-unused-vars -- `db` is the parameter name in the generated migration's exported `up()`, not in this scope
     migrationContent += `export async function up(db: Database<any>) {\n`
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
@@ -412,7 +412,7 @@ async function createAlterTableMigration(modelPath: string) {
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true
-    migrationContent += `  await (db as any).schema.alterTable('${tableName}')\n`
+    migrationContent += `  await db.schema.alterTable('${tableName}')\n`
   }
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
@@ -478,7 +478,7 @@ async function createAlterTableMigration(modelPath: string) {
   for (const oldIndex of oldIndexes) {
     if (!newIndexes.find(newIndex => newIndex.name === oldIndex.name)) {
       hasChanged = true
-      migrationContent += `  await (db as any).schema.dropIndex('${oldIndex.name}').execute()\n`
+      migrationContent += `  await db.schema.dropIndex('${oldIndex.name}').execute()\n`
     }
   }
 
@@ -538,13 +538,13 @@ export function generateIndexCreationSQL(
     return `  await db.unsafe(\`CREATE ${unique}INDEX IF NOT EXISTS "${index.name}" ON "${tableName}" (${cols})${whereClause}\`).execute()\n`
   }
   const columnsStr = index.columns.map(col => `\`${snakeCase(col)}\``).join(', ')
-  return `  await (db as any).schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+  return `  await db.schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
 function generatePrimaryKeyIndexSQL(tableName: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+  return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column(\`${foreignKey}\`).execute()\n\n`
 }

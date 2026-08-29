@@ -76,7 +76,7 @@ export async function recordFailureForPoison(
   const nowStr = now.toISOString().slice(0, 19).replace('T', ' ')
 
   try {
-    const existing = await (db as any)
+    const existing = await db
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
       .where('payload_hash', '=', payloadHash)
@@ -84,7 +84,7 @@ export async function recordFailureForPoison(
       .executeTakeFirst() as { id: number, failure_count: number, window_start: string, quarantined_at: string | null } | undefined
 
     if (!existing) {
-      await (db as any).insertInto('job_quarantine').values({
+      await db.insertInto('job_quarantine').values({
         job_name: jobName,
         payload_hash: payloadHash,
         failure_count: 1,
@@ -103,7 +103,7 @@ export async function recordFailureForPoison(
     const ageMs = now.getTime() - windowStartMs
     const windowMs = windowMinutes * 60 * 1000
     if (Number.isFinite(windowStartMs) && ageMs > windowMs) {
-      await (db as any).updateTable('job_quarantine')
+      await db.updateTable('job_quarantine')
         .set({ failure_count: 1, window_start: nowStr })
         .where('id', '=', existing.id)
         .execute()
@@ -112,14 +112,14 @@ export async function recordFailureForPoison(
 
     const newCount = existing.failure_count + 1
     if (newCount >= maxFailures) {
-      await (db as any).updateTable('job_quarantine')
+      await db.updateTable('job_quarantine')
         .set({ failure_count: newCount, quarantined_at: nowStr })
         .where('id', '=', existing.id)
         .execute()
       return true
     }
 
-    await (db as any).updateTable('job_quarantine')
+    await db.updateTable('job_quarantine')
       .set({ failure_count: newCount })
       .where('id', '=', existing.id)
       .execute()
@@ -146,7 +146,7 @@ export async function isQuarantined(jobName: string, payload: unknown): Promise<
     // that `quarantineJob(name)` writes when called without a payload —
     // without the `*` arm a manual `queue:quarantine <name>` stored a row
     // that nothing ever matched, so class-wide quarantine never blocked.
-    const row = await (db as any)
+    const row = await db
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
       .where('payload_hash', 'in', [payloadHash, '*'])
@@ -178,20 +178,20 @@ export async function quarantineJob(jobName: string, payload?: unknown): Promise
   const payloadHash = payload === undefined ? '*' : hashPayload(payload)
   const nowStr = new Date().toISOString().slice(0, 19).replace('T', ' ')
   try {
-    const existing = await (db as any)
+    const existing = await db
       .selectFrom('job_quarantine')
       .where('job_name', '=', jobName)
       .where('payload_hash', '=', payloadHash)
       .select(['id'])
       .executeTakeFirst() as { id: number } | undefined
     if (existing) {
-      await (db as any).updateTable('job_quarantine')
+      await db.updateTable('job_quarantine')
         .set({ quarantined_at: nowStr })
         .where('id', '=', existing.id)
         .execute()
     }
     else {
-      await (db as any).insertInto('job_quarantine').values({
+      await db.insertInto('job_quarantine').values({
         job_name: jobName,
         payload_hash: payloadHash,
         failure_count: 0,
@@ -216,7 +216,7 @@ export async function quarantineJob(jobName: string, payload?: unknown): Promise
  */
 export async function unquarantineJob(jobName: string): Promise<void> {
   try {
-    await (db as any)
+    await db
       .deleteFrom('job_quarantine')
       .where('job_name', '=', jobName)
       .execute()
@@ -242,7 +242,7 @@ export async function listQuarantined(): Promise<Array<{
   quarantined_at: string | null
 }>> {
   try {
-    const rows = await (db as any)
+    const rows = await db
       .selectFrom('job_quarantine')
       .whereNotNull('quarantined_at')
       .selectAll()

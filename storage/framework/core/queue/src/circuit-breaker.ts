@@ -56,13 +56,13 @@ interface CircuitRow {
 
 async function getOrCreateRow(queue: string, nowStr: string): Promise<CircuitRow | null> {
   try {
-    const existing = await (db as any)
+    const existing = await db
       .selectFrom('queue_circuit_state')
       .where('queue_name', '=', queue)
       .selectAll()
       .executeTakeFirst() as CircuitRow | undefined
     if (existing) return existing
-    await (db as any).insertInto('queue_circuit_state').values({
+    await db.insertInto('queue_circuit_state').values({
       queue_name: queue,
       success_count: 0,
       failure_count: 0,
@@ -87,11 +87,11 @@ async function getOrCreateRow(queue: string, nowStr: string): Promise<CircuitRow
     // UNIQUE race (two workers seeded the same row) — re-fetch
     const msg = (err as { message?: string } | null)?.message ?? ''
     if (msg.includes('UNIQUE constraint') || msg.includes('Duplicate entry')) {
-      return await (db as any)
+      return await db
         .selectFrom('queue_circuit_state')
         .where('queue_name', '=', queue)
         .selectAll()
-        .executeTakeFirst() as CircuitRow | null
+        .executeTakeFirst() as unknown as CircuitRow | null
     }
     throw err
   }
@@ -105,7 +105,7 @@ async function getOrCreateRow(queue: string, nowStr: string): Promise<CircuitRow
  */
 export async function isCircuitOpen(queue: string): Promise<boolean> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('queue_circuit_state')
       .where('queue_name', '=', queue)
       .select(['paused_at', 'resume_at'])
@@ -116,7 +116,7 @@ export async function isCircuitOpen(queue: string): Promise<boolean> {
       const resumeMs = Date.parse(row.resume_at.replace(' ', 'T') + 'Z')
       if (Number.isFinite(resumeMs) && Date.now() >= resumeMs) {
         // Cooldown elapsed — clear the pause state and treat as resumed.
-        await (db as any).updateTable('queue_circuit_state')
+        await db.updateTable('queue_circuit_state')
           .set({ paused_at: null, resume_at: null, success_count: 0, failure_count: 0 })
           .where('queue_name', '=', queue)
           .execute()
@@ -148,12 +148,12 @@ export async function recordCircuitSuccess(queue: string, config: CircuitBreaker
 
   try {
     if (shouldResetWindow(row.window_start, windowSeconds)) {
-      await (db as any).updateTable('queue_circuit_state')
+      await db.updateTable('queue_circuit_state')
         .set({ success_count: 1, failure_count: 0, window_start: nowStr })
         .where('queue_name', '=', queue).execute()
       return
     }
-    await (db as any).updateTable('queue_circuit_state')
+    await db.updateTable('queue_circuit_state')
       .set({ success_count: row.success_count + 1 })
       .where('queue_name', '=', queue).execute()
   }
@@ -196,7 +196,7 @@ export async function recordCircuitFailure(queue: string, config: CircuitBreaker
     if (trip) {
       const resumeAt = new Date(now.getTime() + pauseSeconds * 1000)
         .toISOString().slice(0, 19).replace('T', ' ')
-      await (db as any).updateTable('queue_circuit_state')
+      await db.updateTable('queue_circuit_state')
         .set({
           success_count: successCount,
           failure_count: failureCount,
@@ -209,7 +209,7 @@ export async function recordCircuitFailure(queue: string, config: CircuitBreaker
       return true
     }
 
-    await (db as any).updateTable('queue_circuit_state')
+    await db.updateTable('queue_circuit_state')
       .set({
         success_count: successCount,
         failure_count: failureCount,
@@ -245,7 +245,7 @@ export async function pauseQueue(queue: string, pauseSeconds: number = 300): Pro
     .toISOString().slice(0, 19).replace('T', ' ')
   await getOrCreateRow(queue, nowStr)
   try {
-    await (db as any).updateTable('queue_circuit_state')
+    await db.updateTable('queue_circuit_state')
       .set({ paused_at: nowStr, resume_at: resumeAt })
       .where('queue_name', '=', queue)
       .execute()
@@ -262,7 +262,7 @@ export async function pauseQueue(queue: string, pauseSeconds: number = 300): Pro
  */
 export async function resumeQueue(queue: string): Promise<void> {
   try {
-    await (db as any).updateTable('queue_circuit_state')
+    await db.updateTable('queue_circuit_state')
       .set({ paused_at: null, resume_at: null, success_count: 0, failure_count: 0 })
       .where('queue_name', '=', queue)
       .execute()
@@ -280,8 +280,8 @@ export async function resumeQueue(queue: string): Promise<void> {
  */
 export async function listCircuitState(): Promise<CircuitRow[]> {
   try {
-    const rows = await (db as any).selectFrom('queue_circuit_state').selectAll().execute()
-    return (rows ?? []) as CircuitRow[]
+    const rows = await db.selectFrom('queue_circuit_state').selectAll().execute()
+    return (rows ?? []) as unknown as CircuitRow[]
   }
   catch (err) {
     if (isMissingTableError(err)) { warnOnceAboutMissingTable(); return [] }

@@ -91,7 +91,7 @@ export interface RecomputeOrderResult {
  */
 async function fetchProductPrices(ids: number[]): Promise<Map<number, number>> {
   if (ids.length === 0) return new Map()
-  const rows = await (db as any)
+  const rows = await db
     .selectFrom('products')
     .where('id', 'in', ids)
     .select(['id', 'price'])
@@ -118,7 +118,7 @@ async function fetchProductPrices(ids: number[]): Promise<Map<number, number>> {
  */
 async function fetchTaxRate(id: number): Promise<number> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('tax_rates')
       .where('id', '=', id)
       .select(['rate'])

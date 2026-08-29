@@ -441,7 +441,7 @@ export type SqlRunner = (sql: string) => Promise<any[]>
 
 async function defaultRunner(): Promise<SqlRunner> {
   const { db } = await import('./utils')
-  return async (sql: string) => rowsOf(await (db as any).unsafe(sql).execute())
+  return async (sql: string) => rowsOf(await db.unsafe(sql).execute())
 }
 
 function pick(row: any, ...keys: string[]): string {

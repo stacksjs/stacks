@@ -5,6 +5,7 @@
  * powered by bun-query-builder.
  */
 
+import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
@@ -1295,7 +1296,7 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
  */
 export async function countAppliedMigrations(): Promise<number> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('migrations')
       .select((eb: any) => eb.fn.count('id').as('n'))
       .executeTakeFirst()
@@ -1739,7 +1740,7 @@ export async function resetDatabase(): Promise<Result<string, Error>> {
  */
 async function dropOrphanedEnumTypes(): Promise<void> {
   try {
-    const rows = await (db as any).unsafe(`
+    const rows = await db.unsafe(`
       SELECT t.typname AS name
       FROM pg_type t
       JOIN pg_namespace n ON n.oid = t.typnamespace
@@ -1752,13 +1753,23 @@ async function dropOrphanedEnumTypes(): Promise<void> {
         )
     `).execute()
 
-    const names: string[] = (Array.isArray(rows) ? rows : (rows?.rows ?? []))
+    // Drivers disagree on the shape of an empty result - `[]`, `{ rows: [] }`, or
+
+    // a bare undefined - which `UnsafeReturn` does not express: it is declared as
+
+    // the rows alone, so the `.rows` branch narrowed to `never` the moment the
+
+    // `(db as any)` came off. The union says what the callers already handle.
+
+    const raw = rows as UnsafeRowsResult
+
+    const names: string[] = (Array.isArray(raw) ? raw : (raw?.rows ?? []))
       .map((row: any) => String(row.name ?? row.typname ?? ''))
       .filter(Boolean)
 
     for (const name of names) {
       try {
-        await (db as any).unsafe(`DROP TYPE IF EXISTS "${name}" CASCADE`).execute()
+        await db.unsafe(`DROP TYPE IF EXISTS "${name}" CASCADE`).execute()
         log.debug(`Dropped orphaned enum type: ${name}`)
       }
       catch (error) {
@@ -1780,7 +1791,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
   // Disable foreign key checks for MySQL to avoid constraint issues
   if (dialect === 'mysql' || dialect === 'vitess') {
     try {
-      await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
+      await db.unsafe('SET FOREIGN_KEY_CHECKS = 0').execute()
     }
     catch (error) {
       log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -1790,7 +1801,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
   // Disable foreign key checks for SQLite
   if (dialect === 'sqlite') {
     try {
-      await (db as any).unsafe('PRAGMA foreign_keys = OFF').execute()
+      await db.unsafe('PRAGMA foreign_keys = OFF').execute()
     }
     catch (error) {
       log.warn(`Could not disable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -1814,7 +1825,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
 
       log.info(`Dropping framework table: ${tableName}`)
 
-      await (db as any).unsafe(dropSql).execute()
+      await db.unsafe(dropSql).execute()
 
       log.info(`Dropped framework table: ${tableName}`)
     }
@@ -1835,7 +1846,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
   // Re-enable foreign key checks for MySQL
   if (dialect === 'mysql' || dialect === 'vitess') {
     try {
-      await (db as any).unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
+      await db.unsafe('SET FOREIGN_KEY_CHECKS = 1').execute()
     }
     catch (error) {
       log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)
@@ -1845,7 +1856,7 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'vitess' | 'pos
   // Re-enable foreign key checks for SQLite
   if (dialect === 'sqlite') {
     try {
-      await (db as any).unsafe('PRAGMA foreign_keys = ON').execute()
+      await db.unsafe('PRAGMA foreign_keys = ON').execute()
     }
     catch (error) {
       log.warn(`Could not re-enable foreign key checks: ${error instanceof Error ? error.message : String(error)}`)

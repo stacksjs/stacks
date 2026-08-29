@@ -57,7 +57,7 @@ export async function recordWebhookEventOrSkip(
 ): Promise<boolean> {
   if (!eventId) return true // Some providers (Mailgun ping tests) send blank ids — process them
   try {
-    await (db as any)
+    await db
       .insertInto('email_webhook_events')
       .values({
         provider,

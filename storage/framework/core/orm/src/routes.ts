@@ -17,6 +17,7 @@
  * only when the package is unreachable.
  */
 
+import type { DbWriteResult } from '@stacksjs/database'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'
@@ -26,6 +27,53 @@ import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
+
+/**
+ * The query handle, as these auto-generated routes have to use it.
+ *
+ * `db.selectFrom` is typed `<T extends TableName>(table: T)`, which resolves a
+ * row shape from the table NAME. These routes are generated per model at
+ * runtime: the table and the columns arrive as strings out of a request, so
+ * there is no literal for those overloads to resolve, and every chained call
+ * came back mistyped. The file papered over that with sixteen `(db as any)`
+ * casts, which unchecked the whole handle at every one of them.
+ *
+ * One cast, at the boundary where a runtime string meets a type that wants a
+ * literal, against an interface naming exactly the chain this file builds.
+ * Everything downstream of it is checked again.
+ */
+interface DynamicQuery {
+  where: {
+    (_column: string, _operator: string, _value: unknown): DynamicQuery
+    (_criteria: Record<string, unknown>): DynamicQuery
+    /** Grouped conditions, built inside the callback. */
+    (_group: (_qb: DynamicQuery) => DynamicQuery): DynamicQuery
+  }
+  orWhere: (_column: string, _operator: string, _value: unknown) => DynamicQuery
+  whereIn: (_column: string, _values: readonly unknown[]) => DynamicQuery
+  whereNull: (_column: string) => DynamicQuery
+  whereNotNull: (_column: string) => DynamicQuery
+  select: (_columns: string | string[]) => DynamicQuery
+  selectAll: () => DynamicQuery
+  orderBy: (_column: string, _direction?: 'asc' | 'desc') => DynamicQuery
+  limit: (_n: number) => DynamicQuery
+  offset: (_n: number) => DynamicQuery
+  values: (_data: Record<string, unknown>) => DynamicQuery
+  set: (_data: Record<string, unknown>) => DynamicQuery
+  get: () => Promise<Record<string, unknown>[]>
+  execute: () => Promise<DbWriteResult & Record<string, unknown>[]>
+  executeTakeFirst: () => Promise<Record<string, unknown> | undefined>
+  count: () => Promise<number | Record<string, unknown>>
+}
+
+interface DynamicDb {
+  selectFrom: (_table: string) => DynamicQuery
+  insertInto: (_table: string) => DynamicQuery
+  updateTable: (_table: string) => DynamicQuery
+  deleteFrom: (_table: string) => DynamicQuery
+}
+
+
 
 // Initialize the query builder config from the project's optional
 // `config/qb.ts` override (stacksjs/stacks#1930).
@@ -81,6 +129,9 @@ const models = await loadModelRegistry({
 
 // Create a query builder instance (uses the config set above)
 const db = createQueryBuilder()
+
+/** @see {@link DynamicQuery} for why this cast is the honest one. */
+const dyn = db as unknown as DynamicDb
 
 // Helper: check if a route is already registered (user-defined routes take priority)
 /**
@@ -175,7 +226,7 @@ async function applyIncludes(
         for (const r of rows) r[include] = null
         continue
       }
-      const childRows = await (db as any).selectFrom(relatedTable).whereIn('id', ids).get()
+      const childRows = await dyn.selectFrom(relatedTable).whereIn('id', ids).get()
       const byId = new Map<string, any>()
       for (const cr of childRows ?? []) byId.set(String(cr.id), relatedAttrs(cr))
       for (const r of rows) r[include] = byId.get(String(r[fkOnParent])) ?? null
@@ -189,7 +240,7 @@ async function applyIncludes(
         for (const r of rows) r[include] = []
         continue
       }
-      const childRows = await (db as any).selectFrom(relatedTable).whereIn(fkOnChild, parentIds).get()
+      const childRows = await dyn.selectFrom(relatedTable).whereIn(fkOnChild, parentIds).get()
       const grouped = new Map<string, any[]>()
       for (const cr of childRows ?? []) {
         const key = String(cr[fkOnChild])
@@ -555,7 +606,7 @@ for (const [modelName, model] of Object.entries(models)) {
         const { page, perPage, offset } = resolveIndexPageArgs(url.searchParams)
         const sort = url.searchParams.get('sort')
 
-        let query = (db as any).selectFrom(table)
+        let query = dyn.selectFrom(table)
         query = applySorting(query, sort, readColumns)
 
         // Apply query string filters: ?status=active&name=foo filters by column values.
@@ -580,7 +631,7 @@ for (const [modelName, model] of Object.entries(models)) {
         const searchTerm = url.searchParams.get('search')
         if (searchTerm && fillableFields.length > 0) {
           const textFields = fillableFields.slice(0, 5) // Limit to first 5 fields for performance
-          query = query.where((qb: any) => {
+          query = query.where((qb: DynamicQuery) => {
             for (const field of textFields) {
               qb = qb.orWhere(toSnakeCase(field), 'like', `%${searchTerm}%`)
             }
@@ -667,7 +718,7 @@ for (const [modelName, model] of Object.entries(models)) {
             // Scope the count to the caller's rows too — an unscoped COUNT
             // would leak the cross-tenant total even though the page data is
             // team-filtered.
-            let countQuery = (db as any).selectFrom(table)
+            let countQuery = dyn.selectFrom(table)
             if (own.enforced && !own.bypass && own.value != null) {
               countQuery = Array.isArray(own.value)
                 ? countQuery.where(own.field, 'in', own.value)
@@ -727,7 +778,7 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
 
-        const result = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
+        const result = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
 
         if (!result) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
@@ -859,14 +910,14 @@ for (const [modelName, model] of Object.entries(models)) {
         const hookedData = await applyDefinedSetters(data, model)
         const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
-        const result = await (db as any).insertInto(table).values(writeData).execute()
+        const result = await dyn.insertInto(table).values(writeData).execute()
 
         // Try to return the full record with database-assigned ID
         let created = writeData
         try {
           const lastId = result?.lastInsertRowid ?? result?.insertId ?? result
           if (lastId) {
-            const fetched = await (db as any).selectFrom(table).where({ id: lastId }).executeTakeFirst()
+            const fetched = await dyn.selectFrom(table).where({ id: lastId }).executeTakeFirst()
             if (fetched) created = fetched
           }
         } catch {
@@ -918,7 +969,7 @@ for (const [modelName, model] of Object.entries(models)) {
         // 404 fast if the row doesn't exist — previously the UPDATE silently
         // matched zero rows and we returned the request body as if it had
         // succeeded, which masked legit "deleted between read and write" bugs.
-        const existing = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
+        const existing = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
         if (!existing) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
@@ -956,12 +1007,12 @@ for (const [modelName, model] of Object.entries(models)) {
         const hookedData = await applyDefinedSetters(data, model)
         const writeData = toSnakeCaseKeys(applySetCasts(hookedData, model))
 
-        await (db as any).updateTable(table).set(writeData).where({ id }).execute()
+        await dyn.updateTable(table).set(writeData).where({ id }).execute()
 
         // Return the full updated record
         let updated: any = { ...existing, ...writeData }
         try {
-          const fetched = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
+          const fetched = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
           if (fetched) updated = fetched
         } catch {
           // Fall back to merging known existing + diff
@@ -995,7 +1046,7 @@ for (const [modelName, model] of Object.entries(models)) {
         }
 
         // Need the row both for the 404 fast-path and the ownership check.
-        const existing = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
+        const existing = await dyn.selectFrom(table).where({ id }).executeTakeFirst()
         if (!existing) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
@@ -1015,13 +1066,13 @@ for (const [modelName, model] of Object.entries(models)) {
           // Reads in the index handler filter `WHERE deleted_at IS NULL` unless
           // the caller passes ?withTrashed=true.
           const now = new Date().toISOString()
-          await (db as any).updateTable(table)
+          await dyn.updateTable(table)
             .set({ deleted_at: now, updated_at: now })
             .where({ id })
             .execute()
         }
         else {
-          await (db as any).deleteFrom(table).where({ id }).execute()
+          await dyn.deleteFrom(table).where({ id }).execute()
         }
 
         return new Response(null, { status: 204 })
@@ -1076,7 +1127,7 @@ for (const [modelName, model] of Object.entries(models)) {
         if (own.enforced && !own.bypass) {
           if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
           if (own.value == null) return jsonResponse({ error: 'Caller has no ownership identity' }, 403)
-          const rows = await (db as any).selectFrom(table).select(['id', own.field]).execute()
+          const rows = await dyn.selectFrom(table).select(['id', own.field]).execute()
           const ownedIds = new Set(
             (rows as Array<Record<string, unknown>>)
               .filter(r => ownsRow(r[own.field], own.value))
@@ -1090,13 +1141,13 @@ for (const [modelName, model] of Object.entries(models)) {
         const now = new Date().toISOString()
         for (const id of validIds) {
           if (usesSoftDeletes) {
-            await (db as any).updateTable(table)
+            await dyn.updateTable(table)
               .set({ deleted_at: now, updated_at: now })
               .where({ id })
               .execute()
           }
           else {
-            await (db as any).deleteFrom(table).where({ id }).execute()
+            await dyn.deleteFrom(table).where({ id }).execute()
           }
         }
 

@@ -59,7 +59,7 @@ function warnOnceAboutMissingTable(): void {
 export async function hasDispatchedKey(key: string): Promise<boolean> {
   try {
     const { db } = await import('@stacksjs/database')
-    const row = await (db as any)
+    const row = await db
       .selectFrom('job_idempotency')
       .where('idempotency_key', '=', key)
       .select(['idempotency_key'])
@@ -89,7 +89,7 @@ export async function recordDispatchedKey(
 ): Promise<void> {
   try {
     const { db } = await import('@stacksjs/database')
-    await (db as any)
+    await db
       .insertInto('job_idempotency')
       .values({
         idempotency_key: key,
@@ -129,7 +129,7 @@ export type DispatchKeyClaim = 'claimed' | 'duplicate' | 'unenforced'
 export async function claimDispatchKey(key: string, jobName: string, queue?: string): Promise<DispatchKeyClaim> {
   try {
     const { db } = await import('@stacksjs/database')
-    await (db as any)
+    await db
       .insertInto('job_idempotency')
       .values({
         idempotency_key: key,
@@ -162,7 +162,7 @@ export async function claimDispatchKey(key: string, jobName: string, queue?: str
 export async function releaseDispatchKey(key: string): Promise<void> {
   try {
     const { db } = await import('@stacksjs/database')
-    await (db as any).deleteFrom('job_idempotency').where('idempotency_key', '=', key).execute()
+    await db.deleteFrom('job_idempotency').where('idempotency_key', '=', key).execute()
   }
   catch {
     // best-effort compensation

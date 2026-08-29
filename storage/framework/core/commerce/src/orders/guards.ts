@@ -7,6 +7,7 @@
  * allowed to proceed?"
  */
 
+import type { DbWriteResult } from '@stacksjs/database'
 import { db } from '@stacksjs/database'
 
 // ============================================================================
@@ -100,7 +101,7 @@ export async function validateQuantityBounds(
 
   let product: { min_order_qty?: number | null, max_order_qty?: number | null } | undefined
   try {
-    product = await (db as any)
+    product = await db
       .selectFrom('products')
       .where('id', '=', productId)
       .select(['min_order_qty', 'max_order_qty'])
@@ -213,11 +214,17 @@ export async function cleanupAbandonedCarts(
   // select-then-delete pass. Issued via db.unsafe with bound params:
   // the fluent delete builder cannot express IN-subquery predicates.
   try {
-    const statement = await (db as any).unsafe(
+    const statement = await db.unsafe(
       `DELETE FROM carts WHERE updated_at < ? AND id IN (SELECT id FROM carts WHERE updated_at < ? LIMIT ?)`,
       [cutoffAt, cutoffAt, limit],
     )
-    const result: any = typeof statement?.execute === 'function' ? await statement.execute() : statement
+    // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
+    // result: the ternary that used to be here always took its else branch. What
+    // a write statement resolves to is a driver result carrying an affected-row
+    // count, which `UnsafeReturn` does not describe - it is declared as the rows
+    // a SELECT returns. Narrowed to what is actually read, at the boundary where
+    // the declared type and the driver disagree.
+    const result = statement as unknown as DbWriteResult
     const deleted = Number(
       result?.changes
       ?? result?.numDeletedRows
@@ -230,7 +237,7 @@ export async function cleanupAbandonedCarts(
   catch {
     // Fallback: select-then-delete by id. Slower but driver-portable.
     try {
-      const rows = await (db as any)
+      const rows = await db
         .selectFrom('carts')
         .where('updated_at', '<', cutoffAt)
         .select(['id'])
@@ -238,7 +245,7 @@ export async function cleanupAbandonedCarts(
         .execute() as Array<{ id: number }>
       if (rows.length === 0) return { deleted: 0, cutoffAt }
       const ids = rows.map(r => r.id)
-      const result: any = await (db as any)
+      const result: any = await db
         .deleteFrom('carts')
         .where('id', 'in', ids)
         .execute()

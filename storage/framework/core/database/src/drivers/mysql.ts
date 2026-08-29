@@ -164,7 +164,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
   // eslint-disable-next-line pickier/no-unused-vars
   migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await (db as any).schema\n`
+  migrationContent += `  await db.schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
 
@@ -251,7 +251,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
       // Emitted references must use `db` — the generated up() signature
       // above is `up(db: Database<any>)`; `_db` was a ReferenceError.
       migrationContent += `\n  // Create upvote table\n`
-      migrationContent += `  await (db as any).schema\n`
+      migrationContent += `  await db.schema\n`
       migrationContent += `    .createTable('${upvoteTable}')\n`
       migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
       migrationContent += `    .addColumn('${foreignKey}', 'integer', col => col.notNull())\n`
@@ -260,12 +260,12 @@ async function createTableMigration(modelPath: string): Promise<void> {
       migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_${foreignKey}_index').on('${upvoteTable}').column('${foreignKey}').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_${foreignKey}_index').on('${upvoteTable}').column('${foreignKey}').execute()\n`
       // Composite UNIQUE (user_id, fk) — backs the trait's idempotent
       // like(): duplicate inserts throw ER_DUP_ENTRY (errno 1062) and the
       // catch returns the existing row instead of double-counting.
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_user_${foreignKey}_unique').on('${upvoteTable}').columns(['user_id', '${foreignKey}']).unique().execute()\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_user_${foreignKey}_unique').on('${upvoteTable}').columns(['user_id', '${foreignKey}']).unique().execute()\n`
+      migrationContent += `  await db.schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
     }
   }
 
@@ -306,7 +306,7 @@ async function createPivotTableMigration(model: Model, modelPath: string): Promi
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
     // eslint-disable-next-line pickier/no-unused-vars
     migrationContent += `export async function up(db: Database<any>) {\n`
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await db.schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer')\n`
@@ -355,7 +355,7 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     hasChanged = true
     // Emitted references must use `db` — the generated up() signature
     // above is `up(db: Database<any>)`; `_db` was a ReferenceError.
-    migrationContent += `  await (db as any).schema.alterTable('${tableName}')\n`
+    migrationContent += `  await db.schema.alterTable('${tableName}')\n`
   }
 
   const fieldValidations = findDifferingKeys(lastFields, currentFields)
@@ -402,17 +402,17 @@ export function generateIndexCreationSQL(
     return `  await db.unsafe(\`CREATE ${unique}INDEX IF NOT EXISTS \\\`${index.name}\\\` ON \\\`${tableName}\\\` (${cols})${whereClause}\`).execute()\n`
   }
   const columnsStr = index.columns.map(col => `'${snakeCase(col)}'`).join(', ')
-  return `  await (db as any).schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+  return `  await db.schema.createIndex('${index.name}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
 // These helpers are spliced into generated up(db) bodies, so the emitted
 // references must use `db` — `_db` was a ReferenceError at migration time.
 function generatePrimaryKeyIndexSQL(tableName: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+  return `  await db.schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+  return `  await db.schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
 }
 
 function reArrangeColumns(attributes: AttributesElements | undefined, tableName: string): string {

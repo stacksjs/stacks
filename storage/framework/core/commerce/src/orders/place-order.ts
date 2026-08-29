@@ -113,13 +113,13 @@ function isMissingTableError(err: unknown): boolean {
 
 export async function findOrderByIdempotencyKey(key: string): Promise<OrderJsonResponse | null> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('order_idempotency')
       .where('idempotency_key', '=', key)
       .selectAll()
       .executeTakeFirst()
     if (!row) return null
-    const order = await (db as any)
+    const order = await db
       .selectFrom('orders')
       .where('id', '=', row.order_id)
       .selectAll()

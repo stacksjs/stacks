@@ -114,7 +114,7 @@ function canonicalize(email: string): string {
 export async function isSuppressed(email: string, type?: SuppressionType): Promise<boolean> {
   const canon = canonicalize(email)
   try {
-    let query = (db as any)
+    let query = db
       .selectFrom('email_suppressions')
       .where('email', '=', canon)
       .select(['email'])
@@ -140,7 +140,7 @@ export async function isSuppressed(email: string, type?: SuppressionType): Promi
 export async function getSuppressions(email: string): Promise<SuppressionRecord[]> {
   const canon = canonicalize(email)
   try {
-    const rows = await (db as any)
+    const rows = await db
       .selectFrom('email_suppressions')
       .where('email', '=', canon)
       .selectAll()
@@ -174,7 +174,7 @@ export async function suppress(
   const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
 
   try {
-    await (db as any)
+    await db
       .insertInto('email_suppressions')
       .values({
         email: canon,
@@ -204,7 +204,7 @@ export async function suppress(
 export async function unsuppress(email: string, type: SuppressionType): Promise<void> {
   const canon = canonicalize(email)
   try {
-    await (db as any)
+    await db
       .deleteFrom('email_suppressions')
       .where('email', '=', canon)
       .where('type', '=', type)

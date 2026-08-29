@@ -1,3 +1,4 @@
+import type { DbWriteResult } from '@stacksjs/database'
 import type { ModelRow, Payment, UpdateModelData } from '@stacksjs/orm'
 import { db, sqlHelpers } from '@stacksjs/database'
 import { env } from '@stacksjs/env'
@@ -70,7 +71,7 @@ export async function recordRefund(id: number, amount: number): Promise<PaymentJ
   const dialect = sqlHelpers(env.DB_CONNECTION || 'sqlite')
   const p = dialect.param
   const now = formatDate(new Date())
-  const statement = await (db as any).unsafe(
+  const statement = await db.unsafe(
     `UPDATE payments
     SET refund_amount = COALESCE(refund_amount, 0) + ${p(1)},
         status = CASE WHEN COALESCE(refund_amount, 0) + ${p(2)} = amount
@@ -81,7 +82,13 @@ export async function recordRefund(id: number, amount: number): Promise<PaymentJ
       AND COALESCE(refund_amount, 0) + ${p(5)} <= amount`,
     [amount, amount, now, id, amount],
   )
-  const result: any = typeof statement?.execute === 'function' ? await statement.execute() : statement
+  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
+  // result: the ternary that used to be here always took its else branch. What
+  // a write statement resolves to is a driver result carrying an affected-row
+  // count, which `UnsafeReturn` does not describe - it is declared as the rows
+  // a SELECT returns. Narrowed to what is actually read, at the boundary where
+  // the declared type and the driver disagree.
+  const result = statement as unknown as DbWriteResult
 
   const affected = Number(
     result?.numUpdatedRows

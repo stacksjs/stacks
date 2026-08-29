@@ -70,7 +70,7 @@ export async function moveToDeadLetter(
 ): Promise<boolean> {
   const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
   try {
-    await (db as any)
+    await db
       .insertInto('dead_letter_jobs')
       .values({
         uuid: failedJob.uuid ?? crypto.randomUUID(),
@@ -110,7 +110,7 @@ export interface ListDeadLetterFilter {
 
 export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Promise<DeadLetterRecord[]> {
   try {
-    let q = (db as any).selectFrom('dead_letter_jobs').selectAll()
+    let q = db.selectFrom('dead_letter_jobs').selectAll()
     if (filter.queue) q = q.where('queue', '=', filter.queue)
     if (filter.reason) q = q.where('reason', '=', filter.reason)
     if (filter.sinceCutoffMs) {
@@ -118,7 +118,7 @@ export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Pro
       q = q.where('dead_lettered_at', '>=', cutoff)
     }
     if (filter.limit && filter.limit > 0) q = q.limit(filter.limit)
-    const rows = await q.execute() as DeadLetterRecord[]
+    const rows = await q.execute() as unknown as DeadLetterRecord[]
     return rows ?? []
   }
   catch (err) {
@@ -141,7 +141,7 @@ export async function listDeadLetterJobs(filter: ListDeadLetterFilter = {}): Pro
  */
 export async function retryDeadLetterJob(id: number): Promise<boolean> {
   try {
-    const row = await (db as any)
+    const row = await db
       .selectFrom('dead_letter_jobs')
       .where('id', '=', id)
       .selectAll()
@@ -149,7 +149,7 @@ export async function retryDeadLetterJob(id: number): Promise<boolean> {
     if (!row) return false
 
     const nowSec = Math.floor(Date.now() / 1000)
-    await (db as any)
+    await db
       .insertInto('jobs')
       .values({
         queue: row.queue,
@@ -161,7 +161,7 @@ export async function retryDeadLetterJob(id: number): Promise<boolean> {
       })
       .execute()
 
-    await (db as any).deleteFrom('dead_letter_jobs').where('id', '=', id).execute()
+    await db.deleteFrom('dead_letter_jobs').where('id', '=', id).execute()
     return true
   }
   catch (err) {
@@ -184,7 +184,7 @@ export async function purgeDeadLetterJobs(olderThanDays: number = 30): Promise<n
   try {
     const cutoff = new Date(Date.now() - olderThanDays * 24 * 60 * 60 * 1000)
       .toISOString().slice(0, 19).replace('T', ' ')
-    const result: any = await (db as any)
+    const result: any = await db
       .deleteFrom('dead_letter_jobs')
       .where('dead_lettered_at', '<', cutoff)
       .execute()

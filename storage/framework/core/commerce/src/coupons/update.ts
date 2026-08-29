@@ -1,3 +1,4 @@
+import type { DbWriteResult } from '@stacksjs/database'
 import type { Coupon, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
@@ -96,7 +97,7 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
   // guard entirely. One parameterized statement keeps the whole
   // precondition set atomic and injection-safe.
   const now = formatDate(new Date())
-  const statement = await (db as any).unsafe(
+  const statement = await db.unsafe(
     `UPDATE coupons
     SET usage_count = COALESCE(usage_count, 0) + 1, updated_at = ?
     WHERE id = ?
@@ -106,7 +107,13 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
       AND (end_date IS NULL OR end_date >= ?)`,
     [now, id, now, now],
   )
-  const result = typeof statement?.execute === 'function' ? await statement.execute() : statement
+  // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the
+  // result: the ternary that used to be here always took its else branch. What
+  // a write statement resolves to is a driver result carrying an affected-row
+  // count, which `UnsafeReturn` does not describe - it is declared as the rows
+  // a SELECT returns. Narrowed to what is actually read, at the boundary where
+  // the declared type and the driver disagree.
+  const result = statement as unknown as DbWriteResult
 
   // If the UPDATE matched zero rows, the redemption failed
   // (precondition mismatch); diagnose which one to give the caller a

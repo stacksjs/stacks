@@ -50,7 +50,7 @@ async function jobBatchesTableExists(): Promise<boolean> {
   if (driver !== 'sqlite') {
     try {
       const { db } = await import('../utils')
-      await (db as any).selectFrom('job_batches').select('id').limit(1).execute()
+      await db.selectFrom('job_batches').select('id').limit(1).execute()
       return true
     }
     catch {
@@ -88,7 +88,7 @@ async function jobsTableExists(): Promise<boolean> {
   if (driver !== 'sqlite') {
     try {
       const { db } = await import('../utils')
-      await (db as any).selectFrom('jobs').select('id').limit(1).execute()
+      await db.selectFrom('jobs').select('id').limit(1).execute()
       return true
     }
     catch {
@@ -232,7 +232,7 @@ async function ensureQueueSupportTables(driver: string): Promise<void> {
   const statements = driver === 'mysql' ? mysqlStatements : postgresStatements
   const { db } = await import('../utils')
   for (const statement of statements)
-    await (db as any).unsafe(statement).execute()
+    await db.unsafe(statement).execute()
 }
 
 export async function createJobsMigration(): Promise<Result<MigrationResult[] | string, Error>> {
@@ -596,7 +596,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
         }
         else if (driver === 'mysql') {
           const { db } = await import('../utils')
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS jobs (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS jobs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             queue VARCHAR(255) NOT NULL DEFAULT 'default',
             payload LONGTEXT NOT NULL,
@@ -607,7 +607,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
             updated_at TIMESTAMP NULL
           )`).execute()
 
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
             id INT AUTO_INCREMENT PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             connection VARCHAR(255) NOT NULL,
@@ -624,7 +624,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
         }
         else if (driver === 'postgres') {
           const { db } = await import('../utils')
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS jobs (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS jobs (
             id SERIAL PRIMARY KEY,
             queue VARCHAR(255) NOT NULL DEFAULT 'default',
             payload TEXT NOT NULL,
@@ -635,7 +635,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
             updated_at TIMESTAMP
           )`).execute()
 
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS failed_jobs (
             id SERIAL PRIMARY KEY,
             uuid VARCHAR(255) NOT NULL,
             connection VARCHAR(255) NOT NULL,
@@ -684,7 +684,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
         }
         else if (driver === 'mysql') {
           const { db } = await import('../utils')
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
             id VARCHAR(255) PRIMARY KEY,
             name VARCHAR(255) NOT NULL DEFAULT '',
             total_jobs INT NOT NULL DEFAULT 0,
@@ -699,7 +699,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
         }
         else if (driver === 'postgres') {
           const { db } = await import('../utils')
-          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
+          await db.unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
             id VARCHAR(255) PRIMARY KEY,
             name VARCHAR(255) NOT NULL DEFAULT '',
             total_jobs INTEGER NOT NULL DEFAULT 0,

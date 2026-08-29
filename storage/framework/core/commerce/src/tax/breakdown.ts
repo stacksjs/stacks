@@ -77,7 +77,7 @@ function multiplierOf(rate: unknown): number {
 
 /** Every active rate, in the order they should be listed. */
 export async function activeTaxRates(options: BreakdownOptions = {}): Promise<any[]> {
-  let query = (db as any)
+  let query = db
     .selectFrom('tax_rates')
     .where('status', '=', 'active')
     .selectAll()

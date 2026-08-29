@@ -222,7 +222,7 @@ export function createBillableMethods(_tableName: string) {
           idempotencyKey: stacksIdempotencyKey('connect.account.create', tableName, attrs.id),
         })
         accountId = account.id
-        await (db as any).updateTable(tableName)
+        await db.updateTable(tableName)
           .set({ [col]: accountId })
           .where('id', '=', Number(attrs.id))
           .execute()
@@ -276,7 +276,7 @@ export function createBillableMethods(_tableName: string) {
       const chargesEnabled = !!(account as any).charges_enabled
       const payoutsEnabled = !!(account as any).payouts_enabled
       const tableName = options.modelTable || _tableName
-      await (db as any).updateTable(tableName)
+      await db.updateTable(tableName)
         .set({ [chargesCol]: chargesEnabled, [payoutsCol]: payoutsEnabled })
         .where('id', '=', Number(attrs.id))
         .execute()

@@ -722,6 +722,44 @@ type UnsafeRow = Record<string, unknown>
 type UnsafeReturn = Promise<UnsafeRow[]> & { execute: () => Promise<UnsafeRow[]> }
 
 /**
+ * A raw result as the drivers actually hand it back.
+ *
+ * `UnsafeReturn` above says "the rows", and for most drivers that is true. Some
+ * answer `{ rows: [...] }` and some answer nothing at all, which is why callers
+ * across migrations, the query logger and the scheduler all write
+ * `Array.isArray(r) ? r : (r?.rows ?? [])`. Behind a `(db as any)` that read
+ * typechecked; without one the `.rows` branch narrows to `never`, because the
+ * declared type admits only the array. This names the shape they handle.
+ */
+export type UnsafeRowsResult = UnsafeRow[] | { rows?: UnsafeRow[] } | undefined
+
+/**
+ * What a write statement run through `db.unsafe` resolves to.
+ *
+ * `UnsafeReturn` above describes a SELECT - the rows. An UPDATE, INSERT or
+ * DELETE resolves to the driver's own result object instead, and every driver
+ * spells the affected-row count differently, which is why callers read all of
+ * these in turn. They were reaching for the fields off a value typed as
+ * `UnsafeRow[]`, which has none of them, behind a `(db as any)`.
+ */
+export interface DbWriteResult {
+  changes?: number
+  numUpdatedRows?: number | bigint
+  numAffectedRows?: number | bigint
+  numDeletedRows?: number | bigint
+  affectedRows?: number
+  rowsAffected?: number
+  lastInsertRowid?: number | bigint
+  insertId?: number | bigint
+  /**
+   * Some drivers answer with an array of result rows rather than one object,
+   * which is why callers probe `result[0]?.numUpdatedRows` alongside
+   * `result.numUpdatedRows`. Both spellings are real, so both are described.
+   */
+  [index: number]: DbWriteResult | undefined
+}
+
+/**
  * Fluent chain returned by entry-point methods like `selectFrom`/`updateTable`.
  *
  * bun-query-builder marks legacy chain methods (e.g. `selectAll`, `whereILike`,

@@ -695,7 +695,7 @@ async function incrementBatchCounters(id: string, delta: number): Promise<boolea
   // null as a parameter and emits `cancelled_at is $n`, which Postgres rejects
   // outright (42601). That is how a guard was silently lost once already, in
   // stacksjs/stacks#2215.
-  const result = await (db as any)
+  const result = await db
     .updateTable('job_batches')
     .set(batchCounterIncrements(sql, delta))
     .where('id', '=', id)
@@ -810,7 +810,7 @@ async function storeBatchInDatabase(record: BatchRecord): Promise<void> {
 async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
   const { db } = await import('@stacksjs/database')
 
-  const result = await (db as any)
+  const result = await db
     .selectFrom('job_batches')
     .where('id', '=', id)
     .selectAll()
@@ -822,13 +822,13 @@ async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
 async function getAllBatchesFromDatabase(): Promise<BatchRecord[]> {
   const { db } = await import('@stacksjs/database')
 
-  const results = await (db as any)
+  const results = await db
     .selectFrom('job_batches')
     .selectAll()
     .orderBy('created_at', 'desc')
     .execute()
 
-  return results as BatchRecord[]
+  return results as unknown as BatchRecord[]
 }
 
 async function updateBatchInDatabase(id: string, updates: Partial<BatchRecord>): Promise<void> {
@@ -1225,7 +1225,7 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
 
   // Step 1: atomic decrement. `GREATEST` clamps at 0 so a stray
   // double-record can't push the counter negative.
-  await (db as any)
+  await db
     .updateTable('job_batches')
     .set({ pending_jobs: sql`GREATEST(pending_jobs - 1, 0)` })
     .where('id', '=', batchId)
@@ -1240,7 +1240,7 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
   // that re-introduced the race the atomic decrement was added to
   // fix. (stacksjs/stacks#1872 Q-7.)
   const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
-  const completeResult = await (db as any)
+  const completeResult = await db
     .updateTable('job_batches')
     .set({ finished_at: finishedAt })
     .where('id', '=', batchId)
@@ -1392,7 +1392,7 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
   // strand with pending_jobs > 0 and never finalize, so terminal callbacks
   // never fired). Mirror the atomic completion path (#1872 Q-7).
   // (stacksjs/stacks#1957)
-  await (db as any)
+  await db
     .updateTable('job_batches')
     .set({
       pending_jobs: sql`GREATEST(pending_jobs - 1, 0)`,
@@ -1452,7 +1452,7 @@ export async function recordBatchJobFailure(batchId: string, jobId: string, erro
   //    guard as the completion path so completion-or-failure (whichever sees
   //    0 first) finalizes exactly once.
   const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
-  let finalize = (db as any)
+  let finalize = db
     .updateTable('job_batches')
     .set(opts.allowFailures
       ? { finished_at: finishedAt }

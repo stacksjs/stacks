@@ -1,3 +1,4 @@
+import type { UnsafeRowsResult } from './utils'
 import { sqlDateTime } from './sql-helpers'
 import { memoryUsage } from 'node:process'
 import { config } from '@stacksjs/config'
@@ -393,10 +394,11 @@ async function getExplainPlan(query: string): Promise<ExplainResult | null> {
     else if (driver === 'postgres') sqlText = `EXPLAIN (FORMAT JSON) ${query}`
     else sqlText = `EXPLAIN QUERY PLAN ${query}`
 
-    const result = await (db as any).unsafe?.(sqlText)
+    const result = await db.unsafe?.(sqlText)
     if (!result) return null
 
-    const rows = Array.isArray(result) ? result : (result.rows ?? [])
+    const raw = result as UnsafeRowsResult
+    const rows = Array.isArray(raw) ? raw : (raw?.rows ?? [])
     const planText = JSON.stringify(rows)
 
     // Heuristics for missing indexes
