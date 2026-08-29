@@ -7,7 +7,7 @@
 
 import type { Server } from 'bun'
 import type { ActionResult, ActionValidations, ValidationResult } from '@stacksjs/actions'
-import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
+import type { ActionHandler, ActionPath, EnhancedRequest, ExtractRouteParams, KnownRouteName, MiddlewareHandler as BunMiddlewareHandler, MiddlewareReference, PathForRouteName, RequestFor, Route, ServerOptions } from '@stacksjs/bun-router'
 import { response } from '@stacksjs/bun-router'
 import { Middleware } from './middleware'
 // Side-import the EnhancedRequest module augmentation so every `req._foo`
@@ -919,10 +919,25 @@ function warnInvalidMiddlewarePriority(name: string, raw: unknown): void {
  * See stacksjs/stacks#1870 R-2.
  */
 function adaptMiddlewareForBunRouter(
-  middleware: ActionHandler | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> },
-): ActionHandler {
+  /*
+   * The same union `use()` accepts, including the two-argument
+   * `(req, next) => Response` form. That arm was missing here, so the sync
+   * chaining path had to cast to reach this function at all - and a cast at
+   * the call site unchecks every other arm too. The bare-function
+   * pass-through at the end of this function is already the correct handling
+   * for it: bun-router has its own function branch.
+   */
+  middleware:
+    | ActionHandler
+    | BunMiddlewareHandler
+    | Middleware
+    | { handle: (req: EnhancedRequest) => void | Promise<void> },
+): BunMiddlewareHandler {
   if (middleware instanceof Middleware) {
-    return middleware.toRouterHandler() as unknown as ActionHandler
+    // `toRouterHandler()` already returns `(req, next) => Promise<Response>`,
+    // which is exactly a MiddlewareHandler - it only needed a cast while this
+    // function claimed to return the much broader ActionHandler.
+    return middleware.toRouterHandler()
   }
   // Duck-typed handler object: `{ handle(req) { … } }` without the class.
   // Function values DO have a `.handle` property only if explicitly assigned;
@@ -935,7 +950,7 @@ function adaptMiddlewareForBunRouter(
     && typeof middleware !== 'function'
   ) {
     const handle = (middleware as { handle: (req: EnhancedRequest) => void | Promise<void> }).handle.bind(middleware)
-    const wrapper = async (req: EnhancedRequest, next: () => Promise<Response>): Promise<Response> => {
+    const wrapper: BunMiddlewareHandler = async (req, next) => {
       try {
         await handle(req)
       }
@@ -945,9 +960,18 @@ function adaptMiddlewareForBunRouter(
       }
       return next()
     }
-    return wrapper as unknown as ActionHandler
+    return wrapper
   }
-  return middleware as ActionHandler
+
+  /*
+   * Pass-through for the bare-function forms, which bun-router runs through
+   * its own function branch.
+   *
+   * `ActionHandler` is a broad union that also admits a route path string and
+   * a constructor; neither is usable as global middleware, and neither is what
+   * any caller passes here. The narrowing says which arm this line is for.
+   */
+  return middleware as BunMiddlewareHandler
 }
 
 /**
@@ -4131,17 +4155,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     //   downstream route silently breaks. See stacksjs/stacks#1870 R-2.
     // - any other handler-shaped object with a `handle()` method — also wrapped,
     //   under the same contract.
-    use(middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>) | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> }) {
+    use(middleware: ActionHandler | BunMiddlewareHandler | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> }) {
       // bunRouter.use() is async, so we need to call it properly
       // For synchronous chaining, we push directly to globalMiddleware
       // The sync path accepts the broader middleware union the async one does.
-      // Cast retained: the sync chaining path accepts a broader middleware
-      // union than the adapter's parameter names, and reconciling the two is a
-      // change to the middleware surface rather than a narrowing.
-      const adapted = adaptMiddlewareForBunRouter(middleware as any)
-      // Same reason as the cast above: `globalMiddleware` is typed for the
-      // adapter's MiddlewareHandler, and the sync path carries an ActionHandler.
-      bunRouter.globalMiddleware.push(adapted as any)
+      const adapted = adaptMiddlewareForBunRouter(middleware)
+      bunRouter.globalMiddleware.push(adapted)
       return stacksRouter
     },
 
@@ -4625,7 +4644,7 @@ export interface StacksRouterInstance {
     (methods: string[], path: string, handler: StacksHandler): ChainableRoute
   }
   health: () => StacksRouterInstance
-  use: (middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>)) => StacksRouterInstance
+  use: (middleware: ActionHandler | BunMiddlewareHandler) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: MiddlewareReference | MiddlewareReference[] }) => Promise<StacksRouterInstance>
   /**
    * Work to do once, after the routes load and before the first request.

@@ -1,4 +1,4 @@
-import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { EnhancedRequest, MiddlewareHandler } from '@stacksjs/bun-router'
 
 /**
  * Middleware class for defining route middleware
@@ -134,7 +134,15 @@ export class Middleware {
    * `route.use(...)` or `route.middleware(...)` so the void/throw contract
    * is honoured.
    */
-  toRouterHandler(): (req: EnhancedRequest, next: () => Promise<Response>) => Promise<Response> {
+  /*
+   * Typed as bun-router's own `MiddlewareHandler`, which is what consumes it.
+   *
+   * This declared `next: () => Promise<Response>`, narrower than the
+   * `NextFunction` bun-router actually passes - that one may answer `null` or
+   * a bare `Response`. Every consumer therefore had to cast to hand the result
+   * over, and the cast unchecked the rest of the middleware surface with it.
+   */
+  toRouterHandler(): MiddlewareHandler {
     const handle = this.handle.bind(this)
     return async (req, next) => {
       try {

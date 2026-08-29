@@ -16,8 +16,8 @@
  * just call them from inside the `up()` of a migration file.
  */
 
+import type { DbWriteResult } from './utils'
 import { db } from './utils'
-import { sql } from './types'
 
 type Database = typeof db
 
@@ -108,15 +108,36 @@ export async function addColumnSafely(
  * the tagged-template form doesn't accept a string-as-prefix. The
  * underlying driver's `unsafe()` is the canonical hatch for this.
  */
-async function execRaw(dbAny: any, statement: string): Promise<{ numAffectedRows?: number | bigint }> {
+/**
+ * What these helpers need off the connection to run DDL.
+ *
+ * Matches `Db.unsafe`'s own signature. Its declared result is the ROWS a
+ * SELECT returns, while a DDL statement resolves to the driver's write result
+ * - which is what `DbWriteResult` describes and what the caller below reads an
+ * affected-row count from.
+ */
+interface DdlRunner {
+  unsafe?: (_query: string, _params?: unknown[]) => Promise<unknown>
+}
+
+async function execRaw(dbAny: DdlRunner, statement: string): Promise<{ numAffectedRows?: number | bigint }> {
   if (typeof dbAny.unsafe === 'function') {
-    const result = await dbAny.unsafe(statement)
+    const result = await dbAny.unsafe(statement) as DbWriteResult | undefined
     return result ?? {}
   }
-  // Fallback: use the tagged-template through sql.raw() — works on the
-  // bun-query-builder-style driver. May not return affected rows.
-  await (sql`${sql.raw(statement)}` as any).execute(dbAny)
-  return {}
+  /*
+   * No `unsafe()` on this connection, and nothing else here can run raw DDL.
+   *
+   * This used to reach for `sql`…`.execute(db)`, which the docblock above
+   * already explains cannot work - and the fragment `sql` builds carries only
+   * `sql`, `parameters`, `as` and `toString`, so the call was a TypeError
+   * rather than the fallback it was written as. Saying so is more use than
+   * crashing inside a migration with "execute is not a function".
+   */
+  throw new TypeError(
+    'This database connection exposes no `unsafe()`, which is the only way these '
+    + `safe-migration helpers can run raw DDL. Statement: ${statement}`,
+  )
 }
 
 /**
