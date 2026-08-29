@@ -105,6 +105,12 @@ export interface StacksRequestMarkers {
   /** Previous request's input, for `old()` after a redirect-back. */
   _oldInput?: unknown
 
+  /**
+   * The input `validate()` accepted, cached so a handler reading it twice does
+   * not revalidate. Stamped and read by the router itself.
+   */
+  _validatedInput?: unknown
+
   _authenticatedUser?: unknown
 
   /**

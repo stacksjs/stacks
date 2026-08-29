@@ -134,7 +134,7 @@ export async function hasUnfinishedRun(jobName: string): Promise<boolean> {
     // Drivers disagree on the shape of an empty result - `[]`, `{ rows: [] }`, or
     // a bare undefined - which `UnsafeReturn` does not express: it is declared as
     // the rows alone, so the `.rows` branch narrowed to `never` the moment the
-    // `(db as any)` came off. The union says what the callers already handle.
+    // `(db)` came off. The union says what the callers already handle.
     const raw = rows as UnsafeRowsResult
     const list = Array.isArray(raw) ? raw : (raw?.rows ?? [])
     return Array.isArray(list) && list.length > 0

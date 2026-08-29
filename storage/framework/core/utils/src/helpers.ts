@@ -32,7 +32,7 @@ export async function initProject(): Promise<Result<Subprocess, Error>> {
 
   log.info('Application key generated.')
 
-  return ok((result as any).value)
+  return ok((result).value)
 }
 
 export async function ensureProjectIsInitialized(): Promise<boolean> {

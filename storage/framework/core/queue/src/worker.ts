@@ -430,8 +430,10 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
     // Atomically reserve only if still unreserved (CAS pattern)
     const result = await db
       .updateTable('jobs')
-      .set({ reserved_at: now, attempts: ((job as any).attempts || 0) + 1 })
-      .where('id', '=', (job as any).id)
+      // The jobs table is not in the generated `database/types.d.ts`, so its
+      // columns come back untyped; coerced where it is used as a number.
+      .set({ reserved_at: now, attempts: Number(job.attempts || 0) + 1 })
+      .where('id', '=', (job).id)
       .whereNull('reserved_at')
       .executeTakeFirst()
 
@@ -940,7 +942,7 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
       const { runJob } = await import('./job')
       // Same as the database driver: the dispatcher's id, when the envelope
       // carried one.
-      await runJob(data.jobName, { payload: data.payload, traceId: (data as any).traceId })
+      await runJob(data.jobName, { payload: data.payload, traceId: (data).traceId })
 
       tracker.recordCompletion(workerId)
       await emitQueueEvent('job:completed', {

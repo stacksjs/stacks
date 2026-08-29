@@ -74,7 +74,7 @@ beforeAll(async () => {
   const { serve } = await import('bun-plugin-stx/serve')
   // Not awaited: serve()'s promise does not settle while the server is up,
   // so awaiting it here hangs the hook. Start it, then poll the port.
-  void (serve as any)({
+  void (serve)({
     patterns: ['resources/views/**/*.stx'],
     port: PORT,
     quiet: true,

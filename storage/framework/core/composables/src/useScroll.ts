@@ -80,8 +80,8 @@ export function useScroll(
       const win = el as Window
       const doc = typeof document !== 'undefined' ? document : undefined
       return {
-        scrollLeft: win.scrollX ?? (win as any).pageXOffset ?? 0,
-        scrollTop: win.scrollY ?? (win as any).pageYOffset ?? 0,
+        scrollLeft: win.scrollX ?? (win).pageXOffset ?? 0,
+        scrollTop: win.scrollY ?? (win).pageYOffset ?? 0,
         scrollHeight: doc?.documentElement?.scrollHeight ?? 0,
         scrollWidth: doc?.documentElement?.scrollWidth ?? 0,
         clientHeight: win.innerHeight,

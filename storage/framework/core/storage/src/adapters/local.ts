@@ -74,7 +74,7 @@ export class LocalStorageAdapter implements StorageAdapter {
     else {
       // ReadableStream
       const writeStream = createWriteStream(fullPath)
-      await pipeline(contents as any, writeStream)
+      await pipeline(contents, writeStream)
     }
 
     // Read back size + mtime in one syscall — cheaper than the

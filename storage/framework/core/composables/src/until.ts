@@ -91,7 +91,7 @@ export function until<T>(r: Ref<T>): UntilBaseInstance<T> {
   }
 
   function toBeNaN(options?: UntilToMatchOptions): Promise<T> {
-    return toMatch(v => Number.isNaN(v as any), options)
+    return toMatch(v => Number.isNaN(v), options)
   }
 
   function changed(options?: UntilToMatchOptions): Promise<T> {
@@ -112,7 +112,7 @@ export function until<T>(r: Ref<T>): UntilBaseInstance<T> {
       toBeTruthy: (options?: UntilToMatchOptions) => toMatch(v => !v, options),
       toBeNull: (options?: UntilToMatchOptions) => toMatch(v => v !== null, options),
       toBeUndefined: (options?: UntilToMatchOptions) => toMatch(v => v !== undefined, options),
-      toBeNaN: (options?: UntilToMatchOptions) => toMatch(v => !Number.isNaN(v as any), options),
+      toBeNaN: (options?: UntilToMatchOptions) => toMatch(v => !Number.isNaN(v), options),
     },
   }
 }

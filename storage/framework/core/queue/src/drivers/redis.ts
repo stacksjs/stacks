@@ -317,7 +317,7 @@ export class RedisQueue<T = any> {
    * Subscribe to queue events
    */
   on<E extends keyof QueueEvents>(event: E, handler: QueueEvents[E]): void {
-    this.queue.events.on(event, handler as any)
+    this.queue.events.on(event, handler)
   }
 }
 

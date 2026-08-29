@@ -192,7 +192,7 @@ class JobBuilder {
     // Check if queue is faked (testing mode)
     const { isFaked, getFakeQueue } = await import('./testing')
     if (isFaked()) {
-      getFakeQueue()?.dispatch(this.name, this.payload, this.options as any)
+      getFakeQueue()?.dispatch(this.name, this.payload, this.options)
       return
     }
 

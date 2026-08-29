@@ -39,8 +39,8 @@ describe('pages.store', () => {
       blocks: [{ type: 'rich-text', props: { html: '<p>Go team.</p>' } }],
     } as any)
 
-    expect(Number((created as any).site_id)).toBe(SITE)
-    expect((created as any).path).toBe('/athletics')
+    expect(Number((created).site_id)).toBe(SITE)
+    expect((created).path).toBe('/athletics')
 
     const served = await resolvePublishedPage(SITE, '/athletics')
     expect(served).toBeTruthy()
@@ -59,14 +59,14 @@ describe('pages.store', () => {
     const served = await resolvePublishedPage(SITE, '/giving')
     expect(served).toBeTruthy()
     expect(JSON.stringify(served!.blocks)).toContain('Support us')
-    expect((created as any).path).toBe('/giving')
+    expect((created).path).toBe('/giving')
   })
 
   it('derives a free path rather than colliding with an existing page', async () => {
     await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' } as any)
     const second = await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' } as any)
 
-    expect((second as any).path).toBe('/about-2')
+    expect((second).path).toBe('/about-2')
   })
 })
 
@@ -106,9 +106,9 @@ describe('pages.update', () => {
 
     const updated = await pages.update(Number(created.id), { title: 'School Calendar' } as any)
 
-    expect((updated as any).title).toBe('School Calendar')
+    expect((updated).title).toBe('School Calendar')
     // The path is derived from the slug, so a title edit must not move it.
-    expect((updated as any).path).toBe('/calendar')
+    expect((updated).path).toBe('/calendar')
     expect(await resolvePublishedPage(SITE, '/calendar')).toBeTruthy()
   })
 })

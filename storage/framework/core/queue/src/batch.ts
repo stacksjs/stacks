@@ -836,7 +836,7 @@ async function updateBatchInDatabase(id: string, updates: Partial<BatchRecord>):
 
   await db
     .updateTable('job_batches')
-    .set(updates as any)
+    .set(updates)
     .where('id', '=', id)
     .execute()
 }
@@ -870,7 +870,7 @@ async function pruneBatchesFromDatabase(olderThanHours: number): Promise<number>
     .where('finished_at', '<', cutoff)
     .executeTakeFirst()
 
-  return Number((result as any)?.numDeletedRows ?? 0)
+  return Number((result)?.numDeletedRows ?? 0)
 }
 
 // =============================================================================
@@ -882,7 +882,7 @@ const REDIS_BATCH_INDEX = 'stacks:batches'
 
 // The redis-helper functions below all read `queueConfig?.connections?.redis`
 // (and sometimes its nested `.redis`) directly off the typed config. The
-// previous pattern was `(queueConfig as any)?.connections?.redis?.redis`
+// previous pattern was `(queueConfig)?.connections?.redis?.redis`
 // which escaped every type check — stacksjs/stacks#1875 T-6 swept all such
 // casts so a future config-shape rename surfaces here at the type level
 // instead of crashing the redis path at runtime.

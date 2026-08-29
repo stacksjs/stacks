@@ -1902,7 +1902,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
          * must not turn a served request into a 500 - the observation is worth
          * less than the thing being observed.
          */
-        const after = (enhancedReq as any)._afterResponse
+        const after = (enhancedReq)._afterResponse
         if (Array.isArray(after)) {
           for (const callback of after) {
             try {
@@ -1913,7 +1913,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
         }
 
-        const requested = (enhancedReq as any)._responseHeaders
+        const requested = (enhancedReq)._responseHeaders
         if (requested && typeof requested === 'object') {
           for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
             if (typeof value === 'string')
@@ -1935,7 +1935,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         applySecurityHeaders(h)
       }
 
-      if (response && typeof (response as any).headers?.set === 'function') {
+      if (response && typeof (response).headers?.set === 'function') {
         const isErrorJson = response.status >= 400
           && (response.headers.get('content-type') || '').includes('json')
 
@@ -2664,7 +2664,7 @@ function modelValidationRules(model: any): ActionValidations | undefined {
 
   const rules: ActionValidations = {}
   for (const [field, attribute] of Object.entries(model.attributes)) {
-    const validation = (attribute as any)?.validation
+    const validation = (attribute as { validation?: ActionValidations[string] } | null | undefined)?.validation
     if (validation?.rule)
       rules[field] = validation
   }
@@ -3151,10 +3151,10 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return getAllInputFor(this)[key] === value
   },
   async validate(rules?: Record<string, any>, messages: Record<string, string> = {}) {
-    const selectedRules = rules ?? (this as any)._requestValidationRules
+    const selectedRules = rules ?? (this)._requestValidationRules
     if (!selectedRules || Object.keys(selectedRules).length === 0) {
       const input = getAllInputFor(this)
-      ;(this as any)._validatedInput = input
+      ;(this)._validatedInput = input
       return input
     }
 
@@ -3175,14 +3175,16 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
 
     const { validate } = await import('@stacksjs/validation')
     const validated = await validate(this, normalized)
-    ;(this as any)._validatedInput = validated
+    ;(this)._validatedInput = validated
     return validated
   },
   getValidated() {
-    return (this as any)._validatedInput ?? {}
+    return (this)._validatedInput ?? {}
   },
   safe() {
-    const data = (this as any)._validatedInput ?? {}
+    // The marker is `unknown` by design; this accessor is what gives the
+    // validated payload a shape callers can read.
+    const data = (this._validatedInput ?? {}) as Record<string, unknown>
     return {
       all: () => ({ ...data }),
       get: (key: string, defaultValue?: any) => key in data ? data[key] : defaultValue,
@@ -3191,7 +3193,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     }
   },
   old(key: string, defaultValue?: unknown) {
-    const oldInput = (this as any)._oldInput as Record<string, unknown> | undefined
+    const oldInput = (this)._oldInput as Record<string, unknown> | undefined
     return oldInput?.[key] ?? defaultValue
   },
   flashInput(keys?: string[]) {
@@ -3202,7 +3204,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   },
   flashInputExcept(keys: string[]) {
     const input = getAllInputFor(this)
-    ;(this as any)._oldInput = Object.fromEntries(
+    ;(this)._oldInput = Object.fromEntries(
       Object.entries(input).filter(([key]) => !keys.includes(key)),
     )
   },
@@ -3248,7 +3250,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return this.headers.get('sec-ch-ua') || this.headers.get('user-agent')
   },
   ipForRateLimit() {
-    const ip = (this as any).ip
+    const ip = (this).ip
     if (typeof ip === 'function')
       return ip.call(this) || null
     return typeof ip === 'string' && ip ? ip : null
@@ -3268,14 +3270,19 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   async tokenCan(ability: string) {
     if (typeof ability !== 'string' || ability.length === 0)
       return false
-    const token = this._currentAccessToken as any
+    const token = this._currentAccessToken
     if (!token || typeof token !== 'object')
       return false
-    if (!Array.isArray(token.abilities))
+
+    // The access token's shape is project-defined, so it arrives as `unknown`
+    // and is narrowed to the one field this checks.
+    const abilities = (token as { abilities?: unknown }).abilities
+
+    if (!Array.isArray(abilities))
       return false
-    if (token.abilities.includes('*'))
+    if (abilities.includes('*'))
       return true
-    return token.abilities.includes(ability)
+    return abilities.includes(ability)
   },
   async tokenCant(ability: string) {
     return !(await this.tokenCan!(ability))
@@ -4127,7 +4134,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     use(middleware: ActionHandler | ((req: EnhancedRequest, next: () => Promise<Response>) => Response | Promise<Response>) | Middleware | { handle: (req: EnhancedRequest) => void | Promise<void> }) {
       // bunRouter.use() is async, so we need to call it properly
       // For synchronous chaining, we push directly to globalMiddleware
-      const adapted = adaptMiddlewareForBunRouter(middleware as ActionHandler)
+      // The sync path accepts the broader middleware union the async one does.
+      // Cast retained: the sync chaining path accepts a broader middleware
+      // union than the adapter's parameter names, and reconciling the two is a
+      // change to the middleware surface rather than a narrowing.
+      const adapted = adaptMiddlewareForBunRouter(middleware as any)
+      // Same reason as the cast above: `globalMiddleware` is typed for the
+      // adapter's MiddlewareHandler, and the sync path carries an ActionHandler.
       bunRouter.globalMiddleware.push(adapted as any)
       return stacksRouter
     },
