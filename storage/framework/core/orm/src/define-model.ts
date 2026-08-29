@@ -2196,6 +2196,17 @@ export type StacksModelStatic<TDef extends ModelDefinition> = QueryModel<TDef> &
   withoutValidation: <T>(fn: () => T | Promise<T>) => Promise<T>
 }
 
+/**
+ * Statics `defineModel` attaches to a model once its query surface exists.
+ *
+ * `withoutValidation` is the escape hatch for bulk imports carrying rows that
+ * predate a rule; `withoutEvents` suppresses lifecycle events for a call.
+ */
+interface ModelStaticHelpers {
+  withoutValidation: <T>(_fn: () => T | Promise<T>) => Promise<T>
+  withoutEvents: <T>(_fn: () => T | Promise<T>) => Promise<T>
+}
+
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef): StacksModelStatic<TDef> {
   log.debug(`[orm] Defining model: ${definition.name} (table: ${definition.table})`)
 
@@ -2301,12 +2312,18 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // `Model.withoutValidation(fn)` — the escape hatch for bulk imports and
   // backfills carrying rows that predate a rule. Bound to the model for the
   // same discoverability reason as `withoutEvents`.
-  // Cast retained: the static model surface is assembled dynamically here -
-  // `withoutValidation`, `withoutEvents` and the generated `*Quietly` names
-  // are attached after the fact - and typing that properly means reshaping
-  // `StaticWhereOverloads`, which is a design change rather than a
-  // narrowing. Left as it was, said out loud.
-  ;(baseModel as any).withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
+  /*
+   * The statics attached after the query surface is built.
+   *
+   * Each assignment used to be cast on its own, so a misspelt name or a
+   * signature that drifted from what callers expect was written onto the model
+   * and checked against nothing. Named once as what is being added, so the two
+   * below are checked; the generated `*Quietly` names, whose spellings come
+   * from a list at runtime, go through a record view further down.
+   */
+  const withHelpers = baseModel as typeof baseModel & ModelStaticHelpers
+
+  withHelpers.withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
     return withoutValidation(fn)
   }
 
@@ -2320,7 +2337,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // User.withoutEvents(() => User.create(data))`. The quiet variants
   // exist to spare callers the closure noise on the common case (single
   // bulk write, no surrounding logic).
-  ;(baseModel as any).withoutEvents = function <T>(fn: () => T | Promise<T>): Promise<T> {
+  withHelpers.withoutEvents = function <T>(fn: () => T | Promise<T>): Promise<T> {
     return withoutEvents(fn)
   }
 
@@ -2329,7 +2346,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     if (typeof orig !== 'function') continue
     const quietName = `${method}Quietly` as const
     if (typeof (baseModel)[quietName] === 'function') continue
-    ;(baseModel as any)[quietName] = function (...args: unknown[]) {
+    ;(baseModel as unknown as Record<string, unknown>)[quietName] = function (...args: unknown[]) {
       return withoutEvents(() => orig.apply(baseModel, args))
     }
   }
@@ -2884,7 +2901,9 @@ function applySoftDeletes(
   definition: BQBModelDefinition,
   traitFlag: unknown,
 ): void {
-  const helpers = createSoftDeleteMethods(baseModel as any, definition.primaryKey || 'id')
+  // The model is assembled here and gains the query surface `createSoftDeleteMethods`
+  // asks for as it goes, so the conversion passes through `unknown`.
+  const helpers = createSoftDeleteMethods(baseModel as unknown as Parameters<typeof createSoftDeleteMethods>[0], definition.primaryKey || 'id')
   const options = resolveSoftDeleteOptions(traitFlag)
   const parentDef = definition as unknown as { name: string, hasMany?: ReadonlyArray<string>, hasOne?: ReadonlyArray<string> }
   const modelName = definition.name.toLowerCase()
@@ -2898,7 +2917,7 @@ function applySoftDeletes(
     if (!observeOn || eventsAreSuppressed()) return true
     try {
       const { dispatchAsync } = await import('@stacksjs/events')
-      const results = (await dispatchAsync(`${modelName}:restoring` as any, { id })) as unknown[]
+      const results = (await dispatchAsync(`${modelName}:restoring` as Parameters<typeof dispatchAsync>[0], { id })) as unknown[]
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
     catch (err: any) {
@@ -2911,7 +2930,7 @@ function applySoftDeletes(
     if (!observeOn || eventsAreSuppressed()) return
     try {
       const { dispatch } = await import('@stacksjs/events')
-      await dispatch(`${modelName}:restored` as any, { id })
+      await dispatch(`${modelName}:restored` as Parameters<typeof dispatch>[0], { id })
     }
     catch (err: any) {
       if (err?.code !== 'MODULE_NOT_FOUND')

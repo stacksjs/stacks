@@ -66,13 +66,181 @@ export interface LibraryOptions {
 
   /**
    * The Web Component library options.
+   *
+   * Single-package sugar. It is normalized into one `web-components` entry of
+   * `packages`, so anything expressible here is also expressible there. When
+   * `packages` is set, this key is ignored.
    */
   webComponents: LibraryBuildOptions
 
   /**
-   * The Web Component library options.
+   * The function library options.
+   *
+   * Single-package sugar, normalized into one `functions` entry of `packages`.
+   * When `packages` is set, this key is ignored.
    */
   functions: LibraryBuildOptions
+
+  /**
+   * The packages this project releases out of `resources/functions` and
+   * `resources/components`.
+   *
+   * One `resources/` tree can feed any number of npm packages: each entry
+   * claims a slice of it by glob, and gets its own name, entry point,
+   * package.json and dist. Slices may overlap - a file can ship in more
+   * than one package.
+   *
+   * @example
+   * ```ts
+   * packages: [
+   *   { name: '@acme/fx', kind: 'functions', include: ['*.ts'], exclude: ['internal/**'] },
+   *   { name: '@acme/fx-dates', kind: 'functions', include: ['dates/**'] },
+   *   { name: '@acme/ui', kind: 'components', include: ['ui/**'] },
+   *   { name: '@acme/elements', kind: 'web-components', include: ['ui/**'] },
+   * ]
+   * ```
+   */
+  packages: LibraryPackageOptions[]
+}
+
+/**
+ * What a library package ships.
+ *
+ * - `functions` bundles TypeScript from `resources/functions` into an ESM
+ *   package with declarations.
+ * - `components` compiles `.stx` files from `resources/components` into a
+ *   progressive custom-element library (the stx component-library build).
+ * - `web-components` emits a self-registering `customElements.define(...)`
+ *   bundle for the same sources - the drop-in-a-script-tag flavor.
+ */
+export type LibraryPackageKind = 'functions' | 'components' | 'web-components'
+
+/**
+ * One releasable package built out of `resources/`.
+ */
+export interface LibraryPackageOptions {
+  /**
+   * The package name as published to npm, scope included.
+   *
+   * @example '@acme/ui'
+   */
+  name: string
+
+  /**
+   * What this package ships.
+   * @default 'functions'
+   */
+  kind?: LibraryPackageKind
+
+  /**
+   * The directory name under `storage/framework/libs/packages/` that holds the
+   * generated manifest, entry point and dist.
+   *
+   * Defaults to the unscoped package name, so `@acme/ui` builds in
+   * `storage/framework/libs/packages/ui/`. Set it when two packages would
+   * otherwise claim the same directory (`@acme/ui` and `@other/ui`).
+   */
+  dir?: string
+
+  /**
+   * The description published to npm.
+   */
+  description?: string
+
+  /**
+   * The keywords published to npm.
+   */
+  keywords?: string[]
+
+  /**
+   * The SPDX license for this package. Defaults to the library-wide license.
+   */
+  license?: LicenseType
+
+  /**
+   * Pin this package to its own version instead of following the project
+   * version. Useful when one package has stabilized ahead of the others.
+   */
+  version?: string
+
+  /**
+   * Build it, never publish it.
+   * @default false
+   */
+  private?: boolean
+
+  /**
+   * npm publish access.
+   * @default 'public'
+   */
+  access?: 'public' | 'restricted'
+
+  /**
+   * Should this package generate a sourcemap?
+   * @default false
+   */
+  shouldGenerateSourcemap?: boolean
+
+  /**
+   * The sources this package claims, as globs relative to `resources/functions`
+   * (for `functions`) or `resources/components` (for the component kinds).
+   *
+   * @default ['**\/*.ts'] for functions, ['**\/*.stx'] for components
+   * @example ['dates/**', 'string/*.ts']
+   */
+  include?: string[]
+
+  /**
+   * Globs subtracted from `include`, same base directory.
+   *
+   * @example ['**\/*.test.ts', 'internal/**']
+   */
+  exclude?: string[]
+
+  /**
+   * A `functions` shorthand for `include`, kept for the single-package config
+   * shape. Entries may omit the extension (`'counter'`), and a `[file, alias]`
+   * tuple re-exports that file under a namespace
+   * (`export * as alias from './counter'`).
+   */
+  files?: string[]
+
+  /**
+   * Explicit custom-element naming for the component kinds. A tag whose `name`
+   * is a `[component, exportedAs]` tuple registers `component` under the
+   * `exportedAs` name.
+   */
+  tags?: TagsOptions
+
+  /**
+   * The custom-element tag prefix for the component kinds, so `Button` becomes
+   * `<acme-button>`. Defaults to the unscoped package name.
+   */
+  prefix?: string
+
+  /**
+   * Where the built package is expected to run.
+   *
+   * `standalone` (the default) means the package must stand on its own once
+   * installed, so the build refuses sources that reach for stx's ambient
+   * globals (`state`, `useDark`, ...): those exist only inside an stx page
+   * entry, and a consumer importing the published package would get a
+   * `ReferenceError` at first call.
+   *
+   * `stx` says the package is meant to be consumed from inside an stx app.
+   * The ambient globals are then allowed and recorded in the manifest.
+   */
+  runtime?: 'standalone' | 'stx'
+
+  /**
+   * Runtime dependencies written into the generated package.json.
+   */
+  dependencies?: Record<string, string>
+
+  /**
+   * Peer dependencies written into the generated package.json.
+   */
+  peerDependencies?: Record<string, string>
 }
 
 export type LibraryConfig = Partial<LibraryOptions>
