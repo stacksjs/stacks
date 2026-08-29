@@ -255,7 +255,11 @@ class Fetcher {
     return fetch(url, {
       method,
       headers: this.getHeaders(),
-      body: body ? this.formatBody(body) as any : undefined,
+      // Awaited. `formatBody` is async - it may build a FormData from file
+      // attachments - and the cast made handing `fetch` the unresolved promise
+      // look deliberate, so this retry sent the string "[object Promise]" as
+      // its body every time digest auth was challenged.
+      body: body ? await this.formatBody(body) : undefined,
     })
   }
 

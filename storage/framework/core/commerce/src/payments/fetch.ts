@@ -245,13 +245,15 @@ export async function fetchMonthlyPaymentTrends(): Promise<Array<{
     .selectAll()
     .where('created_at', '>=', formatDate(twelveMonthsAgo))
     .where('status', '=', 'completed')
-    .execute() as any[]
+    .execute() as Array<Record<string, unknown>>
 
   // Group by year-month in JavaScript
   const monthlyMap: Record<string, { year: number, month: number, transactions: number, revenue: number }> = {}
 
   for (const payment of payments) {
-    const createdAt = payment.created_at ? new Date(payment.created_at) : new Date()
+    // The row is generic - `payments` is not in the generated database types -
+    // so the timestamp arrives as `unknown` and is coerced before parsing.
+    const createdAt = payment.created_at ? new Date(String(payment.created_at)) : new Date()
     const year = createdAt.getFullYear()
     const month = createdAt.getMonth() + 1 // 1-indexed
     const key = `${year}-${String(month).padStart(2, '0')}`

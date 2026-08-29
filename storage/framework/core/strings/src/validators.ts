@@ -344,13 +344,17 @@ export function isHalfWidth(halfWidth: string): boolean {
  * Hash validation for various algorithms
  */
 export function isHash(hash: string, algorithm: HashAlgorithm): boolean {
-  const hashLengths: Record<HashAlgorithm, number> = {
+  // `Partial`: this covers the five algorithms whose hex length is checked, and
+  // `HashAlgorithm` names about a dozen - crc32, md4, ripemd128 and the rest.
+  // The `if (!expectedLength) return false` below is what handles the gaps, and
+  // an `as any` on the literal is what let the table claim to be complete.
+  const hashLengths: Partial<Record<HashAlgorithm, number>> = {
     'md5': 32,
     'sha1': 40,
     'sha256': 64,
     'sha384': 96,
     'sha512': 128,
-  } as any
+  }
 
   const expectedLength = hashLengths[algorithm]
   if (!expectedLength) return false
