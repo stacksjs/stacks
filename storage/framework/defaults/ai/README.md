@@ -50,6 +50,10 @@ package it touches: `stacks-flow` routes between them, and `stacks-grilling`,
 [mattpocock/skills](https://github.com/mattpocock/skills) (MIT), with credit in
 each `SKILL.md`.
 
+Each skill also has a page in the documentation site, under `docs/skills/`, one
+per skill with a landing page per section. `tests/unit/skills-docs-contract.test.ts`
+fails when a skill gains or loses a page, so the two cannot drift apart.
+
 ### Adding your own
 
 To add a project-specific skill, or to shadow a bundled one, create

@@ -19,6 +19,9 @@ features:
   - title: Best-in-Class DX
     icon: 🦋
     details: One framework that does it all. Building TypeScript apps & libraries has never been simpler.
+  - title: AI-Native
+    icon: 🧠
+    details: "115 agent skills ship with the framework, documenting every subsystem for Claude Code, Codex, Cursor, Copilot & Gemini."
   - title: App Development
     icon: 🖥️
     details: Performant web and Craft desktop applications with one TypeScript codebase.
@@ -66,7 +69,7 @@ features:
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
   - title: Commerce
     icon: 💴
-    details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.
+    details: "Products, orders, customers, coupons, shipping & tax. A full storefront backend, out-of-the-box."
   - title: Realtime
     icon: 🏃🏻
     details: "Build real-time features with WebSockets. Add live updates, chat, notifications & collaborative features with ease."

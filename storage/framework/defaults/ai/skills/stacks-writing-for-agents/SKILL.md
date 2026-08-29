@@ -1,6 +1,6 @@
 ---
 name: stacks-writing-for-agents
-description: Use when writing or editing any document an agent reads - a SKILL.md under app/Skills or storage/framework/defaults/ai/skills, the project AGENTS.md, or a reference file a skill points at. Covers context pointers, the information hierarchy, completion criteria, leading words, and pruning, plus the Stacks skill mechanics buddy setup:ai and @stacksjs/skills enforce.
+description: Use when writing or editing any document an agent reads - a SKILL.md under app/Skills or storage/framework/defaults/ai/skills, the project AGENTS.md, or a reference file a skill points at. Covers context pointers, the information hierarchy, completion criteria, leading words, pruning, and the skill mechanics behind app/Skills and buddy setup:ai.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

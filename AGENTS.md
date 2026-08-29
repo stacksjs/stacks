@@ -73,6 +73,7 @@ the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in
 
 Read the skill before building. The full list lives in `storage/framework/defaults/ai/skills/`; run
 `buddy setup:ai` to expose it to your agent, and add project-specific skills in `app/Skills/`.
+Every skill also has a docs page under `docs/skills/`, one per skill, grouped by section.
 
 ### Backend / API
 | Task | Skill |
