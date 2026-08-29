@@ -8,6 +8,7 @@
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { env as envVars } from '@stacksjs/env'
 import { enqueueAfterCommit, isInTransaction } from '@stacksjs/database'
+import type { Job } from './action'
 import { moveToDeadLetter } from './dead-letter'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { claimDispatchKey, releaseDispatchKey } from './idempotency'
@@ -93,7 +94,7 @@ class JobBuilder {
 
   constructor(
     private name: string,
-    private payload?: any,
+    private payload?: unknown,
   ) {}
 
   /**
@@ -499,7 +500,23 @@ export interface Jobs {}
  */
 export type JobName = keyof Jobs extends never ? string : keyof Jobs & string
 
-export function job(name: JobName, payload?: any): JobBuilder {
+/**
+ * The payload the named job's handler declares.
+ *
+ * The jobs registry is a real re-export barrel rather than a name-to-path map,
+ * so `Jobs[N]` is the job instance itself and its payload type can be read off
+ * it. Dispatching by name therefore gets the same checking as importing the
+ * job and calling `.dispatch()` - which matters more here, because by-name is
+ * the form that cannot be caught by a rename.
+ *
+ * Falls back to `unknown` for a job that declares no payload, and for any name
+ * while the registry is empty.
+ */
+export type JobPayload<N extends JobName> = N extends keyof Jobs
+  ? (Jobs[N] extends Job<infer P> ? P : unknown)
+  : unknown
+
+export function job<const N extends JobName>(name: N, payload?: JobPayload<N>): JobBuilder {
   return new JobBuilder(name, payload)
 }
 
@@ -531,32 +548,32 @@ export function job(name: JobName, payload?: any): JobBuilder {
  */
 export const Jobs = {
   /** Construct a builder without dispatching — for chained option calls. */
-  make(name: JobName, payload?: any): JobBuilder {
+  make<const N extends JobName>(name: N, payload?: JobPayload<N>): JobBuilder {
     return new JobBuilder(name, payload)
   },
 
   /** Dispatch a job in one call. Equivalent to `job(name, payload).dispatch()`. */
-  async dispatch(name: JobName, payload?: any): Promise<void> {
+  async dispatch<const N extends JobName>(name: N, payload?: JobPayload<N>): Promise<void> {
     await new JobBuilder(name, payload).dispatch()
   },
 
   /** Dispatch only if `condition` is truthy. */
-  async dispatchIf(condition: boolean, name: JobName, payload?: any): Promise<void> {
+  async dispatchIf<const N extends JobName>(condition: boolean, name: N, payload?: JobPayload<N>): Promise<void> {
     if (condition) await new JobBuilder(name, payload).dispatch()
   },
 
   /** Dispatch unless `condition` is truthy. */
-  async dispatchUnless(condition: boolean, name: JobName, payload?: any): Promise<void> {
+  async dispatchUnless<const N extends JobName>(condition: boolean, name: N, payload?: JobPayload<N>): Promise<void> {
     if (!condition) await new JobBuilder(name, payload).dispatch()
   },
 
   /** Run the job synchronously, bypassing the queue. */
-  async dispatchNow(name: JobName, payload?: any): Promise<void> {
+  async dispatchNow<const N extends JobName>(name: N, payload?: JobPayload<N>): Promise<void> {
     await new JobBuilder(name, payload).dispatchNow()
   },
 
   /** Schedule the job to run after `seconds` of delay. */
-  dispatchAfter(seconds: number, name: JobName, payload?: any): JobBuilder {
+  dispatchAfter<const N extends JobName>(seconds: number, name: N, payload?: JobPayload<N>): JobBuilder {
     return new JobBuilder(name, payload).delay(seconds)
   },
 
@@ -565,7 +582,7 @@ export const Jobs = {
    * (stacksjs/stacks#1872 Q-8). Equivalent to
    * `Jobs.make(name, payload).withIdempotencyKey(key).dispatch()`.
    */
-  async dispatchOnce(key: string, name: JobName, payload?: any): Promise<void> {
+  async dispatchOnce<const N extends JobName>(key: string, name: N, payload?: JobPayload<N>): Promise<void> {
     await new JobBuilder(name, payload).withIdempotencyKey(key).dispatch()
   },
 
@@ -577,7 +594,7 @@ export const Jobs = {
    * helper exists for callers that want the intent visible at the
    * call site for readability.
    */
-  async dispatchAfterCommit(name: JobName, payload?: any): Promise<void> {
+  async dispatchAfterCommit<const N extends JobName>(name: N, payload?: JobPayload<N>): Promise<void> {
     await new JobBuilder(name, payload).afterCommit().dispatch()
   },
 }

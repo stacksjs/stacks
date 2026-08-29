@@ -33,7 +33,8 @@ type Middlewares = typeof import('../auto-imports/middleware')['middleware']
 type EmailTemplates = typeof import('../auto-imports/emails')['emails']
 
 /** Every job, by the name `resolveJobFile` finds it under. */
-type Jobs = typeof import('../auto-imports/jobs')
+type JobRegistry = typeof import('../auto-imports/jobs')
+type Jobs = JobRegistry
 
 /** The application's middleware alias map, and the framework's behind it. */
 type AppAliases = typeof import('../../../app/Middleware')['default']
@@ -106,7 +107,19 @@ declare module '@stacksjs/email' {
 }
 
 declare module '@stacksjs/queue' {
-  interface Jobs extends Record<JobName, true> {}
+  /*
+   * The job MODULES, not `Record<JobName, true>`.
+   *
+   * The names are the same either way - `JobName` is `keyof` this - but the
+   * value carries the `Job<Payload>` instance, so dispatching by name can be
+   * checked against the payload its handler declares. Mapped to `true`, the
+   * registry knew a job existed and nothing about how to call it, and
+   * `job('SendWelcomeEmail', { emial: … })` was accepted.
+   *
+   * Free here: the jobs auto-import is a real re-export barrel rather than a
+   * name-to-path map, so `JobName` already resolves these modules.
+   */
+  interface Jobs extends JobRegistry {}
 }
 
 declare module '@stacksjs/actions' {
