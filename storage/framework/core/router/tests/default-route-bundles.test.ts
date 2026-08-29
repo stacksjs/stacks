@@ -205,4 +205,23 @@ describe('mounted routes per bundle (#2229)', () => {
     expect(authEmail).toContain('POST /webhooks/email/ses')
     expect(auth).not.toContain('POST /webhooks/email/ses')
   }, 120_000)
+
+  /**
+   * Every bundle bootstrap mounts has to be a name the resolver knows.
+   *
+   * `mounts()` returns false for a bundle missing from `DEFAULT_ROUTE_BUNDLES`,
+   * so a routes file added to bootstrap without its name being registered here
+   * is silently never mounted: no error, no warning, just endpoints that 404 in
+   * every app. That is exactly how `delivery` shipped unmounted.
+   */
+  test('every bundle bootstrap mounts is a known bundle name', async () => {
+    const bootstrap = await Bun.file(join(projectRoot, 'storage/framework/defaults/bootstrap.ts')).text()
+    const mounted = [...bootstrap.matchAll(/mounts\(\s*'([\w-]+)'/g)].map(m => m[1])
+
+    expect(mounted.length).toBeGreaterThan(0)
+
+    const known = new Set<string>([...DEFAULT_ROUTE_BUNDLES, ...OPT_IN_ROUTE_BUNDLES])
+    for (const name of mounted)
+      expect(known).toContain(name)
+  })
 })

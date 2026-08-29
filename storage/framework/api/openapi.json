@@ -10532,6 +10532,152 @@
         }
       }
     },
+    "/api/commerce/couriers": {
+      "get": {
+        "summary": "/api/commerce/couriers",
+        "operationId": "get__api_commerce_couriers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/commerce/couriers",
+        "operationId": "post__api_commerce_couriers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/commerce/couriers/{id}": {
+      "delete": {
+        "summary": "/api/commerce/couriers/{id}",
+        "operationId": "delete__api_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "get": {
+        "summary": "/api/commerce/couriers/{id}",
+        "operationId": "get__api_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/commerce/couriers/{id}",
+        "operationId": "patch__api_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/commerce/customers": {
       "get": {
         "summary": "/api/commerce/customers",
@@ -10965,152 +11111,6 @@
       "patch": {
         "summary": "/api/commerce/digital-deliveries/{id}",
         "operationId": "patch__api_commerce_digital_deliveries__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/commerce/drivers": {
-      "get": {
-        "summary": "/api/commerce/drivers",
-        "operationId": "get__api_commerce_drivers",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "post": {
-        "summary": "/api/commerce/drivers",
-        "operationId": "post__api_commerce_drivers",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/commerce/drivers/{id}": {
-      "delete": {
-        "summary": "/api/commerce/drivers/{id}",
-        "operationId": "delete__api_commerce_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "get": {
-        "summary": "/api/commerce/drivers/{id}",
-        "operationId": "get__api_commerce_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "patch": {
-        "summary": "/api/commerce/drivers/{id}",
-        "operationId": "patch__api_commerce_drivers__id_",
         "parameters": [
           {
             "name": "id",
@@ -15402,6 +15402,686 @@
         }
       }
     },
+    "/api/couriers": {
+      "get": {
+        "summary": "/api/couriers",
+        "operationId": "get__api_couriers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "integer"
+                          },
+                          "uuid": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "name": {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          "phone": {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          "vehicle_number": {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          "license": {
+                            "type": "string",
+                            "maxLength": 255
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "active",
+                              "on_delivery",
+                              "on_break",
+                              "offline"
+                            ]
+                          },
+                          "latitude": {
+                            "type": "number",
+                            "minimum": -90,
+                            "maximum": 90
+                          },
+                          "longitude": {
+                            "type": "number",
+                            "minimum": -180,
+                            "maximum": 180
+                          },
+                          "heading": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 360
+                          },
+                          "speed": {
+                            "type": "number",
+                            "minimum": 0
+                          },
+                          "last_ping_at": {
+                            "type": "timestamp"
+                          },
+                          "user_id": {
+                            "type": "integer"
+                          },
+                          "created_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "uuid"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/couriers",
+        "operationId": "post__api_couriers",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "phone": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle_number": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "license": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "on_delivery",
+                            "on_break",
+                            "offline"
+                          ]
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "heading": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 360
+                        },
+                        "speed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_ping_at": {
+                          "type": "timestamp"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/couriers/bulk-delete": {
+      "post": {
+        "summary": "/api/couriers/bulk-delete",
+        "operationId": "post__api_couriers_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/couriers/{id}": {
+      "delete": {
+        "summary": "/api/couriers/{id}",
+        "operationId": "delete__api_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "phone": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle_number": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "license": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "on_delivery",
+                            "on_break",
+                            "offline"
+                          ]
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "heading": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 360
+                        },
+                        "speed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_ping_at": {
+                          "type": "timestamp"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "get": {
+        "summary": "/api/couriers/{id}",
+        "operationId": "get__api_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "phone": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle_number": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "license": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "on_delivery",
+                            "on_break",
+                            "offline"
+                          ]
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "heading": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 360
+                        },
+                        "speed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_ping_at": {
+                          "type": "timestamp"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/couriers/{id}",
+        "operationId": "patch__api_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "phone": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle_number": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "license": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "on_delivery",
+                            "on_break",
+                            "offline"
+                          ]
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "heading": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 360
+                        },
+                        "speed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_ping_at": {
+                          "type": "timestamp"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/couriers/{id}",
+        "operationId": "put__api_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "phone": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle_number": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "license": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "on_delivery",
+                            "on_break",
+                            "offline"
+                          ]
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "heading": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 360
+                        },
+                        "speed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_ping_at": {
+                          "type": "timestamp"
+                        },
+                        "user_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/customers": {
       "get": {
         "summary": "/api/customers",
@@ -17037,6 +17717,152 @@
         }
       }
     },
+    "/api/dashboard/commerce/couriers": {
+      "get": {
+        "summary": "/api/dashboard/commerce/couriers",
+        "operationId": "get__api_dashboard_commerce_couriers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/dashboard/commerce/couriers",
+        "operationId": "post__api_dashboard_commerce_couriers",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/commerce/couriers/{id}": {
+      "delete": {
+        "summary": "/api/dashboard/commerce/couriers/{id}",
+        "operationId": "delete__api_dashboard_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "get": {
+        "summary": "/api/dashboard/commerce/couriers/{id}",
+        "operationId": "get__api_dashboard_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/dashboard/commerce/couriers/{id}",
+        "operationId": "patch__api_dashboard_commerce_couriers__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/commerce/customers": {
       "get": {
         "summary": "/api/dashboard/commerce/customers",
@@ -17438,152 +18264,6 @@
       "patch": {
         "summary": "/api/dashboard/commerce/digital-deliveries/{id}",
         "operationId": "patch__api_dashboard_commerce_digital_deliveries__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/dashboard/commerce/drivers": {
-      "get": {
-        "summary": "/api/dashboard/commerce/drivers",
-        "operationId": "get__api_dashboard_commerce_drivers",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "post": {
-        "summary": "/api/dashboard/commerce/drivers",
-        "operationId": "post__api_dashboard_commerce_drivers",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/dashboard/commerce/drivers/{id}": {
-      "delete": {
-        "summary": "/api/dashboard/commerce/drivers/{id}",
-        "operationId": "delete__api_dashboard_commerce_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "get": {
-        "summary": "/api/dashboard/commerce/drivers/{id}",
-        "operationId": "get__api_dashboard_commerce_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "patch": {
-        "summary": "/api/dashboard/commerce/drivers/{id}",
-        "operationId": "patch__api_dashboard_commerce_drivers__id_",
         "parameters": [
           {
             "name": "id",
@@ -24869,7 +25549,7 @@
                             "type": "string",
                             "format": "uuid"
                           },
-                          "driver": {
+                          "courier": {
                             "type": "string",
                             "maxLength": 255
                           },
@@ -24907,7 +25587,7 @@
                           "completed_at": {
                             "type": "timestamp"
                           },
-                          "driver_id": {
+                          "courier_id": {
                             "type": "integer"
                           },
                           "created_at": {
@@ -24963,7 +25643,7 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "driver": {
+                        "courier": {
                           "type": "string",
                           "maxLength": 255
                         },
@@ -25001,7 +25681,7 @@
                         "completed_at": {
                           "type": "timestamp"
                         },
-                        "driver_id": {
+                        "courier_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -25092,7 +25772,7 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "driver": {
+                        "courier": {
                           "type": "string",
                           "maxLength": 255
                         },
@@ -25130,7 +25810,7 @@
                         "completed_at": {
                           "type": "timestamp"
                         },
-                        "driver_id": {
+                        "courier_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -25194,7 +25874,7 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "driver": {
+                        "courier": {
                           "type": "string",
                           "maxLength": 255
                         },
@@ -25232,7 +25912,7 @@
                         "completed_at": {
                           "type": "timestamp"
                         },
-                        "driver_id": {
+                        "courier_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -25296,7 +25976,7 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "driver": {
+                        "courier": {
                           "type": "string",
                           "maxLength": 255
                         },
@@ -25334,7 +26014,7 @@
                         "completed_at": {
                           "type": "timestamp"
                         },
-                        "driver_id": {
+                        "courier_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -25398,7 +26078,7 @@
                           "type": "string",
                           "format": "uuid"
                         },
-                        "driver": {
+                        "courier": {
                           "type": "string",
                           "maxLength": 255
                         },
@@ -25436,7 +26116,7 @@
                         "completed_at": {
                           "type": "timestamp"
                         },
-                        "driver_id": {
+                        "courier_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -25548,6 +26228,13 @@
                             "type": "string",
                             "maxLength": 1000
                           },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "pickup",
+                              "dropoff"
+                            ]
+                          },
                           "delivery_route_id": {
                             "type": "integer"
                           },
@@ -25568,7 +26255,8 @@
                           "uuid",
                           "sequence",
                           "status",
-                          "address"
+                          "address",
+                          "type"
                         ]
                       }
                     }
@@ -25663,6 +26351,13 @@
                           "type": "string",
                           "maxLength": 1000
                         },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
                         "delivery_route_id": {
                           "type": "integer"
                         },
@@ -25683,7 +26378,8 @@
                         "uuid",
                         "sequence",
                         "status",
-                        "address"
+                        "address",
+                        "type"
                       ]
                     }
                   },
@@ -25813,6 +26509,13 @@
                           "type": "string",
                           "maxLength": 1000
                         },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
                         "delivery_route_id": {
                           "type": "integer"
                         },
@@ -25833,7 +26536,8 @@
                         "uuid",
                         "sequence",
                         "status",
-                        "address"
+                        "address",
+                        "type"
                       ]
                     }
                   },
@@ -25936,6 +26640,13 @@
                           "type": "string",
                           "maxLength": 1000
                         },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
                         "delivery_route_id": {
                           "type": "integer"
                         },
@@ -25956,7 +26667,8 @@
                         "uuid",
                         "sequence",
                         "status",
-                        "address"
+                        "address",
+                        "type"
                       ]
                     }
                   },
@@ -26059,6 +26771,13 @@
                           "type": "string",
                           "maxLength": 1000
                         },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
                         "delivery_route_id": {
                           "type": "integer"
                         },
@@ -26079,7 +26798,8 @@
                         "uuid",
                         "sequence",
                         "status",
-                        "address"
+                        "address",
+                        "type"
                       ]
                     }
                   },
@@ -26182,6 +26902,13 @@
                           "type": "string",
                           "maxLength": 1000
                         },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
                         "delivery_route_id": {
                           "type": "integer"
                         },
@@ -26202,7 +26929,8 @@
                         "uuid",
                         "sequence",
                         "status",
-                        "address"
+                        "address",
+                        "type"
                       ]
                     }
                   },
@@ -26926,686 +27654,6 @@
                             "active",
                             "inactive"
                           ]
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "uuid"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/drivers": {
-      "get": {
-        "summary": "/api/drivers",
-        "operationId": "get__api_drivers",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "id": {
-                            "type": "integer"
-                          },
-                          "uuid": {
-                            "type": "string",
-                            "format": "uuid"
-                          },
-                          "name": {
-                            "type": "string",
-                            "maxLength": 255
-                          },
-                          "phone": {
-                            "type": "string",
-                            "maxLength": 255
-                          },
-                          "vehicle_number": {
-                            "type": "string",
-                            "maxLength": 255
-                          },
-                          "license": {
-                            "type": "string",
-                            "maxLength": 255
-                          },
-                          "status": {
-                            "type": "string",
-                            "enum": [
-                              "active",
-                              "on_delivery",
-                              "on_break",
-                              "offline"
-                            ]
-                          },
-                          "latitude": {
-                            "type": "number",
-                            "minimum": -90,
-                            "maximum": 90
-                          },
-                          "longitude": {
-                            "type": "number",
-                            "minimum": -180,
-                            "maximum": 180
-                          },
-                          "heading": {
-                            "type": "number",
-                            "minimum": 0,
-                            "maximum": 360
-                          },
-                          "speed": {
-                            "type": "number",
-                            "minimum": 0
-                          },
-                          "last_ping_at": {
-                            "type": "timestamp"
-                          },
-                          "user_id": {
-                            "type": "integer"
-                          },
-                          "created_at": {
-                            "type": "string",
-                            "format": "date-time"
-                          },
-                          "updated_at": {
-                            "type": "string",
-                            "format": "date-time"
-                          }
-                        },
-                        "required": [
-                          "id",
-                          "uuid"
-                        ]
-                      }
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "post": {
-        "summary": "/api/drivers",
-        "operationId": "post__api_drivers",
-        "parameters": [],
-        "responses": {
-          "201": {
-            "description": "Created",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "uuid": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "phone": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "vehicle_number": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "license": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "on_delivery",
-                            "on_break",
-                            "offline"
-                          ]
-                        },
-                        "latitude": {
-                          "type": "number",
-                          "minimum": -90,
-                          "maximum": 90
-                        },
-                        "longitude": {
-                          "type": "number",
-                          "minimum": -180,
-                          "maximum": 180
-                        },
-                        "heading": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 360
-                        },
-                        "speed": {
-                          "type": "number",
-                          "minimum": 0
-                        },
-                        "last_ping_at": {
-                          "type": "timestamp"
-                        },
-                        "user_id": {
-                          "type": "integer"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "uuid"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/drivers/bulk-delete": {
-      "post": {
-        "summary": "/api/drivers/bulk-delete",
-        "operationId": "post__api_drivers_bulk_delete",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
-    "/api/drivers/{id}": {
-      "delete": {
-        "summary": "/api/drivers/{id}",
-        "operationId": "delete__api_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "uuid": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "phone": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "vehicle_number": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "license": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "on_delivery",
-                            "on_break",
-                            "offline"
-                          ]
-                        },
-                        "latitude": {
-                          "type": "number",
-                          "minimum": -90,
-                          "maximum": 90
-                        },
-                        "longitude": {
-                          "type": "number",
-                          "minimum": -180,
-                          "maximum": 180
-                        },
-                        "heading": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 360
-                        },
-                        "speed": {
-                          "type": "number",
-                          "minimum": 0
-                        },
-                        "last_ping_at": {
-                          "type": "timestamp"
-                        },
-                        "user_id": {
-                          "type": "integer"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "uuid"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "get": {
-        "summary": "/api/drivers/{id}",
-        "operationId": "get__api_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "uuid": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "phone": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "vehicle_number": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "license": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "on_delivery",
-                            "on_break",
-                            "offline"
-                          ]
-                        },
-                        "latitude": {
-                          "type": "number",
-                          "minimum": -90,
-                          "maximum": 90
-                        },
-                        "longitude": {
-                          "type": "number",
-                          "minimum": -180,
-                          "maximum": 180
-                        },
-                        "heading": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 360
-                        },
-                        "speed": {
-                          "type": "number",
-                          "minimum": 0
-                        },
-                        "last_ping_at": {
-                          "type": "timestamp"
-                        },
-                        "user_id": {
-                          "type": "integer"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "uuid"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "patch": {
-        "summary": "/api/drivers/{id}",
-        "operationId": "patch__api_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "uuid": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "phone": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "vehicle_number": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "license": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "on_delivery",
-                            "on_break",
-                            "offline"
-                          ]
-                        },
-                        "latitude": {
-                          "type": "number",
-                          "minimum": -90,
-                          "maximum": 90
-                        },
-                        "longitude": {
-                          "type": "number",
-                          "minimum": -180,
-                          "maximum": 180
-                        },
-                        "heading": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 360
-                        },
-                        "speed": {
-                          "type": "number",
-                          "minimum": 0
-                        },
-                        "last_ping_at": {
-                          "type": "timestamp"
-                        },
-                        "user_id": {
-                          "type": "integer"
-                        },
-                        "created_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        },
-                        "updated_at": {
-                          "type": "string",
-                          "format": "date-time"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "uuid"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "data"
-                  ]
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation failed"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      },
-      "put": {
-        "summary": "/api/drivers/{id}",
-        "operationId": "put__api_drivers__id_",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "integer"
-                        },
-                        "uuid": {
-                          "type": "string",
-                          "format": "uuid"
-                        },
-                        "name": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "phone": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "vehicle_number": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "license": {
-                          "type": "string",
-                          "maxLength": 255
-                        },
-                        "status": {
-                          "type": "string",
-                          "enum": [
-                            "active",
-                            "on_delivery",
-                            "on_break",
-                            "offline"
-                          ]
-                        },
-                        "latitude": {
-                          "type": "number",
-                          "minimum": -90,
-                          "maximum": 90
-                        },
-                        "longitude": {
-                          "type": "number",
-                          "minimum": -180,
-                          "maximum": 180
-                        },
-                        "heading": {
-                          "type": "number",
-                          "minimum": 0,
-                          "maximum": 360
-                        },
-                        "speed": {
-                          "type": "number",
-                          "minimum": 0
-                        },
-                        "last_ping_at": {
-                          "type": "timestamp"
-                        },
-                        "user_id": {
-                          "type": "integer"
                         },
                         "created_at": {
                           "type": "string",
@@ -58151,6 +58199,167 @@
         }
       }
     },
+    "/delivery/pings": {
+      "post": {
+        "summary": "/delivery/pings",
+        "operationId": "post__delivery_pings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/routes/{id}/start": {
+      "post": {
+        "summary": "/delivery/routes/{id}/start",
+        "operationId": "post__delivery_routes__id__start",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/complete": {
+      "post": {
+        "summary": "/delivery/stops/{id}/complete",
+        "operationId": "post__delivery_stops__id__complete",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/fail": {
+      "post": {
+        "summary": "/delivery/stops/{id}/fail",
+        "operationId": "post__delivery_stops__id__fail",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/delivery/stops/{id}/start": {
+      "post": {
+        "summary": "/delivery/stops/{id}/start",
+        "operationId": "post__delivery_stops__id__start",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/deployments/": {
       "get": {
         "summary": "/deployments/",
@@ -62643,6 +62852,80 @@
           "uuid"
         ]
       },
+      "Courier": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "vehicle_number": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "license": {
+            "type": "string",
+            "maxLength": 255
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "on_delivery",
+              "on_break",
+              "offline"
+            ]
+          },
+          "latitude": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "longitude": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "heading": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 360
+          },
+          "speed": {
+            "type": "number",
+            "minimum": 0
+          },
+          "last_ping_at": {
+            "type": "timestamp"
+          },
+          "user_id": {
+            "type": "integer"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "uuid"
+        ]
+      },
       "Customer": {
         "type": "object",
         "properties": {
@@ -62711,7 +62994,7 @@
             "type": "string",
             "format": "uuid"
           },
-          "driver": {
+          "courier": {
             "type": "string",
             "maxLength": 255
           },
@@ -62749,7 +63032,7 @@
           "completed_at": {
             "type": "timestamp"
           },
-          "driver_id": {
+          "courier_id": {
             "type": "integer"
           },
           "created_at": {
@@ -62829,6 +63112,13 @@
             "type": "string",
             "maxLength": 1000
           },
+          "type": {
+            "type": "string",
+            "enum": [
+              "pickup",
+              "dropoff"
+            ]
+          },
           "delivery_route_id": {
             "type": "integer"
           },
@@ -62849,7 +63139,8 @@
           "uuid",
           "sequence",
           "status",
-          "address"
+          "address",
+          "type"
         ]
       },
       "Deployment": {
@@ -62947,80 +63238,6 @@
               "active",
               "inactive"
             ]
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "updated_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "id",
-          "uuid"
-        ]
-      },
-      "Driver": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer"
-          },
-          "uuid": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "name": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "phone": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "vehicle_number": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "license": {
-            "type": "string",
-            "maxLength": 255
-          },
-          "status": {
-            "type": "string",
-            "enum": [
-              "active",
-              "on_delivery",
-              "on_break",
-              "offline"
-            ]
-          },
-          "latitude": {
-            "type": "number",
-            "minimum": -90,
-            "maximum": 90
-          },
-          "longitude": {
-            "type": "number",
-            "minimum": -180,
-            "maximum": 180
-          },
-          "heading": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 360
-          },
-          "speed": {
-            "type": "number",
-            "minimum": 0
-          },
-          "last_ping_at": {
-            "type": "timestamp"
-          },
-          "user_id": {
-            "type": "integer"
           },
           "created_at": {
             "type": "string",

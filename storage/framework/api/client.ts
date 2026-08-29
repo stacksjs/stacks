@@ -1017,6 +1017,41 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/commerce/couriers
+   */
+  getCommerceCouriers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/commerce/couriers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/commerce/couriers
+   */
+  postCommerceCouriers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/commerce/couriers", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/commerce/couriers/{id}
+   */
+  getCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/commerce/couriers/{id}
+   */
+  deleteCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/commerce/couriers/{id}
+   */
+  patchCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/commerce/customers
    */
   getCommerceCustomers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -1126,41 +1161,6 @@ export function createClient(config: ClientConfig) {
    */
   patchCommerceDigitalDeliveriesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/commerce/digital-deliveries/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * GET /api/commerce/drivers
-   */
-  getCommerceDrivers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/commerce/drivers", {}, [], false, options)
-  },
-
-  /**
-   * POST /api/commerce/drivers
-   */
-  postCommerceDrivers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/api/commerce/drivers", {}, [], false, options)
-  },
-
-  /**
-   * GET /api/commerce/drivers/{id}
-   */
-  getCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/commerce/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * DELETE /api/commerce/drivers/{id}
-   */
-  deleteCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "DELETE", "/api/commerce/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * PATCH /api/commerce/drivers/{id}
-   */
-  patchCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "PATCH", "/api/commerce/drivers/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -1962,6 +1962,55 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/couriers
+   */
+  getCouriers(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+    return request(config, "GET", "/api/couriers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/couriers
+   */
+  postCouriers(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "POST", "/api/couriers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/couriers/bulk-delete
+   */
+  postCouriersBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/couriers/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/couriers/{id}
+   */
+  getCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "GET", "/api/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/couriers/{id}
+   */
+  putCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "PUT", "/api/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/couriers/{id}
+   */
+  deleteCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "DELETE", "/api/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/couriers/{id}
+   */
+  patchCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "PATCH", "/api/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/customers
    */
   getCustomers(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "name"?: string; "email"?: string; "phone"?: string; "total_spent"?: number; "last_order"?: string; "status"?: "Active" | "Inactive"; "avatar"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
@@ -2270,6 +2319,41 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/commerce/couriers
+   */
+  getDashboardCommerceCouriers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/couriers", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/commerce/couriers
+   */
+  postDashboardCommerceCouriers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/commerce/couriers", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/dashboard/commerce/couriers/{id}
+   */
+  getDashboardCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/dashboard/commerce/couriers/{id}
+   */
+  deleteDashboardCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "DELETE", "/api/dashboard/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * PATCH /api/dashboard/commerce/couriers/{id}
+   */
+  patchDashboardCommerceCouriersId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/commerce/couriers/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/commerce/customers
    */
   getDashboardCommerceCustomers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
@@ -2372,41 +2456,6 @@ export function createClient(config: ClientConfig) {
    */
   patchDashboardCommerceDigitalDeliveriesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "PATCH", "/api/dashboard/commerce/digital-deliveries/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * GET /api/dashboard/commerce/drivers
-   */
-  getDashboardCommerceDrivers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/dashboard/commerce/drivers", {}, [], false, options)
-  },
-
-  /**
-   * POST /api/dashboard/commerce/drivers
-   */
-  postDashboardCommerceDrivers(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/api/dashboard/commerce/drivers", {}, [], false, options)
-  },
-
-  /**
-   * GET /api/dashboard/commerce/drivers/{id}
-   */
-  getDashboardCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "GET", "/api/dashboard/commerce/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * DELETE /api/dashboard/commerce/drivers/{id}
-   */
-  deleteDashboardCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "DELETE", "/api/dashboard/commerce/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * PATCH /api/dashboard/commerce/drivers/{id}
-   */
-  patchDashboardCommerceDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "PATCH", "/api/dashboard/commerce/drivers/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -4190,14 +4239,14 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/delivery-routes
    */
-  getDeliveryRoutes(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+  getDeliveryRoutes(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
     return request(config, "GET", "/api/delivery-routes", {}, [], false, options)
   },
 
   /**
    * POST /api/delivery-routes
    */
-  postDeliveryRoutes(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  postDeliveryRoutes(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "POST", "/api/delivery-routes", {}, [], false, options)
   },
 
@@ -4211,42 +4260,42 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/delivery-routes/{id}
    */
-  getDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  getDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "GET", "/api/delivery-routes/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PUT /api/delivery-routes/{id}
    */
-  putDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  putDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PUT", "/api/delivery-routes/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * DELETE /api/delivery-routes/{id}
    */
-  deleteDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  deleteDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "DELETE", "/api/delivery-routes/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PATCH /api/delivery-routes/{id}
    */
-  patchDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "driver"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "driver_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  patchDeliveryRoutesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PATCH", "/api/delivery-routes/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * GET /api/delivery-stops
    */
-  getDeliveryStops(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+  getDeliveryStops(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
     return request(config, "GET", "/api/delivery-stops", {}, [], false, options)
   },
 
   /**
    * POST /api/delivery-stops
    */
-  postDeliveryStops(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  postDeliveryStops(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "POST", "/api/delivery-stops", {}, [], false, options)
   },
 
@@ -4260,28 +4309,28 @@ export function createClient(config: ClientConfig) {
   /**
    * GET /api/delivery-stops/{id}
    */
-  getDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  getDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "GET", "/api/delivery-stops/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PUT /api/delivery-stops/{id}
    */
-  putDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  putDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PUT", "/api/delivery-stops/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * DELETE /api/delivery-stops/{id}
    */
-  deleteDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  deleteDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "DELETE", "/api/delivery-stops/{id}", input ?? {}, [], false, options)
   },
 
   /**
    * PATCH /api/delivery-stops/{id}
    */
-  patchDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+  patchDeliveryStopsId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PATCH", "/api/delivery-stops/{id}", input ?? {}, [], false, options)
   },
 
@@ -4346,55 +4395,6 @@ export function createClient(config: ClientConfig) {
    */
   patchDigitalDeliveriesId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "download_limit"?: number; "expiry_days"?: number; "requires_login"?: boolean; "automatic_delivery"?: boolean; "status"?: "active" | "inactive"; "created_at"?: string; "updated_at"?: string } }>> {
     return request(config, "PATCH", "/api/digital-deliveries/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * GET /api/drivers
-   */
-  getDrivers(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
-    return request(config, "GET", "/api/drivers", {}, [], false, options)
-  },
-
-  /**
-   * POST /api/drivers
-   */
-  postDrivers(options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
-    return request(config, "POST", "/api/drivers", {}, [], false, options)
-  },
-
-  /**
-   * POST /api/drivers/bulk-delete
-   */
-  postDriversBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/api/drivers/bulk-delete", {}, [], false, options)
-  },
-
-  /**
-   * GET /api/drivers/{id}
-   */
-  getDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
-    return request(config, "GET", "/api/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * PUT /api/drivers/{id}
-   */
-  putDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
-    return request(config, "PUT", "/api/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * DELETE /api/drivers/{id}
-   */
-  deleteDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
-    return request(config, "DELETE", "/api/drivers/{id}", input ?? {}, [], false, options)
-  },
-
-  /**
-   * PATCH /api/drivers/{id}
-   */
-  patchDriversId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "uuid": string; "name"?: string; "phone"?: string; "vehicle_number"?: string; "license"?: string; "status"?: "active" | "on_delivery" | "on_break" | "offline"; "latitude"?: number; "longitude"?: number; "heading"?: number; "speed"?: number; "last_ping_at"?: unknown; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
-    return request(config, "PATCH", "/api/drivers/{id}", input ?? {}, [], false, options)
   },
 
   /**
@@ -7384,6 +7384,41 @@ export function createClient(config: ClientConfig) {
    */
   getDashboardStats2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
     return request(config, "GET", "/dashboard/stats", {}, [], false, options)
+  },
+
+  /**
+   * POST /delivery/pings
+   */
+  postDeliveryPings(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/pings", {}, [], false, options)
+  },
+
+  /**
+   * POST /delivery/routes/{id}/start
+   */
+  postDeliveryRoutesIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/routes/{id}/start", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/complete
+   */
+  postDeliveryStopsIdComplete(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/complete", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/fail
+   */
+  postDeliveryStopsIdFail(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/fail", input ?? {}, [], false, options)
+  },
+
+  /**
+   * POST /delivery/stops/{id}/start
+   */
+  postDeliveryStopsIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/delivery/stops/{id}/start", input ?? {}, [], false, options)
   },
 
   /**

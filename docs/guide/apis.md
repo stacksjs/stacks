@@ -96,8 +96,10 @@ STACKS_DEFAULT_ROUTES=all
 STACKS_DEFAULT_ROUTES=none
 ```
 
-Available bundles are `auth`, `dashboard` and `email`. Unset means all of them,
-so an app that says nothing keeps the behaviour it already had.
+Available bundles are `auth`, `dashboard`, `delivery`, `email` and `forms`.
+Unset means all of them, so an app that says nothing keeps the behaviour it
+already had. Each is still gated on its own feature, so naming a bundle in an
+app that has the feature switched off mounts nothing.
 `STACKS_SKIP_DEFAULT_ROUTES=1` still means "none" and is still supported.
 
 This exists so an app can mount `/login` and 2FA without also mounting the
