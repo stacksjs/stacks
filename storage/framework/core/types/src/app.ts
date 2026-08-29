@@ -1,4 +1,8 @@
-export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | 'testing' | string
+// `(string & {})` rather than a bare `string`, which would absorb every
+// literal beside it and collapse the union to `string` - erasing the named
+// environments from completions while claiming to list them.
+// eslint-disable-next-line ts/ban-types -- keeps literal completions alive
+export type AppEnvType = 'local' | 'dev' | 'stage' | 'prod' | 'testing' | (string & {})
 
 /**
  * **Application Options**

@@ -284,7 +284,19 @@ overridesReady.then(() => {
 export * from './helpers'
 export { defaults, overrides, overridesReady }
 
-type AppEnv = 'dev' | 'stage' | 'prod' | string
+/**
+ * What `determineAppEnv` answers.
+ *
+ * The three canonical values, plus a passthrough for any other configured
+ * environment - the function maps local/development, staging and production
+ * onto them and returns anything else unchanged.
+ *
+ * `(string & {})` rather than a bare `string`: a bare one absorbs the literals
+ * and the union collapses, so the three canonical values stop being offered as
+ * completions and the type says nothing at all.
+ */
+// eslint-disable-next-line ts/ban-types -- `string & {}` keeps literal completions alive
+type AppEnv = 'dev' | 'stage' | 'prod' | (string & {})
 
 export function determineAppEnv(): AppEnv {
   // Read off the live proxy, not the snapshot `app` const above — when

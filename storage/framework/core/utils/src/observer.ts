@@ -35,7 +35,16 @@ export function isResizeObserverSupported(): boolean {
  *
  * Modern browsers all support ResizeObserver, but this provides a fallback
  */
-export function getResizeObserver(): any {
+/**
+ * The native `ResizeObserver`, or a polyfill constructor with the same shape.
+ *
+ * Typed as the constructor rather than `any`: the polyfill below already
+ * declares `implements ResizeObserver`, so both branches genuinely satisfy it
+ * and nothing had to be given up to say so. `any` here spread to the
+ * `ResizeObserver` export beneath, so every consumer of the polyfill lost
+ * `observe` / `unobserve` / `disconnect` checking.
+ */
+export function getResizeObserver(): new (_callback: ResizeObserverCallback) => ResizeObserver {
   if (isResizeObserverSupported()) {
     return window.ResizeObserver
   }
@@ -176,5 +185,5 @@ export function observeElementSize(
 }
 
 // Export the native ResizeObserver if available, or the polyfill
-export const ResizeObserver: any = getResizeObserver()
+export const ResizeObserver: new (_callback: ResizeObserverCallback) => ResizeObserver = getResizeObserver()
 export default ResizeObserver
