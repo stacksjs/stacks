@@ -156,6 +156,10 @@ export interface QueueJobOptions {
  */
 export interface RedisConnectionConfig {
   driver: 'redis'
+  /** Seconds before a reserved job is considered abandoned. Set by `config/queue.ts`. */
+  retryAfter?: number
+  /** Default queue name, which `config/queue.ts` sets. */
+  queue?: string
   /** Redis configuration */
   redis?: QueueRedisConfig
   /** Key prefix for queue keys */

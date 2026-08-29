@@ -26,6 +26,15 @@ export interface ErrorOptions {
     'activeUrl': string
     'alpha': string
     'alphaNumeric': string
+    /**
+     * The string-length minimum, paired with `maxLength`.
+     *
+     * Never declared, which is why `config/defaults.ts` carried its message
+     * under `'min('` - a key with a stray paren that matches no rule, so the
+     * message could never be looked up. Distinct from the numeric `'min'`
+     * below, which is why it could not simply be renamed to that.
+     */
+    'minLength': string
     'maxLength': string
     'fixedLength': string
     'confirmed': string

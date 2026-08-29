@@ -33,6 +33,7 @@
  * can read completely.
  */
 
+import type { Dirent } from 'node:fs'
 import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 import process from 'node:process'
@@ -99,15 +100,18 @@ function collectModels(root: string, origin: ModelSource['origin']): ModelSource
   const out: ModelSource[] = []
 
   const walk = (dir: string) => {
-    let entries: ReturnType<typeof readdirSync>
+    // `withFileTypes: true` selects the `Dirent[]` overload, which is what the
+    // loop below needs for `.name` and `.isDirectory()`. The binding used to
+    // be declared as the plain overload's return and cast back twice.
+    let entries: Dirent[]
     try {
-      entries = readdirSync(dir, { withFileTypes: true }) as any
+      entries = readdirSync(dir, { withFileTypes: true })
     }
     catch {
       return
     }
 
-    for (const entry of entries as any[]) {
+    for (const entry of entries) {
       const full = join(dir, entry.name)
       if (entry.isDirectory()) {
         walk(full)

@@ -194,6 +194,10 @@ export interface ServicesOptions {
      * verify the `stripe-signature` header against.
      */
     webhookSecret?: string
+    /** Stripe app id, which `config/services.ts` sets. */
+    appId?: string
+    /** Stripe API key, which `config/services.ts` sets. */
+    apiKey?: string
     /**
      * Pinned Stripe API version. Defaults to whatever the bundled SDK
      * was compiled against; override here when rolling forward without

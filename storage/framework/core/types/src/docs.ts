@@ -1,6 +1,14 @@
 import type { BunPressOptions } from '@stacksjs/bunpress'
 
 export interface DocsUserConfig extends BunPressOptions {
+  /**
+   * Show a "last updated" stamp on each page.
+   *
+   * Declared here because `config/docs.ts` sets it and BunPressOptions does
+   * not list it - which is what the `as any` on that whole config block was
+   * covering, along with every other key in it.
+   */
+  lastUpdated?: boolean
   deploy?: boolean
 }
 

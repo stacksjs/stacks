@@ -1,4 +1,4 @@
-import type { Ok } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import type { Validator } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
@@ -41,12 +41,12 @@ import {
 
 import { dropCommonTables } from './defaults/traits'
 
-export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
+export async function resetMysqlDatabase(): Promise<Result<string, never>> {
   await dropMysqlTables()
   await deleteFrameworkModels()
   await deleteMigrationFiles()
 
-  return ok('All tables dropped successfully!') as any
+  return ok('All tables dropped successfully!')
 }
 
 export async function dropMysqlTables(): Promise<void> {

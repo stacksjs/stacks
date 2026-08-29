@@ -282,8 +282,8 @@ export const defaults: StacksOptions = {
       //   code: '',
       //   placement: '',
       // },
-    } as any,
-  } as any,
+    },
+  },
 
   email: {
     from: {
@@ -308,7 +308,7 @@ export const defaults: StacksOptions = {
       'activeUrl': 'The {{ field }} field must be a valid URL',
       'alpha': 'The {{ field }} field must contain only letters',
       'alphaNumeric': 'The {{ field }} field must contain only letters and numbers',
-      'min(': 'The {{ field }} field must have at least {{ min }} characters',
+      'minLength': 'The {{ field }} field must have at least {{ min }} characters',
       'maxLength': 'The {{ field }} field must not be greater than {{ max }} characters',
       'fixedLength': 'The {{ field }} field must be {{ size }} characters long',
       'confirmed': 'The {{ field }} field and {{ otherField }} field must be the same',
@@ -368,13 +368,13 @@ export const defaults: StacksOptions = {
 
       // record
       'record': 'The {{ field }} field must be an object',
-      'record.min(': 'The {{ field }} field must have at least {{ min }} items',
+      'record.min': 'The {{ field }} field must have at least {{ min }} items',
       'record.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
       'record.fixedLength': 'The {{ field }} field must contain {{ size }} items',
 
       // array
       'array': 'The {{ field }} field must be an array',
-      'array.min(': 'The {{ field }} field must have at least {{ min }} items',
+      'array.min': 'The {{ field }} field must have at least {{ min }} items',
       'array.maxLength': 'The {{ field }} field must not have more than {{ max }} items',
       'array.fixedLength': 'The {{ field }} field must contain {{ size }} items',
       'notEmpty': 'The {{ field }} field must not be empty',
@@ -387,7 +387,7 @@ export const defaults: StacksOptions = {
       'union': 'Invalid value provided for {{ field }} field',
       'unionGroup': 'Invalid value provided for {{ field }} field',
       'unionOfTypes': 'Invalid value provided for {{ field }} field',
-    } as any,
+    },
   },
 
   git: {
@@ -630,7 +630,7 @@ export const defaults: StacksOptions = {
         region: FRAMEWORK_DEFAULTS.awsRegion,
       },
     },
-  } as any,
+  },
 
   saas: {
     plans: [
@@ -744,7 +744,7 @@ export const defaults: StacksOptions = {
       appId: '',
       apiKey: '',
     },
-  } as any,
+  },
 
   filesystems: {
     /*
