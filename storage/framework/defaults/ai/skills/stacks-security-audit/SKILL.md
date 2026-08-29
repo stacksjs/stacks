@@ -1,6 +1,6 @@
 ---
 name: stacks-security-audit
-description: Use when performing security analysis on a Stacks application — OWASP Top 10, STRIDE threat modeling, attack surface mapping, dependency audit. Requires concrete exploit scenarios. Invoke with /stacks-security-audit.
+description: Use when performing security analysis on a Stacks application - OWASP Top 10, STRIDE threat modeling, attack surface mapping, dependency audit. Requires concrete exploit scenarios. Invoke with /stacks-security-audit.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

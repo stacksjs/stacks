@@ -1,6 +1,6 @@
 ---
 name: stacks-calendar
-description: Use when working with calendar functionality in Stacks — exporting events to Google Calendar, Outlook, Yahoo, or ICS format, the CalendarLink interface for event definitions, timezone handling, all-day events, or calendar URL generation. Covers @stacksjs/calendar-api.
+description: Use when working with calendar functionality in Stacks - exporting events to Google Calendar, Outlook, Yahoo, or ICS format, the CalendarLink interface for event definitions, timezone handling, all-day events, or calendar URL generation. Covers @stacksjs/calendar-api.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

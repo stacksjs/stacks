@@ -1,6 +1,6 @@
 ---
 name: stacks-tunnel
-description: Use when setting up tunnels in Stacks — local development tunnels for webhook testing, custom cloud tunnel deployment to AWS EC2, tunnel event callbacks (onConnect, onRequest, onResponse, onError), subdomain configuration, or the buddy share command. Covers @stacksjs/tunnel.
+description: Use when setting up tunnels in Stacks - local development tunnels for webhook testing, custom cloud tunnel deployment to AWS EC2, tunnel event callbacks (onConnect, onRequest, onResponse, onError), subdomain configuration, or the buddy share command. Covers @stacksjs/tunnel.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

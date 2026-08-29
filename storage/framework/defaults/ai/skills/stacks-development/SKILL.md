@@ -1,6 +1,6 @@
 ---
 name: stacks-development
-description: Use when setting up or configuring the Stacks development environment — dev server, hot reload, development utilities, or IDE configuration. Covers the @stacksjs/development package, the dev server, CLI commands, reverse proxy, SSL, and dev workflow.
+description: Use when setting up or configuring the Stacks development environment - dev server, hot reload, development utilities, or IDE configuration. Covers the @stacksjs/development package, the dev server, CLI commands, reverse proxy, SSL, and dev workflow.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

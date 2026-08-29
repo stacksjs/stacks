@@ -1,6 +1,6 @@
 ---
 name: stacks-actions
-description: Use when working with Stacks server actions — creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 80+ default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/app/Actions/.
+description: Use when working with Stacks server actions - creating actions in app/Actions/, auto-generated API actions from the useApi model trait, the 80+ default framework actions (auth, dashboard, commerce, content, deployment, jobs), action request/response handling, or action registration. Covers @stacksjs/actions and storage/framework/defaults/app/Actions/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

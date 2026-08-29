@@ -1,119 +1,247 @@
 ---
 name: stacks-investigate
-description: Use when debugging issues in the Stacks project — four-phase root-cause debugging with hypothesis testing and escalation. Enforces "no fixes without root cause." Invoke with /stacks-investigate.
+description: Use when debugging a Stacks issue - something broken, throwing, failing, flaky or slow. Builds a tight feedback loop that goes red on the bug before any hypothesis is allowed, then minimises, tests hypotheses, fixes and locks it down with a regression test. Enforces no fixes without root cause. Invoke with /stacks-investigate.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
-# /stacks-investigate — Root Cause Debugging
+# /stacks-investigate - root cause debugging
 
-You are a systematic debugger for the Stacks framework. Find the **root cause**, not just make symptoms go away. No fixes until the root cause is confirmed.
+A discipline for hard bugs. Find the **root cause**, not a way to make the
+symptom go away. Skip a phase only when you can say why.
 
-## Phase 1: Investigate
+Credit: the feedback-loop-first structure is adapted from Matt Pocock's
+`diagnosing-bugs` skill (MIT), <https://github.com/mattpocock/skills>.
 
-Gather information. Do not form hypotheses yet.
+## Redact
 
-1. **Understand the symptom**: What's happening vs. what should happen?
-2. **Reproduce mentally**: Read code paths end-to-end. Trace data flow from input to failure point.
-3. **Collect evidence**:
-   - Read error messages, stack traces, and logs (`storage/logs/stacks.log`)
-   - Check recent git history: `git log --oneline -20 -- [relevant files]`
-   - Check for related test failures: `bun test [relevant test file]`
-   - Check config files that affect the failing path (`config/*.ts`)
-4. **Map blast radius**: What else touches this code? Use `grep` to find all callers.
+This skill has you show commands, outputs and captured artifacts. **Redact every
+secret first**, writing `<REDACTED>` in its place. Build loops against env vars
+so the credential stays in the environment rather than in what you show. In a
+Stacks project the usual offenders are `.env`, `.env.production`,
+`config/services.ts`, `APP_KEY`, AWS keys and `HCLOUD_TOKEN`, plus captured HTTP
+traffic carrying an `Authorization` header. Quote only the lines that carry the
+signal.
 
-For Stacks-specific issues, also check:
-- ORM model definitions in `storage/framework/defaults/app/Models/`
-- Route definitions in `routes/`
-- Action handlers in `storage/framework/core/actions/src/`
-- Middleware in `storage/framework/defaults/app/Middleware/`
+If the redacted output is not enough to diagnose the bug, say so and ask the
+user.
 
-```
-## Investigation Summary
-**Symptom**: [what's happening]
-**Expected**: [what should happen]
-**Affected code**: [file:line references]
-**Recent changes**: [relevant commits]
-**Blast radius**: [other code/features affected]
-```
+## Phase 1: build a feedback loop
 
-## Phase 2: Pattern Analysis
+**This is the skill.** Everything else is mechanical. With a **tight** pass/fail
+signal, one that goes **red** on *this* bug, you will find the cause: bisection,
+hypothesis testing and instrumentation all just consume it. Without one, no
+amount of staring at code will save you.
 
-1. **When does it fail?** Always, or only under certain conditions? Environment-specific?
-2. **Failure mode?** Crash / wrong result / hang / intermittent
-3. **Where in the stack?**
-   - Framework issue (check `storage/framework/core/`)
-   - Application code issue (`app/`, `routes/`, `resources/`)
-   - Dependency issue (check `bun.lock` for version changes)
-   - Configuration issue (`config/*.ts`)
+Spend disproportionate effort here. Be aggressive, be creative, refuse to give
+up.
 
-```
-## Pattern Analysis
-**Failure type**: [crash / wrong result / hang / intermittent]
-**Consistency**: [always / conditional / intermittent]
-**Layer**: [framework / application / dependency / config]
-**Key observation**: [most important pattern]
-```
+### Ways to construct one, in roughly this order
 
-## Phase 3: Hypothesis Testing
+1. **Failing test** at whatever seam reaches the bug. `bun test <path>` is the
+   loop. See `stacks-tdd` for which seam.
+2. **HTTP script** against `buddy dev`, using `curl` or `Bun.fetch` with a
+   fixture payload.
+3. **CLI invocation**, for instance `buddy <command>` with a fixture input,
+   diffing stdout against a known-good snapshot.
+4. **REPL probe**. `buddy repl` reaches models, config and the query builder
+   directly, which is the fastest loop for an ORM or relationship bug.
+5. **Headless browser script**. `/stacks-browse` drives a real browser over CDP
+   and asserts on DOM, console and network with nothing to install.
+6. **Replay a captured trace.** Save a real request, payload or event log to
+   disk, then replay it through the code path in isolation.
+7. **Throwaway harness.** A single file that boots the minimum (one action, a
+   seeded database) and exercises the bug path with one call.
+8. **Deterministic database state.** `buddy migrate:fresh --seed` plus the
+   model factories gives byte-identical rows every run, which turns "sometimes
+   wrong" into "always wrong" more often than you would expect.
+9. **Property or fuzz loop.** For "sometimes the output is wrong", run a
+   thousand inputs and look for the failure mode.
+10. **Bisection harness.** If the bug appeared between two known states, automate
+    "boot at state X, check, repeat" so `git bisect run` can consume it.
+11. **Differential loop.** Same input through two versions or two configs, diff
+    the outputs. This is the one for a dependency bump or a driver swap.
+12. **HITL bash script.** Last resort. If a human must click, drive *them* with
+    [scripts/hitl-loop.template.sh](scripts/hitl-loop.template.sh) so the loop is
+    still structured, and the captured output feeds back to you.
 
-Form up to 3 hypotheses, ranked by likelihood.
+Build the right feedback loop and the bug is 90% fixed.
 
-```
-### Hypothesis 1 (most likely): [title]
-**Claim**: [specific root cause]
-**Prediction**: [observable if true]
-**Test**: [how to verify]
-**Result**: ✅ Confirmed / ❌ Refuted / ⚠️ Inconclusive
-```
+### Tighten the loop
 
-### Escalation Rule
+Treat the loop as a product. Once you have *a* loop, **tighten** it:
 
-If all 3 hypotheses refuted:
-1. **Stop and reassess.** Don't generate more hypotheses in a loop.
-2. Present what you've ruled out.
-3. Ask for additional context.
-4. If still stuck after second round, recommend:
-   - Add targeted logging with `log.debug()` from `@stacksjs/logging`
-   - Write a minimal reproduction case
-   - Run `buddy doctor` for system diagnostics
+- Faster. Narrow the test path, skip unrelated init, reuse the seeded database
+  instead of re-migrating.
+- Sharper signal. Assert on the specific symptom, not "it did not crash".
+- More deterministic. Pin the clock, seed the RNG, isolate the filesystem, freeze
+  the network, and pick one driver rather than whatever `config/` happens to
+  select.
 
-**Never apply a fix just to "see if it helps."**
+A 30-second flaky loop is barely better than no loop. A 2-second deterministic
+one is a superpower.
 
-## Phase 4: Implementation
+### Non-deterministic bugs
 
-Only enter when a hypothesis is confirmed.
+The goal is not a clean repro but a **higher reproduction rate**. Loop the
+trigger 100 times, parallelise, add stress, narrow the timing window, inject
+sleeps. A 50% flake is debuggable, 1% is not, so keep raising the rate.
 
-1. **Explain the root cause** in plain language
-2. **Show the minimal fix** — change as little as possible
-3. **Verify**:
-   - Run existing tests: `bun test`
-   - Check blast radius from Phase 1
-   - Run `bunx --bun pickier . --fix` for formatting
-4. **Suggest a regression test**
+### When you genuinely cannot build a loop
 
-```
-## Root Cause
-[Clear explanation]
+Stop and say so explicitly. List what you tried. Ask the user for one of: access
+to an environment that reproduces it, a redacted captured artifact (a HAR file, a
+log dump from `storage/logs/stacks.log`, a screen recording with timestamps), or
+permission to add temporary instrumentation in production. Do **not** proceed to
+hypothesise without a loop.
 
-## Fix
-[Minimal code change with file:line references]
+### Completion criterion: a tight loop that goes red
 
-## Verification
-- [x] Existing tests pass (`bun test`)
-- [x] Blast radius checked
-- [ ] Regression test: [suggested test]
-```
+Phase 1 is done when you can name **one command** that you have **already run at
+least once**, showing the invocation and its output, redacted, and that is:
+
+- [ ] **Red-capable.** It drives the actual bug code path and asserts the
+      **user's exact symptom**, so it can go red now and green once fixed. Not
+      "runs without erroring".
+- [ ] **Deterministic.** Same verdict every run, or for a flaky bug, a pinned
+      high reproduction rate.
+- [ ] **Fast.** Seconds, not minutes.
+- [ ] **Agent-runnable.** You can run it unattended, with a human in the loop
+      only through the HITL template.
+
+If you catch yourself reading code to build a theory before this command exists,
+**stop. Jumping straight to a hypothesis is the exact failure this skill
+prevents.** No red-capable command, no Phase 2.
+
+## Phase 2: reproduce and minimise
+
+Run the loop. Watch it go red.
+
+Confirm:
+
+- [ ] The loop produces the failure the **user** described, not a different one
+      that happens to be nearby. Wrong bug means wrong fix.
+- [ ] It reproduces across multiple runs, or at a high enough rate to debug
+      against.
+- [ ] You have captured the exact symptom (error message, wrong output, slow
+      timing) so later phases can verify the fix addresses it.
+
+Then shrink the repro to the **smallest scenario that still goes red**. Cut
+inputs, callers, config, middleware, seeded rows and steps **one at a time**,
+re-running the loop after each cut, and keep only what is load-bearing.
+
+A minimal repro shrinks the hypothesis space in Phase 3 and becomes the clean
+regression test in Phase 5.
+
+Done when **every remaining element is load-bearing**: removing any one of them
+makes the loop go green.
+
+## Phase 3: hypothesise
+
+Generate **3 to 5 ranked hypotheses** before testing any of them.
+Single-hypothesis generation anchors on the first plausible idea.
+
+Each must be **falsifiable**, stating the prediction it makes:
+
+> If X is the cause, then changing Y will make the bug disappear, or changing Z
+> will make it worse.
+
+If you cannot state the prediction, the hypothesis is a vibe. Discard or sharpen
+it.
+
+Gather the evidence that ranks them from where Stacks actually keeps it:
+
+- `storage/logs/stacks.log` for the runtime trail.
+- `git log --oneline -20 -- <paths>` for what changed recently.
+- `config/*.ts` for which driver, connection or host is selected in this
+  environment.
+- `app/Models/` and `storage/framework/defaults/app/Models/` for the model, and
+  `database/migrations/` for whether the schema matches it.
+- `storage/framework/types/*.d.ts` and the auto-import manifests, which are
+  generated and go stale. A symbol that types as `any` in an app is usually this.
+- `routes/`, `app/Middleware.ts` and `app/Events.ts` for the registries, where a
+  missing entry fails silently rather than loudly.
+- `bun.lock` and `pantry.lock`. There are two install trees, and Bun resolves
+  `node_modules`, so verify the version that actually loads.
+
+Show the ranked list to the user before testing. They often re-rank it instantly
+("we just deployed a change to number three") or name one already ruled out. Do
+not block on it. Proceed with your ranking if the user is away.
+
+## Phase 4: instrument
+
+Each probe maps to a specific prediction from Phase 3. **Change one variable at a
+time.**
+
+Tool preference:
+
+1. **REPL or debugger inspection** where the environment supports it. One
+   breakpoint beats ten logs, and `buddy repl` is usually reachable.
+2. **Targeted logs** at the boundaries that distinguish the hypotheses, via
+   `log.debug()` from `@stacksjs/logging`.
+3. Never "log everything and grep".
+
+**Tag every debug log** with a unique prefix such as `[DEBUG-a4f2]`, so cleanup
+is a single grep. Untagged logs survive. Tagged ones die.
+
+**Performance branch.** For a regression, logs are usually the wrong instrument.
+Establish a baseline measurement first (a timing harness, `performance.now()`, a
+profiler, the query plan), then bisect. Measure first, fix second. In a Stacks
+app the first thing to measure is query count, because an N+1 through a
+relationship looks exactly like "the framework got slower".
+
+## Phase 5: fix and regression test
+
+Write the regression test **before the fix**, but only if there is a **correct
+seam** for it.
+
+A correct seam is one where the test exercises the **real bug pattern** as it
+occurs at the call site. If the only available seam is too shallow (a single
+caller test when the bug needs several, a unit test that cannot replicate the
+chain that triggered it), a test there gives false confidence.
+
+**If no correct seam exists, that itself is the finding.** Note it. The
+architecture is preventing the bug from being locked down, which is a
+`stacks-codebase-design` problem, not a testing one.
+
+If a correct seam exists:
+
+1. Turn the minimised repro into a failing test at that seam.
+2. Watch it fail.
+3. Apply the fix. Change as little as possible.
+4. Watch it pass.
+5. Re-run the Phase 1 loop against the original, un-minimised scenario.
+
+## Phase 6: cleanup
+
+Required before declaring done:
+
+- [ ] The original repro no longer reproduces. Re-run the Phase 1 loop.
+- [ ] The regression test passes, or the absence of a seam is documented.
+- [ ] All `[DEBUG-...]` instrumentation removed. Grep the prefix.
+- [ ] Throwaway harnesses deleted, or moved to a clearly marked debug location.
+- [ ] `./buddy lint:fix` and `./buddy typecheck` are clean.
+- [ ] The hypothesis that turned out correct is stated in the commit message, so
+      the next debugger learns.
 
 ## Rules
 
-- **No fixes without root cause.** If you can't explain WHY, you haven't found the bug.
-- **Read before you grep.** Understand architecture first.
-- **Don't blame the framework first.** Application code is wrong far more often than `storage/framework/core/` code.
-- **Intermittent bugs are timing bugs** until proven otherwise. Look for race conditions, missing `await`, shared mutable state.
-- **If the fix is more than ~20 lines, question the root cause.** Large fixes often mean you're working around the problem.
+- **No fixes without root cause.** If you cannot explain why, you have not found
+  the bug.
+- **Never apply a fix to see if it helps.** That is a hypothesis test with no
+  prediction and no cleanup.
+- **Do not blame the framework first.** Application code and configuration are
+  wrong far more often than `storage/framework/core/` is.
+- **Intermittent bugs are timing bugs** until proven otherwise. Look for a
+  missing `await`, a race, or shared mutable state.
+- **If the fix runs past about 20 lines, question the root cause.** Large fixes
+  usually mean you are working around the problem.
+- **Check the blast radius before you fix.** A change in `storage/framework/core/`
+  can reach 15+ downstream packages, and in a published package a change to a
+  `.d.ts` path can silently degrade consumers to `any`.
 
 ## Downstream
 
-> **Fix applied.** Run `/stacks-review` to verify — it will check against this investigation's root cause.
+> **Fix applied.** Run `/stacks-review` to review it, and `/stacks-retro` when
+> the real lesson is that the environment let the bug hide.

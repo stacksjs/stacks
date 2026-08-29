@@ -1,6 +1,6 @@
 ---
 name: stacks-ui
-description: Use when working with UI in a Stacks application — components, composables, reactivity (refs/watch/computed), Craft native components, Crosswind CSS, Crosswind utility framework, accessibility, or the STX templating engine. Covers @stacksjs/ui, @stacksjs/stx, and related UI tooling.
+description: Use when working with UI in a Stacks application - components, composables, reactivity (refs/watch/computed), Craft native components, Crosswind CSS, Crosswind utility framework, accessibility, or the STX templating engine. Covers @stacksjs/ui, @stacksjs/stx, and related UI tooling.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

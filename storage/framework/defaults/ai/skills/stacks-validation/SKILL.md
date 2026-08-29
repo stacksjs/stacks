@@ -1,6 +1,6 @@
 ---
 name: stacks-validation
-description: Use when implementing validation in Stacks — type guards (isString, isNumber, isBoolean, isObject, isArray, isFunction, etc.), numeric checks (isPositive, isEven, isInteger), the schema builder for model attribute validation, or request validation. Covers @stacksjs/validation.
+description: Use when implementing validation in Stacks - type guards (isString, isNumber, isBoolean, isObject, isArray, isFunction, etc.), numeric checks (isPositive, isEven, isInteger), the schema builder for model attribute validation, or request validation. Covers @stacksjs/validation.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

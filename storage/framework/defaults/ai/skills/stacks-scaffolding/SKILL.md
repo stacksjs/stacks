@@ -1,6 +1,6 @@
 ---
 name: stacks-scaffolding
-description: Use when generating new code with Stacks — buddy make commands, project scaffolding, component/page/store/layout generation, or project templates. Covers buddy make:* commands and STX scaffolding utilities.
+description: Use when generating new code with Stacks - buddy make commands, project scaffolding, component/page/store/layout generation, or project templates. Covers buddy make:* commands and STX scaffolding utilities.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

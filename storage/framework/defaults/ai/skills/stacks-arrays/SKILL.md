@@ -1,6 +1,6 @@
 ---
 name: stacks-arrays
-description: Use when working with array utilities in Stacks — statistical operations (average, median, mode, standard deviation, z-score, percentile, covariance), array manipulation (unique, flatten, partition, shuffle, sample, move), containment checks, or the Arr facade. Covers @stacksjs/arrays.
+description: Use when working with array utilities in Stacks - statistical operations (average, median, mode, standard deviation, z-score, percentile, covariance), array manipulation (unique, flatten, partition, shuffle, sample, move), containment checks, or the Arr facade. Covers @stacksjs/arrays.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

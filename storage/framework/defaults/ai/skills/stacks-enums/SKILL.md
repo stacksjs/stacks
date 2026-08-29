@@ -1,6 +1,6 @@
 ---
 name: stacks-enums
-description: Use when working with framework constants in a Stacks application — NpmScript commands, Action identifiers, or any enumerated constants used across the build system, CLI, and actions. Covers @stacksjs/enums.
+description: Use when working with framework constants in a Stacks application - NpmScript commands, Action identifiers, or any enumerated constants used across the build system, CLI, and actions. Covers @stacksjs/enums.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

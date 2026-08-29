@@ -38,8 +38,26 @@ reference for a task instead of guessing at an API.
 symlinks by default so skills stay in sync when you upgrade the framework. Pass
 `--copy` if you would rather edit them per project.
 
+### Two kinds
+
+Most bundled skills are **subsystem reference**: one per part of the framework,
+model-invoked, found by the agent from the task at hand. A smaller set are
+**engineering craft** skills that shape how the work happens rather than which
+package it touches: `stacks-flow` routes between them, and `stacks-grilling`,
+`stacks-codebase-design`, `stacks-tdd`, `stacks-domain-modeling`,
+`stacks-prototype`, `stacks-wizard`, `stacks-handoff` and
+`stacks-writing-for-agents` are the rest. Several are adapted from
+[mattpocock/skills](https://github.com/mattpocock/skills) (MIT), with credit in
+each `SKILL.md`.
+
+### Adding your own
+
 To add a project-specific skill, or to shadow a bundled one, create
-`app/Skills/<name>/SKILL.md`. `@stacksjs/skills` searches `app/Skills` first and
-falls back to this directory - the same app-overrides-defaults model the rest of
-the framework uses - and `setup:ai` links the winner, so a project skill also
-wins in the agent's directory.
+`app/Skills/<name>/SKILL.md`. Read `stacks-writing-for-agents` before you do:
+it covers the frontmatter `validateSkill()` enforces, the invocation choice, and
+how to write a description that fires when it should.
+
+`@stacksjs/skills` searches `app/Skills` first and falls back to this directory,
+the same app-overrides-defaults model the rest of the framework uses, and
+`setup:ai` links the winner, so a project skill also wins in the agent's
+directory.

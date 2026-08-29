@@ -1,6 +1,6 @@
 ---
 name: stacks-cloud
-description: Use when deploying or managing cloud infrastructure for Stacks — AWS deployment via CloudFormation/CDK, server mode (EC2, ALB, VPC), serverless mode (Lambda, API Gateway, CloudFront), jump boxes, domain management (Route53), S3 storage, SES email, edge computing, security groups, IAM, or the cloud configuration. Covers @stacksjs/cloud, @stacksjs/deploy, storage/framework/cloud/, and cloud/.
+description: Use when deploying or managing cloud infrastructure for Stacks - AWS deployment via CloudFormation/CDK, server mode (EC2, ALB, VPC), serverless mode (Lambda, API Gateway, CloudFront), jump boxes, domain management (Route53), S3 storage, SES email, edge computing, security groups, IAM, or the cloud configuration. Covers @stacksjs/cloud, @stacksjs/deploy, storage/framework/cloud/, and cloud/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, AWS
 allowed-tools: Read Edit Write Bash Grep Glob

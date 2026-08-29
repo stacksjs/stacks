@@ -1,6 +1,6 @@
 ---
 name: stacks-sms
-description: Use when implementing SMS in Stacks — sending text messages, the SmsBuilder fluent API, SMS templates, phone verification (OTP/2FA), bulk sending, Twilio/Vonage drivers, E.164 formatting, or the SMS facade. Covers @stacksjs/sms and config/sms.ts.
+description: Use when implementing SMS in Stacks - sending text messages, the SmsBuilder fluent API, SMS templates, phone verification (OTP/2FA), bulk sending, Twilio/Vonage drivers, E.164 formatting, or the SMS facade. Covers @stacksjs/sms and config/sms.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

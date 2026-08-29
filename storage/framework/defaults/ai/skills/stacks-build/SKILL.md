@@ -1,6 +1,6 @@
 ---
 name: stacks-build
-description: Use when working with the Stacks build system — building component libraries, CLI binaries, server Docker images, documentation, or the framework core. Covers @stacksjs/build, buddy build commands, build actions, and the server build pipeline.
+description: Use when working with the Stacks build system - building component libraries, CLI binaries, server Docker images, documentation, or the framework core. Covers @stacksjs/build, buddy build commands, build actions, and the server build pipeline.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

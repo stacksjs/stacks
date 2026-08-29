@@ -1,6 +1,6 @@
 ---
 name: stacks-config
-description: Use when working with Stacks configuration — the 44 config files, config helper functions, default values, environment-specific overrides, or the defineApp/defineDatabase/etc builder functions. Covers @stacksjs/config and the config/ directory.
+description: Use when working with Stacks configuration - the 44 config files, config helper functions, default values, environment-specific overrides, or the defineApp/defineDatabase/etc builder functions. Covers @stacksjs/config and the config/ directory.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

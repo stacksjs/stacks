@@ -1,6 +1,6 @@
 ---
 name: stacks-objects
-description: Use when working with object manipulation in Stacks — deep merging with type safety, object mapping/transformation, strict key checking, typed entries/keys, property picking, clearing undefined values, or the DeepMerge utility type. Covers @stacksjs/objects.
+description: Use when working with object manipulation in Stacks - deep merging with type safety, object mapping/transformation, strict key checking, typed entries/keys, property picking, clearing undefined values, or the DeepMerge utility type. Covers @stacksjs/objects.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

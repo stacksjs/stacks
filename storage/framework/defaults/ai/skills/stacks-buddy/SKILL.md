@@ -1,6 +1,6 @@
 ---
 name: stacks-buddy
-description: Use when working with the Stacks CLI (buddy/bud/stacks/stx) — understanding all 50+ commands with their flags and options, adding custom commands, the make:* scaffolding commands, development server commands, build commands, deployment commands, email/mail commands, environment management, or domain/DNS commands. Covers @stacksjs/buddy and all CLI command files.
+description: Use when working with the Stacks CLI (buddy/bud/stacks/stx) - understanding all 50+ commands with their flags and options, adding custom commands, the make:* scaffolding commands, development server commands, build commands, deployment commands, email/mail commands, environment management, or domain/DNS commands. Covers @stacksjs/buddy and all CLI command files.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

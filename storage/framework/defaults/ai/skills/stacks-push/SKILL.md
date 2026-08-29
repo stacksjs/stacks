@@ -1,6 +1,6 @@
 ---
 name: stacks-push
-description: Use when implementing push notifications in Stacks — sending via Expo Push Service or Firebase Cloud Messaging (FCM legacy and v1 APIs), configuring push drivers, batch sending, multicast, topic subscriptions, push notification payloads, token validation, or receipt checking. Covers @stacksjs/push.
+description: Use when implementing push notifications in Stacks - sending via Expo Push Service or Firebase Cloud Messaging (FCM legacy and v1 APIs), configuring push drivers, batch sending, multicast, topic subscriptions, push notification payloads, token validation, or receipt checking. Covers @stacksjs/push.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

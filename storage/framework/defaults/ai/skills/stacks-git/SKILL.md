@@ -1,6 +1,6 @@
 ---
 name: stacks-git
-description: Use when working with git in a Stacks application — commit conventions, git hooks, changelog generation, commit scopes/types, or GitHub API types. Covers @stacksjs/git, config/git.ts, config/commit.ts, and the git hooks system.
+description: Use when working with git in a Stacks application - commit conventions, git hooks, changelog generation, commit scopes and types, GitHub API types, or resolving an in-progress merge or rebase conflict. Covers @stacksjs/git, config/git.ts, config/commit.ts, and the git hooks system.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -147,12 +147,40 @@ interface WorkflowRun {
 }
 ```
 
+## Resolving a merge or rebase conflict
+
+Resolve by **intent**, traced back to each side's primary source, never by
+picking lines that look plausible.
+
+1. **See the current state.** `git status`, `git log --oneline --graph -20`, and
+   the conflicting files. Know which operation you are in the middle of, a merge
+   or a rebase, before touching anything.
+2. **Find the primary source for each side.** Read the commit messages, the PR,
+   the issue. Understand deeply why each change was made and what it was for. A
+   conflict is two intents colliding, and you cannot resolve it while you only
+   know one.
+3. **Resolve each hunk.** Preserve both intents where possible. Where they are
+   genuinely incompatible, pick the one matching the merge's stated goal and note
+   the trade-off. Do not invent new behaviour to bridge them. Always resolve,
+   never `--abort`.
+4. **Run the checks.** `./buddy lint`, `./buddy typecheck`, `./buddy test`. In
+   this framework two conflict classes survive a clean textual merge and only
+   show up here: a model changed on both sides, where the generated migrations
+   diverged and one has to be regenerated, and a registry file
+   (`app/Routes.ts`, `app/Events.ts`, `app/Middleware.ts`) where a dropped entry
+   fails silently rather than failing to compile.
+5. **Finish the operation.** Stage everything and commit, or continue the rebase
+   until every commit is replayed.
+
+Credit: adapted from Matt Pocock's `resolving-merge-conflicts` skill (MIT),
+<https://github.com/mattpocock/skills>.
+
 ## Gotchas
-- **`@stacksjs/git` is mostly re-exports** — actual functionality in `@stacksjs/gitlint`, `@stacksjs/gitit`, `bun-git-hooks`
-- **Pre-commit runs lint-staged** — the only default hook
-- **Emoji disabled by default** — `useEmoji: false` but emoji mappings exist for each type
-- **`buddy commit` runs `npm run commit`** — delegates to commitizen/cz-git flow
-- **Scopes dynamically extended** — component and function names merged into scopes at runtime
-- **Breaking changes only for feat/fix** — `allowBreakingChanges: ['feat', 'fix']`
-- **No max header length** — `maxHeaderLength: Infinity`
-- **Git hooks config re-exports** — `git-hooks.config.ts` just re-exports from `config/git.ts`
+- **`@stacksjs/git` is mostly re-exports** - actual functionality in `@stacksjs/gitlint`, `@stacksjs/gitit`, `bun-git-hooks`
+- **Pre-commit runs lint-staged** - the only default hook
+- **Emoji disabled by default** - `useEmoji: false` but emoji mappings exist for each type
+- **`buddy commit` runs `npm run commit`** - delegates to commitizen/cz-git flow
+- **Scopes dynamically extended** - component and function names merged into scopes at runtime
+- **Breaking changes only for feat/fix** - `allowBreakingChanges: ['feat', 'fix']`
+- **No max header length** - `maxHeaderLength: Infinity`
+- **Git hooks config re-exports** - `git-hooks.config.ts` just re-exports from `config/git.ts`

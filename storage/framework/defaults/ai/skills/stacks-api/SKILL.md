@@ -1,6 +1,6 @@
 ---
 name: stacks-api
-description: Use when building, modifying, or debugging API endpoints in a Stacks application — defining routes, handling requests, API middleware, working with the API server, HTTP client (fetcher), API resources, or OpenAPI generation. Covers both @stacksjs/api utilities and the stacks-api server implementation.
+description: Use when building, modifying, or debugging API endpoints in a Stacks application - defining routes, handling requests, API middleware, working with the API server, HTTP client (fetcher), API resources, or OpenAPI generation. Covers both @stacksjs/api utilities and the stacks-api server implementation.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

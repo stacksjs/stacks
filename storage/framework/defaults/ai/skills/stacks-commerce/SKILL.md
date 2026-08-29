@@ -1,6 +1,6 @@
 ---
 name: stacks-commerce
-description: Use when building e-commerce features in Stacks — the commerce namespace with 13 sub-modules (products, orders, customers, coupons, payments, shipping, tax, gift cards, waitlists, devices, receipts, restaurant), 20+ commerce models, default commerce functions, or the commerce configuration. Covers @stacksjs/commerce.
+description: Use when building e-commerce features in Stacks - the commerce namespace with 13 sub-modules (products, orders, customers, coupons, payments, shipping, tax, gift cards, waitlists, devices, receipts, restaurant), 20+ commerce models, default commerce functions, or the commerce configuration. Covers @stacksjs/commerce.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

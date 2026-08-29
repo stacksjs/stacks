@@ -1,6 +1,6 @@
 ---
 name: stacks-composables
-description: Use when creating or using reactive composables in STX templates — 90+ composables for state management, DOM interaction, sensors, animation, browser APIs, async operations, or the complete list of auto-imported composables. Covers @stacksjs/composables.
+description: Use when creating or using reactive composables in STX templates - 90+ composables for state management, DOM interaction, sensors, animation, browser APIs, async operations, or the complete list of auto-imported composables. Covers @stacksjs/composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

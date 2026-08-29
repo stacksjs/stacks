@@ -1,6 +1,6 @@
 ---
 name: stacks-storage
-description: Use when working with file storage in Stacks — the Storage facade (put/get/delete/copy/move/list), StorageAdapter interface, local and S3 disk configurations, file uploads (UploadedFile class), file operations (read/write/copy/move/delete/hash/glob/zip), visibility management, checksums, MIME types, temporary URLs, or filesystem configuration. Covers @stacksjs/storage and config/filesystems.ts.
+description: Use when working with file storage in Stacks - the Storage facade (put/get/delete/copy/move/list), StorageAdapter interface, local and S3 disk configurations, file uploads (UploadedFile class), file operations (read/write/copy/move/delete/hash/glob/zip), visibility management, checksums, MIME types, temporary URLs, or filesystem configuration. Covers @stacksjs/storage and config/filesystems.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

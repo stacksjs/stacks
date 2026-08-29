@@ -1,6 +1,6 @@
 ---
 name: stacks-health
-description: Use when implementing health checks in a Stacks application — service monitoring, health endpoints, or diagnostic checks. Covers @stacksjs/health (currently WIP — Oh Dear integration planned).
+description: Use when implementing health checks in a Stacks application - service monitoring, health endpoints, or diagnostic checks. Covers @stacksjs/health (currently WIP - Oh Dear integration planned).
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-configuration
-description: Use when setting up or modifying Stacks project-level configuration — bunfig.toml preload order, the tsconfig chain and TypeScript 7 / tsgo type checking, workspace configuration, .env setup, package.json scripts, system requirements (Bun >= 1.3.0, SQLite >= 3.47.2), or the project bootstrap process. For individual feature configs (database, email, auth, etc.), see the specific package skills instead.
+description: Use when setting up or modifying Stacks project-level configuration - bunfig.toml preload order, the tsconfig chain and TypeScript 7 / tsgo type checking, workspace configuration, .env setup, package.json scripts, system requirements (Bun >= 1.3.0, SQLite >= 3.47.2), or the project bootstrap process. For individual feature configs (database, email, auth, etc.), see the specific package skills instead.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-collections
-description: Use when working with collection data structures in Stacks — chaining array operations, Laravel-style collection methods, mapping, filtering, reducing, or grouping. Covers @stacksjs/collections which wraps ts-collect.
+description: Use when working with collection data structures in Stacks - chaining array operations, Laravel-style collection methods, mapping, filtering, reducing, or grouping. Covers @stacksjs/collections which wraps ts-collect.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

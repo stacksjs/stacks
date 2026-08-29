@@ -1,6 +1,6 @@
 ---
 name: stacks-strings
-description: Use when working with string utilities in Stacks — case conversion (camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Train-Case, etc.), pluralization, string validation (email, URL, UUID, credit card, etc.), slug generation, random strings, template interpolation, or the Str facade. Covers @stacksjs/strings.
+description: Use when working with string utilities in Stacks - case conversion (camelCase, PascalCase, snake_case, kebab-case, CONSTANT_CASE, Train-Case, etc.), pluralization, string validation (email, URL, UUID, credit card, etc.), slug generation, random strings, template interpolation, or the Str facade. Covers @stacksjs/strings.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-http
-description: Use when working with HTTP utilities in a Stacks application — HTTP status codes, making outbound HTTP requests via HttxClient, reactive fetch composables (useFetch/createFetch), or HTTP-related helpers. Covers @stacksjs/http, @stacksjs/httx, and the fetch composables in @stacksjs/composables.
+description: Use when working with HTTP utilities in a Stacks application - HTTP status codes, making outbound HTTP requests via HttxClient, reactive fetch composables (useFetch/createFetch), or HTTP-related helpers. Covers @stacksjs/http, @stacksjs/httx, and the fetch composables in @stacksjs/composables.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

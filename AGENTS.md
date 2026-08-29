@@ -114,12 +114,41 @@ Read the skill before building. The full list lives in `storage/framework/defaul
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
 | Native iOS/Android apps, Craft bridge, mobile builds and components | `stacks-mobile` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
-| Testing (DB test utils, feature tests, config) | `stacks-testing` |
+| Testing: the utilities, DB test setup, feature tests, config | `stacks-testing` |
+| Testing: the discipline, red-green loop, which seam to test at | `stacks-tdd` |
 | Dev server, HMR, reverse proxy, SSL | `stacks-development`, `stacks-server` |
 | Technical diagrams (architecture, workflow, sequence, data flow, lifecycle) | `stacks-technical-diagrams` |
 
 The recommended order for a new feature is **model, migration, action, route, test** (see
-`stacks-new-feature`).
+`stacks-new-feature`), one **tracer bullet** at a time.
+
+### Engineering craft
+
+These shape *how* the work happens rather than which subsystem it touches. Where the tables above
+answer "which package", these answer "what do I do now". `stacks-flow` is the router over them: run
+it when you cannot remember which one fits.
+
+| Situation | Skill |
+|---|---|
+| Which skill or flow fits this situation, and where to cut a session | `stacks-flow` |
+| An idea needs stress-testing before anything is built | `stacks-office-hours`, `stacks-grilling` |
+| A design question needs a runnable answer, not an argument | `stacks-prototype` |
+| Scope, data flow, interfaces, test matrix, implementation plan | `stacks-plan-review` |
+| Where a seam goes, how deep a module should be, testability | `stacks-codebase-design` |
+| The project's domain language, `CONTEXT.md`, ADRs | `stacks-domain-modeling` |
+| Build it test-first, one vertical slice at a time | `stacks-tdd`, `stacks-new-feature` |
+| Something is broken, flaky or slow | `stacks-investigate` |
+| Review a diff on standards and spec | `stacks-review` |
+| QA it in a real browser | `stacks-browse` |
+| Security analysis (OWASP, STRIDE, attack surface) | `stacks-security-audit` |
+| Destructive-command guard, freeze mode, the PreToolUse hook | `stacks-guard` |
+| A step only a human can take (credentials, DNS, CI secrets, a cutover) | `stacks-wizard` |
+| Hand the work to another session, harness or person | `stacks-handoff` |
+| Improve the environment the next session runs in | `stacks-retro` |
+| Write a skill, an `AGENTS.md`, or any doc an agent reads | `stacks-writing-for-agents` |
+
+Several of these are adapted, with credit in each `SKILL.md`, from
+[mattpocock/skills](https://github.com/mattpocock/skills) (MIT).
 
 ---
 

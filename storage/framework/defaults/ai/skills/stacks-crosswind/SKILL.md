@@ -1,6 +1,6 @@
 ---
 name: stacks-crosswind
-description: Use when styling components in a Stacks application — utility-first CSS classes, theming, responsive design, variants, custom rules, or CSS generation. Crosswind is the CSS utility engine powering Stacks' Crosswind config.
+description: Use when styling components in a Stacks application - utility-first CSS classes, theming, responsive design, variants, custom rules, or CSS generation. Crosswind is the CSS utility engine powering Stacks' Crosswind config.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-types
-description: Use when working with TypeScript type definitions in a Stacks application — model types, request types, environment variables, event types, billing types, attribute types, or auto-imported globals. Covers storage/framework/types/ and storage/framework/core/types/src/.
+description: Use when working with TypeScript type definitions in a Stacks application - model types, request types, environment variables, event types, billing types, attribute types, or auto-imported globals. Covers storage/framework/types/ and storage/framework/core/types/src/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

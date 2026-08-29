@@ -1,6 +1,6 @@
 ---
 name: stacks-alias
-description: Use when working with path aliases in a Stacks project — import resolution, module aliasing, or debugging import paths. Covers @stacksjs/alias which defines 260+ path mappings for the entire framework.
+description: Use when working with path aliases in a Stacks project - import resolution, module aliasing, or debugging import paths. Covers @stacksjs/alias which defines 260+ path mappings for the entire framework.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

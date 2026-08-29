@@ -1,6 +1,6 @@
 ---
 name: stacks-server
-description: Use when working with the Stacks development or production server — server configuration, server middleware, or server startup. Covers @stacksjs/server and storage/framework/server/.
+description: Use when working with the Stacks development or production server - server configuration, server middleware, or server startup. Covers @stacksjs/server and storage/framework/server/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

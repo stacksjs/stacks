@@ -1,6 +1,6 @@
 ---
 name: stacks-notifications
-description: Use when implementing notifications in Stacks — multi-channel notifications (email, SMS, push, chat, database), the database notification driver with read/unread tracking, notification factories (useEmail, useSMS, useChat, useDatabase), or notification configuration. Covers @stacksjs/notifications and config/notification.ts.
+description: Use when implementing notifications in Stacks - multi-channel notifications (email, SMS, push, chat, database), the database notification driver with read/unread tracking, notification factories (useEmail, useSMS, useChat, useDatabase), or notification configuration. Covers @stacksjs/notifications and config/notification.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-migrations
-description: Use when working with database migrations in a Stacks application — creating migration files, running migrations, fresh migration (drop + recreate), seeding after migration, migration file naming conventions, or the 96+ built-in migration files. For the database API itself (queries, connections, SQL helpers), see stacks-database.
+description: Use when working with database migrations in a Stacks application - creating migration files, running migrations, fresh migration (drop + recreate), seeding after migration, migration file naming conventions, or the 96+ built-in migration files. For the database API itself (queries, connections, SQL helpers), see stacks-database.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob

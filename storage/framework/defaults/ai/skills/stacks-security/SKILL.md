@@ -1,6 +1,6 @@
 ---
 name: stacks-security
-description: Use when implementing security in Stacks — password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, or security configuration (firewall, rate limiting, IP allowlists). Covers @stacksjs/security and config/security.ts.
+description: Use when implementing security in Stacks - password hashing (bcrypt/argon2), app key generation, AES encryption/decryption, hash verification, rehashing detection, or security configuration (firewall, rate limiting, IP allowlists). Covers @stacksjs/security and config/security.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

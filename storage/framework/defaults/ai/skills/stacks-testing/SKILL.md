@@ -1,6 +1,6 @@
 ---
 name: stacks-testing
-description: Use when writing or running tests in Stacks — test setup, database test utilities (setup, refresh, truncate), DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
+description: Use when writing or running tests in Stacks - test setup, database test utilities (setup, refresh, truncate), DynamoDB testing, feature test patterns, the test CLI commands, test configuration in bunfig.toml, or test environment setup. Covers @stacksjs/testing and tests/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -9,6 +9,11 @@ allowed-tools: Read Edit Write Bash Grep Glob
 # Stacks Testing
 
 Uses Bun's built-in test runner with Stacks-specific test utilities.
+
+This skill is the **mechanics**: the utilities, the setup, the CLI, the gotchas.
+`stacks-tdd` is the **discipline**: the red-green loop, which seam a test belongs
+at, and the anti-patterns that make a test worse than no test. Read that one
+before deciding what to test, and this one for how.
 
 ## Key Paths
 - Core package: `storage/framework/core/testing/src/`
@@ -122,8 +127,13 @@ preload = ["./tests/setup.ts"]
 - Uses Bun's native test runner, NOT Jest or Vitest
 - Test preload runs `tests/setup.ts` before each test file
 - SQLite testing database is at `database/stacks_testing.sqlite`
-- `refreshDatabase()` drops ALL tables — use in test setup only
+- `refreshDatabase()` drops ALL tables - use in test setup only
 - DynamoDB Local must be installed for DynamoDB tests
-- Queue testing uses `fake()`/`restore()` pattern — affects global state
+- Queue testing uses `fake()`/`restore()` pattern - affects global state
 - `@stacksjs/faker` provides test data generation
 - Coverage reports with `bun run test:coverage`
+
+## Downstream
+
+> Deciding what to test, or where? `/stacks-tdd`. Reviewing someone else's
+> tests? `/stacks-review` audits coverage as its third pass.

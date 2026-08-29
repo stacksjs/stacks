@@ -1,6 +1,6 @@
 ---
 name: stacks-middleware
-description: Use when working with middleware in a Stacks application — defining middleware, applying to routes, middleware aliases, parameterized middleware, groups, or the middleware execution pipeline. Covers the Middleware class, app/Middleware.ts alias registry, and all 22 default middleware files.
+description: Use when working with middleware in a Stacks application - defining middleware, applying to routes, middleware aliases, parameterized middleware, groups, or the middleware execution pipeline. Covers the Middleware class, app/Middleware.ts alias registry, and all 22 default middleware files.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-logging
-description: Use when implementing logging in Stacks — the log facade (info, error, warn, debug, success), dump/dd debugging, timing functions, file-based logging, or log configuration. Covers @stacksjs/logging and config/logging.ts.
+description: Use when implementing logging in Stacks - the log facade (info, error, warn, debug, success), dump/dd debugging, timing functions, file-based logging, or log configuration. Covers @stacksjs/logging and config/logging.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

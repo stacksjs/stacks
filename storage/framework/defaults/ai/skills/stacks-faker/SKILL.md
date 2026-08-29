@@ -1,6 +1,6 @@
 ---
 name: stacks-faker
-description: Use when working with fake data generation in a Stacks application — seeding databases, generating test data, model factories, or using faker utilities. Covers @stacksjs/faker (wrapper around ts-mocker) and its integration with the database seeder.
+description: Use when working with fake data generation in a Stacks application - seeding databases, generating test data, model factories, or using faker utilities. Covers @stacksjs/faker (wrapper around ts-mocker) and its integration with the database seeder.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

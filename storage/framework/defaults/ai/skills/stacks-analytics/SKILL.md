@@ -1,6 +1,6 @@
 ---
 name: stacks-analytics
-description: Use when adding analytics to a Stacks application — configuring Fathom or self-hosted analytics, generating tracking scripts, privacy-friendly analytics setup, or the analytics configuration. Covers @stacksjs/analytics and config/analytics.ts.
+description: Use when adding analytics to a Stacks application - configuring Fathom or self-hosted analytics, generating tracking scripts, privacy-friendly analytics setup, or the analytics configuration. Covers @stacksjs/analytics and config/analytics.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

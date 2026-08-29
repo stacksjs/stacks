@@ -1,6 +1,6 @@
 ---
 name: stacks-auto-imports
-description: Use when working with the Stacks auto-import system — understanding how browser and server auto-imports work, configuring auto-imported functions/models/composables, the auto-import manifests, type generation, or how globals are injected. Covers the auto-import pipeline at storage/framework/auto-imports/.
+description: Use when working with the Stacks auto-import system - understanding how browser and server auto-imports work, configuring auto-imported functions/models/composables, the auto-import manifests, type generation, or how globals are injected. Covers the auto-import pipeline at storage/framework/auto-imports/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

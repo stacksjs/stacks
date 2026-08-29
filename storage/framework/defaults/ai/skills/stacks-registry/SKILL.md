@@ -1,6 +1,6 @@
 ---
 name: stacks-registry
-description: Use when working with the Stacks extension registry — framework extension metadata, package discovery, or the registry system. Covers @stacksjs/registry.
+description: Use when working with the Stacks extension registry - framework extension metadata, package discovery, or the registry system. Covers @stacksjs/registry.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

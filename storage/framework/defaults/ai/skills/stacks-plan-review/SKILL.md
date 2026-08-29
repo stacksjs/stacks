@@ -1,12 +1,12 @@
 ---
 name: stacks-plan-review
-description: Use for architecture review of Stacks changes — scope review (CEO-level), data flow analysis, dependency analysis, test matrices, and implementation plans. Invoke with /stacks-plan-review.
+description: Use for architecture review of Stacks changes - scope review, data flow analysis, dependency and interface analysis, test matrices, and an implementation plan sliced into tracer bullets. Invoke with /stacks-plan-review.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
 ---
 
-# /stacks-plan-review — Architecture Review & Planning
+# /stacks-plan-review - Architecture Review & Planning
 
 You analyze proposed changes at two levels: scope review (are we building the right thing?) and engineering review (are we building it right?).
 
@@ -14,9 +14,21 @@ You analyze proposed changes at two levels: scope review (are we building the ri
 
 If `/stacks-office-hours` produced a design document, read it. Don't ask the user to re-explain.
 
+## Vocabulary
+
+Call the Skill tool with `stacks-codebase-design` before Step 3. Every interface
+and seam judgement below uses its terms exactly (**module**, **interface**,
+**depth**, **seam**, **adapter**, **leverage**, **locality**) and its principles:
+the deletion test, the interface is the test surface, and one adapter means a
+hypothetical seam while two mean a real one. Do not drift into "component",
+"service" or "boundary".
+
+Where the plan is still soft enough that questions outnumber answers, run
+`stacks-grilling` first and come back with the decision tree settled.
+
 ## Step 1: Scope Review
 
-### Expansion Analysis — Is this doing too much
+### Expansion Analysis - Is this doing too much
 
 ```
 | Addition | Core to goal? | Can ship separately? | Risk if included |
@@ -24,7 +36,7 @@ If `/stacks-office-hours` produced a design document, read it. Don't ask the use
 | [item] | [yes/no] | [yes/no] | [risk] |
 ```
 
-### Reduction Analysis — Is this doing too little
+### Reduction Analysis - Is this doing too little
 
 ```
 | Missing piece | Needed for v1? | Cost of deferring |
@@ -120,7 +132,14 @@ P0: Must have before merge. P1: Should have. P2: Nice to have.
 1. [specific rollback step]
 ```
 
-Each phase should be independently mergeable. Run `bun test` at each checkpoint.
+Each phase should be independently mergeable, which is the same bar
+`stacks-new-feature` sets for a **tracer bullet**: a narrow but complete path
+through model, migration, action, route and test. Hand the phases to that skill
+to slice and build, and give each one its blocking edges here so the frontier is
+obvious. A change whose blast radius makes a vertical slice impossible is a
+**wide refactor**, and it is sequenced expand, migrate, contract instead.
+
+Run `./buddy typecheck` and `bun test` at each checkpoint.
 
 ## Output
 
@@ -149,4 +168,6 @@ Each phase should be independently mergeable. Run `bun test` at each checkpoint.
 
 ## Downstream
 
-> **Plan complete.** After implementation, run `/stacks-review` for code review, `/stacks-security-audit` for security, or `/stacks-browse` for QA.
+> **Plan complete.** Build it with `/stacks-new-feature`, driving `/stacks-tdd`
+> inside each slice. Then `/stacks-review` for the two-axis review,
+> `/stacks-security-audit` for security, or `/stacks-browse` for QA.

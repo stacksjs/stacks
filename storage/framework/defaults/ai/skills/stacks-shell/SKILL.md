@@ -1,6 +1,6 @@
 ---
 name: stacks-shell
-description: Use when executing shell commands in a Stacks application — running system commands, process management, or using the shell operator. Covers @stacksjs/shell which wraps Bun's native $ operator.
+description: Use when executing shell commands in a Stacks application - running system commands, process management, or using the shell operator. Covers @stacksjs/shell which wraps Bun's native $ operator.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

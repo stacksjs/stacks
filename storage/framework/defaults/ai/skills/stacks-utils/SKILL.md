@@ -1,6 +1,6 @@
 ---
 name: stacks-utils
-description: Use when needing general utility functions in Stacks — deep merge, debounce/throttle, color output, byte formatting, markdown tables, YAML parsing, Pipeline class, ResizeObserver, Macroable, project initialization, indentation detection, or the comprehensive utility toolkit. Covers @stacksjs/utils.
+description: Use when needing general utility functions in Stacks - deep merge, debounce/throttle, color output, byte formatting, markdown tables, YAML parsing, Pipeline class, ResizeObserver, Macroable, project initialization, indentation detection, or the comprehensive utility toolkit. Covers @stacksjs/utils.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

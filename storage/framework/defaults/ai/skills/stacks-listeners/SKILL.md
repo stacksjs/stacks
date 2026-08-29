@@ -1,6 +1,6 @@
 ---
 name: stacks-listeners
-description: Use when creating event listeners in app/Listeners/ — the listener file structure, registering listeners in app/Events.ts, the listener-to-action mapping pattern, CLI event listeners in Console.ts, or debugging listener execution. For the event system API (dispatch, listen, emitter, model events), see stacks-events.
+description: Use when creating event listeners in app/Listeners/ - the listener file structure, registering listeners in app/Events.ts, the listener-to-action mapping pattern, CLI event listeners in Console.ts, or debugging listener execution. For the event system API (dispatch, listen, emitter, model events), see stacks-events.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

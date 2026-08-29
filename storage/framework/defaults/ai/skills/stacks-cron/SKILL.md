@@ -1,6 +1,6 @@
 ---
 name: stacks-cron
-description: Use when working with cron expressions in a Stacks application — parsing cron syntax, registering OS-level cron jobs, or low-level scheduling. Covers @stacksjs/cron. For higher-level scheduling, see stacks-scheduler.
+description: Use when working with cron expressions in a Stacks application - parsing cron syntax, registering OS-level cron jobs, or low-level scheduling. Covers @stacksjs/cron. For higher-level scheduling, see stacks-scheduler.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

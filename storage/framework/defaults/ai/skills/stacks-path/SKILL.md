@@ -1,6 +1,6 @@
 ---
 name: stacks-path
-description: Use when working with file paths in Stacks — 100+ framework-aware path builder functions for every directory in the project (actions, app, config, database, models, routes, storage, etc.), plus Node.js path utilities (join, resolve, basename, dirname, etc.). Covers @stacksjs/path.
+description: Use when working with file paths in Stacks - 100+ framework-aware path builder functions for every directory in the project (actions, app, config, database, models, routes, storage, etc.), plus Node.js path utilities (join, resolve, basename, dirname, etc.). Covers @stacksjs/path.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

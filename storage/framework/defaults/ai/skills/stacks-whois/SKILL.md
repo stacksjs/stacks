@@ -1,6 +1,6 @@
 ---
 name: stacks-whois
-description: Use when performing WHOIS lookups in Stacks — domain queries, batch lookups, SOCKS proxy support, TLD server discovery, response parsing, the WhoIsParser class, or the built-in SocksClient. Covers @stacksjs/whois.
+description: Use when performing WHOIS lookups in Stacks - domain queries, batch lookups, SOCKS proxy support, TLD server discovery, response parsing, the WhoIsParser class, or the built-in SocksClient. Covers @stacksjs/whois.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

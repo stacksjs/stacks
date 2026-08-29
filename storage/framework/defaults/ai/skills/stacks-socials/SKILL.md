@@ -1,6 +1,6 @@
 ---
 name: stacks-socials
-description: Use when implementing social authentication in Stacks — OAuth2 flows with GitHub/Google/Facebook/Twitter providers, the AbstractProvider base class, PKCE support, state management, scope configuration, social user profiles, or token handling. Covers @stacksjs/socials.
+description: Use when implementing social authentication in Stacks - OAuth2 flows with GitHub/Google/Facebook/Twitter providers, the AbstractProvider base class, PKCE support, state management, scope configuration, social user profiles, or token handling. Covers @stacksjs/socials.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

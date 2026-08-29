@@ -1,6 +1,6 @@
 ---
 name: stacks-deploy
-description: Use when deploying a Stacks application — the deployment workflow (build → deploy), pre/post deploy hooks, server vs serverless mode selection, first-time deployment setup, deployment troubleshooting, or the buddy deploy command. For cloud infrastructure details (EC2, Lambda, CloudFormation, Route53, IAM), see stacks-cloud.
+description: Use when deploying a Stacks application - the deployment workflow (build → deploy), pre/post deploy hooks, server vs serverless mode selection, first-time deployment setup, deployment troubleshooting, or the buddy deploy command. For cloud infrastructure details (EC2, Lambda, CloudFormation, Route53, IAM), see stacks-cloud.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, AWS
 allowed-tools: Read Edit Write Bash Grep Glob

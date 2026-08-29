@@ -1,6 +1,6 @@
 ---
 name: stacks-queue
-description: Use when working with job queues in a Stacks application — creating jobs, dispatching, workers, batches, failed jobs, queue events, health checks, testing, Redis/database/sync drivers, rate limiting, or scheduled jobs. Covers @stacksjs/queue, config/queue.ts, and app/Jobs/.
+description: Use when working with job queues in a Stacks application - creating jobs, dispatching, workers, batches, failed jobs, queue events, health checks, testing, Redis/database/sync drivers, rate limiting, or scheduled jobs. Covers @stacksjs/queue, config/queue.ts, and app/Jobs/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

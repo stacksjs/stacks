@@ -1,6 +1,6 @@
 ---
 name: stacks-routes
-description: Use when defining or organizing route files in a Stacks application — creating route files in routes/, registering them in app/Routes.ts, using route prefixes and middleware groups, or the default API routes structure. For the router API itself (request helpers, response helpers, middleware classes), see stacks-router.
+description: Use when defining or organizing route files in a Stacks application - creating route files in routes/, registering them in app/Routes.ts, using route prefixes and middleware groups, or the default API routes structure. For the router API itself (request helpers, response helpers, middleware classes), see stacks-router.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

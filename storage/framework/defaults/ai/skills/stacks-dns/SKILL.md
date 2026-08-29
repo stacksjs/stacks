@@ -1,6 +1,6 @@
 ---
 name: stacks-dns
-description: Use when managing DNS in a Stacks application — Route53 hosted zones, domain records, nameserver management, or DNS configuration. Covers @stacksjs/dns (AWS Route53 driver), @stacksjs/dnsx, and config/dns.ts.
+description: Use when managing DNS in a Stacks application - Route53 hosted zones, domain records, nameserver management, or DNS configuration. Covers @stacksjs/dns (AWS Route53 driver), @stacksjs/dnsx, and config/dns.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

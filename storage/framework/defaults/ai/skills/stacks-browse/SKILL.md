@@ -1,6 +1,6 @@
 ---
 name: stacks-browse
-description: Use for headless browser QA on Stacks applications — navigation, screenshots, responsive testing, console/network monitoring, and accessibility snapshots. Dependency-free: drives a system browser over the Chrome DevTools Protocol using only Bun (no Playwright/Puppeteer). Invoke with /stacks-browse.
+description: Use for headless browser QA on Stacks applications - navigation, screenshots, responsive testing, console/network monitoring, and accessibility snapshots. Dependency-free, driving a system browser over the Chrome DevTools Protocol using only Bun (no Playwright/Puppeteer). Invoke with /stacks-browse.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, a Chromium-family browser on the machine
 allowed-tools: Read Edit Write Bash Grep Glob

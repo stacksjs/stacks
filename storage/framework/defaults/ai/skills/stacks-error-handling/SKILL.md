@@ -1,6 +1,6 @@
 ---
 name: stacks-error-handling
-description: Use when implementing error handling in Stacks — the Result type (Ok/Err), handleError function, error page rendering (development with stack traces, production with friendly messages), ErrorHandler class, ModelNotFoundException, HTTP error mapping, log file writing, or error configuration. Covers @stacksjs/error-handling and config/errors.ts.
+description: Use when implementing error handling in Stacks - the Result type (Ok/Err), handleError function, error page rendering (development with stack traces, production with friendly messages), ErrorHandler class, ModelNotFoundException, HTTP error mapping, log file writing, or error configuration. Covers @stacksjs/error-handling and config/errors.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

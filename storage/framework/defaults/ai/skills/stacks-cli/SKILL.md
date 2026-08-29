@@ -1,6 +1,6 @@
 ---
 name: stacks-cli
-description: Use when building CLI commands or tools with Stacks — the @stacksjs/cli package for creating commands with argument parsing, option handling, colored output, tables, progress indicators, prompts, or integrating with the buddy command system. Covers @stacksjs/cli and app/Commands/.
+description: Use when building CLI commands or tools with Stacks - the @stacksjs/cli package for creating commands with argument parsing, option handling, colored output, tables, progress indicators, prompts, or integrating with the buddy command system. Covers @stacksjs/cli and app/Commands/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

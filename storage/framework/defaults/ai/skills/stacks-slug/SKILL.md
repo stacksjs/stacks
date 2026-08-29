@@ -1,6 +1,6 @@
 ---
 name: stacks-slug
-description: Use when generating URL slugs in Stacks — creating unique slugs with database collision detection, the uniqueSlug function with table/column configuration, or basic slugification. Covers @stacksjs/slug.
+description: Use when generating URL slugs in Stacks - creating unique slugs with database collision detection, the uniqueSlug function with table/column configuration, or basic slugification. Covers @stacksjs/slug.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

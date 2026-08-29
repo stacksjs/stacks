@@ -1,6 +1,6 @@
 ---
 name: stacks-i18n
-description: Use when working with internationalization in a Stacks application — translations, locale management, pluralization, date/number/currency formatting, or loading translation files. Covers @stacksjs/i18n with translator, formatter, loader, and pluralization modules.
+description: Use when working with internationalization in a Stacks application - translations, locale management, pluralization, date/number/currency formatting, or loading translation files. Covers @stacksjs/i18n with translator, formatter, loader, and pluralization modules.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

@@ -1,6 +1,6 @@
 ---
 name: stacks-plugins
-description: Use when working with the Stacks preload chain and Bun plugins — the env plugin, the framework preloader, how auto-imports get injected into globalThis, why a command does or does not see framework globals, the bun-plugin-stx static-serve plugin, or writing a Bun plugin. Covers bunfig.toml preload and storage/framework/defaults/resources/plugins/preloader.ts.
+description: Use when working with the Stacks preload chain and Bun plugins - the env plugin, the framework preloader, how auto-imports get injected into globalThis, why a command does or does not see framework globals, the bun-plugin-stx static-serve plugin, or writing a Bun plugin. Covers bunfig.toml preload and storage/framework/defaults/resources/plugins/preloader.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

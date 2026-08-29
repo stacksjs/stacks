@@ -1,6 +1,6 @@
 ---
 name: stacks-dependencies
-description: Use when managing dependencies in a Stacks project — system dependencies via Pantry, Bun workspaces, buddy-bot updates, better-dx tooling, or dependency configuration. Covers config/deps.ts, Pantry, and workspace management.
+description: Use when managing dependencies in a Stacks project - system dependencies via Pantry, Bun workspaces, buddy-bot updates, better-dx tooling, or dependency configuration. Covers config/deps.ts, Pantry, and workspace management.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

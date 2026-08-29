@@ -1,6 +1,6 @@
 ---
 name: stacks-stx
-description: Use when working with STX templates in a Stacks application — template syntax, components, directives, signals, reactivity, SSR, streaming, hydration, or debugging STX rendering. STX is the ONLY templating system for Stacks.
+description: Use when working with STX templates in a Stacks application - template syntax, components, directives, signals, reactivity, SSR, streaming, hydration, or debugging STX rendering. STX is the ONLY templating system for Stacks.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

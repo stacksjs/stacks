@@ -1,6 +1,6 @@
 ---
 name: stacks-desktop
-description: Use when building or publishing desktop applications with Stacks — Craft native windows, system tray, desktop packaging, or Mac App Store delivery.
+description: Use when building or publishing desktop applications with Stacks - Craft native windows, system tray, desktop packaging, or Mac App Store delivery.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
