@@ -2,7 +2,7 @@
   "name": "@stacksjs/realtime",
   "type": "module",
   "sideEffects": false,
-  "version": "0.72.101",
+  "version": "0.72.102",
   "description": "The Stacks realtime integration. Built on top of ts-broadcasting.",
   "author": "Chris Breuer",
   "contributors": [

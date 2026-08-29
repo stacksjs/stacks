@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.101...v0.72.102)
+
+## 🐛 Bug Fixes
+
+- **desktop**: permission prompts named the launcher, not the app ([70ff878](https://github.com/stacksjs/stacks/commit/70ff878)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **dashboard**: the window says how much room its buttons need ([5195ff7](https://github.com/stacksjs/stacks/commit/5195ff7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.100...v0.72.101)
 
 ## 🐛 Bug Fixes
