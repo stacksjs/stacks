@@ -130,9 +130,23 @@ export class RedisQueue<T = any> {
       // `number[]` in ms), instead of collapsing it to a single fixed delay
       // (stacksjs/stacks#1984). Stacks backoff is in seconds → ms, matching the
       // delay/timeout conversions above.
+      // A single number is a fixed delay, and needs the same seconds → ms
+      // conversion and the driver's own `{ type, delay }` shape. It used to be
+      // passed straight through: bun-queue takes `number[]` or `{ type, delay
+      // }`, so a bare `60` was neither, and `new Job({ backoff: 60 })` - which
+      // is how every job in the framework declares one - reached the driver as
+      // a value it could not read, in the wrong unit besides.
+      //
+      // This was invisible because `QueueOption.backoff` was declared as the
+      // DRIVER's type (`number[] | QueueBackoff`) while extending JobOptions,
+      // whose backoff is Stacks' own `number | number[]` in seconds. The two
+      // could not both be true, and an `@ts-ignore` on the interface is what
+      // kept them from having to be.
       backoff: Array.isArray(options?.backoff)
         ? options.backoff.map(s => (Number(s) || 1) * 1000)
-        : options?.backoff,
+        : typeof options?.backoff === 'number'
+          ? { type: 'fixed' as const, delay: (options.backoff || 1) * 1000 }
+          : undefined,
     }
 
     return this.queue.add(data, jobOptions)

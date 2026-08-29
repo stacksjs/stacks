@@ -291,11 +291,11 @@ export interface QueueOptions {
   }
 }
 
-// @ts-ignore - QueueOption extends JobOptions with compatible overrides
+
 export interface QueueOption extends JobOptions {
   delay?: number
-  payload?: any
-  afterResponse?: any
+  payload?: unknown
+  afterResponse?: unknown
   context?: string
   maxTries?: number
   chainedJobs?: Dispatchable[]
@@ -303,8 +303,23 @@ export interface QueueOption extends JobOptions {
   queue?: string
   /** Job priority */
   priority?: number
-  /** Backoff configuration */
-  backoff?: number[] | QueueBackoff
+  /**
+   * Backoff configuration.
+   *
+   * `number | number[]`, matching `JobOptions` and matching what the worker
+   * implements: it branches on `Array.isArray(backoff)` and on `typeof
+   * backoff === 'number'`, and reads nothing else.
+   *
+   * This said `number[] | QueueBackoff`, which was wrong in both directions -
+   * it excluded the plain number the worker handles and every `new Job({
+   * backoff: 60 })` declares, and it admitted a `QueueBackoff` whose `type`
+   * and `delay` nothing reads. That made `QueueOption` an invalid extension of
+   * `JobOptions`, which is what the `@ts-ignore` above it was hiding.
+   *
+   * `QueueBackoff` keeps its real home on `QueueJobOptions`, the driver-facing
+   * shape where `{ type, delay }` is what the driver is given.
+   */
+  backoff?: number | number[]
   /** Job timeout */
   timeout?: number
   /** Immediate execution */
