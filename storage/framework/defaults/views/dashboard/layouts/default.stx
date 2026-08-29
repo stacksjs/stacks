@@ -644,7 +644,7 @@ onDestroy(() => {
       <!-- Chrome strip. The traffic lights are the platform's, so this draws
           none and reserves whatever room the host says they need. Craft
           measures its own window: the far edge of the real buttons where they
-          float over this sidebar, and nothing where they do not — a window
+          float over this sidebar, and nothing where they do not: a window
           that keeps them in a titlebar, a fullscreen one whose titlebar has
           slid away, or a browser, which has no window buttons at all. It is also the window drag
           region, and in a browser it is the same empty strip macOS sidebars
