@@ -93,7 +93,11 @@ function normalizeOptions(options: WaitOptions): { interval: number, timeout: nu
  */
 export function waitWhile(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
-    const { interval = 100, timeout = 0 } = options as any
+    // Normalized, like `waitUntil` above. `WaitOptions` is `number | { … }`,
+    // so destructuring it directly meant `waitWhile(fn, 500)` read `interval`
+    // off a number, found nothing, and silently used the 100ms default - the
+    // caller's polling interval was discarded.
+    const { interval, timeout } = normalizeOptions(options)
 
     // Immediately resolve if the condition is initially false
     if (!condition()) {

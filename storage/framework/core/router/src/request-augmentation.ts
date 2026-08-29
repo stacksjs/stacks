@@ -210,6 +210,17 @@ export interface StacksRequestMacros {
   whenFilled?: <T>(key: string, callback: (value: T) => void, defaultCallback?: () => void) => void
   /** Compare an input value without coercion. */
   isValue?: (key: string, value: unknown) => boolean
+  /**
+   * Validate the request against `rules`, or against the rules the route
+   * attached if none are given.
+   *
+   * The macro has always existed on the request - `stacks-router.ts` defines
+   * it beside `isValue` above - but was never declared here, so every caller
+   * had to reach it through a cast. `Controller.validate` did, which is how it
+   * came to call it with the wrong arity and a local `type Request = any`
+   * standing in for the request.
+   */
+  validate?: (_rules?: Record<string, unknown>, _messages?: Record<string, string>) => Promise<unknown>
 
   /** Get a single uploaded file by field name. */
   file?: (key: string) => FileInfo | null
@@ -273,5 +284,6 @@ declare module '@stacksjs/bun-router' {
     allFiles?: StacksRequestMacros['allFiles']
     tokenCan?: StacksRequestMacros['tokenCan']
     can?: StacksRequestMacros['can']
+    validate?: StacksRequestMacros['validate']
   }
 }

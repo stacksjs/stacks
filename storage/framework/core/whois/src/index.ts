@@ -179,7 +179,11 @@ export async function tcpWhois(
         })
 
         socket.on('data', (data) => {
-          resolve(decoder.decode(data as any))
+          // A socket's `data` is `string | Buffer` depending on whether an
+          // encoding was set; only the buffer needs decoding.
+          resolve(typeof data === 'string'
+            ? data
+            : decoder.decode(new Uint8Array(data.buffer, data.byteOffset, data.byteLength)))
         })
 
         socket.on('error', (error) => {

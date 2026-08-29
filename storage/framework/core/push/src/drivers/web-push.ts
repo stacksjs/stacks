@@ -305,7 +305,14 @@ export async function sendWebPush(options: SendWebPushOptions): Promise<WebPushR
     const answer = await fetch(subscription.endpoint, {
       method: 'POST',
       headers,
-      body: body as any,
+      // A push with no payload sends no body, which is legal - the cast used
+      // to make that indistinguishable from sending one. The view is built
+      // over the exact byte range because a Node Buffer's backing store is
+      // pooled and shared.
+      // `BodyInit` wants a view over a real ArrayBuffer; a Node Buffer's is
+      // typed `ArrayBufferLike`, which also admits SharedArrayBuffer. Copying
+      // the bytes gives a view that is unambiguously its own.
+      body: body ? new Uint8Array(body) : undefined,
     })
 
     // 404 and 410 are the only two that mean the subscription is gone. Every
