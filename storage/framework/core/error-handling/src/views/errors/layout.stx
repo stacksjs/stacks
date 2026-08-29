@@ -1,3 +1,24 @@
+<script server>
+/*
+ * The context `renderErrorPage` spreads into this template, declared so the
+ * checker holds it to the same shape the renderer builds.
+ *
+ * Every name below is typed by indexing `ErrorPageViewModel` rather than
+ * restating it, so renaming a field there is a build error here instead of
+ * an `undefined` rendered onto the error page - the one page where a silent
+ * failure is most expensive, because you are already debugging something
+ * else when you read it.
+ *
+ * See `storage/framework/core/error-handling/src/error-page-view-model.ts`.
+ */
+import type { ErrorPageViewModel } from '../../error-page-view-model'
+
+/** The rendered body of the page this layout wraps. */
+declare const content: string
+
+declare const pageTitle: ErrorPageViewModel['pageTitle']
+declare const highlightCss: ErrorPageViewModel['highlightCss']
+</script>
 <!DOCTYPE html>
 <html lang="en">
 <head>

@@ -110,8 +110,22 @@ jobs:
             echo "::endgroup::"
           done
 
-      - name: Typecheck
+      # Three typecheck scripts cover three disjoint surfaces, and only the
+      # first was running here. `typecheck:app` covers app/, config/, routes/
+      # and resources/; `typecheck:views` covers all 615 tracked .stx files.
+      # Neither was wired in, so the two surfaces an app author actually edits
+      # were unverified on every PR - which is how 75 .stx errors accumulated,
+      # among them five storefront views that always rendered an empty cart.
+      #
+      # Kept as separate steps so a failure names the surface it came from.
+      - name: Typecheck framework
         run: bun run typecheck
+
+      - name: Typecheck app
+        run: bun run typecheck:app
+
+      - name: Typecheck views
+        run: bun run typecheck:views
 
   test:
     runs-on: ubuntu-latest

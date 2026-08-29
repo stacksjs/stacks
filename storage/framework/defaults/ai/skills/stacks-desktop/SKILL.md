@@ -140,6 +140,11 @@ Keys the bundle must own — `CFBundleIdentifier`, `CFBundleExecutable`,
 `CFBundleVersion`, and the rest of the identity — are ignored with a note.
 Rewriting those produces a bundle that does not match what was signed.
 
+Inside the bundle the launcher is named after the app, not `stacks-desktop`.
+macOS names the *process* in every permission prompt, so a launcher keeping the
+framework's build name asks "stacks-desktop would like to access files in your
+Downloads folder" — which reads like something to refuse.
+
 Application data belongs in `~/Library/Application Support/<AppName>`, never
 inside the bundle — `/Applications` is not writable by the user, and the bundle
 is replaced wholesale on update.

@@ -1,3 +1,12 @@
+<script server>
+/*
+ * Included as `@include('./frame', { frame: frame })` from both loops in
+ * `trace.stx` and from `vendor-frames.stx`, so `frame` is an include prop.
+ */
+import type { FrameViewModel } from '../../../error-page-view-model'
+
+declare const frame: FrameViewModel
+</script>
 <div
   class="group rounded-lg border border-neutral-200 dark:border-white/10 overflow-hidden shadow-xs trace-frame {{ frame.expanded ? 'is-expanded' : '' }}"
   data-trace-frame

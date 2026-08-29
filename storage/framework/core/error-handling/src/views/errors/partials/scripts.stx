@@ -1,5 +1,5 @@
 <script>
-function stacksCopy(text) {
+function stacksCopy(text: string) {
   if (navigator.clipboard) return navigator.clipboard.writeText(text);
   const ta = document.createElement('textarea');
   ta.value = text;
@@ -38,7 +38,7 @@ document.querySelectorAll('[data-copy-url]').forEach((btn) => {
 
 document.querySelectorAll('[data-trace-toggle]').forEach((el) => {
   el.addEventListener('click', () => {
-    const frame = el.closest('[data-trace-frame]');
+    const frame = el.closest<HTMLElement>('[data-trace-frame]');
     if (!frame || frame.dataset.hasCode !== '1') return;
     frame.classList.toggle('is-expanded');
     const body = frame.querySelector('.trace-frame-body');

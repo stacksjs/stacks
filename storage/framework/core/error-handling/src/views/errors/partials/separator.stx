@@ -1,3 +1,11 @@
-<div class="h-0 w-full relative {{ class ?? '' }}">
+<script server>
+/*
+ * `extraClass`, not `class`: the latter is a reserved word, so `{{ class }}`
+ * cannot be parsed as an expression by anything that reads this template as
+ * TypeScript, however well the renderer coped with it.
+ */
+declare const extraClass: string | undefined
+</script>
+<div class="h-0 w-full relative {{ extraClass ?? '' }}">
   <div class="absolute bottom-0 left-0 right-0 top-[-1px] border-dashed border-neutral-300 border-t dark:border-white/[9%]"></div>
 </div>

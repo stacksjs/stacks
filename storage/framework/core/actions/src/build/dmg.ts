@@ -58,13 +58,28 @@ mkdirSync(resourcesDir, { recursive: true })
 // Contents/MacOS. Copying the whole directory rather than three names lets an
 // app with its own launcher ship the sibling binaries it needs — a server, a
 // worker — which a fixed list silently dropped.
-const launcherName = 'stacks-desktop'
+const builtLauncher = 'stacks-desktop'
+
+/**
+ * The launcher is renamed to the app inside the bundle.
+ *
+ * macOS names the *process* in every permission prompt, not the bundle: a
+ * launcher still called `stacks-desktop` produces "stacks-desktop would like to
+ * access files in your Downloads folder", which reads like something the user
+ * should refuse — and many will. `build:desktop` keeps the stable name in
+ * `desktop-dist` so provenance and checksums do not move; the bundle gets the
+ * name a person recognises.
+ */
+const launcherName = appName
+
 const bundledFiles = readdirSync(desktopDist).filter(name => statSync(join(desktopDist, name)).isFile())
-for (const file of bundledFiles)
-  await runCommand(['cp', join(desktopDist, file), join(macosDir, file)], { cwd: projectPath() })
+for (const file of bundledFiles) {
+  const target = file === builtLauncher ? launcherName : file
+  await runCommand(['cp', join(desktopDist, file), join(macosDir, target)], { cwd: projectPath() })
+}
 
 if (!existsSync(join(macosDir, launcherName)))
-  throw new Error(`build:desktop did not produce ${launcherName}`)
+  throw new Error(`build:desktop did not produce ${builtLauncher}`)
 
 // Anything an app puts in `app/Desktop/Resources/` — a prerendered UI, a
 // schema, seed data — travels into the bundle. A local-first app has a payload
@@ -173,7 +188,7 @@ if (signingIdentity) {
   // Signing the parent first invalidates its seal the moment an inner binary is
   // signed after it — and an app-owned launcher may ship several.
   const nested = bundledFiles
-    .filter(name => name !== launcherName && !name.endsWith('.json') && !name.endsWith('.sha256'))
+    .filter(name => name !== builtLauncher && !name.endsWith('.json') && !name.endsWith('.sha256'))
     .map(name => join(macosDir, name))
 
   for (const target of [...nested, join(macosDir, launcherName), appDir])

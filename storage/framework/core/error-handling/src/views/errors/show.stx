@@ -1,3 +1,20 @@
+<script server>
+/*
+ * The context `renderErrorPage` spreads into this template, declared so the
+ * checker holds it to the same shape the renderer builds.
+ *
+ * Every name below is typed by indexing `ErrorPageViewModel` rather than
+ * restating it, so renaming a field there is a build error here instead of
+ * an `undefined` rendered onto the error page - the one page where a silent
+ * failure is most expensive, because you are already debugging something
+ * else when you read it.
+ *
+ * See `storage/framework/core/error-handling/src/error-page-view-model.ts`.
+ */
+import type { ErrorPageViewModel } from '../../error-page-view-model'
+
+declare const hintsHtml: ErrorPageViewModel['hintsHtml']
+</script>
 <div class="mx-auto px-6 py-0 sm:py-0 max-w-7xl">
   @include('./partials/topbar')
 </div>
@@ -8,7 +25,7 @@
   @include('./partials/header')
 </div>
 
-@include('./partials/separator', { class: '-mt-5 -z-10' })
+@include('./partials/separator', { extraClass: '-mt-5 -z-10' })
 
 <div class="flex flex-col gap-8 mx-auto pt-14 px-6 max-w-7xl">
   @if(hintsHtml)

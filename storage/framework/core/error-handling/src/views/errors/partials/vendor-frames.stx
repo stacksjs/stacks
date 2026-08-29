@@ -1,3 +1,17 @@
+<script server>
+/*
+ * Included by `trace.stx` as
+ *
+ *   @include('./vendor-frames', { frames: group.frames, vendorCount: group.vendorCount })
+ *
+ * so these are include props off one trace group, not page context. Typed
+ * from the group model rather than restated.
+ */
+import type { TraceGroupViewModel } from '../../../error-page-view-model'
+
+declare const frames: TraceGroupViewModel['frames']
+declare const vendorCount: TraceGroupViewModel['vendorCount']
+</script>
 <div class="bg-neutral-50 dark:bg-white/1 border border-dashed border-neutral-300 rounded-lg dark:border-white/10 opacity-90 vendor-group" data-vendor-group>
   <div class="flex gap-3 items-center pl-4 pr-2.5 h-11 hover:bg-white/50 dark:hover:bg-white/2 rounded-lg cursor-pointer vendor-toggle" data-vendor-toggle>
     <svg class="h-3 w-3 text-neutral-400 vendor-icon-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/></svg>

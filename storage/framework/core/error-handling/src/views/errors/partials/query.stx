@@ -1,3 +1,20 @@
+<script server>
+/*
+ * The context `renderErrorPage` spreads into this template, declared so the
+ * checker holds it to the same shape the renderer builds.
+ *
+ * Every name below is typed by indexing `ErrorPageViewModel` rather than
+ * restating it, so renaming a field there is a build error here instead of
+ * an `undefined` rendered onto the error page - the one page where a silent
+ * failure is most expensive, because you are already debugging something
+ * else when you read it.
+ *
+ * See `storage/framework/core/error-handling/src/error-page-view-model.ts`.
+ */
+import type { ErrorPageViewModel } from '../../../error-page-view-model'
+
+declare const queryCount: ErrorPageViewModel['queryCount']
+</script>
 <div class="flex flex-col gap-2.5 p-2.5 bg-neutral-50 dark:bg-white/1 border border-neutral-200 rounded-xl dark:border-neutral-800 shadow-xs" data-query-panel>
   <div class="flex items-center justify-between p-2">
     <div class="flex gap-2.5 items-center">
