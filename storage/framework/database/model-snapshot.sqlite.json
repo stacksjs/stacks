@@ -687,157 +687,6 @@
         ]
       },
       {
-        "table": "drivers",
-        "columns": [
-          {
-            "name": "id",
-            "type": "bigint",
-            "isPrimaryKey": true,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "name",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "phone",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "vehicle_number",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "license",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
-            "name": "status",
-            "type": "enum",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": "active",
-            "enumValues": [
-              "active",
-              "on_delivery",
-              "on_break",
-              "offline"
-            ]
-          },
-          {
-            "name": "user_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "users",
-              "column": "id"
-            }
-          },
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": "UTC_TIMESTAMP"
-          },
-          {
-            "name": "updated_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "uuid",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": true,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "latitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "longitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "heading",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "speed",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
-            "name": "last_ping_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          }
-        ],
-        "indexes": [
-          {
-            "name": "drivers_uuid_unique",
-            "columns": [
-              "uuid"
-            ],
-            "type": "unique"
-          }
-        ]
-      },
-      {
         "table": "waitlist_products",
         "columns": [
           {
@@ -8031,15 +7880,6 @@
             "hasDefault": false
           },
           {
-            "name": "driver",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false,
-            "maxLength": 255
-          },
-          {
             "name": "vehicle",
             "type": "string",
             "isPrimaryKey": false,
@@ -8079,18 +7919,6 @@
             "isUnique": false,
             "isNullable": false,
             "hasDefault": false
-          },
-          {
-            "name": "driver_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "drivers",
-              "column": "id"
-            }
           },
           {
             "name": "created_at",
@@ -8147,6 +7975,27 @@
             "isUnique": false,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "courier",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "courier_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "couriers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -9476,131 +9325,24 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "type",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "dropoff",
+            "enumValues": [
+              "pickup",
+              "dropoff"
+            ]
           }
         ],
         "indexes": [
           {
             "name": "delivery_stops_uuid_unique",
-            "columns": [
-              "uuid"
-            ],
-            "type": "unique"
-          }
-        ]
-      },
-      {
-        "table": "driver_pings",
-        "columns": [
-          {
-            "name": "id",
-            "type": "bigint",
-            "isPrimaryKey": true,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "latitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "longitude",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "heading",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "speed",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": true,
-            "defaultValue": 0
-          },
-          {
-            "name": "accuracy",
-            "type": "integer",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "recorded_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": false
-          },
-          {
-            "name": "driver_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "drivers",
-              "column": "id"
-            }
-          },
-          {
-            "name": "delivery_route_id",
-            "type": "bigint",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false,
-            "references": {
-              "table": "delivery_routes",
-              "column": "id"
-            }
-          },
-          {
-            "name": "created_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": false,
-            "hasDefault": true,
-            "defaultValue": "UTC_TIMESTAMP"
-          },
-          {
-            "name": "updated_at",
-            "type": "datetime",
-            "isPrimaryKey": false,
-            "isUnique": false,
-            "isNullable": true,
-            "hasDefault": false
-          },
-          {
-            "name": "uuid",
-            "type": "string",
-            "isPrimaryKey": false,
-            "isUnique": true,
-            "isNullable": true,
-            "hasDefault": false
-          }
-        ],
-        "indexes": [
-          {
-            "name": "driver_pings_uuid_unique",
             "columns": [
               "uuid"
             ],
@@ -12647,10 +12389,281 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "couriers",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "phone",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "vehicle_number",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "license",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": "active",
+            "enumValues": [
+              "active",
+              "on_delivery",
+              "on_break",
+              "offline"
+            ]
+          },
+          {
+            "name": "latitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "longitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "heading",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "speed",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "last_ping_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "couriers_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "courier_pings",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "latitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "longitude",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "heading",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "speed",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": 0
+          },
+          {
+            "name": "accuracy",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "recorded_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "courier_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "couriers",
+              "column": "id"
+            }
+          },
+          {
+            "name": "delivery_route_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "delivery_routes",
+              "column": "id"
+            }
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "courier_pings_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "19cf334eb0a53c8a0e2306eafb17c189459a5cef7ffeab31efb42ea3a0407ca8",
+  "hash": "9f95c6e30c28477a2b1636b599d471b3965d513e1675a3b393bc443530ca6580",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-23T02:00:06.305Z"
+  "updatedAt": "2026-08-29T22:19:27.465Z"
 }

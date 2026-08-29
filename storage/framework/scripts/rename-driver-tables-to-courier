@@ -1,0 +1,108 @@
+#!/bin/sh
+# One-time schema catch-up for the Driver -> Courier rename (stacksjs/stacks#2382).
+#
+# The rename renamed models, tables and migration files, so a fresh database
+# gets `couriers` and `courier_pings` and never sees the old names. A database
+# that predates the rename is the awkward case: the corpus creates the new
+# tables, nothing removes the old ones, and the schema differ then wants to drop
+# two tables it no longer recognises. It refuses to do that unattended - rightly
+# - and the deploy stops there, every time, until somebody intervenes.
+#
+# So intervene here, the non-destructive way: rename the old tables into the new
+# names, keeping whatever rows they hold. That is what the release notes ask
+# operators to do by hand. The differ then finds the schema it expects.
+#
+# Safe to run on every deploy forever. No database file, no `drivers` table, or
+# an already-renamed schema all exit 0 having changed nothing, and every step is
+# guarded on what the schema actually contains rather than on what it should.
+#
+# Delete this script and its preStart entry once no deployed database predates
+# the rename. It is an upgrade step for existing installs, not part of the
+# schema.
+#
+# SQLite only, deliberately: it reads `sqlite_master`, and this project runs
+# SQLite in production. Under any other dialect it does nothing at all.
+
+set -eu
+
+DB="${DB_DATABASE_PATH:-database/stacks.sqlite}"
+
+[ -f "$DB" ] || exit 0
+
+if ! command -v sqlite3 >/dev/null 2>&1; then
+  echo "rename-driver-tables-to-courier: sqlite3 not found, skipping" >&2
+  exit 0
+fi
+
+# Every statement runs with foreign keys ON, and that is load-bearing rather
+# than tidy. SQLite rewrites the REFERENCES clauses in other tables when a table
+# is renamed *only* while foreign keys are enabled; with the default OFF the
+# rename succeeds and leaves `courier_pings` and `delivery_routes` pointing at a
+# `drivers` table that no longer exists. Nothing complains until the first
+# insert under enforced keys, which then fails with "no such table: drivers".
+run() { sqlite3 "$DB" "PRAGMA foreign_keys=ON; $1"; }
+
+q() { sqlite3 "$DB" "$1" 2>/dev/null || echo 0; }
+
+table_exists() { [ "$(q "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='$1';")" != "0" ]; }
+column_exists() { [ "$(q "SELECT COUNT(*) FROM pragma_table_info('$1') WHERE name='$2';")" != "0" ]; }
+row_count() { q "SELECT COUNT(*) FROM \"$1\";"; }
+
+changed=0
+
+# Tables. For each pair, the old table is the one carrying the data, so it wins
+# the name - unless the new one already holds rows, in which case something has
+# written through the new schema and only a human can say which is real.
+for pair in "drivers couriers" "driver_pings courier_pings"; do
+  old=${pair% *}
+  new=${pair#* }
+
+  table_exists "$old" || continue
+
+  if table_exists "$new"; then
+    old_rows=$(row_count "$old")
+    new_rows=$(row_count "$new")
+
+    if [ "$new_rows" != "0" ]; then
+      if [ "$old_rows" != "0" ]; then
+        echo "rename-driver-tables-to-courier: $old ($old_rows rows) and $new ($new_rows rows) both hold data; merge them by hand" >&2
+        exit 1
+      fi
+
+      # The new table is live and the old one is an empty leftover.
+      run "DROP TABLE \"$old\";"
+      echo "rename-driver-tables-to-courier: dropped empty legacy $old"
+      changed=1
+      continue
+    fi
+
+    # The new table is an empty shell the corpus created. Clear the name.
+    run "DROP TABLE \"$new\";"
+  fi
+
+  run "ALTER TABLE \"$old\" RENAME TO \"$new\";"
+  echo "rename-driver-tables-to-courier: renamed $old -> $new"
+  changed=1
+done
+
+# Columns, each guarded on its own: a table renamed above still carries the old
+# column names, while one the corpus created already has the new ones.
+rename_column() {
+  table=$1
+  from=$2
+  to=$3
+
+  table_exists "$table" || return 0
+  column_exists "$table" "$from" || return 0
+  ! column_exists "$table" "$to" || return 0
+
+  run "ALTER TABLE \"$table\" RENAME COLUMN \"$from\" TO \"$to\";"
+  echo "rename-driver-tables-to-courier: renamed $table.$from -> $to"
+  changed=1
+}
+
+rename_column courier_pings driver_id courier_id
+rename_column delivery_routes driver courier
+rename_column delivery_routes driver_id courier_id
+
+[ "$changed" = "0" ] || echo "rename-driver-tables-to-courier: done"
