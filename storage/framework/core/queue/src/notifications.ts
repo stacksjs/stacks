@@ -267,9 +267,12 @@ export class FailedJobNotifier {
     // Use Stacks mailer if available
     try {
       const { mail } = await import('@stacksjs/email')
-      await (mail as any).send({
+      await mail.send({
         to: Array.isArray(config.to) ? config.to : [config.to],
-        from: config.from,
+        // The mailer takes an `{ address, name? }`, and the queue config
+        // carries a plain address string. The cast used to hide that, so the
+        // `from` header was built from an object with no `address` at all.
+        from: config.from ? { address: config.from } : undefined,
         subject,
         html: body,
       })

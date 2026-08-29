@@ -1,3 +1,4 @@
+import type { DeepPartial } from './utils'
 import type { IntRange } from '@stacksjs/cron'
 
 export type Job = JobOptions
@@ -122,7 +123,15 @@ export interface JobOptions<T = unknown> {
   /**
    * Advanced backoff configuration
    */
-  backoffConfig?: BackoffConfig
+  /**
+   * Advanced backoff configuration.
+   *
+   * `DeepPartial`, because `config/queue.ts` declares every member of it -
+   * including the nested `jitter` block - as optional
+   * and the worker fills what is missing - so a config setting only `factor`
+   * is legal, and was previously reaching this field through a cast.
+   */
+  backoffConfig?: DeepPartial<BackoffConfig>
   /**
    * Rate limiting configuration
    * Can be a string like "5/minute" or an Every object

@@ -1,4 +1,4 @@
-import type { ValidationType, Validator } from '@stacksjs/ts-validation'
+import type { ValidationErrors, ValidationType, Validator } from '@stacksjs/ts-validation'
 import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -59,6 +59,32 @@ export function isObjectNotEmpty(obj: object | undefined): boolean {
   return Object.keys(obj).length > 0
 }
 
+/**
+ * Flatten a validation result into the reporter's message shape.
+ *
+ * `ValidationErrors` is `ValidationError[] | ValidationErrorMap`, and a
+ * `ValidationError` is just `{ message }` - so passing it straight to
+ * `reportError`, which stores `{ message, value, field }[]`, dropped the field
+ * name and the offending value on every failure. In the map form the field is
+ * the key, which is the only place it exists at all.
+ */
+function toMessageObjects(
+  errors: ValidationErrors,
+  params: RequestData,
+): { message: string, value: string, field: string }[] {
+  const valueFor = (field: string): string => {
+    const value = (params as Record<string, unknown>)[field]
+    return value === undefined || value === null ? '' : String(value)
+  }
+
+  if (Array.isArray(errors))
+    return errors.map(error => ({ message: error.message, value: '', field: '' }))
+
+  return Object.entries(errors).flatMap(([field, fieldErrors]: [string, { message: string }[]]) =>
+    fieldErrors.map(error => ({ message: error.message, value: valueFor(field), field })),
+  )
+}
+
 export async function validateField(modelFile: string, params: RequestData): Promise<any> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
   const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
@@ -106,7 +132,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     const result = await validator.validate(params)
 
     if (!result.valid) {
-      reportError(result.errors as any)
+      reportError(toMessageObjects(result.errors, params))
       throw new HttpError(422, 'Validation failed', { errors: result.errors })
     }
 
