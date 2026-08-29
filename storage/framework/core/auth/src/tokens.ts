@@ -125,6 +125,38 @@ function generateSecureToken(bytes: number = 40): string {
  * everyone out. Accepts an optional query runner so the refresh exchange
  * can read the stamp inside its own transaction.
  */
+/**
+ * The token tables, as these queries select them.
+ *
+ * `db.unsafe` answers `Record<string, unknown>`, so every field read off a
+ * result was `unknown` and eleven call sites cast the whole array to `any[]`
+ * to get at it - which meant a column renamed in a migration, or misspelt in
+ * one of the SQL strings below, read as `undefined` and flowed silently into a
+ * token record.
+ *
+ * These tables are not in the generated `database/types.d.ts`, so the shapes
+ * are written here, beside the queries that select them. Fields are typed as
+ * the drivers return them: sqlite gives 0/1 for booleans and strings for
+ * dates, which is why the code coerces at each use.
+ */
+interface AccessTokenRow {
+  id: number
+  user_id: number
+  name: string
+  scopes: string | null
+  revoked: number | boolean | null
+  expires_at: string | null
+  created_at: string
+  updated_at: string | null
+  ip_address: string | null
+  user_agent: string | null
+  oauth_client_id: number
+  password_changed_at: string | null
+  access_token_id: number | null
+  provider: string | null
+}
+
+
 export async function getPasswordChangedAt(
   userId: unknown,
   q: { unsafe: (sql: string, params?: any[]) => any } = db,
@@ -135,7 +167,7 @@ export async function getPasswordChangedAt(
     const rows = await q.unsafe(`
       SELECT password_changed_at FROM users WHERE id = ${param(1)} LIMIT 1
     `, [userId])
-    const value = (rows as any[])[0]?.password_changed_at
+    const value = (rows as unknown as AccessTokenRow[])[0]?.password_changed_at
     if (value === null || value === undefined)
       return null
     return parseSqlDateTime(value)
@@ -190,7 +222,7 @@ export async function tokens(userId: number): Promise<AccessToken[]> {
     ORDER BY t.created_at DESC
   `, [userId])
 
-  return (rows as any[]).map(row => ({
+  return (rows as unknown as AccessTokenRow[]).map(row => ({
     id: row.id,
     userId: row.user_id,
     clientId: row.oauth_client_id,
@@ -226,7 +258,7 @@ export async function findToken(plainTextToken: string): Promise<AccessToken | n
     LIMIT 1
   `, [hashedToken])
 
-  const row = (rows as any[])[0]
+  const row = (rows as unknown as AccessTokenRow[])[0]
   if (!row) return null
 
   // Reject any token issued before the user last changed their password
@@ -432,7 +464,7 @@ export async function createToken(
     SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
   `)
 
-  const client = (clients as any[])[0]
+  const client = (clients as unknown as OAuthClientRow[])[0]
   if (!client) {
     throw new HttpError(500, 'No personal access client found. Run ./buddy auth:setup first.')
   }
@@ -469,7 +501,7 @@ export async function createToken(
     SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
   `, [hashedToken])
 
-  const row = (inserted as any[])[0]
+  const row = (inserted as unknown as AccessTokenRow[])[0]
   if (!row) {
     throw new HttpError(500, 'Failed to create access token - inserted row not found')
   }
@@ -483,7 +515,10 @@ export async function createToken(
     revoked: false,
     expiresAt: expiresAt,
     createdAt: new Date(row.created_at),
-    updatedAt: new Date(row.updated_at),
+    // `updated_at` is nullable in the schema, and `new Date(null)` is not an
+    // error - it is 1970-01-01. A token that has never been updated was being
+    // reported as updated at the epoch.
+    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
   }
 
   // Create refresh token if requested
@@ -584,7 +619,7 @@ export async function refreshToken(
       LIMIT 1${forUpdate}
     `, [hashedRefreshToken])
 
-    const refreshRow = (refreshRows as any[])[0]
+    const refreshRow = (refreshRows as unknown as AccessTokenRow[])[0]
     if (!refreshRow) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
@@ -641,18 +676,26 @@ export async function refreshToken(
       SELECT * FROM oauth_access_tokens WHERE token = ${param(1)} LIMIT 1
     `, [hashedToken])
 
-    const row = (inserted as any[])[0]
+    const row = (inserted as unknown as AccessTokenRow[])[0]
+
+    // The row was just inserted, but the read-back can still come up empty -
+    // and reading through it blind threw a bare TypeError rather than saying
+    // what went wrong.
+    if (!row)
+      throw new HttpError(500, 'Failed to read back the access token that was just created.')
 
     const accessToken: AccessToken = {
       id: row.id,
       userId: row.user_id,
       clientId: row.oauth_client_id,
-      name: row.name,
+      // `name` is nullable in the schema; the sibling mapper above already
+      // defaults it.
+      name: row.name || 'access-token',
       scopes: parseScopes(row.scopes),
       revoked: false,
       expiresAt: expiresAt,
       createdAt: new Date(row.created_at),
-      updatedAt: new Date(row.updated_at),
+      updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(row.created_at),
     }
 
     // Re-read the stamp once more inside the transaction. If a reset
@@ -709,7 +752,7 @@ export async function validateRefreshToken(refreshTokenPlain: string): Promise<b
     LIMIT 1
   `, [hashedRefreshToken])
 
-  return (rows as any[]).length > 0
+  return (rows as unknown as AccessTokenRow[]).length > 0
 }
 
 /**
@@ -996,7 +1039,7 @@ export async function clients(userId: number): Promise<OAuthClient[]> {
     ORDER BY created_at DESC
   `, [userId])
 
-  return (rows as any[]).map(mapToOAuthClient)
+  return (rows as unknown as OAuthClientRow[]).map(mapToOAuthClient)
 }
 
 /**
@@ -1011,7 +1054,8 @@ export async function findClient(clientId: number): Promise<OAuthClient | null> 
     SELECT * FROM oauth_clients WHERE id = ${param(1)} LIMIT 1
   `, [clientId])
 
-  const row = (rows as any[])[0]
+  // An oauth_clients row, not a token row.
+  const row = (rows as unknown as OAuthClientRow[])[0]
   return row ? mapToOAuthClient(row) : null
 }
 
@@ -1056,8 +1100,15 @@ export async function createClient(options: CreateClientOptions): Promise<Create
     SELECT * FROM oauth_clients WHERE secret = ${param(1)} LIMIT 1
   `, [secret])
 
+  const createdClient = (inserted as unknown as OAuthClientRow[])[0]
+
+  // Same read-back guard as the access-token path: an empty result threw a
+  // bare TypeError inside the mapper.
+  if (!createdClient)
+    throw new HttpError(500, 'Failed to read back the OAuth client that was just created.')
+
   return {
-    client: mapToOAuthClient((inserted as any[])[0]),
+    client: mapToOAuthClient(createdClient),
     plainTextSecret: secret,
   }
 }
