@@ -771,7 +771,7 @@ export class S3Client {
     const text = await response.text()
 
     try {
-      return JSON.parse(text) as any
+      return JSON.parse(text)
     }
     catch {
       throw new Error(`Failed to parse bucket policy JSON: ${text.slice(0, 200)}`)
@@ -1169,7 +1169,7 @@ export class S3Client {
         method: 'GET',
         path: `/${bucket}`,
         queryParams: { tagging: '' },
-      }) as any
+      })
       const tagSet = result?.Tagging?.TagSet?.Tag
       if (!tagSet) return []
       return (Array.isArray(tagSet) ? tagSet : [tagSet]) as { Key: string, Value: string }[]
@@ -1227,7 +1227,7 @@ export class S3Client {
         method: 'GET',
         path: `/${bucket}/${key}`,
         queryParams: { tagging: '' },
-      }) as any
+      })
       const tagSet = result?.Tagging?.TagSet?.Tag
       if (!tagSet) return []
       return (Array.isArray(tagSet) ? tagSet : [tagSet]) as { Key: string, Value: string }[]

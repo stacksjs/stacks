@@ -167,7 +167,7 @@ route.use((async (request: any, next: any) => {
     && (response.headers.get('content-type') || '').includes('json')
   ) {
     try {
-      const body = await response.clone().json() as any
+      const body = await response.clone().json()
       if (body && (body.message === 'Not Found' || body.error === 'Not Found')) {
         const url = new URL(request.url)
         const enriched = {
@@ -185,7 +185,7 @@ route.use((async (request: any, next: any) => {
   }
 
   return response
-}) as any)
+}))
 
 // Import routes
 await route.importRoutes()

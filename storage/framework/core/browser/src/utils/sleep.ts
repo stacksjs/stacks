@@ -93,7 +93,7 @@ function normalizeOptions(options: WaitOptions): { interval: number, timeout: nu
  */
 export function waitWhile(condition: () => boolean, options: WaitOptions = {}): Promise<void> {
   return new Promise((resolve) => {
-    const { interval = 100, timeout = 0 } = options as any
+    const { interval = 100, timeout = 0 } = options
 
     // Immediately resolve if the condition is initially false
     if (!condition()) {

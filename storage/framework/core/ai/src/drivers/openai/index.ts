@@ -274,7 +274,7 @@ export async function chat(
     throw new Error(`OpenAI API error: ${error}`)
   }
 
-  const data = (await response.json()) as any
+  const data = (await response.json())
 
   if (!data.choices || data.choices.length === 0) {
     throw new Error('OpenAI API returned empty choices')
@@ -364,7 +364,7 @@ export async function* streamChat(
         if (data === '[DONE]') continue
 
         try {
-          const parsed = JSON.parse(data) as any
+          const parsed = JSON.parse(data)
           const content = parsed.choices[0]?.delta?.content
           if (content) yield content
         }
@@ -490,7 +490,7 @@ export async function transcribe(
     throw new Error(`OpenAI Whisper API error: ${error}`)
   }
 
-  return response.json() as any
+  return response.json()
 }
 
 /**

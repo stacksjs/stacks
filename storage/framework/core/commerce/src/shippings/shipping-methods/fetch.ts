@@ -38,7 +38,7 @@ export async function fetchAll(): Promise<ShippingMethodJsonResponse[]> {
 
   const shippingQuery = db
     .selectFrom('shipping_zones')
-    .where('shipping_method_id', 'in', shippingMethodIds) as any
+    .where('shipping_method_id', 'in', shippingMethodIds)
 
   // Fetch shipping zones for these specific shipping methods using WHERE IN
   const allShippingZones = await shippingQuery.selectAll().execute()

@@ -355,7 +355,7 @@ export async function fetchDailyOrderTrends(_daysRange: number = 30): Promise<{
   // Query all orders in the range, then aggregate in JS by date
   const orders = await db
     .selectFrom('orders')
-    .select(['created_at', 'total_amount'] as any)
+    .select(['created_at', 'total_amount'])
     .where('created_at', '>=', startDate.toISOString())
     .where('created_at', '<=', today.toISOString())
     .orderBy('created_at', 'asc')

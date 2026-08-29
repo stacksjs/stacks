@@ -475,7 +475,7 @@ function effectiveOwnershipConfig(model: any): any | null {
     field: teamCol,
     resolve: async (_user: any, req: EnhancedRequest) => {
       const { resolveAuthenticatedTeamId } = await import('@stacksjs/auth')
-      return resolveAuthenticatedTeamId(teamAuthRequest(req) as any)
+      return resolveAuthenticatedTeamId(teamAuthRequest(req))
     },
   }
 }

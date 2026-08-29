@@ -185,7 +185,7 @@ export function getCurrentRequest(): EnhancedRequest | undefined {
  * (stacksjs/stacks#1851 Phase 1). All the macros action handlers
  * reach for (`all`, `get`, `input`, `cookies`, `param`, `validate`,
  * `user`, `bearerToken`, …) resolve to their declared types instead
- * of `any`, eliminating most `(request as any)` casts in action code.
+ * of `any`, eliminating most `(request)` casts in action code.
  *
  * Runtime is unchanged — the proxy still delegates to whichever
  * `EnhancedRequest` is in the AsyncLocalStorage slot. The type swap
@@ -206,7 +206,7 @@ export function getCurrentRequest(): EnhancedRequest | undefined {
  * the Auth middleware stamps `_authenticatedUser` / `_currentAccessToken` onto
  * it. This proxy hands those straight back at runtime, but it was typed as
  * `RequestInstance` alone - which declares none of them - so every reader had
- * to write `(request as any)._authenticatedUser` to get at a property that was
+ * to write `(request)._authenticatedUser` to get at a property that was
  * already there and already documented one file over.
  */
 export const request: RequestInstance & StacksRequestMarkers = new Proxy(
@@ -254,7 +254,7 @@ export const request: RequestInstance & StacksRequestMarkers = new Proxy(
       // statically (rate-limit headers, span ids, etc.). The proxy
       // forwards those verbatim — callers that need them can widen
       // via `(request as EnhancedRequest)` for the rare cases.
-      const value = (currentRequest as any)[prop]
+      const value = (currentRequest)[prop]
       if (typeof value === 'function') {
         return value.bind(currentRequest)
       }

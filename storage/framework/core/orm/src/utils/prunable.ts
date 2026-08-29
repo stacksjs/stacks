@@ -19,7 +19,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
       qb = query(qb)
       const result = await qb.execute()
       const rows = Array.isArray(result) ? result : [result]
-      const count = Number((rows[0] as any)?.numDeletedRows ?? rows.length ?? 0)
+      const count = Number((rows[0])?.numDeletedRows ?? rows.length ?? 0)
       log.info(`Pruned ${count} records from ${tableName}`)
       return count
     }
@@ -33,7 +33,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
       .execute()
 
     const rows = Array.isArray(result) ? result : [result]
-    const count = Number((rows[0] as any)?.numDeletedRows ?? rows.length ?? 0)
+    const count = Number((rows[0])?.numDeletedRows ?? rows.length ?? 0)
     log.info(`Pruned ${count} records from ${tableName} older than ${olderThanDays} days`)
     return count
   }

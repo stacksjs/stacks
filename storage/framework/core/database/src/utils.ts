@@ -431,7 +431,7 @@ function updateQueryBuilderConfig(): void {
     // onto Bun's driver options itself, so the block is handed down as-is
     // rather than pre-translated here. `toBunPoolOptions` exists for the
     // replica connections below, which are constructed directly.
-    database: (pool ? { ...dbConfigForQb, pool } : dbConfigForQb) as any,
+    database: (pool ? { ...dbConfigForQb, pool } : dbConfigForQb),
     verbose: getEnv() !== 'production',
     // Must match the value migrations.ts sets. setConfig replaces the config
     // wholesale, so omitting this here silently reverts the snapshot to the

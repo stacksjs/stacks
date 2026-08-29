@@ -201,7 +201,7 @@ async function fetchCountsForPeriod(
   endDate: Date | null,
   currentDate: Date,
 ): Promise<CouponCountStats> {
-  let query = db.selectFrom('coupons') as any
+  let query = db.selectFrom('coupons')
 
   // Apply date filter if startDate is provided
   if (startDate) {
@@ -220,7 +220,7 @@ async function fetchCountsForPeriod(
 
   // Get active count (is_active = true, start_date <= current date, end_date >= current date)
   // Create a new query instead of cloning
-  let activeQuery = db.selectFrom('coupons') as any
+  let activeQuery = db.selectFrom('coupons')
 
   // Apply the same date filters as the total query if needed
   if (startDate) {
@@ -262,7 +262,7 @@ export async function fetchCouponCountsByType(): Promise<Record<string, CouponCo
   // Get all discount types
   const discountTypes = await db
     .selectFrom('coupons')
-    .select('discount_type' as any)
+    .select('discount_type')
     .distinct()
     .execute() as { discount_type: string }[]
 

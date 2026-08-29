@@ -30,7 +30,7 @@ export async function fetchComments(options: {
   offset?: number
 } = {}): Promise<Commentable[]> {
   const db = await getDb()
-  let query = db.selectFrom('commentables') as any
+  let query = db.selectFrom('commentables')
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -68,7 +68,7 @@ export async function fetchCommentsByCommentables(
   let query = db
     .selectFrom('commentables')
     .where('commentables_id', '=', commentables_id)
-    .where('commentables_type', '=', commentables_type) as any
+    .where('commentables_type', '=', commentables_type)
 
   if (options.status)
     query = query.where('status', '=', options.status)
@@ -112,7 +112,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
   try {
     let query = db
       .selectFrom('commentables')
-      .where('status', '=', status) as any
+      .where('status', '=', status)
 
     if (options.limit)
       query = query.limit(options.limit)
@@ -187,7 +187,7 @@ export async function fetchPostsWithMostComments(dateRange: DateRange, options: 
         'posts.title',
       ])
       .groupBy('posts.id', 'posts.title')
-      .orderBy('posts.id', 'desc') as any
+      .orderBy('posts.id', 'desc')
 
     if (options.limit)
       query = query.limit(options.limit)

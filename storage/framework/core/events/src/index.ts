@@ -213,7 +213,7 @@ export function createEmitter<Events extends EventMap>(
       return
     }
     for (let i = list.length - 1; i >= 0; i--) {
-      const h = list[i] as any
+      const h = list[i]
       if (h === handler || h?.[ASYNC_HANDLER_TAG] === handler) list.splice(i, 1)
     }
   }

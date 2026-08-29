@@ -350,7 +350,7 @@ async function analyzeImageAnthropic(
     throw new Error(`Claude Vision API error: ${error}`)
   }
 
-  const responseData = (await response.json()) as any
+  const responseData = (await response.json())
 
   return {
     content: responseData.content[0].text,
@@ -416,7 +416,7 @@ async function analyzeImageOpenAI(
     throw new Error(`OpenAI Vision API error: ${error}`)
   }
 
-  const responseData = (await response.json()) as any
+  const responseData = (await response.json())
 
   return {
     content: responseData.choices[0].message.content,
@@ -457,7 +457,7 @@ async function analyzeImageOllama(
     throw new Error(`Ollama Vision API error: ${error}`)
   }
 
-  const responseData = (await response.json()) as any
+  const responseData = (await response.json())
 
   return {
     content: responseData.response,
@@ -522,7 +522,7 @@ export async function analyzeImages(
       throw new Error(`Claude Vision API error: ${error}`)
     }
 
-    const responseData = (await response.json()) as any
+    const responseData = (await response.json())
     return {
       content: responseData.content[0].text,
       model: responseData.model,
@@ -577,7 +577,7 @@ export async function analyzeImages(
       throw new Error(`OpenAI Vision API error: ${error}`)
     }
 
-    const responseData = (await response.json()) as any
+    const responseData = (await response.json())
     return {
       content: responseData.choices[0].message.content,
       model: responseData.model,

@@ -178,7 +178,7 @@ export function buildVapidHeaders(options: {
       // needs them, and deriving them here means callers store one string.
       x: b64url(fromB64url(options.vapid.publicKey).subarray(1, 33)),
       y: b64url(fromB64url(options.vapid.publicKey).subarray(33, 65)),
-    } as any,
+    },
     format: 'jwk',
   })
 
@@ -305,7 +305,7 @@ export async function sendWebPush(options: SendWebPushOptions): Promise<WebPushR
     const answer = await fetch(subscription.endpoint, {
       method: 'POST',
       headers,
-      body: body as any,
+      body: body,
     })
 
     // 404 and 410 are the only two that mean the subscription is gone. Every

@@ -158,7 +158,7 @@ export function share(buddy: CLI): void {
         if (runner) {
           s.start(`Starting ${serviceType} dev server...`)
           muteOutput()
-          runner({ verbose: options.verbose ?? false } as any).catch(() => {})
+          runner({ verbose: options.verbose ?? false }).catch(() => {})
           await waitForPort(port)
           unmuteOutput()
           s.succeed(`${bold(capitalize(serviceType))} ready ${dim(`on :${port}`)}`)
@@ -173,7 +173,7 @@ export function share(buddy: CLI): void {
 
           // Fire all runners
           for (const companion of companions) {
-            companion.runner({ verbose: options.verbose ?? false } as any).catch(() => {})
+            companion.runner({ verbose: options.verbose ?? false }).catch(() => {})
           }
 
           // Wait for each, track which started (60s timeout — API can be slow to boot)

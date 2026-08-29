@@ -86,7 +86,7 @@ export function formatShippingOptions(): Promise<{ id: number, name: string, sta
       .selectFrom('shipping_methods')
       .select(['id', 'name', 'status', 'base_rate'])
       .orderBy('name')
-      .execute() as any
+      .execute()
   }
   catch (error) {
     if (error instanceof Error) {

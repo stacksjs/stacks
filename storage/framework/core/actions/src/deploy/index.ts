@@ -535,7 +535,7 @@ try {
     repoSpinner.start()
 
     try {
-      const { ECRClient } = await import('@stacksjs/ts-cloud') as any
+      const { ECRClient } = await import('@stacksjs/ts-cloud')
       const ecr = new ECRClient(region)
       const repoName = `${projectName}-${environment}-api`
 
@@ -568,7 +568,7 @@ try {
     authSpinner.start()
 
     try {
-      const { ECRClient } = await import('@stacksjs/ts-cloud') as any
+      const { ECRClient } = await import('@stacksjs/ts-cloud')
       const ecr = new ECRClient(region)
 
       // Get ECR authorization token
@@ -645,7 +645,7 @@ try {
   // Helper function to get AWS account ID using ts-cloud SDK
   async function getAwsAccountId(region: string): Promise<string> {
     try {
-      const { STSClient } = await import('@stacksjs/ts-cloud') as any
+      const { STSClient } = await import('@stacksjs/ts-cloud')
       const sts = new STSClient(region)
       const identity = await sts.getCallerIdentity()
       const accountId = identity.Account || process.env.AWS_ACCOUNT_ID || ''
@@ -688,7 +688,7 @@ try {
   try {
     const deployScript = await import(p.projectPath('cloud/deploy-script'))
     if (typeof deployScript.afterDeploy === 'function') {
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const cf = new CloudFormationClient(region)
       const stackName = `${projectName}-cloud`
       let stackOutputs: Record<string, string> = {}
@@ -777,7 +777,7 @@ try {
     serverOutputSpinner.start()
 
     try {
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
+      const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const cf = new CloudFormationClient(region)
       const stackName = `${projectName}-cloud`
       const outputs = await cf.getStackOutputs(stackName)
@@ -805,7 +805,7 @@ try {
     serverDeploySpinner.start()
 
     try {
-      const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud') as any
+      const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud')
       const { readFileSync: readServerFile, existsSync: serverFileExists } = await import('node:fs')
       const { resolve } = await import('node:path')
 
@@ -829,7 +829,7 @@ try {
 
       let securityGroupId: string | undefined
       if (instanceId) {
-        const { EC2Client } = await import('@stacksjs/ts-cloud') as any
+        const { EC2Client } = await import('@stacksjs/ts-cloud')
         const ec2 = new EC2Client(region)
         const instanceData = await ec2.describeInstances({
           Filters: [{ Name: 'instance-id', Values: [instanceId] }],
@@ -1115,7 +1115,7 @@ systemctl enable stacks-api`,
       smtpSpinner.start()
 
       try {
-        const { S3Client, AWSClient, EC2Client } = await import('@stacksjs/ts-cloud') as any
+        const { S3Client, AWSClient, EC2Client } = await import('@stacksjs/ts-cloud')
         const { readFileSync: readSmtpFile, existsSync: smtpFileExists } = await import('node:fs')
         const { resolve: resolvePath, join: joinPath } = await import('node:path')
         const { execSync } = await import('node:child_process')
@@ -1132,7 +1132,7 @@ systemctl enable stacks-api`,
         let emailBucketName: string | undefined
         let securityGroupId: string | undefined
         try {
-          const { AWSCloudFormationClient: CfnClient } = await import('@stacksjs/ts-cloud') as any
+          const { AWSCloudFormationClient: CfnClient } = await import('@stacksjs/ts-cloud')
           const cfn = new CfnClient(region)
           const cfnOutputs = await cfn.getStackOutputs(stackName)
           for (const [key, value] of Object.entries(cfnOutputs)) {
@@ -1471,7 +1471,7 @@ SERVICEFILE`,
   frontendSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
+    const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud')
     const { readFileSync } = await import('node:fs')
     const { buildFrontendStatic } = await import('../build/frontend-static')
 
@@ -1525,7 +1525,7 @@ SERVICEFILE`,
       const distributionId = stackOutputs.publicCloudFrontDistributionId || stackOutputs.CloudFrontDistributionId
       if (distributionId) {
         if (isVerbose) log.debug('  Invalidating CloudFront cache...')
-        const { AWSClient } = await import('@stacksjs/ts-cloud') as any
+        const { AWSClient } = await import('@stacksjs/ts-cloud')
         const client = new AWSClient()
         await client.request({
           service: 'cloudfront',
@@ -1564,7 +1564,7 @@ SERVICEFILE`,
     docsDeploySpinner.start()
 
     try {
-      const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
+      const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud')
       const { readFileSync } = await import('node:fs')
 
       const s3 = new S3Client(region)
@@ -1599,7 +1599,7 @@ SERVICEFILE`,
         const docsDistributionId = docsOutputs.docsCloudFrontDistributionId || docsOutputs.publicCloudFrontDistributionId || docsOutputs.CloudFrontDistributionId
         if (docsDistributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for docs...')
-          const { AWSClient } = await import('@stacksjs/ts-cloud') as any
+          const { AWSClient } = await import('@stacksjs/ts-cloud')
           const client = new AWSClient()
           const docsInvalidationPaths = docsOutputs.docsCloudFrontDistributionId
             ? ['/*']
@@ -1643,7 +1643,7 @@ SERVICEFILE`,
     blogDeploySpinner.start()
 
     try {
-      const { S3Client: BlogS3Client, CloudFormationClient: BlogCFClient } = await import('@stacksjs/ts-cloud') as any
+      const { S3Client: BlogS3Client, CloudFormationClient: BlogCFClient } = await import('@stacksjs/ts-cloud')
       const { readFileSync: readBlogFile } = await import('node:fs')
 
       const blogS3 = new BlogS3Client(region)
@@ -1671,7 +1671,7 @@ SERVICEFILE`,
         const blogDistributionId = outputs.blogCloudFrontDistributionId || outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
         if (blogDistributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for blog...')
-          const { AWSClient: BlogAWSClient } = await import('@stacksjs/ts-cloud') as any
+          const { AWSClient: BlogAWSClient } = await import('@stacksjs/ts-cloud')
           const blogClient = new BlogAWSClient()
           const blogInvalidationPaths = outputs.blogCloudFrontDistributionId
             ? ['/*']
@@ -1712,7 +1712,7 @@ SERVICEFILE`,
   errorPageSpinner.start()
 
   try {
-    const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud') as any
+    const { S3Client, CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud')
     const { existsSync: exists404, readFileSync: read404 } = await import('node:fs')
 
     const s3 = new S3Client(region)
@@ -1958,7 +1958,7 @@ SERVICEFILE`,
   dnsSpinner.start()
 
   try {
-    const { Route53Client, CloudFormationClient: DnsCfClient } = await import('@stacksjs/ts-cloud') as any
+    const { Route53Client, CloudFormationClient: DnsCfClient } = await import('@stacksjs/ts-cloud')
 
     const dnsCf = new DnsCfClient(region)
     const dnsStackName = `${projectName}-cloud`

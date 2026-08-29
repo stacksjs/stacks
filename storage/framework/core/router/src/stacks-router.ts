@@ -4138,10 +4138,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // Cast retained: the sync chaining path accepts a broader middleware
       // union than the adapter's parameter names, and reconciling the two is a
       // change to the middleware surface rather than a narrowing.
-      const adapted = adaptMiddlewareForBunRouter(middleware as any)
+      const adapted = adaptMiddlewareForBunRouter(middleware)
       // Same reason as the cast above: `globalMiddleware` is typed for the
       // adapter's MiddlewareHandler, and the sync path carries an ActionHandler.
-      bunRouter.globalMiddleware.push(adapted as any)
+      bunRouter.globalMiddleware.push(adapted)
       return stacksRouter
     },
 
@@ -4733,7 +4733,7 @@ async function handleServerRequest(request: Request): Promise<Response> {
   // user 404s with their own message stay untouched.
   if (response.status === 404 && response.headers.get('content-type')?.includes('json')) {
     try {
-      const body = await response.clone().json() as any
+      const body = await response.clone().json()
       const isGeneric = body?.message === 'Not Found' || body?.error === 'Not Found'
       if (isGeneric) {
         const url = new URL(request.url)

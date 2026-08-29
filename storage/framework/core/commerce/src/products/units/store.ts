@@ -110,7 +110,7 @@ export function formatUnitOptions(
   try {
     let query = db
       .selectFrom('product_units')
-      .select(['id', 'name', 'abbreviation', 'is_default'] as any) as any
+      .select(['id', 'name', 'abbreviation', 'is_default'])
 
     // Filter by type if provided
     if (type)

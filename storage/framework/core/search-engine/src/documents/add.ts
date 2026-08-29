@@ -121,11 +121,11 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
     }
 
     log.info(modelOption)
-    return ok('Successfully imported models to search engine!') as any
+    return ok('Successfully imported models to search engine!')
   }
   catch (error: any) {
     log.error(error)
 
-    return err(error?.message || String(error)) as any
+    return err(error?.message || String(error))
   }
 }

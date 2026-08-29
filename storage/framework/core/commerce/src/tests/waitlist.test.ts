@@ -21,7 +21,7 @@ beforeEach(async () => {
 describe('Waitlist Product Module', () => {
   describe('update', () => {
     it('should return undefined when the waitlist entry does not exist', async () => {
-      expect(await update(99999999, {} as any)).toBeUndefined()
+      expect(await update(99999999, {})).toBeUndefined()
     })
   })
 
@@ -43,14 +43,14 @@ describe('Waitlist Product Module', () => {
         status: 'waiting',
         product_id: 1,
         customer_id: 1,
-      } as any)
+      })
 
       const notified = await updateStatus(created.id, 'notified')
       expect(notified?.notified_at).toBeTruthy()
 
       const pinned = await update(created.id, {
         notified_at: '2026-01-02 03:04:05',
-      } as any)
+      })
       const edited = await update(created.id, {
         name: 'Status audit updated',
         email: 'updated@example.test',
@@ -58,7 +58,7 @@ describe('Waitlist Product Module', () => {
         notification_preference: 'both',
         source: 'app',
         status: 'notified',
-      } as any)
+      })
 
       expect(edited?.notified_at).toBe(pinned?.notified_at)
       expect(edited?.phone).toBe('+1 555 0100')

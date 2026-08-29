@@ -255,7 +255,7 @@ class Fetcher {
     return fetch(url, {
       method,
       headers: this.getHeaders(),
-      body: body ? this.formatBody(body) as any : undefined,
+      body: body ? this.formatBody(body) : undefined,
     })
   }
 
@@ -274,7 +274,7 @@ class Fetcher {
     let response = await fetch(urlWithParams, {
       method,
       headers: this.getHeaders(),
-      body: formattedBody as any,
+      body: formattedBody,
     })
 
     // Handle digest authentication if needed

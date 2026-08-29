@@ -263,7 +263,7 @@ export async function currentAccessToken(): Promise<AccessToken | null> {
   //
   // The marker is declared `unknown` on the request - deliberately, since the
   // shape is project-defined - so it is narrowed here rather than returned
-  // straight into an `AccessToken` slot the way the `(request as any)` read
+  // straight into an `AccessToken` slot the way the `(request)` read
   // used to allow.
   const attached = request._currentAccessToken as AccessToken | undefined
   if (attached) return attached

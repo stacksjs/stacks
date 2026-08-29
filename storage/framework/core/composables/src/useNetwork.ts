@@ -33,7 +33,7 @@ export function useNetwork(): UseNetworkReturn {
 
   function updateNetworkInfo(): void {
     if (!isSupported.value) return
-    const conn = (navigator as any).connection
+    const conn = (navigator).connection
     if (conn) {
       downlink.value = conn.downlink
       downlinkMax.value = conn.downlinkMax
@@ -69,7 +69,7 @@ export function useNetwork(): UseNetworkReturn {
     }
 
     if (isSupported.value) {
-      const conn = (navigator as any).connection
+      const conn = (navigator).connection
       if (conn?.addEventListener) {
         conn.addEventListener('change', updateNetworkInfo)
         try {

@@ -363,20 +363,20 @@ function collectRecipientAddresses(message: EmailMessage): string[] {
 let _mail: Mail | undefined
 function getMail(): Mail {
   if (!_mail) {
-    const driver = (config as any)?.email?.default
+    const driver = (config)?.email?.default
       || process.env.MAIL_MAILER
       || 'ses'
-    _mail = new Mail({ defaultDriver: driver as any })
+    _mail = new Mail({ defaultDriver: driver })
   }
   return _mail
 }
 
 export const mail: Mail = new Proxy({} as Mail, {
   get(_t, prop) {
-    return (getMail() as any)[prop]
+    return (getMail())[prop]
   },
   set(_t, prop, value) {
-    ;(getMail() as any)[prop] = value
+    ;(getMail())[prop] = value
     return true
   },
 }) as Mail

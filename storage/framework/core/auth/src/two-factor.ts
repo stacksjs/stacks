@@ -77,7 +77,7 @@ async function getLastUsedTwoFactorStep(userId: number): Promise<number | null> 
 /** Best-effort persist of the consumed TOTP step; no-op on an un-migrated DB. */
 async function setLastUsedTwoFactorStep(userId: number, step: number): Promise<void> {
   try {
-    await db.updateTable('users').set({ two_factor_last_used_step: step } as any).where('id', '=', userId).executeTakeFirst()
+    await db.updateTable('users').set({ two_factor_last_used_step: step }).where('id', '=', userId).executeTakeFirst()
   }
   catch {
     // Column missing (un-migrated) — skip; replay protection stays off.

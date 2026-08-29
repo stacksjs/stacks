@@ -36,7 +36,7 @@ async function resolveOperationalMailHost(): Promise<string | undefined> {
     const response = await fetch(`https://api.hetzner.cloud/v1/servers?name=${encodeURIComponent(`${appName}-production-app`)}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    const data = await response.json() as any
+    const data = await response.json()
     const ip = data.servers?.[0]?.public_net?.ipv4?.ip
     if (ip)
       return ip
@@ -189,7 +189,7 @@ async function waitForHetznerAction(token: string, actionId: number): Promise<vo
     const response = await fetch(`https://api.hetzner.cloud/v1/actions/${actionId}`, {
       headers: { Authorization: `Bearer ${token}` },
     })
-    const data = await response.json() as any
+    const data = await response.json()
     if (!response.ok)
       throw new Error(data?.error?.message || `Hetzner action ${actionId} lookup failed`)
     if (data.action?.status === 'success')
@@ -214,7 +214,7 @@ async function ensureMailStorageVolume(
   }
   const host = await mailStorageHost(options)
   const serverResponse = await fetch(`https://api.hetzner.cloud/v1/servers?name=${encodeURIComponent('stacks-production-app')}`, { headers })
-  const serverData = await serverResponse.json() as any
+  const serverData = await serverResponse.json()
   const server = serverData.servers?.[0]
   if (!server)
     throw new Error('Hetzner server stacks-production-app was not found.')
@@ -226,7 +226,7 @@ async function ensureMailStorageVolume(
     throw new Error('Mail volume size must be between 10 and 1024 GiB.')
 
   const volumesResponse = await fetch(`https://api.hetzner.cloud/v1/volumes?name=${encodeURIComponent(name)}`, { headers })
-  const volumesData = await volumesResponse.json() as any
+  const volumesData = await volumesResponse.json()
   let volume = volumesData.volumes?.[0]
   if (!volume) {
     const createResponse = await fetch('https://api.hetzner.cloud/v1/volumes', {
@@ -244,7 +244,7 @@ async function ensureMailStorageVolume(
         },
       }),
     })
-    const createData = await createResponse.json() as any
+    const createData = await createResponse.json()
     if (!createResponse.ok)
       throw new Error(createData?.error?.message || 'Hetzner volume creation failed.')
     volume = createData.volume
@@ -257,7 +257,7 @@ async function ensureMailStorageVolume(
       headers,
       body: JSON.stringify({ server: server.id, automount: false }),
     })
-    const attachData = await attachResponse.json() as any
+    const attachData = await attachResponse.json()
     if (!attachResponse.ok)
       throw new Error(attachData?.error?.message || 'Hetzner volume attach failed.')
     await waitForHetznerAction(token, attachData.action.id)
@@ -266,7 +266,7 @@ async function ensureMailStorageVolume(
     throw new Error(`Hetzner volume ${name} is attached to a different server.`)
   }
 
-  const refreshed = await (await fetch(`https://api.hetzner.cloud/v1/volumes/${volume.id}`, { headers })).json() as any
+  const refreshed = await (await fetch(`https://api.hetzner.cloud/v1/volumes/${volume.id}`, { headers })).json()
   volume = refreshed.volume || volume
   if (!volume.linux_device)
     throw new Error(`Hetzner volume ${name} has no Linux device path yet.`)
@@ -1735,7 +1735,7 @@ export function mailCommands(buddy: CLI): void {
           const res = await fetch('https://api.hetzner.cloud/v1/servers?label_selector=service=mail', {
             headers: { Authorization: `Bearer ${hetznerToken}` },
           })
-          const data = await res.json() as any
+          const data = await res.json()
           const server = data.servers?.[0]
           const ip = server?.public_net?.ipv4?.ip
 
@@ -1744,7 +1744,7 @@ export function mailCommands(buddy: CLI): void {
             const allRes = await fetch('https://api.hetzner.cloud/v1/servers', {
               headers: { Authorization: `Bearer ${hetznerToken}` },
             })
-            const allData = await allRes.json() as any
+            const allData = await allRes.json()
             const mailServer = allData.servers?.find((s: any) => s.name?.includes('mail'))
             if (mailServer) {
               const serverIp = mailServer.public_net?.ipv4?.ip
@@ -2385,7 +2385,7 @@ async function requestHetznerPort25(
     const res = await fetch('https://api.hetzner.cloud/v1/servers', {
       headers: { Authorization: `Bearer ${hetznerToken}` },
     })
-    const data = await res.json() as any
+    const data = await res.json()
     const mailServer = data.servers?.find((s: any) => s.name?.includes('mail'))
       || data.servers?.[0]
 
@@ -2430,7 +2430,7 @@ async function requestHetznerPort25(
           body: JSON.stringify({ ip: serverIp, dns_ptr: rdns }),
         },
       )
-      const rdnsData = await rdnsRes.json() as any
+      const rdnsData = await rdnsRes.json()
 
       if (rdnsData.action?.status === 'running' || rdnsData.action?.status === 'success') {
         log.success(`Reverse DNS set: ${serverIp} -> ${rdns}`)

@@ -56,7 +56,7 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
     }
   }
 
-  return ok('Schedules ran successfully') as any
+  return ok('Schedules ran successfully')
 }
 
 async function runSchedulerInstance(): Promise<void> {

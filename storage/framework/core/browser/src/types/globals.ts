@@ -1,7 +1,7 @@
 /**
  * The globals the server injects into the page, declared once.
  *
- * Every one of these was read through `(window as any)` or `(globalThis as
+ * Every one of these was read through `(window)` or `(globalThis as
  * any)` - six casts across five files - so a typo in a key was a silent
  * `undefined` and the default beside it quietly won. `__STACKS_CONFIG__` is
  * how an application overrides its API base URL and auth endpoints, so a

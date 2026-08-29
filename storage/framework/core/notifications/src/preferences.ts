@@ -134,7 +134,7 @@ export async function setNotificationPreference(
     .select(['id'])
     .where('user_id', '=', userId)
     .where('channel', '=', channel)
-  const existing = await wherePreferenceCategory(baseQuery as any, cat)
+  const existing = await wherePreferenceCategory(baseQuery, cat)
     .executeTakeFirst() as { id?: number } | undefined
 
   if (existing?.id) {

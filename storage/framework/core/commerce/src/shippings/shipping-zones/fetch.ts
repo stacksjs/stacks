@@ -31,7 +31,7 @@ export function formatZoneOptions(): Promise<{ id: number, name: string, status:
       .selectFrom('shipping_zones')
       .select(['id', 'name', 'status', 'countries'])
       .orderBy('name')
-      .execute() as any
+      .execute()
   }
   catch (error) {
     if (error instanceof Error) {

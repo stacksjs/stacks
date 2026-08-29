@@ -345,8 +345,8 @@ export type MakeBooleanOption =
  *
  * Every key optional, because that is what a CLI flag is: the parsed object
  * carries only what the user typed. Declared as required, no real options
- * object ever satisfied it, so `make.ts` reached for `(options as any).dryRun`
- * and handed `options as any` to every make* function - which also meant a
+ * object ever satisfied it, so `make.ts` reached for `(options).dryRun`
+ * and handed `options` to every make* function - which also meant a
  * flag that is genuinely absent read as `boolean` rather than `undefined`.
  */
 export type MakeOptions = {

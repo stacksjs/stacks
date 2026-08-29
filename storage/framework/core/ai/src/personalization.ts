@@ -387,7 +387,7 @@ async function callProvider(
       throw new Error(`Claude API error: ${error}`)
     }
 
-    const data = (await response.json()) as any
+    const data = (await response.json())
     return {
       content: data.content[0].text,
       model: data.model,
@@ -425,7 +425,7 @@ async function callProvider(
       throw new Error(`OpenAI API error: ${error}`)
     }
 
-    const data = (await response.json()) as any
+    const data = (await response.json())
     return {
       content: data.choices[0].message.content,
       model: data.model,
@@ -459,7 +459,7 @@ async function callProvider(
       throw new Error(`Ollama API error: ${error}`)
     }
 
-    const data = (await response.json()) as any
+    const data = (await response.json())
     return {
       content: data.message.content,
       model: data.model,

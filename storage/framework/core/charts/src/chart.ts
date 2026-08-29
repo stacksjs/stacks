@@ -390,7 +390,7 @@ export class Chart {
       // floods between the line and the x-axis baseline).
       if (fillColor) {
         const baseline = plot.y + plot.h
-        const areaGen = (d3Area() as any)
+        const areaGen = (d3Area())
           .x((p: { x: number }) => p.x)
           .y0(() => baseline)
           .y1((p: { y: number }) => p.y)
@@ -404,7 +404,7 @@ export class Chart {
       }
 
       // Line stroke through the same point set.
-      const lineGen = (d3Line() as any)
+      const lineGen = (d3Line())
         .x((p: { x: number }) => p.x)
         .y((p: { y: number }) => p.y)
         .curve(curve)
@@ -560,14 +560,14 @@ export class Chart {
     // normalisation, and the start/end angle math we used to inline.
     // We then render with `arc()` against the canvas context so the
     // existing canvas-only API stays unchanged from the caller's POV.
-    const pieLayout = (d3Pie() as any)
+    const pieLayout = (d3Pie())
       .value((d: number) => Math.max(0, d || 0))
       .startAngle(-Math.PI / 2)
       .endAngle(-Math.PI / 2 + Math.PI * 2)
       .sort(null)
     const slices = pieLayout(ds.data) as Array<{ startAngle: number, endAngle: number, value: number, index: number }>
 
-    const slicePath = (d3Arc() as any)
+    const slicePath = (d3Arc())
       .innerRadius(inner)
       .outerRadius(radius)
 

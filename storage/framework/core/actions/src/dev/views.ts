@@ -368,7 +368,7 @@ async function startDefaultServer() {
       const seeded = await seedCsrfPageResponse(req, current)
       return seeded ?? (current === baseline ? secured : current)
     },
-  } as any)
+  })
 }
 
 async function firstExistingPath(candidates: string[]): Promise<string | null> {

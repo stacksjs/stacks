@@ -411,7 +411,7 @@ function notImplemented(_index: string, _arg?: unknown): Promise<EnqueuedTask> {
 }
 
 const typesense: SearchEngineDriver = {
-  client: () => ({}) as any,
+  client: () => ({}),
   resetClient: () => { _config = null },
   search,
 
@@ -428,7 +428,7 @@ const typesense: SearchEngineDriver = {
   updateDocuments: (indexName, docs) => addDocuments(indexName, docs as DocumentOptions[]),
   deleteDocument,
   deleteDocuments: async (indexName) => deleteIndex(indexName),
-  getDocument: async () => fakeTask('typesense') as any,
+  getDocument: async () => fakeTask('typesense'),
 
   getFilterableAttributes,
   updateFilterableAttributes: notImplemented,

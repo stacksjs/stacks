@@ -106,7 +106,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
     const result = await validator.validate(params)
 
     if (!result.valid) {
-      reportError(result.errors as any)
+      reportError(result.errors)
       throw new HttpError(422, 'Validation failed', { errors: result.errors })
     }
 
@@ -153,8 +153,8 @@ export function unique(table: string, column: string, exceptId?: number): AsyncV
       const { db } = await import('@stacksjs/database')
       // The query builder uses template-literal types that narrow on every
       // `.where()`, so chaining loses type compatibility — cast through `any`.
-      let query: any = db.selectFrom(table as any).where(column as any, '=', value as any)
-      if (exceptId) query = query.where('id' as any, '!=', exceptId as any)
+      let query: any = db.selectFrom(table).where(column, '=', value)
+      if (exceptId) query = query.where('id', '!=', exceptId)
       const existing = await query.selectAll().executeTakeFirst()
       return existing ? `The ${column} has already been taken` : true
     }
@@ -172,7 +172,7 @@ export function exists(table: string, column: string): AsyncValidator {
   return async (value: unknown): Promise<boolean | string> => {
     try {
       const { db } = await import('@stacksjs/database')
-      const existing = await (db.selectFrom(table as any).where(column as any, '=', value as any) as any).selectAll().executeTakeFirst()
+      const existing = await (db.selectFrom(table).where(column, '=', value)).selectAll().executeTakeFirst()
       return existing ? true : `The selected ${column} does not exist`
     }
     catch {
@@ -293,7 +293,7 @@ export async function validate<T = Record<string, unknown>>(
 
   for (const [field, def] of Object.entries(rules)) {
     if (!def) continue
-    if (typeof (def as any).rule === 'object' || typeof (def as any).rule === 'function') {
+    if (typeof (def).rule === 'object' || typeof (def).rule === 'function') {
       ruleObject[field] = (def as { rule: Validator<any> }).rule
       const msg = (def as { message?: string | Record<string, string> }).message
       if (typeof msg === 'string') {

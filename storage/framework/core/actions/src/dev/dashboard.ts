@@ -445,7 +445,7 @@ async function startStxServer(): Promise<void> {
     onResponse: seedCsrfPageResponse,
     auth: false,
     ...(stxModule && { stxModule }),
-  } as any)
+  })
 
   serverPromise.catch((err: Error) => {
     restoreConsole()

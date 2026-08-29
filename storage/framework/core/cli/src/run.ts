@@ -105,7 +105,7 @@ export async function runCommands(
       throw result.error
     }
 
-    results.push(result as any)
+    results.push(result)
   }
 
   return results

@@ -19,7 +19,7 @@ export function makeDestructurable<
   T extends Record<string, unknown>,
   A extends readonly unknown[],
 >(obj: T, arr: A): T & A {
-  const clone = { ...obj } as any
+  const clone = { ...obj }
 
   Object.defineProperty(clone, Symbol.iterator, {
     enumerable: false,

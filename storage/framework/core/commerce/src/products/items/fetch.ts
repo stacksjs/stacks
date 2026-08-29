@@ -53,8 +53,8 @@ export async function fetchAll(): Promise<ProductJsonResponse[]> {
   const manufacturerIds = models.map((model: any) => model.manufacturer_id).filter((id: any) => id !== null && id !== undefined)
   const categoryIds = models.map((model: any) => model.category_id).filter((id: any) => id !== null && id !== undefined)
 
-  let manufacturersQuery = db.selectFrom('manufacturers') as any
-  let categoriesQuery = db.selectFrom('categories') as any
+  let manufacturersQuery = db.selectFrom('manufacturers')
+  let categoriesQuery = db.selectFrom('categories')
 
   if (manufacturerIds.length > 0) {
     manufacturersQuery = manufacturersQuery.where('id', 'in', manufacturerIds)

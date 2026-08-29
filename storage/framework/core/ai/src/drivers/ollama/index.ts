@@ -189,7 +189,7 @@ export async function chat(
     throw new Error(`Ollama API error: ${error}`)
   }
 
-  const data = (await response.json()) as any
+  const data = (await response.json())
 
   return {
     content: data.message.content,
@@ -306,7 +306,7 @@ export async function generate(
     throw new Error(`Ollama API error: ${error}`)
   }
 
-  const data = (await response.json()) as any
+  const data = (await response.json())
 
   return {
     content: data.response,
@@ -481,7 +481,7 @@ export async function showModel(_name: string): Promise<{
     throw new Error(`Ollama API error: ${error}`)
   }
 
-  return response.json() as any
+  return response.json()
 }
 
 /**

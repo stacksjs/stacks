@@ -260,7 +260,7 @@ export function cloud(buddy: CLI): void {
         // `prompts` is an object of prompt functions, not the callable the npm
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind
-        // `(prompts as any)(...)`, nothing said so.
+        // `(prompts)(...)`, nothing said so.
         const confirm = await prompts.confirm('Would you like to invalidate the CDN (CloudFront) cache?')
 
         if (!confirm) {
@@ -348,7 +348,7 @@ export function cloud(buddy: CLI): void {
         // `prompts` is an object of prompt functions, not the callable the npm
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind
-        // `(prompts as any)(...)`, nothing said so.
+        // `(prompts)(...)`, nothing said so.
         const confirm = await prompts.confirm('Would you like to add a jump-box to your cloud?')
 
         if (!confirm) {
@@ -430,7 +430,7 @@ export function cloud(buddy: CLI): void {
           // `prompts` is an object of prompt functions, not the callable the npm
           // package of that name exports - calling it threw "prompts is not a
           // function" at every one of these interactive paths. Behind
-          // `(prompts as any)(...)`, nothing said so.
+          // `(prompts)(...)`, nothing said so.
           const confirm = await prompts.confirm('Would you like to remove your jump-box for now?')
 
           if (!confirm) {
@@ -581,7 +581,7 @@ export function cloud(buddy: CLI): void {
         // `prompts` is an object of prompt functions, not the callable the npm
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind
-        // `(prompts as any)(...)`, nothing said so.
+        // `(prompts)(...)`, nothing said so.
         const confirm = await prompts.confirm('Would you like to remove your jump-box to optimize your costs?')
 
         if (!confirm) {
@@ -686,7 +686,7 @@ export function cloud(buddy: CLI): void {
       // `prompts` is an object of prompt functions, not the callable the npm
       // package of that name exports - calling it threw "prompts is not a
       // function" at every one of these interactive paths. Behind
-      // `(prompts as any)(...)`, nothing said so.
+      // `(prompts)(...)`, nothing said so.
       const confirm = await prompts.confirm('Would you like to invalidate the CloudFront cache?')
 
       if (!confirm) {
@@ -867,7 +867,7 @@ export function cloud(buddy: CLI): void {
       // drift from what the deploy actually does.
       let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
       try {
-        const deployApi = await import('@stacksjs/ts-cloud/deploy') as any
+        const deployApi = await import('@stacksjs/ts-cloud/deploy')
         helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
       }
       catch (error) {
@@ -968,7 +968,7 @@ export function cloud(buddy: CLI): void {
 
       let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
       try {
-        const deployApi = await import('@stacksjs/ts-cloud/deploy') as any
+        const deployApi = await import('@stacksjs/ts-cloud/deploy')
         helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
       }
       catch (error) {

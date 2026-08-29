@@ -222,7 +222,7 @@ export const ormReady: Promise<void> = new Promise<void>((resolve) => { _readyRe
 function lazyModel<T>(name: string): T {
   // The Proxy target is a function so the proxy itself is callable
   // (in case any consumer treats a model as a constructor).
-  return new Proxy(function _modelStub() {} as any, {
+  return new Proxy(function _modelStub() {}, {
     get(_target, prop) {
       // Thenable guard — without it, `await User` would call
       // `User.then`, which we'd forward to the underlying (often

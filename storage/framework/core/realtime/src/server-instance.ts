@@ -21,7 +21,7 @@ export function getServer(): BroadcastServer | null {
  */
 export async function createServer(config: ServerConfig): Promise<BroadcastServer> {
   const broadcasting = await import('ts-broadcasting')
-  const Server = (broadcasting as any).BroadcastServer
+  const Server = (broadcasting).BroadcastServer
   const server = new Server(config)
   await server.start()
   setServer(server)

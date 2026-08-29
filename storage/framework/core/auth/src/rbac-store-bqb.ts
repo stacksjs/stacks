@@ -74,11 +74,11 @@ async function insertAndFetch(
   guardName: string,
   description?: string,
 ): Promise<RoleRecord | PermissionRecord> {
-  await (db.insertInto(table) as any)
+  await (db.insertInto(table))
     .values({ name, guard_name: guardName, description: description ?? null })
     .execute()
 
-  const row = await (db.selectFrom(table) as any)
+  const row = await (db.selectFrom(table))
     .selectAll()
     .where('name', '=', name)
     .where('guard_name', '=', guardName)
@@ -110,7 +110,7 @@ async function pivotAttach(
   // Cheap existence check first — avoids most INSERTs in the steady state
   // where a user/role pair is already present (the common case once roles
   // are seeded).
-  let q = db.selectFrom(table).select('user_id' in cols ? 'user_id' : 'role_id') as any
+  let q = db.selectFrom(table).select('user_id' in cols ? 'user_id' : 'role_id')
   for (const [k, v] of Object.entries(cols))
     q = q.where(k, '=', v)
   const existing = await q.limit(1).executeTakeFirst()
@@ -118,7 +118,7 @@ async function pivotAttach(
     return
 
   try {
-    await (db.insertInto(table) as any).values(cols).execute()
+    await (db.insertInto(table)).values(cols).execute()
   }
   catch (err) {
     swallowDuplicate(err)
@@ -129,7 +129,7 @@ async function pivotDetach(
   table: 'user_roles' | 'user_permissions' | 'role_permissions',
   cols: Record<string, number>,
 ): Promise<void> {
-  let q = db.deleteFrom(table) as any
+  let q = db.deleteFrom(table)
   for (const [k, v] of Object.entries(cols))
     q = q.where(k, '=', v)
   await q.execute()
@@ -140,7 +140,7 @@ async function pivotDetachAll(
   column: 'user_id' | 'role_id',
   value: number,
 ): Promise<void> {
-  await (db.deleteFrom(table) as any).where(column, '=', value).execute()
+  await (db.deleteFrom(table)).where(column, '=', value).execute()
 }
 
 async function pivotSync(
@@ -166,12 +166,12 @@ async function pivotSync(
     // whose chained methods are typed optional. Mirror the shape of the
     // top-level `db` proxy so the chains type-check identically.
     const trx = rawTrx as unknown as typeof db
-    await (trx.deleteFrom(table) as any).where(ownerColumn, '=', ownerId).execute()
+    await (trx.deleteFrom(table)).where(ownerColumn, '=', ownerId).execute()
     if (unique.length === 0) return
 
     const rows = unique.map(id => ({ [ownerColumn]: ownerId, [targetColumn]: id }))
     try {
-      await (trx.insertInto(table) as any).values(rows).execute()
+      await (trx.insertInto(table)).values(rows).execute()
     }
     catch (err) {
       // Concurrent sync race; fall back to one-by-one with idempotent attach
@@ -180,7 +180,7 @@ async function pivotSync(
       swallowDuplicate(err)
       for (const id of unique) {
         try {
-          await (trx.insertInto(table) as any).values({ [ownerColumn]: ownerId, [targetColumn]: id }).execute()
+          await (trx.insertInto(table)).values({ [ownerColumn]: ownerId, [targetColumn]: id }).execute()
         }
         catch (innerErr) {
           swallowDuplicate(innerErr)
@@ -195,7 +195,7 @@ export function createBqbRbacStore(): RbacStore {
     // ─── Roles ────────────────────────────────────────────────────────
 
     async findRoleByName(name: string, guardName: string = 'web'): Promise<RoleRecord | null> {
-      const row = await (db.selectFrom('roles') as any)
+      const row = await (db.selectFrom('roles'))
         .selectAll()
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
@@ -205,7 +205,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async findRoleById(id: number): Promise<RoleRecord | null> {
-      const row = await (db.selectFrom('roles') as any)
+      const row = await (db.selectFrom('roles'))
         .selectAll()
         .where('id', '=', id)
         .limit(1)
@@ -223,13 +223,13 @@ export function createBqbRbacStore(): RbacStore {
       // FK CASCADE because the existing Stacks migrations are FK-free
       // (app-layer integrity is the convention) — replicating that here
       // keeps the table-level contract consistent.
-      await (db.deleteFrom('user_roles') as any).where('role_id', '=', id).execute()
-      await (db.deleteFrom('role_permissions') as any).where('role_id', '=', id).execute()
-      await (db.deleteFrom('roles') as any).where('id', '=', id).execute()
+      await (db.deleteFrom('user_roles')).where('role_id', '=', id).execute()
+      await (db.deleteFrom('role_permissions')).where('role_id', '=', id).execute()
+      await (db.deleteFrom('roles')).where('id', '=', id).execute()
     },
 
     async getAllRoles(guardName?: string): Promise<RoleRecord[]> {
-      let q = (db.selectFrom('roles') as any).selectAll() as any
+      let q = (db.selectFrom('roles')).selectAll()
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
@@ -239,7 +239,7 @@ export function createBqbRbacStore(): RbacStore {
     // ─── Permissions ──────────────────────────────────────────────────
 
     async findPermissionByName(name: string, guardName: string = 'web'): Promise<PermissionRecord | null> {
-      const row = await (db.selectFrom('permissions') as any)
+      const row = await (db.selectFrom('permissions'))
         .selectAll()
         .where('name', '=', name)
         .where('guard_name', '=', guardName)
@@ -249,7 +249,7 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async findPermissionById(id: number): Promise<PermissionRecord | null> {
-      const row = await (db.selectFrom('permissions') as any)
+      const row = await (db.selectFrom('permissions'))
         .selectAll()
         .where('id', '=', id)
         .limit(1)
@@ -262,13 +262,13 @@ export function createBqbRbacStore(): RbacStore {
     },
 
     async deletePermission(id: number): Promise<void> {
-      await (db.deleteFrom('user_permissions') as any).where('permission_id', '=', id).execute()
-      await (db.deleteFrom('role_permissions') as any).where('permission_id', '=', id).execute()
-      await (db.deleteFrom('permissions') as any).where('id', '=', id).execute()
+      await (db.deleteFrom('user_permissions')).where('permission_id', '=', id).execute()
+      await (db.deleteFrom('role_permissions')).where('permission_id', '=', id).execute()
+      await (db.deleteFrom('permissions')).where('id', '=', id).execute()
     },
 
     async getAllPermissions(guardName?: string): Promise<PermissionRecord[]> {
-      let q = (db.selectFrom('permissions') as any).selectAll() as any
+      let q = (db.selectFrom('permissions')).selectAll()
       if (guardName)
         q = q.where('guard_name', '=', guardName)
       const rows: Array<Record<string, unknown>> = await q.orderBy('id', 'asc').execute()
@@ -293,7 +293,7 @@ export function createBqbRbacStore(): RbacStore {
       //      REPLACES the SELECT clause each time — only the last
       //      column survives. Array form is the correct shape when
       //      you want >1 column.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('roles') as any)
+      const rows: Array<Record<string, unknown>> = await (db.selectFrom('roles'))
         .innerJoin('user_roles', 'user_roles.role_id', '=', 'roles.id')
         .select([
           'roles.id as id',
@@ -330,7 +330,7 @@ export function createBqbRbacStore(): RbacStore {
     async getUserDirectPermissions(userId: number): Promise<PermissionRecord[]> {
       // See `getUserRoles` above for the bqb API contracts on
       // `innerJoin(..., '=', ...)` and array-form `.select([])`.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions') as any)
+      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions'))
         .innerJoin('user_permissions', 'user_permissions.permission_id', '=', 'permissions.id')
         .select([
           'permissions.id as id',
@@ -367,7 +367,7 @@ export function createBqbRbacStore(): RbacStore {
     async getRolePermissions(roleId: number): Promise<PermissionRecord[]> {
       // See `getUserRoles` above for the bqb API contracts on
       // `innerJoin(..., '=', ...)` and array-form `.select([])`.
-      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions') as any)
+      const rows: Array<Record<string, unknown>> = await (db.selectFrom('permissions'))
         .innerJoin('role_permissions', 'role_permissions.permission_id', '=', 'permissions.id')
         .select([
           'permissions.id as id',

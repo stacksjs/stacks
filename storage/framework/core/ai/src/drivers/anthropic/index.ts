@@ -127,7 +127,7 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
         if (data === '[DONE]') return
         let event: ClaudeStreamEvent & { type: string, error?: { type?: string, message?: string } }
         try {
-          event = JSON.parse(data) as any
+          event = JSON.parse(data)
         }
         catch {
           return
@@ -247,7 +247,7 @@ export async function chat(
     throw new Error(`Claude API error: ${error}`)
   }
 
-  const data = (await response.json()) as any
+  const data = (await response.json())
 
   if (!data.content || data.content.length === 0) {
     throw new Error('Claude API returned empty content')

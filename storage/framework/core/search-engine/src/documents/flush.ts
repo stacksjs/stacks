@@ -26,7 +26,7 @@ export async function flushModelDocuments(modelOption?: string): Promise<Ok<stri
         await deleteIndex(tableName)
     }
 
-    return ok('Successfully flushed all model data from search engine!') as any
+    return ok('Successfully flushed all model data from search engine!')
   }
   catch (err: any) {
     log.error(err)

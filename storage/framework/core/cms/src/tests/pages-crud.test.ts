@@ -37,7 +37,7 @@ describe('pages.store', () => {
       slug: 'athletics',
       status: 'published',
       blocks: [{ type: 'rich-text', props: { html: '<p>Go team.</p>' } }],
-    } as any)
+    })
 
     expect(Number((created).site_id)).toBe(SITE)
     expect((created).path).toBe('/athletics')
@@ -54,7 +54,7 @@ describe('pages.store', () => {
       slug: 'giving',
       status: 'published',
       blocks: JSON.stringify([{ type: 'rich-text', props: { html: '<p>Support us.</p>' } }]),
-    } as any)
+    })
 
     const served = await resolvePublishedPage(SITE, '/giving')
     expect(served).toBeTruthy()
@@ -63,8 +63,8 @@ describe('pages.store', () => {
   })
 
   it('derives a free path rather than colliding with an existing page', async () => {
-    await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' } as any)
-    const second = await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' } as any)
+    await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' })
+    const second = await pages.store({ site_id: SITE, title: 'About', slug: 'about', status: 'published' })
 
     expect((second).path).toBe('/about-2')
   })
@@ -77,9 +77,9 @@ describe('pages.update', () => {
       title: 'Athletics',
       slug: 'athletics',
       status: 'published',
-    } as any)
+    })
 
-    await pages.update(Number(created.id), { slug: 'athletics-teams' } as any)
+    await pages.update(Number(created.id), { slug: 'athletics-teams' })
 
     expect(await resolvePublishedPage(SITE, '/athletics-teams')).toBeTruthy()
     // The old address is what is printed in last year's newsletter.
@@ -89,10 +89,10 @@ describe('pages.update', () => {
   })
 
   it('validates blocks instead of writing whatever it was handed', async () => {
-    const created = await pages.store({ site_id: SITE, title: 'Contact', slug: 'contact' } as any)
+    const created = await pages.store({ site_id: SITE, title: 'Contact', slug: 'contact' })
 
     await expect(
-      pages.update(Number(created.id), { blocks: [{ type: 'no-such-block', props: {} }] } as any),
+      pages.update(Number(created.id), { blocks: [{ type: 'no-such-block', props: {} }] }),
     ).rejects.toThrow()
   })
 
@@ -102,9 +102,9 @@ describe('pages.update', () => {
       title: 'Calendar',
       slug: 'calendar',
       status: 'published',
-    } as any)
+    })
 
-    const updated = await pages.update(Number(created.id), { title: 'School Calendar' } as any)
+    const updated = await pages.update(Number(created.id), { title: 'School Calendar' })
 
     expect((updated).title).toBe('School Calendar')
     // The path is derived from the slug, so a title edit must not move it.

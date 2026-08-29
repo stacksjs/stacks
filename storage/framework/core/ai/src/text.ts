@@ -43,7 +43,7 @@ export async function summarize(text: string, options: SummarizeOptions = {}): P
       }),
     })
 
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as any
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
     return responseBody.results[0].outputText
   }
   catch (error) {
@@ -70,7 +70,7 @@ export async function ask(question: string, options: AskOptions = {}): Promise<s
       }),
     })
 
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as any
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
     return responseBody.results[0].outputText
   }
   catch (error) {

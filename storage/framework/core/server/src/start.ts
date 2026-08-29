@@ -1,5 +1,5 @@
 // Mark as binary mode to prevent auto-registration in routes/api.ts
-;(globalThis as any).__STACKS_BINARY_MODE__ = true
+;(globalThis).__STACKS_BINARY_MODE__ = true
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
 import { assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
@@ -88,7 +88,7 @@ loadRoutes(routeRegistry)
       serve({
         port: config.server.port,
         host: config.server.host,
-      } as any)
+      })
       console.log('[START] serve() called successfully')
     } catch (error) {
       console.error('[START] ERROR calling serve():', error)

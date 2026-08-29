@@ -13,7 +13,7 @@ process.stdin.destroy = function(this: any, error?: Error) {
     this.emit('error', error)
   }
   return this
-} as any
+}
 
 // Handle Ctrl+C gracefully
 process.on('SIGINT', () => {
@@ -38,7 +38,7 @@ function getGlobalRl(): Interface {
     // Set up Ctrl+C handler (only attach when stdin is a TTY)
     if (isTTY && typeof process.stdin.setRawMode === 'function') {
       globalRl.on('SIGINT', () => {
-        process.emit('SIGINT' as any)
+        process.emit('SIGINT')
       })
     }
 

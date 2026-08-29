@@ -95,7 +95,7 @@ export const aws: StorageDriver = {
     return (async function* () {
       const adapter = await getAdapter()
       yield* adapter.list(path, options)
-    })() as any
+    })()
   },
 
   async changeVisibility(path: string, visibility: any): Promise<void> {

@@ -29,7 +29,7 @@ export async function authUser(): Promise<UserModel | undefined> {
   //
   // The marker is declared `unknown` on the request, deliberately: the User
   // shape is project-defined. Narrowed here, where the function promises a
-  // UserModel, rather than through a `(request as any)` that also unchecked
+  // UserModel, rather than through a `(request)` that also unchecked
   // the property name itself.
   const middlewareUser = request?._authenticatedUser as UserModel | undefined
   if (middlewareUser) {

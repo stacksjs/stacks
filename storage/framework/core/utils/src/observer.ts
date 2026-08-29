@@ -123,7 +123,7 @@ export function getResizeObserver(): new (_callback: ResizeObserverCallback) => 
         this.callback(entries, this)
       }
     }
-  } as any
+  }
 }
 
 /**

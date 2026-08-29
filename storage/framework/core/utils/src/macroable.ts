@@ -66,7 +66,7 @@ export class Macroable {
   static flushMacros(): void {
     // Remove all macro methods from prototype
     for (const name of this.macros.keys()) {
-      delete (this.prototype as any)[name]
+      delete (this.prototype)[name]
     }
     this.macros.clear()
   }
@@ -94,7 +94,7 @@ export class Macroable {
  * Create a macroable class
  */
 export function createMacroable<T extends new (..._args: any[]) => any>(
-  BaseClass: T = class {} as any,
+  BaseClass: T = class {},
 ): T & MacroableConstructor {
   return class extends BaseClass {
     private static macros: Map<string, Function> = new Map()
@@ -136,7 +136,7 @@ export function createMacroable<T extends new (..._args: any[]) => any>(
 
     static flushMacros(): void {
       for (const name of this.macros.keys()) {
-        delete (this.prototype as any)[name]
+        delete (this.prototype)[name]
       }
       this.macros.clear()
     }
@@ -156,7 +156,7 @@ export function macroable<T extends new (..._args: any[]) => any>(
   const macros = new Map<string, Function>()
 
   // Add static methods
-  ;(target as any).macro = function (name: string, fn: Function, replace = false): void {
+  ;(target).macro = function (name: string, fn: Function, replace = false): void {
     if (macros.has(name) && !replace) {
       throw new Error(`Macro "${name}" is already registered`)
     }
@@ -170,7 +170,7 @@ export function macroable<T extends new (..._args: any[]) => any>(
     })
   }
 
-  ;(target as any).mixin = function (obj: Record<string, any>, replace = true): void {
+  ;(target).mixin = function (obj: Record<string, any>, replace = true): void {
     const methods = Object.getOwnPropertyNames(obj)
 
     for (const method of methods) {
@@ -182,23 +182,23 @@ export function macroable<T extends new (..._args: any[]) => any>(
 
       const descriptor = Object.getOwnPropertyDescriptor(obj, method)
       if (descriptor && typeof descriptor.value === 'function') {
-        ;(target as any).macro(method, descriptor.value, replace)
+        ;(target).macro(method, descriptor.value, replace)
       }
     }
   }
 
-  ;(target as any).hasMacro = function (name: string): boolean {
+  ;(target).hasMacro = function (name: string): boolean {
     return macros.has(name)
   }
 
-  ;(target as any).flushMacros = function (): void {
+  ;(target).flushMacros = function (): void {
     for (const name of macros.keys()) {
-      delete (target.prototype as any)[name]
+      delete (target.prototype)[name]
     }
     macros.clear()
   }
 
-  ;(target as any).getMacros = function (): string[] {
+  ;(target).getMacros = function (): string[] {
     return Array.from(macros.keys())
   }
 

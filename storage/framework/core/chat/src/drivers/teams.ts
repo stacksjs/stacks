@@ -114,7 +114,7 @@ export class TeamsDriver extends BaseChatDriver {
 
     const payload = this.buildPayload(message)
 
-    const response = await (fetch as any)(webhookUrl, {
+    const response = await (fetch)(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

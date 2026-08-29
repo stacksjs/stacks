@@ -88,7 +88,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
 export async function fetchWithProductCount(options: FetchManufacturersOptions = {}): Promise<ManufacturerJsonResponse[]> {
   // Start building the query with joins and filters before groupBy
   let query = db.selectFrom('manufacturers as m')
-    .leftJoin('products as p', 'p.manufacturer_id', '=', 'm.id') as any
+    .leftJoin('products as p', 'p.manufacturer_id', '=', 'm.id')
 
   // Apply filters before groupBy (WHERE must come before GROUP BY in SQL)
   if (options.country)

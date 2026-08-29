@@ -179,7 +179,7 @@ export async function tcpWhois(
         })
 
         socket.on('data', (data) => {
-          resolve(decoder.decode(data as any))
+          resolve(decoder.decode(data))
         })
 
         socket.on('error', (error) => {
@@ -234,7 +234,7 @@ export async function tcpWhois(
         }
 
         info?.socket.on('data', (data: any) => {
-          resolve(decoder.decode(data as any))
+          resolve(decoder.decode(data))
         })
 
         info?.socket.resume()

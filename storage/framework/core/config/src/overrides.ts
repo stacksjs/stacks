@@ -103,7 +103,7 @@ function defaultsForOverrides(): StacksConfig {
     filesystems: {},
     team: {},
     ui: {},
-  } as any
+  }
 }
 
 // Reuse an existing globalThis anchor if a prior module-load already
@@ -194,7 +194,7 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
       try {
         const mod = await import(modulePath)
         if (mod?.default !== undefined) {
-          (overrides as any)[key] = mod.default
+          (overrides)[key] = mod.default
         }
       }
       catch (err: unknown) {

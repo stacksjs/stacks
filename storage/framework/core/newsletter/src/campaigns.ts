@@ -283,7 +283,7 @@ export function campaignUpdateData(
  * A campaign row as callers use it.
  *
  * Same reason as `EmailListRow`: the models arrive through
- * `await import(...) as any`, so there is nothing to infer a return type
+ * `await import(...)`, so there is nothing to infer a return type
  * from, and the published types said `Promise<void>` - which made
  * `campaigns.create()` useless to anyone who needed the new campaign's id in
  * order to send it.

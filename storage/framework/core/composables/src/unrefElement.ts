@@ -8,7 +8,7 @@ import { unref } from './_shared'
 export function unrefElement(
   elRef: MaybeRef<HTMLElement | { $el: HTMLElement } | null | undefined>,
 ): HTMLElement | null | undefined {
-  const plain = unref(elRef) as any
+  const plain = unref(elRef)
   if (!plain) return plain
   // Handle component instances with $el
   if (plain.$el) return plain.$el

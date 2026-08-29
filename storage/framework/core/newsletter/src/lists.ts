@@ -36,7 +36,7 @@ export function emailListCreateData(input: CreateListInput): Record<string, stri
 /**
  * A list row as callers use it.
  *
- * The ORM models are reached through `await import(...) as any` (they are
+ * The ORM models are reached through `await import(...)` (they are
  * generated, and importing them eagerly would make this package depend on the
  * app's model graph), so nothing here has a return type to infer FROM - and
  * dtsx wrote `Promise<void>` into the published types. Every consumer of

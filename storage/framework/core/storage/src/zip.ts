@@ -34,33 +34,33 @@ export async function unzip(paths: string | string[]): Promise<Result<Subprocess
 }
 
 export function archive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths) as any
+  return zip(paths)
 }
 
 export function unarchive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths) as any
+  return unzip(paths)
 }
 
 export function compress(paths: string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths) as any
+  return zip(paths)
 }
 
 export function decompress(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths) as any
+  return unzip(paths)
 }
 
 export function gzipSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.gzipSync(data as any, options)
+  return Bun.gzipSync(data, options)
 }
 
 export function gunzipSync(data: Uint8Array): Uint8Array {
-  return Bun.gunzipSync(data as any)
+  return Bun.gunzipSync(data)
 }
 
 export function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.deflateSync(data as any, options)
+  return Bun.deflateSync(data, options)
 }
 
 export function inflateSync(data: Uint8Array): Uint8Array {
-  return Bun.inflateSync(data as any)
+  return Bun.inflateSync(data)
 }

@@ -21,7 +21,7 @@ beforeEach(async () => {
 describe('Restaurant Waitlist Module', () => {
   describe('update', () => {
     it('should return undefined when the waitlist entry does not exist', async () => {
-      expect(await update(99999999, {} as any)).toBeUndefined()
+      expect(await update(99999999, {})).toBeUndefined()
     })
   })
 
@@ -44,7 +44,7 @@ describe('Restaurant Waitlist Module', () => {
         quoted_wait_time: 20,
         queue_position: 3,
         customer_id: 1,
-      } as any)
+      })
 
       expect(created.check_in_time).toBe('2026-07-30 03:00:00')
 
@@ -53,7 +53,7 @@ describe('Restaurant Waitlist Module', () => {
 
       const pinned = await update(created.id, {
         seated_at: '2026-01-02 03:04:05',
-      } as any)
+      })
       const edited = await update(created.id, {
         name: 'Seating audit updated',
         email: 'updated@example.test',
@@ -62,7 +62,7 @@ describe('Restaurant Waitlist Module', () => {
         table_preference: 'indoor',
         status: 'seated',
         quoted_wait_time: 25,
-      } as any)
+      })
 
       expect(edited?.seated_at).toBe(pinned?.seated_at)
       expect(edited?.phone).toBe('+1 555 0101')

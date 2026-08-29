@@ -171,7 +171,7 @@ const serverPromise = serve({
       return handleAction(await request.json() as TrayActionRequest)
     },
   },
-} as any)
+})
 serverPromise.catch((error: Error) => {
   console.error(`System tray server failed: ${error.message}`)
   process.exit(1)

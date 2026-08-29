@@ -50,7 +50,7 @@ export async function countTotalPrints(): Promise<number> {
 export async function countPrintsByDeviceId(printDeviceId: number): Promise<number> {
   const result = await db
     .selectFrom('print_devices')
-    .select('print_count' as any)
+    .select('print_count')
     .where('id', '=', printDeviceId)
     .executeTakeFirst()
 

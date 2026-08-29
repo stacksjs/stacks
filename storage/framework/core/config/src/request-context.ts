@@ -3,7 +3,7 @@
  *
  * `requestContext` was installed twice — once by the dev views server, once by
  * the production server — with two different backings, two different sets of
- * methods, and no shared type. Both installers were `(globalThis as any)`, so
+ * methods, and no shared type. Both installers were `(globalThis)`, so
  * nothing could catch a divergence. Two already shipped:
  *
  *   - production's `url()` returned only the query string, so a page doing

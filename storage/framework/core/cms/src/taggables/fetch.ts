@@ -147,7 +147,7 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
       .select([
         'taggables.name',
       ])
-      .groupBy('taggables.name') as any
+      .groupBy('taggables.name')
 
     if (taggableType)
       query = query.where('taggable_models.taggable_type', '=', taggableType)
@@ -188,7 +188,7 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
       .select([
         'taggables.name',
       ])
-      .groupBy('taggables.name') as any)
+      .groupBy('taggables.name'))
       .orderBy('taggables.name', 'asc')
       .executeTakeFirst()
 
@@ -224,7 +224,7 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, p
       .select([
         'taggables.name',
       ])
-      .groupBy('taggables.name') as any)
+      .groupBy('taggables.name'))
       .orderBy('taggables.name', 'desc')
       .limit(10)
       .execute()
@@ -257,7 +257,7 @@ export async function fetchTagDistribution(): Promise<Array<{ name: string, coun
       .select([
         'taggables.name',
       ])
-      .groupBy('taggables.name') as any)
+      .groupBy('taggables.name'))
       .orderBy('taggables.name', 'desc')
       .execute()
 

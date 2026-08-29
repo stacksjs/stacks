@@ -282,8 +282,8 @@ export const defaults: StacksOptions = {
       //   code: '',
       //   placement: '',
       // },
-    } as any,
-  } as any,
+    },
+  },
 
   email: {
     from: {
@@ -387,7 +387,7 @@ export const defaults: StacksOptions = {
       'union': 'Invalid value provided for {{ field }} field',
       'unionGroup': 'Invalid value provided for {{ field }} field',
       'unionOfTypes': 'Invalid value provided for {{ field }} field',
-    } as any,
+    },
   },
 
   git: {
@@ -630,7 +630,7 @@ export const defaults: StacksOptions = {
         region: FRAMEWORK_DEFAULTS.awsRegion,
       },
     },
-  } as any,
+  },
 
   saas: {
     plans: [
@@ -744,7 +744,7 @@ export const defaults: StacksOptions = {
       appId: '',
       apiKey: '',
     },
-  } as any,
+  },
 
   filesystems: {
     /*

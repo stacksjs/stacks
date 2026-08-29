@@ -149,7 +149,7 @@ export async function fetchStats(): Promise<CategoryStats> {
       'parent.name as parent_name',
       db.fn.count('c.id').as('child_count'),
     ])
-    .groupBy(['c.parent_category_id', 'parent.name'] as any)
+    .groupBy(['c.parent_category_id', 'parent.name'])
     .orderBy('child_count', 'desc')
     .limit(5)
     .execute() as { parent_category_id: string, parent_name: string, child_count: number }[]

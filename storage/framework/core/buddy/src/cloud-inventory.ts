@@ -378,7 +378,7 @@ export async function listProviderServers(token: string | undefined, fetchImpl: 
       return { servers, failure: { kind: 'request-failed', status: response.status, detail: body.slice(0, 200) || undefined } }
     }
 
-    const payload = await response.json().catch(() => ({})) as any
+    const payload = await response.json().catch(() => ({}))
     for (const raw of (Array.isArray(payload?.servers) ? payload.servers : []))
       servers.push(toInventoryServer(raw))
 

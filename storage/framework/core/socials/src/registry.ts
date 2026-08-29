@@ -85,7 +85,7 @@ export const SOCIAL_PROVIDERS: Readonly<Record<SocialProviderName, SocialProvide
 })
 
 function settingsFor(name: SocialProviderName): Record<string, any> | undefined {
-  return (config as any)?.services?.[name]
+  return (config)?.services?.[name]
 }
 
 /** Is `name` a provider this package can drive? */

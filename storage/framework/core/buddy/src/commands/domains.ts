@@ -145,7 +145,7 @@ export function domains(buddy: CLI): void {
       // `prompts` is an object of prompt functions, not the callable the npm
       // package of that name exports - calling it threw "prompts is not a
       // function" at every one of these interactive paths. Behind
-      // `(prompts as any)(...)`, nothing said so.
+      // `(prompts)(...)`, nothing said so.
       const confirm = await prompts.confirm(`Would you like to set ${domain} as your APP_URL?`)
 
       if (!confirm) {
@@ -218,7 +218,7 @@ export function domains(buddy: CLI): void {
         // `prompts` is an object of prompt functions, not the callable the npm
         // package of that name exports - calling it threw "prompts is not a
         // function" at every one of these interactive paths. Behind
-        // `(prompts as any)(...)`, nothing said so.
+        // `(prompts)(...)`, nothing said so.
         const confirm = await prompts.confirm(`Are you sure you want to remove ${domain}?`)
 
         if (!confirm) {

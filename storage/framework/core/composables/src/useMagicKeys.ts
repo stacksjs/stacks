@@ -85,7 +85,7 @@ export function useMagicKeys(): Record<string, Ref<boolean>> & { current: Ref<Se
     }
   }
 
-  return new Proxy({ current } as any, {
+  return new Proxy({ current }, {
     get(target, prop: string) {
       if (prop === 'current') return current
       return getRef(prop)

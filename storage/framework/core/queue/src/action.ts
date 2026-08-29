@@ -89,7 +89,7 @@ export class Job<T = unknown> {
         queue: this.queue,
         tries: this.tries,
         timeout: this.timeout,
-      } as any)
+      })
       return
     }
 

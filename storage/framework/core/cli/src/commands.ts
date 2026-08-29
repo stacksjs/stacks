@@ -162,7 +162,7 @@ export async function resolveCommands(options: ResolveCommandsOptions): Promise<
  */
 export function applyAliases(cli: CLI, signature: string, aliases: string[]): boolean {
   const name = signature.trim().split(/\s+/)[0]
-  const commands = (cli as any)?.commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
+  const commands = (cli)?.commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
   const command = commands?.find(c => c.name === name)
 
   if (!command || typeof command.alias !== 'function')
@@ -225,7 +225,7 @@ export async function loadCommands(cli: CLI, options: LoadCommandsOptions): Prom
         continue
       }
 
-      const before = ((cli as any).commands as Array<{ name?: string }> | undefined)?.length ?? 0
+      const before = ((cli).commands as Array<{ name?: string }> | undefined)?.length ?? 0
 
       module.default(cli)
 
@@ -261,7 +261,7 @@ function aliasNewCommands(
   if (signature && applyAliases(cli, signature, aliases))
     return
 
-  const commands = (cli as any).commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
+  const commands = (cli).commands as Array<{ name?: string, alias?: (a: string) => unknown }> | undefined
   const added = commands?.slice(before) ?? []
   const target = added[0]
 

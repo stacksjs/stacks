@@ -152,11 +152,11 @@ export function renderPreviewHtml(
         <div class="panel">
           <dl class="meta">
             <dt>Subject</dt><dd>${escape(inspection.subject || '(no subject)')}</dd>
-            <dt>To</dt><dd>${fmtAddresses(inspection.to as any)}</dd>
-            ${inspection.cc?.length ? `<dt>Cc</dt><dd>${fmtAddresses(inspection.cc as any)}</dd>` : ''}
-            ${inspection.bcc?.length ? `<dt>Bcc</dt><dd>${fmtAddresses(inspection.bcc as any)}</dd>` : ''}
-            ${inspection.from ? `<dt>From</dt><dd>${fmtAddresses([inspection.from as any])}</dd>` : ''}
-            ${inspection.replyTo ? `<dt>Reply-To</dt><dd>${fmtAddresses([inspection.replyTo as any])}</dd>` : ''}
+            <dt>To</dt><dd>${fmtAddresses(inspection.to)}</dd>
+            ${inspection.cc?.length ? `<dt>Cc</dt><dd>${fmtAddresses(inspection.cc)}</dd>` : ''}
+            ${inspection.bcc?.length ? `<dt>Bcc</dt><dd>${fmtAddresses(inspection.bcc)}</dd>` : ''}
+            ${inspection.from ? `<dt>From</dt><dd>${fmtAddresses([inspection.from])}</dd>` : ''}
+            ${inspection.replyTo ? `<dt>Reply-To</dt><dd>${fmtAddresses([inspection.replyTo])}</dd>` : ''}
             ${inspection.template ? `<dt>Template</dt><dd>${escape(inspection.template.name)}.stx</dd>` : ''}
             ${inspection.attachments?.length ? `<dt>Attachments</dt><dd>${inspection.attachments.length}</dd>` : ''}
           </dl>

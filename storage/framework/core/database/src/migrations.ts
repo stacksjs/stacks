@@ -158,7 +158,7 @@ function configureQueryBuilder(
   targetDialect: 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres' = getQbDialect(),
   vitessSharded?: boolean,
 ): void {
-  const connectionConfig = dbConfig.connections[targetDialect] as any
+  const connectionConfig = dbConfig.connections[targetDialect]
 
   setConfig({
     dialect: targetDialect,

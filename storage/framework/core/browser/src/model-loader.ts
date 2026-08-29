@@ -76,7 +76,7 @@ export interface BrowserModel {
 /**
  * Window augmentation for the framework's `StacksBrowser` global
  * (stacksjs/stacks#1894 T-9). Pre-fix every access went through
- * `(window as any)` — typos in model names silently returned
+ * `(window)` — typos in model names silently returned
  * `undefined`. The augmented index signature still permits any
  * model name at runtime; what it adds is the existence + shape of
  * the StacksBrowser bag itself.

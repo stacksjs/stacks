@@ -301,7 +301,7 @@ export class SocksClient {
         }
         const errorMsg = status === undefined
           ? 'No SOCKS5 status returned'
-          : (errors as any)[status] || `Unknown error (${status})`
+          : (errors)[status] || `Unknown error (${status})`
         callback(new Error(`SOCKS5 connection failed: ${errorMsg}`))
         return
       }

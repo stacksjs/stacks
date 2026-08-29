@@ -461,7 +461,7 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
       // Create users from configured mailboxes
       for (const mailbox of mailboxes) {
         // Narrowed to a binding the compiler can follow. `mb` used to be
-        // `mailbox as any`, so every `typeof mailbox === 'object'` guard beside
+        // `mailbox`, so every `typeof mailbox === 'object'` guard beside
         // it proved nothing about the reads that followed - the guards are
         // right, they just could not reach through the alias.
         const mb = typeof mailbox === 'object' && mailbox !== null ? mailbox : null
@@ -469,7 +469,7 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
         // read `mb.name || mb.address`, neither of which exists on it, so a
         // mailbox configured as an OBJECT rather than a bare string produced
         // the literal address `undefined@<domain>`. Both reads were behind
-        // `mailbox as any`, so nothing said so.
+        // `mailbox`, so nothing said so.
         //
         // The field is documented as a full address; a bare local part is
         // still accepted and given the deploy's domain.
@@ -3233,7 +3233,7 @@ export async function resolveAttachTargetBox(
         requestFailure ??= { kind: 'request-failed', status: res.status, detail: pollFailureDetail(body) }
         return []
       }
-      return ((await res.json()) as any).servers || []
+      return ((await res.json())).servers || []
     }
     catch (err) {
       // status 0: the request never got an answer at all.
@@ -3257,7 +3257,7 @@ export async function resolveAttachTargetBox(
   // tenant resolved no IPv6, the AAAA pass was skipped, and the whole shared box
   // quietly served IPv4 only - with nothing in the deploy log to say so. The
   // call is unconditional now, and a missing export warns instead of vanishing.
-  const { normalizePublicIpv6 } = await import('@stacksjs/ts-cloud') as any
+  const { normalizePublicIpv6 } = await import('@stacksjs/ts-cloud')
   if (typeof normalizePublicIpv6 !== 'function')
     log.warn('DNS: @stacksjs/ts-cloud does not export normalizePublicIpv6 - AAAA records will be skipped. Upgrade ts-cloud.')
   const reportedIpv6 = chosen.public_net?.ipv6?.ip
@@ -3913,7 +3913,7 @@ async function resolveZoneDnsProvider(domain: string, providerConfigs: any[], lo
   if (providerConfigs.length === 0)
     return undefined
 
-  const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud') as any
+  const { createDnsProvider, detectDnsProvider } = await import('@stacksjs/ts-cloud')
 
   const provider = await detectDnsProvider(domain, providerConfigs).catch((err: any) => {
     logger.warn(`  DNS: ignoring a configured provider for ${domain} - its credentials were rejected (${err?.message || err})`)
@@ -4310,7 +4310,7 @@ async function reconcileCloudflareCdnForDeploy(
 
   try {
     ({ resolveCloudflareCdnPlan, reconcileCloudflareCdn, CloudflareProvider, normalizePublicIpv6 }
-      = await import('@stacksjs/ts-cloud') as any)
+      = await import('@stacksjs/ts-cloud'))
   }
   catch {
     return
@@ -4441,7 +4441,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
   // the fallback cert, which on a shared box belongs to another tenant.
   // `gatewayHostnames` is the same function the gateway builds its route table
   // from, and a test in ts-cloud pins the two together.
-  const { gatewayHostnames } = await import('@stacksjs/ts-cloud') as any
+  const { gatewayHostnames } = await import('@stacksjs/ts-cloud')
   const hostnames: string[] = gatewayHostnames(sites, { autoWww })
 
   // Group by the zone-ish base each hostname belongs to. The base is what gets
@@ -4473,7 +4473,7 @@ async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logge
     return published
   }
 
-  const { reconcileAddressRecords } = await import('@stacksjs/ts-cloud') as any
+  const { reconcileAddressRecords } = await import('@stacksjs/ts-cloud')
   logger.info('Reconciling DNS records...')
 
   // Best-effort A-record lookup so externally managed domains that already
@@ -4932,8 +4932,8 @@ async function promptAndSaveCredentials() {
   const { setEnv } = await import('@stacksjs/env')
 
   // Set and encrypt the credentials
-  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true } as any)
-  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true } as any)
+  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true })
+  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true })
   await setEnv('AWS_REGION', region || 'us-east-1', { file: '.env.production' })
 
   // Update process.env

@@ -97,7 +97,7 @@ export async function ensureConfiguredBuckets(options: ProvisionOptions = {}): P
   if (filesystems?.s3?.bucket)
     names.add(filesystems.s3.bucket)
 
-  for (const disk of Object.values((filesystems as any)?.disks ?? {})) {
+  for (const disk of Object.values((filesystems)?.disks ?? {})) {
     const candidate = (disk as { driver?: string, bucket?: string })
     if (candidate?.driver === 's3' && candidate.bucket)
       names.add(candidate.bucket)

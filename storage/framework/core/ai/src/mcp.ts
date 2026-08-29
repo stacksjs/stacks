@@ -105,7 +105,7 @@ export class MCPClient {
       await this.connectHTTP()
     }
     else {
-      throw new Error(`Unsupported transport type: ${(this.config.transport as any).type}`)
+      throw new Error(`Unsupported transport type: ${(this.config.transport).type}`)
     }
 
     this.initialized = true
@@ -120,7 +120,7 @@ export class MCPClient {
       stdout: 'pipe',
       stderr: 'pipe',
       env: { ...process.env, ...transport.env },
-    }) as any
+    })
 
     // Start reading stdout for responses
     this.readStdout()
@@ -172,7 +172,7 @@ export class MCPClient {
   private async readStdout(): Promise<void> {
     if (!this.process) return
 
-    const reader = (this.process as any).stdout?.getReader()
+    const reader = (this.process).stdout?.getReader()
     if (!reader) return
 
     const decoder = new TextDecoder()
@@ -233,7 +233,7 @@ export class MCPClient {
     }) + '\n'
 
     if (this.config.transport.type === 'stdio' && this.process) {
-      const writer = (this.process as any).stdin?.getWriter()
+      const writer = (this.process).stdin?.getWriter()
       if (writer) {
         await writer.write(new TextEncoder().encode(message))
         writer.releaseLock()
@@ -275,7 +275,7 @@ export class MCPClient {
         throw new Error(`MCP request error: ${error}`)
       }
 
-      const result = (await response.json()) as any
+      const result = (await response.json())
       if (result.error) {
         throw new Error(result.error.message || 'MCP error')
       }
@@ -293,7 +293,7 @@ export class MCPClient {
     }) + '\n'
 
     if (this.config.transport.type === 'stdio' && this.process) {
-      const writer = (this.process as any).stdin?.getWriter()
+      const writer = (this.process).stdin?.getWriter()
       if (writer) {
         await writer.write(new TextEncoder().encode(message))
         writer.releaseLock()
@@ -440,7 +440,7 @@ export class MCPClient {
    */
   async disconnect(): Promise<void> {
     if (this.process) {
-      (this.process as any).kill()
+      (this.process).kill()
       this.process = null
     }
 

@@ -497,7 +497,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   // project that simply has no functions of its own — which used to be a boot
   // failure for a reason nobody could act on.
   const functionsIndexPath = `${outputDir}/functions.ts`
-  await (generateRuntimeIndex as any)(existingDirs([userFunctionsPath, defaultFunctionsPath]), functionsIndexPath)
+  await (generateRuntimeIndex)(existingDirs([userFunctionsPath, defaultFunctionsPath]), functionsIndexPath)
 
   // Generate runtime index for defineModel models (default exports).
   // Defaults root is scanned NON-recursively (so gated subdirs stay opt-in),
@@ -1026,7 +1026,7 @@ export async function injectGlobalAutoImports(): Promise<void> {
       const mod = await importWithTimeout(pkg)
       for (const name of names) {
         if (mod[name] !== undefined)
-          (globalThis as any)[name] = mod[name]
+          (globalThis as Record<string, unknown>)[name] = mod[name]
       }
     }
     catch (err) {

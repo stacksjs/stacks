@@ -28,11 +28,11 @@ export async function updateIndexSettings(): Promise<Ok<string, never> | Err<str
       }
     }
 
-    return ok('Successfully update index settings!') as any
+    return ok('Successfully update index settings!')
   }
   catch (error: any) {
     log.error(error)
 
-    return err(error?.message || String(error)) as any
+    return err(error?.message || String(error))
   }
 }

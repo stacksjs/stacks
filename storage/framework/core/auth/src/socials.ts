@@ -118,7 +118,7 @@ function defaultStore(): SocialSignInStore {
       const { makeHash } = await import('@stacksjs/security')
       const password = await makeHash(crypto.randomUUID(), { algorithm: 'bcrypt' })
 
-      const created = await (globalThis as any).User?.create?.({
+      const created = await (globalThis).User?.create?.({
         name: attrs.name,
         email: attrs.email,
         password,

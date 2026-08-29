@@ -20,13 +20,13 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
       if (value === undefined) continue
 
       if (Array.isArray(value)) {
-        result[key] = (Array.isArray(existing) ? [...existing, ...value] : [...value]) as any
+        result[key] = (Array.isArray(existing) ? [...existing, ...value] : [...value])
       }
       else if (value && typeof value === 'object' && !isSpecialObject(value)) {
-        result[key] = merge(existing || {}, value) as any
+        result[key] = merge(existing || {}, value)
       }
       else {
-        result[key] = value as any
+        result[key] = value
       }
     }
   }
@@ -39,7 +39,7 @@ export function merge<T extends Record<string, any>>(...objects: DeepPartial<T>[
  */
 export function createMerger<T extends Record<string, any>>(defaults: T) {
   return (...objects: DeepPartial<T>[]): T => {
-    return merge(defaults as any, ...objects)
+    return merge(defaults, ...objects)
   }
 }
 
@@ -50,7 +50,7 @@ export function mergeDefaults<T extends Record<string, any>>(
   obj: DeepPartial<T>,
   ...defaults: DeepPartial<T>[]
 ): T {
-  return merge({} as any, ...defaults, obj)
+  return merge({}, ...defaults, obj)
 }
 
 /**
