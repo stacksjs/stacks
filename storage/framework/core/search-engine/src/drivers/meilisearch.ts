@@ -129,7 +129,11 @@ async function listAllIndexes(): Promise<IndexesResults<Index[]>> {
 }
 
 async function getFilterableAttributes(index: string): Promise<string[]> {
-  return client().index(index).getFilterableAttributes() as any
+  // Meilisearch answers `FilterableAttributes`, which is a list of names OR of
+  // per-attribute rule objects. Only the plain names are usable here.
+  const attributes = await client().index(index).getFilterableAttributes()
+
+  return (attributes ?? []).filter((a): a is string => typeof a === 'string')
 }
 
 async function updateFilterableAttributes(index: string, filterableAttributes: string[] | null): Promise<EnqueuedTask> {

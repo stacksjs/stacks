@@ -1,4 +1,4 @@
-import type { Err, Ok } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import type { JobOptions } from '@stacksjs/types'
 import type { SchedulableJobName } from './schedule'
 import { ok } from '@stacksjs/error-handling'
@@ -8,7 +8,7 @@ import { schedule } from '@stacksjs/scheduler'
 import { globSync } from '@stacksjs/storage'
 import { Every } from '@stacksjs/types'
 
-export async function runScheduler(): Promise<Ok<string, never> | Err<string, any>> {
+export async function runScheduler(): Promise<Result<string, string>> {
   const jobFiles = globSync([path.appPath('Jobs/*.ts')], { absolute: true })
 
   // `app/Scheduler.ts` runs FIRST, before the `rate` fields are read.
@@ -56,7 +56,7 @@ export async function runScheduler(): Promise<Ok<string, never> | Err<string, an
     }
   }
 
-  return ok('Schedules ran successfully') as any
+  return ok('Schedules ran successfully')
 }
 
 async function runSchedulerInstance(): Promise<void> {
