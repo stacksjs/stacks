@@ -309,6 +309,10 @@ export type LintOptions = {
 
 export type MakeStringOption = 'name' | 'chat' | 'sms' | 'env'
 export type MakeBooleanOption =
+  /** The kebab spelling the parser also supplies, read alongside `dryRun`. */
+  | 'dry-run'
+  /** `make:policy --register`, which adds the policy to app/Gates.ts. */
+  | 'register'
   | 'component'
   | 'page'
   | 'function'
@@ -322,10 +326,19 @@ export type MakeBooleanOption =
   | 'dryRun'
   | 'withValidation'
   | 'withAuth'
+/**
+ * The flags `buddy make:*` accepts.
+ *
+ * Every key optional, because that is what a CLI flag is: the parsed object
+ * carries only what the user typed. Declared as required, no real options
+ * object ever satisfied it, so `make.ts` reached for `(options as any).dryRun`
+ * and handed `options as any` to every make* function - which also meant a
+ * flag that is genuinely absent read as `boolean` rather than `undefined`.
+ */
 export type MakeOptions = {
-  [key in MakeBooleanOption]: boolean
+  [key in MakeBooleanOption]?: boolean
 } & {
-  [key in MakeStringOption]: string
+  [key in MakeStringOption]?: string
 } & CliOptions
 
 export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force' | 'canary' | 'stable' | 'noPostinstall' | 'postinstall'

@@ -99,9 +99,30 @@ export async function make(options: MakeOptions): Promise<void> {
   return await invoke(options)
 }
 
+/**
+ * The `--name` a `make:*` command cannot proceed without.
+ *
+ * Every function here reads `options.name` and hands it straight to a path
+ * builder or a log line. `MakeOptions` used to declare its flags as required,
+ * which no parsed options object ever satisfied, so callers passed
+ * `options as any` and a missing `--name` reached `italic(undefined)` and
+ * wrote a file called `undefined`. The flags are optional now, which is what a
+ * CLI flag is, and this is where that becomes a clear failure instead.
+ */
+function requireName(options: MakeOptions, what: string): string {
+  const name = options.name?.trim()
+
+  if (!name) {
+    log.error(`A name is required to create a ${what}. Pass one with --name.`)
+    process.exit(ExitCode.InvalidArgument)
+  }
+
+  return name
+}
+
 export async function makeAction(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'action')
     log.info('Creating your action...')
     await createAction(options)
     log.success(`Created ${italic(name)} action`)
@@ -114,7 +135,7 @@ export async function makeAction(options: MakeOptions): Promise<void> {
 
 export async function makeComponent(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'component')
     log.info('Creating your component...')
     await createComponent(options)
     log.success(`Created ${italic(name)} component`)
@@ -126,7 +147,7 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
 }
 
 export async function createAction(options: MakeOptions): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'component')
   // Pick the variant based on opt-in flags. Falls back to the bare
   // action stub when neither is set so the existing `buddy make:action
   // Foo` behavior is unchanged.
@@ -150,7 +171,7 @@ export async function createAction(options: MakeOptions): Promise<void> {
  * name (the dashboard's "new component" button) could not call this at all.
  */
 export async function createComponent(options: Pick<MakeOptions, 'name'>): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'component')
   await createFileWithTemplate(p.userComponentsPath(componentFileName(name)), 'component', name)
 }
 
@@ -192,7 +213,7 @@ export function createDatabase(options: MakeOptions): void {
 
 export async function factory(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'component')
     log.info(`Creating your ${italic(name)} factory...`)
     await createFactory(options)
   }
@@ -241,7 +262,7 @@ export default ${factoryName}
 
 export async function makeNotification(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'notification')
     log.info(`Creating your ${italic(name)} notification...`)
     await createNotification(options)
     log.success(`Created ${italic(name)} notification`)
@@ -316,7 +337,7 @@ export async function createMail(options: MakeOptions & { force?: boolean }): Pr
 
 export async function makeMail(options: MakeOptions & { force?: boolean }): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'mail')
     log.info(`Creating your ${italic(name)} mailable...`)
     const ok = await createMail(options)
     if (!ok) process.exit(ExitCode.FatalError)
@@ -330,7 +351,7 @@ export async function makeMail(options: MakeOptions & { force?: boolean }): Prom
 
 export async function makePage(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'page')
     log.info('Creating your page...')
     await createPage(options)
     log.success(`Created ${name} page`)
@@ -342,7 +363,7 @@ export async function makePage(options: MakeOptions): Promise<void> {
 }
 
 export async function createPage(options: MakeOptions): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'page')
   await createFileWithTemplate(p.userViewsPath(pageFileName(name)), 'page', name)
 }
 
@@ -352,7 +373,7 @@ export function pageFileName(name: string): string {
 
 export async function makeFunction(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'function')
     log.info('Creating your function...')
     await createFunction(options)
     log.success(`Created ${name} function`)
@@ -365,7 +386,7 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
 
 /** As `createComponent`: the name is the only option this reads. */
 export async function createFunction(options: Pick<MakeOptions, 'name'>): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'function')
   // The template interpolates the name as a JS identifier, so a kebab-case
   // name like `hello-world` would produce invalid code (`const hello-world`).
   // The file keeps the kebab name; the identifier is camelCased.
@@ -374,7 +395,7 @@ export async function createFunction(options: Pick<MakeOptions, 'name'>): Promis
 
 export async function makeLanguage(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'language')
     log.info('Creating your translation file...')
     await createLanguage(options)
     log.success(`Created ${name} translation file`)
@@ -386,13 +407,13 @@ export async function makeLanguage(options: MakeOptions): Promise<void> {
 }
 
 export async function createLanguage(options: MakeOptions): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'language')
   await createFileWithTemplate(p.resourcesPath(`lang/${name}.yml`), 'language', name)
 }
 
 export async function makeStack(options: MakeOptions): Promise<void> {
   try {
-    const name = options.name
+    const name = requireName(options, 'stack')
     log.info(`Creating your ${name} stack...`)
     const stackDir = resolve(process.cwd(), name)
 
@@ -430,7 +451,7 @@ export async function makeStack(options: MakeOptions): Promise<void> {
 }
 
 export async function createNotification(options: MakeOptions): Promise<boolean> {
-  const name = options.name
+  const name = requireName(options, 'stack')
   try {
     let importOption = 'EmailOptions'
 
@@ -456,7 +477,10 @@ export async function createNotification(options: MakeOptions): Promise<boolean>
 export async function createMigration(options: MakeOptions): Promise<void> {
   const optionName = options.name
 
-  if (!optionName[0])
+  // Guarded on the value, not on `optionName[0]`: indexing an absent name
+  // throws "Cannot read properties of undefined" before this line's own,
+  // clearer error can be raised.
+  if (!optionName)
     throw new Error('options.name is required and cannot be empty')
 
   // Follow the scaffold-crud convention: a timestamped, kebab-cased file in
@@ -514,10 +538,15 @@ export async function makeCertificate(): Promise<void> {
 export async function createModel(options: MakeOptions): Promise<void> {
   const optionName = options.name
 
-  if (!optionName[0])
+  // Guarded on the value, not on `optionName[0]`: indexing an absent name
+  // throws "Cannot read properties of undefined" before this line's own,
+  // clearer error can be raised.
+  if (!optionName)
     throw new Error('options.name is required and cannot be empty')
 
-  const name = optionName[0].toUpperCase() + optionName.slice(1)
+  // `charAt` rather than `[0]`, which is `string | undefined` under
+  // noUncheckedIndexedAccess even with the guard above.
+  const name = optionName.charAt(0).toUpperCase() + optionName.slice(1)
   const tableName = name.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '').replace(/([^s])$/, '$1s')
   const path = p.userModelsPath(`${name}.ts`)
 
@@ -532,6 +561,6 @@ export async function createModel(options: MakeOptions): Promise<void> {
 }
 
 export async function createMiddleware(options: MakeOptions): Promise<void> {
-  const name = options.name
+  const name = requireName(options, 'certificate')
   await createFileWithTemplate(p.userMiddlewarePath(`${name}.ts`), 'middleware', name)
 }

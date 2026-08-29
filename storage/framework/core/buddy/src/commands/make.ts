@@ -89,7 +89,7 @@ export function make(buddy: CLI): void {
       // Flip the global dry-run gate before any scaffolder runs. Reset
       // afterwards so back-to-back invocations in the same process
       // (rare, but possible inside tests) don't leak state.
-      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
+      setDryRun(Boolean(options.dryRun || options['dry-run']))
 
       if (make) {
         options.name = buddy.args[1] ?? make
@@ -120,7 +120,7 @@ export function make(buddy: CLI): void {
             await makeLanguage(options)
             break
           case 'mail':
-            await makeMail(options as any)
+            await makeMail(options)
             break
           case 'migration':
             await createMigration(options)
@@ -138,10 +138,22 @@ export function make(buddy: CLI): void {
             await createNotification(options)
             break
           case 'policy':
-            await makePolicy(options as any)
+            // Shaped explicitly rather than passing the whole options bag.
+            // `model` is a BOOLEAN flag on MakeOptions (`buddy make --model`,
+            // "also make a model") and a STRING on these two (`--model Post`,
+            // "the model this policy is for"). The two cannot be the same
+            // value, and `options as any` let one be handed over as the other.
+            await makePolicy({
+              name: options.name,
+              model: typeof options.model === 'string' ? options.model : undefined,
+              register: options.register,
+            })
             break
           case 'resource':
-            await makeResource(options as any)
+            await makeResource({
+              name: options.name,
+              model: typeof options.model === 'string' ? options.model : undefined,
+            })
             break
           case 'queue-table':
             await makeQueueTable()
@@ -214,7 +226,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
+      setDryRun(Boolean(options.dryRun || options['dry-run']))
       await makeAction(options)
     })
 
@@ -249,7 +261,7 @@ export function make(buddy: CLI): void {
       }
 
       const { scaffoldCrud } = await import('@stacksjs/actions')
-      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
+      setDryRun(Boolean(options.dryRun || options['dry-run']))
       try {
         await scaffoldCrud(name, options)
       }
@@ -458,7 +470,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await makeMail(options as any)
+      await makeMail(options)
 
       await outro(`Created your ${italic(name)} mailable.`, {
         startTime: perf,
@@ -519,8 +531,8 @@ export function make(buddy: CLI): void {
 
       const perf = await intro('buddy make:policy')
 
-      name = name ?? (options as any).name
-      ;(options as any).name = name
+      name = name ?? options.name
+      ;options.name = name
 
       if (!name) {
         console.error('You need to specify a policy name.')
@@ -528,7 +540,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const result = await makePolicy(options as any)
+      const result = await makePolicy(options)
 
       if (!result) {
         await outro('While running the make:policy command, there was an issue', {
@@ -560,8 +572,8 @@ export function make(buddy: CLI): void {
 
       const perf = await intro('buddy make:resource')
 
-      name = name ?? (options as any).name
-      ;(options as any).name = name
+      name = name ?? options.name
+      ;options.name = name
 
       if (!name) {
         console.error('You need to specify a resource name.')
@@ -569,7 +581,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const result = await makeResource(options as any)
+      const result = await makeResource(options)
 
       if (!result) {
         await outro('While running the make:resource command, there was an issue', {
