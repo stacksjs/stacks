@@ -1,3 +1,4 @@
+import type { StacksBrowserConfig } from '../../types/globals'
 import type { Ref } from '@stacksjs/stx'
 import { onMounted, ref } from '@stacksjs/stx'
 
@@ -12,14 +13,8 @@ interface GitHubTokenResponse {
   access_token: string
 }
 
-// @ts-ignore - Window.location override
-declare global {
-  // eslint-disable-next-line ts/no-empty-object-type
-  interface Window {}
-}
-
 export function useGitHubOAuth(): GitHubOAuthReturn {
-  const stacksConfig = (window as any).__STACKS_CONFIG__ || {}
+  const stacksConfig: StacksBrowserConfig = window.__STACKS_CONFIG__ || {}
   const clientId = stacksConfig.GITHUB_CLIENT_ID || ''
   const baseUrl = stacksConfig.APP_URL || window.location.origin
   const redirectUri = `${baseUrl}/auth/github/callback`

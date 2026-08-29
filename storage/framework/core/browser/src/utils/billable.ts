@@ -1,4 +1,5 @@
-const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
+import type { StacksBrowserConfig } from '../types/globals'
+const stacksConfig: StacksBrowserConfig = globalThis.__STACKS_CONFIG__ || {}
 export const publishableKey: string = stacksConfig.FRONTEND_STRIPE_PUBLIC_KEY || ''
 
 let client: any

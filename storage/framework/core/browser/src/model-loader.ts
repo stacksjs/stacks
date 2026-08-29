@@ -83,8 +83,27 @@ export interface BrowserModel {
  */
 declare global {
   interface Window {
-    StacksBrowser?: Record<string, BrowserModel | undefined>
+    /*
+     * A bag of models AND of the browser auto-imports, because both write to
+     * it: `auto-init` seeds it with `getBrowserAutoImports()` and then
+     * `loadBrowserModels()` registers models into the same object.
+     *
+     * So `Record<string, BrowserModel | undefined>` was never true of it - the
+     * query builder and composables sitting in there are not models - and the
+     * registration below already had to cast around its own declaration.
+     * `unknown` is what the bag holds; `isBrowserModel` is what turns an entry
+     * back into a model, and it is the same duck-type test
+     * `getBrowserModelNames` was already applying.
+     */
+    StacksBrowser?: Record<string, unknown>
   }
+}
+
+/** An entry in the bag that is a model, rather than one of the utilities. */
+function isBrowserModel(value: unknown): value is BrowserModel {
+  return value != null
+    && typeof (value as BrowserModel).all === 'function'
+    && typeof (value as BrowserModel).find === 'function'
 }
 
 // Dynamically import all model definitions from app/Models/
@@ -134,7 +153,7 @@ export function loadBrowserModels(): void {
       } as const)
 
       // Register on StacksBrowser
-      window.StacksBrowser[definition.name] = browserModel as unknown as BrowserModel
+      window.StacksBrowser[definition.name] = browserModel
     }
     catch (error) {
       console.error(`[model-loader] Failed to create browser model for ${definition.name}:`, error)
@@ -168,7 +187,10 @@ function extractBrowserAttributes(
  */
 export function getBrowserModel(name: string): BrowserModel | null {
   if (typeof window === 'undefined') return null
-  return window.StacksBrowser?.[name] ?? null
+
+  const entry = window.StacksBrowser?.[name]
+
+  return isBrowserModel(entry) ? entry : null
 }
 
 /**
@@ -180,8 +202,5 @@ export function getBrowserModelNames(): string[] {
   const stacksBrowser = window.StacksBrowser
   if (!stacksBrowser) return []
 
-  return Object.keys(stacksBrowser).filter((key) => {
-    const value = stacksBrowser[key]
-    return value != null && typeof value.all === 'function' && typeof value.find === 'function'
-  })
+  return Object.keys(stacksBrowser).filter(key => isBrowserModel(stacksBrowser[key]))
 }

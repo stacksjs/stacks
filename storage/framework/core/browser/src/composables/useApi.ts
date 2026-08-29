@@ -9,6 +9,7 @@
  * model imports needed here.
  */
 
+import type { StacksBrowserConfig } from '../types/globals'
 import { configureBrowser, browserAuth } from 'bun-query-builder/browser'
 
 /**
@@ -37,7 +38,7 @@ export function initApi(options?: {
   onUnauthorized?: () => void
 }): void {
   // eslint-disable-next-line pickier/no-unused-vars
-  const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
+  const stacksConfig: StacksBrowserConfig = globalThis.__STACKS_CONFIG__ || {}
   const baseUrl = options?.baseUrl || (
     typeof window !== 'undefined'
       ? `${window.location.origin}/api`

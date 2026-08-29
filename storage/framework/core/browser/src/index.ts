@@ -1,3 +1,7 @@
+// The globals the server injects into the page. Imported for its `declare
+// global`, which every composable below relies on.
+import './types/globals'
+
 // Auto-initialize API on import (runs as side effect)
 import './auto-init'
 

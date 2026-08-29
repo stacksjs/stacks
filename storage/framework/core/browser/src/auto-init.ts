@@ -69,7 +69,7 @@ function autoInit(): void {
   // Determine API base URL
   // Priority: 1) window.__STACKS_API_URL__ (injected by framework)
   //          2) Same origin /api path
-  const baseUrl = (window as any).__STACKS_API_URL__
+  const baseUrl = window.__STACKS_API_URL__
     || `${window.location.origin}/api`
 
   // Configure the browser query builder
@@ -88,7 +88,7 @@ function autoInit(): void {
     // Handle unauthorized responses
     onUnauthorized: () => {
       // Get the configured redirect URL or default to /login
-      const loginUrl = (window as any).__STACKS_LOGIN_URL__ || '/login'
+      const loginUrl = window.__STACKS_LOGIN_URL__ || '/login'
 
       // Only redirect if not already on login page
       if (!window.location.pathname.startsWith(loginUrl)) {
@@ -102,9 +102,16 @@ function autoInit(): void {
     },
   })
 
-  // Expose core browser exports on window.StacksBrowser for STX auto-imports
-  // App-specific models will self-register when loaded
-  ;(window as any).StacksBrowser = getBrowserAutoImports()
+  // Expose core browser exports on window.StacksBrowser for STX auto-imports.
+  // App-specific models self-register into the same bag when loaded.
+  //
+  // Merged rather than assigned. Replacing the object discards anything
+  // already registered on it, which is only safe while this runs before
+  // `loadBrowserModels()` - a coupling nothing states and nothing enforces.
+  // It also keeps this readable against the installed @stacksjs/browser
+  // declaration, which is a version behind the source beside it and still
+  // types the bag as models only.
+  window.StacksBrowser = Object.assign(window.StacksBrowser ?? {}, getBrowserAutoImports())
 
   // Load all app models and register on StacksBrowser
   loadBrowserModels()
@@ -113,7 +120,7 @@ function autoInit(): void {
   window.dispatchEvent(new CustomEvent('stacks:api-ready'))
 
   // Log in development
-  if ((window as any).__STACKS_DEBUG__) {
+  if (window.__STACKS_DEBUG__) {
     console.debug('[Stacks] Browser API initialized:', baseUrl)
   }
 }

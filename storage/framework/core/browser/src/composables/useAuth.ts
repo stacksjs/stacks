@@ -1,3 +1,4 @@
+import type { StacksBrowserConfig } from '../types/globals'
 import type { AuthComposable, AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import type { SessionHandoffPack } from '@stacksjs/composables'
 import { readSessionHandoff, stripSessionHandoff, useStorage } from '@stacksjs/composables'
@@ -18,7 +19,7 @@ const token = useStorage('token', '')
  */
 const refreshToken = useStorage('refresh_token', '')
 
-const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
+const stacksConfig: StacksBrowserConfig = globalThis.__STACKS_CONFIG__ || {}
 const baseUrl = stacksConfig.API_URL || (typeof window !== 'undefined' ? window.location.origin : '')
 
 /**
