@@ -572,7 +572,7 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
  * Returns undefined if the project has no ts-cloud config (older projects /
  * pure AWS setups that only export the legacy `CloudConfig`).
  */
-export async function loadTsCloudConfig(envName?: string): Promise<any | undefined> {
+export async function loadTsCloudConfig(envName?: string): Promise<TsCloudConfig | undefined> {
   try {
     const base = p.projectPath('config/cloud.ts')
     // Always cache-bust when an environment is known so the config module
@@ -1786,6 +1786,53 @@ function prefixHostForEnv(host: string, prefix: string): string {
 }
 
 /**
+ * The project's ts-cloud config, as this command reads it.
+ *
+ * Written out rather than left as `any`, with every field optional because the
+ * file is user-authored and each read below already guards for absence. The
+ * index signature keeps any other key a project carries legal.
+ *
+ * The point is not to constrain what a config may contain. It is that
+ * `config.infrastructure.dsn` - a typo for `dns` - used to typecheck and answer
+ * `undefined`, which is indistinguishable from a provider that was never
+ * declared, and this command chooses a DNS provider off exactly that read.
+ */
+export interface TsCloudSite {
+  port?: number
+  /** One host, or several. Both spellings appear in real configs. */
+  domain?: string | string[]
+  env?: Record<string, string>
+  [key: string]: unknown
+}
+
+export interface TsCloudInfrastructure {
+  compute?: {
+    runtime?: unknown
+    size?: unknown
+    proxy?: {
+      autoWww?: unknown
+      cdn?: { provider?: string }
+    }
+  }
+  dns?: { provider?: string }
+}
+
+export interface TsCloudConfig {
+  project?: { name?: string, slug?: string, region?: string }
+  cloud?: { attachTo?: string, retiredDomains?: unknown, provider?: string }
+  hetzner?: { apiToken?: string, location?: string }
+  infrastructure?: TsCloudInfrastructure
+  /** A site entry may be absent; `applyEnvironmentToSites` guards for it. */
+  sites?: Record<string, TsCloudSite | null | undefined>
+  environments?: Record<string, { domainPrefix?: string, region?: string } | undefined>
+  mode?: string
+  /** Some call sites are handed the outer config, which nests the above. */
+  tsCloud?: { infrastructure?: TsCloudInfrastructure }
+  [key: string]: unknown
+}
+
+
+/**
  * Make the site model environment-aware. For a non-production environment that
  * declares a `domainPrefix` (staging → `staging`, development → `dev`), every
  * site's public domain becomes `<prefix>.<domain>`, and URL values that point at
@@ -1794,7 +1841,7 @@ function prefixHostForEnv(host: string, prefix: string): string {
  * without duplicating site blocks. Only `//<host>` URL occurrences are rewritten;
  * bare `user@host` (e.g. mail identities) is left alone. Production is untouched.
  */
-export function applyEnvironmentToSites(sites: Record<string, any>, environment: string, config: any): Record<string, any> {
+export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null | undefined>, environment: string, config: TsCloudConfig): Record<string, TsCloudSite | null | undefined> {
   const prefix: string | undefined = config?.environments?.[environment]?.domainPrefix
   if (!prefix || environment === 'production')
     return sites
@@ -1804,7 +1851,7 @@ export function applyEnvironmentToSites(sites: Record<string, any>, environment:
   // rewritten to the prefixed target, and the most-specific host wins.
   const allHosts: string[] = []
   for (const site of Object.values(sites)) {
-    const d = (site as any)?.domain
+    const d = site?.domain
     if (typeof d === 'string') allHosts.push(d)
     else if (Array.isArray(d)) for (const x of d) if (typeof x === 'string') allHosts.push(x)
   }
@@ -1963,12 +2010,12 @@ export async function loadTsCloudDeployApi(): Promise<typeof import('@stacksjs/t
  * gateway's route table (which proxies to 127.0.0.1:port on-box), so its
  * port declaration is left alone.
  */
-export function shouldInjectManagementDashboard(tsCloudConfig: any): boolean {
+export function shouldInjectManagementDashboard(tsCloudConfig: TsCloudConfig): boolean {
   return !tsCloudConfig.cloud?.attachTo
 }
 
 export function reconcilePartialDeployManagementDashboards(
-  tsCloudConfig: any,
+  tsCloudConfig: TsCloudConfig,
   livePorts: Record<string, number>,
 ): { preserved: string[], removed: string[] } {
   const sites = tsCloudConfig.sites as Record<string, any> | undefined
@@ -2093,7 +2140,7 @@ export function resolvePersistedAttachTargetBox(
   }
 }
 
-export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: any): any {
+export function scrubLoopbackSitePortsForFirewall(tsCloudConfig: TsCloudConfig): TsCloudConfig {
   const sites = tsCloudConfig?.sites
   if (!sites)
     return tsCloudConfig
@@ -3006,7 +3053,7 @@ export function hasExplicitEmailConfig(projectRoot = p.projectPath()): boolean {
   return existsSync(join(projectRoot, 'config', 'email.ts'))
 }
 
-export function mailServerOwnerFromConfig(config: any): string | undefined {
+export function mailServerOwnerFromConfig(config: { server?: { attachTo?: unknown } } | null | undefined): string | undefined {
   const owner = config?.server?.attachTo
   return typeof owner === 'string' && owner.trim() ? owner.trim() : undefined
 }
@@ -3063,7 +3110,7 @@ systemctl reset-failed`
  * and then failed attach resolution with no request made and no reason given
  * (stacksjs/stacks#2344). One resolver, so the two cannot drift again.
  */
-export function resolveHetznerApiToken(tsCloudConfig?: any): string | undefined {
+export function resolveHetznerApiToken(tsCloudConfig?: TsCloudConfig): string | undefined {
   return tsCloudConfig?.hetzner?.apiToken || process.env.HCLOUD_TOKEN || process.env.HETZNER_API_TOKEN
 }
 
@@ -3764,7 +3811,11 @@ const DNS_PROVIDER_CREDENTIALS: Record<string, string[]> = {
  * is about who actually administers the zone — it is not a preference to be
  * weighed against whatever credentials happen to be in the environment.
  */
-export function declaredDnsProvider(config: any): string | undefined {
+// Accepts an absent config, which is what both callers pass: they load it with
+// `.catch(() => undefined)` because a project without one still needs DNS
+// guidance. The body always read it with `config?.`; only the signature had
+// never said so, and `any` is what let the two disagree.
+export function declaredDnsProvider(config: TsCloudConfig | null | undefined): string | undefined {
   const provider = config?.tsCloud?.infrastructure?.dns?.provider
     ?? config?.infrastructure?.dns?.provider
   return typeof provider === 'string' && provider ? provider.toLowerCase() : undefined

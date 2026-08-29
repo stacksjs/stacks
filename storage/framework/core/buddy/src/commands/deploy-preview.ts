@@ -1,3 +1,4 @@
+import type { TsCloudConfig } from './deploy'
 import type {
   DeploymentPreview,
   DeploymentPreviewOperation,
@@ -5,27 +6,15 @@ import type {
   DeploymentSiteKind,
 } from '@stacksjs/types'
 
-interface DeploymentPreviewConfig {
-  project?: {
-    name?: string
-    slug?: string
-    region?: string
-  }
-  cloud?: {
-    provider?: string
-    attachTo?: string
-  }
-  infrastructure?: {
-    compute?: {
-      size?: string
-    }
-  }
-  environments?: Record<string, {
-    region?: string
-  }>
-  mode?: string
-  sites?: Record<string, Record<string, unknown> | null | undefined>
-}
+/**
+ * The ts-cloud config this command previews.
+ *
+ * An alias for the one description in `deploy.ts` rather than a second partial
+ * copy of it: this file used to declare its own, listing `project.name` and
+ * `mode` where the other listed `hetzner` and `sites[].port`, so the two
+ * disagreed about the same file and neither was wrong enough to notice.
+ */
+type DeploymentPreviewConfig = TsCloudConfig
 
 export interface CreateDeploymentPreviewOptions {
   config?: DeploymentPreviewConfig
