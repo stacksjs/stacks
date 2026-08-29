@@ -154,20 +154,23 @@ export function determineResetPreset(preset?: string | null): string[] {
 /**
  * Determines whether the specified value is a package manifest.
  */
-export function isManifest(obj: any): obj is Manifest {
+export function isManifest(obj: unknown): obj is Manifest {
+  if (!obj || typeof obj !== 'object')
+    return false
+
+  const candidate = obj as Record<string, unknown>
+
   return (
-    obj
-    && typeof obj === 'object'
-    && isOptionalString(obj.name)
-    && isOptionalString(obj.version)
-    && isOptionalString(obj.description)
+    isOptionalString(candidate.name)
+    && isOptionalString(candidate.version)
+    && isOptionalString(candidate.description)
   )
 }
 
 /**
  * Determines whether the specified value is a string, null, or undefined.
  */
-export function isOptionalString(value: any): value is string | null | undefined {
+export function isOptionalString(value: unknown): value is string | null | undefined {
   const type = typeof value
   return value === null || type === 'undefined' || type === 'string'
 }
@@ -213,7 +216,7 @@ export function hasScript(manifest: Manifest, script: NpmScript): boolean {
   return false
 }
 
-export function parseYaml(content: any): any {
+export function parseYaml(content: string): unknown {
   return Bun.YAML.parse(content)
 }
 
@@ -247,7 +250,7 @@ export function isIpv6(address: AddressInfo): boolean {
   )
 }
 
-export function dumpYaml(content: any): string {
+export function dumpYaml(content: unknown): string {
   const yaml = Bun.YAML as unknown as { stringify?: (value: unknown) => string }
 
   if (typeof yaml.stringify === 'function')
@@ -256,6 +259,6 @@ export function dumpYaml(content: any): string {
   return JSON.stringify(content, null, 2)
 }
 
-export function loadYaml(content: string): any {
+export function loadYaml(content: string): unknown {
   return Bun.YAML.parse(content)
 }

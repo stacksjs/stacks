@@ -1,4 +1,4 @@
-export function toString(v: any): string {
+export function toString(v: unknown): string {
   return Object.prototype.toString.call(v)
 }
 

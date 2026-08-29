@@ -12,7 +12,7 @@ import { getTypeName } from '@stacksjs/types'
  *   already-visited objects breaks the cycle and treats two structurally
  *   identical cycles as equal.
  */
-export function isDeepEqual(value1: any, value2: any, seen: WeakMap<object, object> = new WeakMap()): boolean {
+export function isDeepEqual(value1: unknown, value2: unknown, seen: WeakMap<object, object> = new WeakMap()): boolean {
   if (value1 === value2) return true
   if (typeof value1 === 'number' && typeof value2 === 'number' && Number.isNaN(value1) && Number.isNaN(value2)) return true
 
@@ -28,15 +28,22 @@ export function isDeepEqual(value1: any, value2: any, seen: WeakMap<object, obje
     seen.set(value1 as object, value2 as object)
   }
 
-  if (type1 === 'array') {
+  // Narrowed with `Array.isArray` rather than by comparing `getTypeName`'s
+  // answer to a string: the comparison decides the same thing at runtime but
+  // tells the compiler nothing, so the reads below it were unchecked. The two
+  // types are already known to match by this point.
+  if (Array.isArray(value1) && Array.isArray(value2)) {
     if (value1.length !== value2.length) return false
-    return value1.every((item: any, i: number) => isDeepEqual(item, value2[i], seen))
+    return value1.every((item, i) => isDeepEqual(item, value2[i], seen))
   }
 
   if (type1 === 'object') {
-    const keyArr = Object.keys(value1)
-    if (keyArr.length !== Object.keys(value2).length) return false
-    return keyArr.every((key: string) => isDeepEqual(value1[key], value2[key], seen))
+    // A plain object by `getTypeName`, so its keys are strings.
+    const object1 = value1 as Record<string, unknown>
+    const object2 = value2 as Record<string, unknown>
+    const keyArr = Object.keys(object1)
+    if (keyArr.length !== Object.keys(object2).length) return false
+    return keyArr.every((key: string) => isDeepEqual(object1[key], object2[key], seen))
   }
 
   return Object.is(value1, value2)
