@@ -26,7 +26,16 @@ export enum Every {
   Year = '0 0 1 1 *',
 }
 
-export type JobHandler = (_data?: any) => Promise<any> | any
+/**
+ * A job's handler, carrying the shape of the payload it expects.
+ *
+ * The parameter used to be `_data?: any`, which meant a job could declare
+ * `handle(payload: { email: string, name: string })` and have nothing enforce
+ * it: `dispatch` took its own unrelated generic, so `dispatch({ emial: … })`,
+ * `dispatch('a bare string')` and even `dispatch()` all compiled against a
+ * job that requires an address. The declared payload was decorative.
+ */
+export type JobHandler<T = unknown> = (_data: T) => Promise<any> | any
 
 /**
  * Represents different backoff strategies for job retries
@@ -75,7 +84,7 @@ export interface BackoffConfig {
   jitter?: JitterConfig
 }
 
-export interface JobOptions {
+export interface JobOptions<T = unknown> {
   /**
    * The name of the job
    */
@@ -83,7 +92,7 @@ export interface JobOptions {
   /**
    * Job handler function or identifier string
    */
-  handle?: string | JobHandler
+  handle?: string | JobHandler<T>
   /**
    * Action identifier
    */

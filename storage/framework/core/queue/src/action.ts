@@ -35,11 +35,20 @@ function getQueueDriver(): string {
  * await SendWelcomeEmail.dispatchNow({ email: user.email })
  * ```
  */
-export class Job {
+/**
+ * The payload argument list for a job.
+ *
+ * A job that declares what it takes must be given it; one that declares
+ * nothing (`T` left as `unknown`) may still be dispatched bare, which is what
+ * a job like `Inspire` does.
+ */
+export type JobPayloadArgs<T> = unknown extends T ? [payload?: T] : [payload: T]
+
+export class Job<T = unknown> {
   name: JobOptions['name']
   description: JobOptions['description']
   action?: JobOptions['action']
-  handle?: JobOptions['handle']
+  handle?: JobOptions<T>['handle']
   queue?: string
   rate: JobOptions['rate']
   tries: JobOptions['tries']
@@ -48,7 +57,7 @@ export class Job {
   backoffConfig: JobOptions['backoffConfig']
   enabled: JobOptions['enabled']
 
-  constructor(options: JobOptions & { queue?: string; timeout?: number }) {
+  constructor(options: JobOptions<T> & { queue?: string; timeout?: number }) {
     this.name = options.name
     this.description = options.description
     this.handle = options.handle
@@ -72,7 +81,7 @@ export class Job {
    * force callers to narrow before reading properties off the
    * downstream handler. (stacksjs/stacks#1872 Q-9.)
    */
-  async dispatch<T = unknown>(payload?: T): Promise<void> {
+  async dispatch(...[payload]: JobPayloadArgs<T>): Promise<void> {
     // Check if queue is faked (testing mode)
     const { isFaked, getFakeQueue } = await import('./testing')
     if (isFaked()) {
@@ -87,7 +96,7 @@ export class Job {
     const driver = getQueueDriver()
 
     if (driver === 'sync') {
-      return this.dispatchNow(payload)
+      return this.dispatchNow(...([payload] as JobPayloadArgs<T>))
     }
 
     if (driver === 'redis') {
@@ -115,25 +124,25 @@ export class Job {
   /**
    * Dispatch only if the condition is true.
    */
-  async dispatchIf<T = unknown>(condition: boolean, payload?: T): Promise<void> {
+  async dispatchIf(condition: boolean, ...[payload]: JobPayloadArgs<T>): Promise<void> {
     if (condition) {
-      return this.dispatch(payload)
+      return this.dispatch(...([payload] as JobPayloadArgs<T>))
     }
   }
 
   /**
    * Dispatch unless the condition is true.
    */
-  async dispatchUnless<T = unknown>(condition: boolean, payload?: T): Promise<void> {
+  async dispatchUnless(condition: boolean, ...[payload]: JobPayloadArgs<T>): Promise<void> {
     if (!condition) {
-      return this.dispatch(payload)
+      return this.dispatch(...([payload] as JobPayloadArgs<T>))
     }
   }
 
   /**
    * Dispatch with a delay (in seconds).
    */
-  async dispatchAfter<T = unknown>(delaySeconds: number, payload?: T): Promise<void> {
+  async dispatchAfter(delaySeconds: number, ...[payload]: JobPayloadArgs<T>): Promise<void> {
     const driver = getQueueDriver()
 
     if (driver === 'redis') {
@@ -146,15 +155,15 @@ export class Job {
 
     // Sync: wait then execute
     await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
-    return await this.dispatchNow(payload)
+    return await this.dispatchNow(...([payload] as JobPayloadArgs<T>))
   }
 
   /**
    * Execute the job immediately, bypassing the queue.
    */
-  async dispatchNow<T = unknown>(payload?: T): Promise<void> {
+  async dispatchNow(...[payload]: JobPayloadArgs<T>): Promise<void> {
     if (typeof this.handle === 'function') {
-      await this.handle(payload)
+      await this.handle(payload as T)
     }
     else if (typeof this.action === 'string') {
       const { runAction } = await import('@stacksjs/actions')

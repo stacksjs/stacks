@@ -1,0 +1,20 @@
+{
+  // Type-level tests, for the same reason the auth, events, router and actions
+  // packages have one: `tsconfig.framework.json` excludes every `tests/`
+  // directory, so a `.test-d.ts` left there is compiled by nothing and asserts
+  // nothing. Wired into the root `typecheck` script.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "isolatedDeclarations": false,
+    "noEmit": true
+  },
+  "include": [
+    "tests/*.test-d.ts",
+    "../../types/**/*.d.ts"
+  ],
+  "exclude": [
+    "dist/**"
+  ]
+}

@@ -10,7 +10,7 @@ export default new Job({
   backoff: 60,
   timeout: 30,
 
-  async handle(payload: { email: string; name: string }) {
+  async handle(payload: { email: string, name?: string }) {
     const { email, name } = payload
 
     if (!email) {
