@@ -6,12 +6,12 @@ import { response } from '@stacksjs/router'
 import { commerceIdentifier, commerceNotFound } from '../commerce-action'
 
 export default new Action({
-  name: 'Driver Update',
-  description: 'Driver Update ORM Action',
+  name: 'Courier Update',
+  description: 'Courier Update ORM Action',
   method: 'PATCH',
-  model: Driver,
+  model: Courier,
   async handle(request: RequestInstance) {
-    const identifier = commerceIdentifier(request, 'Driver')
+    const identifier = commerceIdentifier(request, 'Courier')
     if (identifier.error)
       return identifier.error
     const { id } = identifier
@@ -19,9 +19,9 @@ export default new Action({
     await request.validate()
     const data = await request.all()
 
-    const model = await shippings.drivers.update(id, data)
+    const model = await shippings.couriers.update(id, data)
     if (!model)
-      return commerceNotFound('Driver', id)
+      return commerceNotFound('Courier', id)
 
     return response.json(model)
   },

@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   deliveryRouteWriteData,
   digitalDeliveryWriteData,
-  driverWriteData,
+  courierWriteData,
   licenseKeyWriteData,
   shippingMethodWriteData,
   shippingRateWriteData,
@@ -52,7 +52,7 @@ describe('commerce shipping write data', () => {
   })
 
   test('drops identifiers, timestamps, and expanded relationships', () => {
-    expect(driverWriteData({
+    expect(courierWriteData({
       id: 9,
       uuid: 'immutable',
       created_at: '2026-01-01',
@@ -72,14 +72,14 @@ describe('commerce shipping write data', () => {
       expiry_date: '2027-01-01 00:00:00',
     })
     expect(deliveryRouteWriteData({
-      driver: 'Alex',
-      driverId: 12,
+      courier: 'Alex',
+      courierId: 12,
       deliveryTime: 45,
       lastActive: 123,
       unknown: true,
     })).toEqual({
-      driver: 'Alex',
-      driver_id: 12,
+      courier: 'Alex',
+      courier_id: 12,
       delivery_time: 45,
       last_active: 123,
     })

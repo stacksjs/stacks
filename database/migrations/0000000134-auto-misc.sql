@@ -113,7 +113,7 @@ COMMIT;
 PRAGMA foreign_keys=ON;
 PRAGMA foreign_keys=OFF;
 BEGIN;
-CREATE TABLE "_qb_tmp_drivers" (
+CREATE TABLE "_qb_tmp_couriers" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT not null,
   "phone" TEXT not null,
@@ -125,10 +125,10 @@ CREATE TABLE "_qb_tmp_drivers" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_drivers" ("id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid" FROM "drivers";
-DROP TABLE "drivers";
-ALTER TABLE "_qb_tmp_drivers" RENAME TO "drivers";
-CREATE UNIQUE INDEX IF NOT EXISTS "drivers_drivers_uuid_unique" ON "drivers" ("uuid");
+INSERT INTO "_qb_tmp_couriers" ("id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid") SELECT "id", "name", "phone", "vehicle_number", "license", "status", "user_id", "created_at", "updated_at", "uuid" FROM "couriers";
+DROP TABLE "couriers";
+ALTER TABLE "_qb_tmp_couriers" RENAME TO "couriers";
+CREATE UNIQUE INDEX IF NOT EXISTS "couriers_couriers_uuid_unique" ON "couriers" ("uuid");
 PRAGMA foreign_key_check;
 COMMIT;
 PRAGMA foreign_keys=ON;
@@ -1103,7 +1103,7 @@ PRAGMA foreign_keys=OFF;
 BEGIN;
 CREATE TABLE "_qb_tmp_delivery_routes" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-  "driver" TEXT not null,
+  "courier" TEXT not null,
   "vehicle" TEXT not null,
   "stops" INTEGER not null,
   "delivery_time" INTEGER not null,
@@ -1113,7 +1113,7 @@ CREATE TABLE "_qb_tmp_delivery_routes" (
   "updated_at" TEXT,
   "uuid" TEXT
 );
-INSERT INTO "_qb_tmp_delivery_routes" ("id", "driver", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid") SELECT "id", "driver", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid" FROM "delivery_routes";
+INSERT INTO "_qb_tmp_delivery_routes" ("id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid") SELECT "id", "courier", "vehicle", "stops", "delivery_time", "total_distance", "last_active", "created_at", "updated_at", "uuid" FROM "delivery_routes";
 DROP TABLE "delivery_routes";
 ALTER TABLE "_qb_tmp_delivery_routes" RENAME TO "delivery_routes";
 CREATE UNIQUE INDEX IF NOT EXISTS "delivery_routes_delivery_routes_uuid_unique" ON "delivery_routes" ("uuid");

@@ -73,7 +73,7 @@ export function licenseKeyWriteData(input: ShippingWriteInput): Record<string, u
   })
 }
 
-export function driverWriteData(input: ShippingWriteInput): Record<string, unknown> {
+export function courierWriteData(input: ShippingWriteInput): Record<string, unknown> {
   return normalizedColumns(input, {
     name: ['name'],
     phone: ['phone'],
@@ -86,8 +86,8 @@ export function driverWriteData(input: ShippingWriteInput): Record<string, unkno
 
 export function deliveryRouteWriteData(input: ShippingWriteInput): Record<string, unknown> {
   return normalizedColumns(input, {
-    driver: ['driver'],
-    driver_id: ['driver_id', 'driverId'],
+    courier: ['courier'],
+    courier_id: ['courier_id', 'courierId'],
     vehicle: ['vehicle'],
     stops: ['stops'],
     delivery_time: ['delivery_time', 'deliveryTime'],

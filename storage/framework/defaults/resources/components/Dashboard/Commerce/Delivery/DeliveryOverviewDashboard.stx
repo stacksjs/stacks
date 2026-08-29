@@ -10,7 +10,7 @@ interface DeliveryStat {
 
 interface DeliveryRoute {
   id: number
-  driver: string
+  courier: string
   vehicle: string
   stops: number
   duration: string
@@ -34,7 +34,7 @@ interface ShippingZone {
   regions: number
 }
 
-interface DriverSummary {
+interface CourierSummary {
   total: number
   active: number
   onDelivery: number
@@ -46,14 +46,14 @@ interface DeliveryOverviewResponse {
   routes: DeliveryRoute[]
   methods: ShippingMethod[]
   zones: ShippingZone[]
-  drivers: DriverSummary
+  couriers: CourierSummary
 }
 
 const stats = state<DeliveryStat[]>([])
 const routes = state<DeliveryRoute[]>([])
 const methods = state<ShippingMethod[]>([])
 const zones = state<ShippingZone[]>([])
-const drivers = state<DriverSummary>({
+const couriers = state<CourierSummary>({
   total: 0,
   active: 0,
   onDelivery: 0,
@@ -65,7 +65,7 @@ const loadError = state('')
 function statIcon(label: string): string {
   const icons: Record<string, string> = {
     'Active Routes': 'i-hugeicons-route-02',
-    'Drivers on Delivery': 'i-hugeicons-delivery-truck-02',
+    'Couriers on Delivery': 'i-hugeicons-delivery-truck-02',
     'Average Route': 'i-hugeicons-clock-01',
     'Active Zones': 'i-hugeicons-maps-global-02',
   }
@@ -114,7 +114,7 @@ async function loadOverview(): Promise<void> {
       || !Array.isArray(data.routes)
       || !Array.isArray(data.methods)
       || !Array.isArray(data.zones)
-      || !data.drivers
+      || !data.couriers
     ) {
       throw new TypeError('Delivery resources were not returned in the expected shape.')
     }
@@ -123,7 +123,7 @@ async function loadOverview(): Promise<void> {
     routes.set(data.routes)
     methods.set(data.methods)
     zones.set(data.zones)
-    drivers.set(data.drivers)
+    couriers.set(data.couriers)
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
@@ -145,7 +145,7 @@ onMount(() => {
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Delivery</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Monitor active routes, driver availability, shipping methods, and coverage.</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Monitor active routes, courier availability, shipping methods, and coverage.</p>
     </div>
     <div class="flex gap-2">
       <Button :loading="loading()" variant="secondary" @click="loadOverview()">
@@ -211,7 +211,7 @@ onMount(() => {
           <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-900/40">
               <tr>
-                <th scope="col" class="px-5 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Driver</th>
+                <th scope="col" class="px-5 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Courier</th>
                 <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Plan</th>
                 <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400">Distance</th>
                 <th scope="col" class="px-5 py-3 font-medium text-gray-500 text-right text-xs tracking-wide uppercase dark:text-neutral-400">Last active</th>
@@ -221,7 +221,7 @@ onMount(() => {
               <template :for="route in routes()" :key="route.id">
                 <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
                   <td class="px-5 py-3.5">
-                    <p class="font-medium text-gray-900 text-sm dark:text-white">{{ route.driver }}</p>
+                    <p class="font-medium text-gray-900 text-sm dark:text-white">{{ route.courier }}</p>
                     <p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ route.vehicle }}</p>
                   </td>
                   <td class="px-4 py-3.5 text-gray-600 text-sm whitespace-nowrap dark:text-neutral-300">
@@ -243,30 +243,30 @@ onMount(() => {
         <div class="flex items-start justify-between">
           <div>
             <h2 class="font-semibold">Fleet availability</h2>
-            <p class="mt-1 text-sm text-stone-400">Current persisted driver statuses.</p>
+            <p class="mt-1 text-sm text-stone-400">Current persisted courier statuses.</p>
           </div>
           <span class="h-5 w-5 text-blue-400 i-hugeicons-delivery-truck-02"></span>
         </div>
         <div class="mt-7">
-          <p class="font-semibold tabular-nums text-4xl tracking-tight">{{ drivers().total }}</p>
-          <p class="mt-1 text-sm text-stone-400">Drivers in the fleet</p>
+          <p class="font-semibold tabular-nums text-4xl tracking-tight">{{ couriers().total }}</p>
+          <p class="mt-1 text-sm text-stone-400">Couriers in the fleet</p>
         </div>
         <dl class="mt-7 space-y-3">
           <div class="flex items-center justify-between py-2 border-b border-stone-800">
             <dt class="flex gap-2 items-center text-sm text-stone-300"><span class="h-2 w-2 bg-emerald-400 rounded-full"></span>Available</dt>
-            <dd class="font-semibold tabular-nums">{{ drivers().active }}</dd>
+            <dd class="font-semibold tabular-nums">{{ couriers().active }}</dd>
           </div>
           <div class="flex items-center justify-between py-2 border-b border-stone-800">
             <dt class="flex gap-2 items-center text-sm text-stone-300"><span class="h-2 w-2 bg-blue-400 rounded-full"></span>On delivery</dt>
-            <dd class="font-semibold tabular-nums">{{ drivers().onDelivery }}</dd>
+            <dd class="font-semibold tabular-nums">{{ couriers().onDelivery }}</dd>
           </div>
           <div class="flex items-center justify-between py-2">
             <dt class="flex gap-2 items-center text-sm text-stone-300"><span class="h-2 w-2 bg-amber-400 rounded-full"></span>On break</dt>
-            <dd class="font-semibold tabular-nums">{{ drivers().onBreak }}</dd>
+            <dd class="font-semibold tabular-nums">{{ couriers().onBreak }}</dd>
           </div>
         </dl>
-        <a href="/commerce/delivery/drivers" class="inline-flex gap-2 items-center mt-6 font-semibold text-blue-300 text-sm hover:text-blue-200">
-          Manage drivers
+        <a href="/commerce/delivery/couriers" class="inline-flex gap-2 items-center mt-6 font-semibold text-blue-300 text-sm hover:text-blue-200">
+          Manage couriers
           <span class="h-4 w-4 i-hugeicons-arrow-right-01"></span>
         </a>
       </section>

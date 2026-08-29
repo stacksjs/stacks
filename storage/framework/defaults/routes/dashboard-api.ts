@@ -351,7 +351,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // guard so production totals are never protected by client-side role checks.
   guard(route.get('/commerce/stats', 'Actions/Dashboard/Commerce/CommerceDashboardAction'))
 
-  // Delivery operations overview. Guarded because route and driver data is
+  // Delivery operations overview. Guarded because route and courier data is
   // operational information even though the underlying models expose their
   // own generated useApi endpoints.
   guard(route.get('/commerce/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction'))
@@ -383,11 +383,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.patch('/commerce/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction'))
   guard(route.delete('/commerce/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction'))
 
-  guard(route.get('/commerce/drivers', 'Actions/Dashboard/Commerce/DriverIndexAction'))
-  guard(route.get('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverShowAction'))
-  guard(route.post('/commerce/drivers', 'Actions/Commerce/Shipping/DriverStoreAction'))
-  guard(route.patch('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction'))
-  guard(route.delete('/commerce/drivers/{id}', 'Actions/Commerce/Shipping/DriverDestroyAction'))
+  guard(route.get('/commerce/couriers', 'Actions/Dashboard/Commerce/CourierIndexAction'))
+  guard(route.get('/commerce/couriers/{id}', 'Actions/Commerce/Shipping/CourierShowAction'))
+  guard(route.post('/commerce/couriers', 'Actions/Commerce/Shipping/CourierStoreAction'))
+  guard(route.patch('/commerce/couriers/{id}', 'Actions/Commerce/Shipping/CourierUpdateAction'))
+  guard(route.delete('/commerce/couriers/{id}', 'Actions/Commerce/Shipping/CourierDestroyAction'))
 
   guard(route.get('/commerce/digital-deliveries', 'Actions/Dashboard/Commerce/DigitalDeliveryIndexAction'))
   guard(route.get('/commerce/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction'))

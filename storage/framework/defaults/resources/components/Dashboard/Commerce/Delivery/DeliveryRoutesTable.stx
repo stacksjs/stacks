@@ -1,9 +1,9 @@
 <script client>
 interface DeliveryRouteRow {
   id: number
-  driver: string
-  driver_id?: number | null
-  driver_record?: { id: number, name: string, vehicle_number: string }
+  courier: string
+  courier_id?: number | null
+  courier_record?: { id: number, name: string, vehicle_number: string }
   vehicle: string
   stops: number
   delivery_time: number
@@ -39,7 +39,7 @@ function formatNumber(value: number): string {
     <thead class="bg-stone-50/80 dark:bg-neutral-800">
       <tr>
         <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Route</th>
-        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Driver</th>
+        <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Courier</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Vehicle</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Stops</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Time</th>
@@ -57,8 +57,8 @@ function formatNumber(value: number): string {
             #{{ route.id }}
           </td>
           <td class="px-4 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            <span class="block">{{ route.driver_record?.name || route.driver }}</span>
-            <span class="block font-normal text-stone-400 text-xs dark:text-neutral-500">{{ route.driver_id ? 'Linked driver #' + route.driver_id : 'Legacy snapshot' }}</span>
+            <span class="block">{{ route.courier_record?.name || route.courier }}</span>
+            <span class="block font-normal text-stone-400 text-xs dark:text-neutral-500">{{ route.courier_id ? 'Linked courier #' + route.courier_id : 'Legacy snapshot' }}</span>
           </td>
           <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
             {{ route.vehicle }}
@@ -81,7 +81,7 @@ function formatNumber(value: number): string {
               size="sm"
               iconOnly
               @click="emit('edit', route)"
-              :ariaLabel="'Edit delivery route ' + route.id + ' for ' + route.driver"
+              :ariaLabel="'Edit delivery route ' + route.id + ' for ' + route.courier"
             >
               <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
             </Button>
@@ -90,7 +90,7 @@ function formatNumber(value: number): string {
               size="sm"
               iconOnly
               @click="emit('delete', route)"
-              :ariaLabel="'Delete delivery route ' + route.id + ' for ' + route.driver"
+              :ariaLabel="'Delete delivery route ' + route.id + ' for ' + route.courier"
             >
               <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
             </Button>

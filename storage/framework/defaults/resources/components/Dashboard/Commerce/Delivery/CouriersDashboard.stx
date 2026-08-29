@@ -2,7 +2,7 @@
 import { dashboardApi } from '../../../../../functions/dashboard-api'
 import { pushToast } from '../../../../../functions/toasts'
 
-type DriverStatus = 'active' | 'on_delivery' | 'on_break'
+type CourierStatus = 'active' | 'on_delivery' | 'on_break'
 
 interface UserOption {
   id: number
@@ -14,27 +14,27 @@ interface UserIndexResponse {
   users: UserOption[]
 }
 
-interface DriverRecord {
+interface CourierRecord {
   id: number
   name: string
   phone: string
   vehicle_number: string
   license: string
-  status: DriverStatus
+  status: CourierStatus
   user_id?: number | null
   user?: UserOption
 }
 
-interface DriverPayload {
+interface CourierPayload {
   name: string
   phone: string
   vehicleNumber: string
   license: string
-  status: DriverStatus
+  status: CourierStatus
   userId: number | null
 }
 
-const records = state<DriverRecord[]>([])
+const records = state<CourierRecord[]>([])
 const users = state<UserOption[]>([])
 const loading = state(true)
 const loadError = state('')
@@ -43,10 +43,10 @@ const page = state(1)
 const perPage = state(10)
 const editorOpen = state(false)
 const editorMode = state<'create' | 'edit'>('create')
-const editing = state<DriverRecord | null>(null)
+const editing = state<CourierRecord | null>(null)
 const saving = state(false)
 const editorError = state('')
-const deleting = state<DriverRecord | null>(null)
+const deleting = state<CourierRecord | null>(null)
 const deleteBusy = state(false)
 const deleteError = state('')
 
@@ -54,14 +54,14 @@ function userFor(id?: number | null): UserOption | undefined {
   return id ? users().find(user => user.id === id) : undefined
 }
 
-function withUser(record: DriverRecord): DriverRecord {
+function withUser(record: CourierRecord): CourierRecord {
   return {
     ...record,
     user: userFor(record.user_id) || record.user,
   }
 }
 
-function filteredRecords(): DriverRecord[] {
+function filteredRecords(): CourierRecord[] {
   const query = search().trim().toLowerCase()
   if (!query)
     return records()
@@ -76,43 +76,43 @@ function filteredRecords(): DriverRecord[] {
   ].some(value => String(value || '').toLowerCase().includes(query)))
 }
 
-function paginatedRecords(): DriverRecord[] {
+function paginatedRecords(): CourierRecord[] {
   const start = (page() - 1) * perPage()
   return filteredRecords().slice(start, start + perPage())
 }
 
-function statusCount(status: DriverStatus): number {
+function statusCount(status: CourierStatus): number {
   return records().filter(record => record.status === status).length
 }
 
 function metricCards(): Array<{ label: string, value: string, detail: string }> {
   return [
-    { label: 'Drivers', value: records().length.toLocaleString(), detail: 'Persisted Driver records' },
+    { label: 'Couriers', value: records().length.toLocaleString(), detail: 'Persisted Courier records' },
     { label: 'Available', value: statusCount('active').toLocaleString(), detail: 'Ready for assignment' },
     { label: 'On delivery', value: statusCount('on_delivery').toLocaleString(), detail: 'Currently operating' },
     { label: 'On break', value: statusCount('on_break').toLocaleString(), detail: `${records().filter(record => record.user_id).length} linked users` },
   ]
 }
 
-async function loadDrivers(): Promise<void> {
+async function loadCouriers(): Promise<void> {
   loading.set(true)
   loadError.set('')
   try {
-    const [driverData, userData] = await Promise.all([
-      dashboardApi<DriverRecord[]>('/api/dashboard/commerce/drivers'),
+    const [courierData, userData] = await Promise.all([
+      dashboardApi<CourierRecord[]>('/api/dashboard/commerce/couriers'),
       dashboardApi<UserIndexResponse>('/api/dashboard/data/users'),
     ])
-    if (!Array.isArray(driverData) || !Array.isArray(userData?.users))
-      throw new TypeError('Driver resources were not returned in the expected shape.')
+    if (!Array.isArray(courierData) || !Array.isArray(userData?.users))
+      throw new TypeError('Courier resources were not returned in the expected shape.')
     users.set(userData.users)
-    records.set(driverData.map(withUser))
+    records.set(courierData.map(withUser))
     const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
     if (page() > lastPage)
       page.set(lastPage)
   }
   catch (error) {
     loadError.set(error instanceof Error ? error.message : String(error))
-    pushToast('error', 'Could not load drivers', { detail: loadError() })
+    pushToast('error', 'Could not load couriers', { detail: loadError() })
   }
   finally {
     loading.set(false)
@@ -131,7 +131,7 @@ function openCreate(): void {
   editorOpen.set(true)
 }
 
-function openEdit(record: DriverRecord): void {
+function openEdit(record: CourierRecord): void {
   editing.set(record)
   editorMode.set('edit')
   editorError.set('')
@@ -150,15 +150,15 @@ function setEditorError(message: string): void {
   editorError.set(message)
 }
 
-async function saveDriver(payload: DriverPayload): Promise<void> {
+async function saveCourier(payload: CourierPayload): Promise<void> {
   saving.set(true)
   editorError.set('')
   try {
     const current = editing()
-    const updated = await dashboardApi<DriverRecord>(
+    const updated = await dashboardApi<CourierRecord>(
       current
-        ? `/api/dashboard/commerce/drivers/${current.id}`
-        : '/api/dashboard/commerce/drivers',
+        ? `/api/dashboard/commerce/couriers/${current.id}`
+        : '/api/dashboard/commerce/couriers',
       {
         method: current ? 'PATCH' : 'POST',
         body: payload,
@@ -175,7 +175,7 @@ async function saveDriver(payload: DriverPayload): Promise<void> {
     }
     editorOpen.set(false)
     editing.set(null)
-    pushToast('success', current ? 'Driver updated' : 'Driver added', { detail: hydrated.name })
+    pushToast('success', current ? 'Courier updated' : 'Courier added', { detail: hydrated.name })
   }
   catch (error) {
     editorError.set(error instanceof Error ? error.message : String(error))
@@ -185,7 +185,7 @@ async function saveDriver(payload: DriverPayload): Promise<void> {
   }
 }
 
-function requestDelete(record: DriverRecord): void {
+function requestDelete(record: CourierRecord): void {
   deleting.set(record)
   deleteError.set('')
 }
@@ -204,7 +204,7 @@ async function confirmDelete(): Promise<void> {
   deleteBusy.set(true)
   deleteError.set('')
   try {
-    await dashboardApi(`/api/dashboard/commerce/drivers/${current.id}`, {
+    await dashboardApi(`/api/dashboard/commerce/couriers/${current.id}`, {
       method: 'DELETE',
     })
     records.set(records().filter(record => record.id !== current.id))
@@ -212,7 +212,7 @@ async function confirmDelete(): Promise<void> {
     const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
     if (page() > lastPage)
       page.set(lastPage)
-    pushToast('success', 'Driver deleted', { detail: current.name })
+    pushToast('success', 'Courier deleted', { detail: current.name })
   }
   catch (error) {
     deleteError.set(error instanceof Error ? error.message : String(error))
@@ -227,42 +227,42 @@ function goToPage(value: number): void {
 }
 
 onMount(() => {
-  void loadDrivers()
+  void loadCouriers()
 })
 </script>
 
 <div class="space-y-6">
-  <TabNavigation model-value="drivers" />
+  <TabNavigation model-value="couriers" />
 
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
-      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Delivery drivers</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage driver availability, vehicles, licenses, and optional user accounts.</p>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Delivery couriers</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage courier availability, vehicles, licenses, and optional user accounts.</p>
     </div>
     <div class="flex gap-2">
-      <Button :loading="loading()" variant="secondary" @click="loadDrivers()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <Button :disabled="loading()" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add driver</Button>
+      <Button :loading="loading()" variant="secondary" @click="loadCouriers()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+      <Button :disabled="loading()" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add courier</Button>
     </div>
   </header>
 
-  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadDrivers()">Retry</Button></div>
+  <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadCouriers()">Retry</Button></div>
 
-  <section aria-label="Driver metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+  <section aria-label="Courier metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
     <template :for="item in metricCards()" :key="item.label"><article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p></article></template>
   </section>
 
   <section class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-4 py-4 border-b border-gray-200 dark:border-neutral-700">
-      <div><h2 class="font-semibold text-gray-900 dark:text-white">Driver roster</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
-      <SearchFilter placeholder="Search drivers" class="w-full sm:w-80" @search="handleSearch" />
+      <div><h2 class="font-semibold text-gray-900 dark:text-white">Courier roster</h2><p class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">{{ filteredRecords().length }} matching records</p></div>
+      <SearchFilter placeholder="Search couriers" class="w-full sm:w-80" @search="handleSearch" />
     </div>
-    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading drivers</div>
-    <DriversTable :if="!loading()" :drivers="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
+    <div :if="loading()" class="flex items-center justify-center py-24 text-gray-500 text-sm dark:text-neutral-400"><span class="mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading couriers</div>
+    <CouriersTable :if="!loading()" :couriers="paginatedRecords()" @edit="openEdit" @delete="requestDelete" />
     <div :if="!loading()" class="px-4 py-3 bg-gray-50 dark:bg-neutral-900/50 border-gray-200 border-t dark:border-neutral-700">
       <DeliveryPagination :current-page="page()" :total-items="filteredRecords().length" :items-per-page="perPage()" @select="goToPage" />
     </div>
   </section>
 </div>
 
-<DriverDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :users="users()" :busy="saving()" :error="editorError()" @submit="saveDriver" @invalid="setEditorError" @close="closeEditor()" />
-<DriverDeleteDialog :open="Boolean(deleting())" :record="deleting()" :busy="deleteBusy()" :error="deleteError()" @confirm="confirmDelete()" @close="closeDelete()" />
+<CourierDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :users="users()" :busy="saving()" :error="editorError()" @submit="saveCourier" @invalid="setEditorError" @close="closeEditor()" />
+<CourierDeleteDialog :open="Boolean(deleting())" :record="deleting()" :busy="deleteBusy()" :error="deleteError()" @confirm="confirmDelete()" @close="closeDelete()" />

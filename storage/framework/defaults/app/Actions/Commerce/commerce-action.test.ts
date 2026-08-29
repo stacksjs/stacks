@@ -10,22 +10,22 @@ function request(id: string): RequestInstance {
 
 describe('commerce action responses', () => {
   test('accepts safe positive route identifiers', () => {
-    expect(commerceIdentifier(request('42'), 'Driver')).toEqual({ id: 42 })
+    expect(commerceIdentifier(request('42'), 'Courier')).toEqual({ id: 42 })
   })
 
   test('returns 422 for invalid identifiers', async () => {
-    const result = commerceIdentifier(request('not-an-id'), 'Driver')
+    const result = commerceIdentifier(request('not-an-id'), 'Courier')
     expect(result.error?.status).toBe(422)
     expect(await result.error?.json()).toEqual({
-      message: 'Driver id must be a positive integer.',
+      message: 'Courier id must be a positive integer.',
     })
   })
 
   test('returns a consistent not-found response', async () => {
-    const result = commerceNotFound('Driver', 42)
+    const result = commerceNotFound('Courier', 42)
     expect(result.status).toBe(404)
     expect(await result.json()).toEqual({
-      message: 'Driver 42 was not found.',
+      message: 'Courier 42 was not found.',
     })
   })
 })

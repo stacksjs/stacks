@@ -26,8 +26,8 @@ describe('commerce delivery overview', () => {
       [
         {
           id: 1,
-          driver_id: 7,
-          driver: 'Old Driver Name',
+          courier_id: 7,
+          courier: 'Old Courier Name',
           vehicle: 'Old Vehicle',
           stops: 4,
           delivery_time: 90,
@@ -36,7 +36,7 @@ describe('commerce delivery overview', () => {
         },
         {
           id: 2,
-          driver: 'Stale Driver',
+          courier: 'Stale Courier',
           vehicle: 'Van S1',
           stops: 8,
           delivery_time: 180,
@@ -49,8 +49,8 @@ describe('commerce delivery overview', () => {
         { id: 2, name: 'Active Zone', status: 'active', countries: '["US","CA"]', regions: '["West"]' },
       ],
       [
-        { id: 7, name: 'Current Driver', vehicle_number: 'VAN-7', status: 'on_delivery' },
-        { id: 8, name: 'Available Driver', vehicle_number: 'VAN-8', status: 'active' },
+        { id: 7, name: 'Current Courier', vehicle_number: 'VAN-7', status: 'on_delivery' },
+        { id: 8, name: 'Available Courier', vehicle_number: 'VAN-8', status: 'active' },
       ],
       'EUR',
       now,
@@ -60,7 +60,7 @@ describe('commerce delivery overview', () => {
     expect(result.routes).toEqual([
       {
         id: 1,
-        driver: 'Current Driver',
+        courier: 'Current Courier',
         vehicle: 'VAN-7',
         stops: 4,
         duration: '1h 30m',
@@ -76,7 +76,7 @@ describe('commerce delivery overview', () => {
     })
     expect(result.methods[1]?.freeShipping).toBe('Not enabled')
     expect(result.zones[0]).toMatchObject({ name: 'Active Zone', countries: 2, regions: 1 })
-    expect(result.drivers).toEqual({
+    expect(result.couriers).toEqual({
       total: 2,
       active: 1,
       onDelivery: 1,
@@ -84,7 +84,7 @@ describe('commerce delivery overview', () => {
     })
   })
 
-  test('rejects corrupt delivery records and missing driver relationships', () => {
+  test('rejects corrupt delivery records and missing courier relationships', () => {
     expect(() => buildDeliveryOverview(
       [{ id: 1, name: 'Ground', status: 'active', base_rate: 'free', free_shipping: null }],
       [],
@@ -98,8 +98,8 @@ describe('commerce delivery overview', () => {
       [],
       [{
         id: 1,
-        driver_id: 99,
-        driver: 'Recorded driver',
+        courier_id: 99,
+        courier: 'Recorded courier',
         vehicle: 'Recorded vehicle',
         stops: 1,
         delivery_time: 30,
@@ -110,6 +110,6 @@ describe('commerce delivery overview', () => {
       [],
       'USD',
       now,
-    )).toThrow('DeliveryRoute 1.driver_id references missing Driver 99')
+    )).toThrow('DeliveryRoute 1.courier_id references missing Courier 99')
   })
 })

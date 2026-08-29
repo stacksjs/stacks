@@ -8,21 +8,21 @@ import {
   commerceTimestamp,
   commerceValue,
 } from './commerce-record'
-import type { DriverStatus } from './driver-records'
-import { driverStatuses } from './driver-records'
+import type { CourierStatus } from './courier-records'
+import { courierStatuses } from './courier-records'
 
-export interface DeliveryRouteDriver {
+export interface DeliveryRouteCourier {
   id: number
   name: string
   vehicle_number: string
-  status: DriverStatus
+  status: CourierStatus
 }
 
 export interface DeliveryRouteRecord {
   id: number
-  driver: string
-  driver_id: number | null
-  driver_record: DeliveryRouteDriver | null
+  courier: string
+  courier_id: number | null
+  courier_record: DeliveryRouteCourier | null
   vehicle: string
   stops: number
   delivery_time: number
@@ -40,13 +40,13 @@ function numericIdentifier(input: unknown, source: string, field = 'id'): number
   return id
 }
 
-export function indexDeliveryRouteDrivers(records: any[]): Map<number, DeliveryRouteDriver> {
-  const result = new Map<number, DeliveryRouteDriver>()
+export function indexDeliveryRouteCouriers(records: any[]): Map<number, DeliveryRouteCourier> {
+  const result = new Map<number, DeliveryRouteCourier>()
   for (const record of records) {
-    const id = numericIdentifier(commerceValue(record, 'id'), 'Driver')
-    const source = `Driver ${id}`
+    const id = numericIdentifier(commerceValue(record, 'id'), 'Courier')
+    const source = `Courier ${id}`
     if (result.has(id))
-      throw new TypeError(`Duplicate Driver ${id}.`)
+      throw new TypeError(`Duplicate Courier ${id}.`)
     result.set(id, {
       id,
       name: commerceRequiredString(commerceValue(record, 'name'), source, 'name'),
@@ -55,7 +55,7 @@ export function indexDeliveryRouteDrivers(records: any[]): Map<number, DeliveryR
         source,
         'vehicle_number',
       ),
-      status: commerceEnum(commerceValue(record, 'status'), source, 'status', driverStatuses),
+      status: commerceEnum(commerceValue(record, 'status'), source, 'status', courierStatuses),
     })
   }
   return result
@@ -63,27 +63,27 @@ export function indexDeliveryRouteDrivers(records: any[]): Map<number, DeliveryR
 
 export function normalizeDeliveryRouteRecord(
   record: any,
-  drivers: ReadonlyMap<number, DeliveryRouteDriver>,
+  couriers: ReadonlyMap<number, DeliveryRouteCourier>,
 ): DeliveryRouteRecord {
   const id = numericIdentifier(commerceValue(record, 'id'), 'DeliveryRoute')
   const source = `DeliveryRoute ${id}`
-  const driverIdentifier = commerceOptionalIdentifier(
-    commerceValue(record, 'driver_id', 'driverId'),
+  const courierIdentifier = commerceOptionalIdentifier(
+    commerceValue(record, 'courier_id', 'courierId'),
     source,
-    'driver_id',
+    'courier_id',
   )
-  const driverId = driverIdentifier
-    ? numericIdentifier(driverIdentifier, source, 'driver_id')
+  const courierId = courierIdentifier
+    ? numericIdentifier(courierIdentifier, source, 'courier_id')
     : null
-  const driverRecord = driverId ? drivers.get(driverId) : undefined
-  if (driverId && !driverRecord)
-    throw new TypeError(`${source}.driver_id references missing Driver ${driverId}.`)
+  const courierRecord = courierId ? couriers.get(courierId) : undefined
+  if (courierId && !courierRecord)
+    throw new TypeError(`${source}.courier_id references missing Courier ${courierId}.`)
 
   return {
     id,
-    driver: commerceRequiredString(commerceValue(record, 'driver'), source, 'driver'),
-    driver_id: driverId,
-    driver_record: driverRecord || null,
+    courier: commerceRequiredString(commerceValue(record, 'courier'), source, 'courier'),
+    courier_id: courierId,
+    courier_record: courierRecord || null,
     vehicle: commerceRequiredString(commerceValue(record, 'vehicle'), source, 'vehicle'),
     stops: commerceNumber(commerceValue(record, 'stops'), source, 'stops', {
       integer: true,

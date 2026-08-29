@@ -8,7 +8,7 @@
  *     server-side and can be slow.
  *   - The **broadcast channel** (`@stacksjs/realtime`) is for the browser
  *     holding the tracking page open. It carries position at whatever rate
- *     the driver's device reports, which is far too often to put through the
+ *     the courier's device reports, which is far too often to put through the
  *     notification path.
  *
  * A position update takes the second path only. A state change (assigned,
@@ -31,7 +31,7 @@ export function routeTrackingChannel(routeId: number | string): string {
 }
 
 export interface DeliveryPositionPayload extends Coordinates, Record<string, unknown> {
-  driverId: number
+  courierId: number
   routeId?: number | null
   heading?: number | null
   speed?: number | null
@@ -39,7 +39,7 @@ export interface DeliveryPositionPayload extends Coordinates, Record<string, unk
   recordedAt: string
   /** Metres to the stop being served, when there is one. */
   distanceToStopMeters?: number | null
-  /** Seconds, or null when the driver is stationary. */
+  /** Seconds, or null when the courier is stationary. */
   etaSeconds?: number | null
 }
 
@@ -70,7 +70,7 @@ async function emitEvent(eventName: string, payload: Record<string, unknown>): P
  * Best-effort broadcast to a realtime channel.
  *
  * Private rather than public: the payload is a named customer's address and a
- * driver's live position. Authorisation happens in the app's websocket
+ * courier's live position. Authorisation happens in the app's websocket
  * authenticator (`setWsAuthenticator`), which is where the tracking token is
  * checked.
  */
@@ -98,7 +98,7 @@ export async function broadcastToChannel(
 }
 
 /**
- * A driver moved.
+ * A courier moved.
  *
  * Broadcast only — this fires several times a minute per active delivery and
  * has no business waking every event listener in the application.
@@ -116,7 +116,7 @@ export async function emitDeliveryPosition(
   ])
 }
 
-/** A stop was assigned to a route and a driver. Both paths. */
+/** A stop was assigned to a route and a courier. Both paths. */
 export async function emitDeliveryAssigned(stop: Record<string, unknown>): Promise<void> {
   await emitEvent('delivery:assigned', { stop })
   if (stop.order_id != null)
@@ -131,7 +131,7 @@ export async function emitDeliveryStarted(stop: Record<string, unknown>): Promis
 }
 
 /**
- * The driver came within the "nearly there" radius.
+ * The courier came within the "nearly there" radius.
  *
  * The event worth sending an SMS for, and the reason the whole ingest path
  * computes distance per ping rather than leaving it to the client.
@@ -146,7 +146,7 @@ export async function emitDeliveryNearby(
     await broadcastToChannel(orderTrackingChannel(stop.order_id as number), 'delivery:nearby', { stop, distanceMeters, etaSeconds })
 }
 
-/** The driver reached the address. Both paths. */
+/** The courier reached the address. Both paths. */
 export async function emitDeliveryArrived(stop: Record<string, unknown>): Promise<void> {
   await emitEvent('delivery:arrived', { stop })
   if (stop.order_id != null)

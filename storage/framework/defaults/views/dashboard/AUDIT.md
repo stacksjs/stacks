@@ -19,7 +19,7 @@ described the componentized dashboard.
 | Direct `fetch()` calls in dashboard views, components, and stores | 0 |
 
 The eleven models without `useApi` are internal, relationship-owned, or
-provider-owned records: driver pings, order idempotency keys, order items,
+provider-owned records: courier pings, order idempotency keys, order items,
 errors, jobs, failed jobs, payment methods, payment products, payment
 transactions, social accounts, and subscriptions. They are not missing generic
 CRUD surfaces.

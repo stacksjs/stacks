@@ -395,8 +395,8 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['DeliveryRoute', ['commerce'], 'commerce'],
   ['DeliveryStop', ['commerce'], 'commerce'],
   ['DigitalDelivery', ['commerce'], 'commerce'],
-  ['Driver', ['commerce'], 'commerce'],
-  ['DriverPing', ['commerce'], 'commerce'],
+  ['Courier', ['commerce'], 'commerce'],
+  ['CourierPing', ['commerce'], 'commerce'],
   ['TaxRate', ['commerce'], 'commerce'],
   ['WaitlistProduct', ['commerce'], 'commerce'],
   ['WaitlistRestaurant', ['commerce'], 'commerce'],
@@ -477,8 +477,8 @@ export const DeliveryRoute = lazyModel<typeof import('../../../defaults/app/Mode
 export const DeliveryStop = lazyModel<typeof import('../../../defaults/app/Models/commerce/DeliveryStop').default>('DeliveryStop')
 export const Deployment = lazyModel<typeof import('../../../defaults/app/Models/Deployment').default>('Deployment')
 export const DigitalDelivery = lazyModel<typeof import('../../../defaults/app/Models/commerce/DigitalDelivery').default>('DigitalDelivery')
-export const Driver = lazyModel<typeof import('../../../defaults/app/Models/commerce/Driver').default>('Driver')
-export const DriverPing = lazyModel<typeof import('../../../defaults/app/Models/commerce/DriverPing').default>('DriverPing')
+export const Courier = lazyModel<typeof import('../../../defaults/app/Models/commerce/Courier').default>('Courier')
+export const CourierPing = lazyModel<typeof import('../../../defaults/app/Models/commerce/CourierPing').default>('CourierPing')
 export const CampaignSend = lazyModel<typeof import('../../../defaults/app/Models/CampaignSend').default>('CampaignSend')
 export const EmailList = lazyModel<typeof import('../../../defaults/app/Models/EmailList').default>('EmailList')
 export const EmailListSubscriber = lazyModel<typeof import('../../../defaults/app/Models/EmailListSubscriber').default>('EmailListSubscriber')
@@ -559,7 +559,7 @@ const _allExports: Record<string, any> = {
   Author, Bid, Board, BoardColumn, Campaign, CampaignSend, CampaignVariant, Card,
   CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
   CommunicationSuppression, ConsentEvent,
-  DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Driver, DriverPing,
+  DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Courier, CourierPing,
   EmailList,
   EmailListSubscriber, EmailIdempotency, EmailSuppression, EmailWebhookEvent,
   ErrorModel, Form, FormField, FormSubmission, GiftCard, Label, LicenseKey,

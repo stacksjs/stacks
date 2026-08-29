@@ -2,13 +2,13 @@ import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 export default defineModel({
-  name: 'Driver',
-  table: 'drivers',
+  name: 'Courier',
+  table: 'couriers',
   primaryKey: 'id',
   autoIncrement: true,
 
   belongsTo: ['User'],
-  hasMany: ['DeliveryRoute', 'DriverPing'],
+  hasMany: ['DeliveryRoute', 'CourierPing'],
 
   traits: {
     useUuid: true,
@@ -25,7 +25,7 @@ export default defineModel({
     },
 
     useApi: {
-      uri: 'drivers',
+      uri: 'couriers',
       middleware: ['auth'],
     },
 
@@ -94,8 +94,8 @@ export default defineModel({
     /*
      * Last known position.
      *
-     * Denormalised from the `driver_pings` series on purpose: "where is this
-     * driver right now" is asked on every map frame and by every tracking
+     * Denormalised from the `courier_pings` series on purpose: "where is this
+     * courier right now" is asked on every map frame and by every tracking
      * page, and answering it with a MAX(recorded_at) subquery over a table
      * that grows by a row every few seconds is the wrong shape. The series is
      * the history; these three columns are the present.
@@ -149,7 +149,7 @@ export default defineModel({
 
     /*
      * When the last fix landed. A tracking map needs this to say "updated 4
-     * seconds ago" and, more importantly, to stop claiming a driver is at a
+     * seconds ago" and, more importantly, to stop claiming a courier is at a
      * position that is ten minutes stale.
      */
     lastPingAt: {

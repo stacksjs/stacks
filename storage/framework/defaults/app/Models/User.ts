@@ -58,7 +58,7 @@ export default defineModel({
     },
   },
 
-  hasOne: ['Subscriber', 'Driver', 'Author'],
+  hasOne: ['Subscriber', 'Courier', 'Author'],
 
   hasMany: [
     'PersonalAccessToken',

@@ -10,7 +10,7 @@ import {
 /**
  * Stop lifecycle.
  *
- * Every state change a driver makes goes through one of these, so the order's
+ * Every state change a courier makes goes through one of these, so the order's
  * status, the stop's timestamps and the outgoing events stay in step. Writing
  * `delivery_stops.status` directly works and is how a tracking page ends up
  * saying "out for delivery" about an order that was delivered ten minutes ago.
@@ -62,7 +62,7 @@ export async function assignStop(input: AssignStopInput): Promise<Record<string,
 }
 
 /**
- * The driver is now driving to this stop.
+ * The courier is now driving to this stop.
  *
  * Also moves the order to OUT_FOR_DELIVERY, which is the state the customer's
  * tracking page and notifications key on.
@@ -95,7 +95,7 @@ export async function completeStop(stopId: number, notes?: string): Promise<Reco
     .set({
       status: 'completed',
       completed_at: completedAt,
-      // A driver who completes without the arrival radius ever tripping (GPS
+      // A courier who completes without the arrival radius ever tripping (GPS
       // off, indoors, a handover in a car park) still arrived. Backfill rather
       // than leave a completed stop that was never reached.
       ...(await hasArrived(stopId) ? {} : { arrived_at: completedAt }),
@@ -144,7 +144,7 @@ export async function failStop(stopId: number, reason: string): Promise<Record<s
   return stop
 }
 
-/** Start a route. Until this runs, pings from its driver find no active route. */
+/** Start a route. Until this runs, pings from its courier find no active route. */
 export async function startRoute(routeId: number): Promise<void> {
   await db
     .updateTable('delivery_routes')
@@ -156,7 +156,7 @@ export async function startRoute(routeId: number): Promise<void> {
 /**
  * Close a route once nothing is left open on it.
  *
- * Called after every terminal stop transition so a driver never has to
+ * Called after every terminal stop transition so a courier never has to
  * remember to end their shift for the dispatch map to stop showing them as
  * out on a run.
  */
@@ -177,8 +177,8 @@ async function closeRouteIfDone(routeId: number | null | undefined): Promise<voi
   const route = await db
     .selectFrom('delivery_routes')
     .where('id', '=', routeId)
-    .select(['driver_id'])
-    .executeTakeFirst() as { driver_id: number | null } | undefined
+    .select(['courier_id'])
+    .executeTakeFirst() as { courier_id: number | null } | undefined
 
   await db
     .updateTable('delivery_routes')
@@ -186,14 +186,14 @@ async function closeRouteIfDone(routeId: number | null | undefined): Promise<voi
     .where('id', '=', routeId)
     .execute()
 
-  // Hand the driver back. Leaving them `on_delivery` after their last stop is
+  // Hand the courier back. Leaving them `on_delivery` after their last stop is
   // how a dispatch board ends up showing a van out on a run that finished
   // hours ago.
-  if (route?.driver_id != null) {
+  if (route?.courier_id != null) {
     await db
-      .updateTable('drivers')
+      .updateTable('couriers')
       .set({ status: 'active' })
-      .where('id', '=', route.driver_id)
+      .where('id', '=', route.courier_id)
       .execute()
   }
 }
@@ -201,7 +201,7 @@ async function closeRouteIfDone(routeId: number | null | undefined): Promise<voi
 /**
  * Move an order's status and fire the matching order event.
  *
- * Guarded by `canTransition`, so a duplicate "completed" tap from a driver's
+ * Guarded by `canTransition`, so a duplicate "completed" tap from a courier's
  * phone cannot walk DELIVERED backwards.
  *
  * When the jump is not legal in one hop it walks the intermediate state rather

@@ -4,20 +4,20 @@ import { groupGeneratedStatements, inlineSqliteAddedColumnReferences } from '../
 describe('generated migration grouping', () => {
   it('keeps references when SQLite adds a relation column incrementally', () => {
     const statements = inlineSqliteAddedColumnReferences(
-      ['ALTER TABLE "delivery_routes" ADD COLUMN "driver_id" INTEGER;'],
+      ['ALTER TABLE "delivery_routes" ADD COLUMN "courier_id" INTEGER;'],
       {
         tables: [{
           table: 'delivery_routes',
           columns: [{
-            name: 'driver_id',
-            references: { table: 'drivers', column: 'id' },
+            name: 'courier_id',
+            references: { table: 'couriers', column: 'id' },
           }],
         }],
       },
     )
 
     expect(statements).toEqual([
-      'ALTER TABLE "delivery_routes" ADD COLUMN "driver_id" INTEGER REFERENCES "drivers"("id");',
+      'ALTER TABLE "delivery_routes" ADD COLUMN "courier_id" INTEGER REFERENCES "couriers"("id");',
     ])
   })
 

@@ -3,15 +3,15 @@ import { mutationCount } from '../../utils/mutation-count'
 import { fetchById } from './fetch'
 
 /**
- * Delete a driver by ID
+ * Delete a courier by ID
  *
- * @param id The ID of the driver to delete
- * @returns True if the driver was deleted, false otherwise
+ * @param id The ID of the courier to delete
+ * @returns True if the courier was deleted, false otherwise
  */
 export async function destroy(id: number): Promise<boolean> {
   try {
     const result = await db
-      .deleteFrom('drivers')
+      .deleteFrom('couriers')
       .where('id', '=', id)
       .executeTakeFirst()
 
@@ -19,7 +19,7 @@ export async function destroy(id: number): Promise<boolean> {
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete driver: ${error.message}`)
+      throw new TypeError(`Failed to delete courier: ${error.message}`)
     }
 
     throw error
@@ -27,10 +27,10 @@ export async function destroy(id: number): Promise<boolean> {
 }
 
 /**
- * Delete multiple drivers at once
+ * Delete multiple couriers at once
  *
- * @param ids Array of driver IDs to delete
- * @returns Number of drivers deleted
+ * @param ids Array of courier IDs to delete
+ * @returns Number of couriers deleted
  */
 export async function bulkDestroy(ids: number[]): Promise<number> {
   if (!ids.length)
@@ -39,16 +39,16 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   let deletedCount = 0
 
   try {
-    // Process each driver deletion in a transaction
+    // Process each courier deletion in a transaction
     await db.transaction(async (trx) => {
       for (const id of ids) {
-        // Check if driver exists
-        const driver = await fetchById(id)
+        // Check if courier exists
+        const courier = await fetchById(id)
 
-        if (driver) {
-          // Delete the driver
+        if (courier) {
+          // Delete the courier
           await trx
-            .deleteFrom('drivers')
+            .deleteFrom('couriers')
             .where('id', '=', id)
             .execute()
 
@@ -61,7 +61,7 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete drivers in bulk: ${error.message}`)
+      throw new TypeError(`Failed to delete couriers in bulk: ${error.message}`)
     }
 
     throw error

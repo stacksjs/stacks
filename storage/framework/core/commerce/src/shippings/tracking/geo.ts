@@ -1,6 +1,6 @@
 /**
  * Geodesy for delivery tracking. Small on purpose: everything here is used on
- * the hot path (a ping arrives every few seconds per driver) and none of it
+ * the hot path (a ping arrives every few seconds per courier) and none of it
  * justifies a dependency.
  */
 
@@ -59,7 +59,7 @@ export function bearingInDegrees(from: Coordinates, to: Coordinates): number {
  * great circles, and clamped below by `minimumSeconds` so an ETA never reads
  * "arriving now" from two blocks away.
  *
- * Returns null when the driver is stopped, because dividing by zero speed
+ * Returns null when the courier is stopped, because dividing by zero speed
  * produces Infinity and showing "arriving in ∞ minutes" is worse than showing
  * nothing.
  */

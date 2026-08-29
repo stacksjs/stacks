@@ -10,24 +10,24 @@ import {
   commerceValue,
 } from './commerce-record'
 
-export const driverStatuses = ['active', 'on_delivery', 'on_break'] as const
-export type DriverStatus = typeof driverStatuses[number]
+export const courierStatuses = ['active', 'on_delivery', 'on_break'] as const
+export type CourierStatus = typeof courierStatuses[number]
 
-export interface DriverUser {
+export interface CourierUser {
   id: number
   name: string
   email: string
 }
 
-export interface DriverRecord {
+export interface CourierRecord {
   id: number
   name: string
   phone: string
   vehicle_number: string
   license: string
-  status: DriverStatus
+  status: CourierStatus
   user_id: number | null
-  user: DriverUser | null
+  user: CourierUser | null
   created_at: string
   updated_at: string
   uuid: string
@@ -40,8 +40,8 @@ function numericIdentifier(input: unknown, source: string, field = 'id'): number
   return id
 }
 
-export function indexDriverUsers(records: any[]): Map<number, DriverUser> {
-  const result = new Map<number, DriverUser>()
+export function indexCourierUsers(records: any[]): Map<number, CourierUser> {
+  const result = new Map<number, CourierUser>()
   for (const record of records) {
     const id = numericIdentifier(commerceValue(record, 'id'), 'User')
     const source = `User ${id}`
@@ -56,12 +56,12 @@ export function indexDriverUsers(records: any[]): Map<number, DriverUser> {
   return result
 }
 
-export function normalizeDriverRecord(
+export function normalizeCourierRecord(
   record: any,
-  users: ReadonlyMap<number, DriverUser>,
-): DriverRecord {
-  const id = numericIdentifier(commerceValue(record, 'id'), 'Driver')
-  const source = `Driver ${id}`
+  users: ReadonlyMap<number, CourierUser>,
+): CourierRecord {
+  const id = numericIdentifier(commerceValue(record, 'id'), 'Courier')
+  const source = `Courier ${id}`
   const userIdentifier = commerceOptionalIdentifier(
     commerceValue(record, 'user_id', 'userId'),
     source,
@@ -82,7 +82,7 @@ export function normalizeDriverRecord(
       'vehicle_number',
     ),
     license: commerceRequiredString(commerceValue(record, 'license'), source, 'license'),
-    status: commerceEnum(commerceValue(record, 'status'), source, 'status', driverStatuses),
+    status: commerceEnum(commerceValue(record, 'status'), source, 'status', courierStatuses),
     user_id: userId,
     user: user || null,
     created_at: commerceTimestamp(commerceValue(record, 'created_at', 'createdAt'), source),

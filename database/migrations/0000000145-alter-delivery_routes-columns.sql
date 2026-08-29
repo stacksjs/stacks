@@ -1,1 +1,1 @@
-ALTER TABLE "delivery_routes" ADD COLUMN "driver_id" INTEGER REFERENCES "drivers"("id");
+ALTER TABLE "delivery_routes" ADD COLUMN "courier_id" INTEGER REFERENCES "couriers"("id");

@@ -1,27 +1,27 @@
-import type { Driver, ModelRow, UpdateModelData } from '@stacksjs/orm'
+import type { Courier, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
-import { driverWriteData } from '../write-data'
-type DriverJsonResponse = ModelRow<typeof Driver>
-type DriverUpdate = UpdateModelData<typeof Driver>
+import { courierWriteData } from '../write-data'
+type CourierJsonResponse = ModelRow<typeof Courier>
+type CourierUpdate = UpdateModelData<typeof Courier>
 
 /**
- * Update a driver
+ * Update a courier
  *
- * @param id The id of the driver to update
- * @param data The driver data to update
- * @returns The updated driver record
+ * @param id The id of the courier to update
+ * @param data The courier data to update
+ * @returns The updated courier record
  */
-export async function update(id: number, data: DriverUpdate): Promise<DriverJsonResponse | undefined> {
+export async function update(id: number, data: CourierUpdate): Promise<CourierJsonResponse | undefined> {
   try {
     if (!id)
-      throw new Error('Driver ID is required for update')
+      throw new Error('Courier ID is required for update')
 
     const result = await db
-      .updateTable('drivers')
+      .updateTable('couriers')
       .set({
-        ...driverWriteData(data as Record<string, unknown>),
+        ...courierWriteData(data as Record<string, unknown>),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', id)
@@ -31,11 +31,11 @@ export async function update(id: number, data: DriverUpdate): Promise<DriverJson
     if (!result)
       return undefined
 
-    return result as DriverJsonResponse
+    return result as CourierJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to update driver: ${error.message}`)
+      throw new TypeError(`Failed to update courier: ${error.message}`)
     }
 
     throw error
@@ -43,19 +43,19 @@ export async function update(id: number, data: DriverUpdate): Promise<DriverJson
 }
 
 /**
- * Update a driver's status
+ * Update a courier's status
  *
- * @param id The ID of the driver
+ * @param id The ID of the courier
  * @param status The new status (active, on_delivery, on_break)
- * @returns The updated driver with the new status
+ * @returns The updated courier with the new status
  */
 export async function updateStatus(
   id: number,
   status: 'active' | 'on_delivery' | 'on_break',
-): Promise<DriverJsonResponse> {
+): Promise<CourierJsonResponse> {
   try {
     const result = await db
-      .updateTable('drivers')
+      .updateTable('couriers')
       .set({
         status,
         updated_at: formatDate(new Date()),
@@ -65,13 +65,13 @@ export async function updateStatus(
       .executeTakeFirst()
 
     if (!result)
-      throw new Error('Failed to update driver status')
+      throw new Error('Failed to update courier status')
 
-    return result as DriverJsonResponse
+    return result as CourierJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to update driver status: ${error.message}`)
+      throw new TypeError(`Failed to update courier status: ${error.message}`)
     }
 
     throw error
@@ -79,16 +79,16 @@ export async function updateStatus(
 }
 
 /**
- * Update driver's contact information
+ * Update courier's contact information
  *
- * @param id The ID of the driver
+ * @param id The ID of the courier
  * @param phone The updated phone number
- * @returns The updated driver
+ * @returns The updated courier
  */
 export async function updateContact(
   id: number,
   phone?: string,
-): Promise<DriverJsonResponse> {
+): Promise<CourierJsonResponse> {
   try {
     const updateData: Record<string, any> = {
       updated_at: formatDate(new Date()),
@@ -98,7 +98,7 @@ export async function updateContact(
       updateData.phone = phone
 
     const result = await db
-      .updateTable('drivers')
+      .updateTable('couriers')
       .set(updateData)
       .where('id', '=', id)
       .returningAll()
@@ -107,7 +107,7 @@ export async function updateContact(
     if (!result)
       throw new Error('Failed to update contact information')
 
-    return result as DriverJsonResponse
+    return result as CourierJsonResponse
   }
   catch (error) {
     if (error instanceof Error) {

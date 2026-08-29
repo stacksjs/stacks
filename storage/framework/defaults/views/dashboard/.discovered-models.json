@@ -152,6 +152,23 @@
       }
     },
     {
+      "id": "courier",
+      "name": "Courier",
+      "icon": "car.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce",
+      "dashboard": {
+        "highlight": true
+      }
+    },
+    {
+      "id": "courier-ping",
+      "name": "CourierPing",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "commerce"
+    },
+    {
       "id": "customer",
       "name": "Customer",
       "icon": "person.crop.circle.fill",
@@ -200,23 +217,6 @@
       "dashboard": {
         "highlight": true
       }
-    },
-    {
-      "id": "driver",
-      "name": "Driver",
-      "icon": "car.fill",
-      "hasDedicatedPage": false,
-      "category": "commerce",
-      "dashboard": {
-        "highlight": true
-      }
-    },
-    {
-      "id": "driver-ping",
-      "name": "DriverPing",
-      "icon": "tablecells.fill",
-      "hasDedicatedPage": false,
-      "category": "commerce"
     },
     {
       "id": "email-idempotency",

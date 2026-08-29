@@ -5,7 +5,7 @@
  * `@stacksjs/testing/database`, which (pre-existing breakage) never
  * worked from a package directory: `bun test` run from
  * storage/framework/core/commerce doesn't load the repo-root `.env`,
- * so the driver fell back to mysql and the helper's dead kysely-era
+ * so the courier fell back to mysql and the helper's dead kysely-era
  * `sql\`...\`.execute(db)` calls threw in every `beforeEach`. Even
  * forced to sqlite, the migration pipeline resolves `database/` and
  * `database/migrations` off `process.cwd()` and the committed

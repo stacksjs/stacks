@@ -11,10 +11,10 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'driver', 'vehicle', 'stops', 'deliveryTime', 'totalDistance', 'lastActive'],
-      searchable: ['driver', 'vehicle'],
+      displayable: ['id', 'courier', 'vehicle', 'stops', 'deliveryTime', 'totalDistance', 'lastActive'],
+      searchable: ['courier', 'vehicle'],
       sortable: ['stops', 'deliveryTime', 'totalDistance', 'lastActive', 'createdAt', 'updatedAt'],
-      filterable: ['driver', 'vehicle'],
+      filterable: ['courier', 'vehicle'],
     },
 
     useSeeder: {
@@ -29,11 +29,11 @@ export default defineModel({
     observe: true,
   },
 
-  belongsTo: ['Driver'],
-  hasMany: ['DeliveryStop', 'DriverPing'],
+  belongsTo: ['Courier'],
+  hasMany: ['DeliveryStop', 'CourierPing'],
 
   attributes: {
-    driver: {
+    courier: {
       order: 1,
       fillable: true,
       validation: {

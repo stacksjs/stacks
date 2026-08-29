@@ -51,14 +51,14 @@ export async function validateDeliveryRouteWrite(
   input: DeliveryRouteWriteData,
   current?: DeliveryRouteWriteData,
 ): Promise<DeliveryRouteWriteData> {
-  const driverId = numericValue(input, current, 'driver_id')
+  const courierId = numericValue(input, current, 'courier_id')
   const stops = numericValue(input, current, 'stops')
   const deliveryTime = numericValue(input, current, 'delivery_time')
   const totalDistance = numericValue(input, current, 'total_distance')
   const lastActive = timestampValue(input, current)
 
-  if (!Number.isSafeInteger(driverId) || driverId < 1)
-    throw new DeliveryRouteInputError('Driver must be a positive integer.')
+  if (!Number.isSafeInteger(courierId) || courierId < 1)
+    throw new DeliveryRouteInputError('Courier must be a positive integer.')
   if (!Number.isSafeInteger(stops) || stops < 0)
     throw new DeliveryRouteInputError('Stops must be a non-negative integer.')
   if (!Number.isSafeInteger(deliveryTime) || deliveryTime < 0)
@@ -68,22 +68,22 @@ export async function validateDeliveryRouteWrite(
   if (!Number.isSafeInteger(lastActive) || lastActive < 0)
     throw new DeliveryRouteInputError('Last active must be a valid Unix timestamp.')
 
-  const driver = await db
-    .selectFrom('drivers')
-    .where('id', '=', driverId)
+  const courier = await db
+    .selectFrom('couriers')
+    .where('id', '=', courierId)
     .select(['id', 'name', 'vehicle_number'])
     .executeTakeFirst()
-  if (!driver)
-    throw new DeliveryRouteInputError(`Driver ${driverId} was not found.`)
+  if (!courier)
+    throw new DeliveryRouteInputError(`Courier ${courierId} was not found.`)
 
   return {
     ...input,
-    driver_id: Number(driver.id),
-    // Denormalised from the driver row, never taken from the caller: a route
-    // cannot name a driver it is not assigned to, or a vehicle that driver
+    courier_id: Number(courier.id),
+    // Denormalised from the courier row, never taken from the caller: a route
+    // cannot name a courier it is not assigned to, or a vehicle that courier
     // does not have.
-    driver: driver.name,
-    vehicle: driver.vehicle_number,
+    courier: courier.name,
+    vehicle: courier.vehicle_number,
     // The validated value, not the raw input — this is the one field that may
     // have been defaulted rather than supplied, and the column is NOT NULL.
     last_active: lastActive,

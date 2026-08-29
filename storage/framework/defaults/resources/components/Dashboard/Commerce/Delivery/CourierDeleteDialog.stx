@@ -1,22 +1,22 @@
 <script client>
-interface DriverRecord {
+interface CourierRecord {
   id: number
   name: string
 }
 
 const open = useReactiveProp('open', false)
-const record = useReactiveProp('record', null as DriverRecord | null)
+const record = useReactiveProp('record', null as CourierRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits()
-const description = derived(() => `Delete ${record()?.name || 'the selected driver'} permanently. Drivers referenced by delivery routes may be protected by the database.`)
+const description = derived(() => `Delete ${record()?.name || 'the selected courier'} permanently. Couriers referenced by delivery routes may be protected by the database.`)
 </script>
 
 <ConfirmDialog
   :isOpen="open() && Boolean(record())"
-  title="Delete driver?"
+  title="Delete courier?"
   :description="description()"
-  confirmLabel="Delete driver"
+  confirmLabel="Delete courier"
   :busy="busy()"
   :error="error()"
   @close="emit('close')"

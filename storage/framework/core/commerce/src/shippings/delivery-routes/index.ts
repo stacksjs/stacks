@@ -8,7 +8,7 @@ export {
 export {
   fetchActive,
   fetchAll,
-  fetchByDriver,
+  fetchByCourier,
   fetchById,
 } from './fetch'
 

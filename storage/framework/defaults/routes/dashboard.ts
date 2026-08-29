@@ -439,9 +439,9 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   // Shipping (moved from a top-level /shipping group on 2026-05-08).
   // The frontend composables (defaults/functions/commerce/shippings/*.ts)
   // all expect these resources under /commerce/*, so the prior /shipping
-  // group was orphaned — every shipping/driver/license/digital call
+  // group was orphaned — every shipping/courier/license/digital call
   // from the dashboard was 404ing. Resource names match the composable
-  // file names: shipping-methods/rates/zones, delivery-routes, drivers,
+  // file names: shipping-methods/rates/zones, delivery-routes, couriers,
   // digital-deliveries, license-keys.
   // ----------------------------------------------------------------
   route.get('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
@@ -468,11 +468,11 @@ route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.patch('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteUpdateAction')
   route.delete('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteDestroyAction')
 
-  route.get('/drivers', 'Actions/Commerce/Shipping/DriverIndexAction')
-  route.get('/drivers/{id}', 'Actions/Commerce/Shipping/DriverShowAction')
-  route.post('/drivers', 'Actions/Commerce/Shipping/DriverStoreAction')
-  route.patch('/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction')
-  route.delete('/drivers/{id}', 'Actions/Commerce/Shipping/DriverDestroyAction')
+  route.get('/couriers', 'Actions/Commerce/Shipping/CourierIndexAction')
+  route.get('/couriers/{id}', 'Actions/Commerce/Shipping/CourierShowAction')
+  route.post('/couriers', 'Actions/Commerce/Shipping/CourierStoreAction')
+  route.patch('/couriers/{id}', 'Actions/Commerce/Shipping/CourierUpdateAction')
+  route.delete('/couriers/{id}', 'Actions/Commerce/Shipping/CourierDestroyAction')
 
   // Renamed from `/digital` — frontend composable expects `/digital-deliveries`.
   route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')

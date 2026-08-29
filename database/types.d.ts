@@ -419,7 +419,7 @@ declare module '@stacksjs/database' {
       uuid: string
       created_at: string
       updated_at: string | null
-      driver: unknown
+      courier: unknown
       vehicle: unknown
       stops: unknown
       delivery_time: unknown
@@ -428,7 +428,7 @@ declare module '@stacksjs/database' {
       status: unknown
       started_at: unknown
       completed_at: unknown
-      driver_id: number
+      courier_id: number
     }
     delivery_stops: {
       // columns
@@ -481,7 +481,7 @@ declare module '@stacksjs/database' {
       automatic_delivery: unknown
       status: unknown
     }
-    driver_pings: {
+    courier_pings: {
       // columns
       id: number
       uuid: string
@@ -493,10 +493,10 @@ declare module '@stacksjs/database' {
       speed: unknown
       accuracy: unknown
       recorded_at: unknown
-      driver_id: number
+      courier_id: number
       delivery_route_id: number
     }
-    drivers: {
+    couriers: {
       // columns
       id: number
       uuid: string

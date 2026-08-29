@@ -6,11 +6,11 @@ import { schema } from '@stacksjs/validation'
  *
  * `DeliveryRoute` records that a route happened and how far it went; this is
  * the route itself. Without it `stops` is an integer, which is enough to bill
- * a driver and not nearly enough to tell a customer where their order is: the
+ * a courier and not nearly enough to tell a customer where their order is: the
  * link from an order to the vehicle carrying it runs through here.
  *
  * Sequence is the planned order. `status` is what actually happened, which
- * diverges the moment a driver skips a building and comes back to it.
+ * diverges the moment a courier skips a building and comes back to it.
  */
 export default defineModel({
   name: 'DeliveryStop',
@@ -82,7 +82,7 @@ export default defineModel({
 
     /**
      * Geocoded destination. Nullable because an address can arrive before it
-     * resolves, and a stop with no coordinates is still a stop the driver can
+     * resolves, and a stop with no coordinates is still a stop the courier can
      * complete; it just cannot be drawn.
      */
     latitude: {
@@ -113,7 +113,7 @@ export default defineModel({
       factory: faker => faker.phone.number(),
     },
 
-    /** Current estimate, rewritten as the driver moves. */
+    /** Current estimate, rewritten as the courier moves. */
     etaAt: {
       order: 8,
       fillable: true,
@@ -122,7 +122,7 @@ export default defineModel({
     },
 
     /**
-     * When the customer was told the driver was close.
+     * When the customer was told the courier was close.
      *
      * The latch that makes "nearly there" fire once. Without it every ping
      * inside the radius sends another text, which is roughly one text every
@@ -135,7 +135,7 @@ export default defineModel({
       factory: () => null,
     },
 
-    /** When the driver crossed the arrival radius. */
+    /** When the courier crossed the arrival radius. */
     arrivedAt: {
       order: 10,
       fillable: true,
@@ -151,7 +151,7 @@ export default defineModel({
       factory: () => null,
     },
 
-    /** Why a stop failed, or anything the driver needs to record. */
+    /** Why a stop failed, or anything the courier needs to record. */
     notes: {
       order: 12,
       fillable: true,

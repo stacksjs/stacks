@@ -176,12 +176,12 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     'payments', 'payment_methods', 'payment_products', 'payment_transactions',
     'customers', 'subscribers', 'subscriber_emails', 'subscriptions',
     'gift_cards', 'coupons', 'transactions', 'reviews',
-    // `delivery_stops` keys to `delivery_routes` and `driver_pings` to
-    // `drivers`, so both have to be hidden alongside them. Unclaimed, their
+    // `delivery_stops` keys to `delivery_routes` and `courier_pings` to
+    // `couriers`, so both have to be hidden alongside them. Unclaimed, their
     // migrations ran with commerce disabled — the default — against a database
     // where those parents were deliberately left out, and the run died on the
     // foreign key.
-    'drivers', 'driver_pings', 'delivery_routes', 'delivery_stops', 'digital_deliveries',
+    'couriers', 'courier_pings', 'delivery_routes', 'delivery_stops', 'digital_deliveries',
     'shipping_methods', 'shipping_rates', 'shipping_zones',
     'license_keys', 'loyalty_points', 'loyalty_rewards',
     'print_devices', 'receipts', 'tax_rates',

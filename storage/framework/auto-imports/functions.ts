@@ -73,7 +73,7 @@ export { useDeliveryRoutes } from '../defaults/functions/commerce/shippings/deli
 export { useShippingMethods } from '../defaults/functions/commerce/shippings/shipping-methods'
 export { createDashboardResource } from '../defaults/functions/commerce/shippings/dashboard-resource'
 export { useLicenseKeys } from '../defaults/functions/commerce/shippings/license-keys'
-export { useDrivers } from '../defaults/functions/commerce/shippings/drivers'
+export { useCouriers } from '../defaults/functions/commerce/shippings/couriers'
 export { useManufacturers } from '../defaults/functions/commerce/products/manufacturers'
 export { useProducts } from '../defaults/functions/commerce/products/products'
 export { useCategories } from '../defaults/functions/commerce/products/categories'

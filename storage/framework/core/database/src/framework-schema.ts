@@ -604,7 +604,7 @@ export interface FrameworkSchema {
     uuid: string
     created_at: string
     updated_at: string | null
-    driver: string
+    courier: string
     vehicle: string
     stops: number
     delivery_time: number
@@ -613,7 +613,7 @@ export interface FrameworkSchema {
     status: "planned" | "active" | "completed" | "cancelled"
     started_at: string
     completed_at: string
-    driver_id: number
+    courier_id: number
     createdAt: string
     updatedAt: string | null
     deliveryTime: number
@@ -621,7 +621,7 @@ export interface FrameworkSchema {
     lastActive: number
     startedAt: string
     completedAt: string
-    driverId: number
+    courierId: number
   }
   delivery_stops: {
     // columns
@@ -695,7 +695,7 @@ export interface FrameworkSchema {
     requiresLogin: boolean
     automaticDelivery: boolean
   }
-  driver_pings: {
+  courier_pings: {
     // columns
     id: number
     uuid: string
@@ -707,15 +707,15 @@ export interface FrameworkSchema {
     speed: number
     accuracy: number
     recorded_at: string
-    driver_id: number
+    courier_id: number
     delivery_route_id: number
     createdAt: string
     updatedAt: string | null
     recordedAt: string
-    driverId: number
+    courierId: number
     deliveryRouteId: number
   }
-  drivers: {
+  couriers: {
     // columns
     id: number
     uuid: string

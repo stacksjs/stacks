@@ -14,15 +14,15 @@ import {
 } from './geo'
 
 /**
- * Driver position ingest.
+ * Courier position ingest.
  *
- * One entry point for "the driver's device says it is here". Everything that
+ * One entry point for "the courier's device says it is here". Everything that
  * has to happen on a fix happens here, in one place, because splitting it
  * across the route handler and a listener is how a tracking page ends up
  * showing a position that the ETA disagrees with:
  *
- *   1. Append to the `driver_pings` series.
- *   2. Update the driver's denormalised present position.
+ *   1. Append to the `courier_pings` series.
+ *   2. Update the courier's denormalised present position.
  *   3. Recompute distance and ETA for the stop being served.
  *   4. Push position to everyone watching (broadcast only).
  *   5. Raise `delivery:nearby` and `delivery:arrived` on threshold crossings,
@@ -32,11 +32,11 @@ import {
 /** Within this many metres of the destination, the customer is told to expect the door. */
 export const NEARBY_RADIUS_METERS = 400
 
-/** Within this, the driver is treated as arrived. */
+/** Within this, the courier is treated as arrived. */
 export const ARRIVAL_RADIUS_METERS = 60
 
-export interface DriverPingInput extends Coordinates {
-  driverId: number
+export interface CourierPingInput extends Coordinates {
+  courierId: number
   heading?: number | null
   speed?: number | null
   accuracy?: number | null
@@ -44,7 +44,7 @@ export interface DriverPingInput extends Coordinates {
   recordedAt?: string
 }
 
-export interface DriverPingResult {
+export interface CourierPingResult {
   pingId: number | null
   routeId: number | null
   stopId: number | null
@@ -58,27 +58,27 @@ export interface DriverPingResult {
  * A fix this inaccurate is noise. Accepting it drags the marker across the
  * street and back, and worse, can trip the arrival radius from a block away.
  * The ping is still stored (the history should record that the device was
- * uncertain) but it does not move the driver or fire thresholds.
+ * uncertain) but it does not move the courier or fire thresholds.
  */
 const MAX_TRUSTED_ACCURACY_METERS = 250
 
-export async function recordDriverPing(input: DriverPingInput): Promise<DriverPingResult> {
+export async function recordCourierPing(input: CourierPingInput): Promise<CourierPingResult> {
   const recordedAt = input.recordedAt ?? new Date().toISOString()
   const trusted = typeof input.accuracy !== 'number' || input.accuracy <= MAX_TRUSTED_ACCURACY_METERS
 
-  const driver = await db
-    .selectFrom('drivers')
-    .where('id', '=', input.driverId)
+  const courier = await db
+    .selectFrom('couriers')
+    .where('id', '=', input.courierId)
     .select(['id', 'latitude', 'longitude'])
     .executeTakeFirst() as { id: number, latitude: number | null, longitude: number | null } | undefined
 
-  if (!driver)
-    throw new Error(`Unknown driver: ${input.driverId}`)
+  if (!courier)
+    throw new Error(`Unknown courier: ${input.courierId}`)
 
   // The device usually reports heading; when it does not, derive it from the
   // last fix so the map marker still points along the direction of travel.
-  const previous = hasCoordinates(driver as Partial<Coordinates>)
-    ? { latitude: driver.latitude as number, longitude: driver.longitude as number }
+  const previous = hasCoordinates(courier as Partial<Coordinates>)
+    ? { latitude: courier.latitude as number, longitude: courier.longitude as number }
     : null
   const heading = typeof input.heading === 'number'
     ? input.heading
@@ -86,7 +86,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
       ? bearingInDegrees(previous, input)
       : null
 
-  const route = await activeRouteForDriver(input.driverId)
+  const route = await activeRouteForCourier(input.courierId)
   const stop = route ? await currentStopForRoute(route.id) : null
 
   let distanceToStopMeters: number | null = null
@@ -104,7 +104,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
 
     // Thresholds fire once. `arrived_at` and the `en_route` → `arrived`
     // transition are the latches: without them every subsequent ping inside
-    // the radius sends the customer another "your driver is nearby" text.
+    // the radius sends the customer another "your courier is nearby" text.
     crossedArrival = distanceToStopMeters <= ARRIVAL_RADIUS_METERS && stop.arrived_at == null
     crossedNearby = !crossedArrival
       && distanceToStopMeters <= NEARBY_RADIUS_METERS
@@ -113,7 +113,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
   }
 
   const pingId = await insertPing({
-    driverId: input.driverId,
+    courierId: input.courierId,
     routeId: route?.id ?? null,
     latitude: input.latitude,
     longitude: input.longitude,
@@ -125,7 +125,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
 
   if (trusted) {
     await db
-      .updateTable('drivers')
+      .updateTable('couriers')
       .set({
         latitude: input.latitude,
         longitude: input.longitude,
@@ -133,7 +133,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
         speed: input.speed ?? 0,
         last_ping_at: recordedAt,
       })
-      .where('id', '=', input.driverId)
+      .where('id', '=', input.courierId)
       .execute()
   }
 
@@ -150,7 +150,7 @@ export async function recordDriverPing(input: DriverPingInput): Promise<DriverPi
   // the dispatch map, so it broadcasts with an empty order list.
   if (trusted) {
     await emitDeliveryPosition(stop?.order_id == null ? [] : [stop.order_id], route?.id ?? null, {
-      driverId: input.driverId,
+      courierId: input.courierId,
       routeId: route?.id ?? null,
       latitude: input.latitude,
       longitude: input.longitude,
@@ -205,11 +205,11 @@ interface StopRow {
   notified_nearby_at: string | null
 }
 
-/** The route this driver is currently running, if any. */
-async function activeRouteForDriver(driverId: number): Promise<{ id: number } | null> {
+/** The route this courier is currently running, if any. */
+async function activeRouteForCourier(courierId: number): Promise<{ id: number } | null> {
   const row = await db
     .selectFrom('delivery_routes')
-    .where('driver_id', '=', driverId)
+    .where('courier_id', '=', courierId)
     .where('status', '=', 'active')
     .select(['id'])
     .orderBy('id', 'desc')
@@ -221,7 +221,7 @@ async function activeRouteForDriver(driverId: number): Promise<{ id: number } | 
 /**
  * The stop being served: the first one still open, in planned order.
  *
- * `en_route` before `pending` so a driver who skipped ahead is tracked against
+ * `en_route` before `pending` so a courier who skipped ahead is tracked against
  * the stop they actually declared, not the one the plan says is next.
  */
 async function currentStopForRoute(routeId: number): Promise<StopRow | null> {
@@ -240,7 +240,7 @@ async function currentStopForRoute(routeId: number): Promise<StopRow | null> {
 }
 
 async function insertPing(values: {
-  driverId: number
+  courierId: number
   routeId: number | null
   latitude: number
   longitude: number
@@ -252,10 +252,10 @@ async function insertPing(values: {
   const uuid = randomUUIDv7()
 
   await db
-    .insertInto('driver_pings')
+    .insertInto('courier_pings')
     .values({
       uuid,
-      driver_id: values.driverId,
+      courier_id: values.courierId,
       delivery_route_id: values.routeId,
       latitude: values.latitude,
       longitude: values.longitude,
@@ -267,7 +267,7 @@ async function insertPing(values: {
     .executeTakeFirst()
 
   const row = await db
-    .selectFrom('driver_pings')
+    .selectFrom('courier_pings')
     .where('uuid', '=', uuid)
     .select(['id'])
     .executeTakeFirst() as { id: number } | undefined

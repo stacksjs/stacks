@@ -1,7 +1,7 @@
 /**
  * Live delivery tracking.
  *
- * `drivers` and `delivery-routes` are CRUD over the records. This is the part
+ * `couriers` and `delivery-routes` are CRUD over the records. This is the part
  * that moves: position ingest, the stop lifecycle, the geodesy the ETA is
  * derived from, and the two fan-outs (event bus for the application, realtime
  * channel for the browser).
@@ -33,9 +33,9 @@ export type { Coordinates } from './geo'
 export {
   ARRIVAL_RADIUS_METERS,
   NEARBY_RADIUS_METERS,
-  recordDriverPing,
+  recordCourierPing,
 } from './ping'
-export type { DriverPingInput, DriverPingResult } from './ping'
+export type { CourierPingInput, CourierPingResult } from './ping'
 
 export {
   assignStop,

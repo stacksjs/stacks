@@ -2,9 +2,9 @@ import { defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
- * One position fix from a driver's device.
+ * One position fix from a courier's device.
  *
- * The append-only history behind `drivers.latitude/longitude`. A tracking map
+ * The append-only history behind `couriers.latitude/longitude`. A tracking map
  * needs the present position, but everything else about a delivery needs the
  * series: drawing the path already travelled, replaying a disputed drop,
  * measuring how long a stop actually took, and deriving an ETA from recent
@@ -12,12 +12,12 @@ import { schema } from '@stacksjs/validation'
  *
  * Deliberately not `useSearch` (indexing a row every few seconds is pointless
  * and expensive) and not `useApi` (writes come through
- * `recordDriverPing`, which does the fan-out, and reads are scoped to a
+ * `recordCourierPing`, which does the fan-out, and reads are scoped to a
  * route). `usePrunable` keeps the table from growing without bound.
  */
 export default defineModel({
-  name: 'DriverPing',
-  table: 'driver_pings',
+  name: 'CourierPing',
+  table: 'courier_pings',
   primaryKey: 'id',
   autoIncrement: true,
 
@@ -27,7 +27,7 @@ export default defineModel({
     useSeeder: { count: 0 },
   },
 
-  belongsTo: ['Driver', 'DeliveryRoute'],
+  belongsTo: ['Courier', 'DeliveryRoute'],
 
   attributes: {
     latitude: {
@@ -89,7 +89,7 @@ export default defineModel({
 
     /**
      * When the device took the fix, which is not when the server received it.
-     * A driver through a tunnel sends five fixes at once on the far side, and
+     * A courier through a tunnel sends five fixes at once on the far side, and
      * ordering them by arrival draws a path that never happened.
      */
     recordedAt: {

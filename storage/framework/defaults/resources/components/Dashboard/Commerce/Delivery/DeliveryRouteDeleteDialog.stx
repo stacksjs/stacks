@@ -1,7 +1,7 @@
 <script client>
 interface DeliveryRouteRecord {
   id: number
-  driver: string
+  courier: string
 }
 
 const open = useReactiveProp('open', false)
@@ -9,7 +9,7 @@ const record = useReactiveProp('record', null as DeliveryRouteRecord | null)
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits()
-const description = derived(() => `Delete route #${record()?.id} for ${record()?.driver || 'the selected driver'} permanently.`)
+const description = derived(() => `Delete route #${record()?.id} for ${record()?.courier || 'the selected courier'} permanently.`)
 </script>
 
 <ConfirmDialog

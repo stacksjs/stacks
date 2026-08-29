@@ -4,7 +4,7 @@ description: "The Delivery Routes module in the Commerce package provides a comp
 ---
 # Delivery Routes
 
-The Delivery Routes module in the Commerce package provides a comprehensive set of functions to manage and track delivery routes. This module helps you manage delivery drivers, track active routes, and monitor delivery metrics.
+The Delivery Routes module in the Commerce package provides a comprehensive set of functions to manage and track delivery routes. This module helps you manage delivery couriers, track active routes, and monitor delivery metrics.
 
 ## Getting Started
 
@@ -36,10 +36,10 @@ const route = await shippings.routes.fetchById(1) // Replace 1 with the actual r
 const activeRoutes = await shippings.routes.fetchActive() // Returns routes active in the last 24 hours
 ```
 
-### Fetch Routes by Driver
+### Fetch Routes by Courier
 
 ```ts
-const driverRoutes = await shippings.routes.fetchByDriver('driver-id')
+const courierRoutes = await shippings.routes.fetchByCourier('courier-id')
 ```
 
 ## Managing Delivery Routes
@@ -48,7 +48,7 @@ const driverRoutes = await shippings.routes.fetchByDriver('driver-id')
 
 ```ts
 const newRoute = await shippings.routes.store({
-  driver: 'driver-id',
+  courier: 'courier-id',
   vehicle: 'vehicle-id',
   stops: 5,
   delivery_time: 120, // in minutes
@@ -118,7 +118,7 @@ The Delivery Routes module provides RESTful API endpoints for managing delivery 
 ```
 GET    /commerce/delivery-routes              # List all delivery routes
 GET    /commerce/delivery-routes/active       # List active delivery routes
-GET    /commerce/delivery-routes/driver/{id}  # Get routes by driver
+GET    /commerce/delivery-routes/courier/{id}  # Get routes by courier
 POST   /commerce/delivery-routes              # Create a new delivery route
 GET    /commerce/delivery-routes/{id}         # Get a specific delivery route
 PATCH  /commerce/delivery-routes/{id}         # Update a delivery route
@@ -143,7 +143,7 @@ const response = await fetch('/commerce/delivery-routes', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    driver: 'driver-id',
+    courier: 'courier-id',
     vehicle: 'vehicle-id',
     stops: 5,
     delivery_time: 120,
@@ -182,7 +182,7 @@ A successful response includes the delivery route data with all its attributes:
 {
   "id": 1,
   "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "driver": "driver-id",
+  "courier": "courier-id",
   "vehicle": "vehicle-id",
   "stops": 5,
   "delivery_time": 120,
@@ -218,7 +218,7 @@ Example error handling in your code:
 ```ts
 try {
   const deliveryRoute = await shippings.routes.store({
-    driver: 'driver-id',
+    courier: 'courier-id',
     vehicle: 'vehicle-id',
     stops: 5,
     delivery_time: 120,

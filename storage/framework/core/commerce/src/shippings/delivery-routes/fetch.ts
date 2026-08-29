@@ -32,12 +32,12 @@ export async function fetchActive(): Promise<DeliveryRouteJsonResponse[]> {
 }
 
 /**
- * Fetch delivery routes by driver
+ * Fetch delivery routes by courier
  */
-export async function fetchByDriver(driver: string): Promise<DeliveryRouteJsonResponse[]> {
+export async function fetchByCourier(courier: string): Promise<DeliveryRouteJsonResponse[]> {
   return await db
     .selectFrom('delivery_routes')
-    .where('driver', '=', driver)
+    .where('courier', '=', courier)
     .selectAll()
     .execute()
 }

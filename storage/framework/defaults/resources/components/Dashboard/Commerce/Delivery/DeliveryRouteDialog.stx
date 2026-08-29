@@ -1,5 +1,5 @@
 <script client>
-interface DriverOption {
+interface CourierOption {
   id: number
   name: string
   vehicle_number: string
@@ -8,8 +8,8 @@ interface DriverOption {
 
 interface DeliveryRouteRecord {
   id: number
-  driver: string
-  driver_id?: number | null
+  courier: string
+  courier_id?: number | null
   vehicle: string
   stops: number
   delivery_time: number
@@ -20,11 +20,11 @@ interface DeliveryRouteRecord {
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'create')
 const record = useReactiveProp('record', null as DeliveryRouteRecord | null)
-const drivers = useReactiveProp('drivers', [] as DriverOption[])
+const couriers = useReactiveProp('couriers', [] as CourierOption[])
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
 const emit = defineEmits()
-const driverId = state('')
+const courierId = state('')
 const stops = state('0')
 const deliveryTime = state('0')
 const totalDistance = state('0')
@@ -64,26 +64,26 @@ effect(() => {
   if (hydrationKey === nextKey)
     return
   hydrationKey = nextKey
-  driverId.set(current?.driver_id ? String(current.driver_id) : '')
+  courierId.set(current?.courier_id ? String(current.courier_id) : '')
   stops.set(String(current?.stops ?? 0))
   deliveryTime.set(String(current?.delivery_time ?? 0))
   totalDistance.set(String(current?.total_distance ?? 0))
   lastActive.set(toDateTimeLocal(current?.last_active))
 })
 
-function selectedDriver(): DriverOption | undefined {
-  const id = Number(driverId())
-  return drivers().find(driver => driver.id === id)
+function selectedCourier(): CourierOption | undefined {
+  const id = Number(courierId())
+  return couriers().find(courier => courier.id === id)
 }
 
 function submit(): void {
-  const driver = selectedDriver()
+  const courier = selectedCourier()
   const parsedStops = Number(stops())
   const parsedDeliveryTime = Number(deliveryTime())
   const parsedDistance = Number(totalDistance())
 
-  if (!driver) {
-    emit('invalid', 'Select a persisted driver.')
+  if (!courier) {
+    emit('invalid', 'Select a persisted courier.')
     return
   }
   if (!Number.isInteger(parsedStops) || parsedStops < 0) {
@@ -104,9 +104,9 @@ function submit(): void {
   }
 
   emit('submit', {
-    driver: driver.name,
-    driverId: driver.id,
-    vehicle: driver.vehicle_number,
+    courier: courier.name,
+    courierId: courier.id,
+    vehicle: courier.vehicle_number,
     stops: parsedStops,
     deliveryTime: parsedDeliveryTime,
     totalDistance: parsedDistance,
@@ -118,7 +118,7 @@ function submit(): void {
 <Modal
   :isOpen="open()"
   :title="mode() === 'edit' ? 'Edit delivery route' : 'Add delivery route'"
-  description="Assign a persisted driver and record the operational route metrics."
+  description="Assign a persisted courier and record the operational route metrics."
   size="lg"
   @close="emit('close')"
 >
@@ -127,15 +127,15 @@ function submit(): void {
 
         <div class="space-y-4">
           <label class="block">
-            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver</span>
-            <select x-model="driverId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
-              <option value="">Select a driver</option>
-              <template :for="driver in drivers()" :key="driver.id"><option :value="driver.id">{{ driver.name }} - {{ driver.vehicle_number }}</option></template>
+            <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Courier</span>
+            <select x-model="courierId" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700">
+              <option value="">Select a courier</option>
+              <template :for="courier in couriers()" :key="courier.id"><option :value="courier.id">{{ courier.name }} - {{ courier.vehicle_number }}</option></template>
             </select>
           </label>
-          <div :if="selectedDriver()" class="flex gap-3 items-center p-3 text-gray-600 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
+          <div :if="selectedCourier()" class="flex gap-3 items-center p-3 text-gray-600 text-sm dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/60 border border-gray-200 rounded-lg dark:border-neutral-700">
             <span class="h-5 w-5 text-blue-600 i-hugeicons-delivery-truck-02"></span>
-            <span><strong class="text-gray-900 dark:text-white">{{ selectedDriver()?.vehicle_number }}</strong> will be stored as the route vehicle snapshot.</span>
+            <span><strong class="text-gray-900 dark:text-white">{{ selectedCourier()?.vehicle_number }}</strong> will be stored as the route vehicle snapshot.</span>
           </div>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
             <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Stops</span><input x-model="stops" type="number" required min="0" step="1" inputmode="numeric" class="mt-1 px-3 py-2 w-full tabular-nums text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>

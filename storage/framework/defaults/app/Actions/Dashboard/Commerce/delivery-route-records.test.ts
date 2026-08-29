@@ -1,21 +1,21 @@
 import { describe, expect, test } from 'bun:test'
 import {
-  indexDeliveryRouteDrivers,
+  indexDeliveryRouteCouriers,
   normalizeDeliveryRouteRecord,
 } from './delivery-route-records'
 
 describe('delivery route records', () => {
-  const driver = {
+  const courier = {
     id: 2,
     name: 'Alex Morgan',
     vehicle_number: 'VAN-204',
     status: 'active',
   }
-  const drivers = indexDeliveryRouteDrivers([driver])
+  const couriers = indexDeliveryRouteCouriers([courier])
   const base = {
     id: 1,
-    driver: 'Alex Morgan',
-    driver_id: 2,
+    courier: 'Alex Morgan',
+    courier_id: 2,
     vehicle: 'VAN-204',
     stops: 8,
     delivery_time: 90,
@@ -26,12 +26,12 @@ describe('delivery route records', () => {
     uuid: null,
   }
 
-  test('normalizes route metrics and the linked driver', () => {
-    expect(normalizeDeliveryRouteRecord(base, drivers)).toEqual({
+  test('normalizes route metrics and the linked courier', () => {
+    expect(normalizeDeliveryRouteRecord(base, couriers)).toEqual({
       id: 1,
-      driver: 'Alex Morgan',
-      driver_id: 2,
-      driver_record: driver,
+      courier: 'Alex Morgan',
+      courier_id: 2,
+      courier_record: courier,
       vehicle: 'VAN-204',
       stops: 8,
       delivery_time: 90,
@@ -43,10 +43,10 @@ describe('delivery route records', () => {
     })
   })
 
-  test('rejects missing drivers and fractional operational counts', () => {
+  test('rejects missing couriers and fractional operational counts', () => {
     expect(() => normalizeDeliveryRouteRecord(base, new Map()))
-      .toThrow('DeliveryRoute 1.driver_id references missing Driver 2')
-    expect(() => normalizeDeliveryRouteRecord({ ...base, driver_id: null, stops: 1.5 }, drivers))
+      .toThrow('DeliveryRoute 1.courier_id references missing Courier 2')
+    expect(() => normalizeDeliveryRouteRecord({ ...base, courier_id: null, stops: 1.5 }, couriers))
       .toThrow('DeliveryRoute 1.stops must be an integer')
   })
 })

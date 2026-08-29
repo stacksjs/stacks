@@ -2,7 +2,7 @@
 import { dashboardApi } from '../../../../../functions/dashboard-api'
 import { pushToast } from '../../../../../functions/toasts'
 
-interface DriverRecord {
+interface CourierRecord {
   id: number
   name: string
   vehicle_number: string
@@ -11,9 +11,9 @@ interface DriverRecord {
 
 interface DeliveryRouteRecord {
   id: number
-  driver: string
-  driver_id?: number | null
-  driver_record?: DriverRecord
+  courier: string
+  courier_id?: number | null
+  courier_record?: CourierRecord
   vehicle: string
   stops: number
   delivery_time: number
@@ -22,8 +22,8 @@ interface DeliveryRouteRecord {
 }
 
 interface DeliveryRoutePayload {
-  driver: string
-  driverId: number
+  courier: string
+  courierId: number
   vehicle: string
   stops: number
   deliveryTime: number
@@ -32,7 +32,7 @@ interface DeliveryRoutePayload {
 }
 
 const records = state<DeliveryRouteRecord[]>([])
-const drivers = state<DriverRecord[]>([])
+const couriers = state<CourierRecord[]>([])
 const loading = state(true)
 const loadError = state('')
 const search = state('')
@@ -47,14 +47,14 @@ const deleting = state<DeliveryRouteRecord | null>(null)
 const deleteBusy = state(false)
 const deleteError = state('')
 
-function driverFor(id?: number | null): DriverRecord | undefined {
-  return id ? drivers().find(driver => driver.id === id) : undefined
+function courierFor(id?: number | null): CourierRecord | undefined {
+  return id ? couriers().find(courier => courier.id === id) : undefined
 }
 
-function withDriver(record: DeliveryRouteRecord): DeliveryRouteRecord {
+function withCourier(record: DeliveryRouteRecord): DeliveryRouteRecord {
   return {
     ...record,
-    driver_record: driverFor(record.driver_id) || record.driver_record,
+    courier_record: courierFor(record.courier_id) || record.courier_record,
   }
 }
 
@@ -70,8 +70,8 @@ function filteredRecords(): DeliveryRouteRecord[] {
     return records()
   return records().filter(record => [
     record.id,
-    record.driver,
-    record.driver_record?.name,
+    record.courier,
+    record.courier_record?.name,
     record.vehicle,
     record.stops,
     record.delivery_time,
@@ -90,7 +90,7 @@ function metricCards(): Array<{ label: string, value: string, detail: string }> 
   const activeCutoff = Date.now() - (24 * 60 * 60 * 1000)
   const activeRoutes = records().filter(record => routeTime(record.last_active) >= activeCutoff).length
   return [
-    { label: 'Routes', value: records().length.toLocaleString(), detail: `${records().filter(record => record.driver_id).length} linked to drivers` },
+    { label: 'Routes', value: records().length.toLocaleString(), detail: `${records().filter(record => record.courier_id).length} linked to couriers` },
     { label: 'Stops', value: totalStops.toLocaleString(), detail: 'Across the current route plan' },
     { label: 'Distance', value: `${totalDistance.toLocaleString()} mi`, detail: 'Planned route distance' },
     { label: 'Active in 24h', value: activeRoutes.toLocaleString(), detail: 'Based on persisted activity time' },
@@ -101,14 +101,14 @@ async function loadRoutes(): Promise<void> {
   loading.set(true)
   loadError.set('')
   try {
-    const [routeData, driverData] = await Promise.all([
+    const [routeData, courierData] = await Promise.all([
       dashboardApi<DeliveryRouteRecord[]>('/api/dashboard/commerce/delivery-routes'),
-      dashboardApi<DriverRecord[]>('/api/dashboard/commerce/drivers'),
+      dashboardApi<CourierRecord[]>('/api/dashboard/commerce/couriers'),
     ])
-    if (!Array.isArray(routeData) || !Array.isArray(driverData))
+    if (!Array.isArray(routeData) || !Array.isArray(courierData))
       throw new TypeError('Delivery route resources were not returned in the expected shape.')
-    drivers.set(driverData)
-    records.set(routeData.map(withDriver))
+    couriers.set(courierData)
+    records.set(routeData.map(withCourier))
     const lastPage = Math.max(1, Math.ceil(filteredRecords().length / perPage()))
     if (page() > lastPage)
       page.set(lastPage)
@@ -167,7 +167,7 @@ async function saveRoute(payload: DeliveryRoutePayload): Promise<void> {
         body: payload,
       },
     )
-    const hydrated = withDriver(updated)
+    const hydrated = withCourier(updated)
     if (current) {
       records.set(records().map(record => record.id === current.id ? hydrated : record))
     }
@@ -240,16 +240,16 @@ onMount(() => {
   <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
     <div>
       <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Delivery routes</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Assign persisted drivers and track route workload, distance, and activity.</p>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Assign persisted couriers and track route workload, distance, and activity.</p>
     </div>
     <div class="flex gap-2">
       <Button :loading="loading()" variant="secondary" @click="loadRoutes()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
-      <Button :disabled="loading() || drivers().length === 0" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add route</Button>
+      <Button :disabled="loading() || couriers().length === 0" @click="openCreate()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-add-01"></span>Add route</Button>
     </div>
   </header>
 
   <div :if="loadError()" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadRoutes()">Retry</Button></div>
-  <div :if="!loading() && drivers().length === 0" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">Add a driver before creating a delivery route.</div>
+  <div :if="!loading() && couriers().length === 0" class="p-4 text-amber-800 text-sm dark:text-amber-200 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 rounded-lg dark:border-amber-900">Add a courier before creating a delivery route.</div>
 
   <section aria-label="Delivery route metrics" class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
     <template :for="item in metricCards()" :key="item.label"><article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">{{ item.label }}</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ item.value }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ item.detail }}</p></article></template>
@@ -268,5 +268,5 @@ onMount(() => {
   </section>
 </div>
 
-<DeliveryRouteDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :drivers="drivers()" :busy="saving()" :error="editorError()" @submit="saveRoute" @invalid="setEditorError" @close="closeEditor()" />
+<DeliveryRouteDialog :open="editorOpen()" :mode="editorMode()" :record="editing()" :couriers="couriers()" :busy="saving()" :error="editorError()" @submit="saveRoute" @invalid="setEditorError" @close="closeEditor()" />
 <DeliveryRouteDeleteDialog :open="Boolean(deleting())" :record="deleting()" :busy="deleteBusy()" :error="deleteError()" @confirm="confirmDelete()" @close="closeDelete()" />

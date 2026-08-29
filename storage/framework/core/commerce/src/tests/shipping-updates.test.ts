@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { update as updateRoute } from '../shippings/delivery-routes/update'
 import { update as updateDigitalDelivery } from '../shippings/digital-deliveries/update'
-import { update as updateDriver } from '../shippings/drivers/update'
+import { update as updateCourier } from '../shippings/couriers/update'
 import { update as updateLicenseKey } from '../shippings/license-keys/update'
 import { update as updateMethod } from '../shippings/shipping-methods/update'
 import { update as updateRate } from '../shippings/shipping-rates/update'
@@ -18,7 +18,7 @@ describe('Shipping update contracts', () => {
     expect(await updateRate(99999999, {})).toBeUndefined()
     expect(await updateZone(99999999, {})).toBeUndefined()
     expect(await updateRoute(99999999, {})).toBeUndefined()
-    expect(await updateDriver(99999999, {})).toBeUndefined()
+    expect(await updateCourier(99999999, {})).toBeUndefined()
     expect(await updateDigitalDelivery(99999999, {})).toBeUndefined()
     expect(await updateLicenseKey(99999999, {})).toBeUndefined()
   })

@@ -1,5 +1,5 @@
 <script client>
-type DriverStatus = 'active' | 'on_delivery' | 'on_break'
+type CourierStatus = 'active' | 'on_delivery' | 'on_break'
 
 interface UserOption {
   id: number
@@ -7,19 +7,19 @@ interface UserOption {
   email?: string
 }
 
-interface DriverRecord {
+interface CourierRecord {
   id: number
   name: string
   phone: string
   vehicle_number: string
   license: string
-  status: DriverStatus
+  status: CourierStatus
   user_id?: number | null
 }
 
 const open = useReactiveProp('open', false)
 const mode = useReactiveProp('mode', 'create')
-const record = useReactiveProp('record', null as DriverRecord | null)
+const record = useReactiveProp('record', null as CourierRecord | null)
 const users = useReactiveProp('users', [] as UserOption[])
 const busy = useReactiveProp('busy', false)
 const error = useReactiveProp('error', '')
@@ -28,7 +28,7 @@ const name = state('')
 const phone = state('')
 const vehicleNumber = state('')
 const license = state('')
-const status = state<DriverStatus>('active')
+const status = state<CourierStatus>('active')
 const userId = state('')
 let hydrationKey = ''
 
@@ -53,7 +53,7 @@ effect(() => {
 function submit(): void {
   const selectedUserId = userId() ? Number(userId()) : null
   if (!name().trim()) {
-    emit('invalid', 'Driver name is required.')
+    emit('invalid', 'Courier name is required.')
     return
   }
   if (!phone().trim()) {
@@ -86,16 +86,16 @@ function submit(): void {
 
 <Modal
   :isOpen="open()"
-  :title="mode() === 'edit' ? 'Edit driver' : 'Add driver'"
+  :title="mode() === 'edit' ? 'Edit courier' : 'Add courier'"
   description="Manage operational identity, vehicle assignment, availability, and the optional User relationship."
   size="md"
   @close="emit('close')"
 >
-    <form id="driver-form" @submit.prevent="submit()">
+    <form id="courier-form" @submit.prevent="submit()">
         <div :if="error()" class="mb-5 p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
 
         <div class="space-y-4">
-          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Driver name</span><input x-model="name" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+          <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Courier name</span><input x-model="name" type="text" required maxlength="255" autocomplete="name" placeholder="Alex Morgan" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Phone</span><input x-model="phone" type="tel" required maxlength="255" autocomplete="tel" placeholder="+1 555 0100" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
             <label class="block"><span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Vehicle number</span><input x-model="vehicleNumber" type="text" required maxlength="255" autocomplete="off" placeholder="VAN-204" class="mt-1 px-3 py-2 w-full font-mono text-gray-900 text-sm uppercase dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
@@ -114,7 +114,7 @@ function submit(): void {
   <template #footer>
     <div class="flex gap-2 justify-end w-full">
       <Button :disabled="busy()" variant="secondary" @click="emit('close')">Cancel</Button>
-      <Button type="submit" form="driver-form" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add driver' }}</Button>
+      <Button type="submit" form="courier-form" :loading="busy()">{{ mode() === 'edit' ? 'Save changes' : 'Add courier' }}</Button>
     </div>
   </template>
 </Modal>

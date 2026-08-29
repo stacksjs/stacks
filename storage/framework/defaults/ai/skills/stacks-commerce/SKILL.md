@@ -29,7 +29,7 @@ commerce.coupons       // Coupons, including atomic redemption
 commerce.payments      // Payment records, refunds
 commerce.giftCards     // Gift cards, balance, redemption and reload
 commerce.auctions      // Benefit auctions: lots, bids, proxy bidding, pledges
-commerce.shippings     // Methods, rates, zones, routes, drivers, live tracking
+commerce.shippings     // Methods, rates, zones, routes, couriers, live tracking
 commerce.tax           // Tax rates and breakdown
 commerce.waitlists     // Waitlists
 commerce.restaurant    // Restaurant features (lives at waitlists/restaurant)
@@ -69,7 +69,7 @@ Each sub-module typically provides:
 - Shipping rates (weight-based)
 - Shipping zones
 - Delivery routes and their stops
-- Drivers
+- Couriers
 - Digital deliveries
 - License keys
 - **Live tracking** (`commerce.shippings.tracking`) - see below
@@ -92,10 +92,10 @@ Each sub-module typically provides:
 | Manufacturer | manufacturer info | hasMany: Product |
 | Review | rating(1-5), content, isVerifiedPurchase, helpfulVotes | belongsTo: Product, Customer |
 | ShippingRate | weightFrom, weightTo, rate | belongsTo: ShippingMethod, ShippingZone |
-| DeliveryRoute | stops, totalDistance, status(planned/active/completed), startedAt | belongsTo: Driver; hasMany: DeliveryStop, DriverPing |
+| DeliveryRoute | stops, totalDistance, status(planned/active/completed), startedAt | belongsTo: Courier; hasMany: DeliveryStop, CourierPing |
 | DeliveryStop | sequence, status, address, latitude, longitude, etaAt, arrivedAt | belongsTo: DeliveryRoute, Order |
-| Driver | name, phone, vehicleNumber, status, latitude, longitude, heading, lastPingAt | hasMany: DeliveryRoute, DriverPing |
-| DriverPing | latitude, longitude, heading, speed, accuracy, recordedAt | belongsTo: Driver, DeliveryRoute |
+| Courier | name, phone, vehicleNumber, status, latitude, longitude, heading, lastPingAt | hasMany: DeliveryRoute, CourierPing |
+| CourierPing | latitude, longitude, heading, speed, accuracy, recordedAt | belongsTo: Courier, DeliveryRoute |
 | TaxRate | name, rate(0-100), type(VAT/GST/Sales Tax) | |
 | LicenseKey | key(XXXX-XXXX-XXXX-XXXX-XXXX), template, status | belongsTo: Customer, Product, Order |
 | DigitalDelivery | downloadLimit, expiryDays, automaticDelivery | |
@@ -184,22 +184,22 @@ const stop = await tracking.assignStop({
 await tracking.startRoute(route.id)
 await tracking.startStop(stop.id)      // order -> OUT_FOR_DELIVERY
 
-// One call per position fix from the driver's device.
-await tracking.recordDriverPing({
-  driverId, latitude, longitude, speed, accuracy,
+// One call per position fix from the courier's device.
+await tracking.recordCourierPing({
+  courierId, latitude, longitude, speed, accuracy,
 })
 
 await tracking.completeStop(stop.id)   // order -> DELIVERED, route closes itself
 ```
 
-### What `recordDriverPing` does
+### What `recordCourierPing` does
 
 One entry point, so a tracking page never shows a position its ETA disagrees
-with. Per fix it: appends to `driver_pings`, updates the driver's denormalised
+with. Per fix it: appends to `courier_pings`, updates the courier's denormalised
 present position, recomputes the served stop's ETA, broadcasts the position,
 and latches `delivery:nearby` / `delivery:arrived` so each fires exactly once.
 
-A fix reporting worse than 250m accuracy is stored but does not move the driver
+A fix reporting worse than 250m accuracy is stored but does not move the courier
 or trip a threshold.
 
 ### Two fan-outs, on purpose
@@ -227,7 +227,7 @@ back to `SHIPPED` when a drop fails and the parcel returns to the depot.
 `distanceInMeters`, `bearingInDegrees`, `estimateSecondsRemaining`, `isWithin`
 and `hasCoordinates` are exported for building dispatch views. The ETA pads
 straight-line distance by a detour factor and returns `null` for a stationary
-driver rather than `Infinity`.
+courier rather than `Infinity`.
 
 ## Integration with Payments
 Commerce works with `@stacksjs/payments` for Stripe integration:
@@ -257,7 +257,7 @@ locally. That is the whole reason the source-level test exists.
 
 ### Reading back a row you just inserted
 
-Use `insertedId(result)` from `utils/inserted-id`. Drivers disagree: SQLite
+Use `insertedId(result)` from `utils/inserted-id`. Couriers disagree: SQLite
 reports `lastInsertRowid`, MySQL reports `insertId`, and Postgres reports
 neither without a `RETURNING` clause (fall back to the `uuid` the row was
 written with).

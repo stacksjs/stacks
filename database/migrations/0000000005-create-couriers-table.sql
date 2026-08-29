@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS "drivers" (
+CREATE TABLE IF NOT EXISTS "couriers" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "name" TEXT,
   "phone" TEXT,

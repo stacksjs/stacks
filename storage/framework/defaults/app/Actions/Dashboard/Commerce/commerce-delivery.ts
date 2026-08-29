@@ -6,7 +6,7 @@ export interface DeliveryOverviewStat {
 
 export interface DeliveryOverviewRoute {
   id: number
-  driver: string
+  courier: string
   vehicle: string
   stops: number
   duration: string
@@ -35,7 +35,7 @@ export interface DeliveryOverviewResult {
   routes: DeliveryOverviewRoute[]
   methods: DeliveryOverviewMethod[]
   zones: DeliveryOverviewZone[]
-  drivers: {
+  couriers: {
     total: number
     active: number
     onDelivery: number
@@ -87,30 +87,30 @@ export function buildDeliveryOverview(
   methodRows: any[],
   routeRows: any[],
   zoneRows: any[],
-  driverRows: any[],
+  courierRows: any[],
   currency = 'USD',
   now = new Date(),
 ): DeliveryOverviewResult {
   const normalizedCurrency = commerceCurrency(currency, 'Commerce configuration')
-  const normalizedDrivers = driverRows.map((driver) => {
-    const identifier = commerceIdentifier(commerceValue(driver, 'id', 'uuid'), 'Driver')
-    const source = `Driver ${identifier}`
+  const normalizedCouriers = courierRows.map((courier) => {
+    const identifier = commerceIdentifier(commerceValue(courier, 'id', 'uuid'), 'Courier')
+    const source = `Courier ${identifier}`
     return {
       id: identifier,
-      name: commerceRequiredString(commerceValue(driver, 'name'), source, 'name'),
+      name: commerceRequiredString(commerceValue(courier, 'name'), source, 'name'),
       vehicle: commerceRequiredString(
-        commerceValue(driver, 'vehicle_number', 'vehicleNumber'),
+        commerceValue(courier, 'vehicle_number', 'vehicleNumber'),
         source,
         'vehicle_number',
       ),
-      status: commerceEnum(commerceValue(driver, 'status'), source, 'status', [
+      status: commerceEnum(commerceValue(courier, 'status'), source, 'status', [
         'active',
         'on_delivery',
         'on_break',
       ]),
     }
   })
-  const driversById = new Map(normalizedDrivers.map(driver => [driver.id, driver]))
+  const couriersById = new Map(normalizedCouriers.map(courier => [courier.id, courier]))
 
   const routeMinutesById = new Map<number, number>()
   const allRoutes = routeRows.map((route): DeliveryOverviewRoute => {
@@ -119,14 +119,14 @@ export function buildDeliveryOverview(
       integer: true,
     })
     const source = `DeliveryRoute ${numericId}`
-    const driverId = commerceOptionalIdentifier(
-      commerceValue(route, 'driver_id', 'driverId'),
+    const courierId = commerceOptionalIdentifier(
+      commerceValue(route, 'courier_id', 'courierId'),
       source,
-      'driver_id',
+      'courier_id',
     )
-    const linkedDriver = driverId ? driversById.get(driverId) : undefined
-    if (driverId && !linkedDriver)
-      throw new TypeError(`${source}.driver_id references missing Driver ${driverId}.`)
+    const linkedCourier = courierId ? couriersById.get(courierId) : undefined
+    if (courierId && !linkedCourier)
+      throw new TypeError(`${source}.courier_id references missing Courier ${courierId}.`)
     const deliveryTime = commerceNumber(
       commerceValue(route, 'delivery_time', 'deliveryTime'),
       source,
@@ -136,9 +136,9 @@ export function buildDeliveryOverview(
     routeMinutesById.set(numericId, deliveryTime)
     return {
       id: numericId,
-      driver: linkedDriver?.name
-        || commerceRequiredString(commerceValue(route, 'driver'), source, 'driver'),
-      vehicle: linkedDriver?.vehicle
+      courier: linkedCourier?.name
+        || commerceRequiredString(commerceValue(route, 'courier'), source, 'courier'),
+      vehicle: linkedCourier?.vehicle
         || commerceRequiredString(commerceValue(route, 'vehicle'), source, 'vehicle'),
       stops: commerceNumber(commerceValue(route, 'stops'), source, 'stops', {
         min: 0,
@@ -224,8 +224,8 @@ export function buildDeliveryOverview(
       return statusOrder || left.name.localeCompare(right.name)
     })
 
-  const driverStatusCounts = normalizedDrivers.reduce<Record<string, number>>((counts, driver) => {
-    counts[driver.status] = (counts[driver.status] || 0) + 1
+  const courierStatusCounts = normalizedCouriers.reduce<Record<string, number>>((counts, courier) => {
+    counts[courier.status] = (counts[courier.status] || 0) + 1
     return counts
   }, {})
 
@@ -242,9 +242,9 @@ export function buildDeliveryOverview(
         detail: `${activeRoutes.reduce((total, route) => total + route.stops, 0).toLocaleString('en-US')} stops active in 24h`,
       },
       {
-        label: 'Drivers on Delivery',
-        value: (driverStatusCounts.on_delivery || 0).toLocaleString('en-US'),
-        detail: `${driverRows.length.toLocaleString('en-US')} drivers total`,
+        label: 'Couriers on Delivery',
+        value: (courierStatusCounts.on_delivery || 0).toLocaleString('en-US'),
+        detail: `${courierRows.length.toLocaleString('en-US')} couriers total`,
       },
       {
         label: 'Average Route',
@@ -260,11 +260,11 @@ export function buildDeliveryOverview(
     routes: activeRoutes.slice(0, 5),
     methods: methods.slice(0, 5),
     zones: zones.slice(0, 5),
-    drivers: {
-      total: normalizedDrivers.length,
-      active: driverStatusCounts.active || 0,
-      onDelivery: driverStatusCounts.on_delivery || 0,
-      onBreak: driverStatusCounts.on_break || 0,
+    couriers: {
+      total: normalizedCouriers.length,
+      active: courierStatusCounts.active || 0,
+      onDelivery: courierStatusCounts.on_delivery || 0,
+      onBreak: courierStatusCounts.on_break || 0,
     },
   }
 }

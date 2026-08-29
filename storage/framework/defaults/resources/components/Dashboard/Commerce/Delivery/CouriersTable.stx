@@ -1,21 +1,21 @@
 <script client>
-type DriverStatus = 'active' | 'on_delivery' | 'on_break'
+type CourierStatus = 'active' | 'on_delivery' | 'on_break'
 
-interface DriverRow {
+interface CourierRow {
   id: number
   name: string
   phone: string
   vehicle_number: string
   license: string
-  status: DriverStatus
+  status: CourierStatus
   user_id?: number | null
   user?: { id: number, name: string, email?: string }
 }
 
-const drivers = useReactiveProp('drivers', [] as DriverRow[])
+const couriers = useReactiveProp('couriers', [] as CourierRow[])
 const emit = defineEmits()
 
-function statusLabel(status: DriverStatus): string {
+function statusLabel(status: CourierStatus): string {
   return {
     active: 'Available',
     on_delivery: 'On delivery',
@@ -23,7 +23,7 @@ function statusLabel(status: DriverStatus): string {
   }[status] || status
 }
 
-function statusClass(status: DriverStatus): string {
+function statusClass(status: CourierStatus): string {
   if (status === 'active')
     return 'bg-green-50 text-green-700 ring-green-600/20 dark:bg-green-900/30 dark:text-green-300'
   if (status === 'on_delivery')
@@ -36,7 +36,7 @@ function statusClass(status: DriverStatus): string {
   <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
     <thead class="bg-stone-50/80 dark:bg-neutral-800">
       <tr>
-        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Driver</th>
+        <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Courier</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Phone</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Vehicle</th>
         <th scope="col" class="px-4 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">License</th>
@@ -48,26 +48,26 @@ function statusClass(status: DriverStatus): string {
       </tr>
     </thead>
     <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-      <template :for="driver in drivers" :key="driver.id">
+      <template :for="courier in couriers" :key="courier.id">
         <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
           <td class="pl-6 pr-3 py-3.5 font-medium text-sm text-stone-800 whitespace-nowrap dark:text-white">
-            {{ driver.name }}
+            {{ courier.name }}
           </td>
           <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ driver.phone }}
+            {{ courier.phone }}
           </td>
           <td class="px-4 py-3.5 font-mono text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ driver.vehicle_number }}
+            {{ courier.vehicle_number }}
           </td>
           <td class="px-4 py-3.5 font-mono text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ driver.license }}
+            {{ courier.license }}
           </td>
           <td class="px-4 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-300">
-            {{ driver.user?.name || (driver.user_id ? 'User #' + driver.user_id : 'Not linked') }}
+            {{ courier.user?.name || (courier.user_id ? 'User #' + courier.user_id : 'Not linked') }}
           </td>
           <td class="px-4 py-3.5 text-sm whitespace-nowrap">
-            <span :class="'inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md ' + statusClass(driver.status)">
-              {{ statusLabel(driver.status) }}
+            <span :class="'inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md ' + statusClass(courier.status)">
+              {{ statusLabel(courier.status) }}
             </span>
           </td>
           <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
@@ -75,8 +75,8 @@ function statusClass(status: DriverStatus): string {
               variant="ghost"
               size="sm"
               iconOnly
-              @click="emit('edit', driver)"
-              :ariaLabel="'Edit driver ' + driver.name + ', record ' + driver.id"
+              @click="emit('edit', courier)"
+              :ariaLabel="'Edit courier ' + courier.name + ', record ' + courier.id"
             >
               <span class="block h-4 w-4 text-blue-500 i-hugeicons-edit-01"></span>
             </Button>
@@ -84,8 +84,8 @@ function statusClass(status: DriverStatus): string {
               variant="ghost"
               size="sm"
               iconOnly
-              @click="emit('delete', driver)"
-              :ariaLabel="'Delete driver ' + driver.name + ', record ' + driver.id"
+              @click="emit('delete', courier)"
+              :ariaLabel="'Delete courier ' + courier.name + ', record ' + courier.id"
             >
               <span class="block h-4 w-4 text-red-500 i-hugeicons-waste"></span>
             </Button>
@@ -93,9 +93,9 @@ function statusClass(status: DriverStatus): string {
         </tr>
       </template>
 
-      <tr :if="drivers().length === 0">
+      <tr :if="couriers().length === 0">
         <td colspan="7" class="px-6 py-12 text-center text-sm text-stone-500 dark:text-neutral-400">
-          No drivers found.
+          No couriers found.
         </td>
       </tr>
     </tbody>
