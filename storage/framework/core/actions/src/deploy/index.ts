@@ -1096,8 +1096,8 @@ systemctl enable stacks-api`,
 
         // Clean up deployment artifacts from S3
         try {
-          await s3.deleteObject({ bucket: bucketName, key: '_deploy/ts-cloud-dist.js' })
-          await s3.deleteObject({ bucket: bucketName, key: '_deploy/server.ts' })
+          await s3.deleteObject(bucketName, '_deploy/ts-cloud-dist.js')
+          await s3.deleteObject(bucketName, '_deploy/server.ts')
         } catch {
           // Non-critical cleanup
         }
@@ -1447,8 +1447,8 @@ SERVICEFILE`,
               }
 
               try {
-                await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-server.js' })
-                await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-entry.ts' })
+                await s3.deleteObject(smtpBucketName, '_deploy/smtp-server.js')
+                await s3.deleteObject(smtpBucketName, '_deploy/smtp-entry.ts')
               } catch { /* non-critical */ }
             } else {
               smtpSpinner.stop()

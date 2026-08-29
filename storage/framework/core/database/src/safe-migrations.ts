@@ -115,7 +115,7 @@ async function execRaw(dbAny: any, statement: string): Promise<{ numAffectedRows
   }
   // Fallback: use the tagged-template through sql.raw() — works on the
   // bun-query-builder-style driver. May not return affected rows.
-  await (sql`${sql.raw(statement)}`).execute(dbAny)
+  await (sql`${sql.raw(statement)}` as any).execute(dbAny)
   return {}
 }
 

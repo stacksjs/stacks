@@ -186,14 +186,14 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         if (existsSync(entry)) {
           await import(entry)
           // eslint-disable-next-line no-unreachable
-          return { ok: true, value: {} as Subprocess }
+          return { ok: true, value: {} as Subprocess } as any
         }
       }
 
-      return err('dev/views entry not found')
+      return err('dev/views entry not found') as any
     }
     catch (error) {
-      return err(`Failed to start dev server: ${error}`)
+      return err(`Failed to start dev server: ${error}`) as any
     }
   }
 
@@ -268,7 +268,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // way, so we just pick the first existing candidate and hand it to `bun`.
   const path = await resolveActionFile(action, options?.cwd ? String(options.cwd) : undefined)
   if (!path) {
-    return err(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`)
+    return err(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`) as any
   }
   log.debug(`[action] Resolved: ${action} → ${path}`)
 

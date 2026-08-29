@@ -47,7 +47,7 @@ export async function fetchComments(options: {
   if (options.offset)
     query = query.offset(options.offset)
 
-  return query.selectAll().execute() as Promise<Commentable[]>
+  return query.selectAll().execute() as unknown as Promise<Commentable[]>
 }
 
 export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
@@ -79,7 +79,7 @@ export async function fetchCommentsByCommentables(
   if (options.offset)
     query = query.offset(options.offset)
 
-  return query.selectAll().execute() as Promise<Commentable[]>
+  return query.selectAll().execute() as unknown as Promise<Commentable[]>
 }
 
 /**
@@ -120,7 +120,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
     if (options.offset)
       query = query.offset(options.offset)
 
-    return query.selectAll().execute() as Promise<Commentable[]>
+    return query.selectAll().execute() as unknown as Promise<Commentable[]>
   }
   catch (error) {
     if (error instanceof Error) {

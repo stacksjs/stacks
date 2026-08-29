@@ -306,7 +306,7 @@ export function toJobOptions(job: DiscoveredJob): JobOptions {
     tries: config.tries,
     backoff: config.backoff,
     timeout: config.timeout,
-    backoffConfig: config.backoffConfig,
+    backoffConfig: config.backoffConfig as any,
     rate: config.rate,
   }
 }

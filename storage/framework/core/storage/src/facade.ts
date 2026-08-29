@@ -178,7 +178,7 @@ class StorageManager {
       case 's3':
         return this.createS3Adapter(name, config)
       default:
-        throw new Error(`Unsupported driver: ${(config).driver}`)
+        throw new Error(`Unsupported driver: ${(config as any).driver}`)
     }
   }
 

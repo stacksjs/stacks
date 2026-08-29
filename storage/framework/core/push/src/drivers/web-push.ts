@@ -305,7 +305,7 @@ export async function sendWebPush(options: SendWebPushOptions): Promise<WebPushR
     const answer = await fetch(subscription.endpoint, {
       method: 'POST',
       headers,
-      body: body,
+      body: body as any,
     })
 
     // 404 and 410 are the only two that mean the subscription is gone. Every

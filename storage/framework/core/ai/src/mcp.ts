@@ -105,7 +105,7 @@ export class MCPClient {
       await this.connectHTTP()
     }
     else {
-      throw new Error(`Unsupported transport type: ${(this.config.transport).type}`)
+      throw new Error(`Unsupported transport type: ${(this.config.transport as { type?: string }).type}`)
     }
 
     this.initialized = true
@@ -120,7 +120,7 @@ export class MCPClient {
       stdout: 'pipe',
       stderr: 'pipe',
       env: { ...process.env, ...transport.env },
-    })
+    }) as any
 
     // Start reading stdout for responses
     this.readStdout()
@@ -172,7 +172,9 @@ export class MCPClient {
   private async readStdout(): Promise<void> {
     if (!this.process) return
 
-    const reader = (this.process).stdout?.getReader()
+    // Bun types a subprocess stream as `number | ReadableStream` (a raw fd, or a
+    // piped stream). This process is spawned with pipes, so it is the stream.
+    const reader = (this.process.stdout as ReadableStream<Uint8Array> | undefined)?.getReader()
     if (!reader) return
 
     const decoder = new TextDecoder()
@@ -233,7 +235,7 @@ export class MCPClient {
     }) + '\n'
 
     if (this.config.transport.type === 'stdio' && this.process) {
-      const writer = (this.process).stdin?.getWriter()
+      const writer = (this.process.stdin as WritableStream<Uint8Array> | undefined)?.getWriter()
       if (writer) {
         await writer.write(new TextEncoder().encode(message))
         writer.releaseLock()
@@ -275,7 +277,7 @@ export class MCPClient {
         throw new Error(`MCP request error: ${error}`)
       }
 
-      const result = (await response.json())
+      const result = (await response.json()) as any
       if (result.error) {
         throw new Error(result.error.message || 'MCP error')
       }
@@ -293,7 +295,7 @@ export class MCPClient {
     }) + '\n'
 
     if (this.config.transport.type === 'stdio' && this.process) {
-      const writer = (this.process).stdin?.getWriter()
+      const writer = (this.process.stdin as WritableStream<Uint8Array> | undefined)?.getWriter()
       if (writer) {
         await writer.write(new TextEncoder().encode(message))
         writer.releaseLock()

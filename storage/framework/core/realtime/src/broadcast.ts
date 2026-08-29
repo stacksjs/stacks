@@ -238,7 +238,7 @@ export async function runBroadcast(name: string, payload?: any): Promise<void> {
 
   let broadcastFiles: string[]
   try {
-    broadcastFiles = (bun).globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
+    broadcastFiles = (bun as any).globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
   }
   catch (error) {
     throw new Error(`Failed to scan broadcast files: ${error instanceof Error ? error.message : String(error)}`)

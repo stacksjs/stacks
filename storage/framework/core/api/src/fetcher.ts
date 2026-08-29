@@ -255,7 +255,7 @@ class Fetcher {
     return fetch(url, {
       method,
       headers: this.getHeaders(),
-      body: body ? this.formatBody(body) : undefined,
+      body: body ? this.formatBody(body) as any : undefined,
     })
   }
 

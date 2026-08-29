@@ -40,7 +40,7 @@ export class Pipeline<T> {
             return pipe(passable, next)
           }
 
-          const handler = (pipe)[this.method]
+          const handler = (pipe as any)[this.method]
           if (typeof handler === 'function') {
             return handler.call(pipe, passable, next)
           }

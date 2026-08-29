@@ -215,7 +215,7 @@ export abstract class JsonResource<T = unknown> {
     value?: V | (() => V),
     defaultValue?: any,
   ): V | any[] | MissingValue {
-    const resource = this.resource
+    const resource = this.resource as any
 
     // Check if the relationship exists and is loaded
     const isLoaded = relationship in resource && resource[relationship] !== undefined
@@ -235,7 +235,7 @@ export abstract class JsonResource<T = unknown> {
    * Include a count when it's available
    */
   protected whenCounted(relationship: string, defaultValue?: number): number | MissingValue {
-    const resource = this.resource
+    const resource = this.resource as any
     const countKey = `${relationship}_count`
 
     if (countKey in resource) {

@@ -4138,10 +4138,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // Cast retained: the sync chaining path accepts a broader middleware
       // union than the adapter's parameter names, and reconciling the two is a
       // change to the middleware surface rather than a narrowing.
-      const adapted = adaptMiddlewareForBunRouter(middleware)
+      const adapted = adaptMiddlewareForBunRouter(middleware as any)
       // Same reason as the cast above: `globalMiddleware` is typed for the
       // adapter's MiddlewareHandler, and the sync path carries an ActionHandler.
-      bunRouter.globalMiddleware.push(adapted)
+      bunRouter.globalMiddleware.push(adapted as any)
       return stacksRouter
     },
 

@@ -2306,7 +2306,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // are attached after the fact - and typing that properly means reshaping
   // `StaticWhereOverloads`, which is a design change rather than a
   // narrowing. Left as it was, said out loud.
-  ;(baseModel).withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
+  ;(baseModel as any).withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
     return withoutValidation(fn)
   }
 
@@ -2320,7 +2320,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // User.withoutEvents(() => User.create(data))`. The quiet variants
   // exist to spare callers the closure noise on the common case (single
   // bulk write, no surrounding logic).
-  ;(baseModel).withoutEvents = function <T>(fn: () => T | Promise<T>): Promise<T> {
+  ;(baseModel as any).withoutEvents = function <T>(fn: () => T | Promise<T>): Promise<T> {
     return withoutEvents(fn)
   }
 
@@ -2329,7 +2329,7 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     if (typeof orig !== 'function') continue
     const quietName = `${method}Quietly` as const
     if (typeof (baseModel)[quietName] === 'function') continue
-    ;(baseModel)[quietName] = function (...args: unknown[]) {
+    ;(baseModel as any)[quietName] = function (...args: unknown[]) {
       return withoutEvents(() => orig.apply(baseModel, args))
     }
   }
@@ -2884,7 +2884,7 @@ function applySoftDeletes(
   definition: BQBModelDefinition,
   traitFlag: unknown,
 ): void {
-  const helpers = createSoftDeleteMethods(baseModel, definition.primaryKey || 'id')
+  const helpers = createSoftDeleteMethods(baseModel as any, definition.primaryKey || 'id')
   const options = resolveSoftDeleteOptions(traitFlag)
   const parentDef = definition as unknown as { name: string, hasMany?: ReadonlyArray<string>, hasOne?: ReadonlyArray<string> }
   const modelName = definition.name.toLowerCase()
@@ -2898,7 +2898,7 @@ function applySoftDeletes(
     if (!observeOn || eventsAreSuppressed()) return true
     try {
       const { dispatchAsync } = await import('@stacksjs/events')
-      const results = (await dispatchAsync(`${modelName}:restoring`, { id })) as unknown[]
+      const results = (await dispatchAsync(`${modelName}:restoring` as any, { id })) as unknown[]
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
     catch (err: any) {
@@ -2911,7 +2911,7 @@ function applySoftDeletes(
     if (!observeOn || eventsAreSuppressed()) return
     try {
       const { dispatch } = await import('@stacksjs/events')
-      await dispatch(`${modelName}:restored`, { id })
+      await dispatch(`${modelName}:restored` as any, { id })
     }
     catch (err: any) {
       if (err?.code !== 'MODULE_NOT_FOUND')

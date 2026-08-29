@@ -11,7 +11,7 @@ export class Controller {
    * Create a JSON response
    */
   protected json(data: any, status: number = 200): any {
-    return (response).json(data, status)
+    return (response as any).json(data, status)
   }
 
   /**

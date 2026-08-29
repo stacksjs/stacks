@@ -80,11 +80,11 @@ export function deepMerge<T extends object = object, S extends object = T>(
   ...sources: S[]
 ): DeepMerge<T, S> {
   if (!sources.length)
-    return target
+    return target as any
 
   const [source, ...remaining] = sources
   if (source === undefined)
-    return target
+    return target as any
 
   if (isMergeableObject(target) && isMergeableObject(source)) {
     objectKeys(source).forEach((key) => {

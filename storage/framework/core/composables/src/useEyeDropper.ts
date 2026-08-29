@@ -16,7 +16,7 @@ export function useEyeDropper(): UseEyeDropperReturn {
 
   async function open(): Promise<{ sRGBHex: string } | undefined> {
     if (!isSupported.value) return undefined
-    const dropper = new (window).EyeDropper()
+    const dropper = new (window as any).EyeDropper()
     try {
       const result = await dropper.open()
       sRGBHex.value = result.sRGBHex

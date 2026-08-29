@@ -34,7 +34,7 @@ export async function fetchCountBySource(
   let query = db
     .selectFrom('waitlist_products')
     .select(['source', db.fn.count('id').as('count')])
-    .groupBy('source')
+    .groupBy('source') as any
 
   if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
@@ -105,7 +105,7 @@ export async function fetchCountByAllQuantities(
   let query = db
     .selectFrom('waitlist_products')
     .select(['quantity', db.fn.count('id').as('count')])
-    .groupBy('quantity')
+    .groupBy('quantity') as any
 
   if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
@@ -237,7 +237,7 @@ export async function fetchCountByStatus(
   let query = db
     .selectFrom('waitlist_products')
     .select(db.fn.count('id').as('count'))
-    .where('status', '=', status)
+    .where('status', '=', status) as any
 
   if (startDate && _endDate) {
     const startDateStr = formatDate(startDate)
@@ -267,7 +267,7 @@ export async function fetchConversionRates(
   let query = db
     .selectFrom('waitlist_products')
     .select(['status', db.fn.count('id').as('count')])
-    .groupBy('status')
+    .groupBy('status') as any
 
   if (_startDate && _endDate) {
     const startDateStr = formatDate(_startDate)

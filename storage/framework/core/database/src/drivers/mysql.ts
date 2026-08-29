@@ -46,7 +46,7 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
   await deleteFrameworkModels()
   await deleteMigrationFiles()
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 export async function dropMysqlTables(): Promise<void> {

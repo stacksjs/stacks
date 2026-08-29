@@ -373,10 +373,10 @@ function getMail(): Mail {
 
 export const mail: Mail = new Proxy({} as Mail, {
   get(_t, prop) {
-    return (getMail())[prop]
+    return (getMail() as any)[prop]
   },
   set(_t, prop, value) {
-    ;(getMail())[prop] = value
+    ;(getMail() as any)[prop] = value
     return true
   },
 }) as Mail

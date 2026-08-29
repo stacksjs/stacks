@@ -101,7 +101,7 @@ function collectModels(root: string, origin: ModelSource['origin']): ModelSource
   const walk = (dir: string) => {
     let entries: ReturnType<typeof readdirSync>
     try {
-      entries = readdirSync(dir, { withFileTypes: true })
+      entries = readdirSync(dir, { withFileTypes: true }) as any
     }
     catch {
       return

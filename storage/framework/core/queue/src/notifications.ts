@@ -267,7 +267,7 @@ export class FailedJobNotifier {
     // Use Stacks mailer if available
     try {
       const { mail } = await import('@stacksjs/email')
-      await (mail).send({
+      await (mail as any).send({
         to: Array.isArray(config.to) ? config.to : [config.to],
         from: config.from,
         subject,

@@ -4932,8 +4932,8 @@ async function promptAndSaveCredentials() {
   const { setEnv } = await import('@stacksjs/env')
 
   // Set and encrypt the credentials
-  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true })
-  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true })
+  await setEnv('AWS_ACCESS_KEY_ID', accessKeyId, { file: '.env.production', encrypt: true } as any)
+  await setEnv('AWS_SECRET_ACCESS_KEY', secretAccessKey, { file: '.env.production', encrypt: true } as any)
   await setEnv('AWS_REGION', region || 'us-east-1', { file: '.env.production' })
 
   // Update process.env

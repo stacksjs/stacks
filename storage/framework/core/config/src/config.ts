@@ -16,11 +16,11 @@ function readMerged(prop: string): unknown {
   // `defaultsForOverrides()`, so a hit here always wins over `defaults`
   // for any key the user has actually customized. Once user configs land,
   // the same key returns the populated user object via this same accessor.
-  const o = (overrides)[prop]
+  const o = (overrides as any)[prop]
   if (o !== undefined && (typeof o !== 'object' || Object.keys(o).length > 0)) {
     return o
   }
-  return (defaults)[prop]
+  return (defaults as any)[prop]
 }
 
 // Expose `config` as a Proxy of a function target. Two non-obvious things
@@ -68,12 +68,12 @@ export const config: StacksOptions = new Proxy(proxyTarget, {
    * passing on every developer's machine.
    */
   set(_t, prop: string, value: unknown) {
-    ;(overrides)[prop] = value
+    ;(overrides as any)[prop] = value
 
     return true
   },
   deleteProperty(_t, prop: string) {
-    delete (overrides)[prop]
+    delete (overrides as any)[prop]
 
     return true
   },

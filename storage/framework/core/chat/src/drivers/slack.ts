@@ -156,7 +156,7 @@ export class SlackDriver extends BaseChatDriver {
 
     const payload: SlackMessage = {
       text,
-      username: message.from,
+      username: message.from as any,
       mrkdwn: true,
     }
 

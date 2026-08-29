@@ -50,17 +50,17 @@ export function decompress(paths: string | string[]): Promise<Result<Subprocess,
 }
 
 export function gzipSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.gzipSync(data, options)
+  return Bun.gzipSync(data as any, options)
 }
 
 export function gunzipSync(data: Uint8Array): Uint8Array {
-  return Bun.gunzipSync(data)
+  return Bun.gunzipSync(data as any)
 }
 
 export function deflateSync(data: Uint8Array, options?: ZlibCompressionOptions): Uint8Array {
-  return Bun.deflateSync(data, options)
+  return Bun.deflateSync(data as any, options)
 }
 
 export function inflateSync(data: Uint8Array): Uint8Array {
-  return Bun.inflateSync(data)
+  return Bun.inflateSync(data as any)
 }

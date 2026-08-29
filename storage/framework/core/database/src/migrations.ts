@@ -158,7 +158,21 @@ function configureQueryBuilder(
   targetDialect: 'sqlite' | 'mysql' | 'singlestore' | 'vitess' | 'postgres' = getQbDialect(),
   vitessSharded?: boolean,
 ): void {
-  const connectionConfig = dbConfig.connections[targetDialect]
+  // A union of the per-dialect connection shapes - sqlite has `{ database,
+  // prefix }`, mysql has `{ name, host, username, … }` - and this builder
+  // reads across all of them on purpose, falling back field by field. Named as
+  // what it reads rather than narrowed to one dialect, which would be wrong
+  // for the others.
+  const connectionConfig = dbConfig.connections[targetDialect] as {
+    name?: string
+    database?: string
+    host?: string
+    port?: number
+    username?: string
+    password?: string
+    prefix?: string
+    sharded?: boolean
+  } | undefined
 
   setConfig({
     dialect: targetDialect,

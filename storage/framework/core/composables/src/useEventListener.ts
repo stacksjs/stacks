@@ -37,7 +37,7 @@ export function useEventListener(
       cleanup = register(unref(target) as EventTarget | null | undefined)
     })
     // Initial registration
-    cleanup = register((target as MaybeRef<EventTarget | null | undefined>).value)
+    cleanup = register((target as MaybeRef<EventTarget | null | undefined> as any).value)
   }
   else {
     cleanup = register(target as EventTarget | null | undefined)

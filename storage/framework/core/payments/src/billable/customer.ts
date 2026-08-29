@@ -111,7 +111,7 @@ export const manageCustomer: ManageCustomer = (() => {
       return deletedCustomer
     }
     catch (error) {
-      if ((error).statusCode === 404) {
+      if ((error as any).statusCode === 404) {
         throw new Error('Customer not found in Stripe')
       }
       throw error
@@ -132,7 +132,7 @@ export const manageCustomer: ManageCustomer = (() => {
       return customer as Stripe.Response<Stripe.Customer>
     }
     catch (error) {
-      if ((error).statusCode === 404) {
+      if ((error as any).statusCode === 404) {
         return await createStripeCustomer(user, options)
       }
       throw error
@@ -154,7 +154,7 @@ export const manageCustomer: ManageCustomer = (() => {
       return customer as Stripe.Response<Stripe.Customer>
     }
     catch (error) {
-      if ((error).statusCode === 404) {
+      if ((error as any).statusCode === 404) {
         throw new Error('Customer not found in Stripe')
       }
       throw error
@@ -175,7 +175,7 @@ export const manageCustomer: ManageCustomer = (() => {
       return await updateStripeCustomer(user, options)
     }
     catch (error) {
-      if ((error).statusCode === 404) {
+      if ((error as any).statusCode === 404) {
         return await createStripeCustomer(user, options)
       }
 

@@ -334,7 +334,7 @@ async function resetSettings(index: string): Promise<any> {
 }
 
 const opensearch: SearchEngineDriver = {
-  client: () => ({ request, configuration }),
+  client: () => ({ request, configuration }) as any,
   search,
   createIndex,
   getIndex,

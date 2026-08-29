@@ -61,7 +61,7 @@ export async function resetPostgresDatabase(): Promise<Ok<string, never>> {
   await db.unsafe('CREATE TABLE IF NOT EXISTS "migration_locks" (id SERIAL PRIMARY KEY)').execute()
   await db.unsafe('CREATE TABLE IF NOT EXISTS "activities" (id SERIAL PRIMARY KEY)').execute()
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 export async function generatePostgresMigration(modelPath: string): Promise<void> {

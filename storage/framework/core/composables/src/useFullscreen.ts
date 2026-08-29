@@ -43,7 +43,7 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
     if (!doc)
       return null
     return (doc).fullscreenElement
-      ?? (doc).webkitFullscreenElement
+      ?? (doc as any).webkitFullscreenElement
       ?? null
   }
 
@@ -63,8 +63,8 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       if (el.requestFullscreen) {
         await el.requestFullscreen()
       }
-      else if ((el).webkitRequestFullscreen) {
-        await (el).webkitRequestFullscreen()
+      else if ((el as any).webkitRequestFullscreen) {
+        await (el as any).webkitRequestFullscreen()
       }
       isFullscreen.value = true
     }
@@ -81,8 +81,8 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       if (doc.exitFullscreen) {
         await doc.exitFullscreen()
       }
-      else if ((doc).webkitExitFullscreen) {
-        await (doc).webkitExitFullscreen()
+      else if ((doc as any).webkitExitFullscreen) {
+        await (doc as any).webkitExitFullscreen()
       }
       isFullscreen.value = false
     }

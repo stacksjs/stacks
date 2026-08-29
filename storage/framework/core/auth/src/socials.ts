@@ -118,7 +118,12 @@ function defaultStore(): SocialSignInStore {
       const { makeHash } = await import('@stacksjs/security')
       const password = await makeHash(crypto.randomUUID(), { algorithm: 'bcrypt' })
 
-      const created = await (globalThis).User?.create?.({
+      // `User` is a server auto-import global, injected at boot. This package's
+      // program does not carry that declaration, so the read is narrowed to
+      // what it calls rather than left as `any`, which also unchecked the
+      // payload below.
+      const injected = globalThis as { User?: { create?: (_data: Record<string, unknown>) => Promise<{ id?: number | string } | undefined> } }
+      const created = await injected.User?.create?.({
         name: attrs.name,
         email: attrs.email,
         password,

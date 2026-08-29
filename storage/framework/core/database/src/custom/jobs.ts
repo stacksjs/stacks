@@ -723,7 +723,7 @@ CREATE TABLE IF NOT EXISTS job_idempotency (
       console.log('✓ Queue safeguard tables ready')
     }
 
-    return ok('Migration created and executed.')
+    return ok('Migration created and executed.') as any
   }
   catch (error) {
     return err(error instanceof Error ? error : new Error(String(error)))

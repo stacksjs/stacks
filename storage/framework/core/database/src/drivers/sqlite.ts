@@ -38,7 +38,7 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   await deleteMigrationFiles()
   await dropSqliteTables()
 
-  return ok('All tables dropped successfully!')
+  return ok('All tables dropped successfully!') as any
 }
 
 /**
