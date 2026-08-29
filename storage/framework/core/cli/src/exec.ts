@@ -135,7 +135,7 @@ export async function execSync(command: string | string[], options?: CliOptions)
   }
 
   const proc = Bun.spawnSync(cmd, {
-    ...options as any,
+    ...(options as Parameters<typeof Bun.spawnSync>[1]),
     stdin: options?.stdin ?? 'inherit',
     stdout: options?.stdout ?? 'pipe',
     stderr: options?.stderr ?? 'inherit',

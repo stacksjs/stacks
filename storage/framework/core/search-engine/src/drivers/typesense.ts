@@ -411,7 +411,7 @@ function notImplemented(_index: string, _arg?: unknown): Promise<EnqueuedTask> {
 }
 
 const typesense: SearchEngineDriver = {
-  client: () => ({}) as any,
+  client: () => ({}) as ReturnType<SearchEngineDriver['client']>,
   resetClient: () => { _config = null },
   search,
 
