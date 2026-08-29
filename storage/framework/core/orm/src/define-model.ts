@@ -1472,7 +1472,7 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         }
 
         const rows = (await all.call(baseModel)) || []
-        const docs = await projectDocumentsFromTrait(rows as any[], searchConfig)
+        const docs = await projectDocumentsFromTrait(rows as Record<string, unknown>[], searchConfig)
         if (docs.length > 0) await engine.addDocuments(indexName, docs)
         return docs.length
       }
@@ -1494,7 +1494,8 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         const all = baseModel.all as Function | undefined
         const rows = typeof all === 'function' ? ((await all.call(baseModel)) || []) : []
         const e2 = useSearchEngine()
-        for (const r of rows as any[]) {
+        // A row, or a model instance holding its columns in `_attributes`.
+        for (const r of rows as Array<{ id?: unknown, _attributes?: { id?: unknown } }>) {
           const id = r?.id ?? r?._attributes?.id
           if (id != null) await e2.deleteDocument(indexName, Number(id))
         }
@@ -1517,7 +1518,8 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
  * projecting each row, which is what a column-rearranging `shape` wants anyway.
  */
 export async function projectDocumentsFromTrait(
-  models: any[],
+  /** Model rows, projected into search documents by the trait's config. */
+  models: Record<string, unknown>[],
   config: SearchableTraitConfig,
 ): Promise<Record<string, unknown>[]> {
   if (models.length === 0)

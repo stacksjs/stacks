@@ -150,7 +150,7 @@ const dyn = db as unknown as DynamicDb
  * parameter-name mismatch that makes this confusing in the first place.
  */
 function routeExists(method: string, path: string): boolean {
-  const existing = findShadowingRoute(route.routes as any[], method, path)
+  const existing = findShadowingRoute(route.routes as Parameters<typeof findShadowingRoute>[0], method, path)
   if (!existing)
     return false
 

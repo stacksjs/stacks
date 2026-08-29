@@ -319,7 +319,7 @@ export async function validate<T = Record<string, unknown>>(
 
   for (const [field, def] of Object.entries(rules)) {
     if (!def) continue
-    if (typeof (def as any).rule === 'object' || typeof (def as any).rule === 'function') {
+    if (typeof (def as { rule?: unknown }).rule === 'object' || typeof (def as { rule?: unknown }).rule === 'function') {
       ruleObject[field] = (def as { rule: Validator<any> }).rule
       const msg = (def as { message?: string | Record<string, string> }).message
       if (typeof msg === 'string') {
