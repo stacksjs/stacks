@@ -103,7 +103,11 @@ function defaultsForOverrides(): StacksConfig {
     filesystems: {},
     team: {},
     ui: {},
-  } as any
+    // An empty scaffold: every section but `app` is filled from `defaults` at
+    // read time by the config proxy. Named as the target type rather than
+    // `any`, which also unchecked the `app` block above - the one part of this
+    // object that carries real values.
+  } as unknown as StacksConfig
 }
 
 // Reuse an existing globalThis anchor if a prior module-load already
@@ -194,7 +198,7 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
       try {
         const mod = await import(modulePath)
         if (mod?.default !== undefined) {
-          (overrides as any)[key] = mod.default
+          (overrides)[key] = mod.default
         }
       }
       catch (err: unknown) {

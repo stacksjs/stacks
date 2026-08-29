@@ -120,7 +120,7 @@ export class MCPClient {
       stdout: 'pipe',
       stderr: 'pipe',
       env: { ...process.env, ...transport.env },
-    }) as any
+    })
 
     // Start reading stdout for responses
     this.readStdout()
@@ -277,7 +277,7 @@ export class MCPClient {
         throw new Error(`MCP request error: ${error}`)
       }
 
-      const result = (await response.json()) as any
+      const result = (await response.json())
       if (result.error) {
         throw new Error(result.error.message || 'MCP error')
       }

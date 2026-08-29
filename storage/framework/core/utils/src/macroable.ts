@@ -136,7 +136,7 @@ export function createMacroable<T extends new (..._args: any[]) => any>(
 
     static flushMacros(): void {
       for (const name of this.macros.keys()) {
-        delete (this.prototype as any)[name]
+        delete (this.prototype)[name]
       }
       this.macros.clear()
     }
@@ -193,7 +193,7 @@ export function macroable<T extends new (..._args: any[]) => any>(
 
   ;(target as any).flushMacros = function (): void {
     for (const name of macros.keys()) {
-      delete (target.prototype as any)[name]
+      delete (target.prototype)[name]
     }
     macros.clear()
   }

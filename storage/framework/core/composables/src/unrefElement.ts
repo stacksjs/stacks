@@ -8,9 +8,14 @@ import { unref } from './_shared'
 export function unrefElement(
   elRef: MaybeRef<HTMLElement | { $el: HTMLElement } | null | undefined>,
 ): HTMLElement | null | undefined {
-  const plain = unref(elRef) as any
+  const plain = unref(elRef)
   if (!plain) return plain
-  // Handle component instances with $el
-  if (plain.$el) return plain.$el
+
+  // Handle component instances with $el. Narrowed with `in` rather than read
+  // off a cast: the union genuinely has two arms, and only one of them has
+  // `$el` - reading it blind was how a plain element could be returned as a
+  // component wrapper.
+  if ('$el' in plain) return plain.$el
+
   return plain
 }

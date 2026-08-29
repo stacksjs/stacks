@@ -4,7 +4,7 @@
  * Vendor-prefixed fullscreen, which Safari still ships under `webkit`, and two
  * APIs that are real but not yet in the standard lib types: the EyeDropper
  * picker and Network Information. Each was reached through a
- * `(document as any)` / `(navigator as any)` / `(window as any)` cast, which
+ * `(document)` / `(navigator)` / `(window)` cast, which
  * hides which member is being probed - a misspelt one reads as `undefined` and
  * the feature-detection beside it quietly concludes "unsupported".
  *

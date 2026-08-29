@@ -64,8 +64,8 @@ export function useFullscreen(target?: MaybeRef<HTMLElement | null>): UseFullscr
       if (el.requestFullscreen) {
         await el.requestFullscreen()
       }
-      else if ((el as any).webkitRequestFullscreen) {
-        await (el as any).webkitRequestFullscreen()
+      else if ((el).webkitRequestFullscreen) {
+        await (el).webkitRequestFullscreen()
       }
       isFullscreen.value = true
     }
