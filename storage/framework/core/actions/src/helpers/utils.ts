@@ -5,7 +5,7 @@ import { existsSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
 import process from 'node:process'
 import { buddyOptions, runCommand } from '@stacksjs/cli'
-import { err } from '@stacksjs/error-handling'
+import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 
@@ -186,14 +186,14 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         if (existsSync(entry)) {
           await import(entry)
           // eslint-disable-next-line no-unreachable
-          return { ok: true, value: {} as Subprocess } as any
+          return ok({} as Subprocess)
         }
       }
 
-      return err('dev/views entry not found') as any
+      return err(new Error('dev/views entry not found'))
     }
     catch (error) {
-      return err(`Failed to start dev server: ${error}`) as any
+      return err(new Error(`Failed to start dev server: ${error}`))
     }
   }
 
@@ -268,7 +268,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   // way, so we just pick the first existing candidate and hand it to `bun`.
   const path = await resolveActionFile(action, options?.cwd ? String(options.cwd) : undefined)
   if (!path) {
-    return err(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`) as any
+    return err(new Error(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`))
   }
   log.debug(`[action] Resolved: ${action} → ${path}`)
 

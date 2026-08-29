@@ -21,8 +21,15 @@ export function functionEntryData(pkg: ResolvedLibraryPackage, stagedSources: st
   ]
 
   for (const source of stagedSources) {
-    const specifier = `./${relative(`${pkg.dir}/src`, source).replace(/\.ts$/, '')}`
-    const alias = pkg.aliases[specifier.replace(/^\.\//, '')]
+    // The `.ts` extension is deliberate, not a slip. `transpilePackage`
+    // rewrites relative `.ts` specifiers to `.js` on the way into `dist`,
+    // so the published barrel says `from './counter.js'`. An extensionless
+    // specifier survives the transpile as-is and only resolves under Bun —
+    // Node and Vite both reject it, which is a package that installs fine
+    // and fails on first import.
+    const path = relative(`${pkg.dir}/src`, source)
+    const specifier = `./${path}`
+    const alias = pkg.aliases[path.replace(/\.ts$/, '')]
 
     lines.push(alias ? `export * as ${alias} from '${specifier}'` : `export * from '${specifier}'`)
   }

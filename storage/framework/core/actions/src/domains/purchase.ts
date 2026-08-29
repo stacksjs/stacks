@@ -1,4 +1,10 @@
-type CountryCode = string
+// The real ISO union from ts-cloud, not a local `= string` alias.
+//
+// This file declared `type CountryCode = string`, which shadowed the imported
+// one, so every `as CountryCode` below cast to `string` and the registrar's
+// actual country list was never enforced - a typo reached AWS and failed the
+// registration there.
+import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { PurchaseOptions } from '@stacksjs/cloud'
 import process from 'node:process'
 import { log, parseOptions } from '@stacksjs/cli'

@@ -1,3 +1,4 @@
+import type { CountryCode } from '@stacksjs/ts-cloud'
 import type { Result } from '@stacksjs/error-handling'
 import {
   AWSClient,
@@ -99,7 +100,7 @@ export interface PurchaseOptions {
   adminAddressLine2: string
   adminCity: string
   adminState: string
-  adminCountry: string
+  adminCountry: CountryCode
   adminZip: string
   adminPhone: string
   adminEmail: string
@@ -110,7 +111,7 @@ export interface PurchaseOptions {
   techAddressLine2: string
   techCity: string
   techState: string
-  techCountry: string
+  techCountry: CountryCode
   techZip: string
   techPhone: string
   techEmail: string
@@ -121,7 +122,7 @@ export interface PurchaseOptions {
   registrantAddressLine2: string
   registrantCity: string
   registrantState: string
-  registrantCountry: string
+  registrantCountry: CountryCode
   registrantZip: string
   registrantPhone: string
   registrantEmail: string
@@ -156,7 +157,7 @@ export function purchaseDomain(
         AddressLine2: options.adminAddressLine2,
         City: options.adminCity,
         State: options.adminState,
-        CountryCode: options.adminCountry as any,
+        CountryCode: options.adminCountry,
         ZipCode: options.adminZip.toString(),
         PhoneNumber: formatPhone(options.adminPhone),
         Email: options.adminEmail,
@@ -170,7 +171,7 @@ export function purchaseDomain(
         AddressLine2: options.registrantAddressLine2,
         City: options.registrantCity,
         State: options.registrantState,
-        CountryCode: options.registrantCountry as any,
+        CountryCode: options.registrantCountry,
         ZipCode: options.registrantZip.toString(),
         PhoneNumber: formatPhone(options.registrantPhone),
         Email: options.registrantEmail,
@@ -184,7 +185,7 @@ export function purchaseDomain(
         AddressLine2: options.techAddressLine2,
         City: options.techCity,
         State: options.techState,
-        CountryCode: options.techCountry as any,
+        CountryCode: options.techCountry,
         ZipCode: options.techZip.toString(),
         PhoneNumber: formatPhone(options.techPhone),
         Email: options.techEmail,
