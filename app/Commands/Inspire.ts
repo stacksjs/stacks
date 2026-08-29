@@ -22,7 +22,7 @@ export default defineCommand((cli) => {
       try {
         if (options.two) {
           const randomQuotes = quotes.random(2)
-          randomQuotes.toArray().forEach((quote: string, index: number) => {
+          randomQuotes.toArray().forEach((quote, index) => {
             console.log(`${index + 1}. ${quote}`)
           })
         }
@@ -41,7 +41,7 @@ export default defineCommand((cli) => {
 
   cli.command('inspire:two', 'Inspire yourself with two random quotes').action(() => {
     console.log('')
-    quotes.random(2).toArray().forEach((quote: string, index: number) => {
+    quotes.random(2).toArray().forEach((quote, index) => {
       console.log(`${index + 1}. "${quote}"`)
     })
     console.log('')

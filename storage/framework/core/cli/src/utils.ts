@@ -503,7 +503,18 @@ export function box(text: string, options: BoxOptions = {}): string {
   return [top, ...body, bottom].map(line => `${indent}${line}`).join('\n')
 }
 
-export const quotes: any = collect([
+/*
+ * Inferred, not `any`.
+ *
+ * This was annotated `: any`, which threw away the `Collection<string>` that
+ * `collect()` already returns. Nothing downstream could see a quote was a
+ * string: `quotes.random(1).first()` typed as `any` and got interpolated into
+ * output unchecked, and `app/Commands/Inspire.ts` wrote
+ * `.forEach((quote: string, index: number) => …)` to get names back - which is
+ * an assertion over an untyped value, not a check, and would have been
+ * accepted just the same if `random()` returned objects.
+ */
+export const quotes = collect([
   // could be queried from any API or database
   'The best way to get started is to quit talking and begin doing.',
   'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.',
