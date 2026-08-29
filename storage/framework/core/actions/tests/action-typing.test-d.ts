@@ -121,3 +121,37 @@ const bare = new Action({
 })
 
 export const untouched = bare
+
+// ── the action names `runAction` accepts ──────────────────────────────────
+
+/*
+ * `runAction`'s parameter was
+ *
+ *   type ActionPath = string // TODO: narrow this by automating its generation
+ *   type ActionName = string // TODO: narrow this by automating its generation
+ *   type Action = ActionPath | ActionName | string
+ *
+ * All three members were `string`, so the union collapsed to `string`: no name
+ * was checked and none was offered as a completion. The registry those TODOs
+ * ask for exists - it is the same auto-imports name map `schedule.action()`
+ * already reads - so it is wired up here too.
+ *
+ * The parameter stays OPEN via `(string & {})`, because a genuinely dynamic
+ * path is legitimate: `runAction('dev/views')` is a framework entry point, and
+ * a `/actions/:name` route passes one straight through. What `(string & {})`
+ * buys over a bare `string` is that the declared names survive as completions
+ * instead of being erased.
+ */
+
+import type { RunnableActionName } from '../src/helpers/utils'
+
+declare const someString: string
+
+// The registry is populated: an arbitrary string is NOT one of the names.
+// If this stops failing, the augmentation has silently gone missing and the
+// name type has fallen back to `string`, constraining nothing.
+// @ts-expect-error - `string` is wider than the declared action names.
+export const registryIsPopulated: RunnableActionName = someString
+
+// A real action resolves.
+export const knownAction: RunnableActionName = 'Actions/SendWelcomeEmail'

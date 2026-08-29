@@ -109,6 +109,10 @@ declare module '@stacksjs/queue' {
   interface Jobs extends Record<JobName, true> {}
 }
 
+declare module '@stacksjs/actions' {
+  interface RunnableActions extends Record<ActionName, true> {}
+}
+
 declare module '@stacksjs/scheduler' {
   interface SchedulableJobs extends Record<JobName, true> {}
   interface SchedulableActions extends Record<ActionName, true> {}

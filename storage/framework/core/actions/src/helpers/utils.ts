@@ -9,9 +9,42 @@ import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 
-type ActionPath = string // TODO: narrow this by automating its generation
-type ActionName = string // TODO: narrow this by automating its generation
-type Action = ActionPath | ActionName | string
+/**
+ * Augmentation target: the actions this application can run.
+ *
+ * Filled by `storage/framework/types/registries.d.ts` from the same name map
+ * the resolver reads, so a name that typechecks is a name that resolves. Empty
+ * here by design - a package cannot know an application's actions.
+ */
+// eslint-disable-next-line ts/no-empty-object-type -- augmentation target; empty by design
+export interface RunnableActions {}
+
+/** An action name, as narrow as the application has made it. */
+export type RunnableActionName = keyof RunnableActions extends never
+  ? string
+  : Extract<keyof RunnableActions, string>
+
+/**
+ * What `runAction` accepts.
+ *
+ * This used to be
+ *
+ *   type ActionPath = string // TODO: narrow this by automating its generation
+ *   type ActionName = string // TODO: narrow this by automating its generation
+ *   type Action = ActionPath | ActionName | string
+ *
+ * where all three members were `string`, so the union collapsed to `string`:
+ * no name was checked and none was offered as a completion. The registry the
+ * TODOs are asking for exists now, and `schedule.action()` already reads it.
+ *
+ * `(string & {})` rather than a bare `string` keeps the declared names as
+ * completions while still admitting the paths that are legitimately dynamic -
+ * `runAction('dev/views')` is a framework entry point, not an app action, and
+ * a `/actions/:name` route passes one straight through. A bare `string` in the
+ * union would erase the other members, which is the bug being fixed.
+ */
+// eslint-disable-next-line ts/ban-types -- `string & {}` keeps literal completions alive
+type Action = RunnableActionName | (string & {})
 
 export function publishedActionCandidates(action: string, packageRoot?: string): string[] {
   let root = packageRoot
