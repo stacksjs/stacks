@@ -2488,7 +2488,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     if (actionForcesJson) {
       ;req._forceJson = true
     }
-    ;(req as any)._requestValidationRules = requestValidationRules
+    ;req._requestValidationRules = requestValidationRules
     try {
       // A precognition request answers "would this be accepted?" and must
       // never reach handle() — that is the whole point, and it is why this
@@ -2959,7 +2959,7 @@ export function stream(
 // below can be shared module-level functions rather than re-allocated per
 // request.
 function getAllInputFor(req: EnhancedRequest): Record<string, unknown> {
-  const cached = (req as any)._allInputCache as Record<string, unknown> | undefined
+  const cached = req._allInputCache as Record<string, unknown> | undefined
   if (cached)
     return cached
 
@@ -2975,13 +2975,13 @@ function getAllInputFor(req: EnhancedRequest): Record<string, unknown> {
   if (req.params && typeof req.params === 'object')
     Object.assign(input, req.params)
 
-  ;(req as any)._allInputCache = input
+  ;req._allInputCache = input
   return input
 }
 
 function flashInputFor(req: EnhancedRequest, keys?: string[]): void {
   const input = getAllInputFor(req)
-  ;(req as any)._oldInput = keys
+  ;req._oldInput = keys
     ? Object.fromEntries(keys.filter(key => key in input).map(key => [key, input[key]]))
     : { ...input }
 }

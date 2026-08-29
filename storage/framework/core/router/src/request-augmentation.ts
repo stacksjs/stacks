@@ -93,6 +93,18 @@ export interface StacksRequestMarkers {
    * downstream code can read the user without re-running the
    * middleware. `unknown` because the User shape is project-defined.
    */
+  /**
+   * Validation rules attached by `request.validate()`, read back by the
+   * error handler to shape a 422 body.
+   */
+  _requestValidationRules?: unknown
+
+  /** Memoised `all()` payload, so repeated reads do not re-parse the body. */
+  _allInputCache?: unknown
+
+  /** Previous request's input, for `old()` after a redirect-back. */
+  _oldInput?: unknown
+
   _authenticatedUser?: unknown
 
   /**

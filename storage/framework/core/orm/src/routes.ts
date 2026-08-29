@@ -331,11 +331,11 @@ async function getRequestBody(req: EnhancedRequest): Promise<Record<string, any>
   if (contentLength > MAX_BODY_BYTES)
     throw new HttpError(413, `Request body exceeds ${MAX_BODY_BYTES}-byte limit`)
 
-  if ((req as any).jsonBody && typeof (req as any).jsonBody === 'object') {
-    return (req as any).jsonBody
+  if (req.jsonBody && typeof req.jsonBody === 'object') {
+    return req.jsonBody
   }
-  if ((req as any).formBody && typeof (req as any).formBody === 'object') {
-    return (req as any).formBody
+  if (req.formBody && typeof req.formBody === 'object') {
+    return req.formBody
   }
 
   try {
@@ -374,7 +374,7 @@ function coerceId(raw: unknown): number | string | null {
 // Helper: extract bearer token from a request, falling back to the raw header
 // when the enhanced request hasn't attached a `bearerToken()` method.
 function bearerOf(req: EnhancedRequest): string | null {
-  const fn = (req as any).bearerToken
+  const fn = req.bearerToken
   if (typeof fn === 'function') {
     const t = fn.call(req)
     if (t) return t
@@ -389,14 +389,14 @@ function bearerOf(req: EnhancedRequest): string | null {
 // `authedFill` model option to derive ownership-stamping fields like
 // `host_profile_id` from the requesting user. Returns null when unauthed.
 async function authedUserFromRequest(req: EnhancedRequest): Promise<any | null> {
-  const stored = (req as any)._authenticatedUser
+  const stored = req._authenticatedUser
   if (stored) return stored
   const token = bearerOf(req)
   if (!token) return null
   try {
     const { Auth } = await import('@stacksjs/auth')
     const user = await (Auth as any).getUserFromToken(token)
-    if (user) (req as any)._authenticatedUser = user
+    if (user) req._authenticatedUser = user
     return user || null
   }
   catch {
@@ -770,7 +770,7 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('show') && !routeExists('GET', `${basePath}/{id}`)) {
     applyMiddleware(route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
-        const id = coerceId((req as any).params?.id)
+        const id = coerceId(req.params?.id)
 
         // Validate ID parameter — coerceId returns null for negatives,
         // empty strings, NaN, etc., so this single check catches them all.
@@ -939,7 +939,7 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('update')) {
     const updateHandler = async (req: EnhancedRequest) => {
       try {
-        const id = coerceId((req as any).params?.id)
+        const id = coerceId(req.params?.id)
         if (id == null) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
@@ -1040,7 +1040,7 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
     applyMiddleware(route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
-        const id = coerceId((req as any).params?.id)
+        const id = coerceId(req.params?.id)
         if (id == null) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }

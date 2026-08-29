@@ -1,3 +1,4 @@
+import type { TeamAuthRequest } from '@stacksjs/auth'
 import { resolveAuthenticatedTeamId } from '@stacksjs/auth'
 import { db } from '@stacksjs/database'
 import { currentSiteId } from './context'
@@ -35,7 +36,12 @@ export function siteOwnership(): {
   return {
     field: 'site_id',
     resolve: async (_user: unknown, req: unknown) => {
-      const teamId = await resolveAuthenticatedTeamId(req as any)
+      // `TeamAuthRequest` is structural with every member optional by design -
+      // a partial object resolves to "unauthenticated" rather than crashing -
+      // so this narrows to "something that may answer bearerToken/cookies",
+      // not to a concrete request class. The ownership contract genuinely
+      // hands this callback an arbitrary request.
+      const teamId = await resolveAuthenticatedTeamId((req ?? {}) as TeamAuthRequest)
       if (!teamId)
         return null
 
