@@ -85,7 +85,9 @@ export function useMagicKeys(): Record<string, Ref<boolean>> & { current: Ref<Se
     }
   }
 
-  return new Proxy({ current } as any, {
+  // The target only seeds `current`; the handler answers every other key, so
+  // the conversion goes through `unknown` to the shape callers are promised.
+  return new Proxy({ current } as unknown as Record<string, Ref<boolean>> & { current: Ref<Set<string>> }, {
     get(target, prop: string) {
       if (prop === 'current') return current
       return getRef(prop)
