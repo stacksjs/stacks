@@ -271,8 +271,8 @@ describe('buildLibraryPackages', () => {
       packages: [
         { name: 'test-fx-counter', kind: 'functions', include: ['counter.ts'], runtime: 'stx' },
         { name: 'test-fx-dark', kind: 'functions', include: ['dark.ts'], runtime: 'stx' },
-        // LoginScreen is excluded because stx 0.2.245 cannot compile a prop
-        // default containing a comma; see the note in the test below.
+        // A named subset rather than the whole directory: this asserts that a
+        // package claims only what it asked for, and keeps the compile small.
         { name: 'test-ui', kind: 'components', include: ['Taskbar.stx', 'Window.stx'], prefix: 'test' },
         { name: 'test-elements', kind: 'web-components', include: ['Taskbar.stx'], prefix: 'test' },
       ],

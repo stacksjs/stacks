@@ -38,6 +38,17 @@
       "~/*": ["../../*"],
       "@/*": ["../../resources/*"],
       "ts-pantry": ["../../node_modules/ts-pantry"],
+      /*
+       * Types come from the copy that actually runs.
+       *
+       * The `*` fallback below resolves to `pantry/`, which mirrors the
+       * PUBLISHED framework's dependency graph - it pins ts-cloud ^0.11.4 and
+       * carries 0.11.5. Bun resolves `node_modules` at runtime, where the
+       * declared ^0.12.9 is installed, so the two trees disagreed about what
+       * this package exports and the typecheck was checking against a version
+       * no code runs.
+       */
+      "@stacksjs/ts-cloud": ["../../node_modules/@stacksjs/ts-cloud"],
       "*": ["../../pantry/*"]
     }
   },
@@ -72,7 +83,7 @@
     // so nothing checked this tree at all and it drifted for months.)
     "./defaults/**",
     "./frontend-dist/**",
-    "./libs/entries/**",
+    "./libs/packages/**",
     // Runtime state, not source: stx's build cache and the CLI's scratch
     // directory. Both are gitignored and can be deleted at any time.
     "./stx/**",

@@ -60,9 +60,7 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        // FIXME: ts-cloud exports no `getSmsInfrastructureStatus`; this is
-        // `undefined` at runtime and the call below throws.
-        const { getSmsInfrastructureStatus } = await import('@stacksjs/ts-cloud') as any
+        const { getSmsInfrastructureStatus } = await import('@stacksjs/ts-cloud')
 
         const status: any = await withTimeout(
           getSmsInfrastructureStatus({
@@ -119,10 +117,8 @@ export function sms(buddy: CLI): void {
 
         // Try basic check with End User Messaging API
         try {
-          // FIXME: ts-cloud exports no `PinpointSmsVoiceClient`; its SMS surface
-          // is `SmsClient` / `SmsAdvanced`. Undefined at runtime.
-          const { PinpointSmsVoiceClient } = await import('@stacksjs/ts-cloud') as any
-          const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const { SmsVoiceClient } = await import('@stacksjs/ts-cloud')
+          const smsClient = new SmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
           const phoneNumbers: any = await withTimeout(smsClient.describePhoneNumbers({}))
           const activeNumbers = phoneNumbers.PhoneNumbers?.filter((p: any) => p.Status === 'ACTIVE' || p.Status === 'PENDING')
@@ -169,10 +165,8 @@ export function sms(buddy: CLI): void {
 
         // If no configured origination number, try to find one
         if (!originationNumber) {
-          // FIXME: ts-cloud exports no `PinpointSmsVoiceClient`; its SMS surface
-          // is `SmsClient` / `SmsAdvanced`. Undefined at runtime.
-          const { PinpointSmsVoiceClient } = await import('@stacksjs/ts-cloud') as any
-          const pinpointV2 = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const { SmsVoiceClient } = await import('@stacksjs/ts-cloud')
+          const pinpointV2 = new SmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
           const phoneNumbers: any = await withTimeout(pinpointV2.describePhoneNumbers({}))
           const activePhone = phoneNumbers.PhoneNumbers?.find((p: any) => p.Status === 'ACTIVE')
           originationNumber = activePhone?.PhoneNumber
@@ -266,14 +260,17 @@ export function sms(buddy: CLI): void {
         }
 
         console.log('Setting up SMS infrastructure...\n')
-
-        // FIXME: ts-cloud exports no `createSmsInfrastructure`; undefined at runtime.
-        const { createSmsInfrastructure } = await import('@stacksjs/ts-cloud') as any
+        const { createSmsInfrastructure } = await import('@stacksjs/ts-cloud')
 
         const result: any = await withTimeout(
           createSmsInfrastructure({
             enabled: smsConfig.enabled,
-            provider: smsConfig.provider || 'pinpoint',
+            // `'sns'`, which is what this function builds - it provisions the
+            // AWS SNS side and its signature says so. The app's configured
+            // `provider` chooses between vendors elsewhere; passing it here
+            // named a provider this setup path does not implement, and the
+            // parameter is not read at all.
+            provider: 'sns',
             originationNumber: smsConfig.originationNumber,
             defaultCountryCode: smsConfig.defaultCountryCode || 'US',
             messageType: smsConfig.messageType || 'TRANSACTIONAL',
@@ -339,10 +336,8 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        // FIXME: ts-cloud exports no `PinpointSmsVoiceClient`; its SMS surface
-          // is `SmsClient` / `SmsAdvanced`. Undefined at runtime.
-          const { PinpointSmsVoiceClient } = await import('@stacksjs/ts-cloud') as any
-        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const { SmsVoiceClient } = await import('@stacksjs/ts-cloud')
+        const smsClient = new SmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
         const result: any = await withTimeout(smsClient.addSandboxPhone(phone), 30000)
 
@@ -379,10 +374,8 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        // FIXME: ts-cloud exports no `PinpointSmsVoiceClient`; its SMS surface
-          // is `SmsClient` / `SmsAdvanced`. Undefined at runtime.
-          const { PinpointSmsVoiceClient } = await import('@stacksjs/ts-cloud') as any
-        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const { SmsVoiceClient } = await import('@stacksjs/ts-cloud')
+        const smsClient = new SmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
         const result: any = await withTimeout(smsClient.verifySandboxPhone(id, code), 30000)
 
@@ -412,10 +405,8 @@ export function sms(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        // FIXME: ts-cloud exports no `PinpointSmsVoiceClient`; its SMS surface
-          // is `SmsClient` / `SmsAdvanced`. Undefined at runtime.
-          const { PinpointSmsVoiceClient } = await import('@stacksjs/ts-cloud') as any
-        const smsClient = new PinpointSmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
+          const { SmsVoiceClient } = await import('@stacksjs/ts-cloud')
+        const smsClient = new SmsVoiceClient(process.env.AWS_REGION || 'us-east-1')
 
         const phones: any = await withTimeout(smsClient.listSandboxPhones(), 30000)
 
