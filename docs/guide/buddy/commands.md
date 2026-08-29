@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **307 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **311 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -14,7 +14,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | --- | ---: |
 | `ai` | 1 |
 | `auth` | 4 |
-| `build` | 15 |
+| `build` | 16 |
 | `cloud` | 9 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
@@ -35,10 +35,11 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `extension` | 13 |
 | `format` | 1 |
 | `forms` | 2 |
-| `general` | 49 |
+| `general` | 50 |
 | `generate` | 16 |
 | `inspire` | 1 |
 | `key` | 1 |
+| `libs` | 2 |
 | `link` | 1 |
 | `lint` | 1 |
 | `mail` | 31 |
@@ -210,6 +211,7 @@ Build any of your libraries (packages) for production use
 | `-w`, `--web-components` | Build your framework agnostic web component library | boolean, optional | - |
 | `-e`, `--elements` | An alias to the -w flag | boolean, optional | - |
 | `-f`, `--functions` | Build your function library | boolean, optional | - |
+| `-l`, `--libs` | Build every package configured in config/library.ts | boolean, optional | - |
 | `-k`, `--desktop` | Build the Desktop Application | boolean, optional | - |
 | `-m`, `--mobile` | Build the native iOS and Android applications | boolean, optional | - |
 | `--android` | Build the native Android application | boolean, optional | - |
@@ -374,6 +376,20 @@ Build the native iOS application
 - Usage: `$ buddy build:ios`
 - Namespace: `build`
 - Aliases: `prod:ios`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `build:libs`
+
+Build every package configured in config/library.ts
+
+- Usage: `$ buddy build:libs`
+- Namespace: `build`
+- Aliases: `build:libraries`, `prod:libs`
 - Arguments: none
 
 | Option | Description | Contract | Default |
@@ -2333,6 +2349,59 @@ Examples:
 
 ```bash
 buddy launch
+```
+
+### `libs`
+
+List the packages this project releases out of resources/functions and resources/components
+
+- Usage: `$ buddy libs`
+- Namespace: none
+- Aliases: `libs:list`, `libraries`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--json` | Print the resolved packages as JSON | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy libs
+```
+
+### `libs:build`
+
+Build every configured library package
+
+- Usage: `$ buddy libs:build`
+- Namespace: `libs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `libs:publish`
+
+Publish the built library packages to npm
+
+- Usage: `$ buddy libs:publish`
+- Namespace: `libs`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Run `npm publish --dry-run` instead of publishing | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy libs:publish --dry-run
 ```
 
 ### `link:core`
