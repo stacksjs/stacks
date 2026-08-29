@@ -58,6 +58,19 @@ export type PolicyAbility = 'viewAny' | 'view' | 'create' | 'update' | 'delete' 
 export type Ability = GateName | PolicyAbility | (string & {})
 
 /**
+ * The arguments an ability takes after the user.
+ *
+ * A gate the application declares contributes its own parameter list, so
+ * `Gate.allows('update-post', user, post)` is checked against how the gate was
+ * written. Anything else - a policy ability, or a name computed at runtime -
+ * keeps `any[]`, which is what it was for every ability before.
+ */
+export type AbilityArgs<A extends Ability>
+  = A extends keyof AppGates
+    ? (AppGates[A] extends readonly unknown[] ? AppGates[A] : any[])
+    : any[]
+
+/**
  * Augmentation target: the policy classes under `app/Policies/`, and the
  * framework defaults behind it, by filename.
  *
@@ -348,7 +361,7 @@ export function after(callback: GateAfterCallback): void {
  * if (await allows('edit-settings', user)) { ... }
  * if (await allows('update', user, post)) { ... }
  */
-export async function allows(ability: Ability, user: UserModel | null, ...args: any[]): Promise<boolean> {
+export async function allows<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<boolean> {
   return check(ability, user, ...args)
 }
 

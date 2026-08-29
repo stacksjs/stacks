@@ -10,6 +10,7 @@
  * `bun run typecheck`.
  */
 
+import type { UserModel } from '@stacksjs/orm'
 import type { Ability, GatesDefinition, PolicyMapping, PolicyModelName, PolicyName } from '../src/gate'
 import { defineGates } from '../src/gate'
 
@@ -110,3 +111,35 @@ export const policyMethod: Ability = 'update'
 export const dynamic: Ability = 'whatever-a-route-param-said'
 
 export const ok = true
+
+// ── the arguments a gate takes, at the call site ──────────────────────────
+
+/*
+ * `AppGates` used to map every ability to `true`: it recorded that a gate
+ * existed and nothing about how to call it, so a gate declared `(user) =>
+ * boolean` accepted any number of extra arguments at every call site.
+ *
+ * It recorded less than that, in fact. The names were derived through
+ *
+ *   Authorization extends GatesDefinition ? keyof Authorization['gates'] : never
+ *
+ * and although that check passes, the lookup inside its true branch reads back
+ * through the constraint's own index signature - `Readonly<Record<string,
+ * GateCallback>>` - so `keyof` came out `string`. `AppGates` got a string index
+ * signature and NOTHING was constrained, which is the opposite of what
+ * `storage/framework/types/gates.d.ts` exists to do. Binding the object with
+ * `infer` keeps the literal keys.
+ */
+
+// A gate's declared parameters survive `defineGates`, which is what the
+// registry reads. If this widens to `GateCallback` again, the registry that
+// derives from it silently stops constraining anything.
+export const gateKeepsItsSignature: (user: UserModel | null) => boolean
+  = authorization.gates['view-dashboard']
+
+// The keys stay a literal union rather than collapsing to `string`.
+export type DeclaredGateNames = keyof typeof authorization.gates
+export const namesAreLiteral: 'access-admin' | 'view-dashboard' = '' as DeclaredGateNames
+
+// @ts-expect-error - 'not-a-declared-gate' is not one of the two above.
+export const rejectsUnknownName: DeclaredGateNames = 'not-a-declared-gate'
