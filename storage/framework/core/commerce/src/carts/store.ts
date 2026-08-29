@@ -49,7 +49,7 @@ export async function bulkStore(data: NewCart[]): Promise<number> {
   let createdCount = 0
 
   try {
-    await (db as any).transaction().execute(async (trx: any) => {
+    await db.transaction(async (trx) => {
       for (const cart of data) {
         const cartData = {
           ...cart,

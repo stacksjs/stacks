@@ -8,7 +8,7 @@
  * after the job ran). The classic shape:
  *
  * ```ts
- * await db.transaction().execute(async (trx) => {
+ * await db.transaction(async (trx) => {
  *   const order = await trx.insertInto('orders')...
  *   await job('ProcessOrder', { orderId: order.id }).dispatch()
  *   // … more work that might throw and rollback
