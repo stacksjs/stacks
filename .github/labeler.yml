@@ -42,10 +42,11 @@ components:
           - 'storage/framework/libs/components/**'
           - 'resources/components/**'
 
-entries:
+libraries:
   - changed-files:
       - any-glob-to-any-file:
-          - 'storage/framework/libs/entries/**'
+          - 'storage/framework/libs/packages/**'
+          - 'config/library.ts'
 
 examples:
   - changed-files:
@@ -55,7 +56,6 @@ examples:
 functions:
   - changed-files:
       - any-glob-to-any-file:
-          - 'storage/framework/libs/functions/**'
           - 'resources/functions/**'
 
 scripts:

@@ -17,29 +17,45 @@ export default {
   defaultLanguage: 'en',
   releaseable: true,
 
-  webComponents: {
-    name: 'hello-world-elements',
-    description: 'Your framework agnostic web component library description.',
-    keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
-    tags: [
-      {
-        name: ['HelloWorld', 'AppHelloWorld'],
-        description: 'The Hello World custom element, built via this framework.',
-        attributes: [
-          {
-            name: 'greeting',
-            description: 'The greeting.',
-          },
-        ],
-      },
-    ],
-  },
+  /**
+   * One `resources/` tree, any number of npm packages.
+   *
+   * Each entry claims a slice of `resources/functions` or `resources/components`
+   * by glob and becomes its own package: its own name, manifest, dist and
+   * version. Slices may overlap, so a component can ship in a bundle package
+   * and in a focused one. `buddy libs` prints what each package resolved to,
+   * `buddy build:libs` builds them all, `buddy libs:publish` publishes them.
+   */
+  packages: [
+    {
+      name: 'hello-world-fx',
+      kind: 'functions',
+      description: 'Your function library description.',
+      keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
+      include: ['*.ts'],
+      // These composables call stx's ambient globals (`state`, `useDark`),
+      // which no module exports. Saying so here is what lets them ship: the
+      // build otherwise refuses them, because a consumer importing the
+      // published package would hit `ReferenceError: state is not defined`.
+      runtime: 'stx',
+    },
 
-  functions: {
-    name: 'hello-world-fx',
-    description: 'Your function library description.',
-    keywords: ['functions', 'composables', 'library', 'typescript', 'javascript'],
-    shouldGenerateSourcemap: false,
-    files: ['counter', 'dark'],
-  },
+    {
+      name: 'hello-world-components',
+      kind: 'components',
+      description: 'Your STX component library, as tree-shakeable modules.',
+      keywords: ['components', 'custom-elements', 'stx', 'library', 'typescript'],
+      prefix: 'stacks',
+      include: ['*.stx'],
+    },
+
+    {
+      name: 'hello-world-elements',
+      kind: 'web-components',
+      description: 'Your framework agnostic web component library description.',
+      keywords: ['custom-elements', 'web-components', 'library', 'framework-agnostic', 'typescript', 'javascript'],
+      prefix: 'stacks',
+      include: ['*.stx'],
+    },
+  ],
 } satisfies LibraryConfig
