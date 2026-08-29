@@ -3,7 +3,7 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
-import { template } from '../template'
+import { templateByName } from '../template'
 import { BaseEmailDriver } from './base'
 
 /**
@@ -47,7 +47,7 @@ export class LogEmailDriver extends BaseEmailDriver {
 
       let rendered: { html?: string, text?: string } | undefined
       if (message.template) {
-        const t = await template(message.template, options)
+        const t = await templateByName(message.template, options)
         if (t) rendered = { html: (t as { html?: string }).html, text: (t as { text?: string }).text }
       }
 

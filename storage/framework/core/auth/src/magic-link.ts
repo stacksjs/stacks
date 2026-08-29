@@ -2,7 +2,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { db, sqlDateTime } from '@stacksjs/database'
-import { mail, template } from '@stacksjs/email'
+import { mail, templateByName } from '@stacksjs/email'
 import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'
 
@@ -167,7 +167,11 @@ export async function sendMagicLink(email: string, options: SendMagicLinkOptions
   let html: string | undefined
   let text: string | undefined
   try {
-    const rendered = await template('magic-link', {
+    // `templateByName`, not `template`: this probes for a template the
+    // application is not required to provide and falls back to the plain-text
+    // email below when it is absent, so the name is deliberately not one the
+    // registry has to know.
+    const rendered = await templateByName('magic-link', {
       subject: `Sign in to ${appName}`,
       variables: { linkUrl, expireMinutes: ttl },
     })

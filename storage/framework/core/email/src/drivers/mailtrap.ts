@@ -3,7 +3,7 @@ import { Buffer } from 'node:buffer'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
-import { template } from '../template'
+import { templateByName } from '../template'
 import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
@@ -42,7 +42,7 @@ export class MailtrapDriver extends BaseEmailDriver {
       this.validateMessage(message)
       let templ
       if (message.template)
-        templ = await template(message.template, options)
+        templ = await templateByName(message.template, options)
 
       // Use template HTML if available, otherwise use direct HTML from message
       const htmlContent = templ?.html || message.html

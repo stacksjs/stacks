@@ -2,7 +2,7 @@ import type { EmailMessage, EmailResult } from '@stacksjs/types'
 import type { TemplateOptions } from '../template'
 import { config } from '@stacksjs/config'
 import { SESClient } from '@stacksjs/ts-cloud'
-import { template } from '../template'
+import { templateByName } from '../template'
 import { buildMimeMessage } from '../mime'
 import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
@@ -51,7 +51,7 @@ export class SESDriver extends BaseEmailDriver {
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options)
+        const templ = await templateByName(message.template, options)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }

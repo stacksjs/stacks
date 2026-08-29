@@ -6,7 +6,7 @@ import * as net from 'node:net'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
-import { template } from '../template'
+import { templateByName } from '../template'
 import { buildMimeMessage } from '../mime'
 import { ENVELOPE_ADDRESS, filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
@@ -122,7 +122,7 @@ export class SMTPDriver extends BaseEmailDriver {
       // Only attempt to render template if one is provided
       let htmlContent: string | undefined
       if (message.template) {
-        const templ = await template(message.template, options)
+        const templ = await templateByName(message.template, options)
         if (templ && 'html' in templ) {
           htmlContent = templ.html
         }

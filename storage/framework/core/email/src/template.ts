@@ -1,3 +1,4 @@
+import type { EmailTemplateReference } from './mailable'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
@@ -357,6 +358,31 @@ function htmlToText(html: string): string {
  * ```
  */
 export async function template(
+  templateName: EmailTemplateReference,
+  options: TemplateOptions = {},
+): Promise<TemplateResult> {
+  return templateByName(templateName, options)
+}
+
+/**
+ * Render a template whose name is only known at runtime.
+ *
+ * `template()` above is the authoring entry point: the name is written inline,
+ * so it is checked against the templates that exist and a typo is a build
+ * error rather than an email that renders empty.
+ *
+ * This one takes a plain `string`, for the two places where that is the honest
+ * type. A driver re-renders from an `EmailMessage` that may have arrived off a
+ * queue, so its template name is genuinely unvalidated by the time it gets
+ * here. And a caller may deliberately probe for a template the application is
+ * not required to provide - `magic-link` is one - falling back when it is
+ * absent. Both are real, and neither should have to lie about the name being
+ * checked.
+ *
+ * A missing template resolves to empty `html`/`text` rather than throwing, so
+ * a caller can treat emptiness as "not present".
+ */
+export async function templateByName(
   templateName: string,
   options: TemplateOptions = {},
 ): Promise<TemplateResult> {

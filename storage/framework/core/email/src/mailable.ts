@@ -72,12 +72,12 @@ export interface MailableInspection<TProps extends Record<string, unknown> = Rec
   subject?: string
   text?: string
   html?: string
-  template?: { name: string, props: TProps }
+  template?: { name: EmailTemplateReference, props: TProps }
   attachments: EmailAttachment[]
 }
 
 interface TemplateRef<TProps extends Record<string, unknown> = Record<string, unknown>> {
-  name: string
+  name: EmailTemplateReference
   props: TProps
 }
 
