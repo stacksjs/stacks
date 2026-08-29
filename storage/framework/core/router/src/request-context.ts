@@ -6,6 +6,7 @@
  */
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { StacksRequestMarkers } from './request-augmentation'
 import type { RequestInstance } from '@stacksjs/types'
 import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -198,8 +199,18 @@ export function getCurrentRequest(): EnhancedRequest | undefined {
  * - `userToken()` — current access token (async)
  * - `tokenCan(ability)` / `tokenCant(ability)` — async ability checks
  */
-export const request: RequestInstance = new Proxy(
-  {} as RequestInstance,
+/*
+ * `& StacksRequestMarkers`, because that is what the proxy forwards to.
+ *
+ * Every real request is an `EnhancedRequest`, which extends the markers, and
+ * the Auth middleware stamps `_authenticatedUser` / `_currentAccessToken` onto
+ * it. This proxy hands those straight back at runtime, but it was typed as
+ * `RequestInstance` alone - which declares none of them - so every reader had
+ * to write `(request as any)._authenticatedUser` to get at a property that was
+ * already there and already documented one file over.
+ */
+export const request: RequestInstance & StacksRequestMarkers = new Proxy(
+  {} as RequestInstance & StacksRequestMarkers,
   {
     // Note: we don't annotate the trap's return type. `ProxyHandler<T>`
     // declares `get` as returning `any` and the runtime body returns

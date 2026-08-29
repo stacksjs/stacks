@@ -28,7 +28,7 @@ import { isUniqueViolation } from './rbac-store-bqb'
  * means protected.
  */
 function duplicateEmailError(): HttpError {
-  if ((config.auth as any)?.registration?.preventEnumeration === false)
+  if (config.auth?.registration?.preventEnumeration === false)
     return new HttpError(409, 'Email already exists')
   return new HttpError(422, 'Registration could not be completed. Please check your details and try again.')
 }

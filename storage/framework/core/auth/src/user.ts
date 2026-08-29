@@ -25,8 +25,13 @@ export type AuthUser = UserJsonResponse
  * }
  */
 export async function authUser(): Promise<UserModel | undefined> {
-  // First check if already set by middleware (fastest path)
-  const middlewareUser = (request as any)?._authenticatedUser
+  // First check if already set by middleware (fastest path).
+  //
+  // The marker is declared `unknown` on the request, deliberately: the User
+  // shape is project-defined. Narrowed here, where the function promises a
+  // UserModel, rather than through a `(request as any)` that also unchecked
+  // the property name itself.
+  const middlewareUser = request?._authenticatedUser as UserModel | undefined
   if (middlewareUser) {
     return middlewareUser
   }
@@ -75,7 +80,7 @@ export async function logout(): Promise<void> {
 
 export async function refresh(): Promise<void> {
   // Clear the cached user on the request to force re-fetch
-  if ((request as any)?._authenticatedUser) {
-    (request as any)._authenticatedUser = undefined
+  if (request?._authenticatedUser) {
+    request._authenticatedUser = undefined
   }
 }

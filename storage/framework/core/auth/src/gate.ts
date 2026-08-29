@@ -579,7 +579,7 @@ export function getPolicyFor<T = any>(model: T): Policy<T> | null {
     return null
   }
 
-  const modelName = (model as any).constructor?.name
+  const modelName = model.constructor?.name
   const policyClass = state.policies.get(modelName)
 
   if (policyClass) {

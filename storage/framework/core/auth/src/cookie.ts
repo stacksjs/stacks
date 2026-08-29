@@ -65,11 +65,11 @@ export function authCookieName(options?: AuthCookieOptions): string {
   if (options?.name)
     return options.name
 
-  const configured = (config.auth as any)?.cookie?.name
+  const configured = config.auth?.cookie?.name
   if (typeof configured === 'string' && configured.length > 0)
     return configured
 
-  const legacy = (config.auth as any)?.defaultTokenName
+  const legacy = config.auth?.defaultTokenName
   if (typeof legacy === 'string' && legacy.length > 0 && legacy !== 'auth-token') {
     if (COOKIE_NAME_RE.test(legacy))
       return legacy
@@ -94,7 +94,7 @@ function defaultMaxAge(): number {
   // `config.auth.tokenExpiry` is milliseconds — the same value
   // `createTokenForUser` uses for the token's own `expires_at`, so the cookie
   // and the token it carries die together. A cookie wants seconds.
-  const milliseconds = Number((config.auth as any)?.tokenExpiry ?? 60 * 60 * 1000)
+  const milliseconds = Number(config.auth?.tokenExpiry ?? 60 * 60 * 1000)
   if (!Number.isFinite(milliseconds) || milliseconds <= 0)
     return 60 * 60
 
@@ -130,7 +130,7 @@ function isLoopbackHost(hostname: string): boolean {
  * Exported for tests; `authCookie()` feeds it the live config.
  */
 export function shouldSecureAuthCookie(
-  app: { url?: unknown, env?: unknown } = (config.app as any) ?? {},
+  app: { url?: unknown, env?: unknown } = config.app ?? {},
 ): boolean {
   const rawUrl = String(app?.url ?? process.env.APP_URL ?? '').trim()
   if (rawUrl) {

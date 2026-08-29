@@ -93,7 +93,7 @@ export function fingerprintMismatch(
 
 function sessionFingerprintRejected(session: { ip_address?: unknown, user_agent?: unknown }): boolean {
   return fingerprintMismatch(
-    (config.auth as any)?.session?.enforceFingerprint,
+    config.auth?.session?.enforceFingerprint,
     { ip: session.ip_address, userAgent: session.user_agent },
     readRequestFingerprint(),
   )

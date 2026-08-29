@@ -720,7 +720,7 @@ export class Auth {
 
     // Reject tokens issued before the user last changed their password
     // (stacksjs/stacks#1957). The previous code read
-    // `(user as any).password_changed_at` off the ORM instance, but that
+    // `user.password_changed_at` off the ORM instance, but that
     // column is undeclared (added by a defensive ALTER in auth-tables, not
     // part of the model schema), so the ORM never exposes it as a bare
     // property — the read was ALWAYS undefined and this backstop was inert

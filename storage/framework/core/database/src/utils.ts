@@ -749,6 +749,8 @@ export interface DbWriteResult {
   numDeletedRows?: number | bigint
   affectedRows?: number
   rowsAffected?: number
+  /** Postgres. */
+  rowCount?: number
   lastInsertRowid?: number | bigint
   insertId?: number | bigint
   /**

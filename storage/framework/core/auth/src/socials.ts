@@ -140,7 +140,7 @@ function defaultStore(): SocialSignInStore {
 }
 
 function configuredMatching(): SocialMatchingPolicy {
-  const raw = (config.auth as any)?.socials?.matching
+  const raw = config.auth?.socials?.matching
   return raw === 'create' || raw === 'refuse' ? raw : 'link'
 }
 
