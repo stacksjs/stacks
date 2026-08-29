@@ -20,6 +20,7 @@
  */
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
+import { config } from '@stacksjs/config'
 import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware, middlewareAliases } from '../src/stacks-router'
 import defaultAliases from '../../../defaults/app/Middleware'
 
@@ -32,20 +33,47 @@ afterAll(() => {
 })
 
 describe('alias lookup happens before the colon is read as a parameter', () => {
-  test('env:production and env:local cannot both allow', async () => {
-    const router = createStacksRouter()
-    router.get('/mw-env-prod', (() => ({ ok: true })) as any).middleware('env:production')
-    router.get('/mw-env-local', (() => ({ ok: true })) as any).middleware('env:local')
+  /**
+   * Ask both routes under a stated environment.
+   *
+   * The environment is set rather than read, because "whichever environment
+   * this runs in, one of these two passes" is only true in two of the six.
+   * Under `APP_ENV=development` — this repository's own default — neither
+   * `env:production` nor `env:local` should allow anything, and a test that
+   * demanded exactly one 200 failed on correct behaviour.
+   */
+  async function statusesUnder(env: string): Promise<{ production: number, local: number }> {
+    const previous = config.app.env
+    config.app.env = env as typeof config.app.env
 
-    const production = await router.handleRequest(new Request('http://localhost/mw-env-prod'))
-    const local = await router.handleRequest(new Request('http://localhost/mw-env-local'))
+    try {
+      clearMiddlewareCache()
 
-    // Whichever environment this runs in, exactly one of the two may pass.
-    // Pre-fix BOTH returned 200: the colon was read as a parameter separator
-    // before the alias map was consulted, so both resolved to `Env`, which
-    // accepts every known environment and ignores parameters outright.
-    expect([production.status, local.status].filter(status => status === 200)).toHaveLength(1)
-    expect([production.status, local.status].filter(status => status === 403)).toHaveLength(1)
+      const router = createStacksRouter()
+      router.get('/mw-env-prod', (() => ({ ok: true })) as any).middleware('env:production')
+      router.get('/mw-env-local', (() => ({ ok: true })) as any).middleware('env:local')
+
+      return {
+        production: (await router.handleRequest(new Request('http://localhost/mw-env-prod'))).status,
+        local: (await router.handleRequest(new Request('http://localhost/mw-env-local'))).status,
+      }
+    }
+    finally {
+      config.app.env = previous
+    }
+  }
+
+  test('each env alias allows only its own environment', async () => {
+    // Pre-fix every one of these was 200: the colon was read as a parameter
+    // separator before the alias map was consulted, so both references
+    // resolved to `Env`, which accepts every known environment and ignores
+    // parameters outright.
+    expect(await statusesUnder('production')).toEqual({ production: 200, local: 403 })
+    expect(await statusesUnder('local')).toEqual({ production: 403, local: 200 })
+
+    // And in an environment that is neither, neither route opens — the case
+    // this test used to run in without noticing.
+    expect(await statusesUnder('development')).toEqual({ production: 403, local: 403 })
   })
 
   test('throttle:60,1 still splits, because it is not an alias of its own', async () => {
