@@ -238,7 +238,11 @@ export async function runBroadcast(name: string, payload?: any): Promise<void> {
 
   let broadcastFiles: string[]
   try {
-    broadcastFiles = (bun as any).globSync([appPath('Broadcasts/**/*.ts')], { absolute: true })
+    // `Bun.Glob`, which is the scanner Bun's module type declares. `globSync`
+    // was reached through a cast, so whether it existed at all was never
+    // checked here.
+    const glob = new bun.Glob('Broadcasts/**/*.ts')
+    broadcastFiles = [...glob.scanSync({ cwd: appPath(), absolute: true })]
   }
   catch (error) {
     throw new Error(`Failed to scan broadcast files: ${error instanceof Error ? error.message : String(error)}`)
