@@ -1,8 +1,7 @@
 import type { LibraryConfig, LibraryPackageKind, LibraryPackageOptions } from '@stacksjs/types'
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
-import { componentsPath, functionsPath, libsPath } from '@stacksjs/path'
-import { glob } from '@stacksjs/storage'
+import { componentsPath, functionsPath, libraryPackagePath } from '@stacksjs/path'
 
 /**
  * Raised for a `config/library.ts` that cannot produce a coherent set of
@@ -62,11 +61,6 @@ const DEFAULT_COMPONENT_EXCLUDE: string[] = []
 /** Where a package of this kind reads its sources from. */
 export function libraryPackageSourceDir(kind: LibraryPackageKind): string {
   return kind === 'functions' ? functionsPath() : componentsPath()
-}
-
-/** The directory a package builds in. */
-export function libraryPackagePath(slug: string, path?: string): string {
-  return libsPath(`packages/${slug}${path ? `/${path}` : ''}`)
 }
 
 /** `@acme/ui` -> `ui`. Used for the default slug, prefix and tag namespace. */
@@ -255,14 +249,33 @@ export async function resolveLibraryPackages(
   return resolved
 }
 
-/** Sort so a build's output order does not depend on filesystem order. */
+/**
+ * Expand the include/exclude globs against the source directory.
+ *
+ * `Bun.Glob` is scanned per pattern with the source directory as its cwd,
+ * rather than handing absolute patterns to the shared glob helper: that helper
+ * returns nothing for a pattern with no wildcard in it, so an `include` naming
+ * a file outright — `['counter.ts']`, the single most obvious way to write it —
+ * matched nothing at all.
+ *
+ * Sorted, so a build's output order does not depend on filesystem order.
+ */
 async function matchSources(sourceDir: string, include: string[], exclude: string[]): Promise<string[]> {
-  const included = await glob(include.map(pattern => resolve(sourceDir, pattern)), { absolute: true })
-  const excluded = exclude.length
-    ? new Set(await glob(exclude.map(pattern => resolve(sourceDir, pattern)), { absolute: true }))
-    : new Set<string>()
+  const expand = async (patterns: string[]): Promise<Set<string>> => {
+    const files = new Set<string>()
 
-  return [...new Set(included)].filter(file => !excluded.has(file)).sort()
+    for (const pattern of patterns) {
+      for await (const file of new Bun.Glob(pattern).scan({ cwd: sourceDir, absolute: true, onlyFiles: true }))
+        files.add(resolve(file))
+    }
+
+    return files
+  }
+
+  const included = await expand(include)
+  const excluded = exclude.length ? await expand(exclude) : new Set<string>()
+
+  return [...included].filter(file => !excluded.has(file)).sort()
 }
 
 /** The import specifier an entry point uses to reach one of its sources. */

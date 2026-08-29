@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { componentFileName, pageFileName } from '../src/make'
-import { generateEntryPointData } from '../src/helpers/lib-entries'
+import { resolveLibraryPackages } from '../src/library/packages'
 import { CODE_TEMPLATES } from '../src/templates'
 
 describe('STX scaffolding', () => {
@@ -9,11 +9,17 @@ describe('STX scaffolding', () => {
     expect(pageFileName('settings')).toBe('settings.stx')
   })
 
-  it('builds custom-element entry points from STX components', () => {
-    const entry = generateEntryPointData('web-components')
+  it('resolves STX components into a web-component package', async () => {
+    // Custom elements are no longer produced by a hand-written entry file:
+    // `buildComponentLibrary` compiles the .stx sources and each generated
+    // module registers its own tag. What the config layer still owns is which
+    // components a given package claims.
+    const [pkg] = await resolveLibraryPackages({
+      packages: [{ name: 'scaffolding-elements', kind: 'web-components', include: ['*.stx'] }],
+    })
 
-    expect(entry).toContain("from '@stacksjs/stx'")
-    expect(entry).toContain('.stx')
+    expect(pkg?.kind).toBe('web-components')
+    expect(pkg?.sources.every(source => source.endsWith('.stx'))).toBe(true)
   })
 
   it('uses STX scripts in component and page templates', () => {

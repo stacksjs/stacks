@@ -876,14 +876,18 @@ export function layoutsPath(path?: string, options?: { relative?: boolean, defau
 }
 
 /**
- * Returns the path to the library entry file, filtered by library type.
+ * Returns the directory a generated library package builds in.
  *
- * @param type - The type of library ('web-components', or 'functions').
- * @returns The absolute path to the specified library entry file.
+ * A project releases any number of packages out of `resources/`, so there is
+ * no single "the functions library" path any more: each package is addressed
+ * by its own directory name, which `config/library.ts` derives from the npm
+ * name (or states outright via `dir`).
+ *
+ * @param slug - The package directory name, e.g. `ui` for `@acme/ui`.
+ * @param path - A path within that package.
  */
-export type LibraryType = 'web-components' | 'functions'
-export function libraryEntryPath(type: LibraryType): string {
-  return libsEntriesPath(`${type}.ts`)
+export function libraryPackagePath(slug: string, path?: string): string {
+  return libsPath(`packages/${slug}${path ? `/${path}` : ''}`)
 }
 
 /**
@@ -1004,19 +1008,6 @@ export function objectsPath(path?: string): string {
  */
 export function onboardingPath(path?: string): string {
   return projectPath(`${path || 'views/dashboard/onboarding'}`)
-}
-
-/**
- * Returns the path to the `package.json` file of a specified library type within the framework directory.
- *
- * @param type - The type of the library ('web-components', or 'functions') for which to return the package.json path.
- * @returns The absolute path to the specified package.json file within the framework directory.
- */
-export function packageJsonPath(type: LibraryType): string {
-  if (type === 'web-components')
-    return frameworkPath('libs/components/web/package.json')
-
-  return frameworkPath(`libs/${type}/package.json`)
 }
 
 /**
@@ -1894,7 +1885,7 @@ export interface Path {
   layoutsPath: (path?: string, options?: { relative?: boolean }) => string
   libsPath: (path?: string) => string
   userLibsPath: (path?: string) => string
-  libraryEntryPath: (type: LibraryType) => string
+  libraryPackagePath: (slug: string, path?: string) => string
   lintPath: (path?: string) => string
   listenersPath: (path?: string) => string
   loggingPath: (path?: string) => string
@@ -1906,7 +1897,6 @@ export interface Path {
   onboardingPath: (path?: string) => string
   notificationsPath: (path?: string) => string
   newsletterPath: (path?: string) => string
-  packageJsonPath: (type: LibraryType) => string
   viewsPath: (path?: string) => string
   pathPath: (path?: string) => string
   paymentsPath: (path?: string) => string
@@ -2044,7 +2034,7 @@ export const path: Path = {
   layoutsPath,
   libsPath,
   userLibsPath,
-  libraryEntryPath,
+  libraryPackagePath,
   lintPath,
   listenersPath,
   loggingPath,
@@ -2056,7 +2046,6 @@ export const path: Path = {
   onboardingPath,
   notificationsPath,
   newsletterPath,
-  packageJsonPath,
   viewsPath,
   pathPath,
   paymentsPath,

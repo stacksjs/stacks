@@ -69,7 +69,25 @@ export async function planLibraryPublish(config: LibraryConfig | undefined = lib
 }
 
 /**
- * Publish each built package with `npm publish`.
+ * The publisher to shell out to.
+ *
+ * `bun publish` rather than `npm`: this framework runs on Bun and npm is not
+ * necessarily installed at all — it is not on the machine this was written on,
+ * and hardcoding it turned `libs:publish` into an ENOENT. `npm` is still
+ * accepted as a fallback for an environment that has it and not the other.
+ */
+export function publishCommand(): string[] {
+  if (Bun.which('bun'))
+    return ['bun', 'publish']
+
+  if (Bun.which('npm'))
+    return ['npm', 'publish']
+
+  throw new Error('Neither `bun` nor `npm` is on PATH, so there is nothing to publish with.')
+}
+
+/**
+ * Publish each built package.
  *
  * One package per invocation rather than a workspace-wide publish: these live
  * outside the framework workspace on purpose, and publishing them one at a
@@ -78,9 +96,10 @@ export async function planLibraryPublish(config: LibraryConfig | undefined = lib
  */
 export async function publishLibraryPackages(options: { dryRun?: boolean, config?: LibraryConfig } = {}): Promise<LibraryPublishPlan[]> {
   const plans = await planLibraryPublish(options.config ?? library)
+  const command = publishCommand()
 
   for (const plan of plans) {
-    const args = ['npm', 'publish', '--access', plan.access]
+    const args = [...command, '--access', plan.access]
 
     if (options.dryRun)
       args.push('--dry-run')

@@ -1,5 +1,5 @@
 // Mark as binary mode to prevent auto-registration in routes/api.ts
-;(globalThis as any).__STACKS_BINARY_MODE__ = true
+;(globalThis as { __STACKS_BINARY_MODE__?: boolean }).__STACKS_BINARY_MODE__ = true
 
 // IMPORTANT: Import router package first to ensure it's initialized before routes
 import { assertRouteMiddlewareResolvable, loadRoutes, serve } from '@stacksjs/router'
