@@ -1,7 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 
-export default function (cli: CLI) {
+export default function (cli: CLI): void {
   // Listen to the `inspire:three` command
   cli.on('inspire:three', () => {
     // eslint-disable-next-line no-console

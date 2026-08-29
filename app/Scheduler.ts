@@ -9,7 +9,7 @@ import { schedule } from '@stacksjs/scheduler'
  *
  * @see https://docs.stacksjs.com/scheduling
  */
-export default function () {
+export default function (): void {
   // Run the Inspire job every hour
   schedule
     .job('Inspire')
