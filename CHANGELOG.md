@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.102...v0.72.103)
+
+## 🐛 Bug Fixes
+
+- **test**: state the environment the env aliases are asked about ([238c333](https://github.com/stacksjs/stacks/commit/238c333)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: three more unions and an any that erased what they described ([e414500](https://github.com/stacksjs/stacks/commit/e414500)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: runAction's parameter collapsed to string ([cebf428](https://github.com/stacksjs/stacks/commit/cebf428)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: template() ignored the registry that names the templates ([b05c4a8](https://github.com/stacksjs/stacks/commit/b05c4a8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: every single-ability check enforces the gate's declaration ([5e4d751](https://github.com/stacksjs/stacks/commit/5e4d751)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: the gate registry constrained nothing, and now checks arguments too ([57756e3](https://github.com/stacksjs/stacks/commit/57756e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: a job's declared payload was decorative ([0f4c8f8](https://github.com/stacksjs/stacks/commit/0f4c8f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: quotes was annotated any, discarding the type collect() returns ([2877648](https://github.com/stacksjs/stacks/commit/2877648)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **app**: narrow the last loose spots in the app folder ([33efaa0](https://github.com/stacksjs/stacks/commit/33efaa0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 💄 Styles
+
+- **dashboard**: remove a separator dash the copy contract rejects ([bfdff12](https://github.com/stacksjs/stacks/commit/bfdff12)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- run the email type tests in typecheck ([ec0a24e](https://github.com/stacksjs/stacks/commit/ec0a24e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- run the queue type tests in typecheck ([e4063f6](https://github.com/stacksjs/stacks/commit/e4063f6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.101...v0.72.102)
 
 ## 🐛 Bug Fixes
