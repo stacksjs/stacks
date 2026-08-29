@@ -30,6 +30,35 @@ export interface PaymentOptions {
    * Webhook configuration
    */
   webhook?: WebhookConfig
+
+  /**
+   * Stripe Connect configuration, for marketplaces that charge a customer on
+   * behalf of a merchant and keep a cut.
+   */
+  connect?: ConnectConfig
+}
+
+export interface ConnectConfig {
+  /**
+   * Whether Connect is in use. Nothing reads this at call time - the Connect
+   * functions work regardless - but an app can branch on it to hide merchant
+   * onboarding, and `buddy` surfaces it when reporting payment configuration.
+   */
+  enabled: boolean
+
+  /**
+   * Platform cut, as a percentage of the charge, applied when
+   * `destinationCharge` is called without an explicit fee amount.
+   */
+  platformFeePercent?: number
+
+  /**
+   * Signing secret for the Connect webhook endpoint. Connect endpoints are
+   * separate from account endpoints in the Stripe dashboard and get their own
+   * secret, so verifying Connect deliveries against `stripe.webhookSecret`
+   * fails every signature.
+   */
+  webhookSecret?: string
 }
 
 export interface StripeConfig {
@@ -370,6 +399,13 @@ export type WebhookEventType =
   | 'payment_method.detached'
   | 'setup_intent.succeeded'
   | 'setup_intent.setup_failed'
+  // Connect. Delivered to the platform's Connect endpoint, not the account
+  // endpoint, and each carries `event.account` naming the connected account.
+  | 'account.updated'
+  | 'account.application.deauthorized'
+  | 'payout.created'
+  | 'payout.paid'
+  | 'payout.failed'
 
 export interface WebhookEvent<T = unknown> {
   id: string

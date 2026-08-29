@@ -184,6 +184,9 @@ export interface FrameworkEnv {
   // Stripe
   STRIPE_SECRET_KEY: string | undefined
   STRIPE_PUBLISHABLE_KEY: string | undefined
+  STRIPE_CONNECT_ENABLED: boolean | undefined
+  STRIPE_CONNECT_FEE_PERCENT: number | undefined
+  STRIPE_CONNECT_WEBHOOK_SECRET: string | undefined
 
   // Frontend
   FRONTEND_APP_ENV: 'development' | 'staging' | 'production' | undefined

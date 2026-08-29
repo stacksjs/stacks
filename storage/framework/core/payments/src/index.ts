@@ -12,6 +12,9 @@ export { default as Payment } from './payment'
 // Billable modules
 export * from './billable'
 
+// Stripe Connect (marketplaces)
+export * from './connect'
+
 // Stripe driver and SDK
 export * from './drivers/stripe'
 // Type-only re-export of the Stripe SDK namespace (`Stripe.Customer`, etc.).

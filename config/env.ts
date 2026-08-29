@@ -235,6 +235,21 @@ const envSchema = defineEnv({
     default: '',
   },
 
+  STRIPE_CONNECT_ENABLED: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
+  STRIPE_CONNECT_FEE_PERCENT: {
+    validation: schema.number(),
+    default: 10,
+  },
+
+  STRIPE_CONNECT_WEBHOOK_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
   MEILISEARCH_HOST: {
     validation: schema.string(),
     default: '',

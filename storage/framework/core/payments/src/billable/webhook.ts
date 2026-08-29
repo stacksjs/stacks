@@ -34,6 +34,11 @@ export type WebhookEventType =
   | 'payment_method.detached'
   | 'setup_intent.succeeded'
   | 'setup_intent.setup_failed'
+  | 'account.updated'
+  | 'account.application.deauthorized'
+  | 'payout.created'
+  | 'payout.paid'
+  | 'payout.failed'
   | string
 
 export type WebhookHandler = (_event: Stripe.Event) => Promise<void> | void

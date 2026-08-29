@@ -27,6 +27,7 @@ import {
   onSubscription,
   processWebhook,
 } from './billable/webhook'
+import { connect } from './connect'
 
 // =============================================================================
 // Simple Payment Functions
@@ -465,6 +466,9 @@ export const Payment = {
   onCheckout,
   onCharge,
   processWebhook,
+
+  // Marketplaces (Stripe Connect)
+  connect,
 
   // Low-level access
   stripe,
