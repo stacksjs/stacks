@@ -92,5 +92,7 @@ export async function deactivateChildCategories(parentId: string): Promise<numbe
     .where('parent_category_id', '=', parentId)
     .execute()
 
-  return Number((result as any).length) || 0
+  // `execute()` on a delete answers the affected-row count. `.length` on a
+  // number is `undefined`, so this reported 0 deleted every time.
+  return Number(result) || 0
 }

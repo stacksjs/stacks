@@ -69,7 +69,10 @@ function prepareWaitlistForExport(waitlistProducts: WaitlistProductJsonResponse[
       product.name,
       product.email,
       product.phone || 'N/A',
-      (product as any).party_size,
+      // `quantity` is what a product waitlist records; `party_size` is the
+      // RESTAURANT waitlist's field and does not exist on this row, so this
+      // column exported an empty cell for every entry.
+      product.quantity,
       product.notificationPreference,
       product.source,
       product.status,

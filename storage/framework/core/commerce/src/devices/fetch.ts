@@ -41,7 +41,7 @@ export async function countTotalPrints(): Promise<number> {
     .select(db.fn.sum('print_count').as('total'))
     .executeTakeFirst()
 
-  return Number((result as any)?.total || 0)
+  return Number((result)?.total || 0)
 }
 
 /**
@@ -54,7 +54,7 @@ export async function countPrintsByDeviceId(printDeviceId: number): Promise<numb
     .where('id', '=', printDeviceId)
     .executeTakeFirst()
 
-  return (result as any)?.print_count ?? 0
+  return Number(result?.print_count ?? 0)
 }
 
 /**
@@ -69,11 +69,11 @@ export async function calculateErrorRate(): Promise<number> {
     ])
     .executeTakeFirst()
 
-  if (!(result as any)?.total || (result as any).total === 0) {
+  if (!(result)?.total || (result).total === 0) {
     return 0
   }
 
-  return Number((((result as any).failed_count ?? 0) / (result as any).total) * 100)
+  return Number(((Number(result?.failed_count ?? 0)) / Number(result?.total ?? 0)) * 100)
 }
 
 /**
@@ -100,11 +100,11 @@ export async function calculatePrinterHealth(): Promise<number> {
     ])
     .executeTakeFirst()
 
-  if (!(result as any)?.total || (result as any).total === 0) {
+  if (!(result)?.total || (result).total === 0) {
     return 0
   }
 
-  return Number((((result as any).online_count ?? 0) / (result as any).total) * 100)
+  return Number(((Number(result?.online_count ?? 0)) / Number(result?.total ?? 0)) * 100)
 }
 
 /**

@@ -78,7 +78,7 @@ describe('Print Device Module', () => {
       const warned = await updateStatus(Number(stored?.id), 'warning')
       expect(warned?.status).toBe('warning')
       const counted = await updatePrintCount(Number(stored?.id), 45)
-      expect(Number((counted as any)?.print_count)).toBe(45)
+      expect(Number((counted)?.print_count)).toBe(45)
       expect(await destroy(Number(stored?.id))).toBe(true)
     })
 

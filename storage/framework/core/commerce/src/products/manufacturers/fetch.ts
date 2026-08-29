@@ -47,8 +47,8 @@ export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJso
  */
 export async function fetchByCountry(country: string, options: FetchManufacturersOptions = {}): Promise<ManufacturerResponse> {
   // Set default values
-  const page = (options as any).page || 1
-  const limit = (options as any).limit || 2
+  const page = (options).page || 1
+  const limit = (options).limit || 2
 
   // Get total count for pagination
   const countResult = await db

@@ -254,6 +254,13 @@ export interface FetchManufacturersOptions {
   country?: string
   featured?: boolean
   search?: string
+  /**
+   * Pagination, which `fetchByCountry` has always read off this object and
+   * which every sibling Fetch*Options declares. Absent here, so those two
+   * reads went through a cast.
+   */
+  page?: number
+  limit?: number
 }
 
 export interface FetchCouponsOptions {

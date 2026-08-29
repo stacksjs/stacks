@@ -145,7 +145,7 @@ export async function adjustInventory(
     throw new Error('[commerce/inventory] adjustInventory delta must be a non-zero finite number')
   }
 
-  const affected = await adjustInventoryOnConnection(db as any, id, delta, formatDate(new Date()))
+  const affected = await adjustInventoryOnConnection(db, id, delta, formatDate(new Date()))
 
   if (!affected) return null
   return (await fetchById(id)) ?? null

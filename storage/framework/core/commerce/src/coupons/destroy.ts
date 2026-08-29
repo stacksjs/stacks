@@ -31,7 +31,10 @@ export async function deleteCoupons(ids: number[]): Promise<number> {
     .where('id', 'in', ids)
     .execute()
 
-  return (result as any).length || 0
+  // `execute()` on a delete answers the affected-row count. Reading
+  // `.length` off a number is `undefined`, so `|| 0` made this report 0
+  // deleted every time, however many rows went.
+  return result || 0
 }
 
 /**

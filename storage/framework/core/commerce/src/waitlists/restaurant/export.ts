@@ -67,11 +67,15 @@ function prepareRestaurantWaitlistForExport(waitlistEntries: WaitlistRestaurantJ
       entry.partySize,
       entry.tablePreference,
       entry.status,
-      (entry as any).quoted_wait_time || 'N/A',
-      (entry as any).actual_wait_time || 'N/A',
+      (entry).quoted_wait_time || 'N/A',
+      (entry).actual_wait_time || 'N/A',
       entry.checkInTime || 'N/A',
       entry.created_at,
-      (entry as any).notes || 'N/A',
+      // The restaurant waitlist model declares no `notes` attribute - that is
+      // the PRODUCT waitlist's field - so this column has never had a source
+      // and has always exported 'N/A'. Said plainly rather than read off a
+      // property that is not there.
+      'N/A',
     ]
   })
 

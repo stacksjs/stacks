@@ -172,7 +172,7 @@ describe('Waitlist Product Module', () => {
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch notified waitlists between dates
       const notifiedWaitlists = await fetchNotifiedBetweenDates(startDate, endDate)
@@ -278,7 +278,7 @@ describe('Waitlist Product Module', () => {
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch cancelled waitlists between dates
       const cancelledWaitlists = await fetchCancelledBetweenDates(startDate, endDate)
@@ -334,7 +334,7 @@ describe('Waitlist Product Module', () => {
       ]
 
       // Create the waitlist products
-      await bulkStore(requests as any)
+      await bulkStore(requests)
 
       // Fetch waitlists with waiting status
       const waitingWaitlists = await fetchWaiting()

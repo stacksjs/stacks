@@ -44,8 +44,7 @@ export async function adjustInventoryOnConnection(
     updatedAt,
   )
   const pending = await connection.unsafe(statement.query, statement.parameters)
-  const result = typeof (pending as any)?.execute === 'function'
-    ? await (pending as any).execute()
-    : pending
-  return mutationCount(result)
+  // `connection.unsafe(...)` is awaited above, so `.execute` cannot be on the
+  // result and this branch never ran.
+  return mutationCount(pending)
 }

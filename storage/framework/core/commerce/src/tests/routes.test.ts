@@ -59,7 +59,7 @@ describe('Delivery Route Module', () => {
       for (const routeData of routes) {
         const route = await store(routeData)
         expect(route.driver).toBe(driverName)
-        expect(Number((route as any).last_active)).toBeGreaterThan(0)
+        expect(Number((route).last_active)).toBeGreaterThan(0)
       }
 
       const driverRoutes = await fetchByDriver(driverName)
@@ -67,7 +67,7 @@ describe('Delivery Route Module', () => {
       expect(driverRoutes.every(route => route.driver === driverName)).toBe(true)
 
       const updated = await updateLastActive(Number(driverRoutes[0]?.id))
-      expect(Number((updated as any).last_active)).toBeGreaterThan(0)
+      expect(Number((updated).last_active)).toBeGreaterThan(0)
     })
 
     it('should normalize model attribute names to database columns', async () => {
@@ -79,9 +79,9 @@ describe('Delivery Route Module', () => {
         lastActive: 1785360000000,
       })
 
-      expect(Number((route as any).delivery_time)).toBe(75)
-      expect(Number((route as any).total_distance)).toBe(31)
-      expect(Number((route as any).last_active)).toBe(1785360000000)
+      expect(Number((route).delivery_time)).toBe(75)
+      expect(Number((route).total_distance)).toBe(31)
+      expect(Number((route).last_active)).toBe(1785360000000)
     })
 
     it('should only fetch routes active within the last 24 hours', async () => {
