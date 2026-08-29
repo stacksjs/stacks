@@ -15,7 +15,21 @@ import { authCookieToken } from './cookie'
  *
  * The header is checked first, so an API client behaves exactly as before.
  */
-export function requestToken(request: any): string | null {
+/**
+ * What this needs off a request, which is deliberately little.
+ *
+ * Both members are optional because the function is handed two different
+ * shapes: a Stacks request, which answers `bearerToken()`, and a plain
+ * `Request`, which only has headers. Written out rather than left as `any` so
+ * the optional chaining below is checked against something - as `any` it was
+ * indistinguishable from probing for members that do not exist on either.
+ */
+export interface TokenBearingRequest {
+  bearerToken?: () => string | undefined | null
+  headers?: Headers
+}
+
+export function requestToken(request: TokenBearingRequest | null | undefined): string | null {
   let token: string | undefined | null = request?.bearerToken?.()
 
   if (!token) {
@@ -25,7 +39,7 @@ export function requestToken(request: any): string | null {
   }
 
   if (!token && request?.headers)
-    token = authCookieToken(request as { headers: Headers })
+    token = authCookieToken({ headers: request.headers })
 
   return token || null
 }

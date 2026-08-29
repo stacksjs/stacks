@@ -196,9 +196,9 @@ export function getWritableFields(model: {
  * columns). The result stays keyed by attribute name — setters, casts and
  * validation rules all look fields up by that spelling.
  */
-export function filterFillable(body: any, fillableFields: string[]): Record<string, any> {
+export function filterFillable(body: Record<string, unknown> | null | undefined, fillableFields: string[]): Record<string, unknown> {
   if (!body || fillableFields.length === 0) return {}
-  const result: Record<string, any> = {}
+  const result: Record<string, unknown> = {}
   for (const field of fillableFields) {
     if (field in body) {
       result[field] = body[field]
@@ -217,7 +217,7 @@ export function filterFillable(body: any, fillableFields: string[]): Record<stri
  * stored write payload unchanged and normalize only the value passed to the
  * validator.
  */
-export function normalizeValidationValue(rule: any, value: unknown): unknown {
+export function normalizeValidationValue(rule: { name?: unknown } | null | undefined, value: unknown): unknown {
   if (rule?.name !== 'date' || value instanceof Date || typeof value !== 'string')
     return value
 
@@ -264,7 +264,7 @@ export function dropHiddenInputs(data: Record<string, any>, hiddenFields: string
  * `payment_details` on public reads. Response-side mirror of
  * `dropHiddenInputs`.
  */
-export function stripHidden(record: any, hiddenFields: string[]): any {
+export function stripHidden<T extends Record<string, unknown>>(record: T | null | undefined, hiddenFields: string[]): T | null | undefined {
   if (!record || hiddenFields.length === 0) return record
   const result = { ...record }
   for (const field of hiddenFields) {
@@ -332,7 +332,11 @@ export function buildReadColumnMap(
  *   ?sort=-rating           → ORDER BY rating DESC
  *   ?sort=discountType,name → ORDER BY discount_type ASC, name ASC
  */
-export function applySorting(query: any, sortParam: string | null, columns: ReadonlyMap<string, string>): any {
+export function applySorting<Q extends { orderBy: (_column: string, _direction: 'asc' | 'desc') => Q }>(
+  query: Q,
+  sortParam: string | null,
+  columns: ReadonlyMap<string, string>,
+): Q {
   if (!sortParam) return query
   const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
   let q = query

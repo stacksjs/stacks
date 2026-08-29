@@ -93,10 +93,10 @@ export function partition<T>(
   _f5: PartitionFilter<T>,
   _f6: PartitionFilter<T>,
 ): [T[], T[], T[], T[], T[], T[], T[]]
-export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): any {
+export function partition<T>(array: readonly T[], ...filters: PartitionFilter<T>[]): T[][] {
   const result: T[][] = Array.from({ length: filters.length + 1 })
     .fill(null)
-    .map((): any[] => [])
+    .map((): T[] => [])
 
   array.forEach((e, idx, arr) => {
     let i = 0
@@ -147,9 +147,9 @@ export function unique<T>(array: readonly T[]): T[] {
  * uniqueBy([1, 2, 3, 3, 2, 1], (a, b) => a === b) // [1, 2, 3]
  * ```
  */
-export function uniqueBy<T>(array: readonly T[], equalFn: (a: any, b: any) => boolean): T[] {
-  return array.reduce((acc: T[], cur: any) => {
-    const index = acc.findIndex((item: any) => equalFn(cur, item))
+export function uniqueBy<T>(array: readonly T[], equalFn: (a: T, b: T) => boolean): T[] {
+  return array.reduce((acc: T[], cur: T) => {
+    const index = acc.findIndex((item: T) => equalFn(cur, item))
     if (index === -1)
       acc.push(cur)
     return acc

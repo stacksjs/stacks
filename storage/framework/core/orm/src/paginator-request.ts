@@ -145,7 +145,13 @@ export function parseCursor(value: string | number | unknown[] | null | undefine
 export function enrichPaginatorUrls<T>(paginator: Paginator<T>): Paginator<T>
 export function enrichPaginatorUrls<T>(paginator: SimplePaginator<T>): SimplePaginator<T>
 export function enrichPaginatorUrls<T>(paginator: CursorPaginator<T>): CursorPaginator<T>
-export function enrichPaginatorUrls(paginator: any): any {
+// Implementation signature: callers see the three overloads above, so this is
+// not part of the public shape. Typed as the union anyway, so the body is
+// checked against the paginators it actually branches on rather than not at
+// all - the `'next_cursor' in paginator` test below narrows it.
+export function enrichPaginatorUrls(
+  paginator: Paginator<unknown> | SimplePaginator<unknown> | CursorPaginator<unknown>,
+): Paginator<unknown> | SimplePaginator<unknown> | CursorPaginator<unknown> {
   const request = lazyGetCurrentRequest()
   if (!request) return paginator
 

@@ -80,7 +80,7 @@ export function getPivotTableName(formattedModelName: string, modelRelationTable
   return tables.join('_')
 }
 
-export function hasRelations(obj: any, key: string): boolean {
+export function hasRelations(obj: object, key: string): boolean {
   return key in obj
 }
 

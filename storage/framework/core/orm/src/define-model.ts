@@ -2934,12 +2934,18 @@ function applySoftDeletes(
  * the latter pattern silently leaks `hidden: true` fields (e.g. license_plate,
  * vin, password hashes) into responses.
  */
-export function toAttrs<T = any>(value: any): T {
-  if (value == null) return value
-  if (Array.isArray(value)) return value.map(toAttrs) as unknown as T
+export function toAttrs<T = unknown>(value: unknown): T {
+  if (value == null) return value as T
+  if (Array.isArray(value)) return value.map(v => toAttrs(v)) as unknown as T
   if (typeof value !== 'object') return value as T
-  if (typeof value.toJSON === 'function') return value.toJSON()
-  if (value._attributes && typeof value._attributes === 'object') return value._attributes as T
+
+  // Narrowed once, then read: as `any` these three probes were checked against
+  // nothing, so a rename of `_attributes` would have gone unnoticed here and
+  // leaked hidden fields - the exact failure this function exists to prevent.
+  const candidate = value as { toJSON?: unknown, _attributes?: unknown }
+
+  if (typeof candidate.toJSON === 'function') return candidate.toJSON() as T
+  if (candidate._attributes && typeof candidate._attributes === 'object') return candidate._attributes as T
   return value as T
 }
 

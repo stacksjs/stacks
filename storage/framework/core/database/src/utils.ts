@@ -37,6 +37,8 @@ interface DbConnectionConfig {
 }
 
 interface DbConfig {
+  /** The chosen dialect, from `config/database.ts`. */
+  default?: string
   connections: {
     sqlite: DbConnectionConfig
     mysql: DbConnectionConfig
@@ -134,15 +136,40 @@ export function acquireDbConfigLock(): Promise<() => void> {
 }
 
 // Function to initialize the config when it's available
-export function initializeDbConfig(config: any): void {
+/**
+ * The slice of the app config this reads, written out rather than left as
+ * `any`. It is called with the whole config object, so naming only what it
+ * consumes keeps it callable from anywhere while still checking the four
+ * paths it walks.
+ */
+export interface DbConfigSource {
+  app?: { env?: string }
+  database?: {
+    default?: string
+    /*
+     * Every connection optional, because that is how the app config declares
+     * them - `config/database.ts` types each dialect as optional even though
+     * it supplies them all. The stored `DbConfig` below requires all five, so
+     * these two shapes were never the same type; the parameter being `any` is
+     * what let them be assigned to one another without anybody noticing.
+     */
+    connections?: Partial<DbConfig['connections']>
+    reads?: DbConfig['reads']
+  }
+}
+
+export function initializeDbConfig(config: DbConfigSource | null | undefined): void {
   if (config?.app?.env)
     appEnv = config.app.env
 
   if (config?.database?.default)
     dbDriver = config.database.default
 
-  if (config?.database)
-    dbConfig = config.database
+  // Cast rather than a merge: replacing the whole object is the behaviour this
+  // has always had, and an app that reaches here has supplied its connections.
+  // Narrowing the shapes above is what makes the difference visible at all.
+  if (config?.database?.connections)
+    dbConfig = config.database as DbConfig
 
   // Update bun-query-builder config
   updateQueryBuilderConfig()

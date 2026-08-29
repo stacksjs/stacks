@@ -223,14 +223,17 @@ export function deriveVSchema(models: ShardableModel[]): VSchemaResult {
  * array of names, or an object keyed by model name), so this flattens them
  * to the one form the derivation needs.
  */
-export function toShardableModel(definition: any, table: string): ShardableModel {
+export function toShardableModel(
+  definition: { name?: string, belongsTo?: unknown, traits?: { useUuid?: unknown, sharding?: ShardableModel['sharding'] } } | null | undefined,
+  table: string,
+): ShardableModel {
   const raw = definition?.belongsTo
   let belongsTo: string[] = []
 
   if (typeof raw === 'string')
     belongsTo = [raw]
   else if (Array.isArray(raw))
-    belongsTo = raw.map((entry: any) => typeof entry === 'string' ? entry : entry?.model).filter(Boolean)
+    belongsTo = raw.map((entry: unknown) => typeof entry === 'string' ? entry : (entry as { model?: string } | null)?.model).filter((entry): entry is string => Boolean(entry))
   else if (raw && typeof raw === 'object')
     belongsTo = Object.keys(raw)
 
