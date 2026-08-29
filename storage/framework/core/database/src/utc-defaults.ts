@@ -112,7 +112,10 @@ export async function findSessionClockDefaults(driver: string = getDbDriver()): 
       AND (LOWER(column_default) LIKE '%current_timestamp%' OR LOWER(column_default) = 'now()')`,
   ).execute()
 
-  return (rows as any[]).map(row => ({
+  // An information_schema result: MySQL answers upper-case column names,
+  // Postgres lower-case, which is why each field is read both ways. Every read
+  // is coerced below, so the generic row shape is enough.
+  return (rows as Array<Record<string, unknown>>).map(row => ({
     table: String(row.table_name ?? row.TABLE_NAME),
     column: String(row.column_name ?? row.COLUMN_NAME),
   }))

@@ -1077,7 +1077,9 @@ export async function executeFailedJobs(): Promise<void> {
     .selectAll()
     .execute()
 
-  for (const failedJob of failedJobs as any[]) {
+  // `failed_jobs` is not in the generated database types, so its rows come
+  // back generic. Only `id` is read, and it is coerced.
+  for (const failedJob of failedJobs as Array<Record<string, unknown>>) {
     await retryFailedJob(Number(failedJob.id))
   }
 }
@@ -1097,7 +1099,7 @@ export async function retryFailedJob(id: number): Promise<void> {
     .selectAll()
     .execute()
 
-  const failedJob = (failedJobs as any[])[0]
+  const failedJob = (failedJobs as Array<Record<string, unknown>>)[0]
 
   if (!failedJob) {
     throw new Error(`Failed job ${id} not found`)
@@ -1108,9 +1110,12 @@ export async function retryFailedJob(id: number): Promise<void> {
   // #1984). The marker is a reserved envelope key the worker's terminal-
   // failure path reads; if the payload isn't parseable JSON we re-queue it
   // verbatim (no marker — same as before).
-  let payloadToRequeue = failedJob.payload
+  // The row is generic (failed_jobs is not in the generated database types), so
+  // the stored payload arrives as `unknown` and is a JSON string here.
+  const storedPayload = typeof failedJob.payload === 'string' ? failedJob.payload : ''
+  let payloadToRequeue: string = storedPayload
   try {
-    const env = JSON.parse(failedJob.payload || '{}')
+    const env = JSON.parse(storedPayload || '{}')
     env._retriedFromFailed = true
     payloadToRequeue = JSON.stringify(env)
   }

@@ -24,6 +24,21 @@ export type QueuedJobState = 'pending' | 'processing' | 'delayed'
  * `status` column - which several of them tried - silently reports every job
  * as pending forever.
  */
+/**
+ * A `jobs` row, in the terms this module reads it.
+ *
+ * The table is not in the generated `database/types.d.ts`, so `selectAll()`
+ * answers a generic record and every field came back `unknown` - which is why
+ * this file used to cast the whole result to `any[]`. Written down instead, so
+ * a column renamed in a migration shows up here.
+ */
+interface QueuedJobRow {
+  queue?: string | null
+  created_at?: string | number | null
+  available_at?: unknown
+  reserved_at?: unknown
+}
+
 export function queuedJobState(
   job: { reserved_at?: unknown, available_at?: unknown },
   nowTimestamp: number = Math.floor(Date.now() / 1000),
@@ -140,8 +155,10 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
 
   try {
     const { db } = await import('@stacksjs/database')
-    const jobs = await db.selectFrom('jobs').selectAll().execute() as any[]
-    const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute() as any[]
+    // Neither table is in the generated database types, so both come back as
+    // generic rows; every field below is coerced before use.
+    const jobs = await db.selectFrom('jobs').selectAll().execute() as unknown as QueuedJobRow[]
+    const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute() as unknown as QueuedJobRow[]
 
     // Group jobs by queue
     const queueMap = new Map<string, { pending: number; processing: number; delayed: number; oldestAge?: number }>()

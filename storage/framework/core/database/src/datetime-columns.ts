@@ -121,11 +121,16 @@ export async function findTimestampColumns(): Promise<TimestampColumn[]> {
     tables,
   ).execute()
 
-  return (rows as any[]).map(row => ({
+  // An information_schema result: MySQL answers upper-case column names,
+  // Postgres lower-case, which is why each field is read both ways. Every read
+  // is coerced below, so the generic row shape is enough.
+  return (rows as Array<Record<string, unknown>>).map(row => ({
     table: String(row.TABLE_NAME ?? row.table_name),
     column: String(row.COLUMN_NAME ?? row.column_name),
     nullable: String(row.IS_NULLABLE ?? row.is_nullable).toUpperCase() === 'YES',
-    columnDefault: (row.COLUMN_DEFAULT ?? row.column_default) ?? null,
+    // Coerced like its neighbours: the driver hands back whatever the column
+    // default is, and TimestampColumn declares a string.
+    columnDefault: ((row.COLUMN_DEFAULT ?? row.column_default) ?? null) as string | null,
     extra: String(row.EXTRA ?? row.extra ?? ''),
   }))
 }
