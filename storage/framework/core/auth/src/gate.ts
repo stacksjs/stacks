@@ -318,7 +318,7 @@ const state: GateState = {
  * define('edit-settings', (user) => user?.isAdmin)
  * define('update-post', (user, post) => user?.id === post.userId)
  */
-export function define<T = any>(ability: string, callback: GateCallback<T>): void {
+export function define<T = any>(ability: Ability, callback: GateCallback<T>): void {
   state.gates.set(ability, callback)
 }
 
@@ -371,21 +371,21 @@ export async function allows<const A extends Ability>(ability: A, user: UserMode
  * @example
  * if (await denies('delete', user, post)) { ... }
  */
-export async function denies(ability: Ability, user: UserModel | null, ...args: any[]): Promise<boolean> {
+export async function denies<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<boolean> {
   return !(await check(ability, user, ...args))
 }
 
 /**
  * Check if the user can perform an ability (alias for allows)
  */
-export async function can(ability: Ability, user: UserModel | null, ...args: any[]): Promise<boolean> {
+export async function can<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<boolean> {
   return check(ability, user, ...args)
 }
 
 /**
  * Check if the user cannot perform an ability (alias for denies)
  */
-export async function cannot(ability: Ability, user: UserModel | null, ...args: any[]): Promise<boolean> {
+export async function cannot<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<boolean> {
   return !(await check(ability, user, ...args))
 }
 
@@ -394,6 +394,12 @@ export async function cannot(ability: Ability, user: UserModel | null, ...args: 
  *
  * @example
  * if (await any(['update', 'delete'], user, post)) { ... }
+ */
+/*
+ * `any` / `all` / `none` keep `any[]`: one argument list is checked against
+ * SEVERAL abilities, which may each declare different parameters, so there is
+ * no single tuple that is correct for the call. The single-ability functions
+ * above are where the declaration can be enforced.
  */
 export async function any(abilities: readonly Ability[], user: UserModel | null, ...args: any[]): Promise<boolean> {
   for (const ability of abilities) {
@@ -432,8 +438,8 @@ export async function none(abilities: readonly Ability[], user: UserModel | null
  * @example
  * await authorize('update', user, post) // Throws if not allowed
  */
-export async function authorize(ability: Ability, user: UserModel | null, ...args: any[]): Promise<AuthorizationResponse> {
-  const result = await inspect(ability, user, ...args)
+export async function authorize<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<AuthorizationResponse> {
+  const result = await inspect<A>(ability, user, ...args)
 
   if (!result.isAllowed) {
     throw new AuthorizationException(result.message, result.code)
@@ -445,7 +451,7 @@ export async function authorize(ability: Ability, user: UserModel | null, ...arg
 /**
  * Get detailed inspection result for an ability check
  */
-export async function inspect(ability: Ability, user: UserModel | null, ...args: any[]): Promise<AuthorizationResponse> {
+export async function inspect<const A extends Ability>(ability: A, user: UserModel | null, ...args: AbilityArgs<A>): Promise<AuthorizationResponse> {
   let response: AuthorizationResponse | null = null
 
   // Run before callbacks. An explicit true/false is an override that

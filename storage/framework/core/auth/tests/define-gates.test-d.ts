@@ -13,6 +13,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type { Ability, GatesDefinition, PolicyMapping, PolicyModelName, PolicyName } from '../src/gate'
 import { defineGates } from '../src/gate'
+import { Gate } from '../src/gate'
 
 // ── the good case, and what it keeps ──────────────────────────────────────
 
@@ -143,3 +144,54 @@ export const namesAreLiteral: 'access-admin' | 'view-dashboard' = '' as Declared
 
 // @ts-expect-error - 'not-a-declared-gate' is not one of the two above.
 export const rejectsUnknownName: DeclaredGateNames = 'not-a-declared-gate'
+
+// ── every single-ability check is held to the same declaration ────────────
+
+/*
+ * `allows` was typed first and its siblings were left on `...args: any[]`, so
+ * which spelling you reached for decided whether the call was checked. They
+ * agree now.
+ *
+ * `any` / `all` / `none` deliberately keep `any[]`: one argument list is
+ * checked against several abilities, which may each declare different
+ * parameters, so no single tuple is correct for the call.
+ */
+declare const someone: UserModel | null
+
+export async function everyCheckerAgrees(): Promise<void> {
+  // `view-dashboard` is declared `(user) => boolean` above: no extra arguments.
+  await Gate.allows('view-dashboard', someone)
+  await Gate.denies('view-dashboard', someone)
+  await Gate.can('view-dashboard', someone)
+  await Gate.cannot('view-dashboard', someone)
+  await Gate.inspect('view-dashboard', someone)
+  await Gate.authorize('view-dashboard', someone)
+}
+
+export async function everyCheckerRejectsExtras(): Promise<void> {
+  // @ts-expect-error - the gate declares no arguments after the user.
+  await Gate.allows('view-dashboard', someone, 'extra')
+  // @ts-expect-error - denies is held to the same declaration.
+  await Gate.denies('view-dashboard', someone, 'extra')
+  // @ts-expect-error - and can.
+  await Gate.can('view-dashboard', someone, 'extra')
+  // @ts-expect-error - and cannot.
+  await Gate.cannot('view-dashboard', someone, 'extra')
+  // @ts-expect-error - and inspect.
+  await Gate.inspect('view-dashboard', someone, 'extra')
+  // @ts-expect-error - and authorize.
+  await Gate.authorize('view-dashboard', someone, 'extra')
+}
+
+/*
+ * An ability that is not a declared gate stays open, and that is deliberate:
+ * a policy may add its own methods, and a `/can/:ability` route passes one
+ * straight through. The policy name map stores FILE PATHS rather than class
+ * types - on purpose, so resolving one name does not pull in every policy
+ * module - so a policy's method names are not derivable here, and closing
+ * `Ability` would reject correct calls.
+ */
+export async function dynamicAbilitiesStillCompile(routeParam: string): Promise<void> {
+  await Gate.allows(routeParam, someone)
+  await Gate.allows('publish', someone, { id: 1 })
+}
