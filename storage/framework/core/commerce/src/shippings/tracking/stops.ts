@@ -20,6 +20,8 @@ import {
  * same thing as the stop being `en_route` and `completed`.
  */
 
+export type StopType = 'pickup' | 'dropoff'
+
 export interface AssignStopInput {
   deliveryRouteId: number
   orderId?: number | null
@@ -30,6 +32,18 @@ export interface AssignStopInput {
   recipientName?: string | null
   recipientPhone?: string | null
   etaAt?: string | null
+  /** Which leg this stop is. Defaults to `dropoff`. */
+  type?: StopType
+}
+
+/**
+ * Whether a stop is the collection leg.
+ *
+ * Read defensively: rows written before `type` existed have no value, and a
+ * stop with no type is a dropoff, which is what a single-stop route always was.
+ */
+function isPickup(stop: Record<string, unknown>): boolean {
+  return stop.type === 'pickup'
 }
 
 /** Put an order on a route. */
@@ -51,6 +65,7 @@ export async function assignStop(input: AssignStopInput): Promise<Record<string,
       recipient_name: input.recipientName ?? null,
       recipient_phone: input.recipientPhone ?? null,
       eta_at: input.etaAt ?? null,
+      type: input.type ?? 'dropoff',
     })
     .executeTakeFirst()
 
@@ -78,7 +93,11 @@ export async function startStop(stopId: number): Promise<Record<string, unknown>
   if (!stop)
     return null
 
-  if (stop.order_id != null)
+  // Only the dropoff leg puts an order out for delivery. Driving to the
+  // merchant to collect it is not the customer's order being on its way, and
+  // saying so starts the tracking page and its notifications an entire pickup
+  // too early.
+  if (stop.order_id != null && !isPickup(stop))
     await setOrderStatus(stop.order_id as number, 'OUT_FOR_DELIVERY')
 
   await emitDeliveryStarted(stop)
@@ -108,8 +127,11 @@ export async function completeStop(stopId: number, notes?: string): Promise<Reco
   if (!stop)
     return null
 
+  // Collecting the order is not delivering it. A completed pickup advances the
+  // order to OUT_FOR_DELIVERY instead: it has left the merchant and is on the
+  // vehicle, which is exactly what the customer should be told.
   if (stop.order_id != null)
-    await setOrderStatus(stop.order_id as number, 'DELIVERED')
+    await setOrderStatus(stop.order_id as number, isPickup(stop) ? 'OUT_FOR_DELIVERY' : 'DELIVERED')
 
   await emitDeliveryCompleted(stop)
   await closeRouteIfDone(stop.delivery_route_id as number)
@@ -135,7 +157,11 @@ export async function failStop(stopId: number, reason: string): Promise<Record<s
   if (!stop)
     return null
 
-  if (stop.order_id != null)
+  // A failed pickup leaves the order exactly where it was - still with the
+  // merchant, waiting for another courier. Sending it to SHIPPED would claim
+  // it left a building it never left; the `delivery:failed` event is what
+  // dispatch listens to in order to re-offer the job.
+  if (stop.order_id != null && !isPickup(stop))
     await setOrderStatus(stop.order_id as number, 'SHIPPED')
 
   await emitDeliveryFailed(stop, reason)

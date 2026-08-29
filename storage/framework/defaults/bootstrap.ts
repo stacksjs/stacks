@@ -175,6 +175,13 @@ if (mounts('forms', feature('forms'))) {
   await route.register(frameworkPath('defaults/routes/forms.ts'))
 }
 
+// Courier delivery endpoints: position ingest and the stop/route lifecycle a
+// courier's device drives. Gated with the rest of the commerce surface, since
+// they are meaningless without the delivery models behind them.
+if (mounts('delivery', feature('commerce'))) {
+  await route.register(frameworkPath('defaults/routes/delivery.ts'))
+}
+
 // Social sign-in: `/auth/{provider}` + `/auth/{provider}/callback`
 // (stacksjs/stacks#2276). An opt-in bundle, NOT part of the implicit default
 // set or `all` — OAuth callback URLs in an app that configured no provider

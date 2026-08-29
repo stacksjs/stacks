@@ -26,7 +26,7 @@ export default defineModel({
       displayable: ['id', 'sequence', 'status', 'address', 'etaAt'],
       searchable: ['address', 'recipientName'],
       sortable: ['sequence', 'etaAt', 'createdAt'],
-      filterable: ['status', 'deliveryRouteId'],
+      filterable: ['status', 'type', 'deliveryRouteId'],
     },
 
     useSeeder: { count: 0 },
@@ -157,6 +157,29 @@ export default defineModel({
       fillable: true,
       validation: { rule: schema.string().max(1000) },
       factory: () => '',
+    },
+
+    /**
+     * Which leg of the run this stop is.
+     *
+     * A delivery is two stops, not one: collect from the merchant, then hand
+     * over to the customer. Without the distinction both legs look like a
+     * dropoff, so arriving at the restaurant would tell the customer their
+     * order is out for delivery, and collecting it would mark the order
+     * delivered before it had left the kitchen.
+     *
+     * Defaults to `dropoff` so existing single-stop routes keep their meaning.
+     */
+    type: {
+      order: 13,
+      required: true,
+      fillable: true,
+      default: 'dropoff',
+      validation: {
+        rule: schema.enum(['pickup', 'dropoff']),
+        message: { enum: 'Type must be one of: pickup, dropoff' },
+      },
+      factory: () => 'dropoff',
     },
   },
 
