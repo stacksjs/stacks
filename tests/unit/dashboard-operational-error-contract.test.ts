@@ -99,7 +99,7 @@ describe('dashboard operational error contract', () => {
       'CommerceTaxesAction.ts',
       'DeliveryRouteIndexAction.ts',
       'DigitalDeliveryIndexAction.ts',
-      'DriverIndexAction.ts',
+      'CourierIndexAction.ts',
       'LicenseKeyIndexAction.ts',
       'LicenseKeyOptionsAction.ts',
       'ManufacturerIndexAction.ts',

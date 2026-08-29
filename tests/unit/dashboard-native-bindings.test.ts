@@ -676,7 +676,7 @@ describe('dashboard native STX bindings', () => {
     for (const [file, formId] of [
       ['Commerce/Delivery/DeliveryRouteDialog.stx', 'delivery-route-form'],
       ['Commerce/Delivery/DigitalDeliveryDialog.stx', 'digital-delivery-form'],
-      ['Commerce/Delivery/DriverDialog.stx', 'driver-form'],
+      ['Commerce/Delivery/CourierDialog.stx', 'courier-form'],
       ['Commerce/Delivery/LicenseKeyDialog.stx', 'license-key-form'],
       ['Commerce/Delivery/ShippingMethodDialog.stx', 'shipping-method-form'],
       ['Commerce/Delivery/ShippingRateDialog.stx', 'shipping-rate-form'],
@@ -803,7 +803,7 @@ describe('dashboard native STX bindings', () => {
       'Commerce/RestaurantWaitlistDeleteDialog.stx',
       'Commerce/Delivery/DeliveryRouteDeleteDialog.stx',
       'Commerce/Delivery/DigitalDeliveryDeleteDialog.stx',
-      'Commerce/Delivery/DriverDeleteDialog.stx',
+      'Commerce/Delivery/CourierDeleteDialog.stx',
       'Commerce/Delivery/LicenseKeyDeleteDialog.stx',
       'Commerce/Delivery/ShippingMethodDeleteDialog.stx',
       'Commerce/Delivery/ShippingRateDeleteDialog.stx',

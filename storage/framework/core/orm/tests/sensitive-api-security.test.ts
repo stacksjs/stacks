@@ -12,7 +12,7 @@ import Coupon from '../../../defaults/app/Models/commerce/Coupon'
 import Customer from '../../../defaults/app/Models/commerce/Customer'
 import DeliveryRoute from '../../../defaults/app/Models/commerce/DeliveryRoute'
 import DigitalDelivery from '../../../defaults/app/Models/commerce/DigitalDelivery'
-import Driver from '../../../defaults/app/Models/commerce/Driver'
+import Courier from '../../../defaults/app/Models/commerce/Courier'
 import GiftCard from '../../../defaults/app/Models/commerce/GiftCard'
 import LicenseKey from '../../../defaults/app/Models/commerce/LicenseKey'
 import LoyaltyPoint from '../../../defaults/app/Models/commerce/LoyaltyPoint'
@@ -71,7 +71,7 @@ describe('sensitive model API security', () => {
     ['customer', Customer],
     ['delivery route', DeliveryRoute],
     ['digital delivery', DigitalDelivery],
-    ['driver', Driver],
+    ['courier', Courier],
     ['gift card', GiftCard],
     ['license key', LicenseKey],
     ['loyalty point', LoyaltyPoint],
