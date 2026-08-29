@@ -152,13 +152,13 @@ export function email(buddy: CLI): void {
         const identity = await withTimeout(ses.getEmailIdentity(emailDomain))
 
         if (identity) {
-          console.log(`\n✅ Domain Status: ${(identity as any).VerificationStatus || 'Unknown'}`)
+          console.log(`\n✅ Domain Status: ${(identity).VerificationStatus || 'Unknown'}`)
 
-          if ((identity as any).DkimAttributes) {
-            console.log(`\nDKIM Status: ${(identity as any).DkimAttributes.Status || 'Unknown'}`)
-            if ((identity as any).DkimAttributes.Tokens) {
+          if ((identity).DkimAttributes) {
+            console.log(`\nDKIM Status: ${(identity).DkimAttributes.Status || 'Unknown'}`)
+            if ((identity).DkimAttributes.Tokens) {
               console.log('\nDKIM Records needed:')
-              for (const token of (identity as any).DkimAttributes.Tokens) {
+              for (const token of (identity).DkimAttributes.Tokens) {
                 console.log(`  CNAME: ${token}._domainkey.${emailDomain}`)
                 console.log(`  Value: ${token}.dkim.amazonses.com`)
               }
@@ -185,14 +185,14 @@ export function email(buddy: CLI): void {
       // provider — so `email:test` exercises the real send path (e.g. the
       // self-hosted SMTP server) instead of always hitting SES.
       const { config } = await import('@stacksjs/config')
-      const driver = (config as any)?.email?.default || 'ses'
+      const driver = (config)?.email?.default || 'ses'
       console.log(`\n📧 Sending Test Email to ${to} via the configured mailer ('${driver}')...\n`)
 
       try {
         const { mail } = await import('@stacksjs/email')
         const from = {
           name: emailConfig?.from?.name || 'Stacks',
-          address: emailConfig?.from?.address || `hello@${(emailConfig as any)?.domain || 'stacksjs.com'}`,
+          address: emailConfig?.from?.address || `hello@${(emailConfig)?.domain || 'stacksjs.com'}`,
         }
         const result: any = await mail.send({
           to: [to],
@@ -278,13 +278,13 @@ export function email(buddy: CLI): void {
           limit: 1,
         }))
 
-        if (!(streams as any).logStreams || (streams as any).logStreams.length === 0) {
+        if (!(streams).logStreams || (streams).logStreams.length === 0) {
           console.log('No log streams found.')
           console.log('\n💡 Logs will appear after emails are processed.')
           return
         }
 
-        const logStreamName = (streams as any).logStreams[0].logStreamName
+        const logStreamName = streams.logStreams[0]?.logStreamName
         if (!logStreamName) {
           console.log('No log stream name found.')
           return
@@ -296,8 +296,8 @@ export function email(buddy: CLI): void {
           limit: parseInt(options.lines || '20', 10),
         }))
 
-        if ((events as any).events && (events as any).events.length > 0) {
-          for (const event of (events as any).events) {
+        if ((events).events && (events).events.length > 0) {
+          for (const event of (events).events) {
             const time = new Date(event.timestamp || 0).toISOString()
             console.log(`[${time}] ${event.message}`)
           }
@@ -412,7 +412,11 @@ export function email(buddy: CLI): void {
                 prefix: `mailboxes/${domain}/${localPart}/`,
                 maxKeys: 1000,
               }))
-              const matchingKey = (listResult as any).Contents?.find(
+              // `objects`, not `Contents`. This S3Client returns
+              // `{ objects, nextContinuationToken }`; `Contents` is the AWS SDK
+              // v2 field name, so this read was always `undefined` and the
+              // lookup below always found nothing.
+              const matchingKey = listResult.objects?.find(
                 (obj: any) => obj.Key.includes(options!.raw!) && obj.Key.endsWith('/raw.eml')
               )
               if (matchingKey) {
@@ -481,7 +485,8 @@ export function email(buddy: CLI): void {
               maxKeys: limit,
             }))
 
-            const objects = (listResult as any).Contents || []
+            // See above: this client answers `objects`, never `Contents`.
+            const objects = listResult.objects || []
             if (objects.length === 0) {
               // Also try incoming/ prefix (old format)
               const listResult2 = await withTimeout(s3.listObjects({
@@ -489,7 +494,7 @@ export function email(buddy: CLI): void {
                 prefix: 'incoming/',
                 maxKeys: limit,
               }))
-              const objects2 = (listResult2 as any).Contents || []
+              const objects2 = listResult2.objects || []
               objects.push(...objects2)
             }
 

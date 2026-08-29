@@ -88,7 +88,7 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
   return {
     async softDelete(id) {
       const now = sqlDateTime()
-      const q: any = (model as any).where(primaryKey, id)
+      const q: any = (model).where(primaryKey, id)
       if (typeof q?.update === 'function') {
         await q.update({ [DELETED_AT_COLUMN]: now })
         return true
@@ -97,7 +97,7 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
     },
 
     async restore(id) {
-      const q: any = (model as any).where(primaryKey, id)
+      const q: any = (model).where(primaryKey, id)
       if (typeof q?.update === 'function') {
         await q.update({ [DELETED_AT_COLUMN]: null })
         return true
@@ -107,7 +107,7 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
 
     async forceDelete(id) {
       // Bypass the soft-delete shim and call the real query.delete().
-      const q: any = (model as any).where(primaryKey, id)
+      const q: any = (model).where(primaryKey, id)
       if (typeof q?.delete === 'function') {
         await q.delete()
         return true
@@ -118,11 +118,11 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
     withTrashed() {
       // Vanilla query builder — no `whereNull('deleted_at')` filter
       // injection, so soft-deleted rows are visible.
-      return typeof model.query === 'function' ? model.query() : (model as any)
+      return typeof model.query === 'function' ? model.query() : (model)
     },
 
     onlyTrashed() {
-      const q: any = typeof model.query === 'function' ? model.query() : (model as any)
+      const q: any = typeof model.query === 'function' ? model.query() : (model)
       if (typeof q?.whereNotNull === 'function') return q.whereNotNull(DELETED_AT_COLUMN)
       // Fallback for builders that don't expose whereNotNull
       return q?.where?.(DELETED_AT_COLUMN, '!=', null) ?? q

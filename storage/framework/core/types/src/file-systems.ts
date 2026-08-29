@@ -20,13 +20,17 @@ export interface JsonFile {
  * Describes a package.json file.
  */
 export interface PackageJson {
-  engines: {
-    node: string
-    pnpm: string
+  /** The one field every package.json has, and the one `buddy doctor` reads. */
+  name?: string
+  description?: string
+  engines?: {
+    node?: string
+    pnpm?: string
   }
-  version: string
-  packageManager: string
-  // wip
+  version?: string
+  packageManager?: string
+  /** A manifest carries plenty this does not name. */
+  [key: string]: unknown
 }
 
 export interface FileSystemOptions {

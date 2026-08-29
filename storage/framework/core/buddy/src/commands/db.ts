@@ -57,7 +57,7 @@ const DEFAULT_RETAIN = 7
 export async function backupTarget(): Promise<BackupTarget | null> {
   const { config, overridesReady } = await import('@stacksjs/config')
   await overridesReady.catch(() => {})
-  return resolveBackupTarget((config as any)?.database)
+  return resolveBackupTarget((config)?.database)
 }
 
 function backupDir(out?: string): string {

@@ -156,7 +156,7 @@ export function enrichPaginatorUrls(
   if (!request) return paginator
 
   const url = (() => {
-    try { return new URL((request as any).url) }
+    try { return new URL((request).url) }
     catch { return null }
   })()
   if (!url) return paginator

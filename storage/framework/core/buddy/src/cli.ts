@@ -47,7 +47,7 @@ if (needsFullSetup) {
   const reportFatal = (label: string, error: unknown): never => {
     log.debug(`Buddy ${label}`)
     try {
-      process.stderr.write(`\n[buddy] ${label}: ${(error as any)?.stack ?? String(error)}\n`)
+      process.stderr.write(`\n[buddy] ${label}: ${(error as { stack?: string } | null)?.stack ?? String(error)}\n`)
     }
     catch {}
     log.error(error as Error)
@@ -94,8 +94,8 @@ async function main() {
     // Load required commands for setup and key generation, then tell the
     // registry we've handled them so the bulk loader doesn't double-register.
     const { setup } = await import('./commands/setup.ts')
-    setup(buddy as any)
-    markLoaded(buddy as any, 'setup')
+    setup(buddy)
+    markLoaded(buddy, 'setup')
 
     // Before running any commands, ensure the project is already initialized
     // Skip APP_KEY check for commands that don't need it (build, lint, test, etc.)
@@ -119,7 +119,7 @@ async function main() {
 
     // Use lazy loading for better cold start performance
     const commandsToLoad = getCommandsToLoad(args)
-    await loadCommands(commandsToLoad, buddy as any)
+    await loadCommands(commandsToLoad, buddy)
 
     // Load user commands from app/Commands/
     await dynamicImports(buddy)
@@ -127,13 +127,13 @@ async function main() {
   else {
     // For minimal commands, only load what's needed for better cold start
     const { loadCommand } = await import('./lazy-commands.ts')
-    await loadCommand('version', buddy as any)
+    await loadCommand('version', buddy)
   }
 
   buddy.help()
 
   // Handle interactive mode when no command is specified
-  if (args.length === 0 && process.stdin.isTTY && !(buddy as any).isNoInteraction) {
+  if (args.length === 0 && process.stdin.isTTY && !(buddy).isNoInteraction) {
     await showInteractiveMenu(buddy)
   }
   else {
@@ -146,7 +146,7 @@ async function main() {
   //   const { applyTheme, getAvailableThemes } = await import('@stacksjs/clapp')
   //   const availableThemes = getAvailableThemes()
   //   if (availableThemes.includes(buddy.theme)) {
-  //     applyTheme(buddy.theme as any)
+  //     applyTheme(buddy.theme)
   //   }
   //   else {
   //     log.warn(`Unknown theme: ${buddy.theme}. Available themes: ${availableThemes.join(', ')}`)
@@ -244,7 +244,7 @@ async function dynamicImports(buddy: CLI) {
   await loadCommands(buddy, {
     commandsDir: p.appPath('Commands'),
     registryPath: p.appPath('Commands.ts'),
-    onError: (message, error) => log.error(`${message}:`, error as any),
+    onError: (message, error) => log.error(`${message}:`, error),
     onDebug: message => log.debug(message),
   })
 

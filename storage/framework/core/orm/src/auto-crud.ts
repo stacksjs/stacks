@@ -554,7 +554,7 @@ function middlewareList(raw: unknown): string[] {
  */
 export function resolveApiMiddleware(useApi: unknown): { read: string[], write: string[], declared: boolean } {
   const declared = typeof useApi === 'object' && useApi !== null && 'middleware' in (useApi as Record<string, unknown>)
-  const raw = (useApi as any)?.middleware
+  const raw = (useApi as { middleware?: unknown } | null | undefined)?.middleware
 
   if (!declared)
     return { read: ['auth'], write: ['auth'], declared: false }

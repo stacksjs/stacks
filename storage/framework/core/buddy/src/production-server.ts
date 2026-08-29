@@ -310,7 +310,7 @@ export async function startProductionServer(options?: { port?: string | number, 
       const viewPatterns = resolveViewPatterns(
         userViewsPath,
         defaultViewsPath,
-        (config as any)?.ui?.defaultViews,
+        (config)?.ui?.defaultViews,
       )
 
       for (const name of viewPatterns.missing)
@@ -577,8 +577,8 @@ function fallbackI18nFromSite(site: any) {
 async function resolveSiteI18n(site: any): Promise<any> {
   try {
     const resolved = await resolveVendoredStxModule()
-    if (typeof (resolved as any)?.resolveI18n === 'function') {
-      const i18n = (resolved as any).resolveI18n(site, process.cwd())
+    if (typeof (resolved)?.resolveI18n === 'function') {
+      const i18n = (resolved).resolveI18n(site, process.cwd())
       if (i18n)
         return i18n
     }

@@ -257,11 +257,11 @@ export function cloud(buddy: CLI): void {
       }
 
       if (options.invalidateCache) {
-        const { confirm } = await (prompts as any)({
-          name: 'confirm',
-          type: 'confirm',
-          message: 'Would you like to invalidate the CDN (CloudFront) cache?',
-        })
+        // `prompts` is an object of prompt functions, not the callable the npm
+        // package of that name exports - calling it threw "prompts is not a
+        // function" at every one of these interactive paths. Behind
+        // `(prompts as any)(...)`, nothing said so.
+        const confirm = await prompts.confirm('Would you like to invalidate the CDN (CloudFront) cache?')
 
         if (!confirm) {
           await outro('Exited', { startTime, useSeconds: true })
@@ -296,7 +296,7 @@ export function cloud(buddy: CLI): void {
 
           const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
           const generator = new InfrastructureGenerator({
-            config: cloudConfig as any,
+            config: cloudConfig,
             environment,
           })
 
@@ -345,11 +345,11 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:add')
 
       if (options.jumpBox) {
-        const { confirm } = await (prompts as any)({
-          name: 'confirm',
-          type: 'confirm',
-          message: 'Would you like to add a jump-box to your cloud?',
-        })
+        // `prompts` is an object of prompt functions, not the callable the npm
+        // package of that name exports - calling it threw "prompts is not a
+        // function" at every one of these interactive paths. Behind
+        // `(prompts as any)(...)`, nothing said so.
+        const confirm = await prompts.confirm('Would you like to add a jump-box to your cloud?')
 
         if (!confirm) {
           await outro('Exited', { startTime, useSeconds: true })
@@ -427,11 +427,11 @@ export function cloud(buddy: CLI): void {
 
       if (options.jumpBox) {
         if (!options.yes) {
-          const { confirm } = await (prompts as any)({
-            name: 'confirm',
-            type: 'confirm',
-            message: 'Would you like to remove your jump-box for now?',
-          })
+          // `prompts` is an object of prompt functions, not the callable the npm
+          // package of that name exports - calling it threw "prompts is not a
+          // function" at every one of these interactive paths. Behind
+          // `(prompts as any)(...)`, nothing said so.
+          const confirm = await prompts.confirm('Would you like to remove your jump-box for now?')
 
           if (!confirm) {
             await outro('Exited', { startTime, useSeconds: true })
@@ -578,11 +578,11 @@ export function cloud(buddy: CLI): void {
       const startTime = await intro('buddy cloud:optimize-cost')
 
       if (options.jumpBox) {
-        const { confirm } = await (prompts as any)({
-          name: 'confirm',
-          type: 'confirm',
-          message: 'Would you like to remove your jump-box to optimize your costs?',
-        })
+        // `prompts` is an object of prompt functions, not the callable the npm
+        // package of that name exports - calling it threw "prompts is not a
+        // function" at every one of these interactive paths. Behind
+        // `(prompts as any)(...)`, nothing said so.
+        const confirm = await prompts.confirm('Would you like to remove your jump-box to optimize your costs?')
 
         if (!confirm) {
           await outro('Exited', { startTime, useSeconds: true })
@@ -683,11 +683,11 @@ export function cloud(buddy: CLI): void {
 
       const startTime = await intro('buddy cloud:invalidate-cache')
 
-      const { confirm } = await (prompts as any)({
-        name: 'confirm',
-        type: 'confirm',
-        message: 'Would you like to invalidate the CloudFront cache?',
-      })
+      // `prompts` is an object of prompt functions, not the callable the npm
+      // package of that name exports - calling it threw "prompts is not a
+      // function" at every one of these interactive paths. Behind
+      // `(prompts as any)(...)`, nothing said so.
+      const confirm = await prompts.confirm('Would you like to invalidate the CloudFront cache?')
 
       if (!confirm) {
         await outro('Exited', { startTime, useSeconds: true })
@@ -744,7 +744,7 @@ export function cloud(buddy: CLI): void {
 
         const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
         const generator = new InfrastructureGenerator({
-          config: cloudConfig as any,
+          config: cloudConfig,
           environment,
         })
 

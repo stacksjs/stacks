@@ -233,7 +233,7 @@ function lazyModel<T>(name: string): T {
       const m = _loaded[name]
       if (m == null)
         return undefined
-      const value = (m as any)[prop]
+      const value = (m)[prop]
       // Bind methods to the underlying model so `this` is correct
       // when the Proxy is the receiver.
       return typeof value === 'function' ? value.bind(m) : value
@@ -242,12 +242,12 @@ function lazyModel<T>(name: string): T {
       const m = _loaded[name]
       if (m == null)
         return false
-      ;(m as any)[prop] = value
+      ;(m)[prop] = value
       return true
     },
     has(_target, prop) {
       const m = _loaded[name]
-      return m == null ? false : prop in (m as any)
+      return m == null ? false : prop in (m)
     },
     apply(_target, thisArg, args) {
       const m = _loaded[name]

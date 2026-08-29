@@ -35,7 +35,7 @@ import { loadModelRegistry } from './model-registry'
  * row shape from the table NAME. These routes are generated per model at
  * runtime: the table and the columns arrive as strings out of a request, so
  * there is no literal for those overloads to resolve, and every chained call
- * came back mistyped. The file papered over that with sixteen `(db as any)`
+ * came back mistyped. The file papered over that with sixteen `(db)`
  * casts, which unchecked the whole handle at every one of them.
  *
  * One cast, at the boundary where a runtime string meets a type that wants a
@@ -154,7 +154,7 @@ function routeExists(method: string, path: string): boolean {
   if (!existing)
     return false
 
-  const existingPath = String((existing as any).path ?? '')
+  const existingPath = String((existing).path ?? '')
   log.info(
     `[orm] Skipping generated ${method} ${path} - already defined`
     + `${existingPath && existingPath !== path ? ` as ${existingPath}` : ''}.`,
@@ -395,7 +395,7 @@ async function authedUserFromRequest(req: EnhancedRequest): Promise<any | null> 
   if (!token) return null
   try {
     const { Auth } = await import('@stacksjs/auth')
-    const user = await (Auth as any).getUserFromToken(token)
+    const user = await (Auth).getUserFromToken(token)
     if (user) req._authenticatedUser = user
     return user || null
   }
@@ -520,7 +520,7 @@ async function resolveAuthedFill(
     const out: Record<string, any> = {}
     for (const [field, getter] of Object.entries(cfg)) {
       try {
-        out[field] = typeof getter === 'function' ? await (getter as any)(user, req) : getter
+        out[field] = typeof getter === 'function' ? await (getter)(user, req) : getter
       }
       catch { /* ignore individual getter errors */ }
     }
@@ -788,7 +788,7 @@ for (const [modelName, model] of Object.entries(models)) {
         // this, GET /api/cars/123 would happily return a row that was
         // soft-deleted, even though it doesn't appear in the listing.
         const url = new URL(req.url)
-        if (model.traits?.useSoftDeletes && (result as any).deleted_at && url.searchParams.get('withTrashed') !== 'true') {
+        if (model.traits?.useSoftDeletes && (result).deleted_at && url.searchParams.get('withTrashed') !== 'true') {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
 
@@ -819,8 +819,8 @@ for (const [modelName, model] of Object.entries(models)) {
         // empty per spec — the client keeps its cached copy. Skip when the
         // request is authed because per-user variants would poison shared
         // caches.
-        const lastWrite = (payload as any)?.updated_at || (payload as any)?.created_at
-        const etag = lastWrite ? `W/"${(payload as any).id}-${String(lastWrite)}"` : undefined
+        const lastWrite = (payload)?.updated_at || (payload)?.created_at
+        const etag = lastWrite ? `W/"${(payload).id}-${String(lastWrite)}"` : undefined
         const ifNoneMatch = req.headers?.get?.('if-none-match')
         if (etag && ifNoneMatch && ifNoneMatch === etag) {
           return new Response(null, { status: 304, headers: { ETag: etag } })

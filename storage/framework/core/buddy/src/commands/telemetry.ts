@@ -20,6 +20,19 @@ const telemetry = {
   },
 }
 
+/**
+ * The flags `buddy telemetry` declares. Its own, rather than the shared
+ * `CliOptions`, which carries only what every command has.
+ */
+interface TelemetryOptions extends CliOptions {
+  /** `--enable` */
+  enable?: boolean
+  /** `--disable` */
+  disable?: boolean
+  /** `--status` */
+  status?: boolean
+}
+
 export function telemetryCommand(buddy: CLI): void {
   buddy
     .command('telemetry', 'Manage telemetry settings')
@@ -29,13 +42,13 @@ export function telemetryCommand(buddy: CLI): void {
     .example('buddy telemetry --status')
     .example('buddy telemetry --enable')
     .example('buddy telemetry --disable')
-    .action(async (options: CliOptions) => {
+    .action(async (options: TelemetryOptions) => {
       log.debug('Running `buddy telemetry` ...', options)
       await intro('buddy telemetry')
 
       try {
         // Handle enable
-        if ((options as any).enable) {
+        if ((options).enable) {
           await telemetry.enable()
           log.success('Telemetry enabled')
           log.info('')
@@ -49,7 +62,7 @@ export function telemetryCommand(buddy: CLI): void {
         }
 
         // Handle disable
-        if ((options as any).disable) {
+        if ((options).disable) {
           await telemetry.disable()
           log.success('Telemetry disabled')
           log.info('')

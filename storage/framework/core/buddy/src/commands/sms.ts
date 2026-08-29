@@ -1,3 +1,4 @@
+import type { AwsSmsConfig, SmsOptions } from '@stacksjs/types'
 import type { CLI } from '@stacksjs/types'
 import { getErrorMessage } from '@stacksjs/utils'
 import { readFileSync, existsSync } from 'node:fs'
@@ -156,7 +157,8 @@ export function sms(buddy: CLI): void {
         })
 
         // Get origination number from config or existing phone numbers
-        const smsConfig = await import('@stacksjs/config').then(m => (m.config as any)?.sms)
+        // `originationNumber` is on the AWS driver block, not on SmsOptions itself.
+        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms as (SmsOptions & Partial<AwsSmsConfig>) | undefined)
         let originationNumber = smsConfig?.originationNumber
 
         // If no configured origination number, try to find one
@@ -228,7 +230,8 @@ export function sms(buddy: CLI): void {
 
       try {
         // Import SMS config
-        const smsConfig = await import('@stacksjs/config').then(m => (m.config as any)?.sms)
+        // `originationNumber` is on the AWS driver block, not on SmsOptions itself.
+        const smsConfig = await import('@stacksjs/config').then(m => m.config?.sms as (SmsOptions & Partial<AwsSmsConfig>) | undefined)
 
         if (!smsConfig?.enabled) {
           console.log('SMS is disabled in config/sms.ts')

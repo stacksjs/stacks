@@ -142,11 +142,11 @@ export function domains(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const { confirm } = await (prompts as any)({
-        name: 'confirm',
-        type: 'confirm',
-        message: `Would you like to set ${domain} as your APP_URL?`,
-      })
+      // `prompts` is an object of prompt functions, not the callable the npm
+      // package of that name exports - calling it threw "prompts is not a
+      // function" at every one of these interactive paths. Behind
+      // `(prompts as any)(...)`, nothing said so.
+      const confirm = await prompts.confirm(`Would you like to set ${domain} as your APP_URL?`)
 
       if (!confirm) {
         await outro(`Alrighty! ${italic(domain)} was added to your account.`, {
@@ -215,11 +215,11 @@ export function domains(buddy: CLI): void {
       const startTime = await intro('buddy domains:remove')
 
       if (!opts.yes) {
-        const { confirm } = await (prompts as any)({
-          name: 'confirm',
-          type: 'confirm',
-          message: `Are you sure you want to remove ${domain}?`,
-        })
+        // `prompts` is an object of prompt functions, not the callable the npm
+        // package of that name exports - calling it threw "prompts is not a
+        // function" at every one of these interactive paths. Behind
+        // `(prompts as any)(...)`, nothing said so.
+        const confirm = await prompts.confirm(`Are you sure you want to remove ${domain}?`)
 
         if (!confirm) {
           await outro('Cancelled the domains:remove command', {

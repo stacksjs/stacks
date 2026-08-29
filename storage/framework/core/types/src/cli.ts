@@ -277,12 +277,23 @@ export type DevOption =
   | 'all'
   | 'email'
   | 'system-tray'
+  /** The camel spelling the parser also supplies, read alongside the kebab. */
+  | 'systemTray'
+  /** `buddy dev dashboard`, which the handler dispatches on. */
+  | 'dashboard'
   | 'interactive'
   | 'browser'
   | 'site'
   | 'verbose'
+/**
+ * The flags `buddy dev` accepts.
+ *
+ * Optional, like every CLI flag: the parsed object carries only what was
+ * typed. Declared required, no real options object satisfied it, so the
+ * handler read its own flags through casts.
+ */
 export type DevOptions = {
-  [key in DevOption]: boolean
+  [key in DevOption]?: boolean
 } & CliOptions
 
 export type GeneratorOption =

@@ -460,9 +460,24 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
     } else {
       // Create users from configured mailboxes
       for (const mailbox of mailboxes) {
-        const mb = mailbox as any
-        const email = typeof mailbox === 'string' ? `${mailbox}@${emailDomain}` : `${mb.name || mb.address?.split('@')[0]}@${emailDomain}`
-        const password = typeof mailbox === 'object' && mb.password
+        // Narrowed to a binding the compiler can follow. `mb` used to be
+        // `mailbox as any`, so every `typeof mailbox === 'object'` guard beside
+        // it proved nothing about the reads that followed - the guards are
+        // right, they just could not reach through the alias.
+        const mb = typeof mailbox === 'object' && mailbox !== null ? mailbox : null
+        // `mb.email`, which is the only address field MailboxConfig has. This
+        // read `mb.name || mb.address`, neither of which exists on it, so a
+        // mailbox configured as an OBJECT rather than a bare string produced
+        // the literal address `undefined@<domain>`. Both reads were behind
+        // `mailbox as any`, so nothing said so.
+        //
+        // The field is documented as a full address; a bare local part is
+        // still accepted and given the deploy's domain.
+        const configured = mb?.email
+        const email = mb
+          ? (configured?.includes('@') ? configured : `${configured ?? ''}@${emailDomain}`)
+          : `${mailbox}@${emailDomain}`
+        const password = mb?.password
           ? mb.password
           : crypto.randomBytes(16).toString('hex')
         const passwordHash = crypto.createHash('sha256').update(password).digest('hex')
@@ -474,12 +489,12 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
               email: { S: email },
               passwordHash: { S: passwordHash },
               createdAt: { S: new Date().toISOString() },
-              displayName: { S: typeof mailbox === 'object' ? mb.displayName || mb.name || email : mailbox },
+              displayName: { S: mb ? mb.displayName || email : String(mailbox) },
             },
           })
 
           logger.success(`Created mail user: ${email}`)
-          if (typeof mailbox !== 'object' || !mb.password) {
+          if (!mb?.password) {
             logger.info(`  Password: ${password}`)
           }
         } catch (e: unknown) {
@@ -1814,7 +1829,7 @@ export interface TsCloudInfrastructure {
       cdn?: { provider?: string }
     }
   }
-  dns?: { provider?: string }
+  dns?: { provider?: string, hostedZoneId?: string }
 }
 
 export interface TsCloudConfig {
@@ -1941,7 +1956,7 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options as any).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options as any).site || undefined, persistedAttachBox })
+    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox })
   }
   catch (err) {
     log.error('Hetzner deploy failed:')
@@ -2648,8 +2663,8 @@ async function runHetznerDeploy(args: {
     //
     // Per site rather than a framework-wide constant, because only the
     // application knows which of its directories are authoritative on the box.
-    const siteExcludes: string[] = Array.isArray((site as any).exclude)
-      ? (site as any).exclude.filter((entry: unknown) => typeof entry === 'string' && entry.length > 0)
+    const siteExcludes: string[] = Array.isArray((site).exclude)
+      ? (site).exclude.filter((entry: unknown) => typeof entry === 'string' && entry.length > 0)
       : []
 
     const excludeArgs = [...tarExcludes, ...siteExcludes]
@@ -2980,9 +2995,9 @@ function resolveMailboxesWithSkipped(mailboxes: unknown, domain: string, generat
     if (typeof entry === 'string')
       raw = entry
     else if (entry && typeof entry === 'object') {
-      raw = (entry as any).email ?? (entry as any).username
-      explicitPw = (entry as any).password
-      if ((entry as any).generate === true)
+      raw = (entry).email ?? (entry).username
+      explicitPw = (entry).password
+      if ((entry).generate === true)
         generatePassword = true
     }
     if (!raw || typeof raw !== 'string')
@@ -4385,7 +4400,7 @@ export function dnsProviderNameFromNameservers(nameservers: string[]): 'porkbun'
 async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log): Promise<void> {
   const projectDnsConfig = await loadProjectDnsConfig(dnsConfig)
   const declared = (['a', 'aaaa', 'cname', 'mx', 'txt'] as const)
-    .reduce((total, key) => total + (Array.isArray((projectDnsConfig as any)?.[key]) ? (projectDnsConfig as any)[key].length : 0), 0)
+    .reduce((total, key) => total + (Array.isArray((projectDnsConfig)?.[key]) ? (projectDnsConfig)[key].length : 0), 0)
   if (declared === 0)
     return
 
@@ -5211,8 +5226,9 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     log.info(`Email server enabled: ${enableEmailServer}`)
 
     // Get hosted zone ID from cloud config or use a lookup
-    const hostedZoneId = (cloudConfig as any)?.tsCloud?.infrastructure?.dns?.hostedZoneId
-      || (cloudConfig as any)?.infrastructure?.dns?.hostedZoneId
+    const cloud = cloudConfig as TsCloudConfig | undefined
+    const hostedZoneId = cloud?.tsCloud?.infrastructure?.dns?.hostedZoneId
+      || cloud?.infrastructure?.dns?.hostedZoneId
       || process.env.AWS_HOSTED_ZONE_ID
       || 'Z01455702Q7952O6RCY37' // Default for stacksjs.com
 

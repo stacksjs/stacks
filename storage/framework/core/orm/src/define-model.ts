@@ -406,7 +406,7 @@ function resolveRelationPath(
  * not run the setters a second time, then restores it on a `finally`. That
  * assignment is to a `readonly` field, and on an object the comment there
  * already notes is shared across every instance of the model - which the
- * `(target as any)` reads made invisible at the point of assignment.
+ * `(target)` reads made invisible at the point of assignment.
  */
 type MutableModelDefinition = Omit<ModelDefinition, 'set'> & {
   set?: ModelDefinition['set']
@@ -432,8 +432,12 @@ function wrapModelInstance<T extends object>(
   casts?: Record<string, CastType | CasterInterface>,
 ): T {
   if (!instance || typeof instance !== 'object') return instance
-  if ((instance as any)[STACKS_PROXY_TAG]) return instance
-  const attrs = (instance as any)._attributes
+
+  // The same members the handler below reads, named the same way.
+  const candidate = instance as T & WrappedModelInstance & { [STACKS_PROXY_TAG]?: boolean }
+
+  if (candidate[STACKS_PROXY_TAG]) return instance
+  const attrs = candidate._attributes
   if (!attrs || typeof attrs !== 'object') return instance
 
   // Apply read-side casts to attribute values once at wrap-time so every
@@ -539,12 +543,12 @@ function wrapModelInstance<T extends object>(
           // which means our `set:` hook bookkeeping survives.
           if (data && typeof data === 'object' && !Array.isArray(data)) {
             for (const [k, v] of Object.entries(data)) {
-              ;(recv as any)[k] = v
+              ;(recv)[k] = v
             }
           }
           // Re-fetch saveAsync via the same proxy (so 'this'-binding
           // matches what the user would call directly).
-          return (recv as any).saveAsync()
+          return (recv).saveAsync()
         }
       }
 
@@ -561,7 +565,7 @@ function wrapModelInstance<T extends object>(
       }
       if (prop === 'saveAsyncQuietly') {
         return function () {
-          return withoutEvents(() => (recv as any).saveAsync())
+          return withoutEvents(() => (recv).saveAsync())
         }
       }
       if (prop === 'updateQuietly') {
@@ -571,7 +575,7 @@ function wrapModelInstance<T extends object>(
       }
       if (prop === 'updateAsyncQuietly') {
         return function (data: Record<string, unknown>) {
-          return withoutEvents(() => (recv as any).updateAsync(data))
+          return withoutEvents(() => (recv).updateAsync(data))
         }
       }
       if (prop === 'deleteQuietly') {
@@ -863,26 +867,26 @@ function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInter
             // safe (and saves a re-walk). Finally, enrich with URL
             // fields from the active request (P2 — no-op when none).
             const adapter = PAGINATE_ADAPTERS[propName]
-            if (adapter && r && Array.isArray((r as any).data)) {
-              const wrappedData = (r as any).data.map((x: any) => wrapModelInstance(x, casts))
+            if (adapter && r && Array.isArray((r).data)) {
+              const wrappedData = (r).data.map((x: any) => wrapModelInstance(x, casts))
               const canonical = adapter({ ...r, data: wrappedData })
-              return enrichPaginatorUrls(canonical as any)
+              return enrichPaginatorUrls(canonical)
             }
             // Backward-compat: a non-paginator object whose `.data` is
             // an array (custom subquery / search result) — re-wrap items
             // without touching the surrounding shape.
-            if (r && Array.isArray((r as any).data)) {
-              return { ...r, data: (r as any).data.map((x: any) => wrapModelInstance(x, casts)) }
+            if (r && Array.isArray((r).data)) {
+              return { ...r, data: (r).data.map((x: any) => wrapModelInstance(x, casts)) }
             }
             return wrapModelInstance(r, casts)
           }
           // Chainable — re-wrap if QueryBuilder-shaped
-          if (r && typeof r === 'object' && typeof (r as any).get === 'function') {
+          if (r && typeof r === 'object' && typeof (r).get === 'function') {
             return wrapQueryBuilder(r, casts)
           }
           return r
         }
-        if (result && typeof (result as any).then === 'function') {
+        if (result && typeof (result).then === 'function') {
           return (result as Promise<any>).then(finalize)
         }
         return finalize(result)
@@ -899,7 +903,7 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     baseModel[method] = function (...args: any[]) {
       const result = (original as Function).apply(this, args)
       const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
-      if (result && typeof (result as any).then === 'function') return (result as Promise<any>).then(apply)
+      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(apply)
       return apply(result)
     }
   }
@@ -914,7 +918,7 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     baseModel[method] = function (...args: any[]) {
       const result = (original as Function).apply(this, args)
       const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
-      if (result && typeof (result as any).then === 'function') return (result as Promise<any>).then(apply)
+      if (result && typeof (result).then === 'function') return (result as Promise<any>).then(apply)
       return apply(result)
     }
   }
@@ -1026,7 +1030,7 @@ function applyMassAssignmentRules(
   if (options.force) return data
   if (!data || typeof data !== 'object' || Array.isArray(data)) return data
 
-  const attrs = (definition as any).attributes as Record<string, { fillable?: boolean, guarded?: boolean }> | undefined
+  const attrs = (definition).attributes as Record<string, { fillable?: boolean, guarded?: boolean }> | undefined
   if (!attrs) return data
 
   const declared = new Set<string>()
@@ -1093,7 +1097,7 @@ async function applyDefinedSetters(
   definition: BQBModelDefinition,
   data: Record<string, unknown>,
 ): Promise<Record<string, unknown>> {
-  const setters = (definition as any).set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
+  const setters = (definition).set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
   if (!setters || typeof setters !== 'object') return data
   const out: Record<string, unknown> = { ...data }
   for (const [key, fn] of Object.entries(setters)) {
@@ -1933,7 +1937,7 @@ function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, defini
  * they call internally.
  */
 function wrapWritesWithValidation(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
-  const modelName = String((definition as any)?.name ?? baseModel.name ?? 'Model')
+  const modelName = String((definition)?.name ?? baseModel.name ?? 'Model')
 
   const check = (data: unknown, hook: 'creating' | 'updating'): void => {
     if (validationIsSuppressed()) return
@@ -2297,6 +2301,11 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // `Model.withoutValidation(fn)` — the escape hatch for bulk imports and
   // backfills carrying rows that predate a rule. Bound to the model for the
   // same discoverability reason as `withoutEvents`.
+  // Cast retained: the static model surface is assembled dynamically here -
+  // `withoutValidation`, `withoutEvents` and the generated `*Quietly` names
+  // are attached after the fact - and typing that properly means reshaping
+  // `StaticWhereOverloads`, which is a design change rather than a
+  // narrowing. Left as it was, said out loud.
   ;(baseModel as any).withoutValidation = function <T>(fn: () => T | Promise<T>): Promise<T> {
     return withoutValidation(fn)
   }
@@ -2316,10 +2325,10 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   }
 
   for (const method of ['create', 'update', 'firstOrCreate', 'updateOrCreate', 'forceCreate', 'forceUpdate', 'delete', 'forceDelete', 'softDelete', 'restore'] as const) {
-    const orig = (baseModel as any)[method]
+    const orig = (baseModel)[method]
     if (typeof orig !== 'function') continue
     const quietName = `${method}Quietly` as const
-    if (typeof (baseModel as any)[quietName] === 'function') continue
+    if (typeof (baseModel)[quietName] === 'function') continue
     ;(baseModel as any)[quietName] = function (...args: unknown[]) {
       return withoutEvents(() => orig.apply(baseModel, args))
     }
@@ -2480,7 +2489,9 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       const { dispatchAsync } = await import('@stacksjs/events')
       // dispatchAsync awaits every matching handler and returns their results;
       // any explicit `false` return from a listener cancels the operation.
-      const results = (await dispatchAsync(event as any, data)) as unknown[]
+      // `event` is a runtime-composed name (`model:created` and friends), not one
+    // of the declared AppEvents keys.
+    const results = (await dispatchAsync(event as Parameters<typeof dispatchAsync>[0], data)) as unknown[]
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
     catch (err) {

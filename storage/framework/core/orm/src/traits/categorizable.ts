@@ -6,7 +6,7 @@ import { db as _db, sqlDateTime} from '@stacksjs/database'
 // helpers can call the runtime-defined methods without a guard at every site.
 
 export function createCategorizableMethods(tableName: string) {
-  const db = _db as any
+  const db = _db
   async function getCategoryIds(id: number): Promise<number[]> {
     const categoryLinks = await db
       .selectFrom('categorizable_models')
@@ -75,7 +75,7 @@ export function createCategorizableMethods(tableName: string) {
         .values({
           categorizable_id: id,
           categorizable_type: tableName,
-          category_id: (categoryRecord as any).id,
+          category_id: categoryRecord?.id,
           created_at: sqlDateTime(),
           updated_at: sqlDateTime(),
         })

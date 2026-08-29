@@ -2,7 +2,7 @@ import { db as _db, sqlDateTime} from '@stacksjs/database'
 
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
-  const db = _db as any
+  const db = _db
   const likeTable = options?.table || `${tableName}_likes`
   const foreignKey = options?.foreignKey || `${tableName.replace(/s$/, '')}_id`
 
@@ -31,7 +31,7 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
         .where(foreignKey, '=', id)
         .executeTakeFirst()
 
-      return Number((result as any)?.count) || 0
+      return Number((result)?.count) || 0
     },
 
     /**

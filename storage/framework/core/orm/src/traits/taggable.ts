@@ -13,7 +13,7 @@ function assertId(id: unknown, method: string): asserts id is number {
 }
 
 export function createTaggableMethods(tableName: string) {
-  const db = _db as any
+  const db = _db
   return {
     async tags(id: number): Promise<any[]> {
       assertId(id, 'tags')
@@ -34,7 +34,7 @@ export function createTaggableMethods(tableName: string) {
         .where('taggable_type', '=', tableName)
         .executeTakeFirst()
 
-      return Number((result as any)?.count) || 0
+      return Number((result)?.count) || 0
     },
 
     async addTag(id: number, tag: { name: string, description?: string }): Promise<any> {

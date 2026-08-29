@@ -16,7 +16,8 @@ import { fs, readJsonFile, readPackageJson, readTextFile, writeTextFile } from '
 
 export async function packageManager(): Promise<string> {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
-  return packageManager
+  // A manifest need not declare one; the framework's always does.
+  return packageManager ?? ''
 }
 
 export async function initProject(): Promise<Result<Subprocess, Error>> {
@@ -90,7 +91,7 @@ export async function installIfVersionMismatch(): Promise<void> {
 }
 
 export async function frameworkVersion(): Promise<string> {
-  return (await readPackageJson(frameworkPath('package.json'))).version
+  return (await readPackageJson(frameworkPath('package.json'))).version ?? ''
 }
 
 export async function isAppKeySet(): Promise<boolean> {

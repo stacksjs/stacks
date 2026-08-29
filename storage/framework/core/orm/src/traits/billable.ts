@@ -40,7 +40,7 @@ export interface ActiveSubscriptionResult {
 }
 
 export function createBillableMethods(_tableName: string) {
-  const db = _db as any
+  const db = _db
   return {
     async createStripeUser(model: any, options: Stripe.CustomerCreateParams): Promise<Stripe.Response<Stripe.Customer>> {
       const { manageCustomer } = await import('@stacksjs/payments')
@@ -273,8 +273,8 @@ export function createBillableMethods(_tableName: string) {
       if (!accountId) return { chargesEnabled: false, payoutsEnabled: false }
       const stripe = await getStripe()
       const account = await stripe.accounts.retrieve(accountId)
-      const chargesEnabled = !!(account as any).charges_enabled
-      const payoutsEnabled = !!(account as any).payouts_enabled
+      const chargesEnabled = !!(account).charges_enabled
+      const payoutsEnabled = !!(account).payouts_enabled
       const tableName = options.modelTable || _tableName
       await db.updateTable(tableName)
         .set({ [chargesCol]: chargesEnabled, [payoutsCol]: payoutsEnabled })

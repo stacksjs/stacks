@@ -21,7 +21,7 @@ async function main() {
   await loadCommands(buddy, {
     commandsDir: p.appPath('Commands'),
     registryPath: p.appPath('Commands.ts'),
-    onError: (message, error) => log.error(`${message}:`, error as any),
+    onError: (message, error) => log.error(`${message}:`, error),
     onDebug: message => log.debug(message),
   })
 

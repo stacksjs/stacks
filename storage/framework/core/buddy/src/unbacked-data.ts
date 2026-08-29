@@ -93,7 +93,10 @@ function isEnabled(value: unknown): boolean {
  * finding. When a `backups` surface exists, this is where it gets consulted.
  */
 export function findUnbackedManagedServices(tsCloudConfig: unknown): UnbackedService[] {
-  const managed = (tsCloudConfig as any)?.infrastructure?.compute?.managedServices
+  // Same as above: the parameter is `unknown` because callers pass whatever
+  // ts-cloud config they loaded.
+  const config = tsCloudConfig as { infrastructure?: { compute?: { managedServices?: unknown } } } | null | undefined
+  const managed = config?.infrastructure?.compute?.managedServices
 
   if (!managed || typeof managed !== 'object')
     return []
@@ -101,7 +104,7 @@ export function findUnbackedManagedServices(tsCloudConfig: unknown): UnbackedSer
   const out: UnbackedService[] = []
 
   for (const [name, { holds, dumpable }] of Object.entries(STATEFUL_SERVICES)) {
-    if (isEnabled(managed[name]))
+    if (isEnabled((managed as Record<string, unknown> | null | undefined)?.[name]))
       out.push({ name, holds, dumpable })
   }
 

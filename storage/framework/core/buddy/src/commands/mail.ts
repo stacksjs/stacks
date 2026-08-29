@@ -48,7 +48,7 @@ async function resolveOperationalMailHost(): Promise<string | undefined> {
   if (configured)
     return configured
   const { email } = await import('@stacksjs/config')
-  return (email as any)?.domain ? `mail.${(email as any).domain}` : undefined
+  return (email)?.domain ? `mail.${(email).domain}` : undefined
 }
 
 interface MailStorageOptions {
@@ -629,7 +629,7 @@ export function mailCommands(buddy: CLI): void {
       }
 
       const { email: emailConfig } = await import('@stacksjs/config')
-      const domain: string | undefined = (emailConfig as any)?.domain
+      const domain: string | undefined = (emailConfig)?.domain
       if (!domain) {
         log.error('config/email.ts has no `domain` - set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
         process.exit(ExitCode.FatalError)

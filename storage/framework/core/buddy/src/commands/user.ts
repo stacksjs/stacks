@@ -56,7 +56,9 @@ async function loadUserModel(): Promise<any> {
   // Last resort: the package export, in case a project lays its models out
   // somewhere none of the conventions cover.
   const { User } = await import('@stacksjs/orm')
-  if ((User as any)?.where)
+  // `User.where` is a method on the model and so always defined - the probe
+  // never decided anything. The import either resolves a model or it does not.
+  if (User)
     return User
 
   log.error('Could not find a User model. Looked in app/Models, the framework defaults and @stacksjs/orm.')
@@ -121,7 +123,7 @@ export function user(buddy: CLI): void {
           // seed. Seeding first is idempotent.
           await seedDefaultRoles()
 
-          await Rbac.assignRole(account as any, options.role)
+          await Rbac.assignRole(account, options.role)
           log.success(`Assigned the ${options.role} role`)
         }
         catch (error) {

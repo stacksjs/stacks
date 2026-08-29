@@ -139,7 +139,7 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   if (model.morphMany) {
     const items = Array.isArray(model.morphMany) ? model.morphMany : [model.morphMany]
     for (const relationInstance of items) {
-      relationships.push(await processMorphOne(relationInstance as any, model, modelName, 'morphMany'))
+      relationships.push(await processMorphOne(relationInstance, model, modelName, 'morphMany'))
     }
   }
 
@@ -165,14 +165,14 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
   if (model.morphToMany) {
     const items = Array.isArray(model.morphToMany) ? model.morphToMany : [model.morphToMany]
     for (const relationInstance of items) {
-      relationships.push(processPolymorphicPivot(relationInstance as any, model, modelName, 'morphToMany'))
+      relationships.push(processPolymorphicPivot(relationInstance, model, modelName, 'morphToMany'))
     }
   }
 
   if (model.morphedByMany) {
     const items = Array.isArray(model.morphedByMany) ? model.morphedByMany : [model.morphedByMany]
     for (const relationInstance of items) {
-      relationships.push(processPolymorphicPivot(relationInstance as any, model, modelName, 'morphedByMany'))
+      relationships.push(processPolymorphicPivot(relationInstance, model, modelName, 'morphedByMany'))
     }
   }
 

@@ -402,10 +402,10 @@ export function dev(buddy: CLI): void {
         || (options.frontend ? 'frontend' : undefined)
         || (options.api ? 'api' : undefined)
         || (options.components ? 'components' : undefined)
-        || ((options as any).dashboard ? 'dashboard' : undefined)
+        || ((options).dashboard ? 'dashboard' : undefined)
         || (options.desktop ? 'desktop' : undefined)
         || (options.native ? 'native' : undefined)
-        || ((options as any).systemTray || (options as any)['system-tray'] ? 'system-tray' : undefined)
+        || ((options).systemTray || (options)['system-tray'] ? 'system-tray' : undefined)
         || (options.docs ? 'docs' : undefined)
 
       if (target) {
@@ -442,14 +442,16 @@ export function dev(buddy: CLI): void {
         }
       }
       else if (wantsInteractive(options)) {
-        const answer = await (prompts as any)({
-          type: 'select',
-          name: 'value',
+        // `prompts.select` returns the chosen value directly; `prompts` itself
+        // is an object, not the callable the npm package of that name exports,
+        // so calling it threw "prompts is not a function" here.
+        const selectedValue: string = await prompts.select({
           message: descriptions.select,
-          choices: interactiveDevChoices,
+          // `select` renders `choice.label`; these choices carry `title`, so
+          // every entry in the interactive menu would have printed
+          // "undefined". Mapped to the shape the prompt actually reads.
+          choices: interactiveDevChoices.map(choice => ({ value: choice.value, label: choice.title })),
         })
-
-        const selectedValue: string = answer.value
         const a = await actions()
         const handled = await dispatchInteractiveDevSelection(selectedValue, {
           all: () => startDevelopmentServer(options, perf),
@@ -565,8 +567,8 @@ export function dev(buddy: CLI): void {
       // a separate `generate:types --watch` in another terminal and
       // you don't want two regen passes per save).
       if (options.watchTypes !== false) {
-        a.watchTypes(options as any).catch((err: unknown) => {
-          log.warn('[dev:api] type watcher exited:', err as any)
+        a.watchTypes(options).catch((err: unknown) => {
+          log.warn('[dev:api] type watcher exited:', err)
         })
       }
 

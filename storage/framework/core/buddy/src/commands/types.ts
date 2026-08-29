@@ -21,7 +21,7 @@ export function types(buddy: CLI): void {
       // codegen. Previously the generator ran with default config no
       // matter what the user typed, which was confusing for monorepo
       // users targeting a specific sub-project via --project.
-      await generateTypes(options as any)
+      await generateTypes(options)
     })
 
   buddy

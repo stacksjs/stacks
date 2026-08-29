@@ -88,13 +88,23 @@ const ENGINES: Record<string, BackupEngine> = {
  * actually connects with.
  */
 export function resolveBackupTarget(databaseConfig: unknown): BackupTarget | null {
-  const cfg = databaseConfig as any
+  // Narrowed to what this function reads. The parameter is `unknown` on
+  // purpose - it is handed whatever config was loaded - so the narrowing
+  // belongs here rather than in a cast at each read.
+  const cfg = databaseConfig as { default?: unknown, connections?: Record<string, unknown> } | null | undefined
   const dialect = String(cfg?.default ?? '').trim().toLowerCase()
   const engine = ENGINES[dialect]
   if (!engine)
     return null
 
-  const connection = cfg?.connections?.[dialect]
+  const connection = cfg?.connections?.[dialect] as {
+    database?: unknown
+    name?: unknown
+    host?: unknown
+    port?: unknown
+    username?: unknown
+    password?: unknown
+  } | undefined
   if (!connection)
     return null
 

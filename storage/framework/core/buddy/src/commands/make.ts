@@ -142,7 +142,7 @@ export function make(buddy: CLI): void {
             // `model` is a BOOLEAN flag on MakeOptions (`buddy make --model`,
             // "also make a model") and a STRING on these two (`--model Post`,
             // "the model this policy is for"). The two cannot be the same
-            // value, and `options as any` let one be handed over as the other.
+            // value, and `options` let one be handed over as the other.
             await makePolicy({
               name: options.name,
               model: typeof options.model === 'string' ? options.model : undefined,

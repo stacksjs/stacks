@@ -29,7 +29,7 @@ export async function prunable(tableName: string, options: PrunableOptions = {})
 
     const result = await db
       .deleteFrom(tableName)
-      .where(column as any, '<', cutoffDate.toISOString())
+      .where(column, '<', cutoffDate.toISOString())
       .execute()
 
     const rows = Array.isArray(result) ? result : [result]

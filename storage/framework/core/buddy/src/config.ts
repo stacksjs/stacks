@@ -382,26 +382,26 @@ export async function applyBuddyConfig(buddy: CLI): Promise<void> {
   //   const { applyTheme, getAvailableThemes } = await import('@stacksjs/cli')
   //   const availableThemes = getAvailableThemes()
   //   if (availableThemes.includes(config.theme)) {
-  //     applyTheme(config.theme as any)
+  //     applyTheme(config.theme)
   //     buddy.theme = config.theme
   //   }
   // }
 
   // Apply emoji setting if specified
   if (config.emoji !== undefined && buddy.options.noEmoji === undefined) {
-    (buddy as any).useEmoji = config.emoji
+    (buddy).useEmoji = config.emoji
   }
 
   // Apply default flags
   if (config.defaultFlags) {
-    if (config.defaultFlags.verbose && !(buddy as any).isVerbose) {
-      (buddy as any).isVerbose = true
+    if (config.defaultFlags.verbose && !(buddy).isVerbose) {
+      (buddy).isVerbose = true
     }
-    if (config.defaultFlags.quiet && !(buddy as any).isQuiet) {
-      (buddy as any).isQuiet = true
+    if (config.defaultFlags.quiet && !(buddy).isQuiet) {
+      (buddy).isQuiet = true
     }
-    if (config.defaultFlags.debug && !(buddy as any).isDebug) {
-      (buddy as any).isDebug = true
+    if (config.defaultFlags.debug && !(buddy).isDebug) {
+      (buddy).isDebug = true
     }
   }
 

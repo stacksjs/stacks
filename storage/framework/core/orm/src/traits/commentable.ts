@@ -28,7 +28,7 @@ function isDuplicateError(err: unknown): boolean {
 }
 
 export function createCommentableMethods(tableName: string) {
-  const db = _db as any
+  const db = _db
   return {
     async comments(id: number): Promise<any[]> {
       assertId(id, 'comments')
@@ -48,7 +48,7 @@ export function createCommentableMethods(tableName: string) {
         .where('commentables_type', '=', tableName)
         .executeTakeFirst()
 
-      return Number((result as any)?.count) || 0
+      return Number((result)?.count) || 0
     },
 
     async addComment(id: number, comment: { title: string, body: string }): Promise<any> {
@@ -78,7 +78,7 @@ export function createCommentableMethods(tableName: string) {
       if (written && typeof written === 'object' && 'id' in written)
         return written
 
-      const insertedId = (written as any)?.lastInsertRowid
+      const insertedId = (written)?.lastInsertRowid
       if (insertedId == null)
         return written
 
@@ -191,7 +191,7 @@ export function createCommentableMethods(tableName: string) {
         .where('upvoteable_type', '=', COMMENT_UPVOTE_TYPE)
         .executeTakeFirst()
 
-      return Number((result as any)?.count) || 0
+      return Number((result)?.count) || 0
     },
 
     async hasUpvotedComment(commentId: number, userId: number): Promise<boolean> {

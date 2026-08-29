@@ -3,6 +3,29 @@ import type { Command } from '@stacksjs/clapp'
 import { log } from '@stacksjs/logging'
 import { onUnknownSubcommand } from "@stacksjs/cli"
 
+/**
+ * The flags `buddy list` declares.
+ *
+ * The handler took the generic `CliOptions`, which carries only what every
+ * command shares, and then read `filter`, `namespace`, `grouped`, `json` and
+ * `format` off it through casts. A command's own flags belong in its own type:
+ * a misspelt one is then a build error rather than a silently inert option.
+ */
+interface ListOptions extends CliOptions {
+  /** `-f, --filter [filter]` */
+  filter?: string
+  /** `-n, --namespace [namespace]` */
+  namespace?: string
+  /** `-g, --grouped` */
+  grouped?: boolean
+  /** `-J, --json` */
+  json?: boolean
+  /** `--format [format]` */
+  format?: string
+  /** `-p, --project [project]` */
+  project?: string
+}
+
 export function list(buddy: CLI): void {
   const descriptions = {
     list: 'List all available Buddy commands',
@@ -31,7 +54,7 @@ export function list(buddy: CLI): void {
     .example('buddy list --no-grouped')
     .example('buddy list --format=json')
     .example('buddy list --json')
-    .action(async (options: CliOptions) => {
+    .action(async (options: ListOptions) => {
       log.debug('Running `buddy list` ...', options)
 
       const { bold, dim, green } = await import('@stacksjs/cli')
@@ -41,8 +64,8 @@ export function list(buddy: CLI): void {
 
       // Filter commands if filter option is provided
       let filteredCommands = commands
-      if ((options as any).filter) {
-        const filterStr = String((options as any).filter).toLowerCase()
+      if ((options).filter) {
+        const filterStr = String((options).filter).toLowerCase()
         filteredCommands = commands.filter((cmd: any) => {
           const name = canonicalCommandName(cmd)
           const desc = cmd.description || ''
@@ -51,8 +74,8 @@ export function list(buddy: CLI): void {
       }
 
       // Filter by namespace if provided
-      if ((options as any).namespace) {
-        const namespaceStr = String((options as any).namespace).toLowerCase()
+      if ((options).namespace) {
+        const namespaceStr = String((options).namespace).toLowerCase()
         filteredCommands = filteredCommands.filter((cmd: any) => {
           const namespace = cmd.namespace || ''
           return namespace.toLowerCase() === namespaceStr
@@ -65,8 +88,8 @@ export function list(buddy: CLI): void {
         }
         else {
           console.log(dim('No commands found'))
-          if ((options as any).filter) {
-            console.log(dim(`Try removing the filter: ${(options as any).filter}`))
+          if ((options).filter) {
+            console.log(dim(`Try removing the filter: ${(options).filter}`))
           }
         }
         return
@@ -82,7 +105,7 @@ export function list(buddy: CLI): void {
       }
 
       // Group commands by category (based on command name prefix)
-      if ((options as any).grouped) {
+      if ((options).grouped) {
         const groups = new Map<string, any[]>()
 
         for (const cmd of filteredCommands) {
@@ -248,6 +271,6 @@ async function writeJson(payload: unknown): Promise<void> {
   })
 }
 
-function usesJsonOutput(options: CliOptions): boolean {
-  return (options as any).json === true || (options as any).format === 'json'
+function usesJsonOutput(options: ListOptions): boolean {
+  return (options).json === true || (options).format === 'json'
 }
