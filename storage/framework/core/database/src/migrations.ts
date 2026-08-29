@@ -643,7 +643,7 @@ export function preprocessSqliteMigrations(): void {
 
     try {
       return Boolean(
-        (sqliteDb as any)
+        (sqliteDb)
           .prepare('SELECT 1 FROM migrations WHERE migration = ? LIMIT 1')
           .get(file),
       )
@@ -670,7 +670,7 @@ export function preprocessSqliteMigrations(): void {
       .map(s => s.match(createUniqueIndexPattern)?.[1])
       .filter((name): name is string => Boolean(name))
     if (sqliteDb && uniqueIndexNames.length === statements.length) {
-      const indexExists = (sqliteDb as any).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
+      const indexExists = (sqliteDb).prepare(`SELECT name FROM sqlite_master WHERE type = 'index' AND name = ?`)
       const missing = uniqueIndexNames.filter(name => !indexExists.get(name))
       if (missing.length > 0) {
         log.info(`Re-queueing unique-index migration (index missing from database): ${file}`)
@@ -756,7 +756,7 @@ export function preprocessSqliteMigrations(): void {
         try {
           if (sqliteDb) {
             const safeTableName = table.replace(/[^a-zA-Z0-9_]/g, '')
-            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
+            const columns = (sqliteDb).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
             if (columns.some(col => col.name === column))
               return true
             if (columns.length > 0)
@@ -824,7 +824,7 @@ export function preprocessSqliteMigrations(): void {
           try {
             // Sanitize table name to prevent SQL injection (only allow alphanumeric and underscores)
             const safeTableName = tableName.replace(/[^a-zA-Z0-9_]/g, '')
-            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
+            const columns = (sqliteDb).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
             if (columns.length === 0) {
               // The table may be pending in an earlier migration. Preserve the
               // drop when that create file still defines the legacy column.
@@ -874,7 +874,7 @@ export function preprocessSqliteMigrations(): void {
   }
 
   if (sqliteDb) {
-    try { (sqliteDb as any).close() }
+    try { (sqliteDb).close() }
     catch { /* ignore */ }
   }
 
@@ -1759,7 +1759,7 @@ async function dropOrphanedEnumTypes(): Promise<void> {
 
     // the rows alone, so the `.rows` branch narrowed to `never` the moment the
 
-    // `(db as any)` came off. The union says what the callers already handle.
+    // `(db)` came off. The union says what the callers already handle.
 
     const raw = rows as UnsafeRowsResult
 
@@ -2962,7 +2962,7 @@ export async function regenerateMigrationCorpus(options: {
       try {
         const { config, overridesReady } = await import('@stacksjs/config')
         await overridesReady
-        requestedVitessSharded = isVitessSharded((config as any)?.database?.connections?.vitess?.sharded)
+        requestedVitessSharded = isVitessSharded((config)?.database?.connections?.vitess?.sharded)
       }
       catch {
         requestedVitessSharded = isVitessSharded(dbConfig.connections.vitess.sharded)

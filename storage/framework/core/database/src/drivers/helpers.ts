@@ -125,7 +125,7 @@ export async function getExecutedMigrations(): Promise<{ name: string }[]> {
     // `migrations` is the framework's own bookkeeping table and is not in the
     // generated `database/types.d.ts`, so `selectFrom` answers a generic row.
     // Narrowed to the one column selected, rather than restoring a
-    // `(db as any)` that would have unchecked the whole handle.
+    // `(db)` that would have unchecked the whole handle.
     return await db.selectFrom('migrations').select('name').execute() as unknown as { name: string }[]
   }
 

@@ -36,6 +36,15 @@ export interface WebFontMeta {
  */
 export interface UiOptions {
   /**
+   * Which of the framework's default views to serve, read by `dev:views`.
+   *
+   * Declared here because it is read here. `config/ui.ts` sets it and had to
+   * widen the type inline - `satisfies UiOptions & { defaultViews?: … }` - to
+   * be allowed to, while the reader reached for it through a cast.
+   */
+  defaultViews?: boolean | string[]
+
+  /**
    * **Shortcuts**
    *
    * Shortcuts provide you with the ability to combine

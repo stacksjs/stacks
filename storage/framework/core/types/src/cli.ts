@@ -313,6 +313,9 @@ export type MakeBooleanOption =
   | 'dry-run'
   /** `make:policy --register`, which adds the policy to app/Gates.ts. */
   | 'register'
+  /** Kebab spellings read alongside `withValidation` / `withAuth`. */
+  | 'with-validation'
+  | 'with-auth'
   | 'component'
   | 'page'
   | 'function'

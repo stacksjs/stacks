@@ -304,7 +304,8 @@ export async function generateCertificates(domain: string, verbose?: boolean): P
   try {
     const tlsxModule = await import('@stacksjs/tlsx')
     const { generateCertificate, createRootCA } = tlsxModule
-    const _httpsConfig = (tlsxModule as any).httpsConfig
+    // (tlsx exposes no `httpsConfig`; the binding it was read into was never
+    // used, so the read is gone rather than being cast into existence.)
 
     // Ensure SSL directory exists
     if (!fs.existsSync(SSL_DIR)) {

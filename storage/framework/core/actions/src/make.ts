@@ -105,7 +105,7 @@ export async function make(options: MakeOptions): Promise<void> {
  * Every function here reads `options.name` and hands it straight to a path
  * builder or a log line. `MakeOptions` used to declare its flags as required,
  * which no parsed options object ever satisfied, so callers passed
- * `options as any` and a missing `--name` reached `italic(undefined)` and
+ * `options` and a missing `--name` reached `italic(undefined)` and
  * wrote a file called `undefined`. The flags are optional now, which is what a
  * CLI flag is, and this is where that becomes a clear failure instead.
  */
@@ -152,8 +152,8 @@ export async function createAction(options: MakeOptions): Promise<void> {
   // action stub when neither is set so the existing `buddy make:action
   // Foo` behavior is unchanged.
   const opts = options as MakeOptions & { withValidation?: boolean, withAuth?: boolean }
-  const wantsValidation = Boolean(opts.withValidation || (options as any)['with-validation'])
-  const wantsAuth = Boolean(opts.withAuth || (options as any)['with-auth'])
+  const wantsValidation = Boolean(opts.withValidation || (options)['with-validation'])
+  const wantsAuth = Boolean(opts.withAuth || (options)['with-auth'])
   const templateKey: TemplateKey = wantsValidation && wantsAuth
     ? 'actionWithBoth'
     : wantsValidation

@@ -86,7 +86,7 @@ async function startDefaultServer() {
 
   // The stx dev server resolves like any other dependency. To develop against
   // a local STX build, `bun link` it into the project — bare resolution then
-  // picks the link up the same as any other node module.
+  // picks the link up the same other node module.
   const { serve } = await import('bun-plugin-stx/serve')
 
   const { site: siteConfig, i18n: i18nConfig } = await loadStxSiteConfig()
@@ -185,7 +185,7 @@ async function startDefaultServer() {
   const viewPatterns = resolveViewPatterns(
     userViewsPath,
     defaultViewsPath,
-    (config as any)?.ui?.defaultViews,
+    (config)?.ui?.defaultViews,
     path => existsSync(projectPath(path)),
   )
 

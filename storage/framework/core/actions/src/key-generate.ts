@@ -14,7 +14,7 @@ if (!existsSync('.env'))
 // `APP_KEY` is the framework-wide symmetric secret (sessions, signed URLs,
 // encrypted cookie payloads). Always regenerate when this action runs —
 // callers invoke it explicitly via `buddy key:generate`.
-await (setEnvValue as any)('APP_KEY', generateAppKey())
+await (setEnvValue)('APP_KEY', generateAppKey())
 
 // `.env` encryption keypair (stacksjs/stacks#1053). dotenvx-style:
 //   - DOTENV_PUBLIC_KEY  → embedded in .env, used by `env:set` / `env:encrypt`
@@ -34,6 +34,6 @@ const hasPublic = /^DOTENV_PUBLIC_KEY=.+$/m.test(envText)
 const hasPrivate = /^DOTENV_PRIVATE_KEY=.+$/m.test(envText)
 if (!hasPublic || !hasPrivate) {
   const { publicKey, privateKey } = generateKeypair()
-  if (!hasPublic) await (setEnvValue as any)('DOTENV_PUBLIC_KEY', publicKey)
-  if (!hasPrivate) await (setEnvValue as any)('DOTENV_PRIVATE_KEY', privateKey)
+  if (!hasPublic) await (setEnvValue)('DOTENV_PUBLIC_KEY', publicKey)
+  if (!hasPrivate) await (setEnvValue)('DOTENV_PRIVATE_KEY', privateKey)
 }

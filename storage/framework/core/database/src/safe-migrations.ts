@@ -77,7 +77,7 @@ export async function addColumnSafely(
   options: AddColumnSafelyOptions,
 ): Promise<void> {
   const { type, defaultValue, notNull = false, batchSize = 1000 } = options
-  const dbAny = db as any
+  const dbAny = db
 
   // 1. Add the column as nullable + with default. Default-bearing column
   //    additions are O(1) on Postgres ≥ 11 and MySQL ≥ 8 because the
@@ -134,7 +134,7 @@ export async function backfillInBatches(
   value: string | number | boolean | null,
   batchSize = 1000,
 ): Promise<void> {
-  const dbAny = db as any
+  const dbAny = db
   let updated = 0
   let total = 0
   do {
@@ -193,7 +193,7 @@ export async function renameColumnSafely(
   newName: string,
   options: { type: string, atomic?: boolean },
 ): Promise<void> {
-  const dbAny = db as any
+  const dbAny = db
   if (options.atomic) {
     await execRaw(dbAny, `ALTER TABLE ${quote(tableName)} RENAME COLUMN ${quote(oldName)} TO ${quote(newName)}`)
     return

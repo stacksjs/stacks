@@ -219,7 +219,7 @@ function shouldIncludeFrameworkDefaults(): boolean {
   // Optional-chained rather than trusted: the generator also runs in contexts
   // (tests, programmatic migrations) where the config graph is only partly
   // booted. A miss degrades to the default, which is the conservative answer.
-  return (config as any)?.database?.models?.includeFrameworkDefaults === true
+  return (config)?.database?.models?.includeFrameworkDefaults === true
 }
 
 /**

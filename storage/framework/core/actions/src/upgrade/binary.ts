@@ -30,8 +30,17 @@ if (await storage.exists(source)) {
     log.info(`Source: ${source}`) // TODO: should be debug
     log.info(`Destination: ${destination}`) // TODO: should be debug
 
-    await (fs as any).ensureDir(destinationDir)
-    await (fs as any).move(source, destination, { overwrite: true })
+    // `fs.ensureDir` and `fs.move` are fs-extra's, and `@stacksjs/storage`
+    // re-exports node:fs - both were `undefined`, so this threw
+    // "fs.ensureDir is not a function" and the catch below reported that as a
+    // failed upgrade. Written with the primitives that are actually there.
+    //
+    // Copy-then-unlink rather than `rename`, because the build output and the
+    // install destination are not necessarily on the same filesystem, and
+    // `rename` fails with EXDEV across devices.
+    await fs.promises.mkdir(destinationDir, { recursive: true })
+    await fs.promises.copyFile(source, destination)
+    await fs.promises.unlink(source)
 
     log.success('Binary Latest Version Is Used')
   }

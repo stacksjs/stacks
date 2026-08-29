@@ -5,18 +5,18 @@ import { log } from '@stacksjs/logging'
 // First, reset the database
 const resetResult = await resetDatabase()
 
-if ((resetResult as any)?.isErr) {
-  console.error((resetResult as any).error)
-  log.error('resetDatabase failed', (resetResult as any).error)
+if ((resetResult)?.isErr) {
+  console.error((resetResult).error)
+  log.error('resetDatabase failed', (resetResult).error)
   process.exit(1)
 }
 
 // Then generate fresh migrations
 const genResult = await generateMigrations()
 
-if ((genResult as any)?.isErr) {
-  console.error((genResult as any).error)
-  log.error('generateMigrations failed', (genResult as any).error)
+if ((genResult)?.isErr) {
+  console.error((genResult).error)
+  log.error('generateMigrations failed', (genResult).error)
   process.exit(1)
 }
 
@@ -62,9 +62,9 @@ const datetimeResult = await ensureUtcDatetimeColumns()
 if (!datetimeResult.success)
   log.error(`Failed to convert TIMESTAMP columns to DATETIME: ${datetimeResult.error}`)
 
-if ((migrateResult as any).isErr) {
+if ((migrateResult).isErr) {
   log.error('runDatabaseMigration failed')
-  log.error((migrateResult as any).error)
+  log.error((migrateResult).error)
   process.exit(1)
 }
 

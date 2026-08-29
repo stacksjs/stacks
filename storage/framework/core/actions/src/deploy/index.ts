@@ -1871,7 +1871,7 @@ SERVICEFILE`,
                   children += buildXmlElement(key, val, `${indent}  `)
                 }
               }
-              if ((value as any)['#text'] !== undefined) return `${indent}<${name}>${(value as any)['#text']}</${name}>\n`
+              if ((value)['#text'] !== undefined) return `${indent}<${name}>${(value)['#text']}</${name}>\n`
               return `${indent}<${name}>\n${children}${indent}</${name}>\n`
             }
             return ''

@@ -236,7 +236,7 @@ export interface AggregateExpression {
  * `coalesce`, etc.) can be added here as call sites surface; we
  * deliberately don't widen to "everything Kysely exposes" because
  * that surface keeps growing and an `any`-typed escape hatch always
- * exists (`eb.fn as any).newThing(...)`) if a one-off bypass is
+ * exists (`eb.fn).newThing(...)`) if a one-off bypass is
  * genuinely needed.
  */
 export interface ExpressionFunctions {

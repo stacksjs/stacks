@@ -544,7 +544,7 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
   // like `transactional()` — which invokes `this.transaction(...)` — are
   // serialized too.
   const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
-  ;(instance as any).transaction = (...args: any[]) =>
+  ;(instance).transaction = (...args: any[]) =>
     serializeSqliteTransaction(() => original(...args))
 }
 
@@ -563,7 +563,7 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
  */
 function applyTransactionRoutingContext(instance: RawQueryBuilder): void {
   const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
-  ;(instance as any).transaction = (...args: any[]) =>
+  ;(instance).transaction = (...args: any[]) =>
     withTransactionContext(() => original(...args))
 }
 
@@ -727,7 +727,7 @@ type UnsafeReturn = Promise<UnsafeRow[]> & { execute: () => Promise<UnsafeRow[]>
  * `UnsafeReturn` above says "the rows", and for most drivers that is true. Some
  * answer `{ rows: [...] }` and some answer nothing at all, which is why callers
  * across migrations, the query logger and the scheduler all write
- * `Array.isArray(r) ? r : (r?.rows ?? [])`. Behind a `(db as any)` that read
+ * `Array.isArray(r) ? r : (r?.rows ?? [])`. Behind a `(db)` that read
  * typechecked; without one the `.rows` branch narrows to `never`, because the
  * declared type admits only the array. This names the shape they handle.
  */
@@ -740,7 +740,7 @@ export type UnsafeRowsResult = UnsafeRow[] | { rows?: UnsafeRow[] } | undefined
  * DELETE resolves to the driver's own result object instead, and every driver
  * spells the affected-row count differently, which is why callers read all of
  * these in turn. They were reaching for the fields off a value typed as
- * `UnsafeRow[]`, which has none of them, behind a `(db as any)`.
+ * `UnsafeRow[]`, which has none of them, behind a `(db)`.
  */
 export interface DbWriteResult {
   changes?: number
@@ -1274,7 +1274,7 @@ export const db: Db = new Proxy({} as Db, {
       ? getReadDb()
       : getDb()
 
-    const value = (instance as any)[prop]
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
     if (typeof value === 'function') {
       return value.bind(instance)
     }
@@ -1294,7 +1294,7 @@ export const readDb: Omit<Db, 'read'> = new Proxy({} as Db, {
     if (prop === 'fn')
       return aggregateFunctions
     const instance = getExplicitReadDb()
-    const value = (instance as any)[prop]
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
     if (typeof value === 'function') {
       return value.bind(instance)
     }

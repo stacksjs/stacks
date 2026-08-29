@@ -560,7 +560,7 @@ async function generateRecord(
       try {
         // Cast: the faker singleton is a wrapped object that exposes additional helpers
         // beyond the BaseFaker type used in the factory signature.
-        value = attr.factory(faker as any)
+        value = attr.factory(faker)
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)
@@ -901,7 +901,7 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
       const batch = records.slice(i, i + batchSize)
 
       await db.insertInto(model.table)
-        .values(batch as any)
+        .values(batch)
         .execute()
 
       inserted += batch.length

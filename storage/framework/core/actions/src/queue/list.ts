@@ -54,7 +54,7 @@ try {
   console.log('├─────┼────────────────────┼──────────────────────────────────┼──────────┼──────────┼─────────────────────┤')
 
   for (const j of jobs) {
-    const jobAny = j as any
+    const jobAny = j
     const id = String(jobAny.id ?? '').padEnd(3)
     const queue = String(jobAny.queue ?? 'default').substring(0, 18).padEnd(18)
     const jobName = extractJobName(jobAny.payload).substring(0, 32).padEnd(32)

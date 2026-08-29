@@ -153,10 +153,10 @@ export class Database {
       vitess: {
         sharded: isVitessSharded(this._options.connection.sharded),
       },
-      database: this._options.connection as any,
+      database: this._options.connection,
       verbose: this._options.verbose,
-      timestamps: this._options.timestamps as any,
-      softDeletes: this._options.softDeletes as any,
+      timestamps: this._options.timestamps,
+      softDeletes: this._options.softDeletes,
       hooks: this._options.hooks,
     })
 
