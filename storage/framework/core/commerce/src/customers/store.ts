@@ -4,6 +4,7 @@ type NewCustomer = NewModelData<typeof Customer>
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
+import { insertedId } from '../utils/inserted-id'
 import { fetchById } from './fetch'
 
 /**
@@ -27,9 +28,16 @@ export async function store(data: NewCustomer): Promise<CustomerJsonResponse> {
     if (!result)
       throw new Error('Failed to create customer')
 
-    const insertId = result.insertId || Number(result.numInsertedOrUpdatedRows)
+    // Read the id the driver reported, never a row count. `insertId ||
+    // Number(numInsertedOrUpdatedRows)` produced `NaN` on SQLite, so this
+    // returned undefined while declaring a `CustomerJsonResponse`; on a driver
+    // that reported the count it would have returned customer 1 instead.
+    const id = insertedId(result)
 
-    const customerResult = await fetchById(Number(insertId)) as CustomerJsonResponse
+    if (id === undefined)
+      throw new Error('Failed to create customer: the database reported no insert id')
+
+    const customerResult = await fetchById(id) as CustomerJsonResponse
 
     return customerResult
   }

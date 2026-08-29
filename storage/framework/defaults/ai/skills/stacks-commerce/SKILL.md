@@ -1,6 +1,6 @@
 ---
 name: stacks-commerce
-description: Use when building e-commerce features in Stacks - the commerce namespace with 13 sub-modules (products, orders, customers, coupons, payments, shipping, tax, gift cards, waitlists, devices, receipts, restaurant), 20+ commerce models, default commerce functions, or the commerce configuration. Covers @stacksjs/commerce.
+description: Use when building e-commerce features in Stacks - the commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors), 20+ commerce models, checkout and redemption logic, or the commerce configuration. Covers @stacksjs/commerce.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Commerce
 
-Comprehensive e-commerce module with 13 sub-modules and 20+ models.
+Comprehensive e-commerce module with 15 sub-modules and 20+ models.
 
 ## Key Paths
 - Core package: `storage/framework/core/commerce/src/`
@@ -20,30 +20,37 @@ Comprehensive e-commerce module with 13 sub-modules and 20+ models.
 ```typescript
 import { commerce } from '@stacksjs/commerce'
 
-// 13 sub-modules
-commerce.products      // Product CRUD
-commerce.coupons       // Coupon management
-commerce.customers     // Customer management
-commerce.errors        // Error tracking
-commerce.giftCards     // Gift card management
-commerce.orders        // Order management
-commerce.payments      // Payment processing
-commerce.restaurant    // Restaurant features
-commerce.shippings     // Shipping management
-commerce.tax           // Tax rate management
-commerce.waitlists     // Waitlist management
+// 15 sub-modules
+commerce.products      // Products, variants, units, manufacturers, reviews, categories
+commerce.carts         // The pre-checkout basket
+commerce.orders        // Orders, order items, export, checkout guards
+commerce.customers     // Customer records
+commerce.coupons       // Coupons, including atomic redemption
+commerce.payments      // Payment records, refunds
+commerce.giftCards     // Gift cards, balance, redemption and reload
+commerce.auctions      // Benefit auctions: lots, bids, proxy bidding, pledges
+commerce.shippings     // Methods, rates, zones, routes, drivers, live tracking
+commerce.tax           // Tax rates and breakdown
+commerce.waitlists     // Waitlists
+commerce.restaurant    // Restaurant features (lives at waitlists/restaurant)
 commerce.devices       // Print device management
-commerce.receipts      // Receipt management
+commerce.receipts      // Receipt records
+commerce.errors        // Error tracking
 ```
+
+`restaurant` is re-exported from `waitlists/restaurant` rather than having a
+directory of its own, which is why the source tree shows one fewer directory
+than the namespace has keys. `tests/commerce.test.ts` asserts the exact key set,
+so adding a sub-module means updating that count.
 
 ## Sub-Module Operations
 
 Each sub-module typically provides:
-- `index()` — list all
-- `fetch(id)` — get one
-- `store(data)` — create
-- `update(id, data)` — update
-- `destroy(id)` — delete
+- `fetchAll()` - list all
+- `fetchById(id)` - get one
+- `store(data)` - create, plus `bulkStore`
+- `update(id, data)` - update, plus `bulkUpdate`
+- `destroy(id)` - delete, plus `bulkDestroy`
 
 ### Products Sub-Module
 - Products: items, variants, units
@@ -94,6 +101,67 @@ Each sub-module typically provides:
 | DigitalDelivery | downloadLimit, expiryDays, automaticDelivery | |
 | WaitlistProduct | product waitlist tracking | |
 | Receipt | receipt records | |
+
+## Money paths
+
+Three operations move money, and all three are written as a **single conditional
+UPDATE** rather than read-check-write. Concurrency here is not theoretical: two
+parallel requests against a read-then-write redemption both see the pre-state
+and both succeed, which is a coupon redeemed past its limit or a gift card spent
+twice.
+
+### Redeeming a coupon
+
+```ts
+const result = await commerce.coupons.redeem(couponId)
+
+if (!result.ok) {
+  // 'not-found' | 'inactive' | 'expired' | 'limit-reached'
+  throw new HttpError(400, `Coupon cannot be redeemed: ${result.reason}`)
+}
+// result.coupon reflects the post-redemption state.
+```
+
+`redeem` bumps `usage_count` and enforces `max_uses`, `is_active` and the
+start/end dates in the WHERE clause, so the database decides the race. A
+`max_uses` of `NULL` means unlimited. Do not fetch, check and then call
+`update()` to increment: that is the exact pattern this replaced.
+
+### Spending or reloading a gift card
+
+```ts
+await commerce.giftCards.updateBalance(cardId, -25)  // redeem 25
+await commerce.giftCards.updateBalance(cardId, 50)   // reload 50
+```
+
+One entry point for both directions, and they are deliberately asymmetric:
+
+| | Redemption (`amount < 0`) | Reload (`amount > 0`) |
+|---|---|---|
+| Allowed status | `ACTIVE` | `ACTIVE`, or `USED` when the card is `isReloadable` |
+| `lastUsedDate` | stamped | left alone |
+| Balance floor | cannot go below 0 | n/a |
+| Expiry | refused past `expiryDate` | refused past `expiryDate` |
+
+The balance lands on 0 and the status flips to `USED` in the same statement. A
+reloadable card can be revived from `USED`; a non-reloadable one cannot, and
+throws `Gift card is not reloadable`. `deactivate(id)` is the terminal state and
+reports whether a row actually changed.
+
+### Recording a refund
+
+`commerce.payments.recordRefund(id, amount)` takes **integer minor units** and
+enforces `refund_amount + amount <= amount` in the WHERE clause, so operators
+cannot over-refund a payment by racing each other. It flips the status to
+`refunded` or `partiallyRefunded` depending on where the total lands.
+
+## Carts
+
+`commerce.carts` is the pre-checkout basket, with the same CRUD shape as every
+other sub-module plus bulk variants. `commerce.orders` owns what happens after
+checkout, and `orders/guards.ts` holds the pre-flight checks that run between
+the two, including `cleanupAbandonedCarts({ olderThanDays, limit })` for the
+sweeper you schedule daily.
 
 ## Live Delivery Tracking
 
@@ -172,13 +240,51 @@ await Payment.charge(customer, order.totalAmount, paymentMethodId)
 All commerce models have dashboard views at `/dashboard/commerce/*`.
 
 ## Gotchas
-- Commerce models are auto-generated — edit definitions, not generated files
-- Use `buddy make:migration` when changing commerce schemas
+
+### Writing raw SQL here
+
+Two dialect traps have each shipped a broken money path, so both are now guarded
+by `src/tests/sql-dialect-portability.test.ts`:
+
+- **Placeholders.** Postgres numbers them (`$1`); a literal `?` is a syntax
+  error. Render them with `sqlHelpers(env.DB_CONNECTION || 'sqlite').param(n)`.
+- **Booleans.** A `schema.boolean()` attribute becomes a real `BOOLEAN` on
+  Postgres, so `is_active = 1` is `operator does not exist: boolean = integer`.
+  Use `sqlHelpers(...).boolTrue` / `.boolFalse`.
+
+Both pass on SQLite, which is what the tests run against, so neither shows up
+locally. That is the whole reason the source-level test exists.
+
+### Reading back a row you just inserted
+
+Use `insertedId(result)` from `utils/inserted-id`. Drivers disagree: SQLite
+reports `lastInsertRowid`, MySQL reports `insertId`, and Postgres reports
+neither without a `RETURNING` clause (fall back to the `uuid` the row was
+written with).
+
+**Never read a row count as an id.** `numInsertedOrUpdatedRows` says how many
+rows changed, not which one, so a successful single-row insert reports `1` and
+the caller fetches row 1 of the table instead of the new record. `mutationCount`
+is the helper for when the count is genuinely what you want.
+
+### Everything else
+
+- Commerce models are auto-generated - edit definitions, not generated files
+- Run `buddy generate:migrations` after changing a commerce model, and read the
+  SQL before applying it
 - Order `observe: true` emits events on create/update/delete
 - Products have JSON fields for allergens and nutritionalInfo
-- Cart expiry is tracked via `expiresAt` field
+- Cart expiry is tracked via `expiresAt`; `cleanupAbandonedCarts` is the sweeper
 - Coupon types: `fixed_amount` or `percentage`
 - Gift card codes are unique and auto-generated
 - License keys follow XXXX-XXXX-XXXX-XXXX-XXXX format
 - Product dashboard is highlighted (`dashboard: { highlight: true }`)
-- Default seeder counts: Product(10), Order(20), Review(50), Payment(50)
+- Default seeder counts: Product(10), Order(20), Review(50), Payment(50),
+  GiftCard(20), Customer(20), Coupon(15)
+- `fetchById` in most sub-modules returns the raw row, so columns arrive
+  snake_cased even though the declared type is camelCase
+
+## Downstream
+
+> Touching a money path? `/stacks-tdd` for the seam to test it at, and
+> `/stacks-review` before it merges. `/stacks-payments` covers the Stripe side.

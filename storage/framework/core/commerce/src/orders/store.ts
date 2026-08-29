@@ -3,6 +3,7 @@ import type { ModelRow, NewModelData, Order } from '@stacksjs/orm'
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
+import { insertedId } from '../utils/inserted-id'
 type OrderJsonResponse = ModelRow<typeof Order>
 type NewOrder = NewModelData<typeof Order>
 
@@ -28,20 +29,30 @@ export async function store(data: NewOrder): Promise<OrderJsonResponse | undefin
       .values(orderData as NewOrder)
       .executeTakeFirst()
 
-    const insertId = Number(createdOrder?.insertId) || Number(createdOrder?.numInsertedOrUpdatedRows)
+    // Read the id the driver reported, never a row count: SQLite reports
+    // `lastInsertRowid` and nothing here read it, so every successful insert
+    // returned undefined on the default dialect.
+    const id = insertedId(createdOrder)
 
-    // If insert was successful, retrieve the newly created order
-    if (insertId) {
+    if (id !== undefined) {
       const order = await db
         .selectFrom('orders')
-        .where('id', '=', insertId)
+        .where('id', '=', id)
         .selectAll()
         .executeTakeFirst()
 
       return order as OrderJsonResponse | undefined
     }
 
-    return undefined
+    // Postgres reports no insert id without RETURNING; the uuid written above
+    // identifies the row on any dialect.
+    const order = await db
+      .selectFrom('orders')
+      .where('uuid', '=', orderData.uuid)
+      .selectAll()
+      .executeTakeFirst()
+
+    return order as OrderJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof Error)

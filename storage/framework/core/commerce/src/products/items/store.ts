@@ -3,7 +3,8 @@ type ProductJsonResponse = ModelRow<typeof Product>
 type NewProduct = NewModelData<typeof Product>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
-import { fetchById } from './fetch'
+import { insertedId } from '../../utils/inserted-id'
+import { fetchById, getProductByUuid } from './fetch'
 
 /**
  * Create a new product item
@@ -26,9 +27,14 @@ export async function store(data: NewProduct): Promise<ProductJsonResponse> {
     if (!result)
       throw new Error('Failed to create product item')
 
-    const insertId = Number(result.insertId) || Number(result.numInsertedOrUpdatedRows)
+    // Read the id the driver reported, never a row count.
+    const id = insertedId(result)
 
-    const model = await fetchById(insertId)
+    // Postgres reports no insert id without RETURNING; the uuid written above
+    // identifies the row on any dialect.
+    const model = id !== undefined
+      ? await fetchById(id)
+      : await getProductByUuid(itemData.uuid)
 
     if (!model)
       throw new Error('Failed to create product item')

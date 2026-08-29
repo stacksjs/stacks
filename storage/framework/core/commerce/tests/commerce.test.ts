@@ -103,10 +103,18 @@ describe('commerce module', () => {
     expect(mod.commerce.waitlists).toBe(mod.waitlists)
   })
 
-  test('commerce namespace contains exactly 14 submodules', async () => {
+  test('exposes the carts submodule', async () => {
+    const mod = await import('../src/index')
+    expect(mod.carts).toBeDefined()
+    expect(typeof mod.carts).toBe('object')
+    expect(mod.commerce.carts).toBe(mod.carts)
+  })
+
+  test('commerce namespace contains exactly 15 submodules', async () => {
     const mod = await import('../src/index')
     const keys = Object.keys(mod.commerce)
     expect(keys).toContain('auctions')
+    expect(keys).toContain('carts')
     expect(keys).toContain('coupons')
     expect(keys).toContain('customers')
     expect(keys).toContain('devices')
@@ -120,6 +128,6 @@ describe('commerce module', () => {
     expect(keys).toContain('shippings')
     expect(keys).toContain('tax')
     expect(keys).toContain('waitlists')
-    expect(keys.length).toBe(14)
+    expect(keys.length).toBe(15)
   })
 })

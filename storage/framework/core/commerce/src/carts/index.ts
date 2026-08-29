@@ -9,5 +9,11 @@ export {
 } from './fetch'
 
 export {
+  bulkStore,
   store,
 } from './store'
+
+export {
+  bulkUpdate,
+  update,
+} from './update'

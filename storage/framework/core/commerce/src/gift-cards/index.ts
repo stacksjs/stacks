@@ -1,6 +1,8 @@
 export {
   bulkDestroy,
+  deactivate,
   destroy,
+  destroyExpired,
 } from './destroy'
 
 export {

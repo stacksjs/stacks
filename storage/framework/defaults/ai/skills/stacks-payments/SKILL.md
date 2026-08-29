@@ -25,6 +25,7 @@ Full Stripe integration via the Payment facade. Uses Stripe API version `2026-01
 - All billable modules (`manageCharge`, `manageCustomer`, `manageSubscription`, etc.)
 - `stripe` -- raw Stripe SDK instance
 - `Stripe` -- re-exported Stripe types namespace
+- `stacksIdempotencyKey`, `freshIdempotencyKey` -- see Idempotency below
 
 ## Payment Facade
 
@@ -346,6 +347,39 @@ The aggregate always returns persisted `PaymentTransaction` records for the
 authenticated user. Subscription and payment-method reads are provider-backed
 and may be unavailable when the application User override is not billable.
 Render that as an explicit unavailable state, not sample plans or fake cards.
+
+## Idempotency
+
+Stripe calls that **create or attach** a resource are not idempotent by default.
+The classic failure: `createStripeCustomer(user)` succeeds at Stripe, the
+follow-up `user.update({ stripe_id })` fails, the next request sees no
+`stripe_id` and creates a second Stripe customer with no link to the local user.
+
+Pass an idempotency key on every create, attach or update call. Stripe caches
+the response under that key for 24 hours, so a retry returns the original object
+instead of making a new one.
+
+```typescript
+import { stacksIdempotencyKey } from '@stacksjs/payments'
+
+await stripe.customers.create(params, {
+  idempotencyKey: stacksIdempotencyKey('customer.create', user.id),
+})
+```
+
+Keys are built as `stacks:<scope>:<parts...>:v1`, hashed when they would exceed
+Stripe's 255-character limit, and deterministic: the same inputs always produce
+the same key, which is the whole point.
+
+- **`stacksIdempotencyKey(scope, ...parts)`** is the one to reach for. `scope` is
+  a stable operation name and never user input; `parts` scope it within the
+  user's lifetime.
+- **`freshIdempotencyKey(scope, ...parts)`** appends randomness, so it does *not*
+  deduplicate. Use it only when a repeat call is genuinely a new operation (a
+  second, deliberate charge of the same amount), never as a way to get past a
+  cached response.
+- Bump the `v1` suffix in `idempotency.ts` when an operation's parameters change
+  in a way that should not collide with a cached response.
 
 ## config/payment.ts
 

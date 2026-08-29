@@ -8,7 +8,8 @@
  */
 
 import type { DbWriteResult } from '@stacksjs/database'
-import { db } from '@stacksjs/database'
+import { db, sqlHelpers } from '@stacksjs/database'
+import { env } from '@stacksjs/env'
 
 // ============================================================================
 // Co-7: coupon stacking guard
@@ -213,9 +214,14 @@ export async function cleanupAbandonedCarts(
   // LIMIT inside an IN subquery, so we fall back via try/catch to a
   // select-then-delete pass. Issued via db.unsafe with bound params:
   // the fluent delete builder cannot express IN-subquery predicates.
+  const p = sqlHelpers(env.DB_CONNECTION || 'sqlite').param
+
   try {
+    // Placeholders are rendered per dialect: Postgres numbers them (`$1`) and
+    // treats a literal `?` as a syntax error, so every Postgres sweep fell into
+    // the slow select-then-delete fallback below instead of the fast path.
     const statement = await db.unsafe(
-      `DELETE FROM carts WHERE updated_at < ? AND id IN (SELECT id FROM carts WHERE updated_at < ? LIMIT ?)`,
+      `DELETE FROM carts WHERE updated_at < ${p(1)} AND id IN (SELECT id FROM carts WHERE updated_at < ${p(2)} LIMIT ${p(3)})`,
       [cutoffAt, cutoffAt, limit],
     )
     // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the

@@ -1,5 +1,6 @@
 // Main commerce module index file
 import * as auctions from './auctions'
+import * as carts from './carts'
 import * as coupons from './coupons'
 import * as customers from './customers'
 import * as devices from './devices'
@@ -15,6 +16,7 @@ import * as waitlists from './waitlists'
 import * as restaurant from './waitlists/restaurant'
 
 type AuctionsModule = typeof auctions
+type CartsModule = typeof carts
 type CouponsModule = typeof coupons
 type CustomersModule = typeof customers
 type ErrorsModule = typeof errors
@@ -32,6 +34,8 @@ type ReceiptsModule = typeof receipts
 export interface CommerceNamespace {
   /** Benefit auctions: lots, proxy bidding, anti-snipe, pledges, settlement. */
   auctions: AuctionsModule
+  /** Shopping carts: the pre-order basket a customer builds before checkout. */
+  carts: CartsModule
   coupons: CouponsModule
   customers: CustomersModule
   errors: ErrorsModule
@@ -49,6 +53,7 @@ export interface CommerceNamespace {
 
 export const commerce: CommerceNamespace = {
   auctions,
+  carts,
   coupons,
   customers,
   devices,
@@ -68,6 +73,7 @@ export default commerce
 
 export {
   auctions,
+  carts,
   coupons,
   customers,
   devices,

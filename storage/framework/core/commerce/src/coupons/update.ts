@@ -1,6 +1,7 @@
 import type { DbWriteResult } from '@stacksjs/database'
 import type { Coupon, ModelRow, UpdateModelData } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { db, sqlHelpers } from '@stacksjs/database'
+import { env } from '@stacksjs/env'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type CouponJsonResponse = ModelRow<typeof Coupon>
@@ -96,15 +97,23 @@ export async function redeem(id: number): Promise<CouponRedemptionResult> {
   // silently dropped by the runtime — which would drop the max_uses
   // guard entirely. One parameterized statement keeps the whole
   // precondition set atomic and injection-safe.
+  //
+  // Rendered through `sqlHelpers` rather than hardcoded: Postgres numbers its
+  // placeholders (`$1`) instead of accepting `?`, and its `is_active` is a real
+  // BOOLEAN, so `= 1` is `operator does not exist: boolean = integer` there.
+  // Both were literals here, which meant every coupon redemption threw on
+  // Postgres while passing on SQLite - the dialect the tests run against.
+  const dialect = sqlHelpers(env.DB_CONNECTION || 'sqlite')
+  const p = dialect.param
   const now = formatDate(new Date())
   const statement = await db.unsafe(
     `UPDATE coupons
-    SET usage_count = COALESCE(usage_count, 0) + 1, updated_at = ?
-    WHERE id = ?
+    SET usage_count = COALESCE(usage_count, 0) + 1, updated_at = ${p(1)}
+    WHERE id = ${p(2)}
       AND (max_uses IS NULL OR usage_count < max_uses)
-      AND is_active = 1
-      AND (start_date IS NULL OR start_date <= ?)
-      AND (end_date IS NULL OR end_date >= ?)`,
+      AND is_active = ${dialect.boolTrue}
+      AND (start_date IS NULL OR start_date <= ${p(3)})
+      AND (end_date IS NULL OR end_date >= ${p(4)})`,
     [now, id, now, now],
   )
   // `db.unsafe(...)` is already awaited above, so `.execute` cannot be on the

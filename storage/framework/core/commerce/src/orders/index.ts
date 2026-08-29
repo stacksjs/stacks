@@ -17,6 +17,7 @@ export {
   fetchAll,
   fetchById,
   fetchDailyOrderTrends,
+  fetchRecent,
   fetchStats,
 } from './fetch'
 

@@ -41,12 +41,16 @@ export async function bulkDestroy(ids: number[]): Promise<number> {
  * @returns Number of gift cards deleted
  */
 export async function destroyExpired(): Promise<number> {
-  const currentDate = new Date().toISOString().split('T')[0]
+  // `expiry_date` is a timestamp (`YYYY-MM-DD HH:MM:SS`), so comparing it
+  // against a date-only `YYYY-MM-DD` string left every card that expired
+  // earlier the same day looking unexpired: the stored value is the longer
+  // string and sorts after the truncated one. `formatDate` is the same
+  // rendering the rest of the module writes and compares with.
+  const now = formatDate(new Date())
 
-  // Delete expired gift cards
   const result = await db
     .deleteFrom('gift_cards')
-    .where('expiry_date', '<', currentDate)
+    .where('expiry_date', '<', now)
     .executeTakeFirst()
 
   return mutationCount(result)
@@ -76,5 +80,9 @@ export async function deactivate(id: number): Promise<boolean> {
     .where('id', '=', id)
     .executeTakeFirst()
 
-  return !!result
+  // `executeTakeFirst()` resolves to a driver result object, which is truthy
+  // whether it updated one row or none - so `!!result` reported success for a
+  // deactivation that did nothing. `mutationCount` reads the affected-row count
+  // the way `destroy` above it already does.
+  return mutationCount(result) > 0
 }

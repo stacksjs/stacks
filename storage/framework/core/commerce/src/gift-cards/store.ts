@@ -5,6 +5,7 @@ import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
+import { insertedId } from '../utils/inserted-id'
 
 /**
  * Create a new gift card
@@ -34,21 +35,33 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
      * returns no row - or a statement that inserted nothing - threw a
      * `TypeError` here rather than reporting a failed insert.
      */
-    const receipt = (createdGiftCard ?? {}) as { insertId?: unknown, numInsertedOrUpdatedRows?: unknown }
-    const insertId = Number(receipt.insertId ?? 0) || Number(receipt.numInsertedOrUpdatedRows ?? 0)
+    // Read the id the driver reported, never a row count. This used to fall
+    // back to `numInsertedOrUpdatedRows`, which SQLite does not report at all -
+    // so `store()` returned undefined for every successful insert on the
+    // framework's default dialect, and on a driver that did report the count it
+    // would have fetched row 1 instead of the new card.
+    const id = insertedId(createdGiftCard)
 
-    // If insert was successful, retrieve the newly created gift card
-    if (insertId) {
+    if (id !== undefined) {
       const giftCard = await db
         .selectFrom('gift_cards')
-        .where('id', '=', insertId)
+        .where('id', '=', id)
         .selectAll()
         .executeTakeFirst()
 
       return giftCard as GiftCardJsonResponse
     }
 
-    return undefined
+    // Postgres reports no insert id without a RETURNING clause, so fall back to
+    // the uuid this row was written with - the same approach `payments/store`
+    // already takes.
+    const giftCard = await db
+      .selectFrom('gift_cards')
+      .where('uuid', '=', giftCardData.uuid)
+      .selectAll()
+      .executeTakeFirst()
+
+    return giftCard as GiftCardJsonResponse | undefined
   }
   catch (error) {
     if (error instanceof HttpError)

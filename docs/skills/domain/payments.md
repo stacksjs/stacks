@@ -36,6 +36,7 @@ The sections an agent reads once the skill loads.
 - Key Paths
 - Package Exports
 - Payment Facade
+- Idempotency
 - config/payment.ts
 - config/saas.ts
 - Database Tables Used

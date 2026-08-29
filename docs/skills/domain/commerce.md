@@ -12,9 +12,9 @@ waitlists, devices, receipts and restaurant features.
 
 ## When to reach for it
 
-- The commerce namespace with 13 sub-modules (products, orders, customers, coupons, payments, shipping, tax, gift cards, waitlists, devices, receipts, restaurant)
+- The commerce namespace with 15 sub-modules (products, carts, orders, customers, coupons, payments, gift cards, auctions, shipping, tax, waitlists, restaurant, devices, receipts, errors)
 - 20+ commerce models
-- Default commerce functions
+- Checkout and redemption logic
 - The commerce configuration
 
 ## Covers
@@ -29,6 +29,8 @@ The sections an agent reads once the skill loads.
 - Commerce Namespace
 - Sub-Module Operations
 - Commerce Models (20+)
+- Money paths
+- Carts
 - Live Delivery Tracking
 - Integration with Payments
 - Dashboard Routes
@@ -39,6 +41,12 @@ The sections an agent reads once the skill loads.
 - Core package: `storage/framework/core/commerce/src/`
 - Default functions: `storage/framework/defaults/functions/commerce/`
 - Default models: `storage/framework/defaults/app/Models/commerce/`
+
+## Related skills
+
+- [Payments](/skills/domain/payments)
+- [Review](/skills/craft/review)
+- [TDD](/skills/craft/tdd)
 
 ## Using it
 
