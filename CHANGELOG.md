@@ -1,5 +1,89 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.103...v0.73.0)
+
+## 💥 Breaking Changes
+
+- feat(commerce)!: rename Driver to Courier across models, tables, and namespace ([b2c4665](https://github.com/stacksjs/stacks/commit/b2c4665)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2382](https://github.com/stacksjs/stacks/issues/2382))
+
+## ✨ Features
+
+- **auth**: return a scannable QR code with the TOTP setup secret ([8f56581](https://github.com/stacksjs/stacks/commit/8f56581)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2385](https://github.com/stacksjs/stacks/issues/2385))
+- **commerce**: expose courier tracking over HTTP and model the pickup leg ([d636a07](https://github.com/stacksjs/stacks/commit/d636a07)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2384](https://github.com/stacksjs/stacks/issues/2384))
+- **payments**: add Stripe Connect for marketplace payments ([7644db8](https://github.com/stacksjs/stacks/commit/7644db8)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2383](https://github.com/stacksjs/stacks/issues/2383))
+- **skills**: add the engineering craft skills, adapted from mattpocock/skills ([ab48014](https://github.com/stacksjs/stacks/commit/ab48014)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **router**: register the delivery bundle so its routes actually mount ([7d096b2](https://github.com/stacksjs/stacks/commit/7d096b2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2384](https://github.com/stacksjs/stacks/issues/2384))
+- **types**: finish the Courier rename in the scaffold types ([d4acfc0](https://github.com/stacksjs/stacks/commit/d4acfc0)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2382](https://github.com/stacksjs/stacks/issues/2382))
+- **dashboard**: refuse a non-canvas element in useChart ([b78ac99](https://github.com/stacksjs/stacks/commit/b78ac99)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: repair the money paths and complete the namespace ([6db3693](https://github.com/stacksjs/stacks/commit/6db3693)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: drop generated library packages from the lockfile ([ab7b7e3](https://github.com/stacksjs/stacks/commit/ab7b7e3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: the middleware `next` was declared narrower than it is ([3ea3cbc](https://github.com/stacksjs/stacks/commit/3ea3cbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sms**: wire buddy sms to the exports ts-cloud now has ([cbe9137](https://github.com/stacksjs/stacks/commit/cbe9137)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: config.server.host was never applied ([b519c1a](https://github.com/stacksjs/stacks/commit/b519c1a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **api**: the digest-auth retry sent "[object Promise]" as its body ([d48a4f8](https://github.com/stacksjs/stacks/commit/d48a4f8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: the AWS credential writes passed an option that does not exist ([6e254d3](https://github.com/stacksjs/stacks/commit/6e254d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: error reports lost the field name and the offending value ([3d106da](https://github.com/stacksjs/stacks/commit/3d106da)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **server**: Controller.validate could not have validated anything ([e383985](https://github.com/stacksjs/stacks/commit/e383985)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **domains**: CountryCode was a local alias for string, so no code was checked ([f02ed25](https://github.com/stacksjs/stacks/commit/f02ed25)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: the app config reported "characters" for a numeric minimum ([8b51bbc](https://github.com/stacksjs/stacks/commit/8b51bbc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **chat**: Slack and Discord were sent "[object Object]" as the sender ([ff8d5ed](https://github.com/stacksjs/stacks/commit/ff8d5ed)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **payments**: subscription cancel declared create params ([9016e49](https://github.com/stacksjs/stacks/commit/9016e49)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **validation**: three error messages were filed under keys that match no rule ([6a25609](https://github.com/stacksjs/stacks/commit/6a25609)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: a token that was never updated reported updatedAt as 1970-01-01 ([2a5283d](https://github.com/stacksjs/stacks/commit/2a5283d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: S3 cleanup passed one object where two arguments were expected ([ca6e832](https://github.com/stacksjs/stacks/commit/ca6e832)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **sms**: buddy sms sent an empty body to a client that does not exist ([c379cee](https://github.com/stacksjs/stacks/commit/c379cee)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: the interactive CLI paths threw, and one menu rendered undefined ([0044765](https://github.com/stacksjs/stacks/commit/0044765)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **actions**: buddy upgrade:binary called two functions that do not exist ([9122830](https://github.com/stacksjs/stacks/commit/9122830)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: two exports had empty columns and two deletes always reported 0 ([8fb6e91](https://github.com/stacksjs/stacks/commit/8fb6e91)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: make:* flags were typed as required, so nothing satisfied them ([ece8f09](https://github.com/stacksjs/stacks/commit/ece8f09)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: three markers the request stamps were never declared ([82fa147](https://github.com/stacksjs/stacks/commit/82fa147)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: the request proxy did not admit the markers it forwards ([1494623](https://github.com/stacksjs/stacks/commit/1494623)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **commerce**: five bulk operations threw a TypeError on every call ([732d175](https://github.com/stacksjs/stacks/commit/732d175)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **browser**: the globals the server injects are declared, not cast ([40a9484](https://github.com/stacksjs/stacks/commit/40a9484)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: a numeric backoff never reached the redis driver intact ([38253bf](https://github.com/stacksjs/stacks/commit/38253bf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: the ts-cloud config had two partial descriptions and one any ([984fa48](https://github.com/stacksjs/stacks/commit/984fa48)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **utils**: isDeepEqual compared dates, regexps, maps and sets by identity ([f6fd26e](https://github.com/stacksjs/stacks/commit/f6fd26e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **queue**: dispatching by name now checks the payload too ([1cdb17e](https://github.com/stacksjs/stacks/commit/1cdb17e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **composables**: name the proxy target and read the ref properly ([bfec45a](https://github.com/stacksjs/stacks/commit/bfec45a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: fix the parameter, not the call ([09afa4f](https://github.com/stacksjs/stacks/commit/09afa4f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **utils**: merge names its result once instead of at every assignment ([2fa5a54](https://github.com/stacksjs/stacks/commit/2fa5a54)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **realtime**: scan broadcasts with Bun.Glob, scope the upgrade cast ([2e5064a](https://github.com/stacksjs/stacks/commit/2e5064a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: name what the driver stubs and spawn options actually are ([af873be](https://github.com/stacksjs/stacks/commit/af873be)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: name the dynamic reads in six more places ([80e5195](https://github.com/stacksjs/stacks/commit/80e5195)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: the surfaces these casts were building are declared now ([6ae5fe2](https://github.com/stacksjs/stacks/commit/6ae5fe2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: a second sweep, now that the types underneath are better ([b3e3865](https://github.com/stacksjs/stacks/commit/b3e3865)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: two more hand-spelled Result unions, and a Meilisearch list ([36301d4](https://github.com/stacksjs/stacks/commit/36301d4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: the Result helpers already build what these signatures spelled ([3b4ae7a](https://github.com/stacksjs/stacks/commit/3b4ae7a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: declare the browser APIs lib.dom is missing, and use Result ([7db37b1](https://github.com/stacksjs/stacks/commit/7db37b1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: name the rows the queue and schema queries return ([8027915](https://github.com/stacksjs/stacks/commit/8027915)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: widen three array casts that did not need `any` ([2750bd1](https://github.com/stacksjs/stacks/commit/2750bd1)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: remove another 60 casts across seven packages ([9e7f824](https://github.com/stacksjs/stacks/commit/9e7f824)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: the model proxy reads its target through a type, not 31 casts ([f40de7b](https://github.com/stacksjs/stacks/commit/f40de7b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **database**: remove 148 (db as any) casts, and type what they hid ([c56f8a0](https://github.com/stacksjs/stacks/commit/c56f8a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: the last exported anys outside generic constraints ([b267caa](https://github.com/stacksjs/stacks/commit/b267caa)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: describe the external payloads instead of taking any ([38b6c6e](https://github.com/stacksjs/stacks/commit/38b6c6e)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: write down the shapes that were standing in as any ([95a714a](https://github.com/stacksjs/stacks/commit/95a714a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: the type guards take unknown, not any ([1887da6](https://github.com/stacksjs/stacks/commit/1887da6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- regenerate the Buddy command reference ([84d37b7](https://github.com/stacksjs/stacks/commit/84d37b7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- add a Skills section, one page per skill ([4f072fa](https://github.com/stacksjs/stacks/commit/4f072fa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- wip ([58f5791](https://github.com/stacksjs/stacks/commit/58f5791)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.102...v0.72.103)
 
 ## 🐛 Bug Fixes
