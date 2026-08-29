@@ -393,7 +393,7 @@ try {
     SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
   `)
 
-  if ((existing as any[])?.length > 0) {
+  if ((existing as unknown[])?.length > 0) {
     console.log('\n✓ Personal access client already exists')
   }
   else {

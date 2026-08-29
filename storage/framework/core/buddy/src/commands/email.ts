@@ -460,7 +460,7 @@ export function email(buddy: CLI): void {
           const inboxData = await withTimeout(s3.getObject(bucketName, inboxKey))
           if (inboxData) {
             try {
-              inboxEmails = JSON.parse(inboxData) as any[]
+              inboxEmails = JSON.parse(inboxData) as unknown[]
               source = 'mailboxes'
             }
             catch {

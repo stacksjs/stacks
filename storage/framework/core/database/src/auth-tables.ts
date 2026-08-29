@@ -448,7 +448,7 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
     `).execute()
 
-    if ((existing as any[])?.length === 0) {
+    if ((existing as unknown[])?.length === 0) {
       const secret = randomBytes(40).toString('hex')
 
       if (isPostgres) {
