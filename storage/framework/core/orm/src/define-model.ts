@@ -386,6 +386,47 @@ function resolveRelationPath(
  * `toAttrs(instance)` or `instance.toJSON()` for that. This proxy is about
  * making direct property access work, not about output sanitization.
  */
+/**
+ * A model instance, in the terms this proxy reads it.
+ *
+ * `wrapModelInstance` is generic over `T extends object`, so nothing inside
+ * the handler knew that its target carries `_attributes`, `save`, `isDirty`
+ * and the rest - and it reached for them through 31 separate
+ * `target` casts. Each one unchecked the whole instance, so a
+ * renamed internal (`_attributes` is the one this file is built on) would
+ * have gone unnoticed at every single site.
+ *
+ * Named once, and the target narrowed to it once, so the handler body is
+ * checked against the members it genuinely depends on.
+ */
+/**
+ * The shared model definition, as this handler mutates it.
+ *
+ * `saveAsync` blanks `def.set` around the inner `save()` so the sync path does
+ * not run the setters a second time, then restores it on a `finally`. That
+ * assignment is to a `readonly` field, and on an object the comment there
+ * already notes is shared across every instance of the model - which the
+ * `(target as any)` reads made invisible at the point of assignment.
+ */
+type MutableModelDefinition = Omit<ModelDefinition, 'set'> & {
+  set?: ModelDefinition['set']
+  /** Trait method bags, attached by the trait installers. */
+  __traitMethods?: unknown
+}
+
+interface WrappedModelInstance {
+  /** Guaranteed: `wrapModelInstance` returns early when it is absent. */
+  _attributes: Record<string, unknown>
+  _definition: MutableModelDefinition
+  _relations?: Record<string, unknown>
+  id?: unknown
+  isDirty?: (_key?: string) => boolean
+  save: () => unknown
+  update: (_data: Record<string, unknown>) => unknown
+  delete: () => unknown
+  set?: (_key: string, _value: unknown) => unknown
+}
+
 function wrapModelInstance<T extends object>(
   instance: T,
   casts?: Record<string, CastType | CasterInterface>,
@@ -409,7 +450,9 @@ function wrapModelInstance<T extends object>(
   }
 
   return new Proxy(instance, {
-    get(target, prop, recv) {
+    get(rawTarget, prop, recv) {
+      const target = rawTarget as T & WrappedModelInstance
+
       if (prop === STACKS_PROXY_TAG) return true
 
       // saveAsync()/updateAsync(): async-aware variants that resolve
@@ -422,17 +465,17 @@ function wrapModelInstance<T extends object>(
       // type-aware model definitions.
       if (prop === 'saveAsync') {
         return async function () {
-          const def = (target as any)._definition
+          const def = target._definition
           const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
-          if (setters && typeof (target as any).isDirty === 'function') {
+          if (setters && typeof target.isDirty === 'function') {
             for (const [key, fn] of Object.entries(setters)) {
               if (typeof fn !== 'function') continue
-              if (!(target as any).isDirty(key)) continue
-              const result = fn((target as any)._attributes as Record<string, unknown>)
+              if (!target.isDirty(key)) continue
+              const result = fn(target._attributes as Record<string, unknown>)
               const value = (result && typeof (result as { then?: unknown }).then === 'function')
                 ? await result
                 : result
-              ;(target as any)._attributes[key] = value
+              ;target._attributes[key] = value
             }
             // Suppress the sync save's own setter pass — we already did
             // it (and awaited it). Restore on a `finally` so a thrown
@@ -442,13 +485,13 @@ function wrapModelInstance<T extends object>(
             const original = def.set
             def.set = {}
             try {
-              return (target as any).save()
+              return target.save()
             }
             finally {
               def.set = original
             }
           }
-          return (target as any).save()
+          return target.save()
         }
       }
 
@@ -462,30 +505,30 @@ function wrapModelInstance<T extends object>(
       // setter pass so we don't double-apply.
       if (prop === 'save') {
         return function () {
-          const def = (target as any)._definition
+          const def = target._definition
           const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
-          if (setters && Object.keys(setters).length > 0 && typeof (target as any).isDirty === 'function') {
+          if (setters && Object.keys(setters).length > 0 && typeof target.isDirty === 'function') {
             for (const [key, fn] of Object.entries(setters)) {
               if (typeof fn !== 'function') continue
-              if (!(target as any).isDirty(key)) continue
-              const result = fn((target as any)._attributes as Record<string, unknown>)
+              if (!target.isDirty(key)) continue
+              const result = fn(target._attributes as Record<string, unknown>)
               if (result && typeof (result as { then?: unknown }).then === 'function') {
                 throw new Error(
                   `Setter for "${key}" returned a Promise - use \`saveAsync()\` instead of \`save()\` when a model has async setters.`,
                 )
               }
-              ;(target as any)._attributes[key] = result
+              ;target._attributes[key] = result
             }
             const original = def.set
             def.set = {}
             try {
-              return (target as any).save()
+              return target.save()
             }
             finally {
               def.set = original
             }
           }
-          return (target as any).save()
+          return target.save()
         }
       }
 
@@ -513,7 +556,7 @@ function wrapModelInstance<T extends object>(
       // feedback loop (e.g., an `updated` listener that itself updates).
       if (prop === 'saveQuietly') {
         return function () {
-          return withoutEvents(() => (target as any).save())
+          return withoutEvents(() => target.save())
         }
       }
       if (prop === 'saveAsyncQuietly') {
@@ -523,7 +566,7 @@ function wrapModelInstance<T extends object>(
       }
       if (prop === 'updateQuietly') {
         return function (data: Record<string, unknown>) {
-          return withoutEvents(() => (target as any).update(data))
+          return withoutEvents(() => target.update(data))
         }
       }
       if (prop === 'updateAsyncQuietly') {
@@ -533,17 +576,17 @@ function wrapModelInstance<T extends object>(
       }
       if (prop === 'deleteQuietly') {
         return function () {
-          return withoutEvents(() => (target as any).delete())
+          return withoutEvents(() => target.delete())
         }
       }
 
       if (prop === 'toSearchableObject') {
         return function toSearchableObject() {
-          const def = (target as any)._definition as { traits?: { useSearch?: boolean | SearchOptions } } | undefined
+          const def = target._definition as { traits?: { useSearch?: boolean | SearchOptions } } | undefined
           const search = def?.traits?.useSearch
           if (!search) return null
 
-          const attrs = (target as any)._attributes as Record<string, unknown> | undefined
+          const attrs = target._attributes as Record<string, unknown> | undefined
           if (!attrs) return null
 
           // Boolean form: `useSearch: true` indexes every attribute on
@@ -571,7 +614,7 @@ function wrapModelInstance<T extends object>(
           // get()`); this loop just reads the already-loaded relation.
           // See stacksjs/stacks#1918 for the broader picture.
           const denormalize = search.denormalize ?? {}
-          const relations = (target as any)._relations as Record<string, unknown> | undefined
+          const relations = target._relations as Record<string, unknown> | undefined
 
           for (const key of keys) {
             const snake = snakeCase(key)
@@ -604,18 +647,21 @@ function wrapModelInstance<T extends object>(
       }
 
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
-        const a = (target as any)._attributes
+        const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
         // Eloquent-style relation access: after `Booking.query().with('user').first()`
         // the renter is reachable as `booking.user` instead of forcing every
         // call site through `booking.getRelation('user')`. If the relation
         // wasn't eager-loaded, this still returns undefined — callers should
         // either load it via `.with(name)` or use the explicit accessor.
-        const rels = (target as any)._relations
+        const rels = target._relations
         if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) {
           const related = rels[prop]
-          if (Array.isArray(related)) return related.map(x => wrapModelInstance(x, casts))
-          return wrapModelInstance(related, casts)
+          if (Array.isArray(related)) return related.map(x => wrapModelInstance(x as object, casts))
+          // A relation is a row, a list of rows, or nothing. `wrapModelInstance`
+          // returns anything non-object unchanged, so the guard is only here to
+          // satisfy its `T extends object`.
+          return related && typeof related === 'object' ? wrapModelInstance(related, casts) : related
         }
 
         // Trait instance methods (taggable/categorizable/commentable/
@@ -626,13 +672,13 @@ function wrapModelInstance<T extends object>(
         // resolves its *own* model's trait bag here, not the parent's.
         const binding = TRAIT_INSTANCE_METHOD_BINDINGS[prop]
         if (binding) {
-          const traitBags = (target as any)._definition?.__traitMethods as TraitMethods | undefined
+          const traitBags = target._definition?.__traitMethods as TraitMethods | undefined
           const bag = traitBags?.[binding.bag] as Record<string, (...args: any[]) => any> | undefined
           const fn = bag?.[prop]
           if (typeof fn === 'function') {
             return binding.mode === 'model'
               ? (...args: any[]) => fn(recv, ...args)
-              : (...args: any[]) => fn((target as any).id, ...args)
+              : (...args: any[]) => fn(target.id, ...args)
           }
         }
 
@@ -657,7 +703,9 @@ function wrapModelInstance<T extends object>(
       const v = Reflect.get(target, prop, target)
       return typeof v === 'function' ? v.bind(target) : v
     },
-    set(target, prop, value, recv) {
+    set(rawTarget, prop, value, recv) {
+      const target = rawTarget as T & WrappedModelInstance
+
       // Writes to existing attribute keys go through to `_attributes` so
       // `inst.status = 'x'; await inst.save()` actually persists. Without
       // this, the default-set lands the value as an own property on the
@@ -670,8 +718,8 @@ function wrapModelInstance<T extends object>(
       // because it also snapshots `_original` for dirty tracking — without
       // that snapshot, getChanges() returns `{}` and save() becomes a no-op.
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
-        const a = (target as any)._attributes
-        const setter = (target as any).set
+        const a = target._attributes
+        const setter = target.set
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
           if (typeof setter === 'function') setter.call(target, prop, value)
           else a[prop] = value
@@ -699,11 +747,13 @@ function wrapModelInstance<T extends object>(
       }
       return Reflect.set(target, prop, value, recv)
     },
-    has(target, prop) {
+    has(rawTarget, prop) {
+      const target = rawTarget as T & WrappedModelInstance
+
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
-        const a = (target as any)._attributes
+        const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
-        const rels = (target as any)._relations
+        const rels = target._relations
         if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) return true
         // Keep `in` agreeing with what `get` will actually resolve.
         if (a) {
@@ -713,9 +763,11 @@ function wrapModelInstance<T extends object>(
       }
       return Reflect.has(target, prop)
     },
-    deleteProperty(target, prop) {
+    deleteProperty(rawTarget, prop) {
+      const target = rawTarget as T & WrappedModelInstance
+
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
-        const a = (target as any)._attributes
+        const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
           delete a[prop]
           return true
@@ -723,13 +775,17 @@ function wrapModelInstance<T extends object>(
       }
       return Reflect.deleteProperty(target, prop)
     },
-    ownKeys(target) {
-      const a = (target as any)._attributes
+    ownKeys(rawTarget) {
+      const target = rawTarget as T & WrappedModelInstance
+
+      const a = target._attributes
       return a ? Object.keys(a) : []
     },
-    getOwnPropertyDescriptor(target, prop) {
+    getOwnPropertyDescriptor(rawTarget, prop) {
+      const target = rawTarget as T & WrappedModelInstance
+
       if (typeof prop === 'string') {
-        const a = (target as any)._attributes
+        const a = target._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
           return { configurable: true, enumerable: true, value: a[prop], writable: true }
         }
