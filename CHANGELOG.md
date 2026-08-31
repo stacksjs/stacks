@@ -1,5 +1,31 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.2...v0.73.3)
+
+## ✨ Features
+
+- **logging**: bundle @loghq/stacks so apps need no extra install (#2381) ([b4b656f](https://github.com/stacksjs/stacks/commit/b4b656f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2381](https://github.com/stacksjs/stacks/issues/2381), [#2381](https://github.com/stacksjs/stacks/issues/2381))
+
+## 🐛 Bug Fixes
+
+- **env**: make env:rotate --dry-run and --stdout stop destroying the keypair (#2400) ([23f592a](https://github.com/stacksjs/stacks/commit/23f592a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2398](https://github.com/stacksjs/stacks/issues/2398), [#2400](https://github.com/stacksjs/stacks/issues/2400), [#2400](https://github.com/stacksjs/stacks/issues/2400))
+- **logging**: apply config/logging.ts even when something logged first (#2399) ([bcef136](https://github.com/stacksjs/stacks/commit/bcef136)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2397](https://github.com/stacksjs/stacks/issues/2397), [#2399](https://github.com/stacksjs/stacks/issues/2399), [#2399](https://github.com/stacksjs/stacks/issues/2399))
+- **cli**: quotes published as unknown, so a new app failed its own typecheck (#2396) ([2f5d8e8](https://github.com/stacksjs/stacks/commit/2f5d8e8)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2389](https://github.com/stacksjs/stacks/issues/2389), [#2396](https://github.com/stacksjs/stacks/issues/2396), [#2396](https://github.com/stacksjs/stacks/issues/2396))
+- **deps**: stop the release recording generated packages as workspaces (#2395) ([08861b0](https://github.com/stacksjs/stacks/commit/08861b0)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2387](https://github.com/stacksjs/stacks/issues/2387), [#2395](https://github.com/stacksjs/stacks/issues/2395), [#2395](https://github.com/stacksjs/stacks/issues/2395))
+
+## ⚡ Performance Improvements
+
+- **desktop**: stop shipping the Bun runtime more than once ([bab5920](https://github.com/stacksjs/stacks/commit/bab5920)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ♻️ Code Refactoring
+
+- **cloud**: move the fleet inventory and attach preflight into ts-cloud (#2380) ([7c22d3b](https://github.com/stacksjs/stacks/commit/7c22d3b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2380](https://github.com/stacksjs/stacks/issues/2380), [#2380](https://github.com/stacksjs/stacks/issues/2380), [#2378](https://github.com/stacksjs/stacks/issues/2378), [#2379](https://github.com/stacksjs/stacks/issues/2379), [#192](https://github.com/stacksjs/stacks/issues/192), [#191](https://github.com/stacksjs/stacks/issues/191), [#192](https://github.com/stacksjs/stacks/issues/192))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.1...v0.73.2)
 
 ## ✨ Features
