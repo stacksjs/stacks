@@ -126,34 +126,81 @@ await endTimer({ rowCount: users.length })
 
 ## Configuration
 
-Configure logging in `stacks.config.ts`:
+Configure logging in `config/logging.ts`:
+
+```typescript
+import type { LogRecord } from '@stacksjs/types'
+
+export default {
+  // Minimum level the console prints. Optional; see precedence below.
+  level: 'info',
+
+  // 'text' (default in development) or 'json' (default in production)
+  format: 'text',
+
+  // Where the log file goes. Only its directory is used.
+  logsPath: 'storage/logs/stacks.log',
+
+  // Write logs to file as well as the console
+  writeToFile: true,
+
+  // Ship the log stream somewhere else - see below
+  transports: [],
+}
+```
+
+### Level precedence
+
+**`LOG_LEVEL` env var > `config/logging.ts` > `info`.** The env var is there so a
+single run can be made verbose without editing the project; the config file is
+the setting the project ships with.
+
+### Transports
+
+A transport receives every record *before* formatting collapses it, so `args`
+still holds the real `Error` and the real context object. That is the seam for
+shipping logs to a log service, an OTel exporter, or a test sink, without
+rewriting a single call site.
 
 ```typescript
 export default {
-  logging: {
-    // Minimum log level
-    level: process.env.LOG_LEVEL || 'info',
-
-    // Log file directory
-    logDirectory: 'storage/logs',
-
-    // Write logs to file
-    writeToFile: true,
-
-    // Show tags in output (e.g., [STACKS])
-    showTags: false,
-
-    // Colorful console output
-    fancy: process.env.NODE_ENV !== 'production',
-
-    // Date format
-    dateFormat: 'YYYY-MM-DD HH:mm:ss',
-
-    // Sensitive fields to redact
-    redact: ['password', 'token', 'secret', 'creditCard'],
-  }
+  transports: [
+    {
+      name: 'log-service',
+      // Optional: this transport's own floor. Omit it to receive everything,
+      // including debug records the console is configured to suppress.
+      level: 'warning',
+      log(record: LogRecord) {
+        void fetch('https://logs.example.com/ingest', {
+          method: 'POST',
+          body: JSON.stringify(record),
+        })
+      },
+      // Optional: called on shutdown, for a transport that batches.
+      async flush() {},
+    },
+  ],
 }
 ```
+
+A transport that throws is contained and reported once on stderr, then left
+alone - the logger is frequently the thing reporting a failure and must not
+become a second one.
+
+To attach one from a package rather than from the project's config, use
+`registerTransport()`, which returns a function that detaches it:
+
+```typescript
+import { registerTransport } from '@stacksjs/logging'
+
+const detach = registerTransport({ name: 'my-sink', log: record => sink.push(record) })
+```
+
+Records emitted before `config/logging.ts` has finished loading do not reach the
+transports it declares - they do not exist yet. Everything from that point on
+does. `await logger()` resolves once the config has been applied, if you need to
+wait for it (but never call it from inside a `config/*.ts` file, which would
+wait on its own load).
 
 ## Log Channels
 
