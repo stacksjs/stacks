@@ -58,6 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@loghq/stacks": "^0.2.3",
     "@stacksjs/clarity": "^0.3.33"
   },
   "devDependencies": {
