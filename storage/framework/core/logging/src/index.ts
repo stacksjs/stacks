@@ -185,6 +185,38 @@ export function parseLogLevel(raw: string | undefined, fallback: LogLevel = 'inf
   return fallback
 }
 
+/** `level` from `config/logging.ts`, once it has loaded. Set by the config refresh. */
+let _configLevel: LogLevel | undefined
+
+/** Memo for the env level, so an invalid `LOG_LEVEL` warns once and not per call. */
+let _envLevelRaw: string | undefined
+let _envLevelParsed: LogLevel | undefined
+
+/**
+ * The level in force right now, at the same precedence the logger itself was
+ * built with: **env var > config file > default**.
+ *
+ * Exists because the synchronous fast paths need an answer without awaiting
+ * the logger, and the env var is the only part of that answer available
+ * synchronously. The config half arrives later and is filled in by the
+ * refresh; until then this reports what the logger is actually doing.
+ *
+ * Env is re-read per call rather than snapshotted: `LOG_LEVEL` is routinely
+ * set from inside a process (tests, `buddy` subcommands) after this module has
+ * loaded, and a snapshot would ignore it.
+ */
+export function currentLevel(): LogLevel {
+  const raw = process.env.LOG_LEVEL
+  if (raw) {
+    if (raw !== _envLevelRaw) {
+      _envLevelRaw = raw
+      _envLevelParsed = parseLogLevel(raw)
+    }
+    return _envLevelParsed!
+  }
+  return _configLevel ?? 'info'
+}
+
 /** Parse + validate `LOG_FORMAT`; defaults to json in prod, text in dev. */
 export function parseLogFormat(raw: string | undefined): LogFormat {
   if (raw === 'json' || raw === 'text') return raw
@@ -376,6 +408,202 @@ function activeTraceId(): string | undefined {
   }
 }
 
+// --- Reading `config/logging.ts` --------------------------------------------
+//
+// `@stacksjs/config` loads the project's `config/*.ts` files asynchronously and
+// signals completion with `overridesReady`, so anything this package reads
+// during its own lazy init can predate them. That used to be permanent:
+// the init was memoized behind `if (_logger) return`, transports were
+// registered only inside it, and so whichever code logged first decided
+// whether `config/logging.ts` counted at all. `LOG_LEVEL=debug` made losing
+// that race routine rather than rare, because it makes boot-time `log.debug()`
+// calls actually fire - so turning on debug logging to investigate a problem
+// switched off the transports you would have read it in
+// (stacksjs/stacks#2397).
+//
+// The fix is to revisit, not to wait. Waiting is not open to us: a
+// `config/*.ts` file that logs while it is being evaluated would deadlock
+// against its own load if the log call awaited `overridesReady`, and config
+// files routinely import framework packages that log.
+
+/** The shape this package reads out of `config/logging.ts`. */
+interface LoggingConfigSection {
+  level?: string
+  format?: string
+  writeToFile?: boolean
+  logsPath?: string
+  transports?: unknown
+}
+
+interface BuiltSettings extends ResolvedLogSettings {
+  logDirectory: string
+}
+
+/**
+ * Where `@stacksjs/config` anchors its readiness Promise on `globalThis`. It
+ * does that so duplicate module instances coordinate; reading the same anchor
+ * here means this package can see the project's config land without depending
+ * on the config module resolving from its own location.
+ */
+const CONFIG_READY_KEY = Symbol.for('@stacksjs/config:overridesReady')
+
+/** What `_logger` was built with, so a refresh can tell whether it is stale. */
+let _builtWith: BuiltSettings | null = null
+
+/** Read the config section as it stands right now, without awaiting readiness. */
+async function readLoggingConfigNow(): Promise<LoggingConfigSection | null> {
+  try {
+    const cfg = await import('@stacksjs/config') as { logging?: LoggingConfigSection }
+    return cfg.logging ?? null
+  }
+  catch {
+    // Config layer unavailable (e.g. a compiled binary with config loading
+    // skipped) - env + defaults still apply.
+    return null
+  }
+}
+
+/**
+ * The readiness Promise `@stacksjs/config` anchors on `globalThis`, if the
+ * config layer is present in this process at all.
+ *
+ * Preferred over importing `@stacksjs/config` and reading its exports: it
+ * resolves to the very object the config loader mutates, so it carries the
+ * project's `config/logging.ts` verbatim, and reading it does not require this
+ * package to resolve the config module from its own location - which it cannot
+ * always do (a compiled binary skips config loading; a package test run has no
+ * built config package to resolve).
+ */
+function configReadySignal(): Promise<{ logging?: LoggingConfigSection } | undefined> | null {
+  const anchored = (globalThis as Record<symbol, unknown>)[CONFIG_READY_KEY]
+  if (!anchored || typeof (anchored as Promise<unknown>).then !== 'function')
+    return null
+  return anchored as Promise<{ logging?: LoggingConfigSection } | undefined>
+}
+
+/**
+ * Settings + log directory for a given config section. Precedence: env >
+ * config > default.
+ *
+ * `fallbackDirectory` is what the logger is already writing to, and is used
+ * when the config section names no `logsPath` of its own. Without it a refresh
+ * would re-derive the default and could move the log directory (the framework
+ * default `logsPath` is relative; the derived fallback is absolute) purely as
+ * a side effect of re-reading a config that never mentioned it.
+ */
+async function resolveSettings(logging: LoggingConfigSection | null, fallbackDirectory?: string): Promise<BuiltSettings> {
+  const { level, format, writeToFile } = resolveLogSettings({
+    envLevel: process.env.LOG_LEVEL,
+    envFormat: process.env.LOG_FORMAT,
+    cfgLevel: logging?.level,
+    cfgFormat: logging?.format,
+    cfgWriteToFile: typeof logging?.writeToFile === 'boolean' ? logging.writeToFile : undefined,
+    isProduction: process.env.NODE_ENV === 'production',
+  })
+
+  // Resolve the log directory: config's `logsPath` dir wins, else the
+  // project's storage/logs, else a relative fallback.
+  let logDirectory: string | undefined
+  if (logging?.logsPath) {
+    const np = await import('node:path')
+    logDirectory = np.dirname(logging.logsPath)
+  }
+  if (!logDirectory)
+    logDirectory = fallbackDirectory
+  if (!logDirectory) {
+    try {
+      // Lazy import path to avoid a circular dependency (path imports logging).
+      const p = await import('@stacksjs/path')
+      logDirectory = p.projectPath('storage/logs')
+    }
+    catch {
+      logDirectory = 'storage/logs'
+    }
+  }
+
+  return { level, format, writeToFile, logDirectory }
+}
+
+/** Attach transports a config section declares, skipping any already attached. */
+function attachDeclaredTransports(logging: LoggingConfigSection | null): void {
+  if (!Array.isArray(logging?.transports))
+    return
+  for (const transport of logging.transports) {
+    // Identity-checked: the first init may already have attached these (when
+    // config happened to be loaded by then), and a second copy of a transport
+    // would deliver every record to it twice.
+    if (!_transports.includes(transport as LogTransport))
+      addTransport(transport)
+  }
+}
+
+/**
+ * Apply `config/logging.ts` once it has actually loaded.
+ *
+ * Started by `initLogger` and deliberately never awaited by it - see the note
+ * above on why the log path cannot block on config readiness. Runs once per
+ * process; failures are swallowed because the config layer reports its own.
+ */
+let _configApplied: Promise<void> | null = null
+function applyConfigWhenReady(): void {
+  if (_configApplied) return
+
+  const ready = configReadySignal()
+  // Nothing to subscribe to yet. Deliberately not memoized as "no config":
+  // the anchor is installed when `@stacksjs/config` is first imported, and
+  // nothing guarantees that happens before the first log line.
+  if (!ready) return
+
+  _configApplied = ready.then(async (resolved) => {
+    const logging = resolved?.logging
+    if (!logging) return
+
+    // Attached in the first continuation off the readiness Promise, before any
+    // further await. Anything deferred past this point is a record that code
+    // waking on the same Promise logs into a transport not yet attached, for
+    // no reason other than hop count.
+    attachDeclaredTransports(logging)
+    if (logging.level)
+      _configLevel = parseLogLevel(logging.level)
+
+    const built = _builtWith
+    if (!built || !_logger)
+      return
+
+    const next = await resolveSettings(logging, built.logDirectory)
+    if (built.level === next.level && built.format === next.format
+      && built.writeToFile === next.writeToFile && built.logDirectory === next.logDirectory) {
+      return
+    }
+
+    // Rebuild rather than reach into the instance: clarity reads its settings
+    // from the config it was constructed with and exposes no setter for them.
+    // Drain and destroy the old one first - it owns rotation intervals that
+    // would otherwise keep firing (and hold the process open) alongside the
+    // replacement's.
+    const previous = _logger
+    _logger = new Logger('stacks', {
+      level: next.level,
+      logDirectory: next.logDirectory,
+      showTags: false,
+      fancy: next.format !== 'json',
+      format: next.format,
+      writeToFile: next.writeToFile,
+    })
+    _builtWith = next
+    try {
+      await (previous as unknown as { flush?: () => Promise<void> }).flush?.()
+      await (previous as unknown as { destroy?: () => Promise<void> }).destroy?.()
+    }
+    catch {
+      // Best effort. The replacement is already live either way.
+    }
+  }).catch(() => {
+    // A config that fails to load or validate reports that itself; there is
+    // nothing here to apply.
+  })
+}
+
 async function initLogger(): Promise<void> {
   if (_logger) return
   if (_loggerInitPromise) return _loggerInitPromise
@@ -388,75 +616,56 @@ async function initLogger(): Promise<void> {
     // truth (stacksjs/stacks#1935). Best-effort + lazy: any failure
     // falls back to env + defaults (today's behavior). Precedence is
     // **env var > config file > default**.
-    let cfgLevel: string | undefined
-    let cfgFormat: string | undefined
-    let cfgLogDir: string | undefined
-    let cfgWriteToFile: boolean | undefined
-    try {
-      const cfg = await import('@stacksjs/config') as {
-        logging?: { level?: string, format?: string, writeToFile?: boolean, logsPath?: string, transports?: unknown }
-      }
-      const logging = cfg.logging
-      if (logging) {
-        cfgLevel = logging.level
-        cfgFormat = logging.format
-        if (typeof logging.writeToFile === 'boolean') cfgWriteToFile = logging.writeToFile
-        if (logging.logsPath) {
-          const np = await import('node:path')
-          cfgLogDir = np.dirname(logging.logsPath)
-        }
-        // Config-declared transports. Added directly rather than through
-        // `registerTransport`, which would re-enter this function.
-        if (Array.isArray(logging.transports)) {
-          for (const transport of logging.transports)
-            addTransport(transport)
-        }
-      }
-    }
-    catch {
-      // Config layer unavailable (e.g. compiled binary with config
-      // loading skipped) — env + defaults below still apply.
-    }
+    //
+    // This read is unavoidably a snapshot - it is the one that may lose the
+    // race described above - so `applyConfigWhenReady()` below revisits it.
+    const logging = await readLoggingConfigNow()
+    attachDeclaredTransports(logging)
+    if (logging?.level)
+      _configLevel = parseLogLevel(logging.level)
 
-    // env > config > default
-    const { level, format, writeToFile } = resolveLogSettings({
-      envLevel: process.env.LOG_LEVEL,
-      envFormat: process.env.LOG_FORMAT,
-      cfgLevel,
-      cfgFormat,
-      cfgWriteToFile,
-      isProduction: process.env.NODE_ENV === 'production',
-    })
-
-    // Resolve the log directory: config's `logsPath` dir wins, else the
-    // project's storage/logs, else a relative fallback.
-    let logDirectory = cfgLogDir
-    if (!logDirectory) {
-      try {
-        // Lazy import path to avoid a circular dependency (path imports logging).
-        const p = await import('@stacksjs/path')
-        logDirectory = p.projectPath('storage/logs')
-      }
-      catch {
-        logDirectory = 'storage/logs'
-      }
-    }
+    const settings = await resolveSettings(logging)
 
     _logger = new Logger('stacks', {
-      level,
-      logDirectory,
+      level: settings.level,
+      logDirectory: settings.logDirectory,
       showTags: false,
-      fancy: format !== 'json',
-      format,
-      writeToFile,
+      fancy: settings.format !== 'json',
+      format: settings.format,
+      writeToFile: settings.writeToFile,
     })
+    _builtWith = settings
   })()
+
+  // Fire-and-forget: importing `@stacksjs/config` above installs the readiness
+  // anchor, so by the time this runs there is something to subscribe to.
+  void _loggerInitPromise.then(applyConfigWhenReady)
 
   return _loggerInitPromise
 }
 
 async function getLogger(): Promise<Logger> {
   await initLogger()
+  return _logger!
+}
+
+/**
+ * The configured logger.
+ *
+ * Unlike the accessor the `log.*` methods use internally, this one waits for
+ * `config/logging.ts` to have been applied, so what it hands back is the
+ * logger the project asked for rather than whatever was available the first
+ * time something logged.
+ *
+ * The one thing not to do with it is call it from inside a `config/*.ts` file,
+ * or from a module one of them imports at evaluation time: it waits on the
+ * very load those files are part of. The `log.*` methods have no such
+ * restriction - they never wait on config - and are what that code wants.
+ */
+export async function logger(): Promise<Logger> {
+  await initLogger()
+  applyConfigWhenReady()
+  if (_configApplied) await _configApplied
   return _logger!
 }
 
@@ -681,16 +890,30 @@ export const log: Log = {
     // every call still ran formatMessage + getLogger + a level-filtered
     // logger.debug and left a floating Promise, despite emitting nothing.
     // Mirrors the underlying logger: debug ranks below info/warn/error.
-    const lvl = ((process.env.LOG_LEVEL as string) || 'info').toLowerCase()
-    const suppressed = lvl === 'info' || lvl === 'warn' || lvl === 'error'
+    //
+    // The level this consults has to be the *resolved* one. Reading
+    // `process.env.LOG_LEVEL` straight, as this did, meant `level: 'debug'`
+    // in `config/logging.ts` never enabled a single `log.debug` line - the
+    // env var was the only thing that could (stacksjs/stacks#2397).
+    const suppressed = currentLevel() !== 'debug'
 
     // The fast path is unchanged when nothing is attached, which is the common
     // case. A transport, though, is allowed to be more verbose than the
     // terminal: shipping debug lines to a log service while keeping the console
     // at info is a normal thing to want, and suppressing them here would make
     // it impossible.
-    if (suppressed && _transports.length === 0)
+    if (suppressed && _transports.length === 0) {
+      // A suppressed debug line must still not leave `config/logging.ts`
+      // unread: it may declare a transport that wants the debug records the
+      // console does not, and reading that file is exactly what initializing
+      // does. Both guards latch for the rest of the process, so this costs two
+      // boolean checks per call once it has happened.
+      if (!_logger && !_loggerInitPromise)
+        void initLogger()
+      else if (!_configApplied)
+        applyConfigWhenReady()
       return
+    }
 
     const message = formatMessage(...args)
     if (suppressed) {
@@ -809,9 +1032,6 @@ export async function dd(...args: any[]): Promise<never> {
 export async function echo(...args: any[]): Promise<void> {
   await log.debug(...args)
 }
-
-// Export logger getter for debugging
-export { getLogger as logger }
 
 export interface ReportOptions {
   /** Override the detected HTTP status (otherwise read from the error). */

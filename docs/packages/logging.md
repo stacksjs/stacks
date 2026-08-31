@@ -519,7 +519,7 @@ log.info('Payment processed', {
 | `dump(...args)` | Dump objects |
 | `dd(...args)` | Dump and die |
 | `echo(...args)` | Echo output |
-| `logger()` | Get logger instance |
+| `logger()` | Get the logger, once `config/logging.ts` has been applied |
 
 ### Logger Class
 
