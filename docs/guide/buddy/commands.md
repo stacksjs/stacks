@@ -3343,6 +3343,7 @@ Migrates your database
 | `--create-database` | Create the database if it does not exist, without asking | boolean, optional | `false` |
 | `--from-db` | Diff against the live database schema instead of the snapshot (self-heal drift) | boolean, optional | `false` |
 | `--no-rename` | Treat renamed columns as drop + add instead of a data-preserving rename | boolean, optional, negated | `true` |
+| `--no-generate` | Apply committed migration files only; do not generate new ones from your models | boolean, optional, negated | `true` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `migrate:dns`
