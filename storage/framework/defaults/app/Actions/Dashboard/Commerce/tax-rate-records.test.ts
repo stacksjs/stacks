@@ -23,6 +23,11 @@ describe('dashboard tax rate records', () => {
       status: 'active',
       isDefault: true,
       createdAt: '2026-07-29T10:00:00.000Z',
+      // A row written before these columns existed carries neither, and the
+      // normalizer's job is to give the dashboard a complete shape rather than
+      // a partial one — so they come back as their empty values, not absent.
+      code: '',
+      exemptible: false,
     })
   })
 
