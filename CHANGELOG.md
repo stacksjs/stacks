@@ -1,5 +1,32 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.0...v0.73.1)
+
+## ✨ Features
+
+- **migrate**: --no-generate, so a deploy applies what was reviewed ([35ca7c6](https://github.com/stacksjs/stacks/commit/35ca7c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **deploy**: let a pre-rename database reach the Courier schema ([3752218](https://github.com/stacksjs/stacks/commit/3752218)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2382](https://github.com/stacksjs/stacks/issues/2382))
+- **deps**: drop generated library packages from the lockfiles again ([7dd37a5](https://github.com/stacksjs/stacks/commit/7dd37a5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **buddy**: record --no-generate in the command reference ([1e51808](https://github.com/stacksjs/stacks/commit/1e51808)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- point the dashboard and ORM contract tests at the Courier names ([7c32d98](https://github.com/stacksjs/stacks/commit/7c32d98)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- refresh pantry.lock for v0.73.0 ([4d82e0b](https://github.com/stacksjs/stacks/commit/4d82e0b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.72.103...v0.73.0)
 
 ## 💥 Breaking Changes
