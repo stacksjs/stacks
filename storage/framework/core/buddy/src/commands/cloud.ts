@@ -1,4 +1,3 @@
-import type { HostProbe } from '../cloud-inventory'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, text, underline } from "@stacksjs/cli"
@@ -194,6 +193,140 @@ function getResultError(result: unknown): string {
 function getResultValue(result: unknown): unknown {
   if (!result || typeof result !== 'object') return undefined
   return (result as ResultLike).value
+}
+
+/**
+ * What happened to `config/cloud.ts` when an attach was applied.
+ *
+ * `refused` is not a failure of the attach: ts-cloud's editor only rewrites the
+ * shape the templates generate and reports anything else, so the operator makes
+ * a one-line edit by hand instead of the tool guessing at their file.
+ */
+type AttachEditOutcome =
+  | { state: 'written' | 'would-write' | 'already-set' }
+  | { state: 'refused', reason: string }
+
+/**
+ * Print every line, then exit non-zero on the last one.
+ *
+ * `log.error` writes asynchronously and `process.exit` does not wait for it, so
+ * pairing the two plainly printed the refusal nowhere and exited 1 - a blocked
+ * command that looks like a broken one.
+ */
+async function refuse(...messages: string[]): Promise<never> {
+  for (const message of messages.slice(0, -1))
+    await log.error(message)
+  return log.exit(messages[messages.length - 1] as string, ExitCode.FatalError)
+}
+
+/** Only the Hetzner fleet can be listed, and saying so beats printing an empty one. */
+async function assertHetznerProvider(tsCloudConfig: any, command: string): Promise<void> {
+  const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
+  if (provider === 'hetzner')
+    return
+
+  await log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
+  await log.exit(`\`buddy ${command}\` can only list Hetzner servers, and this project's provider is '${provider}'.`, ExitCode.FatalError)
+}
+
+/**
+ * Every server in the provider project, not just this one's.
+ *
+ * Deliberately unfiltered: consolidation asks "which boxes could these sites
+ * move onto", so a box this project has no connection to is exactly what needs
+ * listing. A missing token, a 401 and a genuinely empty project are three
+ * different answers and each gets its own sentence, which is the lesson
+ * `describeAttachLookupFailure` already learned in the deploy command.
+ */
+async function listFleet(tsCloudConfig: any): Promise<{ servers: any[], problem?: string }> {
+  const { HetznerClient, resolveHetznerApiToken, toInventoryServer } = await import('@stacksjs/ts-cloud')
+  const apiToken = resolveHetznerApiToken(tsCloudConfig)
+
+  if (!apiToken) {
+    return {
+      servers: [],
+      problem: 'No Hetzner API token, so no servers were looked up. '
+        + 'Set HCLOUD_TOKEN (or HETZNER_API_TOKEN, or hetzner.apiToken in config/cloud.ts).',
+    }
+  }
+
+  try {
+    const servers = await new HetznerClient({ apiToken }).listServers()
+    return { servers: servers.map(server => toInventoryServer(server)).sort((a, b) => a.name.localeCompare(b.name)) }
+  }
+  catch (error: any) {
+    const status = Number(error?.status)
+    const where = Number.isFinite(status) && status > 0 ? `returned HTTP ${status}` : 'could not be reached'
+    return {
+      servers: [],
+      problem: `The Hetzner API ${where}, so the server list is incomplete. ${error?.message ?? String(error)}`
+        + (status === 401 || status === 403
+          ? ' That is an auth failure, not an empty project: check the token is valid for this Hetzner project.'
+          : ''),
+    }
+  }
+}
+
+/**
+ * This project's sites, in the terms the box reports them.
+ *
+ * `resolveSiteKind` and `siteInstallBase` come from ts-cloud because it owns
+ * both rules - `siteInstallBase` is documented as the single source of truth
+ * for the install path - and re-deriving either here would be free to drift
+ * from what the deploy actually does.
+ */
+async function declaredSitesFor(tsCloudConfig: any, slug: string): Promise<any[]> {
+  const { resolveSiteKind, siteInstallBase } = await import('@stacksjs/ts-cloud')
+
+  return Object.entries((tsCloudConfig?.sites ?? {}) as Record<string, any>).map(([name, site]) => {
+    const domain = typeof site?.domain === 'string' && site.domain.trim() ? site.domain.trim() : undefined
+    const port = Number(site?.port)
+
+    return {
+      name,
+      kind: resolveSiteKind(site),
+      domain,
+      path: typeof site?.path === 'string' && site.path.trim() ? site.path.trim() : '/',
+      port: Number.isFinite(port) && port > 0 ? port : undefined,
+      installBase: siteInstallBase(slug, name),
+      // No `domain`, so the gateway never routes it: a loopback-only service
+      // reached through another site's proxy, not a missing deploy.
+      loopbackOnly: !domain,
+    }
+  })
+}
+
+/**
+ * The two edits an attach needs, in two different repositories.
+ *
+ * Stays here rather than in ts-cloud because `tenants` is a Stacks config key:
+ * it is what lets a project recognise another project's env namespace as
+ * somebody else's, so `buddy deploy` drops those keys instead of shipping them.
+ * The owner's repository is not this one, so that edit is printed, never made.
+ */
+function describeAttachEdits(slug: string, owner: string, edit: AttachEditOutcome, dryRun: boolean): string[] {
+  const lines = ['  Two edits make the attach real, in two different repositories:', '']
+
+  if (edit.state === 'refused') {
+    lines.push(`    1. config/cloud.ts here: could not edit it (${edit.reason})`)
+    lines.push(`       Add \`attachTo: '${owner}'\` to the \`cloud\` block by hand.`)
+  }
+  else if (edit.state === 'already-set') {
+    lines.push(`    1. config/cloud.ts here: already sets attachTo: '${owner}'. Nothing to do.`)
+  }
+  else {
+    lines.push(`    1. config/cloud.ts here: ${dryRun ? `would set attachTo: '${owner}' (--dry-run, not written)` : `set attachTo: '${owner}'`}`)
+  }
+
+  lines.push('')
+  lines.push(`    2. In the '${owner}' project's own repository, which this command cannot edit:`)
+  lines.push(`       add '${slug}' to the \`tenants\` array in its config/cloud.ts.`)
+  lines.push(`       Without it, that project's deploy ships ${slug.toUpperCase()}_* keys from its`)
+  lines.push('       env files into this project\'s .env instead of dropping them.')
+  lines.push('')
+  lines.push('  Then `buddy deploy` from here puts these sites on that box.')
+
+  return lines
 }
 
 export function cloud(buddy: CLI): void {
@@ -838,80 +971,49 @@ export function cloud(buddy: CLI): void {
     .action(async (options: CloudCliOptions & { env?: string, remote?: boolean, json?: boolean }) => {
       log.debug('Running `buddy cloud:sites` ...', options)
 
-      const {
-        declaredSites,
-        describeInventory,
-        listProviderServers,
-        probeHostRoutes,
-      } = await import('../cloud-inventory')
-      const { loadTsCloudConfig, resolveHetznerApiToken } = await import('./deploy')
+      const { formatInventory, probeHostRoutes } = await import('@stacksjs/ts-cloud')
+      const { loadTsCloudConfig } = await import('./deploy')
 
       const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
       const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
       const slug = tsCloudConfig?.project?.slug || 'app'
+      await assertHetznerProvider(tsCloudConfig, 'cloud:sites')
 
-      // Only the Hetzner listing is implemented, and saying so beats printing
-      // an empty fleet that reads as "you have no servers".
-      const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
-      if (provider !== 'hetzner') {
-        // `log.exit`, not `log.error` + `process.exit`: the write is async and
-        // `process.exit` does not wait for it, so the refusal printed nothing
-        // at all and exited 1.
-        await log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
-        await log.exit(`\`buddy cloud:sites\` can only list Hetzner servers, and this project's provider is '${provider}'.`, ExitCode.FatalError)
-      }
+      const listing = await listFleet(tsCloudConfig)
+      if (listing.problem)
+        await log.error(listing.problem)
 
-      // ts-cloud owns both of these rules: `resolveSiteKind` decides what a
-      // site IS, and `siteInstallBase` is documented as the single source of
-      // truth for where it lands. Re-deriving either here would be free to
-      // drift from what the deploy actually does.
-      let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
-      try {
-        const deployApi = await import('@stacksjs/ts-cloud/deploy')
-        helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
-      }
-      catch (error) {
-        log.debug('Could not load @stacksjs/ts-cloud/deploy for site classification:', error)
-      }
-
-      const declared = declaredSites(tsCloudConfig?.sites, helpers, slug)
-      const listing = await listProviderServers(resolveHetznerApiToken(tsCloudConfig))
-
-      const probes: HostProbe[] = []
-      if (options.remote !== false) {
-        const { sshExec } = await import('@stacksjs/ts-cloud')
-        // Batched rather than one Promise.all over the fleet: each probe opens
-        // an SSH connection, and a large project should not fire forty at once.
-        const batchSize = 6
-        for (let index = 0; index < listing.servers.length; index += batchSize) {
-          probes.push(...await Promise.all(
-            listing.servers.slice(index, index + batchSize).map(server =>
-              probeHostRoutes(server, (host, command) => sshExec(host, command, { user: 'root', connectTimeoutSec: 10 })),
-            ),
-          ))
-        }
-      }
-
-      const inventory = {
-        slug,
-        environment,
-        servers: listing.servers,
-        probes,
-        declared,
-        providerFailure: listing.failure,
-      }
+      const declared = await declaredSitesFor(tsCloudConfig, slug)
+      const probes = options.remote === false ? [] : await probeFleet(listing.servers)
+      const inventory = { slug, servers: listing.servers, probes, declared }
 
       if (options.json) {
-        console.log(JSON.stringify(inventory, null, 2))
+        console.log(JSON.stringify({ environment, ...inventory }, null, 2))
       }
       else {
-        for (const line of describeInventory(inventory))
+        for (const line of formatInventory(inventory))
           console.log(line)
       }
 
       // An empty fleet is a fine answer; an empty fleet BECAUSE the lookup
       // failed is not, and the two must not exit the same way.
-      process.exit(listing.failure && listing.servers.length === 0 ? ExitCode.FatalError : ExitCode.Success)
+      process.exit(listing.problem && listing.servers.length === 0 ? ExitCode.FatalError : ExitCode.Success)
+
+      async function probeFleet(servers: any[]): Promise<any[]> {
+        const { sshExec } = await import('@stacksjs/ts-cloud')
+        const probes: any[] = []
+        // Batched rather than one Promise.all over the fleet: each probe opens
+        // an SSH connection, and a large project should not fire forty at once.
+        for (let index = 0; index < servers.length; index += 6) {
+          probes.push(...await Promise.all(
+            servers.slice(index, index + 6).map(server =>
+              probeHostRoutes(server, (host: string, command: string) =>
+                sshExec(host, command, { user: 'root', connectTimeoutSec: 10 })),
+            ),
+          ))
+        }
+        return probes
+      }
     })
 
   buddy
@@ -924,25 +1026,17 @@ export function cloud(buddy: CLI): void {
     .action(async (options: CloudCliOptions & { server?: string, env?: string, dryRun?: boolean, json?: boolean }) => {
       log.debug('Running `buddy cloud:attach` ...', options)
 
-      const { declaredSites, listProviderServers, probeHostRoutes } = await import('../cloud-inventory')
       const {
         attachConflicts,
+        attachIsViable,
         attachPreconditions,
-        describeAttachPlan,
+        formatAttachPlan,
+        probeHostRoutes,
         resolveAttachTarget,
-        setAttachTo,
-      } = await import('../cloud-attach')
-      const { loadTsCloudConfig, resolveHetznerApiToken } = await import('./deploy')
-
-      // `log.error` writes asynchronously and `process.exit` does not wait for
-      // it, so the plain pairing printed the refusal nowhere and exited 1 - a
-      // blocked command that looks like a broken one. Every line is awaited and
-      // the last one exits.
-      const refuse = async (...messages: string[]): Promise<never> => {
-        for (const message of messages.slice(0, -1))
-          await log.error(message)
-        return log.exit(messages[messages.length - 1], ExitCode.FatalError)
-      }
+        setAttachToInCloudConfig,
+        sshExec,
+      } = await import('@stacksjs/ts-cloud')
+      const { loadTsCloudConfig } = await import('./deploy')
 
       if (!options.server)
         return await refuse('Which server? Pass --server <name|owner-slug>. `buddy cloud:sites` lists them.')
@@ -950,75 +1044,75 @@ export function cloud(buddy: CLI): void {
       const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
       const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
       const slug = tsCloudConfig?.project?.slug || 'app'
+      await assertHetznerProvider(tsCloudConfig, 'cloud:attach')
 
-      const listing = await listProviderServers(resolveHetznerApiToken(tsCloudConfig))
-      if (listing.failure) {
-        const { describeProviderFailure } = await import('../cloud-inventory')
-        return await refuse(describeProviderFailure(listing.failure))
-      }
+      const listing = await listFleet(tsCloudConfig)
+      if (listing.problem)
+        return await refuse(listing.problem)
 
       const target = resolveAttachTarget(listing.servers, String(options.server), environment)
       if ('problem' in target)
-        return await refuse(target.problem)
+        return await refuse(`${target.problem} \`buddy cloud:sites\` lists what is there.`)
 
       const server = target.server
       const preconditions = attachPreconditions(slug, server)
       if (preconditions.length > 0)
         return await refuse(...preconditions)
 
-      let helpers: { resolveSiteKind?: (site: any) => string, siteInstallBase?: (slug: string, site: string) => string } = {}
-      try {
-        const deployApi = await import('@stacksjs/ts-cloud/deploy')
-        helpers = { resolveSiteKind: deployApi.resolveSiteKind, siteInstallBase: deployApi.siteInstallBase }
-      }
-      catch (error) {
-        log.debug('Could not load @stacksjs/ts-cloud/deploy for site classification:', error)
-      }
+      const declared = await declaredSitesFor(tsCloudConfig, slug)
+      const probe = await probeHostRoutes(server, (host: string, command: string) =>
+        sshExec(host, command, { user: 'root', connectTimeoutSec: 10 }))
 
-      const declared = declaredSites(tsCloudConfig?.sites, helpers, slug)
-      const { sshExec } = await import('@stacksjs/ts-cloud')
-      const probe = await probeHostRoutes(server, (host, command) => sshExec(host, command, { user: 'root', connectTimeoutSec: 10 }))
-      const conflicts = probe.unavailable ? [] : attachConflicts(slug, declared, probe.routes)
+      const plan = {
+        slug,
+        owner: server.project as string,
+        server,
+        declared,
+        conflicts: probe.unavailable ? [] : attachConflicts(slug, declared, probe.routes),
+        registryRead: !probe.unavailable,
+        registryProblem: probe.unavailable,
+      }
 
       // The config is only edited once the box has been asked and answered
       // clean. Writing first and checking after would leave a repo claiming an
       // attach that must not happen.
-      const blocked = Boolean(probe.unavailable) || conflicts.length > 0
-      let edit: ReturnType<typeof setAttachTo> | undefined
-
-      if (!blocked) {
-        const configPath = p.projectPath('config/cloud.ts')
-        const { readFileSync, writeFileSync } = await import('node:fs')
-        edit = setAttachTo(readFileSync(configPath, 'utf8'), server.project!)
-
-        if (!options.dryRun && 'text' in edit && edit.changed)
-          writeFileSync(configPath, edit.text)
-      }
-
-      const plan = {
-        slug,
-        owner: server.project!,
-        server,
-        declared,
-        conflicts,
-        registryRead: !probe.unavailable,
-        registryProblem: probe.unavailable,
-        edit,
-        dryRun: Boolean(options.dryRun),
-      }
+      const viable = attachIsViable(plan)
+      const edit = viable ? await applyAttachToConfig(plan.owner, Boolean(options.dryRun)) : undefined
 
       if (options.json) {
-        const edited = !edit ? undefined : 'problem' in edit ? edit : { changed: edit.changed }
-        console.log(JSON.stringify({ ...plan, edit: edited }, null, 2))
+        console.log(JSON.stringify({ environment, ...plan, edit }, null, 2))
       }
       else {
-        for (const line of describeAttachPlan(plan))
+        for (const line of formatAttachPlan(plan))
           console.log(line)
+        if (edit)
+          console.log(['', ...describeAttachEdits(plan.slug, plan.owner, edit, Boolean(options.dryRun))].join('\n'))
       }
 
       // An unchecked attach is not a successful one: exiting 0 after failing to
       // read the box would let a CI job proceed on a check that never ran.
-      process.exit(blocked ? ExitCode.FatalError : ExitCode.Success)
+      process.exit(viable ? ExitCode.Success : ExitCode.FatalError)
+
+      async function applyAttachToConfig(owner: string, dryRun: boolean): Promise<AttachEditOutcome> {
+        const configPath = p.projectPath('config/cloud.ts')
+        const { readFileSync, writeFileSync } = await import('node:fs')
+        const before = readFileSync(configPath, 'utf8')
+
+        try {
+          const after = setAttachToInCloudConfig({ configText: before, owner })
+          if (after === before)
+            return { state: 'already-set' }
+
+          if (dryRun)
+            return { state: 'would-write' }
+
+          writeFileSync(configPath, after)
+          return { state: 'written' }
+        }
+        catch (error) {
+          return { state: 'refused', reason: error instanceof Error ? error.message : String(error) }
+        }
+      }
     })
 
   onUnknownSubcommand(buddy, "cloud")
