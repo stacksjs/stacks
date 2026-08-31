@@ -1260,6 +1260,51 @@ function migratesDatabase(command: string): boolean {
   return !/^\s*(?:echo|printf)\b/.test(command) && /\bmigrate\b/.test(command)
 }
 
+/**
+ * Run migrations on every deploy, without every app having to remember to.
+ *
+ * A Stacks app's schema comes from its models, and the migrations derived from
+ * them are committed. What was missing is the last step: unless an app happened
+ * to put `migrate` in a preStart itself, a release shipped code that expected
+ * columns the database did not have — and the failure surfaced as the app
+ * erroring on a query, well after the deploy reported success. WildLoop had
+ * exactly that gap, and had written a comment explaining that migrations were
+ * left out on purpose because there was nothing making them safe.
+ *
+ * There is now. The dump goes in ahead of this ({@link applyPreMigrationBackup}),
+ * and `--no-generate` means the box applies the migrations that were reviewed
+ * and merged rather than deriving new SQL from whatever models the release
+ * happens to hold. Deriving on the server is how a column type nobody looked at
+ * becomes production's schema.
+ *
+ * The site chosen is the one {@link applyPersistentStatePaths} would call the
+ * database owner, by the same rule, so ownership cannot disagree between them.
+ * An app that already migrates somewhere is left completely alone: it has said
+ * where this belongs, and moving it would change the order its own preStart
+ * establishes.
+ *
+ * Opt out with `migrateOnDeploy: false` on a site, for a release that must not
+ * touch the schema — a rollback to code older than the migration, say.
+ */
+export function applyAutomaticMigrations(sites: Record<string, any>): Record<string, any> {
+  // Already declared: the app owns the ordering.
+  if (Object.values(sites).some(site => runsMigrations(site)))
+    return sites
+
+  const isServerApp = (site: any): boolean => !!site && typeof site.start === 'string'
+  const appSites = Object.entries(sites).filter(([, site]) => isServerApp(site))
+  const owner = appSites.find(([, site]) => site?.migrateOnDeploy !== false)?.[0]
+
+  if (!owner)
+    return sites
+
+  const site = sites[owner]
+  const preStart: any[] = Array.isArray(site.preStart) ? [...site.preStart] : []
+  preStart.push('./buddy migrate --no-generate')
+
+  return { ...sites, [owner]: { ...site, preStart } }
+}
+
 /** Does this site run `migrate`? That site owns the database. */
 function runsMigrations(site: any): boolean {
   return migrateIndex(site) !== -1
@@ -2707,9 +2752,15 @@ async function runHetznerDeploy(args: {
   // is already final, and it goes to the same project-level directory the
   // database itself lives under - outside every release tree, so the release
   // pruner cannot take the backup with it (stacksjs/stacks#2313).
+  // Migrations are injected FIRST, so everything downstream sees them: the
+  // persistent-state pass reads `migrate` to decide which site owns the
+  // database, and the backup splices itself in front of that same step.
   const sitesWithResolvedEnv = applyPreMigrationBackup(
     applyScheduledWork(
-      applyPersistentStatePaths(mergeSiteDeployEnv(sites, resolvedDeployEnv), slug),
+      applyPersistentStatePaths(
+        applyAutomaticMigrations(mergeSiteDeployEnv(sites, resolvedDeployEnv)),
+        slug,
+      ),
       p.projectPath('app/Scheduler.ts'),
     ),
     projectDatabaseTarget(slug, 'backups'),
