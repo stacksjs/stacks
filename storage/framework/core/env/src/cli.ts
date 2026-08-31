@@ -71,6 +71,31 @@ export function resolveEnvFile(file?: string, environment?: string): string {
   return `.env.${name}`
 }
 
+/**
+ * Whether `--key` / `--exclude-key` select this variable.
+ *
+ * Shared so `env:rotate --dry-run` counts exactly the values a real rotation
+ * would re-encrypt, rather than a second opinion that can drift from it.
+ */
+function inEncryptScope(key: string, options: Pick<EncryptOptions, 'key' | 'excludeKey'>): boolean {
+  return (!options.key || key.includes(options.key)) && (!options.excludeKey || !key.includes(options.excludeKey))
+}
+
+/** The variables in a decrypted env body that an encrypt pass would rewrite. */
+function encryptableKeys(envContent: string, options: Pick<EncryptOptions, 'key' | 'excludeKey'>): string[] {
+  const keys: string[] = []
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
+    if (trimmed.startsWith('DOTENV_PUBLIC_KEY')) continue
+    const match = trimmed.match(/^([^=]+)=(.*)$/)
+    if (!match || match[1] === undefined) continue
+    const key = match[1].trim()
+    if (inEncryptScope(key, options)) keys.push(key)
+  }
+  return keys
+}
+
 function encryptedEnvContent(envContent: string, publicKey: string, publicKeyName: string, options: Pick<EncryptOptions, 'key' | 'excludeKey'>): string {
   const encryptedLines: string[] = [
     '#/-------------------[DOTENV_PUBLIC_KEY]--------------------/',
@@ -108,7 +133,7 @@ function encryptedEnvContent(envContent: string, publicKey: string, publicKeyNam
     let value = match[2].trim()
     if ((value.startsWith('"') && value.endsWith('"')) || (value.startsWith(`'`) && value.endsWith(`'`)))
       value = value.slice(1, -1)
-    const selected = (!options.key || key.includes(options.key)) && (!options.excludeKey || !key.includes(options.excludeKey))
+    const selected = inEncryptScope(key, options)
     if (selected && !value.startsWith('encrypted:')) value = encryptValue(value, publicKey)
     encryptedLines.push(`${key}="${value}"`)
   }
@@ -684,37 +709,40 @@ export function getKeypair(
   }
 }
 
-/**
- * Rotate keypair and re-encrypt all values
- */
-export function rotateKeypair(
-  options: { file?: string, keysFile?: string, key?: string, excludeKey?: string, stdout?: boolean, cwd?: string } = {},
-): { success: boolean, output?: string, error?: string } {
-  // First decrypt
-  const decryptResult = decryptEnv({
-    file: options.file,
-    keysFile: options.keysFile,
-    stdout: true,
-    cwd: options.cwd,
-  })
+export interface RotateOptions {
+  file?: string
+  keysFile?: string
+  key?: string // Specific key to re-encrypt
+  excludeKey?: string // Key pattern to exclude
+  /**
+   * Print the rotation instead of applying it. Writes nothing at all: the new
+   * env content comes back as `output`, the new keypair as `notice`.
+   */
+  stdout?: boolean
+  /** Report what would change. Writes nothing and generates no key material. */
+  dryRun?: boolean
+  cwd?: string
+}
 
-  if (!decryptResult.success) {
-    return decryptResult
-  }
+export interface RotateResult {
+  success: boolean
+  output?: string
+  error?: string
+  /**
+   * Text for stderr rather than stdout, so a caller redirecting `--stdout`
+   * captures only the env file while the keypair still reaches the operator.
+   */
+  notice?: string
+}
 
-  const cwd = options.cwd || process.cwd()
-  const envPath = resolve(cwd, options.file || '.env')
-  const keysPath = resolve(cwd, options.keysFile || '.env.keys')
-
-  if (decryptResult.output === undefined) return { success: false, error: 'Rotation produced no decrypted content' }
-  const keypair = generateKeypair()
-  const originalEnv = readFileSync(envPath)
-  const originalKeys = readFileSync(keysPath)
-  const lines = originalKeys.toString('utf8').split('\n')
-  const envFileName = options.file || '.env'
-  const env = basename(envFileName).replace(/^\.env\./, '').replace(/^\.env$/, '').toUpperCase()
-  const publicKeyName = env ? `DOTENV_PUBLIC_KEY_${env}` : 'DOTENV_PUBLIC_KEY'
-  const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
+/** Replace (or add) this file's keypair in a `.env.keys` body. */
+function rotatedKeysContent(
+  keysContent: string,
+  keypair: { publicKey: string, privateKey: string },
+  publicKeyName: string,
+  privateKeyName: string,
+): string {
+  const lines = keysContent.split('\n')
   let replacedPublic = false
   let replacedPrivate = false
   for (let i = 0; i < lines.length; i++) {
@@ -731,8 +759,80 @@ export function rotateKeypair(
   }
   if (!replacedPublic) lines.push(`${publicKeyName}="${keypair.publicKey}"`)
   if (!replacedPrivate) lines.push(`${privateKeyName}="${keypair.privateKey}"`)
-  const nextKeys = `${lines.join('\n').replace(/\n+$/, '')}\n`
+  return `${lines.join('\n').replace(/\n+$/, '')}\n`
+}
+
+/**
+ * Rotate an env file's keypair and re-encrypt every value under the new one.
+ *
+ * A rotation is only meaningful as a PAIR: the re-encrypted file and the
+ * keypair that opens it have to land together, or one of them is useless.
+ * `--stdout` used to break that pair - it replaced the keypair in `.env.keys`
+ * and printed the new env content instead of writing it, so the file left on
+ * disk was still encrypted under a private key that had just been overwritten,
+ * and every value in it was unrecoverable (stacksjs/stacks#2398). It now writes
+ * nothing and hands back both halves. `--dry-run` writes nothing either, and
+ * does not even generate a keypair: a preview that produced real key material
+ * and threw it away would be a rotation, not a preview.
+ */
+export function rotateKeypair(options: RotateOptions = {}): RotateResult {
+  // Decrypt into memory. The `stdout: true` here is what keeps the plaintext
+  // off disk, and is unrelated to this function's own `stdout` option.
+  const decryptResult = decryptEnv({
+    file: options.file,
+    keysFile: options.keysFile,
+    stdout: true,
+    cwd: options.cwd,
+  })
+
+  if (!decryptResult.success) {
+    return decryptResult
+  }
+
+  if (decryptResult.output === undefined) return { success: false, error: 'Rotation produced no decrypted content' }
+
+  const cwd = options.cwd || process.cwd()
+  const envFileName = options.file || '.env'
+  const keysFileName = options.keysFile || '.env.keys'
+  const envPath = resolve(cwd, envFileName)
+  const keysPath = resolve(cwd, keysFileName)
+  const { publicKeyName, privateKeyName } = envKeyNames(options.file)
+
+  // Checked before `--stdout`, so asking for both gets the safer one.
+  if (options.dryRun) {
+    const values = encryptableKeys(decryptResult.output, options)
+    return {
+      success: true,
+      output: [
+        'Dry run: nothing was written.',
+        `${envFileName}: ${values.length} value${values.length === 1 ? '' : 's'} would be re-encrypted under a new ${publicKeyName}.`,
+        `${keysFileName}: ${publicKeyName} and ${privateKeyName} would be replaced.`,
+        `The current ${privateKeyName} decrypts nothing once that happens, so keep a copy until the rotation is verified.`,
+      ].join('\n'),
+    }
+  }
+
+  const keypair = generateKeypair()
   const nextEnv = encryptedEnvContent(decryptResult.output, keypair.publicKey, publicKeyName, options)
+
+  if (options.stdout) {
+    return {
+      success: true,
+      output: nextEnv,
+      notice: [
+        `Nothing was written. To adopt the output above, put this keypair in ${keysFileName}:`,
+        '',
+        `${publicKeyName}="${keypair.publicKey}"`,
+        `${privateKeyName}="${keypair.privateKey}"`,
+        '',
+        `Without it that output cannot be decrypted. Run without --stdout to have both applied together.`,
+      ].join('\n'),
+    }
+  }
+
+  const originalEnv = readFileSync(envPath)
+  const originalKeys = readFileSync(keysPath)
+  const nextKeys = rotatedKeysContent(originalKeys.toString('utf8'), keypair, publicKeyName, privateKeyName)
 
   const token = `${process.pid}-${Date.now()}`
   const envTemp = resolve(dirname(envPath), `.${basename(envPath)}.${token}.rotate`)
@@ -740,10 +840,6 @@ export function rotateKeypair(
   try {
     writeFileSync(envTemp, nextEnv, { encoding: 'utf8', mode: 0o600 })
     writeFileSync(keysTemp, nextKeys, { encoding: 'utf8', mode: 0o600 })
-    if (options.stdout) {
-      renameSync(keysTemp, keysPath)
-      return { success: true, output: nextEnv }
-    }
     renameSync(envTemp, envPath)
     try {
       renameSync(keysTemp, keysPath)
@@ -752,7 +848,7 @@ export function rotateKeypair(
       writeFileSync(envPath, originalEnv)
       throw error
     }
-    return { success: true, output: `✔ rotated (${options.file || '.env'}) to encrypted:v2` }
+    return { success: true, output: `✔ rotated (${envFileName}) to encrypted:v2` }
   }
   catch (error) {
     if (!existsSync(keysPath)) writeFileSync(keysPath, originalKeys, { mode: 0o600 })
