@@ -1713,7 +1713,8 @@ Rotate a keypair
 | --- | --- | --- | --- |
 | `-f`, `--file` | The environment file to use | value, optional | `""` |
 | `--fk`, `--file-keys` | The path to the file containing the keys | value, optional | `""` |
-| `-o`, `--stdout` | Output the result to stdout | boolean, optional | `false` |
+| `-o`, `--stdout` | Print the rotated file and its new keypair without writing either | boolean, optional | `false` |
+| `--dry-run` | Report what would change without writing anything | boolean, optional | `false` |
 | `--ek`, `--exclude-key` | The key to exclude from encryption | value, optional | `""` |
 
 Examples:
@@ -1721,6 +1722,7 @@ Examples:
 ```bash
 buddy env:rotate
 buddy env:rotate --file .env.production
+buddy env:rotate --file .env.production --dry-run
 ```
 
 ### `env:set`

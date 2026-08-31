@@ -25,6 +25,8 @@ interface EnvOptions {
   strict: boolean
   /** The global `--env <environment>` flag, e.g. `production`. */
   env: string
+  /** `env:rotate`: report what would change and write nothing. */
+  dryRun: boolean
 }
 
 export function env(buddy: CLI): void {
@@ -41,6 +43,8 @@ export function env(buddy: CLI): void {
     fileKeys: 'The path to the file containing the keys',
     excludeKey: 'The key to exclude from encryption',
     rotate: 'Rotate a keypair',
+    rotateStdout: 'Print the rotated file and its new keypair without writing either',
+    rotateDryRun: 'Report what would change without writing anything',
     format: 'The format to output the result (json, shell, eval)',
     all: 'Get all environment variables',
     file: 'The environment file to use',
@@ -217,10 +221,12 @@ export function env(buddy: CLI): void {
     .command('env:rotate [key]', descriptions.rotate)
     .option('-f, --file [file]', descriptions.file, { default: '' })
     .option('-fk, --file-keys [fileKeys]', descriptions.fileKeys, { default: '' })
-    .option('-o, --stdout', descriptions.stdout, { default: false })
+    .option('-o, --stdout', descriptions.rotateStdout, { default: false })
+    .option('--dry-run', descriptions.rotateDryRun, { default: false })
     .option('-ek, --exclude-key [excludeKey]', descriptions.excludeKey, { default: '' })
     .example('buddy env:rotate')
     .example('buddy env:rotate --file .env.production')
+    .example('buddy env:rotate --file .env.production --dry-run')
     .action(async (key: string, options: EnvOptions) => {
       log.debug('Running `buddy env:rotate` ...', options)
 
@@ -230,10 +236,15 @@ export function env(buddy: CLI): void {
         key,
         excludeKey: options.excludeKey,
         stdout: options.stdout,
+        dryRun: options.dryRun,
       })
 
       if (result.success) {
         console.log(result.output)
+        // The new keypair goes to stderr, so `env:rotate --stdout > file` still
+        // captures only the env file while the keys that output needs stay in
+        // front of whoever ran it.
+        if (result.notice) console.error(result.notice)
         process.exit(ExitCode.Success)
       }
       else {
