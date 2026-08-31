@@ -511,6 +511,7 @@ export function migrate(buddy: CLI): void {
     force: 'Apply destructive changes (drop column/table, lossy type change) without confirmation',
     fromDb: 'Diff against the live database schema instead of the snapshot (self-heal drift)',
     noRename: 'Treat renamed columns as drop + add instead of a data-preserving rename',
+    noGenerate: 'Apply committed migration files only; do not generate new ones from your models',
   }
 
   buddy
@@ -524,8 +525,9 @@ export function migrate(buddy: CLI): void {
     .option('--create-database', 'Create the database if it does not exist, without asking', { default: false })
     .option('--from-db', descriptions.fromDb, { default: false })
     .option('--no-rename', descriptions.noRename)
+    .option('--no-generate', descriptions.noGenerate)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean }) => {
+    .action(async (options: MigrateOptions & { auth?: boolean, createDatabase?: boolean, force?: boolean, fromDb?: boolean, rename?: boolean, generate?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
 
       const perf = await intro('buddy migrate')
@@ -554,6 +556,15 @@ export function migrate(buddy: CLI): void {
         process.env.STACKS_MIGRATE_FROM_DB = '1'
       if (applyRenames === false)
         process.env.STACKS_MIGRATE_NO_RENAME = '1'
+      // `--no-generate`: apply what is committed, invent nothing.
+      //
+      // For a deploy this is the difference between running the migrations a
+      // human reviewed and running whatever the box derives from the models it
+      // happens to be holding. Those are not always the same SQL — a model
+      // diff can produce a column type, a nullability or a default that nobody
+      // looked at — and a production database is the wrong place to find out.
+      if (options.generate === false)
+        process.env.STACKS_MIGRATE_NO_GENERATE = '1'
 
       // --diff: dry-run only. Preview the pending operations + SQL and exit
       // without writing files or applying anything.

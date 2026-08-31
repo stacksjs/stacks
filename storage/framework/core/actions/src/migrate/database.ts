@@ -11,7 +11,26 @@ import { log } from '@stacksjs/logging'
  * the answer is a Postgres error about a table that already exists - which is
  * the ordinary outcome when two processes migrate the same database at once.
  */
-const generated = await generateMigrations()
+/*
+ * `--no-generate` (STACKS_MIGRATE_NO_GENERATE) applies committed migration
+ * files and derives nothing.
+ *
+ * A deploy wants this. Generating on the box means the schema that reaches
+ * production is whatever the model diff produces there, which is not
+ * necessarily the SQL anybody reviewed — a diff can pick a column type, a
+ * nullability or a default that no one looked at, and a live database is the
+ * wrong place to discover the difference. It also writes files into a release
+ * tree that is deleted on the next deploy.
+ *
+ * Local development still generates by default: that is the whole point of
+ * models being the source of truth.
+ */
+const skipGeneration = process.env.STACKS_MIGRATE_NO_GENERATE === '1'
+
+const generated = skipGeneration ? undefined : await generateMigrations()
+
+if (skipGeneration)
+  log.debug('[stacks] migration generation skipped (--no-generate); applying committed files only')
 
 if (generated?.isErr) {
   console.error('Generating migrations failed. The model diff could not be turned into SQL.')
