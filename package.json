@@ -81,7 +81,6 @@
   "workspaces": [
     "storage/framework",
     "storage/framework/libs/*",
-    "storage/framework/libs/packages/*",
     "storage/framework/views/*",
     "storage/framework/core",
     "storage/framework/core/*"

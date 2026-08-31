@@ -329,3 +329,52 @@ describe('buildLibraryPackages', () => {
     })).rejects.toThrow(/No functions packages are configured/)
   })
 })
+
+/**
+ * The generated library packages must not be workspace members
+ * (stacksjs/stacks#2387).
+ *
+ * `buddy release` runs the entry generator before it bumps, so every release
+ * wrote `package.json` files into `storage/framework/libs/packages/*`. That
+ * path used to be a workspace glob, so the install that follows recorded three
+ * directories in `bun.lock` that no checkout has: everything under
+ * `libs/packages/` is gitignored. CI then failed at `bun install
+ * --frozen-lockfile` with "lockfile had changes, but lockfile is frozen",
+ * before a single job ran, taking lint, typecheck, test, compile and
+ * artifact-freshness with it.
+ *
+ * It was fixed by hand twice (ab7b7e3, then again after v0.73.0) and came back
+ * both times, because nothing stopped the glob from matching generated output.
+ * This is that stop.
+ */
+describe('workspace globs vs generated packages (#2387)', () => {
+  it('does not make the generated library packages workspace members', async () => {
+    const manifest = await Bun.file(projectPath('package.json')).json()
+    const workspaces: string[] = manifest.workspaces ?? []
+
+    expect(workspaces).not.toContain('storage/framework/libs/packages/*')
+  })
+
+  it('keeps every workspace glob off the gitignored library output', async () => {
+    // Stated as the rule rather than the one offending string, so a glob that
+    // reaches the same directory by another spelling is caught too.
+    const manifest = await Bun.file(projectPath('package.json')).json()
+    const workspaces: string[] = manifest.workspaces ?? []
+
+    const reachesGeneratedPackages = workspaces.filter(glob =>
+      glob.replace(/\/\*+$/, '').replace(/\/+$/, '') === 'storage/framework/libs/packages',
+    )
+
+    expect(reachesGeneratedPackages).toEqual([])
+  })
+
+  it('control: the tracked libs workspace is still declared', async () => {
+    // Without this, the assertions above pass just as well on an empty list,
+    // and dropping every workspace would read as a fix.
+    const manifest = await Bun.file(projectPath('package.json')).json()
+    const workspaces: string[] = manifest.workspaces ?? []
+
+    expect(workspaces).toContain('storage/framework/libs/*')
+    expect(workspaces).toContain('storage/framework/core/*')
+  })
+})
