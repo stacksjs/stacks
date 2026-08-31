@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.1...v0.73.2)
+
+## ✨ Features
+
+- **deploy**: migrate on every deploy, not only where an app remembered to ([e6bb42f](https://github.com/stacksjs/stacks/commit/e6bb42f)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **dashboard**: the TaxRate test expected a shape the normalizer stopped emitting ([adaeb10](https://github.com/stacksjs/stacks/commit/adaeb10)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.0...v0.73.1)
 
 ## ✨ Features
