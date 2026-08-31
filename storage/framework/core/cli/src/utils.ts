@@ -1,3 +1,4 @@
+import type { CollectionOperations } from '@stacksjs/collections'
 import { collect } from '@stacksjs/collections'
 
 type ColorInput = string | number
@@ -504,17 +505,27 @@ export function box(text: string, options: BoxOptions = {}): string {
 }
 
 /*
- * Inferred, not `any`.
+ * Stated, not inferred, and certainly not `any`.
  *
- * This was annotated `: any`, which threw away the `Collection<string>` that
- * `collect()` already returns. Nothing downstream could see a quote was a
+ * This was annotated `: any`, which threw away the `CollectionOperations<string>`
+ * that `collect()` already returns. Nothing downstream could see a quote was a
  * string: `quotes.random(1).first()` typed as `any` and got interpolated into
  * output unchecked, and `app/Commands/Inspire.ts` wrote
  * `.forEach((quote: string, index: number) => …)` to get names back - which is
  * an assertion over an untyped value, not a check, and would have been
  * accepted just the same if `random()` returned objects.
+ *
+ * Dropping the annotation fixed that inside this repo and broke it outside.
+ * `bun-plugin-dtsx` could not follow the inferred type across the
+ * `@stacksjs/collections` re-export and emitted `export declare const quotes:
+ * unknown`, so a scaffolded app - which resolves this package from its
+ * PUBLISHED dist, not from source - failed its own `buddy typecheck` on the
+ * `inspire` command the scaffold ships. In this repo the same code typechecks,
+ * because here the import resolves to the source above. That is why the type
+ * is written out: it is the one form that survives the package boundary
+ * (stacksjs/stacks#2389).
  */
-export const quotes = collect([
+export const quotes: CollectionOperations<string> = collect([
   // could be queried from any API or database
   'The best way to get started is to quit talking and begin doing.',
   'The pessimist sees difficulty in every opportunity. The optimist sees opportunity in every difficulty.',
