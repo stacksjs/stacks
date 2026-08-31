@@ -54,9 +54,34 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 // Argv form, not a command string: runCommand splits a string on whitespace,
 // so a quoted path arrived at bun with its quotes still attached and any path
 // containing a space would have split in half.
+//
+// `--minify` because this binary ships to users and is never read by anyone:
+// measured at 6.9 MB off a real app (83.9 → 77.0 MB), with the agent serving
+// its whole route tree and the worker subcommand producing identical output.
+// The framework already minifies the server build and buddy's own binary.
+//
+// Not `--bytecode`, which sounds like it belongs here and does the opposite:
+// it adds back the same 6.9 MB, trading size for startup time. Anyone reaching
+// for "make it smaller" would plausibly enable both and end up where they
+// started.
+//
+// `DESKTOP_MINIFY=false` opts out. Minification renames functions and classes,
+// and a launcher can pull in arbitrary application code — anything reading
+// `fn.name`, or keying on a constructor name, breaks in a way that only shows
+// up in the packaged build. An app that hits that should be able to ship
+// without waiting on a framework release.
+const minify = process.env.DESKTOP_MINIFY !== 'false'
 const launcherEntry = resolveDesktopLauncher(projectPath())
 await runCommand(
-  ['bun', 'build', '--compile', launcherEntry, '--outfile', join(outputDir, launcherName)],
+  [
+    'bun',
+    'build',
+    '--compile',
+    ...(minify ? ['--minify'] : []),
+    launcherEntry,
+    '--outfile',
+    join(outputDir, launcherName),
+  ],
   { cwd: projectPath() },
 )
 

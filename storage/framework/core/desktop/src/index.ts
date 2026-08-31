@@ -1,4 +1,4 @@
-import { existsSync } from 'node:fs'
+import { closeSync, existsSync, openSync, readSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -277,4 +277,104 @@ export async function openDevWindow(
 ): Promise<boolean> {
   await launcher(craftDevCommand(port, options))
   return true
+}
+
+// ── Bundle weight ─────────────────────────────────────────────────────
+
+/**
+ * The trailer `bun build --compile` writes into every standalone executable.
+ *
+ * Present in a Bun single-file binary and absent from a native one, which is
+ * what makes it usable to tell the two apart inside a finished bundle.
+ */
+export const BUN_EXECUTABLE_MARKER = '---- Bun!'
+
+/**
+ * How far back from the end of a file to look for that marker.
+ *
+ * It sits after the embedded module graph, so its distance from the end grows
+ * with the payload — measured at ~400 KB for a real app. Eight megabytes is
+ * generous enough for a much larger one and still avoids reading eighty
+ * megabytes of executable to answer a yes/no question.
+ */
+const MARKER_SEARCH_BYTES = 8 * 1024 * 1024
+
+/**
+ * The floor for "this is a compiled runtime, not a helper script".
+ *
+ * `bun build --compile` emits 60.5 MB for `console.log("hi")` — the runtime is
+ * the file, and the entrypoint is a rounding error on top. Forty is well below
+ * that and well above anything else that lands in a bundle.
+ */
+const RUNTIME_SIZE_FLOOR = 40 * 1024 * 1024
+
+/** One Bun-compiled executable found in a bundle. */
+export interface BundledRuntime {
+  name: string
+  bytes: number
+}
+
+/**
+ * Whether a file is a Bun standalone executable.
+ *
+ * Size first because it is a `stat`, then the marker, so the expensive check
+ * only runs on the handful of files large enough to be a runtime at all.
+ */
+export function looksLikeBunExecutable(
+  path: string,
+  read: (path: string) => { size: number, tail: string } | null = readTail,
+): boolean {
+  const file = read(path)
+  if (!file || file.size < RUNTIME_SIZE_FLOOR)
+    return false
+  return file.tail.includes(BUN_EXECUTABLE_MARKER)
+}
+
+function readTail(path: string): { size: number, tail: string } | null {
+  try {
+    const { size } = statSync(path)
+    if (size < RUNTIME_SIZE_FLOOR)
+      return { size, tail: '' }
+    const fd = openSync(path, 'r')
+    try {
+      const length = Math.min(MARKER_SEARCH_BYTES, size)
+      const buffer = Buffer.alloc(length)
+      readSync(fd, buffer, 0, length, size - length)
+      return { size, tail: buffer.toString('latin1') }
+    }
+    finally {
+      closeSync(fd)
+    }
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * What a bundle is paying to ship more than one Bun-compiled executable.
+ *
+ * Every one of them embeds a complete copy of the Bun runtime. An app that
+ * splits its launcher, its server and a worker into three binaries ships three
+ * copies — about 180 MB — and nothing says so: the bundle is simply large, and
+ * a large desktop app looks normal.
+ *
+ * Returns null when there is at most one, which is the case worth saying
+ * nothing about.
+ */
+export function describeRuntimeDuplication(runtimes: BundledRuntime[]): string | null {
+  if (runtimes.length < 2)
+    return null
+
+  // Charge the duplication to the smallest ones: a single binary would still
+  // carry one runtime, so only the copies after the first are avoidable.
+  const sorted = [...runtimes].sort((a, b) => b.bytes - a.bytes)
+  const duplicated = sorted.slice(1)
+  const wasted = duplicated.length * RUNTIME_SIZE_FLOOR
+
+  const names = sorted.map(r => `${r.name} (${(r.bytes / 1024 / 1024).toFixed(1)} MB)`).join(', ')
+
+  return `This bundle ships ${runtimes.length} Bun-compiled executables: ${names}. `
+    + `Each embeds a full copy of the Bun runtime, so at least ${(wasted / 1024 / 1024).toFixed(0)} MB of the bundle is the same runtime repeated. `
+    + `Compiling one binary that dispatches on a subcommand — \`MyApp agent\`, \`MyApp worker\` — keeps the helpers as separate processes and pays for the runtime once.`
 }

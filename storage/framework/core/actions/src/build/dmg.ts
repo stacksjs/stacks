@@ -4,7 +4,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
-import { renderUserlandPlistEntries } from '@stacksjs/desktop-build'
+import { describeRuntimeDuplication, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
 
 /**
  * Package the `build:desktop` output as a macOS `.app` inside a `.dmg`.
@@ -80,6 +80,22 @@ for (const file of bundledFiles) {
 
 if (!existsSync(join(macosDir, launcherName)))
   throw new Error(`build:desktop did not produce ${builtLauncher}`)
+
+// Every `bun build --compile` output embeds a complete copy of the Bun runtime
+// — 60.5 MB before a line of application code. An app that ships its launcher,
+// its server and a worker as three binaries therefore ships three copies, and
+// nothing tells it: the bundle is simply large, and a large desktop app looks
+// unremarkable. One app carried 230 MB that way, of which 180 MB was the same
+// runtime repeated. A warning is the right level — an app may have a reason,
+// and this is not the build's decision to make.
+const runtimes = readdirSync(macosDir)
+  .filter(name => statSync(join(macosDir, name)).isFile())
+  .filter(name => looksLikeBunExecutable(join(macosDir, name)))
+  .map(name => ({ name, bytes: statSync(join(macosDir, name)).size }))
+
+const duplication = describeRuntimeDuplication(runtimes)
+if (duplication)
+  log.warn(duplication)
 
 // Anything an app puts in `app/Desktop/Resources/` — a prerendered UI, a
 // schema, seed data — travels into the bundle. A local-first app has a payload

@@ -149,6 +149,62 @@ Application data belongs in `~/Library/Application Support/<AppName>`, never
 inside the bundle — `/Applications` is not writable by the user, and the bundle
 is replaced wholesale on update.
 
+## Helper processes: one binary, not three
+
+An app that owns its launcher usually needs more than the launcher — an agent
+serving on loopback, a worker doing something slow out of process. Compile each
+as its own binary and the bundle gets very large very quietly.
+
+`bun build --compile` embeds the entire Bun runtime in **every** executable it
+writes. `console.log("hi")` measures **60.5 MB**. So three binaries means three
+copies of the same runtime, and nothing says so — the bundle is simply big, and
+a big desktop app looks unremarkable. One real app shipped 230 MB this way, of
+which about 180 MB was the runtime repeated; its own code plus the native Craft
+runtime came to under 40 MB.
+
+Compile **one** binary and dispatch on a subcommand. The helpers stay separate
+*processes* — which is what actually matters for isolation and for killing one
+that wedges — they just stop being separate *files*.
+
+```ts
+// app/Desktop/launcher.ts — before anything else at module scope
+const subcommand = process.argv[2]
+
+if (subcommand === 'agent' || subcommand === 'scan') {
+  if (subcommand === 'agent') {
+    const { runAgent } = await import('./server')
+    await runAgent()
+  }
+  else {
+    const { runScannerCli } = await import('../Workers/scan')
+    await runScannerCli(process.argv[3] ?? '')
+  }
+
+  // Park. Everything below is the launcher, and a subcommand reaching it would
+  // spawn a second agent and open a second window.
+  await new Promise(() => {})
+}
+```
+
+Then spawn `process.execPath` instead of a sibling path:
+
+```ts
+const agent = Bun.spawn([process.execPath, 'agent'], { stdout: 'pipe' })
+```
+
+Two things that bite, both silently:
+
+- **The dispatch must come first.** A launcher's body is top-level code that
+  starts a server and opens a window as a side effect of loading.
+- **Do not `process.exit()` after starting a server.** A `runAgent()` that
+  returns once `Bun.serve` is listening has not finished — `Bun.serve` is what
+  holds the process open. Exiting after it kills the agent one line after it
+  printed the port the launcher is still waiting for, and the launcher reports
+  a timeout that says nothing about the cause.
+
+`buddy build:dmg` warns when a finished bundle contains more than one
+Bun-compiled executable, naming them and what the repetition costs.
+
 ## CLI Commands
 
 ```bash
