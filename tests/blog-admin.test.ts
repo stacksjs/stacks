@@ -3,20 +3,25 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-// blog-admin resolves content/blog from process.cwd() at module load, so the
-// cwd has to move to a throwaway dir BEFORE the import. Otherwise these tests
-// would create and delete files in the real content/blog.
+// blog-admin reads STACKS_BLOG_CONTENT_DIR, so these tests point it at a
+// throwaway directory and never touch the real content/blog.
+//
+// This used to chdir into a temp dir before the import instead, because the
+// directory was a module-level const joined to process.cwd(). That works when
+// this file runs ALONE. `process.chdir` is process-global, so alongside other
+// suites in one `bun test` process another file changes the cwd back and the
+// fixtures land in the actual blog — observed as content/blog/first.md and
+// dupe.md left untracked in the repo.
 const root = mkdtempSync(join(tmpdir(), 'stacks-blog-admin-'))
 const contentDir = join(root, 'content/blog')
 mkdirSync(contentDir, { recursive: true })
 
-const originalCwd = process.cwd()
-process.chdir(root)
+process.env.STACKS_BLOG_CONTENT_DIR = contentDir
 
 const { deleteBlogPost, getBlogPost, listBlogPosts, saveBlogPost, slugify } = await import('../storage/framework/core/actions/src/blog-admin')
 
 afterAll(() => {
-  process.chdir(originalCwd)
+  delete process.env.STACKS_BLOG_CONTENT_DIR
   rmSync(root, { recursive: true, force: true })
 })
 

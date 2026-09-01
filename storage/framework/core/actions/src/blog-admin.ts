@@ -18,8 +18,32 @@
 import type { ResponseStatus } from '@stacksjs/bun-router'
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import process from 'node:process'
 
-const CONTENT_DIR = join(process.cwd(), 'content/blog')
+/**
+ * Where the posts live.
+ *
+ * `STACKS_BLOG_CONTENT_DIR` wins; otherwise `content/blog` under the current
+ * working directory, which is the ordinary case.
+ *
+ * The override exists because cwd cannot isolate anything. This was a
+ * module-level `const` joined to `process.cwd()`, and `tests/blog-admin.test.ts`
+ * worked around that by chdir-ing into a temp directory BEFORE its import,
+ * specifically to avoid touching the real `content/blog` — it says so in a
+ * comment. That holds when the file runs alone. Run alongside other suites in
+ * one `bun test` process, which is what a broad local run does, and
+ * `process.chdir` is process-global: another file changes the cwd back and the
+ * fixtures land in the actual blog. Observed as `content/blog/first.md` and
+ * `dupe.md` left untracked in the repo, one `git add -A` from being published.
+ *
+ * Resolving lazily instead of at import does not fix it either — it just moves
+ * which calls leak. An explicit override does, because it does not depend on
+ * global state the test cannot own.
+ */
+function contentDir(): string {
+  const override = process.env.STACKS_BLOG_CONTENT_DIR
+  return override && override.trim() ? override : join(process.cwd(), 'content/blog')
+}
 
 /** Frontmatter keys we manage, in the order they are written to the file. */
 const FIELD_ORDER = ['title', 'description', 'date', 'author', 'authorBio', 'poster', 'featured', 'draft'] as const
@@ -83,7 +107,7 @@ export function slugify(input: string): string {
 /**
  * Reject anything that is not a plain slug before it reaches the filesystem.
  *
- * This is the only guard between an API caller and `join(CONTENT_DIR, slug)`, so
+ * This is the only guard between an API caller and `join(contentDir(), slug)`, so
  * it refuses separators, traversal, and dotfiles outright rather than sanitising
  * them into something that merely looks safe.
  */
@@ -196,7 +220,7 @@ function hydrate(slug: string, raw: string, updatedAt: string): BlogPost {
 }
 
 function fileFor(slug: string): string {
-  return join(CONTENT_DIR, `${assertSafeSlug(slug)}.md`)
+  return join(contentDir(), `${assertSafeSlug(slug)}.md`)
 }
 
 /**
@@ -206,13 +230,13 @@ function fileFor(slug: string): string {
  * a half-finished post still shows up in the dashboard instead of vanishing.
  */
 export function listBlogPosts(): BlogPost[] {
-  if (!existsSync(CONTENT_DIR))
+  if (!existsSync(contentDir()))
     return []
 
-  return readdirSync(CONTENT_DIR)
+  return readdirSync(contentDir())
     .filter(f => f.endsWith('.md') && !f.startsWith('.'))
     .map((f) => {
-      const path = join(CONTENT_DIR, f)
+      const path = join(contentDir(), f)
       return hydrate(f.replace(/\.md$/, ''), readFileSync(path, 'utf-8'), statSync(path).mtime.toISOString())
     })
     // A post needs a title to be a post. This skips prose docs that live
@@ -279,8 +303,8 @@ export function saveBlogPost(input: BlogPostInput): BlogPost {
     updatedAt: new Date().toISOString(),
   }
 
-  if (!existsSync(CONTENT_DIR))
-    mkdirSync(CONTENT_DIR, { recursive: true })
+  if (!existsSync(contentDir()))
+    mkdirSync(contentDir(), { recursive: true })
 
   writeFileSync(fileFor(slug), toFileContents(post), 'utf-8')
 
