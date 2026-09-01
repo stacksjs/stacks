@@ -29,8 +29,10 @@
     "noUncheckedSideEffectImports": true,
     "noUnusedLocals": false,
 
-    /* Performance - worth keeping `skipLibCheck` on */
-    "incremental": true,
+    /* Performance - worth keeping `skipLibCheck` on.
+       `incremental` is deliberately absent: tsconfig.app.json turns it off,
+       and re-enabling it here would restore the false green it exists to
+       prevent (stacksjs/stacks#2405). */
     "skipLibCheck": true
   }
 }

@@ -6,7 +6,10 @@
   "compilerOptions": {
     "lib": ["esnext", "dom"],
     "rootDir": "../..",
-    "tsBuildInfoFile": "./.cache/typescript/app.tsbuildinfo",
+    // Not incremental, for the reason spelled out in tsconfig.app.json: the
+    // cache reports a false green after the auto-import barrels are
+    // regenerated. stacksjs/stacks#2405.
+    "incremental": false,
     "paths": {
       "Actions/*": ["../../app/Actions/*"],
       "Commands/*": ["../../app/Commands/*"],

@@ -601,7 +601,52 @@ export * from './controllers'
   if (pruned.length > 0)
     log.debug(`[auto-imports] dropped ${pruned.length} browser globals that resolve to nothing`)
 
+  // Everything above rewrote inputs that other TypeScript projects compile
+  // against, so any incremental state describing them is now a description of
+  // files that no longer exist.
+  await invalidateTypeScriptBuildInfo()
+
   log.debug('Auto-import files generated successfully')
+}
+
+/**
+ * Drop the `.tsbuildinfo` files after the auto-import barrels are regenerated.
+ *
+ * `tsc`'s incremental state survives this regeneration in a way it should not.
+ * Removing a job and running `buddy generate` left a warm cache reporting ZERO
+ * errors on an app whose `Scheduler.ts` still scheduled the deleted job - the
+ * exact diagnostic `SchedulableJobs` exists to produce - while a cold run
+ * reported it. Neither half does it alone: the deleted file is noticed, the
+ * edited barrel is noticed; only the combination loses the diagnostic, and it
+ * goes stale in both directions. stacksjs/stacks#2405.
+ *
+ * The app project no longer uses the cache at all (see tsconfig.app.json,
+ * where the saving was measured at ~1.4s and judged not worth a check that can
+ * pass on code that does not compile). The framework's own projects keep it,
+ * because there it saves considerably more - so they get this instead.
+ *
+ * Best-effort by design. A cache that cannot be deleted is a slow typecheck at
+ * worst, and failing generation over it would break `buddy generate` for a
+ * cleanup step.
+ */
+async function invalidateTypeScriptBuildInfo(): Promise<void> {
+  const cacheDir = path.storagePath('framework/.cache/typescript')
+
+  try {
+    const { readdirSync, rmSync } = await import('node:fs')
+
+    for (const entry of readdirSync(cacheDir)) {
+      if (!entry.endsWith('.tsbuildinfo'))
+        continue
+
+      rmSync(`${cacheDir}/${entry}`, { force: true })
+      log.debug(`[auto-imports] dropped stale ${entry}`)
+    }
+  }
+  catch {
+    // No cache directory yet, or it is not ours to remove. Either way there is
+    // no stale state to invalidate.
+  }
 }
 
 /**

@@ -10,10 +10,27 @@
     // stores, composables), so DOM types sit on top of the base `esnext` lib.
     "lib": ["esnext", "dom"],
     "rootDir": "../..",
-    // Kept inside the framework's own cache rather than `node_modules/.cache`,
-    // so the incremental build survives a `bun install` and never lands in a
-    // hoisted or symlinked `node_modules` shared with another project.
-    "tsBuildInfoFile": "./.cache/typescript/app.tsbuildinfo",
+    // Deliberately NOT incremental, unlike the framework's own projects.
+    //
+    // `tsc`'s incremental state goes stale across the regeneration of the
+    // auto-import barrels, and it does so in the direction that matters: after
+    // removing a job and running `buddy generate`, a warm cache reported ZERO
+    // errors on an app whose `Scheduler.ts` still scheduled the deleted job -
+    // the exact diagnostic `SchedulableJobs` exists to produce. Cold, the same
+    // tree reports it. Neither half does this alone: deleting the file alone is
+    // caught, editing the barrel alone is caught; only the combination loses
+    // it, and it goes stale in both directions.
+    //
+    // The trade is not close. Measured on this project: cold 3.3s, warm 1.9s
+    // raw, and through `buddy typecheck` the difference is inside the noise of
+    // CLI boot. A second and a half is not worth a check that can pass on code
+    // that does not compile, in precisely the workflow that produces the
+    // mistake - delete an example job, regenerate, typecheck, ship.
+    //
+    // The framework's own projects keep the cache, where it saves considerably
+    // more; `generateAutoImportFiles()` drops their build-info files whenever it
+    // rewrites a barrel. stacksjs/stacks#2405.
+    "incremental": false,
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       // Deep entrypoint, mapped explicitly: `@stacksjs/*` below binds the
