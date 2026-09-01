@@ -2,9 +2,10 @@ import { createHash } from 'node:crypto'
 import { chmodSync, copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log } from '@stacksjs/cli'
 import { corePath, projectPath, storagePath } from '@stacksjs/path'
 import { assertDesktopReleaseChannel, hasUserlandDesktopLauncher, resolveCraftExecutable, resolveDesktopLauncher } from '@stacksjs/desktop-build'
+import { runBuildStep } from './run-build-step'
 
 const outputDir = storagePath('framework/desktop-dist')
 const launcherName = process.platform === 'win32' ? 'stacks-desktop.exe' : 'stacks-desktop'
@@ -49,11 +50,11 @@ mkdirSync(outputDir, { recursive: true })
 // monorepo. A consumer app installs it prebuilt and has no `src` to compile.
 const desktopSource = corePath('desktop')
 if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSource, 'src')))
-  await runCommand('bun run build', { cwd: desktopSource })
+  await runBuildStep('bun run build', { cwd: desktopSource, describe: 'The desktop package build' })
 
-// Argv form, not a command string: runCommand splits a string on whitespace,
-// so a quoted path arrived at bun with its quotes still attached and any path
-// containing a space would have split in half.
+// Argv form, not a command string: the underlying runCommand splits a string
+// on whitespace, so a quoted path arrived at bun with its quotes still attached
+// and any path containing a space would have split in half.
 //
 // `--minify` because this binary ships to users and is never read by anyone:
 // measured at 6.9 MB off a real app (83.9 → 77.0 MB), with the agent serving
@@ -72,7 +73,7 @@ if (existsSync(join(desktopSource, 'package.json')) && existsSync(join(desktopSo
 // without waiting on a framework release.
 const minify = process.env.DESKTOP_MINIFY !== 'false'
 const launcherEntry = resolveDesktopLauncher(projectPath())
-await runCommand(
+await runBuildStep(
   [
     'bun',
     'build',
@@ -82,7 +83,7 @@ await runCommand(
     '--outfile',
     join(outputDir, launcherName),
   ],
-  { cwd: projectPath() },
+  { cwd: projectPath(), describe: 'Compiling the desktop launcher' },
 )
 
 copyFileSync(craftBinary, join(outputDir, runtimeName))

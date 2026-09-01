@@ -1,10 +1,11 @@
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { appPath, projectPath, publicPath, resourcesPath, storagePath } from '@stacksjs/path'
 import { describeRuntimeDuplication, looksLikeBunExecutable, renderUserlandPlistEntries } from '@stacksjs/desktop-build'
+import { runBuildStep } from './run-build-step'
 
 /**
  * Package the `build:desktop` output as a macOS `.app` inside a `.dmg`.
@@ -75,7 +76,10 @@ const launcherName = appName
 const bundledFiles = readdirSync(desktopDist).filter(name => statSync(join(desktopDist, name)).isFile())
 for (const file of bundledFiles) {
   const target = file === builtLauncher ? launcherName : file
-  await runCommand(['cp', join(desktopDist, file), join(macosDir, target)], { cwd: projectPath() })
+  await runBuildStep(['cp', join(desktopDist, file), join(macosDir, target)], {
+    cwd: projectPath(),
+    describe: `Copying ${file} into the bundle`,
+  })
 }
 
 if (!existsSync(join(macosDir, launcherName)))
@@ -124,7 +128,12 @@ async function buildIcon(): Promise<string | undefined> {
 
   const icns = join(resourcesDir, 'AppIcon.icns')
   const built = await runCommand(['iconutil', '-c', 'icns', iconset, '-o', icns], { cwd: scratch })
-  if (built.isErr || !existsSync(icns)) return undefined
+  // An icon is not worth failing a build over, but a project that supplied one
+  // and got a bundle wearing the generic document icon deserves to be told why.
+  if (built.isErr || !existsSync(icns)) {
+    log.warn(`Could not build an .icns from ${source}; the bundle will use the default icon.`)
+    return undefined
+  }
   return 'AppIcon'
 }
 
@@ -207,8 +216,15 @@ if (signingIdentity) {
     .filter(name => name !== builtLauncher && !name.endsWith('.json') && !name.endsWith('.sha256'))
     .map(name => join(macosDir, name))
 
-  for (const target of [...nested, join(macosDir, launcherName), appDir])
-    await runCommand(['codesign', '--force', '--options', 'runtime', '--sign', signingIdentity, target], { cwd: staging })
+  // A failed `codesign` used to be invisible: the DMG was still built and
+  // still announced as signed, and the first sign that it was not came from
+  // Gatekeeper on someone else's Mac.
+  for (const target of [...nested, join(macosDir, launcherName), appDir]) {
+    await runBuildStep(['codesign', '--force', '--options', 'runtime', '--sign', signingIdentity, target], {
+      cwd: staging,
+      describe: `Signing ${basename(target)}`,
+    })
+  }
 }
 
 // The drag-to-install target every macOS DMG is expected to have.

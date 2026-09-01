@@ -24,14 +24,20 @@ import { runCommand } from '@stacksjs/cli'
  * output, and no stack. A caller that wants the framework-level trace can pass
  * `--verbose`, which is already threaded through to the child.
  */
-export async function runBuildStep(command: string, options: CliOptions & { describe: string }): Promise<void> {
+export async function runBuildStep(command: string | string[], options: CliOptions & { describe: string }): Promise<void> {
   const { describe, ...cliOptions } = options
   const result = await runCommand(command, cliOptions)
 
   if (!result.isErr)
     return
 
-  console.error(`\n${describe} failed: \`${command}\` exited non-zero.`)
+  // Argv form is accepted because `runCommand` splits a command string on
+  // whitespace, which mangles any argument containing one - a path with a
+  // space, a quoted flag value. Callers that have such arguments pass an
+  // array, and only the message has to put it back together.
+  const printable = Array.isArray(command) ? command.join(' ') : command
+
+  console.error(`\n${describe} failed: \`${printable}\` exited non-zero.`)
   console.error('The error it printed above is the cause - this step only relays its exit status.\n')
   process.exit(1)
 }

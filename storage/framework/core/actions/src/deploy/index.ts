@@ -312,10 +312,17 @@ async function ensureCloudFrontApiOriginPort(awsClient: any, distributionId: str
 // Build framework - show output so user knows it's working
 const frameworkBuildSpinner = spinner('Building framework...')
 frameworkBuildSpinner.start()
-await runCommand('bun run build', {
+// The spinner used to succeed on whatever the build did, because the result
+// was discarded: a framework build that failed still printed "Framework built"
+// and the deploy carried on and shipped the previous build's artifacts.
+const frameworkBuilt = await runCommand('bun run build', {
   cwd: p.frameworkPath('core'),
   quiet: false, // Always show build output so it doesn't appear stuck
 })
+if (frameworkBuilt.isErr) {
+  frameworkBuildSpinner.fail('Framework build failed - see the output above')
+  process.exit(ExitCode.FatalError)
+}
 frameworkBuildSpinner.succeed('Framework built')
 
 // Build documentation with BunPress
@@ -413,18 +420,26 @@ const earlyDeploymentMode = earlyCloudConfig?.tsCloud?.mode || 'server'
 if (earlyDeploymentMode === 'serverless') {
   const serverSpinner = spinner('Building server...')
   serverSpinner.start()
-  await runCommand('bun build.ts', {
+  const serverBuilt = await runCommand('bun build.ts', {
     cwd: p.frameworkPath('server'),
     quiet: !isVerbose,
   })
+  if (serverBuilt.isErr) {
+    serverSpinner.fail('Server build failed - rerun with --verbose to see its output')
+    process.exit(ExitCode.FatalError)
+  }
   serverSpinner.succeed('Server built')
 
   const packageSpinner = spinner('Packaging for deployment...')
   packageSpinner.start()
-  await runCommand('bun zip.ts', {
+  const packaged = await runCommand('bun zip.ts', {
     cwd: p.corePath('cloud'),
     quiet: !isVerbose,
   })
+  if (packaged.isErr) {
+    packageSpinner.fail('Packaging failed - rerun with --verbose to see its output')
+    process.exit(ExitCode.FatalError)
+  }
   packageSpinner.succeed('Package ready')
 } else {
   if (isVerbose) log.debug('Skipping server build and packaging (server mode)')
