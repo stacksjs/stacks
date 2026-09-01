@@ -20,6 +20,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
+import { deriveMigrationTables } from './migration-tables'
 
 /**
  * What a boolean column reads back as, per dialect.
@@ -71,6 +72,12 @@ export interface GenerateSchemaOptions {
    * the types match the driver that will actually answer the query.
    */
   dialect?: 'sqlite' | 'mysql' | 'postgres'
+  /**
+   * Where the migration corpus lives. Tables it creates that no model owns are
+   * typed from the corpus (stacksjs/stacks#2409). Defaults to `migrations/`
+   * beside `outFile`; pass `false` to derive from models alone.
+   */
+  migrationsDir?: string | false
 }
 
 export interface GenerateSchemaResult {
@@ -644,6 +651,36 @@ export async function buildDatabaseSchema(options: GenerateSchemaOptions = {}): 
     }
   }
   tables.push(...pivotByTable.values())
+
+  /*
+   * Tables the migration corpus creates that no model owns (stacksjs/stacks#2409).
+   *
+   * Models win every collision, deliberately: a model knows what its columns
+   * *mean* - an enum column is a union of its allowed values, a boolean is cast
+   * - where the corpus only knows the storage type SQLite gave it. This fills
+   * gaps rather than competing.
+   */
+  if (options.migrationsDir !== false) {
+    /*
+     * Resolved against the file being written, not the running project. Both
+     * mean `database/migrations` for a real app, but a caller generating into a
+     * scratch directory - a test, or a tool building a schema for some other
+     * project - gets that project's corpus or none, rather than silently
+     * inheriting this one's 117 tables.
+     */
+    const migrationsDir = options.migrationsDir ?? path.resolve(path.dirname(outFile), 'migrations')
+    const owned = new Set(tables.map(entry => entry.table))
+    const derived = deriveMigrationTables(migrationsDir, dialect)
+
+    for (const entry of derived.tables) {
+      if (owned.has(entry.table))
+        continue
+      owned.add(entry.table)
+      tables.push({ table: entry.table, model: `(${entry.table} migration)`, columns: entry.columns })
+    }
+
+    errors.push(...derived.errors)
+  }
 
   // Stable alphabetical ordering so diffs are reviewable.
   tables.sort((a, b) => a.table.localeCompare(b.table))

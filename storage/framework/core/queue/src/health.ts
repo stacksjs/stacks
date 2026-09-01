@@ -27,10 +27,13 @@ export type QueuedJobState = 'pending' | 'processing' | 'delayed'
 /**
  * A `jobs` row, in the terms this module reads it.
  *
- * The table is not in the generated `database/types.d.ts`, so `selectAll()`
- * answers a generic record and every field came back `unknown` - which is why
- * this file used to cast the whole result to `any[]`. Written down instead, so
- * a column renamed in a migration shows up here.
+ * `jobs` reaches `database/types.d.ts` from the migration corpus
+ * (stacksjs/stacks#2409), so `selectAll()` now answers real columns rather than
+ * the generic record that made this file cast its whole result to `any[]`.
+ *
+ * This shape is kept as the narrower statement of what the module reads: the
+ * generated entry types a column as the driver returns it (sqlite hands back
+ * 0/1 and date strings), where this says what the field means here.
  */
 interface QueuedJobRow {
   queue?: string | null

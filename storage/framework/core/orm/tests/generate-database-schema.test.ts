@@ -386,3 +386,72 @@ describe('belongsToMany pivot tables (stacksjs/stacks#1938)', () => {
     expect(pivot.columns).toHaveProperty('updated_at', 'string | null')
   })
 })
+
+
+describe('migration-corpus tables (stacksjs/stacks#2409)', () => {
+  test('types a corpus table that no model owns', async () => {
+    const root = mkScratch()
+    const models = join(root, 'models')
+    const migrations = join(root, 'database', 'migrations')
+    mkdirSync(migrations, { recursive: true })
+    writeFileSync(
+      join(migrations, '001-create-roles.sql'),
+      'CREATE TABLE roles (id INTEGER PRIMARY KEY, name TEXT NOT NULL);',
+      'utf-8',
+    )
+    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: {} }`)
+
+    const result = await buildDatabaseSchema({
+      modelsDir: models,
+      defaultsDir: join(root, 'defaults'),
+      outFile: join(root, 'database', 'types.d.ts'),
+      dryRun: true,
+    })
+
+    expect(result.tables.map(t => t.table).sort()).toEqual(['roles', 'widgets'])
+    expect(result.tables.find(t => t.table === 'roles')?.columns.name).toBe('string')
+  })
+
+  test('a model owns its table even when the corpus also creates it', async () => {
+    // The model knows what its columns *mean*; the corpus only knows the
+    // storage type. Models win, so an enum stays a union rather than `string`.
+    const root = mkScratch()
+    const models = join(root, 'models')
+    const migrations = join(root, 'database', 'migrations')
+    mkdirSync(migrations, { recursive: true })
+    writeFileSync(
+      join(migrations, '001-create-widgets.sql'),
+      'CREATE TABLE widgets (id INTEGER PRIMARY KEY, corpus_only TEXT);',
+      'utf-8',
+    )
+    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: {} }`)
+
+    const result = await buildDatabaseSchema({
+      modelsDir: models,
+      defaultsDir: join(root, 'defaults'),
+      outFile: join(root, 'database', 'types.d.ts'),
+      dryRun: true,
+    })
+
+    const widgets = result.tables.filter(t => t.table === 'widgets')
+    expect(widgets).toHaveLength(1)
+    expect(widgets[0]?.columns.corpus_only).toBeUndefined()
+  })
+
+  test('generating into a scratch project does not inherit this one\'s corpus', async () => {
+    // The corpus is resolved beside `outFile` rather than from the running
+    // project, so a caller writing elsewhere gets that project's tables.
+    const root = mkScratch()
+    const models = join(root, 'models')
+    writeModel(models, 'Widget.ts', `export default { name: 'Widget', table: 'widgets', attributes: {} }`)
+
+    const result = await buildDatabaseSchema({
+      modelsDir: models,
+      defaultsDir: join(root, 'defaults'),
+      outFile: join(root, 'database', 'types.d.ts'),
+      dryRun: true,
+    })
+
+    expect(result.tables.map(t => t.table)).toEqual(['widgets'])
+  })
+})

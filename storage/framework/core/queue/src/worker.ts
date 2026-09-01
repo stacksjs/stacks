@@ -430,8 +430,9 @@ async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]
     // Atomically reserve only if still unreserved (CAS pattern)
     const result = await db
       .updateTable('jobs')
-      // The jobs table is not in the generated `database/types.d.ts`, so its
-      // columns come back untyped; coerced where it is used as a number.
+      // `jobs` is typed from the migration corpus (stacksjs/stacks#2409), but
+      // sqlite still hands `attempts` back as whatever it stored, so the
+      // coercion stays.
       .set({ reserved_at: now, attempts: Number(job.attempts || 0) + 1 })
       .where('id', '=', (job).id)
       .whereNull('reserved_at')
@@ -1077,8 +1078,8 @@ export async function executeFailedJobs(): Promise<void> {
     .selectAll()
     .execute()
 
-  // `failed_jobs` is not in the generated database types, so its rows come
-  // back generic. Only `id` is read, and it is coerced.
+  // `failed_jobs` is typed from the migration corpus (stacksjs/stacks#2409).
+  // Only `id` is read, and it is coerced for the driver's integer width.
   for (const failedJob of failedJobs as Array<Record<string, unknown>>) {
     await retryFailedJob(Number(failedJob.id))
   }

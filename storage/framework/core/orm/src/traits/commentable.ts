@@ -78,7 +78,16 @@ export function createCommentableMethods(tableName: string) {
       if (written && typeof written === 'object' && 'id' in written)
         return written
 
-      const insertedId = (written)?.lastInsertRowid
+      /*
+       * `returningAll()` types this as the row, and on a RETURNING-capable
+       * driver that is what arrives. SQLite hands back `{ changes,
+       * lastInsertRowid }` instead, which the declared row type cannot express,
+       * so the cast sits at exactly the point the driver and the type disagree.
+       *
+       * Untyped until `commentables` reached `database/types.d.ts`
+       * (stacksjs/stacks#2409), which is what made the mismatch visible.
+       */
+      const insertedId = (written as { lastInsertRowid?: number | bigint } | undefined)?.lastInsertRowid
       if (insertedId == null)
         return written
 
