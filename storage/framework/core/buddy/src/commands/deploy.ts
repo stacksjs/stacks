@@ -4802,19 +4802,31 @@ export function deploy(buddy: CLI): void {
       console.log('🚀 Deploy')
       console.log('')
 
-      // For production deploy, explicitly load .env.production to get the correct domain
-      // This ensures we use production settings even if .env.local has different values
+      // For a production deploy, take the domain from .env.production so
+      // production settings win over whatever .env.local happens to hold.
+      //
+      // Through `resolveDeployEnvValues`, which DECRYPTS. This used to read the
+      // file with `content.match(/^APP_URL=(.+)$/m)` and use the capture
+      // verbatim, which is wrong twice over for a project whose env is
+      // encrypted — the overwhelmingly common case, since `buddy env:encrypt`
+      // is the documented way to commit one:
+      //
+      //   APP_URL="encrypted:v2:eyJ2IjoyLCJlcGsiOiJNQ293QlFZ…"
+      //
+      // The capture was that whole string, quotes included, and it took
+      // PRECEDENCE over the correctly-decrypted `env.APP_URL` below. So a
+      // deploy without an explicit `--domain` announced "Deploying to
+      // <ciphertext>" and handed that to `configureDomain`, which is the DNS
+      // and TLS path. Even for a plaintext value the surrounding quotes came
+      // through. Measured on this project: the raw parse gives
+      // `"encrypted:v2:eyJ2Ijoy…"` where the resolver gives
+      // `https://stacksjs.com`.
       let productionUrl: string | undefined
       if (deployEnv === 'production' || deployEnv === 'prod') {
-        const prodEnvPath = p.projectPath('.env.production')
-        if (existsSync(prodEnvPath)) {
-          const prodEnvContent = readFileSync(prodEnvPath, 'utf-8')
-          const urlMatch = prodEnvContent.match(/^APP_URL=(.+)$/m)
-          if (urlMatch?.[1]) {
-            productionUrl = urlMatch[1].trim()
-            log.debug('Using APP_URL from .env.production:', productionUrl)
-          }
-        }
+        const productionValues = await resolveDeployEnvValues('production', tsCloudConfig)
+        productionUrl = productionValues.APP_URL?.trim() || undefined
+        if (productionUrl)
+          log.debug('Using APP_URL from .env.production:', productionUrl)
       }
 
       // Get domain from options, production env, env, or config
