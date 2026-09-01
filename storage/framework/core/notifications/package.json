@@ -63,15 +63,19 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
     "@stacksjs/chat": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "@stacksjs/database": "workspace:*",
     "@stacksjs/email": "workspace:*",
-    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/push": "workspace:*",
-    "@stacksjs/sms": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/realtime": "workspace:*",
+    "@stacksjs/sms": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/types": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

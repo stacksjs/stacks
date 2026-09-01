@@ -60,17 +60,20 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/actions": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/dnsx": "^0.2.3",
+    "@stacksjs/enums": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.10"
   },
   "devDependencies": {
-    "@stacksjs/actions": "workspace:*",
-    "better-dx": "^0.2.24",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/whois": "workspace:*"
+    "@stacksjs/whois": "workspace:*",
+    "better-dx": "^0.2.24"
   },
   "sideEffects": false
 }

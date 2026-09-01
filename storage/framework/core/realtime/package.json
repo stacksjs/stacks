@@ -58,6 +58,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "ts-broadcasting": "^0.0.9"
   },
   "devDependencies": {

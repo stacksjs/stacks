@@ -65,6 +65,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.10"
   },
   "peerDependencies": {

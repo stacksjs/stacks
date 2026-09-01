@@ -36,13 +36,13 @@
     "README.md",
     "dist"
   ],
-  "dependencies": {
-    "@stacksjs/types": "workspace:*"
-  },
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

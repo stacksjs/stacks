@@ -58,6 +58,17 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/cache": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/env": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/events": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/payments": "workspace:*",
+    "@stacksjs/realtime": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "ts-spreadsheets": "^0.2.0"
   },
   "devDependencies": {

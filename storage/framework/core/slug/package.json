@@ -56,15 +56,15 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/database": "workspace:*",
     "ts-slug": "^0.1.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "@stacksjs/database": "workspace:*",
-    "better-dx": "^0.2.24",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "better-dx": "^0.2.24"
   },
   "sideEffects": false
 }

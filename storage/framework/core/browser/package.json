@@ -70,6 +70,8 @@
   },
   "dependencies": {
     "@stacksjs/composables": "workspace:*",
+    "@stacksjs/datetime": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.246",
     "bun-query-builder": "^0.2.53"
   },
@@ -82,8 +84,8 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.24",
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.10.0",
+    "better-dx": "^0.2.24"
   }
 }

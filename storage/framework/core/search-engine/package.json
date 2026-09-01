@@ -63,6 +63,15 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/strings": "workspace:*"
+  },
   "peerDependencies": {
     "meilisearch": "^0.59.0"
   },
@@ -72,7 +81,6 @@
     }
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.24",
     "meilisearch": "^0.59.0"
   }

@@ -57,12 +57,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/datetime": "workspace:*",
     "@stacksjs/stx": "^0.2.246"
   },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
-    "better-dx": "^0.2.24",
-    "@stacksjs/security": "workspace:*"
+    "@stacksjs/security": "workspace:*",
+    "better-dx": "^0.2.24"
   },
   "sideEffects": false
 }

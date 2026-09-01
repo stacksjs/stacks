@@ -59,11 +59,15 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-validation": "^0.5.6"
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
+    "@stacksjs/ts-validation": "^0.5.6",
+    "@stacksjs/types": "workspace:*",
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "better-dx": "^0.2.24"
   }
 }

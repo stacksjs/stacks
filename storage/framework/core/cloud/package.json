@@ -59,20 +59,22 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.10",
     "@stacksjs/ts-xml": "^0.1.0"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/env": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

@@ -60,22 +60,26 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/buddy": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/env": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/faker": "^0.73.3",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/path": "workspace:*",
     "@stacksjs/query-builder": "^0.73.3",
+    "@stacksjs/security": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
     "bun-query-builder": "^0.2.53",
     "dynamodb-tooling": "^0.3.2"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/logging": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "better-dx": "^0.2.24",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/storage": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/utils": "workspace:*"
+    "@stacksjs/utils": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

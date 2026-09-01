@@ -55,10 +55,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/cli": "workspace:*"
+  },
   "devDependencies": {
-    "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
-    "@stacksjs/error-handling": "workspace:*"
+    "@stacksjs/error-handling": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

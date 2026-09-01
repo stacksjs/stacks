@@ -55,12 +55,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "bun-query-builder": "^0.2.53"
+  },
   "devDependencies": {
     "@stacksjs/database": "workspace:*",
     "better-dx": "^0.2.24",
     "@stacksjs/types": "workspace:*"
-  },
-  "dependencies": {
-    "bun-query-builder": "^0.2.53"
   }
 }

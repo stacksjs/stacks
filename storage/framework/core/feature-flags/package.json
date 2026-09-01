@@ -57,9 +57,11 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
+    "@stacksjs/database": "workspace:*"
+  },
+  "devDependencies": {
     "@stacksjs/query-builder": "workspace:*",
     "better-dx": "^0.2.24"
   }

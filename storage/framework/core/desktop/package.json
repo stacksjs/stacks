@@ -66,12 +66,12 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "craft-native": "^0.0.55"
+  },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.24",
     "@stacksjs/server": "workspace:*"
-  },
-  "dependencies": {
-    "craft-native": "^0.0.55"
   }
 }

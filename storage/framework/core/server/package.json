@@ -57,14 +57,20 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
+    "@stacksjs/auth": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
+    "@stacksjs/events": "workspace:*",
+    "@stacksjs/i18n": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
-  },
-  "dependencies": {
+    "@stacksjs/storage": "workspace:*",
     "bun-plugin-auto-imports": "^0.4.0"
+  },
+  "devDependencies": {
+    "@stacksjs/validation": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

@@ -58,9 +58,11 @@
     "test": "bun test",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
-    "better-dx": "^0.2.24",
+  "dependencies": {
     "@stacksjs/utils": "workspace:*"
+  },
+  "devDependencies": {
+    "better-dx": "^0.2.24"
   },
   "sideEffects": false
 }

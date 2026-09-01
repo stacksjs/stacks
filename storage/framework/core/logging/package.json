@@ -59,13 +59,14 @@
   },
   "dependencies": {
     "@loghq/stacks": "^0.2.3",
-    "@stacksjs/clarity": "^0.3.33"
-  },
-  "devDependencies": {
-    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/clarity": "^0.3.33",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/cli": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "better-dx": "^0.2.24"

@@ -62,14 +62,15 @@
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
+    "@stacksjs/email": "workspace:*",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/queue": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

@@ -59,6 +59,13 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/orm": "workspace:*"
+  },
   "peerDependencies": {
     "@stripe/stripe-js": "^9.10.0",
     "stripe": "22.3.2"
@@ -72,10 +79,9 @@
     }
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
     "@stacksjs/utils": "workspace:*",
     "@stripe/stripe-js": "^9.10.0",
+    "better-dx": "^0.2.24",
     "stripe": "22.3.2"
   }
 }

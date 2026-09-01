@@ -57,13 +57,13 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/config": "workspace:*",
     "ts-security-crypto": "0.0.2"
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "@stacksjs/validation": "workspace:*"
+    "@stacksjs/validation": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

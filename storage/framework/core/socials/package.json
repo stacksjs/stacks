@@ -56,12 +56,14 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
-    "better-dx": "^0.2.24",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/router": "workspace:*"
-  },
   "dependencies": {
-    "@stacksjs/composables": "workspace:*"
+    "@stacksjs/api": "workspace:*",
+    "@stacksjs/composables": "workspace:*",
+    "@stacksjs/config": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

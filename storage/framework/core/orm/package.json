@@ -63,13 +63,39 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/auth": "workspace:*",
+    "@stacksjs/cache": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/env": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/events": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/payments": "workspace:*",
+    "@stacksjs/query-builder": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/realtime": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/search-engine": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
+    "@stacksjs/validation": "workspace:*",
     "bun-query-builder": "^0.2.53"
   },
+  "peerDependencies": {
+    "stripe": "22.3.2"
+  },
+  "peerDependenciesMeta": {
+    "stripe": {
+      "optional": true
+    }
+  },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "better-dx": "^0.2.24",
-    "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "stripe": "22.3.2"
   }
 }

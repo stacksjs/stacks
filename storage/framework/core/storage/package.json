@@ -61,15 +61,19 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/cli": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/env": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.10",
     "ts-images": "^0.2.11"
   },
   "devDependencies": {
-    "@stacksjs/arrays": "workspace:*",
-    "better-dx": "^0.2.24",
-    "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*"
+    "@stacksjs/types": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }

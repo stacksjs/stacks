@@ -62,20 +62,23 @@
     "size": "bun scripts/export-size.ts"
   },
   "dependencies": {
-    "@stacksjs/browser": "workspace:*"
-  },
-  "devDependencies": {
     "@stacksjs/actions": "workspace:*",
-    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/browser": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.24",
-    "filesize": "^11.0.22",
-    "markdown-table": "^3.0.4",
-    "@stacksjs/lint": "workspace:*",
+    "@stacksjs/enums": "workspace:*",
+    "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@stacksjs/arrays": "workspace:*",
+    "@stacksjs/lint": "workspace:*",
+    "better-dx": "^0.2.24",
+    "filesize": "^11.0.22",
+    "markdown-table": "^3.0.4"
   }
 }

@@ -55,10 +55,13 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "devDependencies": {
+  "dependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/notifications": "workspace:*",
+    "@stacksjs/logging": "workspace:*",
+    "@stacksjs/notifications": "workspace:*"
+  },
+  "devDependencies": {
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "better-dx": "^0.2.24"

@@ -75,11 +75,15 @@
   },
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
+    "@stacksjs/cache": "workspace:*",
+    "@stacksjs/config": "workspace:*",
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/storage": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.10"
   },
   "devDependencies": {
-    "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
     "better-dx": "^0.2.24"
   }
 }

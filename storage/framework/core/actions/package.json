@@ -60,41 +60,55 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/config": "workspace:*",
+    "@stacksjs/ai": "workspace:*",
+    "@stacksjs/analytics": "workspace:*",
+    "@stacksjs/api": "workspace:*",
+    "@stacksjs/auth": "workspace:*",
+    "@stacksjs/build": "workspace:*",
     "@stacksjs/bumpx": "^0.2.6",
     "@stacksjs/bunpress": "^0.2.8",
-    "@stacksjs/logsmith": "^0.2.3",
-    "@stacksjs/registry": "workspace:*",
-    "@stacksjs/stx": "^0.2.246",
-    "@stacksjs/ts-cloud": "^0.12.10",
-    "@stacksjs/ts-md": "^0.1.1"
-  },
-  "devDependencies": {
-    "@stacksjs/api": "workspace:*",
     "@stacksjs/cli": "workspace:*",
+    "@stacksjs/cloud": "workspace:*",
+    "@stacksjs/cms": "workspace:*",
+    "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/tlsx": "^0.13.2",
-    "better-dx": "^0.2.24",
+    "@stacksjs/desktop-build": "workspace:*",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
+    "@stacksjs/gitit": "^0.2.5",
+    "@stacksjs/i18n": "workspace:*",
     "@stacksjs/image": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/logsmith": "^0.2.3",
+    "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
+    "@stacksjs/payments": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/registry": "workspace:*",
+    "@stacksjs/router": "workspace:*",
+    "@stacksjs/rpx": "^0.11.42",
+    "@stacksjs/scheduler": "workspace:*",
+    "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/cms": "workspace:*",
     "@stacksjs/sites": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
+    "@stacksjs/stx": "^0.2.246",
+    "@stacksjs/tlsx": "^0.13.2",
+    "@stacksjs/ts-cloud": "^0.12.10",
+    "@stacksjs/ts-md": "^0.1.1",
+    "@stacksjs/tunnel": "workspace:*",
+    "@stacksjs/types": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
-    "@stacksjs/build": "workspace:*"
+    "@stacksjs/whois": "workspace:*",
+    "bun-plugin-stx": "^0.2.246"
   },
   "peerDependencies": {
-    "pickier": "^0.1.58",
-    "craft-native": "^0.0.67"
+    "craft-native": "^0.0.67",
+    "pickier": "^0.1.58"
   },
   "peerDependenciesMeta": {
     "pickier": {
@@ -103,5 +117,9 @@
     "craft-native": {
       "optional": true
     }
+  },
+  "devDependencies": {
+    "@stacksjs/validation": "workspace:*",
+    "better-dx": "^0.2.24"
   }
 }
