@@ -896,6 +896,7 @@ Dump the application database to a file
 | `--out` | Where to write the dump (default: storage/backups/database) | value, optional | - |
 | `--retain` | How many dumps to keep | value, optional | `"7"` |
 | `--before-migrations` | Deploy mode: succeed quietly when there is no database yet | boolean, optional | `false` |
+| `--destination` | Copy the dump offsite: s3://bucket/prefix or disk://name/prefix | value, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
@@ -903,6 +904,7 @@ Examples:
 ```bash
 buddy db:backup
 buddy db:backup --out /var/backups/app --retain 30
+buddy db:backup --destination disk://backups/daily
 ```
 
 ### `db:backups`
