@@ -1,5 +1,5 @@
-import { runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
+import { runBuildStep } from './run-build-step'
 
 /**
  * Build the documentation site.
@@ -42,6 +42,13 @@ function bunpressCommand(): string {
   }
 }
 
-await runCommand(`${bunpressCommand()} build`, {
+// The result is checked rather than discarded. It was not, and the failure
+// this file's own docblock describes - the step dying and leaving no `dist/`
+// at all - was therefore reported as a successful build. The app then started
+// normally and every documentation URL answered with the view's own
+// "documentation has not been built" notice, which reads as a missing build
+// rather than a broken deploy step.
+await runBuildStep(`${bunpressCommand()} build`, {
   cwd: projectPath(),
+  describe: 'The documentation build',
 })
