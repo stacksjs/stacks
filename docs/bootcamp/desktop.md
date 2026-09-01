@@ -58,12 +58,12 @@ unsigned test installers are evidence for packaging behavior, not release-ready
 artifacts. No OS/architecture row is stable yet. A build refuses
 `DESKTOP_RELEASE_CHANNEL=stable` until that exact target has retained
 install/launch/update/rollback evidence and enforced platform signing. See the
-[machine-readable support matrix](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/desktop-support.json)
+[machine-readable support matrix](https://github.com/stacksjs/protocol/blob/main/evidence/desktop-support.json)
 and issues [#2059](https://github.com/stacksjs/stacks/issues/2059),
 [#2062](https://github.com/stacksjs/stacks/issues/2062), and
 [#2063](https://github.com/stacksjs/stacks/issues/2063). The pinned Craft source,
 file digests, matrix, and current upstream Actions blocker are recorded in
-[`protocol/evidence/craft.json`](https://github.com/stacksjs/stacks/blob/main/protocol/evidence/craft.json).
+[`evidence/craft.json`](https://github.com/stacksjs/protocol/blob/main/evidence/craft.json).
 
 ## Desktop API
 
