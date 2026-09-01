@@ -42,6 +42,53 @@ export async function invoke(options?: GeneratorOptions): Promise<void> {
     await generateOpenApiSpec()
   else if (options?.images)
     await generateProjectImages({ verbose: options?.verbose })
+  else
+    await generateEverything(options)
+}
+
+/**
+ * `buddy generate` with no flag selected.
+ *
+ * The chain above is a flag-gated `else if`, so no flag meant no branch: the
+ * command did its nothing and exited 0. That is the behaviour AGENTS.md already
+ * documents against ("Regenerate with `buddy generate`"), and it silently
+ * defeats any freshness check built on it - regenerate-then-diff cannot fail
+ * when the regenerate step is a no-op.
+ *
+ * Runs the generators that produce committed, deterministic artifacts. Images
+ * are excluded deliberately: they are expensive, they reach for external
+ * services, and they have their own `--images` flag.
+ */
+async function generateEverything(options?: GeneratorOptions): Promise<void> {
+  log.info('Generating types, entry points, component meta and the OpenAPI spec...')
+
+  // Types first: the name registries it refreshes are what the later
+  // generators read, so the order is a dependency rather than a preference.
+  await generateTypes({ ...options, types: true })
+  await generateLibEntries({ ...options, entries: true })
+  await generateOpenApiSpec()
+
+  /*
+   * The remaining generators are reachable by their own flag but deliberately
+   * not run here, because each is currently broken and this command is supposed
+   * to succeed:
+   *
+   * - `--web-types`, `--ide-helpers` and `--custom-data` shell out to npm
+   *   scripts (`generate:web-types`, `generate:ide-helpers`,
+   *   `generate:custom-data`) that are defined in no package.json in the repo,
+   *   so all three fail on invocation.
+   * - `--component-meta` rewrites `core/custom-elements.json` with
+   *   `"tags": undefined` - not valid JSON. `JSON.stringify(undefined)` returns
+   *   `undefined` rather than a string, and the template interpolates it
+   *   literally. It only misbehaves inside the CLI: `library.webComponents.tags`
+   *   resolves in a plain Bun process and is undefined there, so the guard the
+   *   same file already uses for web-types (`?? []`) would paper over a config
+   *   resolution difference rather than fix it.
+   *
+   * Tracked in stacksjs/stacks#2411.
+   */
+
+  log.success('Generated')
 }
 
 export function generate(options: GeneratorOptions): Promise<void> {
