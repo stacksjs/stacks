@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test'
-import { extractLinks, isSkippableLink, isTrackedPath, resolveCandidates, selfRepoPath } from './links'
+import { join, resolve } from 'node:path'
+import { extractLinks, isFileCaseExact, isSkippableLink, isTrackedPath, resolveCandidates, selfRepoPath } from './links'
 
 describe('docs link checker (stacksjs/stacks#2056)', () => {
   describe('isSkippableLink', () => {
@@ -151,5 +152,37 @@ describe('isTrackedPath', () => {
   it('does not treat a partial segment match as a directory', () => {
     // `docs/ind` is a prefix of `docs/index.md` as a STRING but not as a path.
     expect(isTrackedPath('docs/ind', tracked)).toBe(false)
+  })
+})
+
+/**
+ * Case matters, at every segment.
+ *
+ * macOS's filesystem is case-insensitive by default, so `existsSync` reports
+ * that `docs/Basics/components.md` exists when only `docs/basics/…` does. The
+ * link then 404s on the deployed site, whose filesystem is not — the author is
+ * the one person who cannot see it.
+ *
+ * Checking only the FILENAME's case is not enough and was measured to be not
+ * enough: `readdirSync('docs/Basics')` lists `docs/basics` on such a volume, so
+ * a wrong-cased directory sails through. The walk has to start at the root.
+ */
+describe('isFileCaseExact', () => {
+  const root = resolve(import.meta.dir, '../../../../../../..')
+
+  it('accepts a real path with the right case', () => {
+    expect(isFileCaseExact(join(root, 'docs/index.md'), root)).toBe(true)
+  })
+
+  it('rejects a wrong-cased filename', () => {
+    expect(isFileCaseExact(join(root, 'docs/Index.md'), root)).toBe(false)
+  })
+
+  it('rejects a wrong-cased directory, which the filename-only check allowed', () => {
+    expect(isFileCaseExact(join(root, 'Docs/index.md'), root)).toBe(false)
+  })
+
+  it('rejects a path that does not exist at all', () => {
+    expect(isFileCaseExact(join(root, 'docs/definitely-not-here.md'), root)).toBe(false)
   })
 })

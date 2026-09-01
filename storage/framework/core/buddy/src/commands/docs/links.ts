@@ -25,7 +25,7 @@
 import { assertFrameworkRepo } from './framework-repo'
 import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, join, relative, resolve } from 'node:path'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 
 const root = resolve(import.meta.dir, '../../../../../../..')
 const docsDir = resolve(root, 'docs')
@@ -88,6 +88,47 @@ function trackedFiles(): Set<string> {
   }
 
   return tracked
+}
+
+/**
+ * Does this file exist, matching case at EVERY segment?
+ *
+ * `existsSync` answers from the filesystem, and macOS's is case-insensitive by
+ * default — so a docs link to `/Basics/components` resolves against
+ * `docs/basics/components.md` on the author's machine and 404s on the deployed
+ * site, whose filesystem is not.
+ *
+ * Every segment, not just the filename: checking only the last one still lets
+ * `/Basics/components` through, because `readdirSync('docs/Basics')` happily
+ * lists `docs/basics` on a case-insensitive volume. Walking from the root is
+ * the only version that actually answers the question. (Measured — the
+ * last-segment-only version passed this exact case.)
+ */
+const listings = new Map<string, Set<string>>()
+function entriesOf(dir: string): Set<string> {
+  let entries = listings.get(dir)
+  if (!entries) {
+    entries = existsSync(dir) ? new Set(readdirSync(dir)) : new Set()
+    listings.set(dir, entries)
+  }
+  return entries
+}
+
+export function isFileCaseExact(path: string, from: string = root): boolean {
+  const relativePath = relative(from, path)
+
+  // Outside the tree we walk (shouldn't happen for docs links) — fall back.
+  if (relativePath.startsWith('..'))
+    return existsSync(path) && statSync(path).isFile()
+
+  let dir = from
+  for (const segment of relativePath.split(sep)) {
+    if (!entriesOf(dir).has(segment))
+      return false
+    dir = join(dir, segment)
+  }
+
+  return statSync(path).isFile()
 }
 
 /**
@@ -213,7 +254,7 @@ export function checkDocsLinks(docsRoot = docsDir): BrokenDocLink[] {
       const candidates = resolveCandidates(target, dirname(file), docsRoot)
       if (candidates.length === 0)
         continue
-      const resolvedOk = candidates.some(candidate => existsSync(candidate) && statSync(candidate).isFile())
+      const resolvedOk = candidates.some(candidate => isFileCaseExact(candidate))
       if (!resolvedOk)
         broken.push({ file: relative(docsRoot, file), line, target })
     }

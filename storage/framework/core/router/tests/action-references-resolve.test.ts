@@ -11,12 +11,13 @@
  * both `app/Actions` (the app's own, which override) and the framework
  * defaults. Nothing else checks them.
  *
- * One honest limit: this resolves with `existsSync`, so on a case-insensitive
- * filesystem (macOS by default) `Actions/Auth/LogInAction` matches
- * `LoginAction.ts` and a case-only typo passes locally. It fails on CI, where
- * the filesystem is case-sensitive — which is the environment that matters,
- * since that is also where the route would 500 in production. Verified both
- * ways: a genuinely absent action is reported on either platform.
+ * Resolution is CASE-EXACT, against directory listings rather than
+ * `existsSync`. On a case-insensitive filesystem — macOS by default —
+ * `existsSync` says `Actions/Auth/LogInAction` exists because `LoginAction.ts`
+ * does, so a case-only typo passes locally and 500s on Linux. Comparing
+ * against what `readdirSync` actually returns gives the same answer on both,
+ * which is the whole point of a guard like this: an author should not need the
+ * right operating system to find out.
  */
 
 import { describe, expect, it } from 'bun:test'
@@ -63,11 +64,37 @@ const ACTION_ROOTS = [
   join(root, 'storage/framework/defaults/app/Actions'),
 ]
 
+/** Directory listings, memoised — one readdir per directory, not per lookup. */
+const listings = new Map<string, Set<string>>()
+function entriesOf(dir: string): Set<string> {
+  let entries = listings.get(dir)
+  if (!entries) {
+    entries = existsSync(dir) ? new Set(readdirSync(dir)) : new Set()
+    listings.set(dir, entries)
+  }
+  return entries
+}
+
+/** Does this exact path exist, matching case at every segment? */
+function existsCaseExact(base: string, relativePath: string): boolean {
+  let dir = base
+
+  const segments = relativePath.split('/')
+  for (let index = 0; index < segments.length; index++) {
+    const segment = segments[index]!
+    if (!entriesOf(dir).has(segment))
+      return false
+    dir = join(dir, segment)
+  }
+
+  return true
+}
+
 function resolvesToAnAction(reference: string): boolean {
-  const relative = reference.replace(/^Actions\//, '')
+  const relativePath = reference.replace(/^Actions\//, '')
 
   return ACTION_ROOTS.some(base =>
-    ['.ts', '.js', '/index.ts'].some(suffix => existsSync(join(base, relative + suffix))),
+    ['.ts', '.js', '/index.ts'].some(suffix => existsCaseExact(base, relativePath + suffix)),
   )
 }
 
