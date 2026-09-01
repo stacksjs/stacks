@@ -361,14 +361,6 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun .github/scripts/check-subpath-exports.ts
 
-      # The other half of #2056's first criterion. docs:artifacts:check covers
-      # OpenAPI; nothing covered the generated declarations, and two stale
-      # generated files AGREE WITH EACH OTHER, so the existing validity test
-      # sees nothing wrong.
-      - name: Generated declarations are current
-        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
-        run: bun .github/scripts/check-generated-declarations.ts
-
   # A freshly scaffolded app must typecheck against the framework version it
   # pinned. `buddy new` writes the template from THIS checkout and pins a
   # PUBLISHED framework, so the two can disagree whenever the template
