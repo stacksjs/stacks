@@ -7,7 +7,8 @@ button:
   toggle_langs: Sprachen ändern
 intro:
   desc: Rapid Application Development
-  dynamic-route: Demo einer dynamischen Route
-  hi: Hi, {name}!
+  dynamic_route: Demo einer dynamischen Route
+  hi: 'Hi, {name}!'
   aka: Auch bekannt als
-  whats-your-name: Wie heißt du?
+  whats_your_name: Wie heißt du?
+  not_found: Nicht gefunden
