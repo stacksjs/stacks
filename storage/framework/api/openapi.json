@@ -484,9 +484,199 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/analytics-events",
+        "operationId": "post__api_analytics_events",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "category": {
+                          "type": "string",
+                          "maxLength": 50
+                        },
+                        "path": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "currency": {
+                          "type": "string",
+                          "maxLength": 3
+                        },
+                        "properties": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "name",
+                        "category",
+                        "currency"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/analytics-events/bulk-delete": {
+      "post": {
+        "summary": "/api/analytics-events/bulk-delete",
+        "operationId": "post__api_analytics_events_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/analytics-events/{id}": {
+      "delete": {
+        "summary": "/api/analytics-events/{id}",
+        "operationId": "delete__api_analytics_events__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "category": {
+                          "type": "string",
+                          "maxLength": 50
+                        },
+                        "path": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "value": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "currency": {
+                          "type": "string",
+                          "maxLength": 3
+                        },
+                        "properties": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "name",
+                        "category",
+                        "currency"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/analytics-events/{id}",
         "operationId": "get__api_analytics_events__id_",
@@ -7439,12 +7629,468 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/cart-items",
+        "operationId": "post__api_cart_items",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quantity": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "unit_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "tax_rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "tax_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "discount_percentage": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "discount_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "product_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "product_sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "product_image": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 500
+                        },
+                        "cart_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/cart-items/bulk-delete": {
+      "post": {
+        "summary": "/api/cart-items/bulk-delete",
+        "operationId": "post__api_cart_items_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/cart-items/{id}": {
+      "delete": {
+        "summary": "/api/cart-items/{id}",
+        "operationId": "delete__api_cart_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quantity": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "unit_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "tax_rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "tax_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "discount_percentage": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "discount_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "product_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "product_sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "product_image": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 500
+                        },
+                        "cart_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/cart-items/{id}",
         "operationId": "get__api_cart_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quantity": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "unit_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "tax_rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "tax_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "discount_percentage": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "discount_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "product_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "product_sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "product_image": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 500
+                        },
+                        "cart_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/cart-items/{id}",
+        "operationId": "patch__api_cart_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "quantity": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "unit_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_price": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "tax_rate": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "tax_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "discount_percentage": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "discount_amount": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "product_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "product_sku": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "product_image": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 500
+                        },
+                        "cart_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/cart-items/{id}",
+        "operationId": "put__api_cart_items__id_",
         "parameters": [
           {
             "name": "id",
@@ -24278,12 +24924,436 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/delivery-routes",
+        "operationId": "post__api_delivery_routes",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "courier": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "stops": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "delivery_time": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_distance": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_active": {
+                          "type": "unix"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "planned",
+                            "active",
+                            "completed",
+                            "cancelled"
+                          ]
+                        },
+                        "started_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "courier_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/delivery-routes/bulk-delete": {
+      "post": {
+        "summary": "/api/delivery-routes/bulk-delete",
+        "operationId": "post__api_delivery_routes_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/delivery-routes/{id}": {
+      "delete": {
+        "summary": "/api/delivery-routes/{id}",
+        "operationId": "delete__api_delivery_routes__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "courier": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "stops": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "delivery_time": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_distance": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_active": {
+                          "type": "unix"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "planned",
+                            "active",
+                            "completed",
+                            "cancelled"
+                          ]
+                        },
+                        "started_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "courier_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/delivery-routes/{id}",
         "operationId": "get__api_delivery_routes__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "courier": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "stops": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "delivery_time": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_distance": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_active": {
+                          "type": "unix"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "planned",
+                            "active",
+                            "completed",
+                            "cancelled"
+                          ]
+                        },
+                        "started_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "courier_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/delivery-routes/{id}",
+        "operationId": "patch__api_delivery_routes__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "courier": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vehicle": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "stops": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "delivery_time": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "total_distance": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "last_active": {
+                          "type": "unix"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "planned",
+                            "active",
+                            "completed",
+                            "cancelled"
+                          ]
+                        },
+                        "started_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "courier_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/delivery-routes/{id}",
+        "operationId": "put__api_delivery_routes__id_",
         "parameters": [
           {
             "name": "id",
@@ -24509,12 +25579,552 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/delivery-stops",
+        "operationId": "post__api_delivery_stops",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "sequence": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "en_route",
+                            "arrived",
+                            "completed",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "recipient_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "recipient_phone": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "eta_at": {
+                          "type": "timestamp"
+                        },
+                        "notified_nearby_at": {
+                          "type": "timestamp"
+                        },
+                        "arrived_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
+                        "delivery_route_id": {
+                          "type": "integer"
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "sequence",
+                        "status",
+                        "address",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/delivery-stops/bulk-delete": {
+      "post": {
+        "summary": "/api/delivery-stops/bulk-delete",
+        "operationId": "post__api_delivery_stops_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/delivery-stops/{id}": {
+      "delete": {
+        "summary": "/api/delivery-stops/{id}",
+        "operationId": "delete__api_delivery_stops__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "sequence": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "en_route",
+                            "arrived",
+                            "completed",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "recipient_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "recipient_phone": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "eta_at": {
+                          "type": "timestamp"
+                        },
+                        "notified_nearby_at": {
+                          "type": "timestamp"
+                        },
+                        "arrived_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
+                        "delivery_route_id": {
+                          "type": "integer"
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "sequence",
+                        "status",
+                        "address",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/delivery-stops/{id}",
         "operationId": "get__api_delivery_stops__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "sequence": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "en_route",
+                            "arrived",
+                            "completed",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "recipient_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "recipient_phone": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "eta_at": {
+                          "type": "timestamp"
+                        },
+                        "notified_nearby_at": {
+                          "type": "timestamp"
+                        },
+                        "arrived_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
+                        "delivery_route_id": {
+                          "type": "integer"
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "sequence",
+                        "status",
+                        "address",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/delivery-stops/{id}",
+        "operationId": "patch__api_delivery_stops__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "sequence": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "en_route",
+                            "arrived",
+                            "completed",
+                            "failed",
+                            "skipped"
+                          ]
+                        },
+                        "address": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "latitude": {
+                          "type": "number",
+                          "minimum": -90,
+                          "maximum": 90
+                        },
+                        "longitude": {
+                          "type": "number",
+                          "minimum": -180,
+                          "maximum": 180
+                        },
+                        "recipient_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "recipient_phone": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "eta_at": {
+                          "type": "timestamp"
+                        },
+                        "notified_nearby_at": {
+                          "type": "timestamp"
+                        },
+                        "arrived_at": {
+                          "type": "timestamp"
+                        },
+                        "completed_at": {
+                          "type": "timestamp"
+                        },
+                        "notes": {
+                          "type": "string",
+                          "maxLength": 1000
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "pickup",
+                            "dropoff"
+                          ]
+                        },
+                        "delivery_route_id": {
+                          "type": "integer"
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid",
+                        "sequence",
+                        "status",
+                        "address",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/delivery-stops/{id}",
+        "operationId": "put__api_delivery_stops__id_",
         "parameters": [
           {
             "name": "id",
@@ -25072,7 +26682,100 @@
         }
       }
     },
+    "/api/email-idempotency/bulk-delete": {
+      "post": {
+        "summary": "/api/email-idempotency/bulk-delete",
+        "operationId": "post__api_email_idempotency_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/email-idempotency/{id}": {
+      "delete": {
+        "summary": "/api/email-idempotency/{id}",
+        "operationId": "delete__api_email_idempotency__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "message_id": {
+                          "type": "string",
+                          "maxLength": 512
+                        },
+                        "provider": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "success": {
+                          "type": "boolean"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "success"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/email-idempotency/{id}",
         "operationId": "get__api_email_idempotency__id_",
@@ -26040,7 +27743,108 @@
         }
       }
     },
+    "/api/email-suppressions/bulk-delete": {
+      "post": {
+        "summary": "/api/email-suppressions/bulk-delete",
+        "operationId": "post__api_email_suppressions_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/email-suppressions/{id}": {
+      "delete": {
+        "summary": "/api/email-suppressions/{id}",
+        "operationId": "delete__api_email_suppressions__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "email": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "format": "email"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "bounce",
+                            "complaint",
+                            "unsubscribe",
+                            "manual"
+                          ]
+                        },
+                        "reason": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "email",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/email-suppressions/{id}",
         "operationId": "get__api_email_suppressions__id_",
@@ -26184,7 +27988,102 @@
         }
       }
     },
+    "/api/email-webhook-events/bulk-delete": {
+      "post": {
+        "summary": "/api/email-webhook-events/bulk-delete",
+        "operationId": "post__api_email_webhook_events_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/email-webhook-events/{id}": {
+      "delete": {
+        "summary": "/api/email-webhook-events/{id}",
+        "operationId": "delete__api_email_webhook_events__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "mailgun",
+                            "postmark",
+                            "ses",
+                            "sendgrid"
+                          ]
+                        },
+                        "processed_at": {
+                          "type": "timestamp"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "provider",
+                        "processed_at"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/email-webhook-events/{id}",
         "operationId": "get__api_email_webhook_events__id_",
@@ -26431,12 +28330,460 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/form-fields",
+        "operationId": "post__api_form_fields",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "textarea",
+                            "email",
+                            "phone",
+                            "select",
+                            "checkbox",
+                            "radio",
+                            "date",
+                            "file",
+                            "currency",
+                            "section_break"
+                          ]
+                        },
+                        "required": {
+                          "type": "boolean"
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "width": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "half"
+                          ]
+                        },
+                        "options": {
+                          "type": "json"
+                        },
+                        "conditions": {
+                          "type": "json"
+                        },
+                        "form_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "label",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/form-fields/bulk-delete": {
+      "post": {
+        "summary": "/api/form-fields/bulk-delete",
+        "operationId": "post__api_form_fields_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/form-fields/{id}": {
+      "delete": {
+        "summary": "/api/form-fields/{id}",
+        "operationId": "delete__api_form_fields__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "textarea",
+                            "email",
+                            "phone",
+                            "select",
+                            "checkbox",
+                            "radio",
+                            "date",
+                            "file",
+                            "currency",
+                            "section_break"
+                          ]
+                        },
+                        "required": {
+                          "type": "boolean"
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "width": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "half"
+                          ]
+                        },
+                        "options": {
+                          "type": "json"
+                        },
+                        "conditions": {
+                          "type": "json"
+                        },
+                        "form_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "label",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/form-fields/{id}",
         "operationId": "get__api_form_fields__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "textarea",
+                            "email",
+                            "phone",
+                            "select",
+                            "checkbox",
+                            "radio",
+                            "date",
+                            "file",
+                            "currency",
+                            "section_break"
+                          ]
+                        },
+                        "required": {
+                          "type": "boolean"
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "width": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "half"
+                          ]
+                        },
+                        "options": {
+                          "type": "json"
+                        },
+                        "conditions": {
+                          "type": "json"
+                        },
+                        "form_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "label",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/form-fields/{id}",
+        "operationId": "patch__api_form_fields__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 64
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "text",
+                            "textarea",
+                            "email",
+                            "phone",
+                            "select",
+                            "checkbox",
+                            "radio",
+                            "date",
+                            "file",
+                            "currency",
+                            "section_break"
+                          ]
+                        },
+                        "required": {
+                          "type": "boolean"
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "width": {
+                          "type": "string",
+                          "enum": [
+                            "full",
+                            "half"
+                          ]
+                        },
+                        "options": {
+                          "type": "json"
+                        },
+                        "conditions": {
+                          "type": "json"
+                        },
+                        "form_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "label",
+                        "type"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/form-fields/{id}",
+        "operationId": "put__api_form_fields__id_",
         "parameters": [
           {
             "name": "id",
@@ -29664,12 +32011,732 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/mail-preferences",
+        "operationId": "post__api_mail_preferences",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "mailbox": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "format": "email"
+                        },
+                        "account_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "signature": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "display_density": {
+                          "type": "string",
+                          "enum": [
+                            "comfortable",
+                            "default",
+                            "compact"
+                          ]
+                        },
+                        "theme": {
+                          "type": "string",
+                          "enum": [
+                            "light",
+                            "dark",
+                            "system"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "enum": [
+                            "en",
+                            "fr",
+                            "de",
+                            "es",
+                            "ja"
+                          ]
+                        },
+                        "default_reply_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "reply",
+                            "replyAll"
+                          ]
+                        },
+                        "send_and_archive": {
+                          "type": "boolean"
+                        },
+                        "auto_advance": {
+                          "type": "string",
+                          "enum": [
+                            "newer",
+                            "older",
+                            "back"
+                          ]
+                        },
+                        "desktop_notifications": {
+                          "type": "boolean"
+                        },
+                        "notification_sound": {
+                          "type": "string",
+                          "enum": [
+                            "default",
+                            "subtle",
+                            "none"
+                          ]
+                        },
+                        "notification_preview": {
+                          "type": "boolean"
+                        },
+                        "filters": {
+                          "type": "string"
+                        },
+                        "blocked_senders": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "string"
+                        },
+                        "load_remote_images": {
+                          "type": "boolean"
+                        },
+                        "show_external_content": {
+                          "type": "boolean"
+                        },
+                        "vacation_enabled": {
+                          "type": "boolean"
+                        },
+                        "vacation_start_date": {
+                          "type": "string"
+                        },
+                        "vacation_end_date": {
+                          "type": "string"
+                        },
+                        "vacation_subject": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vacation_message": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "mailbox",
+                        "account_name",
+                        "display_density",
+                        "theme",
+                        "language",
+                        "default_reply_behavior",
+                        "send_and_archive",
+                        "auto_advance",
+                        "desktop_notifications",
+                        "notification_sound",
+                        "notification_preview",
+                        "filters",
+                        "blocked_senders",
+                        "labels",
+                        "load_remote_images",
+                        "show_external_content",
+                        "vacation_enabled"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/mail-preferences/bulk-delete": {
+      "post": {
+        "summary": "/api/mail-preferences/bulk-delete",
+        "operationId": "post__api_mail_preferences_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/mail-preferences/{id}": {
+      "delete": {
+        "summary": "/api/mail-preferences/{id}",
+        "operationId": "delete__api_mail_preferences__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "mailbox": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "format": "email"
+                        },
+                        "account_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "signature": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "display_density": {
+                          "type": "string",
+                          "enum": [
+                            "comfortable",
+                            "default",
+                            "compact"
+                          ]
+                        },
+                        "theme": {
+                          "type": "string",
+                          "enum": [
+                            "light",
+                            "dark",
+                            "system"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "enum": [
+                            "en",
+                            "fr",
+                            "de",
+                            "es",
+                            "ja"
+                          ]
+                        },
+                        "default_reply_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "reply",
+                            "replyAll"
+                          ]
+                        },
+                        "send_and_archive": {
+                          "type": "boolean"
+                        },
+                        "auto_advance": {
+                          "type": "string",
+                          "enum": [
+                            "newer",
+                            "older",
+                            "back"
+                          ]
+                        },
+                        "desktop_notifications": {
+                          "type": "boolean"
+                        },
+                        "notification_sound": {
+                          "type": "string",
+                          "enum": [
+                            "default",
+                            "subtle",
+                            "none"
+                          ]
+                        },
+                        "notification_preview": {
+                          "type": "boolean"
+                        },
+                        "filters": {
+                          "type": "string"
+                        },
+                        "blocked_senders": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "string"
+                        },
+                        "load_remote_images": {
+                          "type": "boolean"
+                        },
+                        "show_external_content": {
+                          "type": "boolean"
+                        },
+                        "vacation_enabled": {
+                          "type": "boolean"
+                        },
+                        "vacation_start_date": {
+                          "type": "string"
+                        },
+                        "vacation_end_date": {
+                          "type": "string"
+                        },
+                        "vacation_subject": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vacation_message": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "mailbox",
+                        "account_name",
+                        "display_density",
+                        "theme",
+                        "language",
+                        "default_reply_behavior",
+                        "send_and_archive",
+                        "auto_advance",
+                        "desktop_notifications",
+                        "notification_sound",
+                        "notification_preview",
+                        "filters",
+                        "blocked_senders",
+                        "labels",
+                        "load_remote_images",
+                        "show_external_content",
+                        "vacation_enabled"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/mail-preferences/{id}",
         "operationId": "get__api_mail_preferences__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "mailbox": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "format": "email"
+                        },
+                        "account_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "signature": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "display_density": {
+                          "type": "string",
+                          "enum": [
+                            "comfortable",
+                            "default",
+                            "compact"
+                          ]
+                        },
+                        "theme": {
+                          "type": "string",
+                          "enum": [
+                            "light",
+                            "dark",
+                            "system"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "enum": [
+                            "en",
+                            "fr",
+                            "de",
+                            "es",
+                            "ja"
+                          ]
+                        },
+                        "default_reply_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "reply",
+                            "replyAll"
+                          ]
+                        },
+                        "send_and_archive": {
+                          "type": "boolean"
+                        },
+                        "auto_advance": {
+                          "type": "string",
+                          "enum": [
+                            "newer",
+                            "older",
+                            "back"
+                          ]
+                        },
+                        "desktop_notifications": {
+                          "type": "boolean"
+                        },
+                        "notification_sound": {
+                          "type": "string",
+                          "enum": [
+                            "default",
+                            "subtle",
+                            "none"
+                          ]
+                        },
+                        "notification_preview": {
+                          "type": "boolean"
+                        },
+                        "filters": {
+                          "type": "string"
+                        },
+                        "blocked_senders": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "string"
+                        },
+                        "load_remote_images": {
+                          "type": "boolean"
+                        },
+                        "show_external_content": {
+                          "type": "boolean"
+                        },
+                        "vacation_enabled": {
+                          "type": "boolean"
+                        },
+                        "vacation_start_date": {
+                          "type": "string"
+                        },
+                        "vacation_end_date": {
+                          "type": "string"
+                        },
+                        "vacation_subject": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vacation_message": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "mailbox",
+                        "account_name",
+                        "display_density",
+                        "theme",
+                        "language",
+                        "default_reply_behavior",
+                        "send_and_archive",
+                        "auto_advance",
+                        "desktop_notifications",
+                        "notification_sound",
+                        "notification_preview",
+                        "filters",
+                        "blocked_senders",
+                        "labels",
+                        "load_remote_images",
+                        "show_external_content",
+                        "vacation_enabled"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/mail-preferences/{id}",
+        "operationId": "patch__api_mail_preferences__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "mailbox": {
+                          "type": "string",
+                          "maxLength": 320,
+                          "format": "email"
+                        },
+                        "account_name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "signature": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "display_density": {
+                          "type": "string",
+                          "enum": [
+                            "comfortable",
+                            "default",
+                            "compact"
+                          ]
+                        },
+                        "theme": {
+                          "type": "string",
+                          "enum": [
+                            "light",
+                            "dark",
+                            "system"
+                          ]
+                        },
+                        "language": {
+                          "type": "string",
+                          "enum": [
+                            "en",
+                            "fr",
+                            "de",
+                            "es",
+                            "ja"
+                          ]
+                        },
+                        "default_reply_behavior": {
+                          "type": "string",
+                          "enum": [
+                            "reply",
+                            "replyAll"
+                          ]
+                        },
+                        "send_and_archive": {
+                          "type": "boolean"
+                        },
+                        "auto_advance": {
+                          "type": "string",
+                          "enum": [
+                            "newer",
+                            "older",
+                            "back"
+                          ]
+                        },
+                        "desktop_notifications": {
+                          "type": "boolean"
+                        },
+                        "notification_sound": {
+                          "type": "string",
+                          "enum": [
+                            "default",
+                            "subtle",
+                            "none"
+                          ]
+                        },
+                        "notification_preview": {
+                          "type": "boolean"
+                        },
+                        "filters": {
+                          "type": "string"
+                        },
+                        "blocked_senders": {
+                          "type": "string"
+                        },
+                        "labels": {
+                          "type": "string"
+                        },
+                        "load_remote_images": {
+                          "type": "boolean"
+                        },
+                        "show_external_content": {
+                          "type": "boolean"
+                        },
+                        "vacation_enabled": {
+                          "type": "boolean"
+                        },
+                        "vacation_start_date": {
+                          "type": "string"
+                        },
+                        "vacation_end_date": {
+                          "type": "string"
+                        },
+                        "vacation_subject": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "vacation_message": {
+                          "type": "string",
+                          "maxLength": 20000
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "mailbox",
+                        "account_name",
+                        "display_density",
+                        "theme",
+                        "language",
+                        "default_reply_behavior",
+                        "send_and_archive",
+                        "auto_advance",
+                        "desktop_notifications",
+                        "notification_sound",
+                        "notification_preview",
+                        "filters",
+                        "blocked_senders",
+                        "labels",
+                        "load_remote_images",
+                        "show_external_content",
+                        "vacation_enabled"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/mail-preferences/{id}",
+        "operationId": "put__api_mail_preferences__id_",
         "parameters": [
           {
             "name": "id",
@@ -30007,12 +33074,404 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/menu-items",
+        "operationId": "post__api_menu_items",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "target": {
+                          "type": "string",
+                          "enum": [
+                            "_self",
+                            "_blank"
+                          ]
+                        },
+                        "parent_id": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "auth"
+                          ]
+                        },
+                        "menu_id": {
+                          "type": "integer"
+                        },
+                        "page_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/menu-items/bulk-delete": {
+      "post": {
+        "summary": "/api/menu-items/bulk-delete",
+        "operationId": "post__api_menu_items_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/menu-items/{id}": {
+      "delete": {
+        "summary": "/api/menu-items/{id}",
+        "operationId": "delete__api_menu_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "target": {
+                          "type": "string",
+                          "enum": [
+                            "_self",
+                            "_blank"
+                          ]
+                        },
+                        "parent_id": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "auth"
+                          ]
+                        },
+                        "menu_id": {
+                          "type": "integer"
+                        },
+                        "page_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/menu-items/{id}",
         "operationId": "get__api_menu_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "target": {
+                          "type": "string",
+                          "enum": [
+                            "_self",
+                            "_blank"
+                          ]
+                        },
+                        "parent_id": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "auth"
+                          ]
+                        },
+                        "menu_id": {
+                          "type": "integer"
+                        },
+                        "page_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/menu-items/{id}",
+        "operationId": "patch__api_menu_items__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "label": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "url": {
+                          "type": "string",
+                          "maxLength": 2048
+                        },
+                        "target": {
+                          "type": "string",
+                          "enum": [
+                            "_self",
+                            "_blank"
+                          ]
+                        },
+                        "parent_id": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "visibility": {
+                          "type": "string",
+                          "enum": [
+                            "public",
+                            "auth"
+                          ]
+                        },
+                        "menu_id": {
+                          "type": "integer"
+                        },
+                        "page_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "label"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/menu-items/{id}",
+        "operationId": "put__api_menu_items__id_",
         "parameters": [
           {
             "name": "id",
@@ -40104,12 +43563,404 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/requests",
+        "operationId": "post__api_requests",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "HEAD"
+                          ]
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "status_code": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "type": "number"
+                        },
+                        "ip_address": {
+                          "type": "string"
+                        },
+                        "memory_usage": {
+                          "type": "number"
+                        },
+                        "user_agent": {
+                          "type": "string"
+                        },
+                        "error_message": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "deleted_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/requests/bulk-delete": {
+      "post": {
+        "summary": "/api/requests/bulk-delete",
+        "operationId": "post__api_requests_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/requests/{id}": {
+      "delete": {
+        "summary": "/api/requests/{id}",
+        "operationId": "delete__api_requests__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "HEAD"
+                          ]
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "status_code": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "type": "number"
+                        },
+                        "ip_address": {
+                          "type": "string"
+                        },
+                        "memory_usage": {
+                          "type": "number"
+                        },
+                        "user_agent": {
+                          "type": "string"
+                        },
+                        "error_message": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "deleted_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/requests/{id}",
         "operationId": "get__api_requests__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "HEAD"
+                          ]
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "status_code": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "type": "number"
+                        },
+                        "ip_address": {
+                          "type": "string"
+                        },
+                        "memory_usage": {
+                          "type": "number"
+                        },
+                        "user_agent": {
+                          "type": "string"
+                        },
+                        "error_message": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "deleted_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/requests/{id}",
+        "operationId": "patch__api_requests__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "method": {
+                          "type": "string",
+                          "enum": [
+                            "GET",
+                            "POST",
+                            "PUT",
+                            "PATCH",
+                            "DELETE",
+                            "OPTIONS",
+                            "HEAD"
+                          ]
+                        },
+                        "path": {
+                          "type": "string"
+                        },
+                        "status_code": {
+                          "type": "number"
+                        },
+                        "duration_ms": {
+                          "type": "number"
+                        },
+                        "ip_address": {
+                          "type": "string"
+                        },
+                        "memory_usage": {
+                          "type": "number"
+                        },
+                        "user_agent": {
+                          "type": "string"
+                        },
+                        "error_message": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "deleted_at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "id"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/requests/{id}",
+        "operationId": "put__api_requests__id_",
         "parameters": [
           {
             "name": "id",
@@ -47591,12 +51442,368 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/transactions",
+        "operationId": "post__api_transactions",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 0.01
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "transaction_reference": {
+                          "type": "string"
+                        },
+                        "loyalty_points_earned": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "loyalty_points_redeemed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/transactions/bulk-delete": {
+      "post": {
+        "summary": "/api/transactions/bulk-delete",
+        "operationId": "post__api_transactions_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/transactions/{id}": {
+      "delete": {
+        "summary": "/api/transactions/{id}",
+        "operationId": "delete__api_transactions__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 0.01
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "transaction_reference": {
+                          "type": "string"
+                        },
+                        "loyalty_points_earned": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "loyalty_points_redeemed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/transactions/{id}",
         "operationId": "get__api_transactions__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 0.01
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "transaction_reference": {
+                          "type": "string"
+                        },
+                        "loyalty_points_earned": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "loyalty_points_redeemed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/transactions/{id}",
+        "operationId": "patch__api_transactions__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 0.01
+                        },
+                        "status": {
+                          "type": "string"
+                        },
+                        "payment_method": {
+                          "type": "string"
+                        },
+                        "transaction_reference": {
+                          "type": "string"
+                        },
+                        "loyalty_points_earned": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "loyalty_points_redeemed": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "order_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/transactions/{id}",
+        "operationId": "put__api_transactions__id_",
         "parameters": [
           {
             "name": "id",
@@ -49606,6 +53813,78 @@
                           "time"
                         ]
                       }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "post": {
+        "summary": "/api/websockets",
+        "operationId": "post__api_websockets",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "disconnection",
+                            "error",
+                            "success"
+                          ]
+                        },
+                        "socket": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 255
+                        },
+                        "details": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 1000
+                        },
+                        "time": {
+                          "type": "number"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "type",
+                        "socket",
+                        "details",
+                        "time"
+                      ]
                     }
                   },
                   "required": [

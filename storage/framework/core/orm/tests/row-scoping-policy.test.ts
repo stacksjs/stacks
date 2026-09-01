@@ -31,8 +31,10 @@ async function registeredSurface(policy?: string): Promise<Surface> {
       mutating: mutating.length,
       userStore: mutating.some(r => String(r.uri ?? r.path) === '/api/users' && String(r.method).toUpperCase() === 'POST'),
       // A model that still declares nothing: no ownership config, no owner
-      // column, no \`ownership: false\`. This is the shape 'deny' withholds.
-      unscopedStore: mutating.some(r => String(r.uri ?? r.path) === '/api/websockets' && String(r.method).toUpperCase() === 'POST'),
+      // column, no \`ownership: false\`. \`Board\` is one of the seven left in
+      // that state - nothing in the schema says who owns a board - which is
+      // exactly the shape 'deny' withholds.
+      unscopedStore: mutating.some(r => String(r.uri ?? r.path) === '/api/boards' && String(r.method).toUpperCase() === 'POST'),
     }))
   `
 

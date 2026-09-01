@@ -14,6 +14,51 @@
  * POSTing somebody else's id.
  */
 
+import { teamOwnershipField, userOwnershipField } from './auto-crud'
+
+// The ownership config actually enforced for a model. An explicit
+// `model.ownership` always wins. Otherwise any model with a `team_id`
+// column is auto-scoped to the caller's active team — tenant tables are
+// row-isolated with zero per-model config, while a public catalog table
+// (no team_id, no ownership) resolves to `null` and stays un-scoped.
+//
+// The team is resolved from the request's REAL credential (bearer token or
+// session cookie) via @stacksjs/auth — never from a client-supplied field —
+// so a caller can't widen their own scope by POSTing or ?team_id=-ing another
+// team's id. Lazy import mirrors authedUserFromRequest: avoids a boot-time
+// cycle through @stacksjs/auth.
+export function effectiveOwnershipConfig(model: any): any | null {
+  // `ownership: false` is a declaration, not an absence: the model is saying it
+  // has no per-row owner. It resolves to the same un-scoped behaviour as saying
+  // nothing, and `ownershipDeclaredUnscoped` is what tells the two apart.
+  if (model?.ownership === false) return null
+  if (model?.ownership) return model.ownership
+
+  const teamCol = teamOwnershipField(model)
+  if (teamCol) {
+    return {
+      field: teamCol,
+      resolve: async (_user: any, req: any) => {
+        const { resolveAuthenticatedTeamId } = await import('@stacksjs/auth')
+        return resolveAuthenticatedTeamId(teamAuthRequest(req))
+      },
+    }
+  }
+
+  // Per-user ownership, on the same terms as the team rule above: the value
+  // comes from the request's real credential, never from a client-supplied
+  // field, so a caller cannot widen their scope by POSTing someone else's id.
+  const userCol = userOwnershipField(model)
+  if (userCol) {
+    return {
+      field: userCol,
+      resolve: async (user: any) => (user?.id ?? null),
+    }
+  }
+
+  return null
+}
+
 /**
  * Adapt a raw request to the `{ bearerToken, cookies }` shape @stacksjs/auth's
  * team resolver expects.
@@ -151,6 +196,68 @@ export function teamMembershipOwnership(field = 'id'): {
       }
       catch {
         return null
+      }
+    },
+  }
+}
+
+/**
+ * Rows owned through a parent row's owner.
+ *
+ * Some models have no owner of their own and never will: a cart item belongs to
+ * a cart, a form field to a form, a transaction to an order. The owner is
+ * whoever owns the PARENT, so the answer for the child is the set of parent ids
+ * the caller owns - and `ownsRow` already accepts a set.
+ *
+ * The parent's ownership is resolved with the same rules the parent itself is
+ * subject to (`effectiveOwnershipConfig`), rather than restated here. That
+ * matters: when `Cart` changes how it decides ownership, `CartItem` follows
+ * automatically instead of drifting into a second, staler answer.
+ *
+ * One hop only, deliberately. A chain of chains is a query per level on every
+ * write, and nothing in the framework needs two - the models that look like
+ * they might (BoardColumn through Board, Receipt through PrintDevice) have a
+ * parent that is itself unscoped, so a second hop would resolve to "no owner"
+ * anyway. Those stay denied, which is the honest answer: nothing in the schema
+ * says who owns them.
+ *
+ * @param parentModel Model name as registered, e.g. `'Cart'`.
+ * @param field The child's foreign key column, e.g. `'cart_id'`.
+ */
+export function parentOwnership(parentModel: string, field: string): {
+  field: string
+  resolve: (user: any, req: any) => Promise<number[]>
+} {
+  return {
+    field,
+    resolve: async (user: any, req: any) => {
+      try {
+        const orm: any = await import('@stacksjs/orm')
+        const parent = orm.models?.[parentModel] ?? orm[parentModel]?.definition ?? null
+        const parentConfig = effectiveOwnershipConfig(parent)
+
+        // An unscoped parent owns nothing in particular, so neither does the
+        // child. Returning [] denies rather than allowing everything.
+        if (!parentConfig?.field || typeof parentConfig.resolve !== 'function')
+          return []
+
+        const ownerValue = await parentConfig.resolve(user, req)
+        if (ownerValue == null || (Array.isArray(ownerValue) && ownerValue.length === 0))
+          return []
+
+        const Parent = orm[parentModel]
+        if (!Parent)
+          return []
+
+        const rows = Array.isArray(ownerValue)
+          ? await Parent.whereIn(parentConfig.field, ownerValue).get()
+          : await Parent.where(parentConfig.field, ownerValue).get()
+
+        return (rows ?? []).map((row: any) => row.id).filter((id: unknown) => id != null)
+      }
+      catch {
+        // Owning nothing is the safe answer; owning everything is not.
+        return []
       }
     },
   }

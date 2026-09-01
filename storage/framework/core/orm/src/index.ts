@@ -39,7 +39,7 @@ export { filterFillable, getWritableFields, isUniqueViolation, mapWriteError, to
 
 // Ready-made `ownership` resolvers for models whose owner is one hop away
 // (stacksjs/stacks#2375).
-export { customerOwnership, selfOwnership, siteOwnership, teamMembershipOwnership } from './ownership'
+export { customerOwnership, parentOwnership, selfOwnership, siteOwnership, teamMembershipOwnership } from './ownership'
 export * from './batch-loader'
 export * from './db'
 export * from './subquery'

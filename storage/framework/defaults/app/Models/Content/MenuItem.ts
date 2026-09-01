@@ -1,4 +1,4 @@
-import { defineModel } from '@stacksjs/orm'
+import { defineModel, parentOwnership } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -10,6 +10,11 @@ export default defineModel({
   table: 'menu_items',
   primaryKey: 'id',
   autoIncrement: true,
+
+  // No owner of its own: these rows are owned by whoever owns the menu's site, and so its team
+  // (stacksjs/stacks#2375). Resolved through the parent so it follows any change
+  // to how Menu decides ownership.
+  ownership: parentOwnership('Menu', 'menu_id'),
 
   traits: {
     useTimestamps: true,

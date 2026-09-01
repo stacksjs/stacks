@@ -204,7 +204,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "name": string; "category": string; "path"?: string; "value"?: number; "currency": string; "properties"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/analytics-events/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -228,7 +264,20 @@ export interface paths {
   }
     put?: never
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name": string; "category": string; "path"?: string; "value"?: number; "currency": string; "properties"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
     patch?: never
@@ -1724,7 +1773,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "quantity"?: number; "unit_price"?: number; "total_price"?: number; "tax_rate"?: number; "tax_amount"?: number; "discount_percentage"?: number; "discount_amount"?: number; "product_name"?: string; "product_sku"?: string; "product_image"?: string; "notes"?: string; "cart_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/cart-items/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -1746,12 +1831,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "quantity"?: number; "unit_price"?: number; "total_price"?: number; "tax_rate"?: number; "tax_amount"?: number; "discount_percentage"?: number; "discount_amount"?: number; "product_name"?: string; "product_sku"?: string; "product_image"?: string; "notes"?: string; "cart_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "quantity"?: number; "unit_price"?: number; "total_price"?: number; "tax_rate"?: number; "tax_amount"?: number; "discount_percentage"?: number; "discount_amount"?: number; "product_name"?: string; "product_sku"?: string; "product_image"?: string; "notes"?: string; "cart_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "quantity"?: number; "unit_price"?: number; "total_price"?: number; "tax_rate"?: number; "tax_amount"?: number; "discount_percentage"?: number; "discount_amount"?: number; "product_name"?: string; "product_sku"?: string; "product_image"?: string; "notes"?: string; "cart_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/cart/add": {
@@ -11072,7 +11196,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/delivery-routes/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -11094,12 +11254,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "courier"?: string; "vehicle"?: string; "stops"?: number; "delivery_time"?: number; "total_distance"?: number; "last_active"?: unknown; "status"?: "planned" | "active" | "completed" | "cancelled"; "started_at"?: unknown; "completed_at"?: unknown; "courier_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/delivery-stops": {
@@ -11118,7 +11317,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/delivery-stops/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -11140,12 +11375,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "sequence": number; "status": "pending" | "en_route" | "arrived" | "completed" | "failed" | "skipped"; "address": string; "latitude"?: number; "longitude"?: number; "recipient_name"?: string; "recipient_phone"?: string; "eta_at"?: unknown; "notified_nearby_at"?: unknown; "arrived_at"?: unknown; "completed_at"?: unknown; "notes"?: string; "type": "pickup" | "dropoff"; "delivery_route_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/deployments": {
@@ -11263,6 +11537,29 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/email-idempotency/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/email-idempotency/{id}": {
     get: {
     parameters: {
@@ -11280,7 +11577,20 @@ export interface paths {
   }
     put?: never
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "message_id"?: string; "provider"?: string; "success": boolean; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
     patch?: never
@@ -11476,6 +11786,29 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/email-suppressions/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/email-suppressions/{id}": {
     get: {
     parameters: {
@@ -11493,7 +11826,20 @@ export interface paths {
   }
     put?: never
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "email": string; "type": "bounce" | "complaint" | "unsubscribe" | "manual"; "reason"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
     patch?: never
@@ -11522,6 +11868,29 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  "/api/email-webhook-events/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   "/api/email-webhook-events/{id}": {
     get: {
     parameters: {
@@ -11539,7 +11908,20 @@ export interface paths {
   }
     put?: never
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "provider": "mailgun" | "postmark" | "ses" | "sendgrid"; "processed_at": unknown; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
     patch?: never
@@ -11620,7 +12002,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "name": string; "label": string; "type": "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"; "required"?: boolean; "position"?: number; "width"?: "full" | "half"; "options"?: unknown; "conditions"?: unknown; "form_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/form-fields/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -11642,12 +12060,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "name": string; "label": string; "type": "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"; "required"?: boolean; "position"?: number; "width"?: "full" | "half"; "options"?: unknown; "conditions"?: unknown; "form_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "name": string; "label": string; "type": "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"; "required"?: boolean; "position"?: number; "width"?: "full" | "half"; "options"?: unknown; "conditions"?: unknown; "form_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "name": string; "label": string; "type": "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"; "required"?: boolean; "position"?: number; "width"?: "full" | "half"; "options"?: unknown; "conditions"?: unknown; "form_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/forms": {
@@ -12311,7 +12768,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "mailbox": string; "account_name": string; "signature"?: string; "display_density": "comfortable" | "default" | "compact"; "theme": "light" | "dark" | "system"; "language": "en" | "fr" | "de" | "es" | "ja"; "default_reply_behavior": "reply" | "replyAll"; "send_and_archive": boolean; "auto_advance": "newer" | "older" | "back"; "desktop_notifications": boolean; "notification_sound": "default" | "subtle" | "none"; "notification_preview": boolean; "filters": string; "blocked_senders": string; "labels": string; "load_remote_images": boolean; "show_external_content": boolean; "vacation_enabled": boolean; "vacation_start_date"?: string; "vacation_end_date"?: string; "vacation_subject"?: string; "vacation_message"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/mail-preferences/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -12333,12 +12826,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "mailbox": string; "account_name": string; "signature"?: string; "display_density": "comfortable" | "default" | "compact"; "theme": "light" | "dark" | "system"; "language": "en" | "fr" | "de" | "es" | "ja"; "default_reply_behavior": "reply" | "replyAll"; "send_and_archive": boolean; "auto_advance": "newer" | "older" | "back"; "desktop_notifications": boolean; "notification_sound": "default" | "subtle" | "none"; "notification_preview": boolean; "filters": string; "blocked_senders": string; "labels": string; "load_remote_images": boolean; "show_external_content": boolean; "vacation_enabled": boolean; "vacation_start_date"?: string; "vacation_end_date"?: string; "vacation_subject"?: string; "vacation_message"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "mailbox": string; "account_name": string; "signature"?: string; "display_density": "comfortable" | "default" | "compact"; "theme": "light" | "dark" | "system"; "language": "en" | "fr" | "de" | "es" | "ja"; "default_reply_behavior": "reply" | "replyAll"; "send_and_archive": boolean; "auto_advance": "newer" | "older" | "back"; "desktop_notifications": boolean; "notification_sound": "default" | "subtle" | "none"; "notification_preview": boolean; "filters": string; "blocked_senders": string; "labels": string; "load_remote_images": boolean; "show_external_content": boolean; "vacation_enabled": boolean; "vacation_start_date"?: string; "vacation_end_date"?: string; "vacation_subject"?: string; "vacation_message"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "mailbox": string; "account_name": string; "signature"?: string; "display_density": "comfortable" | "default" | "compact"; "theme": "light" | "dark" | "system"; "language": "en" | "fr" | "de" | "es" | "ja"; "default_reply_behavior": "reply" | "replyAll"; "send_and_archive": boolean; "auto_advance": "newer" | "older" | "back"; "desktop_notifications": boolean; "notification_sound": "default" | "subtle" | "none"; "notification_preview": boolean; "filters": string; "blocked_senders": string; "labels": string; "load_remote_images": boolean; "show_external_content": boolean; "vacation_enabled": boolean; "vacation_start_date"?: string; "vacation_end_date"?: string; "vacation_subject"?: string; "vacation_message"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/marketing/campaigns": {
@@ -12426,7 +12958,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "label": string; "url"?: string; "target"?: "_self" | "_blank"; "parent_id"?: number; "position"?: number; "visibility"?: "public" | "auth"; "menu_id"?: number; "page_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/menu-items/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -12448,12 +13016,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "label": string; "url"?: string; "target"?: "_self" | "_blank"; "parent_id"?: number; "position"?: number; "visibility"?: "public" | "auth"; "menu_id"?: number; "page_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "label": string; "url"?: string; "target"?: "_self" | "_blank"; "parent_id"?: number; "position"?: number; "visibility"?: "public" | "auth"; "menu_id"?: number; "page_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "label": string; "url"?: string; "target"?: "_self" | "_blank"; "parent_id"?: number; "position"?: number; "visibility"?: "public" | "auth"; "menu_id"?: number; "page_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/menus": {
@@ -14905,7 +15512,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "method"?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"; "path"?: string; "status_code"?: number; "duration_ms"?: number; "ip_address"?: string; "memory_usage"?: number; "user_agent"?: string; "error_message"?: string; "created_at"?: string; "updated_at"?: string; "deleted_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/requests/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -14927,12 +15570,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "method"?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"; "path"?: string; "status_code"?: number; "duration_ms"?: number; "ip_address"?: string; "memory_usage"?: number; "user_agent"?: string; "error_message"?: string; "created_at"?: string; "updated_at"?: string; "deleted_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "method"?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"; "path"?: string; "status_code"?: number; "duration_ms"?: number; "ip_address"?: string; "memory_usage"?: number; "user_agent"?: string; "error_message"?: string; "created_at"?: string; "updated_at"?: string; "deleted_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "method"?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "OPTIONS" | "HEAD"; "path"?: string; "status_code"?: number; "duration_ms"?: number; "ip_address"?: string; "memory_usage"?: number; "user_agent"?: string; "error_message"?: string; "created_at"?: string; "updated_at"?: string; "deleted_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/reviews/submit": {
@@ -16659,7 +17341,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "amount"?: number; "status"?: string; "payment_method"?: string; "transaction_reference"?: string; "loyalty_points_earned"?: number; "loyalty_points_redeemed"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/transactions/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -16681,12 +17399,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "amount"?: number; "status"?: string; "payment_method"?: string; "transaction_reference"?: string; "loyalty_points_earned"?: number; "loyalty_points_redeemed"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "amount"?: number; "status"?: string; "payment_method"?: string; "transaction_reference"?: string; "loyalty_points_earned"?: number; "loyalty_points_redeemed"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "amount"?: number; "status"?: string; "payment_method"?: string; "transaction_reference"?: string; "loyalty_points_earned"?: number; "loyalty_points_redeemed"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/usage-events": {
@@ -17052,7 +17809,20 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "type": "disconnection" | "error" | "success"; "socket": string; "details": string; "time": number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never

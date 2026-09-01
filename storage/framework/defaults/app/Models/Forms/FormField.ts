@@ -1,4 +1,4 @@
-import { defineModel } from '@stacksjs/orm'
+import { defineModel, parentOwnership } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -20,6 +20,11 @@ export default defineModel({
       unique: true,
     },
   ],
+
+  // No owner of its own: these rows are owned by whoever owns the form's site, and so its team
+  // (stacksjs/stacks#2375). Resolved through the parent so it follows any change
+  // to how Form decides ownership.
+  ownership: parentOwnership('Form', 'form_id'),
 
   traits: {
     useTimestamps: true,

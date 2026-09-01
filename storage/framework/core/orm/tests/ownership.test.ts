@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { ownershipDeclaredUnscoped, teamOwnershipField, userOwnershipField } from '../src/auto-crud'
-import { selfOwnership, teamAuthRequest } from '../src/ownership'
+import { effectiveOwnershipConfig, parentOwnership, selfOwnership, teamAuthRequest } from '../src/ownership'
 
 /**
  * Row scoping for generated mutating routes (stacksjs/stacks#2375).
@@ -80,5 +80,54 @@ describe('teamAuthRequest', () => {
     const adapted = teamAuthRequest({})
     expect(adapted.bearerToken()).toBeNull()
     expect(adapted.cookies.get('session')).toBeNull()
+  })
+})
+
+describe('parentOwnership', () => {
+  it('carries the child foreign key as the field to compare', () => {
+    expect(parentOwnership('Cart', 'cart_id').field).toBe('cart_id')
+  })
+
+  it('owns nothing when the parent model does not exist', async () => {
+    // A typo in a model name must not widen access.
+    const owned = await parentOwnership('NoSuchModel', 'nope_id').resolve({ id: 1 }, {})
+    expect(owned).toEqual([])
+  })
+
+  it('owns nothing when the parent is itself unscoped', async () => {
+    // `Product` declares `ownership: false`, so there is no set of parent rows
+    // that belong to this caller in particular - and "no owner" must resolve to
+    // owning nothing rather than to owning everything.
+    const owned = await parentOwnership('Product', 'product_id').resolve({ id: 1 }, {})
+    expect(owned).toEqual([])
+  })
+
+  it('owns nothing for an unauthenticated caller', async () => {
+    const owned = await parentOwnership('Cart', 'cart_id').resolve(null, {})
+    expect(owned).toEqual([])
+  })
+})
+
+describe('effectiveOwnershipConfig', () => {
+  it('treats `ownership: false` as unscoped, like saying nothing', () => {
+    expect(effectiveOwnershipConfig({ ownership: false })).toBeNull()
+    expect(effectiveOwnershipConfig({})).toBeNull()
+  })
+
+  it('lets an explicit config win over an owner column', () => {
+    const explicit = { field: 'host_id', resolve: async () => 1 }
+    const cfg = effectiveOwnershipConfig({ ownership: explicit, attributes: { team_id: {} } })
+    expect(cfg).toBe(explicit)
+  })
+
+  it('auto-scopes a team column ahead of a user one', () => {
+    // Both present is a tenant table that also records who created the row;
+    // the tenant is the isolation boundary.
+    const cfg = effectiveOwnershipConfig({ attributes: { team_id: {}, user_id: {} } })
+    expect(cfg?.field).toBe('team_id')
+  })
+
+  it('auto-scopes a user column when there is no team', () => {
+    expect(effectiveOwnershipConfig({ attributes: { user_id: {} } })?.field).toBe('user_id')
   })
 })

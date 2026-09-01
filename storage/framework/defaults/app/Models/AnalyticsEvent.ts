@@ -7,6 +7,11 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
+  // An infrastructure table: rows are written by the system, not on behalf of a
+  // caller, so no row has a per-caller owner to scope by. Writes are gated by
+  // `middleware` instead. Declared rather than left silent (stacksjs/stacks#2375).
+  ownership: false,
+
   traits: {
     useUuid: true,
     useTimestamps: true,
