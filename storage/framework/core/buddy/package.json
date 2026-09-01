@@ -144,7 +144,7 @@
     "@stacksjs/skills": "^0.74.0",
     "@stacksjs/storage": "^0.74.0",
     "@stacksjs/strings": "^0.74.0",
-    "@stacksjs/stx": "^0.2.246",
+    "@stacksjs/stx": "^0.2.253",
     "@stacksjs/testing": "^0.74.0",
     "@stacksjs/tinker": "^0.74.0",
     "@stacksjs/ts-cloud": "^0.12.10",

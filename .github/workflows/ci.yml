@@ -361,6 +361,37 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun .github/scripts/check-subpath-exports.ts
 
+  # A freshly scaffolded app must typecheck against the framework version it
+  # pinned. `buddy new` writes the template from THIS checkout and pins a
+  # PUBLISHED framework, so the two can disagree whenever the template
+  # references something added since the last release — and the user sees the
+  # error in a file they did not write (#2322, #2375).
+  #
+  # Not on pull_request: it scaffolds and installs a whole app, which is minutes
+  # and a lot of disk for a check whose answer only changes when the template or
+  # the published framework moves.
+  scaffold-smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        with:
+          version: '0.11.29'
+          install: 'false'
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Scaffold an app and typecheck it
+        run: bun .github/scripts/scaffold-smoke.ts
+
   deployment-target:
     if: >-
       github.event_name == 'workflow_dispatch' ||
