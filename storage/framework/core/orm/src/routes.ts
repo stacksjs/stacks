@@ -17,6 +17,7 @@
  * only when the package is unreachable.
  */
 
+import process from 'node:process'
 import type { DbWriteResult } from '@stacksjs/database'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
@@ -25,7 +26,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 
 /**
@@ -529,6 +530,35 @@ async function resolveAuthedFill(
   return {}
 }
 
+/**
+ * The row-scoping policy, read from `config/security.ts`.
+ *
+ * Read by path rather than through `@stacksjs/config`, matching how this file
+ * already reads `config/qb.ts`: route registration runs inside the ORM's own
+ * import graph, and the config package is the one import orm defers to a
+ * microtask precisely to keep that graph acyclic. A missing or malformed file
+ * resolves to the default, so an app without the setting behaves exactly as
+ * it did. stacksjs/stacks#2375.
+ */
+const rowScopingPolicy = await (async () => {
+  // `process.env`, not the typed `env` proxy: this is an override knob for a
+  // framework default, not a variable an app declares in `config/env.ts`, and
+  // putting it there would make every app's env schema carry a setting it did
+  // not choose.
+  const override = process.env.STACKS_API_ROW_SCOPING
+
+  try {
+    const securityConfig = (await import(projectPath('config/security.ts'))).default
+    return resolveRowScopingPolicy(securityConfig?.api?.rowScoping, override)
+  }
+  catch {
+    return resolveRowScopingPolicy(undefined, override)
+  }
+})()
+
+/** Models registering mutating routes that no row-level check applies to. */
+const unscopedMutatingModels: string[] = []
+
 // Register CRUD routes for each model with useApi trait
 for (const [modelName, model] of Object.entries(models)) {
   const useApi = model.traits?.useApi
@@ -584,6 +614,19 @@ for (const [modelName, model] of Object.entries(models)) {
   const readMiddleware = (rowScoped && !readMiddleware0.includes('auth'))
     ? ['auth', ...readMiddleware0]
     : readMiddleware0
+
+  // A model with no ownership config and no team_id column gets mutating
+  // routes that no row-level check applies to: authentication says who is
+  // calling, and nothing says which rows are theirs. That is right for a
+  // public catalog table and wrong nearly everywhere else, and declaring
+  // nothing is what a model does by accident as well as on purpose — so the
+  // set is reported at boot, and `security.api.rowScoping: 'deny'` refuses to
+  // register the routes at all. stacksjs/stacks#2375.
+  const writesAreUnscoped = hasMutating && !rowScoped
+  if (writesAreUnscoped)
+    unscopedMutatingModels.push(modelName)
+
+  const skipMutatingRoutes = writesAreUnscoped && rowScopingPolicy === 'deny'
 
   // Local helper: chain `.middleware()` for every entry in `names`.
   // The chainable return value from `route.get/post/...` accepts one
@@ -849,7 +892,7 @@ for (const [modelName, model] of Object.entries(models)) {
   }
 
   // POST /api/{uri} — create record
-  if (enabledRoutes.includes('store') && !routeExists('POST', basePath)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('store') && !routeExists('POST', basePath)) {
     applyMiddleware(route.post(basePath, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
@@ -936,7 +979,7 @@ for (const [modelName, model] of Object.entries(models)) {
   }
 
   // PUT/PATCH /api/{uri}/{id} — update record
-  if (enabledRoutes.includes('update')) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('update')) {
     const updateHandler = async (req: EnhancedRequest) => {
       try {
         const id = coerceId(req.params?.id)
@@ -1037,7 +1080,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
   // DELETE /api/{uri}/{id} — delete record (or soft-delete if model has useSoftDeletes).
   const usesSoftDeletes = !!model.traits?.useSoftDeletes
-  if (enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
     applyMiddleware(route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId(req.params?.id)
@@ -1090,7 +1133,7 @@ for (const [modelName, model] of Object.entries(models)) {
 
   // POST /api/{uri}/bulk-delete — delete multiple records (also soft-aware,
   // also ownership-checked per row).
-  if (enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
+  if (!skipMutatingRoutes && enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
     applyMiddleware(route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
@@ -1163,6 +1206,16 @@ for (const [modelName, model] of Object.entries(models)) {
       }
     }), writeMiddleware)
   }
+}
+
+// One line, after every model, rather than one per model. The sibling warning
+// about public reads was demoted to `debug` because 15 lines on every boot
+// about intended behaviour is how a warning stops being read; this set is four
+// times larger.
+{
+  const report = describeUnscopedMutatingModels(unscopedMutatingModels, rowScopingPolicy)
+  if (report)
+    log.warn(report)
 }
 
 export default route

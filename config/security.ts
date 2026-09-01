@@ -8,6 +8,16 @@ import type { SecurityConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  api: {
+    // What to do about a model whose generated store/update/destroy routes have
+    // no row-level scoping - no `ownership` config and no `team_id` column.
+    //
+    // 'warn' registers them and names the models at boot; 'deny' does not
+    // register them at all. 'warn' is the published behaviour; switch to 'deny'
+    // once every model that should be scoped declares how. See #2375.
+    rowScoping: 'warn',
+  },
+
   firewall: {
     enabled: true,
     countryCodes: ['RU', 'IR'],

@@ -26,7 +26,7 @@
 import { describe, expect, it } from 'bun:test'
 import { Database } from 'bun:sqlite'
 import { snakeCase } from '@stacksjs/strings'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, INDEX_DEFAULT_PER_PAGE, INDEX_MAX_PER_PAGE, isUniqueViolation, mapWriteError, normalizeValidationValue, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, routeShape, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys } from '../src/auto-crud'
 import { toPaginator } from '../src/paginator'
 
 describe('toSnakeCaseKeys (write-path column mapping)', () => {
@@ -826,5 +826,75 @@ describe('findShadowingRoute (which generated routes must not register) (#2364)'
 
   it('tolerates a route whose path is missing rather than throwing', () => {
     expect(findShadowingRoute([{ method: 'PATCH' }], 'PATCH', '/api/sites/{id}')).toBeUndefined()
+  })
+})
+
+/**
+ * Row scoping for generated mutating routes (stacksjs/stacks#2375).
+ *
+ * `resolveOwnership` returns `{ enforced: false }` for a model that declares
+ * neither `ownership` nor a `team_id` column, so its generated store/update/
+ * destroy routes have no row-level check: authentication says who is calling
+ * and nothing says which rows are theirs. That is deliberate for a public
+ * catalog table and a footgun everywhere else, because declaring nothing is
+ * what a model does by accident as well as on purpose.
+ *
+ * The call made here: report it at boot for everyone (non-breaking), and let
+ * an app fail closed today behind `security.api.rowScoping: 'deny'`, with the
+ * default staying on the published behaviour until a major.
+ */
+describe('resolveRowScopingPolicy', () => {
+  it('defaults to warn when nothing is configured', () => {
+    expect(resolveRowScopingPolicy(undefined)).toBe('warn')
+    expect(resolveRowScopingPolicy(null)).toBe('warn')
+  })
+
+  it('honours a configured deny', () => {
+    expect(resolveRowScopingPolicy('deny')).toBe('deny')
+    expect(resolveRowScopingPolicy('DENY')).toBe('deny')
+  })
+
+  it('lets the env override config, so CI can try the strict posture', () => {
+    expect(resolveRowScopingPolicy('warn', 'deny')).toBe('deny')
+    expect(resolveRowScopingPolicy('deny', 'warn')).toBe('warn')
+  })
+
+  it('falls back to the default on an unrecognised value rather than throwing', () => {
+    // A typo in a security setting should not take the API down, and the boot
+    // report names every unscoped model either way.
+    expect(resolveRowScopingPolicy('strict')).toBe('warn')
+    expect(resolveRowScopingPolicy(42)).toBe('warn')
+  })
+})
+
+describe('describeUnscopedMutatingModels', () => {
+  it('says nothing when every model is scoped', () => {
+    expect(describeUnscopedMutatingModels([], 'warn')).toBeNull()
+  })
+
+  it('names the models, the count and both ways to scope one', () => {
+    const report = describeUnscopedMutatingModels(['User', 'Team'], 'warn')
+
+    expect(report).toContain('2 model(s)')
+    expect(report).toContain('Team, User')
+    expect(report).toContain('ownership')
+    expect(report).toContain('team_id')
+    expect(report).toContain('rowScoping')
+  })
+
+  it('says what was withheld under deny, and how to get it back', () => {
+    const report = describeUnscopedMutatingModels(['Post'], 'deny')
+
+    expect(report).toContain('NOT registering')
+    expect(report).toContain('Post')
+    expect(report).toContain('restore its writes')
+  })
+
+  it('is one message, not one per model', () => {
+    const report = describeUnscopedMutatingModels(['A', 'B', 'C', 'D'], 'warn')
+
+    // The sibling warning about public reads was demoted to `debug` because a
+    // line per model on every boot is how a warning stops being read.
+    expect(report?.split('\n')).toHaveLength(1)
   })
 })

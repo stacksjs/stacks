@@ -710,3 +710,59 @@ export function buildIndexPaginator(
   const { page: currentPage, ...rest } = buildIndexMeta(url, page, perPage, rowCount, hasMore, total)
   return { current_page: currentPage, ...rest }
 }
+
+/**
+ * What to do about a model whose generated mutating routes have no row-level
+ * scoping. See `ApiSecurityOptions` in @stacksjs/types for the full reasoning.
+ */
+export type ApiRowScopingPolicy = 'warn' | 'deny'
+
+/**
+ * Resolve the row-scoping policy from config, with an env override.
+ *
+ * `'warn'` is the default because anything else is a breaking change to
+ * published behaviour: `'deny'` stops registering `store` / `update` /
+ * `destroy` for every model that declares no ownership, which in this
+ * framework's own model set is 62 of the 82 models that use the trait -
+ * `User` and `Team` among them.
+ *
+ * The env override exists so CI can run the strict posture without editing
+ * config, which is how an app finds out what it would lose before committing
+ * to it. An unrecognised value falls back to the default rather than throwing:
+ * a typo in a security setting should not take the API down, and the boot
+ * warning still names every unscoped model either way.
+ */
+export function resolveRowScopingPolicy(configured: unknown, envOverride?: string | null): ApiRowScopingPolicy {
+  const candidate = (envOverride ?? configured ?? '').toString().trim().toLowerCase()
+  return candidate === 'deny' ? 'deny' : 'warn'
+}
+
+/**
+ * The one-line-per-boot report about models publishing unscoped mutating routes.
+ *
+ * Aggregated deliberately. The sibling warning about public reads was demoted
+ * to `debug` because 15 lines on every boot about intended behaviour is how a
+ * warning stops being read; 62 lines would be worse. One line that names the
+ * count, the models and the two ways to fix it stays readable and stays
+ * actionable.
+ *
+ * Returns null when there is nothing to report, so the caller logs nothing.
+ */
+export function describeUnscopedMutatingModels(
+  modelNames: readonly string[],
+  policy: ApiRowScopingPolicy,
+): string | null {
+  if (modelNames.length === 0)
+    return null
+
+  const names = [...modelNames].sort().join(', ')
+
+  if (policy === 'deny') {
+    return `[orm] security.api.rowScoping is 'deny': NOT registering store/update/destroy for ${modelNames.length} model(s) `
+      + `with no row-level scoping — ${names}. Give a model an \`ownership\` config or a \`team_id\` column to restore its writes.`
+  }
+
+  return `[orm] ${modelNames.length} model(s) publish mutating routes with no row-level scoping, so an authenticated caller can write any row — `
+    + `${names}. Scope one with an \`ownership\` config or a \`team_id\` column; intended for public catalog tables. `
+    + `Set \`security.api.rowScoping: 'deny'\` (config/security.ts) to stop generating these routes instead.`
+}
