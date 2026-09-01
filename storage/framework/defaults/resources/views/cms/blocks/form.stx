@@ -18,6 +18,12 @@
   const sending = state(false)
   const done = state('')
   const openedAt = Date.now()
+  // Field names with an upload in flight, so each file input can disable
+  // itself and the submit button can wait for all of them.
+  const uploading = reactive<Record<string, boolean>>({})
+  // The chosen file's name per field, so the person can see what was attached
+  // rather than only the storage path the server answered with.
+  const attached = reactive<Record<string, string>>({})
 
   effect(() => {
     if (!host() || definition())
@@ -52,10 +58,87 @@
     return conditions.action === 'show' ? matched : !matched
   }
 
+  /**
+   * Upload one file and record the storage path it returns.
+   *
+   * The submitted value for a `file` field is that path, not the file: the
+   * server checks it sits under this form's upload prefix before accepting the
+   * submission, so a path this endpoint did not issue is rejected.
+   *
+   * Size and type are enforced server-side from `config/forms.ts`; `accept` on
+   * the input is only a picker convenience, since a file dialog filter is a
+   * suggestion and not a check.
+   */
+  async function uploadFile(field: PublicFormField, event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement
+    const file = input.files?.[0]
+    if (!file)
+      return
+
+    uploading[field.name] = true
+    errors.set({ ...errors(), [field.name]: '' })
+
+    try {
+      const uuid = host()?.dataset.formUuid
+      const payload = new FormData()
+      payload.append('field', field.name)
+      payload.append('file', file)
+
+      const reply = await fetch(`/api/forms/${uuid}/uploads`, {
+        method: 'POST',
+        credentials: 'same-origin',
+        body: payload,
+      })
+      const body = await reply.json().catch(() => ({}))
+
+      if (!reply.ok) {
+        // Clear the input as well as the value: leaving a rejected file
+        // showing next to its own error message reads as though it was taken.
+        input.value = ''
+        delete values[field.name]
+        delete attached[field.name]
+        errors.set({ ...errors(), [field.name]: body.message ?? 'That file could not be uploaded.' })
+        return
+      }
+
+      values[field.name] = body.path
+      attached[field.name] = file.name
+    }
+    catch {
+      input.value = ''
+      errors.set({ ...errors(), [field.name]: 'That file could not be uploaded.' })
+    }
+    finally {
+      uploading[field.name] = false
+    }
+  }
+
+  /**
+   * The `accept` attribute for a field's picker.
+   *
+   * A convenience only - a file dialog filter is a suggestion, and the server
+   * enforces the real allowlist from `config/forms.ts`. Built here rather than
+   * inline in the template so the extension parameter has a type.
+   */
+  function acceptAttr(field: PublicFormField): string {
+    return (field.options.accept ?? []).map((extension: string) => `.${extension}`).join(',')
+  }
+
+  /** True while any upload is still in flight. */
+  function anyUploading(): boolean {
+    return Object.values(uploading).some(Boolean)
+  }
+
   async function submit(event: Event): Promise<void> {
     event.preventDefault()
     if (sending())
       return
+    // A submission sent mid-upload would carry no path for that field and read
+    // as a missing required answer, which is not what happened.
+    if (anyUploading()) {
+      errors.set({ _form: 'Please wait for the upload to finish.' })
+      return
+    }
     sending.set(true)
     errors.set({})
 
@@ -119,6 +202,14 @@
                 <input type="checkbox" @change="values[field.name] = $event.target.checked" class="h-4 w-4 rounded">
                 {{ field.options.placeholder ?? 'Yes' }}
               </label>
+              {{-- A file field used to fall through to the text input below, so
+                   a person typed prose into what should have been a picker and
+                   the submission could never satisfy it. --}}
+              <div :else-if="field.type === 'file'" class="mt-1.5">
+                <input type="file" :required="field.required && !values[field.name]" :disabled="uploading[field.name]" accept="{{ acceptAttr(field) }}" @change="uploadFile(field, $event)" class="block w-full text-[15px] file:mr-3 file:rounded-lg file:border-0 file:bg-gray-100 file:px-3.5 file:py-2 file:text-[14px] file:font-medium">
+                <p :if="uploading[field.name]" class="mt-1.5 text-[13px] text-gray-500">Uploading...</p>
+                <p :else-if="attached[field.name]" class="mt-1.5 text-[13px] text-green-700">Attached {{ attached[field.name] }}</p>
+              </div>
               <input :else type="{{ field.type === 'email' ? 'email' : (field.type === 'phone' ? 'tel' : (field.type === 'date' ? 'date' : (field.type === 'currency' ? 'number' : 'text'))) }}" :required="field.required" placeholder="{{ field.options.placeholder ?? '' }}" @input="values[field.name] = field.type === 'currency' ? Math.round(Number($event.target.value) * 100) : $event.target.value" class="mt-1.5 w-full rounded-lg border border-gray-300 px-3.5 py-2.5 text-[15px]">
               <p :if="errors()[field.name]" class="mt-1.5 text-[13px] text-red-600">{{ errors()[field.name] }}</p>
             </template>
@@ -128,7 +219,7 @@
 
       <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" class="hidden" @input="values._hp = $event.target.value">
 
-      <button type="submit" :disabled="sending()" class="mt-7 rounded-lg px-6 py-3 font-medium bg-gray-900 text-white transition-transform active:scale-[0.98] disabled:opacity-60">
+      <button type="submit" :disabled="sending() || anyUploading()" class="mt-7 rounded-lg px-6 py-3 font-medium bg-gray-900 text-white transition-transform active:scale-[0.98] disabled:opacity-60">
         {{ sending() ? 'Sending...' : (definition()?.submitLabel ?? 'Submit') }}
       </button>
     </form>
