@@ -34,7 +34,7 @@
 
 import { randomBytes } from 'node:crypto'
 import { db, sqlDateTime, parseSqlDateTime} from '@stacksjs/database'
-import { generateTwoFactorSecret, generateTwoFactorUri, verifyTwoFactorCode } from './authenticator'
+import { generateTwoFactorSecret, generateTwoFactorUri, twoFactorQrCode, verifyTwoFactorCode } from './authenticator'
 import { RateLimiter } from './rate-limiter'
 
 const DEFAULT_CHALLENGE_TTL_SECONDS = 5 * 60
@@ -116,12 +116,18 @@ export function isTwoFactorEnabled(user: TwoFactorUser): boolean {
 }
 
 /**
- * Generate a new (unpersisted) secret + otpauth:// URI for setup.
+ * Generate a new (unpersisted) secret + otpauth:// URI for setup, along with
+ * the URI rendered as a scannable QR code.
+ *
+ * The QR code comes back here rather than being left to the caller because
+ * every setup screen needs one, and a caller that has to find its own encoder
+ * either ships one to the browser or falls back to asking the user to type a
+ * 32-character secret by hand. Clients that render their own still have `uri`.
  */
-export function generateTwoFactorSetup(email: string, serviceName?: string): { secret: string, uri: string } {
+export function generateTwoFactorSetup(email: string, serviceName?: string): { secret: string, uri: string, qr: string } {
   const secret = generateTwoFactorSecret()
   const uri = generateTwoFactorUri(email, serviceName, secret)
-  return { secret, uri }
+  return { secret, uri, qr: twoFactorQrCode(uri) }
 }
 
 const PENDING_SECRET_TTL_SECONDS = 10 * 60

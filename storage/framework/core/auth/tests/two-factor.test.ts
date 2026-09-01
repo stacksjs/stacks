@@ -37,7 +37,7 @@ const {
   stashPendingTwoFactorSecret,
   verifyTwoFactorLoginCode,
 } = await import('../src/two-factor')
-const { generateTwoFactorToken } = await import('../src/authenticator')
+const { generateTwoFactorToken, twoFactorQrCode } = await import('../src/authenticator')
 
 async function seedUser(email: string): Promise<number> {
   await db.unsafe(`
@@ -115,6 +115,25 @@ describe('TOTP setup + enable/disable', () => {
     const state = await getTwoFactorState(userId)
     expect(state.enabled).toBe(false)
     expect(state.secret).toBeNull()
+  })
+
+  // stacksjs/stacks#2385: the setup step returns the URI already rendered, so
+  // no caller has to find its own encoder to show a scannable code.
+  test('generateTwoFactorSetup returns the URI as a scannable SVG QR code', async () => {
+    const { uri, qr } = generateTwoFactorSetup('setup-qr@example.com', 'Status')
+
+    expect(qr).toStartWith('<svg')
+    expect(qr).toEndWith('</svg>')
+    expect(qr).toContain('viewBox')
+    expect(qr).toContain('Two-factor authentication setup')
+
+    // Rendering is a pure function of the URI, so the same URI encodes the
+    // same code - which is what makes the response safe to cache or re-render.
+    expect(twoFactorQrCode(uri)).toBe(qr)
+
+    // The secret must not leak into the markup: only the otpauth URI is
+    // encoded, and it is encoded as modules, never as text in the document.
+    expect(qr).not.toContain('otpauth://')
   })
 
   test('enableTwoFactor rejects an invalid code and does not persist', async () => {
