@@ -1166,7 +1166,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/router": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "bun-plugin-auto-imports": "^0.4.0",
+        "bun-plugin-auto-imports": "^0.4.2",
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -1783,7 +1783,7 @@
 
     "bun-git-hooks": ["bun-git-hooks@0.3.3", "", { "bin": { "git-hooks": "./dist/bin/cli.js", "bun-git-hooks": "./dist/bin/cli.js" } }, "sha512-kcg8teRh/cMs8uZyt/+A/bBuJnmc6EvjnBJ12pWEJ61L9z3uSuqm0mvjrYX4Iu7SZPAwpvAK5fFKmqevS4WBkA=="],
 
-    "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.4.1", "", {}, "sha512-S/+M76UtZc+1SBpqLKOmFXuEVBDnEBqjwnD3dsbHQao8vV+C46uN0JMQNJUZLdhR35KChZh1mHVJuiNqBrOSXQ=="],
+    "bun-plugin-auto-imports": ["bun-plugin-auto-imports@0.4.2", "", {}, "sha512-UmXPZ25fu9tvddmOGlOrY9FVqSAB3S1zroX/tps9y/SmRNJRsWlVRkO1LcDe2E2HxauCr3iOz55calIVYP1XUg=="],
 
     "bun-plugin-dtsx": ["bun-plugin-dtsx@0.11.10", "", { "dependencies": { "@stacksjs/dtsx": "0.11.10" } }, "sha512-qQrEBIV1pzhDmrxmhTHhgVK5gqE5CfpO8C9NCp7zUaN48c4IJVrpqXbeNWch7sAT/Hf4GhVMWau7T65xySm59Q=="],
 
