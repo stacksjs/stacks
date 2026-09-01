@@ -10,6 +10,7 @@ import { ExitCode } from '@stacksjs/types'
 import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 import { resultFailed } from '../result'
+import { fetchPublishedVersions } from '../registry'
 
 interface NewOptions extends CreateOptions {
   withCore?: boolean
@@ -180,12 +181,65 @@ async function isOnline(): Promise<boolean> {
  * first, which would take the repository's history with it. `isFolderCheck()`
  * has already established the target holds nothing but `.git`.
  */
+/**
+ * The template ref to scaffold from: the tag matching the framework version the
+ * app is about to pin, or `null` for the default branch.
+ *
+ * This used to be the default branch unconditionally, while `unpublish:core`
+ * pinned the framework to the newest PUBLISHED version. Those are two different
+ * points in history, and the gap between them is exactly where a release has
+ * not happened yet - so a freshly scaffolded app carried userland (`config/`,
+ * `app/`, `routes/`) written against framework changes it could not install,
+ * and failed its own `./buddy typecheck` before the user had touched anything.
+ * `MobileConfig` did it in stacksjs/stacks#2322, and `security.api` was doing
+ * it again while this was being written.
+ *
+ * Scaffolding from the tag removes the disagreement by construction rather than
+ * reporting it afterwards, and makes `buddy new` reproducible: two people
+ * scaffolding a week apart get the same app rather than whatever main happened
+ * to be.
+ */
+export async function templateRef(
+  fetchVersions: typeof fetchPublishedVersions = fetchPublishedVersions,
+): Promise<string | null> {
+  try {
+    const { latest } = await fetchVersions('stacks')
+    // A package with no release has no tag to scaffold from either.
+    return latest ? `v${latest}` : null
+  }
+  catch {
+    // An unreachable registry is not a reason to refuse to scaffold. The
+    // default branch is what shipped before this, so fall back to it.
+    return null
+  }
+}
+
+/** The gitit spec for a template ref, or the default branch when there is none. */
+export function templateSpec(ref: string | null): string {
+  return ref ? `gh:stacksjs/stacks#${ref}` : 'gh:stacksjs/stacks'
+}
+
 async function download(name: string, path: string, _options: CreateOptions) {
   log.info('Setting up your stack.')
 
+  const ref = await templateRef()
+
   try {
     const { downloadTemplate } = await import('@stacksjs/gitit')
-    await downloadTemplate('gh:stacksjs/stacks', { dir: name, force: true })
+    try {
+      await downloadTemplate(templateSpec(ref), { dir: name, force: true })
+    }
+    catch (error) {
+      // The registry named a version whose tag is not on GitHub - a publish
+      // that landed without its tag, or a tag naming scheme that has moved on.
+      // Scaffolding from the default branch is the old behaviour and still
+      // produces a working app far more often than not, so say what happened
+      // and carry on rather than failing here.
+      if (!ref) throw error
+      log.warn(`No ${ref} tag to scaffold from (${error instanceof Error ? error.message : String(error)}).`)
+      log.info('Falling back to the default branch. If this app does not typecheck, that gap is why.')
+      await downloadTemplate(templateSpec(null), { dir: name, force: true })
+    }
     log.success(`Successfully scaffolded your project at ${cyan(path)}`)
     return { isErr: false as const }
   }

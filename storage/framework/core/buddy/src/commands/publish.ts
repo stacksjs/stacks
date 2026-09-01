@@ -9,6 +9,7 @@ import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { pruneVendoredCoreFromWorkflows, splitFrameworkTypecheckScript } from '../workflow-prune'
 import { detectInstaller, findCoreReferences, isDanglingLink, rewriteCoreCommandPaths, rewriteCoreSourceImports, rewriteSurvivingFrameworkManifests } from '../unvendor-rewrite'
+import { fetchPublishedVersions } from '../registry'
 import { ExitCode } from '@stacksjs/types'
 
 interface PublishOptions {
@@ -1084,25 +1085,6 @@ async function resolvePublishedVersion(depName: string, vendored: string): Promi
   log.warn(`${depName}@${vendored} is not published yet - the vendored copy is ahead of npm.`)
   log.info(`Pinning the newest published version instead, ${depName}@^${published.latest}.`)
   return published.latest
-}
-
-async function fetchPublishedVersions(depName: string): Promise<{ latest?: string, versions: Set<string> }> {
-  const response = await fetch(`https://registry.npmjs.org/${depName.replace('/', '%2F')}`, {
-    headers: { accept: 'application/vnd.npm.install-v1+json' },
-  })
-
-  if (!response.ok)
-    throw new Error(`registry responded ${response.status}`)
-
-  const packument = await response.json() as {
-    'dist-tags'?: Record<string, string>
-    'versions'?: Record<string, unknown>
-  }
-
-  return {
-    latest: packument['dist-tags']?.latest,
-    versions: new Set(Object.keys(packument.versions ?? {})),
-  }
 }
 
 /** Accepts `router`, `@stacksjs/router`, or `core/router`. */
