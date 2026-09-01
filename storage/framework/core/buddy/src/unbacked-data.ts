@@ -15,14 +15,21 @@
  * ## What this still warns about, now that dumps exist
  *
  * `buddy db:backup` takes a real dump, and the deploy takes one before every
- * `migrate` (see `database-backup.ts`). That closes the bad-migration hole. It
- * does NOT close this one: those dumps sit on the same disk as the database
- * they came from, so they survive a migration and do not survive losing the
- * box. Nothing in the framework copies them anywhere else.
+ * `migrate` (see `database-backup.ts`). That closes the bad-migration hole. On
+ * its own it does not close this one: a dump sits on the same disk as the
+ * database it came from, so it survives a migration and not the loss of the
+ * box.
  *
- * So this keeps warning, with narrower wording. The day something uploads a
- * dump offsite is the day this check should start consulting that config
- * instead of firing unconditionally.
+ * `backups.destination` is what closes it, and this check now consults it —
+ * which is what the previous version of this comment said should happen the day
+ * something uploaded a dump offsite. With a destination configured the warning
+ * stops, because the finding it describes is no longer true.
+ *
+ * Note what is deliberately NOT checked: whether an upload has ever succeeded.
+ * That would need state this has no access to at deploy time, and a warning
+ * that fires on a correctly configured app is one people turn off. The
+ * configured destination is the claim; `buddy db:backup` fails loudly when the
+ * upload does not happen.
  *
  * ## Why the dump itself did not have to wait for ts-cloud
  *
@@ -39,6 +46,8 @@
  * the **application's own user**, for the one database it owns, needs no
  * superuser and therefore no copy of that rule.
  */
+
+import process from 'node:process'
 
 /** A stateful service running on the instance with no backup path. */
 export interface UnbackedService {
@@ -87,12 +96,17 @@ function isEnabled(value: unknown): boolean {
 
 /**
  * Read the `managedServices` block of a ts-cloud config and return the stateful
- * services it provisions on the instance.
+ * services it provisions on the instance with nothing copying them off it.
  *
- * Every one of them is unbacked today, so presence in this list is the whole
- * finding. When a `backups` surface exists, this is where it gets consulted.
+ * `hasOffsiteDestination` is the `backups.destination` answer for the app's
+ * database. When it is true the dumpable engines drop out of the finding: their
+ * data does leave the box. An engine `buddy db:backup` cannot dump stays in the
+ * list regardless — a destination does not help a database nothing dumps.
  */
-export function findUnbackedManagedServices(tsCloudConfig: unknown): UnbackedService[] {
+export function findUnbackedManagedServices(
+  tsCloudConfig: unknown,
+  hasOffsiteDestination = false,
+): UnbackedService[] {
   // Same as above: the parameter is `unknown` because callers pass whatever
   // ts-cloud config they loaded.
   const config = tsCloudConfig as { infrastructure?: { compute?: { managedServices?: unknown } } } | null | undefined
@@ -104,8 +118,12 @@ export function findUnbackedManagedServices(tsCloudConfig: unknown): UnbackedSer
   const out: UnbackedService[] = []
 
   for (const [name, { holds, dumpable }] of Object.entries(STATEFUL_SERVICES)) {
-    if (isEnabled((managed as Record<string, unknown> | null | undefined)?.[name]))
-      out.push({ name, holds, dumpable })
+    if (!isEnabled((managed as Record<string, unknown> | null | undefined)?.[name]))
+      continue
+    if (hasOffsiteDestination && dumpable)
+      continue
+
+    out.push({ name, holds, dumpable })
   }
 
   return out
@@ -145,4 +163,26 @@ export function unbackedDataMessage(services: UnbackedService[]): string {
   return `${head}, and nothing backs it up. \`buddy db:backup\` does not dump ${undumpable}: a logical dump `
     + 'taken through a vtgate does not restore a sharded keyspace, so pretending otherwise would be worse than '
     + 'saying nothing. Take a snapshot at the storage layer, and test restoring it (stacksjs/stacks#2313).'
+}
+
+/**
+ * Does this app configure somewhere for its dumps to go?
+ *
+ * Lives here rather than in `commands/db.ts` so the three callers of
+ * {@link findUnbackedManagedServices} — deploy, the deploy summary, and doctor
+ * — cannot answer the question three different ways. Answers `false` on any
+ * failure: an app whose config cannot be read is exactly the app that should
+ * still hear the warning.
+ */
+export async function hasOffsiteBackupDestination(): Promise<boolean> {
+  try {
+    const { config, overridesReady } = await import('@stacksjs/config')
+    await overridesReady.catch(() => {})
+
+    const { resolveBackupDestination } = await import('./database-backup')
+    return resolveBackupDestination((config)?.database, process.env) !== null
+  }
+  catch {
+    return false
+  }
 }

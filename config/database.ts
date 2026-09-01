@@ -11,6 +11,18 @@ import { env } from '@stacksjs/env'
 export default {
   default: env.DB_CONNECTION as SupportedDialect || 'sqlite',
 
+  /**
+   * Where `buddy db:backup` copies each dump.
+   *
+   * Unset means dumps stay on the instance, which survives a bad migration and
+   * not the loss of the box - `buddy deploy` and `buddy doctor` both say so
+   * until this is set. `disk://backups` targets the encrypted, versioned
+   * bucket `config/cloud.ts` already provisions.
+   */
+  backups: {
+    destination: env.DB_BACKUP_DESTINATION || '',
+  },
+
   connections: {
     sqlite: {
       // SQLite requires a file path, not a database name

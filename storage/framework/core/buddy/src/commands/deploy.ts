@@ -17,7 +17,7 @@ import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { withDeployNotification } from '../deploy-notify'
 import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
-import { findUnbackedManagedServices, unbackedDataMessage } from '../unbacked-data'
+import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 
 // Use console.log for clean output without timestamps
@@ -1996,7 +1996,7 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
   // app loses it. Not a refusal - the operator may know, and a deploy is the
   // wrong place to argue - but it will not happen silently, which is how it
   // went unnoticed in the app that opened stacksjs/stacks#2313.
-  const unbacked = findUnbackedManagedServices(tsCloudConfig)
+  const unbacked = findUnbackedManagedServices(tsCloudConfig, await hasOffsiteBackupDestination())
   if (unbacked.length > 0)
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
@@ -4726,7 +4726,7 @@ export function deploy(buddy: CLI): void {
 
         const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
         const { resolveSiteKind } = await loadTsCloudDeployApi()
-        const unbacked = tsCloudConfig ? findUnbackedManagedServices(tsCloudConfig) : []
+        const unbacked = tsCloudConfig ? findUnbackedManagedServices(tsCloudConfig, await hasOffsiteBackupDestination()) : []
         let plan: DeploymentPreview
         try {
           plan = createDeploymentPreview({

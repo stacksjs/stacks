@@ -469,7 +469,7 @@ export function doctor(buddy: CLI): void {
         if (!fs.existsSync(cloudConfig))
           return 'No config/cloud.ts (skipped)'
 
-        const { findUnbackedManagedServices, unbackedDataMessage } = await import('../unbacked-data')
+        const { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } = await import('../unbacked-data')
 
         let tsCloud: unknown
         try {
@@ -482,7 +482,7 @@ export function doctor(buddy: CLI): void {
           throw new ProbeWarning('could not read config/cloud.ts (skipped)')
         }
 
-        const unbacked = findUnbackedManagedServices(tsCloud)
+        const unbacked = findUnbackedManagedServices(tsCloud, await hasOffsiteBackupDestination())
         if (unbacked.length === 0)
           return 'No unbacked managed data services'
 

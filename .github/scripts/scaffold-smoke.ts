@@ -46,16 +46,42 @@ async function main(): Promise<void> {
     stderr: 'inherit',
   })
 
-  if (await scaffold.exited !== 0) {
-    console.error('\n`buddy new` failed, so nothing was typechecked.')
+  const scaffoldCode = await scaffold.exited
+
+  /**
+   * Did the scaffold produce an app, whatever its exit status said?
+   *
+   * `buddy new` installs system packages through pantry as its last act, and on
+   * a CI runner that step can fail for reasons that have nothing to do with the
+   * template: the first run of this job died on `bun.sh@1.3.14 (FileBusy)`,
+   * because the runner is already executing the Bun it was asked to install.
+   * Treating that as "the scaffold is broken" would make the job red for a
+   * property it does not test, which is how a check gets muted.
+   *
+   * So the question asked here is the one this job is actually about: is there
+   * an app to typecheck? If the template failed to write, there is not, and
+   * that IS a scaffold failure worth reporting.
+   */
+  const scaffolded = ['package.json', 'tsconfig.json', 'config'].every(entry => existsSync(join(appDir, entry)))
+
+  if (!scaffolded) {
+    console.error(`\n\`buddy new\` exited ${scaffoldCode} without producing an app, so nothing was typechecked.`)
     process.exit(1)
   }
 
+  if (scaffoldCode !== 0)
+    console.log(`\nNote: \`buddy new\` exited ${scaffoldCode}, but wrote an app — typechecking it anyway.`)
+
   const manifest = await Bun.file(join(appDir, 'package.json')).json()
   const pinned = manifest.dependencies?.stacks ?? manifest.devDependencies?.stacks ?? '(none)'
-  const vendored = (await Bun.file(join(repoRoot, 'package.json')).json()).version
 
-  console.log(`\nScaffold pinned stacks@${pinned}; this checkout is ${vendored}.`)
+  // The FRAMEWORK version, not the root package.json's. The root is the
+  // playground app and carries its own unrelated version, so reporting it here
+  // said things like "pinned ^0.74.0; this checkout is 0.70.52" — which reads
+  // as the scaffold being ahead when it is a different number entirely.
+  const vendored = (await Bun.file(join(repoRoot, 'storage/framework/package.json')).json()).version
+
+  console.log(`\nScaffold pinned stacks@${pinned}; this checkout's framework is ${vendored}.`)
 
   if (!existsSync(join(appDir, 'tsconfig.json'))) {
     console.error('The scaffolded app has no tsconfig.json to check.')
@@ -85,8 +111,8 @@ async function main(): Promise<void> {
   console.error(`\nA freshly scaffolded app does not typecheck against stacks@${pinned}:\n`)
   console.error(`${out}${err}`.trim())
   console.error(
-    `\nEach error names a file the template wrote. If this checkout (${vendored}) is ahead of `
-    + `the published framework, publishing is the fix — until then \`buddy new\` produces this app.\n`,
+    `\nEach error names a file the template wrote. If this checkout's framework (${vendored}) is ahead `
+    + `of the published one, publishing is the fix — until then \`buddy new\` produces this app.\n`,
   )
   process.exit(1)
 }

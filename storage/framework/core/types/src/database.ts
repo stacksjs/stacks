@@ -65,9 +65,36 @@ export interface NetworkedConnectionOptions {
   replicas?: ReplicaOptions[]
 }
 
+/**
+ * Where `buddy db:backup` copies a dump so that losing the instance does not
+ * lose the data.
+ *
+ * `managedServices: { postgres: true }` puts the database on the same disk as
+ * the web process. A dump written next to it survives a bad migration and
+ * nothing else, which is why the deploy warns about it until this is set.
+ * stacksjs/stacks#2313.
+ */
+export interface DatabaseBackupOptions {
+  /**
+   * `s3://bucket/prefix` or `disk://name/prefix`, naming a disk from
+   * `config/filesystems.ts`. The scaffolded `config/cloud.ts` provisions an
+   * encrypted, versioned `backups` bucket, so `disk://backups` usually needs
+   * no new credentials.
+   *
+   * A local path is deliberately not accepted: `--out` already writes locally,
+   * and a second copy on the same disk is not a backup of the box.
+   *
+   * `DB_BACKUP_DESTINATION` overrides this, so a deploy can set it without
+   * editing config.
+   */
+  destination?: string
+}
+
 export interface DatabaseOptions {
   default: SupportedDialect
   logging?: boolean
+  /** Where dumps go so they outlive the instance. Unset means local-only. */
+  backups?: DatabaseBackupOptions
   connections: {
     mysql?: NetworkedConnectionOptions & {
       url?: string

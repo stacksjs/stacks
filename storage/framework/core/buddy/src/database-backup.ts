@@ -345,3 +345,87 @@ export function toolFailureDetail(stderr: string | Buffer, bin?: string): string
 
   return kept.join(' ')
 }
+
+/**
+ * Where a dump is copied so that losing the instance does not lose the data.
+ *
+ * `buddy db:backup` writes to instance-local disk, which survives a bad
+ * migration and nothing else — the command has said so on every run since it
+ * shipped, and `unbacked-data.ts` warns about it on every deploy. This is the
+ * other half: a destination the dump is copied to once it exists.
+ *
+ * Two forms, because the two situations are genuinely different:
+ *
+ *   `s3://bucket/prefix`   an explicit bucket, credentials from the app's
+ *                          filesystems config for the s3 disk
+ *   `disk://name/prefix`   a disk the app already configured, by name. The
+ *                          scaffolded `config/cloud.ts` provisions an encrypted
+ *                          versioned `backups` bucket, so `disk://backups` is
+ *                          usually what an app wants and needs no new secrets.
+ *
+ * A local path is deliberately NOT accepted. `--out` already writes locally,
+ * and accepting `/mnt/whatever` here would let an app configure a "destination"
+ * that is still one disk failure from nothing — which is the exact belief this
+ * whole area exists to correct. stacksjs/stacks#2313.
+ */
+export interface BackupDestination {
+  kind: 's3' | 'disk'
+  /** Bucket name for `s3://`, disk name for `disk://`. */
+  target: string
+  /** Key prefix within the bucket or disk. Empty when the URI had none. */
+  prefix: string
+}
+
+/**
+ * Parse a destination URI, or throw with what was wrong.
+ *
+ * Throws rather than returning null: a destination that was configured and
+ * cannot be understood is a backup that silently stays on one disk, and the
+ * whole point here is that nobody finds that out at restore time.
+ */
+export function parseBackupDestination(uri: string): BackupDestination {
+  const trimmed = uri.trim()
+
+  const match = trimmed.match(/^(s3|disk):\/\/([^/]+)(?:\/(.*))?$/)
+  if (!match) {
+    throw new Error(
+      `Backup destination must be \`s3://bucket/prefix\` or \`disk://name/prefix\`, got ${JSON.stringify(uri)}. `
+      + 'A local path is not accepted here — `--out` already writes locally, and a second copy on the same disk '
+      + 'is not a backup of the box.',
+    )
+  }
+
+  const [, kind, target, rawPrefix = ''] = match
+  const prefix = rawPrefix.replace(/^\/+|\/+$/g, '')
+
+  if (!target) {
+    throw new Error(`Backup destination ${JSON.stringify(uri)} names no ${kind === 's3' ? 'bucket' : 'disk'}.`)
+  }
+
+  return { kind: kind as 's3' | 'disk', target, prefix }
+}
+
+/** The key a dump is stored under at its destination. */
+export function backupObjectKey(destination: BackupDestination, fileName: string): string {
+  return destination.prefix ? `${destination.prefix}/${fileName}` : fileName
+}
+
+/**
+ * The configured offsite destination, or null.
+ *
+ * Env first so a deploy can set it without editing config, then
+ * `config/database.ts`'s `backups.destination`. Returning null is the ordinary
+ * case and is not an error — it is what the deploy warning is about.
+ */
+export function resolveBackupDestination(
+  databaseConfig: unknown,
+  env: Record<string, string | undefined> = {},
+): BackupDestination | null {
+  const configured = env.DB_BACKUP_DESTINATION
+    ?? (databaseConfig as { backups?: { destination?: unknown } } | null | undefined)?.backups?.destination
+
+  if (typeof configured !== 'string' || !configured.trim())
+    return null
+
+  return parseBackupDestination(configured)
+}

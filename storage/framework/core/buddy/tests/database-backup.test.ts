@@ -24,6 +24,9 @@ import {
   isBackupFileName,
   prunableBackups,
   resolveBackupTarget,
+  backupObjectKey,
+  parseBackupDestination,
+  resolveBackupDestination,
   restoreCommand,
   restoreSqlite,
   toolFailureDetail,
@@ -304,5 +307,89 @@ describe('the directory a dump lands in', () => {
 
     const listed = ['notes.txt', name].filter(isBackupFileName)
     expect(listed).toEqual([name])
+  })
+})
+
+/**
+ * Backup destinations (stacksjs/stacks#2313).
+ *
+ * A dump on the same disk as the database survives a bad migration and not the
+ * loss of the box. These pin the parsing of where it goes instead — including
+ * the refusal that matters most: a local path, which would let an app believe
+ * it had configured a backup while staying one disk failure from nothing.
+ */
+describe('parseBackupDestination', () => {
+  it('parses an s3 destination with a prefix', () => {
+    expect(parseBackupDestination('s3://my-bucket/db/daily')).toEqual({
+      kind: 's3',
+      target: 'my-bucket',
+      prefix: 'db/daily',
+    })
+  })
+
+  it('parses a disk destination, which is what the scaffolded bucket is', () => {
+    expect(parseBackupDestination('disk://backups')).toEqual({ kind: 'disk', target: 'backups', prefix: '' })
+  })
+
+  it('trims surrounding and trailing slashes from the prefix', () => {
+    expect(parseBackupDestination('s3://b/daily/').prefix).toBe('daily')
+    expect(parseBackupDestination('  disk://backups/nightly  ').prefix).toBe('nightly')
+  })
+
+  it('refuses a local path, which is the belief this exists to correct', () => {
+    expect(() => parseBackupDestination('/mnt/backups')).toThrow(/not accepted/)
+    expect(() => parseBackupDestination('file:///mnt/backups')).toThrow()
+    expect(() => parseBackupDestination('./backups')).toThrow()
+  })
+
+  it('refuses a scheme it cannot upload to, rather than guessing', () => {
+    expect(() => parseBackupDestination('gs://bucket/prefix')).toThrow()
+    expect(() => parseBackupDestination('')).toThrow()
+  })
+})
+
+describe('backupObjectKey', () => {
+  it('joins the prefix to the file name', () => {
+    const destination = parseBackupDestination('s3://b/db/daily')
+
+    expect(backupObjectKey(destination, '2026-09-01.sql')).toBe('db/daily/2026-09-01.sql')
+  })
+
+  it('uses the bare file name when there is no prefix', () => {
+    expect(backupObjectKey(parseBackupDestination('disk://backups'), 'x.sql')).toBe('x.sql')
+  })
+})
+
+describe('resolveBackupDestination', () => {
+  it('is null when nothing is configured, which is the ordinary case', () => {
+    expect(resolveBackupDestination({}, {})).toBeNull()
+    expect(resolveBackupDestination({ backups: {} }, {})).toBeNull()
+    // An empty string is what `env.DB_BACKUP_DESTINATION || ''` produces in the
+    // scaffolded config, and must read as "not configured" rather than throw.
+    expect(resolveBackupDestination({ backups: { destination: '' } }, {})).toBeNull()
+    expect(resolveBackupDestination({ backups: { destination: '   ' } }, {})).toBeNull()
+  })
+
+  it('reads config/database.ts', () => {
+    expect(resolveBackupDestination({ backups: { destination: 'disk://backups/x' } }, {})).toEqual({
+      kind: 'disk',
+      target: 'backups',
+      prefix: 'x',
+    })
+  })
+
+  it('lets the env win, so a deploy can set it without editing config', () => {
+    const resolved = resolveBackupDestination(
+      { backups: { destination: 'disk://backups' } },
+      { DB_BACKUP_DESTINATION: 's3://prod-dumps/nightly' },
+    )
+
+    expect(resolved).toEqual({ kind: 's3', target: 'prod-dumps', prefix: 'nightly' })
+  })
+
+  it('throws on a configured value it cannot understand', () => {
+    // Silently ignoring it would leave the dump on one disk while the app
+    // believes otherwise, which is the failure mode, not a lenient default.
+    expect(() => resolveBackupDestination({ backups: { destination: '/mnt/x' } }, {})).toThrow()
   })
 })

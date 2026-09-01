@@ -1,5 +1,5 @@
 import type { CLI } from '@stacksjs/types'
-import type { BackupTarget, DumpCommand } from '../database-backup'
+import type { BackupDestination, BackupTarget, DumpCommand } from '../database-backup'
 import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from 'node:fs'
 import { isAbsolute, join, resolve } from 'node:path'
 import process from 'node:process'
@@ -7,12 +7,15 @@ import { confirmOrNull, intro, log, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import {
   backupFileName,
+  backupObjectKey,
   describeCommand,
   dumpCommand,
   dumpSqlite,
   isBackupFileName,
   prunableBackups,
+  resolveBackupDestination,
   resolveBackupTarget,
+  parseBackupDestination,
   restoreCommand,
   restoreSqlite,
   toolFailureDetail,
@@ -76,6 +79,56 @@ export async function backupTarget(): Promise<BackupTarget | null> {
   return resolveBackupTarget((config)?.database)
 }
 
+/**
+ * The configured offsite destination, behind the same config barrier as
+ * {@link backupTarget} and for the same reason: read early and an app that
+ * configured `backups.destination` in `config/database.ts` looks like an app
+ * that configured nothing, so the dump quietly stays on one disk.
+ */
+export async function backupDestination(override?: string): Promise<BackupDestination | null> {
+  if (override?.trim())
+    return parseBackupDestination(override)
+
+  const { config, overridesReady } = await import('@stacksjs/config')
+  await overridesReady.catch(() => {})
+  return resolveBackupDestination((config)?.database, process.env)
+}
+
+/**
+ * Copy a dump to its destination.
+ *
+ * Streamed rather than read into memory: a dump is the whole database, and the
+ * boxes this runs on are sized for the web process.
+ *
+ * Failure is thrown, not logged. The caller is `db:backup`, whose whole
+ * contract is that a dump exists somewhere the instance is not — reporting
+ * success after the upload failed would leave exactly the belief this feature
+ * exists to correct.
+ */
+async function uploadBackup(destination: BackupDestination, file: string, fileName: string): Promise<string> {
+  const { Storage } = await import('@stacksjs/storage')
+  const key = backupObjectKey(destination, fileName)
+  const diskName = destination.kind === 'disk' ? destination.target : 's3'
+  const disk = Storage.disk(diskName)
+
+  // `putStream` is optional on the adapter interface, and the alternative is
+  // reading the whole dump into memory on a box sized for the web process.
+  // Refusing is the honest answer: an app that has configured a destination
+  // needs to know its dumps are not arriving, not to have the deploy OOM.
+  if (typeof disk.putStream !== 'function') {
+    throw new TypeError(
+      `The '${diskName}' disk cannot stream uploads, so a database dump cannot be copied to it. `
+      + 'Use an S3-backed disk for `backups.destination`.',
+    )
+  }
+
+  await disk.putStream(key, Bun.file(file).stream())
+
+  return destination.kind === 'disk'
+    ? `disk://${destination.target}/${key}`
+    : `s3://${destination.target}/${key}`
+}
+
 function backupDir(out?: string): string {
   const dir = out?.trim() || DEFAULT_BACKUP_DIR
   return isAbsolute(dir) ? dir : resolve(process.cwd(), dir)
@@ -136,10 +189,12 @@ export function db(buddy: CLI): void {
     .option('--out [dir]', `Where to write the dump (default: ${DEFAULT_BACKUP_DIR})`)
     .option('--retain [count]', `How many dumps to keep`, { default: String(DEFAULT_RETAIN) })
     .option('--before-migrations', 'Deploy mode: succeed quietly when there is no database yet', { default: false })
+    .option('--destination [uri]', 'Copy the dump offsite: s3://bucket/prefix or disk://name/prefix')
     .option('--verbose', 'Enable verbose output', { default: false })
     .example('buddy db:backup')
     .example('buddy db:backup --out /var/backups/app --retain 30')
-    .action(async (options: { out?: string, retain?: string, beforeMigrations?: boolean, verbose?: boolean }) => {
+    .example('buddy db:backup --destination disk://backups/daily')
+    .action(async (options: { out?: string, retain?: string, beforeMigrations?: boolean, destination?: string, verbose?: boolean }) => {
       const perf = await intro('buddy db:backup')
 
       try {
@@ -187,9 +242,24 @@ export function db(buddy: CLI): void {
         if (removed.length)
           log.info(`Pruned ${removed.length} older dump(s), keeping ${retain}.`)
 
-        // Said on every dump rather than once in the docs: a file on the same
-        // disk as the database is not a backup of the box (#2313).
-        log.info('This dump is on the same disk as the database. Copy it off the box for a real backup.')
+        // The offsite half. Resolved BEFORE the dump would be nicer for a bad
+        // URI, but the dump is what the deploy is waiting on and a malformed
+        // destination should not be the thing that stops a pre-migration
+        // backup from existing at all.
+        const offsite = await backupDestination(options.destination)
+
+        if (offsite) {
+          const uploaded = await uploadBackup(offsite, destination, name)
+          log.success(`Copied to ${uploaded}`)
+        }
+        else {
+          // Said on every dump rather than once in the docs: a file on the same
+          // disk as the database is not a backup of the box (#2313).
+          log.info(
+            'This dump is on the same disk as the database. Set `backups.destination` in config/database.ts '
+            + '(or DB_BACKUP_DESTINATION) to copy it off the box.',
+          )
+        }
 
         await outro('Database backed up', { startTime: perf, useSeconds: true })
       }

@@ -119,6 +119,14 @@ const envSchema = defineEnv({
     default: 'mysql',
   },
 
+  // Where `buddy db:backup` copies each dump: `s3://bucket/prefix` or
+  // `disk://name/prefix`. Empty means dumps stay on the instance, which the
+  // deploy warns about (stacksjs/stacks#2313).
+  DB_BACKUP_DESTINATION: {
+    validation: schema.string(),
+    default: '',
+  },
+
   DB_VITESS_SHARDED: {
     validation: schema.boolean(),
     default: true,

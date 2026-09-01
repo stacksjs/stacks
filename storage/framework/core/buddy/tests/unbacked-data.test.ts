@@ -114,3 +114,37 @@ describe('unbackedDataMessage', () => {
     expect(message).toContain('postgres, mysql are provisioned')
   })
 })
+
+/**
+ * The offsite half (stacksjs/stacks#2313).
+ *
+ * `backups.destination` is what turns a dump into a backup of the box, so the
+ * warning has to stop once it is set — a warning that fires on a correctly
+ * configured app is one people turn off, and then it is not there for the app
+ * that needs it.
+ */
+describe('findUnbackedManagedServices with an offsite destination', () => {
+  it('stops reporting a dumpable engine once dumps leave the box', () => {
+    expect(findUnbackedManagedServices(config({ postgres: true }), true)).toEqual([])
+  })
+
+  it('still reports it without one, which is the default', () => {
+    expect(findUnbackedManagedServices(config({ postgres: true }), false).map(s => s.name)).toEqual(['postgres'])
+    expect(findUnbackedManagedServices(config({ postgres: true })).map(s => s.name)).toEqual(['postgres'])
+  })
+
+  it('keeps reporting an engine nothing dumps, destination or not', () => {
+    // A place to put dumps does not help a database no dump is taken of.
+    // Telling a vitess app it is covered would be worse than saying nothing.
+    const found = findUnbackedManagedServices(config({ vitess: true }), true)
+
+    expect(found.map(s => s.name)).toEqual(['vitess'])
+    expect(found[0].dumpable).toBe(false)
+  })
+
+  it('separates the two when an app runs both', () => {
+    const found = findUnbackedManagedServices(config({ postgres: true, vitess: true }), true)
+
+    expect(found.map(s => s.name)).toEqual(['vitess'])
+  })
+})
