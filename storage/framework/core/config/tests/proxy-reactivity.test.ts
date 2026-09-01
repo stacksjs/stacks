@@ -140,8 +140,16 @@ describe('writing through the proxy', () => {
 
     // Read back through the proxy, and present in `overrides` rather than
     // having landed on the target where nothing would ever see it.
-    expect(Object.keys(services())).toEqual(['apple'])
+    expect((services() as any).apple).toEqual({ clientId: 'org.example.web' })
     expect((overrides as any).services).toEqual({ apple: { clientId: 'org.example.web' } })
+
+    // The read is an OVERLAY on the defaults, not a replacement of them
+    // (stacksjs/stacks#2411): setting one service does not delete the four the
+    // framework ships, the same way a `config/services.ts` that names one
+    // service does not delete the rest.
+    expect(Object.keys(services()).sort()).toEqual(
+      [...new Set([...Object.keys((defaults as any).services), 'apple'])].sort(),
+    )
   })
 
   it('and a delete falls back to the defaults rather than to nothing', () => {
@@ -161,5 +169,67 @@ describe('writing through the proxy', () => {
     ;(config as any).services = {}
 
     expect(services()).toEqual((defaults as any).services)
+  })
+})
+
+/**
+ * A user's config section is laid OVER the framework default, not swapped for
+ * it (stacksjs/stacks#2411).
+ *
+ * Returning the override wholesale meant every default sub-key the user's file
+ * did not restate silently vanished. In the framework's own repo that dropped
+ * 19 keys across 8 sections - `auth.cookie`, `dns.driver`, `database.logging`,
+ * `library.webComponents` among them - which is how `generate:component-meta`
+ * ended up writing `"tags": undefined` over a committed file.
+ */
+describe('config sections overlay their defaults', () => {
+  it('keeps a default sub-key the override does not mention', () => {
+    ;(config as any).library = { name: 'only-a-name' }
+
+    // The name is the user's...
+    expect((config as any).library.name).toBe('only-a-name')
+    // ...and webComponents is still the framework's, rather than gone.
+    expect((config as any).library.webComponents).toBeDefined()
+
+    delete (config as any).library
+  })
+
+  it('lets the override win where the two disagree', () => {
+    const shipped = (defaults as any).library.name
+    ;(config as any).library = { name: 'mine' }
+
+    expect((config as any).library.name).toBe('mine')
+    expect((config as any).library.name).not.toBe(shipped)
+
+    delete (config as any).library
+  })
+
+  it('merges nested objects rather than only the top level', () => {
+    ;(config as any).library = { webComponents: { name: 'renamed' } }
+
+    const wc = (config as any).library.webComponents
+    expect(wc.name).toBe('renamed')
+    // `tags` lives two levels down and was never mentioned, so it survives.
+    expect(wc.tags).toEqual((defaults as any).library.webComponents.tags)
+
+    delete (config as any).library
+  })
+
+  it('replaces arrays instead of concatenating them', () => {
+    // Otherwise a config file could never REMOVE a default entry: opting out of
+    // one shipped country code would be impossible if the two were merged.
+    ;(config as any).security = { firewall: { countryCodes: ['DE'] } }
+
+    expect((config as any).security.firewall.countryCodes).toEqual(['DE'])
+
+    delete (config as any).security
+  })
+
+  it('treats an explicit undefined as "not stated" rather than "unset it"', () => {
+    ;(config as any).library = { name: undefined }
+
+    expect((config as any).library.name).toBe((defaults as any).library.name)
+
+    delete (config as any).library
   })
 })

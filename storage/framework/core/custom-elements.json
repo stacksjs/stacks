@@ -2,9 +2,17 @@
   "version": 1.1,
   "tags": [
     {
-      "name": ["HelloWorld", "AppHelloWorld"],
+      "name": [
+        "HelloWorld",
+        "AppHelloWorld"
+      ],
       "description": "The Hello World custom element, built via this framework.",
-      "attributes": [{ "name": "greeting", "description": "The greeting." }]
+      "attributes": [
+        {
+          "name": "greeting",
+          "description": "The greeting."
+        }
+      ]
     }
   ]
 }

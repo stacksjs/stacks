@@ -8,7 +8,7 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
-import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
+import { generateVsCodeCustomData as genVsCodeCustomData, generateWebTypes as genWebTypes } from '../helpers/vscode-custom-data'
 import { generateProjectImages } from './images'
 import { generateRouteNames } from './action-types'
 
@@ -27,11 +27,11 @@ export async function invoke(options?: GeneratorOptions): Promise<void> {
   else if (options?.entries)
     await generateLibEntries(options)
   else if (options?.webTypes)
-    await generateWebTypes(options)
+    await generateWebTypes()
   else if (options?.customData)
     await generateVsCodeCustomData()
   else if (options?.ideHelpers)
-    await generateIdeHelpers(options)
+    await generateIdeHelpers()
   else if (options?.componentMeta)
     await generateComponentMeta()
   else if (options?.coreSymlink)
@@ -109,15 +109,17 @@ export async function generateLibEntries(options: GeneratorOptions): Promise<voi
   log.success('Library entry points generated successfully')
 }
 
-export async function generateWebTypes(options?: GeneratorOptions): Promise<void> {
-  const result = await runNpmScript(NpmScript.GenerateWebTypes, options)
-
-  if (result.isErr) {
-    log.error('There was an error generating the web-types.json file.', result.error)
-    process.exit(ExitCode.FatalError)
-  }
-
-  log.success('Successfully generated the web-types.json file')
+export async function generateWebTypes(): Promise<void> {
+  /*
+   * Calls the implementation instead of shelling out to `generate:web-types`,
+   * an npm script defined in no package.json in the repo (stacksjs/stacks#2411).
+   * The work was always here, in `helpers/vscode-custom-data.ts`; the wrapper
+   * just never reached it.
+   *
+   * It did not even fail cleanly: `runNpmScript` printed "the script does not
+   * exist" and returned Ok, so this logged success over a file it never wrote.
+   */
+  await genWebTypes()
 }
 
 export async function generateVsCodeCustomData(): Promise<void> {
@@ -133,15 +135,14 @@ export async function generateVsCodeCustomData(): Promise<void> {
   log.success('Successfully generated the custom-elements.json file')
 }
 
-export async function generateIdeHelpers(options?: GeneratorOptions): Promise<void> {
-  const result = await runNpmScript(NpmScript.GenerateIdeHelpers, options)
+export async function generateIdeHelpers(): Promise<void> {
+  // Same as above: `generate:ide-helpers` is not a script that exists, and the
+  // two files it was supposed to produce are produced right here
+  // (stacksjs/stacks#2411).
+  await genWebTypes()
+  await genVsCodeCustomData()
 
-  if (result.isErr) {
-    log.error('There was an error generating IDE helpers.', result.error)
-    process.exit(ExitCode.FatalError)
-  }
-
-  await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
+  await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json files need to be linted
   log.success('Successfully generated IDE helpers')
 }
 

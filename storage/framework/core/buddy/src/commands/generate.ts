@@ -170,7 +170,7 @@ export function generate(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:web-types` ...', options)
-      await generateWebTypes(options)
+      await generateWebTypes()
     })
 
   buddy
@@ -190,7 +190,7 @@ export function generate(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:ide-helpers` ...', options)
-      await generateIdeHelpers(options)
+      await generateIdeHelpers()
     })
 
   buddy

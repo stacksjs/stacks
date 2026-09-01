@@ -11,6 +11,53 @@ import { overrides, overridesReady } from './overrides'
 // `config.email.default` later would see `undefined`. A Proxy that reads
 // `overrides[key]` first and falls back to `defaults[key]` on every access
 // keeps the export reactive without exposing the loading mechanism.
+/** A plain object, as opposed to an array, a class instance or null. */
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== 'object' || value === null || Array.isArray(value))
+    return false
+
+  const proto = Object.getPrototypeOf(value)
+
+  return proto === Object.prototype || proto === null
+}
+
+/**
+ * `over` laid on top of `base`, without mutating either.
+ *
+ * Arrays replace rather than concatenate. `firewall.countryCodes: ['RU']` has
+ * to mean those countries and not those-plus-the-defaults, or a config file
+ * could never remove a default entry.
+ */
+function overlay(base: Record<string, unknown>, over: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...base }
+
+  for (const key of Object.keys(over)) {
+    const next = over[key]
+    const prev = out[key]
+
+    // An explicit `undefined` is "not stated", not "unset this": a config file
+    // that omits a key and one that writes `key: undefined` mean the same
+    // thing to a reader, so they should mean the same thing here.
+    if (next === undefined)
+      continue
+
+    out[key] = isPlainObject(prev) && isPlainObject(next) ? overlay(prev, next) : next
+  }
+
+  return out
+}
+
+/*
+ * Per-section merge cache.
+ *
+ * `readMerged` runs on every `config.x` read, and the section objects are
+ * static once loaded, so the merge is computed once per override object and
+ * reused. Keyed on the override's identity: the loader ASSIGNS
+ * `overrides[key] = mod.default`, so a new object means new content and a
+ * stale entry can never be served.
+ */
+const mergedSections = new Map<string, { from: unknown, merged: unknown }>()
+
 function readMerged(prop: string): unknown {
   // `overrides` is initialized synchronously with empty objects in
   // `defaultsForOverrides()`, so a hit here always wins over `defaults`
@@ -18,10 +65,35 @@ function readMerged(prop: string): unknown {
   // the same key returns the populated user object via this same accessor.
   // A Proxy trap: `prop` is a runtime key, so the config is read by key.
   const o = (overrides as unknown as Record<string | symbol, unknown>)[prop]
-  if (o !== undefined && (typeof o !== 'object' || o === null || Object.keys(o).length > 0)) {
+  const d = (defaults as unknown as Record<string | symbol, unknown>)[prop]
+
+  const hasOverride = o !== undefined && (typeof o !== 'object' || o === null || Object.keys(o).length > 0)
+  if (!hasOverride)
+    return d
+
+  /*
+   * A user section is laid OVER the default one rather than replacing it
+   * (stacksjs/stacks#2411).
+   *
+   * Returning `o` wholesale meant every default sub-key the user's file did
+   * not restate was silently gone: `config/library.ts` declares no
+   * `webComponents`, so `config.library.webComponents` was undefined even
+   * though the framework ships one. In this repo alone that dropped 19 keys
+   * across 8 sections, including `auth.cookie`, `dns.driver` and
+   * `database.logging` - a config file is an overlay, and nobody writing one
+   * expects omitting a key to delete the default.
+   */
+  if (!isPlainObject(o) || !isPlainObject(d))
     return o
-  }
-  return (defaults as unknown as Record<string | symbol, unknown>)[prop]
+
+  const cached = mergedSections.get(prop)
+  if (cached && cached.from === o)
+    return cached.merged
+
+  const merged = overlay(d, o)
+  mergedSections.set(prop, { from: o, merged })
+
+  return merged
 }
 
 // Expose `config` as a Proxy of a function target. Two non-obvious things
