@@ -1,5 +1,6 @@
 import type { FieldOptions, FormDefinition, FormFieldDefinition, SubmissionErrors, ValidateSubmissionResult } from './types'
 import { visibleFields } from './conditions'
+import { isOwnedUploadPath } from './uploads'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 // Loose on purpose: parents type phone numbers every way imaginable, and a
@@ -10,7 +11,7 @@ function isBlank(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim() === '')
 }
 
-function checkField(field: FormFieldDefinition, value: unknown): string | null {
+function checkField(field: FormFieldDefinition, value: unknown, form: Pick<FormDefinition, 'uuid'>): string | null {
   const options: FieldOptions = field.options ?? {}
 
   if (isBlank(value))
@@ -59,10 +60,16 @@ function checkField(field: FormFieldDefinition, value: unknown): string | null {
     }
 
     case 'file':
-      // The value is the storage path returned by the presign flow. The
+      // The value is the storage path the upload endpoint returned, and it has
+      // to sit under THIS form's prefix.
+      //
+      // That was the intent all along — the comment here used to say "the
       // prefix pins it to this form's upload area, so a submission cannot
-      // reference someone else's file.
-      return typeof value === 'string' && value.length <= 1024
+      // reference someone else's file" — but the check was `length <= 1024`
+      // and nothing else, so a submission could name any path it liked,
+      // including another form's uploads. `isOwnedUploadPath` is that
+      // sentence, enforced (stacksjs/stacks#2406).
+      return isOwnedUploadPath(form, value)
         ? null
         : `${field.label} upload is invalid`
 
@@ -163,7 +170,7 @@ export function validateSubmission(form: FormDefinition, payload: Record<string,
       continue
 
     const raw = payload[field.name]
-    const problem = checkField(field, raw)
+    const problem = checkField(field, raw, form)
     if (problem) {
       errors[field.name] = problem
       continue

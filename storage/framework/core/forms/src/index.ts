@@ -23,4 +23,13 @@ export type {
   SubmissionErrors,
   ValidateSubmissionResult,
 } from './types'
+export {
+  checkUpload,
+  extensionOf,
+  fileFieldNamed,
+  formUploadPrefix,
+  isOwnedUploadPath,
+  resolveUploadLimits,
+} from './uploads'
+export type { UploadLimits, UploadRejection } from './uploads'
 export { computeAmountCents, validateSubmission } from './validate'

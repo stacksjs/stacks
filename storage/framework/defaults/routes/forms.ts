@@ -35,6 +35,52 @@ route.get('/api/forms/{uuid}', async (request: any) => {
   return response.json(publicDefinition(form))
 }).rateLimit(60, 'minute')
 
+/**
+ * File uploads for a form's `file` fields.
+ *
+ * Proxied through the server rather than presigned, because this is where the
+ * ceilings in `config/forms.ts` can actually be applied: a presigned policy can
+ * express a size cap but not a real type check (S3 sees only the Content-Type
+ * the client declared), and a proxied upload works on a local disk too. A
+ * public form is not a bulk-upload surface. stacksjs/stacks#2406.
+ *
+ * The stored path is returned for the submit step, which checks it sits under
+ * this form's prefix before accepting it.
+ */
+route.post('/api/forms/{uuid}/uploads', async (request: any) => {
+  const { checkUpload, fileFieldNamed, formUploadPrefix, loadFormByUuid, resolveUploadLimits } = await import('@stacksjs/forms')
+
+  const form = await loadFormByUuid(String(request.params?.uuid ?? request.param?.('uuid') ?? ''), await siteIdForRequest(request))
+  if (!form || form.status === 'draft')
+    return response.notFound('Form not found')
+
+  // Same gate the submit endpoint applies: a closed form does not take files
+  // either, and accepting them would leave orphans nothing ever references.
+  if (form.status !== 'active')
+    return response.json({ message: 'This form is not accepting responses.' }, { status: 409 })
+
+  const field = fileFieldNamed(form, request.get?.('field') ?? request.input?.('field'))
+  if (!field)
+    return response.json({ message: 'Unknown upload field.' }, { status: 422 })
+
+  const file = request.file?.('file')
+  if (!file)
+    return response.json({ message: `${field.label} is required.` }, { status: 422 })
+
+  const limits = resolveUploadLimits(field)
+  const rejection = checkUpload(field, { name: file.name, size: file.size }, limits)
+  if (rejection)
+    return response.json({ message: rejection.message }, { status: rejection.status })
+
+  const { Storage } = await import('@stacksjs/storage')
+  const stored = await Storage.put(file, {
+    ...(limits.disk ? { disk: limits.disk } : {}),
+    dir: formUploadPrefix(form),
+  })
+
+  return response.json({ path: stored.path }, { status: 201 })
+}).rateLimit(20, 'minute')
+
 route.post('/api/forms/{uuid}/submissions', async (request: any) => {
   const { dispatchSubmissionNotifications, loadFormByUuid, submitForm } = await import('@stacksjs/forms')
 
