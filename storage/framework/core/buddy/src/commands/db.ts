@@ -46,13 +46,29 @@ const DEFAULT_RETAIN = 7
  * backup and therefore the deploy, which is a worse failure than the one it
  * would be reporting. The validator has already printed the issues itself.
  *
- * Deliberately untested, which is worth stating rather than hiding. In this
- * repo `database.default` comes from `DB_CONNECTION` in the environment,
- * available synchronously, so early and late reads agree and no assertion can
- * tell them apart - measured over three runs, and an ordering assertion also
- * passed with the barrier removed. Reproducing the divergence needs a
- * `config/database.ts` that is not env-derived or that carries a top-level
- * await. A test that passes either way would only look like coverage.
+ * Deliberately untested, which is worth stating rather than hiding - but not
+ * for the reason recorded here before. That reason was that early and late
+ * reads agree in this repo, because `database.default` comes from
+ * `DB_CONNECTION` and the environment is available synchronously. They do not
+ * agree: the framework default is a hardcoded `'sqlite'` that never consults
+ * the environment, and only `config/database.ts` reads `DB_CONNECTION`, so the
+ * two differ whenever that variable says anything else. Measured directly against the config layer:
+ *
+ *     early: {"dbDefault":"sqlite"}
+ *     late:  {"dbDefault":"postgres"}
+ *
+ * What is true is the observation that an ordering assertion passes with this
+ * barrier removed, and the reason is the boot sequence rather than the value.
+ * `bunfig.toml` preloads the framework's own preloader, so the config load is
+ * already in flight before `main()` runs and has settled long before commands
+ * are registered, let alone run. Instrumented on both edges:
+ * `atRegistration=settled`, `atHandlerEntry=already-settled` - with the await
+ * here removed.
+ *
+ * So this await is defence against a boot sequence that stops winning that
+ * race, not against `DB_CONNECTION` being synchronous. Cheap enough to keep on
+ * a path where being wrong means restoring from a backup of the wrong database,
+ * and a test could only assert an ordering the preload already guarantees.
  */
 export async function backupTarget(): Promise<BackupTarget | null> {
   const { config, overridesReady } = await import('@stacksjs/config')
