@@ -124,6 +124,47 @@ export function teamOwnershipField(model: {
 }
 
 /**
+ * Resolve the database column used for automatic per-user ownership.
+ *
+ * The same principle `teamOwnershipField` applies to tenants, applied to the
+ * rows a single caller owns: a model carrying `user_id` (declared, or created
+ * by a `belongsTo: ['User']` relation during model-driven migration) has a
+ * per-row owner already, so it does not need to repeat that fact as an
+ * `ownership` config just to get API isolation.
+ *
+ * Ten of the framework's own models are in this shape - Card, Comment,
+ * Notification, Subscriber and friends - and every one of them published
+ * mutating routes that any authenticated caller could point at any row
+ * (stacksjs/stacks#2375).
+ */
+export function userOwnershipField(model: {
+  attributes?: Record<string, unknown>
+  belongsTo?: unknown[]
+} | null | undefined): string | null {
+  if (!model) return null
+  const attributes = model.attributes ?? {}
+  if (Object.prototype.hasOwnProperty.call(attributes, 'userId') || Object.prototype.hasOwnProperty.call(attributes, 'user_id'))
+    return 'user_id'
+
+  return model.belongsTo?.some(relation => relation === 'User') ? 'user_id' : null
+}
+
+/**
+ * A model that has declared, in as many words, that its rows have no per-caller
+ * owner: `ownership: false`.
+ *
+ * This is what separates "considered, and there is genuinely nothing to scope
+ * by" - a public catalog table - from "nobody thought about it", which is the
+ * state `security.api.rowScoping: 'deny'` refuses to generate writes for. The
+ * two were indistinguishable before, which is why denying by default needed
+ * this to exist first: without it the safe default also punishes every model
+ * that is legitimately unscoped.
+ */
+export function ownershipDeclaredUnscoped(model: { ownership?: unknown } | null | undefined): boolean {
+  return model?.ownership === false
+}
+
+/**
  * Remove every client spelling of an ownership field, then apply the trusted
  * value resolved from the authenticated request. Array ownership is used for
  * resources owned through a parent relation, so the client must select one of
@@ -734,7 +775,10 @@ export type ApiRowScopingPolicy = 'warn' | 'deny'
  */
 export function resolveRowScopingPolicy(configured: unknown, envOverride?: string | null): ApiRowScopingPolicy {
   const candidate = (envOverride ?? configured ?? '').toString().trim().toLowerCase()
-  return candidate === 'deny' ? 'deny' : 'warn'
+  // Defaults to 'deny' (stacksjs/stacks#2375). Anything unrecognised - an empty
+  // config, a typo - lands on the safe side rather than the permissive one,
+  // which is the whole point of flipping it.
+  return candidate === 'warn' ? 'warn' : 'deny'
 }
 
 /**

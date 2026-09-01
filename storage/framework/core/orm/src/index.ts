@@ -36,6 +36,10 @@ export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes
 // `@stacksjs/auth`'s './rbac-store-bqb' for back-compat; `mapWriteError`
 // powers the auto-CRUD store/update 409 mapping.
 export { filterFillable, getWritableFields, isUniqueViolation, mapWriteError, toSnakeCaseKeys } from './auto-crud'
+
+// Ready-made `ownership` resolvers for models whose owner is one hop away
+// (stacksjs/stacks#2375).
+export { customerOwnership, selfOwnership, siteOwnership, teamMembershipOwnership } from './ownership'
 export * from './batch-loader'
 export * from './db'
 export * from './subquery'

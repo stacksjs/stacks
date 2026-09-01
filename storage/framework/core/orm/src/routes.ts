@@ -26,7 +26,8 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { teamAuthRequest } from './ownership'
+import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, resolveApiMiddleware, ownershipDeclaredUnscoped, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, teamOwnershipField, toSnakeCase, toSnakeCaseKeys, userOwnershipField, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 
 /**
@@ -438,25 +439,6 @@ function ownsRow(rowField: unknown, ownerValue: unknown): boolean {
 // `req.bearerToken()` being wired here (the auto-CRUD paths read the
 // Authorization header directly via bearerOf), so surface the credential
 // from the header and parse the Cookie header for the session/token cookie.
-function teamAuthRequest(req: EnhancedRequest): { bearerToken: () => string | null, cookies: { get: (name: string) => string | null } } {
-  const token = bearerOf(req)
-  const cookieHeader = (req.headers?.get?.('cookie') as string | null) || ''
-  return {
-    bearerToken: () => token,
-    cookies: {
-      get: (name: string) => {
-        for (const part of cookieHeader.split(';')) {
-          const eq = part.indexOf('=')
-          if (eq === -1) continue
-          if (part.slice(0, eq).trim() === name)
-            return decodeURIComponent(part.slice(eq + 1).trim())
-        }
-        return null
-      },
-    },
-  }
-}
-
 // The ownership config actually enforced for a model. An explicit
 // `model.ownership` always wins. Otherwise any model with a `team_id`
 // column is auto-scoped to the caller's active team — tenant tables are
@@ -469,16 +451,35 @@ function teamAuthRequest(req: EnhancedRequest): { bearerToken: () => string | nu
 // team's id. Lazy import mirrors authedUserFromRequest: avoids a boot-time
 // cycle through @stacksjs/auth.
 function effectiveOwnershipConfig(model: any): any | null {
+  // `ownership: false` is a declaration, not an absence: the model is saying it
+  // has no per-row owner. It resolves to the same un-scoped behaviour as saying
+  // nothing, and `ownershipDeclaredUnscoped` is what tells the two apart.
+  if (model?.ownership === false) return null
   if (model?.ownership) return model.ownership
+
   const teamCol = teamOwnershipField(model)
-  if (!teamCol) return null
-  return {
-    field: teamCol,
-    resolve: async (_user: any, req: EnhancedRequest) => {
-      const { resolveAuthenticatedTeamId } = await import('@stacksjs/auth')
-      return resolveAuthenticatedTeamId(teamAuthRequest(req))
-    },
+  if (teamCol) {
+    return {
+      field: teamCol,
+      resolve: async (_user: any, req: EnhancedRequest) => {
+        const { resolveAuthenticatedTeamId } = await import('@stacksjs/auth')
+        return resolveAuthenticatedTeamId(teamAuthRequest(req))
+      },
+    }
   }
+
+  // Per-user ownership, on the same terms as the team rule above: the value
+  // comes from the request's real credential, never from a client-supplied
+  // field, so a caller cannot widen their scope by POSTing someone else's id.
+  const userCol = userOwnershipField(model)
+  if (userCol) {
+    return {
+      field: userCol,
+      resolve: async (user: any) => (user?.id ?? null),
+    }
+  }
+
+  return null
 }
 
 async function resolveOwnership(
@@ -622,9 +623,17 @@ for (const [modelName, model] of Object.entries(models)) {
   // nothing is what a model does by accident as well as on purpose — so the
   // set is reported at boot, and `security.api.rowScoping: 'deny'` refuses to
   // register the routes at all. stacksjs/stacks#2375.
-  const writesAreUnscoped = hasMutating && !rowScoped
+  const declaredUnscoped = ownershipDeclaredUnscoped(model)
+  const writesAreUnscoped = hasMutating && !rowScoped && !declaredUnscoped
   if (writesAreUnscoped)
     unscopedMutatingModels.push(modelName)
+
+  // A model that said `ownership: false` is unscoped on purpose. Recorded, not
+  // warned about, for the same reason the public-read line is: a warning about
+  // behaviour somebody asked for in as many words is a warning people stop
+  // reading.
+  if (hasMutating && declaredUnscoped)
+    log.debug(`[orm] ${modelName}: registering unscoped mutating routes at ${basePath} (declared \`ownership: false\`)`)
 
   const skipMutatingRoutes = writesAreUnscoped && rowScopingPolicy === 'deny'
 

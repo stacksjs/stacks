@@ -833,20 +833,26 @@ describe('findShadowingRoute (which generated routes must not register) (#2364)'
  * Row scoping for generated mutating routes (stacksjs/stacks#2375).
  *
  * `resolveOwnership` returns `{ enforced: false }` for a model that declares
- * neither `ownership` nor a `team_id` column, so its generated store/update/
+ * neither `ownership` nor an owner column, so its generated store/update/
  * destroy routes have no row-level check: authentication says who is calling
  * and nothing says which rows are theirs. That is deliberate for a public
  * catalog table and a footgun everywhere else, because declaring nothing is
  * what a model does by accident as well as on purpose.
  *
- * The call made here: report it at boot for everyone (non-breaking), and let
- * an app fail closed today behind `security.api.rowScoping: 'deny'`, with the
- * default staying on the published behaviour until a major.
+ * The call made here: fail closed. The default is `'deny'`, so a model that
+ * has said nothing gets no mutating routes, and a model restores them by
+ * saying who owns a row or by declaring `ownership: false` to say nothing
+ * does. `'warn'` remains as the pre-0.75 posture for apps that need it.
  */
 describe('resolveRowScopingPolicy', () => {
-  it('defaults to warn when nothing is configured', () => {
-    expect(resolveRowScopingPolicy(undefined)).toBe('warn')
-    expect(resolveRowScopingPolicy(null)).toBe('warn')
+  it('defaults to deny when nothing is configured', () => {
+    expect(resolveRowScopingPolicy(undefined)).toBe('deny')
+    expect(resolveRowScopingPolicy(null)).toBe('deny')
+  })
+
+  it('honours an explicitly configured warn', () => {
+    expect(resolveRowScopingPolicy('warn')).toBe('warn')
+    expect(resolveRowScopingPolicy('WARN')).toBe('warn')
   })
 
   it('honours a configured deny', () => {
@@ -859,11 +865,12 @@ describe('resolveRowScopingPolicy', () => {
     expect(resolveRowScopingPolicy('deny', 'warn')).toBe('warn')
   })
 
-  it('falls back to the default on an unrecognised value rather than throwing', () => {
-    // A typo in a security setting should not take the API down, and the boot
-    // report names every unscoped model either way.
-    expect(resolveRowScopingPolicy('strict')).toBe('warn')
-    expect(resolveRowScopingPolicy(42)).toBe('warn')
+  it('falls back to the safe default on an unrecognised value rather than throwing', () => {
+    // A typo in a security setting should not take the API down, and it should
+    // not quietly buy the permissive posture either: anything unrecognised
+    // lands on 'deny'. Only the exact string 'warn' opts out.
+    expect(resolveRowScopingPolicy('strict')).toBe('deny')
+    expect(resolveRowScopingPolicy(42)).toBe('deny')
   })
 })
 

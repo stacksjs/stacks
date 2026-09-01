@@ -1,5 +1,5 @@
 import type { Attributes } from '@stacksjs/types'
-import { defineModel } from '@stacksjs/orm'
+import { defineModel, selfOwnership } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 // soon, these will be auto-imported
 import { schema } from '@stacksjs/validation'
@@ -18,6 +18,11 @@ export default defineModel({
       columns: ['email', 'name'],
     },
   ],
+
+  // A caller may write their own row and no other (stacksjs/stacks#2375). The
+  // owner column IS the primary key here, so without this `User` is the worst
+  // case the issue describes: an authenticated caller able to PATCH any user.
+  ownership: selfOwnership(),
 
   traits: {
     useAuth: {

@@ -10,12 +10,14 @@ import type { SecurityConfig } from '@stacksjs/types'
 export default {
   api: {
     // What to do about a model whose generated store/update/destroy routes have
-    // no row-level scoping - no `ownership` config and no `team_id` column.
+    // no row-level scoping - no `ownership` config, no `team_id` or `user_id`
+    // column, and no explicit `ownership: false`.
     //
-    // 'warn' registers them and names the models at boot; 'deny' does not
-    // register them at all. 'warn' is the published behaviour; switch to 'deny'
-    // once every model that should be scoped declares how. See #2375.
-    rowScoping: 'warn',
+    // 'deny' (the default) does not register those routes; 'warn' registers
+    // them and names the models at boot, which is the pre-0.75 behaviour. A
+    // model restores its writes by saying who owns a row, or by declaring
+    // `ownership: false` to say that nothing does. See #2375.
+    rowScoping: 'deny',
   },
 
   firewall: {
