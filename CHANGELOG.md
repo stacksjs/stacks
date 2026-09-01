@@ -1,5 +1,30 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.3...v0.74.0)
+
+## ✨ Features
+
+- **orm**: report unscoped generated writes, and let an app fail closed (#2375) ([e94b2c4](https://github.com/stacksjs/stacks/commit/e94b2c4)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2224](https://github.com/stacksjs/stacks/issues/2224))
+- **auth**: return the TOTP setup QR code from generateTwoFactorSetup (#2385) ([8982b5c](https://github.com/stacksjs/stacks/commit/8982b5c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2385](https://github.com/stacksjs/stacks/issues/2385), [#2385](https://github.com/stacksjs/stacks/issues/2385), [#2385](https://github.com/stacksjs/stacks/issues/2385))
+
+## 🐛 Bug Fixes
+
+- **scheduler**: return the overlap-guarded task's promise instead of detaching it (#2404) ([812d20f](https://github.com/stacksjs/stacks/commit/812d20f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2403](https://github.com/stacksjs/stacks/issues/2403), [#2404](https://github.com/stacksjs/stacks/issues/2404), [#2404](https://github.com/stacksjs/stacks/issues/2404))
+- **create**: scaffold from the tag matching the framework version the app pins (#2401) ([4132ccd](https://github.com/stacksjs/stacks/commit/4132ccd)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2401](https://github.com/stacksjs/stacks/issues/2401), [#2401](https://github.com/stacksjs/stacks/issues/2401), [#2322](https://github.com/stacksjs/stacks/issues/2322))
+- **deps**: declare craft-native ranges that can actually provide the subpaths (#2322) ([5cfc767](https://github.com/stacksjs/stacks/commit/5cfc767)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2322](https://github.com/stacksjs/stacks/issues/2322), [#2322](https://github.com/stacksjs/stacks/issues/2322), [#2322](https://github.com/stacksjs/stacks/issues/2322))
+- **build**: stop burying a failed build step under the framework's own stack (#2391) ([68099f2](https://github.com/stacksjs/stacks/commit/68099f2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2391](https://github.com/stacksjs/stacks/issues/2391), [#2391](https://github.com/stacksjs/stacks/issues/2391), [#2391](https://github.com/stacksjs/stacks/issues/2391))
+- **deps**: declare the packages every published @stacksjs/* package imports (#2388) ([345d02f](https://github.com/stacksjs/stacks/commit/345d02f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2388](https://github.com/stacksjs/stacks/issues/2388), [#2388](https://github.com/stacksjs/stacks/issues/2388), [#2388](https://github.com/stacksjs/stacks/issues/2388))
+- **i18n**: make the scaffolded en.yml and de.yml resolve the same keys (#2386) ([c0cc120](https://github.com/stacksjs/stacks/commit/c0cc120)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2386](https://github.com/stacksjs/stacks/issues/2386), [#2386](https://github.com/stacksjs/stacks/issues/2386), [#2386](https://github.com/stacksjs/stacks/issues/2386))
+
+## 📝 Documentation
+
+- **db**: correct why the pre-migration backup's config await is untested (#2402) ([ab35d8c](https://github.com/stacksjs/stacks/commit/ab35d8c)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2313](https://github.com/stacksjs/stacks/issues/2313), [#2402](https://github.com/stacksjs/stacks/issues/2402), [#2402](https://github.com/stacksjs/stacks/issues/2402))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.2...v0.73.3)
 
 ## ✨ Features
