@@ -30,10 +30,16 @@ import { acquireSchedulerLock } from './scheduler-lock'
  * The jobs an application has, for `schedule.job(…)` to be checked against.
  *
  * Empty here and augmented by the application's own declarations, which derive
- * it from the jobs barrel - see `storage/framework/types/scheduled.d.ts`. The
- * scheduler cannot name them itself: importing the barrel from this package
- * would drag every job module into every compilation that touches the
- * scheduler.
+ * it from the jobs registry - see the `declare module '@stacksjs/scheduler'`
+ * block in `storage/framework/types/registries.d.ts`. The scheduler cannot name
+ * them itself: importing the barrel from this package would drag every job
+ * module into every compilation that touches the scheduler.
+ *
+ * This used to point at `storage/framework/types/scheduled.d.ts`, the 1500-line
+ * generated union the registry replaced. That file is gone, and
+ * `name-registries.test.ts` asserts it stays gone, so the pointer sent anyone
+ * checking whether the guard was live to a file whose absence looked like the
+ * guard being dead.
  *
  * Empty means any string, so an application that declares nothing is unchanged.
  */
@@ -536,38 +542,57 @@ export class Schedule implements UntimedSchedule {
 
   // --- Task wrapping ---
 
-  private wrapTask(originalTask: () => void): () => void {
+  private wrapTask(originalTask: () => void): () => unknown {
     const taskName = this.options.name || 'unnamed-task'
-    let wrappedTask = originalTask
+    let wrappedTask: () => unknown = originalTask
 
     if (this.shouldPreventOverlap || this.shouldRunOnOneServer) {
       const self = this
       const innerTask = wrappedTask
-      // Lock acquisition is async now (DB advisory lock can require a
-      // round-trip) but cron ticks are sync. Run the lock acquire in
-      // the background and gate execution behind it — if acquire
-      // fails, log + skip; if it succeeds, run + release in finally.
-      wrappedTask = () => {
-        void (async () => {
-          const acquired = await self.acquireLock(taskName)
-          if (!acquired) {
-            log.info(`Skipping overlapping task: ${taskName}`)
-            return
+      // Lock acquisition is async (a DB advisory lock can require a round-trip)
+      // while cron ticks are sync, so the guarded body has to be a Promise.
+      //
+      // It is RETURNED rather than discarded, which is the whole of
+      // stacksjs/stacks#2403. This used to be `void (async () => {…})()`, so
+      // every caller expecting to await the task got `undefined`: the runner's
+      // `if (result?.then) await result` never fired, `withErrorHandler` never
+      // saw a guarded task fail, and `Schedule.runNow()` resolved in ~0ms while
+      // the task was still running and about to throw. Three behaviours, one
+      // missing `return`, and only for tasks that chain `.withoutOverlapping()`
+      // or `.onOneServer()` - which is the combination the framework's own docs
+      // put in their worked example.
+      wrappedTask = () => (async () => {
+        // Deliberately NOT in a try: a lock layer that cannot answer is a
+        // failure to run, and the runner is what decides what that means.
+        // Previously it sat in a detached promise, so an unwritable lock
+        // directory (`ENOTDIR`, a full disk, a read-only mount) surfaced as an
+        // unhandled rejection, which terminates the process under Bun's
+        // default policy.
+        const acquired = await self.acquireLock(taskName)
+        if (!acquired) {
+          log.info(`Skipping overlapping task: ${taskName}`)
+          return
+        }
+        try {
+          const result: unknown = innerTask()
+          if (result && typeof result === 'object' && typeof (result as { finally?: unknown }).finally === 'function') {
+            await (result as Promise<unknown>)
           }
+        }
+        finally {
+          // Swallowed on purpose, and only here. A throw from `finally`
+          // REPLACES the task's own error, so an unguarded release would hide
+          // the failure the operator actually needs to see behind a lock-file
+          // complaint - and it is already too late to do anything about the
+          // release.
           try {
-            const result: unknown = innerTask()
-            if (result && typeof result === 'object' && typeof (result as { finally?: unknown }).finally === 'function') {
-              await (result as Promise<unknown>)
-            }
-          }
-          catch (error) {
-            log.error(`[scheduler] task ${taskName} threw: ${error instanceof Error ? error.message : String(error)}`)
-          }
-          finally {
             await self.releaseLock(taskName)
           }
-        })()
-      }
+          catch (error) {
+            log.error(`[scheduler] releasing the lock for ${taskName} failed: ${error instanceof Error ? error.message : String(error)}`)
+          }
+        }
+      })()
     }
 
     if (this.shouldRunInBackground) {
@@ -757,7 +782,7 @@ export class Schedule implements UntimedSchedule {
           this.options.catch(error as Error)
         }
         else {
-          log.error(`[scheduler] task ${taskName} failed (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
+          log.error(`[scheduler] task ${taskName} failed (no withErrorHandler() installed): ${error instanceof Error ? error.message : String(error)}`)
         }
         throw error
       }
