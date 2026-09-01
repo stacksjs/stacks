@@ -57,7 +57,10 @@ const dirs = allEntries.filter((entry) => {
 })
 
 if (dirs.length === 0) {
-  log.info('No core packages found')
+  // Awaited, like the summary below: `log` writes asynchronously, so a bare
+  // `log.x()` before `process.exit` exits with the line still in flight and
+  // the user sees nothing but a non-zero status.
+  await log.info('No core packages found')
   process.exit(ExitCode.FatalError)
 }
 
@@ -72,16 +75,26 @@ for (const folder of dirs) {
     log.success(`${italic(dim(folder))} built`)
   }
   catch (error) {
-    log.warn(`Failed to build ${italic(dim(folder))}, skipping...`)
+    // Carry on through the remaining packages rather than stopping at the
+    // first break: one run should report every package that is broken, not
+    // make you rediscover them one build at a time. The exit code below is
+    // what makes this a deferred failure rather than a tolerated one.
+    log.warn(`Failed to build ${italic(dim(folder))}, continuing with the rest...`)
     failed.push(folder)
   }
 
   console.log(``)
 }
 
+// Exiting 0 here made every caller believe the framework had been built.
+// `buddy build:core` checks this action's Result and `buddy build --stacks`
+// runs it through `runBuildStep`, so both were reading an exit code that said
+// success while packages sat unbuilt - the same false green as
+// stacksjs/stacks#2391, one layer down.
 if (failed.length > 0) {
-  log.warn(`${failed.length} package(s) failed to build:`)
+  await log.error(`${failed.length} package(s) failed to build:`)
   for (const f of failed) {
-    log.warn(`  - ${f}`)
+    await log.error(`  - ${f}`)
   }
+  process.exit(ExitCode.FatalError)
 }
