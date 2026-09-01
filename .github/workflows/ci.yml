@@ -361,6 +361,14 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun .github/scripts/check-subpath-exports.ts
 
+      # Half of #2056's first criterion: docs:artifacts:check covers OpenAPI,
+      # this covers the ungated barrels. Deliberately NOT models.ts, whose
+      # contents depend on which features config enables and so differ between
+      # a developer's machine and CI (#2408).
+      - name: Generated barrels are current
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun .github/scripts/check-generated-barrels.ts
+
   # A freshly scaffolded app must typecheck against the framework version it
   # pinned. `buddy new` writes the template from THIS checkout and pins a
   # PUBLISHED framework, so the two can disagree whenever the template
