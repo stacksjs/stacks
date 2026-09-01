@@ -23,6 +23,7 @@
  */
 
 import { assertFrameworkRepo } from './framework-repo'
+import { execFileSync } from 'node:child_process'
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative, resolve } from 'node:path'
 
@@ -50,6 +51,63 @@ export function selfRepoPath(target: string): string | null {
 
   // Drop a line anchor (`#L12`) or query, neither of which is part of the path.
   return match[1]!.split('#')[0]!.split('?')[0]!
+}
+
+/**
+ * Paths git tracks, memoised.
+ *
+ * Tracked rather than merely present on disk, because the URL is a link to
+ * GitHub: a file only someone's working tree has does not exist at that URL for
+ * anyone else. Checking `existsSync` instead makes the result depend on whose
+ * machine runs it — which this check got wrong on its first CI run. A docs page
+ * linked to a `.DS_Store` inside a skill directory; macOS creates that file, so
+ * it resolved locally and 404'd for every reader, and CI was the first thing to
+ * say so.
+ *
+ * Falls back to the filesystem when git is unavailable (a tarball, a vendored
+ * copy), where a working-tree check is the best answer available.
+ */
+let tracked: Set<string> | null = null
+function trackedFiles(): Set<string> {
+  if (tracked)
+    return tracked
+
+  try {
+    const listing = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+    tracked = new Set(listing.split('\0').filter(Boolean))
+  }
+  catch {
+    // No git (a tarball, a vendored copy). A working-tree check is the best
+    // answer available, and `isTrackedPath`'s prefix scan is skipped because
+    // `has` already answers for a directory here.
+    tracked = null
+    return {
+      has: (path: string) => existsSync(resolve(root, path)),
+      [Symbol.iterator]: function* () {},
+    } as unknown as Set<string>
+  }
+
+  return tracked
+}
+
+/**
+ * Is this path tracked, as a file or as a directory?
+ *
+ * `git ls-files` lists files, so a `/tree/` link to a directory needs the
+ * prefix test — those links are legitimate and several docs pages use them to
+ * point at a whole skills folder.
+ */
+export function isTrackedPath(path: string, files: Set<string> = trackedFiles()): boolean {
+  if (files.has(path))
+    return true
+
+  const asDirectory = `${path.replace(/\/+$/, '')}/`
+  for (const tracked of files) {
+    if (tracked.startsWith(asDirectory))
+      return true
+  }
+
+  return false
 }
 
 /** True for links this checker deliberately does not resolve on disk. */
@@ -141,12 +199,11 @@ export function checkDocsLinks(docsRoot = docsDir): BrokenDocLink[] {
   for (const file of walkMarkdown(docsRoot)) {
     const content = readFileSync(file, 'utf8')
     for (const { target, line } of extractLinks(content)) {
-      // A GitHub URL pointing back at this repo is checked against the working
-      // tree, before the external-link skip below sends it on its way.
+      // A GitHub URL pointing back at this repo is checked against what git
+      // TRACKS, before the external-link skip below sends it on its way.
       const selfPath = selfRepoPath(target)
       if (selfPath !== null) {
-        const onDisk = resolve(root, selfPath)
-        if (!existsSync(onDisk))
+        if (!isTrackedPath(selfPath))
           broken.push({ file: relative(docsRoot, file), line, target })
         continue
       }

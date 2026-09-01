@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { extractLinks, isSkippableLink, resolveCandidates, selfRepoPath } from './links'
+import { extractLinks, isSkippableLink, isTrackedPath, resolveCandidates, selfRepoPath } from './links'
 
 describe('docs link checker (stacksjs/stacks#2056)', () => {
   describe('isSkippableLink', () => {
@@ -118,5 +118,38 @@ describe('selfRepoPath', () => {
     expect(selfRepoPath('https://stacksjs.com/docs')).toBeNull()
     expect(selfRepoPath('https://github.com/stacksjs/stacks/issues/2059')).toBeNull()
     expect(selfRepoPath('/guide/intro')).toBeNull()
+  })
+})
+
+/**
+ * Self-repo links resolve against what git TRACKS, not against the working
+ * tree, because the URL is a link to GitHub: a file only one machine has does
+ * not exist at that URL for anyone else.
+ *
+ * This check's own first CI run proved the point. `docs/skills/design/
+ * technical-diagrams.md` linked to a `.DS_Store` inside a skill directory —
+ * macOS creates that file, so it resolved on the author's machine and 404'd
+ * for every reader, and CI was the first thing to say so.
+ */
+describe('isTrackedPath', () => {
+  const tracked = new Set(['docs/index.md', 'storage/framework/core/buddy/src/cli.ts'])
+
+  it('accepts a tracked file', () => {
+    expect(isTrackedPath('docs/index.md', tracked)).toBe(true)
+  })
+
+  it('accepts a tracked directory, which /tree/ links point at', () => {
+    expect(isTrackedPath('storage/framework/core', tracked)).toBe(true)
+    expect(isTrackedPath('storage/framework/core/', tracked)).toBe(true)
+  })
+
+  it('rejects a path git does not track, even if the machine has the file', () => {
+    // The .DS_Store case: present locally, absent for every reader.
+    expect(isTrackedPath('storage/framework/core/buddy/.DS_Store', tracked)).toBe(false)
+  })
+
+  it('does not treat a partial segment match as a directory', () => {
+    // `docs/ind` is a prefix of `docs/index.md` as a STRING but not as a path.
+    expect(isTrackedPath('docs/ind', tracked)).toBe(false)
   })
 })

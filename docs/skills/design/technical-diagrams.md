@@ -28,7 +28,6 @@ The sections an agent reads once the skill loads.
 
 Reference and scripts the skill reaches for on demand, rather than loading up front.
 
-- [`.DS_Store`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/.DS_Store)
 - [`LICENSE`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/LICENSE)
 - [`agents/openai.yaml`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/agents/openai.yaml)
 - [`assets/template.html`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/assets/template.html)
