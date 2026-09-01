@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.0...v0.74.1)
+
+## ✅ Tests
+
+- **ci**: typecheck a freshly scaffolded app, and take stx 0.2.253 (#2322) ([6c385ef](https://github.com/stacksjs/stacks/commit/6c385ef)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2322](https://github.com/stacksjs/stacks/issues/2322), [#2322](https://github.com/stacksjs/stacks/issues/2322), [#2322](https://github.com/stacksjs/stacks/issues/2322), [#2322](https://github.com/stacksjs/stacks/issues/2322), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2391](https://github.com/stacksjs/stacks/issues/2391), [#2394](https://github.com/stacksjs/stacks/issues/2394))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.73.3...v0.74.0)
 
 ## ✨ Features
