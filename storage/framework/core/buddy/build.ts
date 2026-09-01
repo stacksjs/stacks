@@ -21,6 +21,7 @@ await transpilePackage({
 // Update the package.json workspace:* references to the specific version
 const packageJsonPath = './package.json'
 const packageJson = await Bun.file(packageJsonPath).json()
+let updated = false
 
 // Find all workspace:* dependencies in the main package.json and update them to use the current version
 for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
@@ -31,13 +32,21 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
     // Update all workspace:* references to use the current version
     if (depVersion === 'workspace:*') {
       packageJson[section][dep] = `^${version}`
+      updated = true
       console.log(`Updated ${dep} from 'workspace:*' to '^${version}'`)
     }
   }
 }
 
-// Write the updated package.json back to the file
-await Bun.write(packageJsonPath, JSON.stringify(packageJson, null, 2))
+// Write the updated package.json back to the file.
+//
+// Only write when a reference actually changed, and keep the trailing newline
+// the file is committed with. The unconditional `JSON.stringify` write stripped
+// that newline on every build, so a plain `bun run build` left package.json
+// showing as modified in `git status` - a stray diff to revert by hand each
+// time, or to accidentally commit.
+if (updated)
+  await Bun.write(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 
 // Ensure the published CLI entry starts with a shebang so it is directly
 // executable (npm marks bin files executable when they begin with one).

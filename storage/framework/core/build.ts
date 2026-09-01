@@ -97,6 +97,8 @@ const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
   peerDependencies?: Record<string, string>
 }
 
+let updated = false
+
 // Find all workspace:* dependencies in the main package.json and update them to use the current version
 for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
   if (!packageJson[section])
@@ -106,13 +108,21 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as
     // Update all workspace:* references to use the current version
     if (depVersion === 'workspace:*') {
       packageJson[section][dep] = `^${version}`
+      updated = true
       log.debug(`Updated ${dep} from 'workspace:*' to '^${version}'`)
     }
   }
 }
 
-// Write the updated package.json back to the file
-writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
+// Write the updated package.json back to the file.
+//
+// Only write when a reference actually changed, and keep the trailing newline
+// the file is committed with. The unconditional `JSON.stringify` write stripped
+// that newline on every build, so a plain `bun run build` left package.json
+// showing as modified in `git status` - a stray diff to revert by hand each
+// time, or to accidentally commit.
+if (updated)
+  writeFileSync(packageJsonPath, `${JSON.stringify(packageJson, null, 2)}\n`)
 
 const endTime = Date.now()
 const timeTaken = endTime - startTime
