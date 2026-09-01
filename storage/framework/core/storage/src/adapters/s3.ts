@@ -148,6 +148,8 @@ export class S3StorageAdapter implements StorageAdapter {
   private region: string
   private endpoint?: string
   private usePathStyleEndpoint?: boolean
+  /** Public base URL for {@link publicUrl}; see the note there. */
+  private publicBaseUrl?: string
   /**
    * Caller-supplied credentials, kept so we can issue presigned POST
    * policies (which need access to the signing key — ts-cloud's
@@ -169,6 +171,7 @@ export class S3StorageAdapter implements StorageAdapter {
     this.credentials = config.credentials
     this.endpoint = config.endpoint
     this.usePathStyleEndpoint = config.usePathStyleEndpoint
+    this.publicBaseUrl = config.url?.replace(/\/+$/, '')
 
     if (!this.bucket) {
       throw new Error('S3 bucket name is required')
@@ -653,10 +656,48 @@ export class S3StorageAdapter implements StorageAdapter {
     return (result.objects || []).length > 0
   }
 
+  /**
+   * A public URL for an object.
+   *
+   * The AWS host is only ever synthesised for a disk that is actually on AWS.
+   * It used to be the unconditional fallback, which meant every S3-COMPATIBLE
+   * disk got a URL naming a host that is not its own:
+   *
+   *   R2       -> https://assets.s3.auto.amazonaws.com/img/logo.png
+   *   Hetzner  -> https://assets.s3.fsn1.amazonaws.com/img/logo.png
+   *   Filebase -> https://assets.s3.us-east-1.amazonaws.com/img/logo.png
+   *
+   * None of those resolve to the object, and `s3.auto.amazonaws.com` is not
+   * even a region that exists. The failure is entirely silent: the string is
+   * well-formed, so it goes straight into an <img src>, an email, or a
+   * database column, and only shows up as a broken image for a viewer.
+   *
+   * So: an explicit `domain` wins, then the disk's configured `url`. With a
+   * custom endpoint and neither of those, this THROWS rather than guessing.
+   * Every provider documents its own public-URL form and they genuinely
+   * differ - R2 serves from a mapped custom domain or `pub-<hash>.r2.dev` and
+   * never from its API host, while Hetzner and MinIO do serve from theirs - so
+   * there is nothing safe to derive. A thrown error at the call site is
+   * recoverable; a dead URL in a sent email is not.
+   *
+   * stacksjs/stacks#1896.
+   */
   async publicUrl(path: string, options: PublicUrlOptions = {}): Promise<string> {
     const key = this.prefixPath(path)
-    const domain = options.domain || `https://${this.bucket}.s3.${this.region}.amazonaws.com`
-    return `${domain}/${key}`
+    const base = options.domain?.replace(/\/+$/, '') ?? this.publicBaseUrl
+
+    if (base)
+      return `${base}/${key}`
+
+    if (this.endpoint) {
+      throw new Error(
+        `[storage/s3] this disk points at ${this.endpoint}, so it has no AWS public URL. `
+        + 'Set `url` on the disk to its public base (a custom domain, or the provider\'s public host) '
+        + 'or pass `{ domain }`. Use `temporaryUrl()` for a signed URL instead.',
+      )
+    }
+
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {

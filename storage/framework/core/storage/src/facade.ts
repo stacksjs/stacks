@@ -196,6 +196,10 @@ class StorageManager {
       prefix: config.prefix,
       endpoint: config.endpoint,
       usePathStyleEndpoint: config.usePathStyleEndpoint,
+      // The disk's public base URL. Required for `publicUrl()` on any
+      // S3-compatible provider, since the AWS host is only right for AWS
+      // (stacksjs/stacks#1896).
+      url: config.url,
       // S3DiskConfig uses { key, secret }; the adapter/ts-cloud client use
       // { accessKeyId, secretAccessKey }. Map so S3-compatible providers whose
       // keys aren't in the AWS env chain still authenticate (stacksjs/stacks#1897).

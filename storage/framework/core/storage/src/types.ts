@@ -328,7 +328,15 @@ export interface MimeTypeOptions {
 export interface StorageAdapterConfig {
   /** Root directory for local storage */
   root?: string
-  /** Base URL for files exposed by a local public disk */
+  /**
+   * Public base URL for `publicUrl()`.
+   *
+   * For a local public disk, where the files are served from. For an
+   * S3-COMPATIBLE disk (R2, Hetzner, Filebase, MinIO, ...) this is required
+   * for `publicUrl()` to work at all: the AWS host is only correct for AWS,
+   * and synthesising it for anything else produces a well-formed URL that
+   * resolves to nothing (stacksjs/stacks#1896).
+   */
   url?: string
   /** S3 bucket name */
   bucket?: string
