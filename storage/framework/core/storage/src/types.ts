@@ -332,10 +332,10 @@ export interface StorageAdapterConfig {
    * Public base URL for `publicUrl()`.
    *
    * For a local public disk, where the files are served from. For an
-   * S3-COMPATIBLE disk (R2, Hetzner, Filebase, MinIO, ...) this is required
-   * for `publicUrl()` to work at all: the AWS host is only correct for AWS,
-   * and synthesising it for anything else produces a well-formed URL that
-   * resolves to nothing (stacksjs/stacks#1896).
+   * S3-COMPATIBLE disk (R2, Hetzner, Filebase, MinIO, ...) it overrides the
+   * URL derived from the endpoint — required for R2, which serves public
+   * objects only from a mapped custom domain or `pub-<hash>.r2.dev` and never
+   * from its API host (stacksjs/stacks#1896).
    */
   url?: string
   /** S3 bucket name */

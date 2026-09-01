@@ -13,6 +13,10 @@
  * email, or a database column, and surfaces as a broken image for a viewer
  * some time later.
  *
+ * It must also never throw: `Storage.put()` returns a `url` on every upload,
+ * so a `publicUrl` that can fail turns a bad URL into a failed upload — the
+ * more important operation, and a worse regression than the bug.
+ *
  * stacksjs/stacks#1896.
  */
 
@@ -39,28 +43,47 @@ describe('publicUrl on AWS', () => {
 })
 
 describe('publicUrl on an S3-compatible provider', () => {
-  const providers: Array<[string, Record<string, unknown>]> = [
-    ['R2', { bucket: 'assets', region: 'auto', endpoint: 'https://acct123.r2.cloudflarestorage.com' }],
-    ['Hetzner', { bucket: 'assets', region: 'fsn1', endpoint: 'https://fsn1.your-objectstorage.com' }],
-    ['Filebase', { bucket: 'assets', region: 'us-east-1', endpoint: 'https://s3.filebase.com' }],
+  const providers: Array<[string, Record<string, unknown>, string]> = [
+    [
+      'R2',
+      { bucket: 'assets', region: 'auto', endpoint: 'https://acct123.r2.cloudflarestorage.com' },
+      'https://assets.acct123.r2.cloudflarestorage.com/img/logo.png',
+    ],
+    [
+      'Filebase',
+      { bucket: 'assets', region: 'us-east-1', endpoint: 'https://s3.filebase.com' },
+      'https://assets.s3.filebase.com/img/logo.png',
+    ],
+    [
+      'Hetzner (path-style)',
+      { bucket: 'assets', region: 'fsn1', endpoint: 'https://fsn1.your-objectstorage.com', usePathStyleEndpoint: true },
+      'https://fsn1.your-objectstorage.com/assets/img/logo.png',
+    ],
   ]
 
-  for (const [name, config] of providers) {
-    it(`refuses to invent an AWS URL for ${name}`, async () => {
-      const promise = adapter(config).publicUrl('img/logo.png')
+  for (const [name, config, expected] of providers) {
+    it(`derives ${name} from its own endpoint, never an AWS host`, async () => {
+      const url = await adapter(config).publicUrl('img/logo.png')
 
-      await expect(promise).rejects.toThrow(/no AWS public URL/)
-      // The message has to name the endpoint, or the reader cannot tell which
-      // of several disks is misconfigured.
-      await expect(promise).rejects.toThrow(new RegExp(String(config.endpoint).replace(/[.]/g, '\\.')))
+      expect(url).toBe(expected)
+      expect(url).not.toContain('amazonaws.com')
     })
 
-    it(`uses the configured url for ${name}`, async () => {
+    it(`prefers the configured url for ${name}`, async () => {
       const url = await adapter({ ...config, url: 'https://cdn.example.com' }).publicUrl('img/logo.png')
 
       expect(url).toBe('https://cdn.example.com/img/logo.png')
     })
   }
+
+  it('never throws, because Storage.put() returns a url on every upload', async () => {
+    // The first shape of this fix threw when it could not build a public URL,
+    // which turned a bad URL into a FAILED UPLOAD in `put-file.ts` — a worse
+    // regression than the bug, on the more important operation.
+    const url = await adapter({ bucket: 'assets', endpoint: 'https://s3.filebase.com' }).publicUrl('x.png')
+
+    expect(typeof url).toBe('string')
+  })
 
   it('lets an explicit domain win over the configured url', async () => {
     const url = await adapter({
@@ -80,6 +103,16 @@ describe('publicUrl on an S3-compatible provider', () => {
     }).publicUrl('logo.png')
 
     expect(url).toBe('https://cdn.example.com/logo.png')
+  })
+
+  it('applies the disk prefix to a derived URL too', async () => {
+    const url = await adapter({
+      bucket: 'assets',
+      endpoint: 'https://s3.filebase.com',
+      prefix: 'uploads',
+    }).publicUrl('logo.png')
+
+    expect(url).toBe('https://assets.s3.filebase.com/uploads/logo.png')
   })
 })
 

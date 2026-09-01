@@ -659,26 +659,35 @@ export class S3StorageAdapter implements StorageAdapter {
   /**
    * A public URL for an object.
    *
-   * The AWS host is only ever synthesised for a disk that is actually on AWS.
-   * It used to be the unconditional fallback, which meant every S3-COMPATIBLE
-   * disk got a URL naming a host that is not its own:
+   * The AWS host is only ever built for a disk that is actually on AWS. It
+   * used to be the unconditional fallback, so every S3-COMPATIBLE disk got a
+   * URL naming a host that is not its own:
    *
    *   R2       -> https://assets.s3.auto.amazonaws.com/img/logo.png
    *   Hetzner  -> https://assets.s3.fsn1.amazonaws.com/img/logo.png
    *   Filebase -> https://assets.s3.us-east-1.amazonaws.com/img/logo.png
    *
    * None of those resolve to the object, and `s3.auto.amazonaws.com` is not
-   * even a region that exists. The failure is entirely silent: the string is
+   * even a region that exists. The failure is silent: the string is
    * well-formed, so it goes straight into an <img src>, an email, or a
    * database column, and only shows up as a broken image for a viewer.
    *
-   * So: an explicit `domain` wins, then the disk's configured `url`. With a
-   * custom endpoint and neither of those, this THROWS rather than guessing.
-   * Every provider documents its own public-URL form and they genuinely
-   * differ - R2 serves from a mapped custom domain or `pub-<hash>.r2.dev` and
-   * never from its API host, while Hetzner and MinIO do serve from theirs - so
-   * there is nothing safe to derive. A thrown error at the call site is
-   * recoverable; a dead URL in a sent email is not.
+   * Order: an explicit `domain`, then the disk's configured `url`, then a URL
+   * derived from the endpoint, then the AWS host for a disk with no endpoint.
+   *
+   * Deriving rather than throwing, which was the first shape of this fix and
+   * was wrong: `Storage.put()` returns a `url` on every upload, so throwing
+   * here turns a bad URL into a failed upload — a worse regression than the
+   * bug, on the more important operation. Storing the file is the point; the
+   * URL is a convenience.
+   *
+   * Derivation is exactly right for the providers that serve objects from
+   * their API host (Hetzner, MinIO, Filebase, Backblaze). It is not enough for
+   * R2, which serves only from a mapped custom domain or `pub-<hash>.r2.dev` —
+   * but the derived URL at least names the real bucket on the real service
+   * rather than an unrelated one, and an R2 disk that wants public URLs has to
+   * set `url` regardless. That is a property of R2, not something the
+   * framework can invent.
    *
    * stacksjs/stacks#1896.
    */
@@ -689,15 +698,29 @@ export class S3StorageAdapter implements StorageAdapter {
     if (base)
       return `${base}/${key}`
 
-    if (this.endpoint) {
-      throw new Error(
-        `[storage/s3] this disk points at ${this.endpoint}, so it has no AWS public URL. `
-        + 'Set `url` on the disk to its public base (a custom domain, or the provider\'s public host) '
-        + 'or pass `{ domain }`. Use `temporaryUrl()` for a signed URL instead.',
-      )
-    }
+    if (this.endpoint)
+      return `${this.endpointBaseUrl()}/${key}`
 
     return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${key}`
+  }
+
+  /**
+   * The bucket's base URL on a custom endpoint, in whichever addressing style
+   * the disk is configured for — path-style puts the bucket after the host,
+   * virtual-hosted puts it in front. Getting this backwards produces a URL
+   * that resolves for one provider and 404s for another, so it follows the
+   * same flag the client signs with.
+   */
+  private endpointBaseUrl(): string {
+    const endpoint = this.endpoint!.replace(/\/+$/, '')
+    const withScheme = /^https?:\/\//.test(endpoint) ? endpoint : `https://${endpoint}`
+
+    if (this.usePathStyleEndpoint)
+      return `${withScheme}/${this.bucket}`
+
+    const url = new URL(withScheme)
+    url.hostname = `${this.bucket}.${url.hostname}`
+    return url.origin
   }
 
   async temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string> {
