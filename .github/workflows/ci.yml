@@ -353,6 +353,14 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun test ./.github/scripts/deploy/resolve-target.test.ts
 
+      # Asks the registry what each declared range actually admits, rather than
+      # what happens to be installed here — a local checkout, a nested install
+      # and a pantry copy all masked craft-native's missing subpaths until an
+      # app installed the published package (#2322).
+      - name: Subpath imports match declared ranges
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun .github/scripts/check-subpath-exports.ts
+
   deployment-target:
     if: >-
       github.event_name == 'workflow_dispatch' ||
