@@ -63,7 +63,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/actions": "workspace:*",
     "@stacksjs/bun-queue": "^0.1.8",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/config": "workspace:*",

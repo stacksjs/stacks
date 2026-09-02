@@ -11,6 +11,11 @@
 // =============================================================================
 export { Job } from './action'
 
+// How a job runs an action it names by string. `@stacksjs/actions` registers
+// itself here on import; see ./action-runner for why the queue asks rather
+// than imports.
+export { type ActionRunner, getActionRunner, setActionRunner } from './action-runner'
+
 // =============================================================================
 // Stacks job helper for dispatching file-based jobs
 // =============================================================================

@@ -13,6 +13,7 @@ import { moveToDeadLetter } from './dead-letter'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { claimDispatchKey, releaseDispatchKey } from './idempotency'
 import { isQuarantined } from './poison'
+import { runNamedAction } from './action-runner'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -707,8 +708,7 @@ export async function runJob(name: string, options: { payload?: any; context?: a
       await jobConfig.handle(options.payload)
     }
     else if (typeof jobConfig.action === 'string') {
-      const { runAction } = await import('@stacksjs/actions')
-      await runAction(jobConfig.action)
+      await runNamedAction(jobConfig.action)
     }
     else if (typeof jobConfig.action === 'function') {
       await jobConfig.action()

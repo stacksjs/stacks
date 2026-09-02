@@ -1,3 +1,17 @@
+/*
+ * Supply the queue's action runner.
+ *
+ * A job may name an action as a string rather than hand over a function, and
+ * running it is this package's job. The queue used to import this package
+ * directly to do it, which put the queue - and nine packages with it - inside
+ * the framework's dependency cycle. It asks now, and this is the answer,
+ * registered by the act of importing the action layer at all.
+ */
+import { setActionRunner } from '@stacksjs/queue'
+import { runAction } from './helpers'
+
+setActionRunner(action => runAction(action as Parameters<typeof runAction>[0]))
+
 export * from './action'
 export { add as runAdd } from './add'
 // The write side of the markdown blog (content/blog/*.md), used by the

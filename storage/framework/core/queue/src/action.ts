@@ -1,6 +1,7 @@
 import type { JobOptions } from '@stacksjs/types'
 import { env as envVars } from '@stacksjs/env'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
+import { runNamedAction } from './action-runner'
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -166,8 +167,7 @@ export class Job<T = unknown> {
       await this.handle(payload as T)
     }
     else if (typeof this.action === 'string') {
-      const { runAction } = await import('@stacksjs/actions')
-      await runAction(this.action)
+      await runNamedAction(this.action)
     }
     else if (typeof this.action === 'function') {
       await (this.action as () => unknown | Promise<unknown>)()
