@@ -7,6 +7,7 @@ import { buildLibraryPackages } from '../src/library/build'
 import { functionEntryData } from '../src/library/entries'
 import { ambientGlobalsUsed } from '../src/library/globals'
 import { libraryManifest } from '../src/library/manifest'
+import { publishCommand } from '../src/library/publish'
 import {
   entrySpecifier,
   LibraryConfigError,
@@ -376,5 +377,51 @@ describe('workspace globs vs generated packages (#2387)', () => {
 
     expect(workspaces).toContain('storage/framework/libs/*')
     expect(workspaces).toContain('storage/framework/core/*')
+  })
+})
+
+describe('publishCommand', () => {
+  it('publishes through pantry when it is installed', () => {
+    // Pantry is the package manager this project ships and the only one of
+    // the three that reaches the Pantry registry. A release that fell through
+    // to `bun publish` went to npm and nowhere else.
+    const which = Bun.which
+    Bun.which = ((name: string) => (name === 'pantry' ? '/usr/local/bin/pantry' : null)) as typeof Bun.which
+
+    try {
+      expect(publishCommand()).toEqual(['pantry', 'publish'])
+    }
+    finally {
+      Bun.which = which
+    }
+  })
+
+  it('falls back to bun, and then to npm', () => {
+    const which = Bun.which
+
+    try {
+      Bun.which = ((name: string) => (name === 'bun' ? '/usr/local/bin/bun' : null)) as typeof Bun.which
+      expect(publishCommand()).toEqual(['bun', 'publish'])
+
+      Bun.which = ((name: string) => (name === 'npm' ? '/usr/local/bin/npm' : null)) as typeof Bun.which
+      expect(publishCommand()).toEqual(['npm', 'publish'])
+    }
+    finally {
+      Bun.which = which
+    }
+  })
+
+  it('says so rather than spawning something that is not there', () => {
+    const which = Bun.which
+    Bun.which = (() => null) as typeof Bun.which
+
+    try {
+      // Hardcoding a publisher that is absent turned this into an ENOENT
+      // from deep inside a spawn, which named neither the cause nor the fix.
+      expect(() => publishCommand()).toThrow(/pantry/)
+    }
+    finally {
+      Bun.which = which
+    }
   })
 })

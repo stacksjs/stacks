@@ -19,9 +19,9 @@ export function libs(buddy: CLI): void {
   const descriptions = {
     list: 'List the packages this project releases out of resources/functions and resources/components',
     build: 'Build every configured library package',
-    publish: 'Publish the built library packages to npm',
+    publish: 'Publish the built library packages through pantry',
     json: 'Print the resolved packages as JSON',
-    dryRun: 'Run `npm publish --dry-run` instead of publishing',
+    dryRun: 'Report what would be published without uploading anything',
     verbose: 'Enable verbose output',
   }
 

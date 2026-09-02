@@ -71,19 +71,33 @@ export async function planLibraryPublish(config: LibraryConfig | undefined = lib
 /**
  * The publisher to shell out to.
  *
- * `bun publish` rather than `npm`: this framework runs on Bun and npm is not
- * necessarily installed at all — it is not on the machine this was written on,
- * and hardcoding it turned `libs:publish` into an ENOENT. `npm` is still
- * accepted as a fallback for an environment that has it and not the other.
+ * `pantry publish` first. Pantry is this project's package manager, it is what
+ * the release workflows already install, and it is the only one of the three
+ * that publishes to the Pantry registry — a release that went out through
+ * `bun publish` reached npm and nothing else, which is not where these
+ * packages are meant to live.
+ *
+ * It also takes the same flags this function's callers pass: `--access` and
+ * `--dry-run` mean what they mean everywhere else, so nothing downstream has
+ * to know which publisher was chosen. `--npm` is pantry's own escape hatch for
+ * an npm-bound package; it belongs on the package, not here.
+ *
+ * `bun` and then `npm` remain as fallbacks. Neither is guaranteed present —
+ * npm was not on the machine this was written on, and hardcoding it turned
+ * `libs:publish` into an ENOENT — so the choice is made from what is actually
+ * on PATH rather than assumed.
  */
 export function publishCommand(): string[] {
+  if (Bun.which('pantry'))
+    return ['pantry', 'publish']
+
   if (Bun.which('bun'))
     return ['bun', 'publish']
 
   if (Bun.which('npm'))
     return ['npm', 'publish']
 
-  throw new Error('Neither `bun` nor `npm` is on PATH, so there is nothing to publish with.')
+  throw new Error('None of `pantry`, `bun` or `npm` is on PATH, so there is nothing to publish with.')
 }
 
 /**

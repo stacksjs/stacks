@@ -170,7 +170,7 @@ export interface LibraryPackageOptions {
   private?: boolean
 
   /**
-   * npm publish access.
+   * Registry access level, passed to the publisher as `--access`.
    * @default 'public'
    */
   access?: 'public' | 'restricted'
