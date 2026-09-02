@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **315 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **316 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -61,7 +61,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `search-engine` | 2 |
 | `seed` | 1 |
 | `serve` | 1 |
-| `server` | 4 |
+| `server` | 5 |
 | `setup` | 3 |
 | `simulator` | 2 |
 | `sms` | 6 |
@@ -4418,6 +4418,24 @@ Adopt a host: check it, then install what the deploy needs
 | `--env` | Environment whose configuration to bootstrap | value, required | `"production"` |
 | `--discover` | Browse the local network for hosts advertising SSH | boolean, optional | `false` |
 | `--dry-run` | Run the checks and stop before changing the host | boolean, optional | `false` |
+
+### `server:trust`
+
+Trust the host's own certificate authority on this machine
+
+- Usage: `$ buddy server:trust [host]`
+- Namespace: `server`
+- Aliases: none
+- Arguments: `[host]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment whose configuration names the host | value, required | `"production"` |
+| `--discover` | Browse the local network for hosts advertising SSH | boolean, optional | `false` |
+| `--ca-path` | Where the authority lives on the host | value, required | `"/etc/rpx/local-ca/rpx-root-ca.crt"` |
+| `--mobileconfig` | Also write an Apple configuration profile for an iPhone or iPad | value, required | - |
+| `--export-only` | Save the certificate without changing this machine, and say how to trust it by hand | boolean, optional | `false` |
+| `--json` | Print the result as JSON | boolean, optional | `false` |
 
 ### `setup`
 
