@@ -7,7 +7,7 @@
  */
 
 import { isVitessSharded, toQueryBuilderDialect } from './dialect'
-import { qbSnapshotDir } from './utils'
+import { qbSnapshotDir, resetDatabaseConnection } from './utils'
 import type { QueryBuilderConfig, StacksDialect } from '@stacksjs/query-builder'
 import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 import { env as stacksEnv } from '@stacksjs/env'
@@ -202,6 +202,21 @@ export class Database {
     }
     this._queryBuilder = null
     this._initialized = false
+
+    /*
+     * The connection this just closed is process-wide, so the `db` proxy's own
+     * cached query-builder is now holding a closed handle - the exact state
+     * `resetDatabaseConnection` documents and exists to clear. Without this,
+     * closing ANY Database instance left the next `db` query throwing
+     * `RangeError: Cannot use a closed database` rather than opening a fresh
+     * connection, and nothing in between said why (stacksjs/stacks#2415).
+     *
+     * It showed up as two failures in `core/email`, which queries suppressions
+     * through the proxy: `integration.test.ts` closes an in-memory Database to
+     * assert `isInitialized` flips, and every later file in the run inherited
+     * the dead handle.
+     */
+    resetDatabaseConnection()
   }
 
   /**
