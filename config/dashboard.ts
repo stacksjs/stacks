@@ -40,27 +40,6 @@ export default {
     },
   },
 
-  /**
-   * Where each dashboard section reads its data from.
-   *
-   * `local` is this application's own database, and it is the default for
-   * every domain. Point a domain at `hq` to read the matching hosted product
-   * instead, and give that driver a base URL and a READ token.
-   *
-   * A product's ingest key is not a read token. The key an app uses to send
-   * logs or errors identifies a project and grants no read access, so it
-   * cannot be reused here.
-   *
-   * Health is deliberately absent. That section reports the process serving
-   * the request, and the same probe backs the framework's own liveness route,
-   * so it stays local by construction.
-   */
-  providers: {
-    logs: { driver: 'local' },
-    errors: { driver: 'local' },
-    analytics: { driver: 'local' },
-  },
-
   // CI tracking — ports the standalone repo-dashboard into the dashboard
   // (stacksjs/stacks#1844). Off by default; opt in by listing orgs and
   // setting GITHUB_TOKEN in .env.

@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { errors } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
-import { readErrorsByGroup } from './error-provider'
 
 export default new Action({
   name: 'Error Group',
@@ -14,6 +14,8 @@ export default new Action({
       return response.json({ error: 'Both type and message are required' }, 400)
     }
 
-    return response.json(await readErrorsByGroup(type, message))
+    const results = await errors.fetchByGroup(type, message)
+
+    return response.json({ data: results })
   },
 })
