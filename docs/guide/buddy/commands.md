@@ -2390,7 +2390,7 @@ Build every configured library package
 
 ### `libs:publish`
 
-Publish the built library packages to npm
+Publish the built library packages through pantry
 
 - Usage: `$ buddy libs:publish`
 - Namespace: `libs`
@@ -2399,7 +2399,7 @@ Publish the built library packages to npm
 
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
-| `--dry-run` | Run `npm publish --dry-run` instead of publishing | boolean, optional | `false` |
+| `--dry-run` | Report what would be published without uploading anything | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 Examples:
