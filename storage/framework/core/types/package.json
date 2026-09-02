@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/types",
   "type": "module",
-  "version": "0.74.2",
+  "version": "0.74.3",
   "description": "The Stacks framework types.",
   "author": "Chris Breuer",
   "contributors": [

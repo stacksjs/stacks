@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.2...v0.74.3)
+
+## ✨ Features
+
+- **generate**: add the `--framework` flag its own output documents (#2409) ([e7d62fc](https://github.com/stacksjs/stacks/commit/e7d62fc)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2409](https://github.com/stacksjs/stacks/issues/2409), [#2409](https://github.com/stacksjs/stacks/issues/2409), [#2409](https://github.com/stacksjs/stacks/issues/2409), [#2409](https://github.com/stacksjs/stacks/issues/2409))
+- **dashboard**: chase the carts people filled and left ([3d50daa](https://github.com/stacksjs/stacks/commit/3d50daa)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **ci**: regenerate what the abandoned-carts and --framework commits left stale (#2416) ([d8c8d35](https://github.com/stacksjs/stacks/commit/d8c8d35)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2416](https://github.com/stacksjs/stacks/issues/2416), [#2416](https://github.com/stacksjs/stacks/issues/2416), [#2409](https://github.com/stacksjs/stacks/issues/2409))
+
+## ✅ Tests
+
+- **feature-flags**: hand back the query-builder config this file repoints (#2415) ([3cd2ae3](https://github.com/stacksjs/stacks/commit/3cd2ae3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.1...v0.74.2)
 
 ## 💥 Breaking Changes
