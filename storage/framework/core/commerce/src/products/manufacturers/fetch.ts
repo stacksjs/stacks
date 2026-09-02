@@ -2,44 +2,51 @@ import type { Manufacturer, ModelRow } from '@stacksjs/orm'
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 import type { FetchManufacturersOptions, ManufacturerResponse } from '../../types'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 
-export function fetchAll(): Promise<ManufacturerJsonResponse[]> {
-  return db.selectFrom('manufacturers').selectAll().execute() as Promise<ManufacturerJsonResponse[]>
+export async function fetchAll(): Promise<ManufacturerJsonResponse[]> {
+  return asModelRows<ManufacturerJsonResponse>(await db.selectFrom('manufacturers').selectAll().execute())
 }
 
 /**
  * Fetch a product manufacturer by ID
  */
 export async function fetchById(id: number): Promise<ManufacturerJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('manufacturers')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as ManufacturerJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<ManufacturerJsonResponse>(row, true)
 }
 
 /**
  * Fetch a product manufacturer by UUID
  */
 export async function fetchByUuid(uuid: string): Promise<ManufacturerJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('manufacturers')
     .where('uuid', '=', uuid)
     .selectAll()
-    .executeTakeFirst() as ManufacturerJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<ManufacturerJsonResponse>(row, true)
 }
 
 /**
  * Fetch featured manufacturers
  */
 export async function fetchFeatured(limit: number = 10): Promise<ManufacturerJsonResponse[]> {
-  return await db
+  const rows = await db
     .selectFrom('manufacturers')
     .where('featured', '=', true)
     .selectAll()
     .orderBy('manufacturer', 'asc')
     .limit(limit)
-    .execute() as ManufacturerJsonResponse[]
+    .execute()
+
+  return asModelRows<ManufacturerJsonResponse>(rows)
 }
 
 /**
@@ -72,7 +79,7 @@ export async function fetchByCountry(country: string, options: FetchManufacturer
   const totalPages = Math.ceil(total / limit)
 
   return {
-    data: manufacturers as ManufacturerJsonResponse[],
+    data: asModelRows<ManufacturerJsonResponse>(manufacturers),
     paging: {
       total_records: total,
       page,

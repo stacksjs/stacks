@@ -1,5 +1,6 @@
 import type { Manufacturer, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
@@ -30,7 +31,7 @@ export async function update(id: number, data: ManufacturerUpdate): Promise<Manu
     if (!result)
       return undefined
 
-    return result as ManufacturerJsonResponse
+    return asModelRow<ManufacturerJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof HttpError)
@@ -69,7 +70,7 @@ export async function updateFeaturedStatus(
     if (!result)
       throw new Error('Failed to update manufacturer featured status')
 
-    return result as ManufacturerJsonResponse
+    return asModelRow<ManufacturerJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -102,7 +103,7 @@ export async function updateByUuid(uuid: string, data: Omit<ManufacturerUpdate, 
     if (!result)
       throw new Error('Failed to update manufacturer')
 
-    return result as ManufacturerJsonResponse
+    return asModelRow<ManufacturerJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

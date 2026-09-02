@@ -1,5 +1,6 @@
 import type { ModelRow, Review, UpdateModelData } from '@stacksjs/orm'
 import { asRow, db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
 type ReviewUpdate = UpdateModelData<typeof Review>
@@ -29,7 +30,7 @@ export async function update(id: number, data: ReviewUpdate): Promise<ReviewJson
     if (!result)
       return undefined
 
-    return result
+    return asModelRow<ReviewJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

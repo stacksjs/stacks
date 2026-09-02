@@ -3,6 +3,7 @@ type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 type NewGiftCard = NewModelData<typeof GiftCard>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 import { insertedId } from '../utils/inserted-id'
@@ -49,7 +50,7 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
         .selectAll()
         .executeTakeFirst()
 
-      return giftCard as GiftCardJsonResponse
+      return asModelRow<GiftCardJsonResponse>(giftCard)
     }
 
     // Postgres reports no insert id without a RETURNING clause, so fall back to
@@ -61,7 +62,7 @@ export async function store(data: NewGiftCard): Promise<GiftCardJsonResponse | u
       .selectAll()
       .executeTakeFirst()
 
-    return giftCard as GiftCardJsonResponse | undefined
+    return asModelRow<GiftCardJsonResponse>(giftCard, true)
   }
   catch (error) {
     if (error instanceof HttpError)

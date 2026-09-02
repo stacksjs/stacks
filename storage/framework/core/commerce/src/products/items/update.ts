@@ -1,5 +1,6 @@
 import type { ModelRow, Product, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 type ProductUpdate = UpdateModelData<typeof Product>
@@ -31,7 +32,7 @@ export async function update(id: number, data: Omit<ProductUpdate, 'id'>): Promi
     if (!result)
       return undefined
 
-    return result as ProductJsonResponse
+    return asModelRow<ProductJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

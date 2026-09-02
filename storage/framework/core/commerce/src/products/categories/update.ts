@@ -239,7 +239,10 @@ async function wouldCreateCircularReference(categoryId: number, newParentId: str
 
     // Get the parent's parent
     const parent = await fetchById(currentParentId) as (CategoryRow & { parent_category_id?: string | null }) | undefined
-    const nextParentId = parent?.parent_category_id ?? parent?.parentCategoryId
+    // Column name only. The `?? parent?.parentCategoryId` half that used to
+    // follow was unreachable: `fetchById` returns a RAW row, which carries the
+    // column spelling and never the declared one (stacksjs/stacks#2417).
+    const nextParentId = parent?.parent_category_id
     if (!parent || !nextParentId) {
       // We've reached a root category, no cycle
       return false

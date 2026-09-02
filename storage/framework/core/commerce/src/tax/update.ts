@@ -1,5 +1,6 @@
 import type { ModelRow, TaxRate } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import type { TaxRateWriteData } from './types'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
@@ -49,7 +50,7 @@ export async function update(id: number, data: TaxRateWriteData): Promise<TaxRat
       if (!result)
         return undefined
 
-      return result as TaxRateJsonResponse
+      return asModelRow<TaxRateJsonResponse>(result)
     })
   }
   catch (error) {
@@ -86,7 +87,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update tax rate status')
 
-    return result as TaxRateJsonResponse
+    return asModelRow<TaxRateJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -122,7 +123,7 @@ export async function updateRate(
     if (!result)
       throw new Error('Failed to update rate information')
 
-    return result as TaxRateJsonResponse
+    return asModelRow<TaxRateJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

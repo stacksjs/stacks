@@ -1,6 +1,7 @@
 import type { Coupon, ModelRow } from '@stacksjs/orm'
 import type { CouponCountStats, CouponRedemptionStats, CouponStats, CouponTimeStats } from '../types'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../utils/model-row'
 import { extractDate, formatDate } from '@stacksjs/orm'
 import { camelCase } from '@stacksjs/strings'
 type CouponJsonResponse = ModelRow<typeof Coupon>
@@ -45,7 +46,7 @@ export async function fetchAll(): Promise<CouponJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return (coupons as CouponJsonResponse[]).map(processCouponData)
+  return asModelRows<CouponJsonResponse>(coupons).map(processCouponData)
 }
 
 /**
@@ -59,7 +60,7 @@ export async function fetchById(id: number): Promise<CouponJsonResponse | undefi
     .executeTakeFirst()
 
   if (coupon) {
-    return processCouponData(coupon as CouponJsonResponse)
+    return processCouponData(asModelRow<CouponJsonResponse>(coupon))
   }
 
   return undefined
@@ -76,7 +77,7 @@ export async function fetchByCode(code: string): Promise<CouponJsonResponse | un
     .executeTakeFirst()
 
   if (coupon) {
-    return processCouponData(coupon as CouponJsonResponse)
+    return processCouponData(asModelRow<CouponJsonResponse>(coupon))
   }
 
   return undefined
@@ -96,7 +97,7 @@ export async function fetchActive(): Promise<CouponJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return (coupons as CouponJsonResponse[]).map(processCouponData)
+  return asModelRows<CouponJsonResponse>(coupons).map(processCouponData)
 }
 
 /**

@@ -1,5 +1,6 @@
 import type { DigitalDelivery, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { digitalDeliveryWriteData } from '../write-data'
@@ -31,7 +32,7 @@ export async function update(id: number, data: DigitalDeliveryUpdate): Promise<D
     if (!result)
       return undefined
 
-    return result as DigitalDeliveryJsonResponse
+    return asModelRow<DigitalDeliveryJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -67,7 +68,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update digital delivery status')
 
-    return result as DigitalDeliveryJsonResponse
+    return asModelRow<DigitalDeliveryJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -119,7 +120,7 @@ export async function updateDeliverySettings(
     if (!result)
       throw new Error('Failed to update delivery settings')
 
-    return result as DigitalDeliveryJsonResponse
+    return asModelRow<DigitalDeliveryJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

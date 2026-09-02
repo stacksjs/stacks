@@ -21,12 +21,6 @@ export interface FrameworkSchema {
     properties: string
     ip_address: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    subjectType: string
-    subjectId: number
-    ipAddress: string
-    userId: number
   }
   analytics_events: {
     // columns
@@ -40,8 +34,6 @@ export interface FrameworkSchema {
     value: number
     currency: string
     properties: string
-    createdAt: string
-    updatedAt: string | null
   }
   auction_items: {
     // columns
@@ -64,19 +56,6 @@ export interface FrameworkSchema {
     closes_at: string
     extension_count: number
     auction_id: number
-    createdAt: string
-    updatedAt: string | null
-    lotNumber: number
-    imageUrl: string
-    donorName: string
-    fairMarketValue: number
-    startingBid: number
-    minIncrement: number
-    buyNowPrice: number
-    reservePrice: number
-    closesAt: string
-    extensionCount: number
-    auctionId: number
   }
   auctions: {
     // columns
@@ -95,15 +74,6 @@ export interface FrameworkSchema {
     anti_snipe_minutes: number
     extend_on_bid_window_minutes: number
     max_extensions: number
-    createdAt: string
-    updatedAt: string | null
-    eventId: number
-    goalAmount: number
-    opensAt: string
-    closesAt: string
-    antiSnipeMinutes: number
-    extendOnBidWindowMinutes: number
-    maxExtensions: number
   }
   authors: {
     // columns
@@ -116,9 +86,6 @@ export interface FrameworkSchema {
     bio: string
     avatar: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    userId: number
   }
   automation_runs: {
     // columns
@@ -138,16 +105,6 @@ export interface FrameworkSchema {
     error: string
     team_id: number
     automation_id: number
-    createdAt: string
-    updatedAt: string | null
-    currentNodeId: string
-    subjectType: string
-    subjectId: string
-    idempotencyKey: string
-    startedAt: string
-    finishedAt: string
-    teamId: number
-    automationId: number
   }
   automations: {
     // columns
@@ -162,10 +119,6 @@ export interface FrameworkSchema {
     graph: unknown
     published_at: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    publishedAt: string
-    teamId: number
   }
   bids: {
     // columns
@@ -181,14 +134,6 @@ export interface FrameworkSchema {
     placed_at: string
     auction_id: number
     auction_item_id: number
-    createdAt: string
-    updatedAt: string | null
-    bidderName: string
-    bidderEmail: string
-    maxAmount: number
-    placedAt: string
-    auctionId: number
-    auctionItemId: number
   }
   board_columns: {
     // columns
@@ -201,10 +146,6 @@ export interface FrameworkSchema {
     position: number
     card_limit: number
     color: string
-    createdAt: string
-    updatedAt: string | null
-    boardId: number
-    cardLimit: number
   }
   boards: {
     // columns
@@ -217,9 +158,7 @@ export interface FrameworkSchema {
     icon: string
     color: string
     position: number
-    archived: boolean
-    createdAt: string
-    updatedAt: string | null
+    archived: number
   }
   campaign_sends: {
     // columns
@@ -246,20 +185,6 @@ export interface FrameworkSchema {
     metadata: unknown
     team_id: number
     campaign_variant_id: number
-    createdAt: string
-    updatedAt: string | null
-    campaignId: number
-    subscriberId: number
-    emailListId: number
-    idempotencyKey: string
-    providerMessageId: string
-    sentAt: string
-    openedAt: string
-    clickedAt: string
-    deliveredAt: string
-    failedAt: string
-    teamId: number
-    campaignVariantId: number
   }
   campaign_variants: {
     // columns
@@ -275,18 +200,9 @@ export interface FrameworkSchema {
     open_count: number
     click_count: number
     conversion_count: number
-    is_winner: boolean
+    is_winner: number
     team_id: number
     campaign_id: number
-    createdAt: string
-    updatedAt: string | null
-    sentCount: number
-    openCount: number
-    clickCount: number
-    conversionCount: number
-    isWinner: boolean
-    teamId: number
-    campaignId: number
   }
   campaigns: {
     // columns
@@ -324,25 +240,13 @@ export interface FrameworkSchema {
     start_date: string
     end_date: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    channelSettings: unknown
-    segmentDefinition: unknown
-    fromName: string
-    fromAddress: string
-    replyTo: string
-    experimentMetric: "open_rate" | "click_rate" | "conversion_rate"
-    emailListId: number
-    scheduledAt: string
-    sentAt: string
-    audienceSize: number
-    sentCount: number
-    openRate: number
-    clickRate: number
-    conversionRate: number
-    startDate: string
-    endDate: string
-    teamId: number
+  }
+  card_assignees: {
+    // columns
+    card_id: number
+    user_id: number
+    assigned_by_user_id: number | null
+    created_at: string | null
   }
   card_comments: {
     // columns
@@ -353,10 +257,12 @@ export interface FrameworkSchema {
     card_id: number
     user_id: number
     body: string
-    createdAt: string
-    updatedAt: string | null
-    cardId: number
-    userId: number
+  }
+  card_labels: {
+    // columns
+    card_id: number
+    label_id: number
+    created_at: string | null
   }
   cards: {
     // columns
@@ -371,17 +277,9 @@ export interface FrameworkSchema {
     position: number
     created_by_user_id: number
     due_date: string
-    archived: boolean
+    archived: number
     board_column_id: number
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    columnId: number
-    boardId: number
-    createdByUserId: number
-    dueDate: string
-    boardColumnId: number
-    userId: number
   }
   cart_items: {
     // columns
@@ -401,18 +299,6 @@ export interface FrameworkSchema {
     product_image: string
     notes: string
     cart_id: number
-    createdAt: string
-    updatedAt: string | null
-    unitPrice: number
-    totalPrice: number
-    taxRate: number
-    taxAmount: number
-    discountPercentage: number
-    discountAmount: number
-    productName: string
-    productSku: string
-    productImage: string
-    cartId: number
   }
   carts: {
     // columns
@@ -432,15 +318,6 @@ export interface FrameworkSchema {
     applied_coupon_id: string
     customer_id: number
     coupon_id: number
-    createdAt: string
-    updatedAt: string | null
-    totalItems: number
-    taxAmount: number
-    discountAmount: number
-    expiresAt: string
-    appliedCouponId: string
-    customerId: number
-    couponId: number
   }
   categories: {
     // columns
@@ -452,15 +329,9 @@ export interface FrameworkSchema {
     description: string
     slug: string
     image_url: string
-    is_active: boolean
+    is_active: number
     parent_category_id: string
     display_order: number
-    createdAt: string
-    updatedAt: string | null
-    imageUrl: string
-    isActive: boolean
-    parentCategoryId: string
-    displayOrder: number
   }
   categorizable_models: {
     // columns
@@ -468,6 +339,58 @@ export interface FrameworkSchema {
     category_id: number
     categorizable_id: number
     categorizable_type: string
+    created_at: string
+    updated_at: string | null
+  }
+  categorizables: {
+    // columns
+    id: number
+    name: string
+    slug: string
+    description: string | null
+    is_active: number
+    categorizable_type: string
+    created_at: string
+    updated_at: string | null
+  }
+  ci_run_states: {
+    // columns
+    repo_full_name: string
+    last_conclusion: string | null
+    last_run_id: number | null
+    last_seen_at: string | null
+    last_notified_at: string | null
+    updated_at: string | null
+  }
+  ci_runner_alert_states: {
+    // columns
+    org: string
+    alerting: number
+    last_alerted_at: string | null
+    last_cleared_at: string | null
+    updated_at: string | null
+  }
+  ci_runner_samples: {
+    // columns
+    id: number
+    org: string
+    running: number
+    queued: number
+    cap: number
+    sampled_at: string
+  }
+  commentables: {
+    // columns
+    id: number
+    title: string
+    body: string
+    status: string
+    approved_at: number | null
+    rejected_at: number | null
+    commentables_id: number
+    commentables_type: string
+    user_id: number | null
+    is_active: number | null
     created_at: string
     updated_at: string | null
   }
@@ -488,16 +411,6 @@ export interface FrameworkSchema {
     is_approved: number
     post_id: number
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    authorName: string
-    authorEmail: string
-    postTitle: string
-    ipAddress: string
-    userAgent: string
-    isApproved: number
-    postId: number
-    userId: number
   }
   communication_suppressions: {
     // columns
@@ -512,11 +425,6 @@ export interface FrameworkSchema {
     suppressed_at: string
     lifted_at: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    suppressedAt: string
-    liftedAt: string
-    teamId: number
   }
   consent_events: {
     // columns
@@ -536,13 +444,6 @@ export interface FrameworkSchema {
     ip_address: string
     occurred_at: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    policyVersion: string
-    idempotencyKey: string
-    ipAddress: string
-    occurredAt: string
-    teamId: number
   }
   coupons: {
     // columns
@@ -553,7 +454,7 @@ export interface FrameworkSchema {
     code: string
     description: string
     status: "Active" | "Scheduled" | "Expired"
-    is_active: boolean
+    is_active: number
     discount_type: "fixed_amount" | "percentage"
     discount_value: number
     min_order_amount: number
@@ -564,19 +465,39 @@ export interface FrameworkSchema {
     start_date: string
     end_date: string
     product_id: number
-    createdAt: string
-    updatedAt: string | null
-    isActive: boolean
-    discountType: "fixed_amount" | "percentage"
-    discountValue: number
-    minOrderAmount: number
-    maxDiscountAmount: number
-    freeProductId: string
-    usageLimit: number
-    usageCount: number
-    startDate: string
-    endDate: string
-    productId: number
+  }
+  courier_pings: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    latitude: number
+    longitude: number
+    heading: number
+    speed: number
+    accuracy: number
+    recorded_at: string
+    courier_id: number
+    delivery_route_id: number
+  }
+  couriers: {
+    // columns
+    id: number
+    uuid: string
+    created_at: string
+    updated_at: string | null
+    name: string
+    phone: string
+    vehicle_number: string
+    license: string
+    status: "active" | "on_delivery" | "on_break" | "offline"
+    latitude: number
+    longitude: number
+    heading: number
+    speed: number
+    last_ping_at: string
+    user_id: number
   }
   customers: {
     // columns
@@ -592,11 +513,20 @@ export interface FrameworkSchema {
     status: "Active" | "Inactive"
     avatar: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    totalSpent: number
-    lastOrder: string
-    userId: number
+  }
+  dead_letter_jobs: {
+    // columns
+    id: number
+    uuid: string
+    connection: string
+    queue: string
+    payload: string
+    exception: string
+    reason: string
+    total_failures: number
+    first_failed_at: string | null
+    last_failed_at: string | null
+    dead_lettered_at: string
   }
   delivery_routes: {
     // columns
@@ -614,14 +544,6 @@ export interface FrameworkSchema {
     started_at: string
     completed_at: string
     courier_id: number
-    createdAt: string
-    updatedAt: string | null
-    deliveryTime: number
-    totalDistance: number
-    lastActive: number
-    startedAt: string
-    completedAt: string
-    courierId: number
   }
   delivery_stops: {
     // columns
@@ -641,18 +563,9 @@ export interface FrameworkSchema {
     arrived_at: string
     completed_at: string
     notes: string
+    type: "pickup" | "dropoff"
     delivery_route_id: number
     order_id: number
-    createdAt: string
-    updatedAt: string | null
-    recipientName: string
-    recipientPhone: string
-    etaAt: string
-    notifiedNearbyAt: string
-    arrivedAt: string
-    completedAt: string
-    deliveryRouteId: number
-    orderId: number
   }
   deployments: {
     // columns
@@ -669,11 +582,6 @@ export interface FrameworkSchema {
     author: string
     url: string
     error_log: string
-    createdAt: string
-    updatedAt: string | null
-    commitHash: string
-    commitMessage: string
-    errorLog: string
   }
   digital_deliveries: {
     // columns
@@ -685,58 +593,9 @@ export interface FrameworkSchema {
     description: string
     download_limit: number
     expiry_days: number
-    requires_login: boolean
-    automatic_delivery: boolean
+    requires_login: number
+    automatic_delivery: number
     status: "active" | "inactive"
-    createdAt: string
-    updatedAt: string | null
-    downloadLimit: number
-    expiryDays: number
-    requiresLogin: boolean
-    automaticDelivery: boolean
-  }
-  courier_pings: {
-    // columns
-    id: number
-    uuid: string
-    created_at: string
-    updated_at: string | null
-    latitude: number
-    longitude: number
-    heading: number
-    speed: number
-    accuracy: number
-    recorded_at: string
-    courier_id: number
-    delivery_route_id: number
-    createdAt: string
-    updatedAt: string | null
-    recordedAt: string
-    courierId: number
-    deliveryRouteId: number
-  }
-  couriers: {
-    // columns
-    id: number
-    uuid: string
-    created_at: string
-    updated_at: string | null
-    name: string
-    phone: string
-    vehicle_number: string
-    license: string
-    status: "active" | "on_delivery" | "on_break" | "offline"
-    latitude: number
-    longitude: number
-    heading: number
-    speed: number
-    last_ping_at: string
-    user_id: number
-    createdAt: string
-    updatedAt: string | null
-    vehicleNumber: string
-    lastPingAt: string
-    userId: number
   }
   email_idempotency: {
     // columns
@@ -748,11 +607,7 @@ export interface FrameworkSchema {
     recipient: string
     subject: string
     provider: string
-    success: boolean
-    createdAt: string
-    updatedAt: string | null
-    idempotencyKey: string
-    messageId: string
+    success: number
   }
   email_list_subscribers: {
     // columns
@@ -766,12 +621,6 @@ export interface FrameworkSchema {
     source: string
     subscribed_at: string
     unsubscribed_at: string
-    createdAt: string
-    updatedAt: string | null
-    emailListId: number
-    subscriberId: number
-    subscribedAt: string
-    unsubscribedAt: string
   }
   email_lists: {
     // columns
@@ -789,14 +638,6 @@ export interface FrameworkSchema {
     status: "active" | "inactive" | "archived"
     is_public: number
     double_opt_in: number
-    createdAt: string
-    updatedAt: string | null
-    subscriberCount: number
-    activeCount: number
-    unsubscribedCount: number
-    bouncedCount: number
-    isPublic: number
-    doubleOptIn: number
   }
   email_suppressions: {
     // columns
@@ -806,8 +647,6 @@ export interface FrameworkSchema {
     email: string
     type: "bounce" | "complaint" | "unsubscribe" | "manual"
     reason: string
-    createdAt: string
-    updatedAt: string | null
   }
   email_webhook_events: {
     // columns
@@ -817,10 +656,6 @@ export interface FrameworkSchema {
     provider: "mailgun" | "postmark" | "ses" | "sendgrid"
     event_id: string
     processed_at: string
-    createdAt: string
-    updatedAt: string | null
-    eventId: string
-    processedAt: string
   }
   errors: {
     // columns
@@ -832,9 +667,6 @@ export interface FrameworkSchema {
     stack: string
     status: number
     additional_info: string
-    createdAt: string
-    updatedAt: string | null
-    additionalInfo: string
   }
   failed_jobs: {
     // columns
@@ -850,11 +682,6 @@ export interface FrameworkSchema {
     max_attempts: number
     duration_ms: number
     failed_at: string
-    createdAt: string
-    updatedAt: string | null
-    maxAttempts: number
-    durationMs: number
-    failedAt: string
   }
   form_fields: {
     // columns
@@ -864,15 +691,12 @@ export interface FrameworkSchema {
     name: string
     label: string
     type: "text" | "textarea" | "email" | "phone" | "select" | "checkbox" | "radio" | "date" | "file" | "currency" | "section_break"
-    required: boolean
+    required: number
     position: number
     width: "full" | "half"
     options: unknown
     conditions: unknown
     form_id: number
-    createdAt: string
-    updatedAt: string | null
-    formId: number
   }
   form_submissions: {
     // columns
@@ -890,13 +714,6 @@ export interface FrameworkSchema {
     submitted_at: string
     form_id: number
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    amountCents: number
-    paymentIntentId: string
-    submittedAt: string
-    formId: number
-    siteId: number
   }
   forms: {
     // columns
@@ -909,9 +726,6 @@ export interface FrameworkSchema {
     status: "draft" | "active" | "closed"
     settings: unknown
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    siteId: number
   }
   gift_cards: {
     // columns
@@ -928,28 +742,46 @@ export interface FrameworkSchema {
     recipient_email: string
     recipient_name: string
     personal_message: string
-    is_digital: boolean
-    is_reloadable: boolean
-    is_active: boolean
+    is_digital: number
+    is_reloadable: number
+    is_active: number
     expiry_date: string
     last_used_date: string
     template_id: string
     customer_id: number
-    createdAt: string
-    updatedAt: string | null
-    initialBalance: number
-    currentBalance: number
-    purchaserId: string
-    recipientEmail: string
-    recipientName: string
-    personalMessage: string
-    isDigital: boolean
-    isReloadable: boolean
-    isActive: boolean
-    expiryDate: string
-    lastUsedDate: string
-    templateId: string
-    customerId: number
+  }
+  job_batches: {
+    // columns
+    id: string
+    name: string
+    total_jobs: number
+    pending_jobs: number
+    failed_jobs: number
+    failed_job_ids: string
+    options: string | null
+    cancelled_at: string | null
+    created_at: string
+    finished_at: string | null
+    then_handler: string | null
+    catch_handler: string | null
+    finally_handler: string | null
+  }
+  job_idempotency: {
+    // columns
+    id: number
+    idempotency_key: string
+    job_name: string
+    queue: string
+    dispatched_at: string
+  }
+  job_quarantine: {
+    // columns
+    id: number
+    job_name: string
+    payload_hash: string
+    failure_count: number
+    window_start: string
+    quarantined_at: string | null
   }
   jobs: {
     // columns
@@ -961,10 +793,6 @@ export interface FrameworkSchema {
     attempts: number
     available_at: number
     reserved_at: number
-    createdAt: string
-    updatedAt: string | null
-    availableAt: number
-    reservedAt: number
   }
   labels: {
     // columns
@@ -975,9 +803,6 @@ export interface FrameworkSchema {
     board_id: number
     name: string
     color: string
-    createdAt: string
-    updatedAt: string | null
-    boardId: number
   }
   license_keys: {
     // columns
@@ -992,12 +817,6 @@ export interface FrameworkSchema {
     customer_id: number
     product_id: number
     order_id: number
-    createdAt: string
-    updatedAt: string | null
-    expiryDate: string
-    customerId: number
-    productId: number
-    orderId: number
   }
   logs: {
     // columns
@@ -1011,8 +830,6 @@ export interface FrameworkSchema {
     project: string
     stacktrace: string
     file: string
-    createdAt: string
-    updatedAt: string | null
   }
   loyalty_points: {
     // columns
@@ -1026,13 +843,7 @@ export interface FrameworkSchema {
     source_reference_id: string
     description: string
     expiry_date: string
-    is_used: boolean
-    createdAt: string
-    updatedAt: string | null
-    walletId: string
-    sourceReferenceId: string
-    expiryDate: string
-    isUsed: boolean
+    is_used: number
   }
   loyalty_rewards: {
     // columns
@@ -1046,20 +857,10 @@ export interface FrameworkSchema {
     reward_type: string
     discount_percentage: number
     free_product_id: string
-    is_active: boolean
+    is_active: number
     expiry_days: number
     image_url: string
     product_id: number
-    createdAt: string
-    updatedAt: string | null
-    pointsRequired: number
-    rewardType: string
-    discountPercentage: number
-    freeProductId: string
-    isActive: boolean
-    expiryDays: number
-    imageUrl: string
-    productId: number
   }
   magic_link_tokens: {
     // columns
@@ -1073,13 +874,6 @@ export interface FrameworkSchema {
     redirect_to: string
     site_id: number
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    expiresAt: string
-    consumedAt: string
-    redirectTo: string
-    siteId: number
-    userId: number
   }
   mail_preferences: {
     // columns
@@ -1093,39 +887,21 @@ export interface FrameworkSchema {
     theme: "light" | "dark" | "system"
     language: "en" | "fr" | "de" | "es" | "ja"
     default_reply_behavior: "reply" | "replyAll"
-    send_and_archive: boolean
+    send_and_archive: number
     auto_advance: "newer" | "older" | "back"
-    desktop_notifications: boolean
+    desktop_notifications: number
     notification_sound: "default" | "subtle" | "none"
-    notification_preview: boolean
+    notification_preview: number
     filters: string
     blocked_senders: string
     labels: string
-    load_remote_images: boolean
-    show_external_content: boolean
-    vacation_enabled: boolean
+    load_remote_images: number
+    show_external_content: number
+    vacation_enabled: number
     vacation_start_date: string
     vacation_end_date: string
     vacation_subject: string
     vacation_message: string
-    createdAt: string
-    updatedAt: string | null
-    accountName: string
-    displayDensity: "comfortable" | "default" | "compact"
-    defaultReplyBehavior: "reply" | "replyAll"
-    sendAndArchive: boolean
-    autoAdvance: "newer" | "older" | "back"
-    desktopNotifications: boolean
-    notificationSound: "default" | "subtle" | "none"
-    notificationPreview: boolean
-    blockedSenders: string
-    loadRemoteImages: boolean
-    showExternalContent: boolean
-    vacationEnabled: boolean
-    vacationStartDate: string
-    vacationEndDate: string
-    vacationSubject: string
-    vacationMessage: string
   }
   manufacturers: {
     // columns
@@ -1136,9 +912,7 @@ export interface FrameworkSchema {
     manufacturer: string
     description: string
     country: string
-    featured: boolean
-    createdAt: string
-    updatedAt: string | null
+    featured: number
   }
   menu_items: {
     // columns
@@ -1153,11 +927,6 @@ export interface FrameworkSchema {
     visibility: "public" | "auth"
     menu_id: number
     page_id: number
-    createdAt: string
-    updatedAt: string | null
-    parentId: number
-    menuId: number
-    pageId: number
   }
   menus: {
     // columns
@@ -1167,9 +936,6 @@ export interface FrameworkSchema {
     handle: string
     name: string
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    siteId: number
   }
   notification_deliveries: {
     // columns
@@ -1185,10 +951,6 @@ export interface FrameworkSchema {
     error: string
     metadata: string
     sent_at: string
-    createdAt: string
-    updatedAt: string | null
-    userId: number
-    sentAt: string
   }
   notifications: {
     // columns
@@ -1200,10 +962,6 @@ export interface FrameworkSchema {
     data: string
     read_at: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    readAt: string
-    userId: number
   }
   order_idempotency: {
     // columns
@@ -1212,10 +970,6 @@ export interface FrameworkSchema {
     updated_at: string | null
     idempotency_key: string
     order_id: number
-    createdAt: string
-    updatedAt: string | null
-    idempotencyKey: string
-    orderId: number
   }
   order_items: {
     // columns
@@ -1227,11 +981,6 @@ export interface FrameworkSchema {
     special_instructions: string
     order_id: number
     product_id: number
-    createdAt: string
-    updatedAt: string | null
-    specialInstructions: string
-    orderId: number
-    productId: number
   }
   orders: {
     // columns
@@ -1256,23 +1005,6 @@ export interface FrameworkSchema {
     applied_coupon_id: string
     customer_id: number
     coupon_id: number
-    createdAt: string
-    updatedAt: string | null
-    totalAmount: number
-    taxAmount: number
-    discountAmount: number
-    deliveryFee: number
-    tipAmount: number
-    orderType: string
-    deliveryAddress: string
-    specialInstructions: string
-    estimatedDeliveryTime: string
-    trackingToken: string
-    deliveryLatitude: number
-    deliveryLongitude: number
-    appliedCouponId: string
-    customerId: number
-    couponId: number
   }
   page_revisions: {
     // columns
@@ -1286,11 +1018,6 @@ export interface FrameworkSchema {
     note: string
     page_id: number
     author_id: number
-    createdAt: string
-    updatedAt: string | null
-    metaDescription: string
-    pageId: number
-    authorId: number
   }
   pages: {
     // columns
@@ -1312,14 +1039,6 @@ export interface FrameworkSchema {
     conversions: number
     author_id: number
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    parentId: number
-    metaDescription: string
-    scheduledAt: string
-    publishedAt: string
-    authorId: number
-    siteId: number
   }
   payment_methods: {
     // columns
@@ -1332,17 +1051,9 @@ export interface FrameworkSchema {
     brand: string
     exp_month: number
     exp_year: number
-    is_default: boolean
+    is_default: number
     provider_id: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    lastFour: number
-    expMonth: number
-    expYear: number
-    isDefault: boolean
-    providerId: string
-    userId: number
   }
   payment_products: {
     // columns
@@ -1357,10 +1068,6 @@ export interface FrameworkSchema {
     status: string
     image: string
     provider_id: string
-    createdAt: string
-    updatedAt: string | null
-    unitPrice: number
-    providerId: string
   }
   payment_transactions: {
     // columns
@@ -1375,11 +1082,6 @@ export interface FrameworkSchema {
     provider_id: string
     user_id: number
     payment_method_id: number
-    createdAt: string
-    updatedAt: string | null
-    providerId: string
-    userId: number
-    paymentMethodId: number
   }
   payments: {
     // columns
@@ -1401,17 +1103,15 @@ export interface FrameworkSchema {
     notes: string
     order_id: number
     customer_id: number
-    createdAt: string
-    updatedAt: string | null
-    referenceNumber: string
-    cardLastFour: string
-    cardBrand: string
-    billingEmail: string
-    transactionId: string
-    paymentProvider: string
-    refundAmount: number
-    orderId: number
-    customerId: number
+  }
+  permissions: {
+    // columns
+    id: number
+    name: string
+    guard_name: string
+    description: string | null
+    created_at: string | null
+    updated_at: string | null
   }
   pledges: {
     // columns
@@ -1425,11 +1125,6 @@ export interface FrameworkSchema {
     level: string
     status: "pending" | "confirmed" | "cancelled"
     auction_id: number
-    createdAt: string
-    updatedAt: string | null
-    donorName: string
-    donorEmail: string
-    auctionId: number
   }
   posts: {
     // columns
@@ -1451,15 +1146,6 @@ export interface FrameworkSchema {
     is_featured: number
     author_id: number
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    focusKeyword: string
-    metaDescription: string
-    canonicalUrl: string
-    publishedAt: string
-    isFeatured: number
-    authorId: number
-    siteId: number
   }
   print_devices: {
     // columns
@@ -1474,11 +1160,6 @@ export interface FrameworkSchema {
     status: "online" | "offline" | "warning"
     last_ping: number
     print_count: number
-    createdAt: string
-    updatedAt: string | null
-    macAddress: string
-    lastPing: number
-    printCount: number
   }
   product_units: {
     // columns
@@ -1490,12 +1171,8 @@ export interface FrameworkSchema {
     abbreviation: string
     type: string
     description: string
-    is_default: boolean
+    is_default: number
     product_id: number
-    createdAt: string
-    updatedAt: string | null
-    isDefault: boolean
-    productId: number
   }
   product_variants: {
     // columns
@@ -1509,9 +1186,6 @@ export interface FrameworkSchema {
     options: string
     status: "active" | "inactive" | "draft"
     product_id: number
-    createdAt: string
-    updatedAt: string | null
-    productId: number
   }
   products: {
     // columns
@@ -1523,22 +1197,13 @@ export interface FrameworkSchema {
     description: string
     price: number
     image_url: string
-    is_available: boolean
+    is_available: number
     inventory_count: number
     preparation_time: number
     allergens: string
     nutritional_info: string
     category_id: number
     manufacturer_id: number
-    createdAt: string
-    updatedAt: string | null
-    imageUrl: string
-    isAvailable: boolean
-    inventoryCount: number
-    preparationTime: number
-    nutritionalInfo: string
-    categoryId: number
-    manufacturerId: number
   }
   query_logs: {
     // columns
@@ -1567,18 +1232,15 @@ export interface FrameworkSchema {
     missing_indexes: string
     explain_plan: string
     optimization_suggestions: string
-    createdAt: string
-    updatedAt: string | null
-    normalizedQuery: string
-    executedAt: string
-    memoryUsage: number
-    rowsAffected: number
-    transactionId: string
-    affectedTables: string
-    indexesUsed: string
-    missingIndexes: string
-    explainPlan: string
-    optimizationSuggestions: string
+  }
+  queue_circuit_state: {
+    // columns
+    queue_name: string
+    success_count: number
+    failure_count: number
+    window_start: string
+    paused_at: string | null
+    resume_at: string | null
   }
   receipts: {
     // columns
@@ -1595,9 +1257,6 @@ export interface FrameworkSchema {
     duration: number
     metadata: string
     print_device_id: number
-    createdAt: string
-    updatedAt: string | null
-    printDeviceId: number
   }
   redirects: {
     // columns
@@ -1609,12 +1268,6 @@ export interface FrameworkSchema {
     status_code: number
     source: "slug-change" | "manual"
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    fromPath: string
-    toPath: string
-    statusCode: number
-    siteId: number
   }
   releases: {
     // columns
@@ -1628,8 +1281,6 @@ export interface FrameworkSchema {
     notes: string
     downloads: number
     author: string
-    createdAt: string
-    updatedAt: string | null
   }
   requests: {
     // columns
@@ -1645,15 +1296,6 @@ export interface FrameworkSchema {
     memory_usage: number
     user_agent: string
     error_message: string
-    createdAt: string
-    updatedAt: string | null
-    deletedAt: string | null
-    statusCode: number
-    durationMs: number
-    ipAddress: string
-    memoryUsage: number
-    userAgent: string
-    errorMessage: string
   }
   reviews: {
     // columns
@@ -1664,25 +1306,30 @@ export interface FrameworkSchema {
     rating: number
     title: string
     content: string
-    is_verified_purchase: boolean
-    is_approved: boolean
-    is_featured: boolean
+    is_verified_purchase: number
+    is_approved: number
+    is_featured: number
     helpful_votes: number
     unhelpful_votes: number
     purchase_date: string
     images: string
     product_id: number
     customer_id: number
-    createdAt: string
-    updatedAt: string | null
-    isVerifiedPurchase: boolean
-    isApproved: boolean
-    isFeatured: boolean
-    helpfulVotes: number
-    unhelpfulVotes: number
-    purchaseDate: string
-    productId: number
-    customerId: number
+  }
+  role_permissions: {
+    // columns
+    role_id: number
+    permission_id: number
+    created_at: string | null
+  }
+  roles: {
+    // columns
+    id: number
+    name: string
+    guard_name: string
+    description: string | null
+    created_at: string | null
+    updated_at: string | null
   }
   sender_domains: {
     // columns
@@ -1697,12 +1344,6 @@ export interface FrameworkSchema {
     verified_at: string
     last_checked_at: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    dnsRecords: unknown
-    verifiedAt: string
-    lastCheckedAt: string
-    teamId: number
   }
   shipping_methods: {
     // columns
@@ -1715,10 +1356,6 @@ export interface FrameworkSchema {
     base_rate: number
     free_shipping: number
     status: "active" | "inactive" | "draft"
-    createdAt: string
-    updatedAt: string | null
-    baseRate: number
-    freeShipping: number
   }
   shipping_rates: {
     // columns
@@ -1731,12 +1368,6 @@ export interface FrameworkSchema {
     rate: number
     shipping_method_id: number
     shipping_zone_id: number
-    createdAt: string
-    updatedAt: string | null
-    weightFrom: number
-    weightTo: number
-    shippingMethodId: number
-    shippingZoneId: number
   }
   shipping_zones: {
     // columns
@@ -1750,10 +1381,6 @@ export interface FrameworkSchema {
     postal_codes: string
     status: "active" | "inactive" | "draft"
     shipping_method_id: number
-    createdAt: string
-    updatedAt: string | null
-    postalCodes: string
-    shippingMethodId: number
   }
   site_domains: {
     // columns
@@ -1761,16 +1388,10 @@ export interface FrameworkSchema {
     created_at: string
     updated_at: string | null
     domain: string
-    is_primary: boolean
+    is_primary: number
     verified_at: string
     ssl_status: "pending" | "issued" | "failed"
     site_id: number
-    createdAt: string
-    updatedAt: string | null
-    isPrimary: boolean
-    verifiedAt: string
-    sslStatus: "pending" | "issued" | "failed"
-    siteId: number
   }
   sites: {
     // columns
@@ -1784,9 +1405,6 @@ export interface FrameworkSchema {
     settings: unknown
     timezone: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    teamId: number
   }
   sms_opt_outs: {
     // columns
@@ -1796,9 +1414,6 @@ export interface FrameworkSchema {
     phone: string
     reason: string
     opted_out_at: string
-    createdAt: string
-    updatedAt: string | null
-    optedOutAt: string
   }
   social_accounts: {
     // columns
@@ -1809,11 +1424,6 @@ export interface FrameworkSchema {
     provider_user_id: string
     provider_email: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    providerUserId: string
-    providerEmail: string
-    userId: number
   }
   social_posts: {
     // columns
@@ -1833,13 +1443,6 @@ export interface FrameworkSchema {
     image_url: string
     external_id: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    scheduledAt: string
-    publishedAt: string
-    imageUrl: string
-    externalId: string
-    userId: number
   }
   subscriber_emails: {
     // columns
@@ -1850,9 +1453,6 @@ export interface FrameworkSchema {
     email: string
     source: string
     subscriber_id: number
-    createdAt: string
-    updatedAt: string | null
-    subscriberId: number
   }
   subscribers: {
     // columns
@@ -1865,10 +1465,6 @@ export interface FrameworkSchema {
     source: string
     unsubscribed_at: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    unsubscribedAt: string
-    userId: number
   }
   subscriptions: {
     // columns
@@ -1888,23 +1484,24 @@ export interface FrameworkSchema {
     ends_at: string
     last_used_at: string
     user_id: number
-    createdAt: string
-    updatedAt: string | null
-    providerId: string
-    providerStatus: string
-    unitPrice: number
-    providerType: string
-    providerPriceId: string
-    trialEndsAt: string
-    endsAt: string
-    lastUsedAt: string
-    userId: number
   }
   taggable_models: {
     // columns
     id: number
     tag_id: number
     taggable_id: number
+    taggable_type: string
+    created_at: string
+    updated_at: string | null
+  }
+  taggables: {
+    // columns
+    id: number
+    name: string
+    slug: string
+    description: string | null
+    is_active: number
+    taggable_id: number | null
     taggable_type: string
     created_at: string
     updated_at: string | null
@@ -1919,8 +1516,6 @@ export interface FrameworkSchema {
     slug: string
     description: string
     color: string
-    createdAt: string
-    updatedAt: string | null
   }
   tax_rates: {
     // columns
@@ -1934,12 +1529,9 @@ export interface FrameworkSchema {
     country: string
     region: "North America" | "South America" | "Europe" | "Asia" | "Africa" | "Oceania" | "Antarctica"
     status: "active" | "inactive"
-    is_default: boolean
+    is_default: number
     code: string
-    exemptible: boolean
-    createdAt: string
-    updatedAt: string | null
-    isDefault: boolean
+    exemptible: number
   }
   team_invitations: {
     // columns
@@ -1960,18 +1552,6 @@ export interface FrameworkSchema {
     expires_at: string
     delivered_at: string
     accepted_at: string
-    createdAt: string
-    updatedAt: string | null
-    teamId: number
-    tokenHash: string
-    pendingKey: string
-    invitedByUserId: number
-    acceptedByUserId: number
-    deliveryStatus: "pending" | "sent" | "failed"
-    deliveryError: string
-    expiresAt: string
-    deliveredAt: string
-    acceptedAt: string
   }
   team_members: {
     // columns
@@ -1983,10 +1563,6 @@ export interface FrameworkSchema {
     user_id: number
     role: "owner" | "admin" | "member" | "viewer"
     status: "active" | "suspended"
-    createdAt: string
-    updatedAt: string | null
-    teamId: number
-    userId: number
   }
   teams: {
     // columns
@@ -1998,9 +1574,6 @@ export interface FrameworkSchema {
     description: string
     member_count: number
     status: string
-    createdAt: string
-    updatedAt: string | null
-    memberCount: number
   }
   transactions: {
     // columns
@@ -2016,14 +1589,6 @@ export interface FrameworkSchema {
     loyalty_points_earned: number
     loyalty_points_redeemed: number
     order_id: number
-    createdAt: string
-    updatedAt: string | null
-    paymentMethod: string
-    paymentDetails: string
-    transactionReference: string
-    loyaltyPointsEarned: number
-    loyaltyPointsRedeemed: number
-    orderId: number
   }
   usage_events: {
     // columns
@@ -2037,11 +1602,18 @@ export interface FrameworkSchema {
     metadata: unknown
     occurred_at: string
     team_id: number
-    createdAt: string
-    updatedAt: string | null
-    idempotencyKey: string
-    occurredAt: string
-    teamId: number
+  }
+  user_permissions: {
+    // columns
+    user_id: number
+    permission_id: number
+    created_at: string | null
+  }
+  user_roles: {
+    // columns
+    user_id: number
+    role_id: number
+    created_at: string | null
   }
   users: {
     // columns
@@ -2052,21 +1624,13 @@ export interface FrameworkSchema {
     email_verified_at: string | null
     password_changed_at: string | null
     two_factor_secret: string | null
-    two_factor_enabled: boolean | null
+    two_factor_enabled: number | null
     two_factor_last_used_step: number | null
     stripe_id: string | null
     name: string
     email: string
     password: string
     avatar: string
-    createdAt: string
-    updatedAt: string | null
-    emailVerifiedAt: string | null
-    passwordChangedAt: string | null
-    twoFactorSecret: string | null
-    twoFactorEnabled: boolean | null
-    twoFactorLastUsedStep: number | null
-    stripeId: string | null
   }
   waitlist_products: {
     // columns
@@ -2087,14 +1651,6 @@ export interface FrameworkSchema {
     cancelled_at: string
     product_id: number
     customer_id: number
-    createdAt: string
-    updatedAt: string | null
-    notificationPreference: "sms" | "email" | "both"
-    notifiedAt: string
-    purchasedAt: string
-    cancelledAt: string
-    productId: number
-    customerId: number
   }
   waitlist_restaurants: {
     // columns
@@ -2116,18 +1672,6 @@ export interface FrameworkSchema {
     no_show_at: string
     cancelled_at: string
     customer_id: number
-    createdAt: string
-    updatedAt: string | null
-    partySize: number
-    checkInTime: string
-    tablePreference: "indoor" | "bar" | "booth" | "no_preference"
-    quotedWaitTime: number
-    actualWaitTime: number
-    queuePosition: number
-    seatedAt: string
-    noShowAt: string
-    cancelledAt: string
-    customerId: number
   }
   websockets: {
     // columns
@@ -2138,7 +1682,5 @@ export interface FrameworkSchema {
     socket: string
     details: string
     time: number
-    createdAt: string
-    updatedAt: string | null
   }
 }

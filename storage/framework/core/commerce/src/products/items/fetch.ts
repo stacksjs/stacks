@@ -1,6 +1,7 @@
 import type { ModelRow, Product } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 import { db, sql } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**
  * Fetch a product item by ID
@@ -102,7 +103,7 @@ export async function getProductsByManufacturer(manufacturerId: number): Promise
       .orderBy('name')
       .execute()
 
-    return products as ProductJsonResponse[]
+    return asModelRows<ProductJsonResponse>(products)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -128,7 +129,7 @@ export async function getProductsByCategory(categoryId: number): Promise<Product
       .orderBy('name')
       .execute()
 
-    return products as ProductJsonResponse[]
+    return asModelRows<ProductJsonResponse>(products)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -153,7 +154,7 @@ export async function getProductByUuid(uuid: string): Promise<ProductJsonRespons
       .where('uuid', '=', uuid)
       .executeTakeFirst()
 
-    return product as ProductJsonResponse | undefined
+    return asModelRow<ProductJsonResponse>(product, true)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -213,7 +214,7 @@ export async function getProductsByPriceRange(minPrice: number, maxPrice: number
       .orderBy('price')
       .execute()
 
-    return products as ProductJsonResponse[]
+    return asModelRows<ProductJsonResponse>(products)
   }
   catch (error) {
     if (error instanceof Error) {

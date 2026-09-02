@@ -3,6 +3,7 @@ type ManufacturerJsonResponse = ModelRow<typeof Manufacturer>
 type NewManufacturer = NewModelData<typeof Manufacturer>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 
@@ -29,7 +30,7 @@ export async function store(data: NewManufacturer): Promise<ManufacturerJsonResp
     if (!result)
       throw new Error('Failed to create manufacturer')
 
-    return result as ManufacturerJsonResponse
+    return asModelRow<ManufacturerJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof HttpError)
