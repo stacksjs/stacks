@@ -15,8 +15,25 @@ export function resolveApiBaseUrl(defaultPath = '/api'): string {
   if (configured)
     return configured.replace(/\/+$/, '')
 
-  if (typeof window !== 'undefined')
-    return `${window.location.origin}${defaultPath}`
+  /*
+   * `window.location`, not just `window`.
+   *
+   * A global named `window` is not proof of a DOM. Test harnesses assign
+   * `globalThis.window = globalThis` to make browser code importable off-DOM,
+   * and that object has no `location` - so the guard passed and the very next
+   * property read threw `undefined is not an object`. Callers compute this at
+   * MODULE scope (`monitoring/errors.ts` builds its `baseURL` there), so the
+   * throw happened on import, before any code could catch it: it surfaced as an
+   * unhandled error between tests, attributed to no test at all
+   * (stacksjs/stacks#2421).
+   *
+   * Reading the origin defensively costs nothing in a real browser and keeps
+   * this resolvable anywhere - a worker, SSR, a partial DOM shim - where the
+   * honest answer is the relative default.
+   */
+  const origin = typeof window !== 'undefined' ? window.location?.origin : undefined
+  if (origin)
+    return `${origin}${defaultPath}`
 
   return defaultPath
 }
