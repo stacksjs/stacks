@@ -21,8 +21,8 @@
  * one-directional claim, true regardless of which environment generated the
  * file, and it catches the case that prompted the issue.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { path } from '@stacksjs/path'
 
@@ -94,6 +94,60 @@ describe('auto-import barrels list everything on disk', () => {
       // A name here means someone added a file and did not run `buddy generate`,
       // so the framework will not auto-import it and nothing else would say so.
       expect([...new Set(missing)].sort()).toEqual([])
+    })
+  }
+})
+
+/**
+ * The relative module paths a barrel points at, as written.
+ *
+ * Unlike {@link namesIn} this keeps the path, because the question here is
+ * whether the target still exists - which a basename cannot answer.
+ */
+function referencesIn(barrel: string): string[] {
+  return [...readFileSync(barrel, 'utf-8').matchAll(/'(\.\.?\/[^']+)'/g)].map(match => match[1]!)
+}
+
+/*
+ * Every barrel, including the two the completeness check above cannot cover.
+ *
+ * That one needs to know which directories feed each barrel; this one only
+ * needs the barrel, so `emails` and `controllers` come along for free.
+ */
+const ALL_BARRELS = [
+  ...BARRELS.map(entry => ({ what: entry.what, barrel: entry.barrel })),
+  { what: 'emails', barrel: path.frameworkPath('auto-imports/emails.ts') },
+  { what: 'controllers', barrel: path.frameworkPath('auto-imports/controllers.ts') },
+]
+
+describe('auto-import barrels do not point at files that are gone', () => {
+  /*
+   * The other direction, and the one the completeness check cannot see.
+   *
+   * Deleting `app/Jobs/Foo.ts` without regenerating leaves an entry resolving
+   * to nothing. Nothing else notices: the declarations go stale in the same
+   * commit and still agree with the barrel, and the completeness check only
+   * asks whether files on disk are listed - a listed file that no longer
+   * exists is not a file on disk (stacksjs/stacks#2408).
+   *
+   * Safe to assert unconditionally, for the same reason as above: a barrel may
+   * legitimately OMIT an entry a feature gate excluded, but it must never point
+   * at something that is not there, under any configuration.
+   */
+  for (const { what, barrel } of ALL_BARRELS) {
+    it(`${what}: every entry resolves to a file`, () => {
+      if (!existsSync(barrel))
+        return // A barrel an app has not generated yet is not a failure.
+
+      const base = dirname(barrel)
+      const dangling = referencesIn(barrel).filter((ref) => {
+        const target = resolve(base, ref)
+        // Entries are written with and without extensions, and `emails` points
+        // at `.stx` templates rather than modules.
+        return !['', '.ts', '.stx'].some(extension => existsSync(target + extension))
+      })
+
+      expect([...new Set(dangling)].sort()).toEqual([])
     })
   }
 })
