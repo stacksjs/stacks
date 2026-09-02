@@ -1,14 +1,12 @@
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { Request } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
 import { dashboardOperationalError } from '../dashboard-response'
 import {
-  buildWebAnalytics,
   normalizeAnalyticsRange,
   normalizeAnalyticsScope,
-  requestAnalyticsRow,
 } from './request-analytics'
+import { readDashboardWebAnalytics } from './web-analytics-provider'
 
 export default new Action({
   name: 'WebAnalyticsAction',
@@ -29,10 +27,7 @@ export default new Action({
       }, 422)
     }
     try {
-      const records = await Request.orderByDesc('id').limit(10_000).get()
-      const rows = records.map(requestAnalyticsRow)
-
-      return buildWebAnalytics(rows, range, new Date(), scope)
+      return await readDashboardWebAnalytics({ range, scope })
     }
     catch (error) {
       return dashboardOperationalError(error, 'Web analytics records could not be read.', 'WebAnalyticsAction')
