@@ -108,12 +108,48 @@ async function main(): Promise<void> {
     return
   }
 
+  const errors = `${out}${err}`.trim()
+
   console.error(`\nA freshly scaffolded app does not typecheck against stacks@${pinned}:\n`)
-  console.error(`${out}${err}`.trim())
-  console.error(
-    `\nEach error names a file the template wrote. If this checkout's framework (${vendored}) is ahead `
-    + `of the published one, publishing is the fix — until then \`buddy new\` produces this app.\n`,
-  )
+  console.error(errors)
+
+  /*
+   * Say what actually went wrong, at the bottom, where the reader is.
+   *
+   * These two hints used to print unconditionally, and the note about `buddy
+   * new` exiting non-zero was a dozen lines further up. So a run whose real
+   * problem was "a system package failed to install, and we typechecked a
+   * half-built app anyway" presented as a version-skew problem and sent me to
+   * check the registry - where nothing was wrong (stacksjs/stacks#2414).
+   *
+   * The version hint is worth having when it applies. It applies when the
+   * errors are about resolution: a module or preload that cannot be found is
+   * what an app pinned to a version older than this checkout looks like. It
+   * does not apply to a type mismatch inside a file the template wrote, which
+   * is a real scaffold bug and should not be explained away.
+   */
+  const looksLikeResolution = /cannot find module|preload not found|cannot find name|could not resolve|TS2307|TS2304/i.test(errors)
+
+  if (scaffoldCode !== 0) {
+    console.error(
+      `\n\`buddy new\` exited ${scaffoldCode} before it finished, so this app may be incomplete — `
+      + `the errors above can be a consequence of that rather than of the template. `
+      + `Check its output at the top of this log first.\n`,
+    )
+  }
+  else if (looksLikeResolution) {
+    console.error(
+      `\nEach error names a file the template wrote. If this checkout's framework (${vendored}) is ahead `
+      + `of the published one, publishing is the fix — until then \`buddy new\` produces this app.\n`,
+    )
+  }
+  else {
+    console.error(
+      `\nEach error names a file the template wrote, and none of them is a resolution failure — `
+      + `so this is the template disagreeing with the framework it pinned, not a publishing lag.\n`,
+    )
+  }
+
   process.exit(1)
 }
 
