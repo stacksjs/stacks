@@ -1,0 +1,10 @@
+@extends('layouts/default')
+
+@section('content')
+
+@title('Dashboard - Abandoned Carts')
+<PageLayout>
+  <AbandonedCartsDashboard />
+</PageLayout>
+
+@endsection

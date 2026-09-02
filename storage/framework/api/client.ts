@@ -3467,6 +3467,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/marketing/abandoned-carts
+   */
+  getDashboardMarketingAbandonedCarts(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/marketing/abandoned-carts", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/marketing/abandoned-carts/campaign
+   */
+  postDashboardMarketingAbandonedCartsCampaign(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/marketing/abandoned-carts/campaign", {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/marketing/campaigns
    */
   getDashboardMarketingCampaigns(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -21931,6 +21931,56 @@
         }
       }
     },
+    "/api/dashboard/marketing/abandoned-carts": {
+      "get": {
+        "summary": "/api/dashboard/marketing/abandoned-carts",
+        "operationId": "get__api_dashboard_marketing_abandoned_carts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/marketing/abandoned-carts/campaign": {
+      "post": {
+        "summary": "/api/dashboard/marketing/abandoned-carts/campaign",
+        "operationId": "post__api_dashboard_marketing_abandoned_carts_campaign",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/marketing/campaigns": {
       "get": {
         "summary": "/api/dashboard/marketing/campaigns",

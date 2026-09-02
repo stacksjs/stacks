@@ -1,0 +1,96 @@
+<script client>
+import type { AbandonedCartRecord } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+
+const records = useReactiveProp('records', [] as AbandonedCartRecord[])
+const loading = useReactiveProp('loading', false)
+
+function money(value: number, currency: string): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: currency || 'USD' }).format(value)
+  }
+  catch {
+    // A currency the browser does not know is not a reason to render nothing
+    // where a number belongs.
+    return `${value.toFixed(2)} ${currency}`
+  }
+}
+
+/**
+ * How long ago, in the units a person would actually say it in.
+ *
+ * "37.4 hours" is a measurement; "2 days" is how somebody decides whether a
+ * cart is still worth chasing.
+ */
+function idle(hours: number): string {
+  if (hours < 1)
+    return 'under an hour'
+  if (hours < 48)
+    return `${Math.round(hours)}h`
+  return `${Math.round(hours / 24)} days`
+}
+
+function contents(record: AbandonedCartRecord): string {
+  if (record.items.length === 0)
+    return `${record.itemCount} item${record.itemCount === 1 ? '' : 's'}`
+  const shown = record.items.slice(0, 2).join(', ')
+  const rest = record.itemCount - Math.min(2, record.items.length)
+  return rest > 0 ? `${shown} +${rest} more` : shown
+}
+
+function stateLabel(record: AbandonedCartRecord): string {
+  if (record.state === 'recovered')
+    return 'Recovered'
+  if (record.state === 'expired')
+    return 'Expired'
+  return record.contacted ? 'Chased' : 'Cold'
+}
+
+function stateClass(record: AbandonedCartRecord): string {
+  if (record.state === 'recovered')
+    return 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+  if (record.state === 'expired')
+    return 'bg-gray-100 text-gray-600 dark:bg-neutral-700 dark:text-neutral-300'
+  return record.contacted
+    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+    : 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300'
+}
+</script>
+
+<div class="overflow-x-auto bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+  <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+    <thead class="bg-gray-50 dark:bg-neutral-900/50">
+      <tr>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Customer</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Left behind</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Value</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">Idle</th>
+        <th scope="col" class="px-4 py-3 font-semibold text-gray-600 text-left text-xs dark:text-neutral-300">State</th>
+      </tr>
+    </thead>
+    <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :if="loading()">
+        <tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading carts</td></tr>
+      </template>
+      <template :else-if="records().length === 0">
+        <tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-shopping-cart-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No carts to chase</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Nothing matches these filters — which, for once, is the good outcome.</p></td></tr>
+      </template>
+      <template :else>
+        <template :for="record in records">
+          <tr class="hover:bg-gray-50/70 dark:hover:bg-neutral-700/40">
+            <td class="px-4 py-4 max-w-xs">
+              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ record.customerName }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ record.customerEmail || 'No address on the cart' }}</p>
+            </td>
+            <td class="px-4 py-4 max-w-sm">
+              <p class="text-gray-900 text-sm dark:text-white">{{ contents(record) }}</p>
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Cart #{{ record.id }}</p>
+            </td>
+            <td class="px-4 py-4"><p class="font-medium text-gray-900 text-sm tabular-nums dark:text-white">{{ money(record.value, record.currency) }}</p></td>
+            <td class="px-4 py-4"><p class="text-gray-900 text-sm dark:text-white">{{ idle(record.idleHours) }}</p></td>
+            <td class="px-4 py-4"><span :class="'inline-flex px-2 py-1 font-medium text-xs rounded-full ' + stateClass(record)">{{ stateLabel(record) }}</span></td>
+          </tr>
+        </template>
+      </template>
+    </tbody>
+  </table>
+</div>

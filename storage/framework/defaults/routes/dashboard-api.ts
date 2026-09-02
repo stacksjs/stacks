@@ -413,6 +413,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/marketing/campaigns/{id}/send', 'Actions/Dashboard/Marketing/CampaignSendAction'))
   guard(route.post('/marketing/campaigns/{id}/schedule', 'Actions/Dashboard/Marketing/CampaignScheduleAction'))
   guard(route.post('/marketing/campaigns/{id}/cancel', 'Actions/Dashboard/Marketing/CampaignCancelAction'))
+  // Abandoned carts: the audience a shop already has, and the campaign that
+  // goes after it. The campaign it writes is an ordinary Campaign row, so it
+  // shows up on /marketing/campaigns and sends through the same pipeline.
+  guard(route.get('/marketing/abandoned-carts', 'Actions/Dashboard/Marketing/AbandonedCartIndexAction'))
+  guard(route.post('/marketing/abandoned-carts/campaign', 'Actions/Dashboard/Marketing/AbandonedCartCampaignAction'))
   guard(route.get('/marketing/social-posts', 'Actions/Dashboard/Marketing/SocialPostIndexAction'))
   guard(route.post('/marketing/social-posts', 'Actions/Dashboard/Marketing/SocialPostStoreAction'))
   guard(route.patch('/marketing/social-posts/{id}', 'Actions/Dashboard/Marketing/SocialPostUpdateAction'))

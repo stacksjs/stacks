@@ -1,0 +1,240 @@
+<script client>
+import type {
+  AbandonedCartIndexPayload,
+  AbandonedCartRecord,
+  AbandonedCartSummary,
+  RecoveryCampaignRecord,
+} from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+import { dashboardApi } from '../../../../functions/dashboard-api'
+import { pushToast } from '../../../../functions/toasts'
+
+const emptySummary: AbandonedCartSummary = {
+  open: 0,
+  openValue: 0,
+  contacted: 0,
+  recovered: 0,
+  recoveredValue: 0,
+  recoveryRate: 0,
+  averageValue: 0,
+  currency: 'USD',
+}
+
+const records = state<AbandonedCartRecord[]>([])
+const summary = state<AbandonedCartSummary>({ ...emptySummary })
+const campaigns = state<RecoveryCampaignRecord[]>([])
+/*
+ * The shop's configured currency, and the fallback for a page with no carts
+ * on it. The carts themselves carry their own, and `summary().currency` is
+ * the one the numbers on this screen are actually in - a shop trading in
+ * euros should not be shown a dollar sign because the framework's default
+ * says USD.
+ */
+const defaultCurrency = state('USD')
+const defaultIdleHours = state(4)
+const loading = state(true)
+const loadError = state('')
+const search = state('')
+const stateFilter = state('open')
+const idleFilter = state('all')
+const sort = state('value')
+const page = state(1)
+const perPage = 10
+const dialogOpen = state(false)
+const saving = state(false)
+const saveError = state('')
+
+function filteredRecords(): AbandonedCartRecord[] {
+  const query = search().trim().toLowerCase()
+  const minimumIdle = idleFilter() === 'all' ? 0 : Number(idleFilter())
+
+  return [...records()]
+    .filter((record) => {
+      if (stateFilter() === 'open' && record.state === 'recovered')
+        return false
+      if (stateFilter() === 'cold' && (record.state !== 'abandoned' || record.contacted))
+        return false
+      if (stateFilter() === 'chased' && !record.contacted)
+        return false
+      if (stateFilter() === 'recovered' && record.state !== 'recovered')
+        return false
+      if (record.idleHours < minimumIdle)
+        return false
+      return !query || [record.customerName, record.customerEmail, record.id, ...record.items]
+        .some(value => String(value).toLowerCase().includes(query))
+    })
+    .sort((left, right) => {
+      if (sort() === 'idle')
+        return right.idleHours - left.idleHours
+      if (sort() === 'customer')
+        return left.customerName.localeCompare(right.customerName)
+      return right.value - left.value || right.idleHours - left.idleHours
+    })
+}
+
+function visibleRecords(): AbandonedCartRecord[] {
+  const start = (page() - 1) * perPage
+  return filteredRecords().slice(start, start + perPage)
+}
+
+function totalPages(): number {
+  return Math.max(1, Math.ceil(filteredRecords().length / perPage))
+}
+
+effect(() => {
+  search()
+  stateFilter()
+  idleFilter()
+  sort()
+  page.set(1)
+})
+
+function money(value: number): string {
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: summary().currency || defaultCurrency() || 'USD',
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+  catch {
+    return `${Math.round(value)} ${defaultCurrency()}`
+  }
+}
+
+function percentage(value: number): string {
+  return `${value.toFixed(1)}%`
+}
+
+function campaignTiming(campaign: RecoveryCampaignRecord): string {
+  const stamp = campaign.sentAt || campaign.scheduledAt
+  if (!stamp)
+    return 'Not scheduled'
+  const date = new Date(stamp.replace(' ', 'T'))
+  if (!Number.isFinite(date.getTime()))
+    return 'Not scheduled'
+  const when = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date)
+  return campaign.sentAt ? `Sent ${when}` : `Scheduled ${when}`
+}
+
+async function loadCarts(): Promise<void> {
+  loading.set(true)
+  loadError.set('')
+  try {
+    const data = await dashboardApi<AbandonedCartIndexPayload>('/api/dashboard/marketing/abandoned-carts')
+    if (!data || !Array.isArray(data.records) || !data.summary || !Array.isArray(data.campaigns))
+      throw new TypeError('Abandoned cart resources were not returned in the expected shape.')
+    records.set(data.records)
+    summary.set(data.summary)
+    campaigns.set(data.campaigns)
+    defaultCurrency.set(data.defaultCurrency || 'USD')
+    defaultIdleHours.set(data.defaultIdleHours || 4)
+    if (page() > totalPages())
+      page.set(totalPages())
+  }
+  catch (error) {
+    loadError.set(error instanceof Error ? error.message : String(error))
+    pushToast('error', 'Could not load abandoned carts', { detail: loadError() })
+  }
+  finally {
+    loading.set(false)
+  }
+}
+
+function openCompose(): void {
+  saveError.set('')
+  dialogOpen.set(true)
+}
+
+function closeCompose(): void {
+  if (saving())
+    return
+  dialogOpen.set(false)
+  saveError.set('')
+}
+
+async function createCampaign(payload: Record<string, unknown>): Promise<void> {
+  saving.set(true)
+  saveError.set('')
+  try {
+    await dashboardApi('/api/dashboard/marketing/abandoned-carts/campaign', { method: 'POST', body: payload })
+    dialogOpen.set(false)
+    pushToast('success', payload.scheduledAt ? 'Recovery campaign scheduled' : 'Recovery campaign saved as a draft')
+    await loadCarts()
+  }
+  catch (error) {
+    saveError.set(error instanceof Error ? error.message : String(error))
+  }
+  finally {
+    saving.set(false)
+  }
+}
+
+function previousPage(): void {
+  if (page() > 1)
+    page.set(page() - 1)
+}
+
+function nextPage(): void {
+  if (page() < totalPages())
+    page.set(page() + 1)
+}
+
+onMount(() => {
+  void loadCarts()
+})
+</script>
+
+<div class="space-y-6">
+  <header class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div>
+      <h1 class="font-bold text-2xl text-gray-900 dark:text-white">Abandoned Carts</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">The audience that already chose the products. Every other campaign starts by guessing.</p>
+    </div>
+    <div class="flex gap-2">
+      <Button :loading="loading()" variant="secondary" @click="loadCarts()"><span :if="!loading()" aria-hidden="true" class="h-4 w-4 i-hugeicons-refresh"></span>Refresh</Button>
+      <Button @click="openCompose()"><span aria-hidden="true" class="h-4 w-4 i-hugeicons-mail-send-01"></span>New recovery campaign</Button>
+    </div>
+  </header>
+
+  <div :if="loadError()" role="alert" class="flex gap-4 items-center justify-between p-4 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900"><span>{{ loadError() }}</span><Button variant="secondary" size="sm" @click="loadCarts()">Retry</Button></div>
+
+  <section aria-label="Cart recovery metrics" class="grid gap-3 grid-cols-2 lg:grid-cols-5">
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Sitting there</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().open.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Carts abandoned or expired</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Worth</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ money(summary().openValue) }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ money(summary().averageValue) }} average</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Chased</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ summary().contacted.toLocaleString() }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Written to and still cold</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Recovered</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ money(summary().recoveredValue) }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">{{ summary().recovered.toLocaleString() }} carts checked out after an email</p></article>
+    <article class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700"><p class="text-gray-500 text-xs dark:text-neutral-400">Recovery rate</p><p class="mt-2 font-semibold text-2xl text-gray-900 dark:text-white">{{ percentage(summary().recoveryRate) }}</p><p class="mt-1 text-gray-400 text-xs dark:text-neutral-500">Of the carts actually chased</p></article>
+  </section>
+
+  <section :if="campaigns().length > 0" aria-label="Recovery campaigns" class="p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700">
+    <h2 class="font-semibold text-gray-900 text-sm dark:text-white">Recovery campaigns</h2>
+    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Ordinary campaigns aimed at cold carts. They send, report and are edited on the campaigns screen like any other.</p>
+    <ul class="mt-3 divide-gray-200 divide-y dark:divide-neutral-700">
+      <template :for="campaign in campaigns">
+        <li class="flex flex-col gap-1 py-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="font-medium text-gray-900 text-sm dark:text-white">{{ campaign.name }}</p>
+            <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Carts idle {{ campaign.idleHours }}h or more<span :if="campaign.minimumValue > 0"> · {{ money(campaign.minimumValue) }} and up</span> · {{ campaignTiming(campaign) }}</p>
+          </div>
+          <div class="flex gap-3 items-center">
+            <p class="text-gray-500 text-xs dark:text-neutral-400">{{ campaign.sentCount.toLocaleString() }} sent</p>
+            <span class="inline-flex px-2 py-1 font-medium text-xs bg-gray-100 dark:bg-neutral-700 rounded-full">{{ campaign.status }}</span>
+          </div>
+        </li>
+      </template>
+    </ul>
+  </section>
+
+  <section class="space-y-3">
+    <div class="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+      <label><span class="sr-only">Search carts</span><input x-model="search" type="search" placeholder="Search by customer or product" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700" /></label>
+      <label><span class="sr-only">Filter cart state</span><select x-model="stateFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="open">Still out there</option><option value="cold">Never chased</option><option value="chased">Already chased</option><option value="recovered">Recovered</option><option value="all">Everything</option></select></label>
+      <label><span class="sr-only">Filter by how long the cart has been idle</span><select x-model="idleFilter" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="all">Any age</option><option value="4">Idle 4h or more</option><option value="24">Idle a day or more</option><option value="72">Idle 3 days or more</option></select></label>
+      <label><span class="sr-only">Sort carts</span><select x-model="sort" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-700"><option value="value">Highest value</option><option value="idle">Longest idle</option><option value="customer">Customer</option></select></label>
+    </div>
+    <AbandonedCartsTable :records="visibleRecords()" :loading="loading()" />
+    <div :if="filteredRecords().length > perPage" class="flex items-center justify-between"><p class="text-gray-500 text-sm dark:text-neutral-400">Page {{ page() }} of {{ totalPages() }}</p><div class="flex gap-2"><Button :disabled="page() === 1" variant="secondary" @click="previousPage()">Previous</Button><Button :disabled="page() === totalPages()" variant="secondary" @click="nextPage()">Next</Button></div></div>
+  </section>
+</div>
+
+<RecoveryCampaignDialog :open="dialogOpen()" :records="records()" :defaultIdleHours="defaultIdleHours()" :defaultCurrency="summary().currency || defaultCurrency()" :busy="saving()" :error="saveError()" @submit="createCampaign" @close="closeCompose()" />

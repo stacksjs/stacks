@@ -1,0 +1,145 @@
+<script client>
+import type { AbandonedCartRecord } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+import { reachOf } from '../../../../app/Actions/Dashboard/Marketing/abandoned-cart-records'
+
+const open = useReactiveProp('open', false)
+const records = useReactiveProp('records', [] as AbandonedCartRecord[])
+const defaultIdleHours = useReactiveProp('defaultIdleHours', 4)
+const defaultCurrency = useReactiveProp('defaultCurrency', 'USD')
+const busy = useReactiveProp('busy', false)
+const error = useReactiveProp('error', '')
+const emit = defineEmits()
+
+const name = state('')
+const subject = state('')
+const text = state('')
+const fromName = state('')
+const fromAddress = state('')
+const idleHours = state(4)
+const minimumValue = state(0)
+const scheduledAt = state('')
+let hydrated = false
+
+effect(() => {
+  if (!open()) {
+    hydrated = false
+    return
+  }
+  if (hydrated)
+    return
+  hydrated = true
+  name.set('Cart recovery')
+  subject.set('You left something behind')
+  text.set('')
+  fromName.set('')
+  fromAddress.set('')
+  idleHours.set(defaultIdleHours())
+  minimumValue.set(0)
+  scheduledAt.set('')
+})
+
+/**
+ * Who this would actually be sent to, as the rules are being set.
+ *
+ * The same function the summary is built from, run against the rows already
+ * on the page: a rule that reaches nobody should say so while somebody is
+ * still choosing it, not after they have scheduled a send to an empty room.
+ */
+function reach(): { carts: number, value: number } {
+  return reachOf(records(), Number(idleHours()) || 0, Number(minimumValue()) || 0)
+}
+
+function money(value: number): string {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: defaultCurrency() || 'USD' }).format(value)
+  }
+  catch {
+    return `${value.toFixed(2)} ${defaultCurrency()}`
+  }
+}
+
+function submit(): void {
+  const when = scheduledAt() ? new Date(scheduledAt()) : null
+  if (when && !Number.isFinite(when.getTime()))
+    return
+
+  emit('submit', {
+    name: name(),
+    subject: subject(),
+    text: text(),
+    fromName: fromName(),
+    fromAddress: fromAddress(),
+    idleHours: Number(idleHours()) || 0,
+    minimumValue: Number(minimumValue()) || 0,
+    scheduledAt: when ? when.toISOString() : null,
+    currency: defaultCurrency(),
+  })
+}
+</script>
+
+<Modal :isOpen="open()" title="New recovery campaign" description="Writes to the people whose carts went cold. The audience comes from the carts themselves, not from a list." size="lg" @close="emit('close')">
+  <div class="mt-4 space-y-4">
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Campaign name</span>
+        <input x-model="name" type="text" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+      </label>
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Subject line</span>
+        <input x-model="subject" type="text" required class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+      </label>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Wait before writing</span>
+        <div class="flex gap-2 items-center mt-1">
+          <input x-model="idleHours" type="number" min="1" max="336" class="px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+          <span class="text-gray-500 text-sm dark:text-neutral-400">hours</span>
+        </div>
+        <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Writing to somebody who is still shopping is not a recovery, it is an interruption.</span>
+      </label>
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Minimum cart value</span>
+        <input x-model="minimumValue" type="number" min="0" step="1" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+        <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave at zero to chase every cart.</span>
+      </label>
+    </div>
+
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From name</span>
+        <input x-model="fromName" type="text" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+      </label>
+      <label class="block">
+        <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">From address</span>
+        <input x-model="fromAddress" type="email" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+      </label>
+    </div>
+
+    <label class="block">
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Message</span>
+      <textarea x-model="text" rows="3" placeholder="Your cart is still here, and so is everything in it." class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700"></textarea>
+    </label>
+
+    <label class="block">
+      <span class="font-medium text-gray-700 text-sm dark:text-neutral-200">Send at</span>
+      <input x-model="scheduledAt" type="datetime-local" class="mt-1 px-3 py-2 w-full text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-900 border border-gray-300 rounded-md dark:border-neutral-700" />
+      <span class="block mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave empty to save it as a draft and send it from the campaigns screen.</span>
+    </label>
+
+    <div class="p-3 bg-gray-50 dark:bg-neutral-900/50 border border-gray-200 rounded-lg dark:border-neutral-700">
+      <p class="font-medium text-gray-900 text-sm dark:text-white">{{ reach().carts.toLocaleString() }} carts match these rules</p>
+      <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ money(reach().value) }} of goods, counted from the carts on this page. Carts with no address on them cannot be written to and are not included.</p>
+    </div>
+
+    <div :if="error()" role="alert" class="p-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950/30 border border-red-200 rounded-lg dark:border-red-900">{{ error() }}</div>
+  </div>
+
+  <template #footer>
+    <div class="flex gap-2 justify-end w-full">
+      <Button :disabled="busy()" variant="secondary" @click="emit('close')">Close</Button>
+      <Button :disabled="busy() || !name() || !subject()" :loading="busy()" @click="submit()">{{ scheduledAt() ? 'Schedule campaign' : 'Save as draft' }}</Button>
+    </div>
+  </template>
+</Modal>

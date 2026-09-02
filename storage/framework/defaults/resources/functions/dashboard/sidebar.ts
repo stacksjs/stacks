@@ -443,6 +443,7 @@ export function buildNavSections(
       { to: '/marketing/lists', icon: 'list-settings', text: 'Lists' },
       { to: '/marketing/social-posts', icon: 'clock', text: 'Social Posts' },
       { to: '/marketing/campaigns', icon: 'rocket', text: 'Campaigns' },
+      { to: '/marketing/abandoned-carts', icon: 'cart', text: 'Abandoned Carts' },
       { to: '/marketing/reviews', icon: 'star', text: 'Reviews' },
       ...categoryNavItems(discoveredModels, 'marketing', new Set(['campaign'])),
     ]])
