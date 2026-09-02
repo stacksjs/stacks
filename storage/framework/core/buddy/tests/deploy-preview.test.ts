@@ -151,3 +151,67 @@ describe('deployment preview', () => {
     expect(source).toContain(".option('--prod', descriptions.production, { default: false })")
   })
 })
+
+/**
+ * What the preview promises for a host nobody provisioned.
+ *
+ * The preview is the only place a user sees what a deploy intends before it
+ * happens, so for an SSH target it has to say "adopt" rather than "create", and
+ * it must not promise DNS records or certificates for a board on a home LAN
+ * that can never receive either.
+ */
+describe('deployment preview for an ssh host', () => {
+  const base = {
+    project: { name: 'Acme', slug: 'acme', region: 'us-west-2' },
+    cloud: { provider: 'ssh' },
+    mode: 'server',
+    sites: {
+      app: { domain: 'acme.test', root: '.', start: 'bun serve.ts', port: 3000, preStart: [] },
+    },
+  }
+
+  const build = (config: Record<string, unknown>) => createDeploymentPreview({
+    config: config as any,
+    environment: 'production',
+    resolveSiteKind,
+    applyEnvironmentToSites,
+  })
+
+  const lan = { ...base, ssh: { hosts: [{ host: 'pi-stacks.local', user: 'pi' }], profile: 'raspberry-pi' } }
+  const routable = { ...base, ssh: { hosts: [{ host: '203.0.113.9', user: 'deploy' }] } }
+
+  it('adopts the named host instead of creating a server', () => {
+    const infra = build(lan).operations.find(op => op.phase === 'infrastructure')
+    expect(infra?.label).toBe('Adopt SSH host')
+    expect(infra?.detail).toContain('pi@pi-stacks.local')
+    expect(infra?.detail).toContain('sudo')
+  })
+
+  it('promises no DNS or TLS work for a host on the local network', () => {
+    const kinds = build(lan).operations.map(op => op.phase)
+    expect(kinds).toContain('gateway')
+    expect(kinds).not.toContain('dns')
+    expect(kinds).not.toContain('tls')
+  })
+
+  it('says the routes are local-network only', () => {
+    expect(build(lan).operations.find(op => op.phase === 'gateway')?.detail).toContain('local network')
+  })
+
+  it('still promises DNS and TLS when the host is actually reachable', () => {
+    const kinds = build(routable).operations.map(op => op.phase)
+    expect(kinds).toContain('dns')
+    expect(kinds).toContain('tls')
+  })
+
+  it('names the port when the host does not use the default', () => {
+    const config = { ...base, ssh: { hosts: [{ host: 'pi.local', user: 'pi', port: 2222 }] } }
+    expect(build(config).operations.find(op => op.phase === 'infrastructure')?.detail).toContain('pi@pi.local:2222')
+  })
+
+  it('leaves the hetzner preview exactly as it was', () => {
+    const kinds = build({ ...base, cloud: { provider: 'hetzner' }, infrastructure: { compute: { size: 'medium' } } }).operations.map(op => op.phase)
+    expect(kinds).toContain('dns')
+    expect(kinds).toContain('tls')
+  })
+})

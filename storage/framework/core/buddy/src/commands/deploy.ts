@@ -19,6 +19,8 @@ import { ensureAppKey, ensureDeployEnvIsSet, ensureEnvIsSet } from './setup'
 import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
+import type { SshTarget } from './deploy-ssh-target'
+import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -608,7 +610,7 @@ export async function loadTsCloudConfig(envName?: string): Promise<TsCloudConfig
 /**
  * Resolve the cloud provider from a ts-cloud config (defaults to aws).
  */
-function resolveProvider(tsCloudConfig: any): string {
+export function resolveProvider(tsCloudConfig: any): string {
   return tsCloudConfig?.cloud?.provider
     || (process.env.CLOUD_PROVIDER as string | undefined)
     || 'aws'
@@ -737,8 +739,10 @@ export async function pollUntil(opts: {
  *   TS_CLOUD_SSH_WAIT_SECS   (default 480 = 8m)  — SSH reachability
  *   TS_CLOUD_BOOT_WAIT_SECS  (default 720 = 12m) — cloud-init + bun on PATH
  */
-async function waitForRemoteReady(ip: string): Promise<void> {
+async function waitForRemoteReady(where: string | SshTarget): Promise<void> {
   const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+  const target = toSshTarget(where)
+  const ip = target.host
 
   // Delegate the SSH exec to ts-cloud's helper. It disables host-key checking
   // (StrictHostKeyChecking=no, UserKnownHostsFile=/dev/null), the same args the
@@ -747,7 +751,7 @@ async function waitForRemoteReady(ip: string): Promise<void> {
   // changed key would otherwise fail verification and wrongly report "SSH not
   // reachable". ConnectTimeout=10 matches the previous inline check.
   const run = (remote: string): Promise<string> =>
-    sshExecOrThrow(ip, remote, { user: 'root', connectTimeoutSec: 10 })
+    sshExecOrThrow(ip, remote, remoteExecOptions(target, 10))
 
   // 1) Wait for SSH to accept connections (server may still be booting).
   const sshWaitSecs = readWaitSecs('TS_CLOUD_SSH_WAIT_SECS', 8 * 60)
@@ -760,13 +764,28 @@ async function waitForRemoteReady(ip: string): Promise<void> {
   })
   log.success('SSH is up')
 
-  // 2) Block on cloud-init, then confirm bun landed on PATH.
-  log.info('Waiting for cloud-init (installing bun + caddy)...')
+  // 2) Block on cloud-init when the host actually runs it, then confirm bun
+  // landed on PATH. A host with no cloud-init has nothing to wait for, and
+  // waiting anyway costs the full boot timeout for no information.
+  let hasCloudInit = true
   try {
-    await run('cloud-init status --wait || true')
+    await run('command -v cloud-init >/dev/null 2>&1')
   }
-  catch (err) {
-    log.debug('cloud-init status --wait returned non-zero (continuing):', err)
+  catch {
+    hasCloudInit = false
+  }
+
+  if (hasCloudInit) {
+    log.info('Waiting for cloud-init (installing bun + caddy)...')
+    try {
+      await run('cloud-init status --wait || true')
+    }
+    catch (err) {
+      log.debug('cloud-init status --wait returned non-zero (continuing):', err)
+    }
+  }
+  else {
+    log.info('No cloud-init on this host; skipping the first-boot wait.')
   }
 
   const bootWaitSecs = readWaitSecs('TS_CLOUD_BOOT_WAIT_SECS', 12 * 60)
@@ -894,7 +913,7 @@ export function orphanedFragmentDomains(
  * the decision stays in git, next to the sites it used to sit among.
  */
 export async function assertFragmentIsOurs(
-  ip: string,
+  where: string | SshTarget,
   tsCloudConfig: any,
   log: { error: (m: string) => void, info: (m: string) => void },
 ): Promise<void> {
@@ -908,7 +927,7 @@ export async function assertFragmentIsOurs(
   let remote = ''
   try {
     const { execSync } = await import('node:child_process')
-    const args = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+    const args = sshCliArgs(toSshTarget(where))
     remote = execSync(`ssh ${args.map(a => `'${a}'`).join(' ')} bash -s`, {
       input: `cat /etc/rpx/sites.d/${slug}.json 2>/dev/null || true`,
       encoding: 'utf8',
@@ -961,7 +980,7 @@ export async function assertFragmentIsOurs(
  * replacing itself.
  */
 export async function assertPortsAreFree(
-  ip: string,
+  where: string | SshTarget,
   tsCloudConfig: any,
   log: { error: (m: string) => void, info: (m: string) => void },
 ): Promise<void> {
@@ -980,7 +999,7 @@ export async function assertPortsAreFree(
   let listing = ''
   try {
     const { execSync } = await import('node:child_process')
-    const args = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=15', `root@${ip}`]
+    const args = sshCliArgs(toSshTarget(where))
     // `ss -lntp` gives port plus the owning pid; the unit name resolves the
     // owner, which is what tells a redeploy apart from a collision.
     listing = execSync(`ssh ${args.map(a => `'${a}'`).join(' ')} bash -s`, {
@@ -1881,6 +1900,14 @@ export interface TsCloudConfig {
   project?: { name?: string, slug?: string, region?: string }
   cloud?: { attachTo?: string, retiredDomains?: unknown, provider?: string }
   hetzner?: { apiToken?: string, location?: string }
+  ssh?: {
+    hosts?: Array<{ host?: string, user?: string, port?: number, privateKeyPath?: string, role?: string }>
+    hostKey?: 'pin' | 'accept-new' | 'insecure'
+    sudo?: boolean
+    profile?: 'raspberry-pi' | 'generic'
+    publicIp?: 'auto' | string
+    lan?: { hostname?: string, tls?: 'local-ca' | 'off' }
+  }
   infrastructure?: TsCloudInfrastructure
   /** A site entry may be absent; `applyEnvironmentToSites` guards for it. */
   sites?: Record<string, TsCloudSite | null | undefined>
@@ -1957,24 +1984,53 @@ export function applyEnvironmentToSites(sites: Record<string, TsCloudSite | null
  *
  * The app is served directly on the server's public IP (no domain required).
  */
-async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: DeployOptions): Promise<void> {
+async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: DeployOptions): Promise<void> {
   const verbose = options.verbose === true
   const environment = (deployEnv === 'prod' ? 'production' : deployEnv) as 'production' | 'staging' | 'development'
+  const provider = resolveProvider(tsCloudConfig)
 
-  const apiToken = resolveHetznerApiToken(tsCloudConfig)
   const persistedAttachBox = resolvePersistedAttachTargetBox(tsCloudConfig, environment)
-  if (!apiToken && !persistedAttachBox) {
-    log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
-    process.exit(ExitCode.FatalError)
-  }
+  let sshTarget: SshTarget | undefined
 
-  // Confirm the local SSH public key the driver will register on the server.
-  const sshPubKey = join(homedir(), '.ssh', 'id_ed25519.pub')
-  if (!existsSync(sshPubKey)) {
-    log.error(`SSH public key not found at ${sshPubKey}.`)
-    log.info('ts-cloud deploys to Hetzner over SSH and registers this key on the server.')
-    log.info('Generate one with:  ssh-keygen -t ed25519')
-    process.exit(ExitCode.FatalError)
+  if (provider === 'ssh') {
+    // Nothing is provisioned for this provider, so the host has to be named.
+    // That is a configuration gap rather than a failure, so say what to write.
+    const resolved = resolveSshTarget(tsCloudConfig)
+    if (!resolved) {
+      log.error('No SSH host configured for this deploy.')
+      log.info('Add one to config/cloud.ts:  ssh: { hosts: [{ host: \'pi-stacks.local\', user: \'pi\' }] }')
+      log.info('Or set TS_CLOUD_SSH_HOST (with TS_CLOUD_SSH_USER / TS_CLOUD_SSH_PORT / TS_CLOUD_SSH_KEY).')
+      process.exit(ExitCode.FatalError)
+    }
+
+    sshTarget = resolved
+
+    // A key named in config that is not on disk fails much later, inside a
+    // remote command, as a bare "Permission denied (publickey)". Say it here.
+    if (resolved.identityFile && !existsSync(resolved.identityFile)) {
+      log.error(`SSH private key not found at ${resolved.identityFile}.`)
+      log.info('Fix ssh.hosts[].privateKeyPath in config/cloud.ts, or set TS_CLOUD_SSH_KEY.')
+      process.exit(ExitCode.FatalError)
+    }
+
+    if (!resolved.identityFile)
+      log.info(`Using ssh's own key selection for ${resolved.user}@${resolved.host} (agent or ~/.ssh/config).`)
+  }
+  else {
+    const apiToken = resolveHetznerApiToken(tsCloudConfig)
+    if (!apiToken && !persistedAttachBox) {
+      log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
+      process.exit(ExitCode.FatalError)
+    }
+
+    // Confirm the local SSH public key the driver will register on the server.
+    const sshPubKey = join(homedir(), '.ssh', 'id_ed25519.pub')
+    if (!existsSync(sshPubKey)) {
+      log.error(`SSH public key not found at ${sshPubKey}.`)
+      log.info('ts-cloud deploys to Hetzner over SSH and registers this key on the server.')
+      log.info('Generate one with:  ssh-keygen -t ed25519')
+      process.exit(ExitCode.FatalError)
+    }
   }
 
   const { createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, buildSiteDeployScript } = await loadTsCloudDeployApi()
@@ -2001,10 +2057,10 @@ async function deployToHetzner(tsCloudConfig: any, deployEnv: string, options: D
     log.warn(`[deploy] ${unbackedDataMessage(unbacked)}`)
 
   try {
-    await runHetznerDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox })
+    await runSshDeploy({ tsCloudConfig, environment, verbose, docker: (options).docker === true, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite: (options).site || undefined, persistedAttachBox, provider, sshTarget })
   }
   catch (err) {
-    log.error('Hetzner deploy failed:')
+    log.error(`${deployTargetLabel(provider, sshTarget?.profile)} deploy failed:`)
     console.error(err instanceof Error ? (err.stack || err.message) : err)
     // Rethrow rather than exit: the command's own handler owns notifying and
     // setting the exit code, so a deploy failure reports the same way whatever
@@ -2106,7 +2162,7 @@ export function reconcilePartialDeployManagementDashboards(
 
 async function reconcilePartialDeployManagementDashboardsWithLiveBox(
   tsCloudConfig: any,
-  ip: string,
+  where: string | SshTarget,
 ): Promise<void> {
   const slug = String(tsCloudConfig.project?.slug || 'app').replace(/[^a-z0-9._-]+/gi, '-')
   const siteNames = Object.keys(tsCloudConfig.sites ?? {})
@@ -2134,10 +2190,11 @@ console.log(JSON.stringify(ports))
 `.trim()
   const encoded = Buffer.from(probe).toString('base64')
   const { sshExecOrThrow } = await import('@stacksjs/ts-cloud')
+  const target = toSshTarget(where)
   const output = await sshExecOrThrow(
-    ip,
+    target.host,
     `/usr/local/bin/bun -e "eval(Buffer.from('${encoded}','base64').toString())"`,
-    { user: 'root', connectTimeoutSec: 10 },
+    remoteExecOptions(target, 10),
   )
   const line = output.trim().split('\n').at(-1) || '{}'
   const livePorts = JSON.parse(line) as Record<string, number>
@@ -2150,7 +2207,8 @@ console.log(JSON.stringify(ports))
 }
 
 interface AttachedComputeBox {
-  serverId: number
+  /** Absent for the ssh provider: there is no provider API issuing server ids. */
+  serverId?: number
   serverName: string
   publicIp: string
   publicIpv6?: string
@@ -2177,9 +2235,10 @@ export function resolvePersistedAttachTargetBox(
 
   try {
     const state = JSON.parse(readFileSync(statePath, 'utf8')) as Record<string, unknown>
+    const isSshPin = state.provider === 'ssh'
     if (
       state.stackName !== stackName ||
-      typeof state.serverId !== 'number' ||
+      (!isSshPin && typeof state.serverId !== 'number') ||
       typeof state.publicIp !== 'string' ||
       !state.publicIp.trim()
     ) {
@@ -2187,10 +2246,10 @@ export function resolvePersistedAttachTargetBox(
     }
 
     return {
-      serverId: state.serverId,
+      ...(typeof state.serverId === 'number' ? { serverId: state.serverId } : {}),
       serverName: typeof state.serverName === 'string' && state.serverName
         ? state.serverName
-        : `${owner}-${environment}-app`,
+        : isSshPin ? String(state.publicIp) : `${owner}-${environment}-app`,
       publicIp: state.publicIp,
       publicIpv6: typeof state.publicIpv6 === 'string' ? state.publicIpv6 : undefined,
     }
@@ -2362,7 +2421,7 @@ async function startGithubDeployments(args: {
   return records
 }
 
-async function runHetznerDeploy(args: {
+async function runSshDeploy(args: {
   tsCloudConfig: any
   environment: 'production' | 'staging' | 'development'
   verbose: boolean
@@ -2376,17 +2435,27 @@ async function runHetznerDeploy(args: {
    *  the full config so rpx keeps every existing route; only this site's files
    *  are rebuilt/shipped and only its domain gets a DNS record. */
   onlySite?: string
+  /** 'hetzner' (ts-cloud provisions the box) or 'ssh' (the host already exists). */
+  provider: string
+  /** Where to connect for the ssh provider; absent for hetzner, which resolves an IP. */
+  sshTarget?: SshTarget
 }): Promise<void> {
-  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite, persistedAttachBox } = args
+  const { tsCloudConfig, environment, verbose, docker, createCloudDriver, deployAllComputeSites, ensureManagementDashboard, resolveSiteKind, onlySite, persistedAttachBox, provider, sshTarget } = args
 
   const startTime = performance.now()
+  const targetLabel = deployTargetLabel(provider, sshTarget?.profile)
   console.log('')
-  console.log('🚀 Deploy → Hetzner Cloud')
+  console.log(`🚀 Deploy → ${targetLabel}`)
   console.log('')
   log.info(`Project: ${tsCloudConfig.project?.slug}`)
   log.info(`Environment: ${environment}`)
-  log.info(`Location: ${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'}`)
-  log.info(`Size: ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`)
+  if (sshTarget) {
+    log.info(`Host: ${sshTarget.user}@${sshTarget.host}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}`)
+  }
+  else {
+    log.info(`Location: ${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'}`)
+    log.info(`Size: ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`)
+  }
 
   // Auto-inject the ts-cloud management dashboard (a `dashboard.<apex>` site,
   // behind Basic auth) BEFORE provisioning, so the dashboard flows through the
@@ -2410,9 +2479,9 @@ async function runHetznerDeploy(args: {
     log.warn(`Management dashboard injection skipped: ${getErrorMessage(err)}`)
   }
 
-  const driver = createCloudDriver({ config: tsCloudConfig, provider: 'hetzner' })
+  const driver = createCloudDriver({ config: tsCloudConfig, provider })
   if (!driver.provisionComputeInfrastructure) {
-    log.error('Hetzner driver does not support compute provisioning (update @stacksjs/ts-cloud).')
+    log.error(`The ${provider} driver does not support compute provisioning (update @stacksjs/ts-cloud).`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -2436,6 +2505,11 @@ async function runHetznerDeploy(args: {
     // means no lookup ran at all, which is itself worth not misreporting.
     let lookup: AttachLookupResult | undefined
     let box: AttachTargetBox | null | undefined = persistedAttachBox
+    if (!box && provider === 'ssh' && sshTarget) {
+      // Nothing to look up: for this provider the operator names the host, and
+      // there is no provider API that could confirm or contradict them.
+      box = { publicIp: sshTarget.host, serverName: sshTarget.host }
+    }
     if (!box) {
       lookup = await resolveAttachTargetBox(attachTo, environment, tsCloudConfig)
       box = lookup.box
@@ -2446,7 +2520,7 @@ async function runHetznerDeploy(args: {
     // same v6-less file. Re-resolve when the cache is missing v6 so an existing
     // tenant heals itself on its next deploy instead of needing the file
     // deleted by hand.
-    if (box && !box.publicIpv6) {
+    if (box && !box.publicIpv6 && provider !== 'ssh') {
       const resolved = await resolveAttachTargetBox(attachTo, environment, tsCloudConfig)
       if (resolved.box?.publicIpv6)
         box = { ...box, publicIpv6: resolved.box.publicIpv6 }
@@ -2480,8 +2554,9 @@ async function runHetznerDeploy(args: {
     // fragment on the box is the source of truth for what this slug currently
     // serves: if it declares domains this project does not, writing ours would
     // silently drop them. Read before write.
-    await assertFragmentIsOurs(ip, tsCloudConfig, log)
-    await assertPortsAreFree(ip, tsCloudConfig, log)
+    const guardTarget = sshTarget ? { ...sshTarget, host: ip } : ip
+    await assertFragmentIsOurs(guardTarget, tsCloudConfig, log)
+    await assertPortsAreFree(guardTarget, tsCloudConfig, log)
 
     // The attached-to box is fronted by the owner's rpx gateway (it owns :80/:443
     // and terminates TLS). Force rpx for our sites regardless of what the config
@@ -2502,7 +2577,8 @@ async function runHetznerDeploy(args: {
     // cert forever, with no unit to ever issue the real one.
     const compute = ((tsCloudConfig.infrastructure ??= {}).compute ??= {}) as Record<string, any>
     compute.webServer = 'rpx'
-    compute.proxy = { onDemandTls: true, ...(compute.proxy ?? {}), engine: 'rpx' }
+    const wantsPublicTls = dnsPublishingAllowed({ provider, publicIp: ip, sites: tsCloudConfig.sites })
+    compute.proxy = { ...(wantsPublicTls ? { onDemandTls: true } : {}), ...(compute.proxy ?? {}), engine: 'rpx' }
     // Pin the shared box in OUR own driver state so ts-cloud's deploy targets it
     // (keyed by our project's stack name — we never touch the owner's state file).
     // This is the exact shape ts-cloud's readDriverState expects; writing it
@@ -2518,41 +2594,60 @@ async function runHetznerDeploy(args: {
     const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
     const stateDir = join(process.cwd(), 'storage', 'cloud', 'state')
     mkdirSync(stateDir, { recursive: true })
-    writeFileSync(join(stateDir, `${stackName}.json`), `${JSON.stringify({
-      stackName,
-      serverId: box.serverId,
-      serverName: box.serverName,
-      publicIp: ip,
-      // Persisted because the next deploy short-circuits the Hetzner lookup and
-      // reads this file instead (resolvePersistedAttachTargetBox). Omitting it
-      // silently downgraded every deploy after the first to IPv4-only: the box
-      // has a public v6 and serves on it, but the AAAA pass is skipped when
-      // this is undefined, so tenants ended up reachable over v4 alone.
-      ...(ipv6 ? { publicIpv6: ipv6 } : {}),
-      sshUser: 'root',
-      deployStoragePath: '/var/ts-cloud/staging',
-    }, null, 2)}\n`)
+    const attachPin = provider === 'ssh' && sshTarget
+      ? sshStatePin({ stackName, target: { ...sshTarget, host: ip }, lanIp: ip })
+      : {
+          stackName,
+          serverId: box.serverId,
+          serverName: box.serverName,
+          publicIp: ip,
+          // Persisted because the next deploy short-circuits the Hetzner lookup
+          // and reads this file instead (resolvePersistedAttachTargetBox).
+          // Omitting it silently downgraded every deploy after the first to
+          // IPv4-only: the box has a public v6 and serves on it, but the AAAA
+          // pass is skipped when this is undefined, so tenants ended up
+          // reachable over v4 alone.
+          ...(ipv6 ? { publicIpv6: ipv6 } : {}),
+          sshUser: 'root',
+          deployStoragePath: '/var/ts-cloud/staging',
+        }
+    writeFileSync(join(stateDir, `${stackName}.json`), `${JSON.stringify(attachPin, null, 2)}\n`)
   }
   else {
-    log.info('Provisioning Hetzner compute infrastructure...')
+    log.info(provider === 'ssh' ? `Adopting ${sshTarget?.host ?? 'host'} (preflight, then bootstrap if needed)...` : 'Provisioning Hetzner compute infrastructure...')
     // Provision with loopback-only site ports stripped so the firewall never
     // exposes them (#1950); the full config still drives deployAllComputeSites.
     const outputs = await driver.provisionComputeInfrastructure({ config: scrubLoopbackSitePortsForFirewall(tsCloudConfig), environment })
     ip = outputs.appPublicIp
     ipv6 = outputs.appPublicIpv6
-    log.success('Hetzner compute infrastructure ready')
-    if (outputs.appInstanceId)
+    log.success(provider === 'ssh' ? 'Host ready' : 'Hetzner compute infrastructure ready')
+    if (outputs.appInstanceId && provider !== 'ssh')
       log.info(`Server ID: ${outputs.appInstanceId}`)
+
+    // Pin the adopted host so a later --site or attach deploy resolves it
+    // without repeating discovery or the bootstrap.
+    if (provider === 'ssh' && sshTarget && ip) {
+      try {
+        const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
+        const pin = sshStatePin({ stackName, target: sshTarget, deployStoragePath: outputs.deployStoragePath })
+        const dir = join(process.cwd(), 'storage', 'cloud', 'state')
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(join(dir, `${stackName}.json`), `${JSON.stringify(pin, null, 2)}\n`)
+      }
+      catch (err) {
+        log.warn(`Could not record the ssh host pin: ${getErrorMessage(err)}`)
+      }
+    }
   }
 
   if (ip)
-    log.info(`Server IP: ${ip}`)
+    log.info(provider === 'ssh' ? `Host: ${ip}` : `Server IP: ${ip}`)
   if (!ip) {
-    log.error('Provisioned server has no public IP - cannot deploy over SSH.')
+    log.error('The deploy target has no reachable address - cannot deploy over SSH.')
     process.exit(ExitCode.FatalError)
   }
 
-  await waitForRemoteReady(ip)
+  await waitForRemoteReady(sshTarget ? { ...sshTarget, host: ip } : ip)
 
   // A narrowed app deploy intentionally leaves the management dashboard unit
   // untouched. Resolve its REAL systemd port before regenerating rpx so a stale
@@ -2560,7 +2655,7 @@ async function runHetznerDeploy(args: {
   // deploy never started. If no dashboard service is active, omit its route
   // rather than publishing a guaranteed 502.
   if (onlySite && !attachTo)
-    await reconcilePartialDeployManagementDashboardsWithLiveBox(tsCloudConfig, ip)
+    await reconcilePartialDeployManagementDashboardsWithLiveBox(tsCloudConfig, sshTarget ? { ...sshTarget, host: ip } : ip)
 
   // Package each site as source-only: dependencies are NOT shipped. They are
   // installed on the server from the committed lockfile via the site's
@@ -2747,7 +2842,7 @@ async function runHetznerDeploy(args: {
   // whether any file) the app opens is decided by the site's resolved
   // DB_CONNECTION/DB_DATABASE_PATH, not by config/cloud.ts. Requires a ts-cloud
   // that can adopt existing state and honour explicit targets — checked once,
-  // fatally, in deployToHetzner (tsCloudPersistentStateSupport).
+  // fatally, in deployOverSsh (tsCloudPersistentStateSupport).
   // The pre-migration dump is spliced in LAST, so it lands in a preStart that
   // is already final, and it goes to the same project-level directory the
   // database itself lives under - outside every release tree, so the release
@@ -2859,6 +2954,22 @@ async function runHetznerDeploy(args: {
     },
   })
 
+  // Whether the world may be told about this deploy.
+  //
+  // A Hetzner box always has a routable address, so nothing changes there. A
+  // host reached over SSH may well be sitting on a home LAN, and publishing its
+  // address would put 192.168.x.y in public DNS: not merely useless, it points
+  // every visitor's browser at whatever occupies that address on THEIR network.
+  // ACME has the same problem from the other side, since a challenge cannot
+  // reach a host the internet cannot route to.
+  const dnsAllowed = dnsPublishingAllowed({ provider, publicIp: ip, sites })
+  if (ok && !dnsAllowed && provider === 'ssh') {
+    const reachable = lanUrls(onlySite ? { [onlySite]: sites[onlySite] } : sites, sshTarget ?? hetznerTarget(ip), tsCloudConfig.ssh?.lan?.hostname)
+    log.info('Private host: skipping DNS, TLS issuance, CDN and mail reconciliation.')
+    log.info(`Reachable on the local network at ${reachable.join(', ')}`)
+    log.info('To publish a domain, give the host a routable address and set ssh.publicIp, or set TS_CLOUD_SSH_PUBLISH_DNS=1.')
+  }
+
   // Reconcile DNS for every site that declares a public domain. Hetzner deploys
   // historically had NO DNS step (Route53 reconciliation only ran on the AWS
   // path), so domains had to be pointed by hand. We now resolve a DNS provider
@@ -2866,7 +2977,7 @@ async function runHetznerDeploy(args: {
   // env) and upsert A records → the box IP. Non-fatal: a DNS hiccup shouldn't
   // fail an otherwise-successful release.
   let publishedDns: string[] = []
-  if (ok) {
+  if (ok && dnsAllowed) {
     // The same autoWww setting the gateway was built with, so the hostnames DNS
     // publishes and the routes rpx serves stay one set.
     const autoWww = tsCloudConfig.infrastructure?.compute?.proxy?.autoWww
@@ -2900,7 +3011,7 @@ async function runHetznerDeploy(args: {
       const { execSync } = await import('node:child_process')
       const slug = tsCloudConfig.project?.slug || 'app'
       const unit = `rpx-cert-renew-${slug}.service`
-      const certSshArgs = ['-o', 'StrictHostKeyChecking=accept-new', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=20', `root@${ip}`]
+      const certSshArgs = sshCliArgs(sshTarget ? { ...sshTarget, host: ip } : hetznerTarget(ip), { connectTimeoutSec: 20 })
       const out = execSync(`ssh ${certSshArgs.map(a => `'${a}'`).join(' ')} bash -s`, {
         input: `systemctl start ${unit} 2>&1 || true\nsystemctl is-active ${unit} >/dev/null 2>&1 && echo TLSUNIT:running || echo TLSUNIT:done\njournalctl -u ${unit} -n 20 --no-pager 2>/dev/null | grep -E 'Certificate written|Skipping|error|Error' | tail -5 || true`,
         encoding: 'utf8',
@@ -2926,7 +3037,7 @@ async function runHetznerDeploy(args: {
   // A records above — e.g. verification TXT, extra CNAMEs. Strictly additive:
   // only creates declared records that are missing (and never a private IP),
   // never deletes or overwrites. Best-effort, same as the reconcilers around it.
-  if (ok)
+  if (ok && dnsAllowed)
     await reconcileConfigDns(onlySite ? { [onlySite]: sites[onlySite] } : sites, log)
 
   // Put the frontends behind Cloudflare's edge, and bust the cache.
@@ -2941,14 +3052,14 @@ async function runHetznerDeploy(args: {
   // This is also where a release becomes visible: HTML is cached at the edge,
   // so without the purge at the tail of this step a deploy would ship new
   // assets that nobody is served until the TTL lapses.
-  if (ok)
+  if (ok && dnsAllowed)
     await reconcileCloudflareCdnForDeploy(tsCloudConfig, ip, ipv6, log)
 
   // Reconcile this app's mail routing onto the (shared) mail server from
   // config/email.ts: register its local domain and provision its auto-forward
   // rules (forwards.json + compiled RFC 5228 Sieve). Idempotent, merge-based and best-effort — it never
   // removes another tenant's domains/forwards and never fails the release.
-  if (ok) {
+  if (ok && dnsAllowed) {
     const mailOwner = mailServerOwnerFromConfig(emailConfig)
     let mailIp: string | undefined = ip
     if (mailOwner) {
@@ -2981,11 +3092,14 @@ async function runHetznerDeploy(args: {
 
   console.log('')
   if (ok) {
-    await outro(`Deployed to Hetzner. Your site is live at http://${ip}:3000`, { startTime, useSeconds: true })
+    const liveAt = dnsAllowed
+      ? (publishedDns[0] ? `https://${publishedDns[0]}` : `http://${ip}:3000`)
+      : lanUrls(onlySite ? { [onlySite]: sites[onlySite] } : sites, sshTarget ?? hetznerTarget(ip), tsCloudConfig.ssh?.lan?.hostname).join(', ')
+    await outro(`Deployed to ${targetLabel}. Your site is live at ${liveAt}`, { startTime, useSeconds: true })
     log.info(`Coming-soon page: http://${ip}:3000  (bypass with ?secret=…)`)
   }
   else {
-    await outro('Hetzner deploy reported a failure - see the per-instance output above.', { startTime, useSeconds: true })
+    await outro(`${targetLabel} deploy reported a failure - see the per-instance output above.`, { startTime, useSeconds: true })
     process.exit(ExitCode.FatalError)
   }
 }
@@ -3169,7 +3283,7 @@ systemctl reset-failed`
 /**
  * The Hetzner token, resolved the same way everywhere.
  *
- * `deployToHetzner` accepted `hetzner.apiToken` from the config or either env
+ * `deployOverSsh` accepted `hetzner.apiToken` from the config or either env
  * var, while `resolveAttachTargetBox` read only `process.env.HCLOUD_TOKEN`. A
  * project that configured the token in `config/cloud.ts`, or set only
  * `HETZNER_API_TOKEN`, therefore passed the token check at the top of the deploy
@@ -3189,7 +3303,8 @@ export function resolveHetznerApiToken(tsCloudConfig?: TsCloudConfig): string | 
  * mean either lying about the pin or re-checking it at every use.
  */
 export interface AttachTargetBox {
-  serverId: number
+  /** Absent for the ssh provider: there is no provider API issuing server ids. */
+  serverId?: number
   serverName: string
   publicIp?: string
   publicIpv6?: string
@@ -4782,12 +4897,13 @@ export function deploy(buddy: CLI): void {
         }
       }
 
-      // Non-AWS providers (currently Hetzner) provision + deploy over SSH via
-      // ts-cloud and have nothing to do with the AWS CloudFormation path below.
-      // Route them off early, before any AWS credential / domain checks run.
+      // Non-AWS providers (a Hetzner box, or any Linux host reached over SSH)
+      // provision + deploy through ts-cloud and have nothing to do with the AWS
+      // CloudFormation path below. Route them off before any AWS credential or
+      // domain check runs.
       const tsCloudConfig = await loadTsCloudConfig(deployEnvName)
-      if (tsCloudConfig && resolveProvider(tsCloudConfig) === 'hetzner') {
-        await deployToHetzner(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options)
+      if (tsCloudConfig && isSshPipelineProvider(resolveProvider(tsCloudConfig))) {
+        await deployOverSsh(applyDeploymentDomainOverride(tsCloudConfig, options.domain), deployEnv, options)
         return
       }
 

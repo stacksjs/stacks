@@ -1,4 +1,6 @@
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import process from 'node:process'
 import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, text, underline } from "@stacksjs/cli"
 import {
@@ -19,6 +21,7 @@ import { hasTTY, isCI } from '@stacksjs/env'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resultFailed } from '../result'
+import { isSshPipelineProvider, sshFleetFromConfigAndState } from './deploy-ssh-target'
 
 /**
  * Create a temporary IAM role to allow CloudFormation to delete a stuck stack
@@ -219,14 +222,35 @@ async function refuse(...messages: string[]): Promise<never> {
   return log.exit(messages[messages.length - 1] as string, ExitCode.FatalError)
 }
 
-/** Only the Hetzner fleet can be listed, and saying so beats printing an empty one. */
-async function assertHetznerProvider(tsCloudConfig: any, command: string): Promise<void> {
+/** Only an SSH-deployed fleet can be listed, and saying so beats printing an empty one. */
+async function assertFleetProvider(tsCloudConfig: any, command: string): Promise<void> {
   const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
-  if (provider === 'hetzner')
+  if (isSshPipelineProvider(provider))
     return
 
   await log.info('The on-box half (the rpx gateway registry) is provider-independent; the server listing is not yet.')
-  await log.exit(`\`buddy ${command}\` can only list Hetzner servers, and this project's provider is '${provider}'.`, ExitCode.FatalError)
+  await log.exit(`\`buddy ${command}\` can list Hetzner and ssh servers, and this project's provider is '${provider}'.`, ExitCode.FatalError)
+}
+
+/** Every ssh state pin this project has written, newest layout only. */
+function readSshStatePins(cwd = process.cwd()): Array<Record<string, unknown>> {
+  const dir = join(cwd, 'storage', 'cloud', 'state')
+  if (!existsSync(dir))
+    return []
+
+  const pins: Array<Record<string, unknown>> = []
+  for (const file of readdirSync(dir)) {
+    if (!file.endsWith('.json'))
+      continue
+    try {
+      pins.push(JSON.parse(readFileSync(join(dir, file), 'utf8')) as Record<string, unknown>)
+    }
+    catch {
+      // A pin this process cannot read is one the deploy will rewrite; it is
+      // not worth failing a listing over.
+    }
+  }
+  return pins
 }
 
 /**
@@ -239,6 +263,18 @@ async function assertHetznerProvider(tsCloudConfig: any, command: string): Promi
  * `describeAttachLookupFailure` already learned in the deploy command.
  */
 async function listFleet(tsCloudConfig: any): Promise<{ servers: any[], problem?: string }> {
+  // An ssh project has no API to enumerate: its fleet is exactly the hosts the
+  // config names plus the ones previous deploys pinned.
+  if ((tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER) === 'ssh') {
+    const servers = sshFleetFromConfigAndState(tsCloudConfig, readSshStatePins())
+    return {
+      servers,
+      problem: servers.length === 0
+        ? 'No ssh hosts are configured. Add one under `ssh.hosts` in config/cloud.ts, or set TS_CLOUD_SSH_HOST.'
+        : undefined,
+    }
+  }
+
   const { HetznerClient, resolveHetznerApiToken, toInventoryServer } = await import('@stacksjs/ts-cloud')
   const apiToken = resolveHetznerApiToken(tsCloudConfig)
 
@@ -977,7 +1013,7 @@ export function cloud(buddy: CLI): void {
       const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
       const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
       const slug = tsCloudConfig?.project?.slug || 'app'
-      await assertHetznerProvider(tsCloudConfig, 'cloud:sites')
+      await assertFleetProvider(tsCloudConfig, 'cloud:sites')
 
       const listing = await listFleet(tsCloudConfig)
       if (listing.problem)
@@ -1044,7 +1080,7 @@ export function cloud(buddy: CLI): void {
       const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
       const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
       const slug = tsCloudConfig?.project?.slug || 'app'
-      await assertHetznerProvider(tsCloudConfig, 'cloud:attach')
+      await assertFleetProvider(tsCloudConfig, 'cloud:attach')
 
       const listing = await listFleet(tsCloudConfig)
       if (listing.problem)

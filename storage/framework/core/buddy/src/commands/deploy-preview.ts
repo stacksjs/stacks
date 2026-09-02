@@ -1,4 +1,5 @@
 import type { TsCloudConfig } from './deploy'
+import { dnsPublishingAllowed, resolveSshTarget } from './deploy-ssh-target'
 import type {
   DeploymentPreview,
   DeploymentPreviewOperation,
@@ -153,7 +154,22 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
     operation('validate', 'Validate deployment inputs', `Resolve the ${options.environment} configuration and list the prerequisites checked before a real deployment.`, siteNames),
   ]
 
-  if (provider === 'hetzner') {
+  // An ssh host is adopted rather than created: the preview should promise a
+  // check and a bootstrap, not a server that will come into existence.
+  const sshTarget = provider === 'ssh' ? resolveSshTarget(config) : null
+  const publishesDns = dnsPublishingAllowed({
+    provider,
+    publicIp: sshTarget?.host,
+    sites: configuredSites as Record<string, { domain?: string | string[] } | null | undefined>,
+  })
+
+  if (provider === 'ssh') {
+    const where = sshTarget ? `${sshTarget.user}@${sshTarget.host}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}` : 'the configured host'
+    operations.push(attachTo
+      ? operation('infrastructure', 'Use attached server', `Resolve the existing '${attachTo}' server at ${where} and verify that this project owns its gateway fragment and ports.`, siteNames)
+      : operation('infrastructure', 'Adopt SSH host', `Check ${where} over SSH (architecture, OS, memory, disk, sudo, clock, outbound HTTPS), then install bun, the rpx gateway and the systemd units if they are missing.`, siteNames))
+  }
+  else if (provider === 'hetzner') {
     operations.push(attachTo
       ? operation('infrastructure', 'Use attached server', `Resolve the existing '${attachTo}' server and verify that this project owns its gateway fragment and ports.`, siteNames)
       : operation('infrastructure', 'Reconcile compute infrastructure', `Create or reuse the ${config.infrastructure?.compute?.size || 'configured'} Hetzner server, firewall, SSH key, and managed services.`, siteNames))
@@ -199,9 +215,16 @@ export function createDeploymentPreview(options: CreateDeploymentPreviewOptions)
   }
 
   if (publicSites.length > 0) {
-    operations.push(operation('gateway', 'Reconcile public routes', 'Regenerate the reverse-proxy routes from the complete environment-aware site model.', publicSites.map(site => site.name)))
-    operations.push(operation('dns', 'Reconcile DNS records', 'Publish the configured public domains through their resolved DNS providers.', publicSites.map(site => site.name)))
-    operations.push(operation('tls', 'Reconcile TLS certificates', 'Issue or renew certificates for public domains and reload the gateway when records change.', publicSites.map(site => site.name)))
+    operations.push(operation('gateway', 'Reconcile public routes', publishesDns
+      ? 'Regenerate the reverse-proxy routes from the complete environment-aware site model.'
+      : 'Regenerate the reverse-proxy routes from the complete environment-aware site model, served over the local network only.', publicSites.map(site => site.name)))
+
+    // A private host publishes nothing and asks for no certificate: neither a
+    // public A record nor an ACME challenge can reach it.
+    if (publishesDns) {
+      operations.push(operation('dns', 'Reconcile DNS records', 'Publish the configured public domains through their resolved DNS providers.', publicSites.map(site => site.name)))
+      operations.push(operation('tls', 'Reconcile TLS certificates', 'Issue or renew certificates for public domains and reload the gateway when records change.', publicSites.map(site => site.name)))
+    }
   }
 
   if (options.docker) {
