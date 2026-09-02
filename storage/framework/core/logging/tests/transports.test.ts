@@ -22,13 +22,37 @@ const TRACE_KEY = Symbol.for('stacks.router.traceStorage')
 
 let detachers: Array<() => void> = []
 
-/** Attach a sink that records everything it is given, and clean it up after. */
+/*
+ * Records emitted by anything other than this suite.
+ *
+ * `bun test` runs every file in one process and the framework logs from
+ * background work - `[orm] Defining model: ...` arrives while a later file is
+ * mid-assertion, from model loading a previous suite started. A sink that
+ * captures EVERYTHING therefore cannot support a count assertion: six tests
+ * here failed depending only on which file ran before them
+ * (stacksjs/stacks#2413).
+ *
+ * Filtering on the emitter keeps every assertion in this file exactly as
+ * strict about what this suite logs, while ignoring traffic it did not cause.
+ */
+const FOREIGN_PREFIXES = ['[orm]', '[database]', '[email', '[search', '[queue']
+
+function isForeign(record: LogRecord): boolean {
+  const message = typeof record.message === 'string' ? record.message : String(record.message)
+
+  return FOREIGN_PREFIXES.some(prefix => message.startsWith(prefix))
+}
+
+/** Attach a sink that records everything this suite logs, and clean it up after. */
 function sink(options: Partial<LogTransport> = {}): LogRecord[] {
   const records: LogRecord[] = []
   detachers.push(registerTransport({
     name: options.name ?? 'test-sink',
     level: options.level,
-    log: record => records.push(record),
+    log: (record) => {
+      if (!isForeign(record))
+        records.push(record)
+    },
     flush: options.flush,
   }))
   return records
@@ -195,7 +219,7 @@ describe('isolation', () => {
     }))
     detachers.push(registerTransport({
       name: 'fine',
-      log: record => good.push(record),
+      log: (record) => { if (!isForeign(record)) good.push(record) },
     }))
 
     // The logger is very often the thing reporting a failure. It must not
@@ -211,7 +235,9 @@ describe('isolation', () => {
     const buffered: LogRecord[] = []
     detachers.push(registerTransport({
       name: 'buffered',
-      log: record => buffered.push(record),
+      // Same foreign-record filter as `sink()`: background framework logging
+      // lands here too, and this asserts on a count.
+      log: (record) => { if (!isForeign(record)) buffered.push(record) },
       flush: async () => { flushed++ },
     }))
 

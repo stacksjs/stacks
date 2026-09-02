@@ -196,12 +196,31 @@ const templateRoots: Array<(relativePath: string) => string> = [
  */
 let templateRegistry: Record<string, { path: string, type: 'stx' | 'html' }> | null = null
 let templateRegistryLoaded = false
+/*
+ * The cwd the cached registry was resolved against.
+ *
+ * Every path in the registry comes from `storagePath()`, which walks up from
+ * `process.cwd()` - so the cache is only valid for the directory it was built
+ * in. Caching it across a `chdir` meant a project root that had been warmed
+ * once kept answering for a different root: `core/email`'s template-resolution
+ * suite chdirs into a temp project, and any earlier file in the run that
+ * resolved a template left it holding the real repo's paths, so the userland
+ * override under the temp root was never seen (stacksjs/stacks#2413).
+ *
+ * `resetTemplateRegistry()` below is still the explicit way to drop it; this
+ * just means no caller has to know to.
+ */
+let templateRegistryCwd: string | null = null
 
 function loadTemplateRegistry(): Record<string, { path: string, type: 'stx' | 'html' }> | null {
-  if (templateRegistryLoaded)
+  const cwd = process.cwd()
+
+  if (templateRegistryLoaded && templateRegistryCwd === cwd)
     return templateRegistry
 
+  templateRegistry = null
   templateRegistryLoaded = true
+  templateRegistryCwd = cwd
 
   try {
     const dir = storagePath('framework/auto-imports')
@@ -228,6 +247,7 @@ function loadTemplateRegistry(): Record<string, { path: string, type: 'stx' | 'h
 export function resetTemplateRegistry(): void {
   templateRegistry = null
   templateRegistryLoaded = false
+  templateRegistryCwd = null
 }
 
 function resolveTemplatePath(templateName: string): { path: string, type: 'stx' | 'html' } | null {

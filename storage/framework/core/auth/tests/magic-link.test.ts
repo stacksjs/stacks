@@ -102,6 +102,16 @@ beforeEach(async () => {
 })
 
 afterAll(() => {
+  /*
+   * Put `@stacksjs/email` back. `mock.module` is process-global and never rolled
+   * back, so leaving the stub installed handed every later file a `mail` with
+   * two methods and a `template` that returns empty strings - which is why
+   * `core/email` lost nine tests in a full-tree run while passing on its own
+   * (stacksjs/stacks#2413). The three sibling files that mock this module
+   * already restore it; this one did not.
+   */
+  mock.module('@stacksjs/email', () => realEmail)
+
   for (const suffix of ['', '-wal', '-shm']) {
     try {
       if (existsSync(`${DB_PATH}${suffix}`))
