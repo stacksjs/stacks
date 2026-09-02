@@ -4,6 +4,18 @@ import { DatabaseFeatureFlagDriver } from '../src/drivers/database'
 import { FeatureFlagStoreError } from '../src/errors'
 import { featureFlagMigrationSql } from '../src/schema'
 
+/*
+ * `setConfig` is PROCESS-WIDE query-builder state, not this file's own.
+ *
+ * Pointing it at `:memory:` here and leaving it there meant every later test
+ * file in the run shared a query-builder configured for a database this file
+ * owns - and once the in-memory handle went away, `db` queries elsewhere threw
+ * `RangeError: Cannot use a closed database`. It cost `core/email` two tests
+ * that pass on their own (stacksjs/stacks#2415).
+ *
+ * The `afterAll` below hands the shared caches back so the next file rebuilds
+ * from the app config.
+ */
 setConfig({ dialect: 'sqlite', database: { database: ':memory:' } } as any)
 const database = createQueryBuilder() as any
 const driver = new DatabaseFeatureFlagDriver(database, {
@@ -14,6 +26,20 @@ const driver = new DatabaseFeatureFlagDriver(database, {
 
 afterAll(async () => {
   await database.unsafe('DROP TABLE IF EXISTS test_feature_flags').execute()
+
+  /*
+   * Drop both cached layers - the Stacks `db` proxy's query builder and the
+   * connection bun-query-builder caches under it - so nothing downstream is
+   * left holding this file's in-memory database.
+   *
+   * Imported HERE rather than at module scope: importing `@stacksjs/database`
+   * before the `setConfig` above initializes the shared config against the app
+   * database, and this file's own tests then run against a connection it does
+   * not own.
+   */
+  const { resetDatabaseConnection } = await import('@stacksjs/database')
+
+  resetDatabaseConnection()
 })
 
 describe('DatabaseFeatureFlagDriver', () => {
