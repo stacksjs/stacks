@@ -72,7 +72,7 @@ function stateClass(record: AbandonedCartRecord): string {
         <tr><td colspan="5" class="px-4 py-12 text-center text-gray-500 text-sm dark:text-neutral-400"><span class="inline-block mr-2 h-4 w-4 animate-spin i-hugeicons-loading-03"></span>Loading carts</td></tr>
       </template>
       <template :else-if="records().length === 0">
-        <tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-shopping-cart-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No carts to chase</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Nothing matches these filters — which, for once, is the good outcome.</p></td></tr>
+        <tr><td colspan="5" class="px-4 py-14 text-center"><span class="inline-block h-6 w-6 text-gray-400 i-hugeicons-shopping-cart-01"></span><p class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No carts to chase</p><p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Nothing matches these filters, which, for once, is the good outcome.</p></td></tr>
       </template>
       <template :else>
         <template :for="record in records">

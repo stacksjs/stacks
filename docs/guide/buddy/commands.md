@@ -2120,6 +2120,7 @@ Refresh database/types.d.ts for db.selectFrom autocomplete (stacksjs/stacks#1923
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--dry-run` | Print the would-be file content without writing | boolean, optional | `false` |
+| `--framework` | Write the framework's own FrameworkSchema instead of the app's DatabaseSchema | boolean, optional | `false` |
 
 ### `generate:entries`
 
