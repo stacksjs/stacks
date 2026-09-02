@@ -41,11 +41,20 @@ import process from 'node:process'
  * Barrels whose contents depend only on which files exist.
  *
  * Deliberately NOT `models.ts` or `types/server-auto-imports.d.ts`; see above.
+ *
+ * `actions` and `emails` joined the list once it was confirmed that the gating
+ * above is specific to models - `OPTIONAL_MODEL_MODULES` in
+ * `core/server/src/imports.ts` is the only `configEnabled` caller, and it feeds
+ * `resolveDefaultModelDirs` alone. Both of these are plain directory scans, so
+ * the question "is this file current?" is as well posed for them as for the
+ * other three (stacksjs/stacks#2408).
  */
 const UNGATED_BARRELS = [
   'storage/framework/auto-imports/jobs.ts',
   'storage/framework/auto-imports/controllers.ts',
   'storage/framework/auto-imports/functions.ts',
+  'storage/framework/auto-imports/actions.ts',
+  'storage/framework/auto-imports/emails.ts',
 ]
 
 /**
