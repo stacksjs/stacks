@@ -75,9 +75,31 @@ const plans = [{
   metadata: { createdBy: 'test', version: '1.0.0' },
 }]
 
-mock.module('@stacksjs/logging', () => ({ log: { debug() {}, error() {}, info() {}, warn() {} } }))
-mock.module('@stacksjs/config', () => ({ saas: { plans } }))
-mock.module('@stacksjs/payments', () => ({ stripe }))
+/*
+ * Every mock below spreads the module it stands in for.
+ *
+ * `mock.module` is process-global in Bun and is never rolled back, so whatever
+ * these leave behind is what every test file that runs after this one imports.
+ * The logging mock used to supply four methods where `log` has sixteen, and the
+ * config mock a single key where the module has dozens - so a later file
+ * calling `log.success(...)` got "log.success is not a function", and
+ * `deploy-env.test.ts` failed seven tests that pass on their own
+ * (stacksjs/stacks#2413).
+ *
+ * Spreading keeps the replacement a faithful stand-in: silence the output this
+ * file does not want, override the data it needs, leave the rest alone.
+ */
+const actualLogging = await import('@stacksjs/logging')
+const actualConfig = await import('@stacksjs/config')
+const actualPayments = await import('@stacksjs/payments')
+
+const silentLog = Object.fromEntries(
+  Object.keys(actualLogging.log).map(method => [method, () => {}]),
+) as typeof actualLogging.log
+
+mock.module('@stacksjs/logging', () => ({ ...actualLogging, log: silentLog }))
+mock.module('@stacksjs/config', () => ({ ...actualConfig, saas: { plans } }))
+mock.module('@stacksjs/payments', () => ({ ...actualPayments, stripe }))
 
 const { createStripeProduct, formatSetupReport } = await import('../src/billable/setup-products')
 

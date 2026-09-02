@@ -626,7 +626,39 @@ export class Schedule implements UntimedSchedule {
           }
         }
 
-        const child = spawn(process.execPath, ['-e', `(${innerTask.toString()})()`], {
+        /*
+         * A background task runs by having its SOURCE evaluated in a fresh
+         * process, so a function with no source cannot run at all. A native or
+         * bound function stringifies to `function () { [native code] }`, which
+         * is not valid JavaScript: the child died on a parse error whose text
+         * arrived on the parent's stderr with no task name attached, and
+         * `bun test` reported it as an unexplained non-zero exit with no
+         * summary (stacksjs/stacks#2413).
+         *
+         * Refused here instead, where the task's name is still in hand.
+         */
+        const source = innerTask.toString()
+        if (source.includes('[native code]')) {
+          log.error(
+            `[scheduler] Background task ${taskName} cannot run: its function has no serializable source `
+            + `(it is native or bound), and a background task is evaluated from source in a new process. `
+            + `Wrap the call in a plain function - \`.run(() => nativeFn())\` - or drop \`.runInBackground()\`.`,
+          )
+          if (closeFd !== null) {
+            try {
+              // eslint-disable-next-line ts/no-require-imports
+              const { closeSync } = require('node:fs') as typeof import('node:fs')
+              closeSync(closeFd)
+            }
+            catch {
+              // Already closed, or never opened: nothing to recover.
+            }
+          }
+
+          return
+        }
+
+        const child = spawn(process.execPath, ['-e', `(${source})()`], {
           detached: true,
           stdio: ['ignore', stdoutFd, stderrFd],
         })

@@ -20,8 +20,11 @@
  */
 
 import { describe, expect, it } from 'bun:test'
+import process from 'node:process'
 import { defaults } from '../src/defaults'
-import { overrides } from '../src/overrides'
+import { defaultsForOverrides, overrides } from '../src/overrides'
+
+
 
 describe('overrides pre-load shape', () => {
   it('carries app.url synchronously, before loadUserConfigs resolves', () => {
@@ -39,9 +42,36 @@ describe('overrides pre-load shape', () => {
   })
 
   it('still lets APP_NAME / APP_ENV win, as they did before', () => {
-    // These two were the only keys the hand-written fallback set, and both
-    // read from process.env. That behaviour has to survive the change.
-    expect(overrides.app?.name).toBe(process.env.APP_NAME || defaults.app?.name || 'Stacks')
-    expect(overrides.app?.env).toBe(process.env.APP_ENV || 'production')
+    /*
+     * Built here rather than read off the exported `overrides`.
+     *
+     * That object is a snapshot taken whenever this module was first evaluated
+     * in the process - which, in a full-tree run, is before twelve other test
+     * files that set `APP_ENV = 'testing'` at module scope for their database
+     * setup. Asserting on it compared two different moments and failed for a
+     * reason unrelated to the rule under test (stacksjs/stacks#2413). Calling
+     * the builder pins the rule itself.
+     */
+    const saved = { name: process.env.APP_NAME, env: process.env.APP_ENV }
+
+    try {
+      process.env.APP_NAME = 'From The Environment'
+      process.env.APP_ENV = 'staging'
+      expect(defaultsForOverrides().app?.name).toBe('From The Environment')
+      expect(defaultsForOverrides().app?.env).toBe('staging')
+
+      delete process.env.APP_NAME
+      delete process.env.APP_ENV
+      expect(defaultsForOverrides().app?.name).toBe(defaults.app?.name || 'Stacks')
+      expect(defaultsForOverrides().app?.env).toBe('production')
+    }
+    finally {
+      for (const [key, value] of Object.entries({ APP_NAME: saved.name, APP_ENV: saved.env })) {
+        if (value === undefined)
+          delete process.env[key]
+        else
+          process.env[key] = value
+      }
+    }
   })
 })

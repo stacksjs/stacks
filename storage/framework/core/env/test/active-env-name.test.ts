@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { activeEnvName, autoLoadEnv } from '../src/plugin'
+import { activeEnvName, autoLoadEnv, resetPrivateKeyCache } from '../src/plugin'
 
 /**
  * Which environment the env layer thinks it is running as decides which
@@ -23,9 +23,22 @@ beforeEach(() => {
   delete process.env.NODE_ENV
   delete process.env.APP_ENV
   delete process.env.DOTENV_ENV
+
+  /*
+   * `loadedEnvName` is module state that outranks all three variables above, so
+   * clearing the environment is not enough to control what `activeEnvName`
+   * answers. Under `bun test` the preload has already recorded `test`, which is
+   * why this file failed even when run on its own: it was asserting on an input
+   * it did not set. Same reset the env proxy's own tests use (#2259).
+   */
+  resetPrivateKeyCache()
 })
 
 afterEach(() => {
+  // Leave no recorded environment behind either: the next file in the process
+  // should see the same starting state this one did.
+  resetPrivateKeyCache()
+
   for (const [key, value] of Object.entries(SAVED)) {
     if (value === undefined)
       delete process.env[key]

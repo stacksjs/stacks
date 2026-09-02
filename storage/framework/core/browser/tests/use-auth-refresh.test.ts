@@ -10,7 +10,7 @@
  * `fetch` and `localStorage` are stubbed so this runs headless.
  */
 
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 
 // ─── Minimal localStorage, since `useStorage` persists through it ────
 
@@ -27,7 +27,32 @@ const store = new Map<string, string>()
 // Run the callback SYNCHRONOUSLY so persistence lands the moment a ref is
 // set: a wall-clock sleep would make these assertions a race on a loaded CI
 // runner, and the thing under test has nothing to do with frame timing.
+const REAL_GLOBALS = {
+  localStorage: (globalThis as any).localStorage,
+  window: (globalThis as any).window,
+  __STACKS_CONFIG__: (globalThis as any).__STACKS_CONFIG__,
+  requestAnimationFrame: (globalThis as any).requestAnimationFrame,
+}
 ;(globalThis as any).requestAnimationFrame = (fn: () => void) => { fn(); return 0 }
+
+/*
+ * Put every global back.
+ *
+ * These are set at module scope and were never removed, so the rest of the run
+ * inherited them - including a `requestAnimationFrame` that calls its callback
+ * SYNCHRONOUSLY. `IntersectionObserver`'s poll loop reschedules itself from
+ * inside that callback, so once any other suite had an observed element the
+ * scheduler recursed until the stack overflowed, killing the process before
+ * `bun test` could print a summary (stacksjs/stacks#2413).
+ */
+afterAll(() => {
+  for (const [key, value] of Object.entries(REAL_GLOBALS)) {
+    if (value === undefined)
+      delete (globalThis as any)[key]
+    else
+      (globalThis as any)[key] = value
+  }
+})
 
 /** Kept as an await point for readability; persistence is already synchronous. */
 const flush = (): Promise<void> => Promise.resolve()

@@ -46,7 +46,16 @@ const READY_KEY = Symbol.for('@stacksjs/config:overridesReady')
 // that reads `config.<key>` at module-eval time in TDZ. By making this
 // module synchronous, the consumer graph evaluates deterministically and
 // `loadUserConfigs()` patches in real values asynchronously in the background.
-function defaultsForOverrides(): StacksConfig {
+/*
+ * Exported for tests (stacksjs/stacks#2413).
+ *
+ * The `overrides` object it produces is built once, whenever this module is
+ * first evaluated in the process, so a test asserting on it is really asserting
+ * on when config happened to load relative to twelve other test files that set
+ * `APP_ENV` at module scope. Calling the function directly tests the rule -
+ * APP_NAME / APP_ENV win where set - without depending on any of that.
+ */
+export function defaultsForOverrides(): StacksConfig {
   return {
     ai: {},
     analytics: {},

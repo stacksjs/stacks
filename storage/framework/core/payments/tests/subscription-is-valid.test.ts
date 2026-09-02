@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // stacksjs/stacks#2361 — `isValid()` fetched one subscription row with
 // `executeTakeFirst()` and no ORDER BY, then inspected that row's status. A user
@@ -55,10 +55,24 @@ function fakeDb() {
   }
 }
 
-// Override only `db`. Replacing a module wholesale drops the rest of its
-// surface, and anything else importing it then fails to load.
-const realDatabase = await import('@stacksjs/database')
+/*
+ * Override only `db`. Replacing a module wholesale drops the rest of its
+ * surface, and anything else importing it then fails to load.
+ *
+ * Captured with a spread and restored in `afterAll`: `mock.module` is
+ * process-global and never rolled back, so without this every later file in the
+ * run imported `db` as the fake and `db.unsafe` was not a function - ten
+ * failures in `forms`, `sms` and friends, all of which pass on their own
+ * (stacksjs/stacks#2413). The spread matters for the same reason it does in
+ * `core/testing`: mocking patches the live namespace in place, so a bare
+ * capture would restore the mock itself.
+ */
+const realDatabase = { ...await import('@stacksjs/database') }
 mock.module('@stacksjs/database', () => ({ ...realDatabase, db: fakeDb() }))
+
+afterAll(() => {
+  mock.module('@stacksjs/database', () => realDatabase)
+})
 
 const { manageSubscription, ENTITLING_STATUSES, INCOMPLETE_STATUSES } = await import('../src/billable/subscription')
 

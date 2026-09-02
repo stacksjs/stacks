@@ -54,6 +54,9 @@ export function getResizeObserver(): new (_callback: ResizeObserverCallback) => 
     private callback: ResizeObserverCallback
     private observedElements: Set<Element> = new Set()
     private rafId: number | null = null
+    /** True while inside `raf(...)`, so a synchronous callback cannot recurse. */
+    private scheduling = false
+
 
     constructor(callback: ResizeObserverCallback) {
       this.callback = callback
@@ -87,19 +90,40 @@ export function getResizeObserver(): new (_callback: ResizeObserverCallback) => 
     }
 
     private scheduleCheck(): void {
-      if (this.rafId !== null) return
+      /*
+       * `scheduling` guards the window `rafId` cannot.
+       *
+       * `rafId` is only assigned AFTER `raf(...)` returns, so a
+       * `requestAnimationFrame` that invokes its callback synchronously - a
+       * polyfill, a test double, any non-browser host - runs the reschedule
+       * while `rafId` is still null. The guard below never trips, and
+       * `scheduleCheck` recurses into itself until the stack overflows, taking
+       * the whole process down rather than failing one test
+       * (stacksjs/stacks#2413).
+       *
+       * With a real, asynchronous rAF this flag is already false by the time
+       * the callback runs, so polling continues exactly as before.
+       */
+      if (this.rafId !== null || this.scheduling) return
 
       // Use setTimeout as fallback if requestAnimationFrame is not available
       const raf = typeof requestAnimationFrame !== 'undefined' ? requestAnimationFrame : setTimeout
 
-      this.rafId = raf(() => {
-        this.check()
-        this.rafId = null
+      this.scheduling = true
 
-        if (this.observedElements.size > 0) {
-          this.scheduleCheck()
-        }
-      }) as number
+      try {
+        this.rafId = raf(() => {
+          this.check()
+          this.rafId = null
+
+          if (this.observedElements.size > 0) {
+            this.scheduleCheck()
+          }
+        }) as number
+      }
+      finally {
+        this.scheduling = false
+      }
     }
 
     private check(): void {
