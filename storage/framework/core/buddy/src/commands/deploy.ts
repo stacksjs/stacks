@@ -20,7 +20,7 @@ import { resultFailed } from '../result'
 import { findUnbackedManagedServices, hasOffsiteBackupDestination, unbackedDataMessage } from '../unbacked-data'
 import { applyDeploymentDomainOverride, createDeploymentPreview, deploymentPreviewJsonPrefix, formatDeploymentPreview, resolveDeploymentEnvironment } from './deploy-preview'
 import type { SshTarget } from './deploy-ssh-target'
-import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
+import { deployTargetLabel, dnsPublishingAllowed, hetznerTarget, isSshPipelineProvider, lanUrls, mergeSshStatePin, remoteExecOptions, resolveSshTarget, sshCliArgs, sshStatePin, toSshTarget } from './deploy-ssh-target'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -2629,10 +2629,20 @@ async function runSshDeploy(args: {
     if (provider === 'ssh' && sshTarget && ip) {
       try {
         const stackName = tsCloudConfig.project?.stackName || `${tsCloudConfig.project?.slug || 'app'}-${environment}`
-        const pin = sshStatePin({ stackName, target: sshTarget, deployStoragePath: outputs.deployStoragePath })
         const dir = join(process.cwd(), 'storage', 'cloud', 'state')
+        const statePath = join(dir, `${stackName}.json`)
+        // The driver has just written its own pin here, carrying what only it
+        // learns while provisioning. Merge onto it rather than over it.
+        let existing: Record<string, unknown> | null = null
+        try {
+          existing = existsSync(statePath) ? JSON.parse(readFileSync(statePath, 'utf8')) as Record<string, unknown> : null
+        }
+        catch {
+          existing = null
+        }
+        const pin = mergeSshStatePin(existing, sshStatePin({ stackName, target: sshTarget, deployStoragePath: outputs.deployStoragePath }))
         mkdirSync(dir, { recursive: true })
-        writeFileSync(join(dir, `${stackName}.json`), `${JSON.stringify(pin, null, 2)}\n`)
+        writeFileSync(statePath, `${JSON.stringify(pin, null, 2)}\n`)
       }
       catch (err) {
         log.warn(`Could not record the ssh host pin: ${getErrorMessage(err)}`)

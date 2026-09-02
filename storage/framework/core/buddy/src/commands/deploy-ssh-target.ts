@@ -268,6 +268,30 @@ export function dnsPublishingAllowed(input: {
   return Boolean(input.publicIp) && !isPrivateHost(input.publicIp as string)
 }
 
+/**
+ * Merge a pin over whatever is already recorded for this stack.
+ *
+ * The driver writes its own pin while provisioning, carrying things only it
+ * learns: the host key fingerprint it pinned, the address the box reports on
+ * the local network, which bootstrap version ran. A caller that then writes its
+ * own pin over the top silently discards them. Only keys this caller actually
+ * has a value for are allowed to win.
+ */
+export function mergeSshStatePin(
+  existing: Record<string, unknown> | null | undefined,
+  next: Record<string, unknown>,
+): Record<string, unknown> {
+  if (!existing || existing.provider !== 'ssh')
+    return next
+
+  const merged: Record<string, unknown> = { ...existing }
+  for (const [key, value] of Object.entries(next)) {
+    if (value !== undefined && value !== null && value !== '')
+      merged[key] = value
+  }
+  return merged
+}
+
 /** The persisted pin an SSH deploy writes so the next one skips discovery. */
 export function sshStatePin(input: {
   stackName: string

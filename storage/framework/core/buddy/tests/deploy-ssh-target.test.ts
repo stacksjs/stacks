@@ -6,6 +6,7 @@ import {
   isPrivateHost,
   isSshPipelineProvider,
   lanUrls,
+  mergeSshStatePin,
   remoteExecOptions,
   resolveSshTarget,
   sshCliArgs,
@@ -233,5 +234,67 @@ describe('toSshTarget', () => {
     expect(toSshTarget('1.2.3.4')).toEqual(hetznerTarget('1.2.3.4'))
     const target = resolveSshTarget(pi, {})!
     expect(toSshTarget(target)).toBe(target)
+  })
+})
+
+/**
+ * Keeping what the driver learned.
+ *
+ * ts-cloud writes its own pin while provisioning, and it is the only thing that
+ * knows the host key fingerprint it pinned, the address the box reports on the
+ * local network, and which bootstrap version ran. Both `buddy server:setup` and
+ * the deploy then record a pin of their own moments later. Writing over the
+ * file discarded all of it, and the next deploy had to rediscover what was
+ * already known.
+ */
+describe('mergeSshStatePin', () => {
+  const recorded = {
+    provider: 'ssh',
+    stackName: 'acme-production',
+    host: 'pi.local',
+    publicIp: 'pi.local',
+    sshUser: 'pi',
+    sshPort: 22,
+    hostKeyFingerprint: 'SHA256:abc',
+    lanIp: '192.168.1.20',
+    bootstrapVersion: 1,
+    bootstrappedAt: '2026-09-02T00:00:00Z',
+  }
+
+  it('keeps the fields only the driver knows', () => {
+    const merged = mergeSshStatePin(recorded, sshStatePin({
+      stackName: 'acme-production',
+      target: resolveSshTarget({ ssh: { hosts: [{ host: 'pi.local', user: 'pi' }] } }, {})!,
+    }))
+    expect(merged.hostKeyFingerprint).toBe('SHA256:abc')
+    expect(merged.lanIp).toBe('192.168.1.20')
+    expect(merged.bootstrapVersion).toBe(1)
+    expect(merged.bootstrappedAt).toBe('2026-09-02T00:00:00Z')
+  })
+
+  it('lets the caller correct what it does know', () => {
+    const merged = mergeSshStatePin(recorded, sshStatePin({
+      stackName: 'acme-production',
+      target: { host: '10.0.0.5', user: 'deploy', port: 2222, profile: 'generic', hostKey: 'pin' },
+      deployStoragePath: '/var/ts-cloud/staging',
+    }))
+    expect(merged.host).toBe('10.0.0.5')
+    expect(merged.sshUser).toBe('deploy')
+    expect(merged.sshPort).toBe(2222)
+    // Still carried, because the caller had nothing to say about it.
+    expect(merged.hostKeyFingerprint).toBe('SHA256:abc')
+  })
+
+  it('writes the new pin outright when nothing is recorded', () => {
+    const pin = sshStatePin({ stackName: 's', target: hetznerTarget('1.2.3.4') })
+    expect(mergeSshStatePin(null, pin)).toEqual(pin)
+    expect(mergeSshStatePin(undefined, pin)).toEqual(pin)
+  })
+
+  it('does not merge onto a pin from another provider', () => {
+    const hetzner = { provider: 'hetzner', stackName: 's', serverId: 42, publicIp: '1.2.3.4' }
+    const pin = sshStatePin({ stackName: 's', target: hetznerTarget('5.6.7.8') })
+    expect(mergeSshStatePin(hetzner, pin)).toEqual(pin)
+    expect(mergeSshStatePin(hetzner, pin).serverId).toBeUndefined()
   })
 })
