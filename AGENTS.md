@@ -65,7 +65,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-80+ default actions and 50+ built-in models you can use or override.
+621 default actions and 97 built-in models you can use or override.
 
 ---
 
@@ -104,14 +104,14 @@ Every skill also has a docs page under `docs/skills/`, one per skill, grouped by
 |---|---|
 | E-commerce (products, orders, customers, coupons, payments, shipping, tax, ...) | `stacks-commerce`, `stacks-payments` |
 | CMS (posts, authors, pages, categories, tags, comments, RSS, sitemap) | `stacks-cms` |
-| Admin dashboard pages, model views, widgets (150+ components) | `stacks-dashboard` |
+| Admin dashboard pages, model views, widgets (399 components) | `stacks-dashboard` |
 | i18n / translations / formatting | `stacks-i18n` |
 | Utilities: strings, arrays, collections, objects, datetime, slugs | `stacks-strings`, `stacks-arrays`, `stacks-collections`, `stacks-objects`, `stacks-datetime`, `stacks-slug` |
 
 ### CLI, build, deploy, test
 | Task | Skill |
 |---|---|
-| The `buddy` / `bud` / `stacks` CLI (50+ commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
+| The `buddy` / `bud` / `stacks` CLI (315 commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
 | Native iOS/Android apps, Craft bridge, mobile builds and components | `stacks-mobile` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
@@ -161,8 +161,14 @@ Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated typ
 `storage/framework/types/*auto-imports.d.ts`. Regenerate with `buddy generate` (`--types` for the
 declarations). Full reference: `stacks-auto-imports`.
 
-**stx templates (browser)** - available with no import:
-- STX reactivity and 200+ composables: `ref`, `computed`, `watch`, `reactive`,
+**stx templates (browser)** - available with no import. There are **83** of
+them, 27 of which are `use*` composables; this said "200+ composables" for a
+long time, which was not a stale count but a wrong one. The manifest is the
+count: `storage/framework/browser-auto-imports.json` and the generated
+`storage/framework/types/browser-auto-imports.d.ts` agree on 83, and a name
+that is not in them needs an import however familiar it looks.
+
+- STX reactivity and the composables among them: `ref`, `computed`, `watch`, `reactive`,
   `watchEffect`, `useFetch`, `useDark` / `useColorMode`, `useStorage`, `useLocalStorage`, `useToggle`,
   `useCounter`, `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax`,
   `usePreferredReducedMotion`, plus utilities (`debounce`, `throttle`, `sleep`, `clamp`), `useAuth`,
@@ -175,7 +181,7 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 90+ models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- All 97 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
 - Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
 
 Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to
@@ -280,7 +286,7 @@ buddy generate:migrations     # 2. diff models vs current schema, emit SQL into 
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
-`buddy make:migration <name>` still exists for hand-written migrations, and 96+ migrations ship for
+`buddy make:migration <name>` still exists for hand-written migrations, and 220 migrations ship for
 the built-in models. `buddy migrate` verifies models exist before running.
 
 ### Query builder
