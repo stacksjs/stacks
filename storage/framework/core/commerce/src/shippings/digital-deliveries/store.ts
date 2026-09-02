@@ -2,7 +2,8 @@ import type { DigitalDelivery, ModelRow, NewModelData } from '@stacksjs/orm'
 type DigitalDeliveryJsonResponse = ModelRow<typeof DigitalDelivery>
 type NewDigitalDelivery = NewModelData<typeof DigitalDelivery>
 import { randomUUIDv7 } from 'bun'
-import { asRow, db } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { digitalDeliveryWriteData } from '../write-data'
 
@@ -34,7 +35,7 @@ export async function store(data: NewDigitalDelivery): Promise<DigitalDeliveryJs
       throw new Error('Failed to resolve created digital delivery')
 
     // Read back after the insert, so the shape is stated here once.
-    return asRow<DigitalDeliveryJsonResponse>(digitalDelivery) as DigitalDeliveryJsonResponse
+    return asModelRow<DigitalDeliveryJsonResponse>(digitalDelivery)
   }
   catch (error) {
     if (error instanceof Error) {

@@ -5,7 +5,8 @@ import type {
   OrderTypeCount,
   StatusCount,
 } from '../types'
-import { asRows, db } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
+import { asModelRows } from '../utils/model-row'
 
 /**
  * Fetch all orders from the database with their items
@@ -21,7 +22,7 @@ export async function fetchAll(limit?: number): Promise<OrderJsonResponse[]> {
     query = query.limit(limit)
   }
 
-  const orders = asRows<OrderJsonResponse>(await query.execute())
+  const orders = asModelRows<OrderJsonResponse>(await query.execute())
 
   // Fetch items for each order
   return await Promise.all(orders.map(async (order: OrderJsonResponse) => {
@@ -84,7 +85,7 @@ export async function fetchStats(): Promise<OrderStats> {
     .execute() as unknown as OrderTypeCount[]
 
   // Recent orders with their items
-  const recentOrdersRaw = asRows<OrderJsonResponse>(await db
+  const recentOrdersRaw = asModelRows<OrderJsonResponse>(await db
     .selectFrom('orders')
     .selectAll()
     .orderBy('created_at', 'desc')

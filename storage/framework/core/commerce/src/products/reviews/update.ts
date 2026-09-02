@@ -1,5 +1,5 @@
 import type { ModelRow, Review, UpdateModelData } from '@stacksjs/orm'
-import { asRow, db } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ReviewJsonResponse = ModelRow<typeof Review>
@@ -74,10 +74,14 @@ export async function updateVotes(
 
     /*
      * A `RETURNING *` through raw SQL, so the row's shape is the statement's
-     * rather than the schema's. Stated once, here, which is what `asRow` is
-     * for.
+     * rather than the schema's, and has to be stated once - here.
+     *
+     * `asModelRow` rather than `asRow`: both state the type, but the row is
+     * still whatever the database returned, which is column names only.
+     * `ReviewJsonResponse` promises the declared spellings too, so a plain cast
+     * would assert half a shape that is not there (stacksjs/stacks#2417).
      */
-    return asRow<ReviewJsonResponse>(row) as ReviewJsonResponse
+    return asModelRow<ReviewJsonResponse>(row)
   }
   catch (error) {
     if (error instanceof Error) {
