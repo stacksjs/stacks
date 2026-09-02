@@ -1,4 +1,3 @@
-import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken} from '@stacksjs/types'
 // `Infer<T extends Validator<U>>` resolves to the validator's output
@@ -6,10 +5,38 @@ import type { AuthToken} from '@stacksjs/types'
 // keeps this package free of a runtime ts-validation dependency.
 import type { Infer, IsRequired } from '@stacksjs/ts-validation'
 
-// Trait methods are attached dynamically by the Stacks model proxy. The
-// open member bag reflects application-level traits that the framework's
-// default User definition cannot know about ahead of time.
-type UserJsonResponse = NonNullable<Awaited<ReturnType<typeof User.find>>> & Record<string, any>
+/**
+ * The row `request.user()` resolves to.
+ *
+ * Declared here rather than derived from `@stacksjs/orm`'s `User`, which is
+ * what this used to be. That single line put the ORM underneath everything
+ * that needs a type: `@stacksjs/logging` depends on this package, so logging
+ * transitively depended on the ORM, and the ORM depends on the router, which
+ * depends on this package again. A types package sits at the bottom of a
+ * stack or it drags whatever it imports down there with it.
+ *
+ * Nothing is lost in practice. The old type was intersected with
+ * `Record<string, any>` already, because the model proxy attaches trait
+ * methods ahead of time and an application's own User columns are its own -
+ * so every property access resolved through the index signature regardless.
+ *
+ * It is an interface so an application can have the precision back where it
+ * wants it:
+ *
+ * ```ts
+ * declare module '@stacksjs/types' {
+ *   interface AuthenticatedUser {
+ *     email: string
+ *     team_id: number
+ *   }
+ * }
+ * ```
+ */
+export interface AuthenticatedUser {
+  [key: string]: any
+}
+
+type UserJsonResponse = AuthenticatedUser
 
 interface RequestData {
   [key: string]: any

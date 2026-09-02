@@ -59,7 +59,6 @@
     "@stacksjs/bunpress": "^0.2.8",
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/events": "workspace:*",
-    "@stacksjs/orm": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.253",
     "@stacksjs/ts-validation": "^0.5.6",
