@@ -19,15 +19,52 @@ buddy undeploy
 ## Command Syntax
 
 ```bash
-buddy deploy [options]
+buddy deploy [env] [options]
 ```
+
+The positional `[env]` selects the environment (`production`, `staging`, `development`). The
+`--prod`, `--staging` and `--dev` flags do the same thing. With none of them, the deploy targets
+production.
 
 ### Options
 
 | Option | Description |
 |--------|-------------|
+| `--domain <domain>` | Override the domain this deploy publishes |
 | `-p, --project [project]` | Target a specific project |
+| `--prod` | Deploy to production |
+| `--staging` | Deploy to staging |
+| `--dev` | Deploy to development |
+| `--site <name>` | Deploy only this one site to the existing server |
+| `--docker` | Also build an OCI image with pantry and push it to the pantry registry |
+| `--dry-run` | Preview the plan and exit before anything is changed |
+| `--yes` | Skip confirmation prompts |
+| `-J, --json` | Emit a machine-readable deployment preview |
 | `--verbose` | Enable verbose output |
+
+`--dry-run` evaluates the target environment and the cloud model, then exits before prerequisites,
+builds, packaging, hooks, provider calls, persistence, DNS or TLS can change anything. Combined
+with `-J` it emits a versioned `STACKS_DEPLOY_PREVIEW_JSON=` line for tools to read.
+
+## Deploy targets
+
+`cloud.provider` in `config/cloud.ts` decides where `buddy deploy` ships. `CLOUD_PROVIDER` in the
+environment overrides it. With neither set, the provider is `aws`.
+
+| `cloud.provider` | Target |
+|---|---|
+| `'aws'` (default) | CloudFormation stack on AWS |
+| `'hetzner'` | A Hetzner Cloud server, provisioned through the Hetzner API |
+| `'ssh'` | A Linux host you already own, adopted and bootstrapped over SSH |
+
+The Hetzner and `ssh` targets share one pipeline: a release tarball over SSH, systemd units per
+site, and the rpx gateway in front. The AWS prerequisites below apply only to `provider: 'aws'`.
+
+For `provider: 'ssh'`, connection details come from `ssh.hosts` in `config/cloud.ts` or from
+`TS_CLOUD_SSH_HOST`, `TS_CLOUD_SSH_USER`, `TS_CLOUD_SSH_PORT` and `TS_CLOUD_SSH_KEY`. The
+environment wins over the config. A host on a private address publishes no DNS and requests no
+certificate; `TS_CLOUD_SSH_PUBLISH_DNS=1` forces publishing on and `0` forces it off. See
+[Deploying to a Raspberry Pi](/guide/cloud/raspberry-pi).
 
 ## Deployment Process
 
@@ -43,7 +80,10 @@ When you run `buddy deploy`, Stacks:
 
 ## Prerequisites
 
-Before deploying, ensure you have:
+These apply to `provider: 'aws'`. A Hetzner deploy needs `HCLOUD_TOKEN` and a local
+`~/.ssh/id_ed25519.pub` instead. An `ssh` deploy needs a reachable host and a key.
+
+Before deploying to AWS, ensure you have:
 
 1. **AWS Credentials** configured in `.env.production`:
 
@@ -168,7 +208,7 @@ buddy env:check --file .env.production
 ```
 
 ```
-⚠ Tenant isolation          21 key(s) belong to another tenant — remove them
+⚠ Tenant isolation          21 key(s) belong to another tenant - move them to .env
 ⚠   analyticshq             ANALYTICSHQ_APP_KEY, ANALYTICSHQ_DB_PASSWORD, …
 ⚠   bughq                   BUGHQ_APP_KEY, BUGHQ_STRIPE_SECRET_KEY, …
 ```
@@ -216,16 +256,36 @@ buddy cloud --ssh
 
 ## Rollback
 
-If deployment fails or you need to rollback:
+`buddy deploy:rollback` activates a preserved release on the server. Nothing is rebuilt and
+nothing is re-uploaded; the previous release directory becomes the active one again.
 
 ```bash
-# Remove current deployment
-buddy undeploy
-
-# Re-deploy previous version
-git checkout <previous-commit>
-buddy deploy
+buddy deploy:rollback [site] [options]
 ```
+
+| Option | Description |
+|--------|-------------|
+| `--env <environment>` | Environment to roll back (default `production`) |
+| `--to <release>` | Preserved release id to activate |
+| `--dry-run` | Preview the rollback without changing the active release |
+| `--verbose` | Enable verbose output |
+
+The optional `[site]` argument limits the rollback to one site. Without `--to`, the previous
+preserved release is used.
+
+```bash
+# See what would happen
+buddy deploy:rollback --dry-run
+
+# Roll one site back to a named release
+buddy deploy:rollback docs --to <release>
+```
+
+The command delegates to ts-cloud, which owns the preserved releases and their ids. Run it with
+`--dry-run` first to see which release ids exist on the server.
+
+On the AWS path there are no preserved release directories. Tear the stack down with
+`buddy cloud:remove` and redeploy from the commit you want.
 
 ## Undeploy
 

@@ -1,0 +1,17 @@
+version: 2
+ethernets:
+  eth0:
+    match:
+      name: "e*"
+    dhcp4: true
+    dhcp6: true
+    optional: true
+wifis:
+  wlan0:
+    dhcp4: true
+    dhcp6: true
+    optional: true
+    regulatory-domain: "DE"
+    access-points:
+      "HomeNet":
+        password: "s3cret-pass"

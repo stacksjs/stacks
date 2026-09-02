@@ -6,6 +6,17 @@ description: Stacks provides first-class cloud deployment support with automated
 
 Stacks provides first-class cloud deployment support with automated infrastructure provisioning. Deploy your applications to AWS with a single command.
 
+## Deploy targets
+
+`cloud.provider` in `config/cloud.ts` decides where `buddy deploy` ships. This page covers the AWS
+target, which is the default.
+
+| `cloud.provider` | Target | Guide |
+|---|---|---|
+| `'aws'` (default) | CloudFormation stack on AWS | This page |
+| `'hetzner'` | A Hetzner Cloud server | [Deploy](/guide/cloud/deployment) |
+| `'ssh'` | A Linux host you already own | [Raspberry Pi](/guide/cloud/raspberry-pi) |
+
 ## Overview
 
 Stacks Cloud offers:
@@ -461,6 +472,8 @@ buddy cloud:remove
 
 ## Related
 
+- [Deploy](/guide/cloud/deployment) - the three deploy targets and the release flow
+- [Raspberry Pi](/guide/cloud/raspberry-pi) - deploying to a host you already own, over SSH
 - [Configuration](/guide/config) - Application configuration
 - [CI/CD](/guide/ci) - Continuous integration setup
 - [Testing](/guide/testing) - Test before deploying

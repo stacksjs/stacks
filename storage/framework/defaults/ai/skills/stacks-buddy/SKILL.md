@@ -367,7 +367,57 @@ buddy env:check                  # validate environment configuration
 ## Cloud & Deployment
 
 ### `buddy deploy` - Deploy to cloud
-Handles full deployment workflow: prerequisites check, pantry install, env setup, APP_KEY, AWS credentials (from .env.{env} or ~/.aws/credentials), domain setup, email DNS records (DKIM, MX, SPF, DMARC), mail user creation.
+Handles full deployment workflow: prerequisites check, pantry install, env setup, APP_KEY, provider credentials, domain setup, email DNS records (DKIM, MX, SPF, DMARC), mail user creation.
+
+```bash
+buddy deploy [env]             # env is production | staging | development
+  --domain <domain>            # override the domain this deploy publishes
+  -p/--project [project]       # target a specific project
+  --prod                       # deploy to production
+  --staging                    # deploy to staging
+  --dev                        # deploy to development
+  --site <name>                # deploy only this one site to the existing server
+  --docker                     # also build an OCI image with pantry and push it
+  --dry-run                    # preview the plan, change nothing
+  --yes                        # skip confirmation (required from a non-TTY)
+  -J/--json                    # machine-readable deployment preview
+  --verbose                    # verbose output
+
+buddy deploy:rollback [site]   # activate a preserved release (hetzner/ssh targets)
+  --env <environment>          # environment to roll back (default: production)
+  --to <release>               # preserved release id to activate
+  --dry-run                    # preview without changing the active release
+  --verbose                    # verbose output
+```
+
+Where it deploys is `cloud.provider` in `config/cloud.ts`: `'aws'` (default, CloudFormation),
+`'hetzner'` (provision a server, then deploy over SSH), or `'ssh'` (a host you already own).
+`CLOUD_PROVIDER` overrides the config value.
+
+### `buddy server:*` - An SSH deploy target
+For `cloud.provider: 'ssh'`, a Linux box you already own. The `raspberry-pi` profile tunes the
+bootstrap for a small single-board computer.
+
+```bash
+buddy server:flash        # write an OS image to an SD card or USB disk
+  --os <name>             # raspberry-pi-os-lite (default), raspberry-pi-os, ubuntu-24.04, ubuntu-26.04
+  --device <path>         # the whole disk to write to, e.g. /dev/disk4
+  --list                  # list writable disks and exit
+  --dry-run               # say what would happen without writing
+  --yes                   # skip the confirmation
+buddy server:first-boot   # write cloud-init user-data to the mounted boot partition
+  --hostname <name>       # the board's hostname
+  --user <name>           # the login user cloud-init creates
+buddy server:doctor       # preflight over SSH: arch, OS, memory, disk, sudo, clock, HTTPS
+buddy server:setup        # adopt and bootstrap the host (bun, rpx, systemd units)
+buddy server:trust        # install the box's local CA here, or emit a .mobileconfig
+```
+
+Then `buddy deploy --prod` behaves exactly as it does for Hetzner. Connection details come from
+`ssh.hosts` in `config/cloud.ts`, or from `TS_CLOUD_SSH_HOST`, `TS_CLOUD_SSH_USER`,
+`TS_CLOUD_SSH_PORT` and `TS_CLOUD_SSH_KEY`, which win over the config. A host on a private address
+publishes no DNS and requests no certificate; `TS_CLOUD_SSH_PUBLISH_DNS=1` forces publishing on
+and `0` forces it off.
 
 ### `buddy cloud` - Cloud management
 ```bash

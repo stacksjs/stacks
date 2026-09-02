@@ -102,6 +102,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Deploy', link: '/guide/cloud/deployment' },
+            { text: 'Raspberry Pi', link: '/guide/cloud/raspberry-pi' },
             { text: 'Extend Cloud', link: '/guide/cloud/extend' },
           ],
         },
