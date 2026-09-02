@@ -1,6 +1,6 @@
 import { Action } from '@stacksjs/actions'
+import { errors } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
-import { readErrorById } from './error-provider'
 
 export default new Action({
   name: 'Error Show',
@@ -13,12 +13,12 @@ export default new Action({
     if (id === null)
       return response.json({ error: 'A numeric error id is required' }, 422)
 
-    const result = await readErrorById(id)
+    const result = await errors.fetchById(id)
 
-    if (!result.data) {
+    if (!result) {
       return response.json({ error: 'Error not found' }, 404)
     }
 
-    return response.json(result)
+    return response.json({ data: result })
   },
 })

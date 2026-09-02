@@ -1,12 +1,14 @@
 import { Action } from '@stacksjs/actions'
+import { errors } from '@stacksjs/commerce'
 import { response } from '@stacksjs/router'
-import { readGroupedErrors } from './error-provider'
 
 export default new Action({
   name: 'Error Index',
   description: 'Fetch all grouped errors (Sentry-like aggregation)',
   method: 'GET',
   async handle() {
-    return response.json(await readGroupedErrors())
+    const results = await errors.fetchGrouped()
+
+    return response.json({ data: results })
   },
 })
