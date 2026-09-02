@@ -37,7 +37,6 @@ const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig 
 // for this module's entire lifetime — no `describe`/`afterAll` boundary exists
 // here (this is a shared fixture imported by many test files, not a test file
 // itself), so it's released on process exit alongside the file cleanup below.
-const releaseDbConfigLock = await acquireDbConfigLock()
 
 /**
  * Drain the one-shot async config reload, then force our temp SQLite
@@ -45,14 +44,28 @@ const releaseDbConfigLock = await acquireDbConfigLock()
  * proxy at a different database mid-test.
  */
 async function forceConfig(): Promise<void> {
-  await ensureDatabaseConfigLoaded()
-  initializeDbConfig({
-    app: { env: 'testing' },
-    database: {
-      default: 'sqlite',
-      connections: { sqlite: { database: DB_PATH, prefix: '' } },
-    },
-  })
+  /*
+   * Held for the MUTATION only. Acquiring at module scope and releasing from
+   * the `process.on('exit')` handler meant holding it for the whole of
+   * `bun test`, since every file shares one process - so each later file
+   * wanting the lock waited out the full 60s watchdog before it could start
+   * (stacksjs/stacks#2413).
+   */
+  const releaseDbConfigLock = await acquireDbConfigLock()
+
+  try {
+    await ensureDatabaseConfigLoaded()
+    initializeDbConfig({
+      app: { env: 'testing' },
+      database: {
+        default: 'sqlite',
+        connections: { sqlite: { database: DB_PATH, prefix: '' } },
+      },
+    })
+  }
+  finally {
+    releaseDbConfigLock()
+  }
 }
 
 // Stale file from a recycled pid would otherwise leak a previous run's
@@ -214,5 +227,4 @@ process.on('exit', () => {
       // Best effort — pid-named file in tmpdir, the OS reclaims it.
     }
   }
-  releaseDbConfigLock()
 })

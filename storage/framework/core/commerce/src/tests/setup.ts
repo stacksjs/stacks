@@ -40,12 +40,6 @@ process.env.APP_ENV = 'test'
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { buildMigrationPlan, generateSql, loadModels } = await import('bun-query-builder')
 
-// Holds `initializeDbConfig`'s process-wide config mutex (stacksjs/stacks#1862)
-// for this module's entire lifetime — no `describe`/`afterAll` boundary exists
-// here (this is a shared fixture imported by many test files, not a test file
-// itself), so it's released on process exit alongside the file cleanup below.
-const releaseDbConfigLock = await acquireDbConfigLock()
-
 // storage/framework/defaults — the framework's vendor layer where the
 // default model definitions live. `loadModels` does not recurse, so the
 // commerce subdirectory is loaded explicitly and merged.
@@ -58,14 +52,38 @@ const commerceModelsDir = join(defaultsModelsDir, 'commerce')
  * proxy at a different database mid-test.
  */
 async function forceConfig(): Promise<void> {
-  await ensureDatabaseConfigLoaded()
-  initializeDbConfig({
-    app: { env: 'test' },
-    database: {
-      default: 'sqlite',
-      connections: { sqlite: { database: DB_PATH, prefix: '' } },
-    },
-  })
+  /*
+   * The lock is held for the MUTATION, not for the lifetime of this module.
+   *
+   * It used to be acquired once at module scope and released from the
+   * `process.on('exit')` handler below, on the reasoning that a shared fixture
+   * has no `afterAll` boundary of its own. But `bun test` runs every file in
+   * one process, so "until exit" meant every later file that wanted the lock
+   * waited out the full 60s watchdog before proceeding - with three fixtures
+   * doing this and 26 files wanting the lock, a full-tree run spent so long
+   * stalled that it never finished (stacksjs/stacks#2413).
+   *
+   * Nothing is given up by narrowing it. `initializeDbConfig` is the only
+   * shared state this touches, this function is the only place it is called
+   * from, and the watchdog already force-released the lock after 60s anyway -
+   * so the old code did not actually hold it to the end, it just made everyone
+   * else pay a minute to find that out.
+   */
+  const releaseDbConfigLock = await acquireDbConfigLock()
+
+  try {
+    await ensureDatabaseConfigLoaded()
+    initializeDbConfig({
+      app: { env: 'test' },
+      database: {
+        default: 'sqlite',
+        connections: { sqlite: { database: DB_PATH, prefix: '' } },
+      },
+    })
+  }
+  finally {
+    releaseDbConfigLock()
+  }
 }
 
 // Stale file from a recycled pid would otherwise leak a previous run's
@@ -145,5 +163,4 @@ process.on('exit', () => {
       // Best effort — pid-named file in tmpdir, the OS reclaims it.
     }
   }
-  releaseDbConfigLock()
 })

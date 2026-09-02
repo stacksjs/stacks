@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
+import { afterAll, beforeEach, describe, expect, it, mock } from 'bun:test'
 
 // stacksjs/stacks#2359 — `buddy stripe:setup` created unconditionally, so a
 // second run left a duplicate product behind and then failed on prices.create
@@ -89,9 +89,9 @@ const plans = [{
  * Spreading keeps the replacement a faithful stand-in: silence the output this
  * file does not want, override the data it needs, leave the rest alone.
  */
-const actualLogging = await import('@stacksjs/logging')
-const actualConfig = await import('@stacksjs/config')
-const actualPayments = await import('@stacksjs/payments')
+const actualLogging = { ...await import('@stacksjs/logging') }
+const actualConfig = { ...await import('@stacksjs/config') }
+const actualPayments = { ...await import('@stacksjs/payments') }
 
 const silentLog = Object.fromEntries(
   Object.keys(actualLogging.log).map(method => [method, () => {}]),
@@ -100,6 +100,22 @@ const silentLog = Object.fromEntries(
 mock.module('@stacksjs/logging', () => ({ ...actualLogging, log: silentLog }))
 mock.module('@stacksjs/config', () => ({ ...actualConfig, saas: { plans } }))
 mock.module('@stacksjs/payments', () => ({ ...actualPayments, stripe }))
+
+/*
+ * Put all three back when this file is done.
+ *
+ * Spreading fixes the SHAPE of a replacement - `log.success` exists again - but
+ * the replacement is still in place for every file that runs afterwards, and a
+ * silent `log` is exactly what `core/logging`'s own suite must not be handed:
+ * it asserts on what gets emitted, so 54 of its tests failed with the mock
+ * still installed. Shape and lifetime are separate problems and both need
+ * solving (stacksjs/stacks#2413).
+ */
+afterAll(() => {
+  mock.module('@stacksjs/logging', () => actualLogging)
+  mock.module('@stacksjs/config', () => actualConfig)
+  mock.module('@stacksjs/payments', () => actualPayments)
+})
 
 const { createStripeProduct, formatSetupReport } = await import('../src/billable/setup-products')
 

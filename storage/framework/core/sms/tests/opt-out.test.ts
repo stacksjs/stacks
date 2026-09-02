@@ -12,17 +12,30 @@ process.env.APP_ENV = 'testing'
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
 const { classifyInboundSms, handleInboundSms, isPhoneOptedOut, normalizePhone, optOutPhone } = await import('../src/opt-out')
 
-const releaseDbConfigLock = await acquireDbConfigLock()
 
 async function forceConfig(): Promise<void> {
-  await ensureDatabaseConfigLoaded()
-  initializeDbConfig({
-    app: { env: 'testing' },
-    database: {
-      default: 'sqlite',
-      connections: { sqlite: { database: DB_PATH, prefix: '' } },
-    },
-  })
+  /*
+   * Held for the MUTATION only. Acquiring at module scope and releasing from
+   * the `process.on('exit')` handler meant holding it for the whole of
+   * `bun test`, since every file shares one process - so each later file
+   * wanting the lock waited out the full 60s watchdog
+   * (stacksjs/stacks#2413).
+   */
+  const releaseDbConfigLock = await acquireDbConfigLock()
+
+  try {
+    await ensureDatabaseConfigLoaded()
+    initializeDbConfig({
+      app: { env: 'testing' },
+      database: {
+        default: 'sqlite',
+        connections: { sqlite: { database: DB_PATH, prefix: '' } },
+      },
+    })
+  }
+  finally {
+    releaseDbConfigLock()
+  }
 }
 
 beforeAll(async () => {
@@ -58,7 +71,6 @@ afterAll(() => {
       // best effort
     }
   }
-  releaseDbConfigLock()
 })
 
 describe('normalizePhone', () => {

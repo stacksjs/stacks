@@ -20,17 +20,30 @@ const SITE_ID = 91
 const { completeSubmissionPayment, exportSubmissionsCsv, fetchSubmissions, submitForm } = await import('../src/submissions')
 const { computeAmountCents, validateSubmission } = await import('../src/validate')
 
-const releaseDbConfigLock = await acquireDbConfigLock()
 
 async function forceConfig(): Promise<void> {
-  await ensureDatabaseConfigLoaded()
-  initializeDbConfig({
-    app: { env: 'testing' },
-    database: {
-      default: 'sqlite',
-      connections: { sqlite: { database: DB_PATH, prefix: '' } },
-    },
-  })
+  /*
+   * Held for the MUTATION only. Acquiring at module scope and releasing from
+   * the `process.on('exit')` handler meant holding it for the whole of
+   * `bun test`, since every file shares one process - so each later file
+   * wanting the lock waited out the full 60s watchdog before it could start
+   * (stacksjs/stacks#2413).
+   */
+  const releaseDbConfigLock = await acquireDbConfigLock()
+
+  try {
+    await ensureDatabaseConfigLoaded()
+    initializeDbConfig({
+      app: { env: 'testing' },
+      database: {
+        default: 'sqlite',
+        connections: { sqlite: { database: DB_PATH, prefix: '' } },
+      },
+    })
+  }
+  finally {
+    releaseDbConfigLock()
+  }
 }
 
 beforeAll(async () => {
@@ -108,7 +121,6 @@ afterAll(() => {
       // best effort
     }
   }
-  releaseDbConfigLock()
 })
 
 function field(overrides: Partial<FormFieldDefinition> & { name: string, type: FormFieldDefinition['type'] }): FormFieldDefinition {
