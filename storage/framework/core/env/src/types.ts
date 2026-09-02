@@ -90,6 +90,13 @@ export interface FrameworkEnv {
 
   // Hetzner Cloud, read by `buddy mail` and the deploy commands
   HCLOUD_TOKEN: string | undefined
+  /** Deploy target for `cloud.provider: 'ssh'`; overrides `ssh.hosts` in config/cloud.ts. */
+  TS_CLOUD_SSH_HOST: string | undefined
+  TS_CLOUD_SSH_USER: string | undefined
+  TS_CLOUD_SSH_PORT: string | undefined
+  TS_CLOUD_SSH_KEY: string | undefined
+  /** Force DNS, TLS and CDN publishing on ('1') or off ('0') for an ssh host. */
+  TS_CLOUD_SSH_PUBLISH_DNS: string | undefined
   HETZNER_API_TOKEN: string | undefined
 
   // dotenvx key material and the sudo escalation used by `buddy setup`

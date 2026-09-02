@@ -40,6 +40,25 @@ export const tsCloud: TsCloudConfig = {
   stateDir: 'storage/cloud',
 
   // Deploy compute to Hetzner Cloud (apiToken falls back to HCLOUD_TOKEN env).
+  //
+  // Set `provider: 'ssh'` instead to deploy to a Linux box you already own that
+  // is reachable over SSH, a Raspberry Pi 5 being the case this was built for.
+  // Nothing is provisioned through a provider API: the host is adopted, checked
+  // and bootstrapped in place, then deployed to exactly like the Hetzner box.
+  //
+  //   cloud: { provider: 'ssh' },
+  //   ssh: {
+  //     profile: 'raspberry-pi',        // smaller swap, capped journald, arm checks
+  //     hosts: [{ host: 'pi-stacks.local', user: 'pi' }],
+  //     publicIp: 'auto',               // discovered at deploy time; omit to stay LAN-only
+  //     lan: { tls: 'local-ca' },       // HTTPS on the LAN from the box's own CA
+  //   },
+  //
+  // On the LAN the deploy publishes no DNS and requests no certificate from
+  // Let's Encrypt, because neither can work for an address the internet cannot
+  // reach. Declare a public domain and give the box a routable address to turn
+  // both back on. Host, user, port and key can also come from TS_CLOUD_SSH_HOST,
+  // TS_CLOUD_SSH_USER, TS_CLOUD_SSH_PORT and TS_CLOUD_SSH_KEY.
   cloud: {
     provider: 'hetzner',
   },

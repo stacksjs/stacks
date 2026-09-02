@@ -21,6 +21,14 @@ export const tsCloud: TsCloudConfig = {
 
   stateDir: 'storage/cloud',
 
+  // Deploy to Hetzner Cloud, or set `provider: 'ssh'` to deploy to a Linux box
+  // you already own over SSH (a Raspberry Pi, a NUC, an old laptop):
+  //
+  //   cloud: { provider: 'ssh' },
+  //   ssh: { profile: 'raspberry-pi', hosts: [{ host: 'pi-stacks.local', user: 'pi' }] },
+  //
+  // See `buddy server:flash`, `server:first-boot`, `server:doctor` and
+  // `server:setup` for getting a fresh board to that point.
   cloud: {
     provider: 'hetzner',
   },
