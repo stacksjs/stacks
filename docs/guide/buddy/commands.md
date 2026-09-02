@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **311 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **315 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -61,6 +61,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `search-engine` | 2 |
 | `seed` | 1 |
 | `serve` | 1 |
+| `server` | 4 |
 | `setup` | 3 |
 | `simulator` | 2 |
 | `sms` | 6 |
@@ -4347,6 +4348,76 @@ Start the production API server (bun-router routes the frontend proxies /api to)
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--port` | Port to listen on (defaults to PORT env or 3008) | value, required | - |
+
+### `server:doctor`
+
+Check that a host can run this application before deploying to it
+
+- Usage: `$ buddy server:doctor [host]`
+- Namespace: `server`
+- Aliases: none
+- Arguments: `[host]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment whose configuration to check against | value, required | `"production"` |
+| `--discover` | Browse the local network for hosts advertising SSH | boolean, optional | `false` |
+| `--json` | Print the findings as JSON | boolean, optional | `false` |
+
+### `server:first-boot`
+
+Write the first-boot configuration onto a freshly flashed card
+
+- Usage: `$ buddy server:first-boot`
+- Namespace: `server`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--hostname` | The name the board answers to on the network | value, required | `"pi-stacks"` |
+| `--user` | The login to create, which the deploy then uses | value, required | `"pi"` |
+| `--ssh-key` | Public key to authorise | value, required | - |
+| `--os` | Which image to write: raspberry-pi-os-lite, raspberry-pi-os, ubuntu-24.04, ubuntu-26.04 | value, required | `"raspberry-pi-os-lite"` |
+| `--out` | Write the files here instead of the mounted boot partition | value, required | - |
+| `--wifi-ssid` | Join this wireless network on first boot | value, required | - |
+| `--wifi-country` | Two-letter regulatory domain, required with wifi | value, required | - |
+| `--timezone` | IANA timezone for the board | value, required | - |
+| `--env` | Environment whose configuration to bootstrap | value, required | `"production"` |
+| `--force` | Overwrite first-boot files already on the card | boolean, optional | `false` |
+
+### `server:flash`
+
+Write a Linux OS image to an SD card or USB disk
+
+- Usage: `$ buddy server:flash`
+- Namespace: `server`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--os` | Which image to write: raspberry-pi-os-lite, raspberry-pi-os, ubuntu-24.04, ubuntu-26.04 | value, required | `"raspberry-pi-os-lite"` |
+| `--device` | The whole disk to write to, for example /dev/disk4 | value, required | - |
+| `--list` | List the disks that could be written to, and exit | boolean, optional | `false` |
+| `--dry-run` | Say what would happen without writing anything | boolean, optional | `false` |
+| `--yes` | Do not ask for confirmation before writing | boolean, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `server:setup`
+
+Adopt a host: check it, then install what the deploy needs
+
+- Usage: `$ buddy server:setup [host]`
+- Namespace: `server`
+- Aliases: none
+- Arguments: `[host]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment whose configuration to bootstrap | value, required | `"production"` |
+| `--discover` | Browse the local network for hosts advertising SSH | boolean, optional | `false` |
+| `--dry-run` | Run the checks and stop before changing the host | boolean, optional | `false` |
 
 ### `setup`
 
