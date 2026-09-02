@@ -349,6 +349,10 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:links:check
 
+      - name: docs:agent-counts:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:agent-counts:check
+
       - name: Deployment target resolution
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun test ./.github/scripts/deploy/resolve-target.test.ts

@@ -72,7 +72,9 @@
     "docs:links:check": "./buddy docs:links:check",
     "deps:lockfile:check": "bun .github/scripts/check-lockfile-version.ts",
     "bud": "./buddy",
-    "stx": "./buddy"
+    "stx": "./buddy",
+    "docs:agent-counts": "./buddy docs:agent-counts",
+    "docs:agent-counts:check": "./buddy docs:agent-counts:check"
   },
   "dependencies": {
     "stacks": "workspace:*",

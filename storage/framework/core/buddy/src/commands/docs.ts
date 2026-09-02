@@ -1,4 +1,5 @@
 import type { CLI } from '@stacksjs/types'
+import { run as runAgentCounts } from './docs/agent-counts'
 import { run as runArtifacts } from './docs/generated-artifacts'
 import { run as runBuddyDocs } from './docs/buddy-commands'
 import { run as runLinks } from './docs/links'
@@ -32,6 +33,18 @@ export function docs(buddy: CLI): void {
     .command('docs:artifacts:check', 'Verify the generated API artifacts are current')
     .action(async () => {
       await runTool(runArtifacts, '--check')
+    })
+
+  buddy
+    .command('docs:agent-counts', 'Rewrite the counts AGENTS.md and the skills state, from the tree')
+    .action(async () => {
+      await runTool(runAgentCounts, '--write')
+    })
+
+  buddy
+    .command('docs:agent-counts:check', 'Verify the counts AGENTS.md and the skills state are current')
+    .action(async () => {
+      await runTool(runAgentCounts, '--check')
     })
 
   buddy

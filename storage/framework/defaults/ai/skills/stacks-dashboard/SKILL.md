@@ -1,6 +1,6 @@
 ---
 name: stacks-dashboard
-description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 250+ built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
+description: Use when building or customizing the Stacks admin dashboard, including dashboard pages, model management views, analytics widgets, commerce dashboards, content management, settings panels, deployment monitoring, job/queue management, or the 399 built-in dashboard components. Covers the dashboard system at storage/framework/defaults/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob

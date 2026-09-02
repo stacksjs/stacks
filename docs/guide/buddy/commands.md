@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **316 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **318 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -28,7 +28,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 6 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 6 |
+| `docs` | 8 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1315,6 +1315,24 @@ Additively sync config/dns.ts to the registrar (creates missing records; never d
 | --- | --- | --- | --- |
 | `--dry-run` | Show the plan without writing any records | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `docs:agent-counts`
+
+Rewrite the counts AGENTS.md and the skills state, from the tree
+
+- Usage: `$ buddy docs:agent-counts`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:agent-counts:check`
+
+Verify the counts AGENTS.md and the skills state are current
+
+- Usage: `$ buddy docs:agent-counts:check`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
 
 ### `docs:artifacts`
 
