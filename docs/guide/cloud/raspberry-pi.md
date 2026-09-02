@@ -59,6 +59,9 @@ buddy server:setup        # adopt and bootstrap the host
 buddy deploy --prod       # deploy, exactly as for Hetzner
 ```
 
+On a LAN there is one optional extra: `buddy server:trust` teaches this machine to trust the
+certificate authority the board signs its own HTTPS with. It is described under LAN access below.
+
 ### 1. Flash
 
 ```bash
@@ -76,9 +79,14 @@ buddy server:flash --os raspberry-pi-os-lite --device /dev/disk4
 | `--yes` | Do not ask for confirmation before writing |
 | `--verbose` | Verbose output |
 
-The command reads the official image catalogue, downloads the image you pick, verifies its
-checksum, and writes it to a block device. The catalogue is read at run time rather than pinned,
-because image URLs carry a build date and a pinned link goes stale within months.
+The command reads the official image catalogue, downloads the image you pick, and writes it to a
+block device. The catalogue is read at run time rather than pinned, because image URLs carry a
+build date and a pinned link goes stale within months.
+
+The download is not checksummed. A cached file is reused only when its size matches the size the
+catalogue advertises, which catches a truncated download and nothing subtler. If you want the
+guarantee, check the image against the `extract_sha256` in the catalogue yourself before writing,
+or flash the card with Raspberry Pi Imager, which verifies what it writes.
 
 The device allowlist refuses by default. An internal disk, a system image, or anything that is not
 an ejectable whole disk is rejected with a reason rather than written to. Run `--list` first and
@@ -102,10 +110,30 @@ buddy server:first-boot --hostname pi-stacks --user pi
 
 This writes `user-data`, `network-config` and `meta-data` to the mounted boot partition.
 
-Those files create your login user, install your SSH public key, disable password authentication,
-set the hostname, and enable passwordless sudo for that user. Eject the card, put it in the board,
-and power it on. The first boot takes a few minutes because cloud-init expands the filesystem and
-applies the configuration.
+| Option | Description |
+|---|---|
+| `--hostname <name>` | The name the board answers to on the network (default `pi-stacks`) |
+| `--user <name>` | The login to create, which the deploy then uses (default `pi`) |
+| `--ssh-key <path>` | Public key to authorise (default `~/.ssh/id_ed25519.pub`) |
+| `--os <name>` | Which image was written, which decides the boot volume name |
+| `--out <dir>` | Write the files here instead of the mounted boot partition |
+| `--wifi-ssid <ssid>` | Join this wireless network on first boot |
+| `--wifi-country <code>` | Two-letter regulatory domain, required with `--wifi-ssid` |
+| `--timezone <tz>` | IANA timezone for the board |
+| `--env <name>` | Environment whose configuration to bootstrap (default `production`) |
+| `--force` | Overwrite first-boot files already on the card |
+
+The wireless passphrase is never a flag. It is read from `WIFI_PASSWORD` or prompted for, so it
+does not end up in your shell history or in the process list.
+
+Those files create your login user, install your SSH public key, disable password authentication
+(`ssh_pwauth: false`, and the account is created with `lock_passwd: true`), set the hostname, and
+give that user passwordless sudo. Eject the card, put it in the board, and power it on. The first
+boot takes a few minutes because cloud-init expands the filesystem and applies the configuration.
+
+The instructions printed at the end come from ts-cloud and name its own CLI (`cloud ssh:preflight`,
+`cloud deploy`). The `buddy` equivalents are the next two steps below, and they are what the rest of
+this guide uses.
 
 On Raspberry Pi OS Trixie some cloud-init modules can rerun on later boots
 ([raspberrypi/trixie-feedback#26](https://github.com/raspberrypi/trixie-feedback/issues/26)). The
@@ -114,25 +142,48 @@ Stacks bootstrap is idempotent and marks itself done, so a rerun changes nothing
 ### 3. Doctor
 
 ```bash
-buddy server:doctor
+buddy server:doctor                    # the host from config/cloud.ts
+buddy server:doctor pi-spare.local     # or name one
+buddy server:doctor --discover         # or browse the network for one
+buddy server:doctor --json             # findings as JSON
 ```
 
 This connects over SSH and checks the things that fail late and confusingly if you skip them:
 architecture, OS release, memory, disk, sudo, clock and outbound HTTPS. Fix what it reports before
-you go further. Nothing on the box has been changed at this point.
+you go further. Nothing on the box has been changed at this point. The command exits non-zero when
+a finding is an error, so it drops into CI as a gate.
+
+`--discover` browses for `_ssh._tcp` over mDNS for a few seconds and takes the first host it hears.
+It is macOS-only, and a board that has only just booted may not have announced itself yet, so it
+supplements naming a host rather than replacing it. `--env <name>` picks the environment whose
+configuration the host is checked against, and defaults to `production`.
 
 ### 4. Setup
 
 ```bash
 buddy server:setup
+buddy server:setup --dry-run   # run the checks and stop before changing anything
 ```
 
-Setup adopts the host. It installs Bun, the rpx gateway and the systemd units if they are missing,
-creates the deploy staging directory, and records the host key fingerprint so later deploys pin it.
-On the `raspberry-pi` profile it also applies small-board tuning: a smaller swap file, capped
-journald retention, and ARM-specific checks.
+Setup adopts the host. It runs the same preflight first and refuses to touch a host that fails it.
+Then it installs Bun, the rpx gateway and the systemd units if they are missing, and creates the
+deploy staging directory. It takes the same `[host]`, `--env` and `--discover` arguments as the
+doctor.
 
-Setup is safe to run again. It installs only what is missing.
+On the `raspberry-pi` profile it also applies small-board tuning: a 1 GB swap file rather than the
+2 GB used elsewhere, and ARM-specific preflight findings (it reports the Pi model, and refuses a
+32-bit userland outright, because Bun ships no 32-bit build).
+
+Finally it records the host at `storage/cloud/state/<stackName>.json`: the address, SSH user and
+port, the key path when one is configured, the profile, and the deploy staging path. Later deploys
+read that file instead of rediscovering the host.
+
+Setup is safe to run again. The bootstrap marks its own version on the box, so a second run
+installs only what is missing.
+
+Do not run setup for a project that uses `cloud.attachTo` (see [Several projects on one
+board](#several-projects-on-one-board)). Provisioning refuses an attached project outright: the
+project that owns the board runs setup, and the tenants only deploy.
 
 ### 5. Deploy
 
@@ -146,6 +197,11 @@ plan without changing anything:
 ```bash
 buddy deploy --prod --dry-run
 ```
+
+`--dry-run` is a global buddy flag rather than one `deploy` declares, and the deploy checks argv for
+it directly, so a requested preview can never fall through into the real pipeline. The environment
+flags `deploy` itself declares are `--prod`, `--staging` and `--dev` (`--dev`, not
+`--development`), and you can also name the environment positionally: `buddy deploy production`.
 
 The preview reports "Adopt SSH host" rather than "create a server", because nothing is created on
 this path.
@@ -173,7 +229,9 @@ export const tsCloud: TsCloudConfig = {
     // 'raspberry-pi' applies small-board tuning. 'generic' is the default.
     profile: 'raspberry-pi',
 
-    // The first host with no role, or role 'app', is the one deployed to.
+    // Exactly one host. The first entry with no role, or role 'app', is the
+    // one deployed to, and provisioning refuses a list of more than one:
+    // multi-host ssh fleets are not supported yet.
     hosts: [
       {
         host: 'pi-stacks.local',
@@ -184,9 +242,9 @@ export const tsCloud: TsCloudConfig = {
       },
     ],
 
-    // 'pin' is the default: refuse a host key that does not match the pin
-    // recorded at setup. 'accept-new' trusts the first key it sees.
-    // 'insecure' disables host key checking entirely.
+    // 'pin' is the default: the host key is recorded the first time ts-cloud
+    // connects, and a key that changes afterwards is refused. 'accept-new'
+    // trusts the first key it sees. 'insecure' disables checking entirely.
     hostKey: 'pin',
 
     // Run privileged remote steps through sudo rather than as root.
@@ -219,6 +277,8 @@ run or a one-off deploy can point at another board without editing `config/cloud
 | `TS_CLOUD_SSH_USER` | `ssh.hosts[].user`, default `root` |
 | `TS_CLOUD_SSH_PORT` | `ssh.hosts[].port`, default `22` |
 | `TS_CLOUD_SSH_KEY` | `ssh.hosts[].privateKeyPath` |
+| `TS_CLOUD_SSH_HOST_KEY` | `ssh.hostKey`, one of `pin`, `accept-new`, `insecure` |
+| `TS_CLOUD_SSH_PROFILE` | `ssh.profile`, `raspberry-pi` or `generic` |
 | `TS_CLOUD_SSH_PUBLISH_DNS` | `1` forces DNS publishing on, `0` forces it off |
 
 If no host is configured and no `TS_CLOUD_SSH_HOST` is set, the deploy stops and tells you what to
@@ -236,7 +296,8 @@ internet cannot route to.
 
 An address counts as private when it is RFC1918 (`10/8`, `172.16/12`, `192.168/16`), CGNAT
 (`100.64/10`), loopback, link-local, an IPv6 unique-local or link-local address, a `.local`,
-`.internal`, `.lan`, `.intranet` or `.home.arpa` name, or a bare single-label hostname.
+`.localhost`, `.internal`, `.lan`, `.intranet` or `.home.arpa` name, or a bare single-label
+hostname.
 
 The deploy prints something like:
 
@@ -251,25 +312,51 @@ second site is reachable by port until you give it a name your router or hosts f
 
 ### Trusting the board's CA
 
-With `lan: { tls: 'local-ca' }` the box runs its own certificate authority (rpx `localCa`) and
-signs the LAN certificate itself. Nothing outside the box trusts that CA until you install it.
+With `lan: { tls: 'local-ca' }` the box runs its own certificate authority and signs the LAN
+certificate itself. Nothing outside the box trusts that authority until you install it.
 
 ```bash
 buddy server:trust
 ```
 
-On the Mac you run it from, this installs the board's CA certificate into the system keychain.
-Safari, Chrome and `curl` then accept the LAN HTTPS URL without a warning.
+That reads the authority off the board over SSH, saves a copy at
+`storage/cloud/ssh/<host>.ca.crt`, and installs it into this machine's trust store. Safari, Chrome
+and `curl` then accept the LAN HTTPS URL without a warning. Installing needs `sudo`, so macOS asks
+for your password: you type it into the system prompt, and buddy never handles it.
 
-For an iPhone or an iPad, `buddy server:trust` can emit a `.mobileconfig` profile instead. AirDrop
-or email it to the device, then:
+| Option | Description |
+|---|---|
+| `[host]` | The host to read from, instead of the one in `config/cloud.ts` |
+| `--env <name>` | Environment whose configuration names the host (default `production`) |
+| `--discover` | Browse the local network for hosts advertising SSH |
+| `--ca-path <path>` | Where the authority lives on the host (default `/etc/rpx/local-ca/rpx-root-ca.crt`) |
+| `--mobileconfig <path>` | Also write an Apple configuration profile for an iPhone or iPad |
+| `--export-only` | Save the certificate without changing this machine, and print how to trust it by hand |
+| `--json` | Print the result as JSON |
+
+Nothing is created on the board. If there is no authority at the path, the command says so and
+stops: that host is not serving LAN HTTPS from its own authority, which takes
+`ssh: { lan: { tls: 'local-ca' } }` in `config/cloud.ts` and a deploy. A run against an already
+trusted certificate reports that and changes nothing.
+
+`--json` prints the host, the path on the board, the local copy, the certificate's SHA-256
+fingerprint, whether this machine trusts it, and the profile path when one was written. The
+certificate itself is never printed, by any of the output modes.
+
+For an iPhone or an iPad, ask for a configuration profile:
+
+```bash
+buddy server:trust --mobileconfig ~/Desktop/pi-stacks.mobileconfig
+```
+
+AirDrop or mail it to the device, then:
 
 1. Open the profile and install it under **Settings > General > VPN & Device Management**.
 2. Go to **Settings > General > About > Certificate Trust Settings**.
 3. Turn on full trust for the board's root certificate.
 
-That second step is not optional on iOS. Installing the profile alone is not enough, and the
-symptom of skipping it is a certificate warning that looks like the certificate is wrong.
+That third step is not optional on iOS. Installing the profile alone is not enough, and the symptom
+of skipping it is a certificate warning that looks like the certificate is wrong.
 
 Set `lan: { tls: 'off' }` if you would rather serve plain HTTP on the LAN and skip all of this.
 
@@ -307,7 +394,9 @@ cloud: {
 },
 ```
 
-An attached project skips provisioning, resolves the existing box, and deploys only its own sites.
+An attached project skips provisioning, resolves the existing box from `ssh.hosts` (there is no
+provider API to ask), and deploys only its own sites. It must not run `buddy server:setup`:
+provisioning refuses `cloud.attachTo` outright, because the board belongs to the owning project.
 
 Each project owns `/etc/rpx/sites.d/<slug>.json`, and a deploy replaces that file wholesale. Two
 consequences follow:
@@ -316,7 +405,8 @@ consequences follow:
   refused, because deploying would overwrite the owner's gateway fragment and take its sites down.
 - **A project's fragment must list every domain that project serves.** If the file on the box
   serves domains the config no longer declares, the deploy stops and names them rather than
-  silently dropping them.
+  silently dropping them. When you really are retiring a domain, list it in `cloud.retiredDomains`
+  and the deploy will let it go.
 
 Pick each site's port explicitly and check what is already bound (`ss -lntp` on the board) before
 adding a tenant. Two tenants can bind the same port config-file-cleanly and collide at run time.
@@ -359,9 +449,11 @@ deploy hangs or fails, because it runs with `BatchMode=yes` and no terminal.
 `buddy server:doctor` reports this. To fix it by hand, on the board:
 
 ```bash
-echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/010-stacks
-sudo chmod 440 /etc/sudoers.d/010-stacks
+echo "$USER ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/ts-cloud
+sudo chmod 440 /etc/sudoers.d/ts-cloud
 ```
+
+That is the file the doctor's own remediation names, so a second run agrees with what you did.
 
 Deploying as `root` avoids the issue entirely, at the cost of a root SSH login.
 
@@ -381,7 +473,10 @@ Symptoms are a filesystem that remounts read-only, a database that reports corru
 that fail to start after a reboot that used to work.
 
 - Move to an NVMe drive or a USB SSD. This is the single biggest reliability change you can make.
-- The `raspberry-pi` profile already caps journald retention, which is the largest routine writer.
+- Cap the journal, which is the largest routine writer. The SSH bootstrap does not do this for you,
+  so on the board: `sudo journalctl --vacuum-size=256M --vacuum-time=14d`, and write
+  `SystemMaxUse=256M` under `[Journal]` in `/etc/systemd/journald.conf.d/99-retention.conf` to keep
+  it that way.
 - Keep backups off the board. See the deploy warning about managed services with no offsite backup
   destination.
 
@@ -399,7 +494,7 @@ systemctl is-enabled <site>.service    # enabled means it starts at boot
 Then check the gateway and the disk:
 
 ```bash
-systemctl status rpx
+systemctl status rpx-gateway           # the unit is rpx-gateway.service
 cat /etc/rpx/sites.d/<slug>.json
 df -h                                  # a full disk stops everything quietly
 ```
@@ -411,9 +506,13 @@ and enables the units.
 
 ## Where the state lives
 
-- `storage/cloud/` on your machine holds the ts-cloud state, including the pin for this host: its
-  address, SSH user and port, key path, host key fingerprint and profile.
+- `storage/cloud/state/<stackName>.json` on your machine pins this host: its address, SSH user and
+  port, the key path when one is configured, the profile and the deploy staging path.
+- `storage/cloud/ssh/<host>.ca.crt` on your machine is the copy of the board's certificate
+  authority that `buddy server:trust` saves. Under `hostKey: 'pin'` ts-cloud also keeps the host
+  key it recorded, in a `known_hosts` file of its own.
 - `/var/ts-cloud/staging` on the board is the deploy staging path.
+- `/var/lib/ts-cloud/bootstrap.v<n>` on the board is the marker that makes the bootstrap idempotent.
 - `/etc/rpx/sites.d/<slug>.json` on the board is this project's gateway fragment.
 
 `buddy cloud` lists the fleet for an `ssh` project from the config and those pins. There is no
