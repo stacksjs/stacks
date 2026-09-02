@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { configureOrm, getDatabase } from 'bun-query-builder'
+import { configureOrm, getDatabase, releaseOrm } from 'bun-query-builder'
 import { acquireDbConfigLock } from '@stacksjs/database'
 import { defineModel } from '@stacksjs/orm'
 import { sqlHelpers } from '../src/sql-helpers'
@@ -46,6 +46,19 @@ describe('Model.create() on a useUuid model - end-to-end regression (stacksjs/st
   })
 
   afterAll(() => {
+    /*
+     * Hand back the `configureOrm` override before anything else.
+     *
+     * It outranks `setConfig()` for the rest of the PROCESS, and `bun test`
+     * shares one across every file - so without this, each later file stayed
+     * pinned to the database this one owns and then deletes, and failed with
+     * `RangeError: Cannot use a closed database` (stacksjs/stacks#2415).
+     * Released while the config lock is still held, so nothing observes the
+     * gap between letting go and the next file configuring its own.
+     */
+    releaseOrm()
+
+
     releaseDbConfigLock()
   })
 

@@ -12,6 +12,7 @@
 // insert below succeeded silently and the cascade never fired.
 import { afterAll, describe, expect, it } from 'bun:test'
 import { config, configureOrm, createModel, createQueryBuilder, getDatabase, setConfig, SQLITE_BOOTSTRAP_PRAGMAS } from '../src/index'
+import { releaseOrm } from 'bun-query-builder'
 
 // Config is process-wide; snapshot what sibling test files may have set and
 // restore it after, so this file can't leak its in-memory sqlite override.
@@ -19,6 +20,19 @@ const originalDialect = config.dialect
 const originalDatabase = { ...config.database }
 
 afterAll(() => {
+  /*
+   * Hand back the `configureOrm` override before anything else.
+   *
+   * It outranks `setConfig()` for the rest of the PROCESS, and `bun test`
+   * shares one across every file - so without this, each later file stayed
+   * pinned to the database this one owns and then deletes, and failed with
+   * `RangeError: Cannot use a closed database` (stacksjs/stacks#2415).
+   * Released while the config lock is still held, so nothing observes the
+   * gap between letting go and the next file configuring its own.
+   */
+  releaseOrm()
+
+
   setConfig({ dialect: originalDialect, database: originalDatabase } as any)
 })
 

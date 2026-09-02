@@ -29,6 +29,7 @@ import { mkdtempSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { releaseOrm } from 'bun-query-builder'
 
 // Pin env BEFORE importing anything that transitively touches
 // bun-query-builder's own config loader (`defineModel()`'s executor reads
@@ -138,6 +139,19 @@ describe('trait methods are wired onto hydrated instances (not just the static m
   })
 
   afterAll(() => {
+    /*
+     * Hand back the `configureOrm` override before anything else.
+     *
+     * It outranks `setConfig()` for the rest of the PROCESS, and `bun test`
+     * shares one across every file - so without this, each later file stayed
+     * pinned to the database this one owns and then deletes, and failed with
+     * `RangeError: Cannot use a closed database` (stacksjs/stacks#2415).
+     * Released while the config lock is still held, so nothing observes the
+     * gap between letting go and the next file configuring its own.
+     */
+    releaseOrm()
+
+
     releaseDbConfigLock()
   })
 

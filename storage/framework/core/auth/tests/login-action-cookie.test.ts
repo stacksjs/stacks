@@ -30,6 +30,7 @@ import { existsSync, unlinkSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
+import { releaseOrm } from 'bun-query-builder'
 
 const DB_PATH = join(tmpdir(), `stacks-2306-login-cookie-${process.pid}.sqlite`)
 process.env.DB_CONNECTION = 'sqlite'
@@ -153,6 +154,19 @@ beforeEach(async () => {
 })
 
 afterAll(() => {
+  /*
+   * Hand back the `configureOrm` override before anything else.
+   *
+   * It outranks `setConfig()` for the rest of the PROCESS, and `bun test`
+   * shares one across every file - so without this, each later file stayed
+   * pinned to the database this one owns and then deletes, and failed with
+   * `RangeError: Cannot use a closed database` (stacksjs/stacks#2415).
+   * Released while the config lock is still held, so nothing observes the
+   * gap between letting go and the next file configuring its own.
+   */
+  releaseOrm()
+
+
   if (existsSync(DB_PATH))
     unlinkSync(DB_PATH)
   releaseDbConfigLock?.()
