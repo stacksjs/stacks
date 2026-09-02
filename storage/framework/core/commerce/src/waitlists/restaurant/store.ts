@@ -3,6 +3,7 @@ type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 type NewWaitlistRestaurant = NewModelData<typeof WaitlistRestaurant>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { restaurantWaitlistWriteData } from './write-data'
 
@@ -35,7 +36,7 @@ export async function store(data: NewWaitlistRestaurant): Promise<WaitlistRestau
     if (!result)
       throw new Error('Failed to create restaurant waitlist entry')
 
-    return result as WaitlistRestaurantJsonResponse
+    return asModelRow<WaitlistRestaurantJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

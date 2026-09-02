@@ -1,5 +1,6 @@
 import type { ModelRow, UpdateModelData, WaitlistProduct } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { fetchById } from './fetch'
 import { productWaitlistWriteData } from './write-data'
@@ -38,7 +39,7 @@ export async function update(id: number, data: WaitlistProductUpdate): Promise<W
     if (!result)
       return undefined
 
-    return result as WaitlistProductJsonResponse
+    return asModelRow<WaitlistProductJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

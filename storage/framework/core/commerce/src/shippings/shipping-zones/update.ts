@@ -1,5 +1,6 @@
 import type { ModelRow, ShippingZone, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { shippingZoneWriteData } from '../write-data'
 type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
@@ -30,7 +31,7 @@ export async function update(id: number, data: ShippingZoneUpdate): Promise<Ship
     if (!result)
       return undefined
 
-    return result as ShippingZoneJsonResponse
+    return asModelRow<ShippingZoneJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -66,7 +67,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update shipping zone status')
 
-    return result as ShippingZoneJsonResponse
+    return asModelRow<ShippingZoneJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -102,7 +103,7 @@ export async function updateCountries(
     if (!result)
       throw new Error('Failed to update shipping zone countries')
 
-    return result as ShippingZoneJsonResponse
+    return asModelRow<ShippingZoneJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -146,7 +147,7 @@ export async function updateRegionsAndPostalCodes(
     if (!result)
       throw new Error('Failed to update regions and postal codes')
 
-    return result as ShippingZoneJsonResponse
+    return asModelRow<ShippingZoneJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

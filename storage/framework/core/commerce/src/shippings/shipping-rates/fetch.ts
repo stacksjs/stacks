@@ -1,6 +1,7 @@
 import type { ModelRow, ShippingRate } from '@stacksjs/orm'
 type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**
  * Fetch a shipping rate by ID
@@ -99,7 +100,7 @@ export async function getRatesByZone(zoneId: number): Promise<ShippingRateJsonRe
       .orderBy('weight_from')
       .execute()
 
-    return rates as ShippingRateJsonResponse[]
+    return asModelRows<ShippingRateJsonResponse>(rates)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -137,7 +138,7 @@ export async function getRateByWeightAndZone(weight: number, zoneId: number): Pr
       .where('weight_to', '>=', weight)
       .executeTakeFirst()
 
-    return rate as ShippingRateJsonResponse | undefined
+    return asModelRow<ShippingRateJsonResponse>(rate, true)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -306,7 +307,7 @@ export async function getShippingRatesByMethod(methodId: number): Promise<Shippi
       .orderBy('weight_from')
       .execute()
 
-    return rates as ShippingRateJsonResponse[]
+    return asModelRows<ShippingRateJsonResponse>(rates)
   }
   catch (error) {
     if (error instanceof Error) {

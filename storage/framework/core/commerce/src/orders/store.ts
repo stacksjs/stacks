@@ -2,6 +2,7 @@ import type { ModelRow, NewModelData, Order } from '@stacksjs/orm'
 // Import dependencies
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { insertedId } from '../utils/inserted-id'
 type OrderJsonResponse = ModelRow<typeof Order>
@@ -41,7 +42,7 @@ export async function store(data: NewOrder): Promise<OrderJsonResponse | undefin
         .selectAll()
         .executeTakeFirst()
 
-      return order as OrderJsonResponse | undefined
+      return asModelRow<OrderJsonResponse>(order, true)
     }
 
     // Postgres reports no insert id without RETURNING; the uuid written above
@@ -52,7 +53,7 @@ export async function store(data: NewOrder): Promise<OrderJsonResponse | undefin
       .selectAll()
       .executeTakeFirst()
 
-    return order as OrderJsonResponse | undefined
+    return asModelRow<OrderJsonResponse>(order, true)
   }
   catch (error) {
     if (error instanceof Error)

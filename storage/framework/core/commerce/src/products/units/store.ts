@@ -3,6 +3,7 @@ import type { ModelRow, ProductUnit } from '@stacksjs/orm'
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import type { ProductUnitWriteData } from './types'
 
 /**
@@ -37,7 +38,7 @@ export async function store(data: ProductUnitWriteData): Promise<ProductUnitJson
           .execute()
       }
 
-      return result as ProductUnitJsonResponse
+      return asModelRow<ProductUnitJsonResponse>(result)
     })
   }
   catch (error) {
@@ -152,7 +153,7 @@ export async function getDefaultUnit(type: string): Promise<ProductUnitJsonRespo
       .where('is_default', '=', true)
       .executeTakeFirst()
 
-    return defaultUnit as ProductUnitJsonResponse | undefined
+    return asModelRow<ProductUnitJsonResponse>(defaultUnit, true)
   }
   catch (error) {
     if (error instanceof Error) {

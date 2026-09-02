@@ -1,6 +1,7 @@
 import type { ModelRow, WaitlistProduct } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 
 /**
@@ -27,7 +28,7 @@ export async function destroy(id: number): Promise<WaitlistProductJsonResponse |
       .where('id', '=', id)
       .execute()
 
-    return waitlistProduct as WaitlistProductJsonResponse
+    return asModelRow<WaitlistProductJsonResponse>(waitlistProduct)
   }
   catch (error) {
     if (error instanceof Error) {

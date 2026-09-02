@@ -1,21 +1,24 @@
 import type { LicenseKey, ModelRow } from '@stacksjs/orm'
 type LicenseKeyJsonResponse = ModelRow<typeof LicenseKey>
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**
  * Fetch a shipping method by ID
  */
 export async function fetchById(id: number): Promise<LicenseKeyJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('license_keys')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as LicenseKeyJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<LicenseKeyJsonResponse>(row, true)
 }
 
 /**
  * Fetch all digital deliveries
  */
 export async function fetchAll(): Promise<LicenseKeyJsonResponse[]> {
-  return await db.selectFrom('license_keys').selectAll().execute() as LicenseKeyJsonResponse[]
+  return asModelRows<LicenseKeyJsonResponse>(await db.selectFrom('license_keys').selectAll().execute())
 }

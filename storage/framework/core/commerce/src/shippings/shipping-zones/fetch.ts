@@ -1,23 +1,26 @@
 import type { ModelRow, ShippingZone } from '@stacksjs/orm'
 type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 
 /**
  * Fetch all shipping zones
  */
 export async function fetchAll(): Promise<ShippingZoneJsonResponse[]> {
-  return await db.selectFrom('shipping_zones').selectAll().execute() as ShippingZoneJsonResponse[]
+  return asModelRows<ShippingZoneJsonResponse>(await db.selectFrom('shipping_zones').selectAll().execute())
 }
 
 /**
  * Fetch a shipping zone by ID
  */
 export async function fetchById(id: number): Promise<ShippingZoneJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('shipping_zones')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as ShippingZoneJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<ShippingZoneJsonResponse>(row, true)
 }
 
 /**
@@ -56,7 +59,7 @@ export async function getActiveShippingZones(): Promise<ShippingZoneJsonResponse
       .orderBy('name')
       .execute()
 
-    return activeZones as ShippingZoneJsonResponse[]
+    return asModelRows<ShippingZoneJsonResponse>(activeZones)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -85,7 +88,7 @@ export async function getZonesByCountry(countryCode: string): Promise<ShippingZo
       .orderBy('name')
       .execute()
 
-    return zones as ShippingZoneJsonResponse[]
+    return asModelRows<ShippingZoneJsonResponse>(zones)
   }
   catch (error) {
     if (error instanceof Error) {

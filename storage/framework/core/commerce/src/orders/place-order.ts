@@ -39,6 +39,7 @@ import type { ModelRow, NewModelData, Order, OrderItem, Payment } from '@stacksj
 
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../utils/model-row'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 import { emitOrderCreated, emitOrderPaid } from './events'
 import { adjustInventoryOnConnection } from '../utils/inventory-adjustment'
@@ -175,11 +176,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       // MySQL reports insertId, and PostgreSQL requires RETURNING. The
       // model-managed UUID is stable across all of them, so resolve the row
       // by UUID instead of mistaking an affected-row count for its id.
-      const insertedOrder = await trx
+      const insertedOrder = asModelRow<OrderJsonResponse>(await trx
         .selectFrom('orders')
         .where('uuid', '=', orderUuid)
         .selectAll()
-        .executeTakeFirst() as OrderJsonResponse | undefined
+        .executeTakeFirst(), true)
       const orderId = Number(insertedOrder?.id)
       if (!Number.isSafeInteger(orderId) || orderId <= 0)
         throw Object.assign(new Error('order insert could not be resolved by uuid'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })
@@ -207,11 +208,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
           }
         })
         await trx.insertInto('order_items').values(values).execute()
-        orderItemRows = await trx
+        orderItemRows = asModelRows<OrderItemJsonResponse>(await trx
           .selectFrom('order_items')
           .where('order_id', '=', orderId)
           .selectAll()
-          .execute() as OrderItemJsonResponse[]
+          .execute())
       }
 
       // 3. Insert the payment row if provided. The transaction_id
@@ -232,11 +233,11 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
               updated_at: now,
             } as NewPayment)
             .executeTakeFirst()
-          paymentRow = await trx
+          paymentRow = asModelRow<PaymentJsonResponse>(await trx
             .selectFrom('payments')
             .where('uuid', '=', paymentUuid)
             .selectAll()
-            .executeTakeFirst() as PaymentJsonResponse | undefined
+            .executeTakeFirst(), true)
           if (!paymentRow)
             throw Object.assign(new Error('payment insert could not be resolved by uuid'), { __placeFail: true, failedAt: 'payment', reason: 'unknown' })
         }
@@ -296,7 +297,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       }
 
       // 6. Refetch the order so callers get the post-write canonical row.
-      const order = await trx.selectFrom('orders').where('id', '=', orderId).selectAll().executeTakeFirst() as OrderJsonResponse | undefined
+      const order = asModelRow<OrderJsonResponse>(await trx.selectFrom('orders').where('id', '=', orderId).selectAll().executeTakeFirst(), true)
       if (!order)
         throw Object.assign(new Error('order disappeared mid-transaction'), { __placeFail: true, failedAt: 'order', reason: 'unknown' })
 

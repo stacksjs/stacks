@@ -4,6 +4,7 @@ type ShippingRateJsonResponse = ModelRow<typeof ShippingRate>
 type NewShippingRate = NewModelData<typeof ShippingRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingRateWriteData } from '../write-data'
 import { ShippingRateInputError, validateShippingRateWrite } from './validate-write'
@@ -41,7 +42,7 @@ export async function store(data: NewShippingRate): Promise<ShippingRateJsonResp
       .executeTakeFirst()
     if (!model)
       throw new Error('Failed to resolve created shipping rate')
-    return model as ShippingRateJsonResponse
+    return asModelRow<ShippingRateJsonResponse>(model)
   }
   catch (error) {
     if (error instanceof ShippingRateInputError)

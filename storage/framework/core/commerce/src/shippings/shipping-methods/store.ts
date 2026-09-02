@@ -3,6 +3,7 @@ type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
 type NewShippingMethod = NewModelData<typeof ShippingMethod>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingMethodWriteData } from '../write-data'
 
@@ -32,7 +33,7 @@ export async function store(data: NewShippingMethod): Promise<ShippingMethodJson
       .executeTakeFirst()
     if (!model)
       throw new Error('Failed to resolve created shipping method')
-    return model as ShippingMethodJsonResponse
+    return asModelRow<ShippingMethodJsonResponse>(model)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -104,12 +105,14 @@ export function formatShippingOptions(): Promise<{ id: number, name: string, sta
  */
 export async function getActiveShippingMethods(): Promise<ShippingMethodJsonResponse[]> {
   try {
-    return await db
+    const rows = await db
       .selectFrom('shipping_methods')
       .selectAll()
       .where('status', '=', 'active')
       .orderBy('name')
-      .execute() as ShippingMethodJsonResponse[]
+      .execute()
+
+    return asModelRows<ShippingMethodJsonResponse>(rows)
   }
   catch (error) {
     if (error instanceof Error) {

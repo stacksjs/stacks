@@ -6,7 +6,7 @@ import type {
   StatusCount,
 } from '../types'
 import { db } from '@stacksjs/database'
-import { asModelRows } from '../utils/model-row'
+import { asModelRow, asModelRows } from '../utils/model-row'
 
 /**
  * Fetch all orders from the database with their items
@@ -57,7 +57,7 @@ export async function fetchById(id: number): Promise<OrderJsonResponse | undefin
     .selectAll()
     .executeTakeFirst()
 
-  return order as OrderJsonResponse | undefined
+  return asModelRow<OrderJsonResponse>(order, true)
 }
 
 /**

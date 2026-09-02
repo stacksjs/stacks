@@ -3,6 +3,7 @@ type PaymentJsonResponse = ModelRow<typeof Payment>
 type NewPayment = NewModelData<typeof Payment>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 
@@ -31,11 +32,13 @@ export async function store(data: NewPayment): Promise<PaymentJsonResponse | und
     // Insert metadata is not: SQLite reports lastInsertRowid, MySQL reports
     // insertId, and PostgreSQL requires RETURNING. Reading by UUID avoids
     // treating an affected-row count as a primary key.
-    return await db
+    const row = await db
       .selectFrom('payments')
       .where('uuid', '=', uuid)
       .selectAll()
-      .executeTakeFirst() as PaymentJsonResponse | undefined
+      .executeTakeFirst()
+
+    return asModelRow<PaymentJsonResponse>(row, true)
   }
   catch (error) {
     if (error instanceof HttpError)

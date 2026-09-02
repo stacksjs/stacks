@@ -3,6 +3,7 @@ type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type NewPrintDevice = NewModelData<typeof PrintDevice>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 
 /**
  * Create a new print device
@@ -31,7 +32,7 @@ export async function store(data: NewPrintDevice): Promise<PrintDeviceJsonRespon
       .selectAll()
       .executeTakeFirst()
 
-    return printDevice as PrintDeviceJsonResponse | undefined
+    return asModelRow<PrintDeviceJsonResponse>(printDevice, true)
   }
   catch (error) {
     if (error instanceof Error) {

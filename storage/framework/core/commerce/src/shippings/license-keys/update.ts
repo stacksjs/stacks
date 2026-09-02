@@ -1,5 +1,6 @@
 import type { LicenseKey, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { licenseKeyWriteData } from '../write-data'
@@ -42,7 +43,7 @@ export async function update(id: number, data: LicenseKeyUpdate): Promise<Licens
     if (!result)
       return undefined
 
-    return result as LicenseKeyJsonResponse
+    return asModelRow<LicenseKeyJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof LicenseKeyInputError)
@@ -82,7 +83,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update license key status')
 
-    return result as LicenseKeyJsonResponse
+    return asModelRow<LicenseKeyJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -122,7 +123,7 @@ export async function updateExpiration(
     if (!result)
       throw new Error('Failed to update expiration information')
 
-    return result as LicenseKeyJsonResponse
+    return asModelRow<LicenseKeyJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

@@ -4,6 +4,7 @@ type ShippingZoneJsonResponse = ModelRow<typeof ShippingZone>
 type NewShippingZone = NewModelData<typeof ShippingZone>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingZoneWriteData } from '../write-data'
 
@@ -33,7 +34,7 @@ export async function store(data: NewShippingZone): Promise<ShippingZoneJsonResp
       .executeTakeFirst()
     if (!model)
       throw new Error('Failed to resolve created shipping zone')
-    return model as ShippingZoneJsonResponse
+    return asModelRow<ShippingZoneJsonResponse>(model)
   }
   catch (error) {
     if (error instanceof Error) {

@@ -3,6 +3,7 @@ type CourierJsonResponse = ModelRow<typeof Courier>
 type NewCourier = NewModelData<typeof Courier>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { mutationCount } from '../../utils/mutation-count'
 import { courierWriteData } from '../write-data'
 
@@ -33,7 +34,7 @@ export async function store(data: NewCourier): Promise<CourierJsonResponse> {
     if (!result)
       throw new Error('Failed to resolve created courier')
 
-    return result as CourierJsonResponse
+    return asModelRow<CourierJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

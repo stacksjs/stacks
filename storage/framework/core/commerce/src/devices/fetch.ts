@@ -2,23 +2,26 @@ import type { ModelRow, PrintDevice, Receipt } from '@stacksjs/orm'
 type PrintDeviceJsonResponse = ModelRow<typeof PrintDevice>
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../utils/model-row'
 
 /**
  * Fetch a print device by ID
  */
 export async function fetchById(id: number): Promise<PrintDeviceJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('print_devices')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as PrintDeviceJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<PrintDeviceJsonResponse>(row, true)
 }
 
 /**
  * Fetch all print devices
  */
 export async function fetchAll(): Promise<PrintDeviceJsonResponse[]> {
-  return await db.selectFrom('print_devices').selectAll().execute() as PrintDeviceJsonResponse[]
+  return asModelRows<PrintDeviceJsonResponse>(await db.selectFrom('print_devices').selectAll().execute())
 }
 
 /**
@@ -80,12 +83,14 @@ export async function calculateErrorRate(): Promise<number> {
  * Fetch all errors from receipts for a specific print device
  */
 export async function fetchErrorsByDeviceId(printDeviceId: number): Promise<ReceiptJsonResponse[]> {
-  return await db
+  const rows = await db
     .selectFrom('receipts')
     .where('print_device_id', '=', printDeviceId)
     .where('status', '=', 'failed')
     .selectAll()
-    .execute() as ReceiptJsonResponse[]
+    .execute()
+
+  return asModelRows<ReceiptJsonResponse>(rows)
 }
 
 /**

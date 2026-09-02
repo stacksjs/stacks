@@ -1,5 +1,6 @@
 import type { ModelRow, WaitlistProduct } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
 
@@ -7,18 +8,20 @@ type WaitlistProductJsonResponse = ModelRow<typeof WaitlistProduct>
  * Fetch a waitlist product by ID
  */
 export async function fetchById(id: number): Promise<WaitlistProductJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('waitlist_products')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as WaitlistProductJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<WaitlistProductJsonResponse>(row, true)
 }
 
 /**
  * Fetch all waitlist products
  */
 export async function fetchAll(): Promise<WaitlistProductJsonResponse[]> {
-  return await db.selectFrom('waitlist_products').selectAll().execute() as WaitlistProductJsonResponse[]
+  return asModelRows<WaitlistProductJsonResponse>(await db.selectFrom('waitlist_products').selectAll().execute())
 }
 
 /**
@@ -136,12 +139,14 @@ export async function fetchBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_products')
     .selectAll()
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
-    .execute() as WaitlistProductJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistProductJsonResponse>(rows)
 }
 
 /**
@@ -157,13 +162,15 @@ export async function fetchNotifiedBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_products')
     .selectAll()
     .where('notified_at', '>=', startDateStr)
     .where('notified_at', '<=', endDateStr)
     .whereNotNull('notified_at')
-    .execute() as WaitlistProductJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistProductJsonResponse>(rows)
 }
 
 /**
@@ -179,13 +186,15 @@ export async function fetchPurchasedBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_products')
     .selectAll()
     .where('purchased_at', '>=', startDateStr)
     .where('purchased_at', '<=', endDateStr)
     .whereNotNull('purchased_at')
-    .execute() as WaitlistProductJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistProductJsonResponse>(rows)
 }
 
 /**
@@ -201,13 +210,15 @@ export async function fetchCancelledBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_products')
     .selectAll()
     .where('cancelled_at', '>=', startDateStr)
     .where('cancelled_at', '<=', endDateStr)
     .whereNotNull('cancelled_at')
-    .execute() as WaitlistProductJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistProductJsonResponse>(rows)
 }
 
 /**
@@ -215,11 +226,13 @@ export async function fetchCancelledBetweenDates(
  * @returns Array of waitlist products with waiting status
  */
 export async function fetchWaiting(): Promise<WaitlistProductJsonResponse[]> {
-  return await db
+  const rows = await db
     .selectFrom('waitlist_products')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute() as WaitlistProductJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistProductJsonResponse>(rows)
 }
 
 /**

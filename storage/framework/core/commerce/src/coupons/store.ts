@@ -3,6 +3,7 @@ type CouponJsonResponse = ModelRow<typeof Coupon>
 type NewCoupon = NewModelData<typeof Coupon>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { isUniqueViolation } from '@stacksjs/orm'
 
@@ -29,7 +30,7 @@ export async function store(data: NewCoupon): Promise<CouponJsonResponse | undef
       .selectAll()
       .executeTakeFirst()
 
-    return coupon as CouponJsonResponse | undefined
+    return asModelRow<CouponJsonResponse>(coupon, true)
   }
   catch (error) {
     if (error instanceof HttpError)

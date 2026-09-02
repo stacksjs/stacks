@@ -3,6 +3,7 @@ type ProductVariantJsonResponse = ModelRow<typeof ProductVariant>
 type NewProductVariant = NewModelData<typeof ProductVariant>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 
 /**
  * Create a new product variant
@@ -26,7 +27,7 @@ export async function store(data: NewProductVariant): Promise<ProductVariantJson
     if (!result)
       throw new Error('Failed to create product variant')
 
-    return result as ProductVariantJsonResponse
+    return asModelRow<ProductVariantJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

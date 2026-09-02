@@ -1,5 +1,6 @@
 import type { ModelRow, ShippingMethod, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { shippingMethodWriteData } from '../write-data'
 type ShippingMethodJsonResponse = ModelRow<typeof ShippingMethod>
@@ -30,7 +31,7 @@ export async function update(id: number, data: ShippingMethodUpdate): Promise<Sh
     if (!result)
       return undefined
 
-    return result as ShippingMethodJsonResponse
+    return asModelRow<ShippingMethodJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -66,7 +67,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update shipping method status')
 
-    return result as ShippingMethodJsonResponse
+    return asModelRow<ShippingMethodJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -110,7 +111,7 @@ export async function updatePricing(
     if (!result)
       throw new Error('Failed to update pricing information')
 
-    return result as ShippingMethodJsonResponse
+    return asModelRow<ShippingMethodJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

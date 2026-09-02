@@ -1,5 +1,6 @@
 import type { ModelRow, Payment } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type PaymentJsonResponse = ModelRow<typeof Payment>
 
@@ -31,18 +32,22 @@ export interface PaymentStats {
 }
 
 export async function fetchAll(): Promise<PaymentJsonResponse[]> {
-  return await db
+  const rows = await db
     .selectFrom('payments')
     .selectAll()
-    .execute() as PaymentJsonResponse[]
+    .execute()
+
+  return asModelRows<PaymentJsonResponse>(rows)
 }
 
 export async function fetchById(id: number): Promise<PaymentJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('payments')
     .selectAll()
     .where('id', '=', id)
-    .executeTakeFirst() as PaymentJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<PaymentJsonResponse>(row, true)
 }
 
 /**

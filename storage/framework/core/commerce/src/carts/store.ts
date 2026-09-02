@@ -3,6 +3,7 @@ type CartJsonResponse = ModelRow<typeof Cart>
 type NewCart = NewModelData<typeof Cart>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 
 /**
  * Create a new cart
@@ -26,7 +27,7 @@ export async function store(data: NewCart): Promise<CartJsonResponse> {
     if (!result)
       throw new Error('Failed to create cart')
 
-    return result as CartJsonResponse
+    return asModelRow<CartJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error)

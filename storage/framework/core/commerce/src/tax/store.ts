@@ -2,6 +2,7 @@ import type { ModelRow, TaxRate } from '@stacksjs/orm'
 type TaxRateJsonResponse = ModelRow<typeof TaxRate>
 import { randomUUIDv7 } from 'bun'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import type { TaxRateWriteData } from './types'
 
 /**
@@ -34,7 +35,7 @@ export async function store(data: TaxRateWriteData): Promise<TaxRateJsonResponse
       if (!result)
         throw new Error('Failed to create tax rate')
 
-      return result as TaxRateJsonResponse
+      return asModelRow<TaxRateJsonResponse>(result)
     })
   }
   catch (error) {

@@ -1,5 +1,6 @@
 import type { ModelRow, WaitlistRestaurant } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
 
@@ -7,18 +8,20 @@ type WaitlistRestaurantJsonResponse = ModelRow<typeof WaitlistRestaurant>
  * Fetch a restaurant waitlist entry by ID
  */
 export async function fetchById(id: number): Promise<WaitlistRestaurantJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('waitlist_restaurants')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as WaitlistRestaurantJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<WaitlistRestaurantJsonResponse>(row, true)
 }
 
 /**
  * Fetch all restaurant waitlist entries
  */
 export async function fetchAll(): Promise<WaitlistRestaurantJsonResponse[]> {
-  return await db.selectFrom('waitlist_restaurants').selectAll().execute() as WaitlistRestaurantJsonResponse[]
+  return asModelRows<WaitlistRestaurantJsonResponse>(await db.selectFrom('waitlist_restaurants').selectAll().execute())
 }
 
 /**
@@ -108,12 +111,14 @@ export async function fetchBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(_endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('created_at', '>=', startDateStr)
     .where('created_at', '<=', endDateStr)
-    .execute() as WaitlistRestaurantJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistRestaurantJsonResponse>(rows)
 }
 
 /**
@@ -129,13 +134,15 @@ export async function fetchSeatedBetweenDates(
   const startDateStr = formatDate(startDate)
   const endDateStr = formatDate(_endDate)
 
-  return await db
+  const rows = await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('check_in_time', '>=', startDateStr)
     .where('check_in_time', '<=', endDateStr)
     .where('status', '=', 'seated')
-    .execute() as WaitlistRestaurantJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistRestaurantJsonResponse>(rows)
 }
 
 /**
@@ -143,11 +150,13 @@ export async function fetchSeatedBetweenDates(
  * @returns Array of waitlist entries with waiting status
  */
 export async function fetchWaiting(): Promise<WaitlistRestaurantJsonResponse[]> {
-  return await db
+  const rows = await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute() as WaitlistRestaurantJsonResponse[]
+    .execute()
+
+  return asModelRows<WaitlistRestaurantJsonResponse>(rows)
 }
 
 /**
@@ -211,11 +220,11 @@ export async function fetchWaitingWithQuotedTimes(): Promise<{
   totalQuotedWaitTime: number
   averageQuotedWaitTime: number
 }> {
-  const waitingEntries = await db
+  const waitingEntries = asModelRows<WaitlistRestaurantJsonResponse>(await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute() as WaitlistRestaurantJsonResponse[]
+    .execute())
 
   const totalQuotedWaitTime = waitingEntries.reduce((sum: any, entry: any) => sum + (entry.quoted_wait_time ?? 0), 0)
   const averageQuotedWaitTime = waitingEntries.length > 0 ? totalQuotedWaitTime / waitingEntries.length : 0
@@ -237,11 +246,11 @@ export async function fetchWaitingWithPartySizes(): Promise<{
   averagePartySize: number
   partySizeBreakdown: Record<number, number>
 }> {
-  const waitingEntries = await db
+  const waitingEntries = asModelRows<WaitlistRestaurantJsonResponse>(await db
     .selectFrom('waitlist_restaurants')
     .selectAll()
     .where('status', '=', 'waiting')
-    .execute() as WaitlistRestaurantJsonResponse[]
+    .execute())
 
   const totalPartySize = waitingEntries.reduce((sum: any, entry: any) => sum + entry.party_size, 0)
   const averagePartySize = waitingEntries.length > 0 ? totalPartySize / waitingEntries.length : 0

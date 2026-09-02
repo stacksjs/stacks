@@ -1,5 +1,6 @@
 import type { Customer, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, isUniqueViolation } from '@stacksjs/orm'
 type CustomerJsonResponse = ModelRow<typeof Customer>
@@ -30,7 +31,7 @@ export async function update(id: number, data: Omit<CustomerUpdate, 'id'>): Prom
     if (!result)
       return undefined
 
-    return result as CustomerJsonResponse
+    return asModelRow<CustomerJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof HttpError)

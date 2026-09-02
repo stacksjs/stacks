@@ -1,5 +1,6 @@
 import type { ModelRow, Receipt } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow, asModelRows } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { aggregateStats } from '../utils/typed-stats'
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
@@ -33,18 +34,20 @@ export async function fetchById(id: number): Promise<ReceiptJsonResponse | undef
   // Single `as` at the kysely → typed-result boundary — schema-wide
   // typing for `selectAll()` would force every consumer to import the
   // generated row types, which we want to keep optional in user code.
-  return await db
+  const row = await db
     .selectFrom('receipts')
     .where('id', '=', id)
     .selectAll()
-    .executeTakeFirst() as ReceiptJsonResponse | undefined
+    .executeTakeFirst()
+
+  return asModelRow<ReceiptJsonResponse>(row, true)
 }
 
 /**
  * Fetch all print logs
  */
 export async function fetchAll(): Promise<ReceiptJsonResponse[]> {
-  return await db.selectFrom('receipts').selectAll().execute() as ReceiptJsonResponse[]
+  return asModelRows<ReceiptJsonResponse>(await db.selectFrom('receipts').selectAll().execute())
 }
 
 /**

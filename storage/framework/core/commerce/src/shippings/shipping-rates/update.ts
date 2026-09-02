@@ -1,5 +1,6 @@
 import type { ModelRow, ShippingRate, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import { mutationCount } from '../../utils/mutation-count'
 import { shippingRateWriteData } from '../write-data'
@@ -43,7 +44,7 @@ export async function update(id: number, data: ShippingRateUpdate): Promise<Ship
     if (!result)
       return undefined
 
-    return result as ShippingRateJsonResponse
+    return asModelRow<ShippingRateJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof ShippingRateInputError)

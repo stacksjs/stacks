@@ -1,5 +1,6 @@
 import type { ModelRow, ProductVariant, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type ProductVariantJsonResponse = ModelRow<typeof ProductVariant>
 type ProductVariantUpdate = UpdateModelData<typeof ProductVariant>
@@ -26,7 +27,7 @@ export async function update(id: number, data: Omit<ProductVariantUpdate, 'id'>)
     if (!result)
       return undefined
 
-    return result as ProductVariantJsonResponse
+    return asModelRow<ProductVariantJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error)

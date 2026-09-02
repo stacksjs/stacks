@@ -1,5 +1,6 @@
 import type { Courier, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 // Import dependencies
 import { formatDate } from '@stacksjs/orm'
 import { courierWriteData } from '../write-data'
@@ -31,7 +32,7 @@ export async function update(id: number, data: CourierUpdate): Promise<CourierJs
     if (!result)
       return undefined
 
-    return result as CourierJsonResponse
+    return asModelRow<CourierJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -67,7 +68,7 @@ export async function updateStatus(
     if (!result)
       throw new Error('Failed to update courier status')
 
-    return result as CourierJsonResponse
+    return asModelRow<CourierJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {
@@ -107,7 +108,7 @@ export async function updateContact(
     if (!result)
       throw new Error('Failed to update contact information')
 
-    return result as CourierJsonResponse
+    return asModelRow<CourierJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error) {

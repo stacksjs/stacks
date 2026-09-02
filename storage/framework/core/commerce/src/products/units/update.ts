@@ -1,5 +1,6 @@
 import type { ModelRow, ProductUnit, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 import type { ProductUnitWriteData } from './types'
 type ProductUnitJsonResponse = ModelRow<typeof ProductUnit>
@@ -51,7 +52,7 @@ export async function update(id: number, data: ProductUnitWriteData): Promise<Pr
       if (!result)
         return undefined
 
-      return result as ProductUnitJsonResponse
+      return asModelRow<ProductUnitJsonResponse>(result)
     })
   }
   catch (error) {

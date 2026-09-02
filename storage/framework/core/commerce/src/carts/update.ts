@@ -1,5 +1,6 @@
 import type { Cart, ModelRow, UpdateModelData } from '@stacksjs/orm'
 import { db } from '@stacksjs/database'
+import { asModelRow } from '../utils/model-row'
 import { formatDate } from '@stacksjs/orm'
 type CartJsonResponse = ModelRow<typeof Cart>
 type CartUpdate = UpdateModelData<typeof Cart>
@@ -26,7 +27,7 @@ export async function update(id: number, data: Omit<CartUpdate, 'id'>): Promise<
     if (!result)
       throw new Error('Failed to update cart')
 
-    return result as CartJsonResponse
+    return asModelRow<CartJsonResponse>(result)
   }
   catch (error) {
     if (error instanceof Error)
