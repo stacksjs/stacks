@@ -117,9 +117,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@0ee7ec71793c301c27448881865c14e7634bf55e # v0.11.40
+        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
         with:
-          version: '0.11.40'
+          version: '0.11.48'
           install: 'false'
 
       - name: Use Cached node_modules
@@ -177,9 +177,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@0ee7ec71793c301c27448881865c14e7634bf55e # v0.11.40
+        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
         with:
-          version: '0.11.40'
+          version: '0.11.48'
           install: 'false'
 
       - name: Use Cached node_modules
@@ -368,9 +368,9 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@0ee7ec71793c301c27448881865c14e7634bf55e # v0.11.40
+        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
         with:
-          version: '0.11.40'
+          version: '0.11.48'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}
