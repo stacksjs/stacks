@@ -6,6 +6,46 @@ import { aggregateStats } from '../utils/typed-stats'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 
 /**
+ * A raw row, given the camelCase spellings its type already promises.
+ *
+ * `GiftCardJsonResponse` is `ModelRow<typeof GiftCard>`, which is
+ * `DeclaredAttributes & SnakeCaseAttributes` - so it types BOTH `currentBalance`
+ * and `current_balance` as present. The ORM delivers on that through the
+ * accessor proxy on a model row, but these functions query the RAW builder,
+ * where a row carries exactly the column names the database has. Casting one to
+ * `GiftCardJsonResponse` therefore claimed properties that were `undefined` at
+ * runtime, and `checkBalance` read three of them:
+ *
+ *   db row  : code=D8ZCGG7PLU, is_active true, current_balance 1, status ACTIVE
+ *   fetched : isActive=undefined currentBalance=undefined expiryDate=undefined
+ *   result  : {"valid":false,"currency":"EUR","message":"Gift card is active"}
+ *
+ * A valid, active, funded card reported invalid with no balance - every call,
+ * since the card's real state was never read (stacksjs/stacks#2417).
+ *
+ * Aliases are ADDED rather than substituted: the snake_case keys stay exactly
+ * where they are, so `Object.keys`, spreads and JSON responses keep the shape
+ * they have today, and only the reads that were silently undefined change.
+ */
+function withDeclaredSpellings<T>(row: T): T {
+  if (row === null || typeof row !== 'object')
+    return row
+
+  const out: Record<string, unknown> = { ...(row as Record<string, unknown>) }
+
+  for (const [key, value] of Object.entries(out)) {
+    if (!key.includes('_'))
+      continue
+
+    const camel = key.replace(/_([a-z0-9])/g, (_, c: string) => c.toUpperCase())
+    if (!(camel in out))
+      out[camel] = value
+  }
+
+  return out as T
+}
+
+/**
  * Fetch all gift cards from the database
  */
 export async function fetchAll(): Promise<GiftCardJsonResponse[]> {
@@ -14,29 +54,33 @@ export async function fetchAll(): Promise<GiftCardJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return giftCards as GiftCardJsonResponse[]
+  return (giftCards as GiftCardJsonResponse[]).map(withDeclaredSpellings)
 }
 
 /**
  * Fetch a gift card by ID
  */
 export async function fetchById(id: number): Promise<GiftCardJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('gift_cards')
     .where('id', '=', id)
     .selectAll()
     .executeTakeFirst() as GiftCardJsonResponse | undefined
+
+  return withDeclaredSpellings(row)
 }
 
 /**
  * Fetch a gift card by code
  */
 export async function fetchByCode(code: string): Promise<GiftCardJsonResponse | undefined> {
-  return await db
+  const row = await db
     .selectFrom('gift_cards')
     .where('code', '=', code)
     .selectAll()
     .executeTakeFirst() as GiftCardJsonResponse | undefined
+
+  return withDeclaredSpellings(row)
 }
 
 /**
@@ -49,7 +93,7 @@ export async function fetchActive(): Promise<GiftCardJsonResponse[]> {
     .selectAll()
     .execute()
 
-  return giftCards as GiftCardJsonResponse[]
+  return (giftCards as GiftCardJsonResponse[]).map(withDeclaredSpellings)
 }
 
 /**
@@ -126,8 +170,8 @@ export async function fetchStats(): Promise<GiftCardStats> {
       medium: mediumBalanceCount,
       high: highBalanceCount,
     },
-    expiring_soon: expiringGiftCards as GiftCardJsonResponse[],
-    recently_used: recentlyUsedGiftCards as GiftCardJsonResponse[],
+    expiring_soon: (expiringGiftCards as GiftCardJsonResponse[]).map(withDeclaredSpellings),
+    recently_used: (recentlyUsedGiftCards as GiftCardJsonResponse[]).map(withDeclaredSpellings),
   }
 }
 
