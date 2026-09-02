@@ -106,7 +106,7 @@
         "@stacksjs/validation": "^0.74.3",
         "@stacksjs/video": "^0.74.3",
         "@stacksjs/whois": "^0.74.3",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -266,7 +266,7 @@
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.253",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
@@ -560,7 +560,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.61",
+        "bun-query-builder": "^0.2.62",
         "dynamodb-tooling": "^0.3.2"
       },
       "devDependencies": {
@@ -930,7 +930,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
         "@stacksjs/validation": "workspace:*",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "devDependencies": {
         "@stacksjs/types": "workspace:*",
@@ -982,7 +982,7 @@
       "name": "@stacksjs/query-builder",
       "version": "0.74.3",
       "dependencies": {
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "devDependencies": {
         "@stacksjs/database": "workspace:*",
@@ -1289,7 +1289,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.253",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -1606,7 +1606,7 @@
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.253",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "peerDependencies": {
         "@stripe/stripe-js": "^9.10.0"
@@ -1974,7 +1974,7 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.61",
+        "bun-query-builder": "^0.2.62",
         "dynamodb-tooling": "^0.3.2"
       }
     },
@@ -2342,7 +2342,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
         "@stacksjs/validation": "workspace:*",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "peerDependencies": {
         "stripe": "22.3.2"
@@ -2392,7 +2392,7 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/query-builder/-/query-builder-0.74.3.tgz",
       "integrity": "sha512-0eOoTapoisFAXC64DUPCTurJQJUF59U745BN0BW9EjNhmo8EkzMl2KrunxvVD9n0OzAQNJeKNgA2Nl8uh+XkbA==",
       "dependencies": {
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       }
     },
     "@stacksjs/queue@0.74.3": {
@@ -2836,7 +2836,7 @@
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.253",
         "@stacksjs/ts-validation": "^0.5.6",
-        "bun-query-builder": "^0.2.61"
+        "bun-query-builder": "^0.2.62"
       },
       "peerDependencies": {
         "meilisearch": "^0.59.0"
@@ -3041,12 +3041,12 @@
         "stx-serve": "./dist/serve.js"
       }
     },
-    "bun-query-builder@0.2.61": {
+    "bun-query-builder@0.2.62": {
       "name": "bun-query-builder",
-      "version": "0.2.61",
+      "version": "0.2.62",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-query-builder/-/bun-query-builder-0.2.61.tgz",
-      "integrity": "sha512-mezzrGf3X3jUEAsd8aW2MZosz3/W0g72pjLPVJqjkY06qgR16/jGWz6SvQlO2qjl5UJPtYK1Ms9l2nTV1OTZ1g==",
+      "resolved": "https://registry.npmjs.org/bun-query-builder/-/bun-query-builder-0.2.62.tgz",
+      "integrity": "sha512-dAYStBmkimlWeyng0tvpiJTFsTpFTm5EQ0ucoBjz3xXZAUILjBrCCE4XPlY+upN9D23OVpRmA/MaC72rD7Ie1Q==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.12",
         "@stacksjs/ts-faker": "^0.1.8",

@@ -399,7 +399,7 @@
     "@stacksjs/newsletter": "^0.74.3",
     "@stacksjs/i18n": "^0.74.3",
     "@stacksjs/cron": "^0.74.3",
-    "bun-query-builder": "^0.2.61"
+    "bun-query-builder": "^0.2.62"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
