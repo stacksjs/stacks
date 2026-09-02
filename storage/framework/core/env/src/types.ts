@@ -95,6 +95,10 @@ export interface FrameworkEnv {
   TS_CLOUD_SSH_USER: string | undefined
   TS_CLOUD_SSH_PORT: string | undefined
   TS_CLOUD_SSH_KEY: string | undefined
+  /** Host key policy for an ssh deploy: 'pin' (default), 'accept-new' or 'insecure'. */
+  TS_CLOUD_SSH_HOST_KEY: string | undefined
+  /** Host tuning profile for an ssh deploy: 'raspberry-pi' or 'generic' (default). */
+  TS_CLOUD_SSH_PROFILE: string | undefined
   /** Force DNS, TLS and CDN publishing on ('1') or off ('0') for an ssh host. */
   TS_CLOUD_SSH_PUBLISH_DNS: string | undefined
   HETZNER_API_TOKEN: string | undefined

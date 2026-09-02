@@ -360,7 +360,7 @@
     "@stacksjs/server": "^0.74.3",
     "@stacksjs/storage": "^0.74.3",
     "@stacksjs/strings": "^0.74.3",
-    "@stacksjs/tlsx": "^0.13.0",
+    "@stacksjs/tlsx": "^0.13.19",
     "@stacksjs/ts-cloud": "^0.12.10",
     "@stacksjs/tunnel": "^0.74.3",
     "@stacksjs/types": "^0.74.3",

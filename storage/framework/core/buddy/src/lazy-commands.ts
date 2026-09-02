@@ -114,6 +114,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'server:first-boot': { path: './commands/server.ts', exportName: 'server' },
   'server:doctor': { path: './commands/server.ts', exportName: 'server' },
   'server:setup': { path: './commands/server.ts', exportName: 'server' },
+  'server:trust': { path: './commands/server.ts', exportName: 'server' },
   'link:core': { path: './commands/link.ts', exportName: 'link' },
   'user:add': { path: './commands/user.ts', exportName: 'user' },
   'user:list': { path: './commands/user.ts', exportName: 'user' },

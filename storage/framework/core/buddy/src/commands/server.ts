@@ -1,12 +1,12 @@
 import type { CLI } from '@stacksjs/types'
 import { createWriteStream, existsSync, mkdirSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 import process from 'node:process'
 import { intro, onUnknownSubcommand, outro, prompts } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { loadTsCloudConfig, loadTsCloudDeployApi, resolveProvider } from './deploy'
-import { resolveSshTarget, sshStatePin, type SshTarget } from './deploy-ssh-target'
+import { mergeSshStatePin, resolveSshTarget, sshCliArgs, sshStatePin, type SshTarget } from './deploy-ssh-target'
 import {
   describeDisk,
   flashRefusalReason,
@@ -18,6 +18,15 @@ import {
   type ServerImage,
   type ServerOsId,
 } from './server-image'
+import {
+  CA_MISSING_EXIT,
+  caCopyPath,
+  caReadScript,
+  DEFAULT_LAN_CA_PATH,
+  mobileconfigInstructions,
+  resolveCaPath,
+  trustSummary,
+} from './server-trust'
 
 
 /** Synchronous output: an async logger loses whatever precedes a process.exit. */
@@ -282,6 +291,53 @@ function buildBootstrapOrExit(api: any, config: any, environment: string, sudoUs
     log.info('Edit config/cloud.ts and run this again.')
     process.exit(ExitCode.FatalError)
   }
+}
+
+/** Why reading the authority off the host did not produce a certificate. */
+type CaReadFailure = 'unreachable' | 'missing' | 'unreadable'
+
+/**
+ * The host's certificate authority, read over SSH.
+ *
+ * Nothing is created on the box: this is a `cat` and no more. The failure cases
+ * are kept apart on purpose, because "the board is not answering" and "the board
+ * is not running its own authority" want completely different advice and both
+ * arrive as a non-zero `ssh` otherwise.
+ */
+async function readRemoteCa(
+  target: SshTarget,
+  caPath: string,
+): Promise<{ pem: string } | { failure: CaReadFailure, detail: string }> {
+  const proc = Bun.spawn(['ssh', ...sshCliArgs(target, { connectTimeoutSec: 20 }), 'sh', '-s'], {
+    stdin: new TextEncoder().encode(caReadScript(caPath)),
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  const [out, err, code] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ])
+
+  if (code === CA_MISSING_EXIT)
+    return { failure: 'missing', detail: '' }
+
+  if (code !== 0)
+    return { failure: err.toLowerCase().includes('sudo') ? 'unreadable' : 'unreachable', detail: err.trim() }
+
+  if (!out.includes('-----BEGIN CERTIFICATE-----'))
+    return { failure: 'unreadable', detail: '' }
+
+  return { pem: out }
+}
+
+/** The platform name tlsx prints trust instructions for. */
+function trustPlatform(): 'macos' | 'windows' | 'debian' {
+  if (process.platform === 'darwin')
+    return 'macos'
+
+  return process.platform === 'win32' ? 'windows' : 'debian'
 }
 
 export function server(buddy: CLI): void {
@@ -610,14 +666,241 @@ export function server(buddy: CLI): void {
 
       const stackName = config.project?.stackName || `${config.project?.slug || 'app'}-${options.env}`
       const dir = join(process.cwd(), 'storage', 'cloud', 'state')
+      const statePath = join(dir, `${stackName}.json`)
+      let recorded: Record<string, unknown> | null = null
+      try {
+        recorded = existsSync(statePath) ? JSON.parse(await Bun.file(statePath).text()) as Record<string, unknown> : null
+      }
+      catch {
+        recorded = null
+      }
       mkdirSync(dir, { recursive: true })
       await Bun.write(
-        join(dir, `${stackName}.json`),
-        `${JSON.stringify(sshStatePin({ stackName, target: adopted, deployStoragePath: outputs?.deployStoragePath }), null, 2)}\n`,
+        statePath,
+        `${JSON.stringify(mergeSshStatePin(recorded, sshStatePin({ stackName, target: adopted, deployStoragePath: outputs?.deployStoragePath })), null, 2)}\n`,
       )
       log.success(`Host adopted. Recorded at storage/cloud/state/${stackName}.json`)
       log.info('Next: `buddy deploy --prod`')
       await outro('Done', { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('server:trust [host]', "Trust the host's own certificate authority on this machine")
+    .option('--env <name>', 'Environment whose configuration names the host', { default: 'production' })
+    .option('--discover', 'Browse the local network for hosts advertising SSH', { default: false })
+    .option('--ca-path <path>', 'Where the authority lives on the host', { default: DEFAULT_LAN_CA_PATH })
+    .option('--mobileconfig <path>', 'Also write an Apple configuration profile for an iPhone or iPad', { default: undefined })
+    .option('--export-only', 'Save the certificate without changing this machine, and say how to trust it by hand', { default: false })
+    .option('--json', 'Print the result as JSON', { default: false })
+    .action(async (host: string | undefined, options: any) => {
+      const asJson = options.json === true
+      const perf = asJson ? undefined : await intro('buddy server:trust')
+      const { target } = await loadSshProject(options.env)
+
+      let host_ = host
+      if (!host_ && options.discover) {
+        const found = await discoverHosts()
+        if (found.length === 0 && !asJson)
+          log.info('No hosts advertising SSH were found on this network.')
+        for (const entry of found) {
+          if (!asJson)
+            log.info(`  ${entry.hostname}`)
+        }
+        host_ = found[0]?.hostname
+      }
+
+      const checked: SshTarget = host_ ? { ...target, host: host_ } : target
+      const caPath = resolveCaPath(options.caPath)
+
+      /** Name the cause and the fix, then stop. Certificate bytes never appear here. */
+      const fail = (reason: string, message: string, remediation: string, detail?: string): never => {
+        if (asJson) {
+          console.log(JSON.stringify({
+            host: checked.host,
+            caPath,
+            error: reason,
+            message,
+            remediation,
+            ...(detail ? { detail } : {}),
+          }, null, 2))
+        }
+        else {
+          log.error(message)
+          log.info(remediation)
+          if (detail)
+            log.info(detail)
+        }
+        process.exit(ExitCode.FatalError)
+      }
+
+      if (!asJson)
+        log.info(`Reading ${caPath} from ${checked.user}@${checked.host}${checked.port === 22 ? '' : `:${checked.port}`}...`)
+
+      const read = await readRemoteCa(checked, caPath)
+      if ('failure' in read) {
+        if (read.failure === 'missing') {
+          return fail(
+            'ca.absent',
+            `There is no certificate authority at ${caPath} on ${checked.host}.`,
+            "That host is not serving LAN HTTPS from its own authority. Set `ssh: { lan: { tls: 'local-ca' } }` in config/cloud.ts and run `buddy deploy --prod`, which is what creates it. Nothing was created on the host. If the authority lives elsewhere, name it with --ca-path.",
+          )
+        }
+
+        if (read.failure === 'unreadable') {
+          return fail(
+            'ca.unreadable',
+            `${caPath} on ${checked.host} exists but could not be read as a certificate.`,
+            `Check it by hand with \`ssh ${checked.user}@${checked.host} sudo cat ${caPath}\`. Reading it falls back to \`sudo -n\`, so a host whose sudo asks for a password cannot serve it to this command.`,
+            read.detail || undefined,
+          )
+        }
+
+        return fail(
+          'ssh.unreachable',
+          `Could not reach ${checked.user}@${checked.host} over SSH.`,
+          'Check the host is powered on and on this network, that SSH is enabled, and that your key is authorised. `buddy server:doctor` reports on all three.',
+          read.detail.split('\n').find(line => line.trim()) || undefined,
+        )
+      }
+
+      const pem = read.pem
+      const { exportCA, getCertSha256Fingerprint, isCertTrusted, trustInstructions } = await import('@stacksjs/tlsx')
+
+      let fingerprint: string
+      try {
+        fingerprint = getCertSha256Fingerprint(pem)
+      }
+      catch (err) {
+        return fail(
+          'ca.unparseable',
+          `The file at ${caPath} on ${checked.host} is not a certificate this can read.`,
+          'Point --ca-path at the root certificate rpx writes, which is a PEM.',
+          err instanceof Error ? err.message : String(err),
+        )
+      }
+
+      // Saved before anything else is attempted: the copy is what a later run,
+      // `curl --cacert`, and the user's own browser all need, and it is worth
+      // having even if installing it into the trust store then fails.
+      const savedPath = caCopyPath(checked.host)
+      mkdirSync(dirname(savedPath), { recursive: true })
+      await Bun.write(savedPath, pem.endsWith('\n') ? pem : `${pem}\n`)
+      if (!asJson)
+        log.success(`Saved the certificate to ${savedPath}`)
+
+      let mobileconfigPath: string | undefined
+      if (options.mobileconfig) {
+        try {
+          const profile = await exportCA({ caCertPath: savedPath, format: 'mobileconfig' })
+          const requested = String(options.mobileconfig)
+          // A directory as the destination is the obvious thing to type, and
+          // tlsx already names the file after the certificate's own subject.
+          const isDir = requested.endsWith('/') || (existsSync(requested) && statSync(requested).isDirectory())
+          mobileconfigPath = isDir ? join(requested, profile.filename) : requested
+          mkdirSync(dirname(mobileconfigPath), { recursive: true })
+          await Bun.write(mobileconfigPath, profile.data)
+        }
+        catch (err) {
+          return fail(
+            'profile.failed',
+            'Could not write the configuration profile.',
+            `Check that ${options.mobileconfig} is somewhere you can write to.`,
+            err instanceof Error ? err.message : String(err),
+          )
+        }
+
+        if (!asJson) {
+          log.success(`Wrote the configuration profile to ${mobileconfigPath}`)
+          for (const step of mobileconfigInstructions(mobileconfigPath))
+            log.info(`  ${step}`)
+        }
+      }
+
+      let trusted = false
+      try {
+        trusted = await isCertTrusted(pem)
+      }
+      catch {
+        // A trust store that cannot be queried is not a trust store that has
+        // it, so the install below runs and reports what actually happened.
+        trusted = false
+      }
+
+      if (options.exportOnly) {
+        if (!asJson) {
+          log.info(trusted
+            ? 'This machine already trusts it. --export-only, so nothing was changed.'
+            : 'This machine does not trust it yet. --export-only, so nothing was changed.')
+          console.log(trustInstructions(trustPlatform(), savedPath))
+        }
+      }
+      else if (trusted) {
+        if (!asJson)
+          log.success('This machine already trusts it. Nothing changed.')
+      }
+      else {
+        if (!asJson) {
+          log.info('Installing it into this machine\'s trust store.')
+          log.info('This needs sudo, so you will be asked for your password. You type it, not buddy.')
+        }
+
+        try {
+          // `addCertToSystemTrustStore` installs the certificate it is given.
+          // `installCA` would GENERATE a root when it finds no private key
+          // beside the certificate, overwriting the one just fetched.
+          const { addCertToSystemTrustStore } = await import('@stacksjs/tlsx')
+          const report = await addCertToSystemTrustStore(savedPath)
+          trusted = report.trusted === true
+
+          if (!asJson) {
+            for (const store of report.stores ?? [])
+              log.info(`  ${store.store}: ${store.status}${store.detail ? ` (${store.detail})` : ''}`)
+          }
+        }
+        catch (err) {
+          const detail = err instanceof Error ? err.message : String(err)
+          return fail(
+            'trust.failed',
+            'Installing the certificate into the trust store failed.',
+            /\s/.test(savedPath)
+              ? `The path ${savedPath} contains a space, which the underlying \`security\` invocation cannot pass through. Trust it by hand:\n${trustInstructions(trustPlatform(), savedPath)}`
+              : `Trust it by hand:\n${trustInstructions(trustPlatform(), savedPath)}`,
+            detail,
+          )
+        }
+
+        if (!trusted) {
+          return fail(
+            'trust.refused',
+            'The certificate was not added to any trust store.',
+            `Trust it by hand:\n${trustInstructions(trustPlatform(), savedPath)}`,
+          )
+        }
+
+        if (!asJson) {
+          log.success('Installed. Restart any open browser before trying the LAN address again.')
+        }
+      }
+
+      const summary = trustSummary({
+        host: checked.host,
+        caPath,
+        savedPath,
+        fingerprint,
+        trusted,
+        mobileconfigPath,
+      })
+
+      if (asJson) {
+        console.log(JSON.stringify(summary, null, 2))
+      }
+      else {
+        log.info(`Fingerprint (SHA-256): ${fingerprint}`)
+        if (perf)
+          await outro('Done', { startTime: perf, useSeconds: true })
+      }
+
       process.exit(ExitCode.Success)
     })
 
