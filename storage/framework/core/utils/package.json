@@ -62,7 +62,6 @@
     "size": "bun scripts/export-size.ts"
   },
   "dependencies": {
-    "@stacksjs/actions": "workspace:*",
     "@stacksjs/browser": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

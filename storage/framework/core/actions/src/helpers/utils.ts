@@ -5,7 +5,9 @@ import { existsSync } from 'node:fs'
 import { delimiter, join } from 'node:path'
 import process from 'node:process'
 import { buddyOptions, runCommand } from '@stacksjs/cli'
-import { err, ok } from '@stacksjs/error-handling'
+import { app } from '@stacksjs/config'
+import { Action as ActionEnum } from '@stacksjs/enums'
+import { err, handleError, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 
@@ -382,4 +384,31 @@ export function hasAction(action: Action): boolean {
   ]
 
   return candidates.some(candidate => existsSync(candidate))
+}
+
+/**
+ * Generate an application key for a project that has not been initialised.
+ *
+ * This lived in `@stacksjs/utils`, and was the only reason that package
+ * depended on this one: a utility package importing the action runner, for a
+ * function whose whole body is a call to it. That single edge held `utils` -
+ * and `arrays`, `objects` and `slug` beneath it - inside the framework's
+ * dependency cycle.
+ *
+ * It belongs next to `runAction`, which is defined above it, so the
+ * dependency now runs the same direction as the layering.
+ */
+export async function initProject(): Promise<Result<Subprocess, Error>> {
+  if (app.env !== 'production')
+    log.info('Project not yet initialized, generating application key...')
+  else handleError('Please run `buddy key:generate` to generate an application key')
+
+  const result = await runAction(ActionEnum.KeyGenerate, { cwd: p.projectPath() })
+
+  if (result.isErr)
+    return err(handleError(result.error))
+
+  log.info('Application key generated.')
+
+  return ok(result.value)
 }

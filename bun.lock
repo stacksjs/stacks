@@ -1360,7 +1360,6 @@
       "name": "@stacksjs/utils",
       "version": "0.74.3",
       "dependencies": {
-        "@stacksjs/actions": "workspace:*",
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",

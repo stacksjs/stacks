@@ -3,11 +3,9 @@ import type { Result } from '@stacksjs/error-handling'
 import type { CliOptions, Manifest, Subprocess } from '@stacksjs/types'
 import type { AddressInfo } from 'node:net'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
-import { log, runCommand } from '@stacksjs/cli'
+import { runCommand } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
-import { Action } from '@stacksjs/enums'
-import { err, handleError, ok } from '@stacksjs/error-handling'
+import { handleError } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { fs, readJsonFile, readPackageJson, readTextFile, writeTextFile } from '@stacksjs/storage'
 // Bun has native YAML support via Bun.YAML
@@ -18,21 +16,6 @@ export async function packageManager(): Promise<string> {
   const { packageManager } = await readPackageJson(frameworkPath('package.json'))
   // A manifest need not declare one; the framework's always does.
   return packageManager ?? ''
-}
-
-export async function initProject(): Promise<Result<Subprocess, Error>> {
-  if (app.env !== 'production')
-    log.info('Project not yet initialized, generating application key...')
-  else handleError('Please run `buddy key:generate` to generate an application key')
-
-  const result = await runAction(Action.KeyGenerate, { cwd: projectPath() })
-
-  if (result.isErr)
-    return err(handleError(result.error))
-
-  log.info('Application key generated.')
-
-  return ok((result).value)
 }
 
 export async function ensureProjectIsInitialized(): Promise<boolean> {
