@@ -210,7 +210,7 @@ import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { rateLimit as enforceRateLimit } from './rate-limit'
 import { applySecurityHeaders } from './security-headers'
-import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/orm'
+import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>

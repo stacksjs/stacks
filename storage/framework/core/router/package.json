@@ -69,7 +69,7 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/pagination": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",

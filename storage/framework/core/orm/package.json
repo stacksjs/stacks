@@ -72,6 +72,7 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/pagination": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",

@@ -1392,6 +1392,16 @@ export function skillsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `pagination` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the pagination directory.
+ * @returns The absolute path to the specified file or directory within the pagination directory.
+ */
+export function paginationPath(path?: string): string {
+  return corePath(`pagination/${path || ''}`)
+}
+
+/**
  * Returns the path to the `slug` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the slug directory.
@@ -1922,6 +1932,7 @@ export interface Path {
   smsPath: (path?: string) => string
   skillsPath: (path?: string) => string
   slugPath: (path?: string) => string
+  paginationPath: (path?: string) => string
   scriptsPath: (path?: string) => string
   securityPath: (path?: string) => string
   serverPath: (path?: string) => string
@@ -2071,6 +2082,7 @@ export const path: Path = {
   smsPath,
   skillsPath,
   slugPath,
+  paginationPath,
   scriptsPath,
   securityPath,
   serverPath,

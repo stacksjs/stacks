@@ -936,6 +936,7 @@
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/logging": "workspace:*",
+        "@stacksjs/pagination": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/payments": "workspace:*",
         "@stacksjs/query-builder": "workspace:*",
@@ -960,6 +961,10 @@
       "optionalPeers": [
         "stripe",
       ],
+    },
+    "storage/framework/core/pagination": {
+      "name": "@stacksjs/pagination",
+      "version": "0.74.3",
     },
     "storage/framework/core/path": {
       "name": "@stacksjs/path",
@@ -1082,7 +1087,7 @@
         "@stacksjs/database": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/logging": "workspace:*",
-        "@stacksjs/orm": "workspace:*",
+        "@stacksjs/pagination": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
@@ -1584,6 +1589,8 @@
     "@stacksjs/objects": ["@stacksjs/objects@workspace:storage/framework/core/objects"],
 
     "@stacksjs/orm": ["@stacksjs/orm@workspace:storage/framework/core/orm"],
+
+    "@stacksjs/pagination": ["@stacksjs/pagination@workspace:storage/framework/core/pagination"],
 
     "@stacksjs/path": ["@stacksjs/path@workspace:storage/framework/core/path"],
 
