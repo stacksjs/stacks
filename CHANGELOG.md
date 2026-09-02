@@ -1,5 +1,73 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.1...v0.74.2)
+
+## 💥 Breaking Changes
+
+- feat(orm)!: fail closed on generated routes with no row-level scoping (#2375) ([e325bef](https://github.com/stacksjs/stacks/commit/e325bef)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375))
+
+## ✨ Features
+
+- **libs**: publish through pantry ([3e0f4bc](https://github.com/stacksjs/stacks/commit/3e0f4bc)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: scope the transitively-owned models, declare the system tables (#2375) ([c141a9a](https://github.com/stacksjs/stacks/commit/c141a9a)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2375](https://github.com/stacksjs/stacks/issues/2375))
+- **forms**: render file fields as a picker that actually uploads (#2406) ([0f1b3a8](https://github.com/stacksjs/stacks/commit/0f1b3a8)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2406](https://github.com/stacksjs/stacks/issues/2406), [#2406](https://github.com/stacksjs/stacks/issues/2406), [#2406](https://github.com/stacksjs/stacks/issues/2406))
+- **forms**: enforce the upload limits config has always declared (#2406) ([78d302c](https://github.com/stacksjs/stacks/commit/78d302c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2406](https://github.com/stacksjs/stacks/issues/2406), [#2406](https://github.com/stacksjs/stacks/issues/2406), [#2406](https://github.com/stacksjs/stacks/issues/2406))
+- **db**: copy database dumps off the box (#2313) ([36bd971](https://github.com/stacksjs/stacks/commit/36bd971)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2313](https://github.com/stacksjs/stacks/issues/2313), [#2313](https://github.com/stacksjs/stacks/issues/2313), [#2313](https://github.com/stacksjs/stacks/issues/2313))
+
+## 🐛 Bug Fixes
+
+- **database**: reset the db proxy cache when a Database is closed (#2415) ([414bf99](https://github.com/stacksjs/stacks/commit/414bf99)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+- **test**: restore the email mock, key the template registry to its cwd (#2413) ([9288d0f](https://github.com/stacksjs/stacks/commit/9288d0f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413))
+- **test**: hold the db config lock for the mutation, not the whole process (#2413) ([ce4e167](https://github.com/stacksjs/stacks/commit/ce4e167)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413))
+- **test**: stop three suites poisoning the rest of the run (#2413) ([ebe8b26](https://github.com/stacksjs/stacks/commit/ebe8b26)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413), [#2413](https://github.com/stacksjs/stacks/issues/2413))
+- **config**: lay a user config section over its defaults instead of replacing it (#2411) ([db0be8e](https://github.com/stacksjs/stacks/commit/db0be8e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2411](https://github.com/stacksjs/stacks/issues/2411), [#2411](https://github.com/stacksjs/stacks/issues/2411), [#2411](https://github.com/stacksjs/stacks/issues/2411))
+- **generate**: make `buddy generate` do the work it documents (#2408) ([86213c0](https://github.com/stacksjs/stacks/commit/86213c0)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2411](https://github.com/stacksjs/stacks/issues/2411))
+- **deps**: align the pantry tree with the published packages (#2408) ([3022c84](https://github.com/stacksjs/stacks/commit/3022c84)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **orm**: type the tables migrations create but no model owns (#2409) ([c4e06b4](https://github.com/stacksjs/stacks/commit/c4e06b4)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2409](https://github.com/stacksjs/stacks/issues/2409), [#2409](https://github.com/stacksjs/stacks/issues/2409), [#2410](https://github.com/stacksjs/stacks/issues/2410))
+- **generate**: sort directory scans so generated barrels are deterministic ([25109ce](https://github.com/stacksjs/stacks/commit/25109ce)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **build**: stop the framework builds dirtying package.json on every run ([d3dd08c](https://github.com/stacksjs/stacks/commit/d3dd08c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **checks**: resolve paths case-exactly, so macOS and Linux agree ([dd84c1a](https://github.com/stacksjs/stacks/commit/dd84c1a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: resolve self-repo links against what git tracks, not the working tree ([c88f3f4](https://github.com/stacksjs/stacks/commit/c88f3f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **blog**: stop the admin tests writing into the real content/blog ([e391206](https://github.com/stacksjs/stacks/commit/e391206)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **docs**: repair two dead evidence links, and check self-repo links (#2056) ([66a869c](https://github.com/stacksjs/stacks/commit/66a869c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2059](https://github.com/stacksjs/stacks/issues/2059))
+- **deploy**: decrypt APP_URL before using it as the deploy domain ([e220ee4](https://github.com/stacksjs/stacks/commit/e220ee4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **build**: fail the core build when a package fails to build ([b737a35](https://github.com/stacksjs/stacks/commit/b737a35)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2391](https://github.com/stacksjs/stacks/issues/2391))
+- **build**: stop discarded subprocess results reporting a failed step as success ([b556f77](https://github.com/stacksjs/stacks/commit/b556f77)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2391](https://github.com/stacksjs/stacks/issues/2391))
+- **storage**: derive the public URL from the endpoint rather than throwing (#1896) ([eadf5e2](https://github.com/stacksjs/stacks/commit/eadf5e2)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896))
+- **storage**: stop publicUrl naming AWS for disks that are not on AWS (#1896) ([9b7e7a3](https://github.com/stacksjs/stacks/commit/9b7e7a3)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896))
+- **typecheck**: stop the app project reporting a false green from a stale cache (#2405) ([86ee378](https://github.com/stacksjs/stacks/commit/86ee378)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2405](https://github.com/stacksjs/stacks/issues/2405), [#2405](https://github.com/stacksjs/stacks/issues/2405), [#2405](https://github.com/stacksjs/stacks/issues/2405))
+
+## 📝 Documentation
+
+- **buddy**: regenerate the command reference for the pantry publisher ([1d8dbe8](https://github.com/stacksjs/stacks/commit/1d8dbe8)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: regenerate the command reference for db:backup --destination ([894f8e5](https://github.com/stacksjs/stacks/commit/894f8e5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **ci**: fail when the ungated auto-import barrels are stale (#2056) ([b44f9cf](https://github.com/stacksjs/stacks/commit/b44f9cf)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **ci**: fail when the ungated auto-import barrels are stale (#2056) ([4bab453](https://github.com/stacksjs/stacks/commit/4bab453)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **ci**: fail when the generated declarations are stale (#2056) ([e758357](https://github.com/stacksjs/stacks/commit/e758357)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **deploy**: fail when production code regex-matches a value out of an env file ([10d45f5](https://github.com/stacksjs/stacks/commit/10d45f5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2407](https://github.com/stacksjs/stacks/issues/2407), [#2407](https://github.com/stacksjs/stacks/issues/2407))
+- **router**: fail when a route names an action that does not exist ([bfa4bff](https://github.com/stacksjs/stacks/commit/bfa4bff)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: fail when a default route file is never mounted (#2384) ([36f89ec](https://github.com/stacksjs/stacks/commit/36f89ec)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2384](https://github.com/stacksjs/stacks/issues/2384), [#2384](https://github.com/stacksjs/stacks/issues/2384), [#2384](https://github.com/stacksjs/stacks/issues/2384))
+
+## 🔧 Chores
+
+- **deps**: take bun-plugin-auto-imports 0.4.2 ([5c34ffa](https://github.com/stacksjs/stacks/commit/5c34ffa)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+
+## ⏪ Reverts
+
+- **ci**: remove the generated-declaration step too ([fde6131](https://github.com/stacksjs/stacks/commit/fde6131)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: drop the generated-declaration freshness check ([6ecc9e9](https://github.com/stacksjs/stacks/commit/6ecc9e9)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## 🎉 Miscellaneous
+
+- Revert "test(ci): fail when the ungated auto-import barrels are stale (#2056)" ([bcf34bb](https://github.com/stacksjs/stacks/commit/bcf34bb)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.0...v0.74.1)
 
 ## ✅ Tests
