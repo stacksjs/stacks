@@ -110,6 +110,10 @@ const commandRegistry: Record<string, CommandLoader> = {
   'package': { path: './commands/package.ts', exportName: 'packageCommands' },
   'phone': { path: './commands/phone.ts', exportName: 'phone' },
   'ports': { path: './commands/ports.ts', exportName: 'ports' },
+  'server:flash': { path: './commands/server.ts', exportName: 'server' },
+  'server:first-boot': { path: './commands/server.ts', exportName: 'server' },
+  'server:doctor': { path: './commands/server.ts', exportName: 'server' },
+  'server:setup': { path: './commands/server.ts', exportName: 'server' },
   'link:core': { path: './commands/link.ts', exportName: 'link' },
   'user:add': { path: './commands/user.ts', exportName: 'user' },
   'user:list': { path: './commands/user.ts', exportName: 'user' },
@@ -179,7 +183,7 @@ const commandGroups = {
   'development': ['dev', 'build', 'test', 'lint'],
   'database': ['migrate', 'seed', 'fresh'],
   'scaffolding': ['make', 'generate'],
-  'deployment': ['deploy', 'release', 'cloud'],
+  'deployment': ['deploy', 'release', 'cloud', 'server'],
   'info': ['about', 'doctor', 'list'],
 }
 
