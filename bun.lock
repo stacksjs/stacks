@@ -341,6 +341,7 @@
         "@stacksjs/env": "^0.74.3",
         "@stacksjs/error-handling": "^0.74.3",
         "@stacksjs/events": "^0.74.3",
+        "@stacksjs/features": "workspace:*",
         "@stacksjs/git": "^0.74.3",
         "@stacksjs/gitit": "^0.2.5",
         "@stacksjs/health": "^0.74.3",
@@ -572,11 +573,11 @@
       "name": "@stacksjs/database",
       "version": "0.74.3",
       "dependencies": {
-        "@stacksjs/buddy": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/faker": "^0.74.3",
+        "@stacksjs/features": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/orm": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -759,6 +760,13 @@
       "devDependencies": {
         "@stacksjs/query-builder": "workspace:*",
         "better-dx": "^0.2.24",
+      },
+    },
+    "storage/framework/core/features": {
+      "name": "@stacksjs/features",
+      "version": "0.74.3",
+      "dependencies": {
+        "@stacksjs/path": "workspace:*",
       },
     },
     "storage/framework/core/forms": {
@@ -1551,6 +1559,8 @@
     "@stacksjs/faker": ["@stacksjs/faker@workspace:storage/framework/core/faker"],
 
     "@stacksjs/feature-flags": ["@stacksjs/feature-flags@workspace:storage/framework/core/feature-flags"],
+
+    "@stacksjs/features": ["@stacksjs/features@workspace:storage/framework/core/features"],
 
     "@stacksjs/forms": ["@stacksjs/forms@workspace:storage/framework/core/forms"],
 

@@ -1392,6 +1392,16 @@ export function skillsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `features` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the features directory.
+ * @returns The absolute path to the specified file or directory within the features directory.
+ */
+export function featuresPath(path?: string): string {
+  return corePath(`features/${path || ''}`)
+}
+
+/**
  * Returns the path to the `pagination` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the pagination directory.
@@ -1933,6 +1943,7 @@ export interface Path {
   skillsPath: (path?: string) => string
   slugPath: (path?: string) => string
   paginationPath: (path?: string) => string
+  featuresPath: (path?: string) => string
   scriptsPath: (path?: string) => string
   securityPath: (path?: string) => string
   serverPath: (path?: string) => string
@@ -2083,6 +2094,7 @@ export const path: Path = {
   skillsPath,
   slugPath,
   paginationPath,
+  featuresPath,
   scriptsPath,
   securityPath,
   serverPath,

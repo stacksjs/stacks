@@ -1080,7 +1080,9 @@ export function resetDatabaseBootstrapCache(): void {
  * were hidden so the caller can log them.
  *
  * Lives here (not in `@stacksjs/buddy`) so the migration runner can
- * import it without a dependency cycle. Stays a no-op when the
+ * import it without a dependency cycle. The manifest it reads comes from
+ * `@stacksjs/features` for the same reason: reading it out of the CLI is
+ * what put this package in a cycle with it. Stays a no-op when the
  * feature manifest / config can't be resolved — defensive, since the
  * runner is also called from non-CLI contexts (tests, programmatic
  * migrations) where one or the other might not be initialised.
@@ -1088,7 +1090,7 @@ export function resetDatabaseBootstrapCache(): void {
 async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string, hidden: string, feature: string }>> {
   const hidden: Array<{ original: string, hidden: string, feature: string }> = []
   try {
-    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/buddy')
+    const { appModelClaimsTable, FEATURE_NAMES, migrationFeature, migrationTable } = await import('@stacksjs/features')
     const { feature: isFeatureEnabled } = await import('@stacksjs/config')
     const fs = await import('node:fs/promises')
 
@@ -1144,7 +1146,7 @@ async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string
     }
   }
   catch {
-    // `@stacksjs/buddy` / `@stacksjs/config` may not resolve cleanly in
+    // `@stacksjs/features` / `@stacksjs/config` may not resolve cleanly in
     // every embedding (notably bare tests). The gate is best-effort —
     // a missing manifest doesn't block migrations from running.
   }

@@ -121,6 +121,7 @@
     "@stacksjs/env": "^0.74.3",
     "@stacksjs/error-handling": "^0.74.3",
     "@stacksjs/events": "^0.74.3",
+    "@stacksjs/features": "workspace:*",
     "@stacksjs/git": "^0.74.3",
     "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/health": "^0.74.3",
