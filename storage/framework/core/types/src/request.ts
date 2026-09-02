@@ -33,6 +33,9 @@ import type { Infer, IsRequired } from '@stacksjs/ts-validation'
  * ```
  */
 export interface AuthenticatedUser {
+  /** Present on every authenticated user, whichever model backs it. */
+  id: number
+  email: string
   [key: string]: any
 }
 

@@ -5,7 +5,7 @@ import type { AddressInfo } from 'node:net'
 import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { app, ui } from '@stacksjs/config'
-import { handleError } from '@stacksjs/error-handling'
+import { err, handleError } from '@stacksjs/error-handling'
 import { frameworkPath, projectPath } from '@stacksjs/path'
 import { fs, readJsonFile, readPackageJson, readTextFile, writeTextFile } from '@stacksjs/storage'
 // Bun has native YAML support via Bun.YAML

@@ -197,7 +197,11 @@ export async function updatePasskeyCounter(
 }
 
 export async function setCurrentRegistrationOptions(
-  user: UserModel,
+  // Declared as what it reads rather than as the whole ORM model. The caller
+  // holds an authenticated user, which is no longer a `UserModel` now that the
+  // types package has stopped importing the ORM, and this only ever needed the
+  // two columns it writes onto the passkey row.
+  user: { id: number, email?: string },
   verified: VerifiedRegistrationResponse,
 ): Promise<void> {
   // WebAuthn registrations without a credential id or public key are

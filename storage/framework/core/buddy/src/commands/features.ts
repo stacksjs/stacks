@@ -1,3 +1,4 @@
+import type { FeatureName } from '@stacksjs/features'
 import type { CLI } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
 import { cp, rm } from 'node:fs/promises'
