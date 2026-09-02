@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Commerce
 
-Comprehensive e-commerce module with 15 sub-modules and 20+ models.
+Comprehensive e-commerce module with 15 sub-modules and 36 models.
 
 ## Key Paths
 - Core package: `storage/framework/core/commerce/src/`

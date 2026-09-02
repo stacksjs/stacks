@@ -86,7 +86,7 @@ All model CRUD events: `model:created`, `model:updated`, `model:deleted`
 
 - **Content**: author, post, page
 - **Core**: user, activity, campaign, comment, email-list, notification, social-post, subscription, tag
-- **Commerce (30+ models)**: cart, cart-item, category, coupon, customer, order, order-item, payment, product, product-variant, review, shipping-method, shipping-rate, tax-rate, transaction, gift-card, license-key, and more
+- **Commerce (36 models)**: cart, cart-item, category, coupon, customer, order, order-item, payment, product, product-variant, review, shipping-method, shipping-rate, tax-rate, transaction, gift-card, license-key, and more
 
 All payloads are `Record<string, any>`.
 

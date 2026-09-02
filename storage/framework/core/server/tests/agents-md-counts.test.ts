@@ -23,6 +23,20 @@ import { path } from '@stacksjs/path'
 
 const AGENTS = readFileSync(path.projectPath('AGENTS.md'), 'utf-8')
 
+/** A skill's text, by directory name. */
+function skill(name: string): string {
+  return readFileSync(path.frameworkPath(`defaults/ai/skills/${name}/SKILL.md`), 'utf-8')
+}
+
+/** The single number a claim states, in an arbitrary document. */
+function claimedIn(source: string, where: string, pattern: RegExp): number {
+  const match = source.match(pattern)
+  if (!match)
+    throw new Error(`${where} no longer contains the claim ${pattern} - update this test alongside the wording.`)
+
+  return Number(match[1])
+}
+
 /** The single number a claim states, so the assertion names both sides. */
 function claimed(pattern: RegExp): number {
   const match = AGENTS.match(pattern)
@@ -88,12 +102,47 @@ describe('AGENTS.md counts match the tree', () => {
     expect(claimed(/There are \*\*(\d+)\*\* of/)).toBe(Object.keys(manifest.globals).length)
   })
 
-  it('states the number of buddy commands, agreeing with the generated reference', () => {
-    // `docs:buddy` writes that number from the runtime registry and CI rejects
-    // it when stale, so the reference is the authority and AGENTS.md follows it.
-    const reference = readFileSync(path.projectPath('docs/guide/buddy/commands.md'), 'utf-8')
-    const generated = Number(reference.match(/\*\*(\d+) commands\*\*/)![1])
+})
 
-    expect(claimed(/CLI \((\d+) commands/)).toBe(generated)
+/**
+ * The same claims live in the skills, and drifted the same way - `stacks-buddy`
+ * said 50+ commands, `stacks-dashboard` said 250+ components while `AGENTS.md`
+ * said 150+ for the same thing. Two documents disagreeing about one number is
+ * how you can tell nothing was checking either (stacksjs/stacks#2056).
+ */
+describe('skill counts match the tree', () => {
+  const modelCount = countFiles(path.frameworkPath('defaults/app/Models'), '.ts')
+  const commerceModels = countFiles(path.frameworkPath('defaults/app/Models/commerce'), '.ts')
+
+  it('stacks-orm and stacks-auto-imports agree on the model count', () => {
+    expect(claimedIn(skill('stacks-orm'), 'stacks-orm', /(\d+) models/)).toBe(modelCount)
+    expect(claimedIn(skill('stacks-auto-imports'), 'stacks-auto-imports', /\((\d+) models\)/)).toBe(modelCount)
+  })
+
+  it('stacks-commerce and stacks-types agree on the commerce model count', () => {
+    expect(claimedIn(skill('stacks-commerce'), 'stacks-commerce', /and (\d+) models/)).toBe(commerceModels)
+    expect(claimedIn(skill('stacks-types'), 'stacks-types', /Commerce \((\d+) models\)/)).toBe(commerceModels)
+  })
+
+  it('stacks-dashboard agrees with AGENTS.md on the component count', () => {
+    const components = countFiles(path.frameworkPath('defaults/resources/components'), '.stx')
+
+    expect(claimedIn(skill('stacks-dashboard'), 'stacks-dashboard', /(\d+) components/)).toBe(components)
+    expect(claimed(/widgets \((\d+) components\)/)).toBe(components)
+  })
+
+
+  it('stacks-composables states how many composables the package exports', () => {
+    const index = readFileSync(path.frameworkPath('core/composables/src/index.ts'), 'utf-8')
+    const exported = new Set(index.match(/\buse[A-Z][A-Za-z0-9]*/g) ?? []).size
+
+    expect(claimedIn(skill('stacks-composables'), 'stacks-composables', /(\d+) composables/)).toBe(exported)
+  })
+
+  it('stacks-writing-for-agents states how many skills ship', () => {
+    const skills = readdirSync(path.frameworkPath('defaults/ai/skills'))
+      .filter(entry => statSync(path.frameworkPath(`defaults/ai/skills/${entry}`)).isDirectory())
+
+    expect(claimedIn(skill('stacks-writing-for-agents'), 'stacks-writing-for-agents', /ships (\d+) skills/)).toBe(skills.length)
   })
 })

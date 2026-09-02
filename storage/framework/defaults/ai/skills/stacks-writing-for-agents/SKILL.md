@@ -13,7 +13,7 @@ project `AGENTS.md`, a doc reached by a pointer. The packaging differs, the
 writing does not. The same levers make each one predictable, because the agent
 takes the same *process* every run rather than producing the same output.
 
-Stacks ships 100+ skills and expects projects to add their own under
+Stacks ships 115 skills and expects projects to add their own under
 `app/Skills/`, so this is the skill that keeps that set from turning to sludge.
 The Stacks-specific mechanics (frontmatter, invocation, the override model,
 what `buddy setup:ai` does with the result) are in

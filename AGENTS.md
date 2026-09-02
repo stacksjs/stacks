@@ -111,7 +111,7 @@ Every skill also has a docs page under `docs/skills/`, one per skill, grouped by
 ### CLI, build, deploy, test
 | Task | Skill |
 |---|---|
-| The `buddy` / `bud` / `stacks` CLI (316 commands, `make:*` scaffolding, custom commands in `app/Commands/`) | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
+| The `buddy` / `bud` / `stacks` CLI (`docs/guide/buddy/commands.md` lists every command, generated from the runtime registry), `make:*` scaffolding, custom commands in `app/Commands/` | `stacks-buddy`, `stacks-cli`, `stacks-scaffolding` |
 | Building (components, CLI binaries, server images, docs) | `stacks-build` |
 | Native iOS/Android apps, Craft bridge, mobile builds and components | `stacks-mobile` |
 | Deploying (server vs serverless, hooks, first deploy) and cloud infra (EC2/Lambda/CDK/Route53/SES/S3) | `stacks-deploy`, `stacks-cloud` |
