@@ -223,6 +223,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         console.error('You need to specify a name. Read more about the documentation here.')
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 

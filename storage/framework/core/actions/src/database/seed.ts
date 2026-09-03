@@ -38,6 +38,7 @@ try {
   log.info(`  Failed: ${result.failed}`)
 
   // Exit with code 0 even with partial failures (seeding still completed)
+  await log.flush()
   process.exit(0)
 }
 catch (err) {

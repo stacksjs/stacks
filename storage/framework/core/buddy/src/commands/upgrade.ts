@@ -189,6 +189,7 @@ export function upgrade(buddy: CLI): void {
     .action(async (options: UpgradeOptions) => {
       if (process.getuid && process.getuid() !== 0) {
         log.warn('To upgrade the binary, you need to run this command with sudo, or as root.')
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 

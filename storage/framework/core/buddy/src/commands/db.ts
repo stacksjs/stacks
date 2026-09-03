@@ -291,6 +291,7 @@ export function db(buddy: CLI): void {
 
       if (!backups.length) {
         log.info(`No dumps in ${dir}.`)
+        await log.flush()
         process.exit(ExitCode.Success)
       }
 

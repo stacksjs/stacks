@@ -12,6 +12,7 @@ if (!jobName) {
 try {
   await unquarantineJob(jobName)
   log.success(`Lifted quarantine for ${jobName}`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

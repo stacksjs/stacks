@@ -16,6 +16,7 @@ try {
   log.info(`Pruning dead-letter rows older than ${days} day(s)...`)
   const deleted = await purgeDeadLetterJobs(days)
   log.success(`Deleted ${deleted} dead-letter row(s)`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

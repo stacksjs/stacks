@@ -28,6 +28,7 @@ try {
   else {
     log.warn('Please provide a job ID or use --all to retry all failed jobs')
     log.info('Usage: buddy queue:retry <id> or buddy queue:retry --all')
+    await log.flush()
     process.exit(1)
   }
 

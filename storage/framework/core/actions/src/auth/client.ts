@@ -65,4 +65,5 @@ log.info(`  Redirect URI: ${redirect}`)
 log.info('')
 log.warn('Make sure to save the client secret. You will not be able to retrieve it again.')
 
+await log.flush()
 process.exit(0)

@@ -11,6 +11,7 @@ try {
   if (projects.length > 0) {
     log.info('Found Projects:')
     projects.forEach((project: string) => console.log(`   - ${project}`))
+    await log.flush()
     process.exit(ExitCode.Success)
   }
 

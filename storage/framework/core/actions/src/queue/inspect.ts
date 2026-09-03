@@ -41,6 +41,7 @@ try {
   if (!jobId) {
     await log.error('Please provide a job ID')
     log.info('Usage: buddy queue:inspect --id=<jobId> [--failed]')
+    await log.flush()
     process.exit(1)
   }
 
@@ -125,6 +126,7 @@ try {
     if (!jobResult) {
       await log.error(`Job with ID ${id} not found`)
       log.info('Tip: Use --failed flag to inspect failed jobs')
+      await log.flush()
       process.exit(1)
     }
 

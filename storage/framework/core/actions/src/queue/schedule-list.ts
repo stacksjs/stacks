@@ -14,6 +14,7 @@ try {
   if (scheduledJobs.length === 0) {
     log.info('No scheduled jobs found.')
     log.info('Tip: Add a "rate" or "schedule" property to your job configuration.')
+    await log.flush()
     process.exit(0)
   }
 

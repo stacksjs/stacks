@@ -34,6 +34,7 @@ export function stacks(buddy: CLI): void {
       if (!name) {
         await log.error('You need to specify a stack name.')
         log.info('Example: buddy add calendar')
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 

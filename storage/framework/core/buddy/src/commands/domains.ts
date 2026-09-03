@@ -159,6 +159,7 @@ export function domains(buddy: CLI): void {
             options.registrantEmail as string,
           )} inbox.`,
         )
+        await log.flush()
         process.exit(ExitCode.Success)
       }
 

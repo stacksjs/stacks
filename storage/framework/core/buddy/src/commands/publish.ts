@@ -200,6 +200,7 @@ export function publish(buddy: CLI): void {
       if (!handler) {
         await log.error(`Unknown publishable resource: ${italic(resource)}`)
         log.info('Available: model, controller, middleware, action, core')
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 
@@ -328,6 +329,7 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   if (!matches.length) {
     await log.error(`Could not find default ${kind}: ${italic(fileName)}`)
     log.info(`Looked under: ${italic(defaultsDir)}`)
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -344,6 +346,7 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   if (existsSync(targetPath) && !force) {
     await log.error(`Already exists: ${italic(targetPath)}`)
     log.info('Pass --force to overwrite.')
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -463,6 +466,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
     await log.error('No Stacks checkout found to vendor from.')
     log.info('Pass one with `--path <dir>`, or set STACKS_FRAMEWORK_PATH.')
     log.info('A checkout is required: the published packages ship `dist` only, so a copy of them would not be editable.')
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -712,6 +716,7 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
   if (!existsSync(installed) && !force) {
     await log.error(`@stacksjs/${shortName} is not installed, so removing the vendored copy would leave nothing to resolve.`)
     log.info(`Run \`bun add @stacksjs/${shortName}\` first, or pass --force to remove it anyway.`)
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -750,6 +755,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   if (!existsSync(corePkgPath)) {
     await log.error(`${rel(coreDir)} has no package.json, so its version cannot be determined.`)
     log.info('Unvendor the packages individually with `buddy unpublish:core <pkg>` instead.')
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -1134,6 +1140,7 @@ async function assertNoUncommittedChanges(dir: string, force: boolean): Promise<
     for (const line of changed.slice(0, 10)) log.info(`  ${line}`)
     if (changed.length > 10) log.info(`  ... and ${changed.length - 10} more`)
     log.info('Commit or stash them first, or pass --force to delete them anyway.')
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
   catch {

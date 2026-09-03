@@ -172,8 +172,8 @@ async function loadSshApi(): Promise<any> {
     .filter(name => typeof api[name] !== 'function')
 
   if (missing.length > 0) {
-    await log.error('This @stacksjs/ts-cloud does not support deploying to a host over SSH.')
-    await log.error(`Missing: ${missing.join(', ')}.`)
+    log.error('This @stacksjs/ts-cloud does not support deploying to a host over SSH.')
+    log.error(`Missing: ${missing.join(', ')}.`)
     log.info('Upgrade with `bun update @stacksjs/ts-cloud`, or point TS_CLOUD_MODULE at a build that has it.')
     process.exit(ExitCode.FatalError)
   }
@@ -185,13 +185,13 @@ async function loadSshApi(): Promise<any> {
 async function loadSshProject(environment: string): Promise<{ config: any, target: SshTarget }> {
   const config = await loadTsCloudConfig(environment)
   if (!config) {
-    await log.error('No ts-cloud configuration found. Expected a `tsCloud` export from config/cloud.ts.')
+    log.error('No ts-cloud configuration found. Expected a `tsCloud` export from config/cloud.ts.')
     process.exit(ExitCode.FatalError)
   }
 
   const target = resolveSshTarget(config)
   if (!target) {
-    await log.error('No SSH host configured.')
+    log.error('No SSH host configured.')
     log.info("Add one to config/cloud.ts:  ssh: { hosts: [{ host: 'pi-stacks.local', user: 'pi' }] }")
     log.info('Or set TS_CLOUD_SSH_HOST (with TS_CLOUD_SSH_USER / TS_CLOUD_SSH_PORT / TS_CLOUD_SSH_KEY).')
     process.exit(ExitCode.FatalError)
@@ -360,7 +360,7 @@ export function server(buddy: CLI): void {
       const perf = await intro('buddy server:flash')
 
       if (process.platform !== 'darwin') {
-        await log.error('`buddy server:flash` currently supports macOS only.')
+        log.error('`buddy server:flash` currently supports macOS only.')
         log.info('On Linux, write the image with `dd`, then run `buddy server:first-boot` against the mounted boot partition.')
         process.exit(ExitCode.FatalError)
       }
@@ -380,7 +380,7 @@ export function server(buddy: CLI): void {
         image = await resolveImage(options.os)
       }
       catch (err) {
-        await log.error(err instanceof Error ? err.message : String(err))
+        log.error(err instanceof Error ? err.message : String(err))
         process.exit(ExitCode.FatalError)
       }
 
@@ -394,13 +394,13 @@ export function server(buddy: CLI): void {
       let device = options.device
       if (!device) {
         if (disks.length === 0) {
-          await log.error('No removable disk is attached. Insert the card and try again, or pass --device.')
+          log.error('No removable disk is attached. Insert the card and try again, or pass --device.')
           process.exit(ExitCode.FatalError)
         }
         if (disks.length > 1) {
           log.error('Several removable disks are attached, so buddy will not pick one:')
           for (const disk of disks)
-            await log.error(`  ${describeDisk(disk)}`)
+            log.error(`  ${describeDisk(disk)}`)
           log.info('Re-run with --device /dev/diskN naming the one you mean.')
           process.exit(ExitCode.FatalError)
         }
@@ -409,13 +409,13 @@ export function server(buddy: CLI): void {
 
       const info = device ? await readDiskInfo(device) : null
       if (!info) {
-        await log.error(`Could not read ${device}. Check the device path with \`diskutil list\`.`)
+        log.error(`Could not read ${device}. Check the device path with \`diskutil list\`.`)
         process.exit(ExitCode.FatalError)
       }
 
       const refusal = flashRefusalReason(info)
       if (refusal) {
-        await log.error(refusal)
+        log.error(refusal)
         process.exit(ExitCode.FatalError)
       }
 
@@ -424,7 +424,7 @@ export function server(buddy: CLI): void {
         decompressor = await resolveDecompressor()
       }
       catch (err) {
-        await log.error(err instanceof Error ? err.message : String(err))
+        log.error(err instanceof Error ? err.message : String(err))
         process.exit(ExitCode.FatalError)
       }
 
@@ -448,7 +448,7 @@ export function server(buddy: CLI): void {
         download = await downloadImage(image)
       }
       catch (err) {
-        await log.error(err instanceof Error ? err.message : String(err))
+        log.error(err instanceof Error ? err.message : String(err))
         process.exit(ExitCode.FatalError)
       }
 
@@ -470,7 +470,7 @@ export function server(buddy: CLI): void {
       ], { stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
 
       if (await write.exited !== 0) {
-        await log.error('Writing the image failed. The card is probably unusable until it is written again.')
+        log.error('Writing the image failed. The card is probably unusable until it is written again.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -509,7 +509,7 @@ export function server(buddy: CLI): void {
 
       const keyPath = options.sshKey || join(homedir(), '.ssh', 'id_ed25519.pub')
       if (!existsSync(keyPath)) {
-        await log.error(`No public key at ${keyPath}.`)
+        log.error(`No public key at ${keyPath}.`)
         log.info('Generate one with:  ssh-keygen -t ed25519')
         log.info('Or point at an existing key with --ssh-key.')
         process.exit(ExitCode.FatalError)
@@ -520,13 +520,13 @@ export function server(buddy: CLI): void {
       let wifi
       if (options.wifiSsid) {
         if (!options.wifiCountry) {
-          await log.error('--wifi-country is required with --wifi-ssid. It sets the radio regulatory domain.')
+          log.error('--wifi-country is required with --wifi-ssid. It sets the radio regulatory domain.')
           process.exit(ExitCode.FatalError)
         }
         const passphrase = process.env.WIFI_PASSWORD
           || await prompts.password({ message: `Passphrase for ${options.wifiSsid}` })
         if (typeof passphrase !== 'string' || !passphrase) {
-          await log.error('No wireless passphrase given.')
+          log.error('No wireless passphrase given.')
           process.exit(ExitCode.FatalError)
         }
         wifi = { ssid: options.wifiSsid, passphrase, country: String(options.wifiCountry).toUpperCase() }
@@ -552,7 +552,7 @@ export function server(buddy: CLI): void {
         const image = await resolveImage(options.os).catch(() => null)
         destination = image ? resolveBootVolume(image, existsSync) : null
         if (!destination) {
-          await log.error('The card does not appear to be mounted.')
+          log.error('The card does not appear to be mounted.')
           log.info('Insert the freshly written card and try again, or pass --out <dir> to write the files elsewhere.')
           process.exit(ExitCode.FatalError)
         }
@@ -562,7 +562,7 @@ export function server(buddy: CLI): void {
       for (const name of Object.keys(bundle.files)) {
         const path = join(destination, name)
         if (existsSync(path) && !options.force) {
-          await log.error(`${path} already exists. Re-run with --force to replace it.`)
+          log.error(`${path} already exists. Re-run with --force to replace it.`)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -631,7 +631,7 @@ export function server(buddy: CLI): void {
       log.info(`Adopting ${adopted.user}@${adopted.host}${adopted.port === 22 ? '' : `:${adopted.port}`}`)
 
       if (!await reportPreflight(api, adopted, false)) {
-        await log.error('The host is not ready. Nothing was changed on it.')
+        log.error('The host is not ready. Nothing was changed on it.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -643,7 +643,7 @@ export function server(buddy: CLI): void {
 
       const driver = api.createCloudDriver({ config, provider: 'ssh' })
       if (!driver.provisionComputeInfrastructure) {
-        await log.error('This ts-cloud cannot bootstrap an SSH host (update @stacksjs/ts-cloud).')
+        log.error('This ts-cloud cannot bootstrap an SSH host (update @stacksjs/ts-cloud).')
         process.exit(ExitCode.FatalError)
       }
 
@@ -659,8 +659,8 @@ export function server(buddy: CLI): void {
         outputs = await driver.provisionComputeInfrastructure({ config, environment: options.env })
       }
       catch (err) {
-        await log.error('Bootstrapping the host failed.')
-        await log.error(err instanceof Error ? err.message : String(err))
+        log.error('Bootstrapping the host failed.')
+        log.error(err instanceof Error ? err.message : String(err))
         process.exit(ExitCode.FatalError)
       }
 

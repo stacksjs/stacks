@@ -133,6 +133,7 @@ export function link(buddy: CLI): void {
       if (!framework) {
         await log.error('No framework checkout found.')
         log.info('Pass one with `--path <dir>` or set STACKS_FRAMEWORK_PATH.')
+        await log.flush()
         process.exit(ExitCode.FatalError)
       }
 
@@ -190,6 +191,7 @@ export function link(buddy: CLI): void {
 
       log.info('Undo with `buddy unlink:core`.')
 
+      await log.flush()
       // The logger writes asynchronously, and process.exit does not wait for
       // it: without this the command reports nothing at all and looks like it
       // did nothing.

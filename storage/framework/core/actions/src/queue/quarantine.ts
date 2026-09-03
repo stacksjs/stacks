@@ -10,6 +10,7 @@ try {
     const jobName = options.add
     await quarantineJob(jobName)
     log.success(`Quarantined ${jobName}`)
+    await log.flush()
     process.exit(0)
   }
 

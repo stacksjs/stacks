@@ -958,7 +958,7 @@ export async function assertFragmentIsOurs(
   log.error(`/etc/rpx/sites.d/${slug}.json on the box already serves ${orphaned.length} domain(s) this project does not declare:`)
   for (const domain of orphaned.slice(0, 8))
     log.error(`  ${domain}`)
-  await log.error(`Deploying would replace that fragment and take those domains down.`)
+  log.error(`Deploying would replace that fragment and take those domains down.`)
   log.info(`Either the slug '${slug}' belongs to another project (pick a different project.slug), or those domains belong here and should be in config/cloud.ts sites.`)
   log.info(`If you mean to stop serving them, list them in \`cloud.retiredDomains\` in config/cloud.ts.`)
   process.exit(ExitCode.FatalError)
@@ -1037,8 +1037,8 @@ done`,
 
   log.error('Another service on the box is already listening on a port this project wants:')
   for (const clash of clashes)
-    await log.error(clash)
-  await log.error('Two services on one port do not error: the kernel load-balances, and each domain serves the other\'s site about half the time.')
+    log.error(clash)
+  log.error('Two services on one port do not error: the kernel load-balances, and each domain serves the other\'s site about half the time.')
   log.info('Pick free ports in config/cloud.ts. `ss -lntp` on the box lists what is taken.')
   process.exit(ExitCode.FatalError)
 }
@@ -1086,7 +1086,7 @@ export async function resolveDeployEnvValues(
     // (a fresh clone, or CI without DOTENV_PRIVATE_KEY_PRODUCTION), and it is
     // not recoverable here — the private key is the only thing that would help.
     if (undecrypted.length > 0) {
-      await log.error(`${undecrypted.length} value(s) in ${fileName} could not be decrypted: ${undecrypted.join(', ')}`)
+      log.error(`${undecrypted.length} value(s) in ${fileName} could not be decrypted: ${undecrypted.join(', ')}`)
       log.info(`The private key for this environment lives in .env.keys, which is not committed. Restore it, or set DOTENV_PRIVATE_KEY_${environment.toUpperCase()} in the environment running the deploy.`)
       process.exit(ExitCode.FatalError)
     }
@@ -1997,7 +1997,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     // That is a configuration gap rather than a failure, so say what to write.
     const resolved = resolveSshTarget(tsCloudConfig)
     if (!resolved) {
-      await log.error('No SSH host configured for this deploy.')
+      log.error('No SSH host configured for this deploy.')
       log.info('Add one to config/cloud.ts:  ssh: { hosts: [{ host: \'pi-stacks.local\', user: \'pi\' }] }')
       log.info('Or set TS_CLOUD_SSH_HOST (with TS_CLOUD_SSH_USER / TS_CLOUD_SSH_PORT / TS_CLOUD_SSH_KEY).')
       process.exit(ExitCode.FatalError)
@@ -2008,7 +2008,7 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
     // A key named in config that is not on disk fails much later, inside a
     // remote command, as a bare "Permission denied (publickey)". Say it here.
     if (resolved.identityFile && !existsSync(resolved.identityFile)) {
-      await log.error(`SSH private key not found at ${resolved.identityFile}.`)
+      log.error(`SSH private key not found at ${resolved.identityFile}.`)
       log.info('Fix ssh.hosts[].privateKeyPath in config/cloud.ts, or set TS_CLOUD_SSH_KEY.')
       process.exit(ExitCode.FatalError)
     }
@@ -2019,14 +2019,14 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
   else {
     const apiToken = resolveHetznerApiToken(tsCloudConfig)
     if (!apiToken && !persistedAttachBox) {
-      await log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
+      log.error('No Hetzner API token found. Set HCLOUD_TOKEN in your .env (or hetzner.apiToken in config/cloud.ts).')
       process.exit(ExitCode.FatalError)
     }
 
     // Confirm the local SSH public key the driver will register on the server.
     const sshPubKey = join(homedir(), '.ssh', 'id_ed25519.pub')
     if (!existsSync(sshPubKey)) {
-      await log.error(`SSH public key not found at ${sshPubKey}.`)
+      log.error(`SSH public key not found at ${sshPubKey}.`)
       log.info('ts-cloud deploys to Hetzner over SSH and registers this key on the server.')
       log.info('Generate one with:  ssh-keygen -t ed25519')
       process.exit(ExitCode.FatalError)
@@ -2041,9 +2041,9 @@ async function deployOverSsh(tsCloudConfig: any, deployEnv: string, options: Dep
   // combination that destroys data instead of merely failing to protect it.
   const support = tsCloudPersistentStateSupport(buildSiteDeployScript)
   if (!support.ok) {
-    await log.error('This ts-cloud cannot keep your database across deploys, and deploying anyway would destroy it.')
-    await log.error(`Missing: ${support.missing.join(', ')}.`)
-    await log.error('Upgrade @stacksjs/ts-cloud (bun update @stacksjs/ts-cloud), or point TS_CLOUD_MODULE at a build that has it.')
+    log.error('This ts-cloud cannot keep your database across deploys, and deploying anyway would destroy it.')
+    log.error(`Missing: ${support.missing.join(', ')}.`)
+    log.error('Upgrade @stacksjs/ts-cloud (bun update @stacksjs/ts-cloud), or point TS_CLOUD_MODULE at a build that has it.')
     process.exit(ExitCode.FatalError)
   }
 
@@ -2481,7 +2481,7 @@ async function runSshDeploy(args: {
 
   const driver = createCloudDriver({ config: tsCloudConfig, provider })
   if (!driver.provisionComputeInfrastructure) {
-    await log.error(`The ${provider} driver does not support compute provisioning (update @stacksjs/ts-cloud).`)
+    log.error(`The ${provider} driver does not support compute provisioning (update @stacksjs/ts-cloud).`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -2526,7 +2526,7 @@ async function runSshDeploy(args: {
         box = { ...box, publicIpv6: resolved.box.publicIpv6 }
     }
     if (!box?.publicIp) {
-      await log.error(describeAttachLookupFailure(attachTo, environment, lookup?.failure))
+      log.error(describeAttachLookupFailure(attachTo, environment, lookup?.failure))
       process.exit(ExitCode.FatalError)
     }
     ip = box.publicIp
@@ -2542,8 +2542,8 @@ async function runSshDeploy(args: {
     // This is not hypothetical: a storefront that kept the template's default
     // slug took stacksjs.com down exactly this way.
     if ((tsCloudConfig.project?.slug || 'app') === attachTo) {
-      await log.error(`This project's slug is '${attachTo}', which is the slug of the box it attaches to.`)
-      await log.error(`A tenant's deploy owns /etc/rpx/sites.d/<slug>.json, so deploying would overwrite '${attachTo}'s own gateway fragment and take its sites down.`)
+      log.error(`This project's slug is '${attachTo}', which is the slug of the box it attaches to.`)
+      log.error(`A tenant's deploy owns /etc/rpx/sites.d/<slug>.json, so deploying would overwrite '${attachTo}'s own gateway fragment and take its sites down.`)
       log.info(`Set a distinct project.slug in config/cloud.ts (e.g. '${p.projectPath().split('/').pop()}') and deploy again.`)
       process.exit(ExitCode.FatalError)
     }
@@ -2653,7 +2653,7 @@ async function runSshDeploy(args: {
   if (ip)
     log.info(provider === 'ssh' ? `Host: ${ip}` : `Server IP: ${ip}`)
   if (!ip) {
-    await log.error('The deploy target has no reachable address - cannot deploy over SSH.')
+    log.error('The deploy target has no reachable address - cannot deploy over SSH.')
     process.exit(ExitCode.FatalError)
   }
 
@@ -2761,7 +2761,7 @@ async function runSshDeploy(args: {
   ]
 
   if (onlySite && !sites[onlySite]) {
-    await log.error(`--site '${onlySite}' is not a configured site. Available: ${Object.keys(sites).join(', ')}`)
+    log.error(`--site '${onlySite}' is not a configured site. Available: ${Object.keys(sites).join(', ')}`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -4829,7 +4829,7 @@ export function deploy(buddy: CLI): void {
         applyDeploymentDomainOverride({}, options.domain)
       }
       catch (error) {
-        await log.error(getErrorMessage(error))
+        log.error(getErrorMessage(error))
         process.exit(ExitCode.InvalidArgument)
       }
 
@@ -4871,7 +4871,7 @@ export function deploy(buddy: CLI): void {
           })
         }
         catch (error) {
-          await log.error(getErrorMessage(error))
+          log.error(getErrorMessage(error))
           process.exit(ExitCode.InvalidArgument)
         }
 
@@ -5010,7 +5010,7 @@ async function confirmProductionDeployment() {
   // one to answer the prompt — `prompts.confirm` would hang forever. Fail fast
   // with a clear instruction instead of stalling the pipeline.
   if (!process.stdin.isTTY) {
-    await log.error('Refusing to deploy to production from a non-interactive shell without confirmation.')
+    log.error('Refusing to deploy to production from a non-interactive shell without confirmation.')
     log.info('   ➡️  Re-run with `--yes` to confirm (e.g. in CI): `buddy deploy --prod --yes`')
     process.exit(ExitCode.InvalidArgument)
   }

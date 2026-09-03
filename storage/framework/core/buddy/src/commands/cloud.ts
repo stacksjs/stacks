@@ -500,6 +500,7 @@ export function cloud(buddy: CLI): void {
       }
 
       log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.com/docs/cloud')
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 
@@ -558,6 +559,7 @@ export function cloud(buddy: CLI): void {
       }
 
       log.info('This functionality is not yet implemented.')
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 

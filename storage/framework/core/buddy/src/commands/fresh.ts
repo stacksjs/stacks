@@ -46,6 +46,7 @@ export function fresh(buddy: CLI): void {
 
         if (!confirmed) {
           log.info('Fresh install cancelled')
+          await log.flush()
           process.exit(ExitCode.Success)
         }
       }

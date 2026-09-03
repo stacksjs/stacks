@@ -61,4 +61,5 @@ if (pruneRevoked) {
 
 log.success(`Token pruning complete. Total removed: ${expiredCount + revokedCount}`)
 
+await log.flush()
 process.exit(0)

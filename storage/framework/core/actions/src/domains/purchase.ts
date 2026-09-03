@@ -80,4 +80,5 @@ if (result.isErr) {
 
 log.info('Domain purchased successfully.')
 
+await log.flush()
 process.exit(ExitCode.Success)

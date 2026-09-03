@@ -91,4 +91,5 @@ writeFileSync(`${output}/stacks-mobile.json`, `${JSON.stringify({
 }, null, 2)}\n`)
 
 log.success(`Built the Craft iOS project in ${output}`)
+await log.flush()
 process.exitCode = 0

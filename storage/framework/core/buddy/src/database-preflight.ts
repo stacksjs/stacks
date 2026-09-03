@@ -185,6 +185,7 @@ export async function preflightDatabase(options: DatabasePreflightOptions = {}):
     log.info('Nothing was changed. Create it yourself with:')
     log.info(`  ${manualCreateHint(target)}`)
     log.info(`Then re-run \`buddy ${commandName}\`, or re-run with --create-database to skip this question.`)
+    await log.flush()
     process.exit(ExitCode.Success)
   }
 

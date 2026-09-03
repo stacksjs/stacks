@@ -13,6 +13,7 @@ const pauseSeconds = options.for ? Number.parseInt(options.for, 10) : 300
 try {
   await pauseQueue(queue, pauseSeconds)
   log.success(`Paused queue '${queue}' for ${pauseSeconds}s`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

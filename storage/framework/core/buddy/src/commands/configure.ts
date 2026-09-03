@@ -28,6 +28,7 @@ export function configure(buddy: CLI): void {
       }
 
       log.info('Not implemented yet. Please use the --aws flag to configure AWS.')
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 

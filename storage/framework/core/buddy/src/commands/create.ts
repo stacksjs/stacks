@@ -110,6 +110,7 @@ export function create(buddy: CLI): void {
       log.info(`Run ${cyan('./buddy doctor')} anytime to check your setup`)
       log.info('To learn more, visit https://stacksjs.com')
 
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 
@@ -144,6 +145,7 @@ async function onlineCheck() {
 
   log.info('It appears you are disconnected from the internet.')
   log.info('Creating a new project requires a brief internet connection to download the template and install dependencies.')
+  await log.flush()
   process.exit(ExitCode.FatalError)
 }
 

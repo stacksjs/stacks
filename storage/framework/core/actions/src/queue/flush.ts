@@ -9,6 +9,7 @@ const force = options.force === 'true'
 try {
   if (!force) {
     log.warn('This will permanently delete all failed jobs. Use --force to confirm.')
+    await log.flush()
     process.exit(1)
   }
 
@@ -34,6 +35,7 @@ try {
   }
 
   log.success(`Flushed ${deletedCount} failed job(s)`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

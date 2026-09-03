@@ -64,6 +64,7 @@ export function maintenance(buddy: CLI): void {
 
         if (!(await isComingSoon())) {
           log.info('Application is not in coming soon mode.')
+          await log.flush()
           process.exit(ExitCode.Success)
         }
 
@@ -179,6 +180,7 @@ export function maintenance(buddy: CLI): void {
 
         if (!(await isDownForMaintenance())) {
           log.info('Application is already live.')
+          await log.flush()
           process.exit(ExitCode.Success)
         }
 

@@ -655,6 +655,7 @@ export function mailCommands(buddy: CLI): void {
       if (res)
         await reconcileMailDns(res, ip!, log)
       log.success(`Mail provisioned for ${domain}. Add MAIL_PASSWORD_<LOCALPART> env vars to pin mailbox passwords.`)
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 
@@ -1286,6 +1287,7 @@ export function mailCommands(buddy: CLI): void {
         })
 
         log.success(`User ${email} deleted`)
+        await log.flush()
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
         await log.error(`Failed to delete user: ${getErrorMessage(error)}`)
@@ -1522,6 +1524,7 @@ export function mailCommands(buddy: CLI): void {
         if (!instanceId) {
           await log.error('No running mail server found.')
           log.info(`Looked for instances tagged: ${appName}-mail-server`)
+          await log.flush()
           process.exit(ExitCode.FatalError)
         }
 
@@ -1644,6 +1647,7 @@ export function mailCommands(buddy: CLI): void {
         if (!instanceId) {
           await log.error('No running mail server found.')
           log.info(`Looked for instances tagged: ${appName}-mail-server`)
+          await log.flush()
           process.exit(ExitCode.FatalError)
         }
 
@@ -2057,6 +2061,7 @@ async function runLocalMailCatcher(options: { smtpPort: number, uiPort: number, 
     await log.error('The mail server is not installed.')
     log.info('Install it with:  pantry install github.com/mail-os/mail')
     log.info('(It is declared in config/deps.ts, so `pantry install` on its own is enough.)')
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 
@@ -2294,6 +2299,7 @@ async function requestAwsPort25(
         log.info('  AWS will process this within 24-48 hours.')
         log.info('  Check status: aws support describe-cases --region us-east-1')
         log.info('')
+        await log.flush()
         process.exit(ExitCode.Success)
       }
       catch {

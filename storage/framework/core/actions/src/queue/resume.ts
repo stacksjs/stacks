@@ -12,6 +12,7 @@ if (!queue) {
 try {
   await resumeQueue(queue)
   log.success(`Resumed queue '${queue}'`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

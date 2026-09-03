@@ -44,6 +44,7 @@ export async function webComponentExample(options: ExamplesOptions): Promise<voi
   else {
     log.info('No components found.')
     // todo: throw custom error here
+    await log.flush()
     process.exit(ExitCode.FatalError)
   }
 }

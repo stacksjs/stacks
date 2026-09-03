@@ -57,6 +57,7 @@ export function clean(buddy: CLI): void {
 
         if (!confirmed) {
           log.info('Clean cancelled')
+          await log.flush()
           process.exit(ExitCode.Success)
         }
       }

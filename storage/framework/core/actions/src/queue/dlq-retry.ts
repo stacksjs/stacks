@@ -21,6 +21,7 @@ try {
     process.exit(1)
   }
   log.success(`Re-enqueued dead-letter job ${id}`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {

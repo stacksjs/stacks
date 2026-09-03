@@ -42,7 +42,17 @@ function offenders(dir: string, found: string[] = []): string[] {
     if (!entry.endsWith('.ts') || entry.endsWith('.test.ts'))
       continue
 
-    const lines = readFileSync(full, 'utf-8').split('\n')
+    const source = readFileSync(full, 'utf-8')
+
+    /*
+     * Some commands define their own `log` over `console.*` (deploy.ts,
+     * server.ts). Those are synchronous, so they never race the exit and an
+     * `await` on them would only imply an async contract they do not have.
+     */
+    if (/^\s*const log = \{/m.test(source))
+      continue
+
+    const lines = source.split('\n')
     lines.forEach((line, index) => {
       if (!/\blog\.error\(/.test(line) || line.includes('await'))
         return

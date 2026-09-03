@@ -9,6 +9,7 @@ const force = options.force === 'true'
 try {
   if (!force) {
     log.warn('This will delete all jobs from the queue. Use --force to confirm.')
+    await log.flush()
     process.exit(1)
   }
 
@@ -34,6 +35,7 @@ try {
   }
 
   log.success(`Cleared ${deletedCount} job(s)`)
+  await log.flush()
   process.exit(0)
 }
 catch (error) {
