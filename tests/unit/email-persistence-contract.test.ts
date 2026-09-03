@@ -15,7 +15,11 @@ describe('email persistence contract', () => {
     expect(suppression).toContain("table: 'email_suppressions'")
     expect(suppression).toContain("uri: 'email-suppressions'")
     expect(suppression).toContain("routes: ['index', 'show', 'destroy']")
-    expect(suppression).toContain("middleware: ['auth']")
+    // Reads are authenticated; writes additionally require an admin. Deleting
+    // a suppression re-enables mail to someone who bounced or opted out, and
+    // `ownership: false` means row scoping cannot gate it, so `auth` alone left
+    // that to any signed-in caller (stacksjs/stacks#2412).
+    expect(suppression).toContain("middleware: { read: ['auth'], write: ['auth', 'role:admin'] }")
     expect(suppression).toContain("columns: ['email', 'type']")
     expect(suppression).toContain('unique: true')
 
