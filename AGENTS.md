@@ -65,7 +65,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-621 default actions and 97 built-in models you can use or override.
+620 default actions and 97 built-in models you can use or override.
 
 ---
 
