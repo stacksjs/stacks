@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.6...v0.74.7)
+
+## ✨ Features
+
+- **seed**: select application seeders ([78b6dd5](https://github.com/stacksjs/stacks/commit/78b6dd5)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🐛 Bug Fixes
+
+- **cli**: make errors printed on the way out actually print (#2056) ([8ec7030](https://github.com/stacksjs/stacks/commit/8ec7030)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## 📝 Documentation
+
+- update Buddy seed reference ([599622b](https://github.com/stacksjs/stacks/commit/599622b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.5...v0.74.6)
 
 ## ✨ Features
