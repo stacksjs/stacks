@@ -61,6 +61,16 @@ describe('buddy migrate --no-generate', () => {
     expect(source).toContain('runDatabaseMigration()')
   })
 
+  it('does not preview an unrequested model diff before applying committed SQL', () => {
+    const source = command()
+    const gate = source.lastIndexOf('confirmDestructiveMigrations({')
+    const conditional = source.lastIndexOf('if (options.generate !== false)', gate)
+
+    expect(gate).toBeGreaterThan(-1)
+    expect(conditional).toBeGreaterThan(-1)
+    expect(gate - conditional).toBeLessThan(500)
+  })
+
   it('still generates by default', () => {
     // Models being the source of truth is the point of the local workflow, so
     // the flag has to be opt-in.

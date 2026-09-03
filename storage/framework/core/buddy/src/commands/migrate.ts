@@ -640,17 +640,22 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      // Gate destructive changes (drop column/table, lossy type change) behind
-      // confirmation while we still have the interactive TTY — the migrate
-      // action runs in a non-interactive subprocess.
-      const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
-      if (!proceed) {
-        lock.release()
-        await outro('Migration cancelled - no changes applied.', { startTime: perf, useSeconds: true })
-        // An operator declining an interactive prompt is a successful cancel.
-        // A non-interactive refusal is a failed deployment precondition and
-        // must propagate a non-zero status to systemd/ts-cloud.
-        process.exit(isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success)
+      // Gate destructive MODEL-DERIVED changes while we still have the
+      // interactive TTY — the migrate action runs in a subprocess. A
+      // `--no-generate` deploy applies only committed, reviewed SQL, so there
+      // is no model diff to approve. Previewing one anyway made every fresh
+      // release directory look like it had no baseline and blocked deployment
+      // before a single committed migration could run.
+      if (options.generate !== false) {
+        const proceed = await confirmDestructiveMigrations({ force: options.force, fromDb: options.fromDb, applyRenames })
+        if (!proceed) {
+          lock.release()
+          await outro('Migration cancelled - no changes applied.', { startTime: perf, useSeconds: true })
+          // An operator declining an interactive prompt is a successful cancel.
+          // A non-interactive refusal is a failed deployment precondition and
+          // must propagate a non-zero status to systemd/ts-cloud.
+          process.exit(isCI || !hasTTY ? ExitCode.FatalError : ExitCode.Success)
+        }
       }
 
       // Auth/oauth tables migrate by default, and run BEFORE the numbered
