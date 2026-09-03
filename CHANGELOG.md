@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.14...v0.74.15)
+
+## 🐛 Bug Fixes
+
+- **release**: publish meta-package through OIDC ([6241eb6](https://github.com/stacksjs/stacks/commit/6241eb6)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.13...v0.74.14)
 
 ## 🐛 Bug Fixes
