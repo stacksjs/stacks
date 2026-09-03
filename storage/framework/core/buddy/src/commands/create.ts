@@ -466,7 +466,20 @@ async function unvendorCore(path: string, options: NewOptions) {
   const result = await runCommand('./buddy unpublish:core --all --force', { ...options, cwd: path })
 
   if (resultFailed(result)) {
-    log.error(result.error)
+    const reason = result.error instanceof Error
+      ? (result.error.stack ?? result.error.message)
+      : String(result.error ?? '').trim()
+
+    log.error('Could not resolve the framework from npm.')
+    log.error(reason.length > 0 ? reason : 'The step failed without reporting a reason.')
+    log.error('')
+    log.error(`The project at ${path} is half converted: the vendored framework has been`)
+    log.error('removed and the published packages are not in place yet, so ./buddy cannot')
+    log.error('boot there. Finish it by hand with:')
+    log.error('')
+    log.error(`  cd ${path} && rm -f node_modules/stacks && bun install`)
+    log.error('')
+    log.error('Or start over with `--with-core` to keep the framework vendored.')
     process.exit(ExitCode.FatalError)
   }
 
