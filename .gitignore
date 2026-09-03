@@ -138,6 +138,11 @@ storage/framework/cache/
 .tmp-upgrade/
 /storage/framework/frontend-dist
 /storage/framework/desktop-dist
+# Output of `buddy build:dmg` (core/actions/src/build/dmg.ts writes here). Its
+# sibling desktop-dist was ignored from the start; this one was not, so a 28MB
+# Postline-0.1.0.dmg from a local July build was committed and has been in
+# every clone since.
+/storage/framework/desktop-dmg
 /storage/framework/mobile
 
 # Per-package runtime logs created when building a core package in place
