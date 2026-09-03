@@ -376,7 +376,28 @@ export function doctor(buddy: CLI): void {
         if (counts.partial > 0) parts.push(`${counts.partial} half-applied`)
         if (counts.reverted > 0) parts.push(`${counts.reverted} recorded but missing from the schema`)
         if (orphans.length > 0) parts.push(`${orphans.length} ledger row(s) with no file on disk`)
-        throw new Error(`Migration ledger has drifted: ${parts.join(', ')}. Inspect with \`buddy migrate:status\`, repair with \`buddy migrate:status --reconcile\`.`)
+
+        /*
+         * Name the repair that fits the drift actually found.
+         *
+         * `--reconcile` repoints renumbered rows and records what the schema
+         * proves; it never runs SQL from a migration file, so it SKIPS every
+         * `reverted` and `partial` entry by design. Recommending it for those
+         * sends the reader to a command that reports "Reconciled." and success
+         * while leaving their drift untouched - a stale local database here
+         * reported 18 reverted entries, and reconcile fixed exactly one
+         * unrelated duplicate row.
+         *
+         * Reverted means the ledger says applied and the schema disagrees, so
+         * the effects have to be re-applied - which is a call about the data in
+         * that database, not something a ledger tool can make.
+         */
+        const needsReapply = counts.reverted + counts.partial
+        const repair = needsReapply > 0
+          ? `\`buddy migrate:status --reconcile\` cannot repair ${needsReapply} of these - it never runs migration SQL, so it skips anything the schema is missing. Those need re-applying: \`buddy migrate:fresh\` (rebuilds from the corpus, RESETS DATA), or restore the database and re-run the missing files by hand.`
+          : `Repair with \`buddy migrate:status --reconcile\`.`
+
+        throw new Error(`Migration ledger has drifted: ${parts.join(', ')}. Inspect with \`buddy migrate:status\`. ${repair}`)
       }, 10000)
 
       // FK orphans (stacksjs/stacks#1951). FK enforcement flipped ON
