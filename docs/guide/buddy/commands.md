@@ -4325,6 +4325,10 @@ Seed your database
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--only` | Comma-separated list of models to seed | value, optional | `""` |
 | `--except` | Comma-separated list of models to skip | value, optional | `""` |
+| `--only-seeders` | Comma-separated list of application seeder classes to run | value, optional | `""` |
+| `--except-seeders` | Comma-separated list of application seeder classes to skip | value, optional | `""` |
+| `--skip-models` | Skip model-factory seeding | boolean, optional | `false` |
+| `--skip-application-seeders` | Skip application seeders | boolean, optional | `false` |
 | `--include-defaults` | Also seed the framework's built-in models | boolean, optional | `false` |
 | `--allow-protected` | Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens) | boolean, optional | `false` |
 | `--fresh` | Truncate tables before seeding | boolean, optional | `false` |
