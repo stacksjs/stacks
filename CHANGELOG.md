@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.7...v0.74.8)
+
+## ✨ Features
+
+- **browser**: resolve canonical API URLs ([bfe6501](https://github.com/stacksjs/stacks/commit/bfe6501)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.6...v0.74.7)
 
 ## ✨ Features
