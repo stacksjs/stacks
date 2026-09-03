@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.9...v0.74.10)
+
+## 🔧 Chores
+
+- require corrected conditional events ([41fc17e](https://github.com/stacksjs/stacks/commit/41fc17e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.8...v0.74.9)
 
 ## 🐛 Bug Fixes
