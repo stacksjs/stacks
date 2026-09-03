@@ -8,7 +8,7 @@ import type {
   CreateHostedZoneResult,
   HostedZone,
 } from '@stacksjs/ts-cloud/aws'
-import { runAction } from '@stacksjs/actions'
+import { runNamedAction } from '@stacksjs/action-runner'
 import { config } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { err, handleError, ok } from '@stacksjs/error-handling'
@@ -345,5 +345,5 @@ export async function hasUserDomainBeenAddedToCloud(domainName?: string): Promis
 }
 
 export async function addDomain(options: DeployOptions): Promise<Result<Subprocess, CommandError>> {
-  return await runAction(Action.DomainsAdd, options)
+  return await runNamedAction(Action.DomainsAdd, options)
 }

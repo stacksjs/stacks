@@ -1,16 +1,17 @@
 /*
- * Supply the queue's action runner.
+ * Supply the action runner.
  *
- * A job may name an action as a string rather than hand over a function, and
- * running it is this package's job. The queue used to import this package
- * directly to do it, which put the queue - and nine packages with it - inside
- * the framework's dependency cycle. It asks now, and this is the answer,
- * registered by the act of importing the action layer at all.
+ * Running an action by name is this package's job, but the queue (a job that
+ * names an action), the scheduler (`Schedule.action`) and the DNS package (the
+ * domain shims) all need to ask for it, and this package imports all three.
+ * Importing it back closed a cycle every time. They ask through
+ * `@stacksjs/action-runner` now, and this is the answer - registered by the
+ * act of importing the action layer at all.
  */
-import { setActionRunner } from '@stacksjs/queue'
+import { setActionRunner } from '@stacksjs/action-runner'
 import { runAction } from './helpers'
 
-setActionRunner(action => runAction(action as Parameters<typeof runAction>[0]))
+setActionRunner((action, options) => runAction(action as Parameters<typeof runAction>[0], options))
 
 export * from './action'
 export { add as runAdd } from './add'

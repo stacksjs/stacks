@@ -60,7 +60,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/actions": "workspace:*",
+    "@stacksjs/action-runner": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/dnsx": "^0.2.3",
     "@stacksjs/enums": "workspace:*",

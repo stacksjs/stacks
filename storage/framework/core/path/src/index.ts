@@ -1422,6 +1422,16 @@ export function modelMetaPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `action-runner` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the action-runner directory.
+ * @returns The absolute path to the specified file or directory within the action-runner directory.
+ */
+export function actionRunnerPath(path?: string): string {
+  return corePath(`action-runner/${path || ''}`)
+}
+
+/**
  * Returns the path to the `slug` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the slug directory.
@@ -1954,6 +1964,7 @@ export interface Path {
   slugPath: (path?: string) => string
   paginationPath: (path?: string) => string
   modelMetaPath: (path?: string) => string
+  actionRunnerPath: (path?: string) => string
   featuresPath: (path?: string) => string
   scriptsPath: (path?: string) => string
   securityPath: (path?: string) => string
@@ -2106,6 +2117,7 @@ export const path: Path = {
   slugPath,
   paginationPath,
   modelMetaPath,
+  actionRunnerPath,
   featuresPath,
   scriptsPath,
   securityPath,

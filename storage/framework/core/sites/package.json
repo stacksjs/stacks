@@ -57,7 +57,6 @@
   },
   "dependencies": {
     "@stacksjs/auth": "workspace:*",
-    "@stacksjs/cms": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/router": "workspace:*"
@@ -66,5 +65,13 @@
     "@stacksjs/error-handling": "workspace:*",
     "better-dx": "^0.2.24"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "peerDependencies": {
+    "@stacksjs/cms": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/cms": {
+      "optional": true
+    }
+  }
 }

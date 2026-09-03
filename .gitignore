@@ -144,6 +144,10 @@ storage/framework/cache/
 storage/framework/core/**/storage/logs/
 storage/framework/**/storage/logs/
 
+# Same, for the machine-local runtime state (migration lock, scheduler state,
+# temp bundles) a core package writes when it runs in place.
+storage/framework/core/**/storage/framework/runtime/
+
 # @stacksjs/defaults copies resources + app from storage/framework/defaults at build time
 # @stacksjs/defaults is a publish wrapper. Its generated scaffold is rebuilt
 # from storage/framework/defaults by core/defaults/build.ts.

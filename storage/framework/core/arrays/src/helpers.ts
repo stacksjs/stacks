@@ -1,5 +1,4 @@
 import type { Arrayable, Nullable } from '@stacksjs/types'
-import { clamp } from '@stacksjs/utils'
 
 /**
  * Convert `Arrayable<T>` to `Array<T>`
@@ -269,6 +268,14 @@ export function move<T>(array: T[], from: number, to: number): T[] {
  * clampArrayRange([1, 2, 3], 4) // 2
  * clampArrayRange([1, 2, 3], -1) // 0
  */
+// `Math.min(max, Math.max(min, n))`. It is re-exported by `@stacksjs/utils`,
+// but importing it from there made this leaf array package depend on utils -
+// and through it storage and browser - for one line of arithmetic. That edge
+// closed the arrays -> utils -> storage -> arrays cycle.
+function clamp(n: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, n))
+}
+
 export function clampArrayRange(arr: readonly unknown[], n: number): number {
   return clamp(n, 0, arr.length - 1)
 }

@@ -3,7 +3,7 @@ import type { ScheduledJob, TimedSchedule, Timezone, UntimedSchedule } from './t
 import { spawn } from 'node:child_process'
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { runAction } from '@stacksjs/actions'
+import { runNamedAction } from '@stacksjs/action-runner'
 import { log, runCommand } from '@stacksjs/cli'
 import { parse } from '@stacksjs/cron'
 import { runJob } from '@stacksjs/queue'
@@ -902,7 +902,7 @@ export class Schedule implements UntimedSchedule {
     return new Schedule(async () => {
       log.info(`Running action: ${name}`)
       try {
-        await runAction(name)
+        await runNamedAction(name)
       }
       catch (error) {
         log.error(`Action ${name} failed:`, error)
