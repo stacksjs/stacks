@@ -61,6 +61,21 @@ if (staticallyResolvedOptionalPeers.size) {
   )
 }
 
+// Rebundling proves dependency resolution, but it does not evaluate the
+// generated module. Execute the exact artifact that will be published so a
+// minifier regression cannot leave a referenced binding undefined.
+const runtimeProbe = Bun.spawnSync({
+  cmd: [process.execPath, '-e', "await import('./dist/index.js')"],
+  cwd: import.meta.dir,
+  stdout: 'pipe',
+  stderr: 'pipe',
+})
+
+if (!runtimeProbe.success) {
+  const stderr = new TextDecoder().decode(runtimeProbe.stderr).trim()
+  throw new Error(`The published ORM entry point cannot be imported.${stderr ? `\n${stderr}` : ''}`)
+}
+
 /**
  * Ship the model definitions the declarations point at.
  *

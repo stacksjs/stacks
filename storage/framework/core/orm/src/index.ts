@@ -68,8 +68,8 @@ export {
   toCursorPaginator,
   toPaginator,
   toSimplePaginator,
-} from './paginator'
-export type { CursorPaginator, Paginator, SimplePaginator } from './paginator'
+} from '@stacksjs/pagination'
+export type { CursorPaginator, Paginator, SimplePaginator } from '@stacksjs/pagination'
 // Request-aware pagination helpers (stacksjs/stacks#1906 P2 + #1907 P3).
 export {
   enrichPaginatorUrls,
