@@ -1,5 +1,15 @@
-import { describe, expect, it } from 'bun:test'
-import { applyBumps, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, lockstepPackages, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+import { afterEach, describe, expect, it } from 'bun:test'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { applyBumps, baseVersion, frameworkPackageUpdateCommand, hasStacksDependency, installedStacksVersion, lockstepPackages, needsFrameworkInstall, standalonePackageUpdateCommand } from '../src/upgrade/packages'
+
+const temporaryProjects: string[] = []
+
+afterEach(() => {
+  for (const project of temporaryProjects.splice(0))
+    rmSync(project, { recursive: true, force: true })
+})
 
 describe('package-only buddy updates', () => {
   it('distinguishes Stacks apps from standalone packages', () => {
@@ -14,6 +24,28 @@ describe('package-only buddy updates', () => {
 
   it('refreshes a Stacks app through the declared meta-package only', () => {
     expect(frameworkPackageUpdateCommand()).toBe('bun update stacks')
+  })
+
+  it('detects an interrupted upgrade whose manifest changed but install did not', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), JSON.stringify({ version: '0.74.9' }))
+
+    expect(installedStacksVersion(project)).toBe('0.74.9')
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+    expect(needsFrameworkInstall(project, '0.74.9')).toBeFalse()
+  })
+
+  it('treats missing or malformed installed metadata as incomplete', () => {
+    const project = mkdtempSync(join(tmpdir(), 'stacks-upgrade-'))
+    temporaryProjects.push(project)
+    expect(installedStacksVersion(project)).toBeNull()
+    expect(needsFrameworkInstall(project, '0.74.11')).toBeTrue()
+
+    mkdirSync(join(project, 'node_modules/stacks'), { recursive: true })
+    writeFileSync(join(project, 'node_modules/stacks/package.json'), '{')
+    expect(installedStacksVersion(project)).toBeNull()
   })
 })
 

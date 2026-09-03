@@ -60,6 +60,22 @@ export function frameworkPackageUpdateCommand(): string {
   return 'bun update stacks'
 }
 
+/** The installed meta-package version, or null when dependencies are absent/incomplete. */
+export function installedStacksVersion(projectRoot: string): string | null {
+  try {
+    const manifest = JSON.parse(readFileSync(join(projectRoot, 'node_modules/stacks/package.json'), 'utf-8')) as { version?: unknown }
+    return typeof manifest.version === 'string' ? manifest.version : null
+  }
+  catch {
+    return null
+  }
+}
+
+/** Whether the declared target still needs to be installed locally. */
+export function needsFrameworkInstall(projectRoot: string, target: string): boolean {
+  return installedStacksVersion(projectRoot) !== target
+}
+
 async function updateStandalonePackage(projectRoot: string, options: PackageUpgradeOptions): Promise<never> {
   console.log('\n  Standalone package detected. No Stacks framework source is installed.')
 
@@ -269,7 +285,16 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
     process.exit(0)
   }
 
-  if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || options.force) {
+  // The manifest is written before installation. If that install is
+  // interrupted (or a just-published dependency has not propagated yet), the
+  // next run sees the target constraint and used to skip `bun update`, leaving
+  // package.json at the new version while bun.lock + node_modules stayed old.
+  // Treat the installed meta-package as part of upgrade state so rerunning the
+  // same command repairs an incomplete upgrade without requiring --force or a
+  // manual package-manager workaround.
+  const dependenciesNeedInstall = needsFrameworkInstall(projectRoot, target)
+
+  if (changes.length > 0 || manifestChanges.length > 0 || projectManifestChanges.length > 0 || dependenciesNeedInstall || options.force) {
     console.log('  Installing…\n')
     const result = await runCommand(frameworkPackageUpdateCommand(), { cwd: projectRoot })
 
@@ -303,6 +328,7 @@ export async function upgradeStacksPackages(projectRoot: string, options: Packag
   const didChange = changes.length > 0
     || manifestChanges.length > 0
     || projectManifestChanges.length > 0
+    || dependenciesNeedInstall
     || structureChanges.length > 0
     || tsconfigChanges.length > 0
 
