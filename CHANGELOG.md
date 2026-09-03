@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.4...v0.74.5)
+
+## 🐛 Bug Fixes
+
+- **orm**: preserve pagination exports in bundles ([3958d27](https://github.com/stacksjs/stacks/commit/3958d27)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **repo**: untrack the cloud-init files written to a path named "undefined" (#2422) ([6ebb193](https://github.com/stacksjs/stacks/commit/6ebb193)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2422](https://github.com/stacksjs/stacks/issues/2422), [#2422](https://github.com/stacksjs/stacks/issues/2422))
+
+## ♻️ Code Refactoring
+
+- **api**: drop the hand-written commands endpoint (#2056) ([e05bb75](https://github.com/stacksjs/stacks/commit/e05bb75)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## 📝 Documentation
+
+- 620 default actions, not 621 ([349c979](https://github.com/stacksjs/stacks/commit/349c979)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.3...v0.74.4)
 
 ## ✨ Features
