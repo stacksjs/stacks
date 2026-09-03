@@ -507,7 +507,10 @@ and enables the units.
 ## Where the state lives
 
 - `storage/cloud/state/<stackName>.json` on your machine pins this host: its address, SSH user and
-  port, the key path when one is configured, the profile and the deploy staging path.
+  port, the key path when one is configured, the profile and the deploy staging path. `server:setup`
+  and each deploy add to that record rather than replacing it, so the host key fingerprint ts-cloud
+  pinned on the first connection, the address the board reports on your network, and which bootstrap
+  version ran are all kept.
 - `storage/cloud/ssh/<host>.ca.crt` on your machine is the copy of the board's certificate
   authority that `buddy server:trust` saves. Under `hostKey: 'pin'` ts-cloud also keeps the host
   key it recorded, in a `known_hosts` file of its own.
