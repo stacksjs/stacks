@@ -19,8 +19,8 @@
  * is behaviour-preserving in the environment every contributor develops in: the
  * resolved sub-paths still equal the strings the dev server used to hardcode.
  */
-import { existsSync } from 'node:fs'
-import { join, resolve } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
+import { dirname, join, resolve } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import { resolveDefaultsResources } from '../src/dev/defaults-resources'
 
@@ -81,5 +81,13 @@ describe('resolveDefaultsResources - vendored branch (#2240)', () => {
     // that branch would land in the catch and get the vendored path that is not
     // there. This asserts the branch is reachable, not that it executes.
     expect(() => Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())).not.toThrow()
+  })
+
+  it('publishes the canonical server preloader for package-only deployments', () => {
+    const manifestPath = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
+    const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
+
+    expect(manifest.exports['./resources/plugins/preloader']).toBe('./resources/plugins/preloader.ts')
+    expect(existsSync(join(dirname(manifestPath), 'resources/plugins/preloader.ts'))).toBe(true)
   })
 })
