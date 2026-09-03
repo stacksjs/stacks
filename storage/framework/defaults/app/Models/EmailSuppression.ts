@@ -25,7 +25,10 @@ export default defineModel({
     useApi: {
       uri: 'email-suppressions',
       routes: ['index', 'show', 'destroy'],
-      middleware: ['auth'],
+      // Reads stay as they were; writes need an admin.
+      // a suppression entry is a compliance record - deleting one re-enables mail to someone who bounced or opted out,
+      // so `auth` alone let any signed-in caller do it (stacksjs/stacks#2412).
+      middleware: { read: ['auth'], write: ['auth', 'role:admin'] },
     },
   },
 

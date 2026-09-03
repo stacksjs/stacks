@@ -36,7 +36,10 @@ export default defineModel({
     useApi: {
       uri: 'requests',
       routes: ['index', 'store', 'show', 'update', 'destroy'],
-      middleware: ['auth'],
+      // Reads stay as they were; writes need an admin.
+      // request logs are an audit trail, and carry whatever the request carried,
+      // so `auth` alone let any signed-in caller do it (stacksjs/stacks#2412).
+      middleware: { read: ['auth'], write: ['auth', 'role:admin'] },
     },
   },
 

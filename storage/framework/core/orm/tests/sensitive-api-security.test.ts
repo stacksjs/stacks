@@ -2,6 +2,12 @@ import { describe, expect, test } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import Comment from '../../../defaults/app/Models/Comment'
+import EmailIdempotency from '../../../defaults/app/Models/EmailIdempotency'
+import EmailSuppression from '../../../defaults/app/Models/EmailSuppression'
+import EmailWebhookEvent from '../../../defaults/app/Models/EmailWebhookEvent'
+// `Request` is a model name that shadows the global, so it is aliased here for
+// the same reason the auto-import generator skips injecting it.
+import RequestModel from '../../../defaults/app/Models/Request'
 import Notification from '../../../defaults/app/Models/Notification'
 import NotificationDelivery from '../../../defaults/app/Models/NotificationDelivery'
 import Auction from '../../../defaults/app/Models/commerce/Auction'
@@ -93,6 +99,31 @@ describe('sensitive model API security', () => {
   ])('protects generated %s reads and writes', (_name, model) => {
     expect(model.traits.useApi).toMatchObject({
       middleware: { read: ['auth'], write: ['auth'] },
+    })
+  })
+
+  /*
+   * Infrastructure tables: readable by any authenticated caller, writable only
+   * by an admin.
+   *
+   * These declare `ownership: false` - nothing owns an idempotency key - so row
+   * scoping cannot gate them and `auth` alone was the whole guard. That let any
+   * signed-in caller DELETE them, and each deletion does real damage: dropping
+   * an EmailSuppression re-enables mail to someone who bounced or opted out,
+   * dropping an EmailIdempotency lets a retry send twice, and the other two are
+   * audit trails (stacksjs/stacks#2412).
+   *
+   * Reads are deliberately left at `auth`, so this tightens the destructive
+   * side without changing who can look.
+   */
+  test.each([
+    ['email suppression', EmailSuppression],
+    ['email webhook event', EmailWebhookEvent],
+    ['email idempotency', EmailIdempotency],
+    ['request log', RequestModel],
+  ])('requires an admin to write %s rows', (_name, model) => {
+    expect(model.traits.useApi).toMatchObject({
+      middleware: { read: ['auth'], write: ['auth', 'role:admin'] },
     })
   })
 

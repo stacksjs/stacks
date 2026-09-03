@@ -25,7 +25,10 @@ export default defineModel({
     useApi: {
       uri: 'email-webhook-events',
       routes: ['index', 'show', 'destroy'],
-      middleware: ['auth'],
+      // Reads stay as they were; writes need an admin.
+      // provider webhook events are the audit trail for what the provider told us,
+      // so `auth` alone let any signed-in caller do it (stacksjs/stacks#2412).
+      middleware: { read: ['auth'], write: ['auth', 'role:admin'] },
     },
   },
 
