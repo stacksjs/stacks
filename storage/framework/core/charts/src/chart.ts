@@ -10,6 +10,7 @@ import {
 } from '@ts-charts/shape'
 import { paletteColor, withAlpha } from './colors'
 import { formatTick, niceTicks } from './ticks'
+import { resolveCanvasCssSize } from './sizing'
 
 const createLinearScale = scaleLinear as unknown as (...args: unknown[]) => any
 const createBandScale = scaleBand as unknown as (...args: unknown[]) => any
@@ -49,7 +50,7 @@ const DEFAULT_BG = 'rgba(15, 23, 42, 0.92)'
  * (radar, animations, plugins) are no-ops rather than crashes.
  */
 export class Chart {
-  static instances = new WeakMap<HTMLCanvasElement, Chart>()
+  static instances: WeakMap<HTMLCanvasElement, Chart> = new WeakMap<HTMLCanvasElement, Chart>()
 
   /**
    * Compatibility no-op: chart.js requires `Chart.register(...registerables)`
@@ -128,8 +129,22 @@ export class Chart {
   private syncCanvasSize(): { width: number, height: number } {
     const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1
     const rect = this.canvas.getBoundingClientRect()
-    const cssW = rect.width || this.canvas.clientWidth || this.canvas.width
-    const cssH = rect.height || this.canvas.clientHeight || this.canvas.height
+    const parentRect = this.canvas.parentElement?.getBoundingClientRect()
+    const size = resolveCanvasCssSize(
+      {
+        width: rect.width || this.canvas.clientWidth || this.canvas.width,
+        height: rect.height || this.canvas.clientHeight || this.canvas.height,
+      },
+      parentRect ? { width: parentRect.width, height: parentRect.height } : undefined,
+      this.options,
+    )
+    const cssW = size.width
+    const cssH = size.height
+    if (this.options.responsive !== false) {
+      this.canvas.style.display = 'block'
+      this.canvas.style.width = `${cssW}px`
+      this.canvas.style.height = `${cssH}px`
+    }
     const w = Math.max(1, Math.floor(cssW * dpr))
     const h = Math.max(1, Math.floor(cssH * dpr))
     if (this.canvas.width !== w)

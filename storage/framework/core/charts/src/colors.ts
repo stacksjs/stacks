@@ -9,7 +9,7 @@ export const DEFAULT_PALETTE = [
   '#f97316',
   '#6366f1',
   '#84cc16',
-]
+] as const
 
 export function paletteColor(index: number): string {
   // The palette is a non-empty literal-typed const, so the modulo
