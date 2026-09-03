@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/sites",
   "type": "module",
-  "version": "0.74.12",
+  "version": "0.74.13",
   "description": "The Stacks multi-site (request-level tenancy) functionality.",
   "author": "Chris Breuer",
   "contributors": [

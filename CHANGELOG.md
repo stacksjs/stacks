@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.12...v0.74.13)
+
+## 🐛 Bug Fixes
+
+- **browser**: reclaim temporary profiles ([ee85512](https://github.com/stacksjs/stacks/commit/ee85512)) _(by Chris <chris@stacksjs.org>)_
+
+## 💚 Continuous Integration
+
+- stop failing the release window for reasons no diff caused (#2056) ([ece573a](https://github.com/stacksjs/stacks/commit/ece573a)) _(by Chris <chris@stacksjs.org>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.11...v0.74.12)
 
 ## ✨ Features
