@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.15...v0.74.16)
+
+## 🐛 Bug Fixes
+
+- **defaults**: publish canonical runtime preloader ([077d567](https://github.com/stacksjs/stacks/commit/077d567)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.14...v0.74.15)
 
 ## 🐛 Bug Fixes
