@@ -23,6 +23,11 @@ function StripeCtor(): StripeConstructor {
 
 let _stripe: Stripe | null = null
 
+/** Whether this process has the credential required to make Stripe calls. */
+export function isStripeConfigured(): boolean {
+  return Boolean(String(services?.stripe?.secretKey || '').trim())
+}
+
 /**
  * Lazy-initialized Stripe instance.
  * Only throws when you actually try to use Stripe, not at module load time.
