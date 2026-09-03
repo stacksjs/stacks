@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.5...v0.74.6)
+
+## ✨ Features
+
+- **discovery**: find the packages an application installed, and record where (#2423) ([f8c2f7f](https://github.com/stacksjs/stacks/commit/f8c2f7f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2423](https://github.com/stacksjs/stacks/issues/2423), [#2423](https://github.com/stacksjs/stacks/issues/2423))
+
+## 🐛 Bug Fixes
+
+- **migrate**: skip model diff for committed-only deploys ([0767320](https://github.com/stacksjs/stacks/commit/0767320)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.4...v0.74.5)
 
 ## 🐛 Bug Fixes
