@@ -6,14 +6,16 @@ description: "Use when working with browser/frontend functionality in Stacks."
 
 `stacks-browser` · Frontend · model-invoked
 
-The browser-side surface: the `useAuth` composable, the Stripe billing helpers,
-the API fetch client and browser model loading.
+The browser-side surface: the `useAuth` composable, canonical API URL
+resolution, the Stripe billing helpers, the API fetch client and browser model
+loading.
 
 ## When to reach for it
 
 - The useAuth composable (login, register, logout, token management)
 - Stripe billing utilities (loadCardElement, confirmPayment)
 - The API fetch client
+- Canonical API URL resolution without doubled `/api` prefixes
 - Browser model loading
 - Auto-imported browser utilities
 

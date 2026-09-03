@@ -86,6 +86,11 @@ const db = createBrowserDb({ baseUrl: '/api' })
 ## Utility Functions
 
 ```typescript
+// API URLs: one canonical `/api` root, legacy-prefixed paths do not double it
+resolveApiBaseUrl() // https://app.example/api in a browser
+resolveApiUrl('/users', 'https://app.example/api') // https://app.example/api/users
+resolveApiUrl('/api/users', 'https://app.example/api') // same URL
+
 // Date
 useDateFormat(date, 'YYYY-MM-DD')
 useNow()
