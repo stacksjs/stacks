@@ -12,9 +12,13 @@ const className = useReactiveProp<string>('class', '')
 </script>
 
 <div data-native-app-shell class="native-app-shell" :class="className()">
-  <main class="native-app-content">
+  <!-- The application layout owns the single <main> landmark. This shell is
+       structural chrome; making it another <main> creates invalid nested
+       landmarks and gives both elements the router's stx-content view-
+       transition name. -->
+  <div class="native-app-content">
     <slot />
-  </main>
+  </div>
   @if(tabBar)
     <footer class="native-app-tab-slot">
       <slot name="tab-bar" />
