@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.13...v0.74.14)
+
+## 🐛 Bug Fixes
+
+- **charts**: fill responsive containers ([f68be7d](https://github.com/stacksjs/stacks/commit/f68be7d)) _(by Chris <chris@stacksjs.org>)_
+
+## 💚 Continuous Integration
+
+- **release**: publish under a holding tag, promote latest once (#2056) ([7416d44](https://github.com/stacksjs/stacks/commit/7416d44)) _(by Chris <chris@stacksjs.org>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.12...v0.74.13)
 
 ## 🐛 Bug Fixes
