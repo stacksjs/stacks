@@ -266,7 +266,7 @@ export function generate(buddy: CLI): void {
   buddy
     .command('generate:core-symlink', 'Symlink `.framework` -> storage/framework. A shortcut for core developers.')
     .action(async (options: GeneratorOptions) => {
-      log.debug('Running `buddy core-symlink` ...', options)
+      log.debug('Running `buddy generate:core-symlink` ...', options)
       await generateCoreSymlink()
     })
 

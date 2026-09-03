@@ -206,7 +206,18 @@ export function phone(buddy: CLI): void {
         for (const num of available.AvailableNumbersList) {
           console.log(`  📱 ${num.PhoneNumber}`)
         }
-        console.log('\n💡 To claim a number, use `buddy phone:claim <number>`')
+        /*
+         * There is no `phone:claim`. This told every caller to run a command
+         * that was never built - the phone namespace registers `phone`,
+         * `phone:status`, `phone:numbers`, `phone:search` and `phone:setup`,
+         * and claiming is still on the roadmap in
+         * `docs/communication-services-todo.md`.
+         *
+         * Naming the search result and stopping is honest. Naming a command
+         * that does not exist sends the reader to `buddy --help` to work out
+         * which of us is wrong.
+         */
+        console.log('\n💡 Claiming a number is not available from the CLI yet - provision it with your provider, then run `buddy phone:numbers` to confirm it is visible here.')
       }
       catch (error: unknown) {
         if (getErrorMessage(error).includes('not authorized')) {

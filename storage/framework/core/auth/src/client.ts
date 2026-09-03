@@ -41,7 +41,16 @@ export async function createPersonalAccessClient(): Promise<Result<string, Creat
   if (existing?.id) {
     return err({
       code: 'already-exists',
-      message: 'A personal access client already exists. Revoke the existing client (`./buddy auth:revoke-client`) before creating a new one.',
+      /*
+       * There is no `auth:revoke-client`. The auth namespace registers
+       * `auth:setup`, `auth:token`, `auth:client` and `auth:prune`, and
+       * `auth:prune` prunes expired and revoked TOKENS, not clients - so this
+       * told a blocked caller to run a command that has never existed, leaving
+       * them with no working path at all (stacksjs/stacks#2056).
+       *
+       * Naming the row is the honest answer until a revoke command exists.
+       */
+      message: 'A personal access client already exists. There is no CLI command to revoke one yet - delete its row from `oauth_clients` (or use the existing client) before creating another.',
     })
   }
 
