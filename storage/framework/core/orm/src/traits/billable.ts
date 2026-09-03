@@ -1,5 +1,10 @@
+import { createRequire } from 'node:module'
 import { db as _db } from '@stacksjs/database'
 import type Stripe from 'stripe'
+
+const require = createRequire(import.meta.url)
+
+type StripeConstructor = typeof Stripe
 
 /**
  * Stored subscription row shape — narrower than `Record<string, unknown>`
@@ -324,9 +329,20 @@ export function createBillableMethods(_tableName: string) {
 }
 
 // Lazy-load Stripe so the trait stays free in projects that don't enable it.
-async function getStripe(): Promise<Stripe> {
+// `createRequire` is deliberate: a literal dynamic import is statically
+// resolved by Bun when a downstream application bundles @stacksjs/orm.
+function getStripe(): Stripe {
   const secret = (globalThis as { process?: { env?: { STRIPE_SECRET_KEY?: string } } }).process?.env?.STRIPE_SECRET_KEY
   if (!secret) throw new Error('Stripe Connect: STRIPE_SECRET_KEY not configured')
-  const StripeCtor = (await import('stripe')).default
+  let StripeCtor: StripeConstructor
+  try {
+    StripeCtor = require('stripe') as StripeConstructor
+  }
+  catch {
+    throw new Error(
+      'Stripe Connect is being used but the `stripe` package is not installed. '
+      + 'It is an opt-in dependency - run `bun add stripe` to enable Stripe Connect.',
+    )
+  }
   return new StripeCtor(secret, { apiVersion: '2026-06-24.dahlia' })
 }

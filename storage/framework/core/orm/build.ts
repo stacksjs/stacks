@@ -30,6 +30,37 @@ const result = await Bun.build({
   ],
 })
 
+// Optional runtime peers must stay invisible to a downstream Bun bundle.
+// A literal `import('stripe')` looks lazy at runtime, but Bun still resolves it
+// while bundling an application and fails before the billable trait is used.
+// Intercept resolution here so every ORM build enforces the package contract.
+const staticallyResolvedOptionalPeers = new Set<string>()
+const optionalPeerProbe = await Bun.build({
+  entrypoints: ['./dist/index.js'],
+  format: 'esm',
+  target: 'bun',
+  write: false,
+  external: frameworkExternal(),
+  plugins: [{
+    name: 'optional-peer-probe',
+    setup(build) {
+      build.onResolve({ filter: /^stripe$/ }, ({ path }) => {
+        staticallyResolvedOptionalPeers.add(path)
+        return { path, external: true }
+      })
+    },
+  }],
+})
+
+if (!optionalPeerProbe.success)
+  throw new Error('The published ORM entry point cannot be bundled by an application.')
+
+if (staticallyResolvedOptionalPeers.size) {
+  throw new Error(
+    `Optional runtime peers were statically resolved by the ORM bundle: ${[...staticallyResolvedOptionalPeers].join(', ')}`,
+  )
+}
+
 /**
  * Ship the model definitions the declarations point at.
  *
