@@ -26,7 +26,7 @@ function normalizeDomain(url: string | undefined): string | undefined {
 const domain = normalizeDomain((options.domain as string | undefined) ?? process.env.APP_URL)
 
 if (!domain) {
-  log.error(
+  await log.error(
     'There was no Domain or App URL provided. Please provide a domain using the --domain flag or add a url to your app config.',
   )
   process.exit(1)

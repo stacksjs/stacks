@@ -5,7 +5,7 @@ import { unquarantineJob } from '@stacksjs/queue'
 const options = parseArgs()
 const jobName = options.name
 if (!jobName) {
-  log.error('Usage: buddy queue:unquarantine --name=<JobName>')
+  await log.error('Usage: buddy queue:unquarantine --name=<JobName>')
   process.exit(1)
 }
 
@@ -15,7 +15,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to unquarantine', error)
+  await log.error('Failed to unquarantine', error)
   process.exit(1)
 }
 

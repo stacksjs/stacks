@@ -113,7 +113,7 @@ function requireName(options: MakeOptions, what: string): string {
   const name = options.name?.trim()
 
   if (!name) {
-    log.error(`A name is required to create a ${what}. Pass one with --name.`)
+    console.error(`A name is required to create a ${what}. Pass one with --name.`)
     process.exit(ExitCode.InvalidArgument)
   }
 
@@ -128,7 +128,7 @@ export async function makeAction(options: MakeOptions): Promise<void> {
     log.success(`Created ${italic(name)} action`)
   }
   catch (error) {
-    log.error('There was an error creating your action', error)
+    await log.error('There was an error creating your action', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -141,7 +141,7 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
     log.success(`Created ${italic(name)} component`)
   }
   catch (error) {
-    log.error('There was an error creating your component', error)
+    await log.error('There was an error creating your component', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -184,7 +184,7 @@ export function makeDatabase(options: MakeOptions): void {
     createDatabase(options)
   }
   catch (error) {
-    log.error('There was an error creating your database', error)
+    console.error('There was an error creating your database', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -218,7 +218,7 @@ export async function factory(options: MakeOptions): Promise<void> {
     await createFactory(options)
   }
   catch (error) {
-    log.error('There was an error creating your factory', error)
+    await log.error('There was an error creating your factory', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -268,7 +268,7 @@ export async function makeNotification(options: MakeOptions): Promise<void> {
     log.success(`Created ${italic(name)} notification`)
   }
   catch (error) {
-    log.error('There was an error creating your notification', error)
+    await log.error('There was an error creating your notification', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -344,7 +344,7 @@ export async function makeMail(options: MakeOptions & { force?: boolean }): Prom
     log.success(`Created ${italic(pascalCase(name))} mailable + ${italic(kebabCase(name))}.stx template`)
   }
   catch (error) {
-    log.error('There was an error creating your mailable', error)
+    await log.error('There was an error creating your mailable', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -357,7 +357,7 @@ export async function makePage(options: MakeOptions): Promise<void> {
     log.success(`Created ${name} page`)
   }
   catch (error) {
-    log.error('There was an error creating your page', error)
+    await log.error('There was an error creating your page', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -379,7 +379,7 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
     log.success(`Created ${name} function`)
   }
   catch (error) {
-    log.error('There was an error creating your function', error)
+    await log.error('There was an error creating your function', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -401,7 +401,7 @@ export async function makeLanguage(options: MakeOptions): Promise<void> {
     log.success(`Created ${name} translation file`)
   }
   catch (error) {
-    log.error('There was an error creating your language.', error)
+    await log.error('There was an error creating your language.', error)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -418,7 +418,7 @@ export async function makeStack(options: MakeOptions): Promise<void> {
     const stackDir = resolve(process.cwd(), name)
 
     if (doesFolderExist(stackDir)) {
-      log.error(`Directory "${name}" already exists`)
+      await log.error(`Directory "${name}" already exists`)
       process.exit(ExitCode.FatalError)
     }
 
@@ -445,7 +445,7 @@ export async function makeStack(options: MakeOptions): Promise<void> {
     log.info(`  buddy add ${shortName}`)
   }
   catch (error) {
-    log.error('There was an error creating your stack', error)
+    await log.error('There was an error creating your stack', error)
     process.exit(ExitCode.FatalError)
   }
 }

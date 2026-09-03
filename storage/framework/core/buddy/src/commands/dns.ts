@@ -111,7 +111,7 @@ export function dns(buddy: CLI): void {
         console.log(output)
       }
       catch (error) {
-        log.error(`DNS query failed: ${error instanceof Error ? error.message : String(error)}`)
+        await log.error(`DNS query failed: ${error instanceof Error ? error.message : String(error)}`)
         process.exit(ExitCode.FatalError)
       }
 
@@ -131,7 +131,7 @@ export function dns(buddy: CLI): void {
 
       const records = await resolveLiveRecords(target)
       if (!records.length) {
-        log.error(`No DNS records resolved for ${target}.`)
+        await log.error(`No DNS records resolved for ${target}.`)
         process.exit(ExitCode.FatalError)
       }
 

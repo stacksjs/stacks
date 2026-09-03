@@ -39,7 +39,7 @@ interface FailedJobRecord {
 
 try {
   if (!jobId) {
-    log.error('Please provide a job ID')
+    await log.error('Please provide a job ID')
     log.info('Usage: buddy queue:inspect --id=<jobId> [--failed]')
     process.exit(1)
   }
@@ -47,7 +47,7 @@ try {
   const id = Number.parseInt(jobId, 10)
 
   if (Number.isNaN(id)) {
-    log.error('Invalid job ID provided')
+    await log.error('Invalid job ID provided')
     process.exit(1)
   }
 
@@ -56,7 +56,7 @@ try {
     const failedResult = await FailedJob.find(id)
 
     if (!failedResult) {
-      log.error(`Failed job with ID ${id} not found`)
+      await log.error(`Failed job with ID ${id} not found`)
       process.exit(1)
     }
 
@@ -123,7 +123,7 @@ try {
     const jobResult = await Job.find(id)
 
     if (!jobResult) {
-      log.error(`Job with ID ${id} not found`)
+      await log.error(`Job with ID ${id} not found`)
       log.info('Tip: Use --failed flag to inspect failed jobs')
       process.exit(1)
     }
@@ -222,7 +222,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to inspect job', error)
+  await log.error('Failed to inspect job', error)
   process.exit(1)
 }
 

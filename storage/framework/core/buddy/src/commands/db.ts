@@ -268,7 +268,7 @@ export function db(buddy: CLI): void {
         // `migrate` against production, and continuing would do the exact thing
         // this command exists to make recoverable.
         //
-        // AWAITED. `log.error` is async, so `log.error(...)` immediately
+        // AWAITED. `log.error` is async, so `await log.error(...)` immediately
         // followed by `process.exit()` kills the process before the logger
         // flushes and the command exits 1 having printed nothing. Measured on
         // this exact command against a live Postgres: a real `pg_dump` version

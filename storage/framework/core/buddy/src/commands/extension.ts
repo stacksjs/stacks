@@ -82,7 +82,7 @@ export function extension(buddy: CLI): void {
     const { loadExtensionConfig } = await import('@stacksjs/browser-extension')
     const config = await loadExtensionConfig(process.cwd())
     if (!config) {
-      log.error('No extension config found. Create `config/extension.ts` exporting `defineExtension({ … })`.')
+      await log.error('No extension config found. Create `config/extension.ts` exporting `defineExtension({ … })`.')
       process.exit(1)
     }
     // Version: explicit flag, else the project's package.json.
@@ -220,7 +220,7 @@ export function extension(buddy: CLI): void {
       // exit non-zero so the release job goes red rather than quietly not
       // reaching users.
       if (failures.length) {
-        log.error(`Failed to publish ${failures.length} of ${publishing.length} store(s):\n  ${failures.join('\n  ')}`)
+        await log.error(`Failed to publish ${failures.length} of ${publishing.length} store(s):\n  ${failures.join('\n  ')}`)
         process.exit(1)
       }
     })

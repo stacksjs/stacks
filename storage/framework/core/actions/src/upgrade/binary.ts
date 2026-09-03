@@ -19,7 +19,7 @@ log.info('Upgrading `stacks`...')
 const result = await runCommand('bun compile.ts', { cwd: path.buddyPath() })
 
 if (result.isErr) {
-  log.error('There was an error compiling the binary', result.error)
+  await log.error('There was an error compiling the binary', result.error)
   process.exit(ExitCode.FatalError)
 }
 
@@ -45,11 +45,11 @@ if (await storage.exists(source)) {
     log.success('Binary Latest Version Is Used')
   }
   catch (err: any) {
-    log.error(err)
+    await log.error(err)
     process.exit(ExitCode.FatalError)
   }
 }
 else {
-  log.error(`Binary source not found: ${source}`)
+  await log.error(`Binary source not found: ${source}`)
   process.exit(ExitCode.FatalError)
 }

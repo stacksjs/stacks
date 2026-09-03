@@ -54,7 +54,7 @@ export function about(buddy: CLI): void {
         log.info('')
       }
       catch (error) {
-        log.error('Failed to retrieve system information:', error)
+        await log.error('Failed to retrieve system information:', error)
         process.exit(1)
       }
     })

@@ -631,7 +631,7 @@ export function mailCommands(buddy: CLI): void {
       const { email: emailConfig } = await import('@stacksjs/config')
       const domain: string | undefined = (emailConfig)?.domain
       if (!domain) {
-        log.error('config/email.ts has no `domain` - set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
+        await log.error('config/email.ts has no `domain` - set it (e.g. domain: \'bughq.org\') and add `mailboxes`.')
         process.exit(ExitCode.FatalError)
       }
 
@@ -644,7 +644,7 @@ export function mailCommands(buddy: CLI): void {
           ip = (await dns.promises.resolve4(domain))[0]
         }
         catch {
-          log.error(`Could not resolve an IP for ${domain}. Deploy the site first, or pass --ip <mail-server-ip>.`)
+          await log.error(`Could not resolve an IP for ${domain}. Deploy the site first, or pass --ip <mail-server-ip>.`)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -1230,7 +1230,7 @@ export function mailCommands(buddy: CLI): void {
 
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to add user: ${getErrorMessage(error)}`)
+        await log.error(`Failed to add user: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1265,7 +1265,7 @@ export function mailCommands(buddy: CLI): void {
         console.log('')
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to list users: ${getErrorMessage(error)}`)
+        await log.error(`Failed to list users: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1288,7 +1288,7 @@ export function mailCommands(buddy: CLI): void {
         log.success(`User ${email} deleted`)
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to delete user: ${getErrorMessage(error)}`)
+        await log.error(`Failed to delete user: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1321,7 +1321,7 @@ export function mailCommands(buddy: CLI): void {
         }
 
         if (!apiUrl) {
-          log.error('Mail API URL not found. Run `buddy deploy` first to create the mail infrastructure.')
+          await log.error('Mail API URL not found. Run `buddy deploy` first to create the mail infrastructure.')
           process.exit(ExitCode.FatalError)
         }
 
@@ -1370,7 +1370,7 @@ export function mailCommands(buddy: CLI): void {
           process.exit(0)
         })
       } catch (error: unknown) {
-        log.error(`Failed to start proxy: ${getErrorMessage(error)}`)
+        await log.error(`Failed to start proxy: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1389,7 +1389,7 @@ export function mailCommands(buddy: CLI): void {
         const mailApiOutput = outputs.find((o: any) => o.OutputKey === 'MailApiUrl')
 
         if (!mailApiOutput?.OutputValue) {
-          log.error('Mail API not deployed. Run `buddy deploy` first.')
+          await log.error('Mail API not deployed. Run `buddy deploy` first.')
           process.exit(ExitCode.FatalError)
         }
 
@@ -1415,7 +1415,7 @@ export function mailCommands(buddy: CLI): void {
 
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to test API: ${getErrorMessage(error)}`)
+        await log.error(`Failed to test API: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1496,7 +1496,7 @@ export function mailCommands(buddy: CLI): void {
           process.exit(ExitCode.Success)
         }
         catch (error) {
-          log.error(`Failed to fetch logs from ${directHost}: ${getErrorMessage(error)}`)
+          await log.error(`Failed to fetch logs from ${directHost}: ${getErrorMessage(error)}`)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -1520,7 +1520,7 @@ export function mailCommands(buddy: CLI): void {
 
         const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
         if (!instanceId) {
-          log.error('No running mail server found.')
+          await log.error('No running mail server found.')
           log.info(`Looked for instances tagged: ${appName}-mail-server`)
           process.exit(ExitCode.FatalError)
         }
@@ -1601,7 +1601,7 @@ export function mailCommands(buddy: CLI): void {
         console.log('')
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to fetch logs: ${getErrorMessage(error)}`)
+        await log.error(`Failed to fetch logs: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1620,7 +1620,7 @@ export function mailCommands(buddy: CLI): void {
           process.exit(ExitCode.Success)
         }
         catch (error) {
-          log.error(`Mail server ${directHost} is unhealthy: ${getErrorMessage(error)}`)
+          await log.error(`Mail server ${directHost} is unhealthy: ${getErrorMessage(error)}`)
           process.exit(ExitCode.FatalError)
         }
       }
@@ -1642,7 +1642,7 @@ export function mailCommands(buddy: CLI): void {
 
         const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
         if (!instanceId) {
-          log.error('No running mail server found.')
+          await log.error('No running mail server found.')
           log.info(`Looked for instances tagged: ${appName}-mail-server`)
           process.exit(ExitCode.FatalError)
         }
@@ -1677,7 +1677,7 @@ export function mailCommands(buddy: CLI): void {
         console.log('')
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed to get status: ${getErrorMessage(error)}`)
+        await log.error(`Failed to get status: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1708,7 +1708,7 @@ export function mailCommands(buddy: CLI): void {
       } else if (provider === 'hetzner') {
         await requestHetznerPort25(options, domain)
       } else {
-        log.error(`Unknown provider: ${provider}. Use 'aws' or 'hetzner'.`)
+        await log.error(`Unknown provider: ${provider}. Use 'aws' or 'hetzner'.`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1726,7 +1726,7 @@ export function mailCommands(buddy: CLI): void {
         // For Hetzner, SSH directly
         const hetznerToken = process.env.HETZNER_API_TOKEN
         if (!hetznerToken) {
-          log.error('HETZNER_API_TOKEN not set')
+          await log.error('HETZNER_API_TOKEN not set')
           process.exit(ExitCode.FatalError)
         }
 
@@ -1759,7 +1759,7 @@ export function mailCommands(buddy: CLI): void {
             printPort25Status(result.trim(), 'Hetzner', ip)
           }
         } catch (error: unknown) {
-          log.error(`Failed: ${getErrorMessage(error)}`)
+          await log.error(`Failed: ${getErrorMessage(error)}`)
         }
         process.exit(ExitCode.Success)
       }
@@ -1780,7 +1780,7 @@ export function mailCommands(buddy: CLI): void {
         const instance = data.Reservations?.[0]?.Instances?.[0]
         const instanceId = instance?.InstanceId
         if (!instanceId) {
-          log.error('No running mail server found.')
+          await log.error('No running mail server found.')
           process.exit(ExitCode.FatalError)
         }
 
@@ -1794,7 +1794,7 @@ export function mailCommands(buddy: CLI): void {
         printPort25Status(result.output?.trim() || 'PORT_25_BLOCKED', 'AWS', publicIp)
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
-        log.error(`Failed: ${getErrorMessage(error)}`)
+        await log.error(`Failed: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -1875,7 +1875,7 @@ export function mailCommands(buddy: CLI): void {
 
         process.exit(0)
       } catch (error: unknown) {
-        log.error(`Failed to start SMTP server: ${getErrorMessage(error)}`)
+        await log.error(`Failed to start SMTP server: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -2054,7 +2054,7 @@ async function runLocalMailCatcher(options: { smtpPort: number, uiPort: number, 
   const binary = resolveMailBinary()
 
   if (!binary) {
-    log.error('The mail server is not installed.')
+    await log.error('The mail server is not installed.')
     log.info('Install it with:  pantry install github.com/mail-os/mail')
     log.info('(It is declared in config/deps.ts, so `pantry install` on its own is enough.)')
     process.exit(ExitCode.FatalError)
@@ -2372,7 +2372,7 @@ async function requestHetznerPort25(
 ): Promise<void> {
   const hetznerToken = process.env.HETZNER_API_TOKEN
   if (!hetznerToken) {
-    log.error('HETZNER_API_TOKEN not set. Add it to .env or set it as an environment variable.')
+    await log.error('HETZNER_API_TOKEN not set. Add it to .env or set it as an environment variable.')
     process.exit(ExitCode.FatalError)
   }
 

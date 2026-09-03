@@ -80,7 +80,7 @@ export function schedule(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`[schedule:list] failed: ${err instanceof Error ? err.message : String(err)}`)
+        await log.error(`[schedule:list] failed: ${err instanceof Error ? err.message : String(err)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -114,7 +114,7 @@ export function schedule(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`[schedule:status] failed: ${err instanceof Error ? err.message : String(err)}`)
+        await log.error(`[schedule:status] failed: ${err instanceof Error ? err.message : String(err)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -133,7 +133,7 @@ export function schedule(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`[schedule:run-one] failed: ${err instanceof Error ? err.message : String(err)}`)
+        await log.error(`[schedule:run-one] failed: ${err instanceof Error ? err.message : String(err)}`)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -159,7 +159,7 @@ export function schedule(buddy: CLI): void {
           process.exit(ExitCode.Success)
         }
         catch (err) {
-          log.error(`[${command}] failed: ${err instanceof Error ? err.message : String(err)}`)
+          await log.error(`[${command}] failed: ${err instanceof Error ? err.message : String(err)}`)
           process.exit(ExitCode.FatalError)
         }
       })

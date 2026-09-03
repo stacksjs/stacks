@@ -48,7 +48,7 @@ catch (error) {
     process.stdout.write('Run `buddy queue:table` to create the migrations, then `buddy migrate` to apply them.\n')
     process.exit(0)
   }
-  log.error('Failed to fetch dead-letter jobs', error)
+  await log.error('Failed to fetch dead-letter jobs', error)
   process.exit(1)
 }
 

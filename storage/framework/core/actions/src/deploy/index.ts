@@ -2077,7 +2077,7 @@ SERVICEFILE`,
   console.log('')
   log.success('Deployment completed successfully!')
 } catch (error) {
-  log.error('Deployment failed:', error)
+  await log.error('Deployment failed:', error)
   process.exit(ExitCode.FatalError)
 }
 
@@ -2087,7 +2087,7 @@ SERVICEFILE`,
 //   cwd: p.frameworkCloudPath(),
 // })
 // if (result.isErr) {
-//   log.error(result.error)
+//   await log.error(result.error)
 //   process.exit(ExitCode.FatalError)
 // }
 // const t = result.value as Subprocess

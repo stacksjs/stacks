@@ -75,7 +75,7 @@ export function resultError(result: unknown, fallback = 'Unknown error'): string
  * Print a failure and stop.
  *
  * `console.error` rather than the logger, and that is not a style preference.
- * The logger writes asynchronously, so `log.error(message)` immediately
+ * The logger writes asynchronously, so `await log.error(message)` immediately
  * followed by `process.exit()` loses the message entirely: the process is gone
  * before the write lands. A command that refuses then produces an exit code and
  * *nothing else*, which is exactly as useless as the bug this module was

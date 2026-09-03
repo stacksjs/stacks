@@ -102,7 +102,7 @@ export async function generateLibEntries(options: GeneratorOptions): Promise<voi
   })
 
   if (result.isErr) {
-    log.error('There was an error generating your library entry points', result.error)
+    await log.error('There was an error generating your library entry points', result.error)
     process.exit(ExitCode.FatalError)
   }
 
@@ -126,7 +126,7 @@ export async function generateVsCodeCustomData(): Promise<void> {
   const result = await genVsCodeCustomData()
 
   if (result.isErr) {
-    log.error('There was an error generating the custom-elements.json file.', result.error)
+    await log.error('There was an error generating the custom-elements.json file.', result.error)
     process.exit(ExitCode.FatalError)
   }
 
@@ -150,7 +150,7 @@ export async function generateComponentMeta(): Promise<void> {
   const result = await genVsCodeCustomData()
 
   if (result.isErr) {
-    log.error('There was an error generating your component meta information.', result.error)
+    await log.error('There was an error generating your component meta information.', result.error)
     process.exit(ExitCode.FatalError)
   }
 

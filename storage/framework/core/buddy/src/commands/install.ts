@@ -30,7 +30,7 @@ export function install(buddy: CLI): void {
       // and discarded the result, leaving the parent process at exit 0
       // even when bun install crashed.
       if (resultFailed(result)) {
-        log.error('bun install failed')
+        await log.error('bun install failed')
         process.exit(ExitCode.FatalError)
       }
     })

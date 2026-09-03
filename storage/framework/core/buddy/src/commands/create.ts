@@ -68,7 +68,7 @@ export function create(buddy: CLI): void {
       const result = await download(name, path, options)
 
       if (resultFailed(result)) {
-        log.error(result.error)
+        await log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -134,7 +134,7 @@ function isFolderCheck(path: string) {
   if (occupied.length === 0)
     return
 
-  log.error(`Path ${path} already exists`)
+  console.error(`Path ${path} already exists`)
   process.exit(ExitCode.FatalError)
 }
 
@@ -405,7 +405,7 @@ async function install(path: string, options: CreateOptions) {
   let result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
   if (resultFailed(result)) {
-    log.error(result.error)
+    await log.error(result.error)
     process.exit(ExitCode.FatalError)
   }
 
@@ -422,7 +422,7 @@ async function install(path: string, options: CreateOptions) {
   log.info('Generating application key...')
   const keyResult = await runAction(Action.KeyGenerate, { ...options, cwd: path })
   if (resultFailed(keyResult)) {
-    log.error(keyResult.error)
+    await log.error(keyResult.error)
     process.exit(ExitCode.FatalError)
   }
 
@@ -435,7 +435,7 @@ async function install(path: string, options: CreateOptions) {
     log.info('Initializing git repository...')
     result = await runCommand('git init', { ...options, cwd: path })
     if (resultFailed(result)) {
-      log.error(result.error)
+      await log.error(result.error)
       process.exit(ExitCode.FatalError)
     }
   }
@@ -477,9 +477,9 @@ async function unvendorCore(path: string, options: NewOptions) {
     log.error('removed and the published packages are not in place yet, so ./buddy cannot')
     log.error('boot there. Finish it by hand with:')
     log.error('')
-    log.error(`  cd ${path} && rm -f node_modules/stacks && bun install`)
-    log.error('')
-    log.error('Or start over with `--with-core` to keep the framework vendored.')
+    await log.error(`  cd ${path} && rm -f node_modules/stacks && bun install`)
+    await log.error('')
+    await log.error('Or start over with `--with-core` to keep the framework vendored.')
     process.exit(ExitCode.FatalError)
   }
 

@@ -52,7 +52,7 @@ export function preview(buddy: CLI): void {
       const port = Number(options?.port) || 3001
 
       if (!existsSync(root)) {
-        log.error(`No \`${root}\` directory to preview. Run \`buddy build\` first, or pass the directory to serve.`)
+        await log.error(`No \`${root}\` directory to preview. Run \`buddy build\` first, or pass the directory to serve.`)
         process.exit(ExitCode.FatalError)
       }
 

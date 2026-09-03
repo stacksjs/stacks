@@ -39,13 +39,13 @@ export function migrateProject(buddy: CLI): void {
     .action(async (target: string | undefined, options: MigrateProjectOptions) => {
       const from = (options.from ?? 'laravel') as SourceFramework
       if (!(from in DRIVERS)) {
-        log.error(`Unknown source framework: '${from}'. Supported: ${Object.keys(DRIVERS).join(', ')}.`)
+        await log.error(`Unknown source framework: '${from}'. Supported: ${Object.keys(DRIVERS).join(', ')}.`)
         process.exit(ExitCode.FatalError)
       }
 
       const sourcePath = options.source ? resolve(process.cwd(), String(options.source)) : process.cwd()
       if (!existsSync(sourcePath)) {
-        log.error(`Source project not found: ${sourcePath}`)
+        await log.error(`Source project not found: ${sourcePath}`)
         process.exit(ExitCode.FatalError)
       }
 
@@ -88,7 +88,7 @@ export function migrateProject(buddy: CLI): void {
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`Migration failed: ${err instanceof Error ? err.message : String(err)}`)
+        await log.error(`Migration failed: ${err instanceof Error ? err.message : String(err)}`)
         process.exit(ExitCode.FatalError)
       }
     })

@@ -131,7 +131,7 @@ export function link(buddy: CLI): void {
       const framework = resolveFrameworkPath(options?.path)
 
       if (!framework) {
-        log.error('No framework checkout found.')
+        await log.error('No framework checkout found.')
         log.info('Pass one with `--path <dir>` or set STACKS_FRAMEWORK_PATH.')
         process.exit(ExitCode.FatalError)
       }
@@ -248,7 +248,7 @@ export function link(buddy: CLI): void {
       const code = await install.exited
 
       if (code !== 0) {
-        log.error('`bun install` failed. The links are gone; re-run the install once the failure is resolved.')
+        await log.error('`bun install` failed. The links are gone; re-run the install once the failure is resolved.')
         process.exit(ExitCode.FatalError)
       }
 

@@ -7,7 +7,7 @@ const result = await createPersonalAccessClient()
 
 if ((result)?.isErr) {
   console.error((result).error)
-  log.error('createPersonalAccessClient failed', (result).error)
+  await log.error('createPersonalAccessClient failed', (result).error)
   process.exit(1)
 }
 

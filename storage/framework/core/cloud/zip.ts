@@ -7,7 +7,7 @@ const result = await runCommand('zip -r ./dist.zip dist/origin-request.js packag
 })
 
 if (result.isErr) {
-  log.error('Zip failed')
+  await log.error('Zip failed')
   process.exit(1)
 }
 

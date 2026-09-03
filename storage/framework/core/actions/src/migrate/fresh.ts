@@ -7,7 +7,7 @@ const resetResult = await resetDatabase()
 
 if ((resetResult)?.isErr) {
   console.error((resetResult).error)
-  log.error('resetDatabase failed', (resetResult).error)
+  await log.error('resetDatabase failed', (resetResult).error)
   process.exit(1)
 }
 
@@ -16,7 +16,7 @@ const genResult = await generateMigrations()
 
 if ((genResult)?.isErr) {
   console.error((genResult).error)
-  log.error('generateMigrations failed', (genResult).error)
+  await log.error('generateMigrations failed', (genResult).error)
   process.exit(1)
 }
 
@@ -63,8 +63,8 @@ if (!datetimeResult.success)
   log.error(`Failed to convert TIMESTAMP columns to DATETIME: ${datetimeResult.error}`)
 
 if ((migrateResult).isErr) {
-  log.error('runDatabaseMigration failed')
-  log.error((migrateResult).error)
+  await log.error('runDatabaseMigration failed')
+  await log.error((migrateResult).error)
   process.exit(1)
 }
 

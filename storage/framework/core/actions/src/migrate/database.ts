@@ -35,7 +35,7 @@ if (skipGeneration)
 if (generated?.isErr) {
   console.error('Generating migrations failed. The model diff could not be turned into SQL.')
   console.error(String(generated.error?.message ?? generated.error))
-  log.error('[stacks] generateMigrations failed', generated.error)
+  await log.error('[stacks] generateMigrations failed', generated.error)
   process.exit(1)
 }
 
@@ -50,7 +50,7 @@ if (migrated.isErr) {
    */
   console.error('Running migrations failed. The files were written; applying them to the database did not succeed.')
   console.error(String(migrated.error?.message ?? migrated.error))
-  log.error('[stacks] runDatabaseMigration failed', migrated.error)
+  await log.error('[stacks] runDatabaseMigration failed', migrated.error)
   process.exit(1)
 }
 

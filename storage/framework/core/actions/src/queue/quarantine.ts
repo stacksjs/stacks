@@ -36,7 +36,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to handle queue:quarantine', error)
+  await log.error('Failed to handle queue:quarantine', error)
   process.exit(1)
 }
 

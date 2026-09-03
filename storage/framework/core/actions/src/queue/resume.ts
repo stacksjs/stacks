@@ -5,7 +5,7 @@ import { resumeQueue } from '@stacksjs/queue'
 const options = parseArgs()
 const queue = options.queue
 if (!queue) {
-  log.error('Usage: buddy queue:resume --queue=<name>')
+  await log.error('Usage: buddy queue:resume --queue=<name>')
   process.exit(1)
 }
 
@@ -15,7 +15,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to resume queue', error)
+  await log.error('Failed to resume queue', error)
   process.exit(1)
 }
 

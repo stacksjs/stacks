@@ -41,6 +41,6 @@ try {
   process.exit(0)
 }
 catch (err) {
-  log.error('Seeding failed catastrophically:', err)
+  await log.error('Seeding failed catastrophically:', err)
   process.exit(1)
 }

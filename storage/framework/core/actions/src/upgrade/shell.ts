@@ -23,7 +23,7 @@ if (match) {
   // Split the captured group by any whitespace and filter out empty strings
   const plugins = match[1]?.split(/\s+/).filter(Boolean)
   if (!plugins) {
-    log.error(
+    await log.error(
       'Maybe the plugins line in your .zshrc file could not be found? If this continues being an issue, please reach out to us on Discord.',
     )
     process.exit(ExitCode.FatalError)

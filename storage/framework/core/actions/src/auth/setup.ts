@@ -168,7 +168,7 @@ try {
   log.success('OAuth tables ready')
 }
 catch (error) {
-  log.error('Failed to create OAuth tables', error)
+  await log.error('Failed to create OAuth tables', error)
   process.exit(1)
 }
 
@@ -241,7 +241,7 @@ try {
   log.success('Password resets table ready')
 }
 catch (error) {
-  log.error('Failed to create password_resets table', error)
+  await log.error('Failed to create password_resets table', error)
   process.exit(1)
 }
 
@@ -316,7 +316,7 @@ try {
   log.success('Email verifications table ready')
 }
 catch (error) {
-  log.error('Failed to create email_verifications table', error)
+  await log.error('Failed to create email_verifications table', error)
   process.exit(1)
 }
 
@@ -380,7 +380,7 @@ try {
   log.success('WebAuthn challenges table ready')
 }
 catch (error) {
-  log.error('Failed to create webauthn_challenges table', error)
+  await log.error('Failed to create webauthn_challenges table', error)
   process.exit(1)
 }
 

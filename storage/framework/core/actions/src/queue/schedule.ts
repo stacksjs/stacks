@@ -13,6 +13,6 @@ try {
   await new Promise(() => {})
 }
 catch (error) {
-  log.error('Failed to start scheduler:', error)
+  await log.error('Failed to start scheduler:', error)
   process.exit(1)
 }

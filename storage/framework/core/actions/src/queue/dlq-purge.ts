@@ -8,7 +8,7 @@ const days = options.olderThanDays
   : (options['older-than-days'] ? Number.parseInt(options['older-than-days'], 10) : 30)
 
 if (!Number.isFinite(days) || days < 1) {
-  log.error(`Invalid --older-than-days value '${options.olderThanDays ?? options['older-than-days']}'`)
+  await log.error(`Invalid --older-than-days value '${options.olderThanDays ?? options['older-than-days']}'`)
   process.exit(1)
 }
 
@@ -19,7 +19,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to purge dead-letter jobs', error)
+  await log.error('Failed to purge dead-letter jobs', error)
   process.exit(1)
 }
 

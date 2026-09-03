@@ -5,7 +5,7 @@ import { pauseQueue } from '@stacksjs/queue'
 const options = parseArgs()
 const queue = options.queue
 if (!queue) {
-  log.error('Usage: buddy queue:pause --queue=<name> [--for=300]')
+  await log.error('Usage: buddy queue:pause --queue=<name> [--for=300]')
   process.exit(1)
 }
 const pauseSeconds = options.for ? Number.parseInt(options.for, 10) : 300
@@ -16,7 +16,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to pause queue', error)
+  await log.error('Failed to pause queue', error)
   process.exit(1)
 }
 

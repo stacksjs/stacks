@@ -32,7 +32,7 @@ export function release(buddy: CLI): void {
       const result = await runAction(Action.Release, options)
 
       if (resultFailed(result)) {
-        log.error('Failed to release', result.error)
+        await log.error('Failed to release', result.error)
         process.exit(ExitCode.FatalError)
       }
 

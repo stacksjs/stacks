@@ -114,7 +114,7 @@ try {
   }
 }
 catch (error) {
-  log.error('Monitor error:', error)
+  await log.error('Monitor error:', error)
   process.exit(1)
 }
 

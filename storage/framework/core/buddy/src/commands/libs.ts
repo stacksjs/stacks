@@ -84,7 +84,7 @@ export function libs(buddy: CLI): void {
       const result = await runAction(Action.BuildLibs, options)
 
       if (resultFailed(result)) {
-        log.error('Failed to build the library packages.', result.error)
+        await log.error('Failed to build the library packages.', result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -98,7 +98,7 @@ export function libs(buddy: CLI): void {
       const result = await runAction(Action.LibraryPublish, { ...options, verbose: true })
 
       if (resultFailed(result)) {
-        log.error('Failed to publish the library packages.', result.error)
+        await log.error('Failed to publish the library packages.', result.error)
         process.exit(ExitCode.FatalError)
       }
     })

@@ -38,7 +38,7 @@ async function gracefulShutdown(signal: NodeJS.Signals): Promise<void> {
     await stopProcessor({ graceMs: SHUTDOWN_GRACE_MS })
   }
   catch (error) {
-    log.error('[queue] Error while draining worker on shutdown:', error)
+    await log.error('[queue] Error while draining worker on shutdown:', error)
   }
   process.exit(0)
 }
@@ -57,7 +57,7 @@ const result = await startProcessor(queue, {
 })
 
 if (result.isErr) {
-  log.error('Failed to start queue worker:', result.error)
+  await log.error('Failed to start queue worker:', result.error)
   process.exit(1)
 }
 

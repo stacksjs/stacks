@@ -44,7 +44,7 @@ export async function runTestSuites(suites: string[], timeout?: number): Promise
   const exitCode = await proc.exited
 
   if (exitCode !== 0) {
-    log.error('Tests failed')
+    await log.error('Tests failed')
     process.exit(exitCode ?? 1)
   }
 }

@@ -17,7 +17,7 @@ try {
     const id = Number.parseInt(jobId, 10)
 
     if (Number.isNaN(id)) {
-      log.error('Invalid job ID provided')
+      await log.error('Invalid job ID provided')
       process.exit(1)
     }
 
@@ -34,7 +34,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to retry job(s)', error)
+  await log.error('Failed to retry job(s)', error)
   process.exit(1)
 }
 

@@ -109,6 +109,24 @@ export function setup(buddy: CLI): void {
       let id = provider
 
       if (!id) {
+        /*
+         * Only prompt when someone is there to answer. The prompt reads a line
+         * from stdin, so with stdin inherited from a script or an agent - a
+         * pipe that is open but never written to - the read blocks until the
+         * writer closes, which for a long-lived parent is never. `setup:ai`
+         * then sits at "Select (number):" with no way to progress and no clue
+         * why (stacksjs/stacks#2056).
+         *
+         * stdin at EOF already resolves to the default choice, and a piped
+         * answer (`echo 2 | ...`) already works; it is the open-and-silent
+         * case that hangs. Naming the argument is more useful than either,
+         * since selecting a provider by menu index depends on menu order.
+         */
+        if (!process.stdin.isTTY) {
+          await log.error(`\`setup:ai\` needs a provider when stdin is not a terminal. Pass one: ${AI_PROVIDERS.map(entry => `buddy setup:ai ${entry.id}`).join(', ')}`)
+          process.exit(ExitCode.InvalidArgument)
+        }
+
         const { select } = await import('@stacksjs/cli')
         id = await select({
           message: 'Which AI coding agent do you use?',
@@ -118,7 +136,7 @@ export function setup(buddy: CLI): void {
       }
 
       if (!id || !isAiProvider(id)) {
-        log.error(`Unknown AI provider: ${id}. Expected one of: ${AI_PROVIDERS.map(entry => entry.id).join(', ')}`)
+        await log.error(`Unknown AI provider: ${id}. Expected one of: ${AI_PROVIDERS.map(entry => entry.id).join(', ')}`)
         process.exit(ExitCode.InvalidArgument)
       }
 
@@ -135,7 +153,7 @@ export function setup(buddy: CLI): void {
       const result = await runAction(Action.UpgradeShell)
 
       if (resultFailed(result)) {
-        log.error(result.error)
+        await log.error(result.error)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -180,7 +198,7 @@ async function installPantry(): Promise<void> {
   if (resultFailed(result))
     handleError(result.error)
   else
-    log.error('Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.')
+    await log.error('Pantry installed but is not available on PATH. Open a new shell and run `buddy setup` again.')
   process.exit(ExitCode.FatalError)
 }
 
@@ -208,7 +226,7 @@ export async function ensurePantryDependencies(cwd: string): Promise<void> {
   }
 
   if (existsSync(join(cwd, 'package.json')) && !existsSync(join(cwd, 'node_modules'))) {
-    log.error('Pantry completed without installing the project JavaScript dependencies.')
+    await log.error('Pantry completed without installing the project JavaScript dependencies.')
     process.exit(ExitCode.FatalError)
   }
 
@@ -683,7 +701,7 @@ export async function ensureDeployEnvIsSet(cwd: string, environment: string): Pr
     // Fatal on purpose. Continuing would deploy with secrets this project has
     // said belong in an encrypted file, from wherever they happen to sit
     // instead — and the point of asking was to stop doing that.
-    log.error(`Could not encrypt ${fileName}: ${result.error ?? 'unknown error'}`)
+    await log.error(`Could not encrypt ${fileName}: ${result.error ?? 'unknown error'}`)
     process.exit(ExitCode.FatalError)
   }
 

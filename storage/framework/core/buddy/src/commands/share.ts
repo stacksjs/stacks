@@ -139,7 +139,7 @@ export function share(buddy: CLI): void {
         : defaultPorts[serviceType] || 3000
 
       if (Number.isNaN(port) || port < 1 || port > 65535) {
-        log.error(`Invalid port: ${options.port}`)
+        await log.error(`Invalid port: ${options.port}`)
         process.exit(ExitCode.InvalidArgument)
       }
 

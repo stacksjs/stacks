@@ -19,7 +19,7 @@ async function runStyleAction(
   const actions = await import('@stacksjs/actions')
   const { ok } = await actions[entry](options as never)
   if (!ok) {
-    log.error(`${label} reported failure`)
+    await log.error(`${label} reported failure`)
     process.exit(ExitCode.FatalError)
   }
 }
@@ -66,7 +66,7 @@ async function runStxChecks(startTime: number): Promise<void> {
   console.log(out.join('\n'))
 
   if (report.failed > 0) {
-    log.error(`${report.failed} stx check(s) failed.`)
+    await log.error(`${report.failed} stx check(s) failed.`)
     await outro('stx checks failed', { startTime, useSeconds: true })
     process.exit(ExitCode.FatalError)
   }

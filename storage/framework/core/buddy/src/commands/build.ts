@@ -279,7 +279,7 @@ export function build(buddy: CLI): void {
       const result = await runAction(Action.BuildCore, options)
 
       if (resultFailed(result)) {
-        log.error('Failed to build the Stacks core.', result.error)
+        await log.error('Failed to build the Stacks core.', result.error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -406,7 +406,7 @@ export function build(buddy: CLI): void {
       const result = await runAction(Action.BuildStacks, options)
 
       if (resultFailed(result)) {
-        log.error('Failed to build Stacks.', result.error)
+        await log.error('Failed to build Stacks.', result.error)
         process.exit(ExitCode.FatalError)
       }
 

@@ -8,7 +8,7 @@ import { ExitCode } from '@stacksjs/types'
 log.info('Ensuring Component Library Entry Point...')
 
 if (!cli.command) {
-  log.error('No command defined in the CLI configuration')
+  await log.error('No command defined in the CLI configuration')
   process.exit(ExitCode.FatalError)
 }
 
@@ -18,7 +18,7 @@ await writeTextFile({
 import('./storage/framework/core/buddy/src/custom-cli')
 `,
 }).catch((err: Error) => {
-  log.error('There was an error generating your custom CLI file.', err)
+  console.error('There was an error generating your custom CLI file.', err)
   process.exit(ExitCode.FatalError)
 })
 

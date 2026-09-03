@@ -437,7 +437,7 @@ export function dev(buddy: CLI): void {
             await a.runDocsDevServer(serverOptions)
             break
           default:
-            log.error(`Unknown server: ${target}`)
+            await log.error(`Unknown server: ${target}`)
             process.exit(ExitCode.InvalidArgument)
         }
       }
@@ -465,7 +465,7 @@ export function dev(buddy: CLI): void {
         })
 
         if (!handled) {
-          log.error('Invalid option during interactive mode')
+          await log.error('Invalid option during interactive mode')
           process.exit(ExitCode.InvalidArgument)
         }
       }

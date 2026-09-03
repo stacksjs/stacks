@@ -44,7 +44,7 @@ export function maintenance(buddy: CLI): void {
         })
       }
       catch (error) {
-        log.error('Failed to enable coming soon mode:', error)
+        await log.error('Failed to enable coming soon mode:', error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -75,7 +75,7 @@ export function maintenance(buddy: CLI): void {
         })
       }
       catch (error) {
-        log.error('Failed to disable coming soon mode:', error)
+        await log.error('Failed to disable coming soon mode:', error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -105,7 +105,7 @@ export function maintenance(buddy: CLI): void {
         }
       }
       catch (error) {
-        log.error('Failed to check coming soon status:', error)
+        await log.error('Failed to check coming soon status:', error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -160,7 +160,7 @@ export function maintenance(buddy: CLI): void {
         })
       }
       catch (error) {
-        log.error('Failed to enable maintenance mode:', error)
+        await log.error('Failed to enable maintenance mode:', error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -190,7 +190,7 @@ export function maintenance(buddy: CLI): void {
         })
       }
       catch (error) {
-        log.error('Failed to bring application up:', error)
+        await log.error('Failed to bring application up:', error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -222,7 +222,7 @@ export function maintenance(buddy: CLI): void {
         }
       }
       catch (error) {
-        log.error('Failed to check site-mode status:', error)
+        await log.error('Failed to check site-mode status:', error)
         process.exit(ExitCode.FatalError)
       }
 

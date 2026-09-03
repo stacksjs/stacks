@@ -402,7 +402,7 @@ export function queue(buddy: CLI): void {
       const result = await runAction(Action.QueueMonitor, options)
 
       if (resultFailed(result)) {
-        log.error('While running the queue:monitor command, there was an issue', result.error)
+        await log.error('While running the queue:monitor command, there was an issue', result.error)
         process.exit(ExitCode.FatalError)
       }
 
@@ -446,7 +446,7 @@ export function queue(buddy: CLI): void {
       const result = await runAction(Action.QueueSchedule, options)
 
       if (resultFailed(result)) {
-        log.error('While running the queue:schedule command, there was an issue', result.error)
+        await log.error('While running the queue:schedule command, there was an issue', result.error)
         process.exit(ExitCode.FatalError)
       }
 

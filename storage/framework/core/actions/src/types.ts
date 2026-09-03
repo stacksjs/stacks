@@ -9,7 +9,7 @@ export async function invoke(options?: TypesOptions): Promise<void> {
   const results = await runNpmScript(NpmScript.TypesFix, options)
 
   if (results.isErr) {
-    log.error('There was an error fixing your types.', results.error)
+    await log.error('There was an error fixing your types.', results.error)
     process.exit(ExitCode.FatalError)
   }
 

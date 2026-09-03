@@ -43,6 +43,6 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to list scheduled jobs:', error)
+  await log.error('Failed to list scheduled jobs:', error)
   process.exit(1)
 }

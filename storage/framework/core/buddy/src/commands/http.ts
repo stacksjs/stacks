@@ -41,7 +41,7 @@ export function http(buddy: CLI): void {
           process.exit(ExitCode.Success)
         },
         err: (error) => {
-          log.error(`Request failed: ${error.message}`)
+          console.error(`Request failed: ${error.message}`)
           process.exit(ExitCode.FatalError)
         },
       })

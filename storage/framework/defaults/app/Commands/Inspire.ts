@@ -50,7 +50,7 @@ export default defineCommand((cli) => {
   })
 
   cli.on('inspire:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
     process.exit(1)
   })
 

@@ -32,7 +32,7 @@ export function stacks(buddy: CLI): void {
       const perf = await intro('buddy stack:install')
 
       if (!name) {
-        log.error('You need to specify a stack name.')
+        await log.error('You need to specify a stack name.')
         log.info('Example: buddy add calendar')
         process.exit(ExitCode.FatalError)
       }
@@ -66,7 +66,7 @@ export function stacks(buddy: CLI): void {
       const perf = await intro('buddy stack:uninstall')
 
       if (!name) {
-        log.error('You need to specify a stack name.')
+        await log.error('You need to specify a stack name.')
         process.exit(ExitCode.FatalError)
       }
 

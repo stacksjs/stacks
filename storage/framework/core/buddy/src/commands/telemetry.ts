@@ -109,7 +109,7 @@ export function telemetryCommand(buddy: CLI): void {
         }
       }
       catch (error) {
-        log.error('Failed to manage telemetry:', error)
+        await log.error('Failed to manage telemetry:', error)
         process.exit(1)
       }
     })

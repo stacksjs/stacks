@@ -6,7 +6,7 @@ const result = await updateIndexSettings()
 
 if (result?.isErr) {
   console.error(result.error)
-  log.error('generateMigrations failed', result.error)
+  await log.error('generateMigrations failed', result.error)
 }
 
 process.exit(0)

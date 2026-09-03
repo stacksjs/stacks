@@ -37,7 +37,7 @@ try {
   process.exit(0)
 }
 catch (error) {
-  log.error('Failed to clear jobs', error)
+  await log.error('Failed to clear jobs', error)
   process.exit(1)
 }
 

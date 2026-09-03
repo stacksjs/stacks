@@ -13,7 +13,7 @@ const result = await createStripeProduct({ dryRun })
 
 if (result?.isErr) {
   console.error(result.error)
-  log.error('stripe:setup failed', result.error)
+  await log.error('stripe:setup failed', result.error)
   process.exit(1)
 }
 

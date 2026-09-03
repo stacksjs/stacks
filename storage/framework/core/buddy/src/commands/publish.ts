@@ -118,7 +118,7 @@ export function publish(buddy: CLI): void {
       }
 
       if (!pkg) {
-        log.error('Usage: buddy publish:core <pkg>   (or --all to vendor the whole framework as a workspace)')
+        await log.error('Usage: buddy publish:core <pkg>   (or --all to vendor the whole framework as a workspace)')
         process.exit(ExitCode.FatalError)
       }
 
@@ -146,7 +146,7 @@ export function publish(buddy: CLI): void {
       }
 
       if (!pkg) {
-        log.error('Usage: buddy unpublish:core <pkg>   (or --all to move the whole framework to node_modules)')
+        await log.error('Usage: buddy unpublish:core <pkg>   (or --all to move the whole framework to node_modules)')
         process.exit(ExitCode.FatalError)
       }
 
@@ -159,7 +159,7 @@ export function publish(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (resource: string | undefined, name: string | undefined, options: PublishOptions) => {
       if (!resource || !name) {
-        log.error('Usage: buddy publish:<resource> <Name>  (e.g. buddy publish:model Cart)')
+        await log.error('Usage: buddy publish:<resource> <Name>  (e.g. buddy publish:model Cart)')
         process.exit(ExitCode.FatalError)
       }
 
@@ -198,7 +198,7 @@ export function publish(buddy: CLI): void {
       const handler = dispatch[resource.toLowerCase()]
 
       if (!handler) {
-        log.error(`Unknown publishable resource: ${italic(resource)}`)
+        await log.error(`Unknown publishable resource: ${italic(resource)}`)
         log.info('Available: model, controller, middleware, action, core')
         process.exit(ExitCode.FatalError)
       }
@@ -326,7 +326,7 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   const matches = globSync([`${defaultsDir}/**/${fileName}`], { absolute: true })
 
   if (!matches.length) {
-    log.error(`Could not find default ${kind}: ${italic(fileName)}`)
+    await log.error(`Could not find default ${kind}: ${italic(fileName)}`)
     log.info(`Looked under: ${italic(defaultsDir)}`)
     process.exit(ExitCode.FatalError)
   }
@@ -342,7 +342,7 @@ async function publishResource(ctx: PublishContext): Promise<void> {
   const targetPath = `${userDir.replace(/\/$/, '')}/${fileName}`
 
   if (existsSync(targetPath) && !force) {
-    log.error(`Already exists: ${italic(targetPath)}`)
+    await log.error(`Already exists: ${italic(targetPath)}`)
     log.info('Pass --force to overwrite.')
     process.exit(ExitCode.FatalError)
   }
@@ -460,7 +460,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
 
   const framework = resolveFrameworkCheckout(explicitPath)
   if (!framework) {
-    log.error('No Stacks checkout found to vendor from.')
+    await log.error('No Stacks checkout found to vendor from.')
     log.info('Pass one with `--path <dir>`, or set STACKS_FRAMEWORK_PATH.')
     log.info('A checkout is required: the published packages ship `dist` only, so a copy of them would not be editable.')
     process.exit(ExitCode.FatalError)
@@ -469,7 +469,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
   const sourceCore = join(framework, 'storage/framework/core')
   const corePkgPath = resolve(sourceCore, 'package.json')
   if (!existsSync(corePkgPath)) {
-    log.error(`${sourceCore} has no package.json - that does not look like a Stacks checkout.`)
+    await log.error(`${sourceCore} has no package.json - that does not look like a Stacks checkout.`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -605,7 +605,7 @@ async function vendorFramework(explicitPath: string | undefined, force: boolean)
   const install = Bun.spawn(['bun', 'install'], { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
   const code = await install.exited
   if (code !== 0) {
-    log.error('`bun install` failed. The files are in place; re-run the install once the failure is resolved.')
+    await log.error('`bun install` failed. The files are in place; re-run the install once the failure is resolved.')
     process.exit(ExitCode.FatalError)
   }
 
@@ -710,7 +710,7 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
   // app that vendored a package and never installed it would simply lose it.
   const installed = resolve(process.cwd(), 'node_modules', '@stacksjs', shortName)
   if (!existsSync(installed) && !force) {
-    log.error(`@stacksjs/${shortName} is not installed, so removing the vendored copy would leave nothing to resolve.`)
+    await log.error(`@stacksjs/${shortName} is not installed, so removing the vendored copy would leave nothing to resolve.`)
     log.info(`Run \`bun add @stacksjs/${shortName}\` first, or pass --force to remove it anyway.`)
     process.exit(ExitCode.FatalError)
   }
@@ -748,7 +748,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
 
   const corePkgPath = resolve(coreDir, 'package.json')
   if (!existsSync(corePkgPath)) {
-    log.error(`${rel(coreDir)} has no package.json, so its version cannot be determined.`)
+    await log.error(`${rel(coreDir)} has no package.json, so its version cannot be determined.`)
     log.info('Unvendor the packages individually with `buddy unpublish:core <pkg>` instead.')
     process.exit(ExitCode.FatalError)
   }
@@ -760,7 +760,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   }
   const version = corePkg.version
   if (!version) {
-    log.error(`${rel(corePkgPath)} has no version field.`)
+    await log.error(`${rel(corePkgPath)} has no version field.`)
     process.exit(ExitCode.FatalError)
   }
 
@@ -1044,7 +1044,7 @@ async function unvendorFramework(force: boolean): Promise<void> {
   const install = Bun.spawn(installer, { cwd: process.cwd(), stdout: 'inherit', stderr: 'inherit' })
   const code = await install.exited
   if (code !== 0) {
-    log.error(`\`${installer.join(' ')}\` failed. package.json and bunfig.toml were updated; re-run the install once the failure is resolved.`)
+    await log.error(`\`${installer.join(' ')}\` failed. package.json and bunfig.toml were updated; re-run the install once the failure is resolved.`)
     process.exit(ExitCode.FatalError)
   }
 

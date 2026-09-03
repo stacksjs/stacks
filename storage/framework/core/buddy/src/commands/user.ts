@@ -61,7 +61,7 @@ async function loadUserModel(): Promise<any> {
   if (User)
     return User
 
-  log.error('Could not find a User model. Looked in app/Models, the framework defaults and @stacksjs/orm.')
+  await log.error('Could not find a User model. Looked in app/Models, the framework defaults and @stacksjs/orm.')
   await log.flush()
   process.exit(ExitCode.FatalError)
 }
@@ -79,7 +79,7 @@ export function user(buddy: CLI): void {
       const address = String(email || '').trim().toLowerCase()
 
       if (!address.includes('@')) {
-        log.error(`\`${email}\` is not an email address.`)
+        await log.error(`\`${email}\` is not an email address.`)
         await log.flush()
         process.exit(ExitCode.FatalError)
       }
@@ -93,7 +93,7 @@ export function user(buddy: CLI): void {
       let account = await User.where('email', address).first()
 
       if (account && !options.update) {
-        log.error(`${address} already exists. Pass --update to reset its password and role.`)
+        await log.error(`${address} already exists. Pass --update to reset its password and role.`)
         await log.flush()
         process.exit(ExitCode.FatalError)
       }
