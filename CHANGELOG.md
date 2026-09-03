@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.11...v0.74.12)
+
+## ✨ Features
+
+- **payments**: expose Stripe configuration state ([c65f1c9](https://github.com/stacksjs/stacks/commit/c65f1c9)) _(by Chris <chris@stacksjs.org>)_
+
+## 🐛 Bug Fixes
+
+- **upgrade**: recover incomplete installs ([c3eea35](https://github.com/stacksjs/stacks/commit/c3eea35)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: flush pending log output before exiting, and drop awaits that mean nothing ([14f7e03](https://github.com/stacksjs/stacks/commit/14f7e03)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.10...v0.74.11)
 
 ## 🔧 Chores
