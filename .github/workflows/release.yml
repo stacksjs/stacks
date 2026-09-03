@@ -252,10 +252,43 @@ jobs:
       # versions, topo-orders, skips already-published versions, and
       # authenticates via npm trusted publishing (OIDC; id-token: write above),
       # falling back to NPM_TOKEN outside OIDC.
+      # Publish under a holding tag, then move `latest` onto the whole set at
+      # once.
+      #
+      # Uploading 86 packages takes minutes, and each one used to land on
+      # `latest` as it went, so for that whole window the registry described no
+      # single release. An install resolving `^0.74.12` got whatever each
+      # package had reached: one CI run pulled `@stacksjs/actions@0.74.12`
+      # alongside `@stacksjs/ai@0.74.13` and produced an app that could not
+      # resolve its own imports. `buddy new` is unreliable for real users in
+      # that window, not just for CI (stacksjs/stacks#2056).
+      #
+      # Promotion is a metadata write per package, so the disagreement window
+      # shrinks from minutes to about a second. If promotion cannot finish,
+      # `latest` still points at the previous release and consumers stay on a
+      # complete set - which is why this is safe to fail.
+      #
+      # Without NPM_TOKEN there is no way to run `npm dist-tag`, and a release
+      # stuck on the holding tag would be worse than the tearing. So that case
+      # publishes straight to `latest`, exactly as before.
       - name: Publish Framework
-        run: pantry publish --npm --access public --ignore-scripts 'storage/framework/core/*' 'storage/framework/core'
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${NPM_TOKEN:-}" ]; then
+            echo "No NPM_TOKEN: publishing straight to latest (promotion needs npm auth)."
+            pantry publish --npm --access public --ignore-scripts 'storage/framework/core/*' 'storage/framework/core'
+            exit 0
+          fi
+
+          pantry publish --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*' 'storage/framework/core'
+
+          # `npm dist-tag` authenticates from .npmrc rather than the env var
+          # that pantry reads.
+          printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > ~/.npmrc
+          bun .github/scripts/promote-latest.ts
 
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.
