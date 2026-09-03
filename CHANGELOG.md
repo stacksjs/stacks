@@ -1,5 +1,23 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.8...v0.74.9)
+
+## 🐛 Bug Fixes
+
+- **ui**: keep native shell landmark-neutral ([26c731e](https://github.com/stacksjs/stacks/commit/26c731e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- the state pin keeps what the driver recorded ([5342e50](https://github.com/stacksjs/stacks/commit/5342e50)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- require corrected stx runtime ([6d486a7](https://github.com/stacksjs/stacks/commit/6d486a7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.7...v0.74.8)
 
 ## ✨ Features
