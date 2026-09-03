@@ -1,5 +1,82 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.3...v0.74.4)
+
+## ✨ Features
+
+- **docs**: generate the counts agent docs state, instead of policing them (#2056) ([7f9f7ba](https://github.com/stacksjs/stacks/commit/7f9f7ba)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **buddy**: server:trust, so a LAN certificate is actually trusted ([04ec1df](https://github.com/stacksjs/stacks/commit/04ec1df)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: declare the ssh deploy target and its environment ([581f771](https://github.com/stacksjs/stacks/commit/581f771)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: server commands for preparing a host to deploy to ([e5d75d3](https://github.com/stacksjs/stacks/commit/e5d75d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: deploy to a Linux host you already own, over SSH ([55804f4](https://github.com/stacksjs/stacks/commit/55804f4)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **dashboard**: give the data sections a provider seam, local by default ([3654886](https://github.com/stacksjs/stacks/commit/3654886)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+- **dashboard**: give the data sections a provider seam, local by default (#2418) ([21bf72a](https://github.com/stacksjs/stacks/commit/21bf72a)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2418](https://github.com/stacksjs/stacks/issues/2418), [#2418](https://github.com/stacksjs/stacks/issues/2418))
+
+## 🐛 Bug Fixes
+
+- **orm**: keep optional Stripe peer out of app bundles ([e671a36](https://github.com/stacksjs/stacks/commit/e671a36)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: stop telling people to run commands that do not exist (#2056) ([721b789](https://github.com/stacksjs/stacks/commit/721b789)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **doctor**: name a ledger repair that fits the drift found (#2203) ([b982662](https://github.com/stacksjs/stacks/commit/b982662)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2203](https://github.com/stacksjs/stacks/issues/2203), [#2203](https://github.com/stacksjs/stacks/issues/2203), [#2203](https://github.com/stacksjs/stacks/issues/2203))
+- **models**: require an admin to write the infrastructure tables (#2412) ([9ef2cde](https://github.com/stacksjs/stacks/commit/9ef2cde)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412), [#2375](https://github.com/stacksjs/stacks/issues/2375), [#2412](https://github.com/stacksjs/stacks/issues/2412))
+- **new**: say why unvendoring failed instead of exiting silently ([d235ce7](https://github.com/stacksjs/stacks/commit/d235ce7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deploy**: keep what the driver recorded about an ssh host ([614cfc5](https://github.com/stacksjs/stacks/commit/614cfc5)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: make scaffold-smoke say what actually went wrong (#2414) ([c8c3a73](https://github.com/stacksjs/stacks/commit/c8c3a73)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2414](https://github.com/stacksjs/stacks/issues/2414), [#2414](https://github.com/stacksjs/stacks/issues/2414), [#2414](https://github.com/stacksjs/stacks/issues/2414))
+- **defaults**: do not infer a location from the existence of a window (#2421) ([d7ba433](https://github.com/stacksjs/stacks/commit/d7ba433)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2421](https://github.com/stacksjs/stacks/issues/2421), [#2421](https://github.com/stacksjs/stacks/issues/2421), [#2421](https://github.com/stacksjs/stacks/issues/2421))
+- **deps**: take bun-query-builder 0.2.62, which stops closing live connections ([8bc27dd](https://github.com/stacksjs/stacks/commit/8bc27dd)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+- **types**: restore the four names the package-splitting refactors left unbound (#2420) ([dcee215](https://github.com/stacksjs/stacks/commit/dcee215)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2420](https://github.com/stacksjs/stacks/issues/2420), [#2420](https://github.com/stacksjs/stacks/issues/2420))
+- **commerce**: build every raw row into its model type, and guard it (#2417) ([f64ded5](https://github.com/stacksjs/stacks/commit/f64ded5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+- **commerce**: replace the last blind row casts with ones that hold (#2417) ([429b35e](https://github.com/stacksjs/stacks/commit/429b35e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+- **commerce**: make raw rows satisfy the ModelRow types they are cast to (#2417) ([dcc76a6](https://github.com/stacksjs/stacks/commit/dcc76a6)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+- **commerce**: give raw gift-card rows the spellings their type promises (#2417) ([476b3ec](https://github.com/stacksjs/stacks/commit/476b3ec)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417), [#2417](https://github.com/stacksjs/stacks/issues/2417))
+
+## ♻️ Code Refactoring
+
+- **core**: let the action layer supply the runner to everyone who needs it ([236c677](https://github.com/stacksjs/stacks/commit/236c677)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **core**: declare the optional integrations optional, and give the database its own model metadata ([6b7ac83](https://github.com/stacksjs/stacks/commit/6b7ac83)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: cover all five barrels exactly, and drop my weaker duplicates ([c60ec23](https://github.com/stacksjs/stacks/commit/c60ec23)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **queue**: let the action layer supply the runner ([f2e9d86](https://github.com/stacksjs/stacks/commit/f2e9d86)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **features**: give the feature manifest its own package ([01c3bd2](https://github.com/stacksjs/stacks/commit/01c3bd2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **utils**: move initProject to where runAction lives ([e1af14d](https://github.com/stacksjs/stacks/commit/e1af14d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **types**: stop the types package importing the ORM ([a47dc78](https://github.com/stacksjs/stacks/commit/a47dc78)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **pagination**: give the paginator its own package ([3362d11](https://github.com/stacksjs/stacks/commit/3362d11)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 📝 Documentation
+
+- **skills**: correct the counts the skills state, and pin them too (#2056) ([8bdba1f](https://github.com/stacksjs/stacks/commit/8bdba1f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- 316 commands, after server:trust ([87c1741](https://github.com/stacksjs/stacks/commit/87c1741)) _(by Chris <chrisbreuer93@gmail.com>)_
+- correct the Raspberry Pi guide against the code ([a8e5c52](https://github.com/stacksjs/stacks/commit/a8e5c52)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **agents**: correct the counts, and pin them so they cannot rot again (#2056) ([e8b01ac](https://github.com/stacksjs/stacks/commit/e8b01ac)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **buddy**: regenerate the command reference for the server commands ([296e0bb](https://github.com/stacksjs/stacks/commit/296e0bb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- the Raspberry Pi guide, and the three deploy targets ([0eb17d3](https://github.com/stacksjs/stacks/commit/0eb17d3)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- update the email persistence contract for admin-gated writes (#2412) ([82dcf4e](https://github.com/stacksjs/stacks/commit/82dcf4e)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412))
+- **storage**: cover the R2 and Backblaze disk presets (#1896) ([c847d97](https://github.com/stacksjs/stacks/commit/c847d97)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896))
+- **server**: catch a barrel entry pointing at a file that is gone (#2408) ([b8cfa4f](https://github.com/stacksjs/stacks/commit/b8cfa4f)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+- **server**: catch a barrel that has stopped describing the codebase (#2408) ([99c131c](https://github.com/stacksjs/stacks/commit/99c131c)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+
+## 💚 Continuous Integration
+
+- **release**: take the pantry the publish order was fixed in ([ee33c4d](https://github.com/stacksjs/stacks/commit/ee33c4d)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- untrack a 28MB build artifact and refuse the next one ([bde3dbe](https://github.com/stacksjs/stacks/commit/bde3dbe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: ts-cloud 0.12.12, which serves LAN hosts from a local CA ([a68a50b](https://github.com/stacksjs/stacks/commit/a68a50b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: ts-cloud 0.12.11, which carries the ssh deploy driver ([233e0cf](https://github.com/stacksjs/stacks/commit/233e0cf)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: release the configureOrm override in test teardown (#2415) ([3f6c601](https://github.com/stacksjs/stacks/commit/3f6c601)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415), [#2415](https://github.com/stacksjs/stacks/issues/2415))
+
+## ⏪ Reverts
+
+- back out the dashboard provider seam so it can re-land under its author ([104ed28](https://github.com/stacksjs/stacks/commit/104ed28)) _(by glennmichael123 <gtorregosa@gmail.com>)_
+
+## Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.2...v0.74.3)
 
 ## ✨ Features
