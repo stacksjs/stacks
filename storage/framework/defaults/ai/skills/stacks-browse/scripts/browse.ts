@@ -20,7 +20,7 @@
  */
 
 import { spawn } from 'bun'
-import { existsSync, mkdirSync, readFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -206,6 +206,8 @@ async function tryLaunch(browser: string): Promise<Session | null> {
   }
   try { proc.kill() }
   catch { /* ignore */ }
+  try { rmSync(userDataDir, { recursive: true, force: true }) }
+  catch { /* a failed launch must not mask the next browser candidate */ }
   return null
 }
 
@@ -301,6 +303,12 @@ async function closePage(port: number, page: BrowserPage): Promise<boolean> {
 function kill(s: Session): void {
   try { s.proc.kill() }
   catch { /* ignore */ }
+  // Chromium profiles contain caches, service-worker databases, and copied
+  // extensions. A full crawl can leave tens of megabytes behind, so every
+  // command must reclaim the uniquely owned temporary directory even when a
+  // scenario assertion or navigation throws.
+  try { rmSync(s.userDataDir, { recursive: true, force: true }) }
+  catch { /* process shutdown remains the primary cleanup guarantee */ }
 }
 
 // ── Page helpers ────────────────────────────────────────────────────────────

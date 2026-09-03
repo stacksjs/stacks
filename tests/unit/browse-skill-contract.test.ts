@@ -105,4 +105,9 @@ describe('browse skill contract', () => {
     expect(script).toContain('targets.some(target => target.id === page.targetId)')
     expect(script).toContain('for (let attempt = 0; attempt < 40; attempt++)')
   })
+
+  test('reclaims temporary Chromium profiles on failed launches and exit', () => {
+    expect(script).toContain("rmSync(userDataDir, { recursive: true, force: true })")
+    expect(script).toContain("rmSync(s.userDataDir, { recursive: true, force: true })")
+  })
 })
