@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it } from 'bun:test'
-import { exportsSubpath, lowestSatisfying, splitSubpathImport } from './check-subpath-exports'
+import { exportsSubpath, lowestSatisfying, splitSubpathImport, resolveTarget } from './check-subpath-exports'
 
 describe('splitSubpathImport', () => {
   it('splits an unscoped subpath import', () => {
@@ -89,5 +89,37 @@ describe('lowestSatisfying', () => {
 
   it('reports null when nothing published satisfies the range', () => {
     expect(lowestSatisfying(published, '>=1.0.0')).toBeNull()
+  })
+})
+
+describe('resolveTarget', () => {
+  it('picks the lowest published version a range admits', () => {
+    expect(resolveTarget('^0.74.0', ['0.73.0', '0.74.1', '0.74.9'])).toEqual({
+      source: 'published',
+      version: '0.74.1',
+    })
+  })
+
+  it('falls back to the sibling in this repo while its release is publishing', () => {
+    // The bump commit has landed; npm still only has the previous release.
+    expect(resolveTarget('^0.74.11', ['0.74.9', '0.74.10'], '0.74.11')).toEqual({
+      source: 'releasing',
+      version: '0.74.11',
+    })
+  })
+
+  it('prefers a published version over the local one when both satisfy', () => {
+    expect(resolveTarget('^0.74.0', ['0.74.9'], '0.74.11')).toEqual({
+      source: 'published',
+      version: '0.74.9',
+    })
+  })
+
+  it('still reports a range no published or local version satisfies', () => {
+    expect(resolveTarget('^99.0.0', ['0.74.9'], '0.74.11')).toBeNull()
+  })
+
+  it('reports an unsatisfiable range when there is no sibling at all', () => {
+    expect(resolveTarget('^2.0.0', ['1.0.0'])).toBeNull()
   })
 })

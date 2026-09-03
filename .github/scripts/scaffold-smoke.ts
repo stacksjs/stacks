@@ -130,6 +130,29 @@ async function main(): Promise<void> {
    */
   const looksLikeResolution = /cannot find module|preload not found|cannot find name|could not resolve|TS2307|TS2304/i.test(errors)
 
+  /*
+   * Lead with the publish window when that is what this is.
+   *
+   * A release lands the version bump as a commit and publishes minutes later.
+   * Every run in between fails here, and the output it produces - a screen of
+   * "failed to resolve" lines ending in `preload not found
+   * "@stacksjs/env/plugin.js"` - points at a package that is published and
+   * whose exports are fine. That last error is a symptom of the aborted
+   * install, and reading it as the cause costs an hour (stacksjs/stacks#2056).
+   *
+   * The check stays red: `buddy new` really is broken until the publish
+   * finishes, and this file argues above that relaxing it would be wrong. But
+   * red should say which of the two failures it is.
+   */
+  const packument = await fetch('https://registry.npmjs.org/stacks').then(r => r.ok ? r.json() : null).catch(() => null)
+  if (packument && vendored && !(vendored in (packument.versions ?? {}))) {
+    console.error(
+      `\nstacks@${vendored} is not on npm yet, so nothing could install it. This is the window `
+      + `between the version bump landing and the release publishing; it closes on its own. `
+      + `Re-run once \`gh run list --workflow=release.yml\` shows the release succeeded.\n`,
+    )
+  }
+
   if (scaffoldCode !== 0) {
     console.error(
       `\n\`buddy new\` exited ${scaffoldCode} before it finished, so this app may be incomplete — `

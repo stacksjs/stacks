@@ -100,6 +100,36 @@ export function lowestSatisfying(versions: readonly string[], range: string): st
   return ordered.find(version => Bun.semver.satisfies(version, range)) ?? null
 }
 
+/**
+ * Which manifest to check a range against.
+ *
+ * Normally the lowest PUBLISHED version the range admits: that is the one a
+ * consumer can actually be resolved onto, and the whole point of this script.
+ *
+ * A release lands its version bump as a commit and publishes minutes later,
+ * though, and in that window no published version satisfies any internal
+ * range. Calling that a broken tree failed CI on six separate releases in one
+ * day for something no diff caused. When the sibling's own version in this
+ * repo satisfies the range, the range is describing the release in flight, and
+ * its source is exactly what is about to be published - so check that.
+ *
+ * Anything else unsatisfiable is still a real failure.
+ */
+export function resolveTarget(
+  range: string,
+  publishedVersions: readonly string[],
+  localVersion?: string,
+): { source: 'published' | 'releasing', version: string } | null {
+  const floor = lowestSatisfying(publishedVersions, range)
+  if (floor)
+    return { source: 'published', version: floor }
+
+  if (localVersion && Bun.semver.satisfies(localVersion, range))
+    return { source: 'releasing', version: localVersion }
+
+  return null
+}
+
 function sourceFiles(dir: string, out: string[] = []): string[] {
   if (!existsSync(dir))
     return out
@@ -127,6 +157,8 @@ async function main(): Promise<void> {
 
   const uses: SubpathUse[] = []
   const rangesByImporter = new Map<string, Map<string, string>>()
+  /** Sibling manifests in this repo, by package name. */
+  const localManifests = new Map<string, { version?: string, exports?: unknown }>()
 
   for (const entry of readdirSync(coreDir, { withFileTypes: true })) {
     if (!entry.isDirectory())
@@ -141,6 +173,7 @@ async function main(): Promise<void> {
     if (!manifest.name || manifest.private)
       continue
 
+    localManifests.set(manifest.name, manifest)
     rangesByImporter.set(manifest.name, new Map(Object.entries({
       ...(manifest.dependencies ?? {}),
       ...(manifest.peerDependencies ?? {}),
@@ -195,12 +228,24 @@ async function main(): Promise<void> {
       continue
     }
 
-    const floor = lowestSatisfying(Object.keys(packument.versions ?? {}), range)
-    if (!floor) {
+    const releasing = localManifests.get(use.pkg)
+    const target = resolveTarget(range, Object.keys(packument.versions ?? {}), releasing?.version)
+    if (!target) {
       failures.push(`${use.importer} declares ${use.pkg}@${range}, which no published version satisfies (${use.file})`)
       continue
     }
 
+    if (target.source === 'releasing') {
+      if (!exportsSubpath(releasing?.exports, use.subpath)) {
+        failures.push(
+          `${use.importer} imports ${use.pkg}${use.subpath.slice(1)} but ${use.pkg}@${target.version} `
+          + `(unpublished, in this repo) does not export ${use.subpath} (${use.file})`,
+        )
+      }
+      continue
+    }
+
+    const floor = target.version
     if (!exportsSubpath(packument.versions[floor]?.exports, use.subpath)) {
       failures.push(
         `${use.importer} imports ${use.pkg}${use.subpath.slice(1)} but declares ${use.pkg}@${range}, `
