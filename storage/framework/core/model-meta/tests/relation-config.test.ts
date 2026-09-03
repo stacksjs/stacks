@@ -15,7 +15,7 @@
  * shape — separately from any DB-level eager-load test.
  */
 import { describe, expect, it } from 'bun:test'
-import { getRelations } from '../src/utils'
+import { getRelations } from '@stacksjs/model-meta'
 
 // Most fixtures avoid the disk-backed relation loader. The named
 // belongsToMany case intentionally resolves the framework's real Post and Tag

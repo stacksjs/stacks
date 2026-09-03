@@ -1412,6 +1412,16 @@ export function paginationPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `model-meta` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the model-meta directory.
+ * @returns The absolute path to the specified file or directory within the model-meta directory.
+ */
+export function modelMetaPath(path?: string): string {
+  return corePath(`model-meta/${path || ''}`)
+}
+
+/**
  * Returns the path to the `slug` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the slug directory.
@@ -1943,6 +1953,7 @@ export interface Path {
   skillsPath: (path?: string) => string
   slugPath: (path?: string) => string
   paginationPath: (path?: string) => string
+  modelMetaPath: (path?: string) => string
   featuresPath: (path?: string) => string
   scriptsPath: (path?: string) => string
   securityPath: (path?: string) => string
@@ -2094,6 +2105,7 @@ export const path: Path = {
   skillsPath,
   slugPath,
   paginationPath,
+  modelMetaPath,
   featuresPath,
   scriptsPath,
   securityPath,

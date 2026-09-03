@@ -63,7 +63,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/auth": "workspace:*",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
@@ -72,14 +71,12 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/model-meta": "workspace:*",
     "@stacksjs/pagination": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/payments": "workspace:*",
     "@stacksjs/query-builder": "workspace:*",
-    "@stacksjs/queue": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
@@ -87,9 +84,25 @@
     "bun-query-builder": "^0.2.62"
   },
   "peerDependencies": {
+    "@stacksjs/auth": "workspace:*",
+    "@stacksjs/payments": "workspace:*",
+    "@stacksjs/queue": "workspace:*",
+    "@stacksjs/search-engine": "workspace:*",
     "stripe": "22.3.2"
   },
   "peerDependenciesMeta": {
+    "@stacksjs/auth": {
+      "optional": true
+    },
+    "@stacksjs/payments": {
+      "optional": true
+    },
+    "@stacksjs/queue": {
+      "optional": true
+    },
+    "@stacksjs/search-engine": {
+      "optional": true
+    },
     "stripe": {
       "optional": true
     }

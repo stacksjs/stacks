@@ -215,12 +215,17 @@
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "@stacksjs/router": "workspace:*",
       },
       "devDependencies": {
         "@stacksjs/utils": "workspace:*",
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/router": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/router",
+      ],
     },
     "storage/framework/core/arrays": {
       "name": "@stacksjs/arrays",
@@ -580,7 +585,7 @@
         "@stacksjs/faker": "^0.74.3",
         "@stacksjs/features": "workspace:*",
         "@stacksjs/logging": "workspace:*",
-        "@stacksjs/orm": "workspace:*",
+        "@stacksjs/model-meta": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/query-builder": "^0.74.3",
         "@stacksjs/security": "workspace:*",
@@ -682,7 +687,6 @@
         "@stacksjs/events": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "@stacksjs/queue": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/stx": "^0.2.253",
@@ -696,6 +700,12 @@
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/queue": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/queue",
+      ],
     },
     "storage/framework/core/enums": {
       "name": "@stacksjs/enums",
@@ -883,6 +893,18 @@
         "better-dx": "^0.2.24",
       },
     },
+    "storage/framework/core/model-meta": {
+      "name": "@stacksjs/model-meta",
+      "version": "0.74.3",
+      "dependencies": {
+        "@stacksjs/path": "workspace:*",
+        "@stacksjs/storage": "workspace:*",
+        "@stacksjs/strings": "workspace:*",
+        "@stacksjs/ts-validation": "^0.5.6",
+        "@stacksjs/types": "workspace:*",
+        "@stacksjs/validation": "workspace:*",
+      },
+    },
     "storage/framework/core/newsletter": {
       "name": "@stacksjs/newsletter",
       "version": "0.74.3",
@@ -936,7 +958,6 @@
       "name": "@stacksjs/orm",
       "version": "0.74.3",
       "dependencies": {
-        "@stacksjs/auth": "workspace:*",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -945,14 +966,12 @@
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/events": "workspace:*",
         "@stacksjs/logging": "workspace:*",
+        "@stacksjs/model-meta": "workspace:*",
         "@stacksjs/pagination": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "@stacksjs/payments": "workspace:*",
         "@stacksjs/query-builder": "workspace:*",
-        "@stacksjs/queue": "workspace:*",
         "@stacksjs/realtime": "workspace:*",
         "@stacksjs/router": "workspace:*",
-        "@stacksjs/search-engine": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-validation": "^0.5.6",
@@ -965,9 +984,17 @@
         "stripe": "22.3.2",
       },
       "peerDependencies": {
+        "@stacksjs/auth": "workspace:*",
+        "@stacksjs/payments": "workspace:*",
+        "@stacksjs/queue": "workspace:*",
+        "@stacksjs/search-engine": "workspace:*",
         "stripe": "22.3.2",
       },
       "optionalPeers": [
+        "@stacksjs/auth",
+        "@stacksjs/payments",
+        "@stacksjs/queue",
+        "@stacksjs/search-engine",
         "stripe",
       ],
     },
@@ -1039,16 +1066,22 @@
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
-        "@stacksjs/email": "workspace:*",
         "@stacksjs/env": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
-        "@stacksjs/router": "workspace:*",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/email": "workspace:*",
+        "@stacksjs/router": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/email",
+        "@stacksjs/router",
+      ],
     },
     "storage/framework/core/realtime": {
       "name": "@stacksjs/realtime",
@@ -1086,20 +1119,16 @@
       "name": "@stacksjs/router",
       "version": "0.74.3",
       "dependencies": {
-        "@stacksjs/api": "workspace:*",
-        "@stacksjs/auth": "workspace:*",
         "@stacksjs/bun-router": "^0.1.8",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
-        "@stacksjs/database": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/pagination": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "@stacksjs/validation": "workspace:*",
         "ts-rate-limiter": "^0.4.2",
       },
       "devDependencies": {
@@ -1107,6 +1136,18 @@
         "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/api": "workspace:*",
+        "@stacksjs/auth": "workspace:*",
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/validation": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/api",
+        "@stacksjs/auth",
+        "@stacksjs/database",
+        "@stacksjs/validation",
+      ],
     },
     "storage/framework/core/scheduler": {
       "name": "@stacksjs/scheduler",
@@ -1391,7 +1432,6 @@
       "name": "@stacksjs/validation",
       "version": "0.74.3",
       "dependencies": {
-        "@stacksjs/database": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
@@ -1402,6 +1442,12 @@
       "devDependencies": {
         "better-dx": "^0.2.24",
       },
+      "peerDependencies": {
+        "@stacksjs/database": "workspace:*",
+      },
+      "optionalPeers": [
+        "@stacksjs/database",
+      ],
     },
     "storage/framework/core/video": {
       "name": "@stacksjs/video",
@@ -1589,6 +1635,8 @@
     "@stacksjs/logsmith": ["@stacksjs/logsmith@0.2.11", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.6", "pickier": "^0.1.9" }, "bin": { "@stacksjs/logsmith": "./dist/bin/cli.js", "logsmith": "./dist/bin/cli.js" } }, "sha512-wqqAxewpsHVDzpC+IRy+yYyGXGlv1j5GCqYTh8fL7d3LLhnRPN72PEQywM357burtORvdkFHfOzk3Ih1SMvuiw=="],
 
     "@stacksjs/mobile": ["@stacksjs/mobile@workspace:storage/framework/core/mobile"],
+
+    "@stacksjs/model-meta": ["@stacksjs/model-meta@workspace:storage/framework/core/model-meta"],
 
     "@stacksjs/newsletter": ["@stacksjs/newsletter@workspace:storage/framework/core/newsletter"],
 

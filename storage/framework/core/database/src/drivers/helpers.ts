@@ -22,14 +22,14 @@
 import type { DateValidatorType, EnumValidatorType, NumberValidatorType, StringValidatorType, ValidationType } from '@stacksjs/ts-validation'
 import type { Attribute, AttributesElements, Model } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
-// Import from the leaf utils file in @stacksjs/orm rather than the package
-// barrel — the barrel re-exports `./db` which imports `@stacksjs/database`,
-// creating a cycle (orm → database → drivers/helpers → orm) that deadlocks
-// bun's module loader. The relative deep import skips the barrel and stays
-// acyclic. Both packages live in the same monorepo, so this stays valid.
-// Already pointing at the leaf utils file (rather than the orm barrel) for
-// the same cycle-avoidance reason captured at the top of this file.
-import { getTableName } from '@stacksjs/orm'
+// These helpers read a model definition to derive a table name; they live in
+// `@stacksjs/model-meta`, which depends on nothing that leads back here.
+// They used to come from `@stacksjs/orm`, whose barrel re-exports `./db` and
+// so imports `@stacksjs/database` — the cycle (orm → database →
+// drivers/helpers → orm) deadlocked bun's module loader, and the import was
+// held at a deep leaf path to dodge it. A leaf package removes the cycle
+// instead of stepping around it, so the barrel import is safe again.
+import { getTableName } from '@stacksjs/model-meta'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'

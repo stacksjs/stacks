@@ -66,7 +66,7 @@
     "@stacksjs/faker": "^0.74.3",
     "@stacksjs/features": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/orm": "workspace:*",
+    "@stacksjs/model-meta": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/query-builder": "^0.74.3",
     "@stacksjs/security": "workspace:*",

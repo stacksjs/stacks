@@ -52,7 +52,7 @@ export * from './model-types'
  */
 export type * from './api-routes'
 export * from './types'
-export * from './utils'
+export * from '@stacksjs/model-meta'
 export * from './define-model'
 export * from './extend-model'
 // Codegen for `database/types.d.ts` — augments

@@ -67,14 +67,24 @@
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "@stacksjs/email": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/router": "workspace:*"
+    "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
+  },
+  "peerDependencies": {
+    "@stacksjs/email": "workspace:*",
+    "@stacksjs/router": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/email": {
+      "optional": true
+    },
+    "@stacksjs/router": {
+      "optional": true
+    }
   }
 }

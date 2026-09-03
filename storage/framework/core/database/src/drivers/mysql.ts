@@ -16,7 +16,7 @@ import { ok } from '@stacksjs/error-handling'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel (the barrel re-exports `./db` which loops
 // back into @stacksjs/database and deadlocks bun's loader).
-import { getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
+import { getModelName, getPivotTables, getTableName } from '@stacksjs/model-meta'
 
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'

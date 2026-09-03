@@ -59,7 +59,6 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
@@ -69,5 +68,13 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
+  },
+  "peerDependencies": {
+    "@stacksjs/database": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/database": {
+      "optional": true
+    }
   }
 }

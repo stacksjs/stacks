@@ -60,25 +60,41 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/api": "workspace:*",
-    "@stacksjs/auth": "workspace:*",
     "@stacksjs/bun-router": "^0.1.8",
     "@stacksjs/cache": "workspace:*",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/database": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/pagination": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/validation": "workspace:*",
     "ts-rate-limiter": "^0.4.2"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "better-dx": "^0.2.24"
+  },
+  "peerDependencies": {
+    "@stacksjs/api": "workspace:*",
+    "@stacksjs/auth": "workspace:*",
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/validation": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/api": {
+      "optional": true
+    },
+    "@stacksjs/auth": {
+      "optional": true
+    },
+    "@stacksjs/database": {
+      "optional": true
+    },
+    "@stacksjs/validation": {
+      "optional": true
+    }
   }
 }

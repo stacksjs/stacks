@@ -62,11 +62,18 @@
   },
   "dependencies": {
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/path": "workspace:*",
-    "@stacksjs/router": "workspace:*"
+    "@stacksjs/path": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
     "better-dx": "^0.2.24"
+  },
+  "peerDependencies": {
+    "@stacksjs/router": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/router": {
+      "optional": true
+    }
   }
 }

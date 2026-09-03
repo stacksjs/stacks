@@ -276,6 +276,8 @@ export const alias: Record<string, string> = {
   'stacks/features': p.featuresPath('src/index.ts'),
   '@stacksjs/pagination': p.paginationPath('src/index.ts'),
   'stacks/pagination': p.paginationPath('src/index.ts'),
+  '@stacksjs/model-meta': p.modelMetaPath('src/index.ts'),
+  'stacks/model-meta': p.modelMetaPath('src/index.ts'),
   '@stacksjs/slug': p.slugPath('src/index.ts'),
   'stacks/slug': p.slugPath('src/index.ts'),
   '@stacksjs/slug/*': p.slugPath('src/*'),

@@ -11,7 +11,7 @@ import { db, SQLITE_BOOTSTRAP_PRAGMAS } from '../utils'
 import { ok } from '@stacksjs/error-handling'
 // Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
 // we go around the orm barrel.
-import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
+import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/model-meta'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'

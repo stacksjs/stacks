@@ -24,7 +24,7 @@
  */
 
 import type { Model } from '@stacksjs/types'
-import { getTableName } from '@stacksjs/orm'
+import { getTableName } from '@stacksjs/model-meta'
 import { path } from '@stacksjs/path'
 import { fs } from '@stacksjs/storage'
 

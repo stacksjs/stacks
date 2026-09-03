@@ -314,15 +314,14 @@ export function traitTableIndexSql(): string[] {
  * The `<table>_likes` tables to create, one per model that sets `likeable`.
  *
  * Model discovery mirrors the reset paths (`dropSqliteTables`, …): userland
- * models first, then the framework defaults. The orm helpers are imported
- * lazily because this module is a leaf that the drivers barrel imports —
- * pulling `@stacksjs/orm` in at the top level would re-enter that barrel and
- * deadlock bun's module loader (see `drivers/helpers.ts`).
+ * models first, then the framework defaults. The imports stay lazy because
+ * this module is a leaf that the drivers barrel imports, and `./drivers/helpers`
+ * below would re-enter that barrel at load time.
  */
 export async function likeableTargets(): Promise<Array<{ table: string, foreignKey: string }>> {
   const { path } = await import('@stacksjs/path')
   const { globSync } = await import('@stacksjs/storage')
-  const { getTableName } = await import('@stacksjs/orm')
+  const { getTableName } = await import('@stacksjs/model-meta')
   const { getLikeableForeignKey, getUpvoteTableName } = await import('./drivers/helpers')
 
   const modelFiles = globSync(

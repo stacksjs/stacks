@@ -66,7 +66,6 @@
     "@stacksjs/events": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/queue": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.253",
@@ -79,5 +78,13 @@
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "better-dx": "^0.2.24"
+  },
+  "peerDependencies": {
+    "@stacksjs/queue": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@stacksjs/queue": {
+      "optional": true
+    }
   }
 }
