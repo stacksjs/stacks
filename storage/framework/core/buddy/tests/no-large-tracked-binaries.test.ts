@@ -9,13 +9,35 @@
  * A size ceiling is the check that would have caught it. Deleting a committed
  * binary does not reclaim the history, so the cheap win is refusing the next
  * one rather than auditing for the last one.
+ *
+ * The second check here is the same lesson at a different scale. `undefined/`
+ * held four cloud-init files, 43KB written by a local `buddy server:init` run
+ * whose destination resolved to the string "undefined" rather than a path, then
+ * swept in by `git add -A`. Too small for any size ceiling to notice, and the
+ * directory name is the tell: a path segment that is a stringified nothing did
+ * not come from a person, it came from an unset variable.
  */
-import { describe, expect, it } from 'bun:test'
+import { beforeAll, describe, expect, it } from 'bun:test'
+import { execFileSync } from 'node:child_process'
 import { statSync } from 'node:fs'
 import { join } from 'node:path'
-import { $ } from 'bun'
 
 const root = new URL('../../../../../', import.meta.url).pathname
+
+/**
+ * The tracked set, read once.
+ *
+ * Both checks want the same list, and asking git twice from inside separate
+ * test bodies was enough to push both past the 5s timeout. One synchronous
+ * read in `beforeAll` costs about 40ms and keeps each assertion pure.
+ */
+let tracked: string[] = []
+
+beforeAll(() => {
+  tracked = execFileSync('git', ['ls-files'], { cwd: root, encoding: 'utf8' })
+    .split('\n')
+    .filter(Boolean)
+})
 
 /** Deliberate exceptions, each with the reason it earns its bytes. */
 const allowed = new Set<string>([
@@ -27,9 +49,7 @@ const allowed = new Set<string>([
 const limitBytes = 5 * 1024 * 1024
 
 describe('tracked files', () => {
-  it('carry no build artifact over the size ceiling', async () => {
-    const tracked = (await $`git ls-files`.cwd(root).quiet()).text().split('\n').filter(Boolean)
-
+  it('carry no build artifact over the size ceiling', () => {
     const oversized = tracked
       .filter(file => !allowed.has(file))
       .map((file) => {
@@ -46,5 +66,17 @@ describe('tracked files', () => {
       .map(({ file, bytes }) => `${file} (${(bytes / 1048576).toFixed(1)}MB)`)
 
     expect(oversized.sort()).toEqual([])
+  })
+
+  it('carry no path built from an unset variable', () => {
+    // What a template literal or `join()` writes when the value it was handed
+    // was never set. A real directory is never named any of these.
+    const stringifiedNothing = new Set(['undefined', 'null', 'NaN'])
+
+    const suspect = tracked.filter(file =>
+      file.split('/').some(segment => stringifiedNothing.has(segment)),
+    )
+
+    expect(suspect.sort()).toEqual([])
   })
 })
