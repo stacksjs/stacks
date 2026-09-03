@@ -4350,14 +4350,19 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const packages = manifest?.packages
         if (!packages) return
 
-        const pantryDir = p.projectPath('pantry')
-
         for (const [pkgName, meta] of Object.entries(packages) as [string, any][]) {
           const routes = meta?.routes
           if (!routes) continue
 
           const routeList = Array.isArray(routes) ? routes : [routes]
-          const pkgDir = `${pantryDir}/${pkgName}`
+          // Discovery records where it found the package. Falling back to
+          // `pantry/<name>` keeps a manifest written before that field existed
+          // working, but it is only ever right for the pantry tree: a package
+          // a user installed lives in node_modules, and reading its routes
+          // from pantry silently found nothing.
+          const pkgDir = meta?.root
+            ? p.projectPath(meta.root)
+            : `${p.projectPath('pantry')}/${pkgName}`
 
           for (const routeFile of routeList) {
             log.debug(`[router] Discovered route: ${pkgName} → ${routeFile}`)
