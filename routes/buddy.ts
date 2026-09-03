@@ -9,7 +9,6 @@ import { route } from '@stacksjs/router'
  */
 
 route.get('/versions', 'Actions/Buddy/VersionsAction') // your-domain.com/api/buddy/versions
-route.get('/commands', 'Actions/Buddy/CommandsAction') // your-domain.com/api/buddy/commands
 
 // Admin-dashboard backends. The existing dashboard/jobs/*.stx views
 // expect these to exist; without them the dashboard renders empty
