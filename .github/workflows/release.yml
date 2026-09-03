@@ -246,14 +246,12 @@ jobs:
             exit 1
           fi
 
-      # Publish the whole framework workspace via pantry: every core/* member
-      # AND the `stacks` meta-package (storage/framework/core) — the meta the
-      # old bash script never published. pantry resolves workspace:* → concrete
-      # versions, topo-orders, skips already-published versions, and
-      # authenticates via npm trusted publishing (OIDC; id-token: write above),
-      # falling back to NPM_TOKEN outside OIDC.
-      # Publish under a holding tag, then move `latest` onto the whole set at
-      # once.
+      # Publish the framework through pantry. Scoped core/* packages use a
+      # holding tag and are promoted as one set. The unscoped `stacks`
+      # meta-package is then published directly to latest through OIDC because
+      # the legacy token cannot mutate that package's dist-tags. pantry resolves
+      # workspace:* → concrete versions, topo-orders, skips already-published
+      # versions, and falls back to NPM_TOKEN outside OIDC.
       #
       # Uploading 86 packages takes minutes, and each one used to land on
       # `latest` as it went, so for that whole window the registry described no
@@ -283,12 +281,19 @@ jobs:
             exit 0
           fi
 
-          pantry publish --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*' 'storage/framework/core'
+          pantry publish --npm --access public --ignore-scripts --tag staging 'storage/framework/core/*'
 
           # `npm dist-tag` authenticates from .npmrc rather than the env var
           # that pantry reads.
           printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_TOKEN" > ~/.npmrc
           bun .github/scripts/promote-latest.ts
+
+          # The unscoped meta-package has trusted publishing configured, but
+          # the legacy token cannot mutate its dist-tags. Publish it through
+          # OIDC only after every scoped package is on latest; this final write
+          # is the release commit point for `buddy upgrade` consumers.
+          rm -f ~/.npmrc
+          pantry publish --npm --access public --ignore-scripts 'storage/framework/core'
 
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.

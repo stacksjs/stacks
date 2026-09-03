@@ -13,11 +13,11 @@ import { publishables } from './promote-latest'
 const root = new URL('../../', import.meta.url).pathname
 
 describe('publishables', () => {
-  it('finds the framework packages and the stacks meta-package', async () => {
+  it('finds the scoped framework packages but not the separately published meta-package', async () => {
     const found = await publishables(root)
     const names = found.map(pkg => pkg.name)
 
-    expect(names).toContain('stacks')
+    expect(names).not.toContain('stacks')
     expect(names).toContain('@stacksjs/actions')
     expect(names.length).toBeGreaterThan(50)
   })
@@ -44,6 +44,7 @@ describe('publishables', () => {
 
     // If the publish step's globs change, this enumeration has to change with
     // them - so fail here rather than stranding whatever the new glob adds.
-    expect(workflow).toContain("'storage/framework/core/*' 'storage/framework/core'")
+    expect(workflow).toContain("--tag staging 'storage/framework/core/*'")
+    expect(workflow).toContain("--ignore-scripts 'storage/framework/core'")
   })
 })

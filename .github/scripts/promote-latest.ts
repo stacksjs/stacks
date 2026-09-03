@@ -29,11 +29,11 @@ export interface Publishable {
 }
 
 /**
- * Every package the release publishes: the workspace members plus the `stacks`
- * meta-package at the root of `core`. Mirrors the globs in the publish step -
- * `'storage/framework/core/*'` and `'storage/framework/core'` - because a
- * package promoted here but not published there (or the reverse) is exactly
- * the torn state this script exists to prevent.
+ * Every scoped workspace package the release publishes under the holding tag.
+ * The unscoped `stacks` meta-package is deliberately excluded: npm trusted
+ * publishing can publish it through OIDC, but `npm dist-tag` requires a token
+ * with separate ownership of that package. The workflow publishes `stacks`
+ * directly to `latest` only after this scoped set has been promoted.
  */
 export async function publishables(root: string): Promise<Publishable[]> {
   // `process.cwd()` has no trailing slash and a URL-derived path does, and the
@@ -44,7 +44,6 @@ export async function publishables(root: string): Promise<Publishable[]> {
     ...readdirSync(coreDir, { withFileTypes: true })
       .filter(entry => entry.isDirectory())
       .map(entry => join(coreDir, entry.name)),
-    coreDir,
   ]
 
   const found: Publishable[] = []
