@@ -67,6 +67,10 @@ export interface ApplicationSeederConfig {
   directory?: string
   /** Whether to output progress and result logs. */
   verbose?: boolean
+  /** Run only these application seeder class names. */
+  only?: string[]
+  /** Skip these application seeder class names. */
+  except?: string[]
 }
 
 const SEEDER_EXTENSIONS = new Set(['.js', '.mjs', '.ts'])
@@ -146,11 +150,20 @@ export async function runApplicationSeeders(config: ApplicationSeederConfig = {}
     }
   }
 
+  const only = config.only ? new Set(config.only) : undefined
+  const except = config.except ? new Set(config.except) : undefined
+  const selected = loaded.filter((entry) => {
+    if (only && !only.has(entry.name))
+      return false
+
+    return !except?.has(entry.name)
+  })
+
   // Stable: equal orders keep path order, so seeders that never set `order`
   // behave exactly as they did before this existed.
-  loaded.sort((a, b) => a.order - b.order)
+  selected.sort((a, b) => a.order - b.order)
 
-  for (const entry of loaded) {
+  for (const entry of selected) {
     const startedAt = Date.now()
     const { displayFile } = entry
     let seeder = entry.name

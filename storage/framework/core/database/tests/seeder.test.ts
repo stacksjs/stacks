@@ -110,6 +110,64 @@ describe('Database Seeder - application seeders', () => {
     expect(await Bun.file(output).text()).toBe('yes')
   })
 
+  test('runs only selected application seeder classes', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-selected-seeders-'))
+    temporaryDirectories.push(directory)
+    const output = join(directory, 'selected.txt')
+    const seederModule = new URL('../src/seeder.ts', import.meta.url).href
+
+    writeFileSync(join(directory, '10-account.ts'), `
+      import { appendFileSync } from 'node:fs'
+      import { Seeder } from '${seederModule}'
+      export default class AccountSeeder extends Seeder {
+        run() { appendFileSync(${JSON.stringify('__OUTPUT__')}, 'account\\n') }
+      }
+    `.replace('__OUTPUT__', output))
+    writeFileSync(join(directory, '20-demo-data.ts'), `
+      import { appendFileSync } from 'node:fs'
+      import { Seeder } from '${seederModule}'
+      export default class DemoDataSeeder extends Seeder {
+        run() { appendFileSync(${JSON.stringify('__OUTPUT__')}, 'demo\\n') }
+      }
+    `.replace('__OUTPUT__', output))
+
+    const result = await runApplicationSeeders({ directory, verbose: false, only: ['AccountSeeder'] })
+
+    expect(result.total).toBe(1)
+    expect(result.successful).toBe(1)
+    expect(result.results.map(item => item.seeder)).toEqual(['AccountSeeder'])
+    expect(await Bun.file(output).text()).toBe('account\n')
+  })
+
+  test('skips excluded application seeder classes', async () => {
+    const directory = mkdtempSync(join(tmpdir(), 'stacks-excluded-seeders-'))
+    temporaryDirectories.push(directory)
+    const output = join(directory, 'selected.txt')
+    const seederModule = new URL('../src/seeder.ts', import.meta.url).href
+
+    writeFileSync(join(directory, '10-account.ts'), `
+      import { appendFileSync } from 'node:fs'
+      import { Seeder } from '${seederModule}'
+      export default class AccountSeeder extends Seeder {
+        run() { appendFileSync(${JSON.stringify('__OUTPUT__')}, 'account\\n') }
+      }
+    `.replace('__OUTPUT__', output))
+    writeFileSync(join(directory, '20-demo-data.ts'), `
+      import { appendFileSync } from 'node:fs'
+      import { Seeder } from '${seederModule}'
+      export default class DemoDataSeeder extends Seeder {
+        run() { appendFileSync(${JSON.stringify('__OUTPUT__')}, 'demo\\n') }
+      }
+    `.replace('__OUTPUT__', output))
+
+    const result = await runApplicationSeeders({ directory, verbose: false, except: ['DemoDataSeeder'] })
+
+    expect(result.total).toBe(1)
+    expect(result.successful).toBe(1)
+    expect(result.results.map(item => item.seeder)).toEqual(['AccountSeeder'])
+    expect(await Bun.file(output).text()).toBe('account\n')
+  })
+
   test('returns an empty summary when the application directory is absent', async () => {
     const directory = join(tmpdir(), `stacks-missing-seeders-${crypto.randomUUID()}`)
     const result = await runApplicationSeeders({ directory, verbose: false })

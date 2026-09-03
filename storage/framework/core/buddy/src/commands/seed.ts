@@ -16,6 +16,10 @@ export function seed(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--only [models]', 'Comma-separated list of models to seed', { default: '' })
     .option('--except [models]', 'Comma-separated list of models to skip', { default: '' })
+    .option('--only-seeders [seeders]', 'Comma-separated list of application seeder classes to run', { default: '' })
+    .option('--except-seeders [seeders]', 'Comma-separated list of application seeder classes to skip', { default: '' })
+    .option('--skip-models', 'Skip model-factory seeding', { default: false })
+    .option('--skip-application-seeders', 'Skip application seeders', { default: false })
     .option('--include-defaults', 'Also seed the framework\'s built-in models', { default: false })
     // Escape hatch for the protected-model guard (stacksjs/stacks#1852).
     // By default `./buddy seed` skips auth/oauth models on a non-fresh
@@ -26,7 +30,7 @@ export function seed(buddy: CLI): void {
     .option('--fresh', 'Truncate tables before seeding', { default: false })
     .option('--append', 'Add rows to tables that already have some, instead of skipping them', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions & { only?: string, except?: string, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
+    .action(async (options: SeedOptions & { only?: string, except?: string, onlySeeders?: string, exceptSeeders?: string, skipModels?: boolean, skipApplicationSeeders?: boolean, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')
@@ -42,22 +46,30 @@ export function seed(buddy: CLI): void {
       const list = (value?: string): string[] | undefined =>
         value ? value.split(',').map(entry => entry.trim()).filter(Boolean) : undefined
 
-      const summary = await seedDatabase({
-        verbose: options.verbose,
-        fresh: options.fresh,
-        append: options.append,
-        only: list(options.only),
-        except: list(options.except),
-        includeDefaults: options.includeDefaults,
-        allowProtected: options.allowProtected,
-      })
-      const applicationSummary = await runApplicationSeeders({ verbose: options.verbose })
+      const summary = options.skipModels
+        ? { total: 0, successful: 0, failed: 0, results: [], duration: 0 }
+        : await seedDatabase({
+            verbose: options.verbose,
+            fresh: options.fresh,
+            append: options.append,
+            only: list(options.only),
+            except: list(options.except),
+            includeDefaults: options.includeDefaults,
+            allowProtected: options.allowProtected,
+          })
+      const applicationSummary = options.skipApplicationSeeders
+        ? { total: 0, successful: 0, failed: 0, results: [], duration: 0 }
+        : await runApplicationSeeders({
+            verbose: options.verbose,
+            only: list(options.onlySeeders),
+            except: list(options.exceptSeeders),
+          })
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
       if (summary.total === 0 && applicationSummary.total === 0) {
         await outro(
-          `No models declare a \`useSeeder\` trait and no application seeders were found.`,
+          `No matching model or application seeders were found.`,
           { startTime: perf, useSeconds: true },
         )
         process.exit(ExitCode.Success)
