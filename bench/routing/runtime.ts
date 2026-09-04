@@ -18,19 +18,36 @@ export interface BootedServer {
   pid: number
 }
 
-export async function boot(target: Target, withDb: boolean): Promise<BootedServer | { skipped: string }> {
-  const proc = Bun.spawn([process.execPath, join(BENCH_ROOT, 'servers', target.server)], {
+/** Keep benchmark targets out of the application's preload graph. */
+export function serverCommand(server: string): string[] {
+  return [
+    process.execPath,
+    `--config=${join(BENCH_ROOT, 'bunfig.toml')}`,
+    join(BENCH_ROOT, 'servers', server),
+  ]
+}
+
+/** Give every framework the same production environment. */
+export function serverEnvironment(target: Target, withDb: boolean, scenarioId?: string): Record<string, string> {
+  return {
+    ...process.env,
+    APP_ENV: 'production',
+    NODE_ENV: 'production',
+    BENCH_PORT: String(PORT),
+    BENCH_DB: withDb ? '1' : '0',
+    BENCH_DB_FILE: FIXTURE,
+    DB_DATABASE_PATH: FIXTURE,
+    ...(scenarioId ? { BENCH_SCENARIO: scenarioId } : {}),
+    ...target.env,
+  } as Record<string, string>
+}
+
+export async function boot(target: Target, withDb: boolean, scenario?: Scenario): Promise<BootedServer | { skipped: string }> {
+  const proc = Bun.spawn(serverCommand(target.server), {
     cwd: REPO_ROOT,
     stdout: 'pipe',
     stderr: 'pipe',
-    env: {
-      ...process.env,
-      BENCH_PORT: String(PORT),
-      BENCH_DB: withDb ? '1' : '0',
-      BENCH_DB_FILE: FIXTURE,
-      DB_DATABASE_PATH: FIXTURE,
-      ...target.env,
-    } as Record<string, string>,
+    env: serverEnvironment(target, withDb, scenario?.id),
   })
 
   const deadline = Date.now() + 60_000
@@ -43,7 +60,7 @@ export async function boot(target: Target, withDb: boolean): Promise<BootedServe
       throw new Error(`${target.id} server exited ${proc.exitCode}:\n${err}`)
     }
     try {
-      const res = await fetch(`http://127.0.0.1:${PORT}/bench/json`)
+      const res = await fetch(`http://127.0.0.1:${PORT}${scenario?.path ?? '/bench/json'}`)
       if (res.ok) {
         await res.arrayBuffer()
         break

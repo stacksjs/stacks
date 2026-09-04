@@ -12,12 +12,12 @@ import process from 'node:process'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const withDb = process.env.BENCH_DB === '1'
+const scenario = process.env.BENCH_SCENARIO
+const serves = (id: string) => !scenario || scenario === id
 
 let Hono: any
-let validator: any
 try {
   ;({ Hono } = await import('hono') as any)
-  ;({ validator } = await import('hono/validator') as any)
 }
 catch {
   console.error('[bench] hono is not installed — run `bun add -d hono` to include it')
@@ -26,22 +26,27 @@ catch {
 
 const app = new Hono()
 
-app.get('/bench/json', (c: any) => c.json({ hello: 'world' }))
-app.get('/bench/users/:id', (c: any) => c.json({ id: c.req.param('id') }))
-app.post(
-  '/bench/echo',
-  validator('json', (value: any, c: any) => {
-    if (typeof value.name !== 'string' || typeof value.count !== 'number')
-      return c.json({ errors: {} }, 422)
-    return value
-  }),
-  (c: any) => {
-    const body = c.req.valid('json')
-    return c.json({ name: body.name, count: body.count })
-  },
-)
+if (serves('static-json'))
+  app.get('/bench/json', (c: any) => c.json({ hello: 'world' }))
+if (serves('path-param'))
+  app.get('/bench/users/:id', (c: any) => c.json({ id: c.req.param('id') }))
+if (serves('post-validate')) {
+  const { validator } = await import('hono/validator') as any
+  app.post(
+    '/bench/echo',
+    validator('json', (value: any, c: any) => {
+      if (typeof value.name !== 'string' || typeof value.count !== 'number')
+        return c.json({ errors: {} }, 422)
+      return value
+    }),
+    (c: any) => {
+      const body = c.req.valid('json')
+      return c.json({ name: body.name, count: body.count })
+    },
+  )
+}
 
-if (withDb) {
+if (withDb && serves('db-roundtrip')) {
   const { Database } = await import('bun:sqlite')
   const db = new Database(process.env.BENCH_DB_FILE!, { readonly: true })
   const selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1')

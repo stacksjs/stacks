@@ -15,19 +15,21 @@
  */
 
 import process from 'node:process'
-import { Action } from '@stacksjs/actions'
-import { createStacksRouter, createTypedRouter } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
+import { createStacksRouter } from '@stacksjs/router'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const minimal = process.env.BENCH_MODE === 'minimal'
 const withDb = process.env.BENCH_DB === '1'
+const scenario = process.env.BENCH_SCENARIO
+const serves = (id: string) => !scenario || scenario === id
 
 const router = createStacksRouter()
 
-router.get('/bench/json', () => ({ hello: 'world' }))
+if (serves('static-json'))
+  router.get('/bench/json', () => ({ hello: 'world' }))
 
-router.get('/bench/users/{id}', (req: any) => ({ id: req.params.id }))
+if (serves('path-param'))
+  router.get('/bench/users/{id}', (req: any) => ({ id: req.params.id }))
 
 /*
  * A real action, registered by import through the typed router.
@@ -38,20 +40,27 @@ router.get('/bench/users/{id}', (req: any) => ({ id: req.params.id }))
  * handler calling `request.validate()` skips most of it and would flatter the
  * number.
  */
-const EchoAction = new Action({
-  name: 'BenchEcho',
-  validations: {
-    name: { rule: schema.string() },
-    count: { rule: schema.number() },
-  },
-  handle(request: any) {
-    return { name: request.get('name'), count: request.get('count') }
-  },
-})
+if (serves('post-validate')) {
+  const [{ Action }, { schema }, { createTypedRouter }] = await Promise.all([
+    import('@stacksjs/actions'),
+    import('@stacksjs/validation'),
+    import('@stacksjs/router'),
+  ])
+  const EchoAction = new Action({
+    name: 'BenchEcho',
+    validations: {
+      name: { rule: schema.string() },
+      count: { rule: schema.number() },
+    },
+    handle(request: any) {
+      return { name: request.get('name'), count: request.get('count') }
+    },
+  })
 
-createTypedRouter(router).post('/bench/echo', EchoAction, minimal ? { skipCsrf: true } : undefined)
+  createTypedRouter(router).post('/bench/echo', EchoAction, minimal ? { skipCsrf: true } : undefined)
+}
 
-if (withDb) {
+if (withDb && serves('db-roundtrip')) {
   // Imported lazily so the two DB-free profiles never pay for the database
   // package's boot, and so a machine with no fixture can still run scenarios
   // 1 to 3.

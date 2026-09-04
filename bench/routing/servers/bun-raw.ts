@@ -7,16 +7,18 @@
  * already believed.
  */
 
-import { Database } from 'bun:sqlite'
 import process from 'node:process'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const withDb = process.env.BENCH_DB === '1'
+const scenario = process.env.BENCH_SCENARIO
+const serves = (id: string) => !scenario || scenario === id
 
 const JSON_HEADERS = { 'content-type': 'application/json' } as const
 
 let selectItem: import('bun:sqlite').Statement | undefined
-if (withDb) {
+if (withDb && serves('db-roundtrip')) {
+  const { Database } = await import('bun:sqlite')
   const db = new Database(process.env.BENCH_DB_FILE!, { readonly: true })
   selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1')
 }
@@ -28,13 +30,13 @@ Bun.serve({
     const pathStart = url.indexOf('/', url.indexOf('://') + 3)
     const path = pathStart === -1 ? '/' : url.slice(pathStart)
 
-    if (path === '/bench/json')
+    if (serves('static-json') && path === '/bench/json')
       return new Response('{"hello":"world"}', { headers: JSON_HEADERS })
 
-    if (path.startsWith('/bench/users/'))
+    if (serves('path-param') && path.startsWith('/bench/users/'))
       return new Response(JSON.stringify({ id: path.slice('/bench/users/'.length) }), { headers: JSON_HEADERS })
 
-    if (path === '/bench/echo' && req.method === 'POST') {
+    if (serves('post-validate') && path === '/bench/echo' && req.method === 'POST') {
       const body = await req.json() as { name?: unknown, count?: unknown }
       if (typeof body.name !== 'string' || typeof body.count !== 'number')
         return new Response('{"errors":{}}', { status: 422, headers: JSON_HEADERS })

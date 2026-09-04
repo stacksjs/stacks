@@ -22,7 +22,10 @@ and Stacks dev fixtures before becoming executable profiles.
 
 The runner uses the same byte-for-byte response parity checks as
 `bench/routing`. It samples the entire server process tree, so launchers cannot
-hide worker memory. The separately launched load generator is not counted.
+hide worker memory. The separately launched load generator is not counted. Each
+server registers only the selected scenario, so an unrelated validator or
+database route cannot inflate one framework's static JSON result. This applies
+identically to every target.
 
 ## Reported value
 
