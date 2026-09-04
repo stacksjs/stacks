@@ -98,9 +98,15 @@ jobs:
       # Dependency order matters: browser's built `composables/useStorage.js`
       # imports `@stacksjs/composables/useStorage`, so composables has to exist
       # first or the same error moves one level down.
+      #
+      # `error-handling` and `storage` joined the list when the router and
+      # logging packages started importing `@stacksjs/error-handling/handler`,
+      # `/http`, `/error-page` and `@stacksjs/storage/uploaded-file`. Neither
+      # depends on the other, so they append. `subpath-builds-are-listed.test.ts`
+      # fails if a new package is imported this way without being added here.
       - name: Build packages imported by subpath
         run: |
-          for pkg in composables browser; do
+          for pkg in composables browser error-handling storage actions; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -190,7 +196,7 @@ jobs:
       # cannot resolve it, add it here, or import its root instead.
       - name: Build packages imported by subpath
         run: |
-          for pkg in composables browser; do
+          for pkg in composables browser error-handling storage actions; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
