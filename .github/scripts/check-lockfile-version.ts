@@ -1,18 +1,16 @@
 /**
  * Guard against a `bun.lock` written by a newer Bun than CI runs.
  *
- * CI provisions Bun 1.3.x (the repo's `engines: bun ^1.3.0`), which reads
- * `lockfileVersion: 1`. Bun 1.4.x writes `lockfileVersion: 2`, which 1.3.x
- * cannot parse — every job then dies at `bun install --frozen-lockfile` with a
- * cryptic `Unknown lockfile version`. This runs before install and fails fast
- * with an actionable message so the fix is obvious.
+ * Pantry provisions the exact Bun version declared by this repository. This
+ * guard keeps a lockfile written by another runtime from reaching CI, where
+ * every install would otherwise fail with an opaque lockfile error.
  */
 
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-/** The lockfile format CI's Bun understands. Bump if the toolchain moves to 1.4.x. */
-export const EXPECTED_LOCKFILE_VERSION = 1
+/** The lockfile format written by the Pantry-pinned Bun 1.4.1 toolchain. */
+export const EXPECTED_LOCKFILE_VERSION = 2
 
 /** Parse the `lockfileVersion` from bun.lock text, or null if absent. */
 export function lockfileVersion(contents: string): number | null {
@@ -29,15 +27,14 @@ if (import.meta.main) {
   }
   else {
     console.error(
-      `✗ bun.lock is lockfileVersion ${version ?? 'unknown'}, but CI's Bun (1.3.x — the repo's \`engines\`) reads v${EXPECTED_LOCKFILE_VERSION}.\n`
+      `✗ bun.lock is lockfileVersion ${version ?? 'unknown'}, but Pantry and \`engines.bun\` pin Bun 1.4.1, which writes v${EXPECTED_LOCKFILE_VERSION}.\n`
       + `\n`
-      + `  This happens when \`bun install\` runs on Bun 1.4.x, which writes v2 that 1.3.x can't parse\n`
-      + `  ("Unknown lockfile version" at install). Regenerate the lockfile with stable Bun:\n`
+      + `  Install the declared toolchain and regenerate the lockfile through Pantry:\n`
       + `\n`
-      + `    bunx bun@1.3.14 install\n`
+      + `    pantry install\n`
+      + `    bun install\n`
       + `\n`
-      + `  ...then commit bun.lock. (Or, to move the whole toolchain to 1.4.x, bump CI's Bun +\n`
-      + `  \`engines\` and set EXPECTED_LOCKFILE_VERSION here to 2.)`,
+      + `  Then commit bun.lock and pantry.lock together.`,
     )
     process.exit(1)
   }

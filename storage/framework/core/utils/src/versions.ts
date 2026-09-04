@@ -23,9 +23,9 @@ export function isVersionLessThanOrEqual(version: string, compareVersion: string
 }
 
 /**
- * The minimum Bun version required to run Stacks. Keep in sync with the
- * `system.bun` range in the root `package.json` and the prerequisites in
- * the README and docs.
+ * The minimum Bun version supported by published Stacks packages. The Stacks
+ * repository's development runtime is pinned separately through Pantry and
+ * `engines.bun` so its generated artifacts remain reproducible.
  */
 export const minimumBunVersion = '1.3.0'
 

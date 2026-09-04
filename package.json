@@ -9,6 +9,9 @@
     "Chris Breuer <chris@stacksjs.org>"
   ],
   "license": "MIT",
+  "engines": {
+    "bun": "1.4.1"
+  },
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
   "repository": {

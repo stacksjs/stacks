@@ -1,9 +1,6 @@
 dependencies:
-  # Pinned exactly. `^1.3.14` resolves through pantry's `v1` symlink, so the
-  # day 1.4.0 publishes every checkout jumps a minor on the next `pantry
-  # install` — and 1.4.x writes `lockfileVersion: 2`, which 1.3.x cannot parse
-  # (see .github/scripts/check-lockfile-version.ts). Moving to 1.4.x is a
-  # deliberate commit: bump here, regenerate bun.lock, bump the guard.
-  bun: 1.3.14
+  # Pinned exactly so Pantry, local development, and CI all use the runtime
+  # that writes this repository's lockfile format.
+  bun: 1.4.1
   git: ^2.47.0
   sqlite: ^3.47.2
