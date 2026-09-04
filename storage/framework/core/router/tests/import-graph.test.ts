@@ -56,4 +56,21 @@ describe('router import graph', () => {
         && (entry.path.includes('ts-rate-limiter') || entry.path.endsWith('error-handling/src/http.ts'))) ?? []
     expect(eagerActionLimiterDependencies).toEqual([])
   })
+
+  it('defers session encryption until an encrypted store is used', async () => {
+    const result = await Bun.build({
+      entrypoints: [join(import.meta.dir, '../src/encrypted-session-store.ts')],
+      target: 'bun',
+      metafile: true,
+      write: false,
+    })
+
+    expect(result.success).toBe(true)
+    const entry = Object.entries(result.metafile?.inputs ?? {})
+      .find(([source]) => source.endsWith('/encrypted-session-store.ts'))
+    const eagerEncryptionDependencies = entry?.[1].imports
+      .filter(dependency => dependency.kind !== 'dynamic-import'
+        && dependency.original === '@stacksjs/security') ?? []
+    expect(eagerEncryptionDependencies).toEqual([])
+  })
 })

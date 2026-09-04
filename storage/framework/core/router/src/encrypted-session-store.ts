@@ -36,7 +36,23 @@
  */
 
 import type { SessionData, SessionStore } from '@stacksjs/bun-router'
-import { decrypt, encrypt } from '@stacksjs/security'
+
+type SecurityModule = typeof import('@stacksjs/security')
+
+let securityModuleLoad: Promise<SecurityModule> | undefined
+
+/**
+ * Encryption is optional session-store work, not router boot work.
+ *
+ * Keeping this import behind the first encrypted read/write prevents the
+ * normal `@stacksjs/router` barrel from evaluating the security package and
+ * its transitive cryptography/config graph in apps that do not use encrypted
+ * sessions. The promise is cached so an active store resolves the module once.
+ */
+function loadSecurityModule(): Promise<SecurityModule> {
+  securityModuleLoad ??= import('@stacksjs/security')
+  return securityModuleLoad
+}
 
 /**
  * Envelope shape persisted to the underlying store. The `_enc`
@@ -143,6 +159,7 @@ export class EncryptedSessionStore implements SessionStore<SessionData> {
     // Don't encrypt the `id` field — middleware reads it back without
     // decrypting (for SID-match) and the value is already in the URL/cookie.
     const { id, ...rest } = session
+    const { encrypt } = await loadSecurityModule()
     const ciphertext = await encrypt(JSON.stringify(rest), this.opts.appKey)
     return {
       _enc: true,
@@ -166,6 +183,7 @@ export class EncryptedSessionStore implements SessionStore<SessionData> {
 
     if (candidate._enc === true && typeof candidate.data === 'string') {
       try {
+        const { decrypt } = await loadSecurityModule()
         const decrypted = await decrypt(candidate.data, this.opts.appKey)
         const parsed = JSON.parse(decrypted) as SessionData
         if (candidate.id !== undefined) parsed.id = candidate.id
