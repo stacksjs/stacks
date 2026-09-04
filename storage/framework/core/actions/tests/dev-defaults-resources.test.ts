@@ -84,10 +84,27 @@ describe('resolveDefaultsResources - vendored branch (#2240)', () => {
   })
 
   it('publishes the canonical server preloader for package-only deployments', () => {
+    /*
+     * Asserted against tracked files only.
+     *
+     * `@stacksjs/defaults` resolves to `storage/framework/core/defaults`, where
+     * `package.json` is tracked but everything else is a build artifact that
+     * `core/defaults/build.ts` copies out of `storage/framework/defaults`. So
+     * looking for `resources/plugins/preloader.ts` NEXT TO the manifest asked
+     * whether someone had run that build: true on a developer's machine, false
+     * in a fresh CI checkout. It went red on every commit for an hour, on a
+     * fact about the build having run rather than about the package.
+     *
+     * What has to be true for a package-only deployment to get the preloader
+     * is that the manifest exports it, that `files` ships the directory it
+     * lives in, and that the source the build copies actually has it. All
+     * three are tracked, so this says the same thing in every checkout.
+     */
     const manifestPath = Bun.resolveSync('@stacksjs/defaults/package.json', process.cwd())
     const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
 
     expect(manifest.exports['./resources/plugins/preloader']).toBe('./resources/plugins/preloader.ts')
-    expect(existsSync(join(dirname(manifestPath), 'resources/plugins/preloader.ts'))).toBe(true)
+    expect(manifest.files).toContain('resources')
+    expect(existsSync(join(import.meta.dir, '../../../defaults/resources/plugins/preloader.ts'))).toBe(true)
   })
 })
