@@ -25,10 +25,12 @@ jobs:
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.11.50'
-          install: 'true'
+          install: 'false'
 
-      - name: Install benchmark frameworks
-        run: bun install --cwd bench/routing --frozen-lockfile
+      - name: Install project and benchmark dependencies
+        run: |
+          pantry install
+          bun install --cwd bench/routing --frozen-lockfile
 
       - name: Install oha 1.16.0
         env:
