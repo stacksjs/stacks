@@ -29,6 +29,12 @@ interface DiscoveredEntry {
   views?: string | string[]
 }
 
+/** Directories a package is taken to provide when it declares no explicit list. */
+const IMPLIED_DIRS = {
+  views: ['resources/views'],
+  models: ['app/Models'],
+} as const
+
 export interface PackageResourceOptions {
   manifestPath?: string
   projectRoot?: string
@@ -65,7 +71,10 @@ function readManifest(manifestPath: string): Record<string, DiscoveredEntry> {
  * would glob it and find nothing anyway, just more slowly, and a package
  * shipping an optional subtree is not an error.
  */
-export function packageViewRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+function resourceRoots(
+  field: 'views' | 'models',
+  options: PackageResourceOptions = {},
+): PackageResourceRoot[] {
   const manifestPath = options.manifestPath ?? path.storagePath('framework/discovered-packages.json')
   const projectRoot = options.projectRoot ?? path.projectPath()
   const exists = options.exists ?? existsSync
@@ -73,7 +82,10 @@ export function packageViewRoots(options: PackageResourceOptions = {}): PackageR
   const roots: PackageResourceRoot[] = []
 
   for (const [name, meta] of Object.entries(readManifest(manifestPath))) {
-    const declared = meta?.views
+    // Models have no manifest key of their own, so a package that ships them
+    // is taken to put them where every Stacks application does. Views keep
+    // their explicit key, which a package uses to ship more than one subtree.
+    const declared = (meta as Record<string, unknown>)?.[field] ?? IMPLIED_DIRS[field]
     if (!declared)
       continue
 
@@ -100,7 +112,24 @@ export function packageViewRoots(options: PackageResourceOptions = {}): PackageR
     }
   }
 
-  // Sorted by package so two packages contributing views resolve in the same
-  // order on every machine, rather than by whatever order the manifest holds.
+  // Sorted by package so two packages contributing the same kind of directory
+  // resolve in the same order on every machine, rather than by manifest order.
   return roots.sort((a, b) => a.package.localeCompare(b.package))
+}
+
+/** View directories each discovered package contributes. */
+export function packageViewRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+  return resourceRoots('views', options)
+}
+
+/**
+ * Model directories each discovered package contributes.
+ *
+ * One reader rather than one per consumer. The migration side and the
+ * auto-import barrel both need this answer, and they are in different packages;
+ * two copies of the resolution rule would eventually disagree about where a
+ * package lives, and routes and models would then point at different trees.
+ */
+export function packageModelRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+  return resourceRoots('models', options)
 }
