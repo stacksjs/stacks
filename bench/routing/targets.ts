@@ -45,6 +45,18 @@ export const TARGETS: readonly Target[] = [
     optional: true,
   },
   {
+    id: 'express',
+    label: 'Express',
+    server: 'express.ts',
+    optional: true,
+  },
+  {
+    id: 'fastify',
+    label: 'Fastify',
+    server: 'fastify.ts',
+    optional: true,
+  },
+  {
     id: 'hono',
     label: 'Hono',
     server: 'hono.ts',
