@@ -58,7 +58,7 @@
   },
   "dependencies": {
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/stx": "^0.2.271",
+    "@stacksjs/stx": "^0.2.272",
     "@stacksjs/types": "workspace:*",
     "ts-error-handling": "^0.1.1",
     "ts-syntax-highlighter": "^0.2.1"
