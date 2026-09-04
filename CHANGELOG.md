@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.17...v0.74.18)
+
+## 🐛 Bug Fixes
+
+- **images**: preserve reactive delivery props ([8b19924](https://github.com/stacksjs/stacks/commit/8b19924)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.16...v0.74.17)
 
 ## ✨ Features
