@@ -419,9 +419,21 @@ jobs:
           version: '0.11.50'
           install: 'false'
 
+      # Run from the script's own directory so the repo's `bunfig.toml` does not
+      # apply. Bun reads `$cwd/bunfig.toml` and does not walk up, and this repo's
+      # preloads the env plugin and the whole framework preloader - for a script
+      # whose only import is `node:fs`.
+      #
+      # That is where `deployment-target` was spending 46 seconds, and where it
+      # then overflowed the stack thousands of times AFTER printing the right
+      # answer, failing a step that had already succeeded (stacksjs/stacks#2414).
+      # From the repo root this takes 1.8s locally; from here, 0.05s.
+      #
+      # `$GITHUB_OUTPUT` is an absolute path, so appending to it is unaffected.
       - name: Resolve provisioned deployment target
         id: target
-        run: bun .github/scripts/deploy/resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
+        working-directory: .github/scripts/deploy
+        run: bun resolve-target.ts --ref "$GITHUB_REF" --github-output "$GITHUB_OUTPUT"
 
   deploy:
     if: >-
