@@ -34,4 +34,9 @@ describe('framework release artifact staging', () => {
     expect(source()).not.toContain('const expectedLockfileVersion = 1')
     expect(source()).toContain("repository's declared Bun toolchain")
   })
+
+  test('refreshes and stages the Pantry lockfile without lifecycle scripts', () => {
+    expect(source()).toContain("['pantry', 'install', '--ignore-scripts', '--quiet']")
+    expect(source()).toContain("for (const file of ['CHANGELOG.md', 'bun.lock', 'pantry.lock'])")
+  })
 })

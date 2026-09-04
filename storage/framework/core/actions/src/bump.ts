@@ -263,6 +263,32 @@ await writeChangelog()
 if (!isDryRun && isFrameworkRelease)
   pinLockstepDeps(nextVersion)
 
+async function refreshPantryLock(): Promise<void> {
+  const lockPath = p.projectPath('pantry.lock')
+  if (!existsSync(lockPath))
+    return
+
+  const previousLock = readFileSync(lockPath)
+  try {
+    await execSync(['pantry', 'install', '--ignore-scripts', '--quiet'], {
+      cwd: p.projectPath(),
+      stdin: 'inherit',
+    })
+    if (!existsSync(lockPath))
+      throw new Error('Pantry completed without writing pantry.lock')
+  }
+  catch (error) {
+    writeFileSync(lockPath, previousLock)
+    throw new Error(
+      'Release aborted: Pantry could not refresh pantry.lock without lifecycle scripts. The previous lockfile was restored.',
+      { cause: error },
+    )
+  }
+}
+
+if (!isDryRun)
+  await refreshPantryLock()
+
 // The package-version fan-out above changes hundreds of workspace manifests.
 // Keep the root Bun lockfile synchronized in the same release commit; otherwise
 // every post-release CI job using `bun install --frozen-lockfile` fails before
@@ -436,7 +462,7 @@ async function stageReleaseArtifacts(): Promise<void> {
   const pathspecs = isFrameworkRelease
     ? [':(glob)storage/framework/**/package.json', 'package.json']
     : ['package.json']
-  for (const file of ['CHANGELOG.md', 'bun.lock']) {
+  for (const file of ['CHANGELOG.md', 'bun.lock', 'pantry.lock']) {
     if (existsSync(p.projectPath(file)))
       pathspecs.push(file)
   }
