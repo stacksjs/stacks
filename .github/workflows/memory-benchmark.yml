@@ -22,9 +22,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
+        uses: pantry-pm/pantry/packages/action@190b47ba5aab36cf857a45c806ae7be13d2ea82d # v0.11.52
         with:
-          version: '0.11.50'
+          version: '0.11.52'
           install: 'false'
 
       - name: Install project and benchmark dependencies
