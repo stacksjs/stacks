@@ -107,9 +107,18 @@ function offenders(dir: string, found: string[] = []): string[] {
 
 describe('log.error before process.exit', () => {
   it('is awaited, so the message survives the exit', () => {
+    /*
+     * The app trees too, not just the framework. `app/Commands/Inspire.ts` had
+     * exactly the bug that was fixed in the defaults copy - and since `app/`
+     * overrides `storage/framework/defaults/app/`, the broken one was the copy
+     * that actually ran.
+     */
     const unawaited = [
       ...offenders(join(root, 'storage/framework/core')),
       ...offenders(join(root, 'storage/framework/defaults/app')),
+      ...offenders(join(root, 'app')),
+      ...offenders(join(root, 'routes')),
+      ...offenders(join(root, 'config')),
     ]
 
     expect(unawaited.sort()).toEqual([])

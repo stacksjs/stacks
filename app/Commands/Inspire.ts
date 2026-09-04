@@ -50,7 +50,11 @@ export default defineCommand((cli) => {
   })
 
   cli.on('inspire:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
+    // Sync handler that exits: `log.error` is async and yields before it
+    // writes, so `process.exit` below outran it and the message never
+    // printed. The defaults copy of this file was fixed in 8ec70305cc; this
+    // is the app-level override, which is the one that actually runs.
+    console.error('Invalid command: %s\nSee --help for a list of available commands.', cli.args.join(' '))
     process.exit(1)
   })
 })
