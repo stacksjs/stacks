@@ -65,6 +65,25 @@ describe('@stacksjs/env proxy', () => {
     expect(env.SOME_STRING).toBe('hello')
   })
 
+  it('writes through the proxy using Bun environment semantics', async () => {
+    const { env } = await import('../src/index')
+    const envBag = env as unknown as Record<string, string | undefined>
+
+    envBag.PROXY_WRITE_TEST = 'written'
+
+    expect(process.env.PROXY_WRITE_TEST).toBe('written')
+  })
+
+  it('deletes through the proxy', async () => {
+    const { env } = await import('../src/index')
+    const envBag = env as unknown as Record<string, string | undefined>
+    process.env.PROXY_DELETE_TEST = 'present'
+
+    delete envBag.PROXY_DELETE_TEST
+
+    expect(process.env.PROXY_DELETE_TEST).toBeUndefined()
+  })
+
   it('env.APP_ENV returns correct value', async () => {
     const { env } = await import('../src/index')
     expect(env.APP_ENV).toBe('local')

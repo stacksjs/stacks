@@ -44,7 +44,12 @@ afterAll(async () => {
   await redis.del(key)
   redis.close()
 
-  ;(env as Record<string, unknown>).QUEUE_DRIVER = original.driver
+  const envBag = env as Record<string, unknown>
+  if (original.driver === undefined)
+    delete envBag.QUEUE_DRIVER
+  else
+    envBag.QUEUE_DRIVER = original.driver
+
   const connections = (queueConfig as { connections?: Record<string, unknown> })?.connections
   if (connections && original.redis !== undefined)
     connections.redis = original.redis

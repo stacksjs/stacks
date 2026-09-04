@@ -72,6 +72,14 @@ const handler: ProxyHandler<StacksEnv> = {
 
     return value
   },
+  set: (target: StacksEnv, key: string, value: unknown) => {
+    // Bun 1.4.1 rejects the partial property descriptor produced when the
+    // proxy's default [[Set]] path forwards a write to Bun.env. Using the
+    // environment object as the receiver preserves its native assignment
+    // semantics while keeping the typed proxy writable.
+    return Reflect.set(target, key, value, target)
+  },
+  deleteProperty: (target: StacksEnv, key: string) => Reflect.deleteProperty(target, key),
 }
 
 export function process(): StacksEnv {
