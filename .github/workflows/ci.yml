@@ -38,9 +38,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -79,9 +77,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -170,9 +166,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         id: install
@@ -274,9 +268,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -316,9 +308,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         id: install
@@ -458,9 +448,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile
@@ -535,9 +523,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         run: bun install --frozen-lockfile

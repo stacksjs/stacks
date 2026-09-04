@@ -126,9 +126,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         # Matches the npm job's install rather than CI's --frozen-lockfile, so
@@ -186,9 +184,7 @@ jobs:
         uses: actions/cache@v5
         with:
           path: node_modules
-          key: node-modules-${{ hashFiles('**/bun.lock') }}
-          restore-keys: |
-            node-modules-
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
 
       - name: Install Dependencies
         run: bun install
