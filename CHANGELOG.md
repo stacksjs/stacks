@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.22...v0.74.23)
+
+## 💚 Continuous Integration
+
+- use Pantry 0.11.55 ([a148e9f](https://github.com/stacksjs/stacks/commit/a148e9f)) _(by Chris <chris@stacksjs.com>)_
+- use Pantry 0.11.54 ([bc12460](https://github.com/stacksjs/stacks/commit/bc12460)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: link local workspace packages ([6c67924](https://github.com/stacksjs/stacks/commit/6c67924)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.21...v0.74.22)
 
 ## 🐛 Bug Fixes
