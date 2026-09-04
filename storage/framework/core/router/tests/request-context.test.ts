@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
+import process from 'node:process'
 import {
   clearCurrentRequest,
   getCurrentRequest,
@@ -6,11 +7,13 @@ import {
   runWithRequest,
   setCurrentRequest,
 } from '../src/request-context'
+import { clearTrackedQueries, getQueryShapeCounts, trackQuery } from '../src/error-handler'
 
 // setCurrentRequest uses AsyncLocalStorage.enterWith, which mutates this
 // scope's store and never restores it, so each test starts clean.
 afterEach(() => {
   clearCurrentRequest()
+  clearTrackedQueries()
 })
 
 // ---------------------------------------------------------------------------
@@ -136,6 +139,25 @@ describe('Request Context - request proxy', () => {
 })
 
 describe('Request Context - clearing', () => {
+  test('query cleanup in an unused request does not clear the fallback scope', () => {
+    clearCurrentRequest()
+    const previousAppEnv = process.env.APP_ENV
+    process.env.APP_ENV = 'development'
+    trackQuery('SELECT * FROM users WHERE id = 1')
+    expect(getCurrentRequest()).toBeUndefined()
+    expect(getQueryShapeCounts().get('SELECT * FROM USERS WHERE ID = ?')).toBe(1)
+
+    runWithRequest(makeFakeRequest(), () => {
+      clearTrackedQueries()
+    })
+
+    expect(getQueryShapeCounts().get('SELECT * FROM USERS WHERE ID = ?')).toBe(1)
+    if (previousAppEnv === undefined)
+      delete process.env.APP_ENV
+    else
+      process.env.APP_ENV = previousAppEnv
+  })
+
   test('clearing removes the current request', () => {
     setCurrentRequest(makeFakeRequest())
     expect(getCurrentRequest()).toBeDefined()

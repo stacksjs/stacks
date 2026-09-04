@@ -221,8 +221,12 @@ export function getQueryShapeCounts(): ReadonlyMap<string, number> {
  */
 export function clearTrackedQueries(): void {
   const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
-  if (req && req[REQUEST_QUERY_TRACK_KEY]) {
-    ;(req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY] = newQueryTrack()
+  if (req) {
+    // A database-free request has no tracking state to clear. In particular,
+    // do not allocate a 50-slot buffer or reset the unrelated fallback bucket
+    // merely because the router performs end-of-request cleanup.
+    if (req[REQUEST_QUERY_TRACK_KEY])
+      delete (req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY]
     return
   }
   fallbackTrack = newQueryTrack()
