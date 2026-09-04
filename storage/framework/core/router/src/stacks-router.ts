@@ -1871,7 +1871,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // `let` (not `const`) because the post-action CORS wrapper below may
       // replace it with a header-mutated copy when the original Response's
       // Headers are immutable.
-      let response = await wrappedBase(enhancedReq)
+      const baseResult = wrappedBase(enhancedReq)
+      let response = baseResult instanceof Response ? baseResult : await baseResult
 
       // Clear tracked queries after each request to prevent accumulation
       clearTrackedQueries()
@@ -3614,10 +3615,12 @@ function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = '
   // primitive → JSON-encoded scalar, same Response passthrough.
   // Without this wrapper, function handlers would return strings to
   // bun-router and end up as `text/plain` regardless of the client.
-  const fn = handler as RouteHandlerFn
-  return async (req: EnhancedRequest) => {
-    const result = await fn(req)
-    return formatResult(result as unknown, req)
+  const fn = handler as InlineRouteHandler
+  return (req: EnhancedRequest) => {
+    const result = fn(req)
+    if (result instanceof Promise)
+      return result.then(value => formatResult(value, req))
+    return formatResult(result, req)
   }
 }
 
