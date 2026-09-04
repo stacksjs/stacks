@@ -604,6 +604,20 @@ const routeActionRegistry = new Map<string, RouterAction>()
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 
+interface ResolvedMiddleware {
+  name: string
+  handler: MiddlewareHandler
+  priority: number
+}
+
+interface MiddlewareTiming {
+  name: string
+  ms: number
+}
+
+const EMPTY_RESOLVED_MIDDLEWARE: ResolvedMiddleware[] = []
+const EMPTY_MIDDLEWARE_TIMINGS: MiddlewareTiming[] = []
+
 /**
  * Named route registry — keeps the original path plus the precomputed
  * placeholder names and a per-param replacement regex so `url()` can
@@ -1671,12 +1685,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // contract requiring CORS to precede auth/throttle so 4xx
       // responses still carry the right headers. See
       // stacksjs/stacks#1863, #1859 (H-1).
-      interface ResolvedMiddleware {
-        name: string
-        handler: MiddlewareHandler
-        priority: number
-      }
-      const resolved: ResolvedMiddleware[] = []
+      const resolved: ResolvedMiddleware[] = middlewareEntries.length === 0
+        ? EMPTY_RESOLVED_MIDDLEWARE
+        : []
       for (const middlewareEntry of middlewareEntries) {
         const parsed = await parseMiddlewareEntry(middlewareEntry)
         const { name: middlewareName, params } = parsed
@@ -1725,10 +1736,13 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
       // so same-priority entries preserve insertion order. This keeps
       // declared sequencing within a priority band predictable.
-      resolved.sort((a, b) => a.priority - b.priority)
+      if (resolved.length > 1)
+        resolved.sort((a, b) => a.priority - b.priority)
 
       // Run middleware in priority order
-      const middlewareTimings: Array<{ name: string, ms: number }> = []
+      const middlewareTimings: MiddlewareTiming[] = resolved.length === 0
+        ? EMPTY_MIDDLEWARE_TIMINGS
+        : []
 
       /*
        * One budget for the chain, armed at most once per request.
@@ -1749,19 +1763,22 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       let chainTimer: ReturnType<typeof setTimeout> | undefined
       let chainBudget: Promise<never> | undefined
       let runningMiddleware = ''
-      const armChainBudget = (): Promise<never> => {
-        if (!chainBudget) {
-          chainBudget = new Promise<never>((_, reject) => {
-            chainTimer = setTimeout(
-              () => reject(new Error(`Middleware '${runningMiddleware}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)),
-              MIDDLEWARE_TIMEOUT_MS,
-            )
-          })
-          // Marks the budget handled so a chain that finishes normally does not
-          // leave an unhandled rejection behind when the timer eventually fires.
-          chainBudget.catch(() => {})
+      let armChainBudget: (() => Promise<never>) | undefined
+      if (resolved.length > 0) {
+        armChainBudget = (): Promise<never> => {
+          if (!chainBudget) {
+            chainBudget = new Promise<never>((_, reject) => {
+              chainTimer = setTimeout(
+                () => reject(new Error(`Middleware '${runningMiddleware}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)),
+                MIDDLEWARE_TIMEOUT_MS,
+              )
+            })
+            // Marks the budget handled so a chain that finishes normally does not
+            // leave an unhandled rejection behind when the timer eventually fires.
+            chainBudget.catch(() => {})
+          }
+          return chainBudget
         }
-        return chainBudget
       }
 
       try {
@@ -1776,7 +1793,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             const outcome = middleware.handle(enhancedReq)
             // Nothing to time out when the layer already finished.
             if (outcome && typeof (outcome as Promise<void>).then === 'function')
-              await Promise.race([outcome as Promise<void>, armChainBudget()])
+              await Promise.race([outcome as Promise<void>, armChainBudget!()])
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
             middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
           }
@@ -1846,7 +1863,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       finally {
         // One timer, cleared on every way out of the chain - including the
         // early returns above - so a settled request leaves nothing pending.
-        clearTimeout(chainTimer)
+        if (chainTimer)
+          clearTimeout(chainTimer)
       }
 
       // Call the actual handler with the enhanced request.
