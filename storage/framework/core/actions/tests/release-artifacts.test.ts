@@ -28,4 +28,10 @@ describe('framework release artifact staging', () => {
       /const pathspecs = isFrameworkRelease\s*\?\s*\[':\(glob\)storage\/framework\/\*\*\/package\.json', 'package\.json'\]\s*:\s*\['package\.json'\]/,
     )
   })
+
+  test('preserves the canonical lockfile format during a release', () => {
+    expect(source()).toContain("const expectedLockfileVersion = lockfileVersion(previousLock.toString('utf8'))")
+    expect(source()).not.toContain('const expectedLockfileVersion = 1')
+    expect(source()).toContain("repository's declared Bun toolchain")
+  })
 })
