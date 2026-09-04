@@ -131,9 +131,9 @@ run_buddy() {
   # for a pantry-installed app, and leaving it off is what makes `buddy` die on
   # `Cannot find module '@stacksjs/env'` from a preload.
   if [ -d "${PANTRY_DIR}" ] && [ -n "$(ls -A "${PANTRY_DIR}" 2>/dev/null)" ]; then
-    exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${ROOT_DIR}/node_modules:${PANTRY_DIR}${NODE_PATH:+:${NODE_PATH}}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
+    exec env PATH="${PANTRY_LOCAL_BIN}:${PATH}:${USER_LOCAL_BIN}" NODE_PATH="${ROOT_DIR}/node_modules:${PANTRY_DIR}${NODE_PATH:+:${NODE_PATH}}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
   fi
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
+  exec env PATH="${PANTRY_LOCAL_BIN}:${PATH}:${USER_LOCAL_BIN}" "${BUN_CMD}" ${CONDITIONS} "${BUDDY_ENTRY}" "$@"
 }
 
 # Fast path: if pantry is already set up, run immediately. We deliberately
