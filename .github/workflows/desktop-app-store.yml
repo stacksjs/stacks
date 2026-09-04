@@ -163,7 +163,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Install application dependencies
@@ -186,7 +186,7 @@ jobs:
         id: signing
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
           apple-signing: 'true'
           apple-signing-application-certificate: ${{ secrets.APPLE_APP_CERTIFICATE_BASE64 }}
@@ -243,7 +243,7 @@ jobs:
       - name: Publish GitHub release and deliver package
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
           release: 'true'
           release-tag: ${{ inputs.release-tag }}

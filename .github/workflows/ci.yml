@@ -31,7 +31,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -72,7 +72,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -163,7 +163,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -267,7 +267,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -309,7 +309,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -395,7 +395,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Install Dependencies
@@ -420,7 +420,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Resolve provisioned deployment target
@@ -451,7 +451,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules
@@ -528,7 +528,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.29'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use cached node_modules

@@ -119,7 +119,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.48'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use Cached node_modules
@@ -179,7 +179,7 @@ jobs:
       - name: Setup Pantry
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.48'
+          version: '0.11.50'
           install: 'false'
 
       - name: Use Cached node_modules
@@ -408,7 +408,7 @@ jobs:
       - name: Create GitHub Release
         uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
-          version: '0.11.48'
+          version: '0.11.50'
           install: 'false'
           release: 'true'
           release-tag: ${{ steps.get_version.outputs.version }}
