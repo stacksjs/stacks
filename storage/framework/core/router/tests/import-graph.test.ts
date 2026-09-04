@@ -44,5 +44,9 @@ describe('router import graph', () => {
       .filter(entry => entry.kind !== 'dynamic-import'
         && ['@stacksjs/clarity', '@stacksjs/error-handling/handler', '@stacksjs/types'].includes(entry.original ?? '')) ?? []
     expect(eagerLoggerDependencies).toEqual([])
+
+    const eagerRateLimiterImports = routerEntry?.[1].imports
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/rate-limit.ts')) ?? []
+    expect(eagerRateLimiterImports).toEqual([])
   })
 })

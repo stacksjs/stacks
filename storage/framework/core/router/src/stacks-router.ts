@@ -208,7 +208,6 @@ function resolveDefaultsPath(rel: string): string {
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
-import { rateLimit as enforceRateLimit } from './rate-limit'
 import { applySecurityHeaders } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
@@ -1590,6 +1589,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       const rl = routeRateLimitRegistry.get(routeKey)
       if (rl) {
         try {
+          const { rateLimit: enforceRateLimit } = await import('./rate-limit')
           await enforceRateLimit(routeKey, rl.max).over(rl.windowSeconds)
         }
         catch (err) {
