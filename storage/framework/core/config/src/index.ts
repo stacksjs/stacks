@@ -12,6 +12,7 @@ export * from './config'
 export { FRAMEWORK_DEFAULTS } from './defaults'
 export { validateConfig, reportConfigIssues, type ConfigValidationIssue } from './validators'
 export { feature, enableFeature, disableFeature, resetFeature, listFeatures } from './features'
+export { packageViewRoots, type PackageResourceOptions, type PackageResourceRoot } from './discovered-resources'
 export { resolveViewPatterns, type DefaultViewsSetting, type ViewPatternResolution } from './views'
 export {
   createRequestContext,
