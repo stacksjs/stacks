@@ -317,7 +317,7 @@ export function resolveModelSources(options: {
 
   assertPackageModelsAreUsable(packaged, framework)
 
-  if (user.length === 0 && framework.length === 0 && packaged.length === 0)
+  if (user.length === 0 && framework.length === 0)
     return null
 
   const merge = options.includeFrameworkDefaults ?? shouldIncludeFrameworkDefaults()
@@ -345,13 +345,18 @@ export function resolveModelSources(options: {
       shadowed.push({ name: model.name, userFile: model.file, frameworkFile: replaced.file })
   }
 
-  // Precedence, lowest to highest: framework defaults, then packages, then
-  // userland. A package's models are MERGED rather than treated as a fallback,
-  // because an application that installed the package asked for its schema.
-  // Userland still wins over both, which is how an app customises either.
+  // Packages are deliberately NOT here. A package owns its tables through the
+  // hand-written SQL it ships, so putting its models in the generator's scope
+  // would emit a second CREATE TABLE for each one. Those duplicates then meet
+  // the earliest-filename-wins pruning in `preprocessSqliteMigrations`, which
+  // deletes the loser - and the loser can be the package's own file, which is
+  // the one thing a package's migrations must never suffer.
+  //
+  // They are reported through `excludedTables` instead, so the generator knows
+  // those tables exist and has no authority to drop them. Being a global is a
+  // separate question, answered by the auto-import barrel rather than here.
   const byName = new Map<string, ModelSource>()
   for (const model of contributing) byName.set(model.name, model)
-  for (const model of packaged) byName.set(model.name, model)
   for (const model of user) byName.set(model.name, model)
 
   const models = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
@@ -359,12 +364,13 @@ export function resolveModelSources(options: {
   const roots: string[] = []
   if (user.length > 0)
     roots.push(userRoot)
-  for (const root of new Set(packaged.map(model => model.file.replace(/\/[^/]+$/, ''))))
-    roots.push(root)
   if (contributing.length > 0)
     roots.push(frameworkRoot)
 
-  const excludedTables = [...new Set(excluded.map(declaredTableName))].sort()
+  // A package's tables are out of the generator's scope for the same reason an
+  // excluded framework default's are: something else owns them, and "not mine
+  // to generate" is not "safe to drop".
+  const excludedTables = [...new Set([...excluded, ...packaged].map(declaredTableName))].sort()
 
   // Fast path: a single root whose models are all top level needs no staging,
   // so the common userland-only project keeps reading its own directory.

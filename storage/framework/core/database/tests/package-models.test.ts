@@ -98,7 +98,7 @@ describe('package model roots', () => {
 })
 
 describe('resolving models with packages installed', () => {
-  test('a package contributes its models alongside the application own', () => {
+  test('a package model stays OUT of the generator scope, and its table is protected', () => {
     const root = project()
     try {
       const userRoot = models(join(root, 'app/Models'), ['Post'])
@@ -111,14 +111,18 @@ describe('resolving models with packages installed', () => {
         packageRoots: [{ package: 'loghq', dir: pkg }],
       })
 
-      // Userland has models, so the framework defaults stay out (#2220). The
-      // package's models come in regardless, because the app asked for them.
-      expect(resolved?.models.map(m => m.name).sort()).toEqual(['LogEntry', 'Post'])
+      // The package owns log_entries through the SQL it ships, so generating a
+      // second CREATE TABLE for it would produce a duplicate that the pruning
+      // resolves by deleting a file, possibly the package's own.
+      expect(resolved?.models.map(m => m.name).sort()).toEqual(['Post'])
+
+      // But the generator must know the table exists, or it proposes a DROP.
+      expect(resolved?.excludedTables).toContain('log_entries')
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })
 
-  test('userland still overrides a model a package shipped', () => {
+  test('a userland model of the same name is the one that generates', () => {
     const root = project()
     try {
       const userRoot = models(join(root, 'app/Models'), ['LogEntry'])
@@ -154,7 +158,8 @@ describe('resolving models with packages installed', () => {
       // A package bringing models is not the app having models of its own, so
       // the defaults still stand in. Removing them here would take User away
       // from a fresh app the moment it installed anything.
-      expect(resolved?.models.map(m => m.name).sort()).toEqual(['LogEntry', 'User'])
+      expect(resolved?.models.map(m => m.name).sort()).toEqual(['User'])
+      expect(resolved?.excludedTables).toContain('log_entries')
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })
