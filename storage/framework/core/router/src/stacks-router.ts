@@ -602,6 +602,7 @@ const routeActionRegistry = new Map<string, RouterAction>()
 
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 
 /**
  * Named route registry — keeps the original path plus the precomputed
@@ -1503,6 +1504,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
   const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
   const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
+  const routeSeedsCsrf = routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
   // What identifies this action to the CSRF skip cache: the handler string
   // when the route was registered by name (straight from the argument rather
@@ -1551,6 +1553,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
     }
     const enhancedReq = enhanceRequest(req)
+    const csrfHandledByOuter = (enhancedReq as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
 
     // Mint the CSRF token BEFORE the handler runs, not after.
     //
@@ -1565,8 +1568,10 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // seeding below then reuses this exact value rather than generating a
     // second one, so what the page embedded and what the browser stores are
     // the same string.
-    const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
-    if (renderTokenSeeding) await renderTokenSeeding
+    if (!csrfHandledByOuter) {
+      const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
+      if (renderTokenSeeding) await renderTokenSeeding
+    }
 
     if (actionPrefetch) await actionPrefetch
 
@@ -1861,8 +1866,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // read but never written. See stacksjs/stacks#1859 (CSRF
       // seeding INVESTIGATE → confirmed broken-by-default).
       if (response) {
-        const safeMethod = req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS'
-        if (safeMethod) {
+        if (routeSeedsCsrf && !csrfHandledByOuter) {
           try {
             const mod = loadCsrfModule()
             const csrf = mod instanceof Promise ? await mod : mod
@@ -1889,7 +1893,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // same `applyCorsIfConfigured` helper as the error paths above
       // so policy enforcement is consistent across all responses
       // (stacksjs/stacks#1859 H-3).
-      if (response) response = await applyCorsIfConfigured(enhancedReq, response)
+      if (response && enhancedReq._corsConfig)
+        response = await applyCorsIfConfigured(enhancedReq, response)
 
       // Echo X-Request-ID + Server-Timing on every response, AND stitch
       // the request_id into JSON error bodies so SPA error toasts can show
@@ -4451,6 +4456,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
     if (safe) {
       const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string })
       if (seeding) await seeding
+      ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
     }
 
     const response = await original(request)

@@ -51,6 +51,16 @@ function get(path: string, init?: RequestInit): Promise<Response> {
 }
 
 describe('the request path keeps its defaults', () => {
+  it('still seeds CSRF when the underlying router is called directly', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/direct', () => ({ ok: true }))
+
+    const answer = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct'))
+
+    expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
+  })
+
   it('still seeds a CSRF cookie on a cold GET', async () => {
     const answer = await get('/_hot/plain')
 
