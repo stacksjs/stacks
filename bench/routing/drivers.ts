@@ -26,6 +26,8 @@ export interface LoadRequest {
   /** Discarded, not measured. */
   warmupSeconds: number
   durationSeconds: number
+  /** One global fixed request rate across all connections. */
+  requestRate?: number
 }
 
 export interface LoadResult {
@@ -44,8 +46,26 @@ export interface Driver {
   name: string
   /** Whether numbers from this driver may be published. */
   publishable: boolean
+  supportsFixedRate: boolean
   isAvailable: () => Promise<boolean>
   run: (req: LoadRequest) => Promise<LoadResult>
+}
+
+export function ohaArgs(req: LoadRequest, durationSeconds: number): string[] {
+  return [
+    'oha',
+    '-z',
+    `${durationSeconds}s`,
+    '-c',
+    String(req.connections),
+    ...(req.requestRate == null ? [] : ['-q', String(req.requestRate), '--latency-correction']),
+    '--wait-ongoing-requests-after-deadline',
+    '--no-tui',
+    '--output-format',
+    'json',
+    ...methodArgs(req, '-m', '-d', '-H'),
+    req.url,
+  ]
 }
 
 async function which(bin: string): Promise<boolean> {
@@ -84,13 +104,14 @@ function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, head
 const oha: Driver = {
   name: 'oha',
   publishable: true,
+  supportsFixedRate: true,
   isAvailable: () => which('oha'),
   async run(req) {
     // oha has no warm-up flag, so the warm-up is a separate throwaway run.
     if (req.warmupSeconds > 0) {
-      await capture(['oha', '-z', `${req.warmupSeconds}s`, '-c', String(req.connections), '--no-tui', '-j', ...methodArgs(req, '-m', '-d', '-H'), req.url])
+      await capture(ohaArgs(req, req.warmupSeconds))
     }
-    const raw = await capture(['oha', '-z', `${req.durationSeconds}s`, '-c', String(req.connections), '--no-tui', '-j', ...methodArgs(req, '-m', '-d', '-H'), req.url])
+    const raw = await capture(ohaArgs(req, req.durationSeconds))
     const json = JSON.parse(raw)
     const codes: Record<string, number> = json.statusCodeDistribution ?? {}
     let ok = 0
@@ -118,6 +139,7 @@ const oha: Driver = {
 const bombardier: Driver = {
   name: 'bombardier',
   publishable: true,
+  supportsFixedRate: false,
   isAvailable: () => which('bombardier'),
   async run(req) {
     if (req.warmupSeconds > 0)
@@ -147,6 +169,7 @@ const bombardier: Driver = {
 const autocannon: Driver = {
   name: 'autocannon',
   publishable: true,
+  supportsFixedRate: false,
   isAvailable: () => which('autocannon'),
   async run(req) {
     const args = ['autocannon', '-d', String(req.durationSeconds), '-w', String(req.warmupSeconds), '-c', String(req.connections), '-j']
@@ -185,6 +208,7 @@ const WORKER = fileURLToPath(new URL('./load-worker.ts', import.meta.url))
 const builtin: Driver = {
   name: 'builtin',
   publishable: false,
+  supportsFixedRate: false,
   isAvailable: async () => true,
   async run(req) {
     const workers = Math.max(1, Math.min(req.connections, Math.max(1, (navigator.hardwareConcurrency || 4) - 2)))
@@ -201,7 +225,7 @@ const builtin: Driver = {
           warmupMs: req.warmupSeconds * 1000,
           durationMs: req.durationSeconds * 1000,
         })
-        return capture(['bun', WORKER, spec]).then(text => JSON.parse(text.trim().split('\n').pop()!))
+        return capture([process.execPath, WORKER, spec]).then(text => JSON.parse(text.trim().split('\n').pop()!))
       }),
     )
 

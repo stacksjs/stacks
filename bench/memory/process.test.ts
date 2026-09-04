@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { parseProcStatusRss, parsePsRss } from './process'
+import { parseProcStatusRss, parsePsProcessTreeRss, parsePsRss } from './process'
 
 describe('RSS parsers', () => {
   it('reads VmRSS from Linux process status', () => {
@@ -14,5 +14,16 @@ describe('RSS parsers', () => {
     expect(parseProcStatusRss('Name:\tbun\n')).toBeNull()
     expect(parsePsRss('')).toBeNull()
     expect(parsePsRss('process exited')).toBeNull()
+  })
+
+  it('sums the server process and every descendant without counting siblings', () => {
+    const table = [
+      '100 1 1000',
+      '101 100 2000',
+      '102 101 3000',
+      '200 1 9000',
+    ].join('\n')
+
+    expect(parsePsProcessTreeRss(table, 100)).toBe(6_000 * 1024)
   })
 })

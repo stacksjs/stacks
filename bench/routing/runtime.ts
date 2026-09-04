@@ -19,7 +19,7 @@ export interface BootedServer {
 }
 
 export async function boot(target: Target, withDb: boolean): Promise<BootedServer | { skipped: string }> {
-  const proc = Bun.spawn(['bun', join(BENCH_ROOT, 'servers', target.server)], {
+  const proc = Bun.spawn([process.execPath, join(BENCH_ROOT, 'servers', target.server)], {
     cwd: REPO_ROOT,
     stdout: 'pipe',
     stderr: 'pipe',

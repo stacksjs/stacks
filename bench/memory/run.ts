@@ -10,6 +10,7 @@ import type { Driver, LoadResult } from '../routing/drivers'
 import type { MemoryMeasurement, MemoryRunMeta, MemorySample } from './report'
 import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
+import type { MemoryProfileTarget } from './profile'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
@@ -20,7 +21,8 @@ import { createFixture } from '../routing/fixture'
 import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from '../routing/runtime'
 import { SCENARIOS } from '../routing/scenarios'
 import { TARGETS } from '../routing/targets'
-import { residentBytes } from './process'
+import { BUN_141_API_PROFILE } from './profile'
+import { residentTreeBytes } from './process'
 import { median, renderMemoryReport } from './report'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -36,6 +38,7 @@ interface Options {
   settleSeconds: number
   runs: number
   output?: string
+  requestRate?: number
 }
 
 function positiveNumber(flag: string, value: string): number {
@@ -53,9 +56,9 @@ function positiveInteger(flag: string, value: string): number {
 
 function parseArgs(argv: string[]): Options {
   const options: Options = {
-    targets: TARGETS.map(target => target.id),
+    targets: BUN_141_API_PROFILE.map(target => target.targetId),
     scenario: 'static-json',
-    connections: 50,
+    connections: 64,
     loadSeconds: 60,
     idleSeconds: 180,
     sampleIntervalMs: 100,
@@ -81,6 +84,7 @@ function parseArgs(argv: string[]): Options {
       case '--settle': options.settleSeconds = positiveNumber(flag, next()); break
       case '--runs': options.runs = positiveInteger(flag, next()); break
       case '--output': options.output = next(); break
+      case '--rate': options.requestRate = positiveNumber(flag, next()); break
       case '--help': case '-h':
         console.log(HELP)
         process.exit(0)
@@ -98,7 +102,8 @@ const HELP = `bun bench/memory/run.ts [flags]
   --targets      comma-separated target ids (${TARGETS.map(target => target.id).join(', ')})
   --scenario     routing scenario to load (default static-json)
   --driver       oha | bombardier | autocannon | builtin
-  --connections  concurrent connections (default 50)
+  --connections  concurrent connections (default 64)
+  --rate         override the profile's fixed requests per second for every target
   --load         sustained-load seconds (default 60)
   --idle         quiet seconds after load (default 180)
   --interval     RSS sample interval in milliseconds (default 100)
@@ -106,10 +111,20 @@ const HELP = `bun bench/memory/run.ts [flags]
   --runs         fresh-process repeats per target (default 1)
   --output       explicit output directory (default results/<timestamp>)`
 
-function resolveTargets(ids: string[]): Target[] {
+interface SelectedTarget extends MemoryProfileTarget {
+  target: Target
+}
+
+function resolveTargets(ids: string[], requestRate?: number): SelectedTarget[] {
   const unknown = ids.filter(id => !TARGETS.some(target => target.id === id))
   if (unknown.length > 0) throw new Error(`Unknown target(s): ${unknown.join(', ')}`)
-  return TARGETS.filter(target => ids.includes(target.id))
+  return ids.map((id) => {
+    const target = TARGETS.find(candidate => candidate.id === id)!
+    const profile = BUN_141_API_PROFILE.find(candidate => candidate.targetId === id)
+    const rate = requestRate ?? profile?.requestRate
+    if (rate == null) throw new Error(`Target '${id}' has no fixed request rate; pass --rate`)
+    return { target, targetId: id, label: profile?.label ?? target.label, requestRate: rate }
+  })
 }
 
 function resolveScenario(id: string): Scenario {
@@ -119,7 +134,7 @@ function resolveScenario(id: string): Scenario {
 }
 
 async function takeSample(pid: number, phase: MemorySample['phase'], startedAt: number): Promise<MemorySample | null> {
-  const rssBytes = await residentBytes(pid)
+  const rssBytes = await residentTreeBytes(pid)
   return rssBytes == null ? null : {
     elapsedMs: Math.round(performance.now() - startedAt),
     phase,
@@ -176,6 +191,7 @@ async function measure(
   scenario: Scenario,
   driver: Driver,
   options: Options,
+  requestRate: number,
 ): Promise<
   | { skipped: string }
   | { measurement: Omit<MemoryMeasurement, 'targetId' | 'run'>, samples: MemorySample[], load: LoadResult }
@@ -195,6 +211,7 @@ async function measure(
       connections: options.connections,
       warmupSeconds: 0,
       durationSeconds: options.loadSeconds,
+      requestRate,
     }), samples)
     const idleStartedAt = await sampleIdle(booted.pid, options.sampleIntervalMs, options.idleSeconds, startedAt, samples)
 
@@ -223,9 +240,11 @@ async function measure(
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2))
-  const targets = resolveTargets(options.targets)
+  const targets = resolveTargets(options.targets, options.requestRate)
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
+  if (!driver.supportsFixedRate)
+    throw new Error(`Load driver '${driver.name}' cannot enforce a fixed request rate. Install oha and rerun this benchmark.`)
 
   if (scenario.requiresDb) createFixture(FIXTURE)
 
@@ -237,7 +256,7 @@ async function main(): Promise<void> {
   const meta: MemoryRunMeta = {
     startedAt,
     driver: driver.name,
-    publishable: driver.publishable,
+    publishable: driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1',
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,
@@ -254,25 +273,26 @@ async function main(): Promise<void> {
     },
   }
 
-  if (!driver.publishable)
-    console.error('[memory] using the built-in generator, so this run is direction-only')
+  if (!(driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1'))
+    console.error('[memory] this is a direction-only run; publishing requires oha on dedicated Linux x64 hardware')
 
   const measurements: MemoryMeasurement[] = []
-  const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
+  const targetRows: Array<{ id: string, label: string, requestRate: number, skipped?: string }> = []
 
-  for (const target of targets) {
-    console.error(`\n[memory] === ${target.label}`)
+  for (const selected of targets) {
+    const { target, requestRate } = selected
+    console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)
 
     for (let run = 1; run <= options.runs; run++) {
       console.error(`[memory] run ${run}: ${options.loadSeconds}s load, then ${options.idleSeconds}s idle`)
-      const result = await measure(target, scenario, driver, options)
+      const result = await measure(target, scenario, driver, options, requestRate)
       if ('skipped' in result) {
         console.error(`[memory] skipped: ${result.skipped}`)
-        targetRows.push({ id: target.id, label: target.label, skipped: result.skipped })
+        targetRows.push({ id: target.id, label: selected.label, requestRate, skipped: result.skipped })
         break
       }
-      if (run === 1) targetRows.push({ id: target.id, label: target.label })
-      measurements.push({ targetId: target.id, run, ...result.measurement })
+      if (run === 1) targetRows.push({ id: target.id, label: selected.label, requestRate })
+      measurements.push({ targetId: target.id, run, requestRate, ...result.measurement })
       writeFileSync(join(rawDir, `${target.id}--run${run}.json`), `${JSON.stringify({
         targetId: target.id,
         run,

@@ -12,6 +12,7 @@ export interface MemoryMeasurement {
   rpsMean: number
   requests: number
   errors: number
+  requestRate: number
 }
 
 export interface MemoryRunMeta {
@@ -36,7 +37,7 @@ export interface MemoryRunMeta {
 
 export interface MemoryReportInput {
   meta: MemoryRunMeta
-  targets: Array<{ id: string, label: string, skipped?: string }>
+  targets: Array<{ id: string, label: string, requestRate: number, skipped?: string }>
   measurements: MemoryMeasurement[]
 }
 
@@ -44,6 +45,10 @@ export function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   return sorted.length % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!
+}
+
+export function rateAttainmentPercent(delivered: number, requested: number): number {
+  return requested === 0 ? 0 : delivered / requested * 100
 }
 
 function mib(bytes: number): string {
@@ -59,8 +64,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   const lines: string[] = ['# Idle memory benchmark', '']
 
   if (!meta.publishable) {
-    lines.push('> **Direction-only.** This run used the built-in Bun load generator. Use `oha` or')
-    lines.push('> `bombardier` before publishing these numbers.')
+    lines.push('> **Direction-only.** Publish only dedicated Linux x64 runs driven by `oha`.')
     lines.push('')
   }
 
@@ -68,7 +72,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
-  lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections |`)
+  lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections, fixed per-target request rates |`)
   lines.push(`| Method | ${meta.loadSeconds}s sustained load, ${meta.idleSeconds}s idle, ${meta.sampleIntervalMs}ms RSS sampling |`)
   lines.push(`| Settled window | Median of the final ${meta.settleSeconds}s of idle |`)
   lines.push(`| Repeats | ${meta.runs}, median reported |`)
@@ -83,19 +87,23 @@ export function renderMemoryReport(input: MemoryReportInput): string {
     lines.push('')
   }
 
-  lines.push('| Target | Settled idle RSS MiB | Run spread MiB | Peak load RSS MiB | req/s | Errors |')
-  lines.push('|---|---:|---:|---:|---:|---:|')
+  lines.push('| Target | Fixed req/s | Delivered req/s | Rate attained | Settled idle RSS MiB | Run spread MiB | Peak load RSS MiB | Errors |')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|')
   for (const target of targets) {
     const rows = measurements.filter(row => row.targetId === target.id)
     if (rows.length === 0) continue
     const settled = rows.map(row => row.settledRssBytes)
+    const delivered = median(rows.map(row => row.rpsMean))
+    const attained = rateAttainmentPercent(delivered, target.requestRate)
     lines.push([
       '',
       target.label,
+      integer(target.requestRate),
+      integer(delivered),
+      `${attained.toFixed(1)}%${attained >= 98 ? '' : ' (invalid)'}`,
       mib(median(settled)),
       `${mib(Math.min(...settled))}-${mib(Math.max(...settled))}`,
       mib(median(rows.map(row => row.peakLoadRssBytes))),
-      integer(median(rows.map(row => row.rpsMean))),
       integer(rows.reduce((total, row) => total + row.errors, 0)),
       '',
     ].join(' | ').trim())
