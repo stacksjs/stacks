@@ -742,6 +742,31 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
  * package), so this is purely a matter of rewriting the three places that
  * point AT the vendored copy, then deleting it.
  */
+/**
+ * Rewrite vendored bunfig preloads to package specifiers, and report which
+ * packages they now name.
+ *
+ * `storage/framework/core/env/plugin.ts` and `@stacksjs/env/plugin.js` are the
+ * same module, and the package's `./*` export maps the specifier onto its build
+ * output. The names come back because a preloaded specifier has to be a DIRECT
+ * dependency of the app - see the caller (stacksjs/stacks#2433 neighbours).
+ */
+export function rewriteBunfigPreloads(bunfig: string): { next: string, packages: Set<string>, rewritten: number } {
+  const packages = new Set<string>()
+  let rewritten = 0
+
+  const next = bunfig.replace(
+    /(["'])\.?\/?storage\/framework\/core\/([\w-]+)\/([^"']+?)\.ts\1/g,
+    (_match, quote: string, pkgName: string, subpath: string) => {
+      rewritten++
+      packages.add(`@stacksjs/${pkgName}`)
+      return `${quote}@stacksjs/${pkgName}/${subpath}.js${quote}`
+    },
+  )
+
+  return { next, packages, rewritten }
+}
+
 async function unvendorFramework(force: boolean): Promise<void> {
   const coreDir = path.frameworkPath('core')
   const rel = (p: string) => p.replace(`${process.cwd()}/`, '')
@@ -877,16 +902,40 @@ async function unvendorFramework(force: boolean): Promise<void> {
   let rewrittenPreloads = 0
   if (existsSync(bunfigPath)) {
     const bunfig = await fs.promises.readFile(bunfigPath, 'utf-8')
-    const next = bunfig.replace(
-      /(["'])\.?\/?storage\/framework\/core\/([\w-]+)\/([^"']+?)\.ts\1/g,
-      (_match, quote: string, pkgName: string, subpath: string) => {
-        rewrittenPreloads++
-        return `${quote}@stacksjs/${pkgName}/${subpath}.js${quote}`
-      },
-    )
+    const { next, packages: preloadedPackages, rewritten } = rewriteBunfigPreloads(bunfig)
+    rewrittenPreloads += rewritten
 
     if (next !== bunfig)
       await fs.promises.writeFile(bunfigPath, next)
+
+    /*
+     * A preloaded specifier has to be a DIRECT dependency.
+     *
+     * Rewriting the path to `@stacksjs/env/plugin.js` is only half the job: the
+     * app declares `stacks`, and `@stacksjs/env` arrives underneath it as a
+     * transitive package that bun does not put in the app's `node_modules`. So
+     * every scaffolded app died before it ran a single line, on
+     *
+     *     error: preload not found "@stacksjs/env/plugin.js"
+     *
+     * which is not a missing file - the package publishes `dist/plugin.js` and
+     * its `./*` export maps onto it - but a package the app never asked for.
+     * The framework itself is declared ten lines above this for exactly the
+     * same reason ("or nothing pulls it in"); preloads need the same treatment.
+     */
+    let declaredForPreload = 0
+    for (const pkgName of preloadedPackages) {
+      if (rootPkg.dependencies?.[pkgName] || rootPkg.devDependencies?.[pkgName])
+        continue
+
+      rootPkg.dependencies = { ...rootPkg.dependencies, [pkgName]: range }
+      declaredForPreload++
+    }
+
+    // Written a second time on purpose: the names only become known here, and
+    // the earlier write happens before this block has read bunfig.
+    if (declaredForPreload > 0)
+      await fs.promises.writeFile(rootPkgPath, `${JSON.stringify(rootPkg, null, 2)}\n`)
   }
 
   // 3. tsconfig.json inherits from the vendored core config, which is about to

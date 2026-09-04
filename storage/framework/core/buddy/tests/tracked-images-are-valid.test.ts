@@ -54,7 +54,19 @@ function startsWith(head: Uint8Array, signature: Uint8Array): boolean {
   return signature.every((byte, index) => head[index] === byte)
 }
 
-async function trackedImages(): Promise<Array<{ file: string, valid: boolean }>> {
+/**
+ * Memoized: both tests below need the same answer, and spawning `git ls-files`
+ * twice plus re-reading every image pushed this over bun's 5s default when the
+ * whole suite runs in parallel.
+ */
+let cached: Promise<Array<{ file: string, valid: boolean }>> | undefined
+
+function trackedImages(): Promise<Array<{ file: string, valid: boolean }>> {
+  cached ??= readTrackedImages()
+  return cached
+}
+
+async function readTrackedImages(): Promise<Array<{ file: string, valid: boolean }>> {
   const tracked = (await $`git ls-files`.cwd(root).quiet()).text().split('\n').filter(Boolean)
 
   return tracked
