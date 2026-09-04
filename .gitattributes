@@ -1,1 +1,35 @@
 * text=auto
+
+# Binary formats must never be line-ending normalised.
+#
+# With `* text=auto` alone, git treated `.png` as text and rewrote every
+# `0D 0A` inside it to `0A` on commit. That destroys the file: a PNG starts
+# `89 50 4E 47 0D 0A 1A 0A`, and 14 tracked images were committed already
+# broken in 2024 and stayed that way for over a year (stacksjs/stacks#2433).
+# The damage is not reversible - only the `0D` bytes that happened to precede
+# `0A` were dropped, so there is no way to tell which survivors used to have
+# one.
+#
+# 87 tracked files match these extensions, and every one of them was exposed.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.avif binary
+*.ico  binary
+*.icns binary
+*.woff  binary
+*.woff2 binary
+*.ttf  binary
+*.otf  binary
+*.eot  binary
+*.pdf  binary
+*.zip  binary
+*.gz   binary
+*.mp4  binary
+*.mov  binary
+*.mp3  binary
+*.wav  binary
+*.dmg  binary
+*.wasm binary
