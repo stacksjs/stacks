@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { publishables } from './promote-latest'
+import { meaningfulNpmError, publishables } from './promote-latest'
 
 const root = new URL('../../', import.meta.url).pathname
 
@@ -46,5 +46,32 @@ describe('publishables', () => {
     // them - so fail here rather than stranding whatever the new glob adds.
     expect(workflow).toContain("--tag staging 'storage/framework/core/*'")
     expect(workflow).toContain("--ignore-scripts 'storage/framework/core'")
+  })
+})
+
+describe('meaningfulNpmError', () => {
+  it('skips the log-path footer that used to be reported as the error', () => {
+    // The shape npm actually produced when promoting `stacks` failed on
+    // v0.74.14. That package is published through OIDC now rather than
+    // promoted (6241eb6c52), but the stderr shape is npm's, not that
+    // package's, and every promotion can still hit it.
+    const stderr = [
+      'npm error code E404',
+      'npm error 404 Not Found - PUT https://registry.npmjs.org/-/package/stacks/dist-tags/latest',
+      'npm error',
+      'npm error A complete log of this run can be found in: /home/runner/.npm/_logs/2026-09-03T22_28_52_123Z-debug-0.log',
+    ].join('\n')
+
+    expect(meaningfulNpmError(stderr)).toBe('404 Not Found - PUT https://registry.npmjs.org/-/package/stacks/dist-tags/latest')
+  })
+
+  it('handles the older npm ERR! prefix', () => {
+    expect(meaningfulNpmError('npm ERR! E403 Forbidden\nnpm ERR! A complete log of this run can be found in: /tmp/x.log'))
+      .toBe('E403 Forbidden')
+  })
+
+  it('says so plainly when npm wrote nothing useful', () => {
+    expect(meaningfulNpmError('npm error\nnpm error A complete log of this run can be found in: /tmp/x.log')).toBe('no error output')
+    expect(meaningfulNpmError('')).toBe('no error output')
   })
 })

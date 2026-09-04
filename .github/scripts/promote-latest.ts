@@ -64,10 +64,43 @@ export async function publishables(root: string): Promise<Publishable[]> {
   return found
 }
 
+/**
+ * The line of npm's stderr worth printing.
+ *
+ * npm ends every failure with two lines of housekeeping - a blank `npm error`
+ * and "A complete log of this run can be found in: /home/runner/.npm/_logs/...".
+ * Taking the last line, as this did, reported that path as the error and told
+ * the reader nothing: a real promotion failure showed up as
+ * `stacks@0.74.14: npm error A complete log of this run can be found in: ...`.
+ * The runner is gone by the time anyone reads the log, so that path is not
+ * even recoverable.
+ */
+export function meaningfulNpmError(stderr: string): string {
+  const lines = stderr
+    .split('\n')
+    .map(line => line.replace(/^npm (error|ERR!)\s*/, '').trim())
+    .filter(Boolean)
+    .filter(line => !/^A complete log of this run/.test(line))
+    .filter(line => !/^code\s/.test(line))
+
+  // Prefer the first substantive line: npm leads with the cause (`E403`,
+  // `E404`, "You cannot publish over...") and follows with context.
+  return lines[0] ?? 'no error output'
+}
+
 async function promote(pkg: Publishable): Promise<string | null> {
-  // Three attempts: a dist-tag write can lose to npm's own replication right
-  // after a publish, and retrying is cheaper than stranding the release.
-  for (let attempt = 1; attempt <= 3; attempt++) {
+  /*
+   * Five attempts with a widening wait. A dist-tag write can lose to npm's own
+   * replication for a few seconds after a publish, and the first version of
+   * this gave up after 2s + 4s. Promoting `stacks` failed on the release that
+   * shipped this; that particular package turned out to need OIDC rather than
+   * the legacy token and is published directly now (6241eb6c52), but the
+   * timing it exposed is real and applies to every package here.
+   *
+   * Retrying is much cheaper than a half-promoted release.
+   */
+  let last = 'no error output'
+  for (let attempt = 1; attempt <= 5; attempt++) {
     const proc = Bun.spawn(['npm', 'dist-tag', 'add', `${pkg.name}@${pkg.version}`, 'latest'], {
       stdout: 'pipe',
       stderr: 'pipe',
@@ -75,14 +108,12 @@ async function promote(pkg: Publishable): Promise<string | null> {
     if (await proc.exited === 0)
       return null
 
-    const stderr = (await new Response(proc.stderr).text()).trim()
-    if (attempt === 3)
-      return `${pkg.name}@${pkg.version}: ${stderr.split('\n').pop() ?? 'unknown error'}`
-
-    await Bun.sleep(attempt * 2000)
+    last = meaningfulNpmError((await new Response(proc.stderr).text()).trim())
+    if (attempt < 5)
+      await Bun.sleep(attempt * 3000)
   }
 
-  return null
+  return `${pkg.name}@${pkg.version}: ${last}`
 }
 
 async function main(): Promise<void> {
@@ -99,19 +130,36 @@ async function main(): Promise<void> {
   }
 
   const failures: string[] = []
+  let promoted = 0
   for (const pkg of packages) {
     const failure = await promote(pkg)
     if (failure)
       failures.push(failure)
+    else
+      promoted++
   }
 
   if (failures.length > 0) {
-    // Every failure at once: a half-promoted release needs the whole list to
-    // finish by hand, not the first name that went wrong.
-    console.error(`\n${failures.length} package(s) could not be promoted to latest:\n`)
+    /*
+     * Say which state the registry is actually in.
+     *
+     * This used to claim "`latest` still points at the previous release, so
+     * consumers are on a complete set", which is only true when nothing moved.
+     * The release that shipped this promoted 85 of 86 and printed that line
+     * anyway - the one reassuring sentence in the output was the false one.
+     *
+     * Every failure is listed rather than the first, because finishing by hand
+     * needs the whole list.
+     */
+    console.error(`\n${failures.length} of ${packages.length} package(s) could not be promoted to latest:\n`)
     for (const failure of failures)
       console.error(`  ✗ ${failure}`)
-    console.error('\n`latest` still points at the previous release, so consumers are on a complete set.')
+
+    console.error(
+      promoted === 0
+        ? '\n`latest` still points at the previous release everywhere, so consumers are on a complete set.'
+        : `\n${promoted} package(s) DID move, so \`latest\` now spans two releases. Finish the rest before that matters.`,
+    )
     console.error('Re-run this job, or finish by hand with `npm dist-tag add <pkg>@<version> latest`.\n')
     process.exit(1)
   }
