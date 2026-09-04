@@ -306,6 +306,7 @@ export async function createMail(options: MakeOptions & { force?: boolean }): Pr
   // an orphaned class without its template (or vice versa) when the
   // user re-runs against a project that already has one of the two.
   // `console.error` (not log.error) so the message lands on stderr
+  await log.flush()
   // before the upstream process.exit fires — the framework logger
   // batches via timers and can lose the final write on rapid exit.
   if (!options.force) {

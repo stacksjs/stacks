@@ -56,6 +56,7 @@ if (preflight.bypassed) {
   log.warn(`${BYPASS_ENV} is set, so the pinned checks were skipped for this release.`)
 }
 else if (preflight.failures.length > 0) {
+  await log.flush()
   // `log.exit`, not `log.error` + `process.exit`: the error write is async and
   // `process.exit` does not wait for it, so the only line explaining why the
   // release stopped was dropped on the way out. `bun run release:patch` printed

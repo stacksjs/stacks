@@ -85,6 +85,7 @@ export function migrateProject(buddy: CLI): void {
           log.success(`Report written to ${reportPath}`)
         }
 
+        await log.flush()
         process.exit(ExitCode.Success)
       }
       catch (err) {

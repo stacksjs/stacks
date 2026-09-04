@@ -64,6 +64,7 @@ if (registrar.includes('Amazon')) {
     log.info(`  ➡️  ${italic('buddy deploy')}`)
     log.info('')
   }
+  await log.flush()
   process.exit(0)
 }
 

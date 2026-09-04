@@ -31,7 +31,10 @@ async function gracefulShutdown(signal: NodeJS.Signals): Promise<void> {
   log.info(`[queue] Worker received ${signal}, draining in-flight jobs (max ${SHUTDOWN_GRACE_MS / 1000}s)…`)
   // Hard backstop: a wedged handler must not hold the worker open forever.
   setTimeout(() => {
-    log.warn('[queue] Drain window exceeded - forcing worker exit.')
+    // Synchronous for the same reason as the parent's backstop: the exit
+    // below outruns the async logger, and this is the only line that says why
+    // the worker died.
+    console.error('[queue] Drain window exceeded - forcing worker exit.')
     process.exit(1)
   }, SHUTDOWN_GRACE_MS + 2_000).unref()
   try {

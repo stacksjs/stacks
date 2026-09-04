@@ -36,7 +36,8 @@ export function http(buddy: CLI): void {
 
       result.match({
         ok: (response) => {
-          log.info(`${response.status} ${response.statusText} (${response.timings.duration.toFixed(0)}ms)`)
+          // Sync callback that exits: the async logger cannot flush first.
+          console.log(`${response.status} ${response.statusText} (${response.timings.duration.toFixed(0)}ms)`)
           console.log(typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2))
           process.exit(ExitCode.Success)
         },

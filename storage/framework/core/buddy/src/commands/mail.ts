@@ -1229,6 +1229,7 @@ export function mailCommands(buddy: CLI): void {
           log.warn('Save this password! It will not be shown again.')
         }
 
+        await log.flush()
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
         await log.error(`Failed to add user: ${getErrorMessage(error)}`)
@@ -1415,6 +1416,7 @@ export function mailCommands(buddy: CLI): void {
           log.warn(`Mail API returned status ${response.status}`)
         }
 
+        await log.flush()
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
         await log.error(`Failed to test API: ${getErrorMessage(error)}`)
@@ -1679,6 +1681,7 @@ export function mailCommands(buddy: CLI): void {
         }
 
         console.log('')
+        await log.flush()
         process.exit(ExitCode.Success)
       } catch (error: unknown) {
         await log.error(`Failed to get status: ${getErrorMessage(error)}`)
@@ -1916,6 +1919,7 @@ export function mailCommands(buddy: CLI): void {
         }
       }
 
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 
@@ -2364,6 +2368,7 @@ async function requestAwsPort25(
   console.log('    buddy mail:port25:status')
   console.log('')
 
+  await log.flush()
   process.exit(ExitCode.Success)
 }
 
@@ -2485,5 +2490,6 @@ async function requestHetznerPort25(
   console.log('    buddy mail:port25:status --provider hetzner')
   console.log('')
 
+  await log.flush()
   process.exit(ExitCode.Success)
 }

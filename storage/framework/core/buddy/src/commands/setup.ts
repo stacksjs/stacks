@@ -584,6 +584,7 @@ export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
     }
     catch (error) {
       handleError(error)
+      await log.flush()
       process.exit(ExitCode.FatalError)
     }
 

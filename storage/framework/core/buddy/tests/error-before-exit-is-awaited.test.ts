@@ -54,14 +54,47 @@ function offenders(dir: string, found: string[] = []): string[] {
 
     const lines = source.split('\n')
     lines.forEach((line, index) => {
-      if (!/\blog\.error\(/.test(line) || line.includes('await'))
+      // Every level, not just `error`. A dropped `log.warn` is how a forced
+      // worker shutdown came to report no reason at all.
+      if (!/\blog\.(error|warn|warning|info|success)\(/.test(line) || line.includes('await'))
+        return
+
+      // `upgrade.ts` keeps a commented-out confirmation block whose lines match
+      // this shape perfectly. Commented code cannot drop anything.
+      const code = line.trimStart()
+      if (code.startsWith('//') || code.startsWith('*') || code.startsWith('/*'))
         return
 
       // Only the exit path matters. A fire-and-forget `log.error` that lets
       // the process keep running does flush on its own.
-      const exitsImmediately = lines
-        .slice(index + 1, index + 4)
-        .some(next => next.includes('process.exit'))
+      /*
+       * Walk forward to the exit rather than peeking three lines, and stop at
+       * anything that makes the write land: an `await` yields, and an explicit
+       * `log.flush()` drains. Several commands print four or five lines before
+       * exiting - `publish:*` printed the whole list of uncommitted files - and
+       * a three-line window called those clean.
+       */
+      let exitsImmediately = false
+      for (let ahead = index + 1; ahead < Math.min(index + 16, lines.length); ahead++) {
+        const next = lines[ahead]!
+
+        // Anything that makes the write land, or that means the exit is not
+        // on this path at all. `setTimeout` was the one that mattered: both
+        // queue workers log a signal, then arm a backstop that exits minutes
+        // later, and counting that as "exits immediately" flagged three sites
+        // whose logging is perfectly fine.
+        if (next.includes('log.flush') || /\bawait\b/.test(next))
+          break
+        if (/\b(setTimeout|setInterval|queueMicrotask)\(/.test(next) || /=>\s*\{\s*$/.test(next))
+          break
+        if (/^\s*return\b/.test(next))
+          break
+
+        if (next.includes('process.exit')) {
+          exitsImmediately = true
+          break
+        }
+      }
 
       const site = `${full.replace(root, '')}:${index + 1}`
       if (exitsImmediately && !delivered.has(site))

@@ -58,6 +58,7 @@ const dirs = allEntries.filter((entry) => {
 
 if (dirs.length === 0) {
   // Awaited, like the summary below: `log` writes asynchronously, so a bare
+  await log.flush()
   // `log.x()` before `process.exit` exits with the line still in flight and
   // the user sees nothing but a non-zero status.
   await log.info('No core packages found')

@@ -111,6 +111,7 @@ export function schedule(buddy: CLI): void {
           for (const name of held)
             log.info(`  • ${name}`)
         }
+        await log.flush()
         process.exit(ExitCode.Success)
       }
       catch (err) {

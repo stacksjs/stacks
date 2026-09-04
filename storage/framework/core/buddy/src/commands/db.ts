@@ -301,6 +301,7 @@ export function db(buddy: CLI): void {
         log.info(`  ${name}  ${(size / 1024).toFixed(1)} KB`)
       }
 
+      await log.flush()
       process.exit(ExitCode.Success)
     })
 
