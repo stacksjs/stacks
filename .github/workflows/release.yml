@@ -117,7 +117,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.11.48'
           install: 'false'
@@ -177,7 +177,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.11.48'
           install: 'false'
@@ -406,7 +406,7 @@ jobs:
           bun run zip:all
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@fa45776eb21df83b1ae8068c6df79aa9943e69b5 # v0.11.48
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.11.48'
           install: 'false'

@@ -71,7 +71,7 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.10.47'
           install: 'false'
@@ -100,7 +100,7 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.10.47'
           install: 'false'
@@ -136,7 +136,7 @@ jobs:
           ref: ${{ inputs.release-tag || github.ref }}
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.10.47'
           install: 'false'
@@ -172,7 +172,7 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.10.47'
           install: 'false'
@@ -242,7 +242,7 @@ jobs:
           echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
       - name: Create GitHub Release
-        uses: pantry-pm/pantry/packages/action@edc09bc52806f154881961eb6418b30c0b7e9faa # v0.11.29
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
         with:
           version: '0.10.47'
           install: 'false'
