@@ -8,6 +8,7 @@
 import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
+import { isPackageMigration } from './package-migrations'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -711,7 +712,11 @@ export function preprocessSqliteMigrations(): void {
     if (createTableMatch && createTableMatch[1]) {
       const tableName = createTableMatch[1]
       const earliest = createTableEarliest.get(tableName)
-      if (earliest && earliest !== file) {
+      // Never the package's copy. Its ordinal is high, so it loses an
+      // earliest-filename-wins comparison against anything the generator
+      // emitted for the same table - and deleting it would take the package's
+      // own schema with it.
+      if (earliest && earliest !== file && !isPackageMigration(file)) {
         deleteMigration(file, filePath, `duplicate create-table for "${tableName}" (kept ${earliest})`)
         continue
       }
@@ -3153,9 +3158,15 @@ export async function regenerateMigrationCorpus(options: {
       options.replaceUnmarked || options.onlyExistingTables ? [] : historicallyRootedTables(dir, existing),
     )
     const outOfScope = new Set(migrationsOutsideCorpus(dir, existing, createdTablesOf(statements)))
-    const deletable = options.replaceUnmarked || options.onlyExistingTables
+    // `replaceUnmarked` and `onlyExistingTables` delete every file regardless
+    // of marker. A package's migrations are not this corpus's to rewrite, and
+    // the package would not put them back: it ships them, it does not generate
+    // them. Excluded from the deletable set rather than rescued afterwards, so
+    // no later filter can put them back in.
+    const deletable = (options.replaceUnmarked || options.onlyExistingTables
       ? existing
-      : existing.filter(file => isGeneratedMigration(dir, file))
+      : existing.filter(file => isGeneratedMigration(dir, file)))
+      .filter(file => !isPackageMigration(file))
     const removed = deletable.filter(file => {
       return !outOfScope.has(file) && !migrationTouchesRootedTable(dir, file, rootedTables)
     })
@@ -3205,12 +3216,17 @@ export async function regenerateMigrationCorpus(options: {
     // such as SQLite table rebuilds. Skip their occupied ordinals instead of
     // renumbering them, since authored backfills may depend on those filenames'
     // relative position.
+    // Package files are unmarked and preserved, so both of these would other-
+    // wise take their maximum from the reserved band and number the whole
+    // regenerated application corpus above them.
     const historicalBoundary = existing
-      .filter(file => !isGeneratedMigration(dir, file))
+      .filter(file => !isGeneratedMigration(dir, file) && !isPackageMigration(file))
       .reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0)
     const startAt = rootedTables.size > 0
       ? historicalBoundary + 1
-      : preserved.reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
+      : preserved
+          .filter(file => !isPackageMigration(file))
+          .reduce((max, file) => Math.max(max, migrationOrdinal(file)), 0) + 1
     const reservedOrdinals = new Set(preserved.map(migrationOrdinal))
     const ordinals = allocateMigrationOrdinals(writableGroups.length, startAt, reservedOrdinals)
 
@@ -3559,6 +3575,11 @@ function nextMigrationNumber(migrationsDir: string): number {
   let max = 0
   try {
     for (const f of readdirSync(migrationsDir)) {
+      // A package's migrations sit in a reserved high band. Counting them here
+      // would push the application's next ordinal into that band, and every
+      // application migration after it would then run AFTER the package's.
+      if (isPackageMigration(f))
+        continue
       const m = f.match(/^(\d+)-/)
       if (m?.[1]) max = Math.max(max, Number.parseInt(m[1], 10))
     }
