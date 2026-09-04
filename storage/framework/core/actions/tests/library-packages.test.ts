@@ -1,4 +1,4 @@
-import type { LibraryConfig } from '@stacksjs/types'
+import type { LibraryBuildOptions, LibraryConfig } from '@stacksjs/types'
 import { describe, expect, it } from 'bun:test'
 import { rm } from 'node:fs/promises'
 import { relative, resolve } from 'node:path'
@@ -423,5 +423,72 @@ describe('publishCommand', () => {
     finally {
       Bun.which = which
     }
+  })
+})
+
+describe('single-package sugar honours include/exclude (stacksjs/stacks#2426)', () => {
+  it('gives webComponents.include precedence over tags', () => {
+    /*
+     * Annotated as `LibraryBuildOptions` rather than inlined, so this also
+     * covers the DECLARATION. Without `include` on that interface a direct
+     * object literal fails with TS2353, which is what the issue reports; an
+     * inline literal inside an `as LibraryConfig` cast would suppress the
+     * excess-property check and quietly pass either way.
+     *
+     * `tags` alone contributes `<Name>.stx` and cannot reach a nested
+     * directory, which is why `include` has to exist on this key.
+     */
+    const webComponents: LibraryBuildOptions = {
+      name: '@acme/ui',
+      description: 'ui',
+      keywords: [],
+      tags: [{ name: 'HelloWorld' }],
+      include: ['charts/**'],
+    }
+
+    const [definition] = normalizeLibraryPackages({ webComponents } as LibraryConfig)
+
+    expect(definition!.include).toEqual(['charts/**'])
+  })
+
+  it('gives functions.include precedence over files', () => {
+    const [definition] = normalizeLibraryPackages({
+      functions: {
+        name: '@acme/fx',
+        description: 'fx',
+        keywords: [],
+        files: ['counter'],
+        include: ['dates/**'],
+      },
+    } as LibraryConfig)
+
+    expect(definition!.include).toEqual(['dates/**'])
+  })
+
+  it('carries exclude through the same normalization', () => {
+    const [definition] = normalizeLibraryPackages({
+      functions: {
+        name: '@acme/fx',
+        description: 'fx',
+        keywords: [],
+        include: ['**/*.ts'],
+        exclude: ['internal/**'],
+      },
+    } as LibraryConfig)
+
+    expect(definition!.exclude).toEqual(['internal/**'])
+  })
+
+  it('still falls back to tags when include is absent', () => {
+    const [definition] = normalizeLibraryPackages({
+      webComponents: {
+        name: '@acme/ui',
+        description: 'ui',
+        keywords: [],
+        tags: [{ name: 'HelloWorld' }],
+      },
+    } as LibraryConfig)
+
+    expect(definition!.include).toEqual(['HelloWorld.stx'])
   })
 })

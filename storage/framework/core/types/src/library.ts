@@ -286,6 +286,33 @@ export interface LibraryBuildOptions {
   files?: string[] // TODO: we can narrow this type to only include .ts files
 
   /**
+   * The sources this package claims, as globs relative to
+   * `resources/functions` (for `functions`) or `resources/components` (for
+   * `webComponents`). Takes precedence over both `files` and `tags`.
+   *
+   * This key is normalized straight into the `packages` entry that
+   * `LibraryPackageOptions` describes, and the resolver has always given it
+   * the highest precedence - it was simply never declared here, so the one
+   * field that overrides everything was the one `buddy typecheck` rejected
+   * (stacksjs/stacks#2426).
+   *
+   * Reach for it when `files` and `tags` cannot describe the layout: a `tags`
+   * entry contributes `<Name>.stx` and `files` appends `.ts`, so components
+   * nested under `resources/components/charts/` need a recursive glob.
+   *
+   * @default ['**\/*.ts'] for functions, ['**\/*.stx'] for components
+   * @example ['charts/**', 'ui/*.stx']
+   */
+  include?: string[]
+
+  /**
+   * Globs subtracted from `include`, same base directory.
+   *
+   * @example ['**\/*.test.ts', 'internal/**']
+   */
+  exclude?: string[]
+
+  /**
    * This is where you define the components that need to be included in
    * your library. For example, including your `HelloWorld` to be built
    * would require `../components/HelloWorld.stx` to be present.
