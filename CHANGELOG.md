@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.21...v0.74.22)
+
+## 🐛 Bug Fixes
+
+- **release**: synchronize Pantry lockfile ([5a0410a](https://github.com/stacksjs/stacks/commit/5a0410a)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- **memory**: use Pantry 0.11.53 ([dc68334](https://github.com/stacksjs/stacks/commit/dc68334)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.20...v0.74.21)
 
 ## ✨ Features
