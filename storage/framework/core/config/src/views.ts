@@ -1,5 +1,7 @@
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
+import { packageViewRoots } from './discovered-resources'
+import type { PackageResourceRoot } from './discovered-resources'
 
 /**
  * Whether an app serves the framework's default views, and which of them.
@@ -42,23 +44,36 @@ export interface ViewPatternResolution {
  *
  * `exists` is injectable so the resolution is testable without a fixture tree;
  * it defaults to the real filesystem.
+ *
+ * Views a discovered package ships are appended LAST, after everything above.
+ * stx's `getRoute()` returns the first pattern whose relative path matches, so
+ * anything appended after the existing roots cannot change the answer for a
+ * path that already resolves. That is what makes this additive for an app with
+ * no packages, and for every pre-existing route in an app with them.
+ *
+ * `defaultViews` is not consulted for packages. That setting decides whether
+ * the app serves the FRAMEWORK's demo views; an application that installed a
+ * package asked for that package's pages either way.
  */
 export function resolveViewPatterns(
   userViewsPath: string,
   defaultViewsPath: string,
   setting: DefaultViewsSetting | undefined,
   exists: (path: string) => boolean = existsSync,
+  packageViews: PackageResourceRoot[] = packageViewRoots({ exists }),
 ): ViewPatternResolution {
+  const fromPackages = packageViews.map(root => root.dir)
+
   // Absent means unset, which must keep behaving exactly as before. Only an
   // explicit `false` or a list opts out.
   if (setting === undefined || setting === true)
-    return { patterns: [userViewsPath, defaultViewsPath], missing: [] }
+    return { patterns: [userViewsPath, defaultViewsPath, ...fromPackages], missing: [] }
 
   if (setting === false)
-    return { patterns: [userViewsPath], missing: [] }
+    return { patterns: [userViewsPath, ...fromPackages], missing: [] }
 
   if (!Array.isArray(setting))
-    return { patterns: [userViewsPath, defaultViewsPath], missing: [] }
+    return { patterns: [userViewsPath, defaultViewsPath, ...fromPackages], missing: [] }
 
   const patterns = [userViewsPath]
   const missing: string[] = []
@@ -76,6 +91,8 @@ export function resolveViewPatterns(
     else
       missing.push(cleaned)
   }
+
+  patterns.push(...fromPackages)
 
   return { patterns, missing }
 }
