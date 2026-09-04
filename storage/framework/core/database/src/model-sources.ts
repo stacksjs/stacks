@@ -40,6 +40,8 @@ import process from 'node:process'
 import { config } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { plural, snakeCase } from '@stacksjs/strings'
+import { packageModelRoots } from './package-models'
+import type { PackageModelRoot } from './package-models'
 
 export interface ModelSource {
   /** Absolute path to the model file. */
@@ -47,7 +49,9 @@ export interface ModelSource {
   /** Basename without extension, used for collision resolution. */
   name: string
   /** Which root it came from. */
-  origin: 'user' | 'framework'
+  origin: 'user' | 'framework' | 'package'
+  /** For `origin: 'package'`, the package that shipped it. */
+  package?: string
 }
 
 /** A userland model that replaced a framework default of the same name. */
@@ -93,7 +97,7 @@ export interface ResolvedModelSources {
 }
 
 /** Collect model files recursively, skipping index barrels and dotfiles. */
-function collectModels(root: string, origin: ModelSource['origin']): ModelSource[] {
+function collectModels(root: string, origin: ModelSource['origin'], owner?: string): ModelSource[] {
   if (!existsSync(root))
     return []
 
@@ -122,12 +126,55 @@ function collectModels(root: string, origin: ModelSource['origin']): ModelSource
       if (entry.name.startsWith('.') || entry.name.startsWith('index'))
         continue
 
-      out.push({ file: full, name: entry.name.replace(/\.ts$/, ''), origin })
+      out.push({ file: full, name: entry.name.replace(/\.ts$/, ''), origin, package: owner })
     }
   }
 
   walk(root)
   return out
+}
+
+/**
+ * Refuse a package model set that cannot be merged safely.
+ *
+ * Models become server GLOBALS, so two of the same name are not a merge
+ * conflict that can be resolved by precedence: whichever loses is simply gone,
+ * and the table it owned is described by nothing. Both cases below are a
+ * packaging mistake with no correct silent outcome, so they stop the run and
+ * name the files rather than letting a schema quietly lose a table.
+ *
+ * Userland is deliberately not checked. An application overriding a model it
+ * installed is a supported customisation, and it already reports through
+ * {@link ResolvedModelSources.shadowed}.
+ */
+function assertPackageModelsAreUsable(packaged: ModelSource[], framework: ModelSource[]): void {
+  const seen = new Map<string, ModelSource>()
+  for (const model of packaged) {
+    const clash = seen.get(model.name)
+    if (clash) {
+      throw new Error(
+        `Two installed packages both ship a '${model.name}' model, and a model name is a global.\n`
+        + `  ${clash.package}: ${clash.file}\n`
+        + `  ${model.package}: ${model.file}\n`
+        + `Only one can win, so neither package can be trusted to own its table. `
+        + `Rename one, or have both depend on a shared package that owns the model.`,
+      )
+    }
+    seen.set(model.name, model)
+  }
+
+  const frameworkNames = new Set(framework.map(model => model.name))
+  for (const model of packaged) {
+    if (!frameworkNames.has(model.name))
+      continue
+
+    throw new Error(
+      `The package '${model.package}' ships a '${model.name}' model, which the framework already owns.\n`
+      + `  ${model.file}\n`
+      + `The framework's own code reads that table, so a package cannot redefine it. `
+      + `A package uses the host application's model instead: this is why a package never ships its own User.`,
+    )
+  }
 }
 
 /**
@@ -252,14 +299,25 @@ export function resolveModelSources(options: {
    * (stacksjs/stacks#2255).
    */
   forceStage?: boolean
+  /**
+   * Model directories contributed by discovered packages.
+   *
+   * Defaults to whatever the discovery manifest names. Passed explicitly by
+   * tests, and by any caller that has already resolved them.
+   */
+  packageRoots?: PackageModelRoot[]
 } = {}): ResolvedModelSources | null {
   const userRoot = options.userRoot ?? path.userModelsPath()
   const frameworkRoot = options.frameworkRoot ?? path.frameworkPath('defaults/app/Models')
 
   const user = collectModels(userRoot, 'user')
   const framework = collectModels(frameworkRoot, 'framework')
+  const packaged = (options.packageRoots ?? packageModelRoots())
+    .flatMap(root => collectModels(root.dir, 'package', root.package))
 
-  if (user.length === 0 && framework.length === 0)
+  assertPackageModelsAreUsable(packaged, framework)
+
+  if (user.length === 0 && framework.length === 0 && packaged.length === 0)
     return null
 
   const merge = options.includeFrameworkDefaults ?? shouldIncludeFrameworkDefaults()
@@ -287,10 +345,13 @@ export function resolveModelSources(options: {
       shadowed.push({ name: model.name, userFile: model.file, frameworkFile: replaced.file })
   }
 
-  // Userland still overrides a framework model of the same name, which is what
-  // the merge path is for.
+  // Precedence, lowest to highest: framework defaults, then packages, then
+  // userland. A package's models are MERGED rather than treated as a fallback,
+  // because an application that installed the package asked for its schema.
+  // Userland still wins over both, which is how an app customises either.
   const byName = new Map<string, ModelSource>()
   for (const model of contributing) byName.set(model.name, model)
+  for (const model of packaged) byName.set(model.name, model)
   for (const model of user) byName.set(model.name, model)
 
   const models = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name))
@@ -298,6 +359,8 @@ export function resolveModelSources(options: {
   const roots: string[] = []
   if (user.length > 0)
     roots.push(userRoot)
+  for (const root of new Set(packaged.map(model => model.file.replace(/\/[^/]+$/, ''))))
+    roots.push(root)
   if (contributing.length > 0)
     roots.push(frameworkRoot)
 
