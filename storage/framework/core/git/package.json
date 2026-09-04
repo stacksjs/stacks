@@ -2,7 +2,7 @@
   "name": "@stacksjs/git",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "The Stacks git utilities & conventions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "cz-git": "^1.13.1"
+    "cz-git": "^1.14.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

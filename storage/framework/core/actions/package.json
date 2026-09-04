@@ -2,7 +2,7 @@
   "name": "@stacksjs/actions",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -66,7 +66,7 @@
     "@stacksjs/api": "workspace:*",
     "@stacksjs/auth": "workspace:*",
     "@stacksjs/build": "workspace:*",
-    "@stacksjs/bumpx": "^0.2.6",
+    "@stacksjs/bumpx": "^0.2.17",
     "@stacksjs/bunpress": "^0.2.8",
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/cloud": "workspace:*",
@@ -82,7 +82,7 @@
     "@stacksjs/i18n": "workspace:*",
     "@stacksjs/image": "workspace:*",
     "@stacksjs/logging": "workspace:*",
-    "@stacksjs/logsmith": "^0.2.3",
+    "@stacksjs/logsmith": "^0.2.11",
     "@stacksjs/orm": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/payments": "workspace:*",
@@ -109,7 +109,7 @@
   },
   "peerDependencies": {
     "craft-native": ">=0.0.72",
-    "pickier": "^0.1.58"
+    "pickier": "^0.1.65"
   },
   "peerDependenciesMeta": {
     "pickier": {

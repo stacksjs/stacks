@@ -2,7 +2,7 @@
   "name": "@stacksjs/http",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "Stacks HTTP methods.",
   "author": "Chris Breuer",
   "contributors": [
@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/httx": "^0.1.10"
+    "@stacksjs/httx": "^0.1.11"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

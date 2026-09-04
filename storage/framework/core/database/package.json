@@ -2,7 +2,7 @@
   "name": "@stacksjs/database",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "The Stacks database integration.",
   "author": "Chris Breuer",
   "contributors": [
@@ -63,18 +63,18 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/env": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
-    "@stacksjs/faker": "^0.74.24",
+    "@stacksjs/faker": "^0.74.22",
     "@stacksjs/features": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/model-meta": "workspace:*",
     "@stacksjs/path": "workspace:*",
-    "@stacksjs/query-builder": "^0.74.24",
+    "@stacksjs/query-builder": "^0.74.22",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
-    "bun-query-builder": "^0.2.62",
-    "dynamodb-tooling": "^0.3.2"
+    "bun-query-builder": "^0.2.63",
+    "dynamodb-tooling": "^0.3.6"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
