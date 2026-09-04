@@ -1,5 +1,19 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.23...v0.74.24)
+
+## 🐛 Bug Fixes
+
+- **cli**: preserve explicit tool path precedence ([a3b6e1c](https://github.com/stacksjs/stacks/commit/a3b6e1c)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: refresh Pantry workspace lock ([3a23127](https://github.com/stacksjs/stacks/commit/3a23127)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.22...v0.74.23)
 
 ## 💚 Continuous Integration
