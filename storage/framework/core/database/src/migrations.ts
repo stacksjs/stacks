@@ -1554,7 +1554,12 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
       makeMigrationsIdempotent()
     }
 
-    const modelsDir = path.userModelsPath()
+    // The corpus to run, which is NOT the models directory. bun-query-builder
+    // declared this argument and then ignored it, resolving `migrationDir` from
+    // its own config, so passing `app/Models` here was wrong and silent. 0.2.63
+    // honours it (stacksjs/bun-query-builder#1137), which turned that into
+    // `Migration directory not found: <app>/app/Models` on every deploy.
+    const corpusDir = migrationDirectory(dialect)
 
     /*
      * Some older generated migration corpora rebuild or normalize framework
@@ -1593,8 +1598,8 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     const appliedBefore = await countAppliedMigrations()
 
     // Execute existing migration files
-    log.debug(`[migration] Running migrations from: ${modelsDir}`)
-    await qbExecuteMigration(modelsDir)
+    log.debug(`[migration] Running migrations from: ${corpusDir}`)
+    await qbExecuteMigration(corpusDir)
 
     // Complete the guarantee after the model batch. This creates tables absent
     // from both the corpus and the preflight, and validates existing shapes.
