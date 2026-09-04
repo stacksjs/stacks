@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.18...v0.74.19)
+
+## 🔧 Chores
+
+- **images**: ship dynamic delivery runtime ([7bb7c19](https://github.com/stacksjs/stacks/commit/7bb7c19)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.17...v0.74.18)
 
 ## 🐛 Bug Fixes
