@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.19...v0.74.20)
+
+## 🐛 Bug Fixes
+
+- **theme**: preserve composable toggle runtime ([a1532df](https://github.com/stacksjs/stacks/commit/a1532df)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.18...v0.74.19)
 
 ## 🔧 Chores
