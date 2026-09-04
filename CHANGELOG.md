@@ -1,5 +1,74 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.20...v0.74.21)
+
+## ✨ Features
+
+- **bench**: add Express and Fastify competitors ([c738373](https://github.com/stacksjs/stacks/commit/c738373)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce fixed-rate idle RSS measurement ([f7b325c](https://github.com/stacksjs/stacks/commit/f7b325c)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: measure idle resident memory ([52e311d](https://github.com/stacksjs/stacks/commit/52e311d)) _(by Chris <chris@stacksjs.com>)_
+- **server**: put an installed package's models on globalThis (#2431) ([5513093](https://github.com/stacksjs/stacks/commit/5513093)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2431](https://github.com/stacksjs/stacks/issues/2431), [#2431](https://github.com/stacksjs/stacks/issues/2431), [#2427](https://github.com/stacksjs/stacks/issues/2427), [#2428](https://github.com/stacksjs/stacks/issues/2428))
+- **database**: reserve an ordinal band for package migrations, and defend it (#2430) ([30058cf](https://github.com/stacksjs/stacks/commit/30058cf)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2430](https://github.com/stacksjs/stacks/issues/2430), [#2430](https://github.com/stacksjs/stacks/issues/2430))
+- **config**: serve the views an installed package ships (#2429) ([d2cbc37](https://github.com/stacksjs/stacks/commit/d2cbc37)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2429](https://github.com/stacksjs/stacks/issues/2429), [#2429](https://github.com/stacksjs/stacks/issues/2429))
+- **database**: let an installed package bring its models (#2427) ([93f55b3](https://github.com/stacksjs/stacks/commit/93f55b3)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2427](https://github.com/stacksjs/stacks/issues/2427), [#2427](https://github.com/stacksjs/stacks/issues/2427), [#2220](https://github.com/stacksjs/stacks/issues/2220))
+
+## 🐛 Bug Fixes
+
+- **release**: preserve canonical Bun lockfile format ([590de38](https://github.com/stacksjs/stacks/commit/590de38)) _(by Chris <chris@stacksjs.com>)_
+- **scaffold**: declare the packages a rewritten preload names ([e4dce32](https://github.com/stacksjs/stacks/commit/e4dce32)) _(by Chris <chris@stacksjs.com>)_
+- **types**: declare include/exclude on LibraryBuildOptions (#2426) ([328743c](https://github.com/stacksjs/stacks/commit/328743c)) _(by Chris <chris@stacksjs.com>)_ ([#2426](https://github.com/stacksjs/stacks/issues/2426), [#2426](https://github.com/stacksjs/stacks/issues/2426), [#2426](https://github.com/stacksjs/stacks/issues/2426))
+- **repo**: stop git corrupting binaries, and drop 7 dead PNGs it already ate (#2433) ([b1ff62a](https://github.com/stacksjs/stacks/commit/b1ff62a)) _(by Chris <chris@stacksjs.com>)_ ([#2433](https://github.com/stacksjs/stacks/issues/2433), [#2433](https://github.com/stacksjs/stacks/issues/2433), [#2433](https://github.com/stacksjs/stacks/issues/2433))
+- **core**: resolve deep source entrypoints ([86b43b4](https://github.com/stacksjs/stacks/commit/86b43b4)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: isolate measured workloads ([6c197b4](https://github.com/stacksjs/stacks/commit/6c197b4)) _(by Chris <chris@stacksjs.com>)_
+- **ci**: install fresh benchmark tooling ([78edb22](https://github.com/stacksjs/stacks/commit/78edb22)) _(by Chris <chris@stacksjs.com>)_
+- **database**: run the migrations directory, not the models directory (#2432) ([ebe58f4](https://github.com/stacksjs/stacks/commit/ebe58f4)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2432](https://github.com/stacksjs/stacks/issues/2432), [#2432](https://github.com/stacksjs/stacks/issues/2432), [#1137](https://github.com/stacksjs/stacks/issues/1137))
+- **ci**: isolate dependency caches ([537fcd1](https://github.com/stacksjs/stacks/commit/537fcd1)) _(by Chris <chris@stacksjs.com>)_
+- **env**: support writes on Bun 1.4.1 ([509b389](https://github.com/stacksjs/stacks/commit/509b389)) _(by Chris <chris@stacksjs.com>)_
+- **database**: keep package models out of the migration generator's scope (#2428) ([2427b79](https://github.com/stacksjs/stacks/commit/2427b79)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2428](https://github.com/stacksjs/stacks/issues/2428), [#2428](https://github.com/stacksjs/stacks/issues/2428), [#2427](https://github.com/stacksjs/stacks/issues/2427))
+
+## ⚡ Performance Improvements
+
+- **router**: defer session encryption runtime ([a436f6c](https://github.com/stacksjs/stacks/commit/a436f6c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: preserve synchronous inline handlers ([6937940](https://github.com/stacksjs/stacks/commit/6937940)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse empty middleware state ([4503760](https://github.com/stacksjs/stacks/commit/4503760)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid redundant safe-path work ([caee53a](https://github.com/stacksjs/stacks/commit/caee53a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: lazy-load action limiter ([bd74089](https://github.com/stacksjs/stacks/commit/bd74089)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid empty query tracker allocations ([23ced38](https://github.com/stacksjs/stacks/commit/23ced38)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer unused route limiter ([38ac01a](https://github.com/stacksjs/stacks/commit/38ac01a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reduce success-path allocations ([59b97dc](https://github.com/stacksjs/stacks/commit/59b97dc)) _(by Chris <chris@stacksjs.com>)_
+- **core**: defer optional runtime dependencies ([e95b959](https://github.com/stacksjs/stacks/commit/e95b959)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **bench**: share server harness ([c84306a](https://github.com/stacksjs/stacks/commit/c84306a)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **bench**: define the Bun idle RSS comparison ([f136122](https://github.com/stacksjs/stacks/commit/f136122)) _(by Chris <chris@stacksjs.com>)_
+- document the pinned Bun toolchain ([1a1cce9](https://github.com/stacksjs/stacks/commit/1a1cce9)) _(by Chris <chris@stacksjs.com>)_
+
+## 💚 Continuous Integration
+
+- **memory**: use Pantry 0.11.52 ([672659d](https://github.com/stacksjs/stacks/commit/672659d)) _(by Chris <chris@stacksjs.com>)_
+- stop loading the framework to answer a branch-name lookup (#2414) ([ad62a34](https://github.com/stacksjs/stacks/commit/ad62a34)) _(by Chris <chris@stacksjs.com>)_ ([#2414](https://github.com/stacksjs/stacks/issues/2414), [#2414](https://github.com/stacksjs/stacks/issues/2414), [#2414](https://github.com/stacksjs/stacks/issues/2414))
+- build the packages whose subpaths the typecheck needs ([3362bb9](https://github.com/stacksjs/stacks/commit/3362bb9)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **bench**: schedule idle memory measurements ([fb79f0e](https://github.com/stacksjs/stacks/commit/fb79f0e)) _(by Chris <chris@stacksjs.com>)_
+- run Pantry v0.11.50 ([a800df9](https://github.com/stacksjs/stacks/commit/a800df9)) _(by Chris <chris@stacksjs.com>)_
+- update Pantry action to v0.11.50 ([3ebc8b1](https://github.com/stacksjs/stacks/commit/3ebc8b1)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **deps**: refresh pantry workspace lock ([40f22b2](https://github.com/stacksjs/stacks/commit/40f22b2)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: update bun router to 0.1.9 ([cb6dc27](https://github.com/stacksjs/stacks/commit/cb6dc27)) _(by Chris <chris@stacksjs.com>)_
+- **package**: use current maintainer email ([53e7cf4](https://github.com/stacksjs/stacks/commit/53e7cf4)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: use Pantry curl 8.22.0 ([042b90e](https://github.com/stacksjs/stacks/commit/042b90e)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: pin Bun 1.4.1 ([96e7238](https://github.com/stacksjs/stacks/commit/96e7238)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.19...v0.74.20)
 
 ## 🐛 Bug Fixes
