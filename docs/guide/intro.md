@@ -96,7 +96,7 @@ router.group({ middleware: ['auth', 'verified'] }, () => {
 - [Pantry](https://pantry.dev), installed with `curl -fsSL https://pantry.dev | bash`
 - macOS, Linux, or Windows through WSL2
 
-Run `pantry bootstrap` once. Pantry then provisions Bun 1.3 or newer and the complete Stacks toolchain from the project dependency manifest.
+Run `pantry bootstrap` once. Pantry then provisions Bun 1.4.1 and the complete Stacks toolchain from the project dependency manifest.
 Detailed Pantry behavior is versioned outside Stacks. The whitepaper pins its
 [package-manager](https://whitepaper.stacksjs.com/reference/package-manager) and
 [registry](https://whitepaper.stacksjs.com/reference/registry) contracts.

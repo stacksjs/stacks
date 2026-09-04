@@ -8,7 +8,7 @@ Stacks desktop applications use [Craft](https://github.com/home-lang/craft), the
 
 ## Prerequisites
 
-- Bun 1.3 or newer
+- Bun 1.4.1, provisioned through Pantry
 - A working Stacks project
 - Craft built in `~/Code/Tools/craft`, or `CRAFT_BIN` set to a native Craft binary
 

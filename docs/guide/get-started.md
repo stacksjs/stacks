@@ -12,7 +12,7 @@ This guide takes you from zero to a running Stacks application in a few minutes.
 - [Pantry](https://pantry.dev) - install with `curl -fsSL https://pantry.dev | bash`, then run `pantry bootstrap`
 - macOS, Linux, or Windows through WSL2
 
-Pantry provisions Bun 1.3 or newer, Git, SQLite, and the rest of the project toolchain from the versioned Stacks dependency manifest.
+Pantry provisions the Bun 1.4.1 workspace runtime, Git, SQLite, and the rest of the project toolchain from the versioned Stacks dependency manifest.
 Stacks pins the upstream Pantry behavior it relies on; consult the source-linked
 [package-manager](https://whitepaper.stacksjs.com/reference/package-manager) and
 [registry](https://whitepaper.stacksjs.com/reference/registry) contracts for

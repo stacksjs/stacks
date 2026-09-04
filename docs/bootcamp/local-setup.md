@@ -4,7 +4,7 @@ description: Install Pantry, create a Stacks project, and verify the local devel
 ---
 # Local Setup
 
-Stacks uses Pantry to provision Bun 1.3 or newer and the rest of its toolchain. Install Pantry, run `pantry bootstrap` once, then create a project with Buddy and verify it before starting development.
+Stacks uses Pantry to provision its Bun 1.4.1 workspace runtime and the rest of its toolchain. Install Pantry, run `pantry bootstrap` once, then create a project with Buddy and verify it before starting development.
 
 ```bash
 panx @stacksjs/buddy new my-app

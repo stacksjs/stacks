@@ -4,10 +4,10 @@ description: Set up Stacks locally, make focused changes, and submit verified co
 ---
 # Contribution Guide
 
-Fork the repository, create a focused branch, and install the workspace with Bun 1.3 or newer.
+Fork the repository, create a focused branch, and let Pantry install the pinned Bun 1.4.1 workspace runtime.
 
 ```bash
-bun install
+pantry install
 ./buddy setup:ai        # wire your AI agent up, if you use one
 ./buddy doctor
 ```

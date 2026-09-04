@@ -26,7 +26,7 @@ Before starting, install Pantry and bootstrap its shell integration:
 - **Pantry** - Install with `curl -fsSL https://pantry.dev | bash`
 - **Pantry shell integration** - Run `pantry bootstrap` once
 
-Pantry provisions Bun 1.3 or newer, Git, SQLite, and every other tool declared by the project.
+Pantry provisions Bun 1.4.1, Git, SQLite, and every other tool declared by the project.
 
 ### Recommended
 
