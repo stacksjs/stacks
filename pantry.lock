@@ -13,6 +13,7 @@
       },
       "system": {
         "bun.sh": "1.4.1",
+        "curl.se": "^8.22.0",
         "git-scm.org": "^2.47.0",
         "sqlite.org": "^3.47.2"
       }
@@ -3107,11 +3108,11 @@
       "source": "pantry",
       "resolved": "registry:curl.se/ca-certs@2026.3.19"
     },
-    "curl.se@8.17.0": {
+    "curl.se@8.22.0": {
       "name": "curl.se",
-      "version": "8.17.0",
+      "version": "8.22.0",
       "source": "pantry",
-      "resolved": "registry:curl.se@8.17.0"
+      "resolved": "registry:curl.se@8.22.0"
     },
     "cz-git@1.13.2-beta.1": {
       "name": "cz-git",

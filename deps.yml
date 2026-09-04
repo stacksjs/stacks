@@ -2,5 +2,6 @@ dependencies:
   # Pinned exactly so Pantry, local development, and CI all use the runtime
   # that writes this repository's lockfile format.
   bun: 1.4.1
+  curl: ^8.22.0
   git: ^2.47.0
   sqlite: ^3.47.2
