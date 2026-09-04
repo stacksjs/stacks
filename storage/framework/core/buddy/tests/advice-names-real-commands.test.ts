@@ -96,7 +96,21 @@ describe('command advice', () => {
     // `help` comes from the CLI framework rather than a `.command()` call.
     const builtins = new Set(['help'])
 
-    const unknown = [...advisedNames(join(root, 'storage/framework/core'))]
+    /*
+     * App trees as well as the framework. `app/` overrides
+     * `storage/framework/defaults/app/`, so an app-level file is the copy that
+     * actually runs - which is how a fixed `Inspire.ts` still shipped the bug
+     * (efcc24f72e). Nothing here is wrong today; the point is that it stays
+     * that way.
+     */
+    const advised = new Map([
+      ...advisedNames(join(root, 'storage/framework/core')),
+      ...advisedNames(join(root, 'app')),
+      ...advisedNames(join(root, 'routes')),
+      ...advisedNames(join(root, 'config')),
+    ])
+
+    const unknown = [...advised]
       .filter(([name]) => !registered.has(name) && !builtins.has(name))
       .map(([name, file]) => `buddy ${name} (${file})`)
 
