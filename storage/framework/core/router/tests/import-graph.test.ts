@@ -25,6 +25,9 @@ describe('router import graph', () => {
     const uploadedFileInputs = Object.keys(result.metafile?.inputs ?? {})
       .filter(source => source.endsWith('storage/src/uploaded-file.ts'))
     expect(uploadedFileInputs).toHaveLength(1)
+    const builtDeepEntrypoints = Object.keys(result.metafile?.inputs ?? {})
+      .filter(source => source.includes('/dist/') && (source.includes('/storage/') || source.includes('/error-handling/')))
+    expect(builtDeepEntrypoints).toEqual([])
 
     const eagerErrorHandlingBarrelImports = Object.entries(result.metafile?.inputs ?? {}).flatMap(([source, meta]) =>
       meta.imports
