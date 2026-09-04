@@ -130,6 +130,34 @@ function existingDirs(dirs: (string | undefined)[]): string[] {
 }
 
 /**
+ * Model directories contributed by discovered packages.
+ *
+ * A package that ships models needs them on `globalThis` for the same reason
+ * the application's own are there: its actions and routes query them by name.
+ * Read through `@stacksjs/config`, which is the one package both this and the
+ * migration side can reach, so there is a single answer to where a package
+ * lives.
+ *
+ * Failure is not fatal. A boot that cannot read the manifest still has the
+ * application's own models, and refusing to build the barrel would take those
+ * away too.
+ */
+function packageModelDirs(): string[] {
+  try {
+    // Required lazily: this runs during boot, and a static import would pull
+    // the config graph in before the env layer has finished loading.
+    // eslint-disable-next-line ts/no-require-imports
+    const { packageModelRoots } = require('@stacksjs/config') as {
+      packageModelRoots: () => Array<{ package: string, dir: string }>
+    }
+    return packageModelRoots().map(root => root.dir)
+  }
+  catch {
+    return []
+  }
+}
+
+/**
  * Resolve the set of directories to scan for framework-default models.
  * Always returns the Models root itself (for top-level files), then includes
  * each opt-in subdir only if its gating config file exists in the project.
@@ -519,8 +547,12 @@ export async function generateAutoImportFiles(): Promise<void> {
   // Defaults root is scanned NON-recursively (so gated subdirs stay opt-in),
   // each enabled module subdir is then added explicitly.
   const modelsIndexPath = `${outputDir}/models.ts`
+  // Package models sit between userland and the defaults: an application still
+  // overrides a package's model by name, and a package still overrides a
+  // framework default. Dedupe here is FIRST-wins, so order is precedence.
   const modelScan: ScanEntry[] = [
     userModelsPath,
+    ...packageModelDirs().map(dir => ({ dir, recursive: true })),
     ...(defaultsRoot ? [{ dir: defaultsRoot, recursive: false }] : []),
     ...defaultModelDirs.slice(1).map(d => ({ dir: d, recursive: true })),
   ]
@@ -694,6 +726,7 @@ export function initiateImports(): void {
   // Scan defineModel() models (default exports from model definitions)
   const defineModelExports = [
     ...scanDefineModelExports(userModelsPath),
+    ...packageModelDirs().flatMap(dir => scanDefineModelExports(dir)),
     ...(defaultsRoot ? scanDefineModelExports(defaultsRoot, { recursive: false }) : []),
     ...enabledSubdirs.flatMap(d => scanDefineModelExports(d)),
   ]

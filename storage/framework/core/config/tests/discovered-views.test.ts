@@ -16,7 +16,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { packageViewRoots } from '../src/discovered-resources'
+import { packageModelRoots, packageViewRoots } from '../src/discovered-resources'
 import { resolveViewPatterns } from '../src/views'
 
 function project(): string {
@@ -189,5 +189,50 @@ describe('view patterns with packages installed', () => {
 
       expect(before.patterns).toEqual(expected)
     }
+  })
+})
+
+describe('package model roots', () => {
+  test('a package that ships app/Models is found without declaring anything', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/app/Models'), { recursive: true })
+      // No `models` key: models have no manifest field, so a package is taken
+      // to put them where every Stacks application does.
+      const file = manifest(root, { loghq: { root: 'node_modules/loghq' } })
+
+      const roots = packageModelRoots({ manifestPath: file, projectRoot: root })
+
+      expect(roots).toHaveLength(1)
+      expect(roots[0]?.dir).toBe(join(root, 'node_modules/loghq/app/Models'))
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('a package with no models directory contributes nothing', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/table/resources'), { recursive: true })
+      const file = manifest(root, { table: { root: 'node_modules/table' } })
+
+      expect(packageModelRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('models and views are resolved independently of one another', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/app/Models'), { recursive: true })
+      mkdirSync(join(root, 'node_modules/loghq/resources/views'), { recursive: true })
+      const file = manifest(root, {
+        loghq: { root: 'node_modules/loghq', views: ['resources/views'] },
+      })
+
+      const opts = { manifestPath: file, projectRoot: root }
+      expect(packageModelRoots(opts).map(r => r.dir)).toEqual([join(root, 'node_modules/loghq/app/Models')])
+      expect(packageViewRoots(opts).map(r => r.dir)).toEqual([join(root, 'node_modules/loghq/resources/views')])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
   })
 })
