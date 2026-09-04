@@ -1,0 +1,55 @@
+name: Idle memory benchmark
+
+on:
+  schedule:
+    - cron: '17 7 * * 0'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: idle-memory-benchmark
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
+        with:
+          version: '0.11.50'
+          install: 'true'
+
+      - name: Install benchmark frameworks
+        run: bun install --cwd bench/routing --frozen-lockfile
+
+      - name: Install oha 1.16.0
+        env:
+          OHA_SHA256: 620bb9e16fb53eabc9a3fc45f88bdb41fefa3fee5c05e75892011ce320391716
+        run: |
+          mkdir -p "$RUNNER_TEMP/oha/bin"
+          pantry/curl.se/v8.22.0/bin/curl -fsSL \
+            https://github.com/hatoo/oha/releases/download/v1.16.0/oha-linux-amd64 \
+            -o "$RUNNER_TEMP/oha/bin/oha"
+          echo "$OHA_SHA256  $RUNNER_TEMP/oha/bin/oha" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/oha/bin/oha"
+          echo "$RUNNER_TEMP/oha/bin" >> "$GITHUB_PATH"
+
+      - name: Measure idle RSS
+        run: bun run bench:memory --driver oha --output bench/memory/results/ci
+
+      - name: Upload report and raw samples
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: idle-memory-${{ github.run_id }}
+          path: bench/memory/results/ci
+          if-no-files-found: error
+          retention-days: 30
