@@ -161,9 +161,9 @@ jobs:
           xcode-version: latest-stable
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
+        uses: pantry-pm/pantry/packages/action@caa3fead05ae21621618047339dcd96918c75c52 # v0.11.54
         with:
-          version: '0.11.50'
+          version: '0.11.54'
           install: 'false'
 
       - name: Install application dependencies
@@ -184,9 +184,9 @@ jobs:
       # `if: always()` cleanup step this replaced.
       - name: Import Apple signing identities
         id: signing
-        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
+        uses: pantry-pm/pantry/packages/action@caa3fead05ae21621618047339dcd96918c75c52 # v0.11.54
         with:
-          version: '0.11.50'
+          version: '0.11.54'
           install: 'false'
           apple-signing: 'true'
           apple-signing-application-certificate: ${{ secrets.APPLE_APP_CERTIFICATE_BASE64 }}
@@ -241,9 +241,9 @@ jobs:
         run: bun node_modules/@stacksjs/buddy/dist/cli.js desktop:apple:publish --package-only
 
       - name: Publish GitHub release and deliver package
-        uses: pantry-pm/pantry/packages/action@2ba9f05f0124d6966b34dec39a9fa9a8a06d964d # v0.11.50
+        uses: pantry-pm/pantry/packages/action@caa3fead05ae21621618047339dcd96918c75c52 # v0.11.54
         with:
-          version: '0.11.50'
+          version: '0.11.54'
           install: 'false'
           release: 'true'
           release-tag: ${{ inputs.release-tag }}
