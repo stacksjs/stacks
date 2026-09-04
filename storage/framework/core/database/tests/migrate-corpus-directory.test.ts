@@ -17,9 +17,13 @@
  */
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 
-const source = readFileSync(resolve('storage/framework/core/database/src/migrations.ts'), 'utf8')
+// Resolved from this file, not the working directory. `storage/framework/...`
+// is framework-owned: it is relative to wherever the framework is installed,
+// which has nothing to do with where the process was started, and
+// `framework-paths-are-not-cwd-relative.test.ts` fails a source file that
+// forgets it.
+const source = readFileSync(new URL('../src/migrations.ts', import.meta.url), 'utf8')
 
 /** The body of `runDatabaseMigration`, up to the next exported function. */
 function runDatabaseMigrationBody(): string {
