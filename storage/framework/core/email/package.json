@@ -68,7 +68,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.273",
+    "@stacksjs/stx": "^0.2.274",
     "@stacksjs/ts-cloud": "^0.12.10",
     "@stacksjs/utils": "workspace:*",
     "postal-mime": "^2.7.6"
