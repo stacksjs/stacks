@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/faker",
   "type": "module",
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "Faker functions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-faker": "^0.1.7"
+    "@stacksjs/ts-faker": "^0.1.8"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

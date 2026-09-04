@@ -1,7 +1,7 @@
 {
   "name": "stacks-orm",
   "type": "module",
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "Your custom ORM.",
   "author": "Chris Breuer",
   "contributors": [
@@ -51,6 +51,6 @@
     "@stacksjs/error-handling": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

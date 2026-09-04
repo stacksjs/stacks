@@ -2,7 +2,7 @@
   "name": "@stacksjs/audio",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "Native audio delivery planning for Stacks.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@ts-audio/core": "^0.1.1",
+    "@ts-audio/core": "^0.1.2",
     "ts-video-player": "^0.1.1"
   },
   "devDependencies": {

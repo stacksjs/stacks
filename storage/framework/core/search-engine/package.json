@@ -2,7 +2,7 @@
   "name": "@stacksjs/search-engine",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.24",
+  "version": "0.74.22",
   "description": "The Stacks search engine integrations.",
   "author": "Chris Breuer",
   "contributors": [
@@ -82,6 +82,6 @@
   },
   "devDependencies": {
     "better-dx": "^0.2.24",
-    "meilisearch": "^0.59.0"
+    "meilisearch": "^0.60.0"
   }
 }
