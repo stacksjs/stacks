@@ -21,6 +21,7 @@ beforeAll(async () => {
   const { route } = await import('../src')
 
   route.get('/_hot/plain', () => ({ ok: true }))
+  route.get('/_hot/body-state', (request: any) => ({ parsed: request._bodyParsed === true }))
   route.get('/_hot/param/{id}', (request: any) => ({ id: request.params.id }))
   route.get('/_hot/encoded/{slug}', (request: any) => ({ slug: request.params.slug }))
   route.get('/_hot/query', (request: any) => ({ query: request.query }))
@@ -91,6 +92,10 @@ describe('the request path keeps its defaults', () => {
 describe('params and query, only when there are any', () => {
   it('answers a route with no params and no query string', async () => {
     expect(await (await get('/_hot/plain')).json()).toEqual({ ok: true })
+  })
+
+  it('does not enter the body parser for a GET route', async () => {
+    expect(await (await get('/_hot/body-state')).json()).toEqual({ parsed: false })
   })
 
   it('leaves an empty query as an empty object rather than undefined', async () => {

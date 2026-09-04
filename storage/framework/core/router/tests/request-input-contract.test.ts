@@ -26,6 +26,7 @@ describe('request input contract', () => {
     })
     const statuses = { Draft: 'draft', Published: 'published' } as const
 
+    expect(Object.hasOwn(request, 'keys')).toBe(false)
     expect(request.keys().sort()).toEqual([
       'empty',
       'invalidDate',

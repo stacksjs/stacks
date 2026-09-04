@@ -21,7 +21,7 @@ import { timingSafeEqual } from 'node:crypto'
 import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import { UploadedFile } from '@stacksjs/storage'
+import { UploadedFile } from '@stacksjs/storage/uploaded-file'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
 
@@ -1503,6 +1503,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
    */
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
   const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
+  const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
   // What identifies this action to the CSRF skip cache: the handler string
   // when the route was registered by name (straight from the argument rather
@@ -1538,15 +1539,17 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
     // it bubble out of the handler as an unhandled rejection.
-    try {
-      await parseRequestBody(req)
-    }
-    catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err))
-      return createMiddlewareErrorResponse(
-        error as Error & { statusCode?: number, status?: number },
-        req,
-      )
+    if (routeMayHaveBody) {
+      try {
+        await parseRequestBody(req)
+      }
+      catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err))
+        return createMiddlewareErrorResponse(
+          error as Error & { statusCode?: number, status?: number },
+          req,
+        )
+      }
     }
     const enhancedReq = enhanceRequest(req)
 
@@ -3333,6 +3336,8 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   },
 }
 
+const stacksRequestPrototypes = new WeakMap<object, object>()
+
 // Decorate the incoming request with the helpers the framework's middleware
 // and actions assume are always available. Names follow Laravel's convention
 // because that's the API surface Stacks userland expects.
@@ -3496,10 +3501,16 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
    * which layer happened to fill it in.
    */
 
-  // Assign the shared Laravel-style request helpers by reference (a single
-  // Object.assign), instead of allocating ~25 closures per request. Per-request
-  // input is memoized on the request by getAllInputFor() — see REQUEST_METHODS.
-  Object.assign(req, REQUEST_METHODS)
+  // Put the shared Laravel-style helpers on one derived prototype instead of
+  // copying every method onto every request. Keep bun-router's own shared
+  // prototype untouched so code using it directly does not gain Stacks APIs.
+  const routerPrototype = Object.getPrototypeOf(req) as object
+  let stacksPrototype = stacksRequestPrototypes.get(routerPrototype)
+  if (!stacksPrototype) {
+    stacksPrototype = Object.assign(Object.create(routerPrototype) as object, REQUEST_METHODS)
+    stacksRequestPrototypes.set(routerPrototype, stacksPrototype)
+  }
+  Object.setPrototypeOf(req, stacksPrototype)
 
   return req
 }
