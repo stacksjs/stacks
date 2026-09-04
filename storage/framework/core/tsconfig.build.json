@@ -24,6 +24,8 @@
       // resolve the blog feed renderer on a checkout that has not built every
       // package, which is every CI run.
       "@stacksjs/actions/*": ["./actions/src/*"],
+      // Deep runtime entrypoints must resolve to source in a clean checkout.
+      "@stacksjs/storage/*": ["./storage/src/*"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       "*": ["../../../pantry/*"]

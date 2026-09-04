@@ -1,10 +1,11 @@
 /* eslint no-console: 0 */
 import type { LogContext, LogLevel, LogRecord, LogTransport } from '@stacksjs/types'
+import type { Logger } from '@stacksjs/clarity'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import process from 'node:process'
-import { Logger } from '@stacksjs/clarity'
-import { handleError } from '@stacksjs/error-handling'
-import { ExitCode } from '@stacksjs/types'
+
+const EXIT_CODE_SUCCESS = 0
+const EXIT_CODE_FATAL_ERROR = 1
 
 // Lazy logger initialization to avoid circular dependency with path
 let _logger: Logger | null = null
@@ -582,6 +583,7 @@ function applyConfigWhenReady(): void {
     // would otherwise keep firing (and hold the process open) alongside the
     // replacement's.
     const previous = _logger
+    const { Logger } = await import('@stacksjs/clarity')
     _logger = new Logger('stacks', {
       level: next.level,
       logDirectory: next.logDirectory,
@@ -626,6 +628,7 @@ async function initLogger(): Promise<void> {
 
     const settings = await resolveSettings(logging)
 
+    const { Logger } = await import('@stacksjs/clarity')
     _logger = new Logger('stacks', {
       level: settings.level,
       logDirectory: settings.logDirectory,
@@ -879,6 +882,7 @@ export const log: Log = {
 
     // Legacy fatal path: only exit when explicitly asked.
     if (legacyOptions?.shouldExit) {
+      const { handleError } = await import('@stacksjs/error-handling/handler')
       handleError(message, legacyOptions)
     }
   },
@@ -908,10 +912,17 @@ export const log: Log = {
       // console does not, and reading that file is exactly what initializing
       // does. Both guards latch for the rest of the process, so this costs two
       // boolean checks per call once it has happened.
-      if (!_logger && !_loggerInitPromise)
-        void initLogger()
-      else if (!_configApplied)
-        applyConfigWhenReady()
+      // If config has not even installed its readiness signal yet, there is
+      // nothing to discover and a suppressed debug line must stay allocation
+      // free. A later real log or explicit logger() call initializes normally.
+      // Once the signal exists we still initialize, because it may declare a
+      // transport that wants debug records even when the console does not.
+      if (configReadySignal()) {
+        if (!_logger && !_loggerInitPromise)
+          void initLogger()
+        else if (!_configApplied)
+          applyConfigWhenReady()
+      }
       return
     }
 
@@ -940,7 +951,7 @@ export const log: Log = {
     const message = formatMessage(...args)
     const logger = await getLogger()
     await logger.error(message)
-    process.exit(ExitCode.FatalError)
+    process.exit(EXIT_CODE_FATAL_ERROR)
   },
 
   echo: async (...args: any[]) => {
@@ -970,14 +981,14 @@ export const log: Log = {
     process.stderr.write(`${msg}\n`)
   },
 
-  fatal: (msg: string, exitCode = ExitCode.FatalError): never => {
+  fatal: (msg: string, exitCode = EXIT_CODE_FATAL_ERROR): never => {
     process.stderr.write(`${msg}\n`)
     process.exit(exitCode)
   },
 
-  exit: async (msg?: string, exitCode = ExitCode.Success): Promise<never> => {
+  exit: async (msg?: string, exitCode = EXIT_CODE_SUCCESS): Promise<never> => {
     if (msg)
-      await (exitCode === ExitCode.Success ? log.success(msg) : log.error(msg))
+      await (exitCode === EXIT_CODE_SUCCESS ? log.success(msg) : log.error(msg))
 
     await log.flush()
     process.exit(exitCode)
@@ -1026,7 +1037,7 @@ export async function dd(...args: any[]): Promise<never> {
   // Use console directly to guarantee output before exit
   const message = formatMessage(...args)
   console.log(message)
-  process.exit(ExitCode.FatalError)
+  process.exit(EXIT_CODE_FATAL_ERROR)
 }
 
 export async function echo(...args: any[]): Promise<void> {

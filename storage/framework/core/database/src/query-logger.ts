@@ -16,9 +16,16 @@ import { db } from './utils'
  */
 // eslint-disable-next-line pickier/no-unused-vars
 type QueryTracker = (query: string, durationMs?: number, connection?: string) => void
-let trackQuery: QueryTracker = () => { /* no-op until set */ }
+const QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
+let configuredQueryTracker: QueryTracker = () => { /* no-op until set */ }
 export function setQueryTracker(fn: QueryTracker): void {
-  trackQuery = fn
+  configuredQueryTracker = fn
+}
+
+function trackQuery(query: string, durationMs?: number, connection?: string): void {
+  const shared = (globalThis as Record<symbol, unknown>)[QUERY_TRACKER_KEY]
+  const tracker = typeof shared === 'function' ? shared as QueryTracker : configuredQueryTracker
+  tracker(query, durationMs, connection)
 }
 
 /**

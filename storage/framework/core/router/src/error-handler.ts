@@ -8,11 +8,7 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
-import {
-  createErrorHandler,
-  renderProductionErrorPage,
-  type ErrorPageConfig,
-} from '@stacksjs/error-handling'
+import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
 import { getCurrentRequest } from './request-context'
 
@@ -183,6 +179,12 @@ export function trackQuery(query: string, time?: number, connection?: string): v
     }).catch(() => { /* logging unavailable — silently skip */ })
   }
 }
+
+// A global handoff keeps database query diagnostics available without making
+// every router import eagerly load the optional database package. It also
+// works in either import order: query-logger reads the slot when a query runs.
+const QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
+;(globalThis as Record<symbol, unknown>)[QUERY_TRACKER_KEY] = trackQuery
 
 /**
  * Get tracked queries in insertion order (for the active request, or
@@ -401,6 +403,7 @@ export async function createErrorResponse(
         { status, headers: getJsonHeaders() },
       )
     }
+    const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
     return new Response(renderProductionErrorPage(status), {
       status,
       headers: { 'Content-Type': 'text/html; charset=utf-8' },
@@ -409,6 +412,7 @@ export async function createErrorResponse(
 
   // Development: create full Ignition-style error page
   try {
+    const { createErrorHandler } = await import('@stacksjs/error-handling/error-page')
     const handler = createErrorHandler(getErrorHandlerConfig())
 
     // Set framework info
@@ -614,6 +618,7 @@ export async function createNotFoundResponse(
     )
   }
 
+  const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
   return new Response(renderProductionErrorPage(404), {
     status: 404,
     headers: { 'Content-Type': 'text/html; charset=utf-8' },

@@ -152,17 +152,3 @@ export type {
   SessionStore,
   StacksSessionConfig,
 } from './session-factory'
-
-// DI: register the router's query tracker with the database package on
-// import so the cycle `database → router → database` doesn't manifest
-// statically. Lazy-imported via Promise so the database package stays
-// optional in environments that don't load it (browser builds, etc.).
-import('@stacksjs/database')
-  .then(({ setQueryTracker }) => {
-    if (typeof setQueryTracker === 'function') {
-      // eslint-disable-next-line ts/no-require-imports
-      const { trackQuery } = require('./error-handler') as { trackQuery: (q: string, t?: number, c?: string) => void }
-      setQueryTracker(trackQuery)
-    }
-  })
-  .catch(() => { /* database package not loaded — fine */ })

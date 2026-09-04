@@ -1,5 +1,4 @@
 import { basename, extname, join } from 'node:path'
-import { Storage } from './facade'
 
 export interface UploadedFileOptions {
   hashName?: boolean
@@ -80,6 +79,7 @@ export class UploadedFile {
     const fullPath = path ? join(path, filename) : filename
     const contents = await this.bytes()
 
+    const { Storage } = await import('./facade')
     await Storage.disk(disk).write(fullPath, contents)
 
     return fullPath
@@ -100,6 +100,7 @@ export class UploadedFile {
     const fullPath = path ? join(path, sanitizedName) : sanitizedName
     const contents = await this.bytes()
 
+    const { Storage } = await import('./facade')
     await Storage.disk(disk).write(fullPath, contents)
 
     return fullPath
@@ -131,6 +132,7 @@ export class UploadedFile {
    */
   async move(path: string, disk: string = 'local'): Promise<string> {
     const contents = await this.bytes()
+    const { Storage } = await import('./facade')
     await Storage.disk(disk).write(path, contents)
     return path
   }

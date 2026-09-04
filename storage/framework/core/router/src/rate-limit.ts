@@ -15,7 +15,7 @@
  * action handler can invoke conditionally. This module provides that.
  */
 
-import { HttpError } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling/http'
 import { RateLimitError, RateLimiter, defaultIdentity } from 'ts-rate-limiter'
 import { getCurrentRequest } from './request-context'
 

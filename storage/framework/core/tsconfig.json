@@ -14,6 +14,8 @@
       // "Cannot find module" on a clean checkout and in CI, and are four of the
       // six errors that have kept the typecheck job red.
       "@stacksjs/actions/*": ["./actions/src/*"],
+      // Deep runtime entrypoints must resolve to source in a clean checkout.
+      "@stacksjs/storage/*": ["./storage/src/*"],
       // The ORM route generator is a package entrypoint of its own, so the
       // vendored `storage/framework/orm/routes.ts` can reach it from an app
       // that has no `core/` directory. Mapped explicitly because `@stacksjs/*`

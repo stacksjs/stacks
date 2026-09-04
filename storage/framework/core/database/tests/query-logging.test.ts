@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { isExcludedQuery } from '../src/query-logger'
+import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 describe('database query logging', () => {
@@ -51,5 +51,27 @@ describe('database query logging', () => {
     expect(isExcludedQuery('SELECT * FROM query_logs', ['query_logs'])).toBe(true)
     expect(isExcludedQuery('select * from users', ['query_logs'])).toBe(false)
     expect(isExcludedQuery('select 1', ['  '])).toBe(false)
+  })
+
+  it('hands query diagnostics to a router loaded before or after the database', async () => {
+    const key = Symbol.for('stacks.database.queryTracker')
+    const globals = globalThis as Record<symbol, unknown>
+    const previous = globals[key]
+    const seen: string[] = []
+
+    try {
+      delete globals[key]
+      setQueryTracker(query => seen.push(`configured:${query}`))
+      await logQuery({ query: { sql: 'select 1' }, queryDurationMillis: 1 })
+
+      globals[key] = (query: string) => seen.push(`shared:${query}`)
+      await logQuery({ query: { sql: 'select 2' }, queryDurationMillis: 1 })
+
+      expect(seen).toEqual(['configured:select 1', 'shared:select 2'])
+    }
+    finally {
+      if (previous === undefined) delete globals[key]
+      else globals[key] = previous
+    }
   })
 })
