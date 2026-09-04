@@ -1,5 +1,26 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.16...v0.74.17)
+
+## ✨ Features
+
+- **images**: centralize optimized delivery ([94ea8da](https://github.com/stacksjs/stacks/commit/94ea8da)) _(by Chris <chris@stacksjs.org>)_
+
+## 🐛 Bug Fixes
+
+- **commands**: the copy that actually runs was still dropping its error ([efcc24f](https://github.com/stacksjs/stacks/commit/efcc24f)) _(by Chris <chris@stacksjs.org>)_
+- **cli**: stop dropping the last thing a command says, at every log level ([c22c3e5](https://github.com/stacksjs/stacks/commit/c22c3e5)) _(by Chris <chris@stacksjs.org>)_
+- **release**: report why a promotion failed, and retry long enough to matter ([ac191de](https://github.com/stacksjs/stacks/commit/ac191de)) _(by Chris <chris@stacksjs.org>)_
+
+## ✅ Tests
+
+- **cli**: check app-level command advice too ([809cbde](https://github.com/stacksjs/stacks/commit/809cbde)) _(by Chris <chris@stacksjs.org>)_
+- **defaults**: assert the preloader ships, not that someone ran the build ([2b187bb](https://github.com/stacksjs/stacks/commit/2b187bb)) _(by Chris <chris@stacksjs.org>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.org>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.15...v0.74.16)
 
 ## 🐛 Bug Fixes
