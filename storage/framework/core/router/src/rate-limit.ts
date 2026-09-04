@@ -15,8 +15,7 @@
  * action handler can invoke conditionally. This module provides that.
  */
 
-import { HttpError } from '@stacksjs/error-handling/http'
-import { RateLimitError, RateLimiter, defaultIdentity } from 'ts-rate-limiter'
+import type { RateLimiter } from 'ts-rate-limiter'
 import { getCurrentRequest } from './request-context'
 
 const PERIOD_SECONDS = {
@@ -38,11 +37,17 @@ type Period = keyof typeof PERIOD_SECONDS
  * RateLimiter instance).
  */
 const limiterCache = new Map<string, RateLimiter>()
+let limiterModulePromise: Promise<typeof import('ts-rate-limiter')> | undefined
 
-function getLimiter(max: number, windowMs: number): RateLimiter {
+function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
+  return limiterModulePromise ??= import('ts-rate-limiter')
+}
+
+async function getLimiter(max: number, windowMs: number): Promise<RateLimiter> {
   const cacheKey = `${windowMs}:${max}`
   let limiter = limiterCache.get(cacheKey)
   if (!limiter) {
+    const { RateLimiter } = await loadLimiterModule()
     limiter = new RateLimiter({
       windowMs,
       maxRequests: max,
@@ -62,9 +67,10 @@ function getLimiter(max: number, windowMs: number): RateLimiter {
  * `defaultIdentity(req)` from `ts-rate-limiter` (auth user → token →
  * IP → 'anon'); callers can override via `options.identity`.
  */
-function resolveIdentity(explicit?: string): string {
+async function resolveIdentity(explicit?: string): Promise<string> {
   if (explicit !== undefined) return explicit
   const req = getCurrentRequest() as Request | undefined
+  const { defaultIdentity } = await loadLimiterModule()
   return req ? defaultIdentity(req) : 'anon'
 }
 
@@ -88,16 +94,19 @@ export function rateLimit(
     /** Run with a numeric ttl in seconds. */
     over: (ttlSeconds: number) => Promise<void>
   } {
-  const id = resolveIdentity(options.identity)
-  const bucketKey = `${key}:${id}`
-
   const run = async (windowMs: number): Promise<void> => {
-    const limiter = getLimiter(max, windowMs)
+    const [id, limiter] = await Promise.all([
+      resolveIdentity(options.identity),
+      getLimiter(max, windowMs),
+    ])
+    const bucketKey = `${key}:${id}`
     try {
       await limiter.enforce(bucketKey)
     }
     catch (err) {
+      const { RateLimitError } = await loadLimiterModule()
       if (err instanceof RateLimitError) {
+        const { HttpError } = await import('@stacksjs/error-handling/http')
         throw Object.assign(
           new HttpError(429, 'Too many requests', {
             key,
@@ -138,9 +147,11 @@ export async function rateLimitStatus(
   windowSeconds: number,
   options: { identity?: string } = {},
 ): Promise<{ count: number, limit: number, remaining: number } | null> {
-  const id = resolveIdentity(options.identity)
+  const [id, limiter] = await Promise.all([
+    resolveIdentity(options.identity),
+    getLimiter(max, windowSeconds * 1000),
+  ])
   const bucketKey = `${key}:${id}`
-  const limiter = getLimiter(max, windowSeconds * 1000)
   const result = await limiter.peek(bucketKey)
   if (!result) return null
   return {
@@ -160,8 +171,10 @@ export async function clearRateLimit(
   windowSeconds: number,
   options: { identity?: string } = {},
 ): Promise<void> {
-  const id = resolveIdentity(options.identity)
+  const [id, limiter] = await Promise.all([
+    resolveIdentity(options.identity),
+    getLimiter(max, windowSeconds * 1000),
+  ])
   const bucketKey = `${key}:${id}`
-  const limiter = getLimiter(max, windowSeconds * 1000)
   await limiter.reset(bucketKey)
 }

@@ -48,5 +48,12 @@ describe('router import graph', () => {
     const eagerRateLimiterImports = routerEntry?.[1].imports
       .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/rate-limit.ts')) ?? []
     expect(eagerRateLimiterImports).toEqual([])
+
+    const rateLimitEntry = Object.entries(result.metafile?.inputs ?? {})
+      .find(([source]) => source.endsWith('router/src/rate-limit.ts'))
+    const eagerActionLimiterDependencies = rateLimitEntry?.[1].imports
+      .filter(entry => entry.kind !== 'dynamic-import'
+        && (entry.path.includes('ts-rate-limiter') || entry.path.endsWith('error-handling/src/http.ts'))) ?? []
+    expect(eagerActionLimiterDependencies).toEqual([])
   })
 })
