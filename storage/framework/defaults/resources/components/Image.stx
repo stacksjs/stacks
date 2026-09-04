@@ -1,14 +1,12 @@
 <script server>
-interface ImageSource { type: string, srcset: string, media?: string }
 interface ImageProps {
   src: string
-  alt: string
+  alt?: string
   width?: number
   height?: number
   aspectRatio?: string
   srcset?: string
   sizes?: string
-  sources?: ImageSource[]
   loading?: 'lazy' | 'eager'
   decoding?: 'async' | 'sync' | 'auto'
   fetchpriority?: 'high' | 'low' | 'auto'
@@ -16,7 +14,8 @@ interface ImageProps {
   decorative?: boolean
   fit?: 'cover' | 'contain' | 'fill' | 'none' | 'scale-down'
   position?: string
-  placeholder?: string
+  placeholder?: 'blur' | 'thumbhash' | 'color' | 'empty' | 'none' | string
+  placeholderColor?: string
   class?: string
 }
 const props = defineProps<ImageProps>()
@@ -27,33 +26,32 @@ const width = props.width || ''
 const height = props.height || ''
 const ratio = props.aspectRatio || (width && height ? `${width} / ${height}` : '')
 const srcset = props.srcset || ''
-const sizes = props.sizes || (srcset ? '100vw' : '')
-const sources = props.sources || []
-const loading = props.priority ? 'eager' : props.loading || 'lazy'
-const decoding = props.decoding || 'async'
-const priority = props.priority ? 'high' : props.fetchpriority || 'auto'
+const sizes = props.sizes || ''
+const loading = props.loading || ''
+const decoding = props.decoding || ''
+const fetchpriority = props.fetchpriority || ''
 const fit = props.fit || 'cover'
 const position = props.position || 'center'
 const placeholder = props.placeholder || ''
+const placeholderColor = props.placeholderColor || ''
 const className = props.class || ''
+const imageStyle = `${ratio ? `aspect-ratio:${ratio};` : ''}object-fit:${fit};object-position:${position};`
 </script>
 
-<picture class="relative block overflow-hidden bg-stone-100 dark:bg-stone-900 {{ className }}" @if(ratio) style="aspect-ratio: {{ ratio }};" @endif>
-  @foreach (sources as source)
-    <source type="{{ source.type }}" srcset="{{ source.srcset }}" @if(source.media) media="{{ source.media }}" @endif @if(sizes) sizes="{{ sizes }}" @endif>
-  @endforeach
-  <img
-    src="{{ src }}"
-    alt="{{ alt }}"
-    @if(width) width="{{ width }}" @endif
-    @if(height) height="{{ height }}" @endif
-    @if(srcset) srcset="{{ srcset }}" @endif
-    @if(sizes) sizes="{{ sizes }}" @endif
-    loading="{{ loading }}"
-    decoding="{{ decoding }}"
-    fetchpriority="{{ priority }}"
-    @if(props.decorative) aria-hidden="true" @endif
-    class="h-full w-full"
-    style="object-fit: {{ fit }}; object-position: {{ position }}; @if(placeholder) background: {{ placeholder }} center / cover no-repeat; @endif"
-  >
-</picture>
+<StxImage
+  src="{{ src }}"
+  alt="{{ alt }}"
+  class="{{ className }}"
+  style="{{ imageStyle }}"
+  @if(width) width="{{ width }}" @endif
+  @if(height) height="{{ height }}" @endif
+  @if(srcset) srcset="{{ srcset }}" @endif
+  @if(sizes) sizes="{{ sizes }}" @endif
+  @if(loading) loading="{{ loading }}" @endif
+  @if(decoding) decoding="{{ decoding }}" @endif
+  @if(fetchpriority) fetchpriority="{{ fetchpriority }}" @endif
+  @if(props.priority) priority @endif
+  @if(props.decorative) aria-hidden="true" @endif
+  @if(placeholder) placeholder="{{ placeholder }}" @endif
+  @if(placeholderColor) placeholder-color="{{ placeholderColor }}" @endif
+/>
