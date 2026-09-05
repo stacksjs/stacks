@@ -18,6 +18,14 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
   belongsTo: ['PrintDevice'],
+
+  /*
+   * A receipt is a record OF a device, not of a customer - it chains to
+   * `PrintDevice`, an unscoped catalog. Saying so explicitly is the honest
+   * declaration; its writes want an admin gate rather than row scoping
+   * (stacksjs/stacks#2412).
+   */
+  ownership: false,
   traits: {
     useUuid: true,
     useTimestamps: true,

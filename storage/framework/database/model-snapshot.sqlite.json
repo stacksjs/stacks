@@ -6399,6 +6399,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "customer_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "customers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -8245,6 +8257,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "team_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "teams",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -11248,6 +11272,18 @@
             "isUnique": true,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "customer_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "references": {
+              "table": "customers",
+              "column": "id"
+            }
           }
         ],
         "indexes": [
@@ -12663,7 +12699,7 @@
       }
     ]
   },
-  "hash": "9f95c6e30c28477a2b1636b599d471b3965d513e1675a3b393bc443530ca6580",
+  "hash": "42a2e84f74ea0b19473fd2f3b6d117caa482bfcd4a7fd557a2a69b2ee3d334f0",
   "dialect": "sqlite",
-  "updatedAt": "2026-08-29T22:19:27.465Z"
+  "updatedAt": "2026-09-05T01:48:15.006Z"
 }

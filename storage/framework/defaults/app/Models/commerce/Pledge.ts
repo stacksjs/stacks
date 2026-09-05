@@ -1,4 +1,4 @@
-import { defineModel } from '@stacksjs/orm'
+import { customerOwnership, defineModel } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -34,7 +34,14 @@ export default defineModel({
     observe: true,
   },
 
-  belongsTo: ['Auction'],
+  /*
+   * A pledge is made BY someone. It chained only to `Auction`, an unscoped
+   * catalog, so there was no owner to resolve and its writes stayed denied
+   * (stacksjs/stacks#2412).
+   */
+  belongsTo: ['Auction', 'Customer'],
+
+  ownership: customerOwnership(),
 
   indexes: [
     { name: 'pledges_auction_id_index', columns: ['auction_id'] },

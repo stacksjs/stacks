@@ -7,6 +7,17 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
 
+
+  /*
+   * A delivery policy, not a delivery. Its columns are `name`,
+   * `downloadLimit`, `expiryDays`, `requiresLogin` and `automaticDelivery` -
+   * a reusable configuration attached to what is sold, with no customer, order
+   * or file on it. #2412 guessed this "almost certainly belongs to an order or
+   * a customer"; the attributes say otherwise, so it is declared a catalog
+   * record and its writes want an admin gate rather than row scoping.
+   */
+  ownership: false,
+
   traits: {
     useUuid: true,
     useTimestamps: true,

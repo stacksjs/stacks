@@ -1,4 +1,4 @@
-import { defineModel } from '@stacksjs/orm'
+import { defineModel, parentOwnership } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -40,6 +40,9 @@ export default defineModel({
   },
 
   belongsTo: ['Board'],
+
+  // Owned by whoever owns the board it sits on (stacksjs/stacks#2412).
+  ownership: parentOwnership('Board', 'board_id'),
   hasMany: ['Card'],
 
   attributes: {
