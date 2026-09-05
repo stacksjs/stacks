@@ -15,10 +15,14 @@ async function cpuSeconds(pid: number): Promise<number | null> {
     const proc = Bun.spawn(['ps', '-o', 'time=', '-p', String(pid)], { stdout: 'pipe', stderr: 'ignore' })
     const out = (await new Response(proc.stdout).text()).trim()
     if (!out) return null
-    // `[dd-]hh:]mm:ss[.ff]`
-    const parts = out.replace('-', ':').split(':').map(Number.parseFloat)
-    if (parts.some(n => !Number.isFinite(n))) return null
-    return parts.reduce((total, part) => total * 60 + part, 0)
+    // [days-][hours:]minutes:seconds[.fraction]. Days have 24 hours,
+    // so folding every separator in base 60 inflates a day-boundary delta.
+    const match = /^(?:(\d+)-)?(?:(\d+):)?(\d+):(\d+(?:\.\d+)?)$/.exec(out)
+    if (!match) return null
+    const seconds = Number(match[1] ?? 0) * 86400
+      + Number(match[2] ?? 0) * 3600
+      + Number(match[3]) * 60 + Number(match[4])
+    return Number.isFinite(seconds) ? seconds : null
   }
   catch {
     return null

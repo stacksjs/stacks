@@ -60,3 +60,51 @@ describe('benchmark CPU window', () => {
     }
   })
 })
+
+// ps emits minutes, hours, and a day prefix as the accumulated CPU time grows.
+// Drive the reported percentage through the sampler, including boundary changes.
+describe('cumulative CPU time formats', () => {
+  it.each([
+    ['minute boundary', '00:59.90', '01:00.10', 20],
+    ['hour boundary', '59:59.90', '01:00:00.10', 20],
+    ['first day boundary', '23:59:59.90', '1-00:00:00.10', 20],
+    ['later day boundary', '1-23:59:59.90', '2-00:00:00.10', 20],
+    ['day and hours', '2-03:00:00', '2-03:00:01', 100],
+    ['missing sample', '', '00:00.10', null],
+    ['malformed sample', '00:00oops', '00:00.10', null],
+  ] as const)('%s', async (name, before, after, expected) => {
+    let wall = 0
+    let sample: string = before
+    const spawn = spyOn(Bun, 'spawn').mockImplementation(() => ({
+      stdout: new Response(sample).body,
+    }) as unknown as ReturnType<typeof Bun.spawn>)
+    const now = spyOn(performance, 'now').mockImplementation(() => wall)
+    try {
+      const measured = await measureLoad({
+        name,
+        publishable: false,
+        supportsFixedRate: false,
+        isAvailable: async () => true,
+        async run() {
+          wall = 1000
+          sample = after
+          return result
+        },
+      }, {
+        url: 'http://127.0.0.1:39400/bench/json',
+        method: 'GET',
+        headers: {},
+        connections: 1,
+        warmupSeconds: 0,
+        durationSeconds: 1,
+      }, 123)
+      if (expected == null) expect(measured.cpuPercent).toBeNull()
+      else expect(measured.cpuPercent).toBeCloseTo(expected, 6)
+      expect(measured.result).toBe(result)
+    }
+    finally {
+      now.mockRestore()
+      spawn.mockRestore()
+    }
+  })
+})
