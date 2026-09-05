@@ -263,23 +263,27 @@ function decrement() {
 For reactive state that updates the UI:
 
 ```html
-<script server>
-import { ref, computed } from '@stacksjs/reactivity'
+<script client>
+const count = state(0)
+const doubled = derived(() => count() * 2)
 
-const count = ref(0)
-const doubled = computed(() => count.value * 2)
-
-function increment() {
-  count.value++
+function increment(): void {
+  count.update(value => value + 1)
 }
 </script>
 
-<div class="counter">
-  <p>Count: {{ count.value }}</p>
-  <p>Doubled: {{ doubled.value }}</p>
-  <button onclick="increment()">Increment</button>
-</div>
+<template>
+  <div class="counter">
+    <p>Count: {{ count() }}</p>
+    <p>Doubled: {{ doubled() }}</p>
+    <button type="button" @click="increment()">Increment</button>
+  </div>
+</template>
 ```
+
+Signals are callable: `count()` reads, `count.update()` writes. There is no
+`.value`, and reactive state belongs in `<script client>` - a `<script server>`
+block runs once, before the page reaches the browser.
 
 ### Shared State
 
@@ -287,35 +291,35 @@ For state shared across components, create a store:
 
 ```typescript
 // resources/functions/store.ts
-import { reactive } from '@stacksjs/reactivity'
+import { state } from '@stacksjs/stx'
 
-export const store = reactive({
-  user: null,
-  isAuthenticated: false,
-  theme: 'light',
-})
+export const user = state(null)
+export const isAuthenticated = state(false)
+export const theme = state('light')
 
-export function setUser(user) {
-  store.user = user
-  store.isAuthenticated = !!user
+export function setUser(next: unknown): void {
+  user.set(next)
+  isAuthenticated.set(!!next)
 }
 
-export function toggleTheme() {
-  store.theme = store.theme === 'light' ? 'dark' : 'light'
+export function toggleTheme(): void {
+  theme.update(current => (current === 'light' ? 'dark' : 'light'))
 }
 ```
 
 Using the store in components:
 
 ```html
-<script server>
-import { store, toggleTheme } from '../functions/store'
+<script client>
+import { theme, toggleTheme } from '../functions/store'
 </script>
 
-<div class="theme-toggle">
-  <span>Current theme: {{ store.theme }}</span>
-  <button onclick="toggleTheme()">Toggle Theme</button>
-</div>
+<template>
+  <div class="theme-toggle">
+    <span>Current theme: {{ theme() }}</span>
+    <button type="button" @click="toggleTheme()">Toggle Theme</button>
+  </div>
+</template>
 ```
 
 ## Routing
@@ -473,42 +477,43 @@ const onDelete = props.onDelete
 
 ```html
 <!-- resources/components/TaskList.stx -->
-<script server>
-import { ref } from '@stacksjs/reactivity'
+<script client>
+interface Task {
+  id: number
+  title: string
+  completed: boolean
+}
 
-const tasks = ref([
+const tasks = state<Task[]>([
   { id: 1, title: 'Learn Stacks', completed: false },
   { id: 2, title: 'Build an app', completed: false },
   { id: 3, title: 'Deploy to production', completed: false },
 ])
 
-const newTaskTitle = ref('')
+const newTaskTitle = state('')
 
-function addTask() {
-  if (newTaskTitle.value.trim()) {
-    tasks.value.push({
-      id: Date.now(),
-      title: newTaskTitle.value,
-      completed: false,
-    })
-    newTaskTitle.value = ''
-  }
+function addTask(): void {
+  const title = newTaskTitle().trim()
+  if (!title)
+    return
+
+  // Replace the array rather than pushing into it: a signal notifies on
+  // assignment, so mutating in place updates nothing.
+  tasks.update(current => [...current, { id: Date.now(), title, completed: false }])
+  newTaskTitle.set('')
 }
 
-function toggleTask(id) {
-  const task = tasks.value.find(t => t.id === id)
-  if (task) {
-    task.completed = !task.completed
-  }
+function toggleTask(id: number): void {
+  tasks.update(current => current.map(task =>
+    task.id === id ? { ...task, completed: !task.completed } : task,
+  ))
 }
 
-function deleteTask(id) {
-  tasks.value = tasks.value.filter(t => t.id !== id)
+function deleteTask(id: number): void {
+  tasks.update(current => current.filter(task => task.id !== id))
 }
 
-const completedCount = computed(() =>
-  tasks.value.filter(t => t.completed).length
-)
+const completedCount = derived(() => tasks().filter(task => task.completed).length)
 </script>
 
 <div class="mx-auto p-6 max-w-md">
@@ -518,19 +523,19 @@ const completedCount = computed(() =>
   <div class="flex gap-2 mb-6">
     <input
       type="text"
-      value="{{ newTaskTitle.value }}"
-      oninput="newTaskTitle.value = event.target.value"
+      value="{{ newTaskTitle() }}"
+      @input="newTaskTitle.set($event.target.value)"
       placeholder="Add a new task..."
       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
     />
-    <Button variant="solid" color="blue" onclick="addTask()">
+    <Button variant="solid" color="blue" @click="addTask()">
       Add
     </Button>
   </div>
 
   <!-- Task List -->
   <ul class="space-y-2">
-    @for(task of tasks.value)
+    @for(task of tasks())
       <TaskItem
         task="{{ task }}"
         onToggle="{{ toggleTask }}"
@@ -541,7 +546,7 @@ const completedCount = computed(() =>
 
   <!-- Summary -->
   <p class="mt-4 text-gray-600 text-sm">
-    {{ completedCount.value }} of {{ tasks.value.length }} tasks completed
+    {{ completedCount() }} of {{ tasks().length }} tasks completed
   </p>
 </div>
 ```
