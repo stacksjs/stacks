@@ -1,5 +1,7 @@
 import type { SourceState } from '../routing/source'
+import type { RuntimeRequirement } from '../routing/runtime-version'
 import { formatSourceState } from '../routing/source'
+import { formatRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 
 export interface MemorySample {
   elapsedMs: number
@@ -21,6 +23,7 @@ export interface MemoryMeasurement {
 export interface MemoryRunMeta {
   startedAt: string
   source?: SourceState
+  runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
   scenario: string
@@ -71,12 +74,19 @@ export function renderMemoryReport(input: MemoryReportInput): string {
     lines.push('> **Direction-only.** Publish only dedicated Linux x64 runs driven by `oha`.')
     lines.push('')
   }
+  const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)
+  if (runtimeWarning) {
+    lines.push(`> ${runtimeWarning}`)
+    lines.push('')
+  }
 
   lines.push('| | |')
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
+  if (meta.runtimeRequirement)
+    lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
   lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections, fixed per-target request rates |`)
   lines.push(`| Method | ${meta.loadSeconds}s sustained load, ${meta.idleSeconds}s idle, ${meta.sampleIntervalMs}ms RSS sampling |`)
   lines.push(`| Settled window | Median of the final ${meta.settleSeconds}s of idle |`)

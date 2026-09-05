@@ -5,6 +5,11 @@ and then sat completely idle. Its default API profile follows the Bun 1.4.1
 comparison method: 60 seconds of load, 180 seconds of idle, 64 connections,
 and RSS sampled every 100 milliseconds.
 
+Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
+The runner records that requirement beside the measured runtime and warns when
+they differ. To compare another runtime intentionally, invoke its Bun executable
+directly; the benchmark servers and the runner use the same executable.
+
 ```bash
 bun install --cwd bench/routing --frozen-lockfile
 BENCH_DEDICATED=1 bun run bench:memory --driver oha --runs 3

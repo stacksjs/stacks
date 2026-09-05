@@ -21,6 +21,7 @@ import { createFixture } from '../routing/fixture'
 import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState } from '../routing/source'
+import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 import { TARGETS } from '../routing/targets'
 import { BUN_141_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
@@ -241,6 +242,9 @@ async function measure(
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2))
+  const runtimeRequirement = await readRuntimeRequirement(REPO_ROOT)
+  const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
+  if (runtimeWarning) console.error(`[memory] ${runtimeWarning}`)
   const targets = resolveTargets(options.targets, options.requestRate)
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
@@ -258,6 +262,7 @@ async function main(): Promise<void> {
   const meta: MemoryRunMeta = {
     startedAt,
     source,
+    runtimeRequirement,
     driver: driver.name,
     publishable: driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1',
     scenario: scenario.id,

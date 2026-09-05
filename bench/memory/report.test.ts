@@ -16,6 +16,7 @@ describe('memory benchmark report', () => {
       meta: {
         startedAt: '2026-09-04T00:00:00.000Z',
         source: { revision: 'a'.repeat(40), dirty: true },
+        runtimeRequirement: { range: '1.4.1', matches: true },
         driver: 'oha',
         publishable: true,
         scenario: 'static-json',
@@ -42,6 +43,24 @@ describe('memory benchmark report', () => {
 
     expect(report).toContain(`| Source at start | \`${'a'.repeat(40)}\` (modified working tree) |`)
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
+    expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
+    expect(report).not.toContain('Runtime mismatch:')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')
+  })
+
+  it('flags a runtime comparison without hiding the measured runtime', () => {
+    const report = renderMemoryReport({
+      meta: {
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: true,
+        scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
+        sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
+        machine: { platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
+        runtimeRequirement: { range: '1.4.1', matches: false },
+      },
+      targets: [], measurements: [],
+    })
+    expect(report).toContain('| Runtime | Bun 1.3.14 |')
+    expect(report).toContain('| Project Bun requirement | 1.4.1 (runtime mismatch) |')
+    expect(report).toContain('Runtime mismatch: Bun 1.3.14 does not satisfy package.json engines.bun (1.4.1).')
   })
 })
