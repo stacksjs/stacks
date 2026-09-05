@@ -1,8 +1,25 @@
 import { describe, expect, it } from 'bun:test'
+import { join } from 'node:path'
 import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 describe('database query logging', () => {
+  it.each([false, true])('delivers real query diagnostics across reconnects and errors (persistence: %s)', async (persistence) => {
+    const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-logger-dispatch.ts'), String(persistence)], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    expect(exitCode, stderr).toBe(0)
+    expect(stdout).toContain('query-logger-dispatch-ok')
+  })
+
   it('forwards successful query-builder events to the logger shape', () => {
     const events: unknown[] = []
     const hooks = createDatabaseQueryHooks(event => events.push(event))

@@ -357,8 +357,17 @@ export function createDatabaseQueryHooks(dispatch: (event: DatabaseQueryLogEvent
   }
 }
 
+let queryLoggerModule: Promise<typeof import('./query-logger')> | undefined
+
 function forwardDatabaseQuery(event: DatabaseQueryLogEvent): void {
-  void import('./query-logger')
+  // Keep delivery asynchronous without resolving the same module per query.
+  // Failed imports remain retryable, so an unavailable logger cannot poison
+  // diagnostics for the rest of the process.
+  queryLoggerModule ??= import('./query-logger').catch((error) => {
+    queryLoggerModule = undefined
+    throw error
+  })
+  void queryLoggerModule
     .then(({ logQuery }) => logQuery(event))
     .catch(() => {})
 }
