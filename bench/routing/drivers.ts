@@ -47,6 +47,8 @@ export interface Driver {
   /** Whether numbers from this driver may be published. */
   publishable: boolean
   supportsFixedRate: boolean
+  /** Counts include in-flight requests completed after the load deadline. */
+  drainsRequests?: boolean
   isAvailable: () => Promise<boolean>
   run: (req: LoadRequest) => Promise<LoadResult>
 }
@@ -103,6 +105,7 @@ function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, head
 /** `oha` — the preferred tool. Percentiles come straight out of its JSON. */
 const oha: Driver = {
   name: 'oha',
+  drainsRequests: true,
   publishable: true,
   supportsFixedRate: true,
   isAvailable: () => which('oha'),
@@ -212,6 +215,7 @@ const WORKER = fileURLToPath(new URL('./load-worker.ts', import.meta.url))
  */
 const builtin: Driver = {
   name: 'builtin',
+  drainsRequests: true,
   publishable: false,
   supportsFixedRate: false,
   isAvailable: async () => true,

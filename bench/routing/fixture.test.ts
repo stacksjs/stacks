@@ -3,7 +3,7 @@ import { expect, it } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { assertFixtureQueryLogged, createFixture, FIXTURE_ROWS, resetFixtureLogs } from './fixture'
+import { assertFixtureQueryCount, assertFixtureQueryLogged, createFixture, FIXTURE_ROWS, resetFixtureLogs } from './fixture'
 
 it('supports real query logging in the isolated benchmark database', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'stacks-routing-fixture-'))
@@ -76,6 +76,38 @@ it('rejects missing, failed, and unrelated query logs before benchmarking', asyn
       db.run(`INSERT INTO query_logs (query, status, executed_at)
         VALUES ('SELECT * FROM bench_items', 'slow', '2026-09-05T00:00:00')`)
       await assertFixtureQueryLogged(file, 20)
+    }
+    finally {
+      db.close()
+    }
+  }
+  finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+it('verifies every loaded query, rejecting partial or duplicate persistence', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'stacks-routing-log-count-'))
+  const file = join(dir, 'bench.sqlite')
+  try {
+    createFixture(file)
+    const db = new Database(file)
+    try {
+      const insert = db.prepare(`INSERT INTO query_logs (query, status, error, executed_at)
+        VALUES (?, ?, ?, '2026-09-05T00:00:00')`)
+      insert.run('SELECT id FROM bench_items', 'completed', null)
+      // A single successful parity probe cannot detect lost logs under load.
+      await assertFixtureQueryLogged(file)
+      await expect(assertFixtureQueryCount(file, 2, 20)).rejects.toThrow('expected 2, found 1')
+      insert.run('SELECT id FROM bench_items', 'failed', 'query failed')
+      insert.run('SELECT id FROM benchXitems', 'completed', null)
+      insert.run('INSERT INTO bench_items VALUES (1)', 'completed', null)
+      await expect(assertFixtureQueryCount(file, 2, 20)).rejects.toThrow('expected 2, found 1')
+      const deferred = assertFixtureQueryCount(file, 2)
+      insert.run('SELECT id FROM bench_items', 'slow', null)
+      expect(await deferred).toBe(2)
+      insert.run('SELECT id FROM bench_items', 'completed', null)
+      await expect(assertFixtureQueryCount(file, 2, 20)).rejects.toThrow('expected 2, found 3')
     }
     finally {
       db.close()

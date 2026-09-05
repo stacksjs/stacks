@@ -50,6 +50,7 @@ describe('benchmark CPU window', () => {
       const measured = await measureLoad(driver, request, 123)
       expect(measured.cpuPercent).toBeCloseTo(10, 8)
       expect(measured.result).toBe(result)
+      expect(measured.warmupResult).toEqual(warmupSeconds > 0 ? { ...result, requests: 999, raw: 'warmup output' } : null)
       expect(requests).toEqual(warmupSeconds > 0
         ? [{ ...request, warmupSeconds: 0, durationSeconds: warmupSeconds }, { ...request, warmupSeconds: 0 }]
         : [{ ...request, warmupSeconds: 0 }])

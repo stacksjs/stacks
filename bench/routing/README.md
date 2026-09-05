@@ -108,6 +108,16 @@ and waits for a successful log of its benchmark SELECT. Disabled or failing
 query logging aborts the run instead of producing a faster, incomplete workload.
 This check runs outside warm-up and measurement.
 
+With `oha` or `builtin`, each Stacks database load run also verifies that the successful
+persisted SELECT count matches the total warmup and measured request count. A
+count mismatch, request errors, or an empty measured load aborts the run. Counting
+happens after CPU sampling, outside the timed window. Raw warmup output and a
+`--persistence.json` sidecar record the request counts used by this check.
+
+Other drivers do not guarantee that their response counts include every in-flight
+request at the deadline. Their sidecars explicitly mark aggregate persistence
+verification as unavailable; the pre-load parity check still applies.
+
 ## Profiles
 
 Stacks has three default profiles. The gap between the first and the third

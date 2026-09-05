@@ -104,3 +104,26 @@ export async function assertFixtureQueryLogged(file: string, timeoutMs = 2000): 
     db.close()
   }
 }
+
+/** Verify warmup plus measured SELECTs after the load generator has stopped. */
+export async function assertFixtureQueryCount(file: string, expected: number, timeoutMs = 2000): Promise<number> {
+  if (!Number.isSafeInteger(expected) || expected < 0)
+    throw new Error('Expected query count must be a non-negative safe integer')
+  const db = new Database(file, { readonly: true })
+  try {
+    const logged = db.query<{ count: number }, []>(`SELECT COUNT(*) AS count FROM query_logs
+      WHERE ltrim(query) LIKE 'SELECT %' AND query LIKE '%bench!_items%' ESCAPE '!'
+        AND status IN ('completed', 'slow') AND error IS NULL`)
+    const deadline = performance.now() + timeoutMs
+    while (true) {
+      const count = logged.get()!.count
+      if (count === expected) return count
+      if (count > expected || performance.now() >= deadline)
+        throw new Error(`Stacks benchmark query logging mismatch: expected ${expected}, found ${count}. Every loaded SELECT must persist exactly once.`)
+      await Bun.sleep(10)
+    }
+  }
+  finally {
+    db.close()
+  }
+}

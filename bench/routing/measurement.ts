@@ -41,13 +41,14 @@ async function measureCpu(pid: number): Promise<() => Promise<number | null>> {
 }
 
 /** Sample server CPU over the load window returned by the driver. */
-export async function measureLoad(driver: Driver, request: LoadRequest, pid: number): Promise<{ result: LoadResult, cpuPercent: number | null }> {
+export async function measureLoad(driver: Driver, request: LoadRequest, pid: number): Promise<{ result: LoadResult, cpuPercent: number | null, warmupResult: LoadResult | null }> {
   // Warm the server before taking either CPU sample. Every adapter receives
   // zero internal warmup, so throughput and CPU exclude the same phase.
   const measuredRequest = { ...request, warmupSeconds: 0 }
-  if (request.warmupSeconds > 0)
-    await driver.run({ ...measuredRequest, durationSeconds: request.warmupSeconds })
+  const warmupResult = request.warmupSeconds > 0
+    ? await driver.run({ ...measuredRequest, durationSeconds: request.warmupSeconds })
+    : null
   const finishCpu = await measureCpu(pid)
   const result = await driver.run(measuredRequest)
-  return { result, cpuPercent: await finishCpu() }
+  return { result, cpuPercent: await finishCpu(), warmupResult }
 }
