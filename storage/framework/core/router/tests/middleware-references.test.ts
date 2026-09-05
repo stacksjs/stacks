@@ -20,11 +20,13 @@
  */
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
-import { config } from '@stacksjs/config'
+import { config, overridesReady } from '@stacksjs/config'
+import { appPath } from '@stacksjs/path'
 import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware, middlewareAliases } from '../src/stacks-router'
 import defaultAliases from '../../../defaults/app/Middleware'
 
-beforeEach(() => {
+beforeEach(async () => {
+  await overridesReady
   clearMiddlewareCache()
 })
 
@@ -158,6 +160,85 @@ describe('negated references', () => {
 })
 
 describe('the alias map merges over the framework defaults', () => {
+  test('reparses a warm parameter reference when aliases are reloaded', async () => {
+    const aliases = (await import(appPath('Middleware.ts'))).default as Record<string, string>
+    const base = '__parsedReferenceFixture'
+    const full = `${base}:alpha`
+    const previous = config.app.env
+    aliases[base] = 'EnvProduction'
+    aliases[full] = 'EnvProduction'
+    config.app.env = 'production'
+
+    try {
+      const router = createStacksRouter()
+      router.get('/mw-parsed-reload', req => req._middlewareParams ?? {}).middleware(full as any)
+      const request = () => router.handleRequest(new Request('http://localhost/mw-parsed-reload'))
+
+      const cold = await Promise.all(Array.from({ length: 4 }, request))
+      for (const res of cold) {
+        expect(res.status).toBe(200)
+        expect(await res.json()).toEqual({})
+      }
+      delete aliases[full]
+      // The existing alias snapshot stays valid until the explicit reload.
+      expect(await (await request()).json()).toEqual({})
+      clearMiddlewareCache()
+      for (let i = 0; i < 2; i++) {
+        const res = await request()
+        expect(res.status).toBe(200)
+        expect(await res.json()).toEqual({ [base]: 'alpha' })
+      }
+    }
+    finally {
+      delete aliases[base]
+      delete aliases[full]
+      config.app.env = previous
+      clearMiddlewareCache()
+    }
+  })
+
+  test('an in-flight alias load cannot repopulate parsed references after a reload', async () => {
+    const aliases = (await import(appPath('Middleware.ts'))).default as Record<string, string>
+    const base = '__inFlightReferenceFixture'
+    const full = `${base}:alpha`
+    const previous = config.app.env
+    aliases[base] = 'EnvProduction'
+    config.app.env = 'production'
+    let reloaded = false
+    Object.defineProperty(aliases, full, {
+      enumerable: true,
+      configurable: true,
+      get() {
+        // Simulate a reload while the first alias snapshot is being loaded.
+        delete aliases[full]
+        clearMiddlewareCache()
+        reloaded = true
+        return 'EnvProduction'
+      },
+    })
+
+    try {
+      const router = createStacksRouter()
+      router.get('/mw-parsed-in-flight', req => req._middlewareParams ?? {}).middleware(full as any)
+      const request = () => router.handleRequest(new Request('http://localhost/mw-parsed-in-flight'))
+      // The already-running request can encounter the old reference after
+      // its alias disappeared. What matters is that later requests recover.
+      await (await request()).arrayBuffer()
+      expect(reloaded).toBe(true)
+      for (let i = 0; i < 2; i++) {
+        const res = await request()
+        expect(res.status).toBe(200)
+        expect(await res.json()).toEqual({ [base]: 'alpha' })
+      }
+    }
+    finally {
+      delete aliases[base]
+      delete aliases[full]
+      config.app.env = previous
+      clearMiddlewareCache()
+    }
+  })
+
   test('every default alias survives the application having its own map', async () => {
     const merged = await middlewareAliases()
 

@@ -1304,6 +1304,9 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
   negatedMiddlewareCache.clear()
+  // In-flight parses keep their original map and cannot refill this cache
+  // with aliases from before a reload.
+  parsedMiddlewareCache = new Map()
   middlewareAliasesPromise = null
   middlewareRegistryPromise = null
   actionRegistryPromise = null
@@ -1403,11 +1406,29 @@ const routeApiResponseRegistry = new Set<string>()
 /** One middleware reference, taken apart. */
 interface ParsedMiddleware {
   /** The alias or class name to load, with any leading `!` removed. */
-  name: string
+  readonly name: string
   /** Whether the reference was negated with a leading `!`. */
-  negated: boolean
+  readonly negated: boolean
   /** Whatever followed the first `:`, when the reference is not itself an alias. */
-  params?: string
+  readonly params?: string
+}
+
+let parsedMiddlewareCache = new Map<string, ParsedMiddleware | Promise<ParsedMiddleware>>()
+
+function parseMiddlewareEntry(middleware: string): ParsedMiddleware | Promise<ParsedMiddleware> {
+  const cache = parsedMiddlewareCache
+  let parsed = cache.get(middleware)
+  if (!parsed) {
+    parsed = parseMiddlewareEntryUncached(middleware).then((resolved) => {
+      cache.set(middleware, resolved)
+      return resolved
+    }, (error) => {
+      cache.delete(middleware)
+      throw error
+    })
+    cache.set(middleware, parsed)
+  }
+  return parsed
 }
 
 /**
@@ -1427,7 +1448,7 @@ interface ParsedMiddleware {
  * Async because the alias map is loaded by dynamic import. The old sync
  * version could not consult it, which is why it did not.
  */
-async function parseMiddlewareEntry(middleware: string): Promise<ParsedMiddleware> {
+async function parseMiddlewareEntryUncached(middleware: string): Promise<ParsedMiddleware> {
   const negated = middleware.startsWith('!')
   const bare = negated ? middleware.slice(1) : middleware
   const aliases = await getMiddlewareAliases()
@@ -1696,7 +1717,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         ? EMPTY_RESOLVED_MIDDLEWARE
         : []
       for (const middlewareEntry of middlewareEntries) {
-        const parsed = await parseMiddlewareEntry(middlewareEntry)
+        const pending = parseMiddlewareEntry(middlewareEntry)
+        const parsed = pending instanceof Promise ? await pending : pending
         const { name: middlewareName, params } = parsed
 
         // Store middleware params on request for middleware to access.
