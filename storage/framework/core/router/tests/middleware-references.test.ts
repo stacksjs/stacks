@@ -86,6 +86,30 @@ describe('alias lookup happens before the colon is read as a parameter', () => {
 })
 
 describe('negated references', () => {
+  test('warm handlers and reloaded handlers enforce the current request environment', async () => {
+    const previous = config.app.env
+    const router = createStacksRouter()
+    router.get('/mw-cache-prod', () => ({ ok: true })).middleware('env:production')
+    router.get('/mw-cache-not-prod', () => ({ ok: true })).middleware('!env:production')
+
+    try {
+      for (let cycle = 0; cycle < 2; cycle++) {
+        clearMiddlewareCache()
+        for (const env of ['production', 'local', 'production']) {
+          config.app.env = env as typeof config.app.env
+          const allowed = await router.handleRequest(new Request('http://localhost/mw-cache-prod'))
+          const negated = await router.handleRequest(new Request('http://localhost/mw-cache-not-prod'))
+          expect(allowed.status).toBe(env === 'production' ? 200 : 403)
+          expect(negated.status).toBe(env === 'production' ? 403 : 200)
+        }
+      }
+    }
+    finally {
+      config.app.env = previous
+      clearMiddlewareCache()
+    }
+  })
+
   test('!auth passes when auth refuses', async () => {
     const router = createStacksRouter()
     let handlerRan = false

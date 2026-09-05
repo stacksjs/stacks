@@ -20,6 +20,8 @@
  */
 
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
+import { unlinkSync, writeFileSync } from 'node:fs'
+import { appPath } from '@stacksjs/path'
 import { assertRouteMiddlewareResolvable, clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware } from '../src/stacks-router'
 
 beforeEach(() => {
@@ -37,6 +39,31 @@ afterAll(() => {
 })
 
 describe('request-time fail-closed', () => {
+  test('a broken middleware stays closed when its failed load is cached', async () => {
+    const name = `BrokenCached${crypto.randomUUID().replaceAll('-', '')}`
+    const file = appPath(`Middleware/${name}.ts`)
+    writeFileSync(file, 'export default {}\n')
+    let handlerRuns = 0
+
+    try {
+      const router = createStacksRouter()
+      router.get('/mw-broken-cached', () => {
+        handlerRuns++
+        return { ok: true }
+      }).middleware(name)
+
+      for (let request = 0; request < 2; request++) {
+        const res = await router.handleRequest(new Request('http://localhost/mw-broken-cached'))
+        expect(res.status).toBe(500)
+        expect(handlerRuns).toBe(0)
+      }
+    }
+    finally {
+      unlinkSync(file)
+      clearMiddlewareCache()
+    }
+  })
+
   test('resolvable alias → middleware runs, handler runs, 200', async () => {
     const router = createStacksRouter()
     let handlerRan = false

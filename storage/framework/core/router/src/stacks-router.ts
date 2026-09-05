@@ -1283,13 +1283,16 @@ function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHan
 /**
  * Load the handler a parsed reference names, negated when it asked to be.
  */
-async function loadParsedMiddleware(parsed: ParsedMiddleware): Promise<MiddlewareHandler | null> {
-  const handler = await loadMiddleware(parsed.name)
+function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | null | Promise<MiddlewareHandler | null> {
+  // Resolved modules are synchronous values. Keep cached failures as null so
+  // the caller still fails closed, and use the same cache hot reload clears.
+  const cached = middlewareCache.get(parsed.name)
+  if (cached !== undefined)
+    return cached && parsed.negated ? negateMiddleware(parsed.name, cached) : cached
 
-  if (!handler || !parsed.negated)
-    return handler
-
-  return negateMiddleware(parsed.name, handler)
+  return loadMiddleware(parsed.name).then(handler =>
+    handler && parsed.negated ? negateMiddleware(parsed.name, handler) : handler,
+  )
 }
 
 /**
@@ -1699,7 +1702,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           ;enhancedReq._middlewareParams[middlewareName] = params
         }
 
-        const middleware = await loadParsedMiddleware(parsed)
+        const loaded = loadParsedMiddleware(parsed)
+        const middleware = loaded instanceof Promise ? await loaded : loaded
         if (!middleware || typeof middleware.handle !== 'function') {
           // Fail CLOSED. The previous `continue` served the route WITHOUT
           // the middleware — a typo'd `auth` alias silently unprotected the
