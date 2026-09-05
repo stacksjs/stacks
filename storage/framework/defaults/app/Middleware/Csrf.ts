@@ -1,5 +1,4 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
-import { Buffer } from 'node:buffer'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { Middleware } from '@stacksjs/router'
@@ -62,6 +61,7 @@ import { Middleware } from '@stacksjs/router'
 export const CSRF_COOKIE_NAME = 'X-CSRF-Token'
 const CSRF_HEADER_NAME = 'x-csrf-token'
 const TOKEN_BYTES = 32
+const TOKEN_ENCODER = new TextEncoder()
 
 /**
  * Generate a fresh CSRF token (hex-encoded, 32 random bytes → 64 chars).
@@ -197,7 +197,7 @@ function safeEqual(a: string, b: string): boolean {
   if (typeof a !== 'string' || typeof b !== 'string') return false
   if (a.length !== b.length) return false
   try {
-    return timingSafeEqual(Buffer.from(a), Buffer.from(b))
+    return timingSafeEqual(TOKEN_ENCODER.encode(a), TOKEN_ENCODER.encode(b))
   }
   catch {
     return false

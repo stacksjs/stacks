@@ -11,6 +11,9 @@ beforeEach(() => {
 describe('native CSRF request enforcement', () => {
   test.each([
     { label: 'matching header', headers: { cookie: `X-CSRF-Token=${token}`, 'x-csrf-token': token }, body: {}, status: 200 },
+    { label: 'matching Unicode token', headers: { cookie: `X-CSRF-Token=${'é'.repeat(32)}` }, body: { _token: 'é'.repeat(32) }, status: 200 },
+    { label: 'different Unicode token', headers: { cookie: `X-CSRF-Token=${'é'.repeat(32)}` }, body: { _token: 'è'.repeat(32) }, status: 403 },
+    { label: 'equal character counts with different byte counts', headers: { cookie: `X-CSRF-Token=${'é'.repeat(32)}` }, body: { _token: 'x'.repeat(32) }, status: 403 },
     { label: 'form token', headers: { cookie: `X-CSRF-Token=${token}` }, body: { _token: token }, status: 200 },
     { label: 'legacy token', headers: { cookie: `csrf-token=${token}` }, body: { csrf_token: token }, status: 200 },
     { label: 'bearer exemption', headers: { authorization: 'Bearer test-credential' }, body: {}, status: 200 },
