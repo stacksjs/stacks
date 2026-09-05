@@ -3,6 +3,7 @@ title: Data Models
 description: Learn how to define and use ORM models in Stacks applications
 ---
 
+```typescript
 attributes: {
   name: {
     factory: faker => faker.person.fullName(),

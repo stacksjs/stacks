@@ -2,6 +2,7 @@
 title: Server Actions
 description: Learn how to create and use Actions in Stacks applications
 ---
+```typescript
   // Get specific keys only
   const credentials = request.only<{ email: string; password: string }>([
     'email',

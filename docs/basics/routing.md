@@ -1,7 +1,8 @@
 ---
 title: Application Routing
-description: "// Points to app/Controllers/ComingSoonController.ts, index method\nroute.get('/coming-soon', 'Controllers/ComingSoonController@index')"
+description: Learn how routes map to Actions and Controllers in Stacks applications
 ---
+```typescript
 // Points to app/Controllers/ComingSoonController.ts, index method
 route.get('/coming-soon', 'Controllers/ComingSoonController@index')
 
