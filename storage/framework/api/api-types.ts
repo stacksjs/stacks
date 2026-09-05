@@ -1128,7 +1128,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "position"?: number; "card_limit"?: number; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/board-columns/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -1150,12 +1186,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "position"?: number; "card_limit"?: number; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "position"?: number; "card_limit"?: number; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "position"?: number; "card_limit"?: number; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/boards": {
@@ -1168,13 +1243,49 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "created_at"?: string; "updated_at"?: string }> } } }
+      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/boards/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -1191,17 +1302,56 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/campaign-sends": {
@@ -11530,7 +11680,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "download_limit"?: number; "expiry_days"?: number; "requires_login"?: boolean; "automatic_delivery"?: boolean; "status"?: "active" | "inactive"; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/digital-deliveries/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -11552,12 +11738,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "download_limit"?: number; "expiry_days"?: number; "requires_login"?: boolean; "automatic_delivery"?: boolean; "status"?: "active" | "inactive"; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "download_limit"?: number; "expiry_days"?: number; "requires_login"?: boolean; "automatic_delivery"?: boolean; "status"?: "active" | "inactive"; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "name"?: string; "description"?: string; "download_limit"?: number; "expiry_days"?: number; "requires_login"?: boolean; "automatic_delivery"?: boolean; "status"?: "active" | "inactive"; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/email-idempotency": {
@@ -12434,7 +12659,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/labels/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -12456,12 +12717,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "color"?: string; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/license-keys": {
@@ -12641,13 +12941,49 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "created_at"?: string; "updated_at"?: string }> } } }
+      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/loyalty-points/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -12664,17 +13000,56 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/loyalty-rewards": {
@@ -14095,13 +14470,49 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
+      "200": { content: { "application/json": { "data": Array<{ "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/pledges/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -14118,17 +14529,56 @@ export interface paths {
     }
     requestBody?: never
     responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
       "422": { content: never }
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/posts": {
@@ -14389,7 +14839,43 @@ export interface paths {
     }
   }
     put?: never
-    post?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "201": { content: { "application/json": { "data": { "id": number; "uuid": string; "printer"?: string; "document"?: string; "timestamp"?: unknown; "status"?: "success" | "failed" | "warning"; "size"?: number; "pages"?: number; "duration"?: number; "metadata"?: string; "print_device_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  "/api/print-logs/bulk-delete": {
+    get?: never
+    put?: never
+    post: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": Record<string, unknown> } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     delete?: never
     options?: never
     head?: never
@@ -14411,12 +14897,51 @@ export interface paths {
       "500": { content: never }
     }
   }
-    put?: never
+    put: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "printer"?: string; "document"?: string; "timestamp"?: unknown; "status"?: "success" | "failed" | "warning"; "size"?: number; "pages"?: number; "duration"?: number; "metadata"?: string; "print_device_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     post?: never
-    delete?: never
+    delete: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "printer"?: string; "document"?: string; "timestamp"?: unknown; "status"?: "success" | "failed" | "warning"; "size"?: number; "pages"?: number; "duration"?: number; "metadata"?: string; "print_device_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     options?: never
     head?: never
-    patch?: never
+    patch: {
+    parameters: {
+      query?: never
+      header?: never
+      path: { "id": string }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      "200": { content: { "application/json": { "data": { "id": number; "uuid": string; "printer"?: string; "document"?: string; "timestamp"?: unknown; "status"?: "success" | "failed" | "warning"; "size"?: number; "pages"?: number; "duration"?: number; "metadata"?: string; "print_device_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
+      "422": { content: never }
+      "500": { content: never }
+    }
+  }
     trace?: never
   }
   "/api/product-categories": {
@@ -21577,7 +22102,7 @@ export interface components {
     "Automation": { "id": number; "uuid": string; "name": string; "status": "draft" | "active" | "paused" | "archived"; "version": number; "trigger": unknown; "graph": unknown; "published_at"?: unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
     "AutomationRun": { "id": number; "uuid": string; "status": "queued" | "running" | "waiting" | "completed" | "failed" | "cancelled"; "current_node_id"?: string; "version": number; "subject_type"?: string; "subject_id"?: string; "context": unknown; "idempotency_key": string; "started_at"?: unknown; "finished_at"?: unknown; "error"?: string; "team_id"?: number; "automation_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Bid": { "id": number; "uuid": string; "bidder_name"?: string; "bidder_email"?: string; "amount"?: number; "status"?: "leading" | "outbid" | "won" | "lost" | "invalid"; "placed_at"?: unknown; "auction_id"?: number; "auction_item_id"?: number; "created_at"?: string; "updated_at"?: string }
-    "Board": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "created_at"?: string; "updated_at"?: string }
+    "Board": { "id": number; "uuid": string; "name"?: string; "description"?: string; "icon"?: string; "color"?: string; "position"?: number; "archived"?: boolean; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
     "BoardColumn": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "position"?: number; "card_limit"?: number; "color"?: string; "created_at"?: string; "updated_at"?: string }
     "Campaign": { "id": number; "uuid": string; "name": string; "description"?: string; "type": "email" | "sms" | "push" | "social" | "multi-channel"; "status": "draft" | "scheduled" | "sending" | "sent" | "paused" | "cancelled" | "failed" | "active" | "completed" | "archived"; "subject"?: string; "template"?: string; "text"?: string; "content"?: unknown; "channel_settings"?: unknown; "segment_definition"?: unknown; "from_name"?: string; "from_address"?: string; "reply_to"?: string; "timezone": string; "recurrence"?: string; "experiment_metric"?: "open_rate" | "click_rate" | "conversion_rate"; "email_list_id"?: number; "scheduled_at"?: unknown; "sent_at"?: unknown; "audience_size"?: number; "sent_count"?: number; "open_rate"?: number; "click_rate"?: number; "conversion_rate"?: number; "budget"?: number; "spent"?: number; "currency": string; "start_date"?: unknown; "end_date"?: unknown; "team_id"?: number; "created_at"?: string; "updated_at"?: string }
     "CampaignSend": { "id": number; "uuid": string; "campaign_id": number; "subscriber_id"?: number; "email_list_id"?: number; "status": "queued" | "deferred" | "sending" | "sent" | "delivered" | "failed" | "undelivered" | "bounced" | "complained" | "suppressed" | "cancelled"; "channel": "email" | "sms" | "push"; "recipient": string; "idempotency_key": string; "provider_message_id"?: string; "error"?: string; "sent_at"?: unknown; "opened_at"?: unknown; "clicked_at"?: unknown; "delivered_at"?: unknown; "failed_at"?: unknown; "segments"?: number; "cost"?: number; "metadata"?: unknown; "team_id"?: number; "campaign_variant_id"?: number; "created_at"?: string; "updated_at"?: string }
@@ -21608,7 +22133,7 @@ export interface components {
     "Label": { "id": number; "uuid": string; "board_id"?: number; "name"?: string; "color"?: string; "created_at"?: string; "updated_at"?: string }
     "LicenseKey": { "id": number; "uuid": string; "key"?: string; "template"?: "Standard License" | "Premium License" | "Enterprise License"; "expiry_date"?: unknown; "status"?: "active" | "inactive" | "unassigned"; "customer_id"?: number; "product_id"?: number; "order_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Log": { "id": number; "timestamp"?: number; "type"?: "warning" | "error" | "info" | "success"; "source"?: "file" | "cli" | "system"; "message"?: string; "project"?: string; "stacktrace"?: string; "file"?: string; "created_at"?: string; "updated_at"?: string }
-    "LoyaltyPoint": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "created_at"?: string; "updated_at"?: string }
+    "LoyaltyPoint": { "id": number; "uuid": string; "wallet_id"?: string; "points"?: number; "source"?: string; "source_reference_id"?: string; "description"?: string; "expiry_date"?: unknown; "is_used"?: boolean; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }
     "LoyaltyReward": { "id": number; "uuid": string; "name"?: string; "description"?: string; "points_required"?: number; "reward_type"?: string; "discount_percentage"?: number; "free_product_id"?: string; "is_active"?: boolean; "expiry_days"?: number; "image_url"?: string; "product_id"?: number; "created_at"?: string; "updated_at"?: string }
     "MailPreference": { "id": number; "mailbox": string; "account_name": string; "signature"?: string; "display_density": "comfortable" | "default" | "compact"; "theme": "light" | "dark" | "system"; "language": "en" | "fr" | "de" | "es" | "ja"; "default_reply_behavior": "reply" | "replyAll"; "send_and_archive": boolean; "auto_advance": "newer" | "older" | "back"; "desktop_notifications": boolean; "notification_sound": "default" | "subtle" | "none"; "notification_preview": boolean; "filters": string; "blocked_senders": string; "labels": string; "load_remote_images": boolean; "show_external_content": boolean; "vacation_enabled": boolean; "vacation_start_date"?: string; "vacation_end_date"?: string; "vacation_subject"?: string; "vacation_message"?: string; "created_at"?: string; "updated_at"?: string }
     "Manufacturer": { "id": number; "uuid": string; "manufacturer"?: string; "description"?: string; "country"?: string; "featured"?: boolean; "created_at"?: string; "updated_at"?: string }
@@ -21619,7 +22144,7 @@ export interface components {
     "Order": { "id": number; "uuid": string; "status"?: string; "total_amount"?: number; "currency"?: string; "tax_amount"?: number; "discount_amount"?: number; "delivery_fee"?: number; "tip_amount"?: number; "order_type"?: string; "delivery_address"?: string; "special_instructions"?: string; "estimated_delivery_time"?: string; "tracking_token"?: string; "delivery_latitude"?: number; "delivery_longitude"?: number; "applied_coupon_id"?: string; "customer_id"?: number; "coupon_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Page": { "id": number; "uuid": string; "title": string; "slug"?: string; "path"?: string; "parent_id"?: number; "template": string; "blocks"?: unknown; "meta_description"?: string; "status"?: "draft" | "published" | "scheduled" | "archived"; "scheduled_at"?: unknown; "views"?: number; "published_at"?: unknown; "conversions"?: number; "author_id"?: number; "site_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Payment": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }
-    "Pledge": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "created_at"?: string; "updated_at"?: string }
+    "Pledge": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Post": { "id": number; "uuid": string; "title": string; "slug"?: string; "poster"?: string; "content": string; "excerpt"?: string; "focus_keyword"?: string; "meta_description"?: string; "canonical_url"?: string; "views"?: number; "published_at"?: unknown; "status": "published" | "draft" | "archived"; "is_featured"?: number; "author_id"?: number; "site_id"?: number; "created_at"?: string; "updated_at"?: string }
     "PrintDevice": { "id": number; "uuid": string; "name"?: string; "mac_address"?: string; "location"?: string; "terminal"?: string; "status"?: "online" | "offline" | "warning"; "last_ping"?: unknown; "print_count"?: number; "created_at"?: string; "updated_at"?: string }
     "Product": { "id": number; "uuid": string; "name"?: string; "description"?: string; "price"?: number; "image_url"?: string; "is_available"?: boolean; "inventory_count"?: number; "preparation_time"?: number; "allergens"?: string; "nutritional_info"?: string; "category_id"?: number; "manufacturer_id"?: number; "created_at"?: string; "updated_at"?: string }

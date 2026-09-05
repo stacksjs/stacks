@@ -286,7 +286,7 @@ buddy generate:migrations     # 2. diff models vs current schema, emit SQL into 
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
-`buddy make:migration <name>` still exists for hand-written migrations, and 220 migrations ship for
+`buddy make:migration <name>` still exists for hand-written migrations, and 223 migrations ship for
 the built-in models. `buddy migrate` verifies models exist before running.
 
 ### Query builder

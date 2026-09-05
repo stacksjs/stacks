@@ -4027,12 +4027,352 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/board-columns",
+        "operationId": "post__api_board_columns",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "card_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/board-columns/bulk-delete": {
+      "post": {
+        "summary": "/api/board-columns/bulk-delete",
+        "operationId": "post__api_board_columns_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/board-columns/{id}": {
+      "delete": {
+        "summary": "/api/board-columns/{id}",
+        "operationId": "delete__api_board_columns__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "card_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/board-columns/{id}",
         "operationId": "get__api_board_columns__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "card_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/board-columns/{id}",
+        "operationId": "patch__api_board_columns__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 80
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "card_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/board-columns/{id}",
+        "operationId": "put__api_board_columns__id_",
         "parameters": [
           {
             "name": "id",
@@ -4161,6 +4501,9 @@
                           "archived": {
                             "type": "boolean"
                           },
+                          "team_id": {
+                            "type": "integer"
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
@@ -4191,9 +4534,201 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/boards",
+        "operationId": "post__api_boards",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "icon": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "archived": {
+                          "type": "boolean"
+                        },
+                        "team_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/boards/bulk-delete": {
+      "post": {
+        "summary": "/api/boards/bulk-delete",
+        "operationId": "post__api_boards_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/boards/{id}": {
+      "delete": {
+        "summary": "/api/boards/{id}",
+        "operationId": "delete__api_boards__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "icon": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "archived": {
+                          "type": "boolean"
+                        },
+                        "team_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/boards/{id}",
         "operationId": "get__api_boards__id_",
@@ -4248,6 +4783,185 @@
                         },
                         "archived": {
                           "type": "boolean"
+                        },
+                        "team_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/boards/{id}",
+        "operationId": "patch__api_boards__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "icon": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "archived": {
+                          "type": "boolean"
+                        },
+                        "team_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/boards/{id}",
+        "operationId": "put__api_boards__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 120
+                        },
+                        "description": {
+                          "type": "string",
+                          "maxLength": 2000
+                        },
+                        "icon": {
+                          "type": "string",
+                          "maxLength": 80
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "position": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "archived": {
+                          "type": "boolean"
+                        },
+                        "team_id": {
+                          "type": "integer"
                         },
                         "created_at": {
                           "type": "string",
@@ -26575,12 +27289,384 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/digital-deliveries",
+        "operationId": "post__api_digital_deliveries",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "download_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "expiry_days": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "requires_login": {
+                          "type": "boolean"
+                        },
+                        "automatic_delivery": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "inactive"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/digital-deliveries/bulk-delete": {
+      "post": {
+        "summary": "/api/digital-deliveries/bulk-delete",
+        "operationId": "post__api_digital_deliveries_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/digital-deliveries/{id}": {
+      "delete": {
+        "summary": "/api/digital-deliveries/{id}",
+        "operationId": "delete__api_digital_deliveries__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "download_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "expiry_days": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "requires_login": {
+                          "type": "boolean"
+                        },
+                        "automatic_delivery": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "inactive"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/digital-deliveries/{id}",
         "operationId": "get__api_digital_deliveries__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "download_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "expiry_days": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "requires_login": {
+                          "type": "boolean"
+                        },
+                        "automatic_delivery": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "inactive"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/digital-deliveries/{id}",
+        "operationId": "patch__api_digital_deliveries__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "name": {
+                          "type": "string",
+                          "maxLength": 255
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "download_limit": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "expiry_days": {
+                          "type": "number",
+                          "minimum": 0
+                        },
+                        "requires_login": {
+                          "type": "boolean"
+                        },
+                        "automatic_delivery": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "active",
+                            "inactive"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/digital-deliveries/{id}",
+        "operationId": "put__api_digital_deliveries__id_",
         "parameters": [
           {
             "name": "id",
@@ -30302,12 +31388,320 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/labels",
+        "operationId": "post__api_labels",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/labels/bulk-delete": {
+      "post": {
+        "summary": "/api/labels/bulk-delete",
+        "operationId": "post__api_labels_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/labels/{id}": {
+      "delete": {
+        "summary": "/api/labels/{id}",
+        "operationId": "delete__api_labels__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/labels/{id}",
         "operationId": "get__api_labels__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/labels/{id}",
+        "operationId": "patch__api_labels__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "board_id": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 60
+                        },
+                        "color": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/labels/{id}",
+        "operationId": "put__api_labels__id_",
         "parameters": [
           {
             "name": "id",
@@ -31178,6 +32572,9 @@
                           "is_used": {
                             "type": "boolean"
                           },
+                          "customer_id": {
+                            "type": "integer"
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
@@ -31208,9 +32605,197 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/loyalty-points",
+        "operationId": "post__api_loyalty_points",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "wallet_id": {
+                          "type": "string"
+                        },
+                        "points": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "source_reference_id": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expiry_date": {
+                          "type": "timestamp"
+                        },
+                        "is_used": {
+                          "type": "boolean"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/loyalty-points/bulk-delete": {
+      "post": {
+        "summary": "/api/loyalty-points/bulk-delete",
+        "operationId": "post__api_loyalty_points_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/loyalty-points/{id}": {
+      "delete": {
+        "summary": "/api/loyalty-points/{id}",
+        "operationId": "delete__api_loyalty_points__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "wallet_id": {
+                          "type": "string"
+                        },
+                        "points": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "source_reference_id": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expiry_date": {
+                          "type": "timestamp"
+                        },
+                        "is_used": {
+                          "type": "boolean"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/loyalty-points/{id}",
         "operationId": "get__api_loyalty_points__id_",
@@ -31263,6 +32848,181 @@
                         },
                         "is_used": {
                           "type": "boolean"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/loyalty-points/{id}",
+        "operationId": "patch__api_loyalty_points__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "wallet_id": {
+                          "type": "string"
+                        },
+                        "points": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "source_reference_id": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expiry_date": {
+                          "type": "timestamp"
+                        },
+                        "is_used": {
+                          "type": "boolean"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/loyalty-points/{id}",
+        "operationId": "put__api_loyalty_points__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "wallet_id": {
+                          "type": "string"
+                        },
+                        "points": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "source": {
+                          "type": "string"
+                        },
+                        "source_reference_id": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "expiry_date": {
+                          "type": "timestamp"
+                        },
+                        "is_used": {
+                          "type": "boolean"
+                        },
+                        "customer_id": {
+                          "type": "integer"
                         },
                         "created_at": {
                           "type": "string",
@@ -37508,6 +39268,9 @@
                           "auction_id": {
                             "type": "integer"
                           },
+                          "customer_id": {
+                            "type": "integer"
+                          },
                           "created_at": {
                             "type": "string",
                             "format": "date-time"
@@ -37538,9 +39301,207 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/pledges",
+        "operationId": "post__api_pledges",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "donor_name": {
+                          "type": "string",
+                          "maxLength": 160
+                        },
+                        "donor_email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "level": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "cancelled"
+                          ]
+                        },
+                        "auction_id": {
+                          "type": "integer"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/pledges/bulk-delete": {
+      "post": {
+        "summary": "/api/pledges/bulk-delete",
+        "operationId": "post__api_pledges_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/pledges/{id}": {
+      "delete": {
+        "summary": "/api/pledges/{id}",
+        "operationId": "delete__api_pledges__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "donor_name": {
+                          "type": "string",
+                          "maxLength": 160
+                        },
+                        "donor_email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "level": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "cancelled"
+                          ]
+                        },
+                        "auction_id": {
+                          "type": "integer"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/pledges/{id}",
         "operationId": "get__api_pledges__id_",
@@ -37597,6 +39558,191 @@
                           ]
                         },
                         "auction_id": {
+                          "type": "integer"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/pledges/{id}",
+        "operationId": "patch__api_pledges__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "donor_name": {
+                          "type": "string",
+                          "maxLength": 160
+                        },
+                        "donor_email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "level": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "cancelled"
+                          ]
+                        },
+                        "auction_id": {
+                          "type": "integer"
+                        },
+                        "customer_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/pledges/{id}",
+        "operationId": "put__api_pledges__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "donor_name": {
+                          "type": "string",
+                          "maxLength": 160
+                        },
+                        "donor_email": {
+                          "type": "string",
+                          "format": "email"
+                        },
+                        "amount": {
+                          "type": "number",
+                          "minimum": 1
+                        },
+                        "level": {
+                          "type": "string",
+                          "maxLength": 40
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "confirmed",
+                            "cancelled"
+                          ]
+                        },
+                        "auction_id": {
+                          "type": "integer"
+                        },
+                        "customer_id": {
                           "type": "integer"
                         },
                         "created_at": {
@@ -39043,12 +41189,432 @@
             "description": "Server error"
           }
         }
+      },
+      "post": {
+        "summary": "/api/print-logs",
+        "operationId": "post__api_print_logs",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "printer": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "document": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "timestamp": {
+                          "type": "timestampTz"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "success",
+                            "failed",
+                            "warning"
+                          ]
+                        },
+                        "size": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "pages": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "metadata": {
+                          "type": "string"
+                        },
+                        "print_device_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/print-logs/bulk-delete": {
+      "post": {
+        "summary": "/api/print-logs/bulk-delete",
+        "operationId": "post__api_print_logs_bulk_delete",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
       }
     },
     "/api/print-logs/{id}": {
+      "delete": {
+        "summary": "/api/print-logs/{id}",
+        "operationId": "delete__api_print_logs__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "printer": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "document": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "timestamp": {
+                          "type": "timestampTz"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "success",
+                            "failed",
+                            "warning"
+                          ]
+                        },
+                        "size": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "pages": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "metadata": {
+                          "type": "string"
+                        },
+                        "print_device_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
       "get": {
         "summary": "/api/print-logs/{id}",
         "operationId": "get__api_print_logs__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "printer": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "document": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "timestamp": {
+                          "type": "timestampTz"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "success",
+                            "failed",
+                            "warning"
+                          ]
+                        },
+                        "size": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "pages": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "metadata": {
+                          "type": "string"
+                        },
+                        "print_device_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "patch": {
+        "summary": "/api/print-logs/{id}",
+        "operationId": "patch__api_print_logs__id_",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "integer"
+                        },
+                        "uuid": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "printer": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "document": {
+                          "type": "string",
+                          "maxLength": 100
+                        },
+                        "timestamp": {
+                          "type": "timestampTz"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "success",
+                            "failed",
+                            "warning"
+                          ]
+                        },
+                        "size": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 100
+                        },
+                        "pages": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "duration": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 50
+                        },
+                        "metadata": {
+                          "type": "string"
+                        },
+                        "print_device_id": {
+                          "type": "integer"
+                        },
+                        "created_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        },
+                        "updated_at": {
+                          "type": "string",
+                          "format": "date-time"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "uuid"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ]
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      },
+      "put": {
+        "summary": "/api/print-logs/{id}",
+        "operationId": "put__api_print_logs__id_",
         "parameters": [
           {
             "name": "id",
@@ -59392,6 +61958,9 @@
           "archived": {
             "type": "boolean"
           },
+          "team_id": {
+            "type": "integer"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -61399,6 +63968,9 @@
           "is_used": {
             "type": "boolean"
           },
+          "customer_id": {
+            "type": "integer"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time"
@@ -62143,6 +64715,9 @@
             ]
           },
           "auction_id": {
+            "type": "integer"
+          },
+          "customer_id": {
             "type": "integer"
           },
           "created_at": {
