@@ -1,0 +1,2 @@
+# Keep application preloads out of the router's cold-start import-cycle probe.
+# Leave preload absent: Bun rejects an empty preload array during startup.

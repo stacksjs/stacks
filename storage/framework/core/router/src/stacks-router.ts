@@ -4287,6 +4287,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // cookie was only ever seeded on API responses. See the wrapper.
       wrapHandleRequestForCsrf(bunRouter)
 
+      // Directly served requests need the same read-after-write tracking as
+      // serverResponse(), including requests that bypass the route pipeline.
+      await wrapHandleRequestForDatabaseContext(bunRouter)
+
       // After the routes and the view configuration, before the first request:
       // the one moment an application can do work once without racing a reader
       // for it. See `BootHook`.
@@ -4806,6 +4810,18 @@ let routesLoadPromise: Promise<void> | null = null
  */
 type ContextRunner = <T>(fn: () => T) => T
 let routingContextRunner: ContextRunner | null = null
+
+const databaseContextWrappedRouters = new WeakSet<Router>()
+
+async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void> {
+  if (databaseContextWrappedRouters.has(router)) return
+  const runInRoutingContext = await getRoutingContextRunner()
+  // Concurrent serve() calls can resolve the runner together.
+  if (databaseContextWrappedRouters.has(router)) return
+  const original = router.handleRequest.bind(router)
+  router.handleRequest = request => runInRoutingContext(() => original(request))
+  databaseContextWrappedRouters.add(router)
+}
 
 async function getRoutingContextRunner(): Promise<ContextRunner> {
   if (!routingContextRunner) {

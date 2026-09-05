@@ -18,9 +18,62 @@
 
 import { describe, expect, test } from 'bun:test'
 import { contextHasWritten, markContextWrote, withRoutingContext } from '@stacksjs/database'
-import { serverResponse } from '../src/stacks-router'
+import { createStacksRouter, serverResponse } from '../src/stacks-router'
 
 describe('routing context plumbing', () => {
+  test('direct serving starts without preloading the database package', async () => {
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${import.meta.dir}/fixtures/cold-start.toml`,
+      `${import.meta.dir}/fixtures/serve-cold-start.ts`,
+    ], { stdout: 'pipe', stderr: 'pipe' })
+    const timeout = setTimeout(() => child.kill(), 10_000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain('router-cold-start-ok')
+    }
+    finally {
+      clearTimeout(timeout)
+      child.kill()
+      await child.exited
+    }
+  }, 15_000)
+
+  test('directly served requests track writes and isolate concurrent readers', async () => {
+    const router = createStacksRouter()
+    const writing = Promise.withResolvers<void>()
+    const release = Promise.withResolvers<void>()
+    router.get('/__routing_write', async () => {
+      const before = contextHasWritten()
+      markContextWrote()
+      writing.resolve()
+      await release.promise
+      return { before, after: contextHasWritten() }
+    })
+    router.get('/__routing_read', () => ({ wrote: contextHasWritten() }))
+    const server = await router.serve({ port: 0 })
+    try {
+      const writer = fetch(`http://localhost:${server.port}/__routing_write`)
+      await writing.promise
+      const reader = await fetch(`http://localhost:${server.port}/__routing_read`)
+      expect(await reader.json()).toEqual({ wrote: false })
+      release.resolve()
+      expect(await (await writer).json()).toEqual({ before: false, after: true })
+      const later = await fetch(`http://localhost:${server.port}/__routing_read`)
+      expect(await later.json()).toEqual({ wrote: false })
+      expect(contextHasWritten()).toBe(false)
+    }
+    finally {
+      release.resolve()
+      await server.stop(true)
+    }
+  }, 15_000)
+
   test('marking a write is inert with no context established', () => {
     // Background jobs and one-shot scripts have no request boundary; they
     // must not throw, they simply get no read-your-writes guarantee.
