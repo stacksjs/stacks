@@ -19,7 +19,8 @@ async function createLogTable(): Promise<void> {
   await db.unsafe(`CREATE TABLE IF NOT EXISTS query_logs (
     id INTEGER PRIMARY KEY, query TEXT, normalized_query TEXT, duration REAL,
     connection TEXT, status TEXT, error TEXT, executed_at TEXT, bindings TEXT,
-    trace TEXT, model TEXT, method TEXT, file TEXT, line INTEGER, memory_usage REAL
+    trace TEXT, model TEXT, method TEXT, file TEXT, line INTEGER, memory_usage REAL,
+    affected_tables TEXT, tags TEXT
   )`).execute()
 }
 
@@ -111,6 +112,30 @@ try {
     const normalized = await db.unsafe('SELECT normalized_query FROM query_logs WHERE query = ?', [literalQuery]).execute()
     if (normalized.length !== 1 || normalized[0]?.normalized_query !== 'SELECT ? AS total, ? AS name, ? AS active, ? AS missing FROM query_logger_fixture')
       throw new Error('Persisted query normalization changed')
+
+    config.database.queryLogging = {
+      ...config.database.queryLogging,
+      slowThreshold: 100,
+      analysis: { enabled: true, analyzeAll: false, explainPlan: false, suggestions: false },
+    }
+    // Concurrent logs can have different columns. Their order must not decide
+    // whether a slow query keeps its analysis or an ordinary query gains it.
+    for (const slowFirst of [false, true]) {
+      const ordinarySql = `SELECT 1 AS mixed_ordinary_${Number(slowFirst)} FROM query_logger_fixture`
+      const analyzedSql = `SELECT 2 AS mixed_analyzed_${Number(slowFirst)} FROM query_logger_fixture`
+      const events = [
+        { query: { sql: ordinarySql }, queryDurationMillis: 1 },
+        { query: { sql: analyzedSql }, queryDurationMillis: 101 },
+      ]
+      await Promise.all((slowFirst ? events.reverse() : events).map(logQuery))
+      const records = await db.unsafe('SELECT query, status, affected_tables, tags FROM query_logs WHERE query IN (?, ?)', [ordinarySql, analyzedSql]).execute()
+      const ordinary = records.find(row => row.query === ordinarySql)
+      const analyzed = records.find(row => row.query === analyzedSql)
+      if (records.length !== 2 || ordinary?.status !== 'completed' || ordinary.affected_tables !== null || ordinary.tags !== null)
+        throw new Error('Concurrent ordinary query diagnostics changed')
+      if (analyzed?.status !== 'slow' || analyzed.affected_tables !== '["query_logger_fixture"]' || analyzed.tags !== '["SELECT","table:query_logger_fixture"]')
+        throw new Error('Concurrent slow query analysis was lost')
+    }
   }
   console.log('query-logger-dispatch-ok')
 }
