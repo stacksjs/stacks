@@ -122,9 +122,15 @@ export const SQLITE_BOOTSTRAP_PRAGMAS = [
   // sidecar indefinitely — invisible to anything that reads only the main
   // file: remote SQLite browsing (e.g. TablePlus over SSH downloads just the
   // db file), file-level backups, and snapshot scripts. Low-write apps pay
-  // effectively nothing; a high-write deployment can raise this back up.
+  // effectively nothing; a high-write deployment can raise this through
+  // `sqlite.pragmas` in its query-builder configuration.
   'PRAGMA wal_autocheckpoint = 1',
 ] as const
+
+/** Application pragmas override the framework defaults in declaration order. */
+function sqliteBootstrapPragmas(): readonly string[] {
+  return [...SQLITE_BOOTSTRAP_PRAGMAS, ...(bunQbConfig.sqlite?.pragmas ?? [])]
+}
 
 type UnsafeReturn<TResult = unknown> = Promise<TResult> & { execute: () => Promise<TResult> }
 type SqlitePragmaExecutor = {
@@ -142,7 +148,7 @@ type SqlitePragmaExecutor = {
  * preserve it themselves.
  */
 export function applySqlitePragmas(instance: SqlitePragmaExecutor): void {
-  for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS) {
+  for (const pragma of sqliteBootstrapPragmas()) {
     try {
       // bun:sqlite executes synchronously inside `.execute()` (the returned
       // promise is created already settled), so every pragma is in effect
@@ -159,11 +165,11 @@ export function applySqlitePragmas(instance: SqlitePragmaExecutor): void {
 
 /**
  * Raw `bun:sqlite` `Database` handles that have already been bootstrapped.
- * The model executor caches its Database per configure/config-signature, so
- * a WeakSet keeps re-assertion calls (every wrapped `createQueryBuilder`)
- * from re-running the pragmas on an already-bootstrapped connection.
+ * The model executor can keep its Database when only pragmas change. Remember
+ * the applied list so repeated bootstrap calls stay cheap, while a changed
+ * configuration is applied to the existing connection too.
  */
-const bootstrappedRawDbs = new WeakSet<object>()
+const bootstrappedRawDbs = new WeakMap<object, string>()
 
 /**
  * Bootstrap the MODEL-EXECUTOR connection — the raw `bun:sqlite` `Database`
@@ -176,16 +182,20 @@ const bootstrappedRawDbs = new WeakSet<object>()
  * `getDatabase()` returns the executor's live handle for the sqlite dialect
  * (creating the executor if needed) and throws for mysql/postgres — where
  * there is nothing to bootstrap, hence the silent catch. Safe to call
- * repeatedly: the WeakSet makes it a no-op after the first hit per
- * connection, and a config change that swaps the executor's Database
- * produces a fresh (unseen) handle that gets bootstrapped on the next call.
+ * repeatedly: the WeakMap makes it a no-op while the connection and pragma
+ * list remain unchanged. A new handle or changed list is bootstrapped on
+ * the next call.
  */
 export function bootstrapModelExecutorPragmas(): void {
   try {
     const raw = (bunQueryBuilder as { getDatabase?: () => { run: (sql: string) => unknown } }).getDatabase?.()
-    if (!raw || typeof raw.run !== 'function' || bootstrappedRawDbs.has(raw))
+    if (!raw || typeof raw.run !== 'function')
       return
-    for (const pragma of SQLITE_BOOTSTRAP_PRAGMAS) {
+    const pragmas = sqliteBootstrapPragmas()
+    const signature = JSON.stringify(pragmas)
+    if (bootstrappedRawDbs.get(raw) === signature)
+      return
+    for (const pragma of pragmas) {
       try {
         raw.run(pragma)
       }
@@ -193,7 +203,7 @@ export function bootstrapModelExecutorPragmas(): void {
         // Fail open per-pragma — same rationale as `applySqlitePragmas`.
       }
     }
-    bootstrappedRawDbs.add(raw)
+    bootstrappedRawDbs.set(raw, signature)
   }
   catch {
     // Non-sqlite dialect (`getDatabase()` throws) — nothing to bootstrap.
