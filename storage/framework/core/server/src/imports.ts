@@ -32,6 +32,22 @@ const OPTIONAL_MODEL_MODULES: Record<string, string[]> = {
 }
 
 function configEnabled(configRelPaths: string[]): boolean {
+  /*
+   * Canonical mode scans every optional module regardless of which config
+   * files the project happens to carry.
+   *
+   * These barrels are committed, so "is this file current?" has to have one
+   * answer. Gating on `existsSync('config/commerce.ts')` gives a different
+   * answer per project - two developers with different features scaffolded
+   * regenerate different barrels and fight over them, and a freshness check
+   * cannot tell that apart from staleness (stacksjs/stacks#2408).
+   *
+   * With every optional module scanned, the output is a function of the source
+   * tree alone, which is what makes a regenerate-and-diff check meaningful.
+   */
+  if (process.env.STACKS_CANONICAL_FEATURES === '1')
+    return true
+
   return configRelPaths.some(rel => existsSync(path.projectPath(rel)))
 }
 

@@ -54,8 +54,37 @@ function configFor(name: string): Record<string, unknown> | undefined {
  * }
  * ```
  */
+/**
+ * Canonical mode: every framework feature reads as enabled.
+ *
+ * Generated artifacts - the auto-import barrels, the server declarations - are
+ * a function of which features are on, because `feature()` decides which models
+ * and jobs load at all. That made "is this file current?" unanswerable: config
+ * reads env, so a developer with `.env.keys` generates one set and CI without
+ * it generates another, and the diff looks like staleness when nothing is
+ * stale (stacksjs/stacks#2408).
+ *
+ * Generating with every feature on makes the output a function of the SOURCE
+ * alone, which is what a regenerate-and-diff freshness check needs.
+ *
+ * An env var rather than an `enableFeature()` call at the entry point, because
+ * generation spans processes: `buddy generate` spawns, and orm's deferred
+ * loader imports config on its own. An env var crosses those boundaries; a
+ * mutation of this module's map does not.
+ *
+ * Off unless explicitly set, so nothing about a running app changes.
+ */
+function canonicalFeatures(): boolean {
+  return process.env.STACKS_CANONICAL_FEATURES === '1'
+}
+
 export function feature(name: string): boolean {
+  // An explicit runtime override still wins - tests that disable a feature
+  // mean it, canonical mode or not.
   if (overrides.has(name)) return overrides.get(name)!
+
+  if (canonicalFeatures() && FEATURE_NAMES.includes(name as StacksFeature))
+    return true
 
   const cfg = configFor(name)
   if (cfg) {
