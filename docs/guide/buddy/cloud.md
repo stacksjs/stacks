@@ -244,12 +244,12 @@ Alternatively, configure `~/.aws/credentials`:
 
 ```ini
 [stacks]
-aws*access*key*id = your-access-key
-aws*secret*access*key = your-secret-key
+aws_access_key_id = your-access-key
+aws_secret_access_key = your-secret-key
 
 [default]
-aws*access*key*id = your-access-key
-aws*secret*access*key = your-secret-key
+aws_access_key_id = your-access-key
+aws_secret_access_key = your-secret-key
 ```
 
 ## Troubleshooting

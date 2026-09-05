@@ -261,7 +261,7 @@ route.post('/users', async (req) => {
   if (req.filled('name')) { /* ... */ }
 
   // Check if input is missing
-  if (req.missing('optional*field')) { /* ... */ }
+  if (req.missing('optional_field')) { /* ... */ }
 })
 ```
 
@@ -276,10 +276,10 @@ route.get('/products', (req) => {
   const page = req.integer('page', 1)
 
   // Cast to float
-  const minPrice = req.float('min*price', 0.0)
+  const minPrice = req.float('min_price', 0.0)
 
   // Cast to boolean
-  const inStock = req.boolean('in*stock', false)
+  const inStock = req.boolean('in_stock', false)
 
   // Cast to array
   const categories = req.array('categories')

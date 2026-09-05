@@ -361,7 +361,7 @@ bun add express@4.17.0
 
 ```bash
 # Install specific framework version
-bun add @stacksjs/core@1.0.0
+bun add stacks@0.74.24
 ```
 
 ## Automation

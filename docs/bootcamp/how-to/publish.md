@@ -139,7 +139,7 @@ export default defineConfig({
     minify: {
       mangle: true,
       compress: {
-        drop*console: true,
+        drop_console: true,
       },
     },
 
