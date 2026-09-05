@@ -145,8 +145,11 @@ export function normalizeQuery(sql: string): string {
     // Replace boolean and NULL literals in one pass.
     normalizedSql = normalizedSql.replace(/\b(?:true|false|null)\b/gi, '?')
 
-    // Normalize whitespace
-    normalizedSql = normalizedSql.replace(/\s+/g, ' ').trim()
+    // Most generated SQL already uses single spaces. Skip rebuilding it unless
+    // another whitespace character or repeated spaces need normalization.
+    if (/[^\S ]| {2}/.test(normalizedSql))
+      normalizedSql = normalizedSql.replace(/\s+/g, ' ')
+    normalizedSql = normalizedSql.trim()
 
     return normalizedSql
   }

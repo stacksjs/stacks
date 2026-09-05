@@ -3,6 +3,13 @@ import { normalizeQuery, parseQuery } from '../src/query-parser'
 
 describe('query normalization', () => {
   it.each([
+    [' SELECT id FROM items ', 'SELECT id FROM items'],
+    ['  SELECT   id,  name FROM  items  ', 'SELECT id, name FROM items'],
+    [' \tSELECT\r\n id,\vname\fFROM items\t WHERE id = 1 ', 'SELECT id, name FROM items WHERE id = ?'],
+    ['SELECT \t id \u00A0 FROM\u2003items', 'SELECT id FROM items'],
+    ['\uFEFFSELECT\u00A0id\u2028FROM\u2029items\u3000', 'SELECT id FROM items'],
+    [' \u0085SELECT\u180Eid\u200BFROM\u2060items ', '\u0085SELECT\u180Eid\u200BFROM\u2060items'],
+    [' \t\r\n\v\f\u00A0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF', ''],
     ["SELECT '123'456, \"789\"10, a'12'34, _\"56\"78", 'SELECT ??, ??, a??, _??'],
     ["SELECT '12'x34, \"56\"_78, a12'34', _56\"78\"", 'SELECT ?x34, ?_78, a12?, _56?'],
     ["SELECT '12''34, \"56\"\"78", "SELECT ?'?, ?\"?"],
