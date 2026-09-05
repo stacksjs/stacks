@@ -18,8 +18,9 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from '../routing/drivers'
 import { createFixture } from '../routing/fixture'
-import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from '../routing/runtime'
+import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { SCENARIOS } from '../routing/scenarios'
+import { readSourceState } from '../routing/source'
 import { TARGETS } from '../routing/targets'
 import { BUN_141_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
@@ -248,6 +249,7 @@ async function main(): Promise<void> {
 
   if (scenario.requiresDb) createFixture(FIXTURE)
 
+  const source = await readSourceState(REPO_ROOT)
   const startedAt = new Date().toISOString()
   const outDir = options.output ?? join(HERE, 'results', startedAt.replace(/[:.]/g, '-'))
   const rawDir = join(outDir, 'raw')
@@ -255,6 +257,7 @@ async function main(): Promise<void> {
 
   const meta: MemoryRunMeta = {
     startedAt,
+    source,
     driver: driver.name,
     publishable: driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1',
     scenario: scenario.id,

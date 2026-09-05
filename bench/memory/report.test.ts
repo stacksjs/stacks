@@ -15,6 +15,7 @@ describe('memory benchmark report', () => {
     const report = renderMemoryReport({
       meta: {
         startedAt: '2026-09-04T00:00:00.000Z',
+        source: { revision: 'a'.repeat(40), dirty: true },
         driver: 'oha',
         publishable: true,
         scenario: 'static-json',
@@ -39,6 +40,7 @@ describe('memory benchmark report', () => {
       ],
     })
 
+    expect(report).toContain(`| Source at start | \`${'a'.repeat(40)}\` (modified working tree) |`)
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')
   })

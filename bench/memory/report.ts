@@ -1,3 +1,6 @@
+import type { SourceState } from '../routing/source'
+import { formatSourceState } from '../routing/source'
+
 export interface MemorySample {
   elapsedMs: number
   phase: 'load' | 'idle'
@@ -17,6 +20,7 @@ export interface MemoryMeasurement {
 
 export interface MemoryRunMeta {
   startedAt: string
+  source?: SourceState
   driver: string
   publishable: boolean
   scenario: string
@@ -71,6 +75,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push('| | |')
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
+  lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
   lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections, fixed per-target request rates |`)
   lines.push(`| Method | ${meta.loadSeconds}s sustained load, ${meta.idleSeconds}s idle, ${meta.sampleIntervalMs}ms RSS sampling |`)

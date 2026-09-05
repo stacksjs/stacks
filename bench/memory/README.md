@@ -42,6 +42,10 @@ Every run writes:
 - `measurements.json`, the compact values and complete run metadata
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
+The report and metadata include the Git revision and working-tree state captured
+before output creation. Ignored files are excluded; source archives without Git
+are marked unavailable. Keep source unchanged throughout the run.
+
 The report declares the requested and delivered rate. A row below 98% rate
 attainment is marked invalid and cannot be used for a memory win. Fixed-rate
 runs require `oha`; the runner fails instead of silently substituting a

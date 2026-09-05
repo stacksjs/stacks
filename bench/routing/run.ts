@@ -23,8 +23,9 @@ import { pickDriver } from './drivers'
 import { createFixture, resetFixtureLogs } from './fixture'
 import { measureLoad } from './measurement'
 import { renderReport } from './report'
-import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from './runtime'
+import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { SCENARIOS } from './scenarios'
+import { readSourceState } from './source'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -109,6 +110,7 @@ async function main(): Promise<void> {
     createFixture(FIXTURE)
   }
 
+  const source = await readSourceState(REPO_ROOT)
   const startedAt = new Date().toISOString()
   const outDir = join(HERE, 'results', startedAt.replace(/[:.]/g, '-'))
   const rawDir = join(outDir, 'raw')
@@ -116,6 +118,7 @@ async function main(): Promise<void> {
 
   const meta: RunMeta = {
     startedAt,
+    source,
     driver: driver.name,
     publishable: driver.publishable,
     connections: opts.connections,

@@ -7,6 +7,8 @@
  */
 
 import type { Scenario } from './scenarios'
+import type { SourceState } from './source'
+import { formatSourceState } from './source'
 
 export interface Measurement {
   targetId: string
@@ -25,6 +27,7 @@ export interface Measurement {
 
 export interface RunMeta {
   startedAt: string
+  source?: SourceState
   driver: string
   publishable: boolean
   connections: number
@@ -66,6 +69,7 @@ export function renderReport(input: ReportInput): string {
   lines.push('| | |')
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
+  lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Connections | ${meta.connections} |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
