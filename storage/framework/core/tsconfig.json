@@ -41,11 +41,11 @@
       "Notifications/*": ["../../../app/Notifications/*"],
       "~/*": ["../../../*"],
       "@/*": ["../../../resources/*"],
-      // Fallback for third-party packages: Pantry installs the dependency graph
-      // into `pantry/` rather than `node_modules/`. It is listed last so it only
-      // applies to specifiers that none of the mappings above matched.
+      // Prefer installed third-party dependencies over a possibly older Pantry
+      // tree. Bun applies these mappings at runtime as well as during builds.
+      // Pantry-only installs still resolve through the second candidate.
       "ts-pantry": ["../../../node_modules/ts-pantry"],
-      "*": ["../../../pantry/*"]
+      "*": ["../../../node_modules/*", "../../../pantry/*"]
     },
     // `dtsx` emits the published `.d.ts` files, not tsc - these two only
     // describe intent for editors and for anyone running tsc by hand. The base

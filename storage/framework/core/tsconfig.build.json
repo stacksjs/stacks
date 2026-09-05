@@ -29,7 +29,9 @@
       "@stacksjs/storage/*": ["./storage/src/*"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
-      "*": ["../../../pantry/*"]
+      // Bun uses these paths while building and running source. Prefer the
+      // installed dependency graph; Pantry remains a fallback for its installs.
+      "*": ["../../../node_modules/*", "../../../pantry/*"]
     },
     "resolveJsonModule": true,
     "types": ["bun"],
