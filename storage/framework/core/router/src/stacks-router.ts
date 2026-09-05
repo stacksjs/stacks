@@ -606,6 +606,7 @@ const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHand
 
 interface ResolvedMiddleware {
   name: string
+  timingName: string
   handler: MiddlewareHandler
   priority: number
 }
@@ -1409,6 +1410,8 @@ interface ParsedMiddleware {
   readonly name: string
   /** Whether the reference was negated with a leading `!`. */
   readonly negated: boolean
+  /** Sanitized Server-Timing label for the original reference. */
+  readonly timingName: string
   /** Whatever followed the first `:`, when the reference is not itself an alias. */
   readonly params?: string
 }
@@ -1449,20 +1452,22 @@ function parseMiddlewareEntry(middleware: string): ParsedMiddleware | Promise<Pa
  * version could not consult it, which is why it did not.
  */
 async function parseMiddlewareEntryUncached(middleware: string): Promise<ParsedMiddleware> {
+  const timingName = middleware.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
   const negated = middleware.startsWith('!')
   const bare = negated ? middleware.slice(1) : middleware
   const aliases = await getMiddlewareAliases()
 
   if (Object.hasOwn(aliases, bare))
-    return { name: bare, negated }
+    return { name: bare, negated, timingName }
 
   const colonIndex = bare.indexOf(':')
   if (colonIndex === -1)
-    return { name: bare, negated }
+    return { name: bare, negated, timingName }
 
   return {
     name: bare.substring(0, colonIndex),
     negated,
+    timingName,
     params: bare.substring(colonIndex + 1),
   }
 }
@@ -1494,7 +1499,7 @@ export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: 
     }
   }
   if (!usage.has('csrf'))
-    usage.set('csrf', { parsed: { name: 'csrf', negated: false }, routes: ['(auto-injected on POST/PUT/PATCH/DELETE)'] })
+    usage.set('csrf', { parsed: { name: 'csrf', negated: false, timingName: 'csrf' }, routes: ['(auto-injected on POST/PUT/PATCH/DELETE)'] })
 
   const unresolvable: Array<{ alias: string, routes: string[] }> = []
   for (const [alias, { parsed, routes }] of usage) {
@@ -1760,7 +1765,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         // Named by the reference as written, not by what it resolved to, so
         // `[middleware] Blocked by: !auth` says which entry in the chain
         // refused rather than naming the middleware it inverts.
-        resolved.push({ name: middlewareEntry, handler: middleware, priority })
+        resolved.push({ name: middlewareEntry, timingName: parsed.timingName, handler: middleware, priority })
       }
 
       // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
@@ -1812,7 +1817,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
 
       try {
-        for (const { name: middlewareName, handler: middleware } of resolved) {
+        for (const { name: middlewareName, timingName, handler: middleware } of resolved) {
           // Per-middleware timing is appended to the request's
           // Server-Timing trail so devtools (and Chrome's network panel)
           // can show exactly which middleware spent how long. Cheap —
@@ -1825,7 +1830,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             if (outcome && typeof (outcome as Promise<void>).then === 'function')
               await Promise.race([outcome as Promise<void>, armChainBudget!()])
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
-            middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
+            middlewareTimings.push({ name: timingName, ms: elapsedMs })
           }
           catch (error) {
             // Even on a thrown middleware, record the timing so the
@@ -1834,7 +1839,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             // timings at all — making it impossible to tell from the
             // response whether the rejection was instant or hung first.
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
-            middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
+            middlewareTimings.push({ name: timingName, ms: elapsedMs })
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
             // Middleware can throw a Response directly (CORS preflight,
             // Maintenance, Throttle 429, etc.) to short-circuit the chain
@@ -1848,8 +1853,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
                 const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
                 const parts = total != null ? [`total;dur=${total.toFixed(1)}`] : []
                 for (const t of middlewareTimings) {
-                  const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
-                  parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+                  parts.push(`mw_${t.name};dur=${t.ms.toFixed(1)}`)
                 }
                 if (parts.length > 0) error.headers.set('Server-Timing', parts.join(', '))
                 if (reqId) error.headers.set('X-Request-ID', reqId)
@@ -1879,8 +1883,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
               const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
               const parts = total != null ? [`total;dur=${total.toFixed(1)}`] : []
               for (const t of middlewareTimings) {
-                const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
-                parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+                parts.push(`mw_${t.name};dur=${t.ms.toFixed(1)}`)
               }
               if (parts.length > 0) errorResponse.headers.set('Server-Timing', parts.join(', '))
               if (reqId) errorResponse.headers.set('X-Request-ID', reqId)
@@ -2008,8 +2011,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           // Append per-middleware timing entries. Chrome's network
           // panel shows these as a stacked timeline under the response.
           for (const t of middlewareTimings) {
-            const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
-            parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+            parts.push(`mw_${t.name};dur=${t.ms.toFixed(1)}`)
           }
           h.set('Server-Timing', parts.join(', '))
         }
