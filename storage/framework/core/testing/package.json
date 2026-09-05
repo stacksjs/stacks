@@ -81,9 +81,9 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.12.10"
+    "@stacksjs/ts-cloud": "^0.12.12"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

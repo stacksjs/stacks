@@ -58,7 +58,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@loghq/stacks": "^0.2.3",
+    "@loghq/stacks": "^0.2.6",
     "@stacksjs/clarity": "^0.3.33",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
@@ -69,6 +69,6 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

@@ -66,10 +66,10 @@
     "@stacksjs/slug": "workspace:*",
     "@stacksjs/stx": "^0.2.274",
     "@stacksjs/validation": "workspace:*",
-    "ts-slug": "^0.1.0",
-    "ts-spreadsheets": "^0.2.0"
+    "ts-slug": "^0.1.2",
+    "ts-spreadsheets": "^0.2.5"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

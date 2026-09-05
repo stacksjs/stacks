@@ -70,12 +70,12 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "ts-rate-limiter": "^0.4.2"
+    "ts-rate-limiter": "^0.4.8"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "peerDependencies": {
     "@stacksjs/api": "workspace:*",
