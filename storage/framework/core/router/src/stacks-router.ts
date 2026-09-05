@@ -2855,22 +2855,10 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
     })
   }
 
-  const forceJson = req._forceJson === true
-  const apiShaped = forceJson || isApiRequest(req as unknown as Request)
-
-  // Null / undefined → 204 No Content for API requests; empty 200 for the
-  // browser-nav case (returning a literal `'null'` string was a bug; the
-  // old behaviour serialized it as text/plain).
-  if (result === null || result === undefined) {
-    return apiShaped
-      ? new Response(null, { status: 204 })
-      : new Response('', { status: 200 })
-  }
-
   // Objects + arrays always serialize as JSON regardless of negotiation —
   // there's no reasonable HTML representation of `{id: 1}`, and userland
   // that wants HTML should return a `new Response(html, …)` directly.
-  if (typeof result === 'object') {
+  if (result !== null && typeof result === 'object') {
     // Paginator auto-serialize (stacksjs/stacks#1908 P4). When the
     // action returns a canonical Paginator / SimplePaginator /
     // CursorPaginator, emit `Link: <prev>; rel="prev", <next>; rel="next"`
@@ -2881,6 +2869,18 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
       return Response.json(result, { headers: { Link: linkHeader } })
     }
     return Response.json(result)
+  }
+
+  const forceJson = req._forceJson === true
+  const apiShaped = forceJson || isApiRequest(req as unknown as Request)
+
+  // Null / undefined → 204 No Content for API requests; empty 200 for the
+  // browser-nav case (returning a literal `'null'` string was a bug; the
+  // old behaviour serialized it as text/plain).
+  if (result === null || result === undefined) {
+    return apiShaped
+      ? new Response(null, { status: 204 })
+      : new Response('', { status: 200 })
   }
 
   // Primitives: JSON-encode for API requests so a string return lands as

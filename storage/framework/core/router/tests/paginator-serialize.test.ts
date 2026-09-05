@@ -1,15 +1,9 @@
 import { describe, expect, test } from 'bun:test'
 import type { CursorPaginator, Paginator, SimplePaginator } from '@stacksjs/orm'
 
-// stacksjs/stacks#1908 (P4) — auto-serialize Paginator return + Link header.
-//
-// We can't easily import the private `formatResult` / `buildPaginatorLinkHeader`
-// helpers from `stacks-router.ts` without exporting them, so this test
-// exercises the *contract* by mocking what an action handler would return
-// and re-implementing the Link-building rule here. The actual integration
-// (an action returning a paginator → response has Link header) is covered
-// by the existing router integration tests; this file documents and locks
-// down the header semantics.
+import { createStacksRouter } from '../src/stacks-router'
+
+// Paginator link examples, followed by a real router serialization check.
 
 function buildExpectedLinks(p: { prev_page_url?: string | null, next_page_url?: string | null, first_page_url?: string, last_page_url?: string }): string {
   const parts: string[] = []
@@ -110,13 +104,9 @@ describe('Paginator → Link header contract', () => {
   })
 })
 
-// Integration: actually hit the formatResult code path via the router
-// re-export to make sure isPaginator detection works end-to-end.
+// Exercise serialization through the router, including browser negotiation.
 describe('formatResult sets Link header on paginator returns', () => {
-  test('returning a paginator from an action results in JSON body + Link header', async () => {
-    // We can't easily instantiate a full router here without DB setup,
-    // but we can simulate the formatResult call shape via Response.json
-    // directly. The integration coverage lives in router/tests/integration.test.ts.
+  test('returning a paginator to a browser results in JSON body + Link header', async () => {
     const paginator: Paginator<{ id: number }> = {
       data: [{ id: 1 }, { id: 2 }],
       current_page: 1,
@@ -130,14 +120,14 @@ describe('formatResult sets Link header on paginator returns', () => {
       first_page_url: '/items?page=1',
       last_page_url: '/items?page=3',
     }
-    // Mimic what the router does:
-    const headers: HeadersInit = {}
-    const link = buildExpectedLinks(paginator)
-    if (link) (headers as Record<string, string>).Link = link
-    const response = Response.json(paginator, { headers })
+    const router = createStacksRouter()
+    router.get('/items', () => paginator)
+    const response = await router.handleRequest(new Request('http://localhost/items', {
+      headers: { accept: 'text/html', 'sec-fetch-dest': 'document' },
+    }))
 
-    expect(response.headers.get('Link')).toContain('rel="next"')
-    expect(response.headers.get('Link')).toContain('/items?page=2')
+    expect(response.headers.get('content-type')).toContain('application/json')
+    expect(response.headers.get('Link')).toBe('</items?page=2>; rel="next", </items?page=1>; rel="first", </items?page=3>; rel="last"')
     const body = (await response.json()) as Paginator<{ id: number }>
     expect(body.data).toHaveLength(2)
     expect(body.total).toBe(5)

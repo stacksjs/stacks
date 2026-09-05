@@ -26,11 +26,15 @@ function jsonReq(path: string, body: unknown, contentType = 'application/json'):
 }
 
 describe('formatResult - JSON-first', () => {
-  test('object return → JSON', async () => {
+  test.each([
+    {},
+    { accept: 'text/html,application/xhtml+xml' },
+    { 'sec-fetch-dest': 'document' },
+  ])('object return stays JSON with headers %j', async (headers) => {
     const router = createStacksRouter()
     router.get('/obj', () => ({ ok: true }) as any)
 
-    const res = await router.handleRequest(new Request('http://localhost/obj'))
+    const res = await router.handleRequest(new Request('http://localhost/obj', { headers }))
     expect(res.headers.get('content-type')).toContain('application/json')
     expect(await res.json()).toEqual({ ok: true })
   })
