@@ -106,7 +106,7 @@ try {
     await queryWithDiagnostics('query_logger_after_failed_store')
 
     const { logQuery } = await import('../../src/query-logger')
-    const literalQuery = "SELECT 42 AS total, 'Ada' AS name, TRUE AS active, NULL AS missing FROM query_logger_fixture"
+    const literalQuery = "SELECT 42 AS total, 'Ada 123' AS name, TRUE AS active, NULL AS missing FROM query_logger_fixture"
     await logQuery({ query: { sql: literalQuery }, queryDurationMillis: 1 })
     const normalized = await db.unsafe('SELECT normalized_query FROM query_logs WHERE query = ?', [literalQuery]).execute()
     if (normalized.length !== 1 || normalized[0]?.normalized_query !== 'SELECT ? AS total, ? AS name, ? AS active, ? AS missing FROM query_logger_fixture')

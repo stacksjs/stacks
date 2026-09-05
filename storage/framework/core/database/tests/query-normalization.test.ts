@@ -3,6 +3,11 @@ import { normalizeQuery, parseQuery } from '../src/query-parser'
 
 describe('query normalization', () => {
   it.each([
+    ["SELECT '123'456, \"789\"10, a'12'34, _\"56\"78", 'SELECT ??, ??, a??, _??'],
+    ["SELECT '12'x34, \"56\"_78, a12'34', _56\"78\"", 'SELECT ?x34, ?_78, a12?, _56?'],
+    ["SELECT '12''34, \"56\"\"78", "SELECT ?'?, ?\"?"],
+    ["SELECT '12\"34', \"56'78\", -90, 1.23", 'SELECT ?, ?, -?, ?.?'],
+    [`INSERT INTO items (payload) VALUES ('${'1 22 333 4444 '.repeat(128)}')`, 'INSERT INTO items (payload) VALUES (?)'],
     ["SELECT 'it''s', \"a\"\"b\", '', \"\"", 'SELECT ?, ?, ?, ?'],
     ["SELECT 'unterminated", "SELECT 'unterminated"],
     ['SELECT "unterminated', 'SELECT "unterminated'],

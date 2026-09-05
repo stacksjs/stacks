@@ -133,13 +133,14 @@ export function normalizeQuery(sql: string): string {
   try {
     let normalizedSql = sql
 
+    // Remove quoted values before scanning numbers so their discarded digits
+    // are never rewritten. Quote boundaries and ? are both non-word characters.
+    normalizedSql = normalizedSql.replace(/'[^']*(?:''[^']*)*'/g, '?')
+    normalizedSql = normalizedSql.replace(/"[^"]*(?:""[^"]*)*"/g, '?')
+
     // Word boundaries already exclude adjacent ASCII letters and underscores,
     // keeping digits in identifiers intact without redundant lookarounds.
     normalizedSql = normalizedSql.replace(/\b\d+\b/g, '?')
-
-    // Replace string literals with ?
-    normalizedSql = normalizedSql.replace(/'[^']*(?:''[^']*)*'/g, '?')
-    normalizedSql = normalizedSql.replace(/"[^"]*(?:""[^"]*)*"/g, '?')
 
     // Replace boolean and NULL literals in one pass.
     normalizedSql = normalizedSql.replace(/\b(?:true|false|null)\b/gi, '?')
