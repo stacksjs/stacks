@@ -51,11 +51,11 @@ function positiveNumber(flag: string, value: string): number {
 
 function positiveInteger(flag: string, value: string): number {
   const parsed = positiveNumber(flag, value)
-  if (!Number.isInteger(parsed)) throw new Error(`${flag} must be an integer`)
+  if (!Number.isSafeInteger(parsed)) throw new Error(`${flag} must be a safe integer`)
   return parsed
 }
 
-function parseArgs(argv: string[]): Options {
+export function parseArgs(argv: string[]): Options {
   const options: Options = {
     targets: BUN_141_API_PROFILE.map(target => target.targetId),
     scenario: 'static-json',
@@ -78,7 +78,7 @@ function parseArgs(argv: string[]): Options {
       case '--targets': options.targets = next().split(','); break
       case '--scenario': options.scenario = next(); break
       case '--driver': options.driver = next(); break
-      case '--connections': case '-c': options.connections = positiveNumber(flag, next()); break
+      case '--connections': case '-c': options.connections = positiveInteger(flag, next()); break
       case '--load': options.loadSeconds = positiveNumber(flag, next()); break
       case '--idle': options.idleSeconds = positiveNumber(flag, next()); break
       case '--interval': options.sampleIntervalMs = positiveNumber(flag, next()); break
@@ -103,13 +103,13 @@ const HELP = `bun bench/memory/run.ts [flags]
   --targets      comma-separated target ids (${TARGETS.map(target => target.id).join(', ')})
   --scenario     routing scenario to load (default static-json)
   --driver       oha | bombardier | autocannon | builtin
-  --connections  concurrent connections (default 64)
+  --connections  concurrent connections, positive integer (default 64)
   --rate         override the profile's fixed requests per second for every target
   --load         sustained-load seconds (default 60)
   --idle         quiet seconds after load (default 180)
   --interval     RSS sample interval in milliseconds (default 100)
   --settle       final idle window used for the median (default 10)
-  --runs         fresh-process repeats per target (default 1)
+  --runs         positive integer fresh-process repeats per target (default 1)
   --output       explicit output directory (default results/<timestamp>)`
 
 interface SelectedTarget extends MemoryProfileTarget {
@@ -313,4 +313,5 @@ async function main(): Promise<void> {
   console.log(report)
 }
 
-await main()
+if (import.meta.main)
+  await main()
