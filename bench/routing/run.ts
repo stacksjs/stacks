@@ -20,7 +20,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
-import { createFixture } from './fixture'
+import { createFixture, resetFixtureLogs } from './fixture'
 import { renderReport } from './report'
 import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from './runtime'
 import { SCENARIOS } from './scenarios'
@@ -188,6 +188,8 @@ async function main(): Promise<void> {
         const cpuReadings: number[] = []
 
         for (let run = 1; run <= opts.runs; run++) {
+          if (scenario.requiresDb)
+            resetFixtureLogs(FIXTURE)
           const finishCpu = await measureCpu(booted.pid)
           const result = await driver.run({
             url: `http://127.0.0.1:${PORT}${scenario.path}`,

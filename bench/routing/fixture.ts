@@ -28,11 +28,58 @@ export function createFixture(file: string): void {
     db.exec('DROP TABLE IF EXISTS bench_items')
     db.exec('CREATE TABLE bench_items (id INTEGER PRIMARY KEY, name TEXT NOT NULL)')
 
+    // Match the built-in QueryLog model, including its write-side indexes.
+    // Stock Stacks logs the SELECT; a missing table measures a failed INSERT.
+    db.exec('DROP TABLE IF EXISTS query_logs')
+    db.exec(`CREATE TABLE query_logs (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at TEXT,
+      query TEXT NOT NULL,
+      normalized_query TEXT,
+      duration REAL DEFAULT 0,
+      connection TEXT DEFAULT 'unknown',
+      status TEXT DEFAULT 'completed' CHECK (status IN ('completed', 'failed', 'slow')),
+      error TEXT,
+      executed_at TEXT NOT NULL,
+      bindings TEXT,
+      trace TEXT,
+      model TEXT,
+      method TEXT,
+      file TEXT,
+      line INTEGER,
+      memory_usage REAL,
+      rows_affected INTEGER,
+      transaction_id TEXT,
+      tags TEXT,
+      affected_tables TEXT,
+      indexes_used TEXT,
+      missing_indexes TEXT,
+      explain_plan TEXT,
+      optimization_suggestions TEXT
+    )`)
+    db.exec('CREATE INDEX query_logs_executed_at_index ON query_logs (executed_at)')
+    db.exec('CREATE INDEX query_logs_status_index ON query_logs (status)')
+    db.exec('CREATE INDEX query_logs_duration_index ON query_logs (duration)')
+
     const insert = db.prepare('INSERT INTO bench_items (id, name) VALUES (?, ?)')
     const seed = db.transaction((count: number) => {
       for (let i = 1; i <= count; i++) insert.run(i, `item-${i}`)
     })
     seed(FIXTURE_ROWS)
+  }
+  finally {
+    db.close()
+  }
+}
+
+/** Reset accumulated diagnostics outside the timed workload, keeping seed rows. */
+export function resetFixtureLogs(file: string): void {
+  const db = new Database(file)
+  try {
+    db.exec('DELETE FROM query_logs')
+    db.exec("DELETE FROM sqlite_sequence WHERE name = 'query_logs'")
+    db.exec('PRAGMA wal_checkpoint(TRUNCATE)')
   }
   finally {
     db.close()

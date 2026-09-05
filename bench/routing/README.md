@@ -78,6 +78,13 @@ papered over. `post-validate` has the same shape: Elysia uses its `t` schema,
 Hono a hand-written check behind its own `validator()` seam, and both are
 cheaper than a compiled rule set.
 
+The fixture includes `query_logs` and its indexes, so stock Stacks query logging
+performs successful writes. Those writes are part of the database workload;
+the bare SQLite targets do not provide query logging. Accumulated logs are
+cleared before each repetition, outside warm-up and measurement, while the
+seeded read data stays unchanged. Results from the earlier fixture without
+`query_logs` measured failed logging writes and are not comparable.
+
 ## Profiles
 
 Stacks appears three times on purpose. The gap between the first and the third
