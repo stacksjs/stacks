@@ -1549,7 +1549,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
    */
   let actionPrefetch: Promise<void> | null = null
   if (typeof handler === 'string' && routeAcceptsCsrf) {
-    actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
+    const pending = resolveStringHandler(handler)
+    if (pending instanceof Promise) {
+      const settled = () => { actionPrefetch = null }
+      actionPrefetch = pending.then(settled, settled)
+    }
   }
 
   return async (req: EnhancedRequest) => {
@@ -2230,17 +2234,22 @@ function cachedImport(fullPath: string): Promise<any> {
 // RouteHandlerFn (module is import-cached, the action wrapper is rebuilt the
 // same way every time), so resolving it once per route and reusing the result
 // removes a per-request `fileExists` stat + closure allocation from the single
-// hottest path. Caches the PROMISE (like `cachedImport`) to collapse concurrent
-// first-resolves; evicts on rejection so a transient failure can be retried.
+// hottest path. Shares a promise while loading, then stores the function so
+// warm requests need no resolution await. Evicts on rejection for retries.
 // Same lifetime as `cachedImport` — a dev hot-reload restarts the process and
 // clears both, so this never serves a stale handler.
-const _resolvedHandlerCache = new Map<string, Promise<RouteHandlerFn>>()
-function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
+const _resolvedHandlerCache = new Map<string, RouteHandlerFn | Promise<RouteHandlerFn>>()
+function resolveStringHandler(handlerPath: string): RouteHandlerFn | Promise<RouteHandlerFn> {
   let resolved = _resolvedHandlerCache.get(handlerPath)
   if (!resolved) {
-    resolved = resolveStringHandlerUncached(handlerPath)
+    resolved = resolveStringHandlerUncached(handlerPath).then((handler) => {
+      _resolvedHandlerCache.set(handlerPath, handler)
+      return handler
+    }, (error) => {
+      _resolvedHandlerCache.delete(handlerPath)
+      throw error
+    })
     _resolvedHandlerCache.set(handlerPath, resolved)
-    resolved.catch(() => _resolvedHandlerCache.delete(handlerPath))
   }
   return resolved
 }
@@ -3586,7 +3595,8 @@ function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = '
           req = enhanceRequest(req)
         }
 
-        const resolvedHandler = await resolveStringHandler(handlerPath)
+        const pending = resolveStringHandler(handlerPath)
+        const resolvedHandler = pending instanceof Promise ? await pending : pending
         // Must await to catch async errors in try-catch
         return await resolvedHandler(req)
       }
