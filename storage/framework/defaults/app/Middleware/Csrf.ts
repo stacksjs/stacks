@@ -168,21 +168,25 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
 }
 
 /**
- * Parse the Cookie header into a key→value map.
- * Lenient: malformed pairs are skipped, not thrown.
+ * Read just the CSRF cookies without building a map of unrelated cookies.
+ * Last duplicate wins; the canonical name takes precedence over the legacy
+ * name unless its final value is empty. Malformed pairs are skipped.
  */
-function parseCookies(req: Request): Record<string, string> {
+function csrfCookieToken(req: Request): string {
   const header = req.headers.get('cookie')
-  if (!header) return {}
-  const out: Record<string, string> = {}
+  if (!header) return ''
+  let canonical = ''
+  let legacy = ''
   for (const part of header.split(';')) {
     const idx = part.indexOf('=')
     if (idx === -1) continue
-    const k = part.slice(0, idx).trim()
-    const v = part.slice(idx + 1).trim()
-    if (k) out[k] = v
+    const name = part.slice(0, idx).trim()
+    if (name === CSRF_COOKIE_NAME)
+      canonical = part.slice(idx + 1).trim()
+    else if (name === 'csrf-token')
+      legacy = part.slice(idx + 1).trim()
   }
-  return out
+  return canonical || legacy
 }
 
 /**
@@ -256,8 +260,7 @@ export async function validateCsrfRequest(request: Request | EnhancedRequest): P
     || (typeof bodyToken === 'string' && bodyToken)
     || ''
 
-  const cookies = parseCookies(request)
-  const cookieToken = cookies[CSRF_COOKIE_NAME] || cookies['csrf-token'] || ''
+  const cookieToken = csrfCookieToken(request)
 
   if (!submitted || !cookieToken || !safeEqual(submitted, cookieToken)) {
     // 419 is the convention Laravel popularized for "CSRF token
