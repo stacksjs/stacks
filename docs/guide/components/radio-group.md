@@ -23,23 +23,23 @@ A modern, accessible radio group component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/radio-group
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/radio-group
-# bun add @stacksjs/radio-group
-# bun i @stacksjs/radio-group
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/radio-group
-# pnpm i @stacksjs/radio-group
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/radio-group
-# yarn i -d @stacksjs/radio-group
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -56,7 +56,7 @@ import {
   RadioGroup,
   RadioGroupLabel,
   RadioGroupOption,
-} from '@stacksjs/radio-group'
+} from '@stacksjs/components'
 
 const plans = [
   { id: 1, name: 'Startup', price: '$29' },

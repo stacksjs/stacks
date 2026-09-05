@@ -24,23 +24,23 @@ A modern, accessible combobox component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/combobox
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/combobox
-# bun add @stacksjs/combobox
-# bun i @stacksjs/combobox
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/combobox
-# pnpm i @stacksjs/combobox
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/combobox
-# yarn i -d @stacksjs/combobox
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -59,7 +59,7 @@ import {
   ComboboxButton,
   ComboboxOptions,
   ComboboxOption
-} from '@stacksjs/combobox'
+} from '@stacksjs/components'
 
 const selected = ref(null)
 const query = ref('')

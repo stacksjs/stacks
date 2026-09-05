@@ -168,11 +168,20 @@ count: `storage/framework/browser-auto-imports.json` and the generated
 `storage/framework/types/browser-auto-imports.d.ts` agree on 83, and a name
 that is not in them needs an import however familiar it looks.
 
-- STX reactivity and the composables among them: `ref`, `computed`, `watch`, `reactive`,
-  `watchEffect`, `useFetch`, `useDark` / `useColorMode`, `useStorage`, `useLocalStorage`, `useToggle`,
-  `useCounter`, `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax`,
-  `usePreferredReducedMotion`, plus utilities (`debounce`, `throttle`, `sleep`, `clamp`), `useAuth`,
-  and the Stripe helpers (`loadCardElement`, `confirmPayment`, ...).
+- The 27 `use*` composables, in full, because a half-remembered name is the whole
+  problem: `useAbs`, `useAuth`, `useAverage`, `useCeil`, `useClamp`, `useDark`,
+  `useDateFormat`, `useFetch`, `useFloor`, `useForm`, `useGitStore`, `useMax`, `useMin`,
+  `useNow`, `useOnline`, `usePaymentStore`, `usePrecision`, `usePreferredDark`,
+  `useQueueStore`, `useRound`, `useScrollLock`, `useStorage`, `useSum`, `useTimeoutFn`,
+  `useToggle`, `useTrunc`, `useUserStore`.
+- Utilities (`debounce`, `throttle`, `clamp`, `delay`, `dateFormat`, `format`, ...) and the
+  Stripe helpers (`loadCardElement`, `confirmPayment`, `confirmCardPayment`, ...).
+- **NOT** `ref`, `computed`, `reactive`, `watch` or `watchEffect`. This list named all five
+  for a long time, along with `useColorMode`, `useLocalStorage`, `useCounter`,
+  `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax` and
+  `usePreferredReducedMotion` - 13 of the 24 names it gave. None of them are in either
+  manifest. Reactivity in a template comes from stx's own `state` / `derived` / `effect`
+  (see `stacks-stx`), and everything else here needs an import.
 - Your components under `resources/components/` (write `<Card />` directly, resolved by the stx
   plugin) and your functions under `resources/functions/` (e.g. `increment`, `toggleDark`).
 

@@ -23,23 +23,23 @@ A modern, accessible listbox component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/listbox
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/listbox
-# bun add @stacksjs/listbox
-# bun i @stacksjs/listbox
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/listbox
-# pnpm i @stacksjs/listbox
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/listbox
-# yarn i -d @stacksjs/listbox
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -57,7 +57,7 @@ import {
   ListboxButton,
   ListboxOptions,
   ListboxOption,
-} from '@stacksjs/listbox'
+} from '@stacksjs/components'
 
 const people = [
   { id: 1, name: 'Durward Reynolds', unavailable: false },

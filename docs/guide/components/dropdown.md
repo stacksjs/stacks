@@ -25,23 +25,23 @@ A modern, accessible dropdown component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/dropdown
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/dropdown
-# bun add @stacksjs/dropdown
-# bun i @stacksjs/dropdown
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/dropdown
-# pnpm i @stacksjs/dropdown
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/dropdown
-# yarn i -d @stacksjs/dropdown
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -59,7 +59,7 @@ import {
   DropdownButton,
   DropdownItems,
   DropdownItem,
-} from '@stacksjs/dropdown'
+} from '@stacksjs/components'
 </script>
 
 <template>
@@ -187,7 +187,7 @@ The dropdown component follows WAI-ARIA guidelines and includes the following fe
 The dropdown component includes full TypeScript support:
 
 ```ts
-import type { DropdownItemProps } from '@stacksjs/dropdown'
+import type { DropdownItemProps } from '@stacksjs/components'
 import { ref } from '@stacksjs/stx'
 
 interface MenuItem {

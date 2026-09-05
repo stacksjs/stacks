@@ -23,23 +23,23 @@ A modern, accessible toggle switch component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/switch
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/switch
-# bun add @stacksjs/switch
-# bun i @stacksjs/switch
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/switch
-# pnpm i @stacksjs/switch
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/switch
-# yarn i -d @stacksjs/switch
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -52,7 +52,7 @@ The switch component is simple to use and highly customizable:
 ```html
 <script>
 import { ref } from '@stacksjs/stx'
-import { Switch, SwitchLabel, SwitchGroup } from '@stacksjs/switch'
+import { Switch, SwitchLabel, SwitchGroup } from '@stacksjs/components'
 
 const enabled = ref(false)
 </script>

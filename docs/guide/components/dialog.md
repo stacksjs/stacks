@@ -24,23 +24,23 @@ A modern, accessible dialog component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/dialog
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/dialog
-# bun add @stacksjs/dialog
-# bun i @stacksjs/dialog
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/dialog
-# pnpm i @stacksjs/dialog
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/dialog
-# yarn i -d @stacksjs/dialog
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -53,7 +53,7 @@ The dialog component is composed of two main components that work together to cr
 ```html
 <script>
 import { ref } from '@stacksjs/stx'
-import { Dialog, DialogPanel } from '@stacksjs/dialog'
+import { Dialog, DialogPanel } from '@stacksjs/components'
 
 const visible = ref(false)
 
@@ -161,7 +161,7 @@ The dialog component follows WAI-ARIA guidelines and includes the following feat
 The dialog component includes full TypeScript support:
 
 ```ts
-import type { DialogProps } from '@stacksjs/dialog'
+import type { DialogProps } from '@stacksjs/components'
 import { ref } from '@stacksjs/stx'
 
 const visible = ref<boolean>(false)

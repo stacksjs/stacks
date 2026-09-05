@@ -24,23 +24,23 @@ A modern, accessible notification component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/notification
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/notification
-# bun add @stacksjs/notification
-# bun i @stacksjs/notification
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/notification
-# pnpm i @stacksjs/notification
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/notification
-# yarn i -d @stacksjs/notification
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -53,7 +53,7 @@ The notification component can be easily integrated into your STX application:
 ```html
 <script>
 import { ref } from '@stacksjs/stx'
-import { Notification } from '@stacksjs/notification'
+import { Notification } from '@stacksjs/components'
 
 const position = ref('top-right')
 const expand = ref(false)
@@ -142,7 +142,7 @@ The notification component follows WAI-ARIA guidelines and includes:
 The notification component includes full TypeScript support:
 
 ```ts
-import type { Position, Theme } from '@stacksjs/notification'
+import type { Position, Theme } from '@stacksjs/components'
 
 const position = ref<Position>('top-right')
 const theme = ref<Theme>('light')

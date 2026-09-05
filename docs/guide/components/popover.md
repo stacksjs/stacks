@@ -25,23 +25,23 @@ A modern, accessible popover component for STX applications.
 ::: code-group
 
 ```sh [npm]
-npm install @stacksjs/popover
+npm install @stacksjs/components
 ```
 
 ```sh [bun]
-bun install @stacksjs/popover
-# bun add @stacksjs/popover
-# bun i @stacksjs/popover
+bun install @stacksjs/components
+# bun add @stacksjs/components
+# bun i @stacksjs/components
 ```
 
 ```sh [pnpm]
-pnpm add @stacksjs/popover
-# pnpm i @stacksjs/popover
+pnpm add @stacksjs/components
+# pnpm i @stacksjs/components
 ```
 
 ```sh [yarn]
-yarn add @stacksjs/popover
-# yarn i -d @stacksjs/popover
+yarn add @stacksjs/components
+# yarn i -d @stacksjs/components
 ```
 
 :::
@@ -58,7 +58,7 @@ import {
   Popover,
   PopoverButton,
   PopoverPanel,
-} from '@stacksjs/popover'
+} from '@stacksjs/components'
 </script>
 
 <template>
@@ -167,7 +167,7 @@ The popover component follows WAI-ARIA guidelines and includes the following fea
 The popover component includes full TypeScript support:
 
 ```ts
-import type { PopoverSlotProps } from '@stacksjs/popover'
+import type { PopoverSlotProps } from '@stacksjs/components'
 import { ref } from '@stacksjs/stx'
 
 const panelOpen = ref<boolean>(false)
