@@ -47,7 +47,8 @@ export function serverEnvironment(target: Target, withDb: boolean, scenarioId?: 
   } as Record<string, string>
 }
 
-export async function boot(target: Target, withDb: boolean, scenario?: Scenario): Promise<BootedServer | { skipped: string }> {
+/** Start a target with a deadline for HTTP readiness and clean up failed starts. */
+export async function boot(target: Target, withDb: boolean, scenario?: Scenario, timeoutMs = 60_000): Promise<BootedServer | { skipped: string }> {
   const proc = Bun.spawn(serverCommand(target.server), {
     cwd: REPO_ROOT,
     stdout: 'pipe',
@@ -64,29 +65,46 @@ export async function boot(target: Target, withDb: boolean, scenario?: Scenario)
         ...(scenario.body != null ? { body: scenario.body } : {}),
       }
     : undefined
-  const deadline = Date.now() + 60_000
-  for (;;) {
-    if (proc.exitCode != null) {
-      const err = await new Response(proc.stderr).text()
-      // 78 is EX_CONFIG: the server said "I am not installed here".
-      if (proc.exitCode === 78 || target.optional)
-        return { skipped: err.trim().split('\n').pop() || `exited ${proc.exitCode}` }
-      throw new Error(`${target.id} server exited ${proc.exitCode}:\n${err}`)
-    }
-    try {
-      const res = await fetch(url, request)
-      if (res.ok) {
-        await res.arrayBuffer()
-        break
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  let ready = false
+  try {
+    while (!controller.signal.aborted) {
+      if (proc.exitCode != null) {
+        const err = await new Response(proc.stderr).text()
+        // 78 is EX_CONFIG: the server said "I am not installed here".
+        if (proc.exitCode === 78 || target.optional)
+          return { skipped: err.trim().split('\n').pop() || `exited ${proc.exitCode}` }
+        throw new Error(`${target.id} server exited ${proc.exitCode}:\n${err}`)
       }
+      try {
+        const res = await fetch(url, { ...request, signal: controller.signal })
+        if (res.ok) {
+          await res.arrayBuffer()
+          if (!controller.signal.aborted) {
+            ready = true
+            return { proc, pid: proc.pid }
+          }
+        }
+        else {
+          await res.body?.cancel()
+        }
+      }
+      catch { /* not listening yet, or the startup deadline expired */ }
+      if (!controller.signal.aborted) await Bun.sleep(100)
     }
-    catch { /* not listening yet */ }
-    if (Date.now() > deadline)
-      throw new Error(`${target.id} server did not become ready within 60s`)
-    await Bun.sleep(100)
+    throw new Error(`${target.id} server did not become ready within ${timeoutMs / 1000}s`)
   }
-
-  return { proc, pid: proc.pid }
+  finally {
+    clearTimeout(timer)
+    controller.abort()
+    if (!ready) {
+      // A failed benchmark server must not survive to occupy the port or
+      // consume CPU/RSS during the next target's measurements.
+      if (proc.exitCode == null) proc.kill('SIGKILL')
+      await proc.exited
+    }
+  }
 }
 
 export async function stop(server: BootedServer): Promise<void> {

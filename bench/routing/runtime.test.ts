@@ -62,32 +62,43 @@ describe('benchmark server isolation', () => {
 
 describe('benchmark server readiness', () => {
   it.each(['post-validate', 'static-json', 'all'])('boots %s with its real request', async (scenario) => {
-    const reservation = Bun.serve({ port: 0, fetch: () => new Response() })
-    const port = reservation.port
-    await reservation.stop(true)
-    const child = Bun.spawn([
-      process.execPath,
-      `--config=${join(import.meta.dir, 'bunfig.toml')}`,
-      join(import.meta.dir, 'fixtures/readiness.ts'),
-      'check',
-      scenario,
-    ], {
-      env: { ...process.env, BENCH_PORT: String(port) },
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-    try {
-      const [exitCode, stdout, stderr] = await Promise.all([
-        child.exited,
-        new Response(child.stdout).text(),
-        new Response(child.stderr).text(),
-      ])
-      expect(exitCode, stderr).toBe(0)
-      expect(stdout).toContain('benchmark-readiness-ok')
-    }
-    finally {
-      if (child.exitCode == null) child.kill()
-      await child.exited
-    }
+    const { exitCode, stdout, stderr } = await runServerFixture('readiness.ts', scenario)
+    expect(exitCode, stderr).toBe(0)
+    expect(stdout).toContain('benchmark-readiness-ok')
+  }, 15_000)
+
+  it.each(['hang-headers', 'hang-body', 'unavailable', 'config-exit'])('cleans up failed startup: %s', async (scenario) => {
+    const { exitCode, stdout, stderr } = await runServerFixture('startup-failure.ts', scenario)
+    expect(exitCode, stderr).toBe(0)
+    expect(stdout).toContain('benchmark-startup-cleanup-ok')
   }, 15_000)
 })
+
+async function runServerFixture(fixture: string, scenario: string) {
+  const reservation = Bun.serve({ port: 0, fetch: () => new Response() })
+  const port = reservation.port
+  await reservation.stop(true)
+  const child = Bun.spawn([
+    process.execPath,
+    `--config=${join(import.meta.dir, 'bunfig.toml')}`,
+    join(import.meta.dir, 'fixtures', fixture),
+    'check',
+    scenario,
+  ], {
+    env: { ...process.env, BENCH_PORT: String(port) },
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  try {
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    return { exitCode, stdout, stderr }
+  }
+  finally {
+    if (child.exitCode == null) child.kill()
+    await child.exited
+  }
+}
