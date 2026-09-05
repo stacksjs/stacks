@@ -17,6 +17,8 @@ export interface Target {
   cookie?: boolean
   /** Absent from this repo's dependencies; skipped rather than failed. */
   optional?: boolean
+  /** Tuned profiles must be selected explicitly. */
+  optIn?: boolean
 }
 
 export const TARGETS: readonly Target[] = [
@@ -30,6 +32,14 @@ export const TARGETS: readonly Target[] = [
     label: 'Stacks (stock defaults, client echoes CSRF cookie)',
     server: 'stacks.ts',
     cookie: true,
+  },
+  {
+    id: 'stacks-wal-full',
+    label: 'Stacks (tuned WAL: 1000 pages, FULL sync, cookie echo)',
+    server: 'stacks.ts',
+    env: { BENCH_SQLITE_PROFILE: 'wal-full' },
+    cookie: true,
+    optIn: true,
   },
   {
     id: 'stacks-minimal',
@@ -68,6 +78,8 @@ export const TARGETS: readonly Target[] = [
     server: 'bun-raw.ts',
   },
 ]
+
+export const DEFAULT_TARGETS: readonly Target[] = TARGETS.filter(target => !target.optIn)
 
 export function targetById(id: string): Target | undefined {
   return TARGETS.find(t => t.id === id)

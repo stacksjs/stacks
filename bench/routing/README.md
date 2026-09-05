@@ -7,7 +7,7 @@ of the runtime all three sit on.
 bun bench/routing/run.ts
 ```
 
-That runs every scenario against every target the machine can boot and writes a
+That runs every scenario against the default targets the machine can boot and writes a
 timestamped directory under `results/` containing `report.md`,
 `measurements.json`, and the raw load-generator output for every individual run.
 
@@ -98,7 +98,7 @@ This check runs outside warm-up and measurement.
 
 ## Profiles
 
-Stacks appears three times on purpose. The gap between the first and the third
+Stacks has three default profiles. The gap between the first and the third
 row is the price of what Stacks does by default and the others do not do at all,
 and reading it as anything else is the mistake this table exists to prevent.
 
@@ -114,6 +114,26 @@ as "Stacks' speed" next to a bare Elysia app would compare a server that sets
 security headers and defends against CSRF with one that does neither. If a
 comparison ever quotes a Stacks-vs-Elysia figure, it either gives Elysia
 equivalent guarantees or it says plainly which profile produced the number.
+
+The opt-in `stacks-wal-full` target measures a configured SQLite deployment:
+1000-page WAL checkpoints and `synchronous=FULL`, with the same security,
+validation, query logging, and cookie behavior as `stacks-warm`. It verifies
+both SQLite settings before listening. Run it explicitly:
+
+```bash
+bun bench/routing/run.ts --targets stacks-warm,stacks-wal-full --scenarios db-roundtrip --driver oha
+```
+
+Reports label this target as tuned. It is excluded from the default target
+list, and its database results must not be presented as stock Stacks defaults.
+See the [SQLite configuration guide](../../docs/packages/query-builder.md#sqlite-write-throughput)
+for the checkpoint and backup implications. The memory runner also accepts
+this target with an explicit `--rate`.
+
+The runner resets its profile selectors and security-header switch before
+applying each target's settings, so shell variables from a previous run cannot
+silently turn a stock target into a tuned or minimal one.
+It also fixes the database driver to SQLite, matching the isolated fixture.
 
 ## Optional targets
 

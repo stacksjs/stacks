@@ -5,13 +5,16 @@
  *
  *   secure   (default) — stock framework defaults. CSRF injected on the POST,
  *                        the render-token seed on every GET, security headers
- *                        on every response, request-id + Server-Timing,
+ *                        on every response, request-id,
  *                        AsyncLocalStorage request context.
  *   minimal            — `.skipCsrf()` on the mutating route and
  *                        `STACKS_SECURITY_HEADERS_DISABLE=true` (set by the
  *                        runner). Everything else is unchanged: this profile
  *                        exists to price the safe-by-default work, NOT to
  *                        produce a headline number. See the README.
+ *
+ * BENCH_SQLITE_PROFILE=wal-full opts into 1000-page WAL checkpoints and
+ * synchronous=FULL for the database scenario. It keeps the secure profile.
  */
 
 import process from 'node:process'
@@ -20,6 +23,13 @@ import { createStacksRouter } from '@stacksjs/router'
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const minimal = process.env.BENCH_MODE === 'minimal'
 const withDb = process.env.BENCH_DB === '1'
+const sqliteProfile = process.env.BENCH_SQLITE_PROFILE ?? 'stock'
+if (sqliteProfile !== 'stock' && sqliteProfile !== 'wal-full')
+  throw new Error(`Unknown benchmark SQLite profile: ${sqliteProfile}`)
+if (withDb && sqliteProfile === 'wal-full') {
+  const { setConfig } = await import('@stacksjs/query-builder')
+  setConfig({ sqlite: { pragmas: ['PRAGMA wal_autocheckpoint = 1000', 'PRAGMA synchronous = FULL'] } })
+}
 const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
@@ -65,6 +75,12 @@ if (withDb && serves('db-roundtrip')) {
   // package's boot, and so a machine with no fixture can still run scenarios
   // 1 to 3.
   const { db } = await import('@stacksjs/database') as any
+  if (sqliteProfile === 'wal-full') {
+    const checkpoint = await db.unsafe('PRAGMA wal_autocheckpoint').execute()
+    const synchronous = await db.unsafe('PRAGMA synchronous').execute()
+    if (checkpoint[0]?.wal_autocheckpoint !== 1000 || synchronous[0]?.synchronous !== 2)
+      throw new Error('Tuned SQLite benchmark requires wal_autocheckpoint=1000 and synchronous=FULL')
+  }
   router.get('/bench/db', async () => {
     const rows = await db.selectFrom('bench_items').select(['id', 'name']).where('id', '=', 1).limit(1).execute()
     const row = rows[0]

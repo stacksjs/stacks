@@ -37,8 +37,12 @@ export function serverEnvironment(target: Target, withDb: boolean, scenarioId?: 
     BENCH_PORT: String(PORT),
     BENCH_DB: withDb ? '1' : '0',
     BENCH_DB_FILE: FIXTURE,
+    DB_CONNECTION: 'sqlite',
     DB_DATABASE_PATH: FIXTURE,
-    ...(scenarioId ? { BENCH_SCENARIO: scenarioId } : {}),
+    BENCH_SCENARIO: scenarioId ?? '',
+    BENCH_MODE: 'secure',
+    BENCH_SQLITE_PROFILE: 'stock',
+    STACKS_SECURITY_HEADERS_DISABLE: 'false',
     ...target.env,
   } as Record<string, string>
 }

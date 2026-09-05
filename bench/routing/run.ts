@@ -24,7 +24,7 @@ import { createFixture, resetFixtureLogs } from './fixture'
 import { renderReport } from './report'
 import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from './runtime'
 import { SCENARIOS } from './scenarios'
-import { TARGETS } from './targets'
+import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
 
@@ -41,7 +41,7 @@ interface Options {
 
 function parseArgs(argv: string[]): Options {
   const opts: Options = {
-    targets: TARGETS.map(t => t.id),
+    targets: DEFAULT_TARGETS.map(t => t.id),
     scenarios: SCENARIOS.map(s => s.id),
     connections: 50,
     warmupSeconds: 5,
@@ -78,14 +78,16 @@ function parseArgs(argv: string[]): Options {
 
 const HELP = `bun bench/routing/run.ts [flags]
 
-  --targets      comma-separated target ids  (${TARGETS.map(t => t.id).join(', ')})
+  --targets      comma-separated target ids  (default: ${DEFAULT_TARGETS.map(t => t.id).join(', ')})
   --scenarios    comma-separated scenario ids (${SCENARIOS.map(s => s.id).join(', ')})
   --driver       oha | bombardier | autocannon | builtin  (default: first available)
   --connections  concurrent connections (default 50)
   --warmup       seconds discarded before measuring (default 5)
   --duration     seconds measured (default 30)
   --runs         repeats per scenario, median reported (default 3)
-  --no-db        skip the SQLite fixture and the db-roundtrip scenario`
+  --no-db        skip the SQLite fixture and the db-roundtrip scenario
+
+Available targets: ${TARGETS.map(t => t.id).join(', ')}`
 
 /**
  * CPU time the server actually burned, as a percentage of one core.
