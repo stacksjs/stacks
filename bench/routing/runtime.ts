@@ -5,6 +5,7 @@ import type { Target } from './targets'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+import { assertFixtureQueryLogged, resetFixtureLogs } from './fixture'
 import { CSRF_COOKIE, CSRF_TOKEN } from './scenarios'
 
 export const BENCH_ROOT = fileURLToPath(new URL('.', import.meta.url))
@@ -97,6 +98,10 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
 
 /** Require byte-identical successful responses before measuring a target. */
 export async function assertParity(target: Target, scenario: Scenario): Promise<void> {
+  const requiresQueryLog = target.server === 'stacks.ts' && scenario.requiresDb
+  if (requiresQueryLog)
+    resetFixtureLogs(FIXTURE)
+
   const res = await fetch(`http://127.0.0.1:${PORT}${scenario.path}`, {
     method: scenario.method,
     headers: headersFor(target, scenario),
@@ -107,4 +112,6 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
     throw new Error(`${target.id} answered ${res.status} for ${scenario.id}: ${body.slice(0, 200)}`)
   if (body !== scenario.expect)
     throw new Error(`${target.id} answered ${body.slice(0, 200)} for ${scenario.id}, expected ${scenario.expect}`)
+  if (requiresQueryLog)
+    await assertFixtureQueryLogged(FIXTURE)
 }

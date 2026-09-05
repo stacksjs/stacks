@@ -85,3 +85,22 @@ export function resetFixtureLogs(file: string): void {
     db.close()
   }
 }
+
+/** Wait for the parity probe's asynchronous log write, outside measurement. */
+export async function assertFixtureQueryLogged(file: string, timeoutMs = 2000): Promise<void> {
+  const db = new Database(file, { readonly: true })
+  try {
+    const logged = db.query(`SELECT id FROM query_logs
+      WHERE ltrim(query) LIKE 'SELECT %' AND query LIKE '%bench!_items%' ESCAPE '!'
+        AND status IN ('completed', 'slow') AND error IS NULL LIMIT 1`)
+    const deadline = performance.now() + timeoutMs
+    while (!logged.get()) {
+      if (performance.now() >= deadline)
+        throw new Error(`Stacks benchmark SELECT was not persisted in query_logs within ${timeoutMs}ms. Check query logging configuration and the fixture.`)
+      await Bun.sleep(10)
+    }
+  }
+  finally {
+    db.close()
+  }
+}

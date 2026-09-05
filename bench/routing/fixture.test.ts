@@ -3,13 +3,14 @@ import { expect, it } from 'bun:test'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createFixture, FIXTURE_ROWS, resetFixtureLogs } from './fixture'
+import { assertFixtureQueryLogged, createFixture, FIXTURE_ROWS, resetFixtureLogs } from './fixture'
 
 it('supports real query logging in the isolated benchmark database', async () => {
   const dir = mkdtempSync(join(tmpdir(), 'stacks-routing-fixture-'))
   const file = join(dir, 'bench.sqlite')
   try {
     createFixture(file)
+    const loggingReady = assertFixtureQueryLogged(file)
     const child = Bun.spawn([
       process.execPath,
       `--config=${join(import.meta.dir, 'bunfig.toml')}`,
@@ -24,6 +25,7 @@ it('supports real query logging in the isolated benchmark database', async () =>
       child.exited,
       new Response(child.stdout).text(),
       new Response(child.stderr).text(),
+      loggingReady,
     ])
     expect(exitCode, stderr).toBe(0)
     expect(stdout).toContain('fixture-query-logging-ok')
@@ -50,6 +52,33 @@ it('supports real query logging in the isolated benchmark database', async () =>
     }
     finally {
       reset.close()
+    }
+  }
+  finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+})
+
+it('rejects missing, failed, and unrelated query logs before benchmarking', async () => {
+  const dir = mkdtempSync(join(tmpdir(), 'stacks-routing-log-guard-'))
+  const file = join(dir, 'bench.sqlite')
+  try {
+    createFixture(file)
+    await expect(assertFixtureQueryLogged(file, 20)).rejects.toThrow('was not persisted')
+    const db = new Database(file)
+    try {
+      db.run(`INSERT INTO query_logs (query, status, error, executed_at) VALUES
+        ('SELECT * FROM bench_items', 'failed', 'database error', '2026-09-05T00:00:00'),
+        ('SELECT * FROM other_items', 'completed', NULL, '2026-09-05T00:00:00'),
+        ('SELECT * FROM benchXitems', 'completed', NULL, '2026-09-05T00:00:00'),
+        ('INSERT INTO bench_items VALUES (1)', 'completed', NULL, '2026-09-05T00:00:00')`)
+      await expect(assertFixtureQueryLogged(file, 20)).rejects.toThrow('was not persisted')
+      db.run(`INSERT INTO query_logs (query, status, executed_at)
+        VALUES ('SELECT * FROM bench_items', 'slow', '2026-09-05T00:00:00')`)
+      await assertFixtureQueryLogged(file, 20)
+    }
+    finally {
+      db.close()
     }
   }
   finally {

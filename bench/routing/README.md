@@ -91,6 +91,11 @@ own write, with warm sequential and concurrent persistence checks. Database
 results from before that correction should be rerun because they may include
 less logging work.
 
+Before measuring a Stacks database scenario, the parity probe clears old logs
+and waits for a successful log of its benchmark SELECT. Disabled or failing
+query logging aborts the run instead of producing a faster, incomplete workload.
+This check runs outside warm-up and measurement.
+
 ## Profiles
 
 Stacks appears three times on purpose. The gap between the first and the third
