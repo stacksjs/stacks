@@ -271,13 +271,24 @@ function sanitizeStackTrace(stack: string): string {
   return out
 }
 
+interface QueryTraceInfo {
+  trace: string
+  caller: Pick<QueryLogRecord, 'model' | 'method' | 'file' | 'line'>
+}
+
+// Keep only one bounded, already-sanitized trace. Repeated queries often
+// originate from the same call site, but every call still captures its stack.
+let lastTraceInfo: QueryTraceInfo | undefined
+
 /**
  * Extract stack trace and caller information
  */
-function extractTraceInfo() {
+function extractTraceInfo(): QueryTraceInfo {
   try {
     // Get the current stack trace
     const stack = new Error('Stack trace capture').stack || ''
+    if (lastTraceInfo?.trace === stack)
+      return lastTraceInfo
 
     // Get the caller information (skipping this file's functions)
     const stackLines = stack.split('\n').slice(1)
@@ -307,10 +318,12 @@ function extractTraceInfo() {
       }
     }
 
-    return {
-      trace: sanitizeStackTrace(stack),
-      caller,
-    }
+    const result = { trace: sanitizeStackTrace(stack), caller }
+    // Do not retain secret-bearing originals as cache keys or keep an
+    // unbounded custom Error.prepareStackTrace result alive.
+    if (result.trace === stack && stack.length <= 8192)
+      lastTraceInfo = result
+    return result
   }
   catch {
     return { trace: '', caller: {} }

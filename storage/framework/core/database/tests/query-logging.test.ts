@@ -4,6 +4,22 @@ import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 describe('database query logging', () => {
+  it('keeps persisted traces accurate and redacted across repeated and changing callers', async () => {
+    const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-trace.ts')], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    expect(exitCode, stderr).toBe(0)
+    expect(stdout).toContain('query-trace-ok')
+  })
+
   it.each([false, true])('delivers real query diagnostics across reconnects and errors (persistence: %s)', async (persistence) => {
     const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-logger-dispatch.ts'), String(persistence)], {
       cwd: join(import.meta.dir, '..'),
