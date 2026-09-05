@@ -2007,13 +2007,13 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
         if (reqId) h.set('X-Request-ID', reqId)
         if (durMs != null) {
-          const parts = [`total;dur=${durMs.toFixed(1)}`]
+          let timing = `total;dur=${durMs.toFixed(1)}`
           // Append per-middleware timing entries. Chrome's network
           // panel shows these as a stacked timeline under the response.
           for (const t of middlewareTimings) {
-            parts.push(`mw_${t.name};dur=${t.ms.toFixed(1)}`)
+            timing += `, mw_${t.name};dur=${t.ms.toFixed(1)}`
           }
-          h.set('Server-Timing', parts.join(', '))
+          h.set('Server-Timing', timing)
         }
         applySecurityHeaders(h)
       }

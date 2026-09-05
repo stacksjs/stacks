@@ -36,6 +36,27 @@ afterAll(() => {
 })
 
 describe('middleware timing labels', () => {
+  test('formats total-only and multiple middleware timings in execution order', async () => {
+    const router = createStacksRouter()
+    router.get('/timed/plain', () => new Response('handled'))
+    router.get('/timed/chain', () => new Response('handled')).middleware(['__timing:first', '__timing:second'])
+
+    for (const [path, labels] of [
+      ['plain', ['total']],
+      ['chain', ['total', 'mw___timing_first', 'mw___timing_second']],
+    ] as const) {
+      const request = new Request(`http://localhost/timed/${path}`)
+      Object.assign(request, { _startNs: process.hrtime.bigint() })
+      const response = await router.handleRequest(request)
+      expect(response.status).toBe(200)
+      const timings = response.headers.get('server-timing')!.split(', ')
+      expect(timings.map(timing => timing.split(';')[0])).toEqual([...labels])
+      for (const timing of timings)
+        expect(timing).toMatch(/;dur=\d+\.\d$/)
+      expect(await response.text()).toBe('handled')
+    }
+  })
+
   for (const [reference, label] of [
     ['__timing:alpha/beta', 'mw___timing_alpha_beta'],
     ['__timing:abcdefghijklmnopqrstuvwxyz0123456789', 'mw___timing_abcdefghijklmnopqrstuvw'],
