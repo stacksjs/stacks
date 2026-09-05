@@ -1,3 +1,4 @@
 # Benchmark servers must not inherit the application's environment and
 # auto-import preloads. Each target imports only the framework it measures.
-preload = []
+# Passing this config explicitly already excludes the root bunfig. Leave
+# preload absent: Bun 1.3 rejects an empty preload array during startup.
