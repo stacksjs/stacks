@@ -3,6 +3,13 @@ import { normalizeQuery, parseQuery } from '../src/query-parser'
 
 describe('query normalization', () => {
   it.each([
+    ['SELECT true, FALSE, nUlL, TrUe, False, NULL', 'SELECT ?, ?, ?, ?, ?, ?'],
+    ['SELECT truefalse, null_true, false9, 9null, is_true, nullish', 'SELECT truefalse, null_true, false9, 9null, is_true, nullish'],
+    ['SELECT TRUE.false/null, (false), NULL::boolean', 'SELECT ?.?/?, (?), ?::boolean'],
+    ['SELECT étrue, NULLé, 漢false', 'SELECT é?, ?é, 漢?'],
+    ["SELECT 'true false NULL', 'it''s true', \"null\"", 'SELECT ?, ?, ?'],
+    ['SELECT true /* false */; -- NULL', 'SELECT ? /* ? */; -- ?'],
+    ['SELECT\tTRUE,\n false,\r\nNULL', 'SELECT ?, ?, ?'],
     ['SELECT 123', 'SELECT ?'],
     ['SELECT * FROM items WHERE id IN (1, 22, 333)', 'SELECT * FROM items WHERE id IN (?, ?, ?)'],
     ['SELECT value1, value_2, _3, 4value, v5x FROM table6', 'SELECT value1, value_2, _3, 4value, v5x FROM table6'],
