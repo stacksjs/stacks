@@ -129,7 +129,7 @@ function extractTables(sql: string, type: string): string[] {
 /**
  * Normalize a SQL query by replacing literal values with placeholders
  */
-function normalizeQuery(sql: string): string {
+export function normalizeQuery(sql: string): string {
   try {
     let normalizedSql = sql
 

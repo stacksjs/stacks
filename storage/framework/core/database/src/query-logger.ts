@@ -4,7 +4,7 @@ import { memoryUsage } from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { parseQuery } from './query-parser'
+import { normalizeQuery, parseQuery } from './query-parser'
 import { db } from './utils'
 
 /**
@@ -225,7 +225,7 @@ async function createQueryLogRecord(
   const connection = config.database.default || 'unknown'
 
   // Get normalized query (replace specific values with placeholders)
-  const normalizedQuery = parseQuery(query).normalized || query
+  const normalizedQuery = normalizeQuery(query) || query
 
   // Extract stack trace and caller information
   const { trace, caller } = extractTraceInfo()
