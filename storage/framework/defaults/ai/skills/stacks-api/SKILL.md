@@ -80,7 +80,9 @@ The dev server watches these directories for changes and auto-reloads:
 - `app/Actions/` -- invalidates module cache, hot-reloads actions
 - `app/Controllers/` -- invalidates module cache, hot-reloads controllers
 - `app/Middleware/` -- invalidates module cache, hot-reloads middleware
-- `app/Models/` (user models) -- triggers `buddy generate:model-files`
+- `app/Models/` (user models) -- regenerates the model artifacts (there is no
+  `generate:model-files` command; the dev server does this itself, and
+  `buddy generate:types` is the manual equivalent)
 
 Production build: `bun build.ts` bundles `dev.ts` to `dist/dev.js`.
 
@@ -805,7 +807,9 @@ the foreign-key attributes derived from `belongsTo`. For example,
 ## CLI Commands
 
 - `buddy dev` -- starts the API server with hot-reload
-- `buddy generate:api-types` -- regenerates API TypeScript types from OpenAPI spec
+- `buddy generate:types` -- regenerates the API TypeScript types and server
+  declarations (there is no `generate:api-types`)
+- `buddy generate:openapi-spec` -- regenerates the OpenAPI spec those types come from
 
 ## Gotchas
 
