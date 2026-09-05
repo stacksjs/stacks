@@ -56,8 +56,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bunpress": "^0.2.8",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/bunpress": "^0.2.14",
+    "@stacksjs/clapp": "^0.2.15",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.274",
@@ -65,7 +65,7 @@
     "bun-query-builder": "^0.2.65"
   },
   "peerDependencies": {
-    "meilisearch": "^0.59.0"
+    "meilisearch": "^0.60.0"
   },
   "peerDependenciesMeta": {
     "meilisearch": {
@@ -74,8 +74,8 @@
   },
   "devDependencies": {
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.24",
-    "meilisearch": "^0.59.0"
+    "better-dx": "^0.2.25",
+    "meilisearch": "^0.60.0"
   },
   "sideEffects": false,
   "publishConfig": {

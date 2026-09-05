@@ -74,12 +74,12 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
     "bun-query-builder": "^0.2.65",
-    "dynamodb-tooling": "^0.3.2"
+    "dynamodb-tooling": "^0.3.6"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/router": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

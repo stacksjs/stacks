@@ -64,10 +64,10 @@
   },
   "dependencies": {
     "bun-plugin-stx": "^0.2.274",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.55"
   },
   "peerDependencies": {
-    "web-ext": ">=8"
+    "web-ext": ">=8.10.0"
   },
   "peerDependenciesMeta": {
     "web-ext": {
@@ -75,6 +75,6 @@
     }
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

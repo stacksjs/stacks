@@ -88,7 +88,7 @@
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/queue": "workspace:*",
     "@stacksjs/search-engine": "workspace:*",
-    "stripe": "22.3.2"
+    "stripe": "22.6.1"
   },
   "peerDependenciesMeta": {
     "@stacksjs/auth": {
@@ -109,7 +109,7 @@
   },
   "devDependencies": {
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24",
-    "stripe": "22.3.2"
+    "better-dx": "^0.2.25",
+    "stripe": "22.6.1"
   }
 }

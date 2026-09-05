@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/types": "workspace:*"
   },
   "sideEffects": false

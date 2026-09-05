@@ -76,7 +76,7 @@
     "bun-query-builder": "^0.2.65"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.15.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0",
-    "better-dx": "^0.2.24"
+    "@stripe/stripe-js": "^9.15.0",
+    "better-dx": "^0.2.25"
   }
 }
