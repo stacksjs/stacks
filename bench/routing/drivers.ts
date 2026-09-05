@@ -193,7 +193,9 @@ const autocannon: Driver = {
         p90: json.latency?.p90 ?? 0,
         p99: json.latency?.p99 ?? 0,
       },
-      requests: json.requests?.total ?? 0,
+      // Autocannon's total counts HTTP responses only. Its errors already
+      // include timeouts, so add that count once to include failed attempts.
+      requests: (json.requests?.total ?? 0) + (json.errors ?? 0),
       errors: (json.errors ?? 0) + (json.non2xx ?? 0),
       raw,
     }

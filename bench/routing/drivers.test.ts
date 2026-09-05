@@ -54,6 +54,35 @@ describe('oha command', () => {
 })
 
 describe('autocannon load isolation', () => {
+  it.each([
+    ['transport failures only', 0, 20, 0, 0, 20, 20],
+    ['mixed responses and failures', 90, 10, 10, 3, 100, 20],
+    ['responses without failures', 20, undefined, undefined, undefined, 20, 0],
+  ] as const)('counts every completed or failed request: %s', async (name, completed, transportErrors, non2xx, timeouts, requests, errors) => {
+    const raw = JSON.stringify({ requests: { total: completed }, errors: transportErrors, non2xx, timeouts })
+    const spawn = spyOn(Bun, 'spawn').mockReturnValue({
+      stdout: new Response(raw).body,
+      stderr: new Response('').body,
+      exited: Promise.resolve(0),
+    } as unknown as ReturnType<typeof Bun.spawn>)
+    try {
+      const result = await DRIVERS.find(driver => driver.name === 'autocannon')!.run({
+        url: 'http://127.0.0.1:39400/bench/json',
+        method: 'GET',
+        headers: {},
+        connections: 1,
+        warmupSeconds: 0,
+        durationSeconds: 1,
+      })
+      expect(result.requests, name).toBe(requests)
+      expect(result.errors, name).toBe(errors)
+      expect(result.raw).toBe(raw)
+    }
+    finally {
+      spawn.mockRestore()
+    }
+  })
+
   it.each([0, 3])('discards %s seconds of warmup with isolated load settings', async (warmupSeconds) => {
     const output = (requests: number) => ({
       stdout: new Response(JSON.stringify({ requests: { total: requests, average: requests } })).body,
