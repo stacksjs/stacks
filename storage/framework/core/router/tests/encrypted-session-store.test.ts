@@ -55,14 +55,22 @@ describe('EncryptedSessionStore (stacksjs/stacks#1878 Se-4)', () => {
   })
 
   test('set() writes an encrypted envelope; raw store does NOT have plaintext', async () => {
-    await store.set('sid-1', { id: 'sid-1', userId: 42, secret: 'shh' } as any)
+    /*
+     * A long, distinctive secret on purpose. This was `'shh'`, and the
+     * assertion below is a substring search over base64 ciphertext - where a
+     * three-character needle turns up by chance roughly once in a thousand
+     * runs. CI found one: `...BeQ2BD2anBrrdtGevHshhdI...` contains `shh`, so a
+     * correctly encrypted envelope failed the test that proves it encrypted.
+     */
+    const secret = 'plaintext-that-must-never-survive-encryption'
+    await store.set('sid-1', { id: 'sid-1', userId: 42, secret } as any)
 
     const raw = inner.store.get('sid-1') as Record<string, unknown>
     expect(raw._enc).toBe(true)
     expect(typeof raw.data).toBe('string')
-    // The plaintext "shh" must not appear anywhere in the envelope
+    // The plaintext must not appear anywhere in the envelope
     // (a quick "did we forget to encrypt something" check).
-    expect(JSON.stringify(raw)).not.toContain('shh')
+    expect(JSON.stringify(raw)).not.toContain(secret)
   })
 
   test('get() decrypts back to the original payload', async () => {
