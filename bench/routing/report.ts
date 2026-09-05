@@ -8,7 +8,9 @@
 
 import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
+import type { RuntimeRequirement } from './runtime-version'
 import { formatSourceState } from './source'
+import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 
 export interface Measurement {
   targetId: string
@@ -28,6 +30,7 @@ export interface Measurement {
 export interface RunMeta {
   startedAt: string
   source?: SourceState
+  runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
   connections: number
@@ -66,6 +69,11 @@ export function renderReport(input: ReportInput): string {
     lines.push('> `bombardier` for any number that leaves this directory.')
     lines.push('')
   }
+  const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)
+  if (runtimeWarning) {
+    lines.push(`> ${runtimeWarning}`)
+    lines.push('')
+  }
   lines.push('| | |')
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
@@ -76,6 +84,8 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)
   lines.push(`| Bun | ${meta.machine.bun} |`)
+  if (meta.runtimeRequirement)
+    lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
   lines.push('')
 
   const skipped = targets.filter(t => t.skipped)

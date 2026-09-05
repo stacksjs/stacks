@@ -20,6 +20,7 @@ import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
+import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
 import { measureLoad } from './measurement'
 import { renderReport } from './report'
@@ -117,6 +118,9 @@ function median(values: number[]): number {
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2))
+  const runtimeRequirement = await readRuntimeRequirement(REPO_ROOT)
+  const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
+  if (runtimeWarning) console.error(`[bench] ${runtimeWarning}`)
   const driver: Driver = await pickDriver(opts.driver)
 
   const scenarios = SCENARIOS.filter(s => opts.scenarios.includes(s.id) && (opts.db || !s.requiresDb))
@@ -137,6 +141,7 @@ async function main(): Promise<void> {
   const meta: RunMeta = {
     startedAt,
     source,
+    runtimeRequirement,
     driver: driver.name,
     publishable: driver.publishable,
     connections: opts.connections,

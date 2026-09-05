@@ -62,6 +62,12 @@ Use a dedicated or reserved instance, and run the load generator on a different
 machine from the server — a generator competing for the server's cores
 understates the server, every time.
 
+Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
+The runner records that requirement beside the actual runtime version and warns
+when they differ. Alternate runtimes are allowed for explicit runtime comparisons:
+invoke the desired Bun binary directly, for example `/path/to/bun bench/routing/run.ts`.
+The benchmark servers use the same executable as the runner.
+
 Every server here is a single Bun listener with no `reusePort` clustering, so
 the comparison is per-core across the board. A multi-core run is a separate,
 clearly-labelled exercise.
