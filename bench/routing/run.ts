@@ -41,7 +41,7 @@ interface Options {
   db: boolean
 }
 
-function parseArgs(argv: string[]): Options {
+export function parseArgs(argv: string[]): Options {
   const opts: Options = {
     targets: DEFAULT_TARGETS.map(t => t.id),
     scenarios: SCENARIOS.map(s => s.id),
@@ -55,7 +55,7 @@ function parseArgs(argv: string[]): Options {
     const arg = argv[i]!
     const next = () => {
       const value = argv[++i]
-      if (value == null) throw new Error(`${arg} needs a value`)
+      if (value == null || value.trim() === '') throw new Error(`${arg} needs a value`)
       return value
     }
     switch (arg) {
@@ -75,6 +75,24 @@ function parseArgs(argv: string[]): Options {
         throw new Error(`Unknown flag ${arg}`)
     }
   }
+  if (!Number.isSafeInteger(opts.connections) || opts.connections <= 0)
+    throw new Error('--connections must be a positive safe integer')
+  if (!Number.isSafeInteger(opts.runs) || opts.runs <= 0)
+    throw new Error('--runs must be a positive safe integer')
+  if (!Number.isFinite(opts.durationSeconds) || opts.durationSeconds <= 0)
+    throw new Error('--duration must be a positive finite number')
+  if (!Number.isFinite(opts.warmupSeconds) || opts.warmupSeconds < 0)
+    throw new Error('--warmup must be a non-negative finite number')
+
+  const unknownTargets = opts.targets.filter(id => !TARGETS.some(target => target.id === id))
+  if (unknownTargets.length > 0)
+    throw new Error(`Unknown target(s): ${unknownTargets.map(id => JSON.stringify(id)).join(', ')}`)
+  const unknownScenarios = opts.scenarios.filter(id => !SCENARIOS.some(scenario => scenario.id === id))
+  if (unknownScenarios.length > 0)
+    throw new Error(`Unknown scenario(s): ${unknownScenarios.map(id => JSON.stringify(id)).join(', ')}`)
+  if (!SCENARIOS.some(scenario => opts.scenarios.includes(scenario.id) && (opts.db || !scenario.requiresDb)))
+    throw new Error('No scenarios remain after applying --no-db')
+
   return opts
 }
 
@@ -83,10 +101,10 @@ const HELP = `bun bench/routing/run.ts [flags]
   --targets      comma-separated target ids  (default: ${DEFAULT_TARGETS.map(t => t.id).join(', ')})
   --scenarios    comma-separated scenario ids (${SCENARIOS.map(s => s.id).join(', ')})
   --driver       oha | bombardier | autocannon | builtin  (default: first available)
-  --connections  concurrent connections (default 50)
-  --warmup       seconds discarded before measuring (default 5)
-  --duration     seconds measured (default 30)
-  --runs         repeats per scenario, median reported (default 3)
+  --connections  concurrent connections, positive integer (default 50)
+  --warmup       non-negative seconds discarded before measuring (default 5)
+  --duration     positive seconds measured (default 30)
+  --runs         positive integer repeats per scenario, median reported (default 3)
   --no-db        skip the SQLite fixture and the db-roundtrip scenario
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
@@ -208,4 +226,5 @@ async function main(): Promise<void> {
   console.log(report)
 }
 
-await main()
+if (import.meta.main)
+  await main()
