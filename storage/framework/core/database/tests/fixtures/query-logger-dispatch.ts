@@ -107,6 +107,22 @@ try {
     await queryWithDiagnostics('query_logger_after_failed_store')
 
     const { logQuery } = await import('../../src/query-logger')
+    // RAISE(FAIL) retains rows inserted before the rejected row in a single
+    // statement. Retrying a partially applied batch must not duplicate them.
+    await db.unsafe(`CREATE TRIGGER reject_query_log BEFORE INSERT ON query_logs
+      WHEN NEW.query = 'SELECT 1 AS rejected_log_row'
+      BEGIN SELECT RAISE(FAIL, 'rejected query log'); END`).execute()
+    const failureSql = ['SELECT 1 AS before_rejected_log', 'SELECT 1 AS rejected_log_row', 'SELECT 1 AS after_rejected_log']
+    try {
+      await Promise.all(failureSql.map(sql => logQuery({ query: { sql }, queryDurationMillis: 1 })))
+      const retained = await db.unsafe('SELECT query FROM query_logs WHERE query IN (?, ?, ?) ORDER BY query', failureSql).execute()
+      if (JSON.stringify(retained.map(row => row.query)) !== JSON.stringify([failureSql[2], failureSql[0]]))
+        throw new Error('A rejected query log duplicated or discarded unrelated diagnostics')
+    }
+    finally {
+      await db.unsafe('DROP TRIGGER reject_query_log').execute()
+    }
+
     const literalQuery = " \tSELECT  42 AS total,\n 'Ada 123' AS name, TRUE AS active, NULL AS missing FROM query_logger_fixture"
     await logQuery({ query: { sql: literalQuery }, queryDurationMillis: 1 })
     const normalized = await db.unsafe('SELECT normalized_query FROM query_logs WHERE query = ?', [literalQuery]).execute()
