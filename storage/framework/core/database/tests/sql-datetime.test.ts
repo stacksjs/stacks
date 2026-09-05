@@ -1,5 +1,5 @@
 import { Database } from 'bun:sqlite'
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, setSystemTime, test } from 'bun:test'
 import { parseSqlDateTime, sqlDateTime, sqlDateTimeLiteral } from '../src/sql-helpers'
 
 /**
@@ -28,6 +28,42 @@ describe('sqlDateTime - the write format', () => {
     const parsed = parseSqlDateTime(sqlDateTime())!
     expect(parsed.getTime()).toBeGreaterThanOrEqual(before - 1000)
     expect(parsed.getTime()).toBeLessThanOrEqual(Date.now() + 1000)
+  })
+
+  test('default timestamps preserve milliseconds across clock boundaries and backward changes', () => {
+    try {
+      for (const timestamp of [
+        '2024-02-29T23:59:59.999',
+        '2024-03-01T00:00:00.000',
+        '2024-03-01T00:00:00.001',
+        '2024-02-29T23:59:59.998',
+        '1970-01-01T00:00:00.000',
+        '1969-12-31T23:59:59.999',
+        '+010000-01-01T00:00:00.000',
+      ]) {
+        setSystemTime(new Date(`${timestamp}Z`))
+        expect(sqlDateTime()).toBe(timestamp)
+        expect(sqlDateTime(undefined)).toBe(timestamp)
+        expect(sqlDateTimeLiteral()).toBe(`'${timestamp}'`)
+      }
+    }
+    finally {
+      setSystemTime()
+    }
+  })
+
+  test('explicit dates retain mutations, custom formatting, and invalid-date errors', () => {
+    const date = new Date(INSTANT.getTime())
+    expect(sqlDateTime(date)).toBe('2026-08-04T01:52:47.417')
+    date.setUTCMilliseconds(418)
+    expect(sqlDateTimeLiteral(date)).toBe("'2026-08-04T01:52:47.418'")
+
+    let calls = 0
+    date.toISOString = () => `2026-08-04T01:52:47.${++calls === 1 ? '419' : '420'}Z`
+    expect(sqlDateTime(date)).toBe('2026-08-04T01:52:47.419')
+    expect(sqlDateTime(date)).toBe('2026-08-04T01:52:47.420')
+    expect(() => sqlDateTime(new Date(Number.NaN))).toThrow(RangeError)
+    expect(() => sqlDateTimeLiteral(new Date(Number.NaN))).toThrow(RangeError)
   })
 
   test('keeps the T, because a space would break ordering against stored ISO rows', () => {

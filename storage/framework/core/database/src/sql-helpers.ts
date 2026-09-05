@@ -112,6 +112,11 @@ export interface SqlDialectHelpers {
   params: (...values: unknown[]) => { sql: string, values: unknown[] }
 }
 
+// Reuse only an exact millisecond's immutable formatting. Explicit Date
+// arguments still run their own serializer, including custom overrides.
+let lastSqlTimestampMs: number | undefined
+let lastSqlTimestamp = ''
+
 /**
  * The framework's canonical datetime literal: ISO-8601 UTC **without** the
  * trailing `Z` (`2026-08-04T01:52:47.417`).
@@ -143,8 +148,16 @@ export interface SqlDialectHelpers {
  * That silently made every `expires_at > datetime('now')` check pass for
  * already-expired rows. Compare app-written columns against `sqlDateTime()`.
  */
-export function sqlDateTime(value: Date = new Date()): string {
-  return value.toISOString().slice(0, -1)
+export function sqlDateTime(value?: Date): string {
+  if (value !== undefined)
+    return value.toISOString().slice(0, -1)
+
+  const now = Date.now()
+  if (now !== lastSqlTimestampMs) {
+    lastSqlTimestamp = new Date(now).toISOString().slice(0, -1)
+    lastSqlTimestampMs = now
+  }
+  return lastSqlTimestamp
 }
 
 /**
@@ -152,7 +165,7 @@ export function sqlDateTime(value: Date = new Date()): string {
  * The value is generated from a `Date`, never from user input, so it cannot
  * carry a quote to escape.
  */
-export function sqlDateTimeLiteral(value: Date = new Date()): string {
+export function sqlDateTimeLiteral(value?: Date): string {
   return `'${sqlDateTime(value)}'`
 }
 
