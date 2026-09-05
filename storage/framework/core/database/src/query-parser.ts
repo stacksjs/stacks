@@ -140,10 +140,8 @@ export function normalizeQuery(sql: string): string {
 
     // Word boundaries already exclude adjacent ASCII letters and underscores,
     // keeping digits in identifiers intact without redundant lookarounds.
-    normalizedSql = normalizedSql.replace(/\b\d+\b/g, '?')
-
-    // Replace boolean and NULL literals in one pass.
-    normalizedSql = normalizedSql.replace(/\b(?:true|false|null)\b/gi, '?')
+    // Numbers, booleans, and NULL share the same boundaries and replacement.
+    normalizedSql = normalizedSql.replace(/\b(?:\d+|true|false|null)\b/gi, '?')
 
     // Most generated SQL already uses single spaces. Skip rebuilding it unless
     // another whitespace character or repeated spaces need normalization.
