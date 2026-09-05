@@ -18,6 +18,39 @@ describe('oha command', () => {
       'http://127.0.0.1:39400/bench/json',
     ])
   })
+
+  it.each([
+    ['transport failures only', {}, { 'Connection refused (os error 61)': 20 }, 20, 20],
+    ['mixed responses and transport failures', { 200: 70, 302: 10, 500: 10 }, { timeout: 10 }, 100, 20],
+    ['responses without transport failures', { 200: 20 }, undefined, 20, 0],
+  ] as const)('counts every completed or failed request: %s', async (name, codes, transportErrors, requests, errors) => {
+    const raw = JSON.stringify({
+      summary: { requestsPerSec: 100 },
+      statusCodeDistribution: codes,
+      errorDistribution: transportErrors,
+    })
+    const spawn = spyOn(Bun, 'spawn').mockReturnValue({
+      stdout: new Response(raw).body,
+      stderr: new Response('').body,
+      exited: Promise.resolve(0),
+    } as unknown as ReturnType<typeof Bun.spawn>)
+    try {
+      const result = await DRIVERS.find(driver => driver.name === 'oha')!.run({
+        url: 'http://127.0.0.1:39400/bench/json',
+        method: 'GET',
+        headers: {},
+        connections: 1,
+        warmupSeconds: 0,
+        durationSeconds: 1,
+      })
+      expect(result.requests, name).toBe(requests)
+      expect(result.errors, name).toBe(errors)
+      expect(result.raw).toBe(raw)
+    }
+    finally {
+      spawn.mockRestore()
+    }
+  })
 })
 
 describe('autocannon load isolation', () => {

@@ -120,6 +120,7 @@ const oha: Driver = {
       if (Number(code) >= 200 && Number(code) < 400) ok += count
       else bad += count
     }
+    const transportErrors = Object.values(json.errorDistribution as Record<string, number> ?? {}).reduce((sum, count) => sum + count, 0)
     return {
       rpsMean: json.summary.requestsPerSec,
       rpsP50: json.rps?.percentiles?.['p50'] ?? null,
@@ -128,8 +129,10 @@ const oha: Driver = {
         p90: (json.latencyPercentiles?.p90 ?? 0) * 1000,
         p99: (json.latencyPercentiles?.p99 ?? 0) * 1000,
       },
-      requests: ok + bad,
-      errors: bad + (json.errorDistribution ? Object.values(json.errorDistribution as Record<string, number>).reduce((a, b) => a + b, 0) : 0),
+      // Failed connections have no status code, but still belong in the
+      // denominator. Otherwise a wholly failed run can report 0% errors.
+      requests: ok + bad + transportErrors,
+      errors: bad + transportErrors,
       raw,
     }
   },
