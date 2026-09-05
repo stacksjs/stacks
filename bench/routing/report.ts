@@ -16,7 +16,7 @@ export interface Measurement {
   rpsP50: number | null
   latencyMs: { p50: number, p90: number, p99: number }
   errorRate: number
-  /** CPU time burned as a percentage of one core, over the whole run. */
+  /** CPU time as a percentage of one core during measured load, excluding warmup. */
   cpuPercent: number | null
   /** Lowest and highest rps across the repeats, so spread is visible. */
   spread: { min: number, max: number }

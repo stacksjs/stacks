@@ -25,7 +25,8 @@ accident. Four things in here exist only to stop that:
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much.
 - **CPU is reported per row.** Deltas of the server's cumulative CPU time over
-  the wall clock of the run. A win bought by burning more CPU is visible here
+  the wall clock of the measured load invocation, after warm-up has finished.
+  This includes load-tool startup and shutdown overhead. A win bought by burning more CPU is visible here
   rather than hidden inside "req/s".
 
 ## Load generators

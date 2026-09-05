@@ -21,6 +21,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { createFixture, resetFixtureLogs } from './fixture'
+import { measureLoad } from './measurement'
 import { renderReport } from './report'
 import { assertParity, boot, FIXTURE, headersFor, PORT, stop } from './runtime'
 import { SCENARIOS } from './scenarios'
@@ -89,42 +90,6 @@ const HELP = `bun bench/routing/run.ts [flags]
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
 
-/**
- * CPU time the server actually burned, as a percentage of one core.
- *
- * Deltas of cumulative CPU time, not `ps -o %cpu`: on macOS that column is an
- * average over the process's whole lifetime, so a server that just booted
- * reports its own startup mixed into every reading and a long run reports a
- * number that keeps sliding. Two samples and the wall clock between them
- * answer the question the report is actually asking - "was that throughput won
- * by being efficient, or by using more CPU".
- */
-async function cpuSeconds(pid: number): Promise<number | null> {
-  try {
-    const proc = Bun.spawn(['ps', '-o', 'time=', '-p', String(pid)], { stdout: 'pipe', stderr: 'ignore' })
-    const out = (await new Response(proc.stdout).text()).trim()
-    if (!out) return null
-    // `[dd-]hh:]mm:ss[.ff]`
-    const parts = out.replace('-', ':').split(':').map(Number.parseFloat)
-    if (parts.some(n => !Number.isFinite(n))) return null
-    return parts.reduce((total, part) => total * 60 + part, 0)
-  }
-  catch {
-    return null
-  }
-}
-
-async function measureCpu(pid: number): Promise<() => Promise<number | null>> {
-  const before = await cpuSeconds(pid)
-  const wallStart = performance.now()
-  return async () => {
-    const after = await cpuSeconds(pid)
-    const wallSeconds = (performance.now() - wallStart) / 1000
-    if (before == null || after == null || wallSeconds <= 0) return null
-    return ((after - before) / wallSeconds) * 100
-  }
-}
-
 function median(values: number[]): number {
   const sorted = [...values].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
@@ -192,8 +157,7 @@ async function main(): Promise<void> {
         for (let run = 1; run <= opts.runs; run++) {
           if (scenario.requiresDb)
             resetFixtureLogs(FIXTURE)
-          const finishCpu = await measureCpu(booted.pid)
-          const result = await driver.run({
+          const { result, cpuPercent } = await measureLoad(driver, {
             url: `http://127.0.0.1:${PORT}${scenario.path}`,
             method: scenario.method,
             body: scenario.body,
@@ -201,8 +165,7 @@ async function main(): Promise<void> {
             connections: opts.connections,
             warmupSeconds: opts.warmupSeconds,
             durationSeconds: opts.durationSeconds,
-          })
-          const cpuPercent = await finishCpu()
+          }, booted.pid)
           if (cpuPercent != null) cpuReadings.push(cpuPercent)
 
           results.push(result)
