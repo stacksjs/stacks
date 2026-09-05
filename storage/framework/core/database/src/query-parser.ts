@@ -138,8 +138,8 @@ export function normalizeQuery(sql: string): string {
     normalizedSql = normalizedSql.replace(/\b\d+\b/g, '?')
 
     // Replace string literals with ?
-    normalizedSql = normalizedSql.replace(/'([^']|'')*'/g, '?')
-    normalizedSql = normalizedSql.replace(/"([^"]|"")*"/g, '?')
+    normalizedSql = normalizedSql.replace(/'[^']*(?:''[^']*)*'/g, '?')
+    normalizedSql = normalizedSql.replace(/"[^"]*(?:""[^"]*)*"/g, '?')
 
     // Replace boolean and NULL literals in one pass.
     normalizedSql = normalizedSql.replace(/\b(?:true|false|null)\b/gi, '?')

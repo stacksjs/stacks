@@ -3,6 +3,14 @@ import { normalizeQuery, parseQuery } from '../src/query-parser'
 
 describe('query normalization', () => {
   it.each([
+    ["SELECT 'it''s', \"a\"\"b\", '', \"\"", 'SELECT ?, ?, ?, ?'],
+    ["SELECT 'unterminated", "SELECT 'unterminated"],
+    ['SELECT "unterminated', 'SELECT "unterminated'],
+    ["SELECT 'a''b", "SELECT ?'b"],
+    ['SELECT "a""b', 'SELECT ?"b'],
+    ["SELECT 'a\"b', \"c'd\"", 'SELECT ?, ?'],
+    ["SELECT '漢\né', \"ü\n字\"", 'SELECT ?, ?'],
+    [`SELECT '${'abcdefghijklmnop'.repeat(128)}', "${'q'.repeat(256)}"`, 'SELECT ?, ?'],
     ['SELECT true, FALSE, nUlL, TrUe, False, NULL', 'SELECT ?, ?, ?, ?, ?, ?'],
     ['SELECT truefalse, null_true, false9, 9null, is_true, nullish', 'SELECT truefalse, null_true, false9, 9null, is_true, nullish'],
     ['SELECT TRUE.false/null, (false), NULL::boolean', 'SELECT ?.?/?, (?), ?::boolean'],
