@@ -240,8 +240,32 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
    * failing to refresh a declaration is not a reason to fail the whole command.
    */
   try {
-    const { generateServerAutoImportTypes } = await import('@stacksjs/server')
-    await generateServerAutoImportTypes()
+    /*
+     * Generate canonically: every framework feature on, every optional model
+     * module scanned, regardless of which config files this project carries.
+     *
+     * These declarations get committed, so they need one answer rather than
+     * one per project. Gating them on `existsSync('config/commerce.ts')` meant
+     * two developers with different features scaffolded produced different
+     * files and fought over them, and no freshness check could tell that apart
+     * from staleness (stacksjs/stacks#2408).
+     *
+     * Scoped to this call and restored afterwards - the flag is read by
+     * `feature()` and by the optional-module scan, and leaving it set would
+     * change what the rest of the command sees.
+     */
+    const previous = process.env.STACKS_CANONICAL_FEATURES
+    process.env.STACKS_CANONICAL_FEATURES = '1'
+    try {
+      const { generateServerAutoImportTypes } = await import('@stacksjs/server')
+      await generateServerAutoImportTypes()
+    }
+    finally {
+      if (previous === undefined)
+        delete process.env.STACKS_CANONICAL_FEATURES
+      else
+        process.env.STACKS_CANONICAL_FEATURES = previous
+    }
   }
   catch (error) {
     log.debug('[generate:types] Could not refresh server auto-import declarations', { error })

@@ -341,6 +341,15 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:artifacts:check
 
+      # The declarations half of #2056, which #2408 could not close while
+      # generation was config-driven: a developer with every feature scaffolded
+      # produced one file and CI produced another, so a diff meant nothing.
+      # The script sets STACKS_CANONICAL_FEATURES, which makes the output a
+      # function of the source tree - so a diff here means stale.
+      - name: declarations:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run declarations:check
+
       - name: docs:links:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:links:check

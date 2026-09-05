@@ -71,6 +71,7 @@
     "docs:buddy": "./buddy docs:buddy",
     "docs:buddy:check": "./buddy docs:buddy:check",
     "docs:artifacts": "./buddy docs:artifacts",
+    "declarations:check": "bun .github/scripts/check-declarations-fresh.ts",
     "docs:artifacts:check": "./buddy docs:artifacts:check",
     "docs:links": "./buddy docs:links",
     "docs:links:check": "./buddy docs:links:check",

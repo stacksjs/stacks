@@ -157,6 +157,7 @@ declare module '@stacksjs/database' {
       color: string
       position: number
       archived: number
+      team_id: number
     }
     campaign_sends: {
       // columns
@@ -842,6 +843,7 @@ declare module '@stacksjs/database' {
       description: string
       expiry_date: string
       is_used: number
+      customer_id: number
     }
     loyalty_rewards: {
       // columns
@@ -1123,6 +1125,7 @@ declare module '@stacksjs/database' {
       level: string
       status: "pending" | "confirmed" | "cancelled"
       auction_id: number
+      customer_id: number
     }
     posts: {
       // columns
