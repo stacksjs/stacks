@@ -2903,10 +2903,21 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
     // alongside the JSON body — HATEOAS for REST clients + crawlers
     // who'd otherwise have to dig through the body to find next/prev.
     const linkHeader = buildPaginatorLinkHeader(result)
-    if (linkHeader) {
-      return Response.json(result, { headers: { Link: linkHeader } })
+    const encoding = req.headers.get('accept-encoding')
+    if (!encoding || encoding === 'identity')
+      return linkHeader ? Response.json(result, { headers: { Link: linkHeader } }) : Response.json(result)
+
+    // Give compression the byte length without making it consume and rebuild
+    // the response stream just to check its threshold. Count UTF-8 bytes, not
+    // JavaScript characters; a custom toJSON may also produce an empty body.
+    const body = JSON.stringify(result) ?? ''
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json;charset=utf-8',
+      'Content-Length': String(Buffer.byteLength(body)),
     }
-    return Response.json(result)
+    if (linkHeader)
+      headers.Link = linkHeader
+    return new Response(body, { headers })
   }
 
   const forceJson = req._forceJson === true

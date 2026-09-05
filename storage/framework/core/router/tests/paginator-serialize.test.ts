@@ -122,14 +122,16 @@ describe('formatResult sets Link header on paginator returns', () => {
     }
     const router = createStacksRouter()
     router.get('/items', () => paginator)
-    const response = await router.handleRequest(new Request('http://localhost/items', {
-      headers: { accept: 'text/html', 'sec-fetch-dest': 'document' },
-    }))
+    for (const encoding of ['identity', 'gzip']) {
+      const response = await router.handleRequest(new Request('http://localhost/items', {
+        headers: { 'accept-encoding': encoding, accept: 'text/html', 'sec-fetch-dest': 'document' },
+      }))
 
-    expect(response.headers.get('content-type')).toContain('application/json')
-    expect(response.headers.get('Link')).toBe('</items?page=2>; rel="next", </items?page=1>; rel="first", </items?page=3>; rel="last"')
-    const body = (await response.json()) as Paginator<{ id: number }>
-    expect(body.data).toHaveLength(2)
-    expect(body.total).toBe(5)
+      expect(response.headers.get('content-type')).toContain('application/json')
+      expect(response.headers.get('Link')).toBe('</items?page=2>; rel="next", </items?page=1>; rel="first", </items?page=3>; rel="last"')
+      const body = (await response.json()) as Paginator<{ id: number }>
+      expect(body.data).toHaveLength(2)
+      expect(body.total).toBe(5)
+    }
   })
 })
