@@ -12,15 +12,12 @@
 //
 // The property that matters most is the negative one: a probe must never reach
 // handle(). A validate-only mode that still registers the user is worse than no
-// validate-only mode at all — and that one is asserted structurally, because
-// driving a real route needs a booted app, a database and an auth stack that
-// this package's tests do not have.
+// validate-only mode at all. The route tests below assert that no lifecycle
+// hook runs for a probe, even when the action has no validation rules.
 
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { schema } from '@stacksjs/validation'
-import { precognitionRequest, precognitionSuccess, validateActionInput } from '../src/stacks-router'
+import { createStacksRouter, precognitionRequest, precognitionSuccess, validateActionInput } from '../src/stacks-router'
 
 /** Minimal stand-in for the shape `precognitionRequest` reads. */
 function request(url: string, headers: Record<string, string> = {}): any {
@@ -59,10 +56,10 @@ describe('recognising a precognition request (#2226)', () => {
     expect(precognitionRequest(request('http://localhost/register?_validate=0'))).toBeNull()
   })
 
-  it('survives a malformed url instead of throwing', () => {
+  it.each(['/register', '/register?_validate=1'])('survives malformed url %s instead of throwing', (url) => {
     // `new URL` throws on a relative url, and a throw here would take down
     // every request rather than just this check.
-    expect(precognitionRequest({ url: '/register', headers: new Headers() } as any)).toBeNull()
+    expect(precognitionRequest({ url, headers: new Headers() } as any)).toBeNull()
   })
 })
 
@@ -174,22 +171,38 @@ describe('narrowed validation runs the real rules (#2226)', () => {
 })
 
 describe('a precognition request never reaches the handler (#2226)', () => {
-  const source = readFileSync(join(import.meta.dir, '../src/stacks-router.ts'), 'utf8')
+  it.each([
+    { query: '', headers: { Precognition: 'true' }, probe: true },
+    { query: '?_validate=1', headers: {}, probe: true },
+    { query: '?%5Fvalidate=%31', headers: {}, probe: true },
+    { query: '?_validate=0&_validate=1', headers: {}, probe: false },
+    { query: '?_validate=0', headers: { Precognition: 'true' }, probe: true },
+    { query: '#?_validate=1', headers: {}, probe: false },
+    { query: '', headers: {}, probe: false },
+  ])('dispatches the expected lifecycle for %j', async ({ query, headers, probe }) => {
+    for (const withRules of [true, false]) {
+      const calls: string[] = []
+      const router = createStacksRouter()
+      router.post('/precognition-dispatch', {
+        skipCsrf: true,
+        validations: withRules ? { name: { rule: schema.string().required() } } : undefined,
+        authorize() { calls.push('authorize'); return true },
+        before() { calls.push('before') },
+        handle() { calls.push('handle'); return { ok: true } },
+      })
 
-  it('returns before authorize, before and handle', () => {
-    const at = (needle: string): number => source.indexOf(needle)
-    const precognition = at('const precognition = precognitionRequest(req)')
+      const response = await router.handleRequest(new Request(`http://localhost/precognition-dispatch${query}`, {
+        method: 'POST',
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ name: 'test' }),
+      }))
 
-    expect(precognition).toBeGreaterThan(-1)
-    expect(precognition).toBeLessThan(at('typeof action.authorize === \'function\''))
-    expect(precognition).toBeLessThan(at('typeof action.before === \'function\''))
-    expect(precognition).toBeLessThan(at('await action.handle(req)'))
-  })
-
-  it('returns early even when the action declares no validations', () => {
-    // Otherwise a probe at an action with no rules falls through and runs it —
-    // the probe becomes the side effect, which is the exact failure this is
-    // meant to prevent.
-    expect(source).toContain('if (!action.validations)')
+      expect(response.status).toBe(probe ? 204 : 200)
+      expect(calls).toEqual(probe ? [] : ['authorize', 'before', 'handle'])
+      if (probe)
+        expect(response.headers.get('Precognition-Success')).toBe('true')
+      else
+        expect(await response.json()).toEqual({ ok: true })
+    }
   })
 })

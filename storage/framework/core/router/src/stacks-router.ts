@@ -2297,7 +2297,10 @@ export function precognitionRequest(req: EnhancedRequest): { only: string[] } | 
 
   let viaQuery = false
   try {
-    viaQuery = new URL(req.url).searchParams.get('_validate') === '1'
+    // Ordinary action requests have no query to inspect. A true header also
+    // settles the decision without parsing the URL again.
+    if (!viaHeader && req.url.includes('?'))
+      viaQuery = new URL(req.url).searchParams.get('_validate') === '1'
   }
   catch {
     viaQuery = false
