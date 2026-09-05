@@ -1,6 +1,7 @@
 import type { UnsafeRowsResult } from './utils'
 import { sqlDateTime } from './sql-helpers'
 import { memoryUsage } from 'node:process'
+import { AsyncLocalStorage } from 'node:async_hooks'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { parseQuery } from './query-parser'
@@ -65,15 +66,16 @@ interface QueryLogRecord {
   optimization_suggestions?: string
 }
 
-// Re-entrancy guard to prevent infinite recursion (logQuery → storeQueryLog → INSERT → logQuery)
-let isLogging = false
+// Only suppress queries descended from a log write. A process-wide flag
+// drops unrelated requests while an asynchronous INSERT is still pending.
+const queryLogContext = new AsyncLocalStorage<boolean>()
 
 /**
  * Process an executed query and store it in the database
  */
 export async function logQuery(event: LogEvent): Promise<void> {
   // Prevent infinite recursion: skip logging our own query_logs INSERT
-  if (isLogging) return
+  if (queryLogContext.getStore()) return
 
   try {
     // Extract basic information from the event
@@ -110,14 +112,9 @@ export async function logQuery(event: LogEvent): Promise<void> {
       await enhanceWithQueryAnalysis(logRecord)
     }
 
-    // Store the query log in the database (with re-entrancy guard)
-    isLogging = true
-    try {
-      await storeQueryLog(logRecord)
-    }
-    finally {
-      isLogging = false
-    }
+    // Deferred query hooks inherit this context, so the INSERT cannot log
+    // itself while other requests remain free to record their own queries.
+    await queryLogContext.run(true, () => storeQueryLog(logRecord))
 
     // Log slow or failed queries to the application log
     if (status !== 'completed') {

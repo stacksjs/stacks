@@ -85,6 +85,12 @@ cleared before each repetition, outside warm-up and measurement, while the
 seeded read data stays unchanged. Results from the earlier fixture without
 `query_logs` measured failed logging writes and are not comparable.
 
+A former process-wide recursion guard could also skip legitimate queries while a
+log write was pending. Logging now suppresses only queries descended from its
+own write, with warm sequential and concurrent persistence checks. Database
+results from before that correction should be rerun because they may include
+less logging work.
+
 ## Profiles
 
 Stacks appears three times on purpose. The gap between the first and the third
