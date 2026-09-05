@@ -194,7 +194,7 @@ async function measure(
   requestRate: number,
 ): Promise<
   | { skipped: string }
-  | { measurement: Omit<MemoryMeasurement, 'targetId' | 'run'>, samples: MemorySample[], load: LoadResult }
+  | { measurement: Omit<MemoryMeasurement, 'targetId' | 'run' | 'requestRate'>, samples: MemorySample[], load: LoadResult }
 > {
   const booted = await boot(target, Boolean(scenario.requiresDb), scenario)
   if ('skipped' in booted) return booted
