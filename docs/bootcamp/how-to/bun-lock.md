@@ -1,6 +1,6 @@
 ---
 title: Bun Lockfile Management
-description: "This guide covers managing Bun's lockfile () in your Stacks application, including best practices for version control, troubleshooting, and team collaborat..."
+description: "This guide covers managing Bun's lockfile (bun.lock) in your Stacks application, including best practices for version control, troubleshooting, and team collaboration."
 ---
 # Bun Lockfile Management
 

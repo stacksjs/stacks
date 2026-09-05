@@ -1,6 +1,6 @@
 ---
 title: Query Builder
-description: "is the low-level database query interface. It re-exports ; most application code should use models and reach for the query builder when a query does not be..."
+description: "@stacksjs/query-builder is the low-level database query interface. It re-exports bun-query-builder; most application code should use models and reach for the query builder when a query does not belong on a model."
 ---
 # Query Builder
 
