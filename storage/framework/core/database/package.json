@@ -73,7 +73,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
-    "bun-query-builder": "^0.2.65",
+    "bun-query-builder": "^0.2.66",
     "dynamodb-tooling": "^0.3.2"
   },
   "devDependencies": {
