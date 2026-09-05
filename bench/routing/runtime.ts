@@ -55,6 +55,15 @@ export async function boot(target: Target, withDb: boolean, scenario?: Scenario)
     env: serverEnvironment(target, withDb, scenario?.id),
   })
 
+  // A scenario-specific server may expose only its validated POST route.
+  const url = `http://127.0.0.1:${PORT}${scenario?.path ?? '/bench/json'}`
+  const request: RequestInit | undefined = scenario
+    ? {
+        method: scenario.method,
+        headers: headersFor(target, scenario),
+        ...(scenario.body != null ? { body: scenario.body } : {}),
+      }
+    : undefined
   const deadline = Date.now() + 60_000
   for (;;) {
     if (proc.exitCode != null) {
@@ -65,7 +74,7 @@ export async function boot(target: Target, withDb: boolean, scenario?: Scenario)
       throw new Error(`${target.id} server exited ${proc.exitCode}:\n${err}`)
     }
     try {
-      const res = await fetch(`http://127.0.0.1:${PORT}${scenario?.path ?? '/bench/json'}`)
+      const res = await fetch(url, request)
       if (res.ok) {
         await res.arrayBuffer()
         break

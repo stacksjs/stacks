@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { join } from 'node:path'
 import { BENCH_ROOT, serverCommand, serverEnvironment } from './runtime'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
@@ -57,4 +58,36 @@ describe('benchmark server isolation', () => {
       })
     }
   })
+})
+
+describe('benchmark server readiness', () => {
+  it.each(['post-validate', 'static-json', 'all'])('boots %s with its real request', async (scenario) => {
+    const reservation = Bun.serve({ port: 0, fetch: () => new Response() })
+    const port = reservation.port
+    await reservation.stop(true)
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${join(import.meta.dir, 'bunfig.toml')}`,
+      join(import.meta.dir, 'fixtures/readiness.ts'),
+      'check',
+      scenario,
+    ], {
+      env: { ...process.env, BENCH_PORT: String(port) },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain('benchmark-readiness-ok')
+    }
+    finally {
+      if (child.exitCode == null) child.kill()
+      await child.exited
+    }
+  }, 15_000)
 })
