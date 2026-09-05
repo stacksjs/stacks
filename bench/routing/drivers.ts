@@ -172,15 +172,12 @@ const autocannon: Driver = {
   supportsFixedRate: false,
   isAvailable: () => which('autocannon'),
   async run(req) {
-    const args = ['autocannon', '-d', String(req.durationSeconds), '-w', String(req.warmupSeconds), '-c', String(req.connections), '-j']
-    if (req.method !== 'GET') {
-      args.push('-m', req.method)
-      if (req.body != null) args.push('-b', req.body)
-    }
-    for (const [name, value] of Object.entries(req.headers))
-      args.push('-H', `${name}: ${value}`)
-    args.push(req.url)
-    const raw = await capture(args)
+    const args = ['autocannon', '-c', String(req.connections), '-j', ...methodArgs(req, '-m', '-b', '-H')]
+    // Keep warmup separate, as in the native adapters. Autocannon's -w
+    // selects worker threads, not a discarded warmup duration.
+    if (req.warmupSeconds > 0)
+      await capture([...args, '-d', String(req.warmupSeconds), req.url])
+    const raw = await capture([...args, '-d', String(req.durationSeconds), req.url])
     const json = JSON.parse(raw)
     return {
       rpsMean: json.requests?.average ?? 0,
