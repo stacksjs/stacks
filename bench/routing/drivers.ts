@@ -173,11 +173,14 @@ const autocannon: Driver = {
   isAvailable: () => which('autocannon'),
   async run(req) {
     const args = ['autocannon', '-c', String(req.connections), '-j', ...methodArgs(req, '-m', '-b', '-H')]
+    // The target URL is explicit. Autocannon treats PORT as a URL base, so an
+    // inherited application setting must not alter or invalidate that URL.
+    const env = { PORT: '' }
     // Keep warmup separate, as in the native adapters. Autocannon's -w
     // selects worker threads, not a discarded warmup duration.
     if (req.warmupSeconds > 0)
-      await capture([...args, '-d', String(req.warmupSeconds), req.url])
-    const raw = await capture([...args, '-d', String(req.durationSeconds), req.url])
+      await capture([...args, '-d', String(req.warmupSeconds), req.url], env)
+    const raw = await capture([...args, '-d', String(req.durationSeconds), req.url], env)
     const json = JSON.parse(raw)
     return {
       rpsMean: json.requests?.average ?? 0,
