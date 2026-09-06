@@ -72,6 +72,37 @@ interface MailStorageSecret {
 }
 
 const mailStorageRemote = '/usr/local/sbin/mail-storage-external'
+const mailStorageCredential = '/etc/credstore.encrypted/mail-storage-key.cred'
+const mailStorageMachineUnit = '/etc/systemd/system/mail-storage.service.machine-bound-backup'
+
+/**
+ * Install the externally escrowed key as a systemd machine-bound credential.
+ *
+ * The raw key reaches systemd-creds only through stdin. The host never puts it
+ * in argv, an environment variable, or a plaintext file. Keeping this command
+ * separate also makes the security properties testable without a live server.
+ */
+export function machineBindMailStorageCommand(): string {
+  return [
+    'set -eu',
+    `test -f ${mailStorageMachineUnit}`,
+    'command -v systemd-creds >/dev/null',
+    `install -d -m 0700 ${mailStorageCredential.slice(0, mailStorageCredential.lastIndexOf('/'))}`,
+    `credential_tmp=$(mktemp ${mailStorageCredential}.XXXXXX)`,
+    'cleanup() { rm -f "$credential_tmp"; }',
+    'trap cleanup EXIT HUP INT TERM',
+    'chmod 0600 "$credential_tmp"',
+    'systemd-creds encrypt --name=mail-storage-key - "$credential_tmp" >/dev/null',
+    'test "$(systemd-creds decrypt --name=mail-storage-key "$credential_tmp" - | wc -c)" -ge 32',
+    `mv "$credential_tmp" ${mailStorageCredential}`,
+    'trap - EXIT HUP INT TERM',
+    `${mailStorageRemote} rollback-machine`,
+    'systemctl is-enabled --quiet mail-storage.service',
+    'systemctl is-active --quiet mail-storage.service',
+    'mountpoint -q /var/lib/mail-storage',
+    'systemctl is-active --quiet mail.service',
+  ].join('; ')
+}
 
 function loadMailStorageAws(options: MailStorageOptions): { profile: string, region: string } {
   const profile = options.profile || process.env.AWS_PROFILE || 'default'
@@ -1029,6 +1060,32 @@ export function mailCommands(buddy: CLI): void {
       }
       catch (error) {
         console.error(`Failed to unlock mail storage: ${getErrorMessage(error)}`)
+        process.exit(ExitCode.FatalError)
+      }
+      finally {
+        key?.fill(0)
+      }
+    })
+
+  addMailStorageOptions(
+    buddy.command('mail:storage:machine-bind', 'Enable unattended reboot recovery with a machine-bound encrypted LUKS credential'),
+  )
+    .action(async (options: MailStorageOptions) => {
+      let key: Buffer | undefined
+      try {
+        const host = await mailStorageHost(options)
+        const secret = await getMailStorageSecret(options)
+        key = secret.key
+        const output = runMailStorageSsh(host, machineBindMailStorageCommand(), key).toString('utf8').trim()
+        if (output)
+          console.log(output)
+        const status = runMailStorageSsh(host, `${mailStorageRemote} status`).toString('utf8').trim()
+        console.log(status)
+        console.log(`Recovery secret retained: ${secret.secretId}`)
+        process.exit(ExitCode.Success)
+      }
+      catch (error) {
+        console.error(`Failed to machine-bind mail storage: ${getErrorMessage(error)}`)
         process.exit(ExitCode.FatalError)
       }
       finally {

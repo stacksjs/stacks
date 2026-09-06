@@ -246,3 +246,21 @@ describe('the mail certificate step', () => {
     expect(executable).not.toMatch(/sed -i .*acme:renew/)
   })
 })
+
+describe('the mail health check', () => {
+  const src = fs.readFileSync(SOURCE, 'utf8')
+  const start = src.indexOf("cat > /usr/local/sbin/mail-health-check <<'EOF'")
+  const end = src.indexOf('\nEOF', start)
+  const healthCheck = src.slice(start, end)
+
+  it('fails when a restart leaves mail inactive', () => {
+    expect(healthCheck).toContain('if ! systemctl is-active --quiet mail; then')
+    expect(healthCheck).toContain('mail remained inactive after restart')
+    expect(healthCheck).toContain('return 1')
+  })
+
+  it('rechecks a missing listener after restarting mail', () => {
+    expect(healthCheck).toContain('required TCP port $port is still not listening after restart')
+    expect(healthCheck).toContain('exit 1')
+  })
+})

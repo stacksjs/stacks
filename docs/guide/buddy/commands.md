@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **318 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **319 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -42,7 +42,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `libs` | 2 |
 | `link` | 1 |
 | `lint` | 1 |
-| `mail` | 31 |
+| `mail` | 32 |
 | `make` | 18 |
 | `marketing` | 2 |
 | `migrate` | 6 |
@@ -2827,6 +2827,22 @@ Create and apply the customer-managed production mail KMS key
 Stop mail and lock external mail storage
 
 - Usage: `$ buddy mail:storage:lock`
+- Namespace: `mail`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--host` | Mail server hostname or IP | value, required | - |
+| `--secret` | AWS Secrets Manager secret ID | value, required | - |
+| `--region` | AWS region | value, required | `"us-east-1"` |
+| `--profile` | AWS credential profile | value, required | `"default"` |
+
+### `mail:storage:machine-bind`
+
+Enable unattended reboot recovery with a machine-bound encrypted LUKS credential
+
+- Usage: `$ buddy mail:storage:machine-bind`
 - Namespace: `mail`
 - Aliases: none
 - Arguments: none

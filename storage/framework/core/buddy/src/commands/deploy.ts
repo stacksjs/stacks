@@ -3868,13 +3868,30 @@ cat > /usr/local/sbin/mail-health-check <<'EOF'
 set -eu
 exec 9>/run/mail-health-check.lock
 flock -n 9 || exit 0
-systemctl is-active --quiet mail || { systemctl restart mail; exit 0; }
+restart_mail() {
+  reason="$1"
+  logger -t mail-health "$reason; restarting mail"
+  if ! systemctl restart mail; then
+    logger -t mail-health "mail restart failed"
+    return 1
+  fi
+  if ! systemctl is-active --quiet mail; then
+    logger -t mail-health "mail remained inactive after restart"
+    return 1
+  fi
+  sleep 2
+}
+if ! systemctl is-active --quiet mail; then
+  restart_mail "mail service is inactive"
+fi
 for port in 25 143 587 993; do
-  ss -H -ltn "sport = :$port" | grep -q . || {
-    logger -t mail-health "required TCP port $port is not listening; restarting mail"
-    systemctl restart mail
-    exit 0
-  }
+  if ! ss -H -ltn "sport = :$port" | grep -q .; then
+    restart_mail "required TCP port $port is not listening"
+    ss -H -ltn "sport = :$port" | grep -q . || {
+      logger -t mail-health "required TCP port $port is still not listening after restart"
+      exit 1
+    }
+  fi
 done
 EOF
 chmod 755 /usr/local/sbin/mail-health-check
