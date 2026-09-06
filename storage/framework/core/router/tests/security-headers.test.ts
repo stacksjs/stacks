@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import process from 'node:process'
-import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord, createJsonSecurityHeaders, createSecurityHeaders, secureJsonResponse, secureSerializedJsonResponse } from '../src/security-headers'
+import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord, createJsonSecurityHeaders, createSecurityHeaders, secureSerializedJsonResponse } from '../src/security-headers'
 
 // stacksjs/stacks#601 — HSTS + companion security headers on every response.
 
@@ -153,12 +153,11 @@ describe('applySecurityHeaders', () => {
   })
 
   test('keeps cached templates isolated from response header mutations', () => {
-    const native = secureJsonResponse({ ok: true })
-    native.headers.set('X-Frame-Options', 'DENY')
     const serialized = secureSerializedJsonResponse('{"ok":true}')
+    serialized.headers.set('X-Frame-Options', 'DENY')
     serialized.headers.delete('Content-Type')
 
-    expect(secureJsonResponse({ ok: true }).headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
+    expect(secureSerializedJsonResponse('{"ok":true}').headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
     expect(secureSerializedJsonResponse('{"ok":true}').headers.get('Content-Type')).toBe('application/json;charset=utf-8')
   })
 })

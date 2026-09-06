@@ -146,11 +146,6 @@ export function createJsonSecurityHeaders(): Headers {
   return new Headers(jsonSecurityHeadersTemplate())
 }
 
-/** Let the native response constructor clone the cached security template. */
-export function secureJsonResponse(result: unknown): Response {
-  return Response.json(result, { headers: securityHeadersTemplate() })
-}
-
 /** Create an already-serialized JSON response from the cached template. */
 export function secureSerializedJsonResponse(body: string): Response {
   return new Response(body, { headers: jsonSecurityHeadersTemplate() })

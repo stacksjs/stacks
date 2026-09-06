@@ -208,7 +208,7 @@ function resolveDefaultsPath(rel: string): string {
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
-import { applySecurityHeaders, createJsonSecurityHeaders, secureJsonResponse, secureSerializedJsonResponse } from './security-headers'
+import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
 
@@ -3056,27 +3056,12 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
 
 /** Serialize JSON once and make its size available to compression. */
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
-  const encoding = req.headers.get('accept-encoding')
-  const usesNativeJson = !encoding || encoding === 'identity'
   const canPreapplyMetadata = !req._responseHeaders
 
-  if (usesNativeJson) {
-    const response = canPreapplyMetadata
-      ? secureJsonResponse(result)
-      : Response.json(result)
-    if (linkHeader)
-      response.headers.set('Link', linkHeader)
-    if (canPreapplyMetadata) {
-      if (req._requestId)
-        response.headers.set('X-Request-ID', req._requestId)
-      ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
-    }
-    return response
-  }
-
-  // Give compression the byte length without making it consume and rebuild
-  // the response stream just to check its threshold. Count UTF-8 bytes, not
-  // JavaScript characters; a custom toJSON may also produce an empty body.
+  // Serialize once and publish the exact byte length so the server and the
+  // compression wrapper do not have to consume and rebuild the response
+  // stream. Count UTF-8 bytes, not JavaScript characters; a custom toJSON may
+  // also produce an empty body.
   const body = JSON.stringify(result) ?? ''
   const response = canPreapplyMetadata
     ? secureSerializedJsonResponse(body)
