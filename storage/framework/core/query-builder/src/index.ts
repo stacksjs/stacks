@@ -40,6 +40,11 @@ type QueryBuilderConfig = Parameters<typeof setBunQueryBuilderConfig>[0] & {
 }
 
 const persistentQueryHooks = new Set<QueryHooks>()
+let configuredQueryHooks: QueryHooks | undefined
+
+function hasConfiguredQueryHooks(hooks?: QueryHooks): boolean {
+  return Boolean(hooks && Object.values(hooks).some(value => value !== undefined))
+}
 
 function callQueryHooks<K extends 'onQueryStart' | 'onQueryEnd' | 'onQueryError' | 'onSlowQuery'>(
   hook: K,
@@ -77,15 +82,30 @@ function withPersistentQueryHooks(configuredHooks?: QueryHooks): QueryHooks {
   }
 }
 
+function applyQueryHooks(): void {
+  const hooks = persistentQueryHooks.size > 0 || hasConfiguredQueryHooks(configuredQueryHooks)
+    ? withPersistentQueryHooks(configuredQueryHooks)
+    : undefined
+  setBunQueryBuilderConfig({ hooks })
+}
+
 export function registerPersistentQueryHooks(hooks: QueryHooks): () => void {
   persistentQueryHooks.add(hooks)
-  return () => persistentQueryHooks.delete(hooks)
+  applyQueryHooks()
+  return () => {
+    if (persistentQueryHooks.delete(hooks))
+      applyQueryHooks()
+  }
 }
 
 export function setConfig(config: QueryBuilderConfig): void {
+  if (Object.prototype.hasOwnProperty.call(config, 'hooks'))
+    configuredQueryHooks = config.hooks
   setBunQueryBuilderConfig({
     ...config,
-    hooks: withPersistentQueryHooks(config.hooks),
+    hooks: persistentQueryHooks.size > 0 || hasConfiguredQueryHooks(configuredQueryHooks)
+      ? withPersistentQueryHooks(configuredQueryHooks)
+      : undefined,
   })
 }
 

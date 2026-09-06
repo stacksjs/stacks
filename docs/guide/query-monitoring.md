@@ -72,8 +72,9 @@ DB_QUERY_LOGGING_SUGGESTIONS=true
 Persistent query history is disabled by default in production because every
 application query otherwise creates an additional database write. Set
 `DB_QUERY_LOGGING_ENABLED=true` when durable history is worth that cost.
-Request-scoped query tracking for error diagnostics remains available when
-persistence is disabled.
+Development retains request-scoped query tracking for error diagnostics when
+persistence is disabled. Production skips the query-hook path entirely unless
+durable history is explicitly enabled.
 
 ## Dashboard Interface
 

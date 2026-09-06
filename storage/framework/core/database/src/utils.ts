@@ -55,6 +55,7 @@ const postgresDefaults = getConnectionDefaults('postgres', envVars)
 
 let appEnv: string = envVars.APP_ENV || 'local'
 let dbDriver: string = envVars.DB_CONNECTION || 'sqlite'
+let queryLoggingEnabled = envVars.DB_QUERY_LOGGING_ENABLED ?? !isProductionEnvironment(appEnv)
 let dbConfig: DbConfig = {
   connections: {
     sqlite: { database: sqliteDefaults.database, prefix: '' },
@@ -155,6 +156,7 @@ export interface DbConfigSource {
      */
     connections?: Partial<DbConfig['connections']>
     reads?: DbConfig['reads']
+    queryLogging?: { enabled?: boolean }
   }
 }
 
@@ -170,6 +172,12 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
   // Narrowing the shapes above is what makes the difference visible at all.
   if (config?.database?.connections)
     dbConfig = config.database as DbConfig
+
+  queryLoggingEnabled = config?.database?.queryLogging?.enabled
+    ?? envVars.DB_QUERY_LOGGING_ENABLED
+    ?? !isProductionEnvironment(appEnv)
+
+  syncDatabaseQueryHooks()
 
   // Update bun-query-builder config
   updateQueryBuilderConfig()
@@ -191,6 +199,10 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
 // Simple functions with defensive defaults
 function getEnv(): string {
   return appEnv
+}
+
+function isProductionEnvironment(value: string): boolean {
+  return value === 'production' || value === 'prod'
 }
 
 function getDriver(): string {
@@ -372,7 +384,20 @@ function forwardDatabaseQuery(event: DatabaseQueryLogEvent): void {
     .catch(() => {})
 }
 
-registerPersistentQueryHooks(createDatabaseQueryHooks(forwardDatabaseQuery))
+let unregisterDatabaseQueryHooks: (() => void) | undefined
+
+function syncDatabaseQueryHooks(): void {
+  const shouldInstall = !isProductionEnvironment(appEnv) || queryLoggingEnabled
+  if (shouldInstall && !unregisterDatabaseQueryHooks) {
+    unregisterDatabaseQueryHooks = registerPersistentQueryHooks(createDatabaseQueryHooks(forwardDatabaseQuery))
+  }
+  else if (!shouldInstall && unregisterDatabaseQueryHooks) {
+    unregisterDatabaseQueryHooks()
+    unregisterDatabaseQueryHooks = undefined
+  }
+}
+
+syncDatabaseQueryHooks()
 
 /**
  * The active connection's pool block, if it declared one.

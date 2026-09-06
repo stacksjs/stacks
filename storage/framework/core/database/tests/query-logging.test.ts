@@ -4,6 +4,22 @@ import { isExcludedQuery, logQuery, setQueryTracker } from '../src/query-logger'
 import { createDatabaseQueryHooks } from '../src/utils'
 
 describe('database query logging', () => {
+  it('installs query hooks only for profiles that consume diagnostics', async () => {
+    const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-hook-profile.ts')], {
+      cwd: join(import.meta.dir, '..'),
+      env: { ...process.env, APP_ENV: 'production', DB_QUERY_LOGGING_ENABLED: 'false' },
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [exitCode, stdout, stderr] = await Promise.all([
+      child.exited,
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+    ])
+    expect(exitCode, stderr).toBe(0)
+    expect(stdout).toContain('query-hook-profile-ok')
+  })
+
   it('keeps persisted traces accurate and redacted across repeated and changing callers', async () => {
     const child = Bun.spawn([process.execPath, join(import.meta.dir, 'fixtures/query-trace.ts')], {
       cwd: join(import.meta.dir, '..'),

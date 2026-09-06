@@ -92,8 +92,9 @@ cheaper than a compiled rule set.
 
 The fixture includes `query_logs` and its indexes, but persistent query history
 is disabled by default in production. This keeps the stock database scenario
-focused on the request and read path shared by every target. Request-scoped
-query tracking remains active for Stacks error diagnostics.
+focused on the request and read path shared by every target. It also lets the
+query builder use its direct no-hooks execution path. Development keeps
+request-scoped query tracking for Stacks error diagnostics.
 
 Set `DB_QUERY_LOGGING_ENABLED=true` to include durable query history in the
 workload. The bare SQLite targets do not provide an equivalent logger, so treat
