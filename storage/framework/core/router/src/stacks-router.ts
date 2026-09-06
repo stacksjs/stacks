@@ -4630,7 +4630,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
   const original = router.handleRequest.bind(router)
 
   router.handleRequest = async (request: Request): Promise<Response> => {
-    const method = request.method?.toUpperCase?.() ?? 'GET'
+    const method = request.method
     const safe = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
 
     /*
