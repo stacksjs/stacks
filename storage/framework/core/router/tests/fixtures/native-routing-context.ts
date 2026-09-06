@@ -30,6 +30,7 @@ router.get('/__native_routing_write', async () => {
   return { before, after: contextHasWritten() }
 })
 router.get('/__native_routing_read', () => ({ wrote: contextHasWritten() }))
+router.get('/__native_compression', () => ({ payload: 'x'.repeat(2048) }))
 
 const server = await router.serve({ port: 0, nativeRoutes: true })
 try {
@@ -39,6 +40,9 @@ try {
   const isolated = await reader.json()
   release.resolve()
   const written = await (await writer).json()
+  const compressed = await fetch(`http://localhost:${server.port}/__native_compression`, {
+    headers: { 'accept-encoding': 'gzip' },
+  })
 
   if (JSON.stringify(written) !== JSON.stringify({ before: false, after: true }))
     throw new Error(`Native writer lost its routing context: ${JSON.stringify(written)}`)
@@ -46,6 +50,10 @@ try {
     throw new Error(`Native request contexts leaked: ${JSON.stringify(isolated)}`)
   if (contextHasWritten())
     throw new Error('Native routing context leaked outside the request')
+  if (!reader.headers.get('vary')?.includes('Accept-Encoding'))
+    throw new Error('Native response did not preserve compression variance')
+  if (compressed.headers.get('content-encoding') !== 'gzip')
+    throw new Error('Native response did not preserve compression')
 
   console.log('native-routing-context-ok')
 }

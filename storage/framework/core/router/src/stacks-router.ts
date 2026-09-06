@@ -22,7 +22,7 @@ import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage/uploaded-file'
-import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
+import { applyRequestEnhancements, applyResponseCompression, Router } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
@@ -5099,9 +5099,15 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     if (!routes)
       return routes
 
+    const compression = (nativeRouter.config as unknown as {
+      compression?: Parameters<typeof applyResponseCompression>[2]
+    }).compression
     for (const methods of Object.values(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
-        methods[method] = request => runInRoutingContext(() => handler(request))
+        methods[method] = async (request) => {
+          const response = await runInRoutingContext(() => handler(request))
+          return await applyResponseCompression(response, request, compression)
+        }
       }
     }
     return routes
