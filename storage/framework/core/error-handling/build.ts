@@ -1,3 +1,6 @@
+import { existsSync } from 'node:fs'
+import { cp } from 'node:fs/promises'
+import { join } from 'node:path'
 import { dts } from 'bun-plugin-dtsx'
 import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
@@ -20,6 +23,23 @@ await transpilePackage({
     }),
   ],
 })
+
+/*
+ * Copy the error-page templates beside the code that reads them.
+ *
+ * `error-page-renderer.ts` resolves them relative to its own module:
+ *
+ *     const VIEWS_DIR = join(dirname(fileURLToPath(import.meta.url)), 'views/errors')
+ *
+ * In this repo that lands on `src/views/errors` and works. Installed, it lands
+ * on `dist/views/errors` - and `transpilePackage` only emits the `.ts` it
+ * compiles, so the published tarball carried 29 files and not one template.
+ * The dev error page could not render in any app that installs the framework,
+ * which is the one place it matters most.
+ */
+const viewsSource = join(import.meta.dir, 'src/views')
+if (existsSync(viewsSource))
+  await cp(viewsSource, join(import.meta.dir, 'dist/views'), { recursive: true })
 
 await outro({
   dir: import.meta.dir,
