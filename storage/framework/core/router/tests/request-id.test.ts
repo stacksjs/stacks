@@ -35,6 +35,7 @@ describe('a request', () => {
     expect(answer.headers.get('X-Request-ID')).toBeTruthy()
     // The same one the handler saw, or the header is useless for correlating.
     expect(answer.headers.get('X-Request-ID')).toBe(body.seen)
+    expect(answer.headers.get('X-Request-ID')).toMatch(/^[0-9a-f]{16}-[0-9a-z]+$/)
   })
 
   it('and a different one each time', async () => {

@@ -3669,7 +3669,7 @@ function fuseRequestEnhancements(router: Router): void {
       }
       Object.setPrototypeOf(enhanced, combined)
       if (!enhanced._requestId)
-        enhanced._requestId = incomingRequestId(enhanced) ?? crypto.randomUUID()
+        enhanced._requestId = incomingRequestId(enhanced) ?? generateRequestId()
       return enhanced
     }
 
@@ -3822,7 +3822,7 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
    * a stranger is log injection with extra steps.
    */
   if (!req._requestId)
-    req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
+    req._requestId = incomingRequestId(req) ?? generateRequestId()
 
   if ((req as unknown as Record<symbol, unknown>)[STACKS_REQUEST_ENHANCED] === true)
     return req
@@ -3875,6 +3875,16 @@ function incomingRequestId(req: EnhancedRequest): string | undefined {
   catch { /* a request with no readable headers is not worth failing over */ }
 
   return undefined
+}
+
+// A random process prefix plus a monotonic sequence is globally unique for
+// request-correlation purposes without asking the system RNG for every request.
+// JavaScript's safe integer range lasts for thousands of years at this
+// router's current throughput before a process could wrap it.
+const requestIdPrefix = crypto.randomUUID().replaceAll('-', '').slice(0, 16)
+let requestIdSequence = 0
+function generateRequestId(): string {
+  return `${requestIdPrefix}-${(++requestIdSequence).toString(36)}`
 }
 
 function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = ''): RouteHandlerFn {
