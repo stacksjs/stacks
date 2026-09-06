@@ -1620,6 +1620,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const directActionSkipsCsrf = isRouterAction(handler)
     && (handler.skipCsrf === true || handler.csrf === false)
   const handlerKey = typeof handler === 'string' ? handler : undefined
+  const synchronousInlineHandler = typeof handler === 'function'
+    && handler.constructor.name !== 'AsyncFunction'
 
   /*
    * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
@@ -1696,6 +1698,44 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // the same flag.
     if (forcesJsonByGroup) {
       ;req._forceJson = true
+    }
+
+    let preparedBaseResult: Response | Promise<Response>
+    let hasPreparedBaseResult = false
+    if (
+      synchronousInlineHandler
+      && !routeAcceptsCsrf
+      && routeMiddleware.length === 0
+      && !routeRateLimit?.config
+    ) {
+      preparedBaseResult = runWithRequest(enhancedReq, () => wrappedBase(enhancedReq))
+      hasPreparedBaseResult = true
+      if (
+        preparedBaseResult instanceof Response
+        && preparedBaseResult.status < 400
+        && (preparedBaseResult as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
+        && !enhancedReq._corsConfig
+        && enhancedReq._compress !== true
+        && enhancedReq._startNs == null
+        && !Array.isArray(enhancedReq._afterResponse)
+        && !enhancedReq._responseHeaders
+      ) {
+        if (routeSeedsCsrf && !csrfHandledByOuter) {
+          const mod = loadCsrfModule()
+          if (!(mod instanceof Promise) && mod) {
+            preparedBaseResult = mod.seedCsrfCookieIfMissing(
+              enhancedReq as unknown as Request,
+              preparedBaseResult,
+              (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
+              true,
+            )
+            return preparedBaseResult
+          }
+        }
+        else {
+          return preparedBaseResult
+        }
+      }
     }
 
     // Run the entire request handling within the request context
@@ -1984,7 +2024,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // `let` (not `const`) because the post-action CORS wrapper below may
       // replace it with a header-mutated copy when the original Response's
       // Headers are immutable.
-      const baseResult = wrappedBase(enhancedReq)
+      const baseResult = hasPreparedBaseResult ? preparedBaseResult! : wrappedBase(enhancedReq)
       let response = baseResult instanceof Response ? baseResult : await baseResult
 
       // CSRF cookie seeding — on safe-method responses (GET/HEAD/OPTIONS),
