@@ -2947,7 +2947,7 @@ function getRequestInput(
   if (req.jsonBody && typeof req.jsonBody === 'object') {
     input = mayNeedCoercion
       ? Object.assign(input, req.jsonBody)
-      : { ...req.jsonBody }
+      : req.jsonBody as Record<string, unknown>
   }
   else if (req.formBody && typeof req.formBody === 'object') {
     input = mayNeedCoercion
