@@ -1,4 +1,4 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto'
+import { timingSafeEqual } from 'node:crypto'
 import { HttpError } from '@stacksjs/error-handling'
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { Middleware } from '@stacksjs/router'
@@ -64,6 +64,7 @@ const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
 const TOKEN_BYTES = 32
 const TOKEN_HEX_LENGTH = TOKEN_BYTES * 2
+const TOKEN_RANDOM_BYTES = Buffer.allocUnsafe(TOKEN_BYTES)
 const TOKEN_ENCODER = new TextEncoder()
 const LEFT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
 const RIGHT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
@@ -78,7 +79,8 @@ const RIGHT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
  * ```
  */
 export function generateCsrfToken(): string {
-  return randomBytes(TOKEN_BYTES).toString('hex')
+  crypto.getRandomValues(TOKEN_RANDOM_BYTES)
+  return TOKEN_RANDOM_BYTES.toString('hex')
 }
 
 /**
