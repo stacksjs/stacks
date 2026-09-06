@@ -43,6 +43,29 @@ describe('routing context plumbing', () => {
     }
   }, 15_000)
 
+  test('native dispatch preserves isolated read-routing state', async () => {
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${import.meta.dir}/fixtures/cold-start.toml`,
+      `${import.meta.dir}/fixtures/native-routing-context.ts`,
+    ], { stdout: 'pipe', stderr: 'pipe' })
+    const timeout = setTimeout(() => child.kill(), 10_000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain('native-routing-context-ok')
+    }
+    finally {
+      clearTimeout(timeout)
+      child.kill()
+      await child.exited
+    }
+  }, 15_000)
+
   test('directly served SQLite requests skip unused read-routing state', async () => {
     const router = createStacksRouter()
     const writing = Promise.withResolvers<void>()

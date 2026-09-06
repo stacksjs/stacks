@@ -5026,11 +5026,45 @@ let routingContextRunner: ContextRunner | null = null
 
 const databaseContextWrappedRouters = new WeakSet<Router>()
 
+type NativeRouteHandler = (request: Request) => Promise<Response>
+type NativeRouteTable = Record<string, Record<string, NativeRouteHandler>>
+
+/**
+ * Bun's native route table bypasses `handleRequest`, which is normally the
+ * database routing boundary. Decorate the generated handlers instead of the
+ * shared dispatcher so fetch-routed requests keep exactly one context while
+ * native requests gain the one they were missing.
+ */
+function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext: ContextRunner): void {
+  const nativeRouter = router as Router & {
+    _nativeDatabaseContextWrapped?: boolean
+    _buildNativeRoutes?: () => NativeRouteTable | null
+  }
+  if (nativeRouter._nativeDatabaseContextWrapped || typeof nativeRouter._buildNativeRoutes !== 'function')
+    return
+
+  const buildNativeRoutes = nativeRouter._buildNativeRoutes.bind(nativeRouter)
+  nativeRouter._buildNativeRoutes = () => {
+    const routes = buildNativeRoutes()
+    if (!routes)
+      return routes
+
+    for (const methods of Object.values(routes)) {
+      for (const [method, handler] of Object.entries(methods)) {
+        methods[method] = request => runInRoutingContext(() => handler(request))
+      }
+    }
+    return routes
+  }
+  nativeRouter._nativeDatabaseContextWrapped = true
+}
+
 async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void> {
   if (databaseContextWrappedRouters.has(router)) return
   const runInRoutingContext = await getRoutingContextRunner()
   // Concurrent serve() calls can resolve the runner together.
   if (databaseContextWrappedRouters.has(router)) return
+  wrapNativeRoutesForDatabaseContext(router, runInRoutingContext)
   const original = router.handleRequest.bind(router)
   router.handleRequest = request => runInRoutingContext(() => original(request))
   databaseContextWrappedRouters.add(router)
