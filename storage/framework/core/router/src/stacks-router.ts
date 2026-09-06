@@ -1400,6 +1400,12 @@ const routeMiddlewareRegistry = new Map<string, string[]>()
  * must survive. Clearing the route table is a separate, coarser action.
  */
 export function clearRouteMiddlewareRegistry(): void {
+  // Request handlers retain their route's array so chainable middleware can
+  // be read without a Map lookup on every dispatch. Empty those arrays before
+  // dropping the registry entries so this test/reset seam still affects live
+  // handlers exactly as it did before.
+  for (const middleware of routeMiddlewareRegistry.values())
+    middleware.length = 0
   routeMiddlewareRegistry.clear()
 }
 
@@ -1540,6 +1546,7 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
 function createMiddlewareHandler(routeKey: string, handler: StacksHandler): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
+  const routeMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
 
   /*
    * Everything about this route that a request cannot change, decided here.
@@ -1668,7 +1675,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
       }
 
-      const userMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
+      const userMiddleware = routeMiddleware
 
       // Default-on CSRF: every state-mutating method gets `csrf` injected
       // at the front of the chain unless:
@@ -4011,10 +4018,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     if (!shadowed)
       registeredRouteKeys.add(routeKey)
 
-    // Pre-populate middleware registry with group middleware
-    if (!shadowed && currentGroupMiddleware.length > 0) {
+    // Create the route-owned array before its request handler so the handler
+    // can retain the reference. Chainable `.middleware()` calls mutate this
+    // same array after registration without requiring a Map lookup per request.
+    if (!shadowed)
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
-    }
 
     // Pre-populate apiResponse registry with the group flag so the request
     // handler can flip `req._forceJson` without re-walking the group stack.
