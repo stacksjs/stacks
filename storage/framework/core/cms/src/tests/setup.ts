@@ -1,12 +1,16 @@
 /**
  * CMS package test harness.
  *
- * This suite used to import `refreshDatabase` from
- * `@stacksjs/testing/database`, which (pre-existing breakage) never
- * worked from a package directory: `bun test` run from
- * storage/framework/core/cms doesn't load the repo-root `.env`, so the
- * driver fell back to mysql and the helper's dead kysely-era
- * `sql\`...\`.execute(db)` calls threw in every `beforeEach`.
+ * This suite does not use `refreshDatabase` from
+ * `@stacksjs/testing/database`, and still should not: for sqlite that
+ * helper only truncates. `setupDatabase` creates schema for mysql alone,
+ * so on a throwaway sqlite file it would truncate tables that were never
+ * created.
+ *
+ * It also cannot pin the connection early enough. `bun test` run from
+ * storage/framework/core/cms does not load the repo-root `.env`, so the
+ * driver falls back to mysql unless something sets it first - which is
+ * what this file does, before any framework module loads.
  *
  * Strategy (mirrors auth/tests/password-reset-revocation.test.ts): pin
  * env to a throwaway SQLite file BEFORE any framework module loads,

@@ -95,9 +95,7 @@ describe('package manifests', () => {
      * `dist/database.js` and `dist/dynamodb.js`, and its build had one
      * entrypoint. Both subpaths resolved to nothing, so
      * `import { refreshDatabase } from '@stacksjs/testing/database'` could
-     * never work from an installed package - recorded in
-     * `commerce/src/tests/setup.ts` as "pre-existing breakage" and worked
-     * around by not importing it.
+     * never work from an installed package.
      *
      * Pattern keys and targets (`./*`) are skipped: a wildcard is allowed to
      * match nothing today.

@@ -1,17 +1,19 @@
 /**
  * Commerce package test harness.
  *
- * These suites used to import `refreshDatabase` from
- * `@stacksjs/testing/database`, which (pre-existing breakage) never
- * worked from a package directory: `bun test` run from
- * storage/framework/core/commerce doesn't load the repo-root `.env`,
- * so the courier fell back to mysql and the helper's dead kysely-era
- * `sql\`...\`.execute(db)` calls threw in every `beforeEach`. Even
- * forced to sqlite, the migration pipeline resolves `database/` and
- * `database/migrations` off `process.cwd()` and the committed
- * migration corpus is both unrunnable on a virgin DB and drifted from
- * the models (missing `uuid` columns for the 28 `useUuid` commerce
- * models).
+ * These suites do not use `refreshDatabase` from
+ * `@stacksjs/testing/database`, and still should not: for sqlite that
+ * helper only truncates. `setupDatabase` creates schema for mysql alone,
+ * so on a throwaway sqlite file it would truncate tables that were never
+ * created.
+ *
+ * Two other reasons it cannot serve here. `bun test` run from
+ * storage/framework/core/commerce does not load the repo-root `.env`, so
+ * the courier falls back to mysql unless something pins it first. And the
+ * migration pipeline resolves `database/` and `database/migrations` off
+ * `process.cwd()`, where the committed corpus is both unrunnable on a
+ * virgin DB and drifted from the models (missing `uuid` columns for the
+ * 28 `useUuid` commerce models).
  *
  * Strategy (mirrors auth/tests/password-reset-revocation.test.ts): pin
  * env to a throwaway SQLite file BEFORE any framework module loads,
