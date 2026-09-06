@@ -32,13 +32,22 @@ beforeAll(async () => {
 
   // `.skipCsrf()` so the body contract can be tested without also asserting the
   // double-submit dance, which has its own tests.
-  route.post('/_hot/body', async (request: any) => ({
-    jsonBody: request.jsonBody,
-    json: await request.json(),
-    text: await request.text(),
-    raw: await request.rawBody(),
-    cloned: await request.clone().text(),
-  })).skipCsrf()
+  route.post('/_hot/body', async (request: any) => {
+    const bytes = await request.bytes()
+    const arrayBuffer = await request.arrayBuffer()
+    const blob = await request.blob()
+    return {
+      jsonBody: request.jsonBody,
+      json: await request.json(),
+      text: await request.text(),
+      raw: await request.rawBody(),
+      bytes: new TextDecoder().decode(bytes),
+      arrayBuffer: new TextDecoder().decode(arrayBuffer),
+      blob: await blob.text(),
+      blobType: blob.type,
+      cloned: await request.clone().text(),
+    }
+  }).skipCsrf()
 
   route.post('/_hot/empty', (request: any) => ({ jsonBody: request.jsonBody })).skipCsrf()
 
@@ -224,6 +233,10 @@ describe('a JSON body stays readable after the router has parsed it', () => {
     // Byte-identical, which is the whole point: a re-serialized body fails an
     // HMAC check that the original passes.
     expect(answer.raw).toBe(body)
+    expect(answer.bytes).toBe(body)
+    expect(answer.arrayBuffer).toBe(body)
+    expect(answer.blob).toBe(body)
+    expect(answer.blobType).toBe('application/json;charset=utf-8')
     expect(answer.cloned).toBe(body)
   })
 

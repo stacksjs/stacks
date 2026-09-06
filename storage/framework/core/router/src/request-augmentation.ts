@@ -125,6 +125,9 @@ export interface StacksRequestMarkers {
    */
   _bodyParsed?: boolean
 
+  /** Content type captured with `_rawBody` for replayed `blob()` reads. */
+  _rawBodyContentType?: string
+
   /**
    * Headers a middleware wants on the outgoing response.
    *

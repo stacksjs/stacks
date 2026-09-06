@@ -3235,12 +3235,60 @@ function flashInputFor(req: EnhancedRequest, keys?: string[]): void {
     : { ...input }
 }
 
+const nativeRequestText = Request.prototype.text
+const nativeRequestJson = Request.prototype.json
+const nativeRequestBytes = Request.prototype.bytes
+const nativeRequestArrayBuffer = Request.prototype.arrayBuffer
+const nativeRequestBlob = Request.prototype.blob
+const nativeRequestClone = Request.prototype.clone
+const requestBodyEncoder = new TextEncoder()
+
 // Shared implementations of the Laravel-style request helpers. Assigned onto
 // each request by a single `Object.assign` (reference copy) instead of
 // allocating ~25 fresh closures per request — all per-request state lives on
 // the request object, so each method reads it through `this`. `ThisType`
 // types `this` as the request inside every method.
 const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<EnhancedRequest> = {
+  text() {
+    return this._rawBody === undefined
+      ? nativeRequestText.call(this)
+      : Promise.resolve(this._rawBody)
+  },
+  json() {
+    if (this._rawBody === undefined)
+      return nativeRequestJson.call(this)
+    try {
+      return Promise.resolve(this._rawBody.length === 0 ? null : JSON.parse(this._rawBody))
+    }
+    catch (error) {
+      return Promise.reject(error)
+    }
+  },
+  bytes() {
+    return this._rawBody === undefined
+      ? nativeRequestBytes.call(this)
+      : Promise.resolve(requestBodyEncoder.encode(this._rawBody))
+  },
+  arrayBuffer() {
+    if (this._rawBody === undefined)
+      return nativeRequestArrayBuffer.call(this)
+    const bytes = requestBodyEncoder.encode(this._rawBody)
+    return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
+  },
+  blob() {
+    return this._rawBody === undefined
+      ? nativeRequestBlob.call(this)
+      : Promise.resolve(new Blob([this._rawBody], { type: this._rawBodyContentType }))
+  },
+  clone() {
+    if (this._rawBody === undefined)
+      return nativeRequestClone.call(this)
+    return new Request(this.url, {
+      method: this.method,
+      headers: this.headers,
+      body: this._rawBody,
+    })
+  },
   get(key: string, defaultValue?: any) {
     const input = getAllInputFor(this)
     const value = input[key]
@@ -3883,28 +3931,7 @@ async function readJsonBodyOnce(req: EnhancedRequest, contentType: string): Prom
   // webhook signature verification (Stripe/GitHub/Slack). A re-serialized
   // `jsonBody` is NOT byte-identical and fails HMAC checks.
   ;req._rawBody = raw
-
-  const target = req as unknown as Record<string, unknown>
-  target.text = () => Promise.resolve(raw)
-  target.json = () => {
-    try {
-      return Promise.resolve(raw.length === 0 ? null : JSON.parse(raw))
-    }
-    catch (err) {
-      return Promise.reject(err)
-    }
-  }
-  target.bytes = () => Promise.resolve(new TextEncoder().encode(raw))
-  target.arrayBuffer = () => {
-    const bytes = new TextEncoder().encode(raw)
-    return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
-  }
-  target.blob = () => Promise.resolve(new Blob([raw], { type: contentType }))
-  target.clone = () => new Request(req.url, {
-    method: req.method,
-    headers: req.headers,
-    body: raw,
-  })
+  ;req._rawBodyContentType = contentType
 
   return raw
 }
