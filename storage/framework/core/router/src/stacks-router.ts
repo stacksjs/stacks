@@ -391,20 +391,20 @@ export interface ChainableRoute {
   rateLimit: (max: number, window: 'second' | 'minute' | 'hour' | 'day' | number) => ChainableRoute
 }
 
-/**
- * Set of route keys (`METHOD:/path`) that have explicitly opted out of
- * CSRF enforcement via `.skipCsrf()`. Lookup happens once per request
- * during the middleware-handler entry point.
- */
-const csrfSkipRegistry = new Set<string>()
+const CSRF_DEFAULT = 0
+const CSRF_SKIPPED = 1
+const CSRF_REQUIRED = 2
+type RouteCsrfMode = typeof CSRF_DEFAULT | typeof CSRF_SKIPPED | typeof CSRF_REQUIRED
 
 /**
- * Set of route keys that have explicitly opted IN to CSRF via
- * `.requireCsrf()` — used to overrule an action-level `skipCsrf: true`
- * on a per-route basis (stacksjs/stacks#1870 R-9). Wins over both the
- * route's own skip set above and the action-level cache below.
+ * Mutable route-owned CSRF state. The handler and chainable route retain the
+ * same object, so `.skipCsrf()` and `.requireCsrf()` stay live without two
+ * global Set lookups on every protected request.
  */
-const csrfRequireRegistry = new Set<string>()
+interface RouteCsrfState {
+  mode: RouteCsrfMode
+}
+const routeCsrfRegistry = new Map<string, RouteCsrfState>()
 
 /**
  * Per-route rate-limit config registered via `.rateLimit(max, window)`
@@ -1550,6 +1550,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
   const routeMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
+  const routeCsrf = routeCsrfRegistry.get(routeKey)
   const routeRateLimit = routeRateLimitRegistry.get(routeKey)
 
   /*
@@ -1560,8 +1561,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
    * function is called - so all three were being re-derived per request from
    * data that was already fixed. The registries that the chainable API can
    * still mutate after registration (`.middleware()`, `.skipCsrf()`,
-   * `.rateLimit()`) are deliberately NOT hoisted; those are read per request
-   * because they can genuinely change.
+   * `.rateLimit()`) are retained as route-owned state so updates stay live.
    */
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
   const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
@@ -1683,7 +1683,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
       // Default-on CSRF: every state-mutating method gets `csrf` injected
       // at the front of the chain unless:
-      //   - the route author explicitly added `.skipCsrf()` (csrfSkipRegistry)
+      //   - the route author explicitly added `.skipCsrf()`
       //   - they already listed `csrf` themselves (don't double-run)
       //   - the resolved action exports `skipCsrf: true` / `csrf: false`
       //     (handled by stamping `_skipCsrf` on the request — the CSRF
@@ -1697,8 +1697,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       let shouldInjectCsrf = false
       if (routeAcceptsCsrf) {
         const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
-        const routeSkipped = csrfSkipRegistry.has(routeKey)
-        const routeRequired = csrfRequireRegistry.has(routeKey)
+        const routeCsrfMode = routeCsrf?.mode ?? CSRF_DEFAULT
+        const routeSkipped = routeCsrfMode === CSRF_SKIPPED
+        const routeRequired = routeCsrfMode === CSRF_REQUIRED
         // Check action-level cache: an action exporting `skipCsrf: true`
         // means we should NOT inject the middleware at all (rather than
         // injecting it and having it self-bail). Skipping at injection
@@ -2162,6 +2163,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
 
   // Extract the path from routeKey (format: "METHOD:/path")
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
+  const routeCsrf = routeCsrfRegistry.get(routeKey)
   const routeRateLimit = routeRateLimitRegistry.get(routeKey)
 
   const chain: ChainableRoute = {
@@ -2204,30 +2206,24 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
     },
 
     skipCsrf() {
-      // Mark this route key as exempt — the auto-CSRF gate in
-      // createMiddlewareHandler reads this set before adding `csrf`
-      // to the effective middleware chain.
-      csrfSkipRegistry.add(routeKey)
-      // Mutually exclusive with requireCsrf — last call wins so the
-      // chain stays predictable rather than silently combining state.
-      csrfRequireRegistry.delete(routeKey)
+      // Last call wins, so skip and require remain mutually exclusive.
+      if (routeCsrf)
+        routeCsrf.mode = CSRF_SKIPPED
       return chain
     },
 
     requireCsrf() {
-      // Mark this route key as forced-on — overrides both the route's
-      // own skip set and the action-level skip cache. See
-      // stacksjs/stacks#1870 R-9.
-      csrfRequireRegistry.add(routeKey)
-      csrfSkipRegistry.delete(routeKey)
+      // Forced-on mode overrides the action-level skip cache.
+      if (routeCsrf)
+        routeCsrf.mode = CSRF_REQUIRED
       return chain
     },
 
     rateLimit(max, window) {
       // Resolve at registration time so a typo (e.g. .rateLimit(5, 'minutes'))
       // throws on boot, not on the first 429. The check is read once per
-      // request in createMiddlewareHandler — registry lookup keeps the hot
-      // path branch-free for routes that didn't opt in.
+      // request in createMiddlewareHandler. The handler retains this state so
+      // routes that did not opt in avoid a registry lookup.
       if (!Number.isFinite(max) || max <= 0) {
         throw new Error(`[Router] .rateLimit(): max must be a positive number, got ${String(max)}`)
       }
@@ -4029,6 +4025,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // same array after registration without requiring a Map lookup per request.
     if (!shadowed)
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
+    if (!shadowed)
+      routeCsrfRegistry.set(routeKey, { mode: CSRF_DEFAULT })
     if (!shadowed)
       routeRateLimitRegistry.set(routeKey, {})
 
