@@ -89,6 +89,50 @@ describe('package manifests', () => {
     expect(missing.sort()).toEqual([])
   })
 
+  it('name no entry point that is never built', () => {
+    /*
+     * `@stacksjs/validation` carried `main: dist/index.cjs` and nothing emits a
+     * `.cjs`. Modern resolvers read `exports` and never reach `main`, so it
+     * resolved fine and the dead field sat there - the kind of leftover that
+     * reads as intent until someone acts on it. Every peer package has no
+     * `main` at all.
+     */
+    const dangling: string[] = []
+
+    for (const entry of readdirSync(coreDir)) {
+      const pkgDir = join(coreDir, entry)
+      if (!statSync(pkgDir).isDirectory() || !existsSync(join(pkgDir, 'dist')))
+        continue
+
+      const manifestPath = join(pkgDir, 'package.json')
+      if (!existsSync(manifestPath))
+        continue
+
+      let manifest: { name?: string, private?: boolean, main?: string, module?: string }
+      try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
+      }
+      catch {
+        continue
+      }
+
+      if (!manifest.name || manifest.private)
+        continue
+
+      for (const field of ['main', 'module'] as const) {
+        const value = manifest[field]
+        if (!value)
+          continue
+
+        const rel = value.startsWith('./') ? value.slice(2) : value
+        if (!existsSync(join(pkgDir, rel)))
+          dangling.push(`${manifest.name}: ${field} -> ${value}`)
+      }
+    }
+
+    expect(dangling.sort()).toEqual([])
+  })
+
   it('point `types` at a declaration file the build actually emits', () => {
     /*
      * `@stacksjs/docs` and `@stacksjs/http` both declared

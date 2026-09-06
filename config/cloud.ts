@@ -767,25 +767,27 @@ export const tsCloud: TsCloudConfig = {
       // the migrating site may create or seed it.
       preStart: [
         /*
-         * Bring the server's bun up to the line that can read this lockfile,
-         * before anything tries to.
+         * Install, and if the box's bun cannot read the lockfile, upgrade it
+         * and try once more.
          *
-         * `bun.lock` is lockfileVersion 2, written by bun 1.4.x, and the box
-         * was provisioned with 1.3.14 - which fails the deploy on
+         * `bun.lock` is lockfileVersion 2, written by bun 1.4.x. The box was
+         * provisioned with 1.3.14 and fails on
          *
          *     error: Unknown lockfile version
          *     UnknownLockfileVersion: failed to parse lockfile: 'bun.lock'
          *
-         * cloud-init installs bun once, at provision time, so an existing box
-         * never picks up a newer one on its own. CI and `deps.yml` are both on
-         * 1.4.x already; this is the deploy target catching up.
+         * ts-cloud's bootstrap installs bun behind `command -v bun`, so a box
+         * that already has one never gets a newer one - `server:setup` will not
+         * fix this either. The real fix is that guard checking a version rather
+         * than presence, which lives in ts-cloud (stacksjs/ts-cloud#167 area).
          *
-         * Guarded so a box already on 1.4.x does no work, and `|| true` so a
-         * self-upgrade that cannot reach the network does not fail a deploy
-         * that would otherwise have succeeded.
+         * Written as install-then-remediate rather than a version check on
+         * purpose: `bun --version | grep "^1\\.4\\."` hardcodes a line that
+         * stops being right the day 1.5 ships, and would then upgrade on every
+         * deploy forever. This tests the thing that actually matters - whether
+         * this bun can install this lockfile - and does nothing when it can.
          */
-        'bun --version | grep -q "^1\\.4\\." || bun upgrade || true',
-        'bun install',
+        'bun install || (bun upgrade && bun install)',
         'mkdir -p storage/framework/runtime/production',
         'bun build --production --splitting --conditions=development --target=bun --external=localtunnels --external=localtunnels/cloud --external=@stacksjs/bun-queue --external=meilisearch storage/framework/core/buddy/src/serve-entry.ts --outdir storage/framework/runtime/production --entry-naming serve.js --chunk-naming chunks/[name]-[hash].js',
         // Catch a pre-rename database up to the Courier rename before the
