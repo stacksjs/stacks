@@ -247,7 +247,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
   return hasEligibleRoute
 }
 
-import { runWithRequest } from './request-context'
+import { runWithRequest, runWithRequestArgument } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
@@ -1750,7 +1750,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       && routeMiddleware.length === 0
       && !routeRateLimit?.config
     ) {
-      preparedBaseResult = runWithRequest(enhancedReq, () => wrappedBase(enhancedReq))
+      preparedBaseResult = runWithRequestArgument(enhancedReq, wrappedBase, enhancedReq)
       hasPreparedBaseResult = true
       if (preparedBaseResult instanceof Response) {
         const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter)
@@ -2256,7 +2256,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
     let preparedBaseResult: Response | Promise<Response>
     try {
-      preparedBaseResult = runWithRequest(req, () => wrappedBase(req))
+      preparedBaseResult = runWithRequestArgument(req, wrappedBase, req)
     }
     catch (error) {
       return Promise.reject(error)

@@ -5,6 +5,7 @@ import {
   getCurrentRequest,
   request,
   runWithRequest,
+  runWithRequestArgument,
   setCurrentRequest,
 } from '../src/request-context'
 import { clearTrackedQueries, getQueryShapeCounts, trackQuery } from '../src/error-handler'
@@ -73,6 +74,15 @@ describe('Request Context - runWithRequest', () => {
     const req = makeFakeRequest()
     const result = runWithRequest(req, () => 42)
     expect(result).toBe(42)
+  })
+
+  test('passes an argument without losing request context', () => {
+    const req = makeFakeRequest({ method: 'PATCH' })
+    const method = runWithRequestArgument(req, (value: number) => {
+      expect(getCurrentRequest()).toBe(req)
+      return `${getCurrentRequest()?.method}:${value}`
+    }, 42)
+    expect(method).toBe('PATCH:42')
   })
 
   test('isolates context between nested runs', () => {

@@ -169,6 +169,11 @@ export function runWithRequest<T>(req: EnhancedRequest, fn: () => T): T {
   return requestStorage.run(req, fn)
 }
 
+/** Run a synchronous dispatcher without allocating a callback closure. */
+export function runWithRequestArgument<T, A>(req: EnhancedRequest, fn: (arg: A) => T, arg: A): T {
+  return requestStorage.run(req, fn, arg)
+}
+
 /**
  * Get the current request from context
  */
