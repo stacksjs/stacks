@@ -3515,12 +3515,11 @@ function applyCsrfRenderToken(req: Request & { _csrfToken?: string }, cookieHead
  * callers write `const seeding = seedCsrfTokenForRender(req); if (seeding) await seeding`
  * and a request that has nothing to seed never allocates a promise at all.
  */
-function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }): void | Promise<void> {
+function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }, cookieHeader = req.headers?.get?.('cookie') ?? ''): void | Promise<void> {
   const method = req.method?.toUpperCase?.() ?? 'GET'
   if (method !== 'GET' && method !== 'HEAD')
     return
 
-  const cookieHeader = req.headers?.get?.('cookie') ?? ''
   if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
     return
 
@@ -4537,15 +4536,19 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
      * on the request first is what makes that first form usable; the response
      * half below then stores the same value in the browser.
      */
+    const cookieHeader = safe ? request.headers.get('cookie') ?? '' : ''
+    const hasCsrfCookie = safe && (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
     if (safe) {
-      const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string })
-      if (seeding) await seeding
+      if (!hasCsrfCookie) {
+        const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
+        if (seeding) await seeding
+      }
       ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
     }
 
     const response = await original(request)
 
-    if (!safe || !response)
+    if (!safe || !response || hasCsrfCookie)
       return response
 
     try {
