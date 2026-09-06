@@ -174,6 +174,17 @@ export function runWithRequestArgument<T, A>(req: EnhancedRequest, fn: (arg: A) 
   return requestStorage.run(req, fn, arg)
 }
 
+/** Run a dispatcher with three arguments without allocating a callback closure. */
+export function runWithRequestArguments<T, A, B, C>(
+  req: EnhancedRequest,
+  fn: (first: A, second: B, third: C) => T,
+  first: A,
+  second: B,
+  third: C,
+): T {
+  return requestStorage.run(req, fn, first, second, third)
+}
+
 /**
  * Get the current request from context
  */

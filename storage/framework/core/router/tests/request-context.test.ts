@@ -6,6 +6,7 @@ import {
   request,
   runWithRequest,
   runWithRequestArgument,
+  runWithRequestArguments,
   setCurrentRequest,
 } from '../src/request-context'
 import { clearTrackedQueries, getQueryShapeCounts, trackQuery } from '../src/error-handler'
@@ -83,6 +84,15 @@ describe('Request Context - runWithRequest', () => {
       return `${getCurrentRequest()?.method}:${value}`
     }, 42)
     expect(method).toBe('PATCH:42')
+  })
+
+  test('passes multiple arguments without losing request context', () => {
+    const req = makeFakeRequest({ method: 'PUT' })
+    const value = runWithRequestArguments(req, (first: string, second: number, third: boolean) => {
+      expect(getCurrentRequest()).toBe(req)
+      return `${first}:${second}:${third}`
+    }, 'args', 3, true)
+    expect(value).toBe('args:3:true')
   })
 
   test('isolates context between nested runs', () => {

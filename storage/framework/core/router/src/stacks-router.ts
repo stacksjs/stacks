@@ -247,7 +247,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
   return hasEligibleRoute
 }
 
-import { runWithRequest, runWithRequestArgument } from './request-context'
+import { runWithRequestArgument, runWithRequestArguments } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
@@ -1693,11 +1693,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     return response
   }
 
-  const handleAsync = (
+  const handleAsyncInContext = async (
     req: EnhancedRequest,
     preparedBaseResult?: Response | Promise<Response>,
     hasPreparedBaseResult = false,
-  ): Promise<Response> => runWithRequest<Promise<Response>>(req, async () => {
+  ): Promise<Response> => {
     // Parse body and enhance request first. parseRequestBody can throw
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
@@ -2249,7 +2249,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
 
       return response
-  })
+  }
+
+  const handleAsync = (
+    req: EnhancedRequest,
+    preparedBaseResult?: Response | Promise<Response>,
+    hasPreparedBaseResult = false,
+  ): Promise<Response> => runWithRequestArguments(
+    req,
+    handleAsyncInContext,
+    req,
+    preparedBaseResult,
+    hasPreparedBaseResult,
+  )
 
   if (!synchronousInlineHandler || !routeRendersCsrf)
     return rememberStacksRouteHandler(handleAsync)
