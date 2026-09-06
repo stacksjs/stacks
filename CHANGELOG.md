@@ -1,5 +1,45 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.26...v0.74.27)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: install with the layout the project asks for ([81410da](https://github.com/stacksjs/stacks/commit/81410da)) _(by Chris <chris@stacksjs.com>)_
+- **types**: expose query trace configuration ([8b46264](https://github.com/stacksjs/stacks/commit/8b46264)) _(by Chris <chris@stacksjs.com>)_
+- **error-handling**: ship the error-page templates with the package ([881d9e6](https://github.com/stacksjs/stacks/commit/881d9e6)) _(by Chris <chris@stacksjs.com>)_
+- **mail**: recover encrypted storage after reboot ([4322d42](https://github.com/stacksjs/stacks/commit/4322d42)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **database**: streamline deferred select lookups ([1b7ad7d](https://github.com/stacksjs/stacks/commit/1b7ad7d)) _(by Chris <chris@stacksjs.com>)_
+- **database**: skip unused read-routing contexts ([e9ae206](https://github.com/stacksjs/stacks/commit/e9ae206)) _(by Chris <chris@stacksjs.com>)_
+- **router**: trust fused request enhancement ([bf3b2a9](https://github.com/stacksjs/stacks/commit/bf3b2a9)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse empty middleware state ([8e7809a](https://github.com/stacksjs/stacks/commit/8e7809a)) _(by Chris <chris@stacksjs.com>)_
+- **database**: specialize single-predicate selects ([98fb1c3](https://github.com/stacksjs/stacks/commit/98fb1c3)) _(by Chris <chris@stacksjs.com>)_
+- **database**: remove deferred select replay log ([b165598](https://github.com/stacksjs/stacks/commit/b165598)) _(by Chris <chris@stacksjs.com>)_
+- **database**: bypass replica routing for SQLite ([7ce7fc3](https://github.com/stacksjs/stacks/commit/7ce7fc3)) _(by Chris <chris@stacksjs.com>)_
+- **database**: compact deferred select replay ([84b9958](https://github.com/stacksjs/stacks/commit/84b9958)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip redundant request macro checks ([6030a6b](https://github.com/stacksjs/stacks/commit/6030a6b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: fuse request helper prototypes ([0928e1c](https://github.com/stacksjs/stacks/commit/0928e1c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: rely on scoped query diagnostics ([c2e821a](https://github.com/stacksjs/stacks/commit/c2e821a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip empty response metadata work ([c1e7baa](https://github.com/stacksjs/stacks/commit/c1e7baa)) _(by Chris <chris@stacksjs.com>)_
+- **database**: defer full SQLite select builders ([5c558bb](https://github.com/stacksjs/stacks/commit/5c558bb)) _(by Chris <chris@stacksjs.com>)_
+- **database**: skip unused production query hooks ([d3bfb60](https://github.com/stacksjs/stacks/commit/d3bfb60)) _(by Chris <chris@stacksjs.com>)_
+- **database**: make production query history opt-in ([916b84e](https://github.com/stacksjs/stacks/commit/916b84e)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reserve query traces for problems ([b1e3055](https://github.com/stacksjs/stacks/commit/b1e3055)) _(by Chris <chris@stacksjs.com>)_
+- **query-builder**: reduce WAL checkpoint frequency ([1074b2e](https://github.com/stacksjs/stacks/commit/1074b2e)) _(by Chris <chris@stacksjs.com>)_
+- **database**: widen query log batches ([b6aff86](https://github.com/stacksjs/stacks/commit/b6aff86)) _(by Chris <chris@stacksjs.com>)_
+- **database**: batch query log writes ([8d620e7](https://github.com/stacksjs/stacks/commit/8d620e7)) _(by Chris <chris@stacksjs.com>)_
+- **router**: preapply generated response metadata ([47c94f9](https://github.com/stacksjs/stacks/commit/47c94f9)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip known-empty security probes ([748b82b](https://github.com/stacksjs/stacks/commit/748b82b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: use leaner security header lookups ([a84947f](https://github.com/stacksjs/stacks/commit/a84947f)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse warm CSRF cookie checks ([7ce922c](https://github.com/stacksjs/stacks/commit/7ce922c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip paginator checks for plain JSON ([062b849](https://github.com/stacksjs/stacks/commit/062b849)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.25...v0.74.26)
 
 ## 🐛 Bug Fixes
