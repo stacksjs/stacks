@@ -150,6 +150,11 @@ async function supportedMatrix() {
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
     missingFirst: await db.selectFrom('fast_items').where('id', '=', 999).first(),
+    value: await db.selectFrom('fast_items').select('name').where('id', '=', 2).value('name'),
+    missingValue: await db.selectFrom('fast_items').select('name').where('id', '=', 999).value('name'),
+    unselectedValue: await db.selectFrom('fast_items').select('id').where('id', '=', 1).value('name'),
+    pluck: await db.selectFrom('fast_items').select('name').where('active', '=', 1).pluck('name'),
+    keyedPluck: await db.selectFrom('fast_items').select(['id', 'name']).pluck('name', 'id'),
     aggregates: {
       count: await db.selectFrom('fast_items').where('active', '=', 1).count(),
       countColumn: await db.selectFrom('fast_items').where('active', '=', 1).count('id'),
