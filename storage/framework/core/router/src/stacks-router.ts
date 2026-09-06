@@ -2706,6 +2706,8 @@ function validateActionInputSync(
   compiledEntries?: ActionValidationEntry[],
 ): ValidationResult {
   const errors: Record<string, string[]> = {}
+  const validated: Record<string, unknown> = {}
+  let valid = true
   const entries = compiledEntries ?? Object.entries(validations)
 
   // Pass `validations` so wire-stringified path/query values get coerced
@@ -2727,6 +2729,7 @@ function validateActionInputSync(
     }
 
     if (!result.valid) {
+      valid = false
       const fieldErrors: string[] = []
       // Friendlier label: snake_case → "snake case", camelCase → "camel case",
       // capitalized so messages read naturally (`"Email is invalid"` rather
@@ -2756,9 +2759,10 @@ function validateActionInputSync(
 
       errors[field] = fieldErrors
     }
+    else if (value !== undefined) {
+      validated[field] = value
+    }
   }
-
-  const valid = Object.keys(errors).length === 0
 
   /*
    * Record what passed, so `request.getValidated()` and `request.safe()` have
@@ -2777,11 +2781,6 @@ function validateActionInputSync(
    * ones the rules were tested against, not the raw wire strings.
    */
   if (valid) {
-    const validated: Record<string, unknown> = {}
-    for (const [field] of entries) {
-      if (input[field] !== undefined)
-        validated[field] = input[field]
-    }
     ;(req as EnhancedRequest & { _validatedInput?: Record<string, unknown> })._validatedInput = validated
   }
 
