@@ -2904,7 +2904,7 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
     // CursorPaginator, emit `Link: <prev>; rel="prev", <next>; rel="next"`
     // alongside the JSON body — HATEOAS for REST clients + crawlers
     // who'd otherwise have to dig through the body to find next/prev.
-    const linkHeader = buildPaginatorLinkHeader(result)
+    const linkHeader = 'data' in result ? buildPaginatorLinkHeader(result) : null
     return formatJsonResult(result, req, linkHeader)
   }
 
