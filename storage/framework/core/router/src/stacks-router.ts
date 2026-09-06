@@ -4139,32 +4139,6 @@ function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = '
 }
 
 /**
- * Read a JSON body once, and leave the request readable afterwards.
- *
- * This used to be `req.clone()` then `.text()` on the clone, which tees the
- * body stream and allocates a second Request on every JSON request that
- * arrives - purely so a handler calling `request.json()` later would still
- * find a body to read. The stream is read directly now, and the readers that
- * would have found it consumed are backed by the string instead: same answers,
- * one read, no clone.
- *
- * `clone()` is replaced too, because the default one throws once the body has
- * been used, and `rawBody()` in bun-router reaches for it when `_rawBody` is
- * not already set.
- */
-async function readJsonBodyOnce(req: EnhancedRequest, contentType: string): Promise<string> {
-  const raw = await (req as unknown as Request).text()
-
-  // The exact unparsed bytes, so `request.rawBody()` can return them for
-  // webhook signature verification (Stripe/GitHub/Slack). A re-serialized
-  // `jsonBody` is NOT byte-identical and fails HMAC checks.
-  ;req._rawBody = raw
-  ;req._rawBodyContentType = contentType
-
-  return raw
-}
-
-/**
  * Parse request body and attach to request object
  */
 async function parseRequestBody(req: EnhancedRequest): Promise<void> {
@@ -4186,7 +4160,12 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
       // the middleware chain returns a proper "Invalid JSON body"
       // response. Empty body is still allowed (Content-Length: 0 →
       // empty string → no parse attempt). See stacksjs/stacks#1859 H-5.
-      const raw = await readJsonBodyOnce(req, contentType)
+      // Read directly instead of awaiting a one-line async helper. Keep the
+      // exact bytes so rawBody() remains suitable for webhook signatures, and
+      // so the replacement body readers can serve the consumed request.
+      const raw = await (req as unknown as Request).text()
+      ;req._rawBody = raw
+      ;req._rawBodyContentType = contentType
       if (raw.length === 0) {
         ;req.jsonBody = {}
       }
