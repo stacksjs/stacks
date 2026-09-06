@@ -28,6 +28,9 @@ describe('db.read exists and falls back to the primary', () => {
     expect(Object.hasOwn(db, 'read')).toBe(true)
     expect(Object.hasOwn(db, 'fn')).toBe(true)
     expect(Object.hasOwn(db, 'unsafe')).toBe(true)
+    expect(Object.hasOwn(db, 'insertInto')).toBe(true)
+    expect(Object.hasOwn(db, 'updateTable')).toBe(true)
+    expect(Object.hasOwn(db, 'deleteFrom')).toBe(true)
     expect(typeof db.unsafe).toBe('function')
   })
 

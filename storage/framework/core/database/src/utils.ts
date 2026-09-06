@@ -2089,6 +2089,21 @@ function unsafeExplicitReadDatabase(query: string, params?: unknown[]): UnsafeRe
   return getExplicitReadDb().unsafe(query, params) as unknown as UnsafeReturn
 }
 
+function insertIntoDatabase(table: string): unknown {
+  markContextWrote()
+  return getDb().insertInto(table)
+}
+
+function updateTableDatabase(table: string): unknown {
+  markContextWrote()
+  return getDb().updateTable(table)
+}
+
+function deleteFromDatabase(table: string): unknown {
+  markContextWrote()
+  return getDb().deleteFrom(table)
+}
+
 /**
  * Lazy fallback for the query-builder surface. The common facade properties
  * live on `db` itself below, so `db.selectFrom()` does not enter a Proxy on
@@ -2125,10 +2140,13 @@ const dbFallback = new Proxy({} as Db, {
  */
 export const db: Db = Object.create(dbFallback) as Db
 Object.defineProperties(db, {
+  deleteFrom: { value: deleteFromDatabase },
   fn: { value: aggregateFunctions },
+  insertInto: { value: insertIntoDatabase },
   read: { get: () => readDb },
   selectFrom: { value: selectFromDatabase },
   unsafe: { value: unsafeDatabase },
+  updateTable: { value: updateTableDatabase },
 })
 
 /**
