@@ -44,6 +44,7 @@ describe('wrapped createQueryBuilder sqlite pragmas (stacksjs/stacks#1951)', () 
   it('exports the bootstrap pragma list with FK enforcement', () => {
     expect(SQLITE_BOOTSTRAP_PRAGMAS).toContain('PRAGMA foreign_keys = ON')
     expect(SQLITE_BOOTSTRAP_PRAGMAS).toContain('PRAGMA busy_timeout = 5000')
+    expect(SQLITE_BOOTSTRAP_PRAGMAS).toContain('PRAGMA wal_autocheckpoint = 100')
   })
 
   it('enables foreign_keys on a self-bootstrapped builder connection', async () => {
@@ -92,7 +93,7 @@ describe('model-executor sqlite pragmas (ORM writer connection)', () => {
     configureOrm({ database: ':memory:' })
     const raw = getDatabase() as any
     expect(raw.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })
-    expect(raw.query('PRAGMA wal_autocheckpoint').get()).toEqual({ wal_autocheckpoint: 1 })
+    expect(raw.query('PRAGMA wal_autocheckpoint').get()).toEqual({ wal_autocheckpoint: 100 })
     expect(raw.query('PRAGMA busy_timeout').get()).toEqual({ timeout: 5000 })
   })
 
@@ -143,6 +144,6 @@ describe('model-executor sqlite pragmas (ORM writer connection)', () => {
     createQueryBuilder()
     const raw = getDatabase() as any
     expect(raw.query('PRAGMA foreign_keys').get()).toEqual({ foreign_keys: 1 })
-    expect(raw.query('PRAGMA wal_autocheckpoint').get()).toEqual({ wal_autocheckpoint: 1 })
+    expect(raw.query('PRAGMA wal_autocheckpoint').get()).toEqual({ wal_autocheckpoint: 100 })
   })
 })

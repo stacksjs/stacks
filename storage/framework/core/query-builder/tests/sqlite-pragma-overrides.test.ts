@@ -15,7 +15,7 @@ test('configured SQLite checkpoint thresholds reach both writers and survive rec
   ])
   expect(code, stderr).toBe(0)
   const observations = JSON.parse(stdout.trim().split('\n').at(-1)!)
-  for (const [name, threshold] of Object.entries({ defaults: 1, configured: 1000, reconnected: 1000, changed: 2000, restored: 1 })) {
+  for (const [name, threshold] of Object.entries({ defaults: 100, configured: 1000, reconnected: 1000, changed: 2000, restored: 100 })) {
     expect(observations[name], name).toEqual({
       builder: [{ wal_autocheckpoint: threshold }],
       model: { wal_autocheckpoint: threshold },

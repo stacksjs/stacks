@@ -116,15 +116,11 @@ export const SQLITE_BOOTSTRAP_PRAGMAS = [
   'PRAGMA journal_mode = WAL',
   'PRAGMA foreign_keys = ON',
   'PRAGMA busy_timeout = 5000',
-  // Checkpoint the WAL into the main db file after every commit (passive —
-  // never blocks readers). bun:sqlite's default threshold is 1000 pages
-  // (~4MB), which on low-write apps leaves recent rows sitting in the -wal
-  // sidecar indefinitely — invisible to anything that reads only the main
-  // file: remote SQLite browsing (e.g. TablePlus over SSH downloads just the
-  // db file), file-level backups, and snapshot scripts. Low-write apps pay
-  // effectively nothing; a high-write deployment can raise this through
-  // `sqlite.pragmas` in its query-builder configuration.
-  'PRAGMA wal_autocheckpoint = 1',
+  // Checkpoint after 100 WAL pages (about 400KB with SQLite's usual page
+  // size). This keeps the sidecar far below bun:sqlite's 1000-page default
+  // without forcing a checkpoint after every write transaction. Applications
+  // with sustained writes can still raise this through `sqlite.pragmas`.
+  'PRAGMA wal_autocheckpoint = 100',
 ] as const
 
 /** Application pragmas override the framework defaults in declaration order. */
