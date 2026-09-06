@@ -63,7 +63,10 @@ const CSRF_HEADER_NAME = 'x-csrf-token'
 const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
 const TOKEN_BYTES = 32
+const TOKEN_HEX_LENGTH = TOKEN_BYTES * 2
 const TOKEN_ENCODER = new TextEncoder()
+const LEFT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
+const RIGHT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
 
 /**
  * Generate a fresh CSRF token (hex-encoded, 32 random bytes → 64 chars).
@@ -205,6 +208,22 @@ function safeEqual(a: string, b: string): boolean {
   if (typeof a !== 'string' || typeof b !== 'string') return false
   if (a.length !== b.length) return false
   try {
+    // Generated tokens are fixed-width ASCII hex. Reuse module-local scratch
+    // arrays for that dominant path: this function is synchronous, so another
+    // request cannot interleave between encoding and comparison. If either
+    // value is not 64 bytes of UTF-8, retain the allocation-based fallback.
+    if (a.length === TOKEN_HEX_LENGTH) {
+      const left = TOKEN_ENCODER.encodeInto(a, LEFT_TOKEN_BYTES)
+      const right = TOKEN_ENCODER.encodeInto(b, RIGHT_TOKEN_BYTES)
+      if (
+        left.read === TOKEN_HEX_LENGTH
+        && left.written === TOKEN_HEX_LENGTH
+        && right.read === TOKEN_HEX_LENGTH
+        && right.written === TOKEN_HEX_LENGTH
+      ) {
+        return timingSafeEqual(LEFT_TOKEN_BYTES, RIGHT_TOKEN_BYTES)
+      }
+    }
     return timingSafeEqual(TOKEN_ENCODER.encode(a), TOKEN_ENCODER.encode(b))
   }
   catch {
