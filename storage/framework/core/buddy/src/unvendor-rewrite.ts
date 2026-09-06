@@ -12,7 +12,7 @@
  * own — they edit files across the whole project, which is not something to
  * find out about from a deploy.
  */
-import { existsSync, lstatSync } from 'node:fs'
+import { existsSync, lstatSync, readFileSync } from 'node:fs'
 import { readdir } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
 import { log } from '@stacksjs/cli'
@@ -43,12 +43,46 @@ export function isDanglingLink(target: string): boolean {
  * tree that the `./buddy` shim does not read — the install "succeeds" and the
  * project still cannot resolve a single @stacksjs package.
  */
+/** True when `bunfig.toml` asks for the hoisted dependency layout. */
+function hoistedLinker(cwd: string): boolean {
+  try {
+    const bunfig = readFileSync(resolve(cwd, 'bunfig.toml'), 'utf-8')
+    return /^\s*linker\s*=\s*["']hoisted["']/m.test(bunfig)
+  }
+  catch {
+    return false
+  }
+}
+
 export function detectInstaller(cwd: string): string[] {
   const has = (rel: string) => existsSync(resolve(cwd, rel))
   const usesPantry = has('pantry') || (has('pantry.lock') && !has('node_modules'))
 
-  if (usesPantry && Bun.which('pantry'))
+  if (usesPantry && Bun.which('pantry')) {
+    /*
+     * Carry the project's linker through. `pantry install` defaults to the
+     * isolated layout regardless of what `bunfig.toml` asks for, which puts a
+     * transitive package at `node_modules/.bun/@types+bun@1.4.1/node_modules/
+     * @types/bun`. TypeScript's default `typeRoots` walks `node_modules/@types`
+     * upward and never looks there, so a scaffolded app failed its first
+     * typecheck with
+     *
+     *     error TS2688: Cannot find type definition file for 'bun'
+     *
+     * even though `better-dx`, which ships `@types/bun`, was installed.
+     *
+     * Worse, running it over a tree `bun install` had already hoisted MOVED the
+     * hoisted copy aside into `node_modules/.old_modules-<hash>/`, so the types
+     * went from present to absent.
+     *
+     * AGENTS.md already requires `linker = "hoisted"` wherever `better-dx` is a
+     * dependency; this makes the install honour it.
+     */
+    if (hoistedLinker(cwd))
+      return ['pantry', 'install', '--linker', 'hoisted']
+
     return ['pantry', 'install']
+  }
 
   if (usesPantry)
     log.warn('This project installs with pantry, but no `pantry` binary is on PATH — falling back to `bun install`.')
