@@ -138,7 +138,7 @@ and reading it as anything else is the mistake this table exists to prevent.
 |---|---|
 | `stacks` | Stock defaults, and a client that never sends a cookie back. Every GET mints a fresh CSRF render token, which is a real cost for a real first visit. |
 | `stacks-warm` | Stock defaults, client echoes the CSRF cookie — a browser or SPA from its second request onward. |
-| `stacks-minimal` | `STACKS_SECURITY_HEADERS_DISABLE=true` and `.skipCsrf()` on the mutating route. Everything else unchanged. |
+| `stacks-minimal` | `STACKS_SECURITY_HEADERS_DISABLE=true`, `.skipCsrf()` on the mutating route, and `requestIds: false` for deployments whose proxy owns correlation. Everything else unchanged. |
 
 **`stacks-minimal` is not a headline number.** It exists to price the
 safe-by-default work separately from the framework's own overhead. Publishing it

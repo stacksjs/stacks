@@ -9,9 +9,10 @@
  *                        AsyncLocalStorage request context.
  *   minimal            — `.skipCsrf()` on the mutating route and
  *                        `STACKS_SECURITY_HEADERS_DISABLE=true` (set by the
- *                        runner). Everything else is unchanged: this profile
- *                        exists to price the safe-by-default work, NOT to
- *                        produce a headline number. See the README.
+ *                        runner), with request IDs owned by an upstream proxy.
+ *                        Everything else is unchanged: this profile exists to
+ *                        price the safe-by-default work, NOT to produce a
+ *                        headline number. See the README.
  *
  * BENCH_SQLITE_PROFILE=wal-full opts into 1000-page WAL checkpoints and
  * synchronous=FULL for the database scenario. It keeps the secure profile.
@@ -33,7 +34,7 @@ if (withDb && sqliteProfile === 'wal-full') {
 const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
-const router = createStacksRouter()
+const router = createStacksRouter({ requestIds: !minimal })
 
 if (serves('static-json'))
   router.get('/bench/json', () => ({ hello: 'world' }))
