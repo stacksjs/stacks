@@ -1541,6 +1541,21 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let proxy: Record<string | symbol, unknown>
   const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
     const selected = selection ?? columns?.join(', ') ?? '*'
+    const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
+    if (
+      predicateColumn !== undefined
+      && predicateValues === undefined
+      && predicateParameterized
+      && additionalPredicates === undefined
+      && orderings === undefined
+      && rowOffset === undefined
+    ) {
+      const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
+      return instance.unsafe(
+        `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ?${limit}`,
+        [predicateValue],
+      ) as unknown as UnsafeReturn
+    }
     let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
     if (predicateColumn !== undefined) {
@@ -1572,7 +1587,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     // bun-query-builder leaves an offset-only SQLite query invalid, including
     // through first-row terminals that append LIMIT after OFFSET. Preserve
     // that behavior instead of silently repairing the caller's query.
-    const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (effectiveLimit !== undefined)
       query += ` LIMIT ${effectiveLimit}`
     if (rowOffset !== undefined)
