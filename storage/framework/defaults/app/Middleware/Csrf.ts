@@ -176,6 +176,11 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
 function csrfCookieToken(req: Request): string {
   const header = req.headers.get('cookie')
   if (!header) return ''
+  // The cookie this framework emits has one exact, whitespace-free shape.
+  // Recognize it before scanning for separators or trimming; browsers send
+  // this common single-cookie form on every authenticated unsafe request.
+  if (header.length === CSRF_COOKIE_PREFIX.length + TOKEN_HEX_LENGTH && header.startsWith(CSRF_COOKIE_PREFIX))
+    return header.slice(CSRF_COOKIE_PREFIX.length)
   if (!header.includes(';')) {
     if (header.startsWith(CSRF_COOKIE_PREFIX))
       return header.slice(CSRF_COOKIE_PREFIX.length).trim()
