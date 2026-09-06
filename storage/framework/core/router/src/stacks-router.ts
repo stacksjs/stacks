@@ -2510,8 +2510,8 @@ function validationFailureResponse(errors: Record<string, string[]>): Response {
  * submission or a `<script client>` block using a bare fetch shorthand, and
  * requiring one would have put this out of reach of the simplest caller.
  */
-export function precognitionRequest(req: EnhancedRequest): { only: string[] } | null {
-  const header = req.headers?.get?.('Precognition')
+export function precognitionRequest(req: EnhancedRequest, knownHeader?: string | null): { only: string[] } | null {
+  const header = knownHeader === undefined ? req.headers?.get?.('Precognition') : knownHeader
   const viaHeader = typeof header === 'string' && header.toLowerCase() === 'true'
 
   let viaQuery = false
@@ -2769,7 +2769,10 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     // never reach handle(). An action with no validations still returns early:
     // running the handler because there was nothing to check would make
     // the probe itself the side effect (#2226).
-    const precognition = precognitionRequest(req)
+    const precognitionHeader = req.headers.get('Precognition')
+    const precognition = precognitionHeader === null && !req.url.includes('?')
+      ? null
+      : precognitionRequest(req, precognitionHeader)
     if (precognition) {
       if (!action.validations)
         return precognitionSuccess()
