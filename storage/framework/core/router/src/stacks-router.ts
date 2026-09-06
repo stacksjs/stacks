@@ -5267,6 +5267,16 @@ interface NativeRouterInternals {
   errorHandler?: (error: Error) => Response | Promise<Response>
 }
 
+function applyDirectNativeCookies(router: NativeRouterInternals, response: Response, request: EnhancedRequest): Response {
+  const cookieChanges = request as EnhancedRequest & {
+    _cookiesToSet?: unknown[]
+    _cookiesToDelete?: unknown[]
+  }
+  return cookieChanges._cookiesToSet?.length || cookieChanges._cookiesToDelete?.length
+    ? router.applyModifiedCookies(response, request)
+    : response
+}
+
 function nativeRouteErrorResponse(error: unknown): Response {
   return new Response(JSON.stringify({
     success: false,
@@ -5349,9 +5359,9 @@ function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeRespo
         try {
           const response = handler(enhancedRequest)
           return response instanceof Response
-            ? finalizeResponse(nativeRouter.applyModifiedCookies(response, enhancedRequest), request)
+            ? finalizeResponse(applyDirectNativeCookies(nativeRouter, response, enhancedRequest), request)
             : response.then(
-                result => finalizeResponse(nativeRouter.applyModifiedCookies(result, enhancedRequest), request),
+                result => finalizeResponse(applyDirectNativeCookies(nativeRouter, result, enhancedRequest), request),
                 (error) => {
                   const result = handleDirectNativeRouteError(nativeRouter, error)
                   return result instanceof Response
