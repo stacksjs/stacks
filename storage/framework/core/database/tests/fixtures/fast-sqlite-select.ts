@@ -129,6 +129,7 @@ async function supportedMatrix() {
       .limit(1)
       .orderBy('id', 'desc')
       .execute(),
+    count: await db.selectFrom('fast_items').where('active', '=', 1).count(),
   }
 }
 

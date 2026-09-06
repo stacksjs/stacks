@@ -1338,8 +1338,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
-  const buildStatement = (firstOnly = false): UnsafeReturn => {
-    const selected = columns?.join(', ') ?? '*'
+  const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
+    const selected = selection ?? columns?.join(', ') ?? '*'
     let query = `SELECT ${selected} FROM ${table}`
     const params: unknown[] = []
     if (predicateColumn !== undefined) {
@@ -1427,6 +1427,20 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     doesntExist() {
       try {
         return Promise.resolve(buildStatement(true).executeSync()[0] === undefined)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    },
+    count(...args: unknown[]) {
+      if (args.length > 0) {
+        const builder = materialize()
+        const apply = builder.count as unknown as (...values: unknown[]) => Promise<number>
+        return apply.call(builder, ...args)
+      }
+      try {
+        const row = buildStatement(false, 'COUNT(*) AS aggregate').executeSync()[0]
+        return Promise.resolve(Number(row?.aggregate ?? 0))
       }
       catch (error) {
         return Promise.reject(error)
