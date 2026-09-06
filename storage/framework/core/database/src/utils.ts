@@ -1311,6 +1311,19 @@ const isSimpleSqliteTable = memoizeSqliteIdentifier(SIMPLE_SQLITE_TABLE)
 const isSimpleSqliteColumn = memoizeSqliteIdentifier(SIMPLE_SQLITE_COLUMN)
 const isSimpleSqliteSelection = memoizeSqliteIdentifier(SIMPLE_SQLITE_SELECTION)
 
+// Endpoint reads tend to repeat one structural query while only bound values
+// change. Keep the cache deliberately single-entry so that locality avoids SQL
+// string assembly without retaining arbitrary application query shapes.
+let lastParameterizedSqliteSelect: {
+  selectKeyword: string
+  selected: string
+  table: string
+  predicateColumn: string
+  predicateOperator: string | undefined
+  limit: number | undefined
+  sql: string
+} | undefined
+
 function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
 }
@@ -1555,11 +1568,29 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       && orderings === undefined
       && rowOffset === undefined
     ) {
-      const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
-      return instance.unsafe(
-        `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ?${limit}`,
-        [predicateValue],
-      ) as unknown as UnsafeReturn
+      const cached = lastParameterizedSqliteSelect
+      if (
+        cached
+        && cached.selectKeyword === selectKeyword
+        && cached.selected === selected
+        && cached.table === table
+        && cached.predicateColumn === predicateColumn
+        && cached.predicateOperator === predicateOperator
+        && cached.limit === effectiveLimit
+      ) {
+        return instance.unsafe(cached.sql, [predicateValue]) as unknown as UnsafeReturn
+      }
+      const sql = `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ?${effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`}`
+      lastParameterizedSqliteSelect = {
+        selectKeyword,
+        selected,
+        table,
+        predicateColumn,
+        predicateOperator,
+        limit: effectiveLimit,
+        sql,
+      }
+      return instance.unsafe(sql, [predicateValue]) as unknown as UnsafeReturn
     }
     let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
