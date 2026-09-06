@@ -237,6 +237,8 @@ export interface DatabaseOptions {
   // Query logging configuration
   queryLogging?: {
     enabled: boolean
+    /** Also capture caller stacks for successful fast queries. */
+    captureAllTraces?: boolean
     slowThreshold: number // in milliseconds
     retention: number // in days
     pruneFrequency: number // in hours
