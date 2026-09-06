@@ -1687,11 +1687,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     return response
   }
 
-  const handleAsync = async (
+  const handleAsync = (
     req: EnhancedRequest,
     preparedBaseResult?: Response | Promise<Response>,
     hasPreparedBaseResult = false,
-  ): Promise<Response> => {
+  ): Promise<Response> => runWithRequest<Promise<Response>>(req, async () => {
     // Parse body and enhance request first. parseRequestBody can throw
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
@@ -1759,9 +1759,6 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
     }
 
-    // Run the entire request handling within the request context
-    // This allows Auth and other services to access the current request
-    return runWithRequest<Promise<Response>>(enhancedReq, async () => {
       // Declarative per-route rate-limit (stacksjs/stacks#1870 R-8).
       // Read once per request; routes that never called `.rateLimit()`
       // skip the call entirely. The shared limiter cache inside
@@ -2234,8 +2231,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
 
       return response
-    })
-  }
+  })
 
   if (!synchronousInlineHandler || !routeRendersCsrf)
     return rememberStacksRouteHandler(handleAsync)
