@@ -1459,7 +1459,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     }
   }
 
-  const base = {
+  /*
+   * The benchmark and the dominant application read shape only touch
+   * select, where, limit, and execute. Keep that four-method surface eager;
+   * allocating every supported convenience method here accounted for most of
+   * the lightweight builder's remaining overhead. The broader fast surface is
+   * created only when a query actually asks for one of those methods.
+   */
+  const createExtensions = (): Record<string, unknown> => ({
     distinct() {
       if (selectKeyword === 'SELECT DISTINCT')
         return materialize().distinct()
@@ -1469,54 +1476,31 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     selectAll() {
       return proxy
     },
-    select(value: unknown) {
-      const selected = Array.isArray(value) ? value : [value]
-      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column)))) {
-        const builder = materialize()
-        const apply = builder.select as unknown as (value: unknown) => typeof builder
-        return apply.call(builder, value)
-      }
-      columns = selected as string[]
-      return proxy
-    },
     where(column: unknown, operator?: unknown, value?: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase())) {
-        if (column !== null && typeof column === 'object' && !Array.isArray(column) && operator === undefined && value === undefined) {
-          const prototype = Object.getPrototypeOf(column)
-          const entries = prototype === Object.prototype || prototype === null
-            ? Object.entries(column as Record<string, unknown>)
-            : []
-          if (entries.length > 0 && entries.every(([key]) => SIMPLE_SQLITE_COLUMN.test(key))) {
-            for (const [key, entryValue] of entries) {
-              if (predicateColumn === undefined) {
-                predicateColumn = key
-                predicateOperator = '='
-                predicateValue = entryValue
-                predicateParameterized = true
-                predicateValues = undefined
-              }
-              else {
-                ;(additionalPredicates ??= []).push({ column: key, operator: '=', value: entryValue, parameterized: true })
-              }
+      if (column !== null && typeof column === 'object' && !Array.isArray(column) && operator === undefined && value === undefined) {
+        const prototype = Object.getPrototypeOf(column)
+        const entries = prototype === Object.prototype || prototype === null
+          ? Object.entries(column as Record<string, unknown>)
+          : []
+        if (entries.length > 0 && entries.every(([key]) => SIMPLE_SQLITE_COLUMN.test(key))) {
+          for (const [key, entryValue] of entries) {
+            if (predicateColumn === undefined) {
+              predicateColumn = key
+              predicateOperator = '='
+              predicateValue = entryValue
+              predicateParameterized = true
+              predicateValues = undefined
             }
-            return proxy
+            else {
+              ;(additionalPredicates ??= []).push({ column: key, operator: '=', value: entryValue, parameterized: true })
+            }
           }
+          return proxy
         }
-        const builder = materialize()
-        const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
-        return apply.call(builder, column, operator, value)
       }
-      if (predicateColumn === undefined) {
-        predicateColumn = column
-        predicateOperator = operator
-        predicateValue = value
-        predicateParameterized = true
-        predicateValues = undefined
-      }
-      else {
-        ;(additionalPredicates ??= []).push({ column, operator, value, parameterized: true })
-      }
-      return proxy
+      const builder = materialize()
+      const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
+      return apply.call(builder, column, operator, value)
     },
     whereNull(column: unknown) {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
@@ -1755,15 +1739,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       ;(orderings ??= []).push({ column: resolvedColumn, direction: 'asc' })
       return proxy
     },
-    limit(value: unknown) {
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
-        const builder = materialize()
-        const apply = builder.limit as unknown as (value: unknown) => typeof builder
-        return apply.call(builder, value)
-      }
-      rowLimit = value
-      return proxy
-    },
     offset(value: unknown) {
       if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
         const builder = materialize()
@@ -1772,14 +1747,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       rowOffset = value
       return proxy
-    },
-    execute() {
-      try {
-        return Promise.resolve(buildStatement().executeSync())
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
     },
     get() {
       try {
@@ -1885,6 +1852,54 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         return Promise.reject(error)
       }
     },
+  })
+
+  let extensions: Record<string, unknown> | undefined
+  const base = {
+    select(value: unknown) {
+      const selected = Array.isArray(value) ? value : [value]
+      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column)))) {
+        const builder = materialize()
+        const apply = builder.select as unknown as (value: unknown) => typeof builder
+        return apply.call(builder, value)
+      }
+      columns = selected as string[]
+      return proxy
+    },
+    where(column: unknown, operator?: unknown, value?: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase())) {
+        const extended = extensions ??= createExtensions()
+        return (extended.where as (column: unknown, operator?: unknown, value?: unknown) => unknown)(column, operator, value)
+      }
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = operator
+        predicateValue = value
+        predicateParameterized = true
+        predicateValues = undefined
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator, value, parameterized: true })
+      }
+      return proxy
+    },
+    limit(value: unknown) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+        const builder = materialize()
+        const apply = builder.limit as unknown as (value: unknown) => typeof builder
+        return apply.call(builder, value)
+      }
+      rowLimit = value
+      return proxy
+    },
+    execute() {
+      try {
+        return Promise.resolve(buildStatement().executeSync())
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    },
   }
 
   proxy = new Proxy(base as Record<string | symbol, unknown>, {
@@ -1892,6 +1907,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
+      const extension = (extensions ??= createExtensions())[property as string]
+      if (extension !== undefined)
+        return extension
       const builder = materialize() as unknown as Record<string | symbol, unknown>
       const fallback = builder[property]
       return typeof fallback === 'function' ? fallback.bind(builder) : fallback
