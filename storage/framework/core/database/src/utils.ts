@@ -55,6 +55,7 @@ const postgresDefaults = getConnectionDefaults('postgres', envVars)
 
 let appEnv: string = envVars.APP_ENV || 'local'
 let dbDriver: string = envVars.DB_CONNECTION || 'sqlite'
+let queryBuilderDialect: QueryBuilderDialect = toQueryBuilderDialect(dbDriver)
 let queryLoggingEnabled = envVars.DB_QUERY_LOGGING_ENABLED ?? !isProductionEnvironment(appEnv)
 let dbConfig: DbConfig = {
   connections: {
@@ -166,6 +167,7 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
 
   if (config?.database?.default)
     dbDriver = config.database.default
+  queryBuilderDialect = toQueryBuilderDialect(dbDriver)
 
   // Cast rather than a merge: replacing the whole object is the behaviour this
   // has always had, and an app that reaches here has supplied its connections.
@@ -223,7 +225,7 @@ function getDatabaseConfig(): DbConfig {
  * matching the previous behavior.
  */
 function getDialect(): QueryBuilderDialect {
-  return toQueryBuilderDialect(getDriver())
+  return queryBuilderDialect
 }
 
 /**
