@@ -1389,8 +1389,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
 }
 
 function selectFromDatabase(table: string): unknown {
-  const instance = getReadDb()
-  if (getDialect() === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && SIMPLE_SQLITE_TABLE.test(table))
+  const dialect = getDialect()
+  const instance = dialect === 'sqlite' ? getDb() : getReadDb()
+  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && SIMPLE_SQLITE_TABLE.test(table))
     return createDeferredSqliteSelect(instance, table)
   return instance.selectFrom(table)
 }
