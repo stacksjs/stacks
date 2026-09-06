@@ -77,6 +77,41 @@ describe('the request path keeps its defaults', () => {
     expect(await (answer as Response).json()).toEqual({ ok: true })
   })
 
+  it('keeps concurrent async action response metadata isolated', async () => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    let resolveFirst: ((value: unknown) => void) | undefined
+    let resolveSecond: ((value: unknown) => void) | undefined
+    const wrapped = wrapAction({
+      handle: (request: Request) => new Promise((resolve) => {
+        if (request.url.endsWith('/first'))
+          resolveFirst = resolve
+        else
+          resolveSecond = resolve
+      }),
+    } as any, 'hot-path-concurrent-async-action')
+    const first = enhanceRequest(new Request('http://localhost/first') as any)
+    const second = enhanceRequest(new Request('http://localhost/second') as any)
+    first._requestId = 'first-request'
+    second._requestId = 'second-request'
+
+    const firstAnswer = wrapped(first) as Promise<Response>
+    const secondAnswer = wrapped(second) as Promise<Response>
+    resolveSecond?.({ request: 'second' })
+    resolveFirst?.({ request: 'first' })
+
+    const [firstResponse, secondResponse] = await Promise.all([firstAnswer, secondAnswer])
+    expect(firstResponse.headers.get('x-request-id')).toBe('first-request')
+    expect(secondResponse.headers.get('x-request-id')).toBe('second-request')
+  })
+
+  it('reports serialization errors from fulfilled async actions', async () => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/async-serialization-error') as any)
+    const wrapped = wrapAction({ handle: async () => ({ invalid: 1n }) } as any, 'hot-path-async-serialization-error')
+
+    await expect(wrapped(request)).rejects.toThrow()
+  })
+
   it('keeps an exact native GET synchronous with bun-router context and cookies', async () => {
     const [{ createStacksRouter }, { getCurrentRequest }] = await Promise.all([
       import('../src'),

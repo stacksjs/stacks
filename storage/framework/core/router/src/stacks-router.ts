@@ -2818,7 +2818,17 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
 
         const result = action.handle(req)
         return result instanceof Promise
-          ? result.then(value => formatResult(value, req)).catch(rethrowActionError)
+          ? result.then(
+              (value) => {
+                try {
+                  return formatResult(value, req)
+                }
+                catch (error) {
+                  return rethrowActionError(error)
+                }
+              },
+              rethrowActionError,
+            )
           : formatResult(result, req)
       }
       catch (handleError) {
