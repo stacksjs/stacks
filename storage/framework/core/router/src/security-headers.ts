@@ -31,7 +31,7 @@ let _headerTemplateCache: Headers | undefined
 let _jsonHeaderTemplateCache: Headers | undefined
 // Fixed-size warm cache: repeated JSON shapes avoid a native Headers.set(),
 // while varied response sizes cannot grow process memory without bound.
-let _jsonLengthHeaderTemplateCache: Map<number, Headers> | undefined
+let _jsonLengthHeaderTemplateCache: Map<number, { headers: Headers }> | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
 
 function isProduction(): boolean {
@@ -158,20 +158,22 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
     return new Response(body, { headers: baseHeaders })
 
   const templates = _jsonLengthHeaderTemplateCache ??= new Map()
-  let headers = templates.get(bodyLength)
-  if (!headers && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
-    headers = new Headers(baseHeaders)
+  let responseInit = templates.get(bodyLength)
+  if (!responseInit && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
+    const headers = new Headers(baseHeaders)
     headers.set('Content-Length', String(bodyLength))
-    templates.set(bodyLength, headers)
+    responseInit = { headers }
+    templates.set(bodyLength, responseInit)
   }
-  if (headers) {
+  if (responseInit) {
     // Response copies Headers synchronously. Updating the private template
     // before that copy is cheaper than mutating the constructed response.
+    const headers = responseInit.headers
     if (requestId)
       headers.set('X-Request-ID', requestId)
     else
       headers.delete('X-Request-ID')
-    return new Response(body, { headers })
+    return new Response(body, responseInit)
   }
 
   const response = new Response(body, { headers: baseHeaders })
