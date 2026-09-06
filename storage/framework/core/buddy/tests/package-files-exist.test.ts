@@ -88,4 +88,47 @@ describe('package manifests', () => {
 
     expect(missing.sort()).toEqual([])
   })
+
+  it('point `types` at a declaration file the build actually emits', () => {
+    /*
+     * `@stacksjs/docs` and `@stacksjs/http` both declared
+     * `types: dist/index.d.ts` and shipped six files, none of them a
+     * declaration - so every consumer of either package saw `any`. Their
+     * builds called `Bun.build` without the dts plugin; most packages get
+     * declarations from the shared build helper, and these two did not.
+     *
+     * Checked against the built `dist` rather than against `build.ts`. Looking
+     * for a `dts(` call in the build script reports 29 packages, and the three
+     * spot-checked against npm all publish declarations perfectly well - the
+     * helper emits them without that call appearing anywhere.
+     */
+    const untyped: string[] = []
+
+    for (const entry of readdirSync(coreDir)) {
+      const pkgDir = join(coreDir, entry)
+      if (!statSync(pkgDir).isDirectory() || !existsSync(join(pkgDir, 'dist')))
+        continue
+
+      const manifestPath = join(pkgDir, 'package.json')
+      if (!existsSync(manifestPath))
+        continue
+
+      let manifest: { name?: string, private?: boolean, types?: string }
+      try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
+      }
+      catch {
+        continue
+      }
+
+      if (!manifest.name || manifest.private || !manifest.types)
+        continue
+
+      const declared = manifest.types.startsWith('./') ? manifest.types.slice(2) : manifest.types
+      if (!existsSync(join(pkgDir, declared)))
+        untyped.push(`${manifest.name}: ${manifest.types}`)
+    }
+
+    expect(untyped.sort()).toEqual([])
+  })
 })
