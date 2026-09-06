@@ -2885,6 +2885,7 @@ function getRequestInput(
   // values were already typed by the JSON parser, so `typeof value !==
   // 'string'` skips them naturally. Form-body fields are still strings
   // (multipart wire format) — same code path covers them.
+  let coerced = false
   for (const [field, validation] of validationEntries) {
     const value = input[field]
     if (typeof value !== 'string') continue
@@ -2896,13 +2897,30 @@ function getRequestInput(
       // emits its natural "Must be a number" error rather than us
       // swallowing the bad value as 0.
       const n = Number(value)
-      if (Number.isFinite(n))
+      if (Number.isFinite(n)) {
         input[field] = n
+        coerced = true
+      }
     }
     else if (validatorName === 'boolean') {
-      if (value === 'true' || value === '1') input[field] = true
-      else if (value === 'false' || value === '0') input[field] = false
+      if (value === 'true' || value === '1') {
+        input[field] = true
+        coerced = true
+      }
+      else if (value === 'false' || value === '0') {
+        input[field] = false
+        coerced = true
+      }
     }
+  }
+
+  if (
+    !coerced
+    && !req.formBody
+    && !req.files
+    && (!req.params || Object.keys(req.params).length === 0)
+  ) {
+    ;req._allInputCache = input
   }
 
   return input
