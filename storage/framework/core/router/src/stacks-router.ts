@@ -2876,8 +2876,13 @@ function getRequestInput(
 
   // Get route params if available (also strings — bun-router doesn't
   // know the route-pattern type)
+  let hasRouteParams = false
   if (req.params) {
-    Object.assign(input, req.params)
+    for (const key in req.params) {
+      if (!Object.hasOwn(req.params, key)) continue
+      input[key] = req.params[key]
+      hasRouteParams = true
+    }
   }
 
   // Use already-parsed body (from parseRequestBody) if available
@@ -2949,7 +2954,7 @@ function getRequestInput(
     !coerced
     && !req.formBody
     && !req.files
-    && (!req.params || Object.keys(req.params).length === 0)
+    && !hasRouteParams
   ) {
     ;req._allInputCache = input
   }
