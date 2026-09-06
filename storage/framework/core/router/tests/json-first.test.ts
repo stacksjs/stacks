@@ -39,6 +39,15 @@ describe('formatResult - JSON-first', () => {
     expect(await res.json()).toEqual({ ok: true })
   })
 
+  test('async inline return stays JSON', async () => {
+    const router = createStacksRouter()
+    router.get('/async-obj', async () => ({ ok: true }) as any)
+
+    const res = await router.handleRequest(new Request('http://localhost/async-obj'))
+    expect(res.headers.get('content-type')).toContain('application/json')
+    expect(await res.json()).toEqual({ ok: true })
+  })
+
   test('string return on API-shaped request → JSON-encoded string', async () => {
     const router = createStacksRouter()
     router.get('/str', (() => 'ok') as any)

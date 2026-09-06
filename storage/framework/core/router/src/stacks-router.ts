@@ -1630,6 +1630,10 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const handlerKey = typeof handler === 'string' ? handler : undefined
   const synchronousInlineHandler = typeof handler === 'function'
     && handler.constructor.name !== 'AsyncFunction'
+  const asynchronousInlineHandler = typeof handler === 'function'
+    && handler.constructor.name === 'AsyncFunction'
+    ? handler as InlineRouteHandler
+    : undefined
 
   /*
    * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
@@ -2045,8 +2049,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // `let` (not `const`) because the post-action CORS wrapper below may
       // replace it with a header-mutated copy when the original Response's
       // Headers are immutable.
-      const baseResult = hasPreparedBaseResult ? preparedBaseResult! : wrappedBase(enhancedReq)
-      let response = baseResult instanceof Response ? baseResult : await baseResult
+      // Declared async inline handlers resolve here, so formatting their value
+      // in this continuation avoids creating a `.then(formatResult)` promise
+      // in `wrappedBase` only to await it immediately.
+      const formatsResolvedInlineResult = asynchronousInlineHandler !== undefined && !hasPreparedBaseResult
+      const baseResult = hasPreparedBaseResult
+        ? preparedBaseResult!
+        : asynchronousInlineHandler
+          ? asynchronousInlineHandler(enhancedReq)
+          : wrappedBase(enhancedReq)
+      const resolvedResult = baseResult instanceof Response ? baseResult : await baseResult
+      let response = formatsResolvedInlineResult
+        ? formatResult(resolvedResult, enhancedReq)
+        : resolvedResult as Response
 
       // CSRF cookie seeding — on safe-method responses (GET/HEAD/OPTIONS),
       // attach a fresh `X-CSRF-Token` cookie when none is present so SPAs
