@@ -71,6 +71,21 @@ const synchronousMissing = db
 if (JSON.stringify(synchronousMissing) !== JSON.stringify([]))
   throw new Error(`Unexpected synchronous missing result: ${JSON.stringify(synchronousMissing)}`)
 
+const synchronousFirst = db
+  .selectFrom('fast_items')
+  .select(['id', 'name'])
+  .where('id', '=', 2)
+  .executeTakeFirstSync!()
+if (JSON.stringify(synchronousFirst) !== JSON.stringify({ id: 2, name: 'beta' }))
+  throw new Error(`Unexpected synchronous first-row result: ${JSON.stringify(synchronousFirst)}`)
+
+const synchronousFirstMissing = db
+  .selectFrom('fast_items')
+  .where('id', '=', 999)
+  .executeTakeFirstSync!()
+if (synchronousFirstMissing !== undefined)
+  throw new Error(`Unexpected synchronous missing first row: ${JSON.stringify(synchronousFirstMissing)}`)
+
 const facadeAliases = await Promise.all([
   db.table('fast_items').select('name').where('id', '=', 1).executeTakeFirst(),
   db.select('fast_items', 'name').where('id', '=', 1).executeTakeFirst(),

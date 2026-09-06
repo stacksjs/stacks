@@ -1032,6 +1032,8 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
   execute: () => Promise<ResultOf<TRow, TKind>>
   /** SQLite fast path only. Executes on the calling thread without a Promise. */
   executeSync?: () => ResultOf<TRow, TKind>
+  /** SQLite fast path only. Executes and returns the first row without an array. */
+  executeTakeFirstSync?: () => FirstOf<TRow, TKind>
   executeTakeFirst: () => Promise<FirstOf<TRow, TKind>>
   executeTakeFirstOrThrow: () => Promise<NonNullable<FirstOf<TRow, TKind>>>
   pluck: (...args: unknown[]) => Promise<unknown[]>
@@ -1362,6 +1364,7 @@ function resolveDeferredSqliteTerminal(
   target: Record<string | symbol, unknown>,
   property: string | symbol,
   executeStatement: (firstOnly?: boolean, selection?: string) => UnsafeRow[],
+  executeFirstStatement: () => UnsafeRow | undefined,
   materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
   proxy: Record<string | symbol, unknown>,
 ): unknown {
@@ -1375,14 +1378,14 @@ function resolveDeferredSqliteTerminal(
     return selectAll
   }
   if (property === 'first' || property === 'executeTakeFirst') {
-    const first = async () => executeStatement(true)[0]
+    const first = async () => executeFirstStatement()
     target.first = first
     target.executeTakeFirst = first
     return first
   }
   if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
     const firstOrFail = async () => {
-      const row = executeStatement(true)[0]
+      const row = executeFirstStatement()
       if (row === undefined)
         throw new Error('Record not found')
       return row
@@ -1393,12 +1396,12 @@ function resolveDeferredSqliteTerminal(
   }
   if (property === 'exists' || property === 'doesntExist') {
     const findsRow = property === 'exists'
-    const check = async () => (executeStatement(true)[0] !== undefined) === findsRow
+    const check = async () => (executeFirstStatement() !== undefined) === findsRow
     target[property] = check
     return check
   }
   if (property === 'value') {
-    const value = async (column: string) => executeStatement(true)[0]?.[column]
+    const value = async (column: string) => executeFirstStatement()?.[column]
     target.value = value
     return value
   }
@@ -1733,6 +1736,85 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (rowOffset !== undefined)
       query += ` OFFSET ${rowOffset}`
     return runFastSqliteSql(instance, sqliteDatabase, query, params)
+  }
+
+  // First-row terminals use Statement.get() directly. Keep this separate from
+  // executeStatement so the established array-returning path gains no mode
+  // branch while first(), exists(), value(), and executeTakeFirstSync() avoid
+  // allocating a one-element result array.
+  const executeFirstStatement = (): UnsafeRow | undefined => {
+    if (rowLimit === 0)
+      return
+
+    const selected = selectedColumnsSql ?? '*'
+    if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
+      const cached = lastUnparameterizedSqliteSelect
+      if (
+        cached
+        && cached.instance === instance
+        && cached.selectKeyword === selectKeyword
+        && cached.selected === selected
+        && cached.table === table
+        && cached.limit === 1
+      ) {
+        if (sqliteDatabase)
+          return (cached.statement ??= sqliteDatabase.query(cached.sql)).get() ?? undefined
+        return runFastSqliteSql(instance, sqliteDatabase, cached.sql)[0]
+      }
+      const sql = `${selectKeyword} ${selected} FROM ${table} LIMIT 1`
+      const statement = sqliteDatabase?.query(sql)
+      lastUnparameterizedSqliteSelect = {
+        instance,
+        selectKeyword,
+        selected,
+        table,
+        limit: 1,
+        sql,
+        statement,
+      }
+      return statement ? statement.get() ?? undefined : runFastSqliteSql(instance, sqliteDatabase, sql)[0]
+    }
+
+    if (
+      predicateColumn !== undefined
+      && predicateValues === undefined
+      && predicateParameterized
+      && additionalPredicates === undefined
+      && orderings === undefined
+      && rowOffset === undefined
+    ) {
+      const cached = lastParameterizedSqliteSelect
+      if (
+        cached
+        && cached.instance === instance
+        && cached.selectKeyword === selectKeyword
+        && cached.selected === selected
+        && cached.table === table
+        && cached.predicateColumn === predicateColumn
+        && cached.predicateOperator === predicateOperator
+        && cached.limit === 1
+      ) {
+        if (sqliteDatabase)
+          return (cached.statement ??= sqliteDatabase.query(cached.sql)).get(predicateValue) ?? undefined
+        return runFastSqliteSql(instance, sqliteDatabase, cached.sql, [predicateValue])[0]
+      }
+      const sql = `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ? LIMIT 1`
+      const statement = sqliteDatabase?.query(sql)
+      lastParameterizedSqliteSelect = {
+        instance,
+        selectKeyword,
+        selected,
+        table,
+        predicateColumn,
+        predicateOperator,
+        limit: 1,
+        sql,
+        statement,
+      }
+      return statement ? statement.get(predicateValue) ?? undefined : runFastSqliteSql(instance, sqliteDatabase, sql, [predicateValue])[0]
+    }
+
+    return executeStatement(true)[0]
   }
 
   /*
@@ -2101,6 +2183,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     executeSync() {
       return executeStatement()
     },
+    executeTakeFirstSync() {
+      return executeFirstStatement()
+    },
   }
 
   proxy = new Proxy(base as Record<string | symbol, unknown>, {
@@ -2108,7 +2193,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
-      const terminal = resolveDeferredSqliteTerminal(target, property, executeStatement, materialize, proxy)
+      const terminal = resolveDeferredSqliteTerminal(target, property, executeStatement, executeFirstStatement, materialize, proxy)
       if (terminal !== undefined)
         return terminal
       const extension = (extensions ??= createExtensions())[property as string]
