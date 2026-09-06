@@ -2853,7 +2853,7 @@ function getRequestInput(
   // caller should disambiguate, and silently overwriting the body
   // value with the file would be more surprising than the reverse.
   // (stacksjs/stacks#1856)
-  if (typeof req.allFiles === 'function') {
+  if (req.files && typeof req.allFiles === 'function') {
     try {
       const files = req.allFiles() as Record<string, unknown>
       for (const key of Object.keys(files ?? {})) {
