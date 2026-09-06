@@ -63,8 +63,11 @@ if (serves('post-validate')) {
       name: { rule: schema.string() },
       count: { rule: schema.number() },
     },
+    // The action pipeline already produced the exact allow-listed payload.
+    // Return it directly instead of re-reading both fields and allocating a
+    // duplicate object after validation.
     handle(request: any) {
-      return { name: request.get('name'), count: request.get('count') }
+      return request.getValidated()
     },
   })
 
