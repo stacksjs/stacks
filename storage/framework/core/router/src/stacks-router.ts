@@ -1828,14 +1828,14 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           // Server-Timing trail so devtools (and Chrome's network panel)
           // can show exactly which middleware spent how long. Cheap —
           // hrtime delta per layer.
-          const mwStart = process.hrtime.bigint()
+          const mwStart = performance.now()
           runningMiddleware = middlewareName
           try {
             const outcome = middleware.handle(enhancedReq)
             // Nothing to time out when the layer already finished.
             if (outcome && typeof (outcome as Promise<void>).then === 'function')
               await Promise.race([outcome as Promise<void>, armChainBudget!()])
-            const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
+            const elapsedMs = performance.now() - mwStart
             middlewareTimings.push({ name: timingName, ms: elapsedMs })
           }
           catch (error) {
@@ -1844,7 +1844,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             // Without this, an auth-rejected 401 had no per-middleware
             // timings at all — making it impossible to tell from the
             // response whether the rejection was instant or hung first.
-            const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
+            const elapsedMs = performance.now() - mwStart
             middlewareTimings.push({ name: timingName, ms: elapsedMs })
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
             // Middleware can throw a Response directly (CORS preflight,
