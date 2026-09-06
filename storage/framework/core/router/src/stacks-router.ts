@@ -619,6 +619,7 @@ interface MiddlewareTiming {
 
 const EMPTY_RESOLVED_MIDDLEWARE: ResolvedMiddleware[] = []
 const EMPTY_MIDDLEWARE_TIMINGS: MiddlewareTiming[] = []
+const EMPTY_MIDDLEWARE_ENTRIES: readonly string[] = []
 
 /**
  * Named route registry — keeps the original path plus the precomputed
@@ -1656,7 +1657,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
       }
 
-      const userMiddleware = routeMiddlewareRegistry.get(routeKey) || []
+      const userMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
 
       // Default-on CSRF: every state-mutating method gets `csrf` injected
       // at the front of the chain unless:
