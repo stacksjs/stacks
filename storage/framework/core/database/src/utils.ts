@@ -762,7 +762,10 @@ ensureConfigLoaded()
  * any at every call site, which is the error `noImplicitAny` exists to raise.
  */
 type UnsafeRow = Record<string, unknown>
-type UnsafeReturn = Promise<UnsafeRow[]> & { execute: () => Promise<UnsafeRow[]> }
+type UnsafeReturn = Promise<UnsafeRow[]> & {
+  execute: () => Promise<UnsafeRow[]>
+  executeSync: () => UnsafeRow[]
+}
 
 /**
  * A raw result as the drivers actually hand it back.
@@ -1335,7 +1338,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
-  const executeRows = (firstOnly = false): Promise<UnsafeRow[]> => {
+  const buildStatement = (firstOnly = false): UnsafeReturn => {
     const selected = columns?.join(', ') ?? '*'
     let query = `SELECT ${selected} FROM ${table}`
     const params: unknown[] = []
@@ -1352,7 +1355,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     const effectiveLimit = rowLimit ?? (firstOnly ? 1 : undefined)
     if (effectiveLimit !== undefined)
       query += ` LIMIT ${effectiveLimit}`
-    return (instance.unsafe(query, params) as unknown as UnsafeReturn).execute()
+    return instance.unsafe(query, params) as unknown as UnsafeReturn
   }
 
   const base = {
@@ -1392,10 +1395,15 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     execute() {
-      return executeRows()
+      return buildStatement().execute()
     },
     executeTakeFirst() {
-      return executeRows(true).then(rows => rows[0])
+      try {
+        return Promise.resolve(buildStatement(true).executeSync()[0])
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     },
   }
 
