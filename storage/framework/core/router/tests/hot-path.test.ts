@@ -77,6 +77,99 @@ describe('the request path keeps its defaults', () => {
     expect(await (answer as Response).json()).toEqual({ ok: true })
   })
 
+  it('keeps an exact native GET synchronous with bun-router context and cookies', async () => {
+    const [{ createStacksRouter }, { getCurrentRequest }] = await Promise.all([
+      import('../src'),
+      import('@stacksjs/bun-router'),
+    ])
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-synchronous', (request) => {
+      request.cookies.set('theme', 'dark', { path: '/' })
+      return { contextMatches: getCurrentRequest() === request }
+    })
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = nativeRoutes['/_hot/native-synchronous'].GET(new Request('http://localhost/_hot/native-synchronous', {
+        headers: { cookie: 'X-CSRF-Token=already-mine' },
+      }))
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(await (answer as Response).json()).toEqual({ contextMatches: true })
+      expect((answer as Response).headers.get('set-cookie') ?? '').toContain('theme=dark')
+      expect((answer as Response).headers.get('x-request-id')).toBeTruthy()
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
+  it('keeps native GETs with global middleware on the generic dispatcher', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.use(async (_request, next) => {
+      const response = await next()
+      response.headers.set('x-global-middleware', 'applied')
+      return response
+    })
+    direct.get('/_hot/native-middleware', () => ({ ok: true }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const pending = nativeRoutes['/_hot/native-middleware'].GET(new Request('http://localhost/_hot/native-middleware'))
+
+      expect(pending).toBeInstanceOf(Promise)
+      expect((await pending).headers.get('x-global-middleware')).toBe('applied')
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
+  it('keeps first-registration semantics on duplicate native GETs', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-duplicate', () => ({ registration: 'first' }))
+    direct.get('/_hot/native-duplicate', () => ({ registration: 'second' }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = nativeRoutes['/_hot/native-duplicate'].GET(new Request('http://localhost/_hot/native-duplicate', {
+        headers: { cookie: 'X-CSRF-Token=already-mine' },
+      }))
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(await (answer as Response).json()).toEqual({ registration: 'first' })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
+  it('preserves native error handling for a rejected synchronous GET', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-error', () => {
+      throw new Error('native failure')
+    })
+    direct.bunRouter.onError(error => Response.json({ caught: error.message }, { status: 418 }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = await nativeRoutes['/_hot/native-error'].GET(new Request('http://localhost/_hot/native-error'))
+
+      expect(answer.status).toBe(418)
+      expect(await answer.json()).toEqual({ caught: 'native failure' })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('still seeds CSRF when the underlying router is called directly', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

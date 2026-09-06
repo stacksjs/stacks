@@ -22,7 +22,7 @@ import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage/uploaded-file'
-import { applyRequestEnhancements, applyResponseCompression, Router } from '@stacksjs/bun-router'
+import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest, setCurrentRequest as setBunRouterCurrentRequest } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
@@ -255,6 +255,12 @@ import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pag
 
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
+const stacksRouteHandlers = new WeakSet<RouteHandlerFn>()
+
+function rememberStacksRouteHandler(handler: RouteHandlerFn): RouteHandlerFn {
+  stacksRouteHandlers.add(handler)
+  return handler
+}
 
 /**
  * An inline handler, as a route file writes one.
@@ -1648,7 +1654,44 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     }
   }
 
-  return async (req: EnhancedRequest) => {
+  const finishSynchronousResult = (
+    req: EnhancedRequest,
+    response: Response,
+    csrfHandledByOuter: boolean,
+  ): Response | undefined => {
+    if (
+      response.status >= 400
+      || (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] !== true
+      || req._corsConfig
+      || req._compress === true
+      || req._startNs != null
+      || Array.isArray(req._afterResponse)
+      || req._responseHeaders
+    ) {
+      return
+    }
+
+    if (routeSeedsCsrf && !csrfHandledByOuter) {
+      const mod = loadCsrfModule()
+      if (mod instanceof Promise)
+        return
+      if (mod) {
+        return mod.seedCsrfCookieIfMissing(
+          req as unknown as Request,
+          response,
+          (req as unknown as { _csrfToken?: string })._csrfToken,
+          true,
+        )
+      }
+    }
+    return response
+  }
+
+  const handleAsync = async (
+    req: EnhancedRequest,
+    preparedBaseResult?: Response | Promise<Response>,
+    hasPreparedBaseResult = false,
+  ): Promise<Response> => {
     // Parse body and enhance request first. parseRequestBody can throw
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
@@ -1700,41 +1743,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       ;req._forceJson = true
     }
 
-    let preparedBaseResult: Response | Promise<Response>
-    let hasPreparedBaseResult = false
     if (
-      synchronousInlineHandler
+      !hasPreparedBaseResult
+      && synchronousInlineHandler
       && !routeAcceptsCsrf
       && routeMiddleware.length === 0
       && !routeRateLimit?.config
     ) {
       preparedBaseResult = runWithRequest(enhancedReq, () => wrappedBase(enhancedReq))
       hasPreparedBaseResult = true
-      if (
-        preparedBaseResult instanceof Response
-        && preparedBaseResult.status < 400
-        && (preparedBaseResult as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
-        && !enhancedReq._corsConfig
-        && enhancedReq._compress !== true
-        && enhancedReq._startNs == null
-        && !Array.isArray(enhancedReq._afterResponse)
-        && !enhancedReq._responseHeaders
-      ) {
-        if (routeSeedsCsrf && !csrfHandledByOuter) {
-          const mod = loadCsrfModule()
-          if (!(mod instanceof Promise) && mod) {
-            preparedBaseResult = mod.seedCsrfCookieIfMissing(
-              enhancedReq as unknown as Request,
-              preparedBaseResult,
-              (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
-              true,
-            )
-            return preparedBaseResult
-          }
-        }
-        else {
-          return preparedBaseResult
-        }
+      if (preparedBaseResult instanceof Response) {
+        const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter)
+        if (finished)
+          return finished
       }
     }
 
@@ -2215,6 +2236,42 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       return response
     })
   }
+
+  if (!synchronousInlineHandler || !routeRendersCsrf)
+    return rememberStacksRouteHandler(handleAsync)
+
+  const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
+    if (routeMiddleware.length !== 0 || routeRateLimit?.config)
+      return handleAsync(req)
+
+    const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
+    if (!csrfHandledByOuter) {
+      const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
+      if (renderTokenSeeding)
+        return renderTokenSeeding.then(() => handleAsync(req))
+    }
+
+    if (forcesJsonByGroup)
+      req._forceJson = true
+
+    let preparedBaseResult: Response | Promise<Response>
+    try {
+      preparedBaseResult = runWithRequest(req, () => wrappedBase(req))
+    }
+    catch (error) {
+      return Promise.reject(error)
+    }
+
+    if (preparedBaseResult instanceof Response) {
+      const finished = finishSynchronousResult(req, preparedBaseResult, csrfHandledByOuter)
+      if (finished)
+        return finished
+    }
+
+    return handleAsync(req, preparedBaseResult, true)
+  }
+
+  return rememberStacksRouteHandler(handleSynchronous)
 }
 
 /**
@@ -5196,6 +5253,94 @@ const databaseContextWrappedRouters = new WeakSet<Router>()
 type NativeRouteHandler = (request: Request) => Response | Promise<Response>
 type NativeRouteTable = Record<string, Record<string, NativeRouteHandler>>
 
+interface NativeRouterInternals {
+  routes: Route[]
+  globalMiddleware: unknown[]
+  enhanceRequest: (request: Request, params?: Record<string, string>) => EnhancedRequest
+  applyModifiedCookies: (response: Response, request: EnhancedRequest) => Response
+  errorHandler?: (error: Error) => Response | Promise<Response>
+}
+
+function nativeRouteErrorResponse(error: unknown): Response {
+  return new Response(JSON.stringify({
+    success: false,
+    message: 'Internal Server Error',
+    error: error instanceof Error ? error.message : String(error),
+  }), {
+    status: 500,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin',
+    },
+  })
+}
+
+function handleDirectNativeRouteError(router: NativeRouterInternals, error: unknown): Response | Promise<Response> {
+  console.error('Error handling request:', error)
+  return router.errorHandler
+    ? router.errorHandler(error instanceof Error ? error : new Error(String(error)))
+    : nativeRouteErrorResponse(error)
+}
+
+/**
+ * Bun-router's generic native adapter is intentionally async because it
+ * supports every handler and middleware shape. Stacks has already compiled
+ * its own exact GET pipeline, so routes with no bun-router middleware can
+ * invoke that handler directly while retaining request context, errors, and
+ * response-cookie handling.
+ */
+function buildDirectNativeGetHandlers(router: Router): Map<string, NativeRouteHandler> {
+  const nativeRouter = router as unknown as NativeRouterInternals
+  const handlers = new Map<string, NativeRouteHandler>()
+  if (nativeRouter.globalMiddleware.length !== 0)
+    return handlers
+
+  for (const route of nativeRouter.routes) {
+    if (
+      (route.method !== 'GET' && route.method !== 'HEAD')
+      || route.nativeDispatch === false
+      || (route.constraints && Object.keys(route.constraints).length > 0)
+      || route.path.includes('{')
+      || route.path.includes(':')
+      || route.path.includes('*')
+      || (route.middleware?.length ?? 0) !== 0
+      || typeof route.handler !== 'function'
+      || !stacksRouteHandlers.has(route.handler as RouteHandlerFn)
+    ) {
+      continue
+    }
+
+    const handler = route.handler as RouteHandlerFn
+    const key = `${route.method}:${route.path}`
+    if (handlers.has(key))
+      continue
+
+    handlers.set(key, (request) => {
+      return runWithBunRouterRequest(request as EnhancedRequest, () => {
+        const enhancedRequest = nativeRouter.enhanceRequest(request, {})
+        setBunRouterCurrentRequest(enhancedRequest)
+        enhancedRequest.route = route
+
+        try {
+          const response = handler(enhancedRequest)
+          return response instanceof Response
+            ? nativeRouter.applyModifiedCookies(response, enhancedRequest)
+            : response.then(
+                result => nativeRouter.applyModifiedCookies(result, enhancedRequest),
+                error => handleDirectNativeRouteError(nativeRouter, error),
+              )
+        }
+        catch (error) {
+          return handleDirectNativeRouteError(nativeRouter, error)
+        }
+      })
+    })
+  }
+  return handlers
+}
+
 /**
  * Bun's native route table bypasses `handleRequest`, which is normally the
  * database routing boundary. Decorate the generated handlers instead of the
@@ -5216,14 +5361,19 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     if (!routes)
       return routes
 
+    const directGetHandlers = buildDirectNativeGetHandlers(router)
+
     const compression = (nativeRouter.config as unknown as {
       compression?: Parameters<typeof applyResponseCompression>[2]
     }).compression
     const compressionDisabled = compression?.enabled === false
     const compressionThreshold = compression?.threshold ?? 1024
-    for (const methods of Object.values(routes)) {
+    for (const [path, methods] of Object.entries(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
         const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
+        const dispatch = directGetHandlers.get(`${method}:${path}`)
+          ?? (method === 'HEAD' ? directGetHandlers.get(`GET:${path}`) : undefined)
+          ?? handler
         methods[method] = (request) => {
           if (safeMethod) {
             const cookie = request.headers.get('cookie') ?? ''
@@ -5239,7 +5389,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
               return response
             return applyResponseCompression(response, request, compression)
           }
-          const response = runInRoutingContext(() => handler(request))
+          const response = runInRoutingContext(() => dispatch(request))
           return response instanceof Response ? finish(response) : response.then(finish)
         }
       }
