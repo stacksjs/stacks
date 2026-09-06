@@ -1294,7 +1294,10 @@ function hasActiveQueryBuilderHooks(): boolean {
  */
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
   let columns: string[] | undefined
-  const predicates: Array<{ column: string, operator: string, value: unknown }> = []
+  let predicateColumn: string | undefined
+  let predicateOperator: string | undefined
+  let predicateValue: unknown
+  let additionalPredicates: Array<{ column: string, operator: string, value: unknown }> | undefined
   let rowLimit: number | undefined
   let materialized: ReturnType<RawQueryBuilder['selectFrom']> | undefined
 
@@ -1306,9 +1309,13 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const apply = builder.select as unknown as (value: unknown) => typeof builder
       builder = apply.call(builder, columns)
     }
-    for (const predicate of predicates) {
+    if (predicateColumn !== undefined) {
       const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
-      builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
+      builder = apply.call(builder, predicateColumn, predicateOperator, predicateValue)
+      if (additionalPredicates) {
+        for (const predicate of additionalPredicates)
+          builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
+      }
     }
     if (rowLimit !== undefined) {
       const apply = builder.limit as unknown as (value: unknown) => typeof builder
@@ -1336,7 +1343,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
         return apply.call(builder, column, operator, value)
       }
-      predicates.push({ column, operator, value })
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = operator
+        predicateValue = value
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator, value })
+      }
       return proxy
     },
     limit(value: unknown) {
@@ -1352,11 +1366,15 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const selected = columns?.join(', ') ?? '*'
       let query = `SELECT ${selected} FROM ${table}`
       const params: unknown[] = []
-      if (predicates.length > 0) {
-        query += ` WHERE ${predicates.map((predicate) => {
-          params.push(predicate.value)
-          return `${predicate.column} ${predicate.operator} ?`
-        }).join(' AND ')}`
+      if (predicateColumn !== undefined) {
+        query += ` WHERE ${predicateColumn} ${predicateOperator} ?`
+        params.push(predicateValue)
+        if (additionalPredicates) {
+          query += ` AND ${additionalPredicates.map((predicate) => {
+            params.push(predicate.value)
+            return `${predicate.column} ${predicate.operator} ?`
+          }).join(' AND ')}`
+        }
       }
       if (rowLimit !== undefined)
         query += ` LIMIT ${rowLimit}`
