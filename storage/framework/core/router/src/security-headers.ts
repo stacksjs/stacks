@@ -137,6 +137,7 @@ function jsonSecurityHeadersTemplate(): Headers {
   if (!_jsonHeaderTemplateCache) {
     _jsonHeaderTemplateCache = new Headers(securityHeadersTemplate())
     _jsonHeaderTemplateCache.set('Content-Type', 'application/json;charset=utf-8')
+    _jsonHeaderTemplateCache.set('Vary', 'Accept-Encoding')
   }
   return _jsonHeaderTemplateCache
 }

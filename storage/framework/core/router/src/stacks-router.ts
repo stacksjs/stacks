@@ -649,6 +649,7 @@ const routeActionRegistry = new Map<string, RouterAction>()
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 const FRAMEWORK_RESPONSE_METADATA_APPLIED = Symbol('stacks.router.frameworkResponseMetadataApplied')
+const FRAMEWORK_RESPONSE_BODY_LENGTH = Symbol('stacks.router.frameworkResponseBodyLength')
 
 interface ResolvedMiddleware {
   name: string
@@ -3106,16 +3107,19 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // stream. Count UTF-8 bytes, not JavaScript characters; a custom toJSON may
   // also produce an empty body.
   const body = JSON.stringify(result) ?? ''
+  const bodyLength = Buffer.byteLength(body)
   const response = canPreapplyMetadata
     ? secureSerializedJsonResponse(body)
     : new Response(body, { headers: createJsonSecurityHeaders() })
-  response.headers.set('Content-Length', String(Buffer.byteLength(body)))
+  response.headers.set('Content-Length', String(bodyLength))
   if (linkHeader)
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
     if (req._requestId)
       response.headers.set('X-Request-ID', req._requestId)
-    ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
+    const frameworkResponse = response as unknown as Record<symbol, unknown>
+    frameworkResponse[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
+    frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH] = bodyLength
   }
   return response
 }
@@ -5102,10 +5106,16 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     const compression = (nativeRouter.config as unknown as {
       compression?: Parameters<typeof applyResponseCompression>[2]
     }).compression
+    const compressionDisabled = compression?.enabled === false
+    const compressionThreshold = compression?.threshold ?? 1024
     for (const methods of Object.values(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
         methods[method] = async (request) => {
           const response = await runInRoutingContext(() => handler(request))
+          const frameworkResponse = response as unknown as Record<symbol, unknown>
+          const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
+          if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
+            return response
           return await applyResponseCompression(response, request, compression)
         }
       }

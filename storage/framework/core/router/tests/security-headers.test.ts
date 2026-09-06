@@ -144,20 +144,25 @@ describe('applySecurityHeaders', () => {
     expect(second.get('Strict-Transport-Security')).toBe('max-age=31536000; includeSubDomains')
   })
 
-  test('includes JSON content type in its own cloned template', () => {
+  test('includes invariant JSON transport headers in its own cloned template', () => {
     const first = createJsonSecurityHeaders()
     first.delete('Content-Type')
+    first.delete('Vary')
 
     expect(createJsonSecurityHeaders().get('Content-Type')).toBe('application/json;charset=utf-8')
+    expect(createJsonSecurityHeaders().get('Vary')).toBe('Accept-Encoding')
     expect(createSecurityHeaders().get('Content-Type')).toBeNull()
+    expect(createSecurityHeaders().get('Vary')).toBeNull()
   })
 
   test('keeps cached templates isolated from response header mutations', () => {
     const serialized = secureSerializedJsonResponse('{"ok":true}')
     serialized.headers.set('X-Frame-Options', 'DENY')
     serialized.headers.delete('Content-Type')
+    serialized.headers.delete('Vary')
 
     expect(secureSerializedJsonResponse('{"ok":true}').headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
     expect(secureSerializedJsonResponse('{"ok":true}').headers.get('Content-Type')).toBe('application/json;charset=utf-8')
+    expect(secureSerializedJsonResponse('{"ok":true}').headers.get('Vary')).toBe('Accept-Encoding')
   })
 })
