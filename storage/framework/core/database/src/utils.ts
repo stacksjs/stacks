@@ -1542,6 +1542,10 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
     const selected = selection ?? columns?.join(', ') ?? '*'
     const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
+    if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
+      const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
+      return instance.unsafe(`${selectKeyword} ${selected} FROM ${table}${limit}`) as unknown as UnsafeReturn
+    }
     if (
       predicateColumn !== undefined
       && predicateValues === undefined
