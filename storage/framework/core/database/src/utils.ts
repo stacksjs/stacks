@@ -1297,6 +1297,46 @@ function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
 }
 
+function resolveDeferredSqliteTerminal(
+  target: Record<string | symbol, unknown>,
+  property: string | symbol,
+  buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
+): unknown {
+  if (property === 'get') {
+    target.get = target.execute
+    return target.execute
+  }
+  if (property === 'first' || property === 'executeTakeFirst') {
+    const first = () => {
+      try {
+        return Promise.resolve(buildStatement(true).executeSync()[0])
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    }
+    target.first = first
+    target.executeTakeFirst = first
+    return first
+  }
+  if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
+    const firstOrFail = () => {
+      try {
+        const row = buildStatement(true).executeSync()[0]
+        return row === undefined
+          ? Promise.reject(new Error('Record not found'))
+          : Promise.resolve(row)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    }
+    target.firstOrFail = firstOrFail
+    target.executeTakeFirstOrThrow = firstOrFail
+    return firstOrFail
+  }
+}
+
 /**
  * Build the common SQLite SELECT shape without allocating bun-query-builder's
  * complete relationship, aggregate, window, pagination, and dynamic-where API.
@@ -1748,52 +1788,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowOffset = value
       return proxy
     },
-    get() {
-      try {
-        return Promise.resolve(buildStatement().executeSync())
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
-    executeTakeFirst() {
-      try {
-        return Promise.resolve(buildStatement(true).executeSync()[0])
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
-    executeTakeFirstOrThrow() {
-      try {
-        const row = buildStatement(true).executeSync()[0]
-        return row === undefined
-          ? Promise.reject(new Error('Record not found'))
-          : Promise.resolve(row)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
-    first() {
-      try {
-        return Promise.resolve(buildStatement(true).executeSync()[0])
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
-    firstOrFail() {
-      try {
-        const row = buildStatement(true).executeSync()[0]
-        return row === undefined
-          ? Promise.reject(new Error('Record not found'))
-          : Promise.resolve(row)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
     exists() {
       try {
         return Promise.resolve(buildStatement(true).executeSync()[0] !== undefined)
@@ -1907,6 +1901,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
+      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement)
+      if (terminal !== undefined)
+        return terminal
       const extension = (extensions ??= createExtensions())[property as string]
       if (extension !== undefined)
         return extension
