@@ -2857,6 +2857,7 @@ function getRequestInput(
   validationEntries?: ActionValidationEntry[],
 ): Record<string, unknown> {
   const input: Record<string, unknown> = {}
+  let mayNeedCoercion = false
 
   // Get query parameters (always strings on the wire). Reuse the query
   // already parsed into `req.query` by enhanceRequest when present; only fall
@@ -2865,12 +2866,16 @@ function getRequestInput(
   // parse on every validated request.
   const q = req.query
   if (q) {
-    for (const key in q) input[key] = q[key]
+    for (const key in q) {
+      input[key] = q[key]
+      mayNeedCoercion = true
+    }
   }
   else {
     const url = new URL(req.url)
     url.searchParams.forEach((value, key) => {
       input[key] = value
+      mayNeedCoercion = true
     })
   }
 
@@ -2882,6 +2887,7 @@ function getRequestInput(
       if (!Object.hasOwn(req.params, key)) continue
       input[key] = req.params[key]
       hasRouteParams = true
+      mayNeedCoercion = true
     }
   }
 
@@ -2891,6 +2897,7 @@ function getRequestInput(
   }
   else if (req.formBody && typeof req.formBody === 'object') {
     Object.assign(input, req.formBody)
+    mayNeedCoercion = true
   }
 
   // Merge multipart files so file-shaped validations
@@ -2922,30 +2929,32 @@ function getRequestInput(
   // 'string'` skips them naturally. Form-body fields are still strings
   // (multipart wire format) — same code path covers them.
   let coerced = false
-  for (const [field, validation] of validationEntries) {
-    const value = input[field]
-    if (typeof value !== 'string') continue
+  if (mayNeedCoercion) {
+    for (const [field, validation] of validationEntries) {
+      const value = input[field]
+      if (typeof value !== 'string') continue
 
-    const validatorName = (validation.rule as { name?: string })?.name
-    if (validatorName === 'number') {
-      // `Number.isFinite()` guard so malformed inputs (`"abc"`,
-      // `"NaN"`, `"Infinity"`) stay as strings — the validator then
-      // emits its natural "Must be a number" error rather than us
-      // swallowing the bad value as 0.
-      const n = Number(value)
-      if (Number.isFinite(n)) {
-        input[field] = n
-        coerced = true
+      const validatorName = (validation.rule as { name?: string })?.name
+      if (validatorName === 'number') {
+        // `Number.isFinite()` guard so malformed inputs (`"abc"`,
+        // `"NaN"`, `"Infinity"`) stay as strings — the validator then
+        // emits its natural "Must be a number" error rather than us
+        // swallowing the bad value as 0.
+        const n = Number(value)
+        if (Number.isFinite(n)) {
+          input[field] = n
+          coerced = true
+        }
       }
-    }
-    else if (validatorName === 'boolean') {
-      if (value === 'true' || value === '1') {
-        input[field] = true
-        coerced = true
-      }
-      else if (value === 'false' || value === '0') {
-        input[field] = false
-        coerced = true
+      else if (validatorName === 'boolean') {
+        if (value === 'true' || value === '1') {
+          input[field] = true
+          coerced = true
+        }
+        else if (value === 'false' || value === '0') {
+          input[field] = false
+          coerced = true
+        }
       }
     }
   }
