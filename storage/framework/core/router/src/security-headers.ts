@@ -27,6 +27,7 @@ import process from 'node:process'
 let _isProductionCache: boolean | undefined
 let _isDisabledCache: boolean | undefined
 let _cspCache: { header: string, value: string } | null | undefined
+let _headerTemplateCache: Headers | undefined
 
 function isProduction(): boolean {
   if (_isProductionCache !== undefined)
@@ -118,9 +119,19 @@ export function applySecurityHeadersToRecord(headers: Record<string, string>): v
     headers[csp.header] = csp.value
 }
 
+/** Clone the resolved defaults without rebuilding their JS record each time. */
+export function createSecurityHeaders(): Headers {
+  if (!_headerTemplateCache) {
+    _headerTemplateCache = new Headers()
+    applySecurityHeaders(_headerTemplateCache, true)
+  }
+  return new Headers(_headerTemplateCache)
+}
+
 /** Test helper — reset the cached env-derived flags. */
 export function __resetSecurityHeadersCache(): void {
   _isProductionCache = undefined
   _isDisabledCache = undefined
   _cspCache = undefined
+  _headerTemplateCache = undefined
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import process from 'node:process'
-import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord } from '../src/security-headers'
+import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord, createSecurityHeaders } from '../src/security-headers'
 
 // stacksjs/stacks#601 — HSTS + companion security headers on every response.
 
@@ -131,5 +131,16 @@ describe('applySecurityHeaders', () => {
     applySecurityHeadersToRecord(headers)
 
     expect(headers).toEqual({ Link: '</next>; rel="next"' })
+  })
+
+  test('clones the resolved header template', () => {
+    process.env.APP_ENV = 'production'
+    __resetSecurityHeadersCache()
+    const first = createSecurityHeaders()
+    first.set('X-Frame-Options', 'DENY')
+
+    const second = createSecurityHeaders()
+    expect(second.get('X-Frame-Options')).toBe('SAMEORIGIN')
+    expect(second.get('Strict-Transport-Security')).toBe('max-age=31536000; includeSubDomains')
   })
 })
