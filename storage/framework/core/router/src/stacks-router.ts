@@ -2796,7 +2796,8 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     // running the handler because there was nothing to check would make
     // the probe itself the side effect (#2226).
     const precognitionHeader = req.headers.get('Precognition')
-    const precognition = precognitionHeader === null && !req.url.includes('?')
+    const requestHasQuery = req.url.includes('?')
+    const precognition = precognitionHeader === null && !requestHasQuery
       ? null
       : precognitionRequest(req, precognitionHeader)
     if (precognition) {
@@ -2815,6 +2816,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         rules === action.validations ? actionValidationEntries : undefined,
         actionMayHaveRouteParams,
         true,
+        requestHasQuery,
       )
       return precognitionResult.valid
         ? precognitionSuccess()
@@ -2822,7 +2824,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     }
 
     if (action.validations) {
-      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams, true)
+      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams, true, requestHasQuery)
       if (!validationResult.valid)
         return validationFailureResponse(validationResult.errors)
     }
@@ -2973,6 +2975,7 @@ function validateActionInputSync(
   compiledEntries?: ActionValidationEntry[],
   mayHaveRouteParams = true,
   reuseSuccessResult = false,
+  requestHasQuery = req.url.includes('?'),
 ): ValidationResult {
   let errors: Record<string, string[]> | undefined
   const validated: Record<string, unknown> = {}
@@ -2984,7 +2987,7 @@ function validateActionInputSync(
   // `schema.number()` on a path-param `id` 422s on every request because
   // the URL delivers `"1"` not `1` and ts-validation's NumberValidator is
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
-  const input = getRequestInput(req, entries, mayHaveRouteParams)
+  const input = getRequestInput(req, entries, mayHaveRouteParams, requestHasQuery)
 
   for (const [field, validation, ruleTests] of entries) {
     const value = input[field]
@@ -3112,6 +3115,7 @@ function getRequestInput(
   req: EnhancedRequest,
   validationEntries?: ActionValidationEntry[],
   mayHaveRouteParams = true,
+  requestHasQuery = req.url.includes('?'),
 ): Record<string, unknown> {
   let input: Record<string, unknown> | undefined
   let mayNeedCoercion = false
@@ -3120,7 +3124,7 @@ function getRequestInput(
   // lazy query accessor untouched when the URL has no query string. When one
   // is present, reuse the parsed `req.query`; only fall back to `new URL()` if
   // this runs before enhancement (the action path always enhances first).
-  if (req.url.includes('?')) {
+  if (requestHasQuery) {
     const q = req.query
     if (q) {
       for (const key in q) {
