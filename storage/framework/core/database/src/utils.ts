@@ -1593,6 +1593,27 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       return proxy
     },
+    whereBetween(column: unknown, values: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !Array.isArray(values) || values.length < 2) {
+        const builder = materialize()
+        const apply = builder.whereBetween as unknown as (column: unknown, values: unknown) => typeof builder
+        return apply.call(builder, column, values)
+      }
+      const lower = values[0]
+      const upper = values[1]
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = '>='
+        predicateValue = lower
+        predicateParameterized = true
+        predicateValues = undefined
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator: '>=', value: lower, parameterized: true })
+      }
+      ;(additionalPredicates ??= []).push({ column, operator: '<=', value: upper, parameterized: true })
+      return proxy
+    },
     orderBy(column: unknown, direction: unknown = 'asc') {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
         const builder = materialize()
