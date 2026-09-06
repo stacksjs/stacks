@@ -2907,7 +2907,7 @@ function getRequestInput(
   req: EnhancedRequest,
   validationEntries?: ActionValidationEntry[],
 ): Record<string, unknown> {
-  let input: Record<string, unknown> = {}
+  let input: Record<string, unknown> | undefined
   let mayNeedCoercion = false
 
   // Get query parameters (always strings on the wire). Leave bun-router's
@@ -2918,14 +2918,14 @@ function getRequestInput(
     const q = req.query
     if (q) {
       for (const key in q) {
-        input[key] = q[key]
+        ;(input ??= {})[key] = q[key]
         mayNeedCoercion = true
       }
     }
     else {
       const url = new URL(req.url)
       url.searchParams.forEach((value, key) => {
-        input[key] = value
+        ;(input ??= {})[key] = value
         mayNeedCoercion = true
       })
     }
@@ -2937,7 +2937,7 @@ function getRequestInput(
   if (req.params) {
     for (const key in req.params) {
       if (!Object.hasOwn(req.params, key)) continue
-      input[key] = req.params[key]
+      ;(input ??= {})[key] = req.params[key]
       hasRouteParams = true
       mayNeedCoercion = true
     }
@@ -2946,12 +2946,12 @@ function getRequestInput(
   // Use already-parsed body (from parseRequestBody) if available
   if (req.jsonBody && typeof req.jsonBody === 'object') {
     input = mayNeedCoercion
-      ? Object.assign(input, req.jsonBody)
+      ? Object.assign(input ?? {}, req.jsonBody)
       : req.jsonBody as Record<string, unknown>
   }
   else if (req.formBody && typeof req.formBody === 'object') {
     input = mayNeedCoercion
-      ? Object.assign(input, req.formBody)
+      ? Object.assign(input ?? {}, req.formBody)
       : { ...req.formBody }
     mayNeedCoercion = true
   }
@@ -2967,7 +2967,8 @@ function getRequestInput(
     try {
       const files = req.allFiles() as Record<string, unknown>
       for (const key of Object.keys(files ?? {})) {
-        if (!(key in input)) input[key] = files[key]
+        const values = input ??= {}
+        if (!(key in values)) values[key] = files[key]
       }
     }
     catch {
@@ -2977,7 +2978,9 @@ function getRequestInput(
   }
 
   if (!validationEntries)
-    return input
+    return input ?? {}
+
+  input ??= {}
 
   // Coerce string values when the rule expects a non-string primitive.
   // Path/query params are always strings on the wire; body-sourced
