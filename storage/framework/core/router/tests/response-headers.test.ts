@@ -36,6 +36,12 @@ beforeAll(async () => {
     return new Response('ok', { status: 200 })
   })
 
+  route.get('/_mw_headers_security_override', (request: any) => {
+    request._responseHeaders = { 'X-Frame-Options': 'DENY' }
+
+    return { ok: true }
+  })
+
   server = await route.serve({ port: 0, hostname: '127.0.0.1' })
   port = Number(server?.port ?? server?.server?.port ?? 0)
 })
@@ -68,5 +74,11 @@ describe('_responseHeaders', () => {
     const answer = await fetch(`http://127.0.0.1:${port}/_mw_headers_collide`)
 
     expect(answer.headers.get('X-Request-ID')).toBe('the-router-owns-this')
+  })
+
+  it('can override a security default on a framework-created response', async () => {
+    const answer = await fetch(`http://127.0.0.1:${port}/_mw_headers_security_override`)
+
+    expect(answer.headers.get('X-Frame-Options')).toBe('DENY')
   })
 })

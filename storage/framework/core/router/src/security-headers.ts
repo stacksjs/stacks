@@ -77,25 +77,27 @@ function resolveCsp(): { header: string, value: string } | null {
  *
  * Skips overwriting any header that's already set — explicit userland
  * config wins. Skips entirely when `STACKS_SECURITY_HEADERS_DISABLE=true`.
+ * `knownMissing` is reserved for router-created responses whose security
+ * headers are known to be absent, avoiding redundant native lookups.
  */
-export function applySecurityHeaders(headers: Headers): void {
+export function applySecurityHeaders(headers: Headers, knownMissing = false): void {
   if (isDisabled())
     return
 
-  if (headers.get('X-Content-Type-Options') === null)
+  if (knownMissing || headers.get('X-Content-Type-Options') === null)
     headers.set('X-Content-Type-Options', 'nosniff')
 
-  if (headers.get('X-Frame-Options') === null)
+  if (knownMissing || headers.get('X-Frame-Options') === null)
     headers.set('X-Frame-Options', 'SAMEORIGIN')
 
-  if (headers.get('Referrer-Policy') === null)
+  if (knownMissing || headers.get('Referrer-Policy') === null)
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-  if (isProduction() && headers.get('Strict-Transport-Security') === null)
+  if (isProduction() && (knownMissing || headers.get('Strict-Transport-Security') === null))
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
 
   const csp = resolveCsp()
-  if (csp && headers.get(csp.header) === null)
+  if (csp && (knownMissing || headers.get(csp.header) === null))
     headers.set(csp.header, csp.value)
 }
 

@@ -603,6 +603,7 @@ const routeActionRegistry = new Map<string, RouterAction>()
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
+const FRAMEWORK_SECURITY_HEADERS_MISSING = Symbol('stacks.router.frameworkSecurityHeadersMissing')
 
 interface ResolvedMiddleware {
   name: string
@@ -2015,7 +2016,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
           h.set('Server-Timing', timing)
         }
-        applySecurityHeaders(h)
+        const frameworkHeadersAreMissing = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] === true
+          && !requested
+        applySecurityHeaders(h, frameworkHeadersAreMissing)
       }
 
       if (response && typeof (response).headers?.set === 'function') {
@@ -2936,8 +2939,11 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
 /** Serialize JSON once and make its size available to compression. */
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
   const encoding = req.headers.get('accept-encoding')
-  if (!encoding || encoding === 'identity')
-    return linkHeader ? Response.json(result, { headers: { Link: linkHeader } }) : Response.json(result)
+  if (!encoding || encoding === 'identity') {
+    const response = linkHeader ? Response.json(result, { headers: { Link: linkHeader } }) : Response.json(result)
+    ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] = true
+    return response
+  }
 
   // Give compression the byte length without making it consume and rebuild
   // the response stream just to check its threshold. Count UTF-8 bytes, not
@@ -2949,7 +2955,9 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   }
   if (linkHeader)
     headers.Link = linkHeader
-  return new Response(body, { headers })
+  const response = new Response(body, { headers })
+  ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] = true
+  return response
 }
 
 /**
