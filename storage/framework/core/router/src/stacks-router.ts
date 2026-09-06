@@ -2670,7 +2670,8 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         if (pre instanceof Response) return pre
       }
 
-      const result = await action.handle(req)
+      const pendingResult = action.handle(req)
+      const result = pendingResult instanceof Promise ? await pendingResult : pendingResult
       return formatResult(result, req)
     }
     catch (handleError) {
