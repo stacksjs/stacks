@@ -1881,7 +1881,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
-      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || (!SIMPLE_SQLITE_OPERATORS.has(operator) && !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || (operator !== '=' && !SIMPLE_SQLITE_OPERATORS.has(operator) && !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))) {
         const extended = extensions ??= createExtensions()
         return (extended.where as (column: unknown, operator?: unknown, value?: unknown) => unknown)(column, operator, value)
       }
