@@ -1305,6 +1305,7 @@ function hasActiveQueryBuilderHooks(): boolean {
  * intact for complex queries.
  */
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
+  let selectKeyword = 'SELECT'
   let columns: string[] | undefined
   let predicateColumn: string | undefined
   let predicateOperator: string | undefined
@@ -1324,6 +1325,10 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (columns) {
       const apply = builder.select as unknown as (value: unknown) => typeof builder
       builder = apply.call(builder, columns)
+    }
+    if (selectKeyword === 'SELECT DISTINCT') {
+      const apply = builder.distinct as unknown as () => typeof builder
+      builder = apply.call(builder)
     }
     if (predicateColumn !== undefined) {
       if (predicateValues) {
@@ -1379,7 +1384,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let proxy: Record<string | symbol, unknown>
   const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
     const selected = selection ?? columns?.join(', ') ?? '*'
-    let query = `SELECT ${selected} FROM ${table}`
+    let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
     if (predicateColumn !== undefined) {
       query += ` WHERE ${predicateColumn} ${predicateOperator}`
@@ -1441,6 +1446,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   const base = {
+    distinct() {
+      if (selectKeyword === 'SELECT DISTINCT')
+        return materialize().distinct()
+      selectKeyword = 'SELECT DISTINCT'
+      return proxy
+    },
     selectAll() {
       return proxy
     },

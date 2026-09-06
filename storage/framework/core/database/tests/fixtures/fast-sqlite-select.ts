@@ -186,6 +186,7 @@ async function supportedMatrix() {
       .whereNotIn('name', ['gamma'])
       .orderBy('id')
       .execute(),
+    distinct: await db.selectFrom('fast_items').select('active').distinct().orderBy('active').execute(),
     emptyIn: await db.selectFrom('fast_items').whereIn('id', []).execute(),
     emptyNotIn: await db.selectFrom('fast_items').whereNotIn('id', []).limit(1).execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
@@ -225,8 +226,19 @@ async function offsetOnlyRejections() {
   return rejects
 }
 
+async function repeatedDistinctRejects() {
+  try {
+    await db.selectFrom('fast_items').select('active').distinct().distinct().execute()
+    return false
+  }
+  catch {
+    return true
+  }
+}
+
 const lightweightMatrix = await supportedMatrix()
 const lightweightOffsetOnlyRejections = await offsetOnlyRejections()
+const lightweightRepeatedDistinctRejection = await repeatedDistinctRejects()
 
 let hookKind: string | undefined
 setConfig({
@@ -236,11 +248,14 @@ setConfig({
 })
 const upstreamMatrix = await supportedMatrix()
 const upstreamOffsetOnlyRejections = await offsetOnlyRejections()
+const upstreamRepeatedDistinctRejection = await repeatedDistinctRejects()
 if (JSON.stringify(lightweightMatrix) !== JSON.stringify(upstreamMatrix))
   throw new Error(`Lightweight and upstream SELECT results diverged: ${JSON.stringify({ lightweightMatrix, upstreamMatrix })}`)
 if (JSON.stringify(lightweightOffsetOnlyRejections) !== JSON.stringify([true, true])
   || JSON.stringify(lightweightOffsetOnlyRejections) !== JSON.stringify(upstreamOffsetOnlyRejections))
   throw new Error(`Lightweight and upstream offset-only behavior diverged: ${JSON.stringify({ lightweightOffsetOnlyRejections, upstreamOffsetOnlyRejections })}`)
+if (!lightweightRepeatedDistinctRejection || lightweightRepeatedDistinctRejection !== upstreamRepeatedDistinctRejection)
+  throw new Error(`Lightweight and upstream repeated-distinct behavior diverged: ${JSON.stringify({ lightweightRepeatedDistinctRejection, upstreamRepeatedDistinctRejection })}`)
 if (hookKind !== 'select')
   throw new Error(`Configured hooks must retain the upstream SELECT path, received ${hookKind}`)
 
