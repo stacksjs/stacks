@@ -140,6 +140,33 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('keeps a user-built native Response synchronous', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-response', () => new Response('ready', {
+      headers: { 'Content-Length': '5' },
+    }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = nativeRoutes['/_hot/native-response'].GET(new Request('http://localhost/_hot/native-response', {
+        headers: {
+          'accept-encoding': 'gzip',
+          'cookie': 'X-CSRF-Token=already-mine',
+        },
+      }))
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(await (answer as Response).text()).toBe('ready')
+      expect((answer as Response).headers.get('x-content-type-options')).toBe('nosniff')
+      expect((answer as Response).headers.get('x-request-id')).toBeTruthy()
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('keeps a native parameter GET synchronous with decoded params', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

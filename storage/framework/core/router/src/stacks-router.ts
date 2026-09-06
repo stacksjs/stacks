@@ -1671,9 +1671,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     response: Response,
     csrfHandledByOuter: boolean,
   ): Response | undefined => {
+    const frameworkMetadataApplied = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
     if (
       response.status >= 400
-      || (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] !== true
       || req._corsConfig
       || req._compress === true
       || req._startNs != null
@@ -1683,20 +1683,33 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       return
     }
 
+    let finalized = response
     if (routeSeedsCsrf && !csrfHandledByOuter) {
       const mod = loadCsrfModule()
       if (mod instanceof Promise)
         return
       if (mod) {
-        return mod.seedCsrfCookieIfMissing(
+        finalized = mod.seedCsrfCookieIfMissing(
           req as unknown as Request,
-          response,
+          finalized,
           (req as unknown as { _csrfToken?: string })._csrfToken,
-          true,
+          frameworkMetadataApplied,
         )
       }
     }
-    return response
+
+    if (!frameworkMetadataApplied) {
+      try {
+        const requestId = req._requestId
+        if (requestId)
+          finalized.headers.set('X-Request-ID', requestId)
+        applySecurityHeaders(finalized.headers)
+      }
+      catch {
+        return
+      }
+    }
+    return finalized
   }
 
   const handleAsyncInContext = async (
@@ -5488,6 +5501,14 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
       const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
       if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
         return response
+      if (bodyLength === undefined) {
+        const declaredLength = response.headers.get('content-length')
+        if (declaredLength !== null) {
+          const length = Number(declaredLength)
+          if (Number.isSafeInteger(length) && length >= 0 && length < compressionThreshold)
+            return response
+        }
+      }
       return applyResponseCompression(response, request, compression)
     }
     const directHandlers = buildDirectNativeHandlers(router, finalizeResponse)
