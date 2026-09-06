@@ -1569,13 +1569,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const routeRendersCsrf = routeMethod === 'GET' || routeMethod === 'HEAD'
   const routeSeedsCsrf = routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
-  // What identifies this action to the CSRF skip cache: the handler string
-  // when the route was registered by name (straight from the argument rather
-  // than back out of a registry that `clearMiddlewareCache()` empties), and
-  // the route key when an action object was handed over directly.
-  const handlerKey = typeof handler === 'string'
-    ? handler
-    : (isRouterAction(handler) ? routeKey : undefined)
+  // Direct actions are already resolved and immutable, so retain their CSRF
+  // flag now. Only string actions need the shared cache that their lazy import
+  // fills later.
+  const directActionSkipsCsrf = isRouterAction(handler)
+    && (handler.skipCsrf === true || handler.csrf === false)
+  const handlerKey = typeof handler === 'string' ? handler : undefined
 
   /*
    * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
@@ -1705,7 +1704,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         // injecting it and having it self-bail). Skipping at injection
         // time avoids the import + parse cost of csrf.ts entirely on
         // hot webhook paths.
-        const actionSkipped = handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false
+        const actionSkipped = directActionSkipsCsrf
+          || (handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false)
         // Decision order (stacksjs/stacks#1870 R-9):
         //   1. `.requireCsrf()` on the route wins over EVERYTHING — used to
         //      re-enable CSRF for a browser-facing route that shares an
