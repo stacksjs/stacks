@@ -1301,6 +1301,7 @@ function resolveDeferredSqliteTerminal(
   target: Record<string | symbol, unknown>,
   property: string | symbol,
   buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
+  materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
 ): unknown {
   if (property === 'get') {
     target.get = target.execute
@@ -1359,6 +1360,12 @@ function resolveDeferredSqliteTerminal(
     }
     target.value = value
     return value
+  }
+  if (property === 'count' || property === 'sum' || property === 'avg' || property === 'min' || property === 'max') {
+    const emptyValue = property === 'min' || property === 'max' ? null : 0
+    const aggregate = (...args: unknown[]) => runDeferredSqliteAggregate(property, args, emptyValue, materialize, buildStatement)
+    target[property] = aggregate
+    return aggregate
   }
 }
 
@@ -1815,21 +1822,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowOffset = value
       return proxy
     },
-    count(...args: unknown[]) {
-      return runDeferredSqliteAggregate('count', args, 0, materialize, buildStatement)
-    },
-    sum(...args: unknown[]) {
-      return runDeferredSqliteAggregate('sum', args, 0, materialize, buildStatement)
-    },
-    avg(...args: unknown[]) {
-      return runDeferredSqliteAggregate('avg', args, 0, materialize, buildStatement)
-    },
-    min(...args: unknown[]) {
-      return runDeferredSqliteAggregate('min', args, null, materialize, buildStatement)
-    },
-    max(...args: unknown[]) {
-      return runDeferredSqliteAggregate('max', args, null, materialize, buildStatement)
-    },
     pluck(...args: unknown[]) {
       if (args.length !== 1) {
         const builder = materialize()
@@ -1904,7 +1896,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
-      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement)
+      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement, materialize)
       if (terminal !== undefined)
         return terminal
       const extension = (extensions ??= createExtensions())[property as string]
