@@ -4402,7 +4402,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     },
 
     // Handle a request directly
-    async handleRequest(req: Request): Promise<Response> {
+    handleRequest(req: Request): Promise<Response> {
       return bunRouter.handleRequest(req)
     },
 
