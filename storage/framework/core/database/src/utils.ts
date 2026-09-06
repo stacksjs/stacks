@@ -709,6 +709,9 @@ function getReplicaDb(replica: ReplicaConfig): ReturnType<typeof createQueryBuil
  */
 function getReadDb(): ReturnType<typeof createQueryBuilder> {
   const replicas = getReplicas()
+  if (replicas.length === 0)
+    return getDb()
+
   const policy = getReadPolicy()
 
   if (!shouldRouteToReplica({ policy, replicas }))
