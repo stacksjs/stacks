@@ -239,7 +239,7 @@ function safeEqual(a: string, b: string): boolean {
  */
 function hasBearerToken(req: Request): boolean {
   const auth = req.headers.get('authorization')
-  return typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')
+  return typeof auth === 'string' && /^bearer /i.test(auth)
 }
 
 /**
