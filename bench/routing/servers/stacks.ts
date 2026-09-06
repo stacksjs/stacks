@@ -87,8 +87,7 @@ if (withDb && serves('db-roundtrip')) {
   }
   const selectItem = db.selectFrom('bench_items').select(['id', 'name']).where('id', '=', 1).limit(1)
   router.get('/bench/db', () => {
-    const rows = selectItem.executeSync()
-    const row = rows[0]
+    const row = selectItem.executeTakeFirstSync()
     return { id: row.id, name: row.name }
   })
 }
