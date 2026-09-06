@@ -1381,6 +1381,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   const base = {
+    selectAll() {
+      return proxy
+    },
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
       if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column)))) {

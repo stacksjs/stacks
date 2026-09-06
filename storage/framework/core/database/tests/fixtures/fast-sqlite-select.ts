@@ -130,6 +130,8 @@ if (!rejectedUnsafeColumn)
 async function supportedMatrix() {
   return {
     selectAll: await db.selectFrom('fast_items').limit(2).execute(),
+    explicitSelectAll: await db.selectFrom('fast_items').selectAll().limit(2).execute(),
+    selectAllAfterSelection: await db.selectFrom('fast_items').select('name').selectAll().limit(1).execute(),
     replacedSelection: await db
       .selectFrom('fast_items')
       .select('id')
