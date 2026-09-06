@@ -22,7 +22,7 @@ import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage/uploaded-file'
-import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest, setCurrentRequest as setBunRouterCurrentRequest } from '@stacksjs/bun-router'
+import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
 
 // --- Split-router-instance detection (stacksjs/stacks#1975 / #1982) ---------
@@ -5340,12 +5340,11 @@ function buildDirectNativeHandlers(router: Router): Map<string, NativeRouteHandl
       continue
 
     handlers.set(key, (request) => {
-      return runWithBunRouterRequest(request as EnhancedRequest, () => {
-        const nativeParams = (request as Request & { params?: Record<string, string> }).params ?? {}
-        const enhancedRequest = nativeRouter.enhanceRequest(request, nativeParams)
-        setBunRouterCurrentRequest(enhancedRequest)
-        enhancedRequest.route = route
+      const nativeParams = (request as Request & { params?: Record<string, string> }).params ?? {}
+      const enhancedRequest = nativeRouter.enhanceRequest(request, nativeParams)
+      enhancedRequest.route = route
 
+      return runWithBunRouterRequest(enhancedRequest, () => {
         try {
           const response = handler(enhancedRequest)
           return response instanceof Response
