@@ -1593,11 +1593,17 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       return proxy
     },
-    whereBetween(column: unknown, values: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !Array.isArray(values) || values.length < 2) {
+    whereBetween(...args: unknown[]) {
+      const [column, startOrValues, end] = args
+      const values = Array.isArray(startOrValues)
+        ? startOrValues
+        : args.length >= 3
+          ? [startOrValues, end]
+          : undefined
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !values || values.length < 2) {
         const builder = materialize()
-        const apply = builder.whereBetween as unknown as (column: unknown, values: unknown) => typeof builder
-        return apply.call(builder, column, values)
+        const apply = builder.whereBetween as unknown as (...values: unknown[]) => typeof builder
+        return apply.call(builder, ...args)
       }
       const lower = values[0]
       const upper = values[1]

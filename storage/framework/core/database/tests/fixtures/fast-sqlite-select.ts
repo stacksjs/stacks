@@ -190,7 +190,8 @@ async function supportedMatrix() {
       .whereNotIn('name', ['gamma'])
       .orderBy('id')
       .execute(),
-    between: await db.selectFrom('fast_items').select('id').whereBetween('id', [1, 2]).orderBy('id').execute(),
+    betweenArray: await db.selectFrom('fast_items').select('id').whereBetween('id', [1, 2]).orderBy('id').execute(),
+    betweenBounds: await db.selectFrom('fast_items').select('id').whereBetween('id', 1, 2).orderBy('id').execute(),
     distinct: await db.selectFrom('fast_items').select('active').distinct().orderBy('active').execute(),
     emptyIn: await db.selectFrom('fast_items').whereIn('id', []).execute(),
     emptyNotIn: await db.selectFrom('fast_items').whereNotIn('id', []).limit(1).execute(),
