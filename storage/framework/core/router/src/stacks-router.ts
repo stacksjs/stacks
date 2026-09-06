@@ -625,9 +625,11 @@ interface MiddlewareTiming {
 const EMPTY_RESOLVED_MIDDLEWARE: ResolvedMiddleware[] = []
 const EMPTY_MIDDLEWARE_TIMINGS: MiddlewareTiming[] = []
 const EMPTY_MIDDLEWARE_ENTRIES: readonly string[] = []
+const CSRF_ONLY_MIDDLEWARE: readonly string[] = ['csrf']
 
 /** Finished middleware descriptors, reused until a development cache clear. */
 let resolvedMiddlewareEntryCache = new Map<string, ResolvedMiddleware>()
+let resolvedCsrfOnlyMiddleware: ResolvedMiddleware[] | undefined
 
 /**
  * Named route registry — keeps the original path plus the precomputed
@@ -1316,6 +1318,7 @@ export function clearMiddlewareCache(): void {
   middlewareCache.clear()
   negatedMiddlewareCache.clear()
   resolvedMiddlewareEntryCache = new Map()
+  resolvedCsrfOnlyMiddleware = undefined
   // In-flight parses keep their original map and cannot refill this cache
   // with aliases from before a reload.
   parsedMiddlewareCache = new Map()
@@ -1721,7 +1724,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // nothing is prepended this aliases the registry's own array, which is
       // read-only from here on.
       const middlewareEntries: readonly string[] = shouldInjectCsrf
-        ? ['csrf', ...userMiddleware]
+        ? (userMiddleware.length === 0 ? CSRF_ONLY_MIDDLEWARE : ['csrf', ...userMiddleware])
         : userMiddleware
 
       // Only pay for pathname extraction when debug logging is actually on —
@@ -1743,10 +1746,13 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // contract requiring CORS to precede auth/throttle so 4xx
       // responses still carry the right headers. See
       // stacksjs/stacks#1863, #1859 (H-1).
-      const resolved: ResolvedMiddleware[] = middlewareEntries.length === 0
-        ? EMPTY_RESOLVED_MIDDLEWARE
-        : []
-      for (const middlewareEntry of middlewareEntries) {
+      const cachedCsrfOnlyMiddleware = middlewareEntries === CSRF_ONLY_MIDDLEWARE
+        ? resolvedCsrfOnlyMiddleware
+        : undefined
+      const resolved: ResolvedMiddleware[] = cachedCsrfOnlyMiddleware
+        ?? (middlewareEntries.length === 0 ? EMPTY_RESOLVED_MIDDLEWARE : [])
+      const unresolvedEntries = cachedCsrfOnlyMiddleware ? EMPTY_MIDDLEWARE_ENTRIES : middlewareEntries
+      for (const middlewareEntry of unresolvedEntries) {
         let resolvedEntry = resolvedMiddlewareEntryCache.get(middlewareEntry)
         if (!resolvedEntry) {
           const pending = parseMiddlewareEntry(middlewareEntry)
@@ -1796,6 +1802,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
         resolved.push(resolvedEntry)
       }
+
+      if (middlewareEntries === CSRF_ONLY_MIDDLEWARE && !cachedCsrfOnlyMiddleware && resolved.length === 1)
+        resolvedCsrfOnlyMiddleware = resolved
 
       // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
       // so same-priority entries preserve insertion order. This keeps
