@@ -1312,6 +1312,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let additionalPredicates: Array<{ column: string, operator: string, value: unknown }> | undefined
   let orderings: Array<{ column: string, direction: 'asc' | 'desc' }> | undefined
   let rowLimit: number | undefined
+  let rowOffset: number | undefined
   let materialized: ReturnType<RawQueryBuilder['selectFrom']> | undefined
 
   const materialize = (): ReturnType<RawQueryBuilder['selectFrom']> => {
@@ -1339,6 +1340,10 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const apply = builder.limit as unknown as (value: unknown) => typeof builder
       builder = apply.call(builder, rowLimit)
     }
+    if (rowOffset !== undefined) {
+      const apply = builder.offset as unknown as (value: unknown) => typeof builder
+      builder = apply.call(builder, rowOffset)
+    }
     materialized = builder
     return builder
   }
@@ -1360,9 +1365,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     }
     if (orderings)
       query += ` ORDER BY ${orderings.map(ordering => `${ordering.column} ${ordering.direction.toUpperCase()}`).join(', ')}`
-    const effectiveLimit = rowLimit ?? (firstOnly ? 1 : undefined)
+    // bun-query-builder leaves an offset-only SQLite query invalid, including
+    // through first-row terminals that append LIMIT after OFFSET. Preserve
+    // that behavior instead of silently repairing the caller's query.
+    const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (effectiveLimit !== undefined)
       query += ` LIMIT ${effectiveLimit}`
+    if (rowOffset !== undefined)
+      query += ` OFFSET ${rowOffset}`
     return instance.unsafe(query, params) as unknown as UnsafeReturn
   }
 
@@ -1443,6 +1453,15 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         return apply.call(builder, value)
       }
       rowLimit = value
+      return proxy
+    },
+    offset(value: unknown) {
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+        const builder = materialize()
+        const apply = builder.offset as unknown as (value: unknown) => typeof builder
+        return apply.call(builder, value)
+      }
+      rowOffset = value
       return proxy
     },
     execute() {

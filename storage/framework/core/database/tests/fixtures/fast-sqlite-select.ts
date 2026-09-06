@@ -148,7 +148,7 @@ async function supportedMatrix() {
       .select('name')
       .limit(1)
       .orderBy('id', 'desc')
-      .offset(0)
+      .groupBy('name')
       .execute(),
     ordered: await db
       .selectFrom('fast_items')
@@ -156,6 +156,13 @@ async function supportedMatrix() {
       .orderBy('active')
       .orderByDesc('id')
       .limit(2)
+      .execute(),
+    offset: await db
+      .selectFrom('fast_items')
+      .select(['id', 'name'])
+      .orderBy('id')
+      .offset(1)
+      .limit(1)
       .execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
@@ -180,7 +187,22 @@ async function supportedMatrix() {
   }
 }
 
+async function offsetOnlyRejections() {
+  const rejects: boolean[] = []
+  for (const terminal of ['execute', 'first'] as const) {
+    try {
+      await db.selectFrom('fast_items').offset(1)[terminal]()
+      rejects.push(false)
+    }
+    catch {
+      rejects.push(true)
+    }
+  }
+  return rejects
+}
+
 const lightweightMatrix = await supportedMatrix()
+const lightweightOffsetOnlyRejections = await offsetOnlyRejections()
 
 let hookKind: string | undefined
 setConfig({
@@ -189,8 +211,12 @@ setConfig({
   },
 })
 const upstreamMatrix = await supportedMatrix()
+const upstreamOffsetOnlyRejections = await offsetOnlyRejections()
 if (JSON.stringify(lightweightMatrix) !== JSON.stringify(upstreamMatrix))
   throw new Error(`Lightweight and upstream SELECT results diverged: ${JSON.stringify({ lightweightMatrix, upstreamMatrix })}`)
+if (JSON.stringify(lightweightOffsetOnlyRejections) !== JSON.stringify([true, true])
+  || JSON.stringify(lightweightOffsetOnlyRejections) !== JSON.stringify(upstreamOffsetOnlyRejections))
+  throw new Error(`Lightweight and upstream offset-only behavior diverged: ${JSON.stringify({ lightweightOffsetOnlyRejections, upstreamOffsetOnlyRejections })}`)
 if (hookKind !== 'select')
   throw new Error(`Configured hooks must retain the upstream SELECT path, received ${hookKind}`)
 
