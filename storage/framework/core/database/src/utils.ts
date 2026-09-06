@@ -1335,7 +1335,7 @@ let lastParameterizedSqliteSelect: {
   predicateOperator: string | undefined
   limit: number | undefined
   sql: string
-  statement?: { all: (...params: unknown[]) => UnsafeRow[] }
+  statement?: FastSqliteStatement
 } | undefined
 
 let lastUnparameterizedSqliteSelect: {
@@ -1345,7 +1345,7 @@ let lastUnparameterizedSqliteSelect: {
   table: string
   limit: number | undefined
   sql: string
-  statement?: { all: () => UnsafeRow[] }
+  statement?: FastSqliteStatement
 } | undefined
 
 // Selection validation and rendering are also structural. Snapshot the last
@@ -1455,8 +1455,13 @@ function runDeferredSqliteAggregate(
   }
 }
 
+interface FastSqliteStatement {
+  all: (...params: unknown[]) => UnsafeRow[]
+  get: (...params: unknown[]) => UnsafeRow | null
+}
+
 interface FastSqliteDatabase {
-  query: (sql: string) => { all: (...params: unknown[]) => UnsafeRow[] }
+  query: (sql: string) => FastSqliteStatement
 }
 
 const fastSqliteDatabaseCache = new WeakMap<object, FastSqliteDatabase | null>()
@@ -1612,6 +1617,10 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       ) {
         if (sqliteDatabase) {
           const statement = cached.statement ??= sqliteDatabase.query(cached.sql)
+          if (effectiveLimit === 1) {
+            const row = statement.get()
+            return row === null ? [] : [row]
+          }
           return statement.all()
         }
         return runFastSqliteSql(instance, sqliteDatabase, cached.sql)
@@ -1627,9 +1636,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         sql,
         statement: sqliteDatabase?.query(sql),
       }
-      return lastUnparameterizedSqliteSelect.statement
-        ? lastUnparameterizedSqliteSelect.statement.all()
-        : runFastSqliteSql(instance, sqliteDatabase, sql)
+      if (lastUnparameterizedSqliteSelect.statement) {
+        if (effectiveLimit === 1) {
+          const row = lastUnparameterizedSqliteSelect.statement.get()
+          return row === null ? [] : [row]
+        }
+        return lastUnparameterizedSqliteSelect.statement.all()
+      }
+      return runFastSqliteSql(instance, sqliteDatabase, sql)
     }
     if (
       predicateColumn !== undefined
@@ -1652,6 +1666,10 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       ) {
         if (sqliteDatabase) {
           const statement = cached.statement ??= sqliteDatabase.query(cached.sql)
+          if (effectiveLimit === 1) {
+            const row = statement.get(predicateValue)
+            return row === null ? [] : [row]
+          }
           return statement.all(predicateValue)
         }
         return runFastSqliteSql(instance, sqliteDatabase, cached.sql, [predicateValue])
@@ -1668,9 +1686,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         sql,
         statement: sqliteDatabase?.query(sql),
       }
-      return lastParameterizedSqliteSelect.statement
-        ? lastParameterizedSqliteSelect.statement.all(predicateValue)
-        : runFastSqliteSql(instance, sqliteDatabase, sql, [predicateValue])
+      if (lastParameterizedSqliteSelect.statement) {
+        if (effectiveLimit === 1) {
+          const row = lastParameterizedSqliteSelect.statement.get(predicateValue)
+          return row === null ? [] : [row]
+        }
+        return lastParameterizedSqliteSelect.statement.all(predicateValue)
+      }
+      return runFastSqliteSql(instance, sqliteDatabase, sql, [predicateValue])
     }
     let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
