@@ -2856,7 +2856,7 @@ function getRequestInput(
   req: EnhancedRequest,
   validationEntries?: ActionValidationEntry[],
 ): Record<string, unknown> {
-  const input: Record<string, unknown> = {}
+  let input: Record<string, unknown> = {}
   let mayNeedCoercion = false
 
   // Get query parameters (always strings on the wire). Reuse the query
@@ -2893,10 +2893,14 @@ function getRequestInput(
 
   // Use already-parsed body (from parseRequestBody) if available
   if (req.jsonBody && typeof req.jsonBody === 'object') {
-    Object.assign(input, req.jsonBody)
+    input = mayNeedCoercion
+      ? Object.assign(input, req.jsonBody)
+      : { ...req.jsonBody }
   }
   else if (req.formBody && typeof req.formBody === 'object') {
-    Object.assign(input, req.formBody)
+    input = mayNeedCoercion
+      ? Object.assign(input, req.formBody)
+      : { ...req.formBody }
     mayNeedCoercion = true
   }
 
