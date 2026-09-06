@@ -3616,7 +3616,6 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   const routeParams: Record<string, string> = req.params ?? {}
 
   req.params = routeParams
-  applyRequestEnhancements(req as unknown as Request, routeParams)
 
   /*
    * Every request gets an id.
@@ -3637,6 +3636,8 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
 
   if ((req as unknown as Record<symbol, unknown>)[STACKS_REQUEST_ENHANCED] === true)
     return req
+
+  applyRequestEnhancements(req as unknown as Request, routeParams)
 
   /*
    * `query` comes from the router (bun-router 0.1.7), as a lazy accessor that
