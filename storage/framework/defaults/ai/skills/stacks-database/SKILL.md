@@ -259,6 +259,7 @@ Entity-centric API for single-table design:
   migrationLocks: 'migration_locks',
   queryLogging: {
     enabled: true,
+    captureAllTraces: false, // slow and failed queries always keep traces
     slowThreshold: 100,  // ms
     retention: 7,        // days
     pruneFrequency: 24,  // hours

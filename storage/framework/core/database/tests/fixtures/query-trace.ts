@@ -11,6 +11,7 @@ initializeDbConfig({
 config.database.queryLogging = {
   ...config.database.queryLogging,
   enabled: true,
+  captureAllTraces: true,
   excludedQueries: [],
   analysis: { ...config.database.queryLogging?.analysis, enabled: false },
 }

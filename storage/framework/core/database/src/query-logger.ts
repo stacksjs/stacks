@@ -293,8 +293,12 @@ async function createQueryLogRecord(
   // Get normalized query (replace specific values with placeholders)
   const normalizedQuery = normalizeQuery(query) || query
 
-  // Extract stack trace and caller information
-  const { trace, caller } = extractTraceInfo()
+  // Caller traces are most useful when a query needs investigation. Capturing
+  // an Error stack for every successful fast query is expensive and inflates
+  // the log rows that dominate production traffic.
+  const traceInfo = status === 'completed' && !config.database?.queryLogging?.captureAllTraces
+    ? undefined
+    : extractTraceInfo()
 
   return {
     query,
@@ -305,8 +309,8 @@ async function createQueryLogRecord(
     error: error ? String(error) : undefined,
     executed_at: sqlDateTime(),
     bindings,
-    trace,
-    ...caller,
+    trace: traceInfo?.trace,
+    ...(traceInfo?.caller ?? {}),
     memory_usage: memoryUsage().heapUsed / 1024 / 1024, // in MB
   }
 }

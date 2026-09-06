@@ -11,7 +11,7 @@ The Query Monitoring system provides comprehensive tools to collect, analyze, an
 - **Real-time Query Logging**: Automatically logs all database queries with detailed information
 - **Query Analysis**: Analyzes query patterns, identifies slow queries, and suggests optimizations
 - **Dashboard Interface**: Visual dashboard for monitoring query performance metrics
-- **Detailed Query Information**: Displays query details including duration, status, bindings, and more
+- **Detailed Query Information**: Displays query details including duration, status, bindings, and caller traces for slow or failed queries
 - **Advanced Filtering**: Filter queries by type, status, connection, and more
 - **Optimization Suggestions**: Automated recommendations for improving query performance
 
@@ -26,6 +26,9 @@ export default {
   queryLogging: {
     // Enable or disable query logging
     enabled: true,
+
+    // Also capture caller stacks for successful fast queries
+    captureAllTraces: false,
 
     // Threshold in milliseconds to mark a query as slow
     slowThreshold: 100,
@@ -56,6 +59,7 @@ You can also configure query monitoring using environment variables:
 
 ```
 DB_QUERY_LOGGING_ENABLED=true
+DB_QUERY_LOGGING_CAPTURE_ALL_TRACES=false
 DB_QUERY_LOGGING_SLOW_THRESHOLD=100
 DB_QUERY_LOGGING_RETENTION_DAYS=7
 DB_QUERY_LOGGING_PRUNE_FREQUENCY=24
@@ -103,7 +107,7 @@ The detail view provides comprehensive information about a specific query:
 - Full query text and normalized version
 - Execution metrics and duration
 - Bindings and parameters
-- Stack trace and caller information
+- Stack trace and caller information for slow or failed queries
 - Index usage information
 - EXPLAIN plan data
 - Optimization suggestions
@@ -135,11 +139,11 @@ Queries are stored in the `query_logs` table with the following structure:
 | error | text | Error message if failed |
 | executed_at | timestamp | When the query was executed |
 | bindings | text | JSON array of query parameters |
-| trace | text | Stack trace showing where query was called |
-| model | text | Model that executed the query |
-| method | text | Method that executed the query |
-| file | text | File path where query originated |
-| line | integer | Line number where query originated |
+| trace | text | Stack trace for a slow or failed query |
+| model | text | Model that executed a slow or failed query |
+| method | text | Method that executed a slow or failed query |
+| file | text | File path where a slow or failed query originated |
+| line | integer | Line number where a slow or failed query originated |
 | memory_usage | numeric | Memory used during execution |
 | rows_affected | integer | Number of rows affected |
 | transaction_id | text | Related transaction identifier |
@@ -164,7 +168,9 @@ The system includes a scheduled job (`PruneQueryLogsJob`) that automatically rem
 
 4. **Database Impact**: Be aware that query logging itself adds some overhead. Monitor the performance impact and adjust settings accordingly.
 
-5. **Security**: Query logs may contain sensitive information in bindings. Ensure that access to the query dashboard is properly secured.
+5. **Caller Traces**: Slow and failed queries always include caller traces. Enable `captureAllTraces` only when fast-query call sites are worth the additional CPU and storage cost.
+
+6. **Security**: Query logs may contain sensitive information in bindings. Ensure that access to the query dashboard is properly secured.
 
 ## Debugging with Query Logs
 

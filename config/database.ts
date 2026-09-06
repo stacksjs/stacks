@@ -189,6 +189,12 @@ export default {
     enabled: env.DB_QUERY_LOGGING_ENABLED ?? true,
 
     /**
+     * Capture caller stacks for successful fast queries too. Slow and failed
+     * queries always retain their caller details.
+     */
+    captureAllTraces: env.DB_QUERY_LOGGING_CAPTURE_ALL_TRACES ?? false,
+
+    /**
      * The threshold in milliseconds to mark a query as slow
      */
     slowThreshold: env.DB_QUERY_LOGGING_SLOW_THRESHOLD || 100,

@@ -142,6 +142,7 @@ export interface FrameworkEnv {
   DB_READ_HOSTS: string | undefined
   DB_READ_AUTO_ROUTE: boolean | undefined
   DB_QUERY_LOGGING_ENABLED: boolean | undefined
+  DB_QUERY_LOGGING_CAPTURE_ALL_TRACES: boolean | undefined
   DB_QUERY_LOGGING_SLOW_THRESHOLD: number | undefined
   DB_QUERY_LOGGING_RETENTION_DAYS: number | undefined
   DB_QUERY_LOGGING_PRUNE_FREQUENCY: number | undefined

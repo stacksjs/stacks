@@ -160,12 +160,12 @@ try {
         { query: { sql: analyzedSql }, queryDurationMillis: 101 },
       ]
       await Promise.all((slowFirst ? events.reverse() : events).map(logQuery))
-      const records = await db.unsafe('SELECT query, status, affected_tables, tags FROM query_logs WHERE query IN (?, ?)', [ordinarySql, analyzedSql]).execute()
+      const records = await db.unsafe('SELECT query, status, affected_tables, tags, trace FROM query_logs WHERE query IN (?, ?)', [ordinarySql, analyzedSql]).execute()
       const ordinary = records.find(row => row.query === ordinarySql)
       const analyzed = records.find(row => row.query === analyzedSql)
-      if (records.length !== 2 || ordinary?.status !== 'completed' || ordinary.affected_tables !== null || ordinary.tags !== null)
+      if (records.length !== 2 || ordinary?.status !== 'completed' || ordinary.affected_tables !== null || ordinary.tags !== null || ordinary.trace !== null)
         throw new Error('Concurrent ordinary query diagnostics changed')
-      if (analyzed?.status !== 'slow' || analyzed.affected_tables !== '["query_logger_fixture"]' || analyzed.tags !== '["SELECT","table:query_logger_fixture"]')
+      if (analyzed?.status !== 'slow' || analyzed.affected_tables !== '["query_logger_fixture"]' || analyzed.tags !== '["SELECT","table:query_logger_fixture"]' || !String(analyzed.trace).includes('query-logger-dispatch.ts'))
         throw new Error('Concurrent slow query analysis was lost')
     }
   }
