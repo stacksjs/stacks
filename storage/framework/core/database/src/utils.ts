@@ -7,7 +7,7 @@
 
 import { AsyncLocalStorage } from 'node:async_hooks'
 import type { QueryHooks } from '@stacksjs/query-builder'
-import { createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
+import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQueryHooks, resetConnection as resetQueryBuilderConnection, setConfig } from '@stacksjs/query-builder'
 
 // Use default values to avoid circular dependencies initially
 // These can be overridden later once config is fully loaded
@@ -1276,6 +1276,109 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   read: Omit<Db, 'read'>
 }
 
+type SelectOperation = {
+  method: 'select' | 'where' | 'limit'
+  args: unknown[]
+}
+
+const SIMPLE_SQLITE_TABLE = /^[A-Z_][A-Z0-9_]*$/i
+const SIMPLE_SQLITE_COLUMN = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?$/i
+const SIMPLE_SQLITE_SELECTION = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?(?:\s+AS\s+[A-Z_][A-Z0-9_]*)?$/i
+const SIMPLE_SQLITE_OPERATORS = new Set(['=', '!=', '<>', '<', '<=', '>', '>=', 'like'])
+
+function hasActiveQueryBuilderHooks(): boolean {
+  return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
+}
+
+/**
+ * Build the common SQLite SELECT shape without allocating bun-query-builder's
+ * complete relationship, aggregate, window, pagination, and dynamic-where API.
+ * Any method or argument outside this deliberately small surface materializes
+ * the upstream builder and replays the calls, so capability and behavior stay
+ * intact for complex queries.
+ */
+function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
+  const operations: SelectOperation[] = []
+  let columns: string[] | undefined
+  const predicates: Array<{ column: string, operator: string, value: unknown }> = []
+  let rowLimit: number | undefined
+  let materialized: ReturnType<RawQueryBuilder['selectFrom']> | undefined
+
+  const materialize = (): ReturnType<RawQueryBuilder['selectFrom']> => {
+    if (materialized)
+      return materialized
+    let builder = instance.selectFrom(table)
+    for (const operation of operations) {
+      const apply = builder[operation.method] as (...args: unknown[]) => typeof builder
+      builder = apply.apply(builder, operation.args)
+    }
+    materialized = builder
+    return builder
+  }
+
+  let proxy: Record<string | symbol, unknown>
+  const base = {
+    select(value: unknown) {
+      const args = [value]
+      operations.push({ method: 'select', args })
+      const selected = Array.isArray(value) ? value : [value]
+      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column))))
+        return materialize()
+      columns = selected as string[]
+      return proxy
+    },
+    where(column: unknown, operator?: unknown, value?: unknown) {
+      const args = [column, operator, value]
+      operations.push({ method: 'where', args })
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))
+        return materialize()
+      predicates.push({ column, operator, value })
+      return proxy
+    },
+    limit(value: unknown) {
+      const args = [value]
+      operations.push({ method: 'limit', args })
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value))
+        return materialize()
+      rowLimit = value
+      return proxy
+    },
+    execute() {
+      const selected = columns?.join(', ') ?? '*'
+      let query = `SELECT ${selected} FROM ${table}`
+      const params: unknown[] = []
+      if (predicates.length > 0) {
+        query += ` WHERE ${predicates.map((predicate) => {
+          params.push(predicate.value)
+          return `${predicate.column} ${predicate.operator} ?`
+        }).join(' AND ')}`
+      }
+      if (rowLimit !== undefined)
+        query += ` LIMIT ${rowLimit}`
+      return (instance.unsafe(query, params) as unknown as UnsafeReturn).execute()
+    },
+  }
+
+  proxy = new Proxy(base as Record<string | symbol, unknown>, {
+    get(target, property, receiver) {
+      const value = Reflect.get(target, property, receiver)
+      if (value !== undefined)
+        return value
+      const builder = materialize() as unknown as Record<string | symbol, unknown>
+      const fallback = builder[property]
+      return typeof fallback === 'function' ? fallback.bind(builder) : fallback
+    },
+  })
+  return proxy
+}
+
+function selectFromDatabase(table: string): unknown {
+  const instance = getReadDb()
+  if (getDialect() === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && SIMPLE_SQLITE_TABLE.test(table))
+    return createDeferredSqliteSelect(instance, table)
+  return instance.selectFrom(table)
+}
+
 /**
  * Lazy proxy for the query builder - connection is only made when first used.
  * This is the main entry point for database operations.
@@ -1292,6 +1395,9 @@ export const db: Db = new Proxy({} as Db, {
     // query tolerates replication lag.
     if (prop === 'read')
       return readDb
+
+    if (prop === 'selectFrom')
+      return selectFromDatabase
 
     // A write pins this async context's later reads to the primary, so a
     // request that reads back what it just wrote cannot be served a stale

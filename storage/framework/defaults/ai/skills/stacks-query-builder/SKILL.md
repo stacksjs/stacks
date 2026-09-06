@@ -63,6 +63,12 @@ const count = await db.selectFrom('users').count()
 const total = await db.selectFrom('orders').sum('amount')
 ```
 
+Production SQLite uses a compact deferred builder for the common
+`select().where().limit().execute()` chain when no query hooks or global
+soft-delete scope is active. Complex methods and arguments automatically replay
+onto the complete upstream builder. Use the normal API in either case; do not
+fork application code into a separate raw-query path for this optimization.
+
 ## Configuration (config/query-builder.ts)
 
 ```typescript

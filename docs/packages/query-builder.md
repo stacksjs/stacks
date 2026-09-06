@@ -48,6 +48,14 @@ const count = await db.selectFrom('users').count()
 
 Configure dialects, timestamps, pagination, relation limits, transaction retries, SQL features, and soft deletes in `config/query-builder.ts`. SQLite is the default dialect. The database proxy initializes the query builder lazily on first use.
 
+For production SQLite connections without query hooks, the common
+`selectFrom().select().where().limit().execute()` shape uses a compact deferred
+builder. It avoids allocating the full relationship, aggregate, window, and
+pagination surface for a simple read. Any complex method or argument
+automatically materializes the complete query builder and replays the chain, so
+application code does not need a separate fast-query API. Configured hooks and
+global soft-delete scopes retain the complete builder path.
+
 ## SQLite write throughput
 
 Stacks defaults to a WAL checkpoint threshold of 100 pages, usually about 400 KB. This bounds the WAL sidecar without checkpointing after every write transaction. Applications with sustained writes can choose a larger threshold through `sqlite.pragmas` in `config/query-builder.ts`:
