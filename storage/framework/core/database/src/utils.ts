@@ -1417,10 +1417,20 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     execute() {
-      return buildStatement().execute()
+      try {
+        return Promise.resolve(buildStatement().executeSync())
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     },
     get() {
-      return buildStatement().execute()
+      try {
+        return Promise.resolve(buildStatement().executeSync())
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     },
     executeTakeFirst() {
       try {
