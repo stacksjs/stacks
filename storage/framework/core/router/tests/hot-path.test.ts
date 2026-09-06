@@ -55,6 +55,19 @@ function get(path: string, init?: RequestInit): Promise<Response> {
 }
 
 describe('the request path keeps its defaults', () => {
+  it('keeps a synchronous action on the synchronous response path', async () => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/synchronous-action') as any)
+    request.query = {}
+    request.params = {}
+    const wrapped = wrapAction({ handle: () => ({ ok: true }) } as any, 'hot-path-synchronous-action')
+
+    const answer = wrapped(request)
+
+    expect(answer).toBeInstanceOf(Response)
+    expect(await (answer as Response).json()).toEqual({ ok: true })
+  })
+
   it('still seeds CSRF when the underlying router is called directly', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

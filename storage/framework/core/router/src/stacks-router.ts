@@ -2603,6 +2603,68 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     ? Object.entries(action.validations)
     : undefined
 
+  const prepareRequest = (req: EnhancedRequest): Response | undefined => {
+    // A precognition request answers "would this be accepted?" and must
+    // never reach handle(). An action with no validations still returns early:
+    // running the handler because there was nothing to check would make
+    // the probe itself the side effect (#2226).
+    const precognition = precognitionRequest(req)
+    if (precognition) {
+      if (!action.validations)
+        return precognitionSuccess()
+
+      const rules = precognition.only.length > 0
+        ? Object.fromEntries(
+            Object.entries(action.validations).filter(([field]) => precognition.only.includes(field)),
+          )
+        : action.validations
+
+      const precognitionResult = validateActionInputSync(
+        req,
+        rules,
+        rules === action.validations ? actionValidationEntries : undefined,
+      )
+      return precognitionResult.valid
+        ? precognitionSuccess()
+        : validationFailureResponse(precognitionResult.errors)
+    }
+
+    if (action.validations) {
+      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries)
+      if (!validationResult.valid)
+        return validationFailureResponse(validationResult.errors)
+    }
+  }
+
+  const rethrowActionError = (handleError: unknown): never => {
+    report(handleError, { label: `[Router] action.handle() for '${handlerKey}'` })
+    throw handleError
+  }
+
+  if (typeof action.authorize !== 'function' && typeof action.before !== 'function') {
+    return (req: EnhancedRequest) => {
+      if (actionSkipsCsrf)
+        req._skipCsrf = true
+      if (actionForcesJson)
+        req._forceJson = true
+      req._requestValidationRules = requestValidationRules
+
+      try {
+        const earlyResponse = prepareRequest(req)
+        if (earlyResponse)
+          return earlyResponse
+
+        const result = action.handle(req)
+        return result instanceof Promise
+          ? result.then(value => formatResult(value, req)).catch(rethrowActionError)
+          : formatResult(result, req)
+      }
+      catch (handleError) {
+        return rethrowActionError(handleError)
+      }
+    }
+  }
+
   return async (req: EnhancedRequest) => {
     if (actionSkipsCsrf) {
       ;req._skipCsrf = true
@@ -2612,42 +2674,9 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     }
     ;req._requestValidationRules = requestValidationRules
     try {
-      // A precognition request answers "would this be accepted?" and must
-      // never reach handle() — that is the whole point, and it is why this
-      // returns before authorize/before/handle rather than after validation
-      // falls through. An action with no validations still returns early:
-      // running the handler because there was nothing to check would make
-      // the probe itself the side effect (#2226).
-      const precognition = precognitionRequest(req)
-      if (precognition) {
-        if (!action.validations)
-          return precognitionSuccess()
-
-        const rules = precognition.only.length > 0
-          ? Object.fromEntries(
-              Object.entries(action.validations).filter(([field]) => precognition.only.includes(field)),
-            )
-          : action.validations
-
-        const precognitionResult = validateActionInputSync(
-          req,
-          rules,
-          rules === action.validations ? actionValidationEntries : undefined,
-        )
-        return precognitionResult.valid
-          ? precognitionSuccess()
-          : validationFailureResponse(precognitionResult.errors)
-      }
-
-      // Validate action input if validations are defined. Always returns
-      // JSON — validation failures are 100% an API-shape signal and HTML
-      // pages would be useless here.
-      if (action.validations) {
-        const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries)
-        if (!validationResult.valid) {
-          return validationFailureResponse(validationResult.errors)
-        }
-      }
+      const earlyResponse = prepareRequest(req)
+      if (earlyResponse)
+        return earlyResponse
 
       // Action lifecycle hooks (stacksjs/stacks#1870 R-5).
       // `authorize` runs after validation so the handler can rely on
@@ -2675,14 +2704,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
       return formatResult(result, req)
     }
     catch (handleError) {
-      // Single chokepoint (stacksjs/stacks#1933) — normalizes the
-      // error (stack + cause), keeps thrown 4xx HttpErrors out of the
-      // error stream, and folds in the full stack. Replaces the old
-      // hand-rolled stack-concat workaround that existed because the
-      // logger's `LogErrorOptions | any` typing silently dropped the
-      // error (stacksjs/stacks#1932, now fixed).
-      report(handleError, { label: `[Router] action.handle() for '${handlerKey}'` })
-      throw handleError
+      return rethrowActionError(handleError)
     }
   }
 }
