@@ -4626,11 +4626,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
   const original = router.handleRequest.bind(router)
 
-  router.handleRequest = async (request: Request): Promise<Response> => {
-    const method = request.method
-    const rendersCsrf = method === 'GET' || method === 'HEAD'
-    const safe = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
-
+  const handleSafeRequest = async (request: Request, rendersCsrf: boolean): Promise<Response> => {
     /*
      * Seeded *before* the render, not only after it.
      *
@@ -4640,19 +4636,17 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
      * on the request first is what makes that first form usable; the response
      * half below then stores the same value in the browser.
      */
-    const cookieHeader = safe ? request.headers.get('cookie') ?? '' : ''
-    const hasCsrfCookie = safe && (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
-    if (safe) {
-      if (rendersCsrf && !hasCsrfCookie) {
-        const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
-        if (seeding) await seeding
-      }
-      ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+    const cookieHeader = request.headers.get('cookie') ?? ''
+    const hasCsrfCookie = cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token=')
+    if (rendersCsrf && !hasCsrfCookie) {
+      const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
+      if (seeding) await seeding
     }
+    ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
 
     const response = await original(request)
 
-    if (!safe || !response || hasCsrfCookie)
+    if (!response || hasCsrfCookie)
       return response
 
     try {
@@ -4679,6 +4673,15 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
       return response
     }
+  }
+
+  router.handleRequest = (request: Request): Promise<Response> => {
+    const method = request.method
+    if (method === 'GET' || method === 'HEAD')
+      return handleSafeRequest(request, true)
+    if (method === 'OPTIONS')
+      return handleSafeRequest(request, false)
+    return original(request)
   }
 
   router._csrfSeedingWrapped = true
