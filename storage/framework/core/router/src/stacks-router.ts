@@ -2663,6 +2663,9 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
   const actionValidationEntries = action.validations
     ? compileActionValidationEntries(action.validations)
     : undefined
+  const routeSeparator = handlerKey.indexOf(':')
+  const actionMayHaveRouteParams = routeSeparator === -1
+    || handlerKey.indexOf('{', routeSeparator + 1) !== -1
 
   const prepareRequest = (req: EnhancedRequest): Response | undefined => {
     // A precognition request answers "would this be accepted?" and must
@@ -2684,6 +2687,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         req,
         rules,
         rules === action.validations ? actionValidationEntries : undefined,
+        actionMayHaveRouteParams,
       )
       return precognitionResult.valid
         ? precognitionSuccess()
@@ -2691,7 +2695,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     }
 
     if (action.validations) {
-      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries)
+      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams)
       if (!validationResult.valid)
         return validationFailureResponse(validationResult.errors)
     }
@@ -2825,6 +2829,7 @@ function validateActionInputSync(
   req: EnhancedRequest,
   validations: ActionValidations,
   compiledEntries?: ActionValidationEntry[],
+  mayHaveRouteParams = true,
 ): ValidationResult {
   const errors: Record<string, string[]> = {}
   const validated: Record<string, unknown> = {}
@@ -2836,7 +2841,7 @@ function validateActionInputSync(
   // `schema.number()` on a path-param `id` 422s on every request because
   // the URL delivers `"1"` not `1` and ts-validation's NumberValidator is
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
-  const input = getRequestInput(req, entries)
+  const input = getRequestInput(req, entries, mayHaveRouteParams)
 
   for (const [field, validation, ruleTests] of entries) {
     const value = input[field]
@@ -2960,6 +2965,7 @@ function modelValidationRules(model: any): ActionValidations | undefined {
 function getRequestInput(
   req: EnhancedRequest,
   validationEntries?: ActionValidationEntry[],
+  mayHaveRouteParams = true,
 ): Record<string, unknown> {
   let input: Record<string, unknown> | undefined
   let mayNeedCoercion = false
@@ -2988,7 +2994,7 @@ function getRequestInput(
   // Get route params if available (also strings — bun-router doesn't
   // know the route-pattern type)
   let hasRouteParams = false
-  if (req.params) {
+  if (mayHaveRouteParams && req.params) {
     for (const key in req.params) {
       if (!Object.hasOwn(req.params, key)) continue
       ;(input ??= {})[key] = req.params[key]
