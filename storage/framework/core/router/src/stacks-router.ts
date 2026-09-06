@@ -4706,7 +4706,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
   const original = router.handleRequest.bind(router)
 
-  const handleSafeRequest = async (request: Request, rendersCsrf: boolean): Promise<Response> => {
+  const handleUnseededSafeRequest = async (request: Request, rendersCsrf: boolean, cookieHeader: string): Promise<Response> => {
     /*
      * Seeded *before* the render, not only after it.
      *
@@ -4716,9 +4716,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
      * on the request first is what makes that first form usable; the response
      * half below then stores the same value in the browser.
      */
-    const cookieHeader = request.headers.get('cookie') ?? ''
-    const hasCsrfCookie = cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token=')
-    if (rendersCsrf && !hasCsrfCookie) {
+    if (rendersCsrf) {
       const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
       if (seeding) await seeding
     }
@@ -4726,7 +4724,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
     const response = await original(request)
 
-    if (!response || hasCsrfCookie)
+    if (!response)
       return response
 
     try {
@@ -4753,6 +4751,15 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
       return response
     }
+  }
+
+  const handleSafeRequest = (request: Request, rendersCsrf: boolean): Promise<Response> => {
+    const cookieHeader = request.headers.get('cookie') ?? ''
+    if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token=')) {
+      ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+      return original(request)
+    }
+    return handleUnseededSafeRequest(request, rendersCsrf, cookieHeader)
   }
 
   router.handleRequest = (request: Request): Promise<Response> => {
