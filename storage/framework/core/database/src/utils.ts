@@ -1483,7 +1483,7 @@ function fastSqliteDatabase(instance: RawQueryBuilder): FastSqliteDatabase | und
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
   const sqliteDatabase = fastSqliteDatabase(instance)
   let selectKeyword = 'SELECT'
-  let columns: string[] | undefined
+  let columns: string | string[] | undefined
   let selectedColumnsSql: string | undefined
   let predicateColumn: string | undefined
   let predicateOperator: string | undefined
@@ -1955,6 +1955,17 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let extensions: Record<string, unknown> | undefined
   const base = {
     select(value: unknown) {
+      if (typeof value === 'string') {
+        if (value !== '*' && !isSimpleSqliteSelection(value)) {
+          const builder = materialize()
+          const apply = builder.select as unknown as (selection: unknown) => typeof builder
+          return apply.call(builder, value)
+        }
+        columns = value
+        selectedColumnsSql = value
+        return proxy
+      }
+
       const selected = Array.isArray(value) ? value : [value]
       let simple = false
       let selection: string | undefined
