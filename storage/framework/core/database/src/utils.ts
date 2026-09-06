@@ -1450,6 +1450,7 @@ function runDeferredSqliteAggregate(
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
   let selectKeyword = 'SELECT'
   let columns: string[] | undefined
+  let selectedColumnsSql: string | undefined
   let predicateColumn: string | undefined
   let predicateOperator: string | undefined
   let predicateValue: unknown
@@ -1540,7 +1541,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
 
   let proxy: Record<string | symbol, unknown>
   const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
-    const selected = selection ?? columns?.join(', ') ?? '*'
+    const selected = selection ?? selectedColumnsSql ?? '*'
     const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
       const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
@@ -1891,9 +1892,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
       let simple = selected.length > 0
+      let selection = ''
       for (let index = 0; simple && index < selected.length; index++) {
         const column = selected[index]
         simple = typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column))
+        if (simple)
+          selection += index === 0 ? column : `, ${column}`
       }
       if (!simple) {
         const builder = materialize()
@@ -1901,6 +1905,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         return apply.call(builder, value)
       }
       columns = selected as string[]
+      selectedColumnsSql = selection
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
