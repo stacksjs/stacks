@@ -1641,6 +1641,26 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       ;(additionalPredicates ??= []).push({ column, operator: '<=', value: upper, parameterized: true })
       return proxy
     },
+    whereDate(...args: unknown[]) {
+      const [column, operator, date] = args
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()) || (typeof date !== 'string' && !(date instanceof Date))) {
+        const builder = materialize()
+        const apply = builder.whereDate as unknown as (...values: unknown[]) => typeof builder
+        return apply.call(builder, ...args)
+      }
+      const normalizedDate = date instanceof Date ? date.toISOString() : date
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = operator
+        predicateValue = normalizedDate
+        predicateParameterized = true
+        predicateValues = undefined
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator, value: normalizedDate, parameterized: true })
+      }
+      return proxy
+    },
     orderBy(column: unknown, direction: unknown = 'asc') {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
         const builder = materialize()

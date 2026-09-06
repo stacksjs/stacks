@@ -19,9 +19,9 @@ if (queryBuilderConfig.hooks !== undefined)
 
 await db.unsafe('CREATE TABLE fast_items (id INTEGER PRIMARY KEY, name TEXT, active INTEGER, note TEXT, created_at TEXT)').execute()
 await db.unsafe('INSERT INTO fast_items (id, name, active, created_at) VALUES (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)', [
-  1, 'alpha', 1, '2026-01-01',
-  2, 'beta', 1, '2026-01-02',
-  3, 'gamma', 0, '2026-01-03',
+  1, 'alpha', 1, '2026-01-01T00:00:00.000Z',
+  2, 'beta', 1, '2026-01-02T00:00:00.000Z',
+  3, 'gamma', 0, '2026-01-03T00:00:00.000Z',
 ]).execute()
 
 const fast = await db
@@ -195,6 +195,10 @@ async function supportedMatrix() {
     objectPredicates: await Promise.all([
       db.selectFrom('fast_items').select('name').where({ id: 2 }).execute(),
       db.selectFrom('fast_items').select('name').where({ active: 1, note: null }).execute(),
+    ]),
+    datePredicates: await Promise.all([
+      db.selectFrom('fast_items').select('id').whereDate('created_at', '>=', '2026-01-02T00:00:00.000Z').execute(),
+      db.selectFrom('fast_items').select('id').whereDate('created_at', '=', new Date('2026-01-01T00:00:00.000Z')).execute(),
     ]),
     distinct: await db.selectFrom('fast_items').select('active').distinct().orderBy('active').execute(),
     emptyIn: await db.selectFrom('fast_items').whereIn('id', []).execute(),
