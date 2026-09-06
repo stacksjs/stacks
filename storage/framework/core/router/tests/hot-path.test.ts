@@ -224,6 +224,28 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('preserves asynchronous native error handling on the fused response path', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-async-error', async () => {
+      await Promise.resolve()
+      throw new Error('async native failure')
+    })
+    direct.bunRouter.onError(async error => Response.json({ caught: error.message }, { status: 418 }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = await nativeRoutes['/_hot/native-async-error'].GET(new Request('http://localhost/_hot/native-async-error'))
+
+      expect(answer.status).toBe(418)
+      expect(await answer.json()).toEqual({ caught: 'async native failure' })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('still seeds CSRF when the underlying router is called directly', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

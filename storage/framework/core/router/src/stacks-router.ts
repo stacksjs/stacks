@@ -5257,6 +5257,7 @@ const databaseContextWrappedRouters = new WeakSet<Router>()
 
 type NativeRouteHandler = (request: Request) => Response | Promise<Response>
 type NativeRouteTable = Record<string, Record<string, NativeRouteHandler>>
+type NativeResponseFinalizer = (response: Response, request: Request) => Response | Promise<Response>
 
 interface NativeRouterInternals {
   routes: Route[]
@@ -5313,7 +5314,7 @@ function directNativePath(path: string): string | undefined {
  * invoke that handler directly while retaining request context, errors, and
  * response-cookie handling.
  */
-function buildDirectNativeHandlers(router: Router): Map<string, NativeRouteHandler> {
+function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeResponseFinalizer): Map<string, NativeRouteHandler> {
   const nativeRouter = router as unknown as NativeRouterInternals
   const handlers = new Map<string, NativeRouteHandler>()
   if (nativeRouter.globalMiddleware.length !== 0)
@@ -5348,14 +5349,22 @@ function buildDirectNativeHandlers(router: Router): Map<string, NativeRouteHandl
         try {
           const response = handler(enhancedRequest)
           return response instanceof Response
-            ? nativeRouter.applyModifiedCookies(response, enhancedRequest)
+            ? finalizeResponse(nativeRouter.applyModifiedCookies(response, enhancedRequest), request)
             : response.then(
-                result => nativeRouter.applyModifiedCookies(result, enhancedRequest),
-                error => handleDirectNativeRouteError(nativeRouter, error),
+                result => finalizeResponse(nativeRouter.applyModifiedCookies(result, enhancedRequest), request),
+                (error) => {
+                  const result = handleDirectNativeRouteError(nativeRouter, error)
+                  return result instanceof Response
+                    ? finalizeResponse(result, request)
+                    : result.then(response => finalizeResponse(response, request))
+                },
               )
         }
         catch (error) {
-          return handleDirectNativeRouteError(nativeRouter, error)
+          const result = handleDirectNativeRouteError(nativeRouter, error)
+          return result instanceof Response
+            ? finalizeResponse(result, request)
+            : result.then(response => finalizeResponse(response, request))
         }
       })
     })
@@ -5383,19 +5392,26 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
     if (!routes)
       return routes
 
-    const directHandlers = buildDirectNativeHandlers(router)
-
     const compression = (nativeRouter.config as unknown as {
       compression?: Parameters<typeof applyResponseCompression>[2]
     }).compression
     const compressionDisabled = compression?.enabled === false
     const compressionThreshold = compression?.threshold ?? 1024
+    const finalizeResponse: NativeResponseFinalizer = (response, request) => {
+      const frameworkResponse = response as unknown as Record<symbol, unknown>
+      const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
+      if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
+        return response
+      return applyResponseCompression(response, request, compression)
+    }
+    const directHandlers = buildDirectNativeHandlers(router, finalizeResponse)
+
     for (const [path, methods] of Object.entries(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
         const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
-        const dispatch = directHandlers.get(`${method}:${path}`)
+        const directDispatch = directHandlers.get(`${method}:${path}`)
           ?? (method === 'HEAD' ? directHandlers.get(`GET:${path}`) : undefined)
-          ?? handler
+        const dispatch = directDispatch ?? handler
         methods[method] = (request) => {
           if (safeMethod) {
             const cookie = request.headers.get('cookie') ?? ''
@@ -5405,20 +5421,11 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
             }
           }
           const response = dispatchInRoutingContext(dispatch, request)
-          if (response instanceof Response) {
-            const frameworkResponse = response as unknown as Record<symbol, unknown>
-            const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
-            if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
-              return response
-            return applyResponseCompression(response, request, compression)
-          }
-          return response.then((resolved) => {
-            const frameworkResponse = resolved as unknown as Record<symbol, unknown>
-            const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
-            if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
-              return resolved
-            return applyResponseCompression(resolved, request, compression)
-          })
+          if (directDispatch)
+            return response
+          return response instanceof Response
+            ? finalizeResponse(response, request)
+            : response.then(resolved => finalizeResponse(resolved, request))
         }
       }
     }
