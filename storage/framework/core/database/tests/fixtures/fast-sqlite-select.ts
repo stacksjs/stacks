@@ -148,6 +148,14 @@ async function supportedMatrix() {
       .select('name')
       .limit(1)
       .orderBy('id', 'desc')
+      .offset(0)
+      .execute(),
+    ordered: await db
+      .selectFrom('fast_items')
+      .select(['id', 'name'])
+      .orderBy('active')
+      .orderByDesc('id')
+      .limit(2)
       .execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),

@@ -1310,6 +1310,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let predicateOperator: string | undefined
   let predicateValue: unknown
   let additionalPredicates: Array<{ column: string, operator: string, value: unknown }> | undefined
+  let orderings: Array<{ column: string, direction: 'asc' | 'desc' }> | undefined
   let rowLimit: number | undefined
   let materialized: ReturnType<RawQueryBuilder['selectFrom']> | undefined
 
@@ -1328,6 +1329,11 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         for (const predicate of additionalPredicates)
           builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
       }
+    }
+    if (orderings) {
+      const apply = builder.orderBy as unknown as (column: string, direction: 'asc' | 'desc') => typeof builder
+      for (const ordering of orderings)
+        builder = apply.call(builder, ordering.column, ordering.direction)
     }
     if (rowLimit !== undefined) {
       const apply = builder.limit as unknown as (value: unknown) => typeof builder
@@ -1352,6 +1358,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         }).join(' AND ')}`
       }
     }
+    if (orderings)
+      query += ` ORDER BY ${orderings.map(ordering => `${ordering.column} ${ordering.direction.toUpperCase()}`).join(', ')}`
     const effectiveLimit = rowLimit ?? (firstOnly ? 1 : undefined)
     if (effectiveLimit !== undefined)
       query += ` LIMIT ${effectiveLimit}`
@@ -1408,6 +1416,24 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       else {
         ;(additionalPredicates ??= []).push({ column, operator, value })
       }
+      return proxy
+    },
+    orderBy(column: unknown, direction: unknown = 'asc') {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.orderBy as unknown as (column: unknown, direction?: unknown) => typeof builder
+        return apply.call(builder, column, direction)
+      }
+      ;(orderings ??= []).push({ column, direction: direction === 'asc' ? 'asc' : 'desc' })
+      return proxy
+    },
+    orderByDesc(column: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.orderByDesc as unknown as (column: unknown) => typeof builder
+        return apply.call(builder, column)
+      }
+      ;(orderings ??= []).push({ column, direction: 'desc' })
       return proxy
     },
     limit(value: unknown) {
