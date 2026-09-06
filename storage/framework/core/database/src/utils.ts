@@ -1291,7 +1291,7 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
 const SIMPLE_SQLITE_TABLE = /^[A-Z_][A-Z0-9_]*$/i
 const SIMPLE_SQLITE_COLUMN = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?$/i
 const SIMPLE_SQLITE_SELECTION = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?(?:\s+AS\s+[A-Z_][A-Z0-9_]*)?$/i
-const SIMPLE_SQLITE_OPERATORS = new Set(['=', '!=', '<>', '<', '<=', '>', '>=', 'like'])
+const SIMPLE_SQLITE_OPERATORS = new Set(['=', '!=', '<>', '<', '<=', '>', '>=', 'like', 'not like'])
 
 function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
@@ -1483,6 +1483,40 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       else {
         ;(additionalPredicates ??= []).push({ column, operator: 'IS NOT NULL', value: undefined, parameterized: false })
+      }
+      return proxy
+    },
+    whereLike(column: unknown, value: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereLike as unknown as (column: unknown, value: unknown) => typeof builder
+        return apply.call(builder, column, value)
+      }
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = 'LIKE'
+        predicateValue = value
+        predicateParameterized = true
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator: 'LIKE', value, parameterized: true })
+      }
+      return proxy
+    },
+    whereNotLike(column: unknown, value: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereNotLike as unknown as (column: unknown, value: unknown) => typeof builder
+        return apply.call(builder, column, value)
+      }
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = 'NOT LIKE'
+        predicateValue = value
+        predicateParameterized = true
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator: 'NOT LIKE', value, parameterized: true })
       }
       return proxy
     },

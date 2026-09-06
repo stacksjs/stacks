@@ -172,6 +172,13 @@ async function supportedMatrix() {
       .orderBy('id', 'desc')
       .limit(2)
       .execute(),
+    likePredicates: await db
+      .selectFrom('fast_items')
+      .select(['id', 'name'])
+      .whereLike('name', '%a%')
+      .whereNotLike('name', 'g%')
+      .orderBy('id')
+      .execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
     missingFirst: await db.selectFrom('fast_items').where('id', '=', 999).first(),
