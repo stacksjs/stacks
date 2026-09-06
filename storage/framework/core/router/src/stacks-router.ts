@@ -1804,7 +1804,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         resolved.sort((a, b) => a.priority - b.priority)
 
       // Run middleware in priority order
-      const middlewareTimings: MiddlewareTiming[] = resolved.length === 0
+      const collectsMiddlewareTimings = enhancedReq._startNs != null
+      const middlewareTimings: MiddlewareTiming[] = resolved.length === 0 || !collectsMiddlewareTimings
         ? EMPTY_MIDDLEWARE_TIMINGS
         : []
 
@@ -1847,19 +1848,19 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
       try {
         for (const { name: middlewareName, timingName, handler: middleware } of resolved) {
-          // Per-middleware timing is appended to the request's
-          // Server-Timing trail so devtools (and Chrome's network panel)
-          // can show exactly which middleware spent how long. Cheap —
-          // hrtime delta per layer.
-          const mwStart = performance.now()
+          // Per-middleware timing is appended to the request's Server-Timing
+          // trail when the caller enabled timing by stamping `_startNs`.
+          const mwStart = collectsMiddlewareTimings ? performance.now() : 0
           runningMiddleware = middlewareName
           try {
             const outcome = middleware.handle(enhancedReq)
             // Nothing to time out when the layer already finished.
             if (outcome && typeof (outcome as Promise<void>).then === 'function')
               await Promise.race([outcome as Promise<void>, armChainBudget!()])
-            const elapsedMs = performance.now() - mwStart
-            middlewareTimings.push({ name: timingName, ms: elapsedMs })
+            if (collectsMiddlewareTimings) {
+              const elapsedMs = performance.now() - mwStart
+              middlewareTimings.push({ name: timingName, ms: elapsedMs })
+            }
           }
           catch (error) {
             // Even on a thrown middleware, record the timing so the
@@ -1867,8 +1868,10 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             // Without this, an auth-rejected 401 had no per-middleware
             // timings at all — making it impossible to tell from the
             // response whether the rejection was instant or hung first.
-            const elapsedMs = performance.now() - mwStart
-            middlewareTimings.push({ name: timingName, ms: elapsedMs })
+            if (collectsMiddlewareTimings) {
+              const elapsedMs = performance.now() - mwStart
+              middlewareTimings.push({ name: timingName, ms: elapsedMs })
+            }
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
             // Middleware can throw a Response directly (CORS preflight,
             // Maintenance, Throttle 429, etc.) to short-circuit the chain

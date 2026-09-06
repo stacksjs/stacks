@@ -36,6 +36,16 @@ afterAll(() => {
 })
 
 describe('middleware timing labels', () => {
+  test('skips timing collection when the request did not opt in', async () => {
+    const router = createStacksRouter()
+    router.get('/timed/off', () => new Response('handled')).middleware('__timing:off')
+
+    const response = await router.handleRequest(new Request('http://localhost/timed/off'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('server-timing')).toBeNull()
+  })
+
   test('formats total-only and multiple middleware timings in execution order', async () => {
     const router = createStacksRouter()
     router.get('/timed/plain', () => new Response('handled'))
