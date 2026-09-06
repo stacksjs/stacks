@@ -1360,29 +1360,17 @@ function resolveDeferredSqliteTerminal(
     return selectAll
   }
   if (property === 'first' || property === 'executeTakeFirst') {
-    const first = () => {
-      try {
-        return Promise.resolve(executeStatement(true)[0])
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    }
+    const first = async () => executeStatement(true)[0]
     target.first = first
     target.executeTakeFirst = first
     return first
   }
   if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
-    const firstOrFail = () => {
-      try {
-        const row = executeStatement(true)[0]
-        return row === undefined
-          ? Promise.reject(new Error('Record not found'))
-          : Promise.resolve(row)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
+    const firstOrFail = async () => {
+      const row = executeStatement(true)[0]
+      if (row === undefined)
+        throw new Error('Record not found')
+      return row
     }
     target.firstOrFail = firstOrFail
     target.executeTakeFirstOrThrow = firstOrFail
@@ -1390,26 +1378,12 @@ function resolveDeferredSqliteTerminal(
   }
   if (property === 'exists' || property === 'doesntExist') {
     const findsRow = property === 'exists'
-    const check = () => {
-      try {
-        return Promise.resolve((executeStatement(true)[0] !== undefined) === findsRow)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    }
+    const check = async () => (executeStatement(true)[0] !== undefined) === findsRow
     target[property] = check
     return check
   }
   if (property === 'value') {
-    const value = (column: string) => {
-      try {
-        return Promise.resolve(executeStatement(true)[0]?.[column])
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    }
+    const value = async (column: string) => executeStatement(true)[0]?.[column]
     target.value = value
     return value
   }
