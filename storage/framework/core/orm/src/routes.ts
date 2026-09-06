@@ -26,7 +26,7 @@ import { projectPath, storagePath } from '@stacksjs/path'
 import { createQueryBuilder, defaultConfig, setConfig } from '@stacksjs/query-builder'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
-import { apiBasePath, applyCasts, applySorting, buildIndexMeta, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
+import { apiBasePath, applyCasts, applySorting, buildIndexPaginator, buildReadColumnMap, describeUnscopedMutatingModels, dropHiddenInputs, filterFillable, findShadowingRoute, getWritableFields, mapWriteError, ownershipDeclaredUnscoped, resolveApiMiddleware, resolveIndexPageArgs, resolveRowScopingPolicy, stampOwnership, stripHidden, toSnakeCase, toSnakeCaseKeys, validateWriteBody } from './auto-crud'
 import { loadModelRegistry } from './model-registry'
 import { effectiveOwnershipConfig } from './ownership'
 
@@ -690,7 +690,6 @@ for (const [modelName, model] of Object.entries(models)) {
             return new Response(JSON.stringify({
               data: [],
               ...emptyPaginator,
-              meta: buildIndexMeta(url, page, perPage, 0, false, undefined),
             }), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'private, no-store', Vary: 'Authorization' } })
           }
           query = Array.isArray(own.value)
@@ -758,10 +757,6 @@ for (const [modelName, model] of Object.entries(models)) {
         return new Response(JSON.stringify({
           data: records,
           ...paginator,
-          // DEPRECATED: `meta` is kept for one transition release for backward
-          // compat. Read the top-level fields instead (note: meta.page ===
-          // current_page). Removed in a future release. (#1960)
-          meta: buildIndexMeta(url, page, perPage, records.length, hasMore, total),
         }), { status: 200, headers: respHeaders })
       }
       catch (err) {

@@ -98,14 +98,9 @@ export type ApiRow<M> = Omit<ModelRow<M>, Extract<HiddenKeys<M>, keyof ModelRow<
 /** What a write accepts: fillable fields, minus anything hidden. */
 export type ApiWriteData<M> = Omit<ModelCreateData<M>, Extract<HiddenKeys<M>, keyof ModelCreateData<M>>>
 
-/** The listing envelope: rows, the flat paginator, and the deprecated `meta`. */
+/** The listing envelope: rows and the flat paginator. */
 export interface ApiIndexResponse<TRow> extends IndexPaginator {
   data: TRow[]
-  /**
-   * @deprecated Kept for one transition release (stacksjs/stacks#1960). Read
-   * the top-level paginator fields instead; `meta.page` is `current_page`.
-   */
-  meta: Record<string, unknown>
 }
 
 /** The single-row envelope, used by show, store and update alike. */

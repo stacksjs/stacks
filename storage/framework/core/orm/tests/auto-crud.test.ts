@@ -676,14 +676,19 @@ describe('buildIndexMeta (index pagination meta)', () => {
     expect(meta.next_page_url).not.toContain('http://')
   })
 
-  it('#1960: top-level flat fields are emitted alongside the (deprecated) meta', () => {
-    // The index route now dual-emits: flat Laravel fields at the top level
-    // (current_page etc.) PLUS the deprecated `meta`. Both come from the same
-    // inputs, so meta stays valid during the transition. Simulate the route's
-    // emit and assert the top-level flat fields match meta for the same inputs.
+  it('#1960: the index envelope is the flat paginator, with no `meta`', () => {
+    /*
+     * The route emitted flat Laravel fields at the top level AND a duplicate
+     * `meta` object, kept for one transition release after #1960. That release
+     * long passed, so `meta` is gone and the top level is the whole answer.
+     *
+     * `buildIndexMeta` stays: `buildIndexPaginator` delegates to it, and the
+     * only difference between the two is `page` vs `current_page`. Comparing
+     * them here is what pins that rename as the sole delta.
+     */
     const url = new URL('http://x/api/cars?page=2')
     const meta = buildIndexMeta(url, 2, 15, 15, true, 100)
-    const envelope = { data: [], ...buildIndexPaginator(url, 2, 15, 15, true, 100), meta }
+    const envelope = { data: [], ...buildIndexPaginator(url, 2, 15, 15, true, 100) }
     expect(envelope.current_page).toBe(meta.page)
     expect(envelope.per_page).toBe(meta.per_page)
     expect(envelope.from).toBe(meta.from)
@@ -693,8 +698,7 @@ describe('buildIndexMeta (index pagination meta)', () => {
     expect(envelope.next_page_url).toBe(meta.next_page_url)
     expect(envelope.total).toBe(meta.total)
     expect(envelope.last_page).toBe(meta.last_page)
-    // meta is preserved verbatim for backward compat this release.
-    expect(envelope.meta).toEqual(meta)
+    expect('meta' in envelope).toBe(false)
   })
 })
 
