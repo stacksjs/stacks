@@ -3166,6 +3166,21 @@ function getRequestInput(
     mayNeedCoercion = true
   }
 
+  // A static JSON action has already produced the exact merged input object
+  // that request.get()/all() would build again in the handler. Reuse it when
+  // no query, path, form, or file source can change precedence or contents.
+  if (
+    !requestHasQuery
+    && !mayHaveRouteParams
+    && req.jsonBody
+    && typeof req.jsonBody === 'object'
+    && !Array.isArray(req.jsonBody)
+    && !req.formBody
+    && !req.files
+  ) {
+    req._allInputCache = input
+  }
+
   // Merge multipart files so file-shaped validations
   // (`schema.file().image().maxBytes(...)`) see the `UploadedFile`
   // instance under its field name. Body wins on collision — text
