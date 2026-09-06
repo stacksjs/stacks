@@ -44,6 +44,16 @@ const fast = await db
 if (JSON.stringify(fast) !== JSON.stringify([{ id: 2, name: 'beta' }]))
   throw new Error(`Unexpected lightweight SELECT result: ${JSON.stringify(fast)}`)
 
+const explicitRead = await db.read
+  .selectFrom('fast_items')
+  .select(['id', 'name'])
+  .where('id', '=', 1)
+  .limit(1)
+  .execute()
+
+if (JSON.stringify(explicitRead) !== JSON.stringify([{ id: 1, name: 'alpha' }]))
+  throw new Error(`Unexpected lightweight explicit-read result: ${JSON.stringify(explicitRead)}`)
+
 const first = await db
   .selectFrom('fast_items')
   .select(['id', 'name'])

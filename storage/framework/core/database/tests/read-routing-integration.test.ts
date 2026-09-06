@@ -34,6 +34,8 @@ describe('db.read exists and falls back to the primary', () => {
   test('db.read exposes the builder surface', () => {
     expect(db.read).toBeDefined()
     expect(typeof db.read.selectFrom).toBe('function')
+    expect(Object.hasOwn(db.read, 'selectFrom')).toBe(true)
+    expect(Object.hasOwn(db.read, 'unsafe')).toBe(false)
   })
 
   test('with no replicas configured, db.read still executes against the primary', async () => {

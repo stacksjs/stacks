@@ -2073,6 +2073,14 @@ function selectFromDatabase(table: string): unknown {
   return instance.selectFrom(table)
 }
 
+function selectFromExplicitReadDatabase(table: string): unknown {
+  const dialect = getDialect()
+  const instance = getExplicitReadDb()
+  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
+    return createDeferredSqliteSelect(instance, table)
+  return instance.selectFrom(table)
+}
+
 /**
  * Lazy fallback for the query-builder surface. The common facade properties
  * live on `db` itself below, so `db.selectFrom()` does not enter a Proxy on
@@ -2117,14 +2125,12 @@ Object.defineProperties(db, {
 /**
  * Replica-routed handle exposed as `db.read`.
  *
- * A separate proxy rather than a method so the whole builder surface stays
- * available behind it (`db.read.selectFrom(...).where(...)`) without
- * re-declaring every chain entry point.
+ * Its common properties use the same facade shape as `db`; the Proxy
+ * prototype retains the complete builder surface without putting common
+ * SQLite reads through the generic builder.
  */
-export const readDb: Omit<Db, 'read'> = new Proxy({} as Db, {
+const readDbFallback = new Proxy({} as Db, {
   get(_target, prop) {
-    if (prop === 'fn')
-      return aggregateFunctions
     const instance = getExplicitReadDb()
     const value = (instance as unknown as Record<string | symbol, unknown>)[prop]
     if (typeof value === 'function') {
@@ -2132,6 +2138,12 @@ export const readDb: Omit<Db, 'read'> = new Proxy({} as Db, {
     }
     return value
   },
+})
+
+export const readDb: Omit<Db, 'read'> = Object.create(readDbFallback) as Omit<Db, 'read'>
+Object.defineProperties(readDb, {
+  fn: { value: aggregateFunctions },
+  selectFrom: { value: selectFromExplicitReadDatabase },
 })
 
 // Export setConfig if available
