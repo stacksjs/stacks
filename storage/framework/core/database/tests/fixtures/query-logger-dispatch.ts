@@ -55,8 +55,8 @@ async function queryWithDiagnostics(marker: string, fail = false): Promise<void>
     if (failed !== fail)
       throw new Error('Query did not fail as expected')
     await tracked
-    // Let the deferred INSERT and its own diagnostic callbacks settle.
-    await Bun.sleep(0)
+    // Let the bounded background batch window and its callbacks settle.
+    await Bun.sleep(10)
     if (persistence) {
       const records = await db.unsafe('SELECT query, status FROM query_logs').execute()
       const matching = records.filter(row => String(row.query).includes(marker))
@@ -101,7 +101,7 @@ try {
         else {
           await Promise.all(Array.from({ length: 200 }, query))
         }
-        await Bun.sleep(0)
+        await Bun.sleep(10)
         const records = await db.unsafe('SELECT query FROM query_logs').execute()
         const matching = records.filter(row => String(row.query).includes(marker))
         if (matching.length !== 200)
@@ -118,7 +118,7 @@ try {
 
     await db.unsafe('DROP TABLE query_logs').execute()
     await db.selectFrom('query_logger_fixture').select(['id']).execute()
-    await Bun.sleep(0)
+    await Bun.sleep(10)
     await createLogTable()
     await queryWithDiagnostics('query_logger_after_failed_store')
 

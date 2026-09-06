@@ -76,6 +76,7 @@ interface PendingQueryLog {
 }
 
 const QUERY_LOG_BATCH_SIZE = 100
+const QUERY_LOG_BATCH_DELAY_MS = 5
 const pendingQueryLogs: PendingQueryLog[] = []
 let queryLogFlushScheduled = false
 let queryLogFlushInFlight = false
@@ -91,10 +92,10 @@ function enqueueQueryLog(record: QueryLogRecord): Promise<void> {
   }
   else if (!queryLogFlushScheduled) {
     queryLogFlushScheduled = true
-    setImmediate(() => {
+    setTimeout(() => {
       queryLogFlushScheduled = false
       void flushQueuedQueryLogs()
-    })
+    }, QUERY_LOG_BATCH_DELAY_MS)
   }
 
   return settled
@@ -127,10 +128,10 @@ async function flushQueuedQueryLogs(): Promise<void> {
     queryLogFlushInFlight = false
     if (pendingQueryLogs.length > 0 && !queryLogFlushScheduled) {
       queryLogFlushScheduled = true
-      setImmediate(() => {
+      setTimeout(() => {
         queryLogFlushScheduled = false
         void flushQueuedQueryLogs()
-      })
+      }, QUERY_LOG_BATCH_DELAY_MS)
     }
   }
 }
