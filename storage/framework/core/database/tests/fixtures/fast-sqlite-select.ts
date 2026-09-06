@@ -23,6 +23,7 @@ await db.unsafe('INSERT INTO fast_items (id, name, active, created_at) VALUES (?
   2, 'beta', 1, '2026-01-02T00:00:00.000Z',
   3, 'gamma', 0, '2026-01-03T00:00:00.000Z',
 ]).execute()
+await db.unsafe('PRAGMA case_sensitive_like = ON').execute()
 
 const fast = await db
   .selectFrom('fast_items')
@@ -183,6 +184,12 @@ async function supportedMatrix() {
       .whereNotLike('name', 'g%')
       .orderBy('id')
       .execute(),
+    likeCaseModes: await Promise.all([
+      db.selectFrom('fast_items').select('id').whereLike('name', 'A%').execute(),
+      db.selectFrom('fast_items').select('id').whereLike('name', 'A%', true).execute(),
+      db.selectFrom('fast_items').select('id').whereILike('name', 'A%').execute(),
+      db.selectFrom('fast_items').select('id').whereNotILike('name', 'A%').orderBy('id').execute(),
+    ]),
     listPredicates: await db
       .selectFrom('fast_items')
       .select(['id', 'name'])

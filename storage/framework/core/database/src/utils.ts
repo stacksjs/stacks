@@ -1332,9 +1332,16 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     }
     if (predicateColumn !== undefined) {
       if (predicateValues) {
-        const method = predicateOperator === 'IN' ? 'whereIn' : 'whereNotIn'
-        const apply = builder[method] as unknown as (column: unknown, values: unknown[]) => typeof builder
-        builder = apply.call(builder, predicateColumn, predicateValues)
+        if (predicateOperator === 'LIKE LOWER' || predicateOperator === 'NOT LIKE LOWER') {
+          const method = predicateOperator === 'LIKE LOWER' ? 'whereILike' : 'whereNotILike'
+          const apply = builder[method] as unknown as (column: unknown, value: unknown) => typeof builder
+          builder = apply.call(builder, predicateColumn.slice(6, -1), predicateValues[0])
+        }
+        else {
+          const method = predicateOperator === 'IN' ? 'whereIn' : 'whereNotIn'
+          const apply = builder[method] as unknown as (column: unknown, values: unknown[]) => typeof builder
+          builder = apply.call(builder, predicateColumn, predicateValues)
+        }
       }
       else if (predicateParameterized) {
         const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
@@ -1348,9 +1355,16 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       if (additionalPredicates) {
         for (const predicate of additionalPredicates) {
           if (predicate.values) {
-            const method = predicate.operator === 'IN' ? 'whereIn' : 'whereNotIn'
-            const apply = builder[method] as unknown as (column: unknown, values: unknown[]) => typeof builder
-            builder = apply.call(builder, predicate.column, predicate.values)
+            if (predicate.operator === 'LIKE LOWER' || predicate.operator === 'NOT LIKE LOWER') {
+              const method = predicate.operator === 'LIKE LOWER' ? 'whereILike' : 'whereNotILike'
+              const apply = builder[method] as unknown as (column: unknown, value: unknown) => typeof builder
+              builder = apply.call(builder, predicate.column.slice(6, -1), predicate.values[0])
+            }
+            else {
+              const method = predicate.operator === 'IN' ? 'whereIn' : 'whereNotIn'
+              const apply = builder[method] as unknown as (column: unknown, values: unknown[]) => typeof builder
+              builder = apply.call(builder, predicate.column, predicate.values)
+            }
           }
           else if (predicate.parameterized) {
             const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
@@ -1540,12 +1554,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       return proxy
     },
-    whereLike(column: unknown, value: unknown) {
+    whereLike(column: unknown, value: unknown, caseSensitive: unknown = false) {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
         const builder = materialize()
-        const apply = builder.whereLike as unknown as (column: unknown, value: unknown) => typeof builder
-        return apply.call(builder, column, value)
+        const apply = builder.whereLike as unknown as (column: unknown, value: unknown, caseSensitive?: unknown) => typeof builder
+        return apply.call(builder, column, value, caseSensitive)
       }
+      if (!caseSensitive)
+        return (proxy.whereILike as (column: string, value: unknown) => unknown)(column, value)
       if (predicateColumn === undefined) {
         predicateColumn = column
         predicateOperator = 'LIKE'
@@ -1558,12 +1574,14 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       return proxy
     },
-    whereNotLike(column: unknown, value: unknown) {
+    whereNotLike(column: unknown, value: unknown, caseSensitive: unknown = false) {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
         const builder = materialize()
-        const apply = builder.whereNotLike as unknown as (column: unknown, value: unknown) => typeof builder
-        return apply.call(builder, column, value)
+        const apply = builder.whereNotLike as unknown as (column: unknown, value: unknown, caseSensitive?: unknown) => typeof builder
+        return apply.call(builder, column, value, caseSensitive)
       }
+      if (!caseSensitive)
+        return (proxy.whereNotILike as (column: string, value: unknown) => unknown)(column, value)
       if (predicateColumn === undefined) {
         predicateColumn = column
         predicateOperator = 'NOT LIKE'
@@ -1573,6 +1591,44 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       else {
         ;(additionalPredicates ??= []).push({ column, operator: 'NOT LIKE', value, parameterized: true })
+      }
+      return proxy
+    },
+    whereILike(column: unknown, value: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereILike as unknown as (column: unknown, value: unknown) => typeof builder
+        return apply.call(builder, column, value)
+      }
+      const sqlColumn = `LOWER(${column})`
+      if (predicateColumn === undefined) {
+        predicateColumn = sqlColumn
+        predicateOperator = 'LIKE LOWER'
+        predicateValue = undefined
+        predicateParameterized = false
+        predicateValues = [value]
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column: sqlColumn, operator: 'LIKE LOWER', value: undefined, parameterized: false, values: [value] })
+      }
+      return proxy
+    },
+    whereNotILike(column: unknown, value: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereNotILike as unknown as (column: unknown, value: unknown) => typeof builder
+        return apply.call(builder, column, value)
+      }
+      const sqlColumn = `LOWER(${column})`
+      if (predicateColumn === undefined) {
+        predicateColumn = sqlColumn
+        predicateOperator = 'NOT LIKE LOWER'
+        predicateValue = undefined
+        predicateParameterized = false
+        predicateValues = [value]
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column: sqlColumn, operator: 'NOT LIKE LOWER', value: undefined, parameterized: false, values: [value] })
       }
       return proxy
     },
