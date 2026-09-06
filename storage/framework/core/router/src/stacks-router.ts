@@ -622,7 +622,6 @@ interface MiddlewareTiming {
   ms: number
 }
 
-const EMPTY_RESOLVED_MIDDLEWARE: ResolvedMiddleware[] = []
 const EMPTY_MIDDLEWARE_TIMINGS: MiddlewareTiming[] = []
 const EMPTY_MIDDLEWARE_ENTRIES: readonly string[] = []
 const CSRF_ONLY_MIDDLEWARE: readonly string[] = ['csrf']
@@ -1727,96 +1726,96 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         ? (userMiddleware.length === 0 ? CSRF_ONLY_MIDDLEWARE : ['csrf', ...userMiddleware])
         : userMiddleware
 
-      // Only pay for pathname extraction when debug logging is actually on —
-      // this runs per request on every middleware-bearing route. The level
-      // gate mirrors `log.debug`'s own cheap-exit, and the cheap string slice
-      // avoids a full `new URL()` parse on the hot path in production.
-      if (middlewareEntries.length > 0 && isDebugLogging()) {
-        const schemeEnd = req.url.indexOf('://')
-        const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
-        const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
-        const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
-        log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${routeMethod} ${urlPath}`)
-      }
+      let middlewareTimings: MiddlewareTiming[] = EMPTY_MIDDLEWARE_TIMINGS
+      if (middlewareEntries.length > 0) {
+        // Only pay for pathname extraction when debug logging is actually on —
+        // this runs per request on every middleware-bearing route. The level
+        // gate mirrors `log.debug`'s own cheap-exit, and the cheap string slice
+        // avoids a full `new URL()` parse on the hot path in production.
+        if (isDebugLogging()) {
+          const schemeEnd = req.url.indexOf('://')
+          const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
+          const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
+          const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
+          log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${routeMethod} ${urlPath}`)
+        }
 
-      // Pre-resolve every entry to its handler + priority. Each
-      // Middleware instance declares an optional `priority` (lower
-      // runs earlier, default 10); without sorting, declared order
-      // alone decides execution — which contradicts the Cors header
-      // contract requiring CORS to precede auth/throttle so 4xx
-      // responses still carry the right headers. See
-      // stacksjs/stacks#1863, #1859 (H-1).
-      const cachedCsrfOnlyMiddleware = middlewareEntries === CSRF_ONLY_MIDDLEWARE
-        ? resolvedCsrfOnlyMiddleware
-        : undefined
-      const resolved: ResolvedMiddleware[] = cachedCsrfOnlyMiddleware
-        ?? (middlewareEntries.length === 0 ? EMPTY_RESOLVED_MIDDLEWARE : [])
-      const unresolvedEntries = cachedCsrfOnlyMiddleware ? EMPTY_MIDDLEWARE_ENTRIES : middlewareEntries
-      for (const middlewareEntry of unresolvedEntries) {
-        let resolvedEntry = resolvedMiddlewareEntryCache.get(middlewareEntry)
-        if (!resolvedEntry) {
-          const pending = parseMiddlewareEntry(middlewareEntry)
-          const parsed = pending instanceof Promise ? await pending : pending
-          const loaded = loadParsedMiddleware(parsed)
-          const middleware = loaded instanceof Promise ? await loaded : loaded
-          if (middleware && typeof middleware.handle === 'function') {
-            const rawPriority = (middleware as { priority?: unknown }).priority
-            let priority = DEFAULT_MIDDLEWARE_PRIORITY
-            if (typeof rawPriority === 'number' && Number.isFinite(rawPriority) && rawPriority >= 0) {
-              priority = rawPriority
+        // Pre-resolve every entry to its handler + priority. Each
+        // Middleware instance declares an optional `priority` (lower
+        // runs earlier, default 10); without sorting, declared order
+        // alone decides execution — which contradicts the Cors header
+        // contract requiring CORS to precede auth/throttle so 4xx
+        // responses still carry the right headers. See
+        // stacksjs/stacks#1863, #1859 (H-1).
+        const cachedCsrfOnlyMiddleware = middlewareEntries === CSRF_ONLY_MIDDLEWARE
+          ? resolvedCsrfOnlyMiddleware
+          : undefined
+        const resolved: ResolvedMiddleware[] = cachedCsrfOnlyMiddleware ?? []
+        const unresolvedEntries = cachedCsrfOnlyMiddleware ? EMPTY_MIDDLEWARE_ENTRIES : middlewareEntries
+        for (const middlewareEntry of unresolvedEntries) {
+          let resolvedEntry = resolvedMiddlewareEntryCache.get(middlewareEntry)
+          if (!resolvedEntry) {
+            const pending = parseMiddlewareEntry(middlewareEntry)
+            const parsed = pending instanceof Promise ? await pending : pending
+            const loaded = loadParsedMiddleware(parsed)
+            const middleware = loaded instanceof Promise ? await loaded : loaded
+            if (middleware && typeof middleware.handle === 'function') {
+              const rawPriority = (middleware as { priority?: unknown }).priority
+              let priority = DEFAULT_MIDDLEWARE_PRIORITY
+              if (typeof rawPriority === 'number' && Number.isFinite(rawPriority) && rawPriority >= 0) {
+                priority = rawPriority
+              }
+              else if (rawPriority !== undefined) {
+                warnInvalidMiddlewarePriority(middlewareEntry, rawPriority)
+              }
+              resolvedEntry = {
+                name: middlewareEntry,
+                timingName: parsed.timingName,
+                handler: middleware,
+                priority,
+                parameterName: parsed.params ? parsed.name : undefined,
+                params: parsed.params,
+              }
+              resolvedMiddlewareEntryCache.set(middlewareEntry, resolvedEntry)
             }
-            else if (rawPriority !== undefined) {
-              warnInvalidMiddlewarePriority(middlewareEntry, rawPriority)
-            }
-            resolvedEntry = {
-              name: middlewareEntry,
-              timingName: parsed.timingName,
-              handler: middleware,
-              priority,
-              parameterName: parsed.params ? parsed.name : undefined,
-              params: parsed.params,
-            }
-            resolvedMiddlewareEntryCache.set(middlewareEntry, resolvedEntry)
           }
+
+          if (!resolvedEntry) {
+            // Fail CLOSED. The previous `continue` served the route WITHOUT
+            // the middleware — a typo'd `auth` alias silently unprotected the
+            // route. Every entry point (including dev hot-reload cache clears
+            // and late package registrations) must get a 500 instead.
+            // Boot-time validation (assertRouteMiddlewareResolvable) catches
+            // these earlier and louder; this branch is the request-time
+            // guarantee. See stacksjs/stacks#1957.
+            log.error(`[Router] Middleware '${middlewareEntry}' on ${routeKey} could not be resolved - failing closed`)
+            const failClosedError = new Error(`Middleware '${middlewareEntry}' could not be resolved`)
+            const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
+            return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
+          }
+
+          // Store middleware params on request for middleware to access.
+          // Params are keyed by middleware name so this is order-independent.
+          if (resolvedEntry.params && resolvedEntry.parameterName) {
+            ;enhancedReq._middlewareParams = enhancedReq._middlewareParams || {}
+            ;enhancedReq._middlewareParams[resolvedEntry.parameterName] = resolvedEntry.params
+          }
+          resolved.push(resolvedEntry)
         }
 
-        if (!resolvedEntry) {
-          // Fail CLOSED. The previous `continue` served the route WITHOUT
-          // the middleware — a typo'd `auth` alias silently unprotected the
-          // route. Every entry point (including dev hot-reload cache clears
-          // and late package registrations) must get a 500 instead.
-          // Boot-time validation (assertRouteMiddlewareResolvable) catches
-          // these earlier and louder; this branch is the request-time
-          // guarantee. See stacksjs/stacks#1957.
-          log.error(`[Router] Middleware '${middlewareEntry}' on ${routeKey} could not be resolved - failing closed`)
-          const failClosedError = new Error(`Middleware '${middlewareEntry}' could not be resolved`)
-          const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
-          return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
-        }
+        if (middlewareEntries === CSRF_ONLY_MIDDLEWARE && !cachedCsrfOnlyMiddleware && resolved.length === 1)
+          resolvedCsrfOnlyMiddleware = resolved
 
-        // Store middleware params on request for middleware to access.
-        // Params are keyed by middleware name so this is order-independent.
-        if (resolvedEntry.params && resolvedEntry.parameterName) {
-          ;enhancedReq._middlewareParams = enhancedReq._middlewareParams || {}
-          ;enhancedReq._middlewareParams[resolvedEntry.parameterName] = resolvedEntry.params
-        }
-        resolved.push(resolvedEntry)
-      }
+        // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
+        // so same-priority entries preserve insertion order. This keeps
+        // declared sequencing within a priority band predictable.
+        if (resolved.length > 1)
+          resolved.sort((a, b) => a.priority - b.priority)
 
-      if (middlewareEntries === CSRF_ONLY_MIDDLEWARE && !cachedCsrfOnlyMiddleware && resolved.length === 1)
-        resolvedCsrfOnlyMiddleware = resolved
-
-      // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
-      // so same-priority entries preserve insertion order. This keeps
-      // declared sequencing within a priority band predictable.
-      if (resolved.length > 1)
-        resolved.sort((a, b) => a.priority - b.priority)
-
-      // Run middleware in priority order
-      const collectsMiddlewareTimings = enhancedReq._startNs != null
-      const middlewareTimings: MiddlewareTiming[] = resolved.length === 0 || !collectsMiddlewareTimings
-        ? EMPTY_MIDDLEWARE_TIMINGS
-        : []
+        // Run middleware in priority order
+        const collectsMiddlewareTimings = enhancedReq._startNs != null
+        if (collectsMiddlewareTimings)
+          middlewareTimings = []
 
       /*
        * One budget for the chain, armed at most once per request.
@@ -1834,12 +1833,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
        * 120s, which is closer to what the client's own timeout does anyway.
        * A middleware that finishes synchronously never arms anything.
        */
-      let chainTimer: ReturnType<typeof setTimeout> | undefined
-      let chainBudget: Promise<never> | undefined
-      let runningMiddleware = ''
+        let chainTimer: ReturnType<typeof setTimeout> | undefined
+        let chainBudget: Promise<never> | undefined
+        let runningMiddleware = ''
 
-      try {
-        for (const { name: middlewareName, timingName, handler: middleware } of resolved) {
+        try {
+          for (const { name: middlewareName, timingName, handler: middleware } of resolved) {
           // Per-middleware timing is appended to the request's Server-Timing
           // trail when the caller enabled timing by stamping `_startNs`.
           const mwStart = collectsMiddlewareTimings ? performance.now() : 0
@@ -1928,13 +1927,14 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             catch { /* immutable headers — leave the response alone */ }
             return await applyCorsIfConfigured(enhancedReq, errorResponse)
           }
+          }
         }
-      }
-      finally {
-        // One timer, cleared on every way out of the chain - including the
-        // early returns above - so a settled request leaves nothing pending.
-        if (chainTimer)
-          clearTimeout(chainTimer)
+        finally {
+          // One timer, cleared on every way out of the chain - including the
+          // early returns above - so a settled request leaves nothing pending.
+          if (chainTimer)
+            clearTimeout(chainTimer)
+        }
       }
 
       // Call the actual handler with the enhanced request.
