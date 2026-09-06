@@ -1627,7 +1627,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // seeding below then reuses this exact value rather than generating a
     // second one, so what the page embedded and what the browser stores are
     // the same string.
-    if (!csrfHandledByOuter) {
+    if (!csrfHandledByOuter && routeSeedsCsrf) {
       const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding) await renderTokenSeeding
     }
