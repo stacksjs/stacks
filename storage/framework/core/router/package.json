@@ -70,7 +70,7 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "ts-rate-limiter": "^0.4.2"
+    "ts-rate-limiter": "^0.4.8"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

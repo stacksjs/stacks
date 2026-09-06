@@ -56,7 +56,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/bunpress": "^0.2.8",
+    "@stacksjs/bunpress": "^0.2.14",
     "@stacksjs/clapp": "^0.2.12",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/strings": "workspace:*",
