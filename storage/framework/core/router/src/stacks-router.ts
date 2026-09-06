@@ -5268,8 +5268,8 @@ let routesLoadPromise: Promise<void> | null = null
  * is a plain pass-through so a build without the database package (or an
  * older one) still serves requests.
  */
-type ContextRunner = <T>(fn: () => T) => T
-let routingContextRunner: ContextRunner | null = null
+type ContextDispatcher = <T, A>(fn: (arg: A) => T, arg: A) => T
+let routingContextDispatcher: ContextDispatcher | null = null
 
 const databaseContextWrappedRouters = new WeakSet<Router>()
 
@@ -5388,7 +5388,7 @@ function buildDirectNativeHandlers(router: Router): Map<string, NativeRouteHandl
  * shared dispatcher so fetch-routed requests keep exactly one context while
  * native requests gain the one they were missing.
  */
-function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext: ContextRunner): void {
+function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingContext: ContextDispatcher): void {
   const nativeRouter = router as Router & {
     _nativeDatabaseContextWrapped?: boolean
     _buildNativeRoutes?: () => NativeRouteTable | null
@@ -5423,7 +5423,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
               markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
             }
           }
-          const response = runInRoutingContext(() => dispatch(request))
+          const response = dispatchInRoutingContext(dispatch, request)
           if (response instanceof Response) {
             const frameworkResponse = response as unknown as Record<symbol, unknown>
             const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
@@ -5448,30 +5448,33 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
 
 async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void> {
   if (databaseContextWrappedRouters.has(router)) return
-  const runInRoutingContext = await getRoutingContextRunner()
+  const dispatchInRoutingContext = await getRoutingContextDispatcher()
   // Concurrent serve() calls can resolve the runner together.
   if (databaseContextWrappedRouters.has(router)) return
-  wrapNativeRoutesForDatabaseContext(router, runInRoutingContext)
+  wrapNativeRoutesForDatabaseContext(router, dispatchInRoutingContext)
   const original = router.handleRequest.bind(router)
-  router.handleRequest = request => runInRoutingContext(() => original(request))
+  router.handleRequest = request => dispatchInRoutingContext(original, request)
   databaseContextWrappedRouters.add(router)
 }
 
-async function getRoutingContextRunner(): Promise<ContextRunner> {
-  if (!routingContextRunner) {
+async function getRoutingContextDispatcher(): Promise<ContextDispatcher> {
+  if (!routingContextDispatcher) {
     try {
       const database = await import('@stacksjs/database')
+      const dispatcher = database.runInDatabaseRoutingContext
       const runner = database.withDatabaseRoutingContext ?? database.withRoutingContext
-      routingContextRunner = typeof runner === 'function'
-        ? runner
-        : (fn => fn())
+      routingContextDispatcher = typeof dispatcher === 'function'
+        ? dispatcher
+        : typeof runner === 'function'
+          ? ((fn, arg) => runner(() => fn(arg)))
+          : ((fn, arg) => fn(arg))
     }
     catch {
       // No database package available — routing is moot, so run unwrapped.
-      routingContextRunner = fn => fn()
+      routingContextDispatcher = (fn, arg) => fn(arg)
     }
   }
-  return routingContextRunner
+  return routingContextDispatcher
 }
 
 /**
@@ -5479,11 +5482,11 @@ async function getRoutingContextRunner(): Promise<ContextRunner> {
  * This is the main entry point for the Stacks server
  */
 export async function serverResponse(request: Request, _body?: string): Promise<Response> {
-  const runInRoutingContext = await getRoutingContextRunner()
+  const dispatchInRoutingContext = await getRoutingContextDispatcher()
   // The context must wrap the whole handler, not just the dispatch: a write
   // in a controller has to be visible to a read later in the same request,
   // and AsyncLocalStorage carries the store across every await inside.
-  return runInRoutingContext(() => handleServerRequest(request))
+  return dispatchInRoutingContext(handleServerRequest, request)
 }
 
 async function handleServerRequest(request: Request): Promise<Response> {

@@ -13,7 +13,7 @@
 // who has not configured a replica.
 
 import { describe, expect, test } from 'bun:test'
-import { db, withDatabaseRoutingContext } from '../src/utils'
+import { db, runInDatabaseRoutingContext, withDatabaseRoutingContext } from '../src/utils'
 import {
   contextHasWritten,
   contextInTransaction,
@@ -128,6 +128,14 @@ describe('no routing context established', () => {
       return contextHasWritten()
     })
     expect(result).toBe(false)
+  })
+
+  test('the argument dispatcher skips routing state when no replicas exist', () => {
+    const result = runInDatabaseRoutingContext((value: number) => {
+      markContextWrote()
+      return { value, wrote: contextHasWritten() }
+    }, 42)
+    expect(result).toEqual({ value: 42, wrote: false })
   })
 
   test('the proxy still works outside any request boundary', async () => {

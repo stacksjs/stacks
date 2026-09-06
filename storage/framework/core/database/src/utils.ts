@@ -437,6 +437,15 @@ export function withDatabaseRoutingContext<T>(fn: () => T): T {
 }
 
 /**
+ * Argument-passing variant for request dispatchers. Keeping the argument out
+ * of a per-request closure matters on the no-replica path, while replica-aware
+ * applications still establish the same AsyncLocalStorage routing boundary.
+ */
+export function runInDatabaseRoutingContext<T, A>(fn: (arg: A) => T, arg: A): T {
+  return getReplicas().length === 0 ? fn(arg) : withRoutingContext(() => fn(arg))
+}
+
+/**
  * Translate the framework's millisecond pool knobs onto Bun's SQL driver
  * options, which are named differently and measured in seconds.
  *
