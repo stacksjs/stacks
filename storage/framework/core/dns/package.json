@@ -68,12 +68,12 @@
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.12.10"
+    "@stacksjs/ts-cloud": "^0.12.12"
   },
   "devDependencies": {
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/whois": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "sideEffects": false
 }

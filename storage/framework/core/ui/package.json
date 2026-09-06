@@ -56,12 +56,12 @@
   },
   "dependencies": {
     "@cwcss/crosswind": "^0.2.19",
-    "@stacksjs/components": "^0.2.246",
+    "@stacksjs/components": "^0.2.278",
     "@stacksjs/config": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

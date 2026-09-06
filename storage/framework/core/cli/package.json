@@ -69,7 +69,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.15",
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
@@ -80,6 +80,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

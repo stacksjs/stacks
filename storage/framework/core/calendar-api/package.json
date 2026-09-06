@@ -58,12 +58,12 @@
   },
   "dependencies": {
     "@stacksjs/datetime": "workspace:*",
-    "@stacksjs/stx": "^0.2.274"
+    "@stacksjs/stx": "^0.2.278"
   },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
     "@stacksjs/security": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "sideEffects": false
 }

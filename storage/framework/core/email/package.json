@@ -68,8 +68,8 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.274",
-    "@stacksjs/ts-cloud": "^0.12.10",
+    "@stacksjs/stx": "^0.2.278",
+    "@stacksjs/ts-cloud": "^0.12.12",
     "@stacksjs/utils": "workspace:*",
     "postal-mime": "^2.7.6"
   },
@@ -77,7 +77,7 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "peerDependencies": {
     "@stacksjs/queue": "workspace:*"

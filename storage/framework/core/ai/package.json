@@ -67,10 +67,10 @@
   "dependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.12.10"
+    "@stacksjs/ts-cloud": "^0.12.12"
   },
   "peerDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.79"
+    "@anthropic-ai/claude-agent-sdk": "^0.3.263"
   },
   "peerDependenciesMeta": {
     "@anthropic-ai/claude-agent-sdk": {
@@ -78,7 +78,7 @@
     }
   },
   "devDependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.79",
-    "better-dx": "^0.2.24"
+    "@anthropic-ai/claude-agent-sdk": "^0.3.263",
+    "better-dx": "^0.2.25"
   }
 }
