@@ -1309,7 +1309,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let predicateColumn: string | undefined
   let predicateOperator: string | undefined
   let predicateValue: unknown
-  let additionalPredicates: Array<{ column: string, operator: string, value: unknown }> | undefined
+  let predicateParameterized = true
+  let additionalPredicates: Array<{ column: string, operator: string, value: unknown, parameterized: boolean }> | undefined
   let orderings: Array<{ column: string, direction: 'asc' | 'desc' }> | undefined
   let rowLimit: number | undefined
   let rowOffset: number | undefined
@@ -1324,11 +1325,27 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       builder = apply.call(builder, columns)
     }
     if (predicateColumn !== undefined) {
-      const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
-      builder = apply.call(builder, predicateColumn, predicateOperator, predicateValue)
+      if (predicateParameterized) {
+        const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
+        builder = apply.call(builder, predicateColumn, predicateOperator, predicateValue)
+      }
+      else {
+        const method = predicateOperator === 'IS NULL' ? 'whereNull' : 'whereNotNull'
+        const apply = builder[method] as unknown as (column: unknown) => typeof builder
+        builder = apply.call(builder, predicateColumn)
+      }
       if (additionalPredicates) {
-        for (const predicate of additionalPredicates)
-          builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
+        for (const predicate of additionalPredicates) {
+          if (predicate.parameterized) {
+            const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
+            builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
+          }
+          else {
+            const method = predicate.operator === 'IS NULL' ? 'whereNull' : 'whereNotNull'
+            const apply = builder[method] as unknown as (column: unknown) => typeof builder
+            builder = apply.call(builder, predicate.column)
+          }
+        }
       }
     }
     if (orderings) {
@@ -1354,12 +1371,18 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     let query = `SELECT ${selected} FROM ${table}`
     const params: unknown[] = []
     if (predicateColumn !== undefined) {
-      query += ` WHERE ${predicateColumn} ${predicateOperator} ?`
-      params.push(predicateValue)
+      query += ` WHERE ${predicateColumn} ${predicateOperator}`
+      if (predicateParameterized) {
+        query += ' ?'
+        params.push(predicateValue)
+      }
       if (additionalPredicates) {
         query += ` AND ${additionalPredicates.map((predicate) => {
-          params.push(predicate.value)
-          return `${predicate.column} ${predicate.operator} ?`
+          if (predicate.parameterized) {
+            params.push(predicate.value)
+            return `${predicate.column} ${predicate.operator} ?`
+          }
+          return `${predicate.column} ${predicate.operator}`
         }).join(' AND ')}`
       }
     }
@@ -1422,9 +1445,44 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         predicateColumn = column
         predicateOperator = operator
         predicateValue = value
+        predicateParameterized = true
       }
       else {
-        ;(additionalPredicates ??= []).push({ column, operator, value })
+        ;(additionalPredicates ??= []).push({ column, operator, value, parameterized: true })
+      }
+      return proxy
+    },
+    whereNull(column: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereNull as unknown as (column: unknown) => typeof builder
+        return apply.call(builder, column)
+      }
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = 'IS NULL'
+        predicateValue = undefined
+        predicateParameterized = false
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator: 'IS NULL', value: undefined, parameterized: false })
+      }
+      return proxy
+    },
+    whereNotNull(column: unknown) {
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+        const builder = materialize()
+        const apply = builder.whereNotNull as unknown as (column: unknown) => typeof builder
+        return apply.call(builder, column)
+      }
+      if (predicateColumn === undefined) {
+        predicateColumn = column
+        predicateOperator = 'IS NOT NULL'
+        predicateValue = undefined
+        predicateParameterized = false
+      }
+      else {
+        ;(additionalPredicates ??= []).push({ column, operator: 'IS NOT NULL', value: undefined, parameterized: false })
       }
       return proxy
     },

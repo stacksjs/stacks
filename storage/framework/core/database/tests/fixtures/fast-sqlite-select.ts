@@ -17,7 +17,7 @@ initializeDbConfig({
 if (queryBuilderConfig.hooks !== undefined)
   throw new Error('The fast SELECT fixture requires the production no-hooks profile')
 
-await db.unsafe('CREATE TABLE fast_items (id INTEGER PRIMARY KEY, name TEXT, active INTEGER)').execute()
+await db.unsafe('CREATE TABLE fast_items (id INTEGER PRIMARY KEY, name TEXT, active INTEGER, note TEXT)').execute()
 await db.unsafe('INSERT INTO fast_items (id, name, active) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)', [
   1, 'alpha', 1,
   2, 'beta', 1,
@@ -163,6 +163,14 @@ async function supportedMatrix() {
       .orderBy('id')
       .offset(1)
       .limit(1)
+      .execute(),
+    nullPredicates: await db
+      .selectFrom('fast_items')
+      .select(['id', 'name'])
+      .whereNull('note')
+      .whereNotNull('name')
+      .orderBy('id', 'desc')
+      .limit(2)
       .execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
