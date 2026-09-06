@@ -1601,7 +1601,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         )
       }
     }
-    const enhancedReq = enhanceRequest(req)
+    // bun-router dispatches only after its enhancer has installed both its
+    // macros and the Stacks prototype. The fused enhancer also initializes the
+    // request id, so running the public fallback decorator again here only
+    // repeats params assignment and a marker lookup.
+    const enhancedReq = req
     const csrfHandledByOuter = (enhancedReq as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
 
     // Mint the CSRF token BEFORE the handler runs, not after.
@@ -3477,6 +3481,8 @@ function fuseRequestEnhancements(router: Router): void {
         enhanced.params = params
       }
       Object.setPrototypeOf(enhanced, combined)
+      if (!enhanced._requestId)
+        enhanced._requestId = incomingRequestId(enhanced) ?? crypto.randomUUID()
       return enhanced
     }
 

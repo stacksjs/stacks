@@ -65,6 +65,19 @@ describe('the request path keeps its defaults', () => {
     expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
   })
 
+  it('initializes request ids on warm direct dispatches', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/direct-id', () => ({ ok: true }))
+
+    const first = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct-id'))
+    const second = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct-id'))
+
+    expect(first.headers.get('x-request-id')).toBeTruthy()
+    expect(second.headers.get('x-request-id')).toBeTruthy()
+    expect(second.headers.get('x-request-id')).not.toBe(first.headers.get('x-request-id'))
+  })
+
   it('still seeds a CSRF cookie on a cold GET', async () => {
     const answer = await get('/_hot/plain')
 
