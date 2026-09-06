@@ -2615,7 +2615,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
             )
           : action.validations
 
-        const precognitionResult = await validateActionInput(req, rules)
+        const precognitionResult = validateActionInputSync(req, rules)
         return precognitionResult.valid
           ? precognitionSuccess()
           : validationFailureResponse(precognitionResult.errors)
@@ -2625,7 +2625,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
       // JSON — validation failures are 100% an API-shape signal and HTML
       // pages would be useless here.
       if (action.validations) {
-        const validationResult = await validateActionInput(req, action.validations)
+        const validationResult = validateActionInputSync(req, action.validations)
         if (!validationResult.valid) {
           return validationFailureResponse(validationResult.errors)
         }
@@ -2676,11 +2676,11 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
 /**
  * Run an action's declarative `validations:` against the request.
  *
- * @internal Exported for regression coverage of path-param coercion
- * (stacksjs/stacks#1865). Production callers should rely on the
- * router's action-resolution path, which invokes this for you.
+ * The action path uses this synchronous core because input collection and the
+ * validator contract are synchronous. The exported wrapper below stays
+ * Promise-based for compatibility with callers that chain or await it.
  */
-export async function validateActionInput(req: EnhancedRequest, validations: ActionValidations): Promise<ValidationResult> {
+function validateActionInputSync(req: EnhancedRequest, validations: ActionValidations): ValidationResult {
   const errors: Record<string, string[]> = {}
 
   // Pass `validations` so wire-stringified path/query values get coerced
@@ -2688,7 +2688,7 @@ export async function validateActionInput(req: EnhancedRequest, validations: Act
   // `schema.number()` on a path-param `id` 422s on every request because
   // the URL delivers `"1"` not `1` and ts-validation's NumberValidator is
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
-  const input = await getRequestInput(req, validations)
+  const input = getRequestInput(req, validations)
 
   for (const [field, validation] of Object.entries(validations)) {
     const value = input[field]
@@ -2766,6 +2766,10 @@ export async function validateActionInput(req: EnhancedRequest, validations: Act
   }
 }
 
+export async function validateActionInput(req: EnhancedRequest, validations: ActionValidations): Promise<ValidationResult> {
+  return validateActionInputSync(req, validations)
+}
+
 function modelValidationRules(model: any): ActionValidations | undefined {
   if (!model?.attributes || typeof model.attributes !== 'object')
     return
@@ -2792,10 +2796,10 @@ function modelValidationRules(model: any): ActionValidations | undefined {
  * parser already gave them their proper JS types
  * (see stacksjs/stacks#1865).
  */
-async function getRequestInput(
+function getRequestInput(
   req: EnhancedRequest,
   validations?: ActionValidations,
-): Promise<Record<string, unknown>> {
+): Record<string, unknown> {
   const input: Record<string, unknown> = {}
 
   // Get query parameters (always strings on the wire). Reuse the query
