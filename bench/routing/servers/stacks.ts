@@ -81,8 +81,8 @@ if (withDb && serves('db-roundtrip')) {
     if (checkpoint[0]?.wal_autocheckpoint !== 1000 || synchronous[0]?.synchronous !== 2)
       throw new Error('Tuned SQLite benchmark requires wal_autocheckpoint=1000 and synchronous=FULL')
   }
-  router.get('/bench/db', async () => {
-    const rows = await db.selectFrom('bench_items').select(['id', 'name']).where('id', '=', 1).limit(1).execute()
+  router.get('/bench/db', () => {
+    const rows = db.selectFrom('bench_items').select(['id', 'name']).where('id', '=', 1).limit(1).executeSync()
     const row = rows[0]
     return { id: row.id, name: row.name }
   })

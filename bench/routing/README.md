@@ -86,7 +86,10 @@ clearly-labelled exercise.
 runner points `DB_DATABASE_PATH` at the fixture); the others open it with
 `bun:sqlite` directly, because none of them ships an ORM and that is their
 idiomatic path. That asymmetry favours them, and it is stated here rather than
-papered over. `post-validate` has the same shape: Elysia uses its `t` schema,
+papered over. The Stacks route uses the query builder's SQLite-only
+`executeSync()` terminal because Bun SQLite performs the read synchronously
+either way; this avoids adding Promise scheduling that the direct `bun:sqlite`
+targets do not have. `post-validate` has the same shape: Elysia uses its `t` schema,
 Hono a hand-written check behind its own `validator()` seam, and both are
 cheaper than a compiled rule set.
 
