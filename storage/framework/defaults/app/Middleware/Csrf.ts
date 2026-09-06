@@ -241,8 +241,6 @@ function hasBearerToken(req: Request): boolean {
   return typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')
 }
 
-const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
-
 /**
  * Validate one request with the framework's native CSRF contract.
  *
@@ -251,14 +249,15 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
  * double-submit and bearer-token rules without duplicating security logic.
  */
 function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
-  const method = request.method.toUpperCase()
+  // Fetch normalizes standard methods when constructing the Request.
+  const method = request.method
 
   // Safe methods don't mutate state — no token check needed.
   // Token *seeding* (set the cookie if it's missing) happens after
   // the response is built; we don't have a post-response hook
   // here, so action handlers / SPAs can call `generateCsrfToken()`
   // themselves on the first GET they need it for.
-  if (SAFE_METHODS.has(method)) return
+  if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return
 
   // API clients with a bearer token are exempt — see header docstring.
   if (hasBearerToken(request)) return
