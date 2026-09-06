@@ -1467,6 +1467,27 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
       if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase())) {
+        if (column !== null && typeof column === 'object' && !Array.isArray(column) && operator === undefined && value === undefined) {
+          const prototype = Object.getPrototypeOf(column)
+          const entries = prototype === Object.prototype || prototype === null
+            ? Object.entries(column as Record<string, unknown>)
+            : []
+          if (entries.length > 0 && entries.every(([key]) => SIMPLE_SQLITE_COLUMN.test(key))) {
+            for (const [key, entryValue] of entries) {
+              if (predicateColumn === undefined) {
+                predicateColumn = key
+                predicateOperator = '='
+                predicateValue = entryValue
+                predicateParameterized = true
+                predicateValues = undefined
+              }
+              else {
+                ;(additionalPredicates ??= []).push({ column: key, operator: '=', value: entryValue, parameterized: true })
+              }
+            }
+            return proxy
+          }
+        }
         const builder = materialize()
         const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
         return apply.call(builder, column, operator, value)

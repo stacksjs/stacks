@@ -192,6 +192,10 @@ async function supportedMatrix() {
       .execute(),
     betweenArray: await db.selectFrom('fast_items').select('id').whereBetween('id', [1, 2]).orderBy('id').execute(),
     betweenBounds: await db.selectFrom('fast_items').select('id').whereBetween('id', 1, 2).orderBy('id').execute(),
+    objectPredicates: await Promise.all([
+      db.selectFrom('fast_items').select('name').where({ id: 2 }).execute(),
+      db.selectFrom('fast_items').select('name').where({ active: 1, note: null }).execute(),
+    ]),
     distinct: await db.selectFrom('fast_items').select('active').distinct().orderBy('active').execute(),
     emptyIn: await db.selectFrom('fast_items').whereIn('id', []).execute(),
     emptyNotIn: await db.selectFrom('fast_items').whereNotIn('id', []).limit(1).execute(),
