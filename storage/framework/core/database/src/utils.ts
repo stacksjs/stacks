@@ -1890,7 +1890,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   const base = {
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
-      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column)))) {
+      let simple = selected.length > 0
+      for (let index = 0; simple && index < selected.length; index++) {
+        const column = selected[index]
+        simple = typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column))
+      }
+      if (!simple) {
         const builder = materialize()
         const apply = builder.select as unknown as (value: unknown) => typeof builder
         return apply.call(builder, value)
