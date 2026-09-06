@@ -5303,11 +5303,11 @@ function directNativePath(path: string): string | undefined {
 /**
  * Bun-router's generic native adapter is intentionally async because it
  * supports every handler and middleware shape. Stacks has already compiled
- * its own exact GET pipeline, so routes with no bun-router middleware can
+ * its own route pipeline, so routes with no bun-router middleware can
  * invoke that handler directly while retaining request context, errors, and
  * response-cookie handling.
  */
-function buildDirectNativeGetHandlers(router: Router): Map<string, NativeRouteHandler> {
+function buildDirectNativeHandlers(router: Router): Map<string, NativeRouteHandler> {
   const nativeRouter = router as unknown as NativeRouterInternals
   const handlers = new Map<string, NativeRouteHandler>()
   if (nativeRouter.globalMiddleware.length !== 0)
@@ -5315,7 +5315,7 @@ function buildDirectNativeGetHandlers(router: Router): Map<string, NativeRouteHa
 
   for (const route of nativeRouter.routes) {
     if (
-      (route.method !== 'GET' && route.method !== 'HEAD')
+      !NATIVE_ROUTE_METHODS.has(route.method)
       || route.nativeDispatch === false
       || (route.constraints && Object.keys(route.constraints).length > 0)
       || (route.middleware?.length ?? 0) !== 0
@@ -5378,7 +5378,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     if (!routes)
       return routes
 
-    const directGetHandlers = buildDirectNativeGetHandlers(router)
+    const directHandlers = buildDirectNativeHandlers(router)
 
     const compression = (nativeRouter.config as unknown as {
       compression?: Parameters<typeof applyResponseCompression>[2]
@@ -5388,8 +5388,8 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     for (const [path, methods] of Object.entries(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
         const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
-        const dispatch = directGetHandlers.get(`${method}:${path}`)
-          ?? (method === 'HEAD' ? directGetHandlers.get(`GET:${path}`) : undefined)
+        const dispatch = directHandlers.get(`${method}:${path}`)
+          ?? (method === 'HEAD' ? directHandlers.get(`GET:${path}`) : undefined)
           ?? handler
         methods[method] = (request) => {
           if (safeMethod) {

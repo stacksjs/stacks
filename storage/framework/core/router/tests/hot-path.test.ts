@@ -132,6 +132,33 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('keeps a native JSON POST on the Stacks validation and CSRF pipeline', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.post('/_hot/native-post', request => ({ name: request.get('name') }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+    const token = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const pending = nativeRoutes['/_hot/native-post'].POST(new Request('http://localhost/_hot/native-post', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cookie': `X-CSRF-Token=${token}`,
+          'x-csrf-token': token,
+        },
+        body: JSON.stringify({ name: 'Ada' }),
+      }))
+
+      expect(pending).toBeInstanceOf(Promise)
+      expect(await (await pending).json()).toEqual({ name: 'Ada' })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('keeps native GETs with global middleware on the generic dispatcher', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()
