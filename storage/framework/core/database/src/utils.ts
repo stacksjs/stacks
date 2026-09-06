@@ -2074,25 +2074,12 @@ function selectFromDatabase(table: string): unknown {
 }
 
 /**
- * Lazy proxy for the query builder - connection is only made when first used.
- * This is the main entry point for database operations.
+ * Lazy fallback for the query-builder surface. The common facade properties
+ * live on `db` itself below, so `db.selectFrom()` does not enter a Proxy on
+ * every read; uncommon methods still resolve lazily through this prototype.
  */
-export const db: Db = new Proxy({} as Db, {
+const dbFallback = new Proxy({} as Db, {
   get(_target, prop) {
-    // `fn` is our own aggregate surface (`aggregateFunctions`) -
-    // bun-query-builder has no top-level `fn`, so serve it directly
-    // instead of forwarding `undefined` from the wrapped instance.
-    if (prop === 'fn')
-      return aggregateFunctions
-
-    // `db.read.*` — explicitly replica-routed, for callers that know the
-    // query tolerates replication lag.
-    if (prop === 'read')
-      return readDb
-
-    if (prop === 'selectFrom')
-      return selectFromDatabase
-
     // A write pins this async context's later reads to the primary, so a
     // request that reads back what it just wrote cannot be served a stale
     // row. Marked before dispatch: the flag must be visible to a read
@@ -2114,6 +2101,17 @@ export const db: Db = new Proxy({} as Db, {
     }
     return value
   },
+})
+
+/**
+ * Lazy query-builder facade. Own properties bypass the Proxy prototype while
+ * preserving the same connection-on-first-use behavior.
+ */
+export const db: Db = Object.create(dbFallback) as Db
+Object.defineProperties(db, {
+  fn: { value: aggregateFunctions },
+  read: { get: () => readDb },
+  selectFrom: { value: selectFromDatabase },
 })
 
 /**

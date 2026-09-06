@@ -1,9 +1,9 @@
-// Read routing through the real `db` proxy.
+// Read routing through the real `db` facade.
 //
 // The policy functions in `./replicas` are unit-tested on their own, but the
-// wiring between them and the `db` proxy is where this can silently stop
-// working: the proxy has to recognise `db.read`, mark writes, and consult
-// the router for reads. A policy that is correct but never consulted looks
+// wiring between them and the `db` facade is where this can silently stop
+// working: the facade has to expose `db.read`, mark writes, and consult the
+// router for reads. A policy that is correct but never consulted looks
 // exactly like a working feature until a stale read reaches production.
 //
 // These run against the default sqlite connection, which declares no
@@ -23,6 +23,14 @@ import {
 } from '../src/replicas'
 
 describe('db.read exists and falls back to the primary', () => {
+  test('common facade properties bypass the dynamic fallback', () => {
+    expect(Object.hasOwn(db, 'selectFrom')).toBe(true)
+    expect(Object.hasOwn(db, 'read')).toBe(true)
+    expect(Object.hasOwn(db, 'fn')).toBe(true)
+    expect(Object.hasOwn(db, 'unsafe')).toBe(false)
+    expect(typeof db.unsafe).toBe('function')
+  })
+
   test('db.read exposes the builder surface', () => {
     expect(db.read).toBeDefined()
     expect(typeof db.read.selectFrom).toBe('function')
@@ -40,9 +48,7 @@ describe('db.read exists and falls back to the primary', () => {
     expect(rows).toBeDefined()
   })
 
-  test('db.fn is still served by the proxy, not shadowed by `read`', () => {
-    // `read` is intercepted before the instance lookup; make sure adding
-    // that branch did not disturb the existing `fn` branch.
+  test('db.fn is still exposed beside `read`', () => {
     expect(db.fn).toBeDefined()
   })
 })
