@@ -17,11 +17,11 @@ initializeDbConfig({
 if (queryBuilderConfig.hooks !== undefined)
   throw new Error('The fast SELECT fixture requires the production no-hooks profile')
 
-await db.unsafe('CREATE TABLE fast_items (id INTEGER PRIMARY KEY, name TEXT, active INTEGER, note TEXT)').execute()
-await db.unsafe('INSERT INTO fast_items (id, name, active) VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)', [
-  1, 'alpha', 1,
-  2, 'beta', 1,
-  3, 'gamma', 0,
+await db.unsafe('CREATE TABLE fast_items (id INTEGER PRIMARY KEY, name TEXT, active INTEGER, note TEXT, created_at TEXT)').execute()
+await db.unsafe('INSERT INTO fast_items (id, name, active, created_at) VALUES (?, ?, ?, ?), (?, ?, ?, ?), (?, ?, ?, ?)', [
+  1, 'alpha', 1, '2026-01-01',
+  2, 'beta', 1, '2026-01-02',
+  3, 'gamma', 0, '2026-01-03',
 ]).execute()
 
 const fast = await db
@@ -157,6 +157,10 @@ async function supportedMatrix() {
       .orderByDesc('id')
       .limit(2)
       .execute(),
+    orderAliases: await Promise.all([
+      db.selectFrom('fast_items').select('id').latest().first(),
+      db.selectFrom('fast_items').select('id').oldest('id').first(),
+    ]),
     offset: await db
       .selectFrom('fast_items')
       .select(['id', 'name'])

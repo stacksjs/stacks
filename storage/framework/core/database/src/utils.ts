@@ -1611,6 +1611,26 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       ;(orderings ??= []).push({ column, direction: 'desc' })
       return proxy
     },
+    latest(column?: unknown) {
+      const resolvedColumn = column ?? queryBuilderConfig.timestamps.defaultOrderColumn
+      if (typeof resolvedColumn !== 'string' || !SIMPLE_SQLITE_COLUMN.test(resolvedColumn)) {
+        const builder = materialize()
+        const apply = builder.latest as unknown as (value?: unknown) => typeof builder
+        return apply.call(builder, column)
+      }
+      ;(orderings ??= []).push({ column: resolvedColumn, direction: 'desc' })
+      return proxy
+    },
+    oldest(column?: unknown) {
+      const resolvedColumn = column ?? queryBuilderConfig.timestamps.defaultOrderColumn
+      if (typeof resolvedColumn !== 'string' || !SIMPLE_SQLITE_COLUMN.test(resolvedColumn)) {
+        const builder = materialize()
+        const apply = builder.oldest as unknown as (value?: unknown) => typeof builder
+        return apply.call(builder, column)
+      }
+      ;(orderings ??= []).push({ column: resolvedColumn, direction: 'asc' })
+      return proxy
+    },
     limit(value: unknown) {
       if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
         const builder = materialize()
