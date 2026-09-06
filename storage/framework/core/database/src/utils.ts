@@ -2104,6 +2104,30 @@ function deleteFromDatabase(table: string): unknown {
   return getDb().deleteFrom(table)
 }
 
+function tableDatabase(table: string): unknown {
+  return getDb().table(table)
+}
+
+function selectDatabase(table: string, ...columns: string[]): unknown {
+  return getReadDb().select(table, ...columns)
+}
+
+function selectFromSubDatabase(subquery: unknown, alias: string): unknown {
+  return getReadDb().selectFromSub(subquery as { toSQL: () => string }, alias)
+}
+
+function tableExplicitReadDatabase(table: string): unknown {
+  return getExplicitReadDb().table(table)
+}
+
+function selectExplicitReadDatabase(table: string, ...columns: string[]): unknown {
+  return getExplicitReadDb().select(table, ...columns)
+}
+
+function selectFromSubExplicitReadDatabase(subquery: unknown, alias: string): unknown {
+  return getExplicitReadDb().selectFromSub(subquery as { toSQL: () => string }, alias)
+}
+
 /**
  * Lazy fallback for the query-builder surface. The common facade properties
  * live on `db` itself below, so `db.selectFrom()` does not enter a Proxy on
@@ -2144,7 +2168,10 @@ Object.defineProperties(db, {
   fn: { value: aggregateFunctions },
   insertInto: { value: insertIntoDatabase },
   read: { get: () => readDb },
+  select: { value: selectDatabase },
   selectFrom: { value: selectFromDatabase },
+  selectFromSub: { value: selectFromSubDatabase },
+  table: { value: tableDatabase },
   unsafe: { value: unsafeDatabase },
   updateTable: { value: updateTableDatabase },
 })
@@ -2170,7 +2197,10 @@ const readDbFallback = new Proxy({} as Db, {
 export const readDb: Omit<Db, 'read'> = Object.create(readDbFallback) as Omit<Db, 'read'>
 Object.defineProperties(readDb, {
   fn: { value: aggregateFunctions },
+  select: { value: selectExplicitReadDatabase },
   selectFrom: { value: selectFromExplicitReadDatabase },
+  selectFromSub: { value: selectFromSubExplicitReadDatabase },
+  table: { value: tableExplicitReadDatabase },
   unsafe: { value: unsafeExplicitReadDatabase },
 })
 

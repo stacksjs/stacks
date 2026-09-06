@@ -54,6 +54,20 @@ const explicitRead = await db.read
 if (JSON.stringify(explicitRead) !== JSON.stringify([{ id: 1, name: 'alpha' }]))
   throw new Error(`Unexpected lightweight explicit-read result: ${JSON.stringify(explicitRead)}`)
 
+const facadeAliases = await Promise.all([
+  db.table('fast_items').select('name').where('id', '=', 1).executeTakeFirst(),
+  db.select('fast_items', 'name').where('id', '=', 1).executeTakeFirst(),
+  db.read.table('fast_items').select('name').where('id', '=', 1).executeTakeFirst(),
+  db.read.select('fast_items', 'name').where('id', '=', 1).executeTakeFirst(),
+])
+if (JSON.stringify(facadeAliases) !== JSON.stringify([
+  { name: 'alpha' },
+  { name: 'alpha' },
+  { name: 'alpha' },
+  { name: 'alpha' },
+]))
+  throw new Error(`Unexpected facade alias results: ${JSON.stringify(facadeAliases)}`)
+
 const first = await db
   .selectFrom('fast_items')
   .select(['id', 'name'])
