@@ -28,6 +28,7 @@ let _isProductionCache: boolean | undefined
 let _isDisabledCache: boolean | undefined
 let _cspCache: { header: string, value: string } | null | undefined
 let _headerTemplateCache: Headers | undefined
+let _jsonHeaderTemplateCache: Headers | undefined
 
 function isProduction(): boolean {
   if (_isProductionCache !== undefined)
@@ -128,10 +129,20 @@ export function createSecurityHeaders(): Headers {
   return new Headers(_headerTemplateCache)
 }
 
+/** Clone the resolved defaults with the invariant JSON content type included. */
+export function createJsonSecurityHeaders(): Headers {
+  if (!_jsonHeaderTemplateCache) {
+    _jsonHeaderTemplateCache = createSecurityHeaders()
+    _jsonHeaderTemplateCache.set('Content-Type', 'application/json;charset=utf-8')
+  }
+  return new Headers(_jsonHeaderTemplateCache)
+}
+
 /** Test helper — reset the cached env-derived flags. */
 export function __resetSecurityHeadersCache(): void {
   _isProductionCache = undefined
   _isDisabledCache = undefined
   _cspCache = undefined
   _headerTemplateCache = undefined
+  _jsonHeaderTemplateCache = undefined
 }

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import process from 'node:process'
-import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord, createSecurityHeaders } from '../src/security-headers'
+import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord, createJsonSecurityHeaders, createSecurityHeaders } from '../src/security-headers'
 
 // stacksjs/stacks#601 — HSTS + companion security headers on every response.
 
@@ -142,5 +142,13 @@ describe('applySecurityHeaders', () => {
     const second = createSecurityHeaders()
     expect(second.get('X-Frame-Options')).toBe('SAMEORIGIN')
     expect(second.get('Strict-Transport-Security')).toBe('max-age=31536000; includeSubDomains')
+  })
+
+  test('includes JSON content type in its own cloned template', () => {
+    const first = createJsonSecurityHeaders()
+    first.delete('Content-Type')
+
+    expect(createJsonSecurityHeaders().get('Content-Type')).toBe('application/json;charset=utf-8')
+    expect(createSecurityHeaders().get('Content-Type')).toBeNull()
   })
 })

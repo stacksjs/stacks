@@ -208,7 +208,7 @@ function resolveDefaultsPath(rel: string): string {
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
-import { applySecurityHeaders, createSecurityHeaders } from './security-headers'
+import { applySecurityHeaders, createJsonSecurityHeaders, createSecurityHeaders } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
 
@@ -3057,8 +3057,11 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
 /** Serialize JSON once and make its size available to compression. */
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
   const encoding = req.headers.get('accept-encoding')
+  const usesNativeJson = !encoding || encoding === 'identity'
   const canPreapplyMetadata = !req._responseHeaders
-  const responseHeaders = canPreapplyMetadata ? createSecurityHeaders() : new Headers()
+  const responseHeaders = canPreapplyMetadata
+    ? (usesNativeJson ? createSecurityHeaders() : createJsonSecurityHeaders())
+    : new Headers()
   if (linkHeader)
     responseHeaders.set('Link', linkHeader)
 
@@ -3067,7 +3070,7 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
       responseHeaders.set('X-Request-ID', req._requestId)
   }
 
-  if (!encoding || encoding === 'identity') {
+  if (usesNativeJson) {
     const response = Response.json(result, { headers: responseHeaders })
     if (canPreapplyMetadata) {
       ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
@@ -3079,7 +3082,8 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // the response stream just to check its threshold. Count UTF-8 bytes, not
   // JavaScript characters; a custom toJSON may also produce an empty body.
   const body = JSON.stringify(result) ?? ''
-  responseHeaders.set('Content-Type', 'application/json;charset=utf-8')
+  if (!canPreapplyMetadata)
+    responseHeaders.set('Content-Type', 'application/json;charset=utf-8')
   responseHeaders.set('Content-Length', String(Buffer.byteLength(body)))
   const response = new Response(body, { headers: responseHeaders })
   if (canPreapplyMetadata) {
