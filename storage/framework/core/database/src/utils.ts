@@ -1348,6 +1348,18 @@ function resolveDeferredSqliteTerminal(
     target[property] = check
     return check
   }
+  if (property === 'value') {
+    const value = (column: string) => {
+      try {
+        return Promise.resolve(buildStatement(true).executeSync()[0]?.[column])
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    }
+    target.value = value
+    return value
+  }
 }
 
 /**
@@ -1815,14 +1827,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     max(...args: unknown[]) {
       return runAggregate('max', args, null)
-    },
-    value(column: string) {
-      try {
-        return Promise.resolve(buildStatement(true).executeSync()[0]?.[column])
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
     },
     pluck(...args: unknown[]) {
       if (args.length !== 1) {
