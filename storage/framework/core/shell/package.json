@@ -30,7 +30,7 @@
     }
   },
   "files": [
-    "buddy.plugin.zsh",
+    "src/buddy.plugin.zsh",
     "dist"
   ],
   "scripts": {
