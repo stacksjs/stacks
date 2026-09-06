@@ -23,6 +23,10 @@ beforeAll(async () => {
   route.get('/_hot/plain', () => ({ ok: true }))
   route.get('/_hot/body-state', (request: any) => ({ parsed: request._bodyParsed === true }))
   route.get('/_hot/param/{id}', (request: any) => ({ id: request.params.id }))
+  route.get('/_hot/helpers/{id}', (request: any) => ({
+    id: request.integer('id'),
+    token: request.bearerToken(),
+  }))
   route.get('/_hot/encoded/{slug}', (request: any) => ({ slug: request.params.slug }))
   route.get('/_hot/query', (request: any) => ({ query: request.query }))
 
@@ -128,6 +132,14 @@ describe('params and query, only when there are any', () => {
 
   it('keeps a plain path param verbatim', async () => {
     expect(await (await get('/_hot/param/42')).json()).toEqual({ id: '42' })
+  })
+
+  it('keeps Bun and Stacks helpers on the fused request prototype', async () => {
+    const first = await get('/_hot/helpers/41', { headers: { authorization: 'Bearer first' } })
+    const second = await get('/_hot/helpers/42', { headers: { authorization: 'Bearer second' } })
+
+    expect(await first.json()).toEqual({ id: 41, token: 'first' })
+    expect(await second.json()).toEqual({ id: 42, token: 'second' })
   })
 
   it('still percent-decodes a param that needs it', async () => {

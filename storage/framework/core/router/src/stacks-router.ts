@@ -3447,6 +3447,43 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
 }
 
 const stacksRequestPrototypes = new WeakMap<object, object>()
+const STACKS_REQUEST_ENHANCED = Symbol.for('stacks.router.requestEnhanced')
+
+/**
+ * Let bun-router install its macros and the Stacks helpers as one cached
+ * prototype. The first request for a base prototype discovers the combined
+ * shape through the normal paths; later requests attach that finished shape
+ * directly, avoiding a second `Object.setPrototypeOf` on every dispatch.
+ */
+function fuseRequestEnhancements(router: Router): void {
+  const original = router.enhanceRequest.bind(router)
+  const combinedPrototypes = new WeakMap<object, object>()
+
+  router.enhanceRequest = (request: Request, params: Record<string, string> = {}): EnhancedRequest => {
+    const basePrototype = Object.getPrototypeOf(request) as object
+    const combined = combinedPrototypes.get(basePrototype)
+    if (combined) {
+      const enhanced = request as EnhancedRequest
+      if ('params' in request) {
+        Object.defineProperty(enhanced, 'params', {
+          value: params,
+          writable: true,
+          configurable: true,
+          enumerable: false,
+        })
+      }
+      else {
+        enhanced.params = params
+      }
+      Object.setPrototypeOf(enhanced, combined)
+      return enhanced
+    }
+
+    const enhanced = enhanceRequest(original(request, params))
+    combinedPrototypes.set(basePrototype, Object.getPrototypeOf(enhanced) as object)
+    return enhanced
+  }
+}
 
 // Decorate the incoming request with the helpers the framework's middleware
 // and actions assume are always available. Names follow Laravel's convention
@@ -3598,6 +3635,9 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   if (!req._requestId)
     req._requestId = incomingRequestId(req) ?? crypto.randomUUID()
 
+  if ((req as unknown as Record<symbol, unknown>)[STACKS_REQUEST_ENHANCED] === true)
+    return req
+
   /*
    * `query` comes from the router (bun-router 0.1.7), as a lazy accessor that
    * parses on first access and caches - so a request that never reads it still
@@ -3617,6 +3657,7 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   let stacksPrototype = stacksRequestPrototypes.get(routerPrototype)
   if (!stacksPrototype) {
     stacksPrototype = Object.assign(Object.create(routerPrototype) as object, REQUEST_METHODS)
+    Object.defineProperty(stacksPrototype, STACKS_REQUEST_ENHANCED, { value: true })
     stacksRequestPrototypes.set(routerPrototype, stacksPrototype)
   }
   Object.setPrototypeOf(req, stacksPrototype)
@@ -3853,6 +3894,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   const bunRouter = new Router({
     verbose: config.verbose ?? false,
   })
+  fuseRequestEnhancements(bunRouter)
 
   let currentPrefix = ''
   let currentGroupMiddleware: string[] = []
