@@ -294,6 +294,12 @@ export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 interface StacksRouterConfig {
   verbose?: boolean
   apiPrefix?: string
+  /**
+   * Generate and echo an `X-Request-ID` for every request. Disable only when
+   * an upstream proxy already owns request correlation.
+   * @default true
+   */
+  requestIds?: boolean
 }
 
 interface GroupOptions {
@@ -3874,7 +3880,7 @@ const STACKS_REQUEST_ENHANCED = Symbol.for('stacks.router.requestEnhanced')
  * shape through the normal paths; later requests attach that finished shape
  * directly, avoiding a second `Object.setPrototypeOf` on every dispatch.
  */
-function fuseRequestEnhancements(router: Router): void {
+function fuseRequestEnhancements(router: Router, initializeRequestIds = true): void {
   const original = router.enhanceRequest.bind(router)
   const combinedPrototypes = new WeakMap<object, object>()
 
@@ -3897,12 +3903,12 @@ function fuseRequestEnhancements(router: Router): void {
         }
       }
       Object.setPrototypeOf(enhanced, combined)
-      if (!enhanced._requestId)
+      if (initializeRequestIds && !enhanced._requestId)
         enhanced._requestId = incomingRequestId(enhanced) ?? generateRequestId()
       return enhanced
     }
 
-    const enhanced = enhanceRequest(original(request, params))
+    const enhanced = enhanceRequest(original(request, params), initializeRequestIds)
     combinedPrototypes.set(basePrototype, Object.getPrototypeOf(enhanced) as object)
     return enhanced
   }
@@ -4027,7 +4033,7 @@ function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }, cookieHe
   applyCsrfRenderToken(req, cookieHeader, mod)
 }
 
-export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
+export function enhanceRequest(req: EnhancedRequest, initializeRequestId = true): EnhancedRequest {
   /*
    * Params arrive decoded. This used to decode them here, because the router
    * handed back the raw path segment - so `/users/{name}` given `caf%C3%A9`
@@ -4057,7 +4063,7 @@ export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
    * filtered first: this string goes into log lines, and an unbounded one from
    * a stranger is log injection with extra steps.
    */
-  if (!req._requestId)
+  if (initializeRequestId && !req._requestId)
     req._requestId = incomingRequestId(req) ?? generateRequestId()
 
   if ((req as unknown as Record<symbol, unknown>)[STACKS_REQUEST_ENHANCED] === true)
@@ -4303,7 +4309,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   const bunRouter = new Router({
     verbose: config.verbose ?? false,
   })
-  fuseRequestEnhancements(bunRouter)
+  fuseRequestEnhancements(bunRouter, config.requestIds !== false)
 
   let currentPrefix = ''
   let currentGroupMiddleware: string[] = []

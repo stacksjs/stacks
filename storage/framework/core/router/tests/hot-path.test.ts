@@ -355,6 +355,30 @@ describe('the request path keeps its defaults', () => {
     expect(second.headers.get('x-request-id')).not.toBe(first.headers.get('x-request-id'))
   })
 
+  it('allows an upstream proxy to own request ids', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter({ requestIds: false })
+    direct.get('/_hot/native-no-request-id', request => ({ requestId: request._requestId ?? null }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const makeRequest = () => new Request('http://localhost/_hot/native-no-request-id', {
+        headers: { cookie: 'X-CSRF-Token=already-mine' },
+      })
+      const first = await nativeRoutes['/_hot/native-no-request-id'].GET(makeRequest())
+      const second = await nativeRoutes['/_hot/native-no-request-id'].GET(makeRequest())
+
+      expect(await first.json()).toEqual({ requestId: null })
+      expect(await second.json()).toEqual({ requestId: null })
+      expect(first.headers.get('x-request-id')).toBeNull()
+      expect(second.headers.get('x-request-id')).toBeNull()
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('still seeds a CSRF cookie on a cold GET', async () => {
     const answer = await get('/_hot/plain')
 
