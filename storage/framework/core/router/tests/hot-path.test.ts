@@ -284,11 +284,51 @@ describe('the request path keeps its defaults', () => {
   it('still seeds CSRF when the underlying router is called directly', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()
-    direct.get('/_hot/direct', () => ({ ok: true }))
+    direct.get('/_hot/direct', request => ({ minted: Boolean(request._csrfToken) }))
 
     const answer = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct'))
 
+    expect(await answer.json()).toEqual({ minted: false })
     expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
+  })
+
+  it('mints a CSRF token before a browser document renders', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/direct-document', request => ({ token: request._csrfToken ?? null }))
+
+    const answer = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct-document', {
+      headers: { accept: 'text/html,application/xhtml+xml' },
+    }))
+    const body = await answer.json() as { token: string }
+
+    expect(body.token).toHaveLength(64)
+    expect(answer.headers.get('set-cookie') ?? '').toContain(`X-CSRF-Token=${body.token}`)
+  })
+
+  it('distinguishes native API and browser CSRF timing', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-api-csrf', request => ({ minted: Boolean(request._csrfToken) }))
+    direct.get('/_hot/native-document-csrf', async request => ({ token: request._csrfToken ?? null }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = await nativeRoutes['/_hot/native-api-csrf'].GET(new Request('http://localhost/_hot/native-api-csrf'))
+      const documentAnswer = await nativeRoutes['/_hot/native-document-csrf'].GET(new Request('http://localhost/_hot/native-document-csrf', {
+        headers: { 'sec-fetch-dest': 'document' },
+      }))
+      const documentBody = await documentAnswer.json() as { token: string }
+
+      expect(await answer.json()).toEqual({ minted: false })
+      expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
+      expect(documentBody.token).toHaveLength(64)
+      expect(documentAnswer.headers.get('set-cookie') ?? '').toContain(`X-CSRF-Token=${documentBody.token}`)
+    }
+    finally {
+      nativeServer.stop()
+    }
   })
 
   it('does not mint a render token for an OPTIONS route', async () => {

@@ -1715,7 +1715,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     const enhancedReq = req
     const csrfHandledByOuter = (enhancedReq as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
 
-    // Mint the CSRF token BEFORE the handler runs, not after.
+    // Mint the CSRF token before a browser document handler runs, not after.
     //
     // Seeding it on the way out (below) is too late for a server-rendered
     // page: the page is what has to embed the token in its forms, and on a
@@ -1727,8 +1727,9 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // header, which is where a template reads cookies from. The response
     // seeding below then reuses this exact value rather than generating a
     // second one, so what the page embedded and what the browser stores are
-    // the same string.
-    if (!csrfHandledByOuter && routeRendersCsrf) {
+    // the same string. API-shaped GETs cannot render a form, so they defer
+    // token generation until response seeding and avoid mutating the request.
+    if (!csrfHandledByOuter && routeRendersCsrf && requestMayRenderHtml(enhancedReq)) {
       const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding) await renderTokenSeeding
     }
@@ -2241,7 +2242,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       return handleAsync(req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
-    if (!csrfHandledByOuter) {
+    if (!csrfHandledByOuter && requestMayRenderHtml(req)) {
       const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding)
         return renderTokenSeeding.then(() => handleAsync(req))
@@ -3946,6 +3947,13 @@ function applyCsrfRenderToken(req: Request & { _csrfToken?: string }, cookieHead
   }
 }
 
+/** Only browser-shaped safe requests need a token before their handler renders. */
+function requestMayRenderHtml(req: Request): boolean {
+  const accept = req.headers.get('accept')
+  return accept?.includes('text/html') === true
+    || req.headers.get('sec-fetch-dest') === 'document'
+}
+
 /**
  * Returns a promise ONLY when it has to wait for the module's first load.
  * Every other call - the overwhelming majority - finishes synchronously, so
@@ -4959,15 +4967,16 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
   const handleUnseededSafeRequest = async (request: Request, rendersCsrf: boolean, cookieHeader: string): Promise<Response> => {
     /*
-     * Seeded *before* the render, not only after it.
+     * Seeded *before* a browser document render, not only after it.
      *
      * A template reads cookies off the incoming request, so a first-time
      * visitor whose request carries none renders an empty token no matter what
      * the response sets afterwards - and their first submit fails. Putting it
      * on the request first is what makes that first form usable; the response
-     * half below then stores the same value in the browser.
+     * half below then stores the same value in the browser. API-shaped GETs
+     * only need the response cookie, so they skip this request mutation.
      */
-    if (rendersCsrf) {
+    if (rendersCsrf && requestMayRenderHtml(request)) {
       const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
       if (seeding) await seeding
     }
