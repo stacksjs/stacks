@@ -52,6 +52,24 @@ const missing = await db
 if (missing !== undefined)
   throw new Error(`Missing lightweight first-row query returned: ${JSON.stringify(missing)}`)
 
+const required = await db
+  .selectFrom('fast_items')
+  .where('id', '=', 1)
+  .executeTakeFirstOrThrow()
+
+if (required.name !== 'alpha')
+  throw new Error(`Unexpected required lightweight row: ${JSON.stringify(required)}`)
+
+let missingError: unknown
+try {
+  await db.selectFrom('fast_items').where('id', '=', 999).executeTakeFirstOrThrow()
+}
+catch (error) {
+  missingError = error
+}
+if (!(missingError instanceof Error) || missingError.message !== 'Record not found')
+  throw new Error(`Unexpected missing-row error: ${String(missingError)}`)
+
 const aliased = await db
   .selectFrom('fast_items')
   .select('name AS label')

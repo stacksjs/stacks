@@ -1405,6 +1405,17 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         return Promise.reject(error)
       }
     },
+    executeTakeFirstOrThrow() {
+      try {
+        const row = buildStatement(true).executeSync()[0]
+        return row === undefined
+          ? Promise.reject(new Error('Record not found'))
+          : Promise.resolve(row)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    },
   }
 
   proxy = new Proxy(base as Record<string | symbol, unknown>, {
