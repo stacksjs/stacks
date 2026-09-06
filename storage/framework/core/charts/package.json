@@ -2,7 +2,7 @@
   "name": "@stacksjs/charts",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.25",
+  "version": "0.74.26",
   "description": "Chart rendering for Stacks. Built on ts-charts (D3 in TypeScript).",
   "author": "Chris Breuer",
   "contributors": [

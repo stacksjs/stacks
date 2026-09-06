@@ -1,5 +1,16 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.25...v0.74.26)
+
+## 🐛 Bug Fixes
+
+- **scaffold**: declare what the kept preloader falls back to, not just the rewritten preloads ([22b3889](https://github.com/stacksjs/stacks/commit/22b3889)) _(by Chris <chris@stacksjs.com>)_
+- **database**: adopt synchronous SQLite query hook delivery ([d8df0e8](https://github.com/stacksjs/stacks/commit/d8df0e8)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.24...v0.74.25)
 
 ## ✨ Features
