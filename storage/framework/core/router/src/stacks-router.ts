@@ -5193,7 +5193,7 @@ let routingContextRunner: ContextRunner | null = null
 
 const databaseContextWrappedRouters = new WeakSet<Router>()
 
-type NativeRouteHandler = (request: Request) => Promise<Response>
+type NativeRouteHandler = (request: Request) => Response | Promise<Response>
 type NativeRouteTable = Record<string, Record<string, NativeRouteHandler>>
 
 /**
@@ -5224,7 +5224,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     for (const methods of Object.values(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
         const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
-        methods[method] = async (request) => {
+        methods[method] = (request) => {
           if (safeMethod) {
             const cookie = request.headers.get('cookie') ?? ''
             if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {
@@ -5232,12 +5232,15 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
               markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
             }
           }
-          const response = await runInRoutingContext(() => handler(request))
-          const frameworkResponse = response as unknown as Record<symbol, unknown>
-          const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
-          if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
-            return response
-          return await applyResponseCompression(response, request, compression)
+          const finish = (response: Response): Response | Promise<Response> => {
+            const frameworkResponse = response as unknown as Record<symbol, unknown>
+            const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
+            if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
+              return response
+            return applyResponseCompression(response, request, compression)
+          }
+          const response = runInRoutingContext(() => handler(request))
+          return response instanceof Response ? finish(response) : response.then(finish)
         }
       }
     }
