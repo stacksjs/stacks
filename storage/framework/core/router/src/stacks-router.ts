@@ -2785,6 +2785,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
         rules,
         rules === action.validations ? actionValidationEntries : undefined,
         actionMayHaveRouteParams,
+        true,
       )
       return precognitionResult.valid
         ? precognitionSuccess()
@@ -2792,7 +2793,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
     }
 
     if (action.validations) {
-      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams)
+      const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries, actionMayHaveRouteParams, true)
       if (!validationResult.valid)
         return validationFailureResponse(validationResult.errors)
     }
@@ -2885,6 +2886,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
  */
 type ActionRuleTest = (value: unknown) => boolean
 type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?]
+const EMPTY_VALIDATION_ERRORS = Object.freeze({}) as Record<string, string[]>
 
 function propertyOwner(value: object, property: PropertyKey): object | undefined {
   let current: object | null = value
@@ -2927,8 +2929,9 @@ function validateActionInputSync(
   validations: ActionValidations,
   compiledEntries?: ActionValidationEntry[],
   mayHaveRouteParams = true,
+  reuseEmptyErrors = false,
 ): ValidationResult {
-  const errors: Record<string, string[]> = {}
+  let errors: Record<string, string[]> | undefined
   const validated: Record<string, unknown> = {}
   let valid = true
   const entries = compiledEntries ?? Object.entries(validations)
@@ -2996,7 +2999,7 @@ function validateActionInputSync(
         fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${label} is invalid`) : `${label} is invalid`)
       }
 
-      errors[field] = fieldErrors
+      ;(errors ??= {})[field] = fieldErrors
     }
     else if (value !== undefined) {
       validated[field] = value
@@ -3025,7 +3028,7 @@ function validateActionInputSync(
 
   return {
     valid,
-    errors,
+    errors: errors ?? (reuseEmptyErrors ? EMPTY_VALIDATION_ERRORS : {}),
   }
 }
 

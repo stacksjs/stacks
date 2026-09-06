@@ -311,6 +311,15 @@ describe('path-param coercion (stacksjs/stacks#1865)', () => {
     expect(result.errors).toEqual({})
   })
 
+  test('the exported validator returns an isolated mutable success object', async () => {
+    const validations = { id: { rule: numberRule() } }
+    const first = await validateActionInput(makeRequest('http://localhost/items/1', { id: '1' }), validations)
+    const second = await validateActionInput(makeRequest('http://localhost/items/2', { id: '2' }), validations)
+
+    first.errors.extra = ['caller annotation']
+    expect(second.errors).toEqual({})
+  })
+
   test('non-numeric path param "abc" stays a string so validator emits an error', async () => {
     const req = makeRequest('http://localhost/judges/abc/follow', { id: 'abc' }, { method: 'POST' })
     const result = await validateActionInput(req, {
