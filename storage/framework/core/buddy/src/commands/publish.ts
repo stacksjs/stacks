@@ -751,6 +751,43 @@ async function unpublishCorePackage(pkg: string, force: boolean): Promise<void> 
  * output. The names come back because a preloaded specifier has to be a DIRECT
  * dependency of the app - see the caller (stacksjs/stacks#2433 neighbours).
  */
+/**
+ * Packages a kept preload FILE falls back to.
+ *
+ * Not every preload becomes a package specifier. The main preloader stays a
+ * relative path into the app, and inside it every framework import is written
+ * as `import('../../../core/<name>/src/...').catch(() => import(pkg))` -
+ * the vendored path first, the published package when that path is gone. In a
+ * package-based app the vendored path IS gone, so the fallback is the only
+ * branch that runs, and it needs the package to be resolvable.
+ *
+ * That is why `@stacksjs/env` alone was not enough: `preloader.ts` also falls
+ * back to `@stacksjs/path`, and a scaffolded app died on
+ * `Cannot find module '@stacksjs/path'` at the next step.
+ *
+ * The specifiers are deliberately split (`'@stacksjs/' + 'path'`) so bundlers
+ * do not resolve them statically, so both spellings are matched here.
+ */
+export function packagesPreloadFilesFallBackTo(source: string): Set<string> {
+  const found = new Set<string>()
+
+  /*
+   * ONLY the split form. `'@stacksjs/' + 'path'` is the idiom the file uses
+   * for imports it cannot do without - the ones written as
+   * `.catch(() => import(pkg))`, where failing means the process dies.
+   *
+   * Plain `'@stacksjs/x'` strings appear too, in the list the preloader walks
+   * to populate globalThis, but that loop is already wrapped in try/catch and
+   * degrades to "no auto-imports" rather than a crash. Matching those as well
+   * collects 24 packages instead of 2 and would put the entire framework in
+   * the app's direct dependencies to fix a two-package problem.
+   */
+  for (const match of source.matchAll(/'@stacksjs\/'\s*\+\s*'([a-z0-9-]+)'/g))
+    found.add(`@stacksjs/${match[1]!}`)
+
+  return found
+}
+
 export function rewriteBunfigPreloads(bunfig: string): { next: string, packages: Set<string>, rewritten: number } {
   const packages = new Set<string>()
   let rewritten = 0
@@ -923,6 +960,21 @@ async function unvendorFramework(force: boolean): Promise<void> {
      * The framework itself is declared ten lines above this for exactly the
      * same reason ("or nothing pulls it in"); preloads need the same treatment.
      */
+    /*
+     * A preload that stays a relative path still pulls packages in. Read the
+     * kept files and add whatever they fall back to, or the app dies one step
+     * later than it used to - `preloader.ts` needs `@stacksjs/path` and says so
+     * only inside itself.
+     */
+    for (const match of next.matchAll(/["'](\.\/[^"']+\.ts)["']/g)) {
+      const preloadPath = resolve(process.cwd(), match[1]!)
+      if (!existsSync(preloadPath))
+        continue
+
+      for (const pkgName of packagesPreloadFilesFallBackTo(await fs.promises.readFile(preloadPath, 'utf-8')))
+        preloadedPackages.add(pkgName)
+    }
+
     let declaredForPreload = 0
     for (const pkgName of preloadedPackages) {
       if (rootPkg.dependencies?.[pkgName] || rootPkg.devDependencies?.[pkgName])

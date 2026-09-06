@@ -17,7 +17,7 @@
  * The caller declares everything this reports, which is why it reports it.
  */
 import { describe, expect, it } from 'bun:test'
-import { rewriteBunfigPreloads } from '../src/commands/publish'
+import { packagesPreloadFilesFallBackTo, rewriteBunfigPreloads } from '../src/commands/publish'
 
 describe('rewriteBunfigPreloads', () => {
   it('rewrites a vendored preload and names the package behind it', () => {
@@ -63,5 +63,45 @@ describe('rewriteBunfigPreloads', () => {
 
     // That path survives into the scaffolded app, so it is not a package.
     expect(rewriteBunfigPreloads(bunfig).next).toBe(bunfig)
+  })
+})
+
+describe('packagesPreloadFilesFallBackTo', () => {
+  it('finds the package a vendored-path import falls back to', () => {
+    // The idiom for an import the file cannot do without: vendored path first,
+    // published package when that path is gone - which it always is in a
+    // package-based app.
+    const source = [
+      "const pathPkg = '@stacksjs/' + 'path'",
+      "const path = await import('../../../core/path/src/index.ts').catch(() => import(pathPkg))",
+    ].join('\n')
+
+    expect([...packagesPreloadFilesFallBackTo(source)]).toEqual(['@stacksjs/path'])
+  })
+
+  it('ignores plain specifiers, which are the optional globalThis list', () => {
+    /*
+     * That list is walked inside a try/catch and degrades to "no auto-imports"
+     * rather than a crash. Counting it collects 24 packages instead of 3 and
+     * puts the whole framework in the app's direct dependencies.
+     */
+    const source = "const stacksPackages = ['@stacksjs/orm', '@stacksjs/validation', '@stacksjs/cache']"
+
+    expect([...packagesPreloadFilesFallBackTo(source)]).toEqual([])
+  })
+
+  it('tolerates spacing around the concatenation', () => {
+    expect([...packagesPreloadFilesFallBackTo("const p = '@stacksjs/'+'env'")]).toEqual(['@stacksjs/env'])
+  })
+
+  it('reads the real preloader as the two it dies without, plus actions', async () => {
+    // Regression anchor: `@stacksjs/env` alone left the scaffolded app dying on
+    // `Cannot find module '@stacksjs/path'` at the next step.
+    const preloader = await Bun.file(
+      new URL('../../../defaults/resources/plugins/preloader.ts', import.meta.url).pathname,
+    ).text()
+
+    expect([...packagesPreloadFilesFallBackTo(preloader)].sort())
+      .toEqual(['@stacksjs/actions', '@stacksjs/env', '@stacksjs/path'])
   })
 })
