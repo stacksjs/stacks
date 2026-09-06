@@ -1302,10 +1302,16 @@ function resolveDeferredSqliteTerminal(
   property: string | symbol,
   buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
   materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
+  proxy: Record<string | symbol, unknown>,
 ): unknown {
   if (property === 'get') {
     target.get = target.execute
     return target.execute
+  }
+  if (property === 'selectAll') {
+    const selectAll = () => proxy
+    target.selectAll = selectAll
+    return selectAll
   }
   if (property === 'first' || property === 'executeTakeFirst') {
     const first = () => {
@@ -1568,9 +1574,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       if (selectKeyword === 'SELECT DISTINCT')
         return materialize().distinct()
       selectKeyword = 'SELECT DISTINCT'
-      return proxy
-    },
-    selectAll() {
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
@@ -1900,7 +1903,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
-      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement, materialize)
+      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement, materialize, proxy)
       if (terminal !== undefined)
         return terminal
       const extension = (extensions ??= createExtensions())[property as string]
