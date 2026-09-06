@@ -5283,6 +5283,23 @@ function handleDirectNativeRouteError(router: NativeRouterInternals, error: unkn
     : nativeRouteErrorResponse(error)
 }
 
+function directNativePath(path: string): string | undefined {
+  const segments = path.split('/')
+  for (let index = 0; index < segments.length; index++) {
+    const segment = segments[index]
+    if (!segment)
+      continue
+    const parameter = segment.match(/^\{([A-Z_$][\w$]*)\}$/i)
+    if (parameter) {
+      segments[index] = `:${parameter[1]}`
+      continue
+    }
+    if (segment.includes('{') || segment.includes(':') || segment.includes('*'))
+      return
+  }
+  return segments.join('/')
+}
+
 /**
  * Bun-router's generic native adapter is intentionally async because it
  * supports every handler and middleware shape. Stacks has already compiled
@@ -5301,9 +5318,6 @@ function buildDirectNativeGetHandlers(router: Router): Map<string, NativeRouteHa
       (route.method !== 'GET' && route.method !== 'HEAD')
       || route.nativeDispatch === false
       || (route.constraints && Object.keys(route.constraints).length > 0)
-      || route.path.includes('{')
-      || route.path.includes(':')
-      || route.path.includes('*')
       || (route.middleware?.length ?? 0) !== 0
       || typeof route.handler !== 'function'
       || !stacksRouteHandlers.has(route.handler as RouteHandlerFn)
@@ -5312,13 +5326,17 @@ function buildDirectNativeGetHandlers(router: Router): Map<string, NativeRouteHa
     }
 
     const handler = route.handler as RouteHandlerFn
-    const key = `${route.method}:${route.path}`
+    const nativePath = directNativePath(route.path)
+    if (!nativePath)
+      continue
+    const key = `${route.method}:${nativePath}`
     if (handlers.has(key))
       continue
 
     handlers.set(key, (request) => {
       return runWithBunRouterRequest(request as EnhancedRequest, () => {
-        const enhancedRequest = nativeRouter.enhanceRequest(request, {})
+        const nativeParams = (request as Request & { params?: Record<string, string> }).params ?? {}
+        const enhancedRequest = nativeRouter.enhanceRequest(request, nativeParams)
         setBunRouterCurrentRequest(enhancedRequest)
         enhancedRequest.route = route
 

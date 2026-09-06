@@ -105,6 +105,33 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('keeps a native parameter GET synchronous with decoded params', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/native-param/{slug}', request => ({ slug: request.params.slug }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const live = await fetch(`http://127.0.0.1:${nativeServer.port}/_hot/native-param/caf%C3%A9`, {
+        headers: { cookie: 'X-CSRF-Token=already-mine' },
+      })
+      expect(await live.json()).toEqual({ slug: 'café' })
+
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const request = new Request('http://localhost/_hot/native-param/caf%C3%A9', {
+        headers: { cookie: 'X-CSRF-Token=already-mine' },
+      }) as Request & { params: Record<string, string> }
+      Object.defineProperty(request, 'params', { value: { slug: 'café' }, configurable: true })
+      const answer = nativeRoutes['/_hot/native-param/:slug'].GET(request)
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(await (answer as Response).json()).toEqual({ slug: 'café' })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('keeps native GETs with global middleware on the generic dispatcher', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()
