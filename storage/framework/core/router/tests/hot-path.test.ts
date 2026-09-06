@@ -323,6 +323,7 @@ describe('the request path keeps its defaults', () => {
 
       expect(await answer.json()).toEqual({ minted: false })
       expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
+      expect(answer.headers.get('set-cookie') ?? '').not.toContain('; Secure')
       expect(documentBody.token).toHaveLength(64)
       expect(documentAnswer.headers.get('set-cookie') ?? '').toContain(`X-CSRF-Token=${documentBody.token}`)
     }

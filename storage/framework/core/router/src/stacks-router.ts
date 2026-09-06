@@ -656,6 +656,8 @@ const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 const FRAMEWORK_RESPONSE_METADATA_APPLIED = Symbol('stacks.router.frameworkResponseMetadataApplied')
 const FRAMEWORK_RESPONSE_BODY_LENGTH = Symbol('stacks.router.frameworkResponseBodyLength')
+const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
+const secureNativeRouteRouters = new WeakSet<Router>()
 
 interface ResolvedMiddleware {
   name: string
@@ -4735,6 +4737,11 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const nativeRoutes = options.nativeRoutes
         ?? (production && !callerSuppliedRoutes && shouldUseNativeRoutesByDefault(bunRouter.routes))
 
+      if ((options as unknown as { tls?: unknown }).tls)
+        secureNativeRouteRouters.add(bunRouter)
+      else
+        secureNativeRouteRouters.delete(bunRouter)
+
       return bunRouter.serve(nativeRoutes === options.nativeRoutes
         ? options
         : { ...options, nativeRoutes })
@@ -5430,6 +5437,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
       return applyResponseCompression(response, request, compression)
     }
     const directHandlers = buildDirectNativeHandlers(router, finalizeResponse)
+    const secureTransport = secureNativeRouteRouters.has(router)
 
     for (const [path, methods] of Object.entries(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
@@ -5439,6 +5447,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
         const dispatch = directDispatch ?? handler
         methods[method] = (request) => {
           if (safeMethod) {
+            ;(request as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT] = secureTransport
             const cookie = request.headers.get('cookie') ?? ''
             if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {
               const markedRequest = request as unknown as Record<symbol, unknown>

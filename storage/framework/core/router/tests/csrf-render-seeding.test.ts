@@ -32,6 +32,12 @@ function cookieOn(res: Response): string {
   return res.headers.get('set-cookie') ?? ''
 }
 
+function requestWithKnownTransport(url: string, secure: boolean): Request {
+  const req = new Request(url)
+  ;(req as unknown as Record<symbol, unknown>)[Symbol.for('@stacksjs/router:csrf-secure-transport')] = secure
+  return req
+}
+
 describe('seedCsrfCookieIfMissing', () => {
   test('seeds a token when the request carries none', () => {
     const seeded = cookieOn(seedCsrfCookieIfMissing(request(), response()))
@@ -111,6 +117,14 @@ describe('seedCsrfCookieIfMissing', () => {
 
   test('is not Secure over plain HTTP, so localhost still works', () => {
     expect(cookieOn(seedCsrfCookieIfMissing(request(), response()))).not.toContain('Secure')
+  })
+
+  test('uses the native server transport hint without consulting the URL', () => {
+    const secure = cookieOn(seedCsrfCookieIfMissing(requestWithKnownTransport('http://localhost/acme/app', true), response()))
+    const plain = cookieOn(seedCsrfCookieIfMissing(requestWithKnownTransport('https://localhost/acme/app', false), response()))
+
+    expect(secure).toContain('; Secure')
+    expect(plain).not.toContain('; Secure')
   })
 
   /** Not HttpOnly on purpose: a single-page app has to read it to echo it. */

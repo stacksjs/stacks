@@ -59,6 +59,7 @@ import { Middleware } from '@stacksjs/router'
  */
 
 export const CSRF_COOKIE_NAME = 'X-CSRF-Token'
+const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const CSRF_HEADER_NAME = 'x-csrf-token'
 const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
@@ -149,7 +150,10 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
     return response
 
   const token = minted || generateCsrfToken()
-  const secure = req.url.startsWith('https://') ? '; Secure' : ''
+  const knownSecureTransport = (req as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT]
+  const secure = knownSecureTransport === true || (knownSecureTransport === undefined && req.url.startsWith('https://'))
+    ? '; Secure'
+    : ''
   const cookie = `${CSRF_COOKIE_NAME}=${token}; Path=/; SameSite=Lax; Max-Age=7200${secure}`
 
   // Append (not Set) so multiple Set-Cookie headers can coexist with any
