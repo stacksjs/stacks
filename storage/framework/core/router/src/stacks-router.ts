@@ -5110,7 +5110,15 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
     const compressionThreshold = compression?.threshold ?? 1024
     for (const methods of Object.values(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
+        const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
         methods[method] = async (request) => {
+          if (safeMethod) {
+            const cookie = request.headers.get('cookie') ?? ''
+            if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {
+              const markedRequest = request as unknown as Record<symbol, unknown>
+              markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+            }
+          }
           const response = await runInRoutingContext(() => handler(request))
           const frameworkResponse = response as unknown as Record<symbol, unknown>
           const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
