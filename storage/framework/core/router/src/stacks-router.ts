@@ -2660,7 +2660,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
   const requestValidationRules = action.validations
     ?? modelValidationRules(action.modelDefinition ?? action.model)
   const actionValidationEntries = action.validations
-    ? Object.entries(action.validations)
+    ? compileActionValidationEntries(action.validations)
     : undefined
 
   const prepareRequest = (req: EnhancedRequest): Response | undefined => {
@@ -2781,7 +2781,44 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
  * validator contract are synchronous. The exported wrapper below stays
  * Promise-based for compatibility with callers that chain or await it.
  */
-type ActionValidationEntry = [string, ActionValidations[string]]
+type ActionRuleTest = (value: unknown) => boolean
+type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?]
+
+function propertyOwner(value: object, property: PropertyKey): object | undefined {
+  let current: object | null = value
+  while (current) {
+    if (Object.hasOwn(current, property))
+      return current
+    current = Object.getPrototypeOf(current) as object | null
+  }
+}
+
+/**
+ * Compile the allocation-free success path exposed by ts-validation's base
+ * validators. Rich failure details still come from `validate()` below.
+ * Validators that override `validate()` (objects, arrays, files, or custom
+ * implementations) remain entirely on their own code path.
+ */
+function compileActionValidationEntries(validations: ActionValidations): ActionValidationEntry[] {
+  return Object.entries(validations).map(([field, validation]) => {
+    const rule = validation.rule as {
+      getRules?: () => Array<{ test?: ActionRuleTest }>
+      validate: (value: unknown) => unknown
+    }
+    if (
+      typeof rule.getRules !== 'function'
+      || propertyOwner(rule, 'validate') !== propertyOwner(rule, 'getRules')
+    ) {
+      return [field, validation]
+    }
+
+    const rules = rule.getRules()
+    if (!Array.isArray(rules) || rules.some(entry => typeof entry?.test !== 'function'))
+      return [field, validation]
+
+    return [field, validation, rules.map(entry => entry.test as ActionRuleTest)]
+  })
+}
 
 function validateActionInputSync(
   req: EnhancedRequest,
@@ -2800,18 +2837,34 @@ function validateActionInputSync(
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
   const input = getRequestInput(req, entries)
 
-  for (const [field, validation] of entries) {
+  for (const [field, validation, ruleTests] of entries) {
     const value = input[field]
-    let result: { valid: boolean, errors?: Array<{ message: string }> }
+    let result: { valid: boolean, errors?: Array<{ message: string }> } | undefined
 
     try {
-      result = validation.rule.validate(value)
+      const rule = validation.rule as typeof validation.rule & { isRequired?: boolean }
+      let passedCompiledRules = false
+      if (ruleTests) {
+        const empty = value === undefined || value === null || value === ''
+        passedCompiledRules = empty && rule.isRequired !== true
+        if (!empty) {
+          passedCompiledRules = true
+          for (let i = 0; i < ruleTests.length; i++) {
+            if (!ruleTests[i]!(value)) {
+              passedCompiledRules = false
+              break
+            }
+          }
+        }
+      }
+      if (!passedCompiledRules)
+        result = rule.validate(value)
     }
     catch {
       result = { valid: false, errors: [{ message: `${field} validation failed` }] }
     }
 
-    if (!result.valid) {
+    if (result && !result.valid) {
       valid = false
       const fieldErrors: string[] = []
       // Friendlier label: snake_case → "snake case", camelCase → "camel case",
