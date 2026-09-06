@@ -3837,16 +3837,18 @@ function fuseRequestEnhancements(router: Router): void {
     const combined = combinedPrototypes.get(basePrototype)
     if (combined) {
       const enhanced = request as EnhancedRequest
-      if ('params' in request) {
-        Object.defineProperty(enhanced, 'params', {
-          value: params,
-          writable: true,
-          configurable: true,
-          enumerable: false,
-        })
-      }
-      else {
-        enhanced.params = params
+      if (enhanced.params !== params) {
+        if ('params' in request) {
+          Object.defineProperty(enhanced, 'params', {
+            value: params,
+            writable: true,
+            configurable: true,
+            enumerable: false,
+          })
+        }
+        else {
+          enhanced.params = params
+        }
       }
       Object.setPrototypeOf(enhanced, combined)
       if (!enhanced._requestId)
