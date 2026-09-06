@@ -25,7 +25,7 @@ import { createFixture, resetFixtureLogs } from './fixture'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
 import { renderReport } from './report'
-import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
+import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { readSourceState } from './source'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
@@ -149,6 +149,7 @@ async function main(): Promise<void> {
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
+    persistentQueryLogging: benchmarkQueryLoggingEnabled(),
     machine: {
       platform: platform(),
       release: release(),
@@ -199,7 +200,7 @@ async function main(): Promise<void> {
           writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}.txt`), result.raw)
           if (warmupResult)
             writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}--warmup.txt`), warmupResult.raw)
-          if (scenario.requiresDb && target.server === 'stacks.ts') {
+          if (benchmarkQueryLoggingEnabled() && scenario.requiresDb && target.server === 'stacks.ts') {
             // The fixture was cleared before warmup. Count both load windows,
             // after CPU sampling, so verification cannot inflate measured cost.
             const persistence = await verifyLoadPersistence(FIXTURE, driver, result, warmupResult)

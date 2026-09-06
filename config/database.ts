@@ -184,9 +184,12 @@ export default {
    */
   queryLogging: {
     /**
-     * Enable query logging to database
+     * Persist query diagnostics to the database. Development keeps the
+     * dashboard useful out of the box; production makes the write-heavy
+     * history an explicit opt-in. Request-scoped error diagnostics remain
+     * available in either mode.
      */
-    enabled: env.DB_QUERY_LOGGING_ENABLED ?? true,
+    enabled: env.DB_QUERY_LOGGING_ENABLED ?? !['production', 'prod'].includes(env.APP_ENV || ''),
 
     /**
      * Capture caller stacks for successful fast queries too. Slow and failed

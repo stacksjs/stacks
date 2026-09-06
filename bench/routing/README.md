@@ -90,12 +90,16 @@ papered over. `post-validate` has the same shape: Elysia uses its `t` schema,
 Hono a hand-written check behind its own `validator()` seam, and both are
 cheaper than a compiled rule set.
 
-The fixture includes `query_logs` and its indexes, so stock Stacks query logging
-performs successful writes. Those writes are part of the database workload;
-the bare SQLite targets do not provide query logging. Accumulated logs are
-cleared before each repetition, outside warm-up and measurement, while the
-seeded read data stays unchanged. Results from the earlier fixture without
-`query_logs` measured failed logging writes and are not comparable.
+The fixture includes `query_logs` and its indexes, but persistent query history
+is disabled by default in production. This keeps the stock database scenario
+focused on the request and read path shared by every target. Request-scoped
+query tracking remains active for Stacks error diagnostics.
+
+Set `DB_QUERY_LOGGING_ENABLED=true` to include durable query history in the
+workload. The bare SQLite targets do not provide an equivalent logger, so treat
+that run as an observability-cost profile rather than a like-for-like database
+comparison. Accumulated logs are cleared before each repetition, outside
+warm-up and measurement, while the seeded read data stays unchanged.
 
 A former process-wide recursion guard could also skip legitimate queries while a
 log write was pending. Logging now suppresses only queries descended from its
@@ -103,16 +107,17 @@ own write, with warm sequential and concurrent persistence checks. Database
 results from before that correction should be rerun because they may include
 less logging work.
 
-Before measuring a Stacks database scenario, the parity probe clears old logs
-and waits for a successful log of its benchmark SELECT. Disabled or failing
-query logging aborts the run instead of producing a faster, incomplete workload.
-This check runs outside warm-up and measurement.
+When persistent logging is explicitly enabled, the parity probe clears old logs
+and waits for a successful log of its benchmark SELECT. Failing query logging
+then aborts the run instead of producing a faster, incomplete workload. This
+check runs outside warm-up and measurement.
 
-With `oha` or `builtin`, each Stacks database load run also verifies that the successful
-persisted SELECT count matches the total warmup and measured request count. A
-count mismatch, request errors, or an empty measured load aborts the run. Counting
-happens after CPU sampling, outside the timed window. Raw warmup output and a
-`--persistence.json` sidecar record the request counts used by this check.
+With `oha` or `builtin` and persistent logging enabled, each Stacks database
+load run also verifies that the successful persisted SELECT count matches the
+total warmup and measured request count. A count mismatch, request errors, or
+an empty measured load aborts the run. Counting happens after CPU sampling,
+outside the timed window. Raw warmup output and a `--persistence.json` sidecar
+record the request counts used by this check.
 
 Other drivers do not guarantee that their response counts include every in-flight
 request at the deadline. Their sidecars explicitly mark aggregate persistence
@@ -139,7 +144,7 @@ equivalent guarantees or it says plainly which profile produced the number.
 
 The opt-in `stacks-wal-full` target measures a configured SQLite deployment:
 1000-page WAL checkpoints and `synchronous=FULL`, with the same security,
-validation, query logging, and cookie behavior as `stacks-warm`. It verifies
+validation, query-tracking, and cookie behavior as `stacks-warm`. It verifies
 both SQLite settings before listening. Run it explicitly:
 
 ```bash

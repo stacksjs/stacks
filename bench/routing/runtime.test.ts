@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { BENCH_ROOT, serverCommand, serverEnvironment } from './runtime'
+import { BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
 describe('benchmark server isolation', () => {
@@ -24,6 +24,24 @@ describe('benchmark server isolation', () => {
     expect(env.NODE_ENV).toBe('production')
     expect(env.BENCH_MODE).toBe('minimal')
     expect(env.BENCH_SCENARIO).toBe('static-json')
+  })
+
+  it('treats persistent query logging as an explicit benchmark profile', () => {
+    const previous = process.env.DB_QUERY_LOGGING_ENABLED
+    try {
+      delete process.env.DB_QUERY_LOGGING_ENABLED
+      expect(benchmarkQueryLoggingEnabled()).toBe(false)
+      process.env.DB_QUERY_LOGGING_ENABLED = 'true'
+      expect(benchmarkQueryLoggingEnabled()).toBe(true)
+      process.env.DB_QUERY_LOGGING_ENABLED = '1'
+      expect(benchmarkQueryLoggingEnabled()).toBe(true)
+      process.env.DB_QUERY_LOGGING_ENABLED = 'false'
+      expect(benchmarkQueryLoggingEnabled()).toBe(false)
+    }
+    finally {
+      if (previous === undefined) delete process.env.DB_QUERY_LOGGING_ENABLED
+      else process.env.DB_QUERY_LOGGING_ENABLED = previous
+    }
   })
 
   it('keeps tuned settings opt-in and prevents shell settings from changing stock profiles', () => {

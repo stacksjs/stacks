@@ -24,8 +24,8 @@ export default {
   // ... other database configs
 
   queryLogging: {
-    // Enable or disable query logging
-    enabled: true,
+    // Persistent history defaults on outside production and off in production
+    enabled: process.env.DB_QUERY_LOGGING_ENABLED === 'true',
 
     // Also capture caller stacks for successful fast queries
     captureAllTraces: false,
@@ -68,6 +68,12 @@ DB_QUERY_LOGGING_ANALYZE_ALL=false
 DB_QUERY_LOGGING_EXPLAIN_PLAN=true
 DB_QUERY_LOGGING_SUGGESTIONS=true
 ```
+
+Persistent query history is disabled by default in production because every
+application query otherwise creates an additional database write. Set
+`DB_QUERY_LOGGING_ENABLED=true` when durable history is worth that cost.
+Request-scoped query tracking for error diagnostics remains available when
+persistence is disabled.
 
 ## Dashboard Interface
 

@@ -36,6 +36,7 @@ describe('benchmark runtime requirements', () => {
       meta: {
         startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: true,
         connections: 50, warmupSeconds: 1, durationSeconds: 3, runs: 1,
+        persistentQueryLogging: false,
         machine: { platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
         runtimeRequirement: { range: '1.4.1', matches: false },
       },
@@ -43,6 +44,7 @@ describe('benchmark runtime requirements', () => {
     })
     expect(report).toContain('| Bun | 1.3.14 |')
     expect(report).toContain('| Project Bun requirement | 1.4.1 (runtime mismatch) |')
+    expect(report).toContain('| Persistent query history | disabled (production default) |')
     expect(report).toContain('Runtime mismatch: Bun 1.3.14 does not satisfy package.json engines.bun (1.4.1).')
   })
 })

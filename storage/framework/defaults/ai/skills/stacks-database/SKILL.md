@@ -258,7 +258,8 @@ Entity-centric API for single-table design:
   migrations: 'migrations',
   migrationLocks: 'migration_locks',
   queryLogging: {
-    enabled: true,
+    // Defaults on outside production and off in production.
+    enabled: env.DB_QUERY_LOGGING_ENABLED ?? !['production', 'prod'].includes(env.APP_ENV || ''),
     captureAllTraces: false, // slow and failed queries always keep traces
     slowThreshold: 100,  // ms
     retention: 7,        // days

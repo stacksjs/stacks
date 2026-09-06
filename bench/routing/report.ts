@@ -37,6 +37,7 @@ export interface RunMeta {
   warmupSeconds: number
   durationSeconds: number
   runs: number
+  persistentQueryLogging: boolean
   machine: {
     platform: string
     release: string
@@ -81,6 +82,7 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Connections | ${meta.connections} |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
+  lines.push(`| Persistent query history | ${meta.persistentQueryLogging ? 'enabled (opt-in)' : 'disabled (production default)'} |`)
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)
   lines.push(`| Bun | ${meta.machine.bun} |`)

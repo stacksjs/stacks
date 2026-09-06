@@ -14,6 +14,12 @@ export const TMP = join(BENCH_ROOT, '.tmp')
 export const FIXTURE = join(TMP, 'bench.sqlite')
 export const PORT = Number(process.env.BENCH_PORT ?? 39400)
 
+/** Persistent query history is opt-in for the production benchmark. */
+export function benchmarkQueryLoggingEnabled(): boolean {
+  const value = process.env.DB_QUERY_LOGGING_ENABLED?.toLowerCase()
+  return value === 'true' || value === '1'
+}
+
 export interface BootedServer {
   proc: ReturnType<typeof Bun.spawn>
   pid: number
@@ -129,7 +135,7 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
 
 /** Require byte-identical successful responses before measuring a target. */
 export async function assertParity(target: Target, scenario: Scenario): Promise<void> {
-  const requiresQueryLog = target.server === 'stacks.ts' && scenario.requiresDb
+  const requiresQueryLog = benchmarkQueryLoggingEnabled() && target.server === 'stacks.ts' && scenario.requiresDb
   if (requiresQueryLog)
     resetFixtureLogs(FIXTURE)
 
