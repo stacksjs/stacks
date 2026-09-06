@@ -20,7 +20,7 @@ import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-confi
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
-import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withTransactionContext } from './replicas'
+import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
@@ -414,17 +414,24 @@ function getPoolConfig(): PoolConfig | undefined {
 }
 
 /** Replicas declared on the active connection. */
+const EMPTY_REPLICAS: ReplicaConfig[] = []
+
 function getReplicas(): ReplicaConfig[] {
   const driver = getDriver()
   if (driver === 'sqlite')
-    return []
+    return EMPTY_REPLICAS
   const connections = getDatabaseConfig().connections as Record<string, DbConnectionConfig | undefined>
-  return connections?.[driver]?.replicas ?? []
+  return connections?.[driver]?.replicas ?? EMPTY_REPLICAS
 }
 
 /** The app's read-routing policy. */
 function getReadPolicy(): ReadPolicyConfig {
   return getDatabaseConfig().reads ?? {}
+}
+
+/** Establish read-routing state only when this connection can use a replica. */
+export function withDatabaseRoutingContext<T>(fn: () => T): T {
+  return getReplicas().length === 0 ? fn() : withRoutingContext(fn)
 }
 
 /**

@@ -2,11 +2,10 @@
 //
 // Two things are being guarded here, and the second is the dangerous one.
 //
-// 1. `serverResponse` must run its handler inside the database package's
-//    routing context. Without it, `contextHasWritten()` has no store to
-//    consult, always reports false, and a read issued right after a write in
-//    the same request routes to a replica — the exact stale-read bug the
-//    routing rules exist to prevent. The tracking would be dead code.
+// 1. `serverResponse` delegates context policy to the database package. A
+//    connection with replicas gets request isolation; SQLite and connections
+//    with no replicas skip the AsyncLocalStorage scope because there is nowhere
+//    else for a read to be routed.
 //
 // 2. It must do that WITHOUT deadlocking. `@stacksjs/database` already
 //    depends on `@stacksjs/router`, so reaching back the other way closes a
@@ -44,7 +43,7 @@ describe('routing context plumbing', () => {
     }
   }, 15_000)
 
-  test('directly served requests track writes and isolate concurrent readers', async () => {
+  test('directly served SQLite requests skip unused read-routing state', async () => {
     const router = createStacksRouter()
     const writing = Promise.withResolvers<void>()
     const release = Promise.withResolvers<void>()
@@ -63,7 +62,7 @@ describe('routing context plumbing', () => {
       const reader = await fetch(`http://localhost:${server.port}/__routing_read`)
       expect(await reader.json()).toEqual({ wrote: false })
       release.resolve()
-      expect(await (await writer).json()).toEqual({ before: false, after: true })
+      expect(await (await writer).json()).toEqual({ before: false, after: false })
       const later = await fetch(`http://localhost:${server.port}/__routing_read`)
       expect(await later.json()).toEqual({ wrote: false })
       expect(contextHasWritten()).toBe(false)

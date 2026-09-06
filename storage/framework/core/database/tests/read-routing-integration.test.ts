@@ -13,10 +13,11 @@
 // who has not configured a replica.
 
 import { describe, expect, test } from 'bun:test'
-import { db } from '../src/utils'
+import { db, withDatabaseRoutingContext } from '../src/utils'
 import {
   contextHasWritten,
   contextInTransaction,
+  markContextWrote,
   withRoutingContext,
   withTransactionContext,
 } from '../src/replicas'
@@ -121,6 +122,14 @@ describe('transactions set the routing context', () => {
 })
 
 describe('no routing context established', () => {
+  test('the request runner skips routing state when no replicas exist', () => {
+    const result = withDatabaseRoutingContext(() => {
+      markContextWrote()
+      return contextHasWritten()
+    })
+    expect(result).toBe(false)
+  })
+
   test('the proxy still works outside any request boundary', async () => {
     // Background jobs and one-shot scripts have no request context. They
     // must keep working; marking a write is simply a no-op there.

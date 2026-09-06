@@ -4907,9 +4907,10 @@ async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void
 async function getRoutingContextRunner(): Promise<ContextRunner> {
   if (!routingContextRunner) {
     try {
-      const { withRoutingContext } = await import('@stacksjs/database')
-      routingContextRunner = typeof withRoutingContext === 'function'
-        ? withRoutingContext
+      const database = await import('@stacksjs/database')
+      const runner = database.withDatabaseRoutingContext ?? database.withRoutingContext
+      routingContextRunner = typeof runner === 'function'
+        ? runner
         : (fn => fn())
     }
     catch {
