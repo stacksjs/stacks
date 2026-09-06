@@ -223,7 +223,7 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS'])
  * the router, such as the local dashboard config editor, can enforce the same
  * double-submit and bearer-token rules without duplicating security logic.
  */
-export async function validateCsrfRequest(request: Request | EnhancedRequest): Promise<void> {
+function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
   const method = request.method.toUpperCase()
 
   // Safe methods don't mutate state — no token check needed.
@@ -271,13 +271,17 @@ export async function validateCsrfRequest(request: Request | EnhancedRequest): P
   }
 }
 
+export async function validateCsrfRequest(request: Request | EnhancedRequest): Promise<void> {
+  assertValidCsrfRequest(request)
+}
+
 export default new Middleware({
   name: 'csrf',
   // Run early — before auth, so we don't waste auth work on a request
   // we're going to reject anyway. After maintenance/throttle though.
   priority: 2,
 
-  async handle(request) {
-    await validateCsrfRequest(request)
+  handle(request) {
+    assertValidCsrfRequest(request)
   },
 })

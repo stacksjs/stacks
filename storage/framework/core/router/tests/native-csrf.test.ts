@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
-import { validateCsrfRequest } from '../../../defaults/app/Middleware/Csrf'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
+import csrf, { validateCsrfRequest } from '../../../defaults/app/Middleware/Csrf'
 import { clearMiddlewareCache, createStacksRouter } from '../src/stacks-router'
 
 const token = '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
@@ -68,5 +69,16 @@ describe('standalone CSRF validator promise contract', () => {
     const request = new Request('http://localhost/native-csrf', { method: 'POST' })
     const validation = validateCsrfRequest(request)
     await expect(validation).rejects.toThrow('CSRF token mismatch')
+  })
+})
+
+describe('built-in CSRF middleware hot path', () => {
+  test('valid requests complete synchronously', () => {
+    const request = new Request('http://localhost/native-csrf', {
+      method: 'POST',
+      headers: { cookie: `X-CSRF-Token=${token}`, 'x-csrf-token': token },
+    })
+
+    expect(csrf.handle(request as EnhancedRequest)).toBeUndefined()
   })
 })
