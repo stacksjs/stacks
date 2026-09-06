@@ -1030,6 +1030,8 @@ export interface BaseFluentChain<TRow = Record<string, unknown>, TKind extends C
    * value that might be a number - the type never told them which they had.
    */
   execute: () => Promise<ResultOf<TRow, TKind>>
+  /** SQLite fast path only. Executes on the calling thread without a Promise. */
+  executeSync?: () => ResultOf<TRow, TKind>
   executeTakeFirst: () => Promise<FirstOf<TRow, TKind>>
   executeTakeFirstOrThrow: () => Promise<NonNullable<FirstOf<TRow, TKind>>>
   pluck: (...args: unknown[]) => Promise<unknown[]>
@@ -2094,6 +2096,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     async execute() {
+      return executeStatement()
+    },
+    executeSync() {
       return executeStatement()
     },
   }

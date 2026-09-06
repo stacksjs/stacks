@@ -54,6 +54,23 @@ const explicitRead = await db.read
 if (JSON.stringify(explicitRead) !== JSON.stringify([{ id: 1, name: 'alpha' }]))
   throw new Error(`Unexpected lightweight explicit-read result: ${JSON.stringify(explicitRead)}`)
 
+const synchronous = db
+  .selectFrom('fast_items')
+  .select(['id', 'name'])
+  .where('id', '=', 1)
+  .limit(1)
+  .executeSync!()
+if (JSON.stringify(synchronous) !== JSON.stringify([{ id: 1, name: 'alpha' }]))
+  throw new Error(`Unexpected synchronous lightweight result: ${JSON.stringify(synchronous)}`)
+
+const synchronousMissing = db
+  .selectFrom('fast_items')
+  .where('id', '=', 999)
+  .limit(1)
+  .executeSync!()
+if (JSON.stringify(synchronousMissing) !== JSON.stringify([]))
+  throw new Error(`Unexpected synchronous missing result: ${JSON.stringify(synchronousMissing)}`)
+
 const facadeAliases = await Promise.all([
   db.table('fast_items').select('name').where('id', '=', 1).executeTakeFirst(),
   db.select('fast_items', 'name').where('id', '=', 1).executeTakeFirst(),
