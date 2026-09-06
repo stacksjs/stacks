@@ -139,6 +139,25 @@ describe('Request Context - request proxy', () => {
 })
 
 describe('Request Context - clearing', () => {
+  test('fresh request scopes start with fresh query tracking', () => {
+    const previousAppEnv = process.env.APP_ENV
+    process.env.APP_ENV = 'development'
+
+    runWithRequest(makeFakeRequest(), () => {
+      trackQuery('SELECT * FROM users WHERE id = 1')
+      expect(getQueryShapeCounts().get('SELECT * FROM USERS WHERE ID = ?')).toBe(1)
+    })
+
+    runWithRequest(makeFakeRequest(), () => {
+      expect(getQueryShapeCounts().size).toBe(0)
+    })
+
+    if (previousAppEnv === undefined)
+      delete process.env.APP_ENV
+    else
+      process.env.APP_ENV = previousAppEnv
+  })
+
   test('query cleanup in an unused request does not clear the fallback scope', () => {
     clearCurrentRequest()
     const previousAppEnv = process.env.APP_ENV

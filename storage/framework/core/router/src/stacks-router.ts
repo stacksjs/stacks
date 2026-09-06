@@ -207,7 +207,7 @@ function resolveDefaultsPath(rel: string): string {
 
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
-import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
+import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, applySecurityHeadersToRecord } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
@@ -1907,9 +1907,6 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // Headers are immutable.
       const baseResult = wrappedBase(enhancedReq)
       let response = baseResult instanceof Response ? baseResult : await baseResult
-
-      // Clear tracked queries after each request to prevent accumulation
-      clearTrackedQueries()
 
       // CSRF cookie seeding — on safe-method responses (GET/HEAD/OPTIONS),
       // attach a fresh `X-CSRF-Token` cookie when none is present so SPAs
