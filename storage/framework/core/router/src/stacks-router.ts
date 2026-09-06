@@ -208,7 +208,7 @@ function resolveDefaultsPath(rel: string): string {
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
-import { applySecurityHeaders } from './security-headers'
+import { applySecurityHeaders, applySecurityHeadersToRecord } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
 
@@ -603,7 +603,7 @@ const routeActionRegistry = new Map<string, RouterAction>()
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
-const FRAMEWORK_SECURITY_HEADERS_MISSING = Symbol('stacks.router.frameworkSecurityHeadersMissing')
+const FRAMEWORK_RESPONSE_METADATA_APPLIED = Symbol('stacks.router.frameworkResponseMetadataApplied')
 
 interface ResolvedMiddleware {
   name: string
@@ -2006,7 +2006,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
         }
 
-        if (reqId) h.set('X-Request-ID', reqId)
+        const frameworkMetadataApplied = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
+        if (reqId && !frameworkMetadataApplied) h.set('X-Request-ID', reqId)
         if (durMs != null) {
           let timing = `total;dur=${durMs.toFixed(1)}`
           // Append per-middleware timing entries. Chrome's network
@@ -2016,9 +2017,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
           h.set('Server-Timing', timing)
         }
-        const frameworkHeadersAreMissing = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] === true
-          && !requested
-        applySecurityHeaders(h, frameworkHeadersAreMissing)
+        if (!frameworkMetadataApplied)
+          applySecurityHeaders(h)
       }
 
       if (response && typeof (response).headers?.set === 'function') {
@@ -2939,9 +2939,22 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
 /** Serialize JSON once and make its size available to compression. */
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
   const encoding = req.headers.get('accept-encoding')
+  const responseHeaders: Record<string, string> = {}
+  if (linkHeader)
+    responseHeaders.Link = linkHeader
+
+  const canPreapplyMetadata = !req._responseHeaders
+  if (canPreapplyMetadata) {
+    if (req._requestId)
+      responseHeaders['X-Request-ID'] = req._requestId
+    applySecurityHeadersToRecord(responseHeaders)
+  }
+
   if (!encoding || encoding === 'identity') {
-    const response = linkHeader ? Response.json(result, { headers: { Link: linkHeader } }) : Response.json(result)
-    ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] = true
+    const response = Response.json(result, { headers: responseHeaders })
+    if (canPreapplyMetadata) {
+      ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
+    }
     return response
   }
 
@@ -2949,14 +2962,12 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // the response stream just to check its threshold. Count UTF-8 bytes, not
   // JavaScript characters; a custom toJSON may also produce an empty body.
   const body = JSON.stringify(result) ?? ''
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json;charset=utf-8',
-    'Content-Length': String(Buffer.byteLength(body)),
+  responseHeaders['Content-Type'] = 'application/json;charset=utf-8'
+  responseHeaders['Content-Length'] = String(Buffer.byteLength(body))
+  const response = new Response(body, { headers: responseHeaders })
+  if (canPreapplyMetadata) {
+    ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
   }
-  if (linkHeader)
-    headers.Link = linkHeader
-  const response = new Response(body, { headers })
-  ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_SECURITY_HEADERS_MISSING] = true
   return response
 }
 

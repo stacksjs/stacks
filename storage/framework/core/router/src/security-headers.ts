@@ -101,6 +101,23 @@ export function applySecurityHeaders(headers: Headers, knownMissing = false): vo
     headers.set(csp.header, csp.value)
 }
 
+/** Add the defaults to a fresh response-init record before Response creation. */
+export function applySecurityHeadersToRecord(headers: Record<string, string>): void {
+  if (isDisabled())
+    return
+
+  headers['X-Content-Type-Options'] = 'nosniff'
+  headers['X-Frame-Options'] = 'SAMEORIGIN'
+  headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+
+  if (isProduction())
+    headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+
+  const csp = resolveCsp()
+  if (csp)
+    headers[csp.header] = csp.value
+}
+
 /** Test helper — reset the cached env-derived flags. */
 export function __resetSecurityHeadersCache(): void {
   _isProductionCache = undefined

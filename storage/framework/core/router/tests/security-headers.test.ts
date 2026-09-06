@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import process from 'node:process'
-import { __resetSecurityHeadersCache, applySecurityHeaders } from '../src/security-headers'
+import { __resetSecurityHeadersCache, applySecurityHeaders, applySecurityHeadersToRecord } from '../src/security-headers'
 
 // stacksjs/stacks#601 — HSTS + companion security headers on every response.
 
@@ -8,10 +8,14 @@ describe('applySecurityHeaders', () => {
   const originalAppEnv = process.env.APP_ENV
   const originalNodeEnv = process.env.NODE_ENV
   const originalDisable = process.env.STACKS_SECURITY_HEADERS_DISABLE
+  const originalCsp = process.env.STACKS_CSP
+  const originalCspReportOnly = process.env.STACKS_CSP_REPORT_ONLY
 
   beforeEach(() => {
     __resetSecurityHeadersCache()
     delete process.env.STACKS_SECURITY_HEADERS_DISABLE
+    delete process.env.STACKS_CSP
+    delete process.env.STACKS_CSP_REPORT_ONLY
   })
 
   afterEach(() => {
@@ -21,6 +25,10 @@ describe('applySecurityHeaders', () => {
     else process.env.NODE_ENV = originalNodeEnv
     if (originalDisable === undefined) delete process.env.STACKS_SECURITY_HEADERS_DISABLE
     else process.env.STACKS_SECURITY_HEADERS_DISABLE = originalDisable
+    if (originalCsp === undefined) delete process.env.STACKS_CSP
+    else process.env.STACKS_CSP = originalCsp
+    if (originalCspReportOnly === undefined) delete process.env.STACKS_CSP_REPORT_ONLY
+    else process.env.STACKS_CSP_REPORT_ONLY = originalCspReportOnly
     __resetSecurityHeadersCache()
   })
 
@@ -97,5 +105,31 @@ describe('applySecurityHeaders', () => {
     expect(h.get('X-Frame-Options')).toBeNull()
     expect(h.get('Referrer-Policy')).toBeNull()
     expect(h.get('Strict-Transport-Security')).toBeNull()
+  })
+
+  test('adds production defaults to a fresh response-init record', () => {
+    process.env.APP_ENV = 'production'
+    process.env.STACKS_CSP = "default-src 'self'"
+    __resetSecurityHeadersCache()
+    const headers: Record<string, string> = { Link: '</next>; rel="next"' }
+
+    applySecurityHeadersToRecord(headers)
+
+    expect(headers.Link).toBe('</next>; rel="next"')
+    expect(headers['X-Content-Type-Options']).toBe('nosniff')
+    expect(headers['X-Frame-Options']).toBe('SAMEORIGIN')
+    expect(headers['Referrer-Policy']).toBe('strict-origin-when-cross-origin')
+    expect(headers['Strict-Transport-Security']).toBe('max-age=31536000; includeSubDomains')
+    expect(headers['Content-Security-Policy']).toBe("default-src 'self'")
+  })
+
+  test('leaves a fresh response-init record alone when disabled', () => {
+    process.env.STACKS_SECURITY_HEADERS_DISABLE = 'true'
+    __resetSecurityHeadersCache()
+    const headers: Record<string, string> = { Link: '</next>; rel="next"' }
+
+    applySecurityHeadersToRecord(headers)
+
+    expect(headers).toEqual({ Link: '</next>; rel="next"' })
   })
 })
