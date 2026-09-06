@@ -27,7 +27,7 @@ describe('db.read exists and falls back to the primary', () => {
     expect(Object.hasOwn(db, 'selectFrom')).toBe(true)
     expect(Object.hasOwn(db, 'read')).toBe(true)
     expect(Object.hasOwn(db, 'fn')).toBe(true)
-    expect(Object.hasOwn(db, 'unsafe')).toBe(false)
+    expect(Object.hasOwn(db, 'unsafe')).toBe(true)
     expect(typeof db.unsafe).toBe('function')
   })
 
@@ -35,7 +35,7 @@ describe('db.read exists and falls back to the primary', () => {
     expect(db.read).toBeDefined()
     expect(typeof db.read.selectFrom).toBe('function')
     expect(Object.hasOwn(db.read, 'selectFrom')).toBe(true)
-    expect(Object.hasOwn(db.read, 'unsafe')).toBe(false)
+    expect(Object.hasOwn(db.read, 'unsafe')).toBe(true)
   })
 
   test('with no replicas configured, db.read still executes against the primary', async () => {

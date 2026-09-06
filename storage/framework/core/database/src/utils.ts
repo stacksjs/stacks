@@ -2081,6 +2081,14 @@ function selectFromExplicitReadDatabase(table: string): unknown {
   return instance.selectFrom(table)
 }
 
+function unsafeDatabase(query: string, params?: unknown[]): UnsafeReturn {
+  return getDb().unsafe(query, params) as unknown as UnsafeReturn
+}
+
+function unsafeExplicitReadDatabase(query: string, params?: unknown[]): UnsafeReturn {
+  return getExplicitReadDb().unsafe(query, params) as unknown as UnsafeReturn
+}
+
 /**
  * Lazy fallback for the query-builder surface. The common facade properties
  * live on `db` itself below, so `db.selectFrom()` does not enter a Proxy on
@@ -2120,6 +2128,7 @@ Object.defineProperties(db, {
   fn: { value: aggregateFunctions },
   read: { get: () => readDb },
   selectFrom: { value: selectFromDatabase },
+  unsafe: { value: unsafeDatabase },
 })
 
 /**
@@ -2144,6 +2153,7 @@ export const readDb: Omit<Db, 'read'> = Object.create(readDbFallback) as Omit<Db
 Object.defineProperties(readDb, {
   fn: { value: aggregateFunctions },
   selectFrom: { value: selectFromExplicitReadDatabase },
+  unsafe: { value: unsafeExplicitReadDatabase },
 })
 
 // Export setConfig if available
