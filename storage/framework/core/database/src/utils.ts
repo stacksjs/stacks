@@ -1358,6 +1358,28 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     return instance.unsafe(query, params) as unknown as UnsafeReturn
   }
 
+  const runAggregate = (
+    name: 'count' | 'sum' | 'avg' | 'min' | 'max',
+    args: unknown[],
+    emptyValue: unknown,
+  ): Promise<unknown> => {
+    const column = args[0]
+    const acceptsNoColumn = name === 'count' && args.length === 0
+    if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column))) {
+      const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => Promise<unknown>>
+      return builder[name].call(builder, ...args)
+    }
+
+    try {
+      const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
+      const value = buildStatement(false, expression).executeSync()[0]?.aggregate ?? emptyValue
+      return Promise.resolve(name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value)
+    }
+    catch (error) {
+      return Promise.reject(error)
+    }
+  }
+
   const base = {
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
@@ -1433,18 +1455,19 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
     },
     count(...args: unknown[]) {
-      if (args.length > 0) {
-        const builder = materialize()
-        const apply = builder.count as unknown as (...values: unknown[]) => Promise<number>
-        return apply.call(builder, ...args)
-      }
-      try {
-        const row = buildStatement(false, 'COUNT(*) AS aggregate').executeSync()[0]
-        return Promise.resolve(Number(row?.aggregate ?? 0))
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
+      return runAggregate('count', args, 0)
+    },
+    sum(...args: unknown[]) {
+      return runAggregate('sum', args, 0)
+    },
+    avg(...args: unknown[]) {
+      return runAggregate('avg', args, 0)
+    },
+    min(...args: unknown[]) {
+      return runAggregate('min', args, null)
+    },
+    max(...args: unknown[]) {
+      return runAggregate('max', args, null)
     },
   }
 

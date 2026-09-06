@@ -129,7 +129,18 @@ async function supportedMatrix() {
       .limit(1)
       .orderBy('id', 'desc')
       .execute(),
-    count: await db.selectFrom('fast_items').where('active', '=', 1).count(),
+    aggregates: {
+      count: await db.selectFrom('fast_items').where('active', '=', 1).count(),
+      countColumn: await db.selectFrom('fast_items').where('active', '=', 1).count('id'),
+      sum: await db.selectFrom('fast_items').where('active', '=', 1).sum('id'),
+      avg: await db.selectFrom('fast_items').where('active', '=', 1).avg('id'),
+      min: await db.selectFrom('fast_items').where('active', '=', 1).min('id'),
+      max: await db.selectFrom('fast_items').where('active', '=', 1).max('id'),
+      emptySum: await db.selectFrom('fast_items').where('id', '=', 999).sum('id'),
+      emptyAvg: await db.selectFrom('fast_items').where('id', '=', 999).avg('id'),
+      emptyMin: await db.selectFrom('fast_items').where('id', '=', 999).min('id'),
+      emptyMax: await db.selectFrom('fast_items').where('id', '=', 999).max('id'),
+    },
   }
 }
 
