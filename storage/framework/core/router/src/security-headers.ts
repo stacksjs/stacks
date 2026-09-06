@@ -31,7 +31,11 @@ let _headerTemplateCache: Headers | undefined
 let _jsonHeaderTemplateCache: Headers | undefined
 // Fixed-size warm cache: repeated JSON shapes avoid a native Headers.set(),
 // while varied response sizes cannot grow process memory without bound.
-let _jsonLengthHeaderTemplateCache: Map<number, { headers: Headers }> | undefined
+interface JsonLengthHeaderTemplates {
+  plain: { headers: Headers }
+  withRequestId?: { headers: Headers }
+}
+let _jsonLengthHeaderTemplateCache: Map<number, JsonLengthHeaderTemplates> | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
 
 function isProduction(): boolean {
@@ -158,21 +162,23 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
     return new Response(body, { headers: baseHeaders })
 
   const templates = _jsonLengthHeaderTemplateCache ??= new Map()
-  let responseInit = templates.get(bodyLength)
-  if (!responseInit && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
+  let lengthTemplates = templates.get(bodyLength)
+  if (!lengthTemplates && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
     const headers = new Headers(baseHeaders)
     headers.set('Content-Length', String(bodyLength))
-    responseInit = { headers }
-    templates.set(bodyLength, responseInit)
+    lengthTemplates = { plain: { headers } }
+    templates.set(bodyLength, lengthTemplates)
   }
-  if (responseInit) {
-    // Response copies Headers synchronously. Updating the private template
-    // before that copy is cheaper than mutating the constructed response.
-    const headers = responseInit.headers
-    if (requestId)
-      headers.set('X-Request-ID', requestId)
-    else
-      headers.delete('X-Request-ID')
+  if (lengthTemplates) {
+    if (!requestId)
+      return new Response(body, lengthTemplates.plain)
+
+    const responseInit = lengthTemplates.withRequestId ??= {
+      headers: new Headers(lengthTemplates.plain.headers),
+    }
+    // Response copies Headers synchronously. Updating the private request-ID
+    // template before that copy is cheaper than mutating the response.
+    responseInit.headers.set('X-Request-ID', requestId)
     return new Response(body, responseInit)
   }
 
