@@ -420,7 +420,10 @@ interface RouteRateLimitConfig {
   max: number
   windowSeconds: number
 }
-const routeRateLimitRegistry = new Map<string, RouteRateLimitConfig>()
+interface RouteRateLimitState {
+  config?: RouteRateLimitConfig
+}
+const routeRateLimitRegistry = new Map<string, RouteRateLimitState>()
 
 /**
  * Resolve a chainable-form `window` arg (`'minute'` or `300`) to a
@@ -1547,6 +1550,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
   const routeMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
+  const routeRateLimit = routeRateLimitRegistry.get(routeKey)
 
   /*
    * Everything about this route that a request cannot change, decided here.
@@ -1658,7 +1662,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // skip the call entirely. The shared limiter cache inside
       // `rate-limit.ts` keeps the bucket math coherent across requests
       // for the same `routeKey:max:window` shape.
-      const rl = routeRateLimitRegistry.get(routeKey)
+      const rl = routeRateLimit?.config
       if (rl) {
         try {
           const { rateLimit: enforceRateLimit } = await import('./rate-limit')
@@ -2158,6 +2162,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
 
   // Extract the path from routeKey (format: "METHOD:/path")
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
+  const routeRateLimit = routeRateLimitRegistry.get(routeKey)
 
   const chain: ChainableRoute = {
     /**
@@ -2227,7 +2232,8 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
         throw new Error(`[Router] .rateLimit(): max must be a positive number, got ${String(max)}`)
       }
       const windowSeconds = rateLimitWindowToSeconds(window)
-      routeRateLimitRegistry.set(routeKey, { max: Math.floor(max), windowSeconds })
+      if (routeRateLimit)
+        routeRateLimit.config = { max: Math.floor(max), windowSeconds }
       return chain
     },
   }
@@ -4023,6 +4029,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // same array after registration without requiring a Map lookup per request.
     if (!shadowed)
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
+    if (!shadowed)
+      routeRateLimitRegistry.set(routeKey, {})
 
     // Pre-populate apiResponse registry with the group flag so the request
     // handler can flip `req._forceJson` without re-walking the group stack.
