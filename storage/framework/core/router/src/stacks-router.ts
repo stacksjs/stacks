@@ -610,6 +610,8 @@ interface ResolvedMiddleware {
   timingName: string
   handler: MiddlewareHandler
   priority: number
+  parameterName?: string
+  params?: string
 }
 
 interface MiddlewareTiming {
@@ -620,6 +622,9 @@ interface MiddlewareTiming {
 const EMPTY_RESOLVED_MIDDLEWARE: ResolvedMiddleware[] = []
 const EMPTY_MIDDLEWARE_TIMINGS: MiddlewareTiming[] = []
 const EMPTY_MIDDLEWARE_ENTRIES: readonly string[] = []
+
+/** Finished middleware descriptors, reused until a development cache clear. */
+let resolvedMiddlewareEntryCache = new Map<string, ResolvedMiddleware>()
 
 /**
  * Named route registry — keeps the original path plus the precomputed
@@ -1307,6 +1312,7 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
   negatedMiddlewareCache.clear()
+  resolvedMiddlewareEntryCache = new Map()
   // In-flight parses keep their original map and cannot refill this cache
   // with aliases from before a reload.
   parsedMiddlewareCache = new Map()
@@ -1728,20 +1734,34 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         ? EMPTY_RESOLVED_MIDDLEWARE
         : []
       for (const middlewareEntry of middlewareEntries) {
-        const pending = parseMiddlewareEntry(middlewareEntry)
-        const parsed = pending instanceof Promise ? await pending : pending
-        const { name: middlewareName, params } = parsed
-
-        // Store middleware params on request for middleware to access.
-        // Params are keyed by middleware name so this is order-independent.
-        if (params) {
-          ;enhancedReq._middlewareParams = enhancedReq._middlewareParams || {}
-          ;enhancedReq._middlewareParams[middlewareName] = params
+        let resolvedEntry = resolvedMiddlewareEntryCache.get(middlewareEntry)
+        if (!resolvedEntry) {
+          const pending = parseMiddlewareEntry(middlewareEntry)
+          const parsed = pending instanceof Promise ? await pending : pending
+          const loaded = loadParsedMiddleware(parsed)
+          const middleware = loaded instanceof Promise ? await loaded : loaded
+          if (middleware && typeof middleware.handle === 'function') {
+            const rawPriority = (middleware as { priority?: unknown }).priority
+            let priority = DEFAULT_MIDDLEWARE_PRIORITY
+            if (typeof rawPriority === 'number' && Number.isFinite(rawPriority) && rawPriority >= 0) {
+              priority = rawPriority
+            }
+            else if (rawPriority !== undefined) {
+              warnInvalidMiddlewarePriority(middlewareEntry, rawPriority)
+            }
+            resolvedEntry = {
+              name: middlewareEntry,
+              timingName: parsed.timingName,
+              handler: middleware,
+              priority,
+              parameterName: parsed.params ? parsed.name : undefined,
+              params: parsed.params,
+            }
+            resolvedMiddlewareEntryCache.set(middlewareEntry, resolvedEntry)
+          }
         }
 
-        const loaded = loadParsedMiddleware(parsed)
-        const middleware = loaded instanceof Promise ? await loaded : loaded
-        if (!middleware || typeof middleware.handle !== 'function') {
+        if (!resolvedEntry) {
           // Fail CLOSED. The previous `continue` served the route WITHOUT
           // the middleware — a typo'd `auth` alias silently unprotected the
           // route. Every entry point (including dev hot-reload cache clears
@@ -1754,24 +1774,14 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           const failClosedResponse = await createErrorResponse(failClosedError, enhancedReq, { status: 500 })
           return await applyCorsIfConfigured(enhancedReq, failClosedResponse)
         }
-        // Bounds-check the priority. The chain is sorted by this number; a
-        // NaN sneaks past the comparator (NaN comparisons evaluate false) and
-        // misorders silently, while a negative value makes a middleware run
-        // ahead of CORS/Csrf/Logger and bypasses every observability hook
-        // those rely on. Clamp + warn-once so the misconfiguration is
-        // visible without breaking the chain. See stacksjs/stacks#1870 R-10.
-        const rawPriority = (middleware as { priority?: unknown }).priority
-        let priority = DEFAULT_MIDDLEWARE_PRIORITY
-        if (typeof rawPriority === 'number' && Number.isFinite(rawPriority) && rawPriority >= 0) {
-          priority = rawPriority
+
+        // Store middleware params on request for middleware to access.
+        // Params are keyed by middleware name so this is order-independent.
+        if (resolvedEntry.params && resolvedEntry.parameterName) {
+          ;enhancedReq._middlewareParams = enhancedReq._middlewareParams || {}
+          ;enhancedReq._middlewareParams[resolvedEntry.parameterName] = resolvedEntry.params
         }
-        else if (rawPriority !== undefined) {
-          warnInvalidMiddlewarePriority(middlewareEntry, rawPriority)
-        }
-        // Named by the reference as written, not by what it resolved to, so
-        // `[middleware] Blocked by: !auth` says which entry in the chain
-        // refused rather than naming the middleware it inverts.
-        resolved.push({ name: middlewareEntry, timingName: parsed.timingName, handler: middleware, priority })
+        resolved.push(resolvedEntry)
       }
 
       // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
