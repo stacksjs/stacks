@@ -70,6 +70,15 @@ catch (error) {
 if (!(missingError instanceof Error) || missingError.message !== 'Record not found')
   throw new Error(`Unexpected missing-row error: ${String(missingError)}`)
 
+const existence = await Promise.all([
+  db.selectFrom('fast_items').where('id', '=', 1).exists(),
+  db.selectFrom('fast_items').where('id', '=', 999).exists(),
+  db.selectFrom('fast_items').where('id', '=', 1).doesntExist(),
+  db.selectFrom('fast_items').where('id', '=', 999).doesntExist(),
+])
+if (JSON.stringify(existence) !== JSON.stringify([true, false, false, true]))
+  throw new Error(`Unexpected lightweight existence results: ${JSON.stringify(existence)}`)
+
 const aliased = await db
   .selectFrom('fast_items')
   .select('name AS label')
