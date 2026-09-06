@@ -260,9 +260,6 @@ function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
   // themselves on the first GET they need it for.
   if (method === 'GET' || method === 'HEAD' || method === 'OPTIONS') return
 
-  // API clients with a bearer token are exempt — see header docstring.
-  if (hasBearerToken(request)) return
-
   // Per-action opt-out: an action exporting `skipCsrf: true` (or
   // `csrf: false`) has declared it can't participate in CSRF
   // (webhooks, third-party callbacks). The router stamps a hint on
@@ -274,6 +271,13 @@ function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
   // Look up the submitted token. Header is the SPA path; body field
   // is the traditional form-post path. We accept either.
   const headerToken = request.headers.get(CSRF_HEADER_NAME)
+
+  // A browser or SPA that supplied an explicit CSRF header should take the
+  // matching-token path first. Bearer-only clients still exit immediately,
+  // while a malformed CSRF header on a bearer request retains the exemption
+  // after validation fails below.
+  if (!headerToken && hasBearerToken(request)) return
+
   const body = enhanced.jsonBody || enhanced.formBody || {}
   // A parsed body is `unknown`-valued: the token is validated as a string
   // two lines down, so read it as one rather than asserting it is one.
@@ -287,13 +291,16 @@ function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
 
   const cookieToken = csrfCookieToken(request)
 
-  if (!submitted || !cookieToken || !safeEqual(submitted, cookieToken)) {
-    // 419 is the convention Laravel popularized for "CSRF token
-    // mismatch" — it's not in the IANA list but most SPAs already
-    // know how to refresh on 419. We use 403 for the strict-correct
-    // status code instead (419 is non-standard).
-    throw new HttpError(403, 'CSRF token mismatch')
-  }
+  if (submitted && cookieToken && safeEqual(submitted, cookieToken)) return
+
+  // Preserve bearer precedence when a client happens to send both headers.
+  if (headerToken && hasBearerToken(request)) return
+
+  // 419 is the convention Laravel popularized for "CSRF token
+  // mismatch" — it's not in the IANA list but most SPAs already
+  // know how to refresh on 419. We use 403 for the strict-correct
+  // status code instead (419 is non-standard).
+  throw new HttpError(403, 'CSRF token mismatch')
 }
 
 export async function validateCsrfRequest(request: Request | EnhancedRequest): Promise<void> {

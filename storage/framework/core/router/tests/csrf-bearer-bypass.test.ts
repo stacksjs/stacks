@@ -67,6 +67,18 @@ describe('CSRF middleware - bearer-token bypass (stacksjs/stacks#1922)', () => {
     expect(response.status).toBe(204)
   })
 
+  test('Bearer token still wins when an invalid CSRF header is also present', async () => {
+    const csrf = new Csrf()
+    const req = makeRequest('POST', {
+      'Authorization': 'Bearer pat_test_abc123',
+      'X-CSRF-Token': 'stale-browser-token',
+    })
+
+    const next = async () => new Response('ok', { status: 200 })
+    const response = await csrf.handle(req, next)
+    expect(response.status).toBe(200)
+  })
+
   test('POST with Authorization: Basic ... → does NOT bypass (basic auth is cookie-adjacent)', async () => {
     const csrf = new Csrf()
     const req = makeRequest('POST', {
