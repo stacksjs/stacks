@@ -1335,7 +1335,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
-  const executeRows = (): Promise<UnsafeRow[]> => {
+  const executeRows = (firstOnly = false): Promise<UnsafeRow[]> => {
     const selected = columns?.join(', ') ?? '*'
     let query = `SELECT ${selected} FROM ${table}`
     const params: unknown[] = []
@@ -1349,8 +1349,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         }).join(' AND ')}`
       }
     }
-    if (rowLimit !== undefined)
-      query += ` LIMIT ${rowLimit}`
+    const effectiveLimit = rowLimit ?? (firstOnly ? 1 : undefined)
+    if (effectiveLimit !== undefined)
+      query += ` LIMIT ${effectiveLimit}`
     return (instance.unsafe(query, params) as unknown as UnsafeReturn).execute()
   }
 
@@ -1390,9 +1391,11 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowLimit = value
       return proxy
     },
-    execute: executeRows,
+    execute() {
+      return executeRows()
+    },
     executeTakeFirst() {
-      return executeRows().then(rows => rows[0])
+      return executeRows(true).then(rows => rows[0])
     },
   }
 
