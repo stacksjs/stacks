@@ -1324,6 +1324,10 @@ let lastParameterizedSqliteSelect: {
   sql: string
 } | undefined
 
+// Selection validation and rendering are also structural. Snapshot the last
+// validated list so caller mutation cannot make cached SQL describe new input.
+let lastSqliteSelection: { columns: string[], sql: string } | undefined
+
 function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
 }
@@ -1922,13 +1926,27 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   const base = {
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
-      let simple = selected.length > 0
-      let selection = ''
-      for (let index = 0; simple && index < selected.length; index++) {
-        const column = selected[index]
-        simple = typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column))
+      let simple = false
+      let selection: string | undefined
+      const cached = lastSqliteSelection
+      if (cached && cached.columns.length === selected.length) {
+        simple = true
+        for (let index = 0; simple && index < selected.length; index++)
+          simple = cached.columns[index] === selected[index]
         if (simple)
-          selection += index === 0 ? column : `, ${column}`
+          selection = cached.sql
+      }
+      if (!simple) {
+        simple = selected.length > 0
+        selection = ''
+        for (let index = 0; simple && index < selected.length; index++) {
+          const column = selected[index]
+          simple = typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column))
+          if (simple)
+            selection += index === 0 ? column : `, ${column}`
+        }
+        if (simple)
+          lastSqliteSelection = { columns: (selected as string[]).slice(), sql: selection }
       }
       if (!simple) {
         const builder = materialize()

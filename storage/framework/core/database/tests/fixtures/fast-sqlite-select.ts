@@ -107,6 +107,13 @@ const aliased = await db
 if (JSON.stringify(aliased) !== JSON.stringify([{ label: 'alpha' }]))
   throw new Error(`Unexpected aliased SELECT result: ${JSON.stringify(aliased)}`)
 
+const mutableSelection = ['id']
+await db.selectFrom('fast_items').select(mutableSelection).where('id', '=', 1).execute()
+mutableSelection[0] = 'name'
+const mutatedSelection = await db.selectFrom('fast_items').select(mutableSelection).where('id', '=', 1).execute()
+if (JSON.stringify(mutatedSelection) !== JSON.stringify([{ name: 'alpha' }]))
+  throw new Error(`Cached selection did not preserve caller mutation safety: ${JSON.stringify(mutatedSelection)}`)
+
 const fallback = await db
   .selectFrom('fast_items')
   .select(['id', 'name'])
