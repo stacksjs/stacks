@@ -70,6 +70,24 @@ catch (error) {
 if (!(missingError instanceof Error) || missingError.message !== 'Record not found')
   throw new Error(`Unexpected missing-row error: ${String(missingError)}`)
 
+const firstAliases = await Promise.all([
+  db.selectFrom('fast_items').select('name').where('id', '=', 2).first(),
+  db.selectFrom('fast_items').select('name').where('id', '=', 1).firstOrFail(),
+  db.selectFrom('fast_items').select('name').where('id', '=', 999).first(),
+])
+if (JSON.stringify(firstAliases) !== JSON.stringify([{ name: 'beta' }, { name: 'alpha' }, null]))
+  throw new Error(`Unexpected lightweight first aliases: ${JSON.stringify(firstAliases)}`)
+
+let missingFirstError: unknown
+try {
+  await db.selectFrom('fast_items').where('id', '=', 999).firstOrFail()
+}
+catch (error) {
+  missingFirstError = error
+}
+if (!(missingFirstError instanceof Error) || missingFirstError.message !== 'Record not found')
+  throw new Error(`Unexpected missing first-row error: ${String(missingFirstError)}`)
+
 const existence = await Promise.all([
   db.selectFrom('fast_items').where('id', '=', 1).exists(),
   db.selectFrom('fast_items').where('id', '=', 999).exists(),
@@ -129,6 +147,9 @@ async function supportedMatrix() {
       .limit(1)
       .orderBy('id', 'desc')
       .execute(),
+    get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
+    first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
+    missingFirst: await db.selectFrom('fast_items').where('id', '=', 999).first(),
     aggregates: {
       count: await db.selectFrom('fast_items').where('active', '=', 1).count(),
       countColumn: await db.selectFrom('fast_items').where('active', '=', 1).count('id'),

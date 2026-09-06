@@ -1419,6 +1419,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     execute() {
       return buildStatement().execute()
     },
+    get() {
+      return buildStatement().execute()
+    },
     executeTakeFirst() {
       try {
         return Promise.resolve(buildStatement(true).executeSync()[0])
@@ -1428,6 +1431,25 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
     },
     executeTakeFirstOrThrow() {
+      try {
+        const row = buildStatement(true).executeSync()[0]
+        return row === undefined
+          ? Promise.reject(new Error('Record not found'))
+          : Promise.resolve(row)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    },
+    first() {
+      try {
+        return Promise.resolve(buildStatement(true).executeSync()[0])
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    },
+    firstOrFail() {
       try {
         const row = buildStatement(true).executeSync()[0]
         return row === undefined
