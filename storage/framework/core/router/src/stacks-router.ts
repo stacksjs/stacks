@@ -2588,6 +2588,9 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
    */
   const requestValidationRules = action.validations
     ?? modelValidationRules(action.modelDefinition ?? action.model)
+  const actionValidationEntries = action.validations
+    ? Object.entries(action.validations)
+    : undefined
 
   return async (req: EnhancedRequest) => {
     if (actionSkipsCsrf) {
@@ -2615,7 +2618,11 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
             )
           : action.validations
 
-        const precognitionResult = validateActionInputSync(req, rules)
+        const precognitionResult = validateActionInputSync(
+          req,
+          rules,
+          rules === action.validations ? actionValidationEntries : undefined,
+        )
         return precognitionResult.valid
           ? precognitionSuccess()
           : validationFailureResponse(precognitionResult.errors)
@@ -2625,7 +2632,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
       // JSON — validation failures are 100% an API-shape signal and HTML
       // pages would be useless here.
       if (action.validations) {
-        const validationResult = validateActionInputSync(req, action.validations)
+        const validationResult = validateActionInputSync(req, action.validations, actionValidationEntries)
         if (!validationResult.valid) {
           return validationFailureResponse(validationResult.errors)
         }
@@ -2680,17 +2687,24 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
  * validator contract are synchronous. The exported wrapper below stays
  * Promise-based for compatibility with callers that chain or await it.
  */
-function validateActionInputSync(req: EnhancedRequest, validations: ActionValidations): ValidationResult {
+type ActionValidationEntry = [string, ActionValidations[string]]
+
+function validateActionInputSync(
+  req: EnhancedRequest,
+  validations: ActionValidations,
+  compiledEntries?: ActionValidationEntry[],
+): ValidationResult {
   const errors: Record<string, string[]> = {}
+  const entries = compiledEntries ?? Object.entries(validations)
 
   // Pass `validations` so wire-stringified path/query values get coerced
   // to the type the rule expects before they're tested. Without this,
   // `schema.number()` on a path-param `id` 422s on every request because
   // the URL delivers `"1"` not `1` and ts-validation's NumberValidator is
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
-  const input = getRequestInput(req, validations)
+  const input = getRequestInput(req, entries)
 
-  for (const [field, validation] of Object.entries(validations)) {
+  for (const [field, validation] of entries) {
     const value = input[field]
     let result: { valid: boolean, errors?: Array<{ message: string }> }
 
@@ -2753,7 +2767,7 @@ function validateActionInputSync(req: EnhancedRequest, validations: ActionValida
    */
   if (valid) {
     const validated: Record<string, unknown> = {}
-    for (const field of Object.keys(validations)) {
+    for (const [field] of entries) {
       if (input[field] !== undefined)
         validated[field] = input[field]
     }
@@ -2798,7 +2812,7 @@ function modelValidationRules(model: any): ActionValidations | undefined {
  */
 function getRequestInput(
   req: EnhancedRequest,
-  validations?: ActionValidations,
+  validationEntries?: ActionValidationEntry[],
 ): Record<string, unknown> {
   const input: Record<string, unknown> = {}
 
@@ -2852,7 +2866,7 @@ function getRequestInput(
     }
   }
 
-  if (!validations)
+  if (!validationEntries)
     return input
 
   // Coerce string values when the rule expects a non-string primitive.
@@ -2860,7 +2874,7 @@ function getRequestInput(
   // values were already typed by the JSON parser, so `typeof value !==
   // 'string'` skips them naturally. Form-body fields are still strings
   // (multipart wire format) — same code path covers them.
-  for (const [field, validation] of Object.entries(validations)) {
+  for (const [field, validation] of validationEntries) {
     const value = input[field]
     if (typeof value !== 'string') continue
 
