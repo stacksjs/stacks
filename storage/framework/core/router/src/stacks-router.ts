@@ -3269,9 +3269,10 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   const body = JSON.stringify(result) ?? ''
   const bodyLength = Buffer.byteLength(body)
   const response = canPreapplyMetadata
-    ? secureSerializedJsonResponse(body)
+    ? secureSerializedJsonResponse(body, bodyLength)
     : new Response(body, { headers: createJsonSecurityHeaders() })
-  response.headers.set('Content-Length', String(bodyLength))
+  if (!canPreapplyMetadata)
+    response.headers.set('Content-Length', String(bodyLength))
   if (linkHeader)
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {

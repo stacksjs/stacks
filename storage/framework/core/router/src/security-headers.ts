@@ -29,6 +29,10 @@ let _isDisabledCache: boolean | undefined
 let _cspCache: { header: string, value: string } | null | undefined
 let _headerTemplateCache: Headers | undefined
 let _jsonHeaderTemplateCache: Headers | undefined
+// Fixed-size warm cache: repeated JSON shapes avoid a native Headers.set(),
+// while varied response sizes cannot grow process memory without bound.
+let _jsonLengthHeaderTemplateCache: Map<number, Headers> | undefined
+const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
 
 function isProduction(): boolean {
   if (_isProductionCache !== undefined)
@@ -148,8 +152,24 @@ export function createJsonSecurityHeaders(): Headers {
 }
 
 /** Create an already-serialized JSON response from the cached template. */
-export function secureSerializedJsonResponse(body: string): Response {
-  return new Response(body, { headers: jsonSecurityHeadersTemplate() })
+export function secureSerializedJsonResponse(body: string, bodyLength?: number): Response {
+  const baseHeaders = jsonSecurityHeadersTemplate()
+  if (bodyLength === undefined)
+    return new Response(body, { headers: baseHeaders })
+
+  const templates = _jsonLengthHeaderTemplateCache ??= new Map()
+  let headers = templates.get(bodyLength)
+  if (!headers && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
+    headers = new Headers(baseHeaders)
+    headers.set('Content-Length', String(bodyLength))
+    templates.set(bodyLength, headers)
+  }
+  if (headers)
+    return new Response(body, { headers })
+
+  const response = new Response(body, { headers: baseHeaders })
+  response.headers.set('Content-Length', String(bodyLength))
+  return response
 }
 
 /** Test helper — reset the cached env-derived flags. */
@@ -159,4 +179,5 @@ export function __resetSecurityHeadersCache(): void {
   _cspCache = undefined
   _headerTemplateCache = undefined
   _jsonHeaderTemplateCache = undefined
+  _jsonLengthHeaderTemplateCache = undefined
 }

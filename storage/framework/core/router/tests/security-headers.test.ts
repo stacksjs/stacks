@@ -156,13 +156,25 @@ describe('applySecurityHeaders', () => {
   })
 
   test('keeps cached templates isolated from response header mutations', () => {
-    const serialized = secureSerializedJsonResponse('{"ok":true}')
+    const serialized = secureSerializedJsonResponse('{"ok":true}', 11)
     serialized.headers.set('X-Frame-Options', 'DENY')
     serialized.headers.delete('Content-Type')
     serialized.headers.delete('Vary')
+    serialized.headers.set('Content-Length', '999')
 
-    expect(secureSerializedJsonResponse('{"ok":true}').headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
-    expect(secureSerializedJsonResponse('{"ok":true}').headers.get('Content-Type')).toBe('application/json;charset=utf-8')
-    expect(secureSerializedJsonResponse('{"ok":true}').headers.get('Vary')).toBe('Accept-Encoding')
+    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
+    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Content-Type')).toBe('application/json;charset=utf-8')
+    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Vary')).toBe('Accept-Encoding')
+    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Content-Length')).toBe('11')
+  })
+
+  test('resets length templates with the environment-derived headers', () => {
+    process.env.STACKS_CSP = "default-src 'self'"
+    __resetSecurityHeadersCache()
+    expect(secureSerializedJsonResponse('{}', 2).headers.get('Content-Security-Policy')).toBe("default-src 'self'")
+
+    delete process.env.STACKS_CSP
+    __resetSecurityHeadersCache()
+    expect(secureSerializedJsonResponse('{}', 2).headers.get('Content-Security-Policy')).toBeNull()
   })
 })
