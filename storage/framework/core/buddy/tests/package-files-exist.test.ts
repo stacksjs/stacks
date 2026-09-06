@@ -89,6 +89,63 @@ describe('package manifests', () => {
     expect(missing.sort()).toEqual([])
   })
 
+  it('resolve every concrete `exports` subpath to a file that exists', () => {
+    /*
+     * `@stacksjs/testing` exported `./database` and `./dynamodb` at
+     * `dist/database.js` and `dist/dynamodb.js`, and its build had one
+     * entrypoint. Both subpaths resolved to nothing, so
+     * `import { refreshDatabase } from '@stacksjs/testing/database'` could
+     * never work from an installed package - recorded in
+     * `commerce/src/tests/setup.ts` as "pre-existing breakage" and worked
+     * around by not importing it.
+     *
+     * Pattern keys and targets (`./*`) are skipped: a wildcard is allowed to
+     * match nothing today.
+     */
+    const unresolvable: string[] = []
+
+    for (const entry of readdirSync(coreDir)) {
+      const pkgDir = join(coreDir, entry)
+      if (!statSync(pkgDir).isDirectory() || !existsSync(join(pkgDir, 'dist')))
+        continue
+
+      const manifestPath = join(pkgDir, 'package.json')
+      if (!existsSync(manifestPath))
+        continue
+
+      let manifest: { name?: string, private?: boolean, exports?: Record<string, unknown> }
+      try {
+        manifest = JSON.parse(readFileSync(manifestPath, 'utf-8'))
+      }
+      catch {
+        continue
+      }
+
+      if (!manifest.name || manifest.private || !manifest.exports)
+        continue
+
+      for (const [key, value] of Object.entries(manifest.exports)) {
+        if (key.includes('*'))
+          continue
+
+        const targets = typeof value === 'string'
+          ? [value]
+          : Object.values(value as Record<string, unknown>).filter((v): v is string => typeof v === 'string')
+
+        for (const target of targets) {
+          if (target.includes('*'))
+            continue
+
+          const rel = target.startsWith('./') ? target.slice(2) : target
+          if (!existsSync(join(pkgDir, rel)))
+            unresolvable.push(`${manifest.name}: ${key} -> ${target}`)
+        }
+      }
+    }
+
+    expect([...new Set(unresolvable)].sort()).toEqual([])
+  })
+
   it('name no entry point that is never built', () => {
     /*
      * `@stacksjs/validation` carried `main: dist/index.cjs` and nothing emits a
