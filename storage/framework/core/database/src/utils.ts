@@ -1362,6 +1362,30 @@ function resolveDeferredSqliteTerminal(
   }
 }
 
+function runDeferredSqliteAggregate(
+  name: 'count' | 'sum' | 'avg' | 'min' | 'max',
+  args: unknown[],
+  emptyValue: unknown,
+  materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
+  buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
+): Promise<unknown> {
+  const column = args[0]
+  const acceptsNoColumn = name === 'count' && args.length === 0
+  if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column))) {
+    const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => Promise<unknown>>
+    return builder[name].call(builder, ...args)
+  }
+
+  try {
+    const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
+    const value = buildStatement(false, expression).executeSync()[0]?.aggregate ?? emptyValue
+    return Promise.resolve(name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value)
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
+}
+
 /**
  * Build the common SQLite SELECT shape without allocating bun-query-builder's
  * complete relationship, aggregate, window, pagination, and dynamic-where API.
@@ -1500,28 +1524,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (rowOffset !== undefined)
       query += ` OFFSET ${rowOffset}`
     return instance.unsafe(query, params) as unknown as UnsafeReturn
-  }
-
-  const runAggregate = (
-    name: 'count' | 'sum' | 'avg' | 'min' | 'max',
-    args: unknown[],
-    emptyValue: unknown,
-  ): Promise<unknown> => {
-    const column = args[0]
-    const acceptsNoColumn = name === 'count' && args.length === 0
-    if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column))) {
-      const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => Promise<unknown>>
-      return builder[name].call(builder, ...args)
-    }
-
-    try {
-      const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
-      const value = buildStatement(false, expression).executeSync()[0]?.aggregate ?? emptyValue
-      return Promise.resolve(name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value)
-    }
-    catch (error) {
-      return Promise.reject(error)
-    }
   }
 
   /*
@@ -1814,19 +1816,19 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     count(...args: unknown[]) {
-      return runAggregate('count', args, 0)
+      return runDeferredSqliteAggregate('count', args, 0, materialize, buildStatement)
     },
     sum(...args: unknown[]) {
-      return runAggregate('sum', args, 0)
+      return runDeferredSqliteAggregate('sum', args, 0, materialize, buildStatement)
     },
     avg(...args: unknown[]) {
-      return runAggregate('avg', args, 0)
+      return runDeferredSqliteAggregate('avg', args, 0, materialize, buildStatement)
     },
     min(...args: unknown[]) {
-      return runAggregate('min', args, null)
+      return runDeferredSqliteAggregate('min', args, null, materialize, buildStatement)
     },
     max(...args: unknown[]) {
-      return runAggregate('max', args, null)
+      return runDeferredSqliteAggregate('max', args, null, materialize, buildStatement)
     },
     pluck(...args: unknown[]) {
       if (args.length !== 1) {
