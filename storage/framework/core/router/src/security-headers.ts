@@ -82,20 +82,20 @@ export function applySecurityHeaders(headers: Headers): void {
   if (isDisabled())
     return
 
-  if (!headers.has('X-Content-Type-Options'))
+  if (headers.get('X-Content-Type-Options') === null)
     headers.set('X-Content-Type-Options', 'nosniff')
 
-  if (!headers.has('X-Frame-Options'))
+  if (headers.get('X-Frame-Options') === null)
     headers.set('X-Frame-Options', 'SAMEORIGIN')
 
-  if (!headers.has('Referrer-Policy'))
+  if (headers.get('Referrer-Policy') === null)
     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
 
-  if (isProduction() && !headers.has('Strict-Transport-Security'))
+  if (isProduction() && headers.get('Strict-Transport-Security') === null)
     headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
 
   const csp = resolveCsp()
-  if (csp && !headers.has(csp.header))
+  if (csp && headers.get(csp.header) === null)
     headers.set(csp.header, csp.value)
 }
 
