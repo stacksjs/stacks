@@ -1390,8 +1390,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   proxy = new Proxy(base as Record<string | symbol, unknown>, {
-    get(target, property, receiver) {
-      const value = Reflect.get(target, property, receiver)
+    get(target, property) {
+      const value = target[property]
       if (value !== undefined)
         return value
       const builder = materialize() as unknown as Record<string | symbol, unknown>
