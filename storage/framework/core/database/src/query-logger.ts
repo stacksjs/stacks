@@ -70,6 +70,71 @@ interface QueryLogRecord {
 // drops unrelated requests while an asynchronous INSERT is still pending.
 const queryLogContext = new AsyncLocalStorage<boolean>()
 
+interface PendingQueryLog {
+  record: QueryLogRecord
+  resolve: () => void
+}
+
+const QUERY_LOG_BATCH_SIZE = 100
+const pendingQueryLogs: PendingQueryLog[] = []
+let queryLogFlushScheduled = false
+let queryLogFlushInFlight = false
+
+/** Persist query diagnostics in bounded multi-row inserts. */
+function enqueueQueryLog(record: QueryLogRecord): Promise<void> {
+  const settled = new Promise<void>((resolve) => {
+    pendingQueryLogs.push({ record, resolve })
+  })
+
+  if (pendingQueryLogs.length >= QUERY_LOG_BATCH_SIZE) {
+    void flushQueuedQueryLogs()
+  }
+  else if (!queryLogFlushScheduled) {
+    queryLogFlushScheduled = true
+    setImmediate(() => {
+      queryLogFlushScheduled = false
+      void flushQueuedQueryLogs()
+    })
+  }
+
+  return settled
+}
+
+async function flushQueuedQueryLogs(): Promise<void> {
+  if (queryLogFlushInFlight)
+    return
+
+  queryLogFlushInFlight = true
+  try {
+    while (pendingQueryLogs.length > 0) {
+      const batch = pendingQueryLogs.splice(0, QUERY_LOG_BATCH_SIZE)
+      const recordsByShape = Map.groupBy(
+        batch.map(item => item.record),
+        record => Object.keys(record).join('\0'),
+      )
+      for (const records of recordsByShape.values()) {
+        const stored = await queryLogContext.run(true, () => storeQueryLogs(records, records.length === 1))
+        if (!stored) {
+          for (const record of records)
+            await queryLogContext.run(true, () => storeQueryLogs([record]))
+        }
+      }
+      for (const item of batch)
+        item.resolve()
+    }
+  }
+  finally {
+    queryLogFlushInFlight = false
+    if (pendingQueryLogs.length > 0 && !queryLogFlushScheduled) {
+      queryLogFlushScheduled = true
+      setImmediate(() => {
+        queryLogFlushScheduled = false
+        void flushQueuedQueryLogs()
+      })
+    }
+  }
+}
+
 /**
  * Process an executed query and store it in the database
  */
@@ -114,7 +179,7 @@ export async function logQuery(event: LogEvent): Promise<void> {
 
     // Deferred query hooks inherit this context, so the INSERT cannot log
     // itself while other requests remain free to record their own queries.
-    await queryLogContext.run(true, () => storeQueryLog(logRecord))
+    await enqueueQueryLog(logRecord)
 
     // Log slow or failed queries to the application log
     if (status !== 'completed') {
@@ -505,15 +570,28 @@ function generateOptimizationSuggestions(explainResult: any, logRecord: QueryLog
 /**
  * Store the query log in the database
  */
-async function storeQueryLog(logRecord: QueryLogRecord): Promise<void> {
+async function storeQueryLogs(logRecords: QueryLogRecord[], reportFailure = true): Promise<boolean> {
   try {
-    await db.insertInto('query_logs').values(logRecord as unknown as Record<string, unknown>).execute()
+    const values = logRecords as unknown as Record<string, unknown>[]
+    if (values.length === 1) {
+      await db.insertInto('query_logs').values(values).execute()
+    }
+    else {
+      await db.transaction(async (rawTrx) => {
+        const trx = rawTrx as unknown as typeof db
+        await trx.insertInto('query_logs').values(values).execute()
+      })
+    }
+    return true
   }
   catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    if (/no such table|does not exist|doesn't exist/i.test(message) && /query_logs/i.test(message))
-      log.debug('Query logging will start after the query_logs table is migrated.')
-    else
-      log.error('Failed to store query log:', error)
+    if (reportFailure) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (/no such table|does not exist|doesn't exist/i.test(message) && /query_logs/i.test(message))
+        log.debug('Query logging will start after the query_logs table is migrated.')
+      else
+        log.error('Failed to store query log:', error)
+    }
+    return false
   }
 }

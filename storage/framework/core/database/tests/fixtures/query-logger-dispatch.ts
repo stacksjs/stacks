@@ -1,5 +1,6 @@
 const { config, overridesReady } = await import('@stacksjs/config')
 const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection } = await import('../../src/utils')
+const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 
 await overridesReady
 await ensureDatabaseConfigLoaded()
@@ -80,24 +81,39 @@ try {
   await queryWithDiagnostics('query_logger_missing_table', true)
   await queryWithDiagnostics('query_logger_after_error')
   if (persistence) {
+    let queryLogInsertStatements = 0
+    const stopCountingLogInserts = registerPersistentQueryHooks({
+      onQueryEnd(event) {
+        if (/insert\s+into\s+[`"]?query_logs/i.test(event.sql))
+          queryLogInsertStatements++
+      },
+    })
     // The logger is fully loaded here. A process-wide recursion guard can
     // drop every other real query while its preceding log INSERT is pending.
-    for (const mode of ['sequential', 'concurrent']) {
-      const marker = `query_logger_burst_${mode}`
-      const query = () => db.selectFrom('query_logger_fixture').select([`id as ${marker}`]).execute()
-      if (mode === 'sequential') {
-        for (let i = 0; i < 200; i++) await query()
+    try {
+      for (const mode of ['sequential', 'concurrent']) {
+        if (mode === 'concurrent') queryLogInsertStatements = 0
+        const marker = `query_logger_burst_${mode}`
+        const query = () => db.selectFrom('query_logger_fixture').select([`id as ${marker}`]).execute()
+        if (mode === 'sequential') {
+          for (let i = 0; i < 200; i++) await query()
+        }
+        else {
+          await Promise.all(Array.from({ length: 200 }, query))
+        }
+        await Bun.sleep(0)
+        const records = await db.unsafe('SELECT query FROM query_logs').execute()
+        const matching = records.filter(row => String(row.query).includes(marker))
+        if (matching.length !== 200)
+          throw new Error(`Lost ${mode} query logs: expected 200, received ${matching.length}`)
+        if (records.some(row => /insert\s+into/i.test(String(row.query))))
+          throw new Error('Query logging recursively persisted its own INSERT')
+        if (mode === 'concurrent' && queryLogInsertStatements >= matching.length)
+          throw new Error(`Concurrent query logs were not batched: ${queryLogInsertStatements} INSERTs for ${matching.length} rows`)
       }
-      else {
-        await Promise.all(Array.from({ length: 200 }, query))
-      }
-      await Bun.sleep(0)
-      const records = await db.unsafe('SELECT query FROM query_logs').execute()
-      const matching = records.filter(row => String(row.query).includes(marker))
-      if (matching.length !== 200)
-        throw new Error(`Lost ${mode} query logs: expected 200, received ${matching.length}`)
-      if (records.some(row => /insert\s+into/i.test(String(row.query))))
-        throw new Error('Query logging recursively persisted its own INSERT')
+    }
+    finally {
+      stopCountingLogInserts()
     }
 
     await db.unsafe('DROP TABLE query_logs').execute()
