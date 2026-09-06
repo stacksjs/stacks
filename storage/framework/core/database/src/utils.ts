@@ -1473,6 +1473,19 @@ function fastSqliteDatabase(instance: RawQueryBuilder): FastSqliteDatabase | und
   return resolved ?? undefined
 }
 
+function runFastSqliteSql(
+  instance: RawQueryBuilder,
+  sqliteDatabase: FastSqliteDatabase | undefined,
+  sql: string,
+  params?: unknown[],
+): UnsafeRow[] {
+  if (sqliteDatabase) {
+    const statement = sqliteDatabase.query(sql)
+    return params ? statement.all(...params) : statement.all()
+  }
+  return (instance.unsafe(sql, params) as unknown as UnsafeReturn).executeSync()
+}
+
 /**
  * Build the common SQLite SELECT shape without allocating bun-query-builder's
  * complete relationship, aggregate, window, pagination, and dynamic-where API.
@@ -1574,16 +1587,12 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
-  const runSql = (sql: string, params: unknown[] = []): UnsafeRow[] => sqliteDatabase
-    ? sqliteDatabase.query(sql).all(...params)
-    : (instance.unsafe(sql, params) as unknown as UnsafeReturn).executeSync()
-
   const executeStatement = (firstOnly = false, selection?: string): UnsafeRow[] => {
     const selected = selection ?? selectedColumnsSql ?? '*'
     const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
       const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
-      return runSql(`${selectKeyword} ${selected} FROM ${table}${limit}`)
+      return runFastSqliteSql(instance, sqliteDatabase, `${selectKeyword} ${selected} FROM ${table}${limit}`)
     }
     if (
       predicateColumn !== undefined
@@ -1608,7 +1617,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
           const statement = cached.statement ??= sqliteDatabase.query(cached.sql)
           return statement.all(predicateValue)
         }
-        return runSql(cached.sql, [predicateValue])
+        return runFastSqliteSql(instance, sqliteDatabase, cached.sql, [predicateValue])
       }
       const sql = `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ?${effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`}`
       lastParameterizedSqliteSelect = {
@@ -1624,7 +1633,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       return lastParameterizedSqliteSelect.statement
         ? lastParameterizedSqliteSelect.statement.all(predicateValue)
-        : runSql(sql, [predicateValue])
+        : runFastSqliteSql(instance, sqliteDatabase, sql, [predicateValue])
     }
     let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
@@ -1661,7 +1670,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       query += ` LIMIT ${effectiveLimit}`
     if (rowOffset !== undefined)
       query += ` OFFSET ${rowOffset}`
-    return runSql(query, params)
+    return runFastSqliteSql(instance, sqliteDatabase, query, params)
   }
 
   /*
