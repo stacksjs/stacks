@@ -152,7 +152,7 @@ export function createJsonSecurityHeaders(): Headers {
 }
 
 /** Create an already-serialized JSON response from the cached template. */
-export function secureSerializedJsonResponse(body: string, bodyLength?: number): Response {
+export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string): Response {
   const baseHeaders = jsonSecurityHeadersTemplate()
   if (bodyLength === undefined)
     return new Response(body, { headers: baseHeaders })
@@ -164,11 +164,20 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number):
     headers.set('Content-Length', String(bodyLength))
     templates.set(bodyLength, headers)
   }
-  if (headers)
+  if (headers) {
+    // Response copies Headers synchronously. Updating the private template
+    // before that copy is cheaper than mutating the constructed response.
+    if (requestId)
+      headers.set('X-Request-ID', requestId)
+    else
+      headers.delete('X-Request-ID')
     return new Response(body, { headers })
+  }
 
   const response = new Response(body, { headers: baseHeaders })
   response.headers.set('Content-Length', String(bodyLength))
+  if (requestId)
+    response.headers.set('X-Request-ID', requestId)
   return response
 }
 

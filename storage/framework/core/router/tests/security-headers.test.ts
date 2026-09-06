@@ -177,4 +177,14 @@ describe('applySecurityHeaders', () => {
     __resetSecurityHeadersCache()
     expect(secureSerializedJsonResponse('{}', 2).headers.get('Content-Security-Policy')).toBeNull()
   })
+
+  test('isolates request ids stored in a shared length template', () => {
+    const first = secureSerializedJsonResponse('{}', 2, 'request-one')
+    const second = secureSerializedJsonResponse('{}', 2, 'request-two')
+    const absent = secureSerializedJsonResponse('{}', 2)
+
+    expect(first.headers.get('X-Request-ID')).toBe('request-one')
+    expect(second.headers.get('X-Request-ID')).toBe('request-two')
+    expect(absent.headers.get('X-Request-ID')).toBeNull()
+  })
 })
