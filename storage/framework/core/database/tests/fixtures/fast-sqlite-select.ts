@@ -179,6 +179,15 @@ async function supportedMatrix() {
       .whereNotLike('name', 'g%')
       .orderBy('id')
       .execute(),
+    listPredicates: await db
+      .selectFrom('fast_items')
+      .select(['id', 'name'])
+      .whereIn('id', [1, 2, 3])
+      .whereNotIn('name', ['gamma'])
+      .orderBy('id')
+      .execute(),
+    emptyIn: await db.selectFrom('fast_items').whereIn('id', []).execute(),
+    emptyNotIn: await db.selectFrom('fast_items').whereNotIn('id', []).limit(1).execute(),
     get: await db.selectFrom('fast_items').select('name').where('active', '=', 1).limit(1).get(),
     first: await db.selectFrom('fast_items').select('name').where('active', '=', 1).first(),
     missingFirst: await db.selectFrom('fast_items').where('id', '=', 999).first(),
