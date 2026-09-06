@@ -2867,24 +2867,25 @@ function getRequestInput(
   let input: Record<string, unknown> = {}
   let mayNeedCoercion = false
 
-  // Get query parameters (always strings on the wire). Reuse the query
-  // already parsed into `req.query` by enhanceRequest when present; only fall
-  // back to a fresh `new URL()` parse if this runs before enhancement
-  // (defensive — the action path always enhances first). Saves a full URL
-  // parse on every validated request.
-  const q = req.query
-  if (q) {
-    for (const key in q) {
-      input[key] = q[key]
-      mayNeedCoercion = true
+  // Get query parameters (always strings on the wire). Leave bun-router's
+  // lazy query accessor untouched when the URL has no query string. When one
+  // is present, reuse the parsed `req.query`; only fall back to `new URL()` if
+  // this runs before enhancement (the action path always enhances first).
+  if (req.url.includes('?')) {
+    const q = req.query
+    if (q) {
+      for (const key in q) {
+        input[key] = q[key]
+        mayNeedCoercion = true
+      }
     }
-  }
-  else {
-    const url = new URL(req.url)
-    url.searchParams.forEach((value, key) => {
-      input[key] = value
-      mayNeedCoercion = true
-    })
+    else {
+      const url = new URL(req.url)
+      url.searchParams.forEach((value, key) => {
+        input[key] = value
+        mayNeedCoercion = true
+      })
+    }
   }
 
   // Get route params if available (also strings — bun-router doesn't
