@@ -81,7 +81,7 @@
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-validation": "^0.5.6",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.2.67"
+    "bun-query-builder": "^0.2.68"
   },
   "peerDependencies": {
     "@stacksjs/auth": "workspace:*",
