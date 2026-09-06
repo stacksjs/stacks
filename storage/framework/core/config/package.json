@@ -58,11 +58,11 @@
     "@stacksjs/events": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/tunnel": "workspace:*",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.55"
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

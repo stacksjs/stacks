@@ -72,11 +72,11 @@
     "@stacksjs/composables": "workspace:*",
     "@stacksjs/datetime": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/stx": "^0.2.274",
+    "@stacksjs/stx": "^0.2.278",
     "bun-query-builder": "^0.2.68"
   },
   "peerDependencies": {
-    "@stripe/stripe-js": "^9.10.0"
+    "@stripe/stripe-js": "^9.15.0"
   },
   "peerDependenciesMeta": {
     "@stripe/stripe-js": {
@@ -85,7 +85,7 @@
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "@stripe/stripe-js": "^9.10.0",
-    "better-dx": "^0.2.24"
+    "@stripe/stripe-js": "^9.15.0",
+    "better-dx": "^0.2.25"
   }
 }

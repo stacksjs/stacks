@@ -54,9 +54,9 @@
   },
   "dependencies": {
     "@iconify-json/f7": "^1.2.2",
-    "@iconify-json/hugeicons": "^1.2.27",
+    "@iconify-json/hugeicons": "^1.2.34",
     "@stacksjs/mobile": "^0.74.27",
-    "@stacksjs/sanitizer": "^0.2.113",
+    "@stacksjs/sanitizer": "^0.2.278",
     "ts-qr-codes": "^0.1.8"
   }
 }
