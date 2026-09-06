@@ -2887,6 +2887,10 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
 type ActionRuleTest = (value: unknown) => boolean
 type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?]
 const EMPTY_VALIDATION_ERRORS = Object.freeze({}) as Record<string, string[]>
+const VALID_ACTION_VALIDATION_RESULT = Object.freeze({
+  valid: true,
+  errors: EMPTY_VALIDATION_ERRORS,
+}) as ValidationResult
 
 function propertyOwner(value: object, property: PropertyKey): object | undefined {
   let current: object | null = value
@@ -2929,7 +2933,7 @@ function validateActionInputSync(
   validations: ActionValidations,
   compiledEntries?: ActionValidationEntry[],
   mayHaveRouteParams = true,
-  reuseEmptyErrors = false,
+  reuseSuccessResult = false,
 ): ValidationResult {
   let errors: Record<string, string[]> | undefined
   const validated: Record<string, unknown> = {}
@@ -3026,9 +3030,12 @@ function validateActionInputSync(
     ;(req as EnhancedRequest & { _validatedInput?: Record<string, unknown> })._validatedInput = validated
   }
 
+  if (valid && reuseSuccessResult)
+    return VALID_ACTION_VALIDATION_RESULT
+
   return {
     valid,
-    errors: errors ?? (reuseEmptyErrors ? EMPTY_VALIDATION_ERRORS : {}),
+    errors: errors ?? {},
   }
 }
 

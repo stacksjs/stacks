@@ -316,6 +316,7 @@ describe('path-param coercion (stacksjs/stacks#1865)', () => {
     const first = await validateActionInput(makeRequest('http://localhost/items/1', { id: '1' }), validations)
     const second = await validateActionInput(makeRequest('http://localhost/items/2', { id: '2' }), validations)
 
+    expect(first).not.toBe(second)
     first.errors.extra = ['caller annotation']
     expect(second.errors).toEqual({})
   })
