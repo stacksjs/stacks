@@ -62,10 +62,22 @@ describe('package manifests', () => {
          * copied from, or this reports `routes` missing on any checkout that
          * has not built - the published tarball carries all 9 route files.
          */
+        /*
+         * `core/defaults` ships nothing that exists before a build:
+         * `core/defaults/build.ts` copies `storage/framework/defaults/*` into
+         * it, and assembles `project/` from repo-root files that live under no
+         * single directory. So `routes` is checkable against the source tree,
+         * `project` is checkable against nothing at all, and on a fresh
+         * checkout neither is present.
+         *
+         * Checked where it can be, skipped where it cannot. The published
+         * tarball carries all of it - 2235 files including the 9 routes.
+         */
+        const assembledAtBuild = entry === 'defaults' && file === 'project'
+        if (assembledAtBuild)
+          continue
+
         const candidates = entry === 'defaults'
-          // Some of its entries are copied from `storage/framework/defaults`
-          // (`routes`, `app`, `resources`), and `project/` is assembled from
-          // repo-root files by the same script. Either location satisfies it.
           ? [join(pkgDir, file), join(root, 'storage/framework/defaults', file)]
           : [join(pkgDir, file)]
 
