@@ -44,7 +44,7 @@ export function isApiRequest(req: Request | { headers: Headers }): boolean {
   const headers = req.headers
 
   const contentType = headers.get('content-type') || ''
-  if (JSON_CONTENT_TYPE.test(contentType)) return true
+  if (contentType === 'application/json' || JSON_CONTENT_TYPE.test(contentType)) return true
 
   // Explicit browser navigation — never JSON-shaped, regardless of Accept.
   // Browsers also send this for top-level redirects, so it's a stronger

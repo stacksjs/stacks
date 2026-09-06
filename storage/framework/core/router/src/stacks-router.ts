@@ -3835,7 +3835,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
   const contentType = req.headers.get('content-type') || ''
 
   try {
-    if (JSON_CONTENT_TYPE.test(contentType)) {
+    if (contentType === 'application/json' || JSON_CONTENT_TYPE.test(contentType)) {
       // Empty body on a JSON-typed POST is common (clients sending only
       // query/path params). Land as `{}` so `request.get('x')` returns
       // undefined instead of throwing, and validation reports the missing
