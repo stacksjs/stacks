@@ -1335,6 +1335,25 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
+  const executeRows = (): Promise<UnsafeRow[]> => {
+    const selected = columns?.join(', ') ?? '*'
+    let query = `SELECT ${selected} FROM ${table}`
+    const params: unknown[] = []
+    if (predicateColumn !== undefined) {
+      query += ` WHERE ${predicateColumn} ${predicateOperator} ?`
+      params.push(predicateValue)
+      if (additionalPredicates) {
+        query += ` AND ${additionalPredicates.map((predicate) => {
+          params.push(predicate.value)
+          return `${predicate.column} ${predicate.operator} ?`
+        }).join(' AND ')}`
+      }
+    }
+    if (rowLimit !== undefined)
+      query += ` LIMIT ${rowLimit}`
+    return (instance.unsafe(query, params) as unknown as UnsafeReturn).execute()
+  }
+
   const base = {
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
@@ -1371,23 +1390,9 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowLimit = value
       return proxy
     },
-    execute() {
-      const selected = columns?.join(', ') ?? '*'
-      let query = `SELECT ${selected} FROM ${table}`
-      const params: unknown[] = []
-      if (predicateColumn !== undefined) {
-        query += ` WHERE ${predicateColumn} ${predicateOperator} ?`
-        params.push(predicateValue)
-        if (additionalPredicates) {
-          query += ` AND ${additionalPredicates.map((predicate) => {
-            params.push(predicate.value)
-            return `${predicate.column} ${predicate.operator} ?`
-          }).join(' AND ')}`
-        }
-      }
-      if (rowLimit !== undefined)
-        query += ` LIMIT ${rowLimit}`
-      return (instance.unsafe(query, params) as unknown as UnsafeReturn).execute()
+    execute: executeRows,
+    executeTakeFirst() {
+      return executeRows().then(rows => rows[0])
     },
   }
 

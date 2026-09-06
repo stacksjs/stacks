@@ -35,6 +35,23 @@ const fast = await db
 if (JSON.stringify(fast) !== JSON.stringify([{ id: 2, name: 'beta' }]))
   throw new Error(`Unexpected lightweight SELECT result: ${JSON.stringify(fast)}`)
 
+const first = await db
+  .selectFrom('fast_items')
+  .select(['id', 'name'])
+  .where('id', '=', 2)
+  .executeTakeFirst()
+
+if (JSON.stringify(first) !== JSON.stringify({ id: 2, name: 'beta' }))
+  throw new Error(`Unexpected lightweight first-row result: ${JSON.stringify(first)}`)
+
+const missing = await db
+  .selectFrom('fast_items')
+  .where('id', '=', 999)
+  .executeTakeFirst()
+
+if (missing !== undefined)
+  throw new Error(`Missing lightweight first-row query returned: ${JSON.stringify(missing)}`)
+
 const aliased = await db
   .selectFrom('fast_items')
   .select('name AS label')
