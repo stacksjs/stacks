@@ -5449,11 +5449,13 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
         const dispatch = directDispatch ?? handler
         methods[method] = (request) => {
           if (safeMethod) {
-            ;(request as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT] = secureTransport
             const cookie = request.headers.get('cookie') ?? ''
+            const markedRequest = request as unknown as Record<symbol, unknown>
             if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {
-              const markedRequest = request as unknown as Record<symbol, unknown>
               markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+            }
+            else {
+              markedRequest[CSRF_SECURE_TRANSPORT] = secureTransport
             }
           }
           const response = dispatchInRoutingContext(dispatch, request)
