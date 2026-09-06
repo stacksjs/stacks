@@ -120,22 +120,40 @@ export function applySecurityHeadersToRecord(headers: Record<string, string>): v
     headers[csp.header] = csp.value
 }
 
-/** Clone the resolved defaults without rebuilding their JS record each time. */
-export function createSecurityHeaders(): Headers {
+function securityHeadersTemplate(): Headers {
   if (!_headerTemplateCache) {
     _headerTemplateCache = new Headers()
     applySecurityHeaders(_headerTemplateCache, true)
   }
-  return new Headers(_headerTemplateCache)
+  return _headerTemplateCache
+}
+
+/** Clone the resolved defaults without rebuilding their JS record each time. */
+export function createSecurityHeaders(): Headers {
+  return new Headers(securityHeadersTemplate())
+}
+
+function jsonSecurityHeadersTemplate(): Headers {
+  if (!_jsonHeaderTemplateCache) {
+    _jsonHeaderTemplateCache = new Headers(securityHeadersTemplate())
+    _jsonHeaderTemplateCache.set('Content-Type', 'application/json;charset=utf-8')
+  }
+  return _jsonHeaderTemplateCache
 }
 
 /** Clone the resolved defaults with the invariant JSON content type included. */
 export function createJsonSecurityHeaders(): Headers {
-  if (!_jsonHeaderTemplateCache) {
-    _jsonHeaderTemplateCache = createSecurityHeaders()
-    _jsonHeaderTemplateCache.set('Content-Type', 'application/json;charset=utf-8')
-  }
-  return new Headers(_jsonHeaderTemplateCache)
+  return new Headers(jsonSecurityHeadersTemplate())
+}
+
+/** Let the native response constructor clone the cached security template. */
+export function secureJsonResponse(result: unknown): Response {
+  return Response.json(result, { headers: securityHeadersTemplate() })
+}
+
+/** Create an already-serialized JSON response from the cached template. */
+export function secureSerializedJsonResponse(body: string): Response {
+  return new Response(body, { headers: jsonSecurityHeadersTemplate() })
 }
 
 /** Test helper — reset the cached env-derived flags. */

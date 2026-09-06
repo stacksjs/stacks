@@ -208,7 +208,7 @@ function resolveDefaultsPath(rel: string): string {
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
-import { applySecurityHeaders, createJsonSecurityHeaders, createSecurityHeaders } from './security-headers'
+import { applySecurityHeaders, createJsonSecurityHeaders, secureJsonResponse, secureSerializedJsonResponse } from './security-headers'
 import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pagination'
 
 
@@ -3059,20 +3059,16 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   const encoding = req.headers.get('accept-encoding')
   const usesNativeJson = !encoding || encoding === 'identity'
   const canPreapplyMetadata = !req._responseHeaders
-  const responseHeaders = canPreapplyMetadata
-    ? (usesNativeJson ? createSecurityHeaders() : createJsonSecurityHeaders())
-    : new Headers()
-  if (linkHeader)
-    responseHeaders.set('Link', linkHeader)
-
-  if (canPreapplyMetadata) {
-    if (req._requestId)
-      responseHeaders.set('X-Request-ID', req._requestId)
-  }
 
   if (usesNativeJson) {
-    const response = Response.json(result, { headers: responseHeaders })
+    const response = canPreapplyMetadata
+      ? secureJsonResponse(result)
+      : Response.json(result)
+    if (linkHeader)
+      response.headers.set('Link', linkHeader)
     if (canPreapplyMetadata) {
+      if (req._requestId)
+        response.headers.set('X-Request-ID', req._requestId)
       ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
     }
     return response
@@ -3082,11 +3078,15 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // the response stream just to check its threshold. Count UTF-8 bytes, not
   // JavaScript characters; a custom toJSON may also produce an empty body.
   const body = JSON.stringify(result) ?? ''
-  if (!canPreapplyMetadata)
-    responseHeaders.set('Content-Type', 'application/json;charset=utf-8')
-  responseHeaders.set('Content-Length', String(Buffer.byteLength(body)))
-  const response = new Response(body, { headers: responseHeaders })
+  const response = canPreapplyMetadata
+    ? secureSerializedJsonResponse(body)
+    : new Response(body, { headers: createJsonSecurityHeaders() })
+  response.headers.set('Content-Length', String(Buffer.byteLength(body)))
+  if (linkHeader)
+    response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
+    if (req._requestId)
+      response.headers.set('X-Request-ID', req._requestId)
     ;(response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
   }
   return response
