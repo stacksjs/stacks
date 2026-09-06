@@ -5382,15 +5382,21 @@ function wrapNativeRoutesForDatabaseContext(router: Router, runInRoutingContext:
               markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
             }
           }
-          const finish = (response: Response): Response | Promise<Response> => {
+          const response = runInRoutingContext(() => dispatch(request))
+          if (response instanceof Response) {
             const frameworkResponse = response as unknown as Record<symbol, unknown>
             const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
             if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
               return response
             return applyResponseCompression(response, request, compression)
           }
-          const response = runInRoutingContext(() => dispatch(request))
-          return response instanceof Response ? finish(response) : response.then(finish)
+          return response.then((resolved) => {
+            const frameworkResponse = resolved as unknown as Record<symbol, unknown>
+            const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
+            if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
+              return resolved
+            return applyResponseCompression(resolved, request, compression)
+          })
         }
       }
     }
