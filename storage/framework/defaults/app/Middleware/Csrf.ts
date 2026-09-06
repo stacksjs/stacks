@@ -125,16 +125,16 @@ function responseAlreadySeeds(response: Response): boolean {
   )
 }
 
-export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string): Response {
-  const cookieHeader = req.headers.get('cookie') || ''
-
+export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string, responseHasNoCookies = false): Response {
   // A token the router minted before rendering wins over "the header already
   // has one", because it put that value in the header itself - and the page
   // has already embedded it in every form it drew. Generating a second token
   // here would store one string in the browser while the page carries another,
   // which fails in a way indistinguishable from having no token at all.
-  if (!minted && (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token='))) {
-    return response
+  if (!minted) {
+    const cookieHeader = req.headers.get('cookie') || ''
+    if (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token='))
+      return response
   }
 
   // A token already on its way to the browser counts as present, exactly like
@@ -143,18 +143,12 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
   // and appending a second here would leave the browser storing the last
   // Set-Cookie while the page embedded the first. Two tokens fail the same way
   // no token does, and are far harder to see.
-  if (responseAlreadySeeds(response))
+  if (!responseHasNoCookies && responseAlreadySeeds(response))
     return response
 
   const token = minted || generateCsrfToken()
-  const isSecure = req.url.startsWith('https://')
-  const cookie = [
-    `${CSRF_COOKIE_NAME}=${token}`,
-    'Path=/',
-    'SameSite=Lax',
-    'Max-Age=7200',
-    isSecure ? 'Secure' : null,
-  ].filter(Boolean).join('; ')
+  const secure = req.url.startsWith('https://') ? '; Secure' : ''
+  const cookie = `${CSRF_COOKIE_NAME}=${token}; Path=/; SameSite=Lax; Max-Age=7200${secure}`
 
   // Append (not Set) so multiple Set-Cookie headers can coexist with any
   // cookies the action handler set itself.

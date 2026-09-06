@@ -2005,6 +2005,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
                 response,
                 // The value the render already embedded, when there was one.
                 (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
+                (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true,
               )
             }
           }
@@ -3776,7 +3777,7 @@ function fuseRequestEnhancements(router: Router): void {
 interface CsrfModule {
   generateCsrfToken: () => string
   CSRF_COOKIE_NAME: string
-  seedCsrfCookieIfMissing: (req: Request, res: Response, token?: string) => Response
+  seedCsrfCookieIfMissing: (req: Request, res: Response, token?: string, responseHasNoCookies?: boolean) => Response
 }
 
 let csrfModule: CsrfModule | null | undefined
