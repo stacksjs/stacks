@@ -1324,6 +1324,7 @@ const isSimpleSqliteSelection = memoizeSqliteIdentifier(SIMPLE_SQLITE_SELECTION)
 // change. Keep the cache deliberately single-entry so that locality avoids SQL
 // string assembly without retaining arbitrary application query shapes.
 let lastParameterizedSqliteSelect: {
+  instance: RawQueryBuilder
   selectKeyword: string
   selected: string
   table: string
@@ -1331,6 +1332,7 @@ let lastParameterizedSqliteSelect: {
   predicateOperator: string | undefined
   limit: number | undefined
   sql: string
+  statement?: { all: (...params: unknown[]) => UnsafeRow[] }
 } | undefined
 
 // Selection validation and rendering are also structural. Snapshot the last
@@ -1344,7 +1346,7 @@ function hasActiveQueryBuilderHooks(): boolean {
 function resolveDeferredSqliteTerminal(
   target: Record<string | symbol, unknown>,
   property: string | symbol,
-  buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
+  executeStatement: (firstOnly?: boolean, selection?: string) => UnsafeRow[],
   materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
   proxy: Record<string | symbol, unknown>,
 ): unknown {
@@ -1360,7 +1362,7 @@ function resolveDeferredSqliteTerminal(
   if (property === 'first' || property === 'executeTakeFirst') {
     const first = () => {
       try {
-        return Promise.resolve(buildStatement(true).executeSync()[0])
+        return Promise.resolve(executeStatement(true)[0])
       }
       catch (error) {
         return Promise.reject(error)
@@ -1373,7 +1375,7 @@ function resolveDeferredSqliteTerminal(
   if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
     const firstOrFail = () => {
       try {
-        const row = buildStatement(true).executeSync()[0]
+        const row = executeStatement(true)[0]
         return row === undefined
           ? Promise.reject(new Error('Record not found'))
           : Promise.resolve(row)
@@ -1390,7 +1392,7 @@ function resolveDeferredSqliteTerminal(
     const findsRow = property === 'exists'
     const check = () => {
       try {
-        return Promise.resolve((buildStatement(true).executeSync()[0] !== undefined) === findsRow)
+        return Promise.resolve((executeStatement(true)[0] !== undefined) === findsRow)
       }
       catch (error) {
         return Promise.reject(error)
@@ -1402,7 +1404,7 @@ function resolveDeferredSqliteTerminal(
   if (property === 'value') {
     const value = (column: string) => {
       try {
-        return Promise.resolve(buildStatement(true).executeSync()[0]?.[column])
+        return Promise.resolve(executeStatement(true)[0]?.[column])
       }
       catch (error) {
         return Promise.reject(error)
@@ -1413,7 +1415,7 @@ function resolveDeferredSqliteTerminal(
   }
   if (property === 'count' || property === 'sum' || property === 'avg' || property === 'min' || property === 'max') {
     const emptyValue = property === 'min' || property === 'max' ? null : 0
-    const aggregate = (...args: unknown[]) => runDeferredSqliteAggregate(property, args, emptyValue, materialize, buildStatement)
+    const aggregate = (...args: unknown[]) => runDeferredSqliteAggregate(property, args, emptyValue, materialize, executeStatement)
     target[property] = aggregate
     return aggregate
   }
@@ -1427,7 +1429,7 @@ function resolveDeferredSqliteTerminal(
 
       try {
         const column = args[0] as string
-        const rows = buildStatement().executeSync()
+        const rows = executeStatement()
         const values = new Array<unknown>(rows.length)
         for (let index = 0; index < rows.length; index++)
           values[index] = rows[index]?.[column]
@@ -1447,7 +1449,7 @@ function runDeferredSqliteAggregate(
   args: unknown[],
   emptyValue: unknown,
   materialize: () => ReturnType<RawQueryBuilder['selectFrom']>,
-  buildStatement: (firstOnly?: boolean, selection?: string) => UnsafeReturn,
+  executeStatement: (firstOnly?: boolean, selection?: string) => UnsafeRow[],
 ): Promise<unknown> {
   const column = args[0]
   const acceptsNoColumn = name === 'count' && args.length === 0
@@ -1458,12 +1460,40 @@ function runDeferredSqliteAggregate(
 
   try {
     const expression = `${name.toUpperCase()}(${acceptsNoColumn ? '*' : column}) AS aggregate`
-    const value = buildStatement(false, expression).executeSync()[0]?.aggregate ?? emptyValue
+    const value = executeStatement(false, expression)[0]?.aggregate ?? emptyValue
     return Promise.resolve(name === 'count' || name === 'sum' || name === 'avg' ? Number(value) : value)
   }
   catch (error) {
     return Promise.reject(error)
   }
+}
+
+interface FastSqliteDatabase {
+  query: (sql: string) => { all: (...params: unknown[]) => UnsafeRow[] }
+}
+
+const fastSqliteDatabaseCache = new WeakMap<object, FastSqliteDatabase | null>()
+
+/**
+ * Resolve bun-query-builder's already-bootstrapped SQLite connection.
+ *
+ * `_wrapper` is an upstream implementation detail, so every access is
+ * feature-detected and cached. A changed upstream shape falls back to
+ * `instance.unsafe()` in `runSql`; it never opens a second connection. Keeping
+ * the live handle matters for transactions because a separate read connection
+ * would not see the transaction's uncommitted writes.
+ */
+function fastSqliteDatabase(instance: RawQueryBuilder): FastSqliteDatabase | undefined {
+  if (fastSqliteDatabaseCache.has(instance))
+    return fastSqliteDatabaseCache.get(instance) ?? undefined
+
+  const sql = (instance as unknown as { sql?: { _wrapper?: { database?: unknown } } }).sql
+  const database = sql?._wrapper?.database as Partial<FastSqliteDatabase> | undefined
+  const resolved = database && typeof database.query === 'function'
+    ? database as FastSqliteDatabase
+    : null
+  fastSqliteDatabaseCache.set(instance, resolved)
+  return resolved ?? undefined
 }
 
 /**
@@ -1474,6 +1504,7 @@ function runDeferredSqliteAggregate(
  * intact for complex queries.
  */
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
+  const sqliteDatabase = fastSqliteDatabase(instance)
   let selectKeyword = 'SELECT'
   let columns: string[] | undefined
   let selectedColumnsSql: string | undefined
@@ -1566,12 +1597,16 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   }
 
   let proxy: Record<string | symbol, unknown>
-  const buildStatement = (firstOnly = false, selection?: string): UnsafeReturn => {
+  const runSql = (sql: string, params: unknown[] = []): UnsafeRow[] => sqliteDatabase
+    ? sqliteDatabase.query(sql).all(...params)
+    : (instance.unsafe(sql, params) as unknown as UnsafeReturn).executeSync()
+
+  const executeStatement = (firstOnly = false, selection?: string): UnsafeRow[] => {
     const selected = selection ?? selectedColumnsSql ?? '*'
     const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
       const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
-      return instance.unsafe(`${selectKeyword} ${selected} FROM ${table}${limit}`) as unknown as UnsafeReturn
+      return runSql(`${selectKeyword} ${selected} FROM ${table}${limit}`)
     }
     if (
       predicateColumn !== undefined
@@ -1584,6 +1619,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const cached = lastParameterizedSqliteSelect
       if (
         cached
+        && cached.instance === instance
         && cached.selectKeyword === selectKeyword
         && cached.selected === selected
         && cached.table === table
@@ -1591,10 +1627,15 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         && cached.predicateOperator === predicateOperator
         && cached.limit === effectiveLimit
       ) {
-        return instance.unsafe(cached.sql, [predicateValue]) as unknown as UnsafeReturn
+        if (sqliteDatabase) {
+          const statement = cached.statement ??= sqliteDatabase.query(cached.sql)
+          return statement.all(predicateValue)
+        }
+        return runSql(cached.sql, [predicateValue])
       }
       const sql = `${selectKeyword} ${selected} FROM ${table} WHERE ${predicateColumn} ${predicateOperator} ?${effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`}`
       lastParameterizedSqliteSelect = {
+        instance,
         selectKeyword,
         selected,
         table,
@@ -1602,8 +1643,11 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         predicateOperator,
         limit: effectiveLimit,
         sql,
+        statement: sqliteDatabase?.query(sql),
       }
-      return instance.unsafe(sql, [predicateValue]) as unknown as UnsafeReturn
+      return lastParameterizedSqliteSelect.statement
+        ? lastParameterizedSqliteSelect.statement.all(predicateValue)
+        : runSql(sql, [predicateValue])
     }
     let query = `${selectKeyword} ${selected} FROM ${table}`
     const params: unknown[] = []
@@ -1640,7 +1684,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       query += ` LIMIT ${effectiveLimit}`
     if (rowOffset !== undefined)
       query += ` OFFSET ${rowOffset}`
-    return instance.unsafe(query, params) as unknown as UnsafeReturn
+    return runSql(query, params)
   }
 
   /*
@@ -1994,7 +2038,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     execute() {
       try {
-        return Promise.resolve(buildStatement().executeSync())
+        return Promise.resolve(executeStatement())
       }
       catch (error) {
         return Promise.reject(error)
@@ -2007,7 +2051,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       const value = target[property]
       if (value !== undefined)
         return value
-      const terminal = resolveDeferredSqliteTerminal(target, property, buildStatement, materialize, proxy)
+      const terminal = resolveDeferredSqliteTerminal(target, property, executeStatement, materialize, proxy)
       if (terminal !== undefined)
         return terminal
       const extension = (extensions ??= createExtensions())[property as string]

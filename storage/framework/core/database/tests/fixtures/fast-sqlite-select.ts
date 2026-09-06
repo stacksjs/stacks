@@ -25,6 +25,14 @@ await db.unsafe('INSERT INTO fast_items (id, name, active, created_at) VALUES (?
 ]).execute()
 await db.unsafe('PRAGMA case_sensitive_like = ON').execute()
 
+await db.transaction(async (transaction: any) => {
+  await transaction.insertInto('fast_items').values({ id: 4, name: 'delta', active: 1 }).execute()
+  const visible = await db.selectFrom('fast_items').select('name').where('id', '=', 4).first()
+  if (visible?.name !== 'delta')
+    throw new Error(`Fast SELECT did not share the active SQLite transaction: ${JSON.stringify(visible)}`)
+})
+await db.unsafe('DELETE FROM fast_items WHERE id = 4').execute()
+
 const fast = await db
   .selectFrom('fast_items')
   .select(['id', 'name'])
