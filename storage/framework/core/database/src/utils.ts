@@ -1335,6 +1335,19 @@ function resolveDeferredSqliteTerminal(
     target.executeTakeFirstOrThrow = firstOrFail
     return firstOrFail
   }
+  if (property === 'exists' || property === 'doesntExist') {
+    const findsRow = property === 'exists'
+    const check = () => {
+      try {
+        return Promise.resolve((buildStatement(true).executeSync()[0] !== undefined) === findsRow)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    }
+    target[property] = check
+    return check
+  }
 }
 
 /**
@@ -1787,22 +1800,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       rowOffset = value
       return proxy
-    },
-    exists() {
-      try {
-        return Promise.resolve(buildStatement(true).executeSync()[0] !== undefined)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
-    },
-    doesntExist() {
-      try {
-        return Promise.resolve(buildStatement(true).executeSync()[0] === undefined)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
     },
     count(...args: unknown[]) {
       return runAggregate('count', args, 0)
