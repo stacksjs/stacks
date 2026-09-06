@@ -1367,6 +1367,29 @@ function resolveDeferredSqliteTerminal(
     target[property] = aggregate
     return aggregate
   }
+  if (property === 'pluck') {
+    const pluck = (...args: unknown[]) => {
+      if (args.length !== 1) {
+        const builder = materialize()
+        const apply = builder.pluck as unknown as (...values: unknown[]) => Promise<unknown[]>
+        return apply.call(builder, ...args)
+      }
+
+      try {
+        const column = args[0] as string
+        const rows = buildStatement().executeSync()
+        const values = new Array<unknown>(rows.length)
+        for (let index = 0; index < rows.length; index++)
+          values[index] = rows[index]?.[column]
+        return Promise.resolve(values)
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
+    }
+    target.pluck = pluck
+    return pluck
+  }
 }
 
 function runDeferredSqliteAggregate(
@@ -1821,25 +1844,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       }
       rowOffset = value
       return proxy
-    },
-    pluck(...args: unknown[]) {
-      if (args.length !== 1) {
-        const builder = materialize()
-        const apply = builder.pluck as unknown as (...values: unknown[]) => Promise<unknown[]>
-        return apply.call(builder, ...args)
-      }
-
-      try {
-        const column = args[0] as string
-        const rows = buildStatement().executeSync()
-        const values = new Array<unknown>(rows.length)
-        for (let index = 0; index < rows.length; index++)
-          values[index] = rows[index]?.[column]
-        return Promise.resolve(values)
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
     },
   })
 
