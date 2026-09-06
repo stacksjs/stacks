@@ -1837,23 +1837,6 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       let chainTimer: ReturnType<typeof setTimeout> | undefined
       let chainBudget: Promise<never> | undefined
       let runningMiddleware = ''
-      let armChainBudget: (() => Promise<never>) | undefined
-      if (resolved.length > 0) {
-        armChainBudget = (): Promise<never> => {
-          if (!chainBudget) {
-            chainBudget = new Promise<never>((_, reject) => {
-              chainTimer = setTimeout(
-                () => reject(new Error(`Middleware '${runningMiddleware}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)),
-                MIDDLEWARE_TIMEOUT_MS,
-              )
-            })
-            // Marks the budget handled so a chain that finishes normally does not
-            // leave an unhandled rejection behind when the timer eventually fires.
-            chainBudget.catch(() => {})
-          }
-          return chainBudget
-        }
-      }
 
       try {
         for (const { name: middlewareName, timingName, handler: middleware } of resolved) {
@@ -1863,9 +1846,22 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           runningMiddleware = middlewareName
           try {
             const outcome = middleware.handle(enhancedReq)
-            // Nothing to time out when the layer already finished.
-            if (outcome && typeof (outcome as Promise<void>).then === 'function')
-              await Promise.race([outcome as Promise<void>, armChainBudget!()])
+            // Nothing to time out when the layer already finished. Arm the
+            // shared chain budget only after the first asynchronous outcome.
+            if (outcome && typeof (outcome as Promise<void>).then === 'function') {
+              if (!chainBudget) {
+                chainBudget = new Promise<never>((_, reject) => {
+                  chainTimer = setTimeout(
+                    () => reject(new Error(`Middleware '${runningMiddleware}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)),
+                    MIDDLEWARE_TIMEOUT_MS,
+                  )
+                })
+                // Marks the budget handled so a chain that finishes normally does not
+                // leave an unhandled rejection behind when the timer eventually fires.
+                chainBudget.catch(() => {})
+              }
+              await Promise.race([outcome as Promise<void>, chainBudget])
+            }
             if (collectsMiddlewareTimings) {
               const elapsedMs = performance.now() - mwStart
               middlewareTimings.push({ name: timingName, ms: elapsedMs })
