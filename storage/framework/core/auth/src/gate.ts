@@ -166,7 +166,7 @@ type OnlyKnownModels<TPolicies> = {
  *
  * export default defineGates({
  *   gates: {
- *     'access-admin': user => user?.email?.endsWith('@stacksjs.org') ?? false,
+ *     'access-admin': user => user?.email?.endsWith('@stacksjs.com') ?? false,
  *   },
  *   policies: {
  *     Post: 'PostPolicy',

@@ -19,7 +19,7 @@ import { Gate } from '../src/gate'
 
 const authorization = defineGates({
   gates: {
-    'access-admin': user => user?.email?.endsWith('@stacksjs.org') ?? false,
+    'access-admin': user => user?.email?.endsWith('@stacksjs.com') ?? false,
     'view-dashboard': user => user !== null,
   },
   policies: {

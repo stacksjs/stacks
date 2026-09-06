@@ -39,7 +39,7 @@ const resourceLinks = [
   {
     title: 'Documentation',
     description: 'Guides and API references',
-    href: 'https://docs.stacksjs.org',
+    href: 'https://docs.stacksjs.com',
     icon: 'i-hugeicons-book-02',
     tone: 'blue',
   },

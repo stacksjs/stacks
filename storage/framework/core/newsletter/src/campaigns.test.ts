@@ -17,7 +17,7 @@ describe('newsletter campaigns', () => {
       template: 'product-update',
       text: 'Read the release notes.',
       fromName: 'Stacks',
-      fromAddress: 'news@stacksjs.org',
+      fromAddress: 'news@stacksjs.com',
       emailListId: 4,
       scheduledAt: '2030-01-01 09:00:00',
     }, 4)).toEqual({
@@ -29,7 +29,7 @@ describe('newsletter campaigns', () => {
       template: 'product-update',
       text: 'Read the release notes.',
       from_name: 'Stacks',
-      from_address: 'news@stacksjs.org',
+      from_address: 'news@stacksjs.com',
       email_list_id: 4,
       scheduled_at: '2030-01-01 09:00:00',
       sent_count: 0,
@@ -40,12 +40,12 @@ describe('newsletter campaigns', () => {
     expect(campaignUpdateData({
       name: 'Updated launch',
       fromName: 'Product team',
-      fromAddress: 'product@stacksjs.org',
+      fromAddress: 'product@stacksjs.com',
       scheduledAt: '',
     }, 7)).toEqual({
       name: 'Updated launch',
       from_name: 'Product team',
-      from_address: 'product@stacksjs.org',
+      from_address: 'product@stacksjs.com',
       email_list_id: 7,
       scheduled_at: null,
       status: 'draft',

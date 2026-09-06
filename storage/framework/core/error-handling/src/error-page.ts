@@ -104,7 +104,7 @@ export interface HttpError {
   suggestion?: string
 }
 
-const DOCS_BASE = 'https://stacksjs.org/docs/errors'
+const DOCS_BASE = 'https://stacksjs.com/docs/errors'
 
 // HTTP error definitions. Each entry includes a doc link, likely causes,
 // and a concrete suggestion so the dev-mode error page reads like a hint

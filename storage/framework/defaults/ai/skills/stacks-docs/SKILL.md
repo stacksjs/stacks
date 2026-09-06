@@ -54,7 +54,7 @@ export default {
   // Navigation
   nav: [
     { text: 'Changelog', link: 'https://github.com/stacksjs/stacks/blob/main/CHANGELOG.md' },
-    { text: 'Blog', link: 'https://updates.stacksjs.org' },
+    { text: 'Blog', link: 'https://updates.stacksjs.com' },
   ],
 
   // Markdown settings

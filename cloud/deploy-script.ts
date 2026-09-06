@@ -11,7 +11,7 @@
  * - Run smoke tests against the deployed environment
  * - Sync environment variables
  *
- * @see https://stacksjs.org/docs/deployments
+ * @see https://stacksjs.com/docs/deployments
  */
 
 /**

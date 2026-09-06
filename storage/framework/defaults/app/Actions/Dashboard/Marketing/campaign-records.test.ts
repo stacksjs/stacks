@@ -54,7 +54,7 @@ describe('campaign records', () => {
       emailListId: '4',
       scheduledAt: '2030-01-01 09:00:00',
       fromName: 'Product team',
-      fromAddress: 'product@stacksjs.org',
+      fromAddress: 'product@stacksjs.com',
       currency: 'usd',
     })
 
@@ -62,7 +62,7 @@ describe('campaign records', () => {
       email_list_id: 4,
       scheduled_at: '2030-01-01 09:00:00',
       from_name: 'Product team',
-      from_address: 'product@stacksjs.org',
+      from_address: 'product@stacksjs.com',
       currency: 'USD',
     })
     expect(validateCampaignWriteData(data, new Date('2029-01-01T00:00:00'))).toBe('')

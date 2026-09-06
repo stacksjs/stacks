@@ -78,7 +78,7 @@ buddy make:action UpdateUser   # scaffold a new Action (also: model, view, job, 
 buddy --help       # show every available command
 ```
 
-For the full command reference, see the collapsible section below or the [Buddy CLI documentation](https://stacksjs.org/docs/cli).
+For the full command reference, see the collapsible section below or the [Buddy CLI documentation](https://stacksjs.com/docs/cli).
 
 <details>
 <summary>View the complete Buddy Toolkit</summary>
@@ -245,7 +245,7 @@ buddy test:types # runs typecheck
 
 </details>
 
-Read more about the Buddy CLI in the [official docs](https://stacksjs.org/docs/cli) — every command, every flag, every prompt explained.
+Read more about the Buddy CLI in the [official docs](https://stacksjs.com/docs/cli) — every command, every flag, every prompt explained.
 
 ## Features
 

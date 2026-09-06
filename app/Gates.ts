@@ -11,7 +11,7 @@ import { defineGates } from '@stacksjs/auth'
  * Registered at boot by `initializeAuthorization()`, which every entry point
  * comes through - HTTP, `buddy seed`, a scheduled job, a console command.
  *
- * @see https://stacksjs.org/docs/security/authorization
+ * @see https://stacksjs.com/docs/security/authorization
  */
 export default defineGates({
   /**
@@ -30,7 +30,7 @@ export default defineGates({
   gates: {
     /** Check if user can access admin area */
     'access-admin': (user: UserModel | null) => {
-      return user?.email?.endsWith('@stacksjs.org') ?? false
+      return user?.email?.endsWith('@stacksjs.com') ?? false
     },
 
     /** Check if user can edit application settings */

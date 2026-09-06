@@ -756,7 +756,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     ${content}
   </main>
   <footer class="footer">
-    <p>&copy; ${new Date().getFullYear()} ${escapeHtml(config.title)}. Built with <a href="https://stacksjs.org">Stacks</a>.</p>
+    <p>&copy; ${new Date().getFullYear()} ${escapeHtml(config.title)}. Built with <a href="https://stacksjs.com">Stacks</a>.</p>
   </footer>
 </body>
 </html>`

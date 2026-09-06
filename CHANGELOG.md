@@ -257,106 +257,106 @@
 
 ## 🐛 Bug Fixes
 
-- **theme**: preserve composable toggle runtime ([a1532df](https://github.com/stacksjs/stacks/commit/a1532df)) _(by Chris <chris@stacksjs.org>)_
+- **theme**: preserve composable toggle runtime ([a1532df](https://github.com/stacksjs/stacks/commit/a1532df)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.18...v0.74.19)
 
 ## 🔧 Chores
 
-- **images**: ship dynamic delivery runtime ([7bb7c19](https://github.com/stacksjs/stacks/commit/7bb7c19)) _(by Chris <chris@stacksjs.org>)_
+- **images**: ship dynamic delivery runtime ([7bb7c19](https://github.com/stacksjs/stacks/commit/7bb7c19)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.17...v0.74.18)
 
 ## 🐛 Bug Fixes
 
-- **images**: preserve reactive delivery props ([8b19924](https://github.com/stacksjs/stacks/commit/8b19924)) _(by Chris <chris@stacksjs.org>)_
+- **images**: preserve reactive delivery props ([8b19924](https://github.com/stacksjs/stacks/commit/8b19924)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.16...v0.74.17)
 
 ## ✨ Features
 
-- **images**: centralize optimized delivery ([94ea8da](https://github.com/stacksjs/stacks/commit/94ea8da)) _(by Chris <chris@stacksjs.org>)_
+- **images**: centralize optimized delivery ([94ea8da](https://github.com/stacksjs/stacks/commit/94ea8da)) _(by Chris <chris@stacksjs.com>)_
 
 ## 🐛 Bug Fixes
 
-- **commands**: the copy that actually runs was still dropping its error ([efcc24f](https://github.com/stacksjs/stacks/commit/efcc24f)) _(by Chris <chris@stacksjs.org>)_
-- **cli**: stop dropping the last thing a command says, at every log level ([c22c3e5](https://github.com/stacksjs/stacks/commit/c22c3e5)) _(by Chris <chris@stacksjs.org>)_
-- **release**: report why a promotion failed, and retry long enough to matter ([ac191de](https://github.com/stacksjs/stacks/commit/ac191de)) _(by Chris <chris@stacksjs.org>)_
+- **commands**: the copy that actually runs was still dropping its error ([efcc24f](https://github.com/stacksjs/stacks/commit/efcc24f)) _(by Chris <chris@stacksjs.com>)_
+- **cli**: stop dropping the last thing a command says, at every log level ([c22c3e5](https://github.com/stacksjs/stacks/commit/c22c3e5)) _(by Chris <chris@stacksjs.com>)_
+- **release**: report why a promotion failed, and retry long enough to matter ([ac191de](https://github.com/stacksjs/stacks/commit/ac191de)) _(by Chris <chris@stacksjs.com>)_
 
 ## ✅ Tests
 
-- **cli**: check app-level command advice too ([809cbde](https://github.com/stacksjs/stacks/commit/809cbde)) _(by Chris <chris@stacksjs.org>)_
-- **defaults**: assert the preloader ships, not that someone ran the build ([2b187bb](https://github.com/stacksjs/stacks/commit/2b187bb)) _(by Chris <chris@stacksjs.org>)_
+- **cli**: check app-level command advice too ([809cbde](https://github.com/stacksjs/stacks/commit/809cbde)) _(by Chris <chris@stacksjs.com>)_
+- **defaults**: assert the preloader ships, not that someone ran the build ([2b187bb](https://github.com/stacksjs/stacks/commit/2b187bb)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.15...v0.74.16)
 
 ## 🐛 Bug Fixes
 
-- **defaults**: publish canonical runtime preloader ([077d567](https://github.com/stacksjs/stacks/commit/077d567)) _(by Chris <chris@stacksjs.org>)_
+- **defaults**: publish canonical runtime preloader ([077d567](https://github.com/stacksjs/stacks/commit/077d567)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.14...v0.74.15)
 
 ## 🐛 Bug Fixes
 
-- **release**: publish meta-package through OIDC ([6241eb6](https://github.com/stacksjs/stacks/commit/6241eb6)) _(by Chris <chris@stacksjs.org>)_
+- **release**: publish meta-package through OIDC ([6241eb6](https://github.com/stacksjs/stacks/commit/6241eb6)) _(by Chris <chris@stacksjs.com>)_
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.13...v0.74.14)
 
 ## 🐛 Bug Fixes
 
-- **charts**: fill responsive containers ([f68be7d](https://github.com/stacksjs/stacks/commit/f68be7d)) _(by Chris <chris@stacksjs.org>)_
+- **charts**: fill responsive containers ([f68be7d](https://github.com/stacksjs/stacks/commit/f68be7d)) _(by Chris <chris@stacksjs.com>)_
 
 ## 💚 Continuous Integration
 
-- **release**: publish under a holding tag, promote latest once (#2056) ([7416d44](https://github.com/stacksjs/stacks/commit/7416d44)) _(by Chris <chris@stacksjs.org>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **release**: publish under a holding tag, promote latest once (#2056) ([7416d44](https://github.com/stacksjs/stacks/commit/7416d44)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.12...v0.74.13)
 
 ## 🐛 Bug Fixes
 
-- **browser**: reclaim temporary profiles ([ee85512](https://github.com/stacksjs/stacks/commit/ee85512)) _(by Chris <chris@stacksjs.org>)_
+- **browser**: reclaim temporary profiles ([ee85512](https://github.com/stacksjs/stacks/commit/ee85512)) _(by Chris <chris@stacksjs.com>)_
 
 ## 💚 Continuous Integration
 
-- stop failing the release window for reasons no diff caused (#2056) ([ece573a](https://github.com/stacksjs/stacks/commit/ece573a)) _(by Chris <chris@stacksjs.org>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- stop failing the release window for reasons no diff caused (#2056) ([ece573a](https://github.com/stacksjs/stacks/commit/ece573a)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.11...v0.74.12)
 
 ## ✨ Features
 
-- **payments**: expose Stripe configuration state ([c65f1c9](https://github.com/stacksjs/stacks/commit/c65f1c9)) _(by Chris <chris@stacksjs.org>)_
+- **payments**: expose Stripe configuration state ([c65f1c9](https://github.com/stacksjs/stacks/commit/c65f1c9)) _(by Chris <chris@stacksjs.com>)_
 
 ## 🐛 Bug Fixes
 
@@ -365,7 +365,7 @@
 
 ## Contributors
 
-- _Chris <chris@stacksjs.org>_
+- _Chris <chris@stacksjs.com>_
 
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.10...v0.74.11)
 

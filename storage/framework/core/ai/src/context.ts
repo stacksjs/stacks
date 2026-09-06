@@ -2,7 +2,7 @@ import { existsSync, lstatSync, readFileSync, readdirSync } from 'node:fs'
 import { basename, relative, resolve, sep } from 'node:path'
 import { estimateTokens } from './utils/tokens'
 
-export const STACKS_PROJECT_CONTEXT_SCHEMA = 'https://stacksjs.org/schemas/ai-project-context/v1'
+export const STACKS_PROJECT_CONTEXT_SCHEMA = 'https://stacksjs.com/schemas/ai-project-context/v1'
 
 const DEFAULT_MAX_CHARS = 4000
 const DEFAULT_MAX_FILES = 30

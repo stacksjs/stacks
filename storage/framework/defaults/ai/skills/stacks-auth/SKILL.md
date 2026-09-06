@@ -378,7 +378,7 @@ import { defineGates } from '@stacksjs/auth'
 
 export default defineGates({
   gates: {
-    'access-admin': user => user?.email?.endsWith('@stacksjs.org') ?? false,
+    'access-admin': user => user?.email?.endsWith('@stacksjs.com') ?? false,
     'edit-settings': user => !!user,
     'view-dashboard': user => !!user,
   },
