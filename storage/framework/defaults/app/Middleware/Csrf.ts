@@ -60,6 +60,8 @@ import { Middleware } from '@stacksjs/router'
 
 export const CSRF_COOKIE_NAME = 'X-CSRF-Token'
 const CSRF_HEADER_NAME = 'x-csrf-token'
+const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
+const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
 const TOKEN_BYTES = 32
 const TOKEN_ENCODER = new TextEncoder()
 
@@ -175,6 +177,12 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
 function csrfCookieToken(req: Request): string {
   const header = req.headers.get('cookie')
   if (!header) return ''
+  if (!header.includes(';')) {
+    if (header.startsWith(CSRF_COOKIE_PREFIX))
+      return header.slice(CSRF_COOKIE_PREFIX.length).trim()
+    if (header.startsWith(LEGACY_CSRF_COOKIE_PREFIX))
+      return header.slice(LEGACY_CSRF_COOKIE_PREFIX.length).trim()
+  }
   let canonical = ''
   let legacy = ''
   for (const part of header.split(';')) {
