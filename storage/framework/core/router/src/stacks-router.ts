@@ -205,6 +205,48 @@ function resolveDefaultsPath(rel: string): string {
   return resolved
 }
 
+const NATIVE_ROUTE_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'])
+const NATIVE_ROUTE_PARAM = /^\{[A-Z_$][\w$]*\}$/i
+
+function hasNativeCompatiblePath(path: string): boolean {
+  if (path === '*')
+    return true
+
+  const segments = path.split('/')
+  for (let index = 0; index < segments.length; index++) {
+    const segment = segments[index]!
+    if (segment === '' || NATIVE_ROUTE_PARAM.test(segment))
+      continue
+    if (segment === '*' && index === segments.length - 1)
+      continue
+    if (segment.includes('{') || segment.includes(':') || segment.includes('*'))
+      return false
+  }
+  return true
+}
+
+/**
+ * Production defaults to Bun's native matcher only when every eligible route
+ * can keep the same semantics. One incompatible route keeps the whole table on
+ * bun-router, since a native route can otherwise intercept a request that an
+ * overlapping constrained, domain-scoped, or mixed-parameter route expected.
+ */
+export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolean {
+  let hasEligibleRoute = false
+  for (const route of routes) {
+    if (!NATIVE_ROUTE_METHODS.has(route.method) || route.handler instanceof Response)
+      continue
+
+    hasEligibleRoute = true
+    if (route.nativeDispatch === false
+      || route.domain
+      || (route.constraints && Object.keys(route.constraints).length > 0)
+      || !hasNativeCompatiblePath(route.path))
+      return false
+  }
+  return hasEligibleRoute
+}
+
 import { runWithRequest } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
@@ -4494,7 +4536,15 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // for it. See `BootHook`.
       await runBootHooks()
 
-      return bunRouter.serve(options)
+      const appEnv = (process.env.APP_ENV ?? '').toLowerCase()
+      const production = appEnv === 'production' || process.env.NODE_ENV === 'production'
+      const callerSuppliedRoutes = Object.prototype.hasOwnProperty.call(options, 'routes')
+      const nativeRoutes = options.nativeRoutes
+        ?? (production && !callerSuppliedRoutes && shouldUseNativeRoutesByDefault(bunRouter.routes))
+
+      return bunRouter.serve(nativeRoutes === options.nativeRoutes
+        ? options
+        : { ...options, nativeRoutes })
     },
 
     // Handle a request directly

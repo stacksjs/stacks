@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { path as p } from '@stacksjs/path'
-import { clearMiddlewareCache, createStacksRouter, listRegisteredRoutes, url } from '../src/stacks-router'
+import { clearMiddlewareCache, createStacksRouter, listRegisteredRoutes, shouldUseNativeRoutesByDefault, url } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
 // Reset state between tests
@@ -367,5 +367,33 @@ describe('createStacksRouter - config', () => {
 
   test('accepts apiPrefix option', () => {
     expect(() => createStacksRouter({ apiPrefix: '/api/v2' })).not.toThrow()
+  })
+})
+
+describe('production native route default', () => {
+  test('accepts static, parameter, and trailing wildcard routes', () => {
+    const router = createStacksRouter()
+    router.get('/health', () => ({ ok: true }))
+    router.get('/users/{id}', () => ({ ok: true }))
+    router.get('/assets/*', () => ({ ok: true }))
+
+    expect(shouldUseNativeRoutesByDefault(router.routes)).toBe(true)
+  })
+
+  test.each([
+    { label: 'mixed parameter', mutate: (route: any) => { route.path = '/users/user-{id}' } },
+    { label: 'constraint', mutate: (route: any) => { route.constraints = { id: '\\d+' } } },
+    { label: 'domain', mutate: (route: any) => { route.domain = 'admin.example.com' } },
+    { label: 'explicit opt-out', mutate: (route: any) => { route.nativeDispatch = false } },
+  ])('keeps the whole table on the established matcher for a $label route', ({ mutate }) => {
+    const router = createStacksRouter()
+    router.get('/users/{id}', () => ({ ok: true }))
+    mutate(router.routes[0])
+
+    expect(shouldUseNativeRoutesByDefault(router.routes)).toBe(false)
+  })
+
+  test('does not enable native matching for an empty table', () => {
+    expect(shouldUseNativeRoutesByDefault([])).toBe(false)
   })
 })
