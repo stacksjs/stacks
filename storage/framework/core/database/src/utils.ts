@@ -2036,13 +2036,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowLimit = value
       return proxy
     },
-    execute() {
-      try {
-        return Promise.resolve(executeStatement())
-      }
-      catch (error) {
-        return Promise.reject(error)
-      }
+    async execute() {
+      return executeStatement()
     },
   }
 
