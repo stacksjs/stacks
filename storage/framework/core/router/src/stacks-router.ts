@@ -1555,6 +1555,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
   const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
   const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
+  const routeRendersCsrf = routeMethod === 'GET' || routeMethod === 'HEAD'
   const routeSeedsCsrf = routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
   // What identifies this action to the CSRF skip cache: the handler string
@@ -1627,7 +1628,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     // seeding below then reuses this exact value rather than generating a
     // second one, so what the page embedded and what the browser stores are
     // the same string.
-    if (!csrfHandledByOuter && routeSeedsCsrf) {
+    if (!csrfHandledByOuter && routeRendersCsrf) {
       const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding) await renderTokenSeeding
     }
@@ -3616,10 +3617,6 @@ function applyCsrfRenderToken(req: Request & { _csrfToken?: string }, cookieHead
  * and a request that has nothing to seed never allocates a promise at all.
  */
 function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }, cookieHeader = req.headers?.get?.('cookie') ?? ''): void | Promise<void> {
-  const method = req.method?.toUpperCase?.() ?? 'GET'
-  if (method !== 'GET' && method !== 'HEAD')
-    return
-
   if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
     return
 
@@ -4631,6 +4628,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
   router.handleRequest = async (request: Request): Promise<Response> => {
     const method = request.method
+    const rendersCsrf = method === 'GET' || method === 'HEAD'
     const safe = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
 
     /*
@@ -4645,7 +4643,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
     const cookieHeader = safe ? request.headers.get('cookie') ?? '' : ''
     const hasCsrfCookie = safe && (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
     if (safe) {
-      if (!hasCsrfCookie) {
+      if (rendersCsrf && !hasCsrfCookie) {
         const seeding = seedCsrfTokenForRender(request as Request & { _csrfToken?: string }, cookieHeader)
         if (seeding) await seeding
       }

@@ -65,6 +65,16 @@ describe('the request path keeps its defaults', () => {
     expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
   })
 
+  it('does not mint a render token for an OPTIONS route', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.options('/_hot/direct-options', request => ({ minted: Boolean(request._csrfToken) }))
+
+    const answer = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/direct-options', { method: 'OPTIONS' }))
+
+    expect(await answer.json()).toEqual({ minted: false })
+  })
+
   it('initializes request ids on warm direct dispatches', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()
