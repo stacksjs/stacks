@@ -1858,7 +1858,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     offset(value: unknown) {
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+      if (typeof value !== 'number' || value < 0 || !Number.isInteger(value)) {
         const builder = materialize()
         const apply = builder.offset as unknown as (value: unknown) => typeof builder
         return apply.call(builder, value)
@@ -1898,7 +1898,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     limit(value: unknown) {
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+      if (typeof value !== 'number' || value < 0 || !Number.isInteger(value)) {
         const builder = materialize()
         const apply = builder.limit as unknown as (value: unknown) => typeof builder
         return apply.call(builder, value)
