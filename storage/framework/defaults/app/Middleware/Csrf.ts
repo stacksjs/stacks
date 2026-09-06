@@ -218,7 +218,7 @@ function safeEqual(a: string, b: string): boolean {
  * an ambient cookie credential, so cross-site forgery doesn't apply).
  */
 function hasBearerToken(req: Request): boolean {
-  const auth = req.headers.get('authorization') || req.headers.get('Authorization')
+  const auth = req.headers.get('authorization')
   return typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')
 }
 
@@ -255,8 +255,6 @@ function assertValidCsrfRequest(request: Request | EnhancedRequest): void {
   // Look up the submitted token. Header is the SPA path; body field
   // is the traditional form-post path. We accept either.
   const headerToken = request.headers.get(CSRF_HEADER_NAME)
-    || request.headers.get('X-CSRF-Token')
-    || request.headers.get('X-Csrf-Token')
   const body = enhanced.jsonBody || enhanced.formBody || {}
   // A parsed body is `unknown`-valued: the token is validated as a string
   // two lines down, so read it as one rather than asserting it is one.
