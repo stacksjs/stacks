@@ -1338,6 +1338,16 @@ let lastParameterizedSqliteSelect: {
   statement?: { all: (...params: unknown[]) => UnsafeRow[] }
 } | undefined
 
+let lastUnparameterizedSqliteSelect: {
+  instance: RawQueryBuilder
+  selectKeyword: string
+  selected: string
+  table: string
+  limit: number | undefined
+  sql: string
+  statement?: { all: () => UnsafeRow[] }
+} | undefined
+
 // Selection validation and rendering are also structural. Snapshot the last
 // validated list so caller mutation cannot make cached SQL describe new input.
 let lastSqliteSelection: { columns: string[], sql: string } | undefined
@@ -1591,8 +1601,35 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     const selected = selection ?? selectedColumnsSql ?? '*'
     const effectiveLimit = rowLimit ?? (firstOnly && rowOffset === undefined ? 1 : undefined)
     if (predicateColumn === undefined && orderings === undefined && rowOffset === undefined) {
+      const cached = lastUnparameterizedSqliteSelect
+      if (
+        cached
+        && cached.instance === instance
+        && cached.selectKeyword === selectKeyword
+        && cached.selected === selected
+        && cached.table === table
+        && cached.limit === effectiveLimit
+      ) {
+        if (sqliteDatabase) {
+          const statement = cached.statement ??= sqliteDatabase.query(cached.sql)
+          return statement.all()
+        }
+        return runFastSqliteSql(instance, sqliteDatabase, cached.sql)
+      }
       const limit = effectiveLimit === undefined ? '' : ` LIMIT ${effectiveLimit}`
-      return runFastSqliteSql(instance, sqliteDatabase, `${selectKeyword} ${selected} FROM ${table}${limit}`)
+      const sql = `${selectKeyword} ${selected} FROM ${table}${limit}`
+      lastUnparameterizedSqliteSelect = {
+        instance,
+        selectKeyword,
+        selected,
+        table,
+        limit: effectiveLimit,
+        sql,
+        statement: sqliteDatabase?.query(sql),
+      }
+      return lastUnparameterizedSqliteSelect.statement
+        ? lastUnparameterizedSqliteSelect.statement.all()
+        : runFastSqliteSql(instance, sqliteDatabase, sql)
     }
     if (
       predicateColumn !== undefined
