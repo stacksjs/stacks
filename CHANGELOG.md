@@ -1,5 +1,95 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.24...v0.74.25)
+
+## ✨ Features
+
+- **bench**: record source revision in benchmark reports ([c55fa57](https://github.com/stacksjs/stacks/commit/c55fa57)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: add an opt-in SQLite WAL profile ([a2a57a0](https://github.com/stacksjs/stacks/commit/a2a57a0)) _(by Chris <chris@stacksjs.com>)_
+- **config**: canonical mode, so generated artifacts stop depending on the project (#2408) ([3b7635b](https://github.com/stacksjs/stacks/commit/3b7635b)) _(by Chris <chris@stacksjs.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **orm**: give the last seven unscoped models an owner (#2412) ([c1ccc72](https://github.com/stacksjs/stacks/commit/c1ccc72)) _(by Chris <chris@stacksjs.com>)_ ([#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412), [#2375](https://github.com/stacksjs/stacks/issues/2375))
+
+## 🐛 Bug Fixes
+
+- **router**: preserve write routing in directly served requests ([1dfa08e](https://github.com/stacksjs/stacks/commit/1dfa08e)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: stop three skills naming commands that do not exist ([3533351](https://github.com/stacksjs/stacks/commit/3533351)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: verify persisted query counts after load ([f5a8a06](https://github.com/stacksjs/stacks/commit/f5a8a06)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: expose memory runtime requirement mismatches ([24dca7e](https://github.com/stacksjs/stacks/commit/24dca7e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: expose routing runtime requirement mismatches ([90cfe6e](https://github.com/stacksjs/stacks/commit/90cfe6e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: validate memory benchmark connection counts ([abe6bd2](https://github.com/stacksjs/stacks/commit/abe6bd2)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reject invalid routing benchmark options ([e31e525](https://github.com/stacksjs/stacks/commit/e31e525)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: include autocannon failures in request totals ([18b0e5c](https://github.com/stacksjs/stacks/commit/18b0e5c)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: count oha transport failures in request totals ([09c519f](https://github.com/stacksjs/stacks/commit/09c519f)) _(by Chris <chris@stacksjs.com>)_
+- **build**: prefer installed dependencies over Pantry ([38a0ad8](https://github.com/stacksjs/stacks/commit/38a0ad8)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: parse CPU time across day boundaries ([61c0e23](https://github.com/stacksjs/stacks/commit/61c0e23)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: isolate autocannon from the application port ([1be2f60](https://github.com/stacksjs/stacks/commit/1be2f60)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: exclude warmup from server CPU measurements ([047dd11](https://github.com/stacksjs/stacks/commit/047dd11)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: discard autocannon warmup before measuring ([b11ca93](https://github.com/stacksjs/stacks/commit/b11ca93)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: bound startup probes and reap failed servers ([a1f656e](https://github.com/stacksjs/stacks/commit/a1f656e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: probe selected scenarios with their request method ([7bbc804](https://github.com/stacksjs/stacks/commit/7bbc804)) _(by Chris <chris@stacksjs.com>)_
+- **query-builder**: honor configured SQLite pragmas ([11b24ec](https://github.com/stacksjs/stacks/commit/11b24ec)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: separate memory samples from request-rate metadata ([ea2898e](https://github.com/stacksjs/stacks/commit/ea2898e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require persisted query logs before database measurements ([d2a0f5d](https://github.com/stacksjs/stacks/commit/d2a0f5d)) _(by Chris <chris@stacksjs.com>)_
+- **database**: scope query log recursion to its write context ([e888d06](https://github.com/stacksjs/stacks/commit/e888d06)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: include successful query logging in database workload ([e23126c](https://github.com/stacksjs/stacks/commit/e23126c)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: omit empty preload array rejected by Bun ([4e4cfae](https://github.com/stacksjs/stacks/commit/4e4cfae)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **database**: normalize unquoted literals in one pass ([91beca6](https://github.com/stacksjs/stacks/commit/91beca6)) _(by Chris <chris@stacksjs.com>)_
+- **database**: avoid rewriting single SQL spaces ([4841177](https://github.com/stacksjs/stacks/commit/4841177)) _(by Chris <chris@stacksjs.com>)_
+- **database**: skip numeric rewrites inside quoted SQL ([932b743](https://github.com/stacksjs/stacks/commit/932b743)) _(by Chris <chris@stacksjs.com>)_
+- **database**: normalize quoted SQL in character runs ([3f2cb12](https://github.com/stacksjs/stacks/commit/3f2cb12)) _(by Chris <chris@stacksjs.com>)_
+- **database**: normalize boolean and null literals in one pass ([29dfba1](https://github.com/stacksjs/stacks/commit/29dfba1)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reuse exact-millisecond SQL timestamps ([033d311](https://github.com/stacksjs/stacks/commit/033d311)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: skip short-response encoding negotiation ([6f583d4](https://github.com/stacksjs/stacks/commit/6f583d4)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: consume cached insert SQL shapes ([53e7b6a](https://github.com/stacksjs/stacks/commit/53e7b6a)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: consume leaner insert construction ([24b0804](https://github.com/stacksjs/stacks/commit/24b0804)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: consume parameter-free SQLite statement reuse ([2788d73](https://github.com/stacksjs/stacks/commit/2788d73)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: consume router and SQLite statement optimizations ([1ed59c3](https://github.com/stacksjs/stacks/commit/1ed59c3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid allocations when composing server timing ([d42db79](https://github.com/stacksjs/stacks/commit/d42db79)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reduce CSRF token encoding cost ([057e456](https://github.com/stacksjs/stacks/commit/057e456)) _(by Chris <chris@stacksjs.com>)_
+- **database**: simplify numeric query normalization ([0ab9236](https://github.com/stacksjs/stacks/commit/0ab9236)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reuse identical sanitized query traces ([be2e53d](https://github.com/stacksjs/stacks/commit/be2e53d)) _(by Chris <chris@stacksjs.com>)_
+- **router**: cache middleware timing labels ([a4ac270](https://github.com/stacksjs/stacks/commit/a4ac270)) _(by Chris <chris@stacksjs.com>)_
+- **router**: size primitive JSON before compression ([f372ac0](https://github.com/stacksjs/stacks/commit/f372ac0)) _(by Chris <chris@stacksjs.com>)_
+- **database**: normalize logged SQL without extracting tables ([4e071d5](https://github.com/stacksjs/stacks/commit/4e071d5)) _(by Chris <chris@stacksjs.com>)_
+- **router**: give JSON compression the serialized byte length ([fcfeb5b](https://github.com/stacksjs/stacks/commit/fcfeb5b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: cache parsed middleware references ([14a98d3](https://github.com/stacksjs/stacks/commit/14a98d3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid waiting on resolved action imports ([71e7d18](https://github.com/stacksjs/stacks/commit/71e7d18)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reuse the lazy query logger import ([e621b13](https://github.com/stacksjs/stacks/commit/e621b13)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip unnecessary precognition URL parsing ([e1b87e7](https://github.com/stacksjs/stacks/commit/e1b87e7)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid parsing unrelated CSRF cookies ([a3c6d11](https://github.com/stacksjs/stacks/commit/a3c6d11)) _(by Chris <chris@stacksjs.com>)_
+- **router**: resolve cached middleware without async wrappers ([b0ed93d](https://github.com/stacksjs/stacks/commit/b0ed93d)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip content negotiation for object responses ([fb53f7d](https://github.com/stacksjs/stacks/commit/fb53f7d)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- put back the words that page descriptions were missing ([2ac862d](https://github.com/stacksjs/stacks/commit/2ac862d)) _(by Chris <chris@stacksjs.com>)_
+- close the code fences that swallowed three pages ([e679e1b](https://github.com/stacksjs/stacks/commit/e679e1b)) _(by Chris <chris@stacksjs.com>)_
+- restore underscores markdown ate, and finish the reactivity rewrite ([d09349e](https://github.com/stacksjs/stacks/commit/d09349e)) _(by Chris <chris@stacksjs.com>)_
+- **bootcamp**: teach stx signals, not Vue refs from a package that does not exist ([067fdf0](https://github.com/stacksjs/stacks/commit/067fdf0)) _(by Chris <chris@stacksjs.com>)_
+- name only the auto-imports and packages that exist ([ddfdb4b](https://github.com/stacksjs/stacks/commit/ddfdb4b)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **database**: isolate rejected query log records ([8272ff4](https://github.com/stacksjs/stacks/commit/8272ff4)) _(by Chris <chris@stacksjs.com>)_
+- **database**: preserve concurrent query analysis records ([9787fd9](https://github.com/stacksjs/stacks/commit/9787fd9)) _(by Chris <chris@stacksjs.com>)_
+- **router**: stop a 3-char needle finding itself in ciphertext ([0133703](https://github.com/stacksjs/stacks/commit/0133703)) _(by Chris <chris@stacksjs.com>)_
+- **server**: catch a module no auto-import barrel mentions (#2408) ([54cd716](https://github.com/stacksjs/stacks/commit/54cd716)) _(by Chris <chris@stacksjs.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+
+## 💚 Continuous Integration
+
+- check the server declarations are current (#2408, #2056) ([b736c01](https://github.com/stacksjs/stacks/commit/b736c01)) _(by Chris <chris@stacksjs.com>)_ ([#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2408](https://github.com/stacksjs/stacks/issues/2408), [#2408](https://github.com/stacksjs/stacks/issues/2408))
+
+## 🔧 Chores
+
+- regenerate the API surface for the newly scoped models (#2412) ([18d0716](https://github.com/stacksjs/stacks/commit/18d0716)) _(by Chris <chris@stacksjs.com>)_ ([#2412](https://github.com/stacksjs/stacks/issues/2412), [#2412](https://github.com/stacksjs/stacks/issues/2412))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.23...v0.74.24)
 
 ## 🐛 Bug Fixes
