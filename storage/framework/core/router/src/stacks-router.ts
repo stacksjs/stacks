@@ -4048,12 +4048,26 @@ function incomingRequestId(req: EnhancedRequest): string | undefined {
 
 // A random process prefix plus a monotonic sequence is globally unique for
 // request-correlation purposes without asking the system RNG for every request.
-// JavaScript's safe integer range lasts for thousands of years at this
-// router's current throughput before a process could wrap it.
+// Cache the two low base36 digits: only the block counter needs number-to-string
+// conversion, once per 1,296 requests instead of once per request. The block's
+// safe integer range still lasts for thousands of years at current throughput.
 const requestIdPrefix = crypto.randomUUID().replaceAll('-', '').slice(0, 16)
-let requestIdSequence = 0
+const REQUEST_ID_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
+const REQUEST_ID_SUFFIX_COUNT = 36 * 36
+const requestIdSuffixes = Array.from(
+  { length: REQUEST_ID_SUFFIX_COUNT },
+  (_, value) => REQUEST_ID_DIGITS[Math.floor(value / 36)]! + REQUEST_ID_DIGITS[value % 36]!,
+)
+let requestIdBlock = 0
+let requestIdSuffix = 0
+let requestIdBlockPrefix = `${requestIdPrefix}-0`
 function generateRequestId(): string {
-  return `${requestIdPrefix}-${(++requestIdSequence).toString(36)}`
+  requestIdSuffix++
+  if (requestIdSuffix === REQUEST_ID_SUFFIX_COUNT) {
+    requestIdSuffix = 0
+    requestIdBlockPrefix = `${requestIdPrefix}-${(++requestIdBlock).toString(36)}`
+  }
+  return requestIdBlockPrefix + requestIdSuffixes[requestIdSuffix]
 }
 
 function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = ''): RouteHandlerFn {
