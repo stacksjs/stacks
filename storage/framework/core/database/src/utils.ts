@@ -1292,6 +1292,24 @@ const SIMPLE_SQLITE_TABLE = /^[A-Z_][A-Z0-9_]*$/i
 const SIMPLE_SQLITE_COLUMN = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?$/i
 const SIMPLE_SQLITE_SELECTION = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?(?:\s+AS\s+[A-Z_][A-Z0-9_]*)?$/i
 const SIMPLE_SQLITE_OPERATORS = new Set(['=', '!=', '<>', '<', '<=', '>', '>=', 'like', 'not like'])
+const SQLITE_IDENTIFIER_CACHE_LIMIT = 512
+
+function memoizeSqliteIdentifier(pattern: RegExp): (value: string) => boolean {
+  const valid = new Set<string>()
+  return (value) => {
+    if (valid.has(value))
+      return true
+    if (!pattern.test(value))
+      return false
+    if (valid.size < SQLITE_IDENTIFIER_CACHE_LIMIT)
+      valid.add(value)
+    return true
+  }
+}
+
+const isSimpleSqliteTable = memoizeSqliteIdentifier(SIMPLE_SQLITE_TABLE)
+const isSimpleSqliteColumn = memoizeSqliteIdentifier(SIMPLE_SQLITE_COLUMN)
+const isSimpleSqliteSelection = memoizeSqliteIdentifier(SIMPLE_SQLITE_SELECTION)
 
 function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
@@ -1407,7 +1425,7 @@ function runDeferredSqliteAggregate(
 ): Promise<unknown> {
   const column = args[0]
   const acceptsNoColumn = name === 'count' && args.length === 0
-  if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column))) {
+  if (!acceptsNoColumn && (args.length !== 1 || typeof column !== 'string' || !isSimpleSqliteColumn(column))) {
     const builder = materialize() as unknown as Record<typeof name, (...values: unknown[]) => Promise<unknown>>
     return builder[name].call(builder, ...args)
   }
@@ -1582,7 +1600,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         const entries = prototype === Object.prototype || prototype === null
           ? Object.entries(column as Record<string, unknown>)
           : []
-        if (entries.length > 0 && entries.every(([key]) => SIMPLE_SQLITE_COLUMN.test(key))) {
+        if (entries.length > 0 && entries.every(([key]) => isSimpleSqliteColumn(key))) {
           for (const [key, entryValue] of entries) {
             if (predicateColumn === undefined) {
               predicateColumn = key
@@ -1603,7 +1621,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return apply.call(builder, column, operator, value)
     },
     whereNull(column: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereNull as unknown as (column: unknown) => typeof builder
         return apply.call(builder, column)
@@ -1621,7 +1639,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereNotNull(column: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereNotNull as unknown as (column: unknown) => typeof builder
         return apply.call(builder, column)
@@ -1639,7 +1657,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereLike(column: unknown, value: unknown, caseSensitive: unknown = false) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereLike as unknown as (column: unknown, value: unknown, caseSensitive?: unknown) => typeof builder
         return apply.call(builder, column, value, caseSensitive)
@@ -1659,7 +1677,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereNotLike(column: unknown, value: unknown, caseSensitive: unknown = false) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereNotLike as unknown as (column: unknown, value: unknown, caseSensitive?: unknown) => typeof builder
         return apply.call(builder, column, value, caseSensitive)
@@ -1679,7 +1697,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereILike(column: unknown, value: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereILike as unknown as (column: unknown, value: unknown) => typeof builder
         return apply.call(builder, column, value)
@@ -1698,7 +1716,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereNotILike(column: unknown, value: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.whereNotILike as unknown as (column: unknown, value: unknown) => typeof builder
         return apply.call(builder, column, value)
@@ -1717,7 +1735,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereIn(column: unknown, values: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !Array.isArray(values)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || !Array.isArray(values)) {
         const builder = materialize()
         const apply = builder.whereIn as unknown as (column: unknown, values: unknown) => typeof builder
         return apply.call(builder, column, values)
@@ -1736,7 +1754,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     whereNotIn(column: unknown, values: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !Array.isArray(values)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || !Array.isArray(values)) {
         const builder = materialize()
         const apply = builder.whereNotIn as unknown as (column: unknown, values: unknown) => typeof builder
         return apply.call(builder, column, values)
@@ -1761,7 +1779,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         : args.length >= 3
           ? [startOrValues, end]
           : undefined
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || !values || values.length < 2) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || !values || values.length < 2) {
         const builder = materialize()
         const apply = builder.whereBetween as unknown as (...values: unknown[]) => typeof builder
         return apply.call(builder, ...args)
@@ -1783,7 +1801,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     whereDate(...args: unknown[]) {
       const [column, operator, date] = args
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()) || (typeof date !== 'string' && !(date instanceof Date))) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()) || (typeof date !== 'string' && !(date instanceof Date))) {
         const builder = materialize()
         const apply = builder.whereDate as unknown as (...values: unknown[]) => typeof builder
         return apply.call(builder, ...args)
@@ -1802,7 +1820,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     orderBy(column: unknown, direction: unknown = 'asc') {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.orderBy as unknown as (column: unknown, direction?: unknown) => typeof builder
         return apply.call(builder, column, direction)
@@ -1811,7 +1829,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     orderByDesc(column: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column)) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column)) {
         const builder = materialize()
         const apply = builder.orderByDesc as unknown as (column: unknown) => typeof builder
         return apply.call(builder, column)
@@ -1821,7 +1839,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     latest(column?: unknown) {
       const resolvedColumn = column ?? queryBuilderConfig.timestamps.defaultOrderColumn
-      if (typeof resolvedColumn !== 'string' || !SIMPLE_SQLITE_COLUMN.test(resolvedColumn)) {
+      if (typeof resolvedColumn !== 'string' || !isSimpleSqliteColumn(resolvedColumn)) {
         const builder = materialize()
         const apply = builder.latest as unknown as (value?: unknown) => typeof builder
         return apply.call(builder, column)
@@ -1831,7 +1849,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
     oldest(column?: unknown) {
       const resolvedColumn = column ?? queryBuilderConfig.timestamps.defaultOrderColumn
-      if (typeof resolvedColumn !== 'string' || !SIMPLE_SQLITE_COLUMN.test(resolvedColumn)) {
+      if (typeof resolvedColumn !== 'string' || !isSimpleSqliteColumn(resolvedColumn)) {
         const builder = materialize()
         const apply = builder.oldest as unknown as (value?: unknown) => typeof builder
         return apply.call(builder, column)
@@ -1854,7 +1872,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   const base = {
     select(value: unknown) {
       const selected = Array.isArray(value) ? value : [value]
-      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column)))) {
+      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || isSimpleSqliteSelection(column)))) {
         const builder = materialize()
         const apply = builder.select as unknown as (value: unknown) => typeof builder
         return apply.call(builder, value)
@@ -1863,7 +1881,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase())) {
+      if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || (!SIMPLE_SQLITE_OPERATORS.has(operator) && !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))) {
         const extended = extensions ??= createExtensions()
         return (extended.where as (column: unknown, operator?: unknown, value?: unknown) => unknown)(column, operator, value)
       }
@@ -1920,7 +1938,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
 function selectFromDatabase(table: string): unknown {
   const dialect = getDialect()
   const instance = dialect === 'sqlite' ? getDb() : getReadDb()
-  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && SIMPLE_SQLITE_TABLE.test(table))
+  if (dialect === 'sqlite' && !queryBuilderConfig.softDeletes?.enabled && !hasActiveQueryBuilderHooks() && isSimpleSqliteTable(table))
     return createDeferredSqliteSelect(instance, table)
   return instance.selectFrom(table)
 }
