@@ -76,6 +76,15 @@ async function supportedMatrix() {
       .limit(3)
       .limit(1)
       .execute(),
+    fallbackAfterReplacements: await db
+      .selectFrom('fast_items')
+      .limit(3)
+      .select('id')
+      .where('active', '=', 1)
+      .select('name')
+      .limit(1)
+      .orderBy('id', 'desc')
+      .execute(),
   }
 }
 

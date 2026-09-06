@@ -1276,10 +1276,6 @@ interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
   read: Omit<Db, 'read'>
 }
 
-const SELECT_OPERATION = 0
-const WHERE_OPERATION = 1
-const LIMIT_OPERATION = 2
-
 const SIMPLE_SQLITE_TABLE = /^[A-Z_][A-Z0-9_]*$/i
 const SIMPLE_SQLITE_COLUMN = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?$/i
 const SIMPLE_SQLITE_SELECTION = /^[A-Z_][A-Z0-9_]*(?:\.[A-Z_][A-Z0-9_]*)?(?:\s+AS\s+[A-Z_][A-Z0-9_]*)?$/i
@@ -1297,11 +1293,6 @@ function hasActiveQueryBuilderHooks(): boolean {
  * intact for complex queries.
  */
 function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): unknown {
-  // A flat replay log keeps the common path allocation-light. The previous
-  // `{ method, args }` entry allocated an object and an arguments array for
-  // every fluent call, even though simple SQLite chains never materialize the
-  // upstream builder that needs the replay.
-  const operations: unknown[] = []
   let columns: string[] | undefined
   const predicates: Array<{ column: string, operator: string, value: unknown }> = []
   let rowLimit: number | undefined
@@ -1311,25 +1302,17 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (materialized)
       return materialized
     let builder = instance.selectFrom(table)
-    for (let index = 0; index < operations.length;) {
-      const operation = operations[index++]
-      if (operation === SELECT_OPERATION) {
-        const apply = builder.select as unknown as (value: unknown) => typeof builder
-        builder = apply.call(builder, operations[index++])
-      }
-      else if (operation === WHERE_OPERATION) {
-        const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
-        builder = apply.call(
-          builder,
-          operations[index++],
-          operations[index++],
-          operations[index++],
-        )
-      }
-      else {
-        const apply = builder.limit as unknown as (value: unknown) => typeof builder
-        builder = apply.call(builder, operations[index++])
-      }
+    if (columns) {
+      const apply = builder.select as unknown as (value: unknown) => typeof builder
+      builder = apply.call(builder, columns)
+    }
+    for (const predicate of predicates) {
+      const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
+      builder = apply.call(builder, predicate.column, predicate.operator, predicate.value)
+    }
+    if (rowLimit !== undefined) {
+      const apply = builder.limit as unknown as (value: unknown) => typeof builder
+      builder = apply.call(builder, rowLimit)
     }
     materialized = builder
     return builder
@@ -1338,24 +1321,30 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let proxy: Record<string | symbol, unknown>
   const base = {
     select(value: unknown) {
-      operations.push(SELECT_OPERATION, value)
       const selected = Array.isArray(value) ? value : [value]
-      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column))))
-        return materialize()
+      if (selected.length === 0 || !selected.every(column => typeof column === 'string' && (column === '*' || SIMPLE_SQLITE_SELECTION.test(column)))) {
+        const builder = materialize()
+        const apply = builder.select as unknown as (value: unknown) => typeof builder
+        return apply.call(builder, value)
+      }
       columns = selected as string[]
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
-      operations.push(WHERE_OPERATION, column, operator, value)
-      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))
-        return materialize()
+      if (typeof column !== 'string' || !SIMPLE_SQLITE_COLUMN.test(column) || typeof operator !== 'string' || !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase())) {
+        const builder = materialize()
+        const apply = builder.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof builder
+        return apply.call(builder, column, operator, value)
+      }
       predicates.push({ column, operator, value })
       return proxy
     },
     limit(value: unknown) {
-      operations.push(LIMIT_OPERATION, value)
-      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value))
-        return materialize()
+      if (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || !Number.isInteger(value)) {
+        const builder = materialize()
+        const apply = builder.limit as unknown as (value: unknown) => typeof builder
+        return apply.call(builder, value)
+      }
       rowLimit = value
       return proxy
     },
