@@ -1957,71 +1957,83 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       const reqId = enhancedReq._requestId as string | undefined
       const startNs = enhancedReq._startNs as bigint | undefined
       const durMs = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
+      const after = enhancedReq._afterResponse
+      const requested = enhancedReq._responseHeaders
+      const frameworkMetadataApplied = response
+        && (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
+      // Framework JSON responses already carry their request id and security
+      // defaults from `formatJsonResult`. When no middleware requested later
+      // work, leave the native Headers object untouched and avoid allocating
+      // the post-processing closure on the dominant success path.
+      const needsResponseMetadata = response && (
+        response.status >= 400
+        || Array.isArray(after)
+        || (requested && typeof requested === 'object')
+        || durMs != null
+        || !frameworkMetadataApplied
+      )
 
-      const setHeaders = (h: Headers) => {
-        /*
-         * Headers a middleware asked to have on the response.
-         *
-         * The middleware pipeline is pre-action only, so a middleware that has
-         * something to say *about the answer* - a rate limit's remaining count,
-         * a cache verdict, a deprecation notice - had nowhere to put it.
-         * Compression got a hard-coded post-action wrapper keyed on a
-         * `_compress` marker; everything else got nothing, and the workaround
-         * in an app is to wrap every action.
-         *
-         * So: a middleware writes `request._responseHeaders`, and they land
-         * here, before the router's own. The router's win a collision on
-         * purpose - `X-Request-ID` and `Server-Timing` are this layer's to
-         * state, and a middleware overwriting them breaks correlation.
-         */
-        /*
-         * Callbacks a middleware asked to run once the answer is known.
-         *
-         * The header seam covers "put this on the response"; this covers
-         * "record that this happened", which is the other half of what a
-         * pre-action pipeline cannot do. Metrics are the obvious case: a
-         * middleware can time the start of a request and has no way to learn
-         * the status or the duration without one of these.
-         *
-         * Failures are swallowed on purpose. A metrics callback that throws
-         * must not turn a served request into a 500 - the observation is worth
-         * less than the thing being observed.
-         */
-        const after = (enhancedReq)._afterResponse
-        if (Array.isArray(after)) {
-          for (const callback of after) {
-            try {
-              if (typeof callback === 'function')
-                callback({ status: response?.status ?? 0, durationMs: durMs ?? 0 })
+      if (needsResponseMetadata && typeof response.headers?.set === 'function') {
+        const setHeaders = (h: Headers) => {
+          /*
+           * Headers a middleware asked to have on the response.
+           *
+           * The middleware pipeline is pre-action only, so a middleware that has
+           * something to say *about the answer* - a rate limit's remaining count,
+           * a cache verdict, a deprecation notice - had nowhere to put it.
+           * Compression got a hard-coded post-action wrapper keyed on a
+           * `_compress` marker; everything else got nothing, and the workaround
+           * in an app is to wrap every action.
+           *
+           * So: a middleware writes `request._responseHeaders`, and they land
+           * here, before the router's own. The router's win a collision on
+           * purpose - `X-Request-ID` and `Server-Timing` are this layer's to
+           * state, and a middleware overwriting them breaks correlation.
+           */
+          /*
+           * Callbacks a middleware asked to run once the answer is known.
+           *
+           * The header seam covers "put this on the response"; this covers
+           * "record that this happened", which is the other half of what a
+           * pre-action pipeline cannot do. Metrics are the obvious case: a
+           * middleware can time the start of a request and has no way to learn
+           * the status or the duration without one of these.
+           *
+           * Failures are swallowed on purpose. A metrics callback that throws
+           * must not turn a served request into a 500 - the observation is worth
+           * less than the thing being observed.
+           */
+          if (Array.isArray(after)) {
+            for (const callback of after) {
+              try {
+                if (typeof callback === 'function')
+                  callback({ status: response.status, durationMs: durMs ?? 0 })
+              }
+              catch { /* an observation is worth less than the request it observes */ }
             }
-            catch { /* an observation is worth less than the request it observes */ }
           }
+
+          if (requested && typeof requested === 'object') {
+            for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
+              if (typeof value === 'string')
+                h.set(name, value)
+            }
+          }
+
+          if (reqId && !frameworkMetadataApplied) h.set('X-Request-ID', reqId)
+          if (durMs != null) {
+            let timing = `total;dur=${durMs.toFixed(1)}`
+            // Append per-middleware timing entries. Chrome's network
+            // panel shows these as a stacked timeline under the response.
+            for (const t of middlewareTimings) {
+              timing += `, mw_${t.name};dur=${t.ms.toFixed(1)}`
+            }
+            h.set('Server-Timing', timing)
+          }
+          if (!frameworkMetadataApplied)
+            applySecurityHeaders(h)
         }
 
-        const requested = (enhancedReq)._responseHeaders
-        if (requested && typeof requested === 'object') {
-          for (const [name, value] of Object.entries(requested as Record<string, unknown>)) {
-            if (typeof value === 'string')
-              h.set(name, value)
-          }
-        }
-
-        const frameworkMetadataApplied = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
-        if (reqId && !frameworkMetadataApplied) h.set('X-Request-ID', reqId)
-        if (durMs != null) {
-          let timing = `total;dur=${durMs.toFixed(1)}`
-          // Append per-middleware timing entries. Chrome's network
-          // panel shows these as a stacked timeline under the response.
-          for (const t of middlewareTimings) {
-            timing += `, mw_${t.name};dur=${t.ms.toFixed(1)}`
-          }
-          h.set('Server-Timing', timing)
-        }
-        if (!frameworkMetadataApplied)
-          applySecurityHeaders(h)
-      }
-
-      if (response && typeof (response).headers?.set === 'function') {
         const isErrorJson = response.status >= 400
           && (response.headers.get('content-type') || '').includes('json')
 
