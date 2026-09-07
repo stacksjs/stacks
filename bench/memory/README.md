@@ -47,6 +47,10 @@ seconds, while still answering the same question. The report also shows peak
 RSS during load, load throughput, errors, and the spread across fresh-process
 repeats.
 
+On Linux, the sampler reads RSS and descendant relationships directly from
+`/proc`; it does not launch `ps` during the load or idle windows. Other hosts
+use the portable `ps` fallback and remain direction-only.
+
 Every run writes:
 
 - `report.md`, the human-readable comparison
