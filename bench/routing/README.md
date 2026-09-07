@@ -66,18 +66,18 @@ accident. The safeguards here exist only to stop that:
 |---|---|---|
 | `oha` | yes | Preferred. `brew install oha` or `cargo install oha`. |
 | `bombardier` | yes | `brew install bombardier`. |
-| `autocannon` | yes | JS-native fallback. |
+| `autocannon` | **no** | JS fallback for direction-only comparisons. |
 | `builtin` | **no** | Ships with the harness so a clean checkout can run. |
 
 The runner picks the first available in that order, or takes `--driver <name>`.
 
-The built-in driver is Bun subprocesses driving `fetch`, and it competes with
-the server under test for the same cores and the same runtime — under it, no
-target here saturates a core, which means the *generator* is the limit and every
-row understates every server. It is genuinely useful for "did that change help",
-which is what it was written for. Every report it produces is stamped
-`direction-only`, and numbers from it must not leave this directory. Install
-`oha` before producing anything anyone else will read.
+The JavaScript drivers can become the limit before the server does. The built-in
+driver is Bun subprocesses driving `fetch`, so it also competes with the server
+under test for the same cores and runtime. They are genuinely useful for "did
+that change help", which is what they are kept for. Every report they produce
+is stamped `direction-only`, and numbers from them must not leave this
+directory. Install `oha` or `bombardier` before producing anything anyone else
+will read.
 
 ## The machine matters
 

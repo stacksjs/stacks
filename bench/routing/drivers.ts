@@ -5,10 +5,9 @@
  * are native, both report percentiles, both cost almost nothing per request.
  * `autocannon` is the JS-native fallback. `builtin` is a Bun implementation
  * that ships with this harness so the suite runs on a clean checkout with
- * nothing installed — it is fine for "did that change help", and its output is
- * labelled `direction-only` everywhere it appears, because a generator written
- * in the same runtime as the server under test competes with it for the very
- * thing being measured.
+ * nothing installed. Both are fine for "did that change help", and their
+ * output is labelled `direction-only` everywhere it appears, because a
+ * JavaScript generator can become the limit before the server does.
  *
  * Every adapter returns the same shape, so the runner and the report never
  * learn which tool produced a row.
@@ -187,7 +186,7 @@ const bombardier: Driver = {
 const autocannon: Driver = {
   name: 'autocannon',
   version: () => commandVersion('autocannon'),
-  publishable: true,
+  publishable: false,
   supportsFixedRate: false,
   isAvailable: () => which('autocannon'),
   async run(req) {

@@ -2,6 +2,12 @@ import { describe, expect, it, spyOn } from 'bun:test'
 import process from 'node:process'
 import { DRIVERS, ohaArgs } from './drivers'
 
+describe('publication-capable drivers', () => {
+  it('allows only native generators that can saturate the server', () => {
+    expect(DRIVERS.filter(driver => driver.publishable).map(driver => driver.name)).toEqual(['oha', 'bombardier'])
+  })
+})
+
 describe('oha command', () => {
   it('applies one global fixed request rate with latency correction', () => {
     expect(ohaArgs({
