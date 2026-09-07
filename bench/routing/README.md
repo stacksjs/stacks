@@ -37,7 +37,9 @@ accident. The safeguards here exist only to stop that:
   result to live under that package's `storage/framework/core/*/src` tree, and
   records every resolved path. The Stacks fixture may configure and call public
   APIs, but may not import framework internals or reimplement a data path with
-  `bun:sqlite`.
+  `bun:sqlite`. Tests also reject benchmark selectors in framework source and
+  prevent the fixture from bypassing the router with direct Bun serving,
+  prebuilt responses, or manual JSON serialization.
 - **Every process exposes only benchmark routes.** The Stacks fixture uses the
   framework's public API-server configuration to disable file-based view
   discovery. Without it, this repository's application views would add routes

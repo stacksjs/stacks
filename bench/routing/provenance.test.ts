@@ -35,6 +35,27 @@ describe('Stacks benchmark source provenance', () => {
     expect(specifiers).not.toContain('bun:sqlite')
     expect(source).not.toMatch(/@stacksjs\/[^'"]+\/src(?:\/|['"])/)
     expect(source).not.toContain('storage/framework/core')
+    expect(source).not.toMatch(/\bBun\.serve\s*\(/)
+    expect(source).not.toMatch(/\bnew\s+Response\s*\(/)
+    expect(source).not.toMatch(/\bResponse\.json\s*\(/)
+    expect(source).not.toMatch(/\bJSON\.stringify\s*\(/)
     expect(source).toContain('disableViewRouting(router.bunRouter)')
+  })
+
+  it('keeps benchmark selectors out of framework source', () => {
+    const filesWithBenchmarkSelectors: string[] = []
+    const sourceGlob = new Bun.Glob('**/*.ts')
+
+    for (const specifier of STACKS_BENCHMARK_MODULES) {
+      const packageName = specifier.slice('@stacksjs/'.length)
+      const sourceRoot = join(REPO_ROOT, 'storage', 'framework', 'core', packageName, 'src')
+      for (const file of sourceGlob.scanSync({ cwd: sourceRoot })) {
+        const source = readFileSync(join(sourceRoot, file), 'utf8')
+        if (/\bBENCH_[A-Z0-9_]+\b/.test(source))
+          filesWithBenchmarkSelectors.push(`${packageName}/src/${file}`)
+      }
+    }
+
+    expect(filesWithBenchmarkSelectors).toEqual([])
   })
 })
