@@ -474,33 +474,21 @@ const CSRF_REQUIRED = 2
 type RouteCsrfMode = typeof CSRF_DEFAULT | typeof CSRF_SKIPPED | typeof CSRF_REQUIRED
 
 /**
- * Mutable route-owned CSRF state. The handler and chainable route retain the
- * same object, so `.skipCsrf()` and `.requireCsrf()` stay live without two
- * global Set lookups on every protected request.
- */
-interface RouteCsrfState {
-  mode: RouteCsrfMode
-}
-const routeCsrfRegistry = new Map<string, RouteCsrfState>()
-
-/**
- * Per-route rate-limit config registered via `.rateLimit(max, window)`
- * on the chainable route builder (stacksjs/stacks#1870 R-8). The
- * `createMiddlewareHandler` request entry point reads this once per
- * call and invokes the shared `rateLimit()` primitive before the
- * action body. Storing here (instead of as part of the action
- * definition) lets two routes registered against the same action
- * apply different limits, mirroring the `.skipCsrf()` /
- * `.requireCsrf()` split.
+ * Mutable route-owned policy. The handler and chainable route retain one
+ * object so middleware, CSRF overrides, and rate limits stay live without
+ * separate registry lookups. Rate-limit state remains per route, allowing two
+ * routes for the same action to declare different quotas.
  */
 interface RouteRateLimitConfig {
   max: number
   windowSeconds: number
 }
-interface RouteRateLimitState {
-  config?: RouteRateLimitConfig
+interface RouteRuntimeState {
+  middleware: string[]
+  csrfMode: RouteCsrfMode
+  rateLimit?: RouteRateLimitConfig
 }
-const routeRateLimitRegistry = new Map<string, RouteRateLimitState>()
+const routeStateRegistry = new Map<string, RouteRuntimeState>()
 
 /**
  * Resolve a chainable-form `window` arg (`'minute'` or `300`) to a
@@ -925,10 +913,10 @@ export function listNamedRoutes(): Record<string, string> {
  */
 export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> {
   const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> = []
-  // routeMiddlewareRegistry keys look like 'METHOD:/path'. We intentionally
+  // routeStateRegistry keys look like 'METHOD:/path'. We intentionally
   // walk it (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
-  for (const key of routeMiddlewareRegistry.keys()) {
+  for (const key of routeStateRegistry.keys()) {
     if (seen.has(key)) continue
     seen.add(key)
     const idx = key.indexOf(':')
@@ -1508,12 +1496,7 @@ export function installMiddlewareHotReload(): () => void {
 }
 
 /**
- * Registry for route middleware - maps route paths to middleware names
- */
-const routeMiddlewareRegistry = new Map<string, string[]>()
-
-/**
- * Drop every registered route → middleware mapping.
+ * Drop every registered route-state mapping.
  *
  * The registry is module-scoped and lives for the life of the process, which
  * is what `listRegisteredRoutes()` and the boot-time validators read. That is
@@ -1532,9 +1515,9 @@ export function clearRouteMiddlewareRegistry(): void {
   // be read without a Map lookup on every dispatch. Empty those arrays before
   // dropping the registry entries so this test/reset seam still affects live
   // handlers exactly as it did before.
-  for (const middleware of routeMiddlewareRegistry.values())
-    middleware.length = 0
-  routeMiddlewareRegistry.clear()
+  for (const state of routeStateRegistry.values())
+    state.middleware.length = 0
+  routeStateRegistry.clear()
 }
 
 /**
@@ -1628,7 +1611,8 @@ async function parseMiddlewareEntryUncached(middleware: string): Promise<ParsedM
  */
 export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: string, routes: string[] }>> {
   const usage = new Map<string, { parsed: ParsedMiddleware, routes: string[] }>()
-  for (const [routeKey, entries] of routeMiddlewareRegistry) {
+  for (const [routeKey, state] of routeStateRegistry) {
+    const entries = state.middleware
     for (const entry of entries) {
       const parsed = await parseMiddlewareEntry(entry)
       // Reported without the parameters - those are the middleware's argument,
@@ -1674,9 +1658,8 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
 function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
-  const routeMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
-  const routeCsrf = routeCsrfRegistry.get(routeKey)
-  const routeRateLimit = routeRateLimitRegistry.get(routeKey)
+  const routeState = routeStateRegistry.get(routeKey)
+  const routeMiddleware = routeState?.middleware ?? EMPTY_MIDDLEWARE_ENTRIES
 
   /*
    * Everything about this route that a request cannot change, decided here.
@@ -1851,7 +1834,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       && synchronousInlineHandler
       && !routeAcceptsCsrf
       && routeMiddleware.length === 0
-      && !routeRateLimit?.config
+      && !routeState?.rateLimit
     ) {
       preparedBaseResult = runWithRequestArgument(enhancedReq, wrappedBase, enhancedReq)
       hasPreparedBaseResult = true
@@ -1867,7 +1850,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       // skip the call entirely. The shared limiter cache inside
       // `rate-limit.ts` keeps the bucket math coherent across requests
       // for the same `routeKey:max:window` shape.
-      const rl = routeRateLimit?.config
+      const rl = routeState?.rateLimit
       if (rl) {
         try {
           const { rateLimit: enforceRateLimit } = await import('./rate-limit')
@@ -1902,7 +1885,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       let shouldInjectCsrf = false
       if (routeAcceptsCsrf) {
         const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
-        const routeCsrfMode = routeCsrf?.mode ?? CSRF_DEFAULT
+        const routeCsrfMode = routeState?.csrfMode ?? CSRF_DEFAULT
         const routeSkipped = routeCsrfMode === CSRF_SKIPPED
         const routeRequired = routeCsrfMode === CSRF_REQUIRED
         // Check action-level cache: an action exporting `skipCsrf: true`
@@ -2368,7 +2351,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
     return rememberStacksRouteHandler(handleAsync)
 
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
-    if (routeMiddleware.length !== 0 || routeRateLimit?.config)
+    if (routeMiddleware.length !== 0 || routeState?.rateLimit)
       return handleAsync(req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
@@ -2432,15 +2415,9 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
   if (shadowed)
     return createInertRoute()
 
-  // Initialize middleware list for this route
-  if (!routeMiddlewareRegistry.has(routeKey)) {
-    routeMiddlewareRegistry.set(routeKey, [])
-  }
-
   // Extract the path from routeKey (format: "METHOD:/path")
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
-  const routeCsrf = routeCsrfRegistry.get(routeKey)
-  const routeRateLimit = routeRateLimitRegistry.get(routeKey)
+  const routeState = routeStateRegistry.get(routeKey)
 
   const chain: ChainableRoute = {
     /**
@@ -2458,7 +2435,7 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
      * cheapest possible place to learn about it.
      */
     middleware(name: MiddlewareReference | readonly MiddlewareReference[]) {
-      const middlewareList = routeMiddlewareRegistry.get(routeKey)
+      const middlewareList = routeState?.middleware
       if (!middlewareList)
         return chain
 
@@ -2484,15 +2461,15 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
 
     skipCsrf() {
       // Last call wins, so skip and require remain mutually exclusive.
-      if (routeCsrf)
-        routeCsrf.mode = CSRF_SKIPPED
+      if (routeState)
+        routeState.csrfMode = CSRF_SKIPPED
       return chain
     },
 
     requireCsrf() {
       // Forced-on mode overrides the action-level skip cache.
-      if (routeCsrf)
-        routeCsrf.mode = CSRF_REQUIRED
+      if (routeState)
+        routeState.csrfMode = CSRF_REQUIRED
       return chain
     },
 
@@ -2505,8 +2482,8 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
         throw new Error(`[Router] .rateLimit(): max must be a positive number, got ${String(max)}`)
       }
       const windowSeconds = rateLimitWindowToSeconds(window)
-      if (routeRateLimit)
-        routeRateLimit.config = { max: Math.floor(max), windowSeconds }
+      if (routeState)
+        routeState.rateLimit = { max: Math.floor(max), windowSeconds }
       return chain
     },
   }
@@ -4489,12 +4466,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Create the route-owned array before its request handler so the handler
     // can retain the reference. Chainable `.middleware()` calls mutate this
     // same array after registration without requiring a Map lookup per request.
-    if (!shadowed)
-      routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
-    if (!shadowed)
-      routeCsrfRegistry.set(routeKey, { mode: CSRF_DEFAULT })
-    if (!shadowed)
-      routeRateLimitRegistry.set(routeKey, {})
+    if (!shadowed) {
+      routeStateRegistry.set(routeKey, {
+        middleware: [...currentGroupMiddleware],
+        csrfMode: CSRF_DEFAULT,
+      })
+    }
 
     // Pre-populate apiResponse registry with the group flag so the request
     // handler can flip `req._forceJson` without re-walking the group stack.
