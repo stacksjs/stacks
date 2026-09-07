@@ -34,6 +34,8 @@ let _jsonHeaderTemplateCache: Headers | undefined
 interface JsonLengthHeaderTemplates {
   plain: { headers: Headers }
   withRequestId?: { headers: Headers }
+  withCsrf?: { headers: Headers }
+  withCsrfAndRequestId?: { headers: Headers }
 }
 let _jsonLengthHeaderTemplateCache: Map<number, JsonLengthHeaderTemplates> | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
@@ -156,7 +158,7 @@ export function createJsonSecurityHeaders(): Headers {
 }
 
 /** Create an already-serialized JSON response from the cached template. */
-export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string): Response {
+export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string, csrfCookie?: string): Response {
   const baseHeaders = jsonSecurityHeadersTemplate()
   if (bodyLength === undefined)
     return new Response(body, { headers: baseHeaders })
@@ -170,6 +172,16 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
     templates.set(bodyLength, lengthTemplates)
   }
   if (lengthTemplates) {
+    if (csrfCookie) {
+      const responseInit = requestId
+        ? lengthTemplates.withCsrfAndRequestId ??= { headers: new Headers(lengthTemplates.plain.headers) }
+        : lengthTemplates.withCsrf ??= { headers: new Headers(lengthTemplates.plain.headers) }
+      responseInit.headers.set('Set-Cookie', csrfCookie)
+      if (requestId)
+        responseInit.headers.set('X-Request-ID', requestId)
+      return new Response(body, responseInit)
+    }
+
     if (!requestId)
       return new Response(body, lengthTemplates.plain)
 
@@ -186,6 +198,8 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
   response.headers.set('Content-Length', String(bodyLength))
   if (requestId)
     response.headers.set('X-Request-ID', requestId)
+  if (csrfCookie)
+    response.headers.append('Set-Cookie', csrfCookie)
   return response
 }
 

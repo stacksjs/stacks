@@ -3355,8 +3355,15 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // also produce an empty body.
   const body = JSON.stringify(result) ?? ''
   const bodyLength = Buffer.byteLength(body)
+  const requestMarkers = req as unknown as Record<symbol, unknown>
+  const nativeColdRequest = requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
+    && typeof requestMarkers[CSRF_SECURE_TRANSPORT] === 'boolean'
+  const csrf = nativeColdRequest ? loadCsrfModule() : null
+  const csrfCookie = canPreapplyMetadata && csrf && !(csrf instanceof Promise) && typeof csrf.createCsrfCookie === 'function'
+    ? csrf.createCsrfCookie(req as unknown as Request, (req as unknown as { _csrfToken?: string })._csrfToken)
+    : undefined
   const response = canPreapplyMetadata
-    ? secureSerializedJsonResponse(body, bodyLength, req._requestId)
+    ? secureSerializedJsonResponse(body, bodyLength, req._requestId, csrfCookie)
     : new Response(body, { headers: createJsonSecurityHeaders() })
   if (!canPreapplyMetadata)
     response.headers.set('Content-Length', String(bodyLength))
@@ -3367,6 +3374,8 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     frameworkResponse[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
     frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH] = bodyLength
   }
+  if (csrfCookie)
+    requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
   return response
 }
 
@@ -3968,6 +3977,7 @@ function fuseRequestEnhancements(router: Router, initializeRequestIds = true): v
 interface CsrfModule {
   generateCsrfToken: () => string
   CSRF_COOKIE_NAME: string
+  createCsrfCookie?: (req: Request, token?: string) => string
   seedCsrfCookieIfMissing: (req: Request, res: Response, token?: string, responseHasNoCookies?: boolean) => Response
 }
 

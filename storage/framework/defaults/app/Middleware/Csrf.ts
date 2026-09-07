@@ -128,6 +128,15 @@ function responseAlreadySeeds(response: Response): boolean {
   )
 }
 
+export function createCsrfCookie(req: Request, minted?: string): string {
+  const token = minted || generateCsrfToken()
+  const knownSecureTransport = (req as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT]
+  const secure = knownSecureTransport === true || (knownSecureTransport === undefined && req.url.startsWith('https://'))
+    ? '; Secure'
+    : ''
+  return `${CSRF_COOKIE_NAME}=${token}; Path=/; SameSite=Lax; Max-Age=7200${secure}`
+}
+
 export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string, responseHasNoCookies = false): Response {
   // A token the router minted before rendering wins over "the header already
   // has one", because it put that value in the header itself - and the page
@@ -149,12 +158,7 @@ export function seedCsrfCookieIfMissing(req: Request, response: Response, minted
   if (!responseHasNoCookies && responseAlreadySeeds(response))
     return response
 
-  const token = minted || generateCsrfToken()
-  const knownSecureTransport = (req as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT]
-  const secure = knownSecureTransport === true || (knownSecureTransport === undefined && req.url.startsWith('https://'))
-    ? '; Secure'
-    : ''
-  const cookie = `${CSRF_COOKIE_NAME}=${token}; Path=/; SameSite=Lax; Max-Age=7200${secure}`
+  const cookie = createCsrfCookie(req, minted)
 
   // Append (not Set) so multiple Set-Cookie headers can coexist with any
   // cookies the action handler set itself.

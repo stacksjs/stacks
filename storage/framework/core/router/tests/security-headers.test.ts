@@ -187,4 +187,20 @@ describe('applySecurityHeaders', () => {
     expect(second.headers.get('X-Request-ID')).toBe('request-two')
     expect(absent.headers.get('X-Request-ID')).toBeNull()
   })
+
+  test('isolates CSRF cookies stored in shared length templates', () => {
+    const first = secureSerializedJsonResponse('{}', 2, 'request-one', 'csrf=one')
+    const second = secureSerializedJsonResponse('{}', 2, 'request-two', 'csrf=two')
+    const withoutId = secureSerializedJsonResponse('{}', 2, undefined, 'csrf=three')
+    const absent = secureSerializedJsonResponse('{}', 2)
+
+    expect(first.headers.get('Set-Cookie')).toBe('csrf=one')
+    expect(first.headers.get('X-Request-ID')).toBe('request-one')
+    expect(second.headers.get('Set-Cookie')).toBe('csrf=two')
+    expect(second.headers.get('X-Request-ID')).toBe('request-two')
+    expect(withoutId.headers.get('Set-Cookie')).toBe('csrf=three')
+    expect(withoutId.headers.get('X-Request-ID')).toBeNull()
+    expect(absent.headers.get('Set-Cookie')).toBeNull()
+    expect(absent.headers.get('X-Request-ID')).toBeNull()
+  })
 })
