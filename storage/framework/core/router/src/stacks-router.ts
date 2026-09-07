@@ -667,7 +667,7 @@ const routeHandlerKeyRegistry = new BoundedMap<string, string>(ACTION_CACHE_MAX)
  * silently document every one of its endpoints as accepting nothing, which is
  * the exact failure the handler registry was added to fix for the string form.
  */
-const routeActionRegistry = new Map<string, RouterAction>()
+let routeActionRegistry: Map<string, RouterAction> | undefined
 
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -716,7 +716,7 @@ interface NamedRoute {
   /** Pre-compiled `:name(?=$|/)` regex per param, anchored to a slash boundary. */
   colonRegex: Map<string, RegExp>
 }
-const namedRouteRegistry = new Map<string, NamedRoute>()
+let namedRouteRegistry: Map<string, NamedRoute> | undefined
 
 function compileNamedRoute(path: string): NamedRoute {
   const paramNames = extractRouteParamNames(path)
@@ -806,9 +806,10 @@ export function url<TName extends KnownRouteName>(
   ...params: RequiresUrlParams<TName> extends true ? [params: UrlParams<TName>] : [params?: UrlParams<TName>]
 ): string
 export function url(routeName: string, params: Record<string, string | number> = {}): string {
-  const named = namedRouteRegistry.get(routeName)
+  const named = namedRouteRegistry?.get(routeName)
   if (!named) {
-    throw new Error(`Route '${routeName}' is not defined. Available routes: ${[...namedRouteRegistry.keys()].join(', ')}`)
+    const availableRoutes = namedRouteRegistry ? [...namedRouteRegistry.keys()].join(', ') : ''
+    throw new Error(`Route '${routeName}' is not defined. Available routes: ${availableRoutes}`)
   }
 
   // Catch missing required path params before they end up as literal
@@ -872,7 +873,7 @@ export function url(routeName: string, params: Record<string, string | number> =
  * codegen/test cases and for detecting typos before runtime.
  */
 export function routeParams(routeName: string): string[] {
-  const named = namedRouteRegistry.get(routeName)
+  const named = namedRouteRegistry?.get(routeName)
   return named ? [...named.paramNames] : []
 }
 
@@ -890,8 +891,10 @@ export function routeParams(routeName: string): string[] {
  */
 export function listNamedRoutes(): Record<string, string> {
   const out: Record<string, string> = {}
-  for (const [name, named] of namedRouteRegistry.entries())
-    out[name] = named.path
+  if (namedRouteRegistry) {
+    for (const [name, named] of namedRouteRegistry)
+      out[name] = named.path
+  }
   return out
 }
 
@@ -922,15 +925,17 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
     const method = key.slice(0, idx)
     const path = key.slice(idx + 1)
     let routeName: string | undefined
-    for (const [n, named] of namedRouteRegistry.entries()) {
-      if (named.path === path) { routeName = n; break }
+    if (namedRouteRegistry) {
+      for (const [n, named] of namedRouteRegistry) {
+        if (named.path === path) { routeName = n; break }
+      }
     }
     out.push({
       method,
       path,
       name: routeName,
       handler: routeHandlerKeyRegistry.get(key),
-      action: routeActionRegistry.get(key),
+      action: routeActionRegistry?.get(key),
     })
   }
   return out.sort((a, b) => a.path.localeCompare(b.path))
@@ -981,11 +986,12 @@ const DEFAULT_MIDDLEWARE_PRIORITY = 10
  * (NaN, negative, or non-numeric). Tracked per name+value so a busy chain
  * doesn't spam the log on every request.
  */
-const _warnedInvalidPriorities = new Set<string>()
+let _warnedInvalidPriorities: Set<string> | undefined
 function warnInvalidMiddlewarePriority(name: string, raw: unknown): void {
   const key = `${name}:${String(raw)}`
-  if (_warnedInvalidPriorities.has(key)) return
-  _warnedInvalidPriorities.add(key)
+  if (_warnedInvalidPriorities?.has(key)) return
+  const warnedPriorities = _warnedInvalidPriorities ??= new Set()
+  warnedPriorities.add(key)
   log.warn(
     `[Router] Middleware '${name}' declared an invalid priority (${String(raw)}). `
     + `Priorities must be a finite non-negative number; falling back to default ${DEFAULT_MIDDLEWARE_PRIORITY}.`,
@@ -1329,7 +1335,7 @@ export async function loadMiddlewareHandlers(): Promise<Record<string, Middlewar
  * Kept separate from `middlewareCache` so `'auth'` and `'!auth'` never collide,
  * and cleared alongside it on hot reload.
  */
-const negatedMiddlewareCache = new Map<string, MiddlewareHandler>()
+let negatedMiddlewareCache: Map<string, MiddlewareHandler> | undefined
 
 /**
  * Whether a thrown value is a middleware saying "no" rather than crashing.
@@ -1363,7 +1369,7 @@ function isShortCircuit(thrown: unknown): boolean {
  * middleware alias(es)".
  */
 function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHandler {
-  const cached = negatedMiddlewareCache.get(name)
+  const cached = negatedMiddlewareCache?.get(name)
   if (cached)
     return cached
 
@@ -1385,7 +1391,8 @@ function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHan
     },
   }
 
-  negatedMiddlewareCache.set(name, negated)
+  const cache = negatedMiddlewareCache ??= new Map()
+  cache.set(name, negated)
 
   return negated
 }
@@ -1413,7 +1420,7 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
  */
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
-  negatedMiddlewareCache.clear()
+  negatedMiddlewareCache = undefined
   resolvedMiddlewareEntryCache = new Map()
   resolvedCsrfOnlyMiddleware = undefined
   // In-flight parses keep their original map and cannot refill this cache
@@ -1429,7 +1436,7 @@ export function clearMiddlewareCache(): void {
   // than serving from a stale answer (stacksjs/stacks#1863 T-8).
   actionSkipsCsrfCache.clear()
   routeHandlerKeyRegistry.clear()
-  routeActionRegistry.clear()
+  routeActionRegistry = undefined
   // Same reasoning for the resolved CSRF middleware module: editing
   // `app/Middleware/Csrf.ts` in dev has to be picked up without a restart, and
   // it is now held as a module reference rather than re-imported per request.
@@ -2450,7 +2457,8 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
     name(routeName: string) {
       // Pre-compile the placeholder regex once at registration time;
       // every later `url()` call reads from this cached shape.
-      namedRouteRegistry.set(routeName, compileNamedRoute(routePath))
+      const registry = namedRouteRegistry ??= new Map()
+      registry.set(routeName, compileNamedRoute(routePath))
       return chain
     },
 
@@ -4484,7 +4492,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // hands it straight to the OpenAPI generator, which would otherwise have
     // no file to read the schema out of.
     if (!shadowed && isRouterAction(_handler)) {
-      routeActionRegistry.set(routeKey, _handler)
+      const registry = routeActionRegistry ??= new Map()
+      registry.set(routeKey, _handler)
     }
 
     return { fullPath, routeKey, shadowed }
