@@ -51,8 +51,9 @@ The Stacks fixture also disables file-based view discovery through the public
 router API, so the repository's application pages do not enter a one-route API
 memory comparison.
 
-Before and after each measurement, the runner refuses to proceed when another
-process is using at least 75% of one CPU core. Pass `--allow-busy-host` only for
+Before and after each measurement, the runner refuses to proceed when one
+process or combined competing work is using at least 75% of one CPU core.
+Pass `--allow-busy-host` only for
 diagnostic runs; the report records every observed process and remains
 non-publishable.
 
@@ -116,7 +117,7 @@ described above; altered smoke or diagnostic runs remain direction-only.
 --runs         fresh-process repeats per target (default 1)
 --output       explicit output directory
 --allow-busy-host
-               run despite another process consuming at least 75% of a core
+               run despite competing processes consuming 75% of a core
 ```
 
 Use `--runs 3` on benchmark hardware when process-to-process spread matters.

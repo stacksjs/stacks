@@ -16,11 +16,24 @@ export function parseProcessCpu(output: string, ownPid = process.pid): BusyProce
       continue
     const pid = Number(match[1])
     const cpuPercent = Number(match[2])
-    if (pid === ownPid || !Number.isFinite(cpuPercent) || cpuPercent < BUSY_PROCESS_CPU_PERCENT)
+    if (pid === ownPid || !Number.isFinite(cpuPercent) || cpuPercent <= 0)
       continue
     processes.push({ pid, cpuPercent, command: match[3]! })
   }
-  return processes.sort((a, b) => b.cpuPercent - a.cpuPercent)
+  processes.sort((a, b) => b.cpuPercent - a.cpuPercent)
+  const individuallyBusy = processes.filter(candidate => candidate.cpuPercent >= BUSY_PROCESS_CPU_PERCENT)
+  if (individuallyBusy.length > 0)
+    return individuallyBusy
+
+  const contributors: BusyProcess[] = []
+  let combinedCpu = 0
+  for (const candidate of processes) {
+    contributors.push(candidate)
+    combinedCpu += candidate.cpuPercent
+    if (combinedCpu >= BUSY_PROCESS_CPU_PERCENT)
+      return contributors
+  }
+  return []
 }
 
 /** Best-effort preflight. Unsupported hosts return no readings. */

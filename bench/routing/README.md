@@ -46,8 +46,9 @@ accident. The safeguards here exist only to stop that:
   during `serve()` even though every peer process contains only the selected
   scenario.
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
-- **Busy hosts are rejected around every measurement.** Any competing process
-  using at least 75% of one core before a server starts or after it stops aborts
+- **Busy hosts are rejected around every measurement.** One competing process,
+  or combined competing work, using at least 75% of one core before a server
+  starts or after it stops aborts
   the run. `--allow-busy-host` is an explicit direction-only override, recorded
   in the report.
 - **Three runs, median reported, spread printed beside it.** A single run on a
@@ -240,7 +241,7 @@ zero.
 --runs         repeats per scenario, median reported (default 3)
 --no-db        skip the SQLite fixture and the db-roundtrip scenario
 --allow-busy-host
-               run despite a competing process using at least 75% of a core
+               run despite competing processes using 75% of a core
 --output       explicit output directory (default results/<timestamp>)
 ```
 

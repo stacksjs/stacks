@@ -122,7 +122,7 @@ const HELP = `bun bench/memory/run.ts [flags]
   --runs         positive integer fresh-process repeats per target (default 1)
   --output       explicit output directory (default results/<timestamp>)
   --allow-busy-host
-                 run despite another process consuming at least 75% of a core`
+                 run despite competing processes consuming 75% of a core`
 
 interface SelectedTarget extends MemoryProfileTarget {
   target: Target

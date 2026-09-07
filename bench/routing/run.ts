@@ -121,7 +121,7 @@ const HELP = `bun bench/routing/run.ts [flags]
   --runs         positive integer repeats per scenario, median reported (default 3)
   --no-db        skip the SQLite fixture and the db-roundtrip scenario
   --allow-busy-host
-                 run despite another process consuming at least 75% of a core
+                 run despite competing processes consuming 75% of a core
   --output       explicit output directory (default results/<timestamp>)
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
