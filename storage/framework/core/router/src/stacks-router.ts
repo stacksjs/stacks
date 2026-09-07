@@ -3438,6 +3438,11 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
  * expect from a paginated collection.
  */
 function buildPaginatorLinkHeader(value: unknown): string | null {
+  // Almost every JSON response is a plain object. Reject that dominant shape
+  // with one property read before invoking the three richer paginator guards,
+  // each of which otherwise repeats the object and `data` checks.
+  if (value === null || typeof value !== 'object' || !Array.isArray((value as { data?: unknown }).data))
+    return null
   if (!isPaginator(value) && !isSimplePaginator(value) && !isCursorPaginator(value))
     return null
   const v = value as { prev_page_url?: string | null, next_page_url?: string | null, first_page_url?: string, last_page_url?: string }
