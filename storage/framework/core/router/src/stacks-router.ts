@@ -3612,7 +3612,7 @@ const nativeRequestBytes = Request.prototype.bytes
 const nativeRequestArrayBuffer = Request.prototype.arrayBuffer
 const nativeRequestBlob = Request.prototype.blob
 const nativeRequestClone = Request.prototype.clone
-const requestBodyEncoder = new TextEncoder()
+let requestBodyEncoder: TextEncoder | undefined
 let UploadedFileConstructor: typeof import('@stacksjs/storage/uploaded-file').UploadedFile | undefined
 
 function createUploadedFile(file: File): UploadedFile {
@@ -3644,12 +3644,12 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   bytes() {
     return this._rawBody === undefined
       ? nativeRequestBytes.call(this)
-      : Promise.resolve(requestBodyEncoder.encode(this._rawBody))
+      : Promise.resolve((requestBodyEncoder ??= new TextEncoder()).encode(this._rawBody))
   },
   arrayBuffer() {
     if (this._rawBody === undefined)
       return nativeRequestArrayBuffer.call(this)
-    const bytes = requestBodyEncoder.encode(this._rawBody)
+    const bytes = (requestBodyEncoder ??= new TextEncoder()).encode(this._rawBody)
     return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
   },
   blob() {
