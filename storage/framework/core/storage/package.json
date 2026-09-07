@@ -69,7 +69,7 @@
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.12.10",
+    "@stacksjs/ts-cloud": "^0.12.15",
     "ts-images": "^0.2.11"
   },
   "devDependencies": {
