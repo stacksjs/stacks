@@ -11,7 +11,7 @@ try {
   ;({ default: express } = await import('express') as any)
 }
 catch {
-  console.error('[bench] express is not installed, run `bun install --cwd bench/routing` to include it')
+  console.error('[bench] express is not installed, run `bun install --cwd bench/routing --frozen-lockfile`')
   process.exit(78)
 }
 

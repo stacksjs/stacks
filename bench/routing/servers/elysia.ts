@@ -1,10 +1,9 @@
 /**
  * Elysia under test, if it is installed.
  *
- * Not a dependency of this repo — `bun add -d elysia` inside `bench/routing`
- * (or anywhere Bun will resolve it from) enables this server. Absent, the
- * process exits 78 and the runner records the framework as skipped rather than
- * as a zero.
+ * The benchmark package pins Elysia and its lockfile. If dependencies have not
+ * been installed, the process exits 78 and the runner records the framework as
+ * skipped rather than as a zero.
  */
 
 import process from 'node:process'
@@ -21,7 +20,7 @@ try {
   ;({ Elysia, t } = await import('elysia') as any)
 }
 catch {
-  console.error('[bench] elysia is not installed — run `bun add -d elysia` to include it')
+  console.error('[bench] elysia is not installed, run `bun install --cwd bench/routing --frozen-lockfile`')
   process.exit(78)
 }
 

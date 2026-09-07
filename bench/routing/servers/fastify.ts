@@ -11,7 +11,7 @@ try {
   ;({ default: fastify } = await import('fastify') as any)
 }
 catch {
-  console.error('[bench] fastify is not installed, run `bun install --cwd bench/routing` to include it')
+  console.error('[bench] fastify is not installed, run `bun install --cwd bench/routing --frozen-lockfile`')
   process.exit(78)
 }
 

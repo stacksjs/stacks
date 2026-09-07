@@ -222,12 +222,13 @@ applying each target's settings, so shell variables from a previous run cannot
 silently turn a stock target into a tuned or minimal one.
 It also fixes the database driver to SQLite, matching the isolated fixture.
 
-## Optional targets
+## Peer targets
 
-Elysia and Hono are not dependencies of this repo. Install them where Bun will
-resolve them (`bun add -d elysia hono`) and they join the run; without them the
-runner records them as skipped and the report says so, rather than reporting a
-zero.
+Elysia, Express, Fastify, and Hono are exact dependencies of the isolated
+benchmark package. Install its locked dependency set with
+`bun install --cwd bench/routing --frozen-lockfile`. If a dependency is absent,
+the runner records that target as skipped and the report says so rather than
+reporting a zero.
 
 ## Flags
 

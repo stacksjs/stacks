@@ -1,8 +1,8 @@
 /**
  * Hono under test, if it is installed.
  *
- * Same opt-in contract as the Elysia server: `bun add -d hono`, or the runner
- * records it as skipped. Validation goes through Hono's own `validator()`
+ * The benchmark package pins Hono and its lockfile. If dependencies have not
+ * been installed, the runner records it as skipped. Validation goes through Hono's own `validator()`
  * seam with a hand-written check, rather than `@hono/zod-validator`, so no
  * second package is needed — worth knowing when reading scenario 3, since a
  * pair of `typeof` tests is cheaper than a compiled schema.
@@ -21,7 +21,7 @@ try {
   ;({ Hono } = await import('hono') as any)
 }
 catch {
-  console.error('[bench] hono is not installed — run `bun add -d hono` to include it')
+  console.error('[bench] hono is not installed, run `bun install --cwd bench/routing --frozen-lockfile`')
   process.exit(78)
 }
 

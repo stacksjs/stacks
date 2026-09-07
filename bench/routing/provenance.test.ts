@@ -77,4 +77,12 @@ describe('Stacks benchmark source provenance', () => {
       expect(source.match(/\bhostname\b/g)?.length).toBeGreaterThanOrEqual(2)
     }
   })
+
+  it('directs every peer fixture to the frozen comparison set', () => {
+    for (const server of ['elysia.ts', 'express.ts', 'fastify.ts', 'hono.ts']) {
+      const source = readFileSync(join(import.meta.dir, 'servers', server), 'utf8')
+      expect(source).toContain('bun install --cwd bench/routing --frozen-lockfile')
+      expect(source).not.toContain('bun add')
+    }
+  })
 })
