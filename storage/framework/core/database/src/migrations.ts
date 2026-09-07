@@ -8,7 +8,7 @@
 import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
-import { isPackageMigration } from './package-migrations'
+import { isPackageMigration, stagePackageMigrations } from './package-migrations'
 import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -1541,6 +1541,37 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     const dialect = getDialect()
     const lockDb = dialect === 'sqlite' ? null : createQueryBuilder()
     lockHandle = await acquireMigrationLock(dialect, lockDb)
+
+    /*
+     * Publish each installed package's migrations into the corpus.
+     *
+     * Between the lock and the preprocessing on purpose. After the lock for
+     * the same reason preprocessing is: two runners writing the corpus at once
+     * corrupt each other's disk state. Before the preprocessing because a
+     * package's SQL needs the same dialect treatment the application's gets -
+     * staging it afterwards would hand SQLite the Postgres-only DDL that
+     * `preprocessSqliteMigrations` exists to drop.
+     */
+    try {
+      // Imported dynamically, the way every other `@stacksjs/config` use in
+      // this file is: it does not resolve cleanly in every embedding, and a
+      // bare test that never installed a package should not fail to load.
+      const { packageMigrationRoots } = await import('@stacksjs/config')
+      const staged = stagePackageMigrations({
+        roots: packageMigrationRoots(),
+        corpusDir: migrationDirectory(dialect),
+      })
+      if (staged.length > 0) {
+        const packages = [...new Set(staged.map(s => s.package))].join(', ')
+        log.info(`Staged ${staged.length} migration(s) from ${packages}`)
+      }
+    }
+    catch (error) {
+      // An application's own migrations do not depend on this having worked,
+      // and refusing to migrate because a package shipped an unreadable
+      // directory would make one bad dependency block every deploy.
+      log.warn(`Could not stage package migrations: ${error instanceof Error ? error.message : String(error)}`)
+    }
 
     // Preprocess migrations for SQLite compatibility — runs *after*
     // the lock is held so concurrent processes can't corrupt each
