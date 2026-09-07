@@ -102,7 +102,6 @@ generated model types stay precise.
 | `useApi` | Generates REST actions and routes: `{ uri, routes, middleware? }` |
 | `useSearch` (alias `searchable`) | Search-engine indexing: `{ displayable, searchable, sortable, filterable }` |
 | `useSocials` | OAuth identities, e.g. `['github']` |
-| `useActivityLog` | Writes an `Activity` row per change |
 | `observe` | Emits `{model}:created` / `:updated` / `:deleted` events |
 | `billable` | Stripe methods (`checkout()`, `activeSubscription()`, ...) |
 | `taggable` / `categorizable` / `commentable` / `likeable` | Pivot tables and their relation methods |

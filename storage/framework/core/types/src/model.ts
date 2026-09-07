@@ -219,14 +219,6 @@ export interface SeedOptions {
   fixtures?: Array<Record<string, unknown>>
 }
 
-type LogAttribute = string
-
-interface ActivityLogOption {
-  exclude: LogAttribute[]
-  include: LogAttribute[] // default to "*"
-  logOnly: LogAttribute[]
-}
-
 export interface Relations {
   hasOne: HasOne<ModelNames> | ModelNames[]
   hasMany: HasMany<ModelNames> | ModelNames[]
@@ -338,7 +330,6 @@ export interface ModelOptions extends Base {
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean
     billable?: boolean
-    useActivityLog?: boolean | ActivityLogOption
 
     likeable?: boolean | LikeableOptions
 
