@@ -500,6 +500,13 @@ const CSRF_SKIPPED = 1
 const CSRF_REQUIRED = 2
 type RouteCsrfMode = typeof CSRF_DEFAULT | typeof CSRF_SKIPPED | typeof CSRF_REQUIRED
 
+const ROUTE_ACCEPTS_CSRF = 1 << 0
+const ROUTE_MAY_HAVE_BODY = 1 << 1
+const ROUTE_RENDERS_CSRF = 1 << 2
+const ROUTE_SEEDS_CSRF = 1 << 3
+const ROUTE_FORCES_JSON = 1 << 4
+const ROUTE_ACTION_SKIPS_CSRF = 1 << 5
+
 /**
  * Mutable route-owned policy. The handler and chainable route retain one
  * object so middleware, CSRF overrides, and rate limits stay live without
@@ -1769,17 +1776,22 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
    * `.rateLimit()`) are retained as route-owned state so updates stay live.
    */
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-  const routeAcceptsCsrf = csrfEnabled
-    && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE')
-  const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
-  const routeRendersCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD')
-  const routeSeedsCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS')
-  const forcesJsonByGroup = routeApiResponseRegistry?.has(routeKey) ?? false
+  let routeFlags = 0
+  if (csrfEnabled && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE'))
+    routeFlags |= ROUTE_ACCEPTS_CSRF
+  if (routeMethod !== 'GET' && routeMethod !== 'HEAD')
+    routeFlags |= ROUTE_MAY_HAVE_BODY
+  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD'))
+    routeFlags |= ROUTE_RENDERS_CSRF
+  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'))
+    routeFlags |= ROUTE_SEEDS_CSRF
+  if (routeApiResponseRegistry?.has(routeKey))
+    routeFlags |= ROUTE_FORCES_JSON
   // Direct actions are already resolved and immutable, so retain their CSRF
   // flag now. Only string actions need the shared cache that their lazy import
   // fills later.
-  const directActionSkipsCsrf = isRouterAction(handler)
-    && (handler.skipCsrf === true || handler.csrf === false)
+  if (isRouterAction(handler) && (handler.skipCsrf === true || handler.csrf === false))
+    routeFlags |= ROUTE_ACTION_SKIPS_CSRF
   const handlerKey = typeof handler === 'string' ? handler : undefined
   const synchronousInlineHandler = typeof handler === 'function'
     && handler.constructor.name !== 'AsyncFunction'
@@ -1812,7 +1824,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
    * already read its flags, synchronously, before this line.
    */
   let actionPrefetch: Promise<void> | null = null
-  if (typeof handler === 'string' && routeAcceptsCsrf) {
+  if (typeof handler === 'string' && (routeFlags & ROUTE_ACCEPTS_CSRF) !== 0) {
     const pending = resolveStringHandler(handler)
     if (pending instanceof Promise) {
       const settled = () => { actionPrefetch = null }
@@ -1829,7 +1841,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
     // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
     // route that to the standard error response path instead of letting
     // it bubble out of the handler as an unhandled rejection.
-    if (routeMayHaveBody) {
+    if ((routeFlags & ROUTE_MAY_HAVE_BODY) !== 0) {
       try {
         await parseRequestBody(req)
       }
@@ -1862,7 +1874,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
     // second one, so what the page embedded and what the browser stores are
     // the same string. API-shaped GETs cannot render a form, so they defer
     // token generation until response seeding and avoid mutating the request.
-    if (!csrfHandledByOuter && routeRendersCsrf && requestMayRenderHtml(enhancedReq)) {
+    if (!csrfHandledByOuter && (routeFlags & ROUTE_RENDERS_CSRF) !== 0 && requestMayRenderHtml(enhancedReq)) {
       const renderTokenSeeding = seedCsrfTokenForRender(enhancedReq as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding) await renderTokenSeeding
     }
@@ -1873,14 +1885,14 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
     // negotiation and always returns JSON. Action-level apiResponse is
     // applied later (inside the action wrapper) and wins by also setting
     // the same flag.
-    if (forcesJsonByGroup) {
+    if ((routeFlags & ROUTE_FORCES_JSON) !== 0) {
       ;req._forceJson = true
     }
 
     if (
       !hasPreparedBaseResult
       && synchronousInlineHandler
-      && !routeAcceptsCsrf
+      && (routeFlags & ROUTE_ACCEPTS_CSRF) === 0
       && !routeState?.middleware?.length
       && !routeState?.rateLimit
     ) {
@@ -1893,7 +1905,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       )
       hasPreparedBaseResult = true
       if (preparedBaseResult instanceof Response) {
-        const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter, routeSeedsCsrf)
+        const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter, (routeFlags & ROUTE_SEEDS_CSRF) !== 0)
         if (finished)
           return finished
       }
@@ -1937,7 +1949,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       // served by the GET route and is not CSRF-protected either way, so
       // reading it off the route rather than the request changes nothing.
       let shouldInjectCsrf = false
-      if (routeAcceptsCsrf) {
+      if ((routeFlags & ROUTE_ACCEPTS_CSRF) !== 0) {
         const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
         const routeCsrfMode = routeState?.csrfMode ?? CSRF_DEFAULT
         const routeSkipped = routeCsrfMode === CSRF_SKIPPED
@@ -1947,7 +1959,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
         // injecting it and having it self-bail). Skipping at injection
         // time avoids the import + parse cost of csrf.ts entirely on
         // hot webhook paths.
-        const actionSkipped = directActionSkipsCsrf
+        const actionSkipped = (routeFlags & ROUTE_ACTION_SKIPS_CSRF) !== 0
           || (handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false)
         // Decision order (stacksjs/stacks#1870 R-9):
         //   1. `.requireCsrf()` on the route wins over EVERYTHING — used to
@@ -2208,7 +2220,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       // seeding INVESTIGATE → confirmed broken-by-default).
       if (response) {
         if (
-          routeSeedsCsrf
+          (routeFlags & ROUTE_SEEDS_CSRF) !== 0
           && !csrfHandledByOuter
           && (enhancedReq as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
         ) {
@@ -2391,7 +2403,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       return response
   }
 
-  if (!synchronousInlineHandler || routeMayHaveBody)
+  if (!synchronousInlineHandler || (routeFlags & ROUTE_MAY_HAVE_BODY) !== 0)
     return rememberStacksRouteHandler(bindAsyncRouteHandler(handleAsyncInContext))
 
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
@@ -2399,13 +2411,13 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       return runWithRequestArguments(req, handleAsyncInContext, req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
-    if (routeRendersCsrf && !csrfHandledByOuter && requestMayRenderHtml(req)) {
+    if ((routeFlags & ROUTE_RENDERS_CSRF) !== 0 && !csrfHandledByOuter && requestMayRenderHtml(req)) {
       const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding)
         return renderTokenSeeding.then(() => runWithRequestArguments(req, handleAsyncInContext, req))
     }
 
-    if (forcesJsonByGroup)
+    if ((routeFlags & ROUTE_FORCES_JSON) !== 0)
       req._forceJson = true
 
     let preparedBaseResult: Response | Promise<Response>
@@ -2423,7 +2435,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
     }
 
     if (preparedBaseResult instanceof Response) {
-      const finished = finishSynchronousResult(req, preparedBaseResult, csrfHandledByOuter, routeSeedsCsrf)
+      const finished = finishSynchronousResult(req, preparedBaseResult, csrfHandledByOuter, (routeFlags & ROUTE_SEEDS_CSRF) !== 0)
       if (finished)
         return finished
     }
