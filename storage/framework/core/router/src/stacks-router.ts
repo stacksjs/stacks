@@ -710,6 +710,7 @@ const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHand
 // numeric value doubles as the metadata marker and a conservative compression
 // input; it may overestimate the exact UTF-8 byte length, but never undershoots.
 const FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND = Symbol('stacks.router.frameworkResponseBodySizeUpperBound')
+const NATIVE_DIRECT_ROUTE_REQUEST = Symbol('stacks.router.nativeDirectRouteRequest')
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const secureNativeRouteRouters = new WeakSet<Router>()
 const csrfEnabledNativeRouteRouters = new WeakSet<Router>()
@@ -3488,14 +3489,21 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
   const canPreapplyMetadata = !req._responseHeaders
 
-  // JSON.stringify emits well-formed strings, so each UTF-16 code unit costs at
-  // most three UTF-8 bytes. Compression only needs a safe threshold bound: an
-  // overestimate falls through to its exact body check, while an underestimate
-  // could skip compression incorrectly. Avoid scanning small bodies twice on
-  // the dominant path; only calculate the exact byte length when it becomes an
-  // observable Content-Length header.
+  // The downstream compression layer can reject sub-threshold bodies from an
+  // explicit byte length without opening and draining the response stream.
+  // JSON.stringify emits UTF-16, so calculate the transport length once here
+  // while the serialized body is already available.
   const body = JSON.stringify(result) ?? ''
   const requestMarkers = req as unknown as Record<symbol, unknown>
+  // Native direct dispatch already gives its response finalizer the upper
+  // bound below, so retain its no-rescan path. Generic dispatch needs the
+  // exact standard header to let bun-router reject small bodies without
+  // opening their streams.
+  const directNativeRequest = typeof requestMarkers[CSRF_SECURE_TRANSPORT] === 'boolean'
+    || requestMarkers[NATIVE_DIRECT_ROUTE_REQUEST] === true
+  const bodyLength = canPreapplyMetadata && directNativeRequest
+    ? undefined
+    : Buffer.byteLength(body)
   const nativeColdRequest = requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
     && typeof requestMarkers[CSRF_SECURE_TRANSPORT] === 'boolean'
   const csrf = nativeColdRequest ? loadCsrfModule() : null
@@ -3503,10 +3511,10 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     ? csrf.createCsrfCookie(req as unknown as Request, (req as unknown as { _csrfToken?: string })._csrfToken)
     : undefined
   const response = canPreapplyMetadata
-    ? secureSerializedJsonResponse(body, undefined, req._requestId, csrfCookie)
+    ? secureSerializedJsonResponse(body, bodyLength, req._requestId, csrfCookie)
     : new Response(body, { headers: createJsonSecurityHeaders() })
   if (!canPreapplyMetadata)
-    response.headers.set('Content-Length', String(Buffer.byteLength(body)))
+    response.headers.set('Content-Length', String(bodyLength!))
   if (linkHeader)
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
@@ -5628,6 +5636,9 @@ function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeRespo
       const nativeParams = (request as Request & { params?: Record<string, string> }).params ?? {}
       const enhancedRequest = nativeRouter.enhanceRequest(request, nativeParams)
       enhancedRequest.route = route
+      const requestMarkers = enhancedRequest as unknown as Record<symbol, unknown>
+      if (typeof requestMarkers[CSRF_SECURE_TRANSPORT] !== 'boolean')
+        requestMarkers[NATIVE_DIRECT_ROUTE_REQUEST] = true
 
       return runWithBunRouterRequest(enhancedRequest, () => {
         try {

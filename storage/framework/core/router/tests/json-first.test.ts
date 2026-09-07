@@ -36,6 +36,7 @@ describe('formatResult - JSON-first', () => {
 
     const res = await router.handleRequest(new Request('http://localhost/obj', { headers }))
     expect(res.headers.get('content-type')).toContain('application/json')
+    expect(res.headers.get('content-length')).toBe(String(Buffer.byteLength('{"ok":true}')))
     expect(await res.json()).toEqual({ ok: true })
   })
 
