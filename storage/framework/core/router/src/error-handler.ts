@@ -109,11 +109,11 @@ const REQUEST_QUERY_TRACK_KEY = Symbol.for('stacks.queryTracking')
 // Used only when no request is in scope. Cleared lazily — tests that
 // don't go through `runWithRequest` can still call `clearTrackedQueries()`
 // to reset between assertions.
-let fallbackTrack: QueryTrack = newQueryTrack()
+let fallbackTrack: QueryTrack | undefined
 
 function getQueryTrack(): QueryTrack {
   const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
-  if (!req) return fallbackTrack
+  if (!req) return fallbackTrack ??= newQueryTrack()
   let track = req[REQUEST_QUERY_TRACK_KEY] as QueryTrack | undefined
   if (!track) {
     track = newQueryTrack()
@@ -229,7 +229,7 @@ export function clearTrackedQueries(): void {
       delete (req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY]
     return
   }
-  fallbackTrack = newQueryTrack()
+  fallbackTrack = undefined
 }
 
 /**
