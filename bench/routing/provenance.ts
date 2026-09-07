@@ -1,12 +1,17 @@
 import process from 'node:process'
 import { join, relative, resolve, sep } from 'node:path'
 
-export const STACKS_BENCHMARK_MODULES = [
+export const STACKS_FIXTURE_MODULES = [
   '@stacksjs/actions',
   '@stacksjs/database',
   '@stacksjs/query-builder',
   '@stacksjs/router',
   '@stacksjs/validation',
+] as const
+
+export const STACKS_BENCHMARK_MODULES = [
+  ...STACKS_FIXTURE_MODULES,
+  '@stacksjs/database/utils',
 ] as const
 
 export type StacksBenchmarkModule = typeof STACKS_BENCHMARK_MODULES[number]
@@ -41,7 +46,7 @@ export function resolveBenchmarkServerModules(repoRoot: string, specifiers: read
 export function stacksSourceIssues(repoRoot: string, modules: StacksSourceModules): string[] {
   const issues: string[] = []
   for (const specifier of STACKS_BENCHMARK_MODULES) {
-    const packageName = specifier.slice('@stacksjs/'.length)
+    const packageName = specifier.slice('@stacksjs/'.length).split('/', 1)[0]!
     const expectedRoot = resolve(repoRoot, 'storage', 'framework', 'core', packageName, 'src')
     const resolvedPath = resolve(modules[specifier])
     const fromExpectedRoot = relative(expectedRoot, resolvedPath)

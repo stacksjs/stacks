@@ -5396,6 +5396,12 @@ let routesLoadPromise: Promise<void> | null = null
  * older one) still serves requests.
  */
 type ContextDispatcher = <T, A>(fn: (arg: A) => T, arg: A) => T
+type ContextRunner = <T>(fn: () => T) => T
+interface DatabaseRoutingApi {
+  runInDatabaseRoutingContext?: ContextDispatcher
+  withDatabaseRoutingContext?: ContextRunner
+  withRoutingContext?: ContextRunner
+}
 let routingContextDispatcher: ContextDispatcher | null = null
 
 const databaseContextWrappedRouters = new WeakSet<Router>()
@@ -5616,7 +5622,12 @@ async function wrapHandleRequestForDatabaseContext(router: Router): Promise<void
 async function getRoutingContextDispatcher(): Promise<ContextDispatcher> {
   if (!routingContextDispatcher) {
     try {
-      const database = await import('@stacksjs/database')
+      // The root barrel also evaluates migrations, seeders, and every driver.
+      // This public subpath owns the same context functions without loading
+      // unrelated database tooling into every HTTP server process.
+      let database = await import('@stacksjs/database/utils') as unknown as DatabaseRoutingApi
+      if (typeof database.runInDatabaseRoutingContext !== 'function' && typeof database.withDatabaseRoutingContext !== 'function')
+        database = await import('@stacksjs/database') as unknown as DatabaseRoutingApi
       const dispatcher = database.runInDatabaseRoutingContext
       const runner = database.withDatabaseRoutingContext ?? database.withRoutingContext
       routingContextDispatcher = typeof dispatcher === 'function'

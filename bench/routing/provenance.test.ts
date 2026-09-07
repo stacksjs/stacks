@@ -3,14 +3,14 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { REPO_ROOT } from './runtime'
-import { resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, stacksSourceIssues } from './provenance'
+import { resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
 
 describe('Stacks benchmark source provenance', () => {
   it('resolves every framework dependency through the server config to source', () => {
     const modules = resolveStacksSourceModules(REPO_ROOT)
     expect(Object.keys(modules).sort()).toEqual([...STACKS_BENCHMARK_MODULES].sort())
     for (const [specifier, path] of Object.entries(modules)) {
-      const packageName = specifier.slice('@stacksjs/'.length)
+      const packageName = specifier.slice('@stacksjs/'.length).split('/', 1)[0]!
       expect(path).toStartWith(`storage/framework/core/${packageName}/src/`)
     }
   })
@@ -18,7 +18,7 @@ describe('Stacks benchmark source provenance', () => {
   it('rejects built packages and another package source tree', () => {
     const modules = Object.fromEntries(STACKS_BENCHMARK_MODULES.map(specifier => [
       specifier,
-      join(REPO_ROOT, 'storage', 'framework', 'core', specifier.slice('@stacksjs/'.length), 'src', 'index.ts'),
+      join(REPO_ROOT, 'storage', 'framework', 'core', specifier.slice('@stacksjs/'.length).split('/', 1)[0]!, 'src', 'index.ts'),
     ])) as StacksSourceModules
     modules['@stacksjs/router'] = join(REPO_ROOT, 'node_modules', '@stacksjs', 'router', 'dist', 'index.js')
     modules['@stacksjs/database'] = join(REPO_ROOT, 'storage', 'framework', 'core', 'router', 'src', 'index.ts')
@@ -31,7 +31,7 @@ describe('Stacks benchmark source provenance', () => {
     const specifiers = [...source.matchAll(/(?:from\s+|import\s*\()\s*['"]([^'"]+)['"]/g)].map(match => match[1]!)
     const stacksSpecifiers = [...new Set(specifiers.filter(specifier => specifier.startsWith('@stacksjs/')))].sort()
 
-    expect(stacksSpecifiers).toEqual([...STACKS_BENCHMARK_MODULES].sort())
+    expect(stacksSpecifiers).toEqual([...STACKS_FIXTURE_MODULES].sort())
     expect(specifiers).not.toContain('bun:sqlite')
     expect(source).not.toMatch(/@stacksjs\/[^'"]+\/src(?:\/|['"])/)
     expect(source).not.toContain('storage/framework/core')
@@ -49,7 +49,7 @@ describe('Stacks benchmark source provenance', () => {
     const sourceGlob = new Bun.Glob('**/*.ts')
 
     for (const specifier of STACKS_BENCHMARK_MODULES) {
-      const packageName = specifier.slice('@stacksjs/'.length)
+      const packageName = specifier.slice('@stacksjs/'.length).split('/', 1)[0]!
       const sourceRoot = join(REPO_ROOT, 'storage', 'framework', 'core', packageName, 'src')
       for (const file of sourceGlob.scanSync({ cwd: sourceRoot })) {
         const source = readFileSync(join(sourceRoot, file), 'utf8')
