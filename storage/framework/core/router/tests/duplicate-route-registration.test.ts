@@ -93,6 +93,19 @@ describe('a shadowed registration cannot modify the live route (#2332)', () => {
 
     expect(res.status).toBe(401)
   })
+
+  test('clearing globally visible route policy does not forget live duplicates', async () => {
+    const router = createStacksRouter()
+    const path = uniquePath()
+    router.get(path, () => new Response('LIVE'))
+
+    clearRouteMiddlewareRegistry()
+    router.get(path, () => new Response('SHADOWED')).middleware('auth')
+
+    const res = await router.handleRequest(new Request(`http://localhost${path}`))
+    expect(res.status).toBe(200)
+    expect(await res.text()).toBe('LIVE')
+  })
 })
 
 describe('the shadow test is per router instance, not per module (#2332)', () => {
@@ -119,11 +132,7 @@ describe('the shadow test is per router instance, not per module (#2332)', () =>
 })
 
 /**
- * Not covered here, and deliberately: the middleware/apiResponse/CSRF
- * registries are MODULE-scoped and keyed by `METHOD:/path` alone, so two
- * router instances sharing a path also share those entries. Measured
- * identical before and after this change, so it is pre-existing and out of
- * scope for #2332 - but it means cross-instance middleware isolation does not
- * exist today, and a test asserting it would be asserting a wish.
+ * Route runtime policy is instance-scoped. Handler-key, imported-action, and
+ * apiResponse metadata remain module-scoped because the route-list and OpenAPI
+ * APIs intentionally aggregate registrations made before server boot.
  */
-

@@ -122,6 +122,17 @@ describe('boot-time validation', () => {
     expect(entry!.routes).toContain('GET:/mw-typo')
   })
 
+  test('keeps middleware policy from separate routers with the same route key', async () => {
+    const first = createStacksRouter()
+    const second = createStacksRouter()
+    first.get('/mw-shared-router-key', (() => ({})) as any).middleware('missing-from-first-router')
+    second.get('/mw-shared-router-key', (() => ({})) as any).middleware('missing-from-second-router')
+
+    const unresolvable = await findUnresolvableRouteMiddleware()
+    expect(unresolvable.map(entry => entry.alias)).toContain('missing-from-first-router')
+    expect(unresolvable.map(entry => entry.alias)).toContain('missing-from-second-router')
+  })
+
   test('assertRouteMiddlewareResolvable rejects naming the bad alias and its route', async () => {
     // 'no-such-mw' was registered by the previous test (module-scoped
     // registry) — the assertion must surface it.

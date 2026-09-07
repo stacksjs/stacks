@@ -488,7 +488,8 @@ interface RouteRuntimeState {
   csrfMode: RouteCsrfMode
   rateLimit?: RouteRateLimitConfig
 }
-const routeStateRegistry = new Map<string, RouteRuntimeState>()
+const routeStateRegistries = new Set<Map<string, RouteRuntimeState>>()
+const clearedRouteKeysByRegistry = new WeakMap<Map<string, RouteRuntimeState>, Set<string>>()
 
 /**
  * Resolve a chainable-form `window` arg (`'minute'` or `300`) to a
@@ -913,29 +914,31 @@ export function listNamedRoutes(): Record<string, string> {
  */
 export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> {
   const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> = []
-  // routeStateRegistry keys look like 'METHOD:/path'. We intentionally
-  // walk it (not bunRouter.routes) so this works before serve() is called.
+  // Route-state keys look like 'METHOD:/path'. We intentionally walk them
+  // (not bunRouter.routes) so this works before serve() is called.
   const seen = new Set<string>()
-  for (const key of routeStateRegistry.keys()) {
-    if (seen.has(key)) continue
-    seen.add(key)
-    const idx = key.indexOf(':')
-    if (idx === -1) continue
-    const method = key.slice(0, idx)
-    const path = key.slice(idx + 1)
-    let routeName: string | undefined
-    if (namedRouteRegistry) {
-      for (const [n, named] of namedRouteRegistry) {
-        if (named.path === path) { routeName = n; break }
+  for (const registry of routeStateRegistries) {
+    for (const key of registry.keys()) {
+      if (seen.has(key)) continue
+      seen.add(key)
+      const idx = key.indexOf(':')
+      if (idx === -1) continue
+      const method = key.slice(0, idx)
+      const path = key.slice(idx + 1)
+      let routeName: string | undefined
+      if (namedRouteRegistry) {
+        for (const [n, named] of namedRouteRegistry) {
+          if (named.path === path) { routeName = n; break }
+        }
       }
+      out.push({
+        method,
+        path,
+        name: routeName,
+        handler: routeHandlerKeyRegistry.get(key),
+        action: routeActionRegistry?.get(key),
+      })
     }
-    out.push({
-      method,
-      path,
-      name: routeName,
-      handler: routeHandlerKeyRegistry.get(key),
-      action: routeActionRegistry?.get(key),
-    })
   }
   return out.sort((a, b) => a.path.localeCompare(b.path))
 }
@@ -1515,11 +1518,18 @@ export function clearRouteMiddlewareRegistry(): void {
   // be read without a Map lookup on every dispatch. Empty those arrays before
   // dropping the registry entries so this test/reset seam still affects live
   // handlers exactly as it did before.
-  for (const state of routeStateRegistry.values()) {
-    if (state.middleware)
-      state.middleware.length = 0
+  for (const registry of routeStateRegistries) {
+    const registeredKeys = clearedRouteKeysByRegistry.get(registry) ?? new Set<string>()
+    for (const routeKey of registry.keys())
+      registeredKeys.add(routeKey)
+    clearedRouteKeysByRegistry.set(registry, registeredKeys)
+    for (const state of registry.values()) {
+      if (state.middleware)
+        state.middleware.length = 0
+    }
+    registry.clear()
   }
-  routeStateRegistry.clear()
+  routeStateRegistries.clear()
 }
 
 /**
@@ -1613,19 +1623,21 @@ async function parseMiddlewareEntryUncached(middleware: string): Promise<ParsedM
  */
 export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: string, routes: string[] }>> {
   const usage = new Map<string, { parsed: ParsedMiddleware, routes: string[] }>()
-  for (const [routeKey, state] of routeStateRegistry) {
-    const entries = state.middleware
-    if (!entries)
-      continue
-    for (const entry of entries) {
-      const parsed = await parseMiddlewareEntry(entry)
-      // Reported without the parameters - those are the middleware's argument,
-      // not part of what has to resolve - but WITH the `!`, because `auth` and
-      // `!auth` are two different things to look up.
-      const alias = parsed.negated ? `!${parsed.name}` : parsed.name
-      const seen = usage.get(alias) ?? { parsed, routes: [] }
-      seen.routes.push(routeKey)
-      usage.set(alias, seen)
+  for (const registry of routeStateRegistries) {
+    for (const [routeKey, state] of registry) {
+      const entries = state.middleware
+      if (!entries)
+        continue
+      for (const entry of entries) {
+        const parsed = await parseMiddlewareEntry(entry)
+        // Reported without the parameters - those are the middleware's argument,
+        // not part of what has to resolve - but WITH the `!`, because `auth` and
+        // `!auth` are two different things to look up.
+        const alias = parsed.negated ? `!${parsed.name}` : parsed.name
+        const seen = usage.get(alias) ?? { parsed, routes: [] }
+        seen.routes.push(routeKey)
+        usage.set(alias, seen)
+      }
     }
   }
   if (!usage.has('csrf'))
@@ -1659,10 +1671,10 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
 /**
  * Create a wrapped handler with middleware support
  */
-function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
+function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
-  const routeState = routeStateRegistry.get(routeKey)
+  const routeState = routeStates.get(routeKey)
 
   /*
    * Everything about this route that a request cannot change, decided here.
@@ -2414,13 +2426,13 @@ function createInertRoute(): ChainableRoute {
   return inert
 }
 
-function createChainableRoute(routeKey: string, shadowed = false): ChainableRoute {
+function createChainableRoute(routeStates: Map<string, RouteRuntimeState>, routeKey: string, shadowed = false): ChainableRoute {
   if (shadowed)
     return createInertRoute()
 
   // Extract the path from routeKey (format: "METHOD:/path")
   const routePath = routeKey.includes(':') ? routeKey.substring(routeKey.indexOf(':') + 1) : routeKey
-  const routeState = routeStateRegistry.get(routeKey)
+  const routeState = routeStates.get(routeKey)
 
   const chain: ChainableRoute = {
     /**
@@ -4428,14 +4440,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   let currentGroupMiddleware: string[] = []
   let currentGroupApiResponse = false
 
-  /**
-   * Every `METHOD:/path` THIS router has already registered.
-   *
-   * Instance-scoped on purpose: bun-router dedupes per instance, so the same
-   * path registered on two routers is live on both. A module-level set would
-   * declare the second one shadowed and silently strip its middleware.
-   */
-  const registeredRouteKeys = new Set<string>()
+  /** Mutable policy and duplicate detection for this router's routes. */
+  const routeStates = new Map<string, RouteRuntimeState>()
 
   // Helper to register a route with group middleware applied
   function registerRoute(method: string, path: string, _handler: StacksHandler) {
@@ -4462,9 +4468,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // duplicate skip is per instance: two `createStacksRouter()` instances
     // registering the same path both serve it, and both must keep their own
     // middleware.
-    const shadowed = registeredRouteKeys.has(routeKey)
-    if (!shadowed)
-      registeredRouteKeys.add(routeKey)
+    const shadowed = routeStates.has(routeKey)
+      || clearedRouteKeysByRegistry.get(routeStates)?.has(routeKey) === true
 
     // Routes without middleware share the frozen empty-list fast path. A
     // route-owned array is allocated only for group middleware or when the
@@ -4473,7 +4478,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const routeState: RouteRuntimeState = { csrfMode: CSRF_DEFAULT }
       if (currentGroupMiddleware.length > 0)
         routeState.middleware = [...currentGroupMiddleware]
-      routeStateRegistry.set(routeKey, routeState)
+      routeStates.set(routeKey, routeState)
+      routeStateRegistries.add(routeStates)
     }
 
     // Pre-populate apiResponse registry with the group flag so the request
@@ -4514,38 +4520,38 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('GET', path, handler)
-      bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.get(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     post(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('POST', path, handler)
-      bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.post(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     put(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PUT', path, handler)
-      bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.put(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     patch(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PATCH', path, handler)
-      bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.patch(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     delete(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('DELETE', path, handler)
-      bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.delete(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     options(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('OPTIONS', path, handler)
-      bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
-      return createChainableRoute(routeKey, shadowed)
+      bunRouter.options(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     // Route grouping with prefix and middleware support
@@ -4686,7 +4692,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
         if (index === 0)
           firstShadowed = shadowed
-        const wrappedHandler = createMiddlewareHandler(routeKey, handler, csrfEnabled)
+        const wrappedHandler = createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled)
         switch (m) {
           case 'GET':
             bunRouter.get(fullPath, wrappedHandler)
@@ -4708,7 +4714,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
             break
         }
       }
-      return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`, firstShadowed)
+      return createChainableRoute(routeStates, `${methods[0]}:${currentPrefix}${path}`, firstShadowed)
     },
 
     // Health check route — probes critical dependencies and returns
