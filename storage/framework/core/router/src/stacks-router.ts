@@ -206,8 +206,17 @@ function resolveDefaultsPath(rel: string): string {
   return resolved
 }
 
-const NATIVE_ROUTE_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'])
 const NATIVE_ROUTE_PARAM = /^\{[A-Z_$][\w$]*\}$/i
+
+function isNativeRouteMethod(method: string): boolean {
+  return method === 'GET'
+    || method === 'POST'
+    || method === 'PUT'
+    || method === 'PATCH'
+    || method === 'DELETE'
+    || method === 'OPTIONS'
+    || method === 'HEAD'
+}
 
 function hasNativeCompatiblePath(path: string): boolean {
   if (path === '*')
@@ -235,7 +244,7 @@ function hasNativeCompatiblePath(path: string): boolean {
 export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolean {
   let hasEligibleRoute = false
   for (const route of routes) {
-    if (!NATIVE_ROUTE_METHODS.has(route.method) || route.handler instanceof Response)
+    if (!isNativeRouteMethod(route.method) || route.handler instanceof Response)
       continue
 
     hasEligibleRoute = true
@@ -673,7 +682,6 @@ const routeHandlerKeyRegistry = new BoundedMap<string, string>(ACTION_CACHE_MAX)
 let routeActionRegistry: Map<string, RouterAction> | undefined
 
 /** HTTP methods that mutate state and therefore need CSRF protection. */
-const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 // Present only when formatJsonResult preapplied every framework header. The
 // numeric value doubles as the metadata marker and the compression input.
@@ -1681,7 +1689,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
    * `.rateLimit()`) are retained as route-owned state so updates stay live.
    */
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-  const routeAcceptsCsrf = csrfEnabled && CSRF_PROTECTED_METHODS.has(routeMethod)
+  const routeAcceptsCsrf = csrfEnabled
+    && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE')
   const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
   const routeRendersCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD')
   const routeSeedsCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS')
@@ -5541,7 +5550,7 @@ function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeRespo
 
   for (const route of nativeRouter.routes) {
     if (
-      !NATIVE_ROUTE_METHODS.has(route.method)
+      !isNativeRouteMethod(route.method)
       || route.nativeDispatch === false
       || (route.constraints && Object.keys(route.constraints).length > 0)
       || (route.middleware?.length ?? 0) !== 0
