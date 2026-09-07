@@ -263,6 +263,23 @@ describe('discovery at boot', () => {
       .toBeLessThan(api.indexOf('route.importRoutes()'))
   })
 
+  test('the production API entry injects auto-imports, after discovery', () => {
+    const api = source('actions/src/serve/api.ts')
+
+    // Every other entry did this and the production API did not, so an app
+    // using the documented `await User.find(1)` global worked in `buddy dev`
+    // and threw ReferenceError once served here (stacksjs/stacks#2442).
+    expect(api).toContain('injectGlobalAutoImports()')
+
+    // Discovery first, matching `buddy dev`: the manifest feeds what the
+    // barrel is built from. Injection before importRoutes, because route files
+    // pull in actions that read these names at module-evaluation time.
+    expect(api.indexOf('ensureDiscoveredPackages()'))
+      .toBeLessThan(api.indexOf('injectGlobalAutoImports()'))
+    expect(api.indexOf('injectGlobalAutoImports()'))
+      .toBeLessThan(api.indexOf('route.importRoutes()'))
+  })
+
   test('the production views server discovers before it reads the manifest', () => {
     const server = source('buddy/src/production-server.ts')
 
