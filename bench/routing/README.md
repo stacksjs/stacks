@@ -29,6 +29,9 @@ accident. Four things in here exist only to stop that:
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much.
+- **Every measurement gets a fresh server process.** Target order rotates
+  between runs so route warm state, target position, and a warming or
+  throttling host cannot consistently favor one implementation.
 - **CPU is reported per row.** Deltas of the server's cumulative CPU time over
   the wall clock of the measured load invocation, after warm-up has finished.
   This includes load-tool startup and shutdown overhead. A win bought by burning more CPU is visible here

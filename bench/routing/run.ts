@@ -26,6 +26,7 @@ import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
 import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
+import { rotateTargets } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState } from './source'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
@@ -164,32 +165,38 @@ async function main(): Promise<void> {
 
   const measurements: Measurement[] = []
   const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
+  const availableTargets = new Set<string>()
+  const unavailableTargets = new Set<string>()
+  const collected = new Map<string, { results: LoadResult[], cpuReadings: number[] }>()
 
-  for (const target of targets) {
-    console.error(`\n[bench] === ${target.label}`)
-    let targetAvailable = false
-    for (const scenario of scenarios) {
-      // One process per scenario keeps route-table size, database imports, and
-      // warm state from one measurement out of every other measurement.
-      const booted = await boot(target, scenario.requiresDb === true, scenario)
-      if ('skipped' in booted) {
-        console.error(`[bench] skipped: ${booted.skipped}`)
-        if (!targetAvailable)
+  for (let scenarioIndex = 0; scenarioIndex < scenarios.length; scenarioIndex++) {
+    const scenario = scenarios[scenarioIndex]!
+    console.error(`\n[bench] === ${scenario.title}`)
+    for (let run = 1; run <= opts.runs; run++) {
+      const measurementIndex = scenarioIndex * opts.runs + run - 1
+      for (const target of rotateTargets(targets, measurementIndex)) {
+        if (unavailableTargets.has(target.id))
+          continue
+
+        // A fresh process keeps route-table size, database imports, and warm
+        // state from one measurement out of every other measurement. Rotating
+        // the target order spreads host drift across implementations.
+        const booted = await boot(target, scenario.requiresDb === true, scenario)
+        if ('skipped' in booted) {
+          if (availableTargets.has(target.id))
+            throw new Error(`${target.id} became unavailable after earlier measurements: ${booted.skipped}`)
+          console.error(`[bench]   ${target.id} skipped: ${booted.skipped}`)
+          unavailableTargets.add(target.id)
           targetRows.push({ id: target.id, label: target.label, skipped: booted.skipped })
-        break
-      }
-      if (!targetAvailable) {
-        targetAvailable = true
-        targetRows.push({ id: target.id, label: target.label })
-      }
+          continue
+        }
+        if (!availableTargets.has(target.id)) {
+          availableTargets.add(target.id)
+          targetRows.push({ id: target.id, label: target.label })
+        }
 
-      try {
-        await assertParity(target, scenario)
-
-        const results: LoadResult[] = []
-        const cpuReadings: number[] = []
-
-        for (let run = 1; run <= opts.runs; run++) {
+        try {
+          await assertParity(target, scenario)
           if (scenario.requiresDb)
             resetFixtureLogs(FIXTURE)
           const { result, cpuPercent, warmupResult } = await measureLoad(driver, {
@@ -201,9 +208,12 @@ async function main(): Promise<void> {
             warmupSeconds: opts.warmupSeconds,
             durationSeconds: opts.durationSeconds,
           }, booted.pid)
-          if (cpuPercent != null) cpuReadings.push(cpuPercent)
+          const key = `${target.id}:${scenario.id}`
+          const bucket = collected.get(key) ?? { results: [], cpuReadings: [] }
+          collected.set(key, bucket)
+          if (cpuPercent != null) bucket.cpuReadings.push(cpuPercent)
 
-          results.push(result)
+          bucket.results.push(result)
           writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}.txt`), result.raw)
           if (warmupResult)
             writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}--warmup.txt`), warmupResult.raw)
@@ -215,30 +225,40 @@ async function main(): Promise<void> {
             if (persistence.status === 'unverified')
               console.error(`[bench] ${persistence.reason}`)
           }
-          console.error(`[bench]   ${scenario.id} run ${run}: ${Math.round(result.rpsMean).toLocaleString()} req/s`)
+          console.error(`[bench]   run ${run} ${target.id}: ${Math.round(result.rpsMean).toLocaleString()} req/s`)
         }
+        finally {
+          await stop(booted)
+        }
+      }
+    }
+  }
 
-        const rpsValues = results.map(r => r.rpsMean)
-        const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
-        measurements.push({
-          targetId: target.id,
-          scenarioId: scenario.id,
-          rpsMean: median(rpsValues),
-          rpsP50: p50s.length ? median(p50s) : null,
-          latencyMs: {
-            p50: median(results.map(r => r.latencyMs.p50)),
-            p90: median(results.map(r => r.latencyMs.p90)),
-            p99: median(results.map(r => r.latencyMs.p99)),
-          },
-          errorRate: results.reduce((sum, r) => sum + (r.requests ? r.errors / r.requests : 0), 0) / results.length,
-          cpuPercent: cpuReadings.length ? median(cpuReadings) : null,
-          spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
-          runs: opts.runs,
-        })
-      }
-      finally {
-        await stop(booted)
-      }
+  for (const target of targets) {
+    if (!availableTargets.has(target.id))
+      continue
+    for (const scenario of scenarios) {
+      const bucket = collected.get(`${target.id}:${scenario.id}`)
+      if (!bucket || bucket.results.length !== opts.runs)
+        throw new Error(`Incomplete measurements for ${target.id}:${scenario.id}`)
+      const { results, cpuReadings } = bucket
+      const rpsValues = results.map(r => r.rpsMean)
+      const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
+      measurements.push({
+        targetId: target.id,
+        scenarioId: scenario.id,
+        rpsMean: median(rpsValues),
+        rpsP50: p50s.length ? median(p50s) : null,
+        latencyMs: {
+          p50: median(results.map(r => r.latencyMs.p50)),
+          p90: median(results.map(r => r.latencyMs.p90)),
+          p99: median(results.map(r => r.latencyMs.p99)),
+        },
+        errorRate: results.reduce((sum, r) => sum + (r.requests ? r.errors / r.requests : 0), 0) / results.length,
+        cpuPercent: cpuReadings.length ? median(cpuReadings) : null,
+        spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
+        runs: opts.runs,
+      })
     }
   }
 
