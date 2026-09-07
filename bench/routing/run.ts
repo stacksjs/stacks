@@ -13,6 +13,7 @@
  */
 
 import type { Driver, LoadResult } from './drivers'
+import type { BusyProcess } from './host-load'
 import type { Measurement, RunMeta } from './report'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { cpus, platform, release } from 'node:os'
@@ -45,6 +46,15 @@ interface Options {
   runs: number
   db: boolean
   allowBusyHost: boolean
+}
+
+async function checkHostLoad(allowBusyHost: boolean, observed: Map<number, BusyProcess>): Promise<void> {
+  const active = await detectBusyProcesses()
+  if (active.length > 0 && !allowBusyHost) {
+    throw new Error(`Host is busy: ${active.map(formatBusyProcess).join(', ')}. Stop competing work or pass --allow-busy-host for a direction-only run.`)
+  }
+  for (const process of active)
+    observed.set(process.pid, process)
 }
 
 export function parseArgs(argv: string[]): Options {
@@ -121,12 +131,10 @@ Available targets: ${TARGETS.map(t => t.id).join(', ')}`
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2))
-  const busyProcesses = await detectBusyProcesses()
-  if (busyProcesses.length > 0 && !opts.allowBusyHost) {
-    throw new Error(`Host is busy: ${busyProcesses.map(formatBusyProcess).join(', ')}. Stop competing work or pass --allow-busy-host for a direction-only run.`)
-  }
-  if (busyProcesses.length > 0)
-    console.error(`[bench] busy-host override: ${busyProcesses.map(formatBusyProcess).join(', ')}`)
+  const observedBusyProcesses = new Map<number, BusyProcess>()
+  await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
+  if (observedBusyProcesses.size > 0)
+    console.error(`[bench] busy-host override: ${[...observedBusyProcesses.values()].map(formatBusyProcess).join(', ')}`)
   const runtimeRequirement = await readRuntimeRequirement(REPO_ROOT)
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[bench] ${runtimeWarning}`)
@@ -158,7 +166,7 @@ async function main(): Promise<void> {
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
     persistentQueryLogging: benchmarkQueryLoggingEnabled(),
-    busyHostProcesses: busyProcesses,
+    busyHostProcesses: [...observedBusyProcesses.values()],
     machine: {
       platform: platform(),
       release: release(),
@@ -185,6 +193,9 @@ async function main(): Promise<void> {
       for (const target of rotateTargets(targets, measurementIndex)) {
         if (unavailableTargets.has(target.id))
           continue
+
+        await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
+        meta.busyHostProcesses = [...observedBusyProcesses.values()]
 
         // A fresh process keeps route-table size, database imports, and warm
         // state from one measurement out of every other measurement. Rotating

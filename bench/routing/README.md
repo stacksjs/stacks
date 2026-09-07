@@ -26,9 +26,9 @@ accident. The safeguards here exist only to stop that:
   expected string). A server that is fast because it 404s, 422s, or returns less
   is not a faster server, and this check is what catches it.
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
-- **Busy hosts are rejected before measurement.** Any competing process using
-  at least 75% of one core aborts the run. `--allow-busy-host` is an explicit
-  direction-only override, recorded in the report.
+- **Busy hosts are rejected before every measurement.** Any competing process
+  using at least 75% of one core aborts the run. `--allow-busy-host` is an
+  explicit direction-only override, recorded in the report.
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much. A full range above 10% of the median marks
