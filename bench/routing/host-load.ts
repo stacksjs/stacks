@@ -41,6 +41,15 @@ export async function detectBusyProcesses(): Promise<BusyProcess[]> {
   }
 }
 
+export async function checkHostLoad(allowBusyHost: boolean, observed: Map<number, BusyProcess>): Promise<void> {
+  const active = await detectBusyProcesses()
+  if (active.length > 0 && !allowBusyHost) {
+    throw new Error(`Host is busy: ${active.map(formatBusyProcess).join(', ')}. Stop competing work or pass --allow-busy-host for a direction-only run.`)
+  }
+  for (const process of active)
+    observed.set(process.pid, process)
+}
+
 export function formatBusyProcess(process: BusyProcess): string {
   return `${process.command} (PID ${process.pid}, ${process.cpuPercent.toFixed(1)}% CPU)`
 }

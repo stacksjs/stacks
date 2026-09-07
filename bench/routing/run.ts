@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
-import { detectBusyProcesses, formatBusyProcess } from './host-load'
+import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
 import { renderReport } from './report'
@@ -46,15 +46,6 @@ interface Options {
   runs: number
   db: boolean
   allowBusyHost: boolean
-}
-
-async function checkHostLoad(allowBusyHost: boolean, observed: Map<number, BusyProcess>): Promise<void> {
-  const active = await detectBusyProcesses()
-  if (active.length > 0 && !allowBusyHost) {
-    throw new Error(`Host is busy: ${active.map(formatBusyProcess).join(', ')}. Stop competing work or pass --allow-busy-host for a direction-only run.`)
-  }
-  for (const process of active)
-    observed.set(process.pid, process)
 }
 
 export function parseArgs(argv: string[]): Options {

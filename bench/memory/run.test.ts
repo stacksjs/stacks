@@ -8,10 +8,11 @@ describe('memory benchmark counts', () => {
   })
 
   it('preserves defaults and accepts fractional timing windows and rates', () => {
-    expect(parseArgs([])).toMatchObject({ connections: 64, runs: 1, loadSeconds: 60, idleSeconds: 180 })
+    expect(parseArgs([])).toMatchObject({ connections: 64, runs: 1, loadSeconds: 60, idleSeconds: 180, allowBusyHost: false })
     expect(parseArgs(['-c', '2', '--runs', '3', '--load', '0.5', '--idle', '0.75', '--interval', '10.5', '--settle', '0.25', '--rate', '100.5'])).toMatchObject({
       connections: 2, runs: 3, loadSeconds: 0.5, idleSeconds: 0.75, sampleIntervalMs: 10.5, settleSeconds: 0.25, requestRate: 100.5,
     })
+    expect(parseArgs(['--allow-busy-host']).allowBusyHost).toBe(true)
   })
 
   it('still caps the settling window at the idle duration', () => {

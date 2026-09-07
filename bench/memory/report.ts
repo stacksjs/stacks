@@ -1,5 +1,7 @@
 import type { SourceState } from '../routing/source'
+import type { BusyProcess } from '../routing/host-load'
 import type { RuntimeRequirement } from '../routing/runtime-version'
+import { formatBusyProcess } from '../routing/host-load'
 import { formatSourceState } from '../routing/source'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 
@@ -26,6 +28,7 @@ export interface MemoryRunMeta {
   runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
+  busyHostProcesses?: BusyProcess[]
   scenario: string
   connections: number
   loadSeconds: number
@@ -77,6 +80,10 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)
   if (runtimeWarning) {
     lines.push(`> ${runtimeWarning}`)
+    lines.push('')
+  }
+  if (meta.busyHostProcesses?.length) {
+    lines.push(`> **Busy-host override.** ${meta.busyHostProcesses.map(formatBusyProcess).join(', ')}. This run is direction-only and must not be published.`)
     lines.push('')
   }
 

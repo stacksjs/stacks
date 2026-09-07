@@ -33,6 +33,10 @@ database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
 cannot consistently favor the same implementation.
 
+Before each measurement, the runner refuses to proceed when another process is
+using at least 75% of one CPU core. Pass `--allow-busy-host` only for diagnostic
+runs; the report records every observed process and remains non-publishable.
+
 ## Reported value
 
 RSS is sampled every 100 milliseconds through both phases. The headline value
@@ -77,6 +81,8 @@ uploads its raw samples, but shared-runner numbers are not publishable.
 --settle       final idle window used for the median (default 10)
 --runs         fresh-process repeats per target (default 1)
 --output       explicit output directory
+--allow-busy-host
+               run despite another process consuming at least 75% of a core
 ```
 
 Use `--runs 3` on benchmark hardware when process-to-process spread matters.

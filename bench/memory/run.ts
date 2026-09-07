@@ -7,6 +7,7 @@
  */
 
 import type { Driver, LoadResult } from '../routing/drivers'
+import type { BusyProcess } from '../routing/host-load'
 import type { MemoryMeasurement, MemoryRunMeta, MemorySample } from './report'
 import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
@@ -18,6 +19,7 @@ import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 import { pickDriver } from '../routing/drivers'
 import { createFixture } from '../routing/fixture'
+import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
 import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState } from '../routing/source'
@@ -42,6 +44,7 @@ interface Options {
   runs: number
   output?: string
   requestRate?: number
+  allowBusyHost: boolean
 }
 
 function positiveNumber(flag: string, value: string): number {
@@ -67,6 +70,7 @@ export function parseArgs(argv: string[]): Options {
     sampleIntervalMs: 100,
     settleSeconds: 10,
     runs: 1,
+    allowBusyHost: false,
   }
 
   for (let index = 0; index < argv.length; index++) {
@@ -88,6 +92,7 @@ export function parseArgs(argv: string[]): Options {
       case '--runs': options.runs = positiveInteger(flag, next()); break
       case '--output': options.output = next(); break
       case '--rate': options.requestRate = positiveNumber(flag, next()); break
+      case '--allow-busy-host': options.allowBusyHost = true; break
       case '--help': case '-h':
         console.log(HELP)
         process.exit(0)
@@ -112,7 +117,9 @@ const HELP = `bun bench/memory/run.ts [flags]
   --interval     RSS sample interval in milliseconds (default 100)
   --settle       final idle window used for the median (default 10)
   --runs         positive integer fresh-process repeats per target (default 1)
-  --output       explicit output directory (default results/<timestamp>)`
+  --output       explicit output directory (default results/<timestamp>)
+  --allow-busy-host
+                 run despite another process consuming at least 75% of a core`
 
 interface SelectedTarget extends MemoryProfileTarget {
   target: Target
@@ -243,6 +250,10 @@ async function measure(
 
 async function main(): Promise<void> {
   const options = parseArgs(process.argv.slice(2))
+  const observedBusyProcesses = new Map<number, BusyProcess>()
+  await checkHostLoad(options.allowBusyHost, observedBusyProcesses)
+  if (observedBusyProcesses.size > 0)
+    console.error(`[memory] busy-host override: ${[...observedBusyProcesses.values()].map(formatBusyProcess).join(', ')}`)
   const runtimeRequirement = await readRuntimeRequirement(REPO_ROOT)
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[memory] ${runtimeWarning}`)
@@ -260,12 +271,14 @@ async function main(): Promise<void> {
   const rawDir = join(outDir, 'raw')
   mkdirSync(rawDir, { recursive: true })
 
+  const dedicatedHost = driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1'
   const meta: MemoryRunMeta = {
     startedAt,
     source,
     runtimeRequirement,
     driver: driver.name,
-    publishable: driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1',
+    publishable: dedicatedHost && observedBusyProcesses.size === 0,
+    busyHostProcesses: [...observedBusyProcesses.values()],
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,
@@ -282,7 +295,7 @@ async function main(): Promise<void> {
     },
   }
 
-  if (!(driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1'))
+  if (!dedicatedHost)
     console.error('[memory] this is a direction-only run; publishing requires oha on dedicated Linux x64 hardware')
 
   const measurements: MemoryMeasurement[] = []
@@ -295,6 +308,13 @@ async function main(): Promise<void> {
       const { target, requestRate } = selected
       if (unavailableTargets.has(target.id))
         continue
+      const busyCount = observedBusyProcesses.size
+      await checkHostLoad(options.allowBusyHost, observedBusyProcesses)
+      meta.busyHostProcesses = [...observedBusyProcesses.values()]
+      if (observedBusyProcesses.size > 0)
+        meta.publishable = false
+      if (observedBusyProcesses.size > busyCount)
+        console.error(`[memory] busy-host override: ${[...observedBusyProcesses.values()].map(formatBusyProcess).join(', ')}`)
       console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)
       console.error(`[memory] run ${run}: ${options.loadSeconds}s load, then ${options.idleSeconds}s idle`)
       const result = await measure(target, scenario, driver, options, requestRate)

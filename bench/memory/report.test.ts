@@ -63,4 +63,18 @@ describe('memory benchmark report', () => {
     expect(report).toContain('| Project Bun requirement | 1.4.1 (runtime mismatch) |')
     expect(report).toContain('Runtime mismatch: Bun 1.3.14 does not satisfy package.json engines.bun (1.4.1).')
   })
+
+  it('flags a busy-host override as non-publishable', () => {
+    const report = renderMemoryReport({
+      meta: {
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: false,
+        scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
+        sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
+        busyHostProcesses: [{ pid: 20, cpuPercent: 88.44, command: 'compiler' }],
+        machine: { platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+      },
+      targets: [], measurements: [],
+    })
+    expect(report).toContain('**Busy-host override.** compiler (PID 20, 88.4% CPU). This run is direction-only and must not be published.')
+  })
 })
