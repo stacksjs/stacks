@@ -12,7 +12,7 @@ const meta: RunMeta = {
   durationSeconds: 3,
   runs: 3,
   persistentQueryLogging: false,
-  machine: { platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+  machine: { arch: 'arm64', platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
 }
 
 const measurement: Measurement = {
@@ -40,6 +40,7 @@ describe('routing benchmark report', () => {
     })
 
     expect(report).toContain('| Target | req/s | req/s p50 | spread | Bun raw |')
+    expect(report).toContain('| Architecture | arm64 |')
     expect(report).toContain('> **Unstable result.** **Stacks minimal** (11.8% range) exceeded the 10% range limit.')
     expect(report).toContain('| Stacks minimal | 85 | 84 | 80-90 (11.8%) | 85.0% (80.0%-90.0%) |')
   })

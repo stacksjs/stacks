@@ -52,7 +52,7 @@ Every run writes:
 - `measurements.json`, the compact values and complete run metadata
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
-The report and metadata include the Git revision and working-tree state captured
+The report and metadata include the Git revision, working-tree state, and machine architecture captured
 before output creation. Ignored files are excluded; source archives without Git
 are marked unavailable. Keep source unchanged throughout the run.
 

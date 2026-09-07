@@ -37,6 +37,7 @@ export interface MemoryRunMeta {
   settleSeconds: number
   runs: number
   machine: {
+    arch: string
     platform: string
     release: string
     cpu: string
@@ -100,6 +101,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push(`| Repeats | ${meta.runs}, median reported |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
+  lines.push(`| Architecture | ${meta.machine.arch} |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)
   lines.push('')
 

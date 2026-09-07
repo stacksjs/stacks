@@ -27,6 +27,7 @@ describe('memory benchmark report', () => {
         settleSeconds: 10,
         runs: 2,
         machine: {
+          arch: 'x64',
           platform: 'linux',
           release: '6.0',
           cpu: 'Test CPU',
@@ -44,6 +45,7 @@ describe('memory benchmark report', () => {
     expect(report).toContain(`| Source at start | \`${'a'.repeat(40)}\` (modified working tree) |`)
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
     expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
+    expect(report).toContain('| Architecture | x64 |')
     expect(report).not.toContain('Runtime mismatch:')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')
   })
@@ -54,7 +56,7 @@ describe('memory benchmark report', () => {
         startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: true,
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
-        machine: { platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
+        machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
         runtimeRequirement: { range: '1.4.1', matches: false },
       },
       targets: [], measurements: [],
@@ -71,7 +73,7 @@ describe('memory benchmark report', () => {
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
         busyHostProcesses: [{ pid: 20, cpuPercent: 88.44, command: 'compiler' }],
-        machine: { platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+        machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
       },
       targets: [], measurements: [],
     })

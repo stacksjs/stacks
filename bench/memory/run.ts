@@ -13,7 +13,7 @@ import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
 import type { MemoryProfileTarget } from './profile'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { cpus, platform, release } from 'node:os'
+import { arch, cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -287,6 +287,7 @@ async function main(): Promise<void> {
     settleSeconds: options.settleSeconds,
     runs: options.runs,
     machine: {
+      arch: arch(),
       platform: platform(),
       release: release(),
       cpu: cpus()[0]?.model ?? 'unknown',

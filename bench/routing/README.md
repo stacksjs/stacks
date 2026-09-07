@@ -11,7 +11,7 @@ That runs every scenario against the default targets the machine can boot and wr
 timestamped directory under `results/` containing `report.md`,
 `measurements.json`, and the raw load-generator output for every individual run.
 
-Reports and metadata record the Git revision and working-tree state before output
+Reports and metadata record the Git revision, working-tree state, and architecture before output
 creation. Ignored files are excluded from that state; source archives without Git
 are marked unavailable. This is a snapshot at startup, so keep source unchanged
 throughout a run.

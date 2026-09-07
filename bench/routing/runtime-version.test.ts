@@ -37,7 +37,7 @@ describe('benchmark runtime requirements', () => {
         startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: true,
         connections: 50, warmupSeconds: 1, durationSeconds: 3, runs: 1,
         persistentQueryLogging: false,
-        machine: { platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
+        machine: { arch: 'arm64', platform: 'darwin', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
         runtimeRequirement: { range: '1.4.1', matches: false },
       },
       scenarios: [], targets: [], measurements: [],

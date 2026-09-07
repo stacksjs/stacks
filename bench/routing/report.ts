@@ -48,6 +48,7 @@ export interface RunMeta {
   persistentQueryLogging: boolean
   busyHostProcesses?: BusyProcess[]
   machine: {
+    arch: string
     platform: string
     release: string
     cpu: string
@@ -105,6 +106,7 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
   lines.push(`| Persistent query history | ${meta.persistentQueryLogging ? 'enabled (opt-in)' : 'disabled (production default)'} |`)
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
+  lines.push(`| Architecture | ${meta.machine.arch} |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)
   lines.push(`| Bun | ${meta.machine.bun} |`)
   if (meta.runtimeRequirement)

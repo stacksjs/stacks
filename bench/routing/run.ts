@@ -16,7 +16,7 @@ import type { Driver, LoadResult } from './drivers'
 import type { BusyProcess } from './host-load'
 import type { Measurement, RunMeta } from './report'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { cpus, platform, release } from 'node:os'
+import { arch, cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -159,6 +159,7 @@ async function main(): Promise<void> {
     persistentQueryLogging: benchmarkQueryLoggingEnabled(),
     busyHostProcesses: [...observedBusyProcesses.values()],
     machine: {
+      arch: arch(),
       platform: platform(),
       release: release(),
       cpu: cpus()[0]?.model ?? 'unknown',
