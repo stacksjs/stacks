@@ -39,6 +39,8 @@ describe('Stacks benchmark source provenance', () => {
     expect(source).not.toMatch(/\bnew\s+Response\s*\(/)
     expect(source).not.toMatch(/\bResponse\.json\s*\(/)
     expect(source).not.toMatch(/\bJSON\.stringify\s*\(/)
+    expect(source).not.toMatch(/return\s+request\.getValidated\(\)/)
+    expect(source).toContain('return { name: validated.name, count: validated.count }')
     expect(source).toContain('disableViewRouting(router.bunRouter)')
   })
 
