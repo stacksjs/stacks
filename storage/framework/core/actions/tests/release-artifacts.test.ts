@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 
 /**
  * `bump.ts` runs its release on import, so these read it as source rather than
@@ -38,5 +39,57 @@ describe('framework release artifact staging', () => {
   test('refreshes and stages the Pantry lockfile without lifecycle scripts', () => {
     expect(source()).toContain("['pantry', 'install', '--ignore-scripts', '--quiet']")
     expect(source()).toContain("for (const file of ['CHANGELOG.md', 'bun.lock', 'pantry.lock'])")
+  })
+
+  /**
+   * An app that provisions system dependencies per machine gitignores
+   * `pantry.lock`. Staging it because it exists on disk aborted the release
+   * after the bump had already written every artifact.
+   */
+  test('skips an optional lockfile a .gitignore rule covers', () => {
+    const staging = source().slice(source().indexOf('async function stageReleaseArtifacts'))
+
+    expect(staging).toContain('if (await isGitIgnored(file))')
+    expect(source()).toContain("git(['check-ignore', '--', file], p.projectPath(), { throwOnError: false })")
+  })
+
+  /**
+   * The premise the skip rests on: `git add` treats an ignored path as an
+   * error, not as nothing to do. If that ever stopped being true the filter
+   * would be dead weight rather than load-bearing.
+   */
+  test('git add on an ignored path fails rather than staging nothing', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'stacks-release-ignored-'))
+
+    try {
+      const run = (...args: string[]): { exitCode: number | null } =>
+        Bun.spawnSync(['git', ...args], { cwd: repo, stdout: 'pipe', stderr: 'pipe' })
+
+      run('init', '--quiet')
+      writeFileSync(join(repo, '.gitignore'), 'pantry.lock\n')
+      writeFileSync(join(repo, 'package.json'), '{}\n')
+      writeFileSync(join(repo, 'pantry.lock'), '{}\n')
+
+      expect(run('add', '--', 'package.json', 'pantry.lock').exitCode).not.toBe(0)
+      expect(run('add', '--', 'package.json').exitCode).toBe(0)
+
+      const ignored = Bun.spawnSync(['git', 'check-ignore', '--', 'pantry.lock'], { cwd: repo, stdout: 'pipe', stderr: 'pipe' })
+      expect(ignored.stdout.toString().trim()).toBe('pantry.lock')
+    }
+    finally {
+      rmSync(repo, { recursive: true, force: true })
+    }
+  })
+
+  /**
+   * The two ways the lockfile format can disagree need opposite remedies, and
+   * naming the operator's Bun for both sent them round a loop they could not
+   * leave: re-running under the declared toolchain is what produced the newer
+   * format in the first place.
+   */
+  test('names the stale side when the lockfile format disagrees', () => {
+    expect(source()).toContain('producedVersion != null && producedVersion > expectedLockfileVersion')
+    expect(source()).toContain('the committed lockfile predates the Bun this repository declares')
+    expect(source()).toContain("this machine's Bun is older than the one that wrote the committed lockfile")
   })
 })

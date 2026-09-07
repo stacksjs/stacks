@@ -94,6 +94,19 @@ async function git(args: string[], cwd = p.projectPath(), options: { throwOnErro
   })
 }
 
+/**
+ * Whether a .gitignore rule covers this path.
+ *
+ * `git check-ignore` exits 1 for a path that is NOT ignored, which is the
+ * answer rather than a failure, so this deliberately does not throw on a
+ * non-zero exit: it reads the output instead, which names the path only when
+ * something ignores it.
+ */
+async function isGitIgnored(file: string): Promise<boolean> {
+  const output = await git(['check-ignore', '--', file], p.projectPath(), { throwOnError: false })
+  return output.trim().length > 0
+}
+
 async function readVersion(file: string): Promise<string> {
   const pkg = await readPackage(file)
 
@@ -343,10 +356,27 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
   const producedVersion = lockfileVersion(regeneratedLock)
   if (expectedLockfileVersion == null || producedVersion !== expectedLockfileVersion) {
     writeFileSync(lockPath, previousLock)
+
+    // Say which side is behind. The mismatch has two opposite causes and only
+    // one of them is the operator's Bun:
+    //
+    //   • produced < committed — this machine's Bun is older than the one that
+    //     wrote the lockfile in the repository. Running the release would
+    //     downgrade a format the rest of the team and CI already use.
+    //   • produced > committed — the Bun the repository DECLARES writes a newer
+    //     format than the lockfile that is checked in, so the committed file is
+    //     the stale one. Telling the operator to re-run under the declared
+    //     toolchain is exactly what they just did, and the release aborts again
+    //     on every attempt until someone regenerates the lockfile on purpose.
+    const remedy = producedVersion != null && producedVersion > expectedLockfileVersion
+      ? 'the committed lockfile predates the Bun this repository declares. Regenerate it once with that toolchain '
+        + '(`bun install --lockfile-only`) and commit the result as its own change, then re-run the release.'
+      : "this machine's Bun is older than the one that wrote the committed lockfile. Re-run the release with the "
+        + "repository's declared Bun toolchain through `pantry install`."
+
     throw new Error(
       `Release aborted: regenerating bun.lock produced lockfileVersion ${producedVersion ?? 'unknown'}, `
-      + `but the repository requires v${expectedLockfileVersion ?? 'unknown'}. Re-run the release with the `
-      + `repository's declared Bun toolchain through \`pantry install\`, then regenerate and commit the canonical lockfile.`,
+      + `but the committed one is v${expectedLockfileVersion ?? 'unknown'} — ${remedy}`,
     )
   }
 }
@@ -463,8 +493,20 @@ async function stageReleaseArtifacts(): Promise<void> {
     ? [':(glob)storage/framework/**/package.json', 'package.json']
     : ['package.json']
   for (const file of ['CHANGELOG.md', 'bun.lock', 'pantry.lock']) {
-    if (existsSync(p.projectPath(file)))
-      pathspecs.push(file)
+    if (!existsSync(p.projectPath(file)))
+      continue
+
+    // On disk is not the same as ours to commit. An app that provisions its
+    // system dependencies per machine gitignores `pantry.lock` and keeps it
+    // untracked — and `git add` on an ignored path is fatal, not a no-op. So
+    // the existence check alone aborted the release right here, *after* the
+    // bump had rewritten package.json and CHANGELOG.md and regenerated the
+    // lockfile, leaving the operator to finish the commit, tag and push by
+    // hand for a release that had otherwise entirely succeeded.
+    if (await isGitIgnored(file))
+      continue
+
+    pathspecs.push(file)
   }
 
   await git(['add', '--', ...pathspecs])
