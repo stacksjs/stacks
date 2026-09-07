@@ -27,12 +27,14 @@ export interface PackageResourceRoot {
 interface DiscoveredEntry {
   root?: string
   views?: string | string[]
+  migrations?: string | string[]
 }
 
 /** Directories a package is taken to provide when it declares no explicit list. */
 const IMPLIED_DIRS = {
   views: ['resources/views'],
   models: ['app/Models'],
+  migrations: ['database/migrations'],
 } as const
 
 export interface PackageResourceOptions {
@@ -72,7 +74,7 @@ function readManifest(manifestPath: string): Record<string, DiscoveredEntry> {
  * shipping an optional subtree is not an error.
  */
 function resourceRoots(
-  field: 'views' | 'models',
+  field: 'views' | 'models' | 'migrations',
   options: PackageResourceOptions = {},
 ): PackageResourceRoot[] {
   const manifestPath = options.manifestPath ?? path.storagePath('framework/discovered-packages.json')
@@ -115,6 +117,20 @@ function resourceRoots(
   // Sorted by package so two packages contributing the same kind of directory
   // resolve in the same order on every machine, rather than by manifest order.
   return roots.sort((a, b) => a.package.localeCompare(b.package))
+}
+
+/**
+ * Migration directories each discovered package contributes.
+ *
+ * These are read, never written. The migration runner deletes and rewrites
+ * files in the corpus it runs - SQLite preprocessing drops statements it
+ * cannot execute and prunes duplicate CREATEs - so a package's own directory
+ * is copied out of before any of that happens. Doing otherwise would have the
+ * framework mutating an installed package's files, which a reinstall silently
+ * undoes.
+ */
+export function packageMigrationRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+  return resourceRoots('migrations', options)
 }
 
 /** View directories each discovered package contributes. */

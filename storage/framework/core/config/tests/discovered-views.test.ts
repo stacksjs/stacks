@@ -16,7 +16,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { packageModelRoots, packageViewRoots } from '../src/discovered-resources'
+import { packageMigrationRoots, packageModelRoots, packageViewRoots } from '../src/discovered-resources'
 import { resolveViewPatterns } from '../src/views'
 
 function project(): string {
@@ -232,6 +232,64 @@ describe('package model roots', () => {
       const opts = { manifestPath: file, projectRoot: root }
       expect(packageModelRoots(opts).map(r => r.dir)).toEqual([join(root, 'node_modules/loghq/app/Models')])
       expect(packageViewRoots(opts).map(r => r.dir)).toEqual([join(root, 'node_modules/loghq/resources/views')])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+})
+
+describe('package migration roots', () => {
+  test('a package that ships database/migrations is found without declaring anything', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/database/migrations'), { recursive: true })
+      const file = manifest(root, { loghq: { root: 'node_modules/loghq' } })
+
+      const roots = packageMigrationRoots({ manifestPath: file, projectRoot: root })
+
+      expect(roots).toHaveLength(1)
+      expect(roots[0]?.dir).toBe(join(root, 'node_modules/loghq/database/migrations'))
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('honours an explicitly declared directory', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/sql'), { recursive: true })
+      const file = manifest(root, {
+        loghq: { root: 'node_modules/loghq', migrations: ['sql'] },
+      })
+
+      expect(packageMigrationRoots({ manifestPath: file, projectRoot: root }).map(r => r.dir))
+        .toEqual([join(root, 'node_modules/loghq/sql')])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('refuses a path that escapes the package', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'database/migrations'), { recursive: true })
+      mkdirSync(join(root, 'node_modules/loghq'), { recursive: true })
+      const file = manifest(root, {
+        loghq: { root: 'node_modules/loghq', migrations: ['../../database/migrations'] },
+      })
+
+      // Otherwise a package could name the application's own corpus as its
+      // migrations directory, and staging would copy every file onto itself
+      // under a banded name.
+      expect(packageMigrationRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('a package with no migrations contributes nothing', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/table/resources'), { recursive: true })
+      const file = manifest(root, { table: { root: 'node_modules/table' } })
+
+      expect(packageMigrationRoots({ manifestPath: file, projectRoot: root })).toEqual([])
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })
