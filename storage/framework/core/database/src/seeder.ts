@@ -820,9 +820,67 @@ export function chooseRelations(
   })
 }
 
+/**
+ * Columns the model declares unique, in their database spelling.
+ *
+ * A factory has no idea how many rows it will be asked for, so a perfectly
+ * reasonable one collides: `faker.company.name()` on a `unique: true` column
+ * repeats within five rows often enough that `buddy seed` failed on the Team
+ * model with `UNIQUE constraint failed: teams.name` - one whole model missing
+ * from the seeded database, and the constraint error the only clue.
+ */
+function uniqueColumns(attributes: Record<string, Attribute>): string[] {
+  return Object.entries(attributes)
+    .filter(([, attr]) => attr.unique === true)
+    .map(([field]) => snakeCase(field))
+}
+
+/**
+ * Make `record` distinct from what the earlier rows already used.
+ *
+ * Regenerating first, and only then disambiguating, so seeded data keeps
+ * looking like the factory meant it to: a retry usually finds a free value, and
+ * the suffix is what stops an exhausted pool from failing the whole model.
+ * A null is never disambiguated - every engine here allows repeated nulls in a
+ * unique index, which is what makes a nullable unique column usable at all.
+ */
+function claimUniqueValues(
+  record: Record<string, unknown>,
+  columns: readonly string[],
+  used: Map<string, Set<unknown>>,
+  suffix: number,
+): boolean {
+  let distinct = true
+
+  for (const column of columns) {
+    const value = record[column]
+    if (value == null)
+      continue
+
+    const seen = used.get(column) ?? new Set<unknown>()
+    used.set(column, seen)
+
+    if (!seen.has(value)) {
+      seen.add(value)
+      continue
+    }
+
+    distinct = false
+    if (suffix > 0) {
+      const disambiguated = typeof value === 'number' ? value + suffix : `${String(value)} ${suffix}`
+      record[column] = disambiguated
+      seen.add(disambiguated)
+    }
+  }
+
+  return distinct
+}
+
 async function generateRecords(model: SeederModel, options: SeederConfig = {}): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
   const relations = await relationColumns(model, options)
+  const unique = uniqueColumns(model.attributes)
+  const used = new Map<string, Set<unknown>>()
 
   for (let i = 0; i < model.count; i++) {
     // A factory that throws is reported on the first record and then stays
@@ -830,7 +888,14 @@ async function generateRecords(model: SeederModel, options: SeederConfig = {}): 
     // reported whether or not `--verbose` was passed: the failure is silently
     // replaced with a default, and a column that comes out null across the
     // whole table is otherwise indistinguishable from one nobody declared.
-    const record = await generateRecord(model.attributes, model.name, i === 0)
+    let record = await generateRecord(model.attributes, model.name, i === 0)
+    if (unique.length > 0) {
+      // Three retries, then disambiguate. A factory drawing from a small pool
+      // would otherwise spin forever on the last few rows.
+      for (let attempt = 0; attempt < 3 && !claimUniqueValues(record, unique, used, 0); attempt++)
+        record = await generateRecord(model.attributes, model.name, false)
+      claimUniqueValues(record, unique, used, i + 1)
+    }
     const fixture = model.fixtures[i]
     // Relations fill only what the record left empty, so an explicit factory
     // on a declared key keeps its value.
