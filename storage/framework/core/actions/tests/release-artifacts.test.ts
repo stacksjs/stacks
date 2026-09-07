@@ -88,7 +88,10 @@ describe('framework release artifact staging', () => {
    * format in the first place.
    */
   test('names the stale side when the lockfile format disagrees', () => {
-    expect(source()).toContain('producedVersion != null && producedVersion > expectedLockfileVersion')
+    // Match the comparison, not the whole guard chain. Pinning the exact
+    // expression turned a later null-hardening of the same line into a CI
+    // failure, which is the opposite of what this test is for.
+    expect(source()).toMatch(/producedVersion != null &&[\s\S]{0,80}producedVersion > expectedLockfileVersion/)
     expect(source()).toContain('the committed lockfile predates the Bun this repository declares')
     expect(source()).toContain("this machine's Bun is older than the one that wrote the committed lockfile")
   })
