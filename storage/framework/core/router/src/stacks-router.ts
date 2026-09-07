@@ -2368,17 +2368,15 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
   if (!synchronousInlineHandler || routeMayHaveBody)
     return rememberStacksRouteHandler(bindAsyncRouteHandler(handleAsyncInContext))
 
-  let handleAsync: AsyncRouteHandlerFn | undefined
-
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
     if (routeState?.middleware?.length || routeState?.rateLimit)
-      return (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req)
+      return runWithRequestArguments(req, handleAsyncInContext, req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
     if (routeRendersCsrf && !csrfHandledByOuter && requestMayRenderHtml(req)) {
       const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding)
-        return renderTokenSeeding.then(() => (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req))
+        return renderTokenSeeding.then(() => runWithRequestArguments(req, handleAsyncInContext, req))
     }
 
     if (forcesJsonByGroup)
@@ -2398,7 +2396,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
         return finished
     }
 
-    return (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req, preparedBaseResult, true)
+    return runWithRequestArguments(req, handleAsyncInContext, req, preparedBaseResult, true)
   }
 
   return rememberStacksRouteHandler(handleSynchronous)
