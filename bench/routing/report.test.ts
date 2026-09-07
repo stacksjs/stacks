@@ -10,7 +10,7 @@ const meta: RunMeta = {
   stacksSourceModules: {
     '@stacksjs/actions': 'storage/framework/core/actions/src/index.ts',
     '@stacksjs/database': 'storage/framework/core/database/src/index.ts',
-    '@stacksjs/database/utils': 'storage/framework/core/database/src/utils.ts',
+    '@stacksjs/database/replicas': 'storage/framework/core/database/src/replicas.ts',
     '@stacksjs/query-builder': 'storage/framework/core/query-builder/src/index.ts',
     '@stacksjs/router': 'storage/framework/core/router/src/index.ts',
     '@stacksjs/validation': 'storage/framework/core/validation/src/index.ts',

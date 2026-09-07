@@ -66,6 +66,32 @@ interface RoutingContext {
 }
 
 const routingContext = new AsyncLocalStorage<RoutingContext>()
+let databaseRoutingContextEnabled = false
+
+/**
+ * Keep the HTTP request boundary dormant when the active connection has no
+ * replicas. Database configuration owns this process-wide switch because the
+ * lightweight routing-context module deliberately does not load config or
+ * query-builder packages itself.
+ */
+export function configureDatabaseRoutingContext(enabled: boolean): void {
+  databaseRoutingContextEnabled = enabled
+}
+
+/** Establish request routing state only when a replica can consume it. */
+export function withDatabaseRoutingContext<T>(fn: () => T): T {
+  return databaseRoutingContextEnabled ? withRoutingContext(fn) : fn()
+}
+
+/**
+ * Argument-passing request dispatcher. AsyncLocalStorage accepts callback
+ * arguments directly, avoiding a closure for replica-aware applications.
+ */
+export function runInDatabaseRoutingContext<T, A>(fn: (arg: A) => T, arg: A): T {
+  return databaseRoutingContextEnabled
+    ? routingContext.run({ wroteInContext: false, inTransaction: false }, fn, arg)
+    : fn(arg)
+}
 
 /**
  * Run `fn` in a fresh routing context.

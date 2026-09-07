@@ -20,7 +20,7 @@ import type { PoolConfig, ReadPolicyConfig, ReplicaConfig } from './driver-confi
 import { getConnectionDefaults } from './defaults'
 import { isMysqlWire, isVitessSharded, toQueryBuilderDialect } from './dialect'
 import { relativeMigrationDirectory, resolveMigrationDirectory, snapshotDirForQueryBuilder } from './migration-path'
-import { contextInTransaction, markContextWrote, resolveReplicaConnection, selectReplica, shouldRouteToReplica, withRoutingContext, withTransactionContext } from './replicas'
+import { configureDatabaseRoutingContext, contextInTransaction, markContextWrote, resolveReplicaConnection, runInDatabaseRoutingContext, selectReplica, shouldRouteToReplica, withDatabaseRoutingContext, withTransactionContext } from './replicas'
 import { aggregateFunctions } from './types'
 
 interface DbConnectionConfig {
@@ -174,6 +174,8 @@ export function initializeDbConfig(config: DbConfigSource | null | undefined): v
   // Narrowing the shapes above is what makes the difference visible at all.
   if (config?.database?.connections)
     dbConfig = config.database as DbConfig
+
+  configureDatabaseRoutingContext(getReplicas().length > 0)
 
   queryLoggingEnabled = config?.database?.queryLogging?.enabled
     ?? envVars.DB_QUERY_LOGGING_ENABLED
@@ -431,19 +433,7 @@ function getReadPolicy(): ReadPolicyConfig {
   return getDatabaseConfig().reads ?? {}
 }
 
-/** Establish read-routing state only when this connection can use a replica. */
-export function withDatabaseRoutingContext<T>(fn: () => T): T {
-  return getReplicas().length === 0 ? fn() : withRoutingContext(fn)
-}
-
-/**
- * Argument-passing variant for request dispatchers. Keeping the argument out
- * of a per-request closure matters on the no-replica path, while replica-aware
- * applications still establish the same AsyncLocalStorage routing boundary.
- */
-export function runInDatabaseRoutingContext<T, A>(fn: (arg: A) => T, arg: A): T {
-  return getReplicas().length === 0 ? fn(arg) : withRoutingContext(() => fn(arg))
-}
+export { runInDatabaseRoutingContext, withDatabaseRoutingContext }
 
 /**
  * Translate the framework's millisecond pool knobs onto Bun's SQL driver

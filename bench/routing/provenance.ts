@@ -11,7 +11,7 @@ export const STACKS_FIXTURE_MODULES = [
 
 export const STACKS_BENCHMARK_MODULES = [
   ...STACKS_FIXTURE_MODULES,
-  '@stacksjs/database/utils',
+  '@stacksjs/database/replicas',
 ] as const
 
 export type StacksBenchmarkModule = typeof STACKS_BENCHMARK_MODULES[number]

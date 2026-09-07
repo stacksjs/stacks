@@ -5623,9 +5623,9 @@ async function getRoutingContextDispatcher(): Promise<ContextDispatcher> {
   if (!routingContextDispatcher) {
     try {
       // The root barrel also evaluates migrations, seeders, and every driver.
-      // This public subpath owns the same context functions without loading
-      // unrelated database tooling into every HTTP server process.
-      let database = await import('@stacksjs/database/utils') as unknown as DatabaseRoutingApi
+      // This public subpath owns the request context without loading database
+      // config, drivers, or query builders into every HTTP server process.
+      let database = await import('@stacksjs/database/replicas') as unknown as DatabaseRoutingApi
       if (typeof database.runInDatabaseRoutingContext !== 'function' && typeof database.withDatabaseRoutingContext !== 'function')
         database = await import('@stacksjs/database') as unknown as DatabaseRoutingApi
       const dispatcher = database.runInDatabaseRoutingContext
