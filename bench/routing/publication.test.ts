@@ -11,11 +11,29 @@ const publishable = {
   source: { revision: 'a'.repeat(40), dirty: false },
   targetIds: DEFAULT_TARGETS.map(target => target.id),
   scenarioIds: SCENARIOS.map(scenario => scenario.id),
-  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.5' },
+  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.7' },
   warmupSeconds: 5,
   durationSeconds: 30,
   runs: 3,
   busyHostProcesses: [],
+}
+
+const responseEvidence = {
+  status: 200,
+  mediaType: 'application/json',
+  bodyBytes: 17,
+  bodySha256: 'a'.repeat(64),
+}
+
+function parityChecks(targetId: string, scenarioId: string, runs = 3) {
+  const evidence = { primary: responseEvidence, probes: [] }
+  return Array.from({ length: runs }, (_, index) => ({
+    targetId,
+    scenarioId,
+    run: index + 1,
+    before: evidence,
+    after: evidence,
+  }))
 }
 
 describe('routing benchmark publication profile', () => {
@@ -76,6 +94,7 @@ describe('routing benchmark publication profile', () => {
         spread: { min: 98, max: 102 }, rangeRatio: 0.04, runs: 3,
       }],
       3,
+      parityChecks('stacks', 'static-json'),
     )).toEqual([])
   })
 
@@ -89,6 +108,10 @@ describe('routing benchmark publication profile', () => {
         spread: { min: 90, max: 110 }, rangeRatio: 0.2, runs: 3,
       }],
       3,
+      [
+        ...parityChecks('stacks', 'static-json'),
+        ...parityChecks('stacks', 'path-param'),
+      ],
     )).toEqual([
       'missing was skipped',
       'stacks:static-json contains an invalid measurement',
@@ -97,5 +120,35 @@ describe('routing benchmark publication profile', () => {
       'stacks:static-json exceeded the 10% throughput stability range',
       'stacks:path-param did not complete 3 required run(s)',
     ])
+  })
+
+  it('rejects missing, malformed, duplicated, and changing parity evidence', () => {
+    const measurement = {
+      targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: 99,
+      latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0, cpuPercent: 98,
+      spread: { min: 98, max: 102 }, rangeRatio: 0.04, runs: 3,
+    }
+    const malformed = parityChecks('stacks', 'static-json')
+    malformed[0] = {
+      ...malformed[0]!,
+      after: { primary: { ...responseEvidence, bodySha256: 'not-a-digest' }, probes: [] },
+    }
+    expect(routingMeasurementPublicationIssues(
+      [{ id: 'stacks' }],
+      [{ id: 'static-json' }],
+      [measurement],
+      3,
+      malformed,
+    )).toEqual([
+      'stacks:static-json contains invalid parity evidence',
+      'stacks:static-json changed parity evidence under load',
+    ])
+    expect(routingMeasurementPublicationIssues(
+      [{ id: 'stacks' }],
+      [{ id: 'static-json' }],
+      [measurement],
+      3,
+      parityChecks('stacks', 'static-json', 2),
+    )).toContain('stacks:static-json did not retain 3 required parity check(s)')
   })
 })

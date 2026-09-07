@@ -1,6 +1,7 @@
 import type { BusyProcess } from './host-load'
 import type { Measurement } from './report'
 import type { RuntimeRequirement } from './runtime-version'
+import type { ScenarioParityEvidence } from './runtime'
 import type { SourceState } from './source'
 import { selectedPeerPackages } from './peer-versions'
 import { SCENARIOS } from './scenarios'
@@ -14,6 +15,15 @@ export interface RoutingPublicationTarget {
 
 export interface RoutingPublicationScenario {
   id: string
+  probes?: readonly { id: string }[]
+}
+
+export interface RoutingParityCheck {
+  targetId: string
+  scenarioId: string
+  run: number
+  before: ScenarioParityEvidence
+  after: ScenarioParityEvidence
 }
 
 export interface RoutingPublicationProfile {
@@ -79,6 +89,7 @@ export function routingMeasurementPublicationIssues(
   scenarios: readonly RoutingPublicationScenario[],
   measurements: Measurement[],
   expectedRuns: number,
+  parityChecks: RoutingParityCheck[],
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -110,6 +121,33 @@ export function routingMeasurementPublicationIssues(
         issues.push(`${key} has no valid server CPU reading`)
       if (measurementRange(row) > MAX_STABLE_RANGE)
         issues.push(`${key} exceeded the 10% throughput stability range`)
+
+      const checks = parityChecks.filter(check => check.targetId === target.id && check.scenarioId === scenario.id)
+      const completeRuns = checks.length === expectedRuns
+        && new Set(checks.map(check => check.run)).size === expectedRuns
+        && checks.every(check => Number.isSafeInteger(check.run) && check.run >= 1 && check.run <= expectedRuns)
+      if (!completeRuns) {
+        issues.push(`${key} did not retain ${expectedRuns} required parity check(s)`)
+        continue
+      }
+
+      const expectedProbeIds = scenario.probes?.map(probe => probe.id) ?? []
+      const validEvidence = checks.every(check => [check.before, check.after].every((evidence) => {
+        const responses = [evidence.primary, ...evidence.probes.map(probe => probe.response)]
+        return evidence.primary.status === 200
+          && evidence.primary.mediaType === 'application/json'
+          && evidence.probes.length === expectedProbeIds.length
+          && evidence.probes.every((probe, index) => probe.id === expectedProbeIds[index])
+          && responses.every(response => Number.isSafeInteger(response.status)
+            && response.status >= 100 && response.status <= 599
+            && (response.mediaType === null || typeof response.mediaType === 'string')
+            && Number.isSafeInteger(response.bodyBytes) && response.bodyBytes >= 0
+            && /^[a-f\d]{64}$/.test(response.bodySha256))
+      }))
+      if (!validEvidence)
+        issues.push(`${key} contains invalid parity evidence`)
+      if (checks.some(check => JSON.stringify(check.before) !== JSON.stringify(check.after)))
+        issues.push(`${key} changed parity evidence under load`)
     }
   }
   return issues

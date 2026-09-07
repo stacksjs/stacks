@@ -334,7 +334,7 @@ async function main(): Promise<void> {
 
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
-    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs),
+    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
   if (sourceStateChanged(meta.source, meta.sourceAtEnd))
