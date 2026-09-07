@@ -45,7 +45,7 @@ export function tinker(buddy: CLI): void {
         if (result.exitCode !== 0) {
           await outro(
             'Tinker session ended with errors',
-            { startTime: perf, useSeconds: true },
+            { startTime: perf, useSeconds: true, type: 'error' },
           )
           process.exit(ExitCode.FatalError)
         }

@@ -877,7 +877,7 @@ export function migrate(buddy: CLI): void {
           + `  To allow it, set database.safety.migrateFresh to 'allow' in config/database.ts,\n`
           + `  or run once with: DB_MIGRATE_FRESH=allow ./buddy migrate:fresh`,
         )
-        await outro('migrate:fresh refused - the migrateFresh guard is set to "disabled".', { startTime: perf, useSeconds: true })
+        await outro('migrate:fresh refused - the migrateFresh guard is set to "disabled".', { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 
@@ -890,7 +890,7 @@ export function migrate(buddy: CLI): void {
             ? 'Guard is "confirm": migrate:fresh must be run interactively.'
             : 'Re-run with --force to drop the database non-interactively.'
           await log.error(`Refusing to drop the ${APP_ENV} database "${dbLabel}" in a non-interactive environment. ${hint}`)
-          await outro('migrate:fresh cancelled.', { startTime: perf, useSeconds: true })
+          await outro('migrate:fresh cancelled.', { startTime: perf, useSeconds: true, type: 'warning' })
           process.exit(ExitCode.FatalError)
         }
 
@@ -1078,7 +1078,7 @@ export function migrate(buddy: CLI): void {
       if (!allowed.has(target)) {
         // eslint-disable-next-line no-console
         console.log(`\n  Unknown target driver "${driver}". Allowed: sqlite, mysql, vitess, postgres.\n`)
-        await outro(`Aborted.`, { startTime: perf, useSeconds: true })
+        await outro(`Aborted.`, { startTime: perf, useSeconds: true, type: 'warning' })
         process.exit(ExitCode.FatalError)
       }
 
@@ -1450,7 +1450,7 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
   That repoints renumbered ledger rows and records migrations the schema
   already proves. It never runs SQL from a migration file.
 `)
-        await outro('Drift detected.', { startTime: perf!, useSeconds: true })
+        await outro('Drift detected.', { startTime: perf!, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 

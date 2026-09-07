@@ -3128,7 +3128,7 @@ async function runSshDeploy(args: {
     log.info(`Coming-soon page: http://${ip}:3000  (bypass with ?secret=…)`)
   }
   else {
-    await outro(`${targetLabel} deploy reported a failure - see the per-instance output above.`, { startTime, useSeconds: true })
+    await outro(`${targetLabel} deploy reported a failure - see the per-instance output above.`, { startTime, useSeconds: true, type: 'error' })
     process.exit(ExitCode.FatalError)
   }
 }

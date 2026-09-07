@@ -327,7 +327,7 @@ export function build(buddy: CLI): void {
       const iosSucceeded = await runBuildAction(Action.BuildIos, 'iOS application', options)
 
       if (!androidSucceeded || !iosSucceeded) {
-        await outro('One or more mobile application builds failed', { startTime: perf, useSeconds: true })
+        await outro('One or more mobile application builds failed', { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 

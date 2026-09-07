@@ -302,6 +302,7 @@ export function make(buddy: CLI): void {
         await outro('While running the make:command command, there was an issue', {
           startTime: perf,
           useSeconds: true,
+          type: 'error',
         })
         process.exit(ExitCode.FatalError)
       }
@@ -507,6 +508,7 @@ export function make(buddy: CLI): void {
         await outro('While running the make:notification command, there was an issue', {
           startTime: perf,
           useSeconds: true,
+          type: 'error',
         })
         process.exit(ExitCode.FatalError)
       }
@@ -547,6 +549,7 @@ export function make(buddy: CLI): void {
         await outro('While running the make:policy command, there was an issue', {
           startTime: perf,
           useSeconds: true,
+          type: 'error',
         })
         process.exit(ExitCode.FatalError)
       }
@@ -588,6 +591,7 @@ export function make(buddy: CLI): void {
         await outro('While running the make:resource command, there was an issue', {
           startTime: perf,
           useSeconds: true,
+          type: 'error',
         })
         process.exit(ExitCode.FatalError)
       }
@@ -677,6 +681,7 @@ export function make(buddy: CLI): void {
         await outro('While running the make:job command, there was an issue', {
           startTime: perf,
           useSeconds: true,
+          type: 'error',
         })
         process.exit(ExitCode.FatalError)
       }

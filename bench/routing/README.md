@@ -24,9 +24,10 @@ A throughput number is easy to produce and easy to produce dishonestly by
 accident. The safeguards here exist only to stop that:
 
 - **Response parity is asserted before anything is measured.** Every target has
-  to answer every scenario with byte-identical bodies (`scenarios.ts` holds the
-  expected string). A server that is fast because it 404s, 422s, or returns less
-  is not a faster server, and this check is what catches it.
+  to answer every scenario with status 200, an application/json media type, and
+  byte-identical bodies (`scenarios.ts` holds the expected string). A server that
+  is fast because it returns a different result is not a faster server, and this
+  check is what catches it.
 - **Validation is probed, not assumed.** Before `post-validate` is measured,
   every target must reject missing fields and wrong field types with a client
   error, then accept an extra input field without echoing it. These setup-only

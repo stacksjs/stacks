@@ -1082,7 +1082,7 @@ export function cloud(buddy: CLI): void {
       if (!options.yes && (isCI || !hasTTY || !process.stdin.isTTY)) {
         log.syncError(`Refusing to remove the "${environment}" cloud infrastructure from a non-interactive shell without confirmation.`)
         log.syncError(`   ➡️  Re-run with \`--yes\` to confirm (e.g. in CI): \`buddy cloud:remove --yes\``)
-        await outro('cloud:remove cancelled.', { startTime, useSeconds: true })
+        await outro('cloud:remove cancelled.', { startTime, useSeconds: true, type: 'warning' })
         await log.flush()
         process.exit(ExitCode.FatalError)
       }
@@ -1223,7 +1223,7 @@ export function cloud(buddy: CLI): void {
           console.error('Error details:', error)
         }
 
-        await outro('Failed to remove infrastructure', { startTime, useSeconds: true })
+        await outro('Failed to remove infrastructure', { startTime, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
     })

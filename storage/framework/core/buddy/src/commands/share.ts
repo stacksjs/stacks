@@ -299,7 +299,7 @@ export function share(buddy: CLI): void {
           log.error(caught.stack)
 
         for (const t of tunnels) t.close()
-        await outro('Share failed', { startTime: perf, useSeconds: true })
+        await outro('Share failed', { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
     })

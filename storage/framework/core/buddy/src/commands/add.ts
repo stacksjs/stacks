@@ -35,7 +35,7 @@ export function add(buddy: CLI): void {
       })
 
       if (!result) {
-        await outro(`Could not add stack ${italic(stack)}.`, { startTime: perf, useSeconds: true })
+        await outro(`Could not add stack ${italic(stack)}.`, { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 

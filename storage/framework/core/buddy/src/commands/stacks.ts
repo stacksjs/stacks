@@ -48,7 +48,7 @@ export function stacks(buddy: CLI): void {
       })
 
       if (!result && !options.dryRun) {
-        await outro('Failed to install stack', { startTime: perf, useSeconds: true })
+        await outro('Failed to install stack', { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 
@@ -79,7 +79,7 @@ export function stacks(buddy: CLI): void {
       })
 
       if (!result) {
-        await outro('Failed to uninstall stack', { startTime: perf, useSeconds: true })
+        await outro('Failed to uninstall stack', { startTime: perf, useSeconds: true, type: 'error' })
         process.exit(ExitCode.FatalError)
       }
 

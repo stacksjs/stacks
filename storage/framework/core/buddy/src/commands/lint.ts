@@ -67,13 +67,13 @@ async function runStxChecks(startTime: number): Promise<void> {
 
   if (report.failed > 0) {
     await log.error(`${report.failed} stx check(s) failed.`)
-    await outro('stx checks failed', { startTime, useSeconds: true })
+    await outro('stx checks failed', { startTime, useSeconds: true, type: 'error' })
     process.exit(ExitCode.FatalError)
   }
 
   if (report.loosened > 0) {
     log.warn(`No regressions, but ${report.loosened} baseline(s) are now stale.`)
-    await outro('stx baselines stale', { startTime, useSeconds: true })
+    await outro('stx baselines stale', { startTime, useSeconds: true, type: 'error' })
     process.exit(ExitCode.FatalError)
   }
 
