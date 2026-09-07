@@ -5692,7 +5692,24 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
         const safeMethod = method === 'GET' || method === 'HEAD' || method === 'OPTIONS'
         const directDispatch = directHandlers.get(`${method}:${path}`)
           ?? (method === 'HEAD' ? directHandlers.get(`GET:${path}`) : undefined)
-        const dispatch = directDispatch ?? handler
+        if (directDispatch) {
+          if (safeMethod && csrfEnabled) {
+            methods[method] = (request) => {
+              const cookie = request.headers.get('cookie') ?? ''
+              const markedRequest = request as unknown as Record<symbol, unknown>
+              if (hasCsrfCookie(cookie))
+                markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
+              else
+                markedRequest[CSRF_SECURE_TRANSPORT] = secureTransport
+              return dispatchInRoutingContext(directDispatch, request)
+            }
+          }
+          else {
+            methods[method] = request => dispatchInRoutingContext(directDispatch, request)
+          }
+          continue
+        }
+
         methods[method] = (request) => {
           if (safeMethod && csrfEnabled) {
             const cookie = request.headers.get('cookie') ?? ''
@@ -5704,9 +5721,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
               markedRequest[CSRF_SECURE_TRANSPORT] = secureTransport
             }
           }
-          const response = dispatchInRoutingContext(dispatch, request)
-          if (directDispatch)
-            return response
+          const response = dispatchInRoutingContext(handler, request)
           return response instanceof Response
             ? finalizeResponse(response, request)
             : response.then(resolved => finalizeResponse(resolved, request))
