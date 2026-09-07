@@ -396,7 +396,23 @@ async function main(): Promise<void> {
 
   const report = renderMemoryReport({ meta, targets: targetRows, measurements })
   writeFileSync(join(outDir, 'report.md'), report)
-  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify({ meta, measurements }, null, 2)}\n`)
+  writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify({
+    meta,
+    targets: targetRows,
+    workload: {
+      targetDefinitions: targets,
+      scenario,
+      requests: targets.map(({ target }) => ({
+        targetId: target.id,
+        scenarioId: scenario.id,
+        method: scenario.method,
+        path: scenario.path,
+        body: scenario.body,
+        headers: headersFor(target, scenario),
+      })),
+    },
+    measurements,
+  }, null, 2)}\n`)
   console.error(`\n[memory] report written to ${join(outDir, 'report.md')}\n`)
   console.log(report)
 }

@@ -10,6 +10,9 @@ bun bench/routing/run.ts
 That runs every scenario against the default targets the machine can boot and writes a
 timestamped directory under `results/` containing `report.md`,
 `measurements.json`, and the raw load-generator output for every individual run.
+The JSON artifact embeds the selected target definitions and complete scenario
+contracts, including request bodies, expected responses, headers profiles, and
+validation probes.
 
 Reports and metadata record the Git revision and working-tree state both before
 and after measurement, plus the machine architecture. Ignored files are
