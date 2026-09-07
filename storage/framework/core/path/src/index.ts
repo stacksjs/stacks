@@ -28,6 +28,9 @@ import {
   toNamespacedPath,
 } from 'node:path'
 import process from 'node:process'
+import { appPath, frameworkPath, projectPath, storagePath } from './project'
+
+export { appPath, frameworkPath, projectPath, storagePath } from './project'
 
 // Lazy import logging to avoid circular dependency (logging imports path)
 async function debugLog(message: string) {
@@ -387,15 +390,6 @@ export function arraysPath(path?: string): string {
  * console.log(appPath('Actions/DummyAction.ts')) // Outputs the absolute path to 'Actions/DummyAction.ts' within the app directory.
  * ```
  */
-export function appPath(path?: string, options?: { relative?: boolean, cwd?: string }): string {
-  const absolutePath = projectPath(`app/${path || ''}`)
-
-  if (options?.relative)
-    return relative(options.cwd || process.cwd(), absolutePath)
-
-  return absolutePath
-}
-
 /**
  * Returns the path to the defaults `app` directory within the framework directory.
  * This is where default Actions, Controllers, etc. are stored.
@@ -792,15 +786,6 @@ export function fakerPath(path?: string): string {
  * @param options.cwd - Specifies a custom working directory.
  * @returns The absolute or relative path to the specified file or directory within the framework directory.
  */
-export function frameworkPath(path?: string, options?: { relative?: boolean, cwd?: string }): string {
-  const absolutePath = storagePath(`framework/${path || ''}`)
-
-  if (options?.relative)
-    return relative(options.cwd || process.cwd(), absolutePath)
-
-  return absolutePath
-}
-
 /**
  * Returns the path to the `frontend` directory within the core directory.
  *
@@ -1046,24 +1031,6 @@ export function paymentsPath(path?: string): string {
  * @param filePath - The relative path to append to the project path. Defaults to an empty string.
  * @returns The absolute path to the specified file or directory within the project directory.
  */
-export function projectPath(filePath = '', options?: { relative: boolean }): string {
-  let path = process.cwd()
-
-  while (path.includes('storage')) {
-    const parent = resolve(path, '..')
-    if (parent === path) break
-    path = parent
-  }
-
-  const finalPath = resolve(path, filePath)
-
-  // If the `relative` option is true, return the path relative to the current working directory
-  if (options?.relative)
-    return relative(process.cwd(), finalPath)
-
-  return finalPath
-}
-
 /**
  * Finds and returns the absolute path of a specified project by name.
  *
@@ -1108,10 +1075,6 @@ export function projectConfigPath(path?: string): string {
  * @param path - The relative path to the file or directory within the storage directory.
  * @returns The absolute path to the specified file or directory within the storage directory.
  */
-export function storagePath(path?: string): string {
-  return projectPath(`storage/${path || ''}`)
-}
-
 /**
  * Returns the path to the `public` directory within the project directory.
  *

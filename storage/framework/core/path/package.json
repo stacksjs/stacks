@@ -31,6 +31,12 @@
       "bun": "./dist/index.js",
       "import": "./dist/index.js",
       "default": "./dist/index.js"
+    },
+    "./project": {
+      "types": "./dist/project.d.ts",
+      "bun": "./dist/project.js",
+      "import": "./dist/project.js",
+      "default": "./dist/project.js"
     }
   },
   "module": "dist/index.js",
