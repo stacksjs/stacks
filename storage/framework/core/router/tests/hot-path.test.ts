@@ -12,7 +12,7 @@
  * requests per second is a test that fails on somebody else's laptop.
  */
 
-import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
+import { afterAll, beforeAll, describe, expect, it, spyOn } from 'bun:test'
 
 let server: any = null
 let port = 0
@@ -136,6 +136,27 @@ describe('the request path keeps its defaults', () => {
       expect((answer as Response).headers.get('x-request-id')).toBeTruthy()
     }
     finally {
+      nativeServer.stop()
+    }
+  })
+
+  it('does not rescan small serialized JSON for its exact byte length', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter({ csrf: false, requestIds: false })
+    direct.get('/_hot/native-small-json', () => ({ ok: true }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+    const byteLength = spyOn(Buffer, 'byteLength')
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = nativeRoutes['/_hot/native-small-json'].GET(new Request('http://localhost/_hot/native-small-json'))
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(await (answer as Response).json()).toEqual({ ok: true })
+      expect(byteLength.mock.calls.some(([body]) => body === '{"ok":true}')).toBe(false)
+    }
+    finally {
+      byteLength.mockRestore()
       nativeServer.stop()
     }
   })

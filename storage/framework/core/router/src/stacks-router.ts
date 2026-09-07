@@ -707,8 +707,9 @@ let routeActionRegistry: Map<string, RouterAction> | undefined
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
 // Present only when formatJsonResult preapplied every framework header. The
-// numeric value doubles as the metadata marker and the compression input.
-const FRAMEWORK_RESPONSE_BODY_LENGTH = Symbol('stacks.router.frameworkResponseBodyLength')
+// numeric value doubles as the metadata marker and a conservative compression
+// input; it may overestimate the exact UTF-8 byte length, but never undershoots.
+const FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND = Symbol('stacks.router.frameworkResponseBodySizeUpperBound')
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const secureNativeRouteRouters = new WeakSet<Router>()
 const csrfEnabledNativeRouteRouters = new WeakSet<Router>()
@@ -1708,7 +1709,7 @@ function finishSynchronousResult(
   csrfHandledByOuter: boolean,
   routeSeedsCsrf: boolean,
 ): Response | undefined {
-  const frameworkMetadataApplied = typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
+  const frameworkMetadataApplied = typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] === 'number'
   if (
     response.status >= 400
     || req._corsConfig
@@ -2241,7 +2242,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
                 response,
                 // The value the render already embedded, when there was one.
                 (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
-                typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number',
+                typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] === 'number',
               )
             }
           }
@@ -2273,7 +2274,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       const after = enhancedReq._afterResponse
       const requested = enhancedReq._responseHeaders
       const frameworkMetadataApplied = response
-        && typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
+        && typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] === 'number'
       // Framework JSON responses already carry their request id and security
       // defaults from `formatJsonResult`. When no middleware requested later
       // work, leave the native Headers object untouched and avoid allocating
@@ -3477,16 +3478,17 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
   })
 }
 
-/** Serialize JSON once and make its size available to compression. */
+/** Serialize JSON once and make a safe size bound available to compression. */
 function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: string | null): Response {
   const canPreapplyMetadata = !req._responseHeaders
 
-  // Serialize once and publish the exact byte length so the server and the
-  // compression wrapper do not have to consume and rebuild the response
-  // stream. Count UTF-8 bytes, not JavaScript characters; a custom toJSON may
-  // also produce an empty body.
+  // JSON.stringify emits well-formed strings, so each UTF-16 code unit costs at
+  // most three UTF-8 bytes. Compression only needs a safe threshold bound: an
+  // overestimate falls through to its exact body check, while an underestimate
+  // could skip compression incorrectly. Avoid scanning small bodies twice on
+  // the dominant path; only calculate the exact byte length when it becomes an
+  // observable Content-Length header.
   const body = JSON.stringify(result) ?? ''
-  const bodyLength = Buffer.byteLength(body)
   const requestMarkers = req as unknown as Record<symbol, unknown>
   const nativeColdRequest = requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
     && typeof requestMarkers[CSRF_SECURE_TRANSPORT] === 'boolean'
@@ -3498,12 +3500,12 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     ? secureSerializedJsonResponse(body, undefined, req._requestId, csrfCookie)
     : new Response(body, { headers: createJsonSecurityHeaders() })
   if (!canPreapplyMetadata)
-    response.headers.set('Content-Length', String(bodyLength))
+    response.headers.set('Content-Length', String(Buffer.byteLength(body)))
   if (linkHeader)
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
     const frameworkResponse = response as unknown as Record<symbol, unknown>
-    frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH] = bodyLength
+    frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] = body.length * 3
   }
   if (csrfCookie)
     requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
@@ -5668,10 +5670,10 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
     const compressionThreshold = compression?.threshold ?? 1024
     const finalizeResponse: NativeResponseFinalizer = (response, request) => {
       const frameworkResponse = response as unknown as Record<symbol, unknown>
-      const bodyLength = frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH]
-      if (compressionDisabled || (typeof bodyLength === 'number' && bodyLength < compressionThreshold))
+      const bodySizeUpperBound = frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND]
+      if (compressionDisabled || (typeof bodySizeUpperBound === 'number' && bodySizeUpperBound < compressionThreshold))
         return response
-      if (bodyLength === undefined) {
+      if (bodySizeUpperBound === undefined) {
         const declaredLength = response.headers.get('content-length')
         if (declaredLength !== null) {
           const length = Number(declaredLength)
