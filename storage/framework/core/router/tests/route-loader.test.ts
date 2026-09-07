@@ -26,7 +26,7 @@ describe('Route Loader - loadRoutes', () => {
     ).rejects.toThrow()
   })
 
-  test('the web key has no prefix added (only `web` is in NO_PREFIX_KEYS now)', async () => {
+  test('the web key is the only key with no prefix added', async () => {
     // `web` mounts at root /. The import will throw for the synthetic
     // path, but reaching the import means the prefix logic ran with
     // `undefined` — the group wrapper wasn't invoked. We verify by
@@ -41,11 +41,11 @@ describe('Route Loader - loadRoutes', () => {
   })
 
   test('the api key auto-prefixes with /api (stacksjs/stacks#1835)', async () => {
-    // Previously `api` was in NO_PREFIX_KEYS and `routes/api.ts`
+    // Previously `api` was treated as prefix-free and `routes/api.ts`
     // mounted at root — which 404'd through the rpx proxy because the
     // forwarded URL kept its `/api` prefix. The fix moves `api` out of
-    // NO_PREFIX_KEYS so it picks up the conventional `/api` prefix
-    // from the key-to-prefix default.
+    // so it now picks up the conventional `/api` prefix from the
+    // key-to-prefix default.
     //
     // We can't easily assert the group prefix without spinning up the
     // real router; the integration smoke is that registering

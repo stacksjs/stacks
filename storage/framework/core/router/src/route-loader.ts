@@ -8,7 +8,7 @@
  * The `'api'` key auto-prefixes with `/api` so user routes in
  * `routes/api.ts` line up with the rpx proxy forward path
  * (`/api/*` → API server with `stripPrefix: false`). Previously this
- * key was also in `NO_PREFIX_KEYS`, which produced silent 404s when
+ * key was also treated as prefix-free, which produced silent 404s when
  * `routes/api.ts` registered `route.get('/cart/add', ...)` but the
  * proxied request arrived as `/api/cart/add` — see
  * stacksjs/stacks#1835 root cause 4.
@@ -23,16 +23,6 @@ import type { MiddlewareReference } from '@stacksjs/bun-router'
 import type { RouteDefinition, RouteRegistry } from './route-types'
 import { log } from '@stacksjs/logging'
 import { route } from './stacks-router'
-
-/**
- * Keys that load at root `/` with no prefix. Currently just `'web'`
- * for HTML/SSR routes that mount at the document root.
- *
- * `'api'` is deliberately NOT in this list (see top-of-file note).
- * It picks up the conventional `/api` prefix via the default
- * key-to-prefix mapping below.
- */
-const NO_PREFIX_KEYS = ['web']
 
 export interface RootMountedAppRoute {
   method: string
@@ -74,7 +64,7 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
     const config = normalizeDefinition(definition)
     const prefix = config.prefix !== undefined
       ? (config.prefix ? (config.prefix.startsWith('/') ? config.prefix : `/${config.prefix}`) : undefined)
-      : (NO_PREFIX_KEYS.includes(key) ? undefined : `/${key}`)
+      : (key === 'web' ? undefined : `/${key}`)
     const middleware = normalizeMiddleware(config.middleware)
     log.debug(`[route-loader] Loading: ${config.path} prefix=${prefix || '/'} middleware=[${middleware.join(', ')}]`)
 
