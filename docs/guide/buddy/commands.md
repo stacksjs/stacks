@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **320 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **321 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 1 |
 | `auth` | 4 |
 | `build` | 16 |
-| `cloud` | 10 |
+| `cloud` | 11 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `commerce` | 2 |
@@ -584,6 +584,24 @@ Run the local Stacks Cloud management cockpit (servers, sites, deploys)
 | `--host` | Host to bind the dashboard to | value, optional | `"127.0.0.1"` |
 | `--port` | Port to bind the dashboard to | value, optional | `"7676"` |
 | `--env` | Environment to manage | value, optional | - |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:destroy`
+
+Destroy a drained server, once nothing on it is anyone's rollback
+
+- Usage: `$ buddy cloud:destroy <server>`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: `<server>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--env` | Environment whose fleet and state pin the server belongs to | value, optional | - |
+| `--confirm` | The exact server name, which an irreversible step requires before it runs | value, required | - |
+| `--discard-drained` | Destroy it even though it still holds site trees that are somebody's rollback | boolean, optional | `false` |
+| `--dry-run` | Print the plan and change nothing | boolean, optional | `false` |
+| `-J`, `--json` | Emit the teardown plan as JSON | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:diff`

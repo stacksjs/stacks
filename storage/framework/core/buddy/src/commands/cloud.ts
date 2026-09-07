@@ -1,3 +1,4 @@
+import type { OperationPlan } from '@stacksjs/ts-cloud'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -319,6 +320,120 @@ export async function renameEffects(
   return effects
 }
 
+/**
+ * What tearing a server down needs, so the plan can be built without a provider.
+ *
+ * Two records, not four: a destroy is the reverse of a provision, and the box's
+ * own hostname and inventory row go away with it. What does NOT go away on its
+ * own is the state pin, which would otherwise keep naming a server that no
+ * longer exists and send the next deploy looking for it.
+ */
+export interface ServerDestroyEffects {
+  /** Is the server still there? This is what makes a half-finished teardown resumable. */
+  providerExists: () => Promise<boolean>
+  deleteProvider: () => Promise<void>
+  /** Name recorded in the local driver state pin, when a pin names this server. */
+  pinnedName?: () => Promise<string | undefined>
+  clearPin?: () => Promise<void>
+}
+
+/**
+ * The plan that destroys `name`.
+ *
+ * Built here rather than upstream because ts-cloud has no destroy planner: it
+ * supplies the drained-site scan that decides whether a teardown may run at all,
+ * and leaves the teardown itself to the driver that provisioned the box.
+ *
+ * Deleting the server comes FIRST, and the pin is cleared after. The other order
+ * reads as safer and is not: a crash between the two would leave a live server
+ * that nothing points at, which is the state that gets forgotten and billed.
+ */
+export function planServerDestroy(name: string, effects: ServerDestroyEffects): OperationPlan {
+  const steps: OperationPlan['steps'] = [
+    {
+      id: 'provider:delete',
+      title: `Delete the server ${name}`,
+      change: { from: name, to: 'gone' },
+      destructive: true,
+      satisfied: async () => !(await effects.providerExists()),
+      apply: async () => await effects.deleteProvider(),
+    },
+  ]
+
+  if (effects.pinnedName && effects.clearPin) {
+    steps.push({
+      id: 'state:clear',
+      title: 'Clear the state pin that names it',
+      change: { from: name, to: 'none' },
+      satisfied: async () => (await effects.pinnedName!()) !== name,
+      apply: async () => await effects.clearPin!(),
+    })
+  }
+
+  return { operation: 'server:destroy', target: name, steps }
+}
+
+/** {@link ServerDestroyEffects} wired to this project's fleet. */
+export async function destroyEffects(tsCloudConfig: any, current: any, environment: string): Promise<ServerDestroyEffects> {
+  const stackName = tsCloudConfig?.project?.stackName || `${tsCloudConfig?.project?.slug || 'app'}-${environment}`
+  const { readDriverState, writeDriverState } = await import('@stacksjs/ts-cloud')
+  const pin = await readDriverState(stackName).catch(() => null)
+
+  const effects: ServerDestroyEffects = {
+    // Without a provider there is nothing this command can delete, and saying so
+    // beats a plan whose one step silently does nothing.
+    providerExists: async () => true,
+    deleteProvider: async () => {
+      throw new Error(`No provider API for this fleet, so ${current?.name} cannot be deleted from here.`)
+    },
+  }
+
+  if (pin?.provider === 'hetzner' && pin.serverName === current?.name) {
+    effects.pinnedName = async () => {
+      const latest = await readDriverState(stackName)
+      return latest?.provider === 'hetzner' ? latest.serverName : undefined
+    }
+    effects.clearPin = async () => {
+      const latest = await readDriverState(stackName)
+      if (latest?.provider !== 'hetzner')
+        return
+      // The pin is emptied rather than deleted: a stack whose box is gone should
+      // re-provision on the next deploy, and the file is where that decision is
+      // recorded. `destroyCompute` clears the same two fields.
+      const { serverId: _id, serverName: _name, ...rest } = latest
+      await writeDriverState(stackName, rest as typeof latest)
+    }
+  }
+
+  const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
+  if (provider !== 'hetzner')
+    return effects
+
+  const { HetznerClient } = await import('@stacksjs/ts-cloud')
+  const { resolveHetznerApiToken } = await import('./deploy')
+  const apiToken = resolveHetznerApiToken(tsCloudConfig)
+  const serverId = Number(current?.id)
+  if (!apiToken || !Number.isFinite(serverId))
+    return effects
+
+  const client = new HetznerClient({ apiToken })
+  effects.providerExists = async () => {
+    try {
+      return Boolean(await client.getServer(serverId))
+    }
+    catch {
+      // A server that is already gone answers 404, which is this step being
+      // satisfied rather than the plan failing.
+      return false
+    }
+  }
+  effects.deleteProvider = async () => {
+    await client.deleteServer(serverId)
+  }
+
+  return effects
+}
+
 /** Only an SSH-deployed fleet can be listed, and saying so beats printing an empty one. */
 async function assertFleetProvider(tsCloudConfig: any, command: string): Promise<void> {
   const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
@@ -484,6 +599,11 @@ export function cloud(buddy: CLI): void {
     renameTo: 'The new server name',
     renameEnv: 'Environment whose fleet and state pin to rename in',
     renameJson: 'Emit the rename plan as JSON',
+    destroy: 'Destroy a drained server, once nothing on it is anyone\'s rollback',
+    destroyEnv: 'Environment whose fleet and state pin the server belongs to',
+    destroyJson: 'Emit the teardown plan as JSON',
+    destroyConfirm: 'The exact server name, which an irreversible step requires before it runs',
+    destroyDiscardDrained: 'Destroy it even though it still holds site trees that are somebody\'s rollback',
     attachServer: 'Server to attach to, by provider name or by owning project slug',
     dryRun: 'Print the plan and change nothing',
     sitesEnv: 'Environment to take the inventory for',
@@ -1352,6 +1472,127 @@ export function cloud(buddy: CLI): void {
       }
 
       await log.success(`Renamed ${server} to ${next}`)
+    })
+
+  buddy
+    .command('cloud:destroy <server>', descriptions.destroy)
+    .option('--env [env]', descriptions.destroyEnv)
+    .option('--confirm <name>', descriptions.destroyConfirm)
+    .option('--discard-drained', descriptions.destroyDiscardDrained, { default: false })
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('-J, --json', descriptions.destroyJson, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (server: string, options: CloudCliOptions & { confirm?: string, discardDrained?: boolean, env?: string, dryRun?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:destroy` ...', options)
+
+      const {
+        applyPlan,
+        buildDrainedSiteScanScript,
+        formatDrainedSiteRefusal,
+        formatPlan,
+        parseDrainedSites,
+        pendingSteps,
+        resolvePlan,
+        sshExec,
+      } = await import('@stacksjs/ts-cloud')
+      const { loadTsCloudConfig } = await import('./deploy')
+
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      await assertFleetProvider(tsCloudConfig, 'cloud:destroy')
+
+      const listing = await listFleet(tsCloudConfig)
+      if (listing.problem)
+        return await refuse(listing.problem)
+
+      const current = listing.servers.find((s: any) => s?.name === server)
+      if (!current)
+        return await refuse(`No server named ${server}. \`buddy cloud:sites\` lists what is there.`)
+
+      const slug = String(tsCloudConfig?.project?.slug || 'app')
+
+      // A precondition, not a step: whether this box is holding somebody's
+      // rollback decides whether the teardown may run at all, and a plan that
+      // printed as runnable and then refused would be worse than not printing.
+      if (current.ipv4 && !options.discardDrained) {
+        const scan = await sshExec(current.ipv4, buildDrainedSiteScanScript(slug).join('\n'), {
+          user: 'root',
+          connectTimeoutSec: 10,
+        })
+        if (scan.code === 0) {
+          const drained = parseDrainedSites(scan.stdout)
+          if (drained.length > 0)
+            return await refuse(formatDrainedSiteRefusal(drained, slug, '--discard-drained'))
+        }
+        else if (!options.dryRun) {
+          // Unreachable means unscanned, and unscanned is not the same as clean.
+          return await refuse(
+            `Could not scan ${server} for drained sites: ${scan.stderr.trim() || 'the box did not answer over SSH.'}`,
+            'A box that cannot be scanned may still be holding a rollback. Re-run with --discard-drained if it is not.',
+          )
+        }
+      }
+
+      const plan = planServerDestroy(server, await destroyEffects(tsCloudConfig, current, environment))
+      const resolved = await resolvePlan(plan)
+      const pending = pendingSteps(resolved)
+
+      if (options.json) {
+        console.log(JSON.stringify({
+          operation: plan.operation,
+          target: plan.target,
+          steps: resolved.map(entry => ({
+            id: entry.step.id,
+            title: entry.step.title,
+            state: entry.state,
+            reason: entry.reason,
+            destructive: entry.step.destructive,
+            change: entry.step.change,
+          })),
+        }, null, 2))
+        return
+      }
+
+      console.log('')
+      for (const line of formatPlan(plan, resolved))
+        console.log(line)
+      console.log('')
+
+      if (options.dryRun) {
+        await log.info(`Dry run: ${pending.length} step(s) would run. Nothing changed.`)
+        return
+      }
+
+      if (pending.length === 0) {
+        await log.success(`${server} is already gone, and nothing still points at it.`)
+        return
+      }
+
+      if (options.confirm !== server) {
+        // A flag rather than a prompt, so a teardown is drivable from CI - and
+        // the exact name rather than a yes, so the flag cannot be pasted from a
+        // run against a different box.
+        return await refuse(
+          `Destroying ${server} cannot be undone.`,
+          `Re-run with \`--confirm ${server}\` to go ahead.`,
+        )
+      }
+
+      const outcome = await applyPlan(plan, resolved, {
+        log: message => console.log(`  ${message}`),
+        confirm: options.confirm,
+      })
+
+      if (!outcome.success) {
+        const failed = outcome.steps.find(step => step.state === 'failed')
+        return await refuse(
+          `Stopped at: ${failed?.title ?? 'an unnamed step'}`,
+          failed?.error ?? 'The step gave no reason.',
+          `Re-run \`buddy cloud:destroy ${server} --confirm ${server}\` to continue: completed steps skip themselves.`,
+        )
+      }
+
+      await log.success(`Destroyed ${server}`)
     })
 
   onUnknownSubcommand(buddy, "cloud")
