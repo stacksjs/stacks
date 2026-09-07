@@ -18,7 +18,7 @@ import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync } from 'node:fs'
 import { log, report } from '@stacksjs/logging'
-import { path as p } from '@stacksjs/path'
+import { appPath, frameworkPath, projectPath, storagePath } from '@stacksjs/path/project'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
 import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
@@ -174,7 +174,7 @@ function resolveDefaultsPath(rel: string): string {
   // Only the `app/` tree is publishable to userland; `resources/` and the rest
   // of the defaults package have no userland counterpart.
   if (rel.startsWith('app/')) {
-    const published = p.appPath(rel.slice('app/'.length))
+    const published = appPath(rel.slice('app/'.length))
     if (existsSync(published)) {
       const cache = __defaultsPathCache ??= new Map()
       cache.set(rel, published)
@@ -182,7 +182,7 @@ function resolveDefaultsPath(rel: string): string {
     }
   }
 
-  const vendored = p.storagePath(`framework/defaults/${rel}`)
+  const vendored = storagePath(`framework/defaults/${rel}`)
   let resolved: string
   if (existsSync(vendored)) {
     resolved = vendored
@@ -1154,7 +1154,7 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
 
     for (const load of [
       () => import(resolveDefaultsPath('app/Middleware.ts')),
-      () => import(p.appPath('Middleware.ts')),
+      () => import(appPath('Middleware.ts')),
     ]) {
       try {
         const module = await load()
@@ -1229,7 +1229,7 @@ async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
 
   middlewareRegistryPromise = (async () => {
     try {
-      const dir = p.storagePath('framework/auto-imports')
+      const dir = storagePath('framework/auto-imports')
       const module = await import(`${dir}/middleware.ts`) as { middleware?: Record<string, string> }
       if (!module.middleware)
         return null
@@ -1294,7 +1294,7 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
   // Try loading from app/Middleware first (user overrides)
   let userPathError: unknown
   try {
-    const userPath = p.appPath(`Middleware/${className}.ts`)
+    const userPath = appPath(`Middleware/${className}.ts`)
     const middleware = await import(userPath)
     const handler = (middleware.default ?? null) as MiddlewareHandler | null
     if (!handler || typeof handler.handle !== 'function') {
@@ -1507,8 +1507,8 @@ export function installMiddlewareHotReload(): () => void {
     try {
       const fs = await import('node:fs')
       const targets = [
-        p.appPath('Middleware'),
-        p.appPath('Middleware.ts'),
+        appPath('Middleware'),
+        appPath('Middleware.ts'),
       ]
       for (const target of targets) {
         try {
@@ -2751,7 +2751,7 @@ async function getActionRegistry(): Promise<Record<string, string> | null> {
 
   actionRegistryPromise = (async () => {
     try {
-      const dir = p.storagePath('framework/auto-imports')
+      const dir = storagePath('framework/auto-imports')
       const module = await import(`${dir}/actions.ts`) as { actions?: Record<string, string> }
       if (!module.actions)
         return null
@@ -2782,7 +2782,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     const [controllerPath, methodName = 'index'] = modulePath.split('@')
 
     // Try user path first, then fall back to defaults
-    const userPath = p.appPath(`${controllerPath}.ts`)
+    const userPath = appPath(`${controllerPath}.ts`)
     const defaultPath = resolveDefaultsPath(`app/${controllerPath}.ts`)
     const fullPath = await fileExists(userPath) ? userPath : defaultPath
 
@@ -2818,7 +2818,7 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     fullPath = modulePath
   }
   else if (modulePath.includes('OrmAction')) {
-    fullPath = p.storagePath(`framework/actions/src/${modulePath}.ts`)
+    fullPath = storagePath(`framework/actions/src/${modulePath}.ts`)
   }
   else if (modulePath.includes('Actions')) {
     // The registry first: it already encodes the app-over-defaults override,
@@ -2831,14 +2831,14 @@ async function resolveStringHandlerUncached(handlerPath: string): Promise<RouteH
     }
     else {
       // Try user path first, then fall back to defaults
-      const userPath = p.projectPath(`app/${modulePath}.ts`)
+      const userPath = projectPath(`app/${modulePath}.ts`)
       const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
       fullPath = await fileExists(userPath) ? userPath : defaultPath
     }
   }
   else {
     // Generic app path - try user first, then defaults
-    const userPath = p.appPath(`${modulePath}.ts`)
+    const userPath = appPath(`${modulePath}.ts`)
     const defaultPath = resolveDefaultsPath(`app/${modulePath}.ts`)
     fullPath = await fileExists(userPath) ? userPath : defaultPath
   }
@@ -5069,8 +5069,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       const ormRoutesCandidates = ormRoutesLoaded
         ? []
         : [
-            p.frameworkPath('orm/routes.ts'),
-            p.frameworkPath('core/orm/routes.ts'),
+            frameworkPath('orm/routes.ts'),
+            frameworkPath('core/orm/routes.ts'),
           ]
       for (const candidate of ormRoutesCandidates) {
         try {
@@ -5123,7 +5123,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Load routes from discovered Stacks packages in pantry
     async loadDiscoveredRoutes(): Promise<void> {
       try {
-        const manifestPath = p.storagePath('framework/discovered-packages.json')
+        const manifestPath = storagePath('framework/discovered-packages.json')
         const file = Bun.file(manifestPath)
         if (!(await file.exists())) return
 
@@ -5142,8 +5142,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           // a user installed lives in node_modules, and reading its routes
           // from pantry silently found nothing.
           const pkgDir = meta?.root
-            ? p.projectPath(meta.root)
-            : `${p.projectPath('pantry')}/${pkgName}`
+            ? projectPath(meta.root)
+            : `${projectPath('pantry')}/${pkgName}`
 
           for (const routeFile of routeList) {
             log.debug(`[router] Discovered route: ${pkgName} → ${routeFile}`)
@@ -5313,16 +5313,16 @@ export function configureViewDirectories(bunRouter: Router): void {
     return
 
   // Nothing to configure for an application with no views at all.
-  if (!existsSync(p.projectPath('resources/views')))
+  if (!existsSync(projectPath('resources/views')))
     return
 
   // `resources/views/layouts` is where the scaffold puts them now;
   // `resources/layouts` is the older location and still in use. Whichever
   // exists is the answer, and the production server picks between them the
   // same way.
-  const layouts = [p.projectPath('resources/views/layouts'), p.projectPath('resources/layouts')].find(existsSync)
-  const partials = [p.projectPath('resources/views/partials'), p.projectPath('resources/partials')].find(existsSync)
-  const components = [p.projectPath('resources/components'), p.projectPath('resources/views/components')].find(existsSync)
+  const layouts = [projectPath('resources/views/layouts'), projectPath('resources/layouts')].find(existsSync)
+  const partials = [projectPath('resources/views/partials'), projectPath('resources/partials')].find(existsSync)
+  const components = [projectPath('resources/components'), projectPath('resources/views/components')].find(existsSync)
 
   router.views({
     ...(components ? { componentsDir: components } : {}),
