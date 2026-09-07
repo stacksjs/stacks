@@ -3405,7 +3405,7 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     ? csrf.createCsrfCookie(req as unknown as Request, (req as unknown as { _csrfToken?: string })._csrfToken)
     : undefined
   const response = canPreapplyMetadata
-    ? secureSerializedJsonResponse(body, bodyLength, req._requestId, csrfCookie)
+    ? secureSerializedJsonResponse(body, undefined, req._requestId, csrfCookie)
     : new Response(body, { headers: createJsonSecurityHeaders() })
   if (!canPreapplyMetadata)
     response.headers.set('Content-Length', String(bodyLength))

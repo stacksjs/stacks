@@ -37,6 +37,8 @@ interface JsonLengthHeaderTemplates {
   withCsrf?: { headers: Headers }
   withCsrfAndRequestId?: { headers: Headers }
 }
+type JsonMetadataHeaderTemplates = Omit<JsonLengthHeaderTemplates, 'plain'>
+let _jsonMetadataHeaderTemplates: JsonMetadataHeaderTemplates | undefined
 let _jsonLengthHeaderTemplateCache: Map<number, JsonLengthHeaderTemplates> | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
 
@@ -160,8 +162,26 @@ export function createJsonSecurityHeaders(): Headers {
 /** Create an already-serialized JSON response from the cached template. */
 export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string, csrfCookie?: string): Response {
   const baseHeaders = jsonSecurityHeadersTemplate()
-  if (bodyLength === undefined)
-    return new Response(body, { headers: baseHeaders })
+  if (bodyLength === undefined) {
+    if (!requestId && !csrfCookie)
+      return new Response(body, { headers: baseHeaders })
+
+    const templates = _jsonMetadataHeaderTemplates ??= {}
+    if (csrfCookie) {
+      const responseInit = requestId
+        ? templates.withCsrfAndRequestId ??= { headers: new Headers(baseHeaders) }
+        : templates.withCsrf ??= { headers: new Headers(baseHeaders) }
+      responseInit.headers.set('Set-Cookie', csrfCookie)
+      if (requestId)
+        responseInit.headers.set('X-Request-ID', requestId)
+      return new Response(body, responseInit)
+    }
+
+    const responseInit = templates.withRequestId ??= { headers: new Headers(baseHeaders) }
+    if (requestId)
+      responseInit.headers.set('X-Request-ID', requestId)
+    return new Response(body, responseInit)
+  }
 
   const templates = _jsonLengthHeaderTemplateCache ??= new Map()
   let lengthTemplates = templates.get(bodyLength)
@@ -210,5 +230,6 @@ export function __resetSecurityHeadersCache(): void {
   _cspCache = undefined
   _headerTemplateCache = undefined
   _jsonHeaderTemplateCache = undefined
+  _jsonMetadataHeaderTemplates = undefined
   _jsonLengthHeaderTemplateCache = undefined
 }
