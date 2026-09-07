@@ -106,7 +106,7 @@ jobs:
       # fails if a new package is imported this way without being added here.
       - name: Build packages imported by subpath
         run: |
-          for pkg in composables browser error-handling storage actions; do
+          for pkg in composables browser error-handling storage actions database; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
@@ -196,7 +196,7 @@ jobs:
       # cannot resolve it, add it here, or import its root instead.
       - name: Build packages imported by subpath
         run: |
-          for pkg in composables browser error-handling storage actions; do
+          for pkg in composables browser error-handling storage actions database; do
             echo "::group::build @stacksjs/$pkg"
             (cd "storage/framework/core/$pkg" && bun run build)
             echo "::endgroup::"
