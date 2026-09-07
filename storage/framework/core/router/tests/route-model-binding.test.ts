@@ -13,7 +13,7 @@
 // UNBOUND parameter still passes its raw string through, because otherwise
 // every existing `can:ability,param` route changes meaning at once.
 
-import { afterEach, describe, expect, it } from 'bun:test'
+import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
 import {
   clearRouteModelBindings,
   defineRouteModelBinding,
@@ -26,15 +26,25 @@ class Site {
   constructor(public id: number) {}
 }
 
+// BEFORE as well as after. `Can.ts` installs the convention fallback as an
+// import-time side effect, so any other file in the same `bun test` process
+// that loads a middleware leaves one registered - and the assertion below is
+// precisely that nothing is. Under `--shard=1/2` that file came first and this
+// test failed in CI while passing on its own, which is the least useful shape a
+// test failure has.
+beforeEach(() => {
+  clearRouteModelBindings()
+})
+
 afterEach(() => {
   clearRouteModelBindings()
 })
 
 describe('an unbound parameter is untouched (#2231)', () => {
-  it('reports not-bound when nothing claims it', () => {
+  it('reports not-bound when nothing claims it', async () => {
     // The compatibility guarantee. `bound: false` is what tells Can to push the
     // raw string, exactly as it did before any of this existed.
-    expect(resolveRouteModel('site', '7')).resolves.toEqual({ bound: false })
+    await expect(resolveRouteModel('site', '7')).resolves.toEqual({ bound: false })
   })
 })
 
