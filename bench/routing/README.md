@@ -82,7 +82,7 @@ clearly-labelled exercise.
 
 | id | What it measures |
 |---|---|
-| `static-json` | The floor: one static JSON literal, no params, no middleware, no DB. |
+| `static-json` | The floor: one static JSON literal, no params, no middleware, no DB. Bun raw uses a native static response. |
 | `path-param` | One path param, echoed. |
 | `post-validate` | A JSON body through each framework's schema validation. |
 | `db-roundtrip` | A SQLite read, through each framework's idiomatic data path. |
@@ -99,6 +99,12 @@ read synchronously either way. This avoids adding Promise scheduling that the
 other targets do not have. `post-validate` has the same shape: Elysia uses its `t` schema,
 Hono a hand-written check behind its own `validator()` seam, and both are
 cheaper than a compiled rule set.
+
+The Bun raw ceiling uses `Bun.serve`'s native route table, matching the native
+dispatch used by Stacks in production. Its static scenario is a prebuilt
+`Response`; dynamic routes construct only the response their payload requires.
+Keeping synchronous routes out of an `async fetch` wrapper avoids charging the
+runtime baseline for Promise scheduling it does not need.
 
 The fixture includes `query_logs` and its indexes, but persistent query history
 is disabled by default in production. This keeps the stock database scenario

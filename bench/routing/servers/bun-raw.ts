@@ -1,5 +1,5 @@
 /**
- * The baseline: `Bun.serve` with a hand-written switch.
+ * The baseline: `Bun.serve` with its native route table.
  *
  * Nothing can beat this, which is exactly why it is here. A framework's number
  * only means something next to the ceiling of the runtime it sits on — without
@@ -15,6 +15,7 @@ const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
 const JSON_HEADERS = { 'content-type': 'application/json' } as const
+const routes: Record<string, any> = {}
 
 let selectItem: import('bun:sqlite').Statement | undefined
 if (withDb && serves('db-roundtrip')) {
@@ -23,31 +24,38 @@ if (withDb && serves('db-roundtrip')) {
   selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1')
 }
 
-Bun.serve({
-  port,
-  async fetch(req) {
-    const url = req.url
-    const pathStart = url.indexOf('/', url.indexOf('://') + 3)
-    const path = pathStart === -1 ? '/' : url.slice(pathStart)
+if (serves('static-json'))
+  routes['/bench/json'] = new Response('{"hello":"world"}', { headers: JSON_HEADERS })
 
-    if (serves('static-json') && path === '/bench/json')
-      return new Response('{"hello":"world"}', { headers: JSON_HEADERS })
+if (serves('path-param')) {
+  routes['/bench/users/:id'] = (req: Request & { params: { id: string } }) =>
+    new Response(JSON.stringify({ id: req.params.id }), { headers: JSON_HEADERS })
+}
 
-    if (serves('path-param') && path.startsWith('/bench/users/'))
-      return new Response(JSON.stringify({ id: path.slice('/bench/users/'.length) }), { headers: JSON_HEADERS })
-
-    if (serves('post-validate') && path === '/bench/echo' && req.method === 'POST') {
+if (serves('post-validate')) {
+  routes['/bench/echo'] = {
+    async POST(req: Request) {
       const body = await req.json() as { name?: unknown, count?: unknown }
       if (typeof body.name !== 'string' || typeof body.count !== 'number')
         return new Response('{"errors":{}}', { status: 422, headers: JSON_HEADERS })
       return new Response(JSON.stringify({ name: body.name, count: body.count }), { headers: JSON_HEADERS })
-    }
+    },
+  }
+}
 
-    if (path === '/bench/db' && selectItem) {
+if (selectItem) {
+  routes['/bench/db'] = {
+    GET() {
       const row = selectItem.get() as { id: number, name: string }
       return new Response(JSON.stringify({ id: row.id, name: row.name }), { headers: JSON_HEADERS })
-    }
+    },
+  }
+}
 
+Bun.serve({
+  port,
+  routes,
+  fetch() {
     return new Response('Not Found', { status: 404 })
   },
 })
