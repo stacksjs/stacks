@@ -4281,11 +4281,13 @@ export function enhanceRequest(req: EnhancedRequest, initializeRequestId = true)
  * refusing a request over a malformed diagnostic header would turn a header
  * nobody needs into an outage.
  */
+const REQUEST_ID_PATTERN = /^[\w.:-]{8,200}$/
+
 function incomingRequestId(req: EnhancedRequest): string | undefined {
   try {
-    const supplied = req.headers?.get?.('x-request-id')?.trim()
+    const supplied = req.headers.get('x-request-id')?.trim()
 
-    if (supplied && /^[\w.:-]{8,200}$/.test(supplied))
+    if (supplied && REQUEST_ID_PATTERN.test(supplied))
       return supplied
   }
   catch { /* a request with no readable headers is not worth failing over */ }
