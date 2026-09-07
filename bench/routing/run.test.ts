@@ -18,6 +18,7 @@ describe('routing benchmark options', () => {
     })
     expect(parseArgs(['--warmup', '0']).warmupSeconds).toBe(0)
     expect(parseArgs(['--allow-busy-host']).allowBusyHost).toBe(true)
+    expect(parseArgs(['--output', '/tmp/routing-result']).output).toBe('/tmp/routing-result')
   })
 
   it.each(['--connections', '--runs'])('requires a positive safe integer for %s', (flag) => {
@@ -53,6 +54,7 @@ describe('routing benchmark options', () => {
 
   it('rejects missing values and unknown flags', () => {
     expect(() => parseArgs(['--runs'])).toThrow('--runs needs a value')
+    expect(() => parseArgs(['--output'])).toThrow('--output needs a value')
     expect(() => parseArgs(['--mystery'])).toThrow('Unknown flag')
   })
 })

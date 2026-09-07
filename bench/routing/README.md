@@ -203,6 +203,7 @@ zero.
 --no-db        skip the SQLite fixture and the db-roundtrip scenario
 --allow-busy-host
                run despite a competing process using at least 75% of a core
+--output       explicit output directory (default results/<timestamp>)
 ```
 
 ## Recorded numbers

@@ -46,6 +46,7 @@ interface Options {
   runs: number
   db: boolean
   allowBusyHost: boolean
+  output?: string
 }
 
 export function parseArgs(argv: string[]): Options {
@@ -76,6 +77,7 @@ export function parseArgs(argv: string[]): Options {
       case '--runs': opts.runs = Number(next()); break
       case '--no-db': opts.db = false; break
       case '--allow-busy-host': opts.allowBusyHost = true; break
+      case '--output': opts.output = next(); break
       case '--help': case '-h':
         console.log(HELP)
         process.exit(0)
@@ -117,6 +119,7 @@ const HELP = `bun bench/routing/run.ts [flags]
   --no-db        skip the SQLite fixture and the db-roundtrip scenario
   --allow-busy-host
                  run despite another process consuming at least 75% of a core
+  --output       explicit output directory (default results/<timestamp>)
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
 
@@ -142,7 +145,7 @@ async function main(): Promise<void> {
 
   const source = await readSourceState(REPO_ROOT)
   const startedAt = new Date().toISOString()
-  const outDir = join(HERE, 'results', startedAt.replace(/[:.]/g, '-'))
+  const outDir = opts.output ?? join(HERE, 'results', startedAt.replace(/[:.]/g, '-'))
   const rawDir = join(outDir, 'raw')
   mkdirSync(rawDir, { recursive: true })
 
