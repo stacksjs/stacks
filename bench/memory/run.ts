@@ -22,6 +22,7 @@ import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
+import { rotateTargets } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
 import { BUN_141_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
@@ -286,20 +287,29 @@ async function main(): Promise<void> {
 
   const measurements: MemoryMeasurement[] = []
   const targetRows: Array<{ id: string, label: string, requestRate: number, skipped?: string }> = []
+  const availableTargets = new Set<string>()
+  const unavailableTargets = new Set<string>()
 
-  for (const selected of targets) {
-    const { target, requestRate } = selected
-    console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)
-
-    for (let run = 1; run <= options.runs; run++) {
+  for (let run = 1; run <= options.runs; run++) {
+    for (const selected of rotateTargets(targets, run - 1)) {
+      const { target, requestRate } = selected
+      if (unavailableTargets.has(target.id))
+        continue
+      console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)
       console.error(`[memory] run ${run}: ${options.loadSeconds}s load, then ${options.idleSeconds}s idle`)
       const result = await measure(target, scenario, driver, options, requestRate)
       if ('skipped' in result) {
+        if (availableTargets.has(target.id))
+          throw new Error(`${target.id} became unavailable after earlier measurements: ${result.skipped}`)
         console.error(`[memory] skipped: ${result.skipped}`)
+        unavailableTargets.add(target.id)
         targetRows.push({ id: target.id, label: selected.label, requestRate, skipped: result.skipped })
-        break
+        continue
       }
-      if (run === 1) targetRows.push({ id: target.id, label: selected.label, requestRate })
+      if (!availableTargets.has(target.id)) {
+        availableTargets.add(target.id)
+        targetRows.push({ id: target.id, label: selected.label, requestRate })
+      }
       measurements.push({ targetId: target.id, run, requestRate, ...result.measurement })
       writeFileSync(join(rawDir, `${target.id}--run${run}.json`), `${JSON.stringify({
         targetId: target.id,

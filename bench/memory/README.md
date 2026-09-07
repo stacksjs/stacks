@@ -30,7 +30,8 @@ The runner uses the same byte-for-byte response parity checks as
 hide worker memory. The separately launched load generator is not counted. Each
 server registers only the selected scenario, so an unrelated validator or
 database route cannot inflate one framework's static JSON result. This applies
-identically to every target.
+identically to every target. Repeated runs rotate target order so host drift
+cannot consistently favor the same implementation.
 
 ## Reported value
 
