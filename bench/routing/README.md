@@ -109,7 +109,10 @@ and must not be presented as output from this single-host runner.
 Set `BENCH_DEDICATED=1` only on that dedicated server. The runner additionally
 requires a clean identified revision, the configured Bun runtime, at least 5
 seconds of warm-up, 30 measured seconds, three repeats, and no observed busy
-process. Reports list every unmet publication prerequisite.
+process. Publication also requires every default target and every declared
+scenario, preventing a minimal-only profile or easy-scenario subset from being
+presented as the benchmark. Explicit tuned targets may be added, but cannot
+replace the stock matrix. Reports list every unmet publication prerequisite.
 
 Publication additionally requires every selected target and scenario to finish
 all repeats, return valid measurements without request errors, include a server

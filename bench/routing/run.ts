@@ -164,6 +164,7 @@ async function main(): Promise<void> {
     runtimeRequirement,
     source,
     targetIds: targets.map(target => target.id),
+    scenarioIds: scenarios.map(scenario => scenario.id),
     peerVersions,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,

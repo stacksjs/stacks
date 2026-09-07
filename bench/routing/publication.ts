@@ -3,7 +3,9 @@ import type { Measurement } from './report'
 import type { RuntimeRequirement } from './runtime-version'
 import type { SourceState } from './source'
 import { selectedPeerPackages } from './peer-versions'
+import { SCENARIOS } from './scenarios'
 import { MAX_STABLE_RANGE } from './statistics'
+import { DEFAULT_TARGETS } from './targets'
 
 export interface RoutingPublicationTarget {
   id: string
@@ -21,6 +23,7 @@ export interface RoutingPublicationProfile {
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
   targetIds: string[]
+  scenarioIds: string[]
   peerVersions: Record<string, string>
   warmupSeconds: number
   durationSeconds: number
@@ -40,6 +43,17 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
     issues.push('runtime does not match package.json engines.bun')
   if (!profile.source?.revision || profile.source.dirty !== false)
     issues.push('source revision is unavailable or the working tree is not clean')
+  const selectedTargetIds = new Set(profile.targetIds)
+  const missingTargets = DEFAULT_TARGETS.map(target => target.id).filter(id => !selectedTargetIds.has(id))
+  if (missingTargets.length > 0)
+    issues.push(`target set omits default targets: ${missingTargets.join(', ')}`)
+  if (selectedTargetIds.size !== profile.targetIds.length)
+    issues.push('target set contains duplicate targets')
+  const expectedScenarioIds = SCENARIOS.map(scenario => scenario.id)
+  if (profile.scenarioIds.length !== expectedScenarioIds.length
+    || new Set(profile.scenarioIds).size !== expectedScenarioIds.length
+    || expectedScenarioIds.some(id => !profile.scenarioIds.includes(id)))
+    issues.push('scenario set does not match the full routing matrix')
   const unidentifiedPeers = selectedPeerPackages(profile.targetIds)
     .filter(packageName => !profile.peerVersions[packageName] || profile.peerVersions[packageName] === 'unavailable')
   if (unidentifiedPeers.length > 0)

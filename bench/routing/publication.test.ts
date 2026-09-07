@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
+import { SCENARIOS } from './scenarios'
+import { DEFAULT_TARGETS } from './targets'
 
 const publishable = {
   driverPublishable: true,
@@ -7,8 +9,9 @@ const publishable = {
   dedicated: true,
   runtimeRequirement: { range: '1.4.1', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
-  targetIds: ['stacks', 'elysia'],
-  peerVersions: { elysia: '1.4.30' },
+  targetIds: DEFAULT_TARGETS.map(target => target.id),
+  scenarioIds: SCENARIOS.map(scenario => scenario.id),
+  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.5' },
   warmupSeconds: 5,
   durationSeconds: 30,
   runs: 3,
@@ -39,12 +42,28 @@ describe('routing benchmark publication profile', () => {
       'BENCH_DEDICATED=1 is not set',
       'runtime does not match package.json engines.bun',
       'source revision is unavailable or the working tree is not clean',
-      'peer framework version is unavailable for elysia',
+      'peer framework version is unavailable for elysia, express, fastify, hono',
       'warm-up is 1s; at least 5s is required',
       'measurement window is 10s; at least 30s is required',
       'only 1 run(s) were requested; at least 3 are required',
       'competing host processes were observed',
     ])
+  })
+
+  it('rejects cherry-picked or duplicate comparison matrices', () => {
+    expect(routingPublicationIssues({
+      ...publishable,
+      targetIds: ['stacks-minimal', 'bun-raw'],
+      scenarioIds: ['static-json'],
+    })).toContain('scenario set does not match the full routing matrix')
+    expect(routingPublicationIssues({
+      ...publishable,
+      targetIds: [...publishable.targetIds, 'stacks'],
+    })).toContain('target set contains duplicate targets')
+    expect(routingPublicationIssues({
+      ...publishable,
+      targetIds: publishable.targetIds.filter(id => id !== 'stacks'),
+    })).toContain('target set omits default targets: stacks')
   })
 
   it('accepts complete, stable, error-free measurements with CPU evidence', () => {
