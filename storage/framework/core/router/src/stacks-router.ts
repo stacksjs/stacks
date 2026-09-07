@@ -1717,6 +1717,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       return
     }
 
+    // formatJsonResult already applied every framework-owned header. A route
+    // with CSRF disabled has no remaining response work, so keep its
+    // synchronous result on the direct path without probing request markers.
+    if (frameworkMetadataApplied && !routeSeedsCsrf)
+      return response
+
     let finalized = response
     const csrfSeededDuringFormatting = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
     if (routeSeedsCsrf && !csrfHandledByOuter && !csrfSeededDuringFormatting) {

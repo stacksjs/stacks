@@ -430,6 +430,24 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('still finalizes explicit responses when CSRF is disabled', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter({ csrf: false, requestIds: false })
+    direct.get('/_hot/csrf-disabled-response', () => new Response('ok'))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = nativeRoutes['/_hot/csrf-disabled-response'].GET(new Request('http://localhost/_hot/csrf-disabled-response'))
+
+      expect(answer).toBeInstanceOf(Response)
+      expect(answer.headers.get('X-Content-Type-Options')).toBe('nosniff')
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('still seeds a CSRF cookie on a cold GET', async () => {
     const answer = await get('/_hot/plain')
 
