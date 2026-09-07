@@ -68,6 +68,16 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
       if (error) {
         log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] Failed`)
       }
+      // `OutroOptions` has declared these two for as long as it has existed and
+      // nothing here read them, so a command that ended in failure and said so
+      // through `type` still closed with a green success line. The exit code was
+      // right; the line an operator actually reads was not.
+      else if (opts.type === 'error') {
+        log.error(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] ${opts.message ?? 'Failed'}`)
+      }
+      else if (opts.type === 'warning') {
+        log.warn(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}] ${opts.message ?? 'Complete'}`)
+      }
       else if (opts.type === 'info') {
         log.info(`${dim(gray(`[${time.toFixed(2)}${opts.useSeconds ? 's' : 'ms'}]`))} ${opts.message ?? 'Complete'}`)
       }
@@ -82,6 +92,10 @@ export function outro(text: string, options?: OutroOptions, error?: Error | stri
     else {
       if (opts?.type === 'info')
         log.info(text)
+      else if (opts?.type === 'error')
+        log.error(text)
+      else if (opts?.type === 'warning')
+        log.warn(text)
       // the following condition triggers in the case of "Cleaned up" messages
       else if (opts?.type === 'success' && opts?.quiet !== true)
         log.success(text)

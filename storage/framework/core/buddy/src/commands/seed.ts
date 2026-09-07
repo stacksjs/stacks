@@ -78,7 +78,10 @@ export function seed(buddy: CLI): void {
       const failures = summary.failed + applicationSummary.failed
       await outro(
         `Seeded your ${APP_ENV} database. ${summary.successful}/${summary.total} model(s) and ${applicationSummary.successful}/${applicationSummary.total} application seeder(s) completed${failures > 0 ? `, ${failures} failed` : ''}.`,
-        { startTime: perf, useSeconds: true },
+        // A run that seeded 55 of 57 models exited non-zero and still closed
+        // with a green SUCCESS line naming the two that failed, which is the
+        // line an operator scanning for red actually reads.
+        { startTime: perf, useSeconds: true, type: failures > 0 ? 'error' : 'success' },
       )
       process.exit(failures > 0 ? ExitCode.FatalError : ExitCode.Success)
     })
