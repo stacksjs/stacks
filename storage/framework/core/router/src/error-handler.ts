@@ -10,7 +10,8 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
-import { getCurrentRequest } from './request-context'
+import { getRecentQueries, isDebugAllowed } from './query-tracker'
+export { clearTrackedQueries, getQueryShapeCounts, trackQuery } from './query-tracker'
 
 /**
  * Standard error response structure used across all JSON error responses.
@@ -52,13 +53,6 @@ function buildErrorJson(opts: {
  * deployments often touch real data and real third-party tokens, so
  * those leaks are exploitable. See stacksjs/stacks#1859 H-10.
  */
-function isDebugAllowed(): boolean {
-  const appEnv = (process.env.APP_ENV ?? '').toLowerCase()
-  if (appEnv === 'development') return true
-  if (!appEnv && process.env.NODE_ENV === 'development') return true
-  return false
-}
-
 function getJsonHeaders(): Record<string, string> {
   // CORS headers used to be emitted here directly using `APP_URL` env,
   // independent of the configured CORS policy. That meant error
@@ -74,162 +68,6 @@ function getJsonHeadersFull(): Record<string, string> {
   // Same rationale as `getJsonHeaders` — defer CORS to the post-response
   // wrapper rather than emit policy-inconsistent headers from here.
   return getJsonHeaders()
-}
-
-// Circular buffer for tracked queries (avoids O(n) shift on every insert).
-// State is scoped per-request via the ALS-backed request context; when
-// no request is in scope (CLI scripts, queued jobs, tests outside
-// `runWithRequest`) a single process-wide fallback bucket is used so
-// the helpers still work — but error pages and N+1 detection inside a
-// request never cross-contaminate with state from a concurrent request
-// running on the same worker (stacksjs/stacks#1863 T-5, #1859 H-4).
-const MAX_QUERIES = 50
-const N1_THRESHOLD = 5
-
-interface QueryTrack {
-  buffer: Array<{ query: string, time?: number, connection?: string } | null>
-  writeIndex: number
-  count: number
-  shapeCounts: Map<string, number>
-  n1Warned: Set<string>
-}
-
-function newQueryTrack(): QueryTrack {
-  return {
-    buffer: new Array(MAX_QUERIES).fill(null),
-    writeIndex: 0,
-    count: 0,
-    shapeCounts: new Map<string, number>(),
-    n1Warned: new Set<string>(),
-  }
-}
-
-const REQUEST_QUERY_TRACK_KEY = Symbol.for('stacks.queryTracking')
-
-// Used only when no request is in scope. Cleared lazily — tests that
-// don't go through `runWithRequest` can still call `clearTrackedQueries()`
-// to reset between assertions.
-let fallbackTrack: QueryTrack | undefined
-
-function getQueryTrack(): QueryTrack {
-  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
-  if (!req) return fallbackTrack ??= newQueryTrack()
-  let track = req[REQUEST_QUERY_TRACK_KEY] as QueryTrack | undefined
-  if (!track) {
-    track = newQueryTrack()
-    ;(req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY] = track
-  }
-  return track
-}
-
-/**
- * Normalize a query string for shape-comparison. Strips bound values
- * (`= 1`, `= 'foo'`, `IN (1, 2, 3)`), collapses whitespace, and uppercases
- * keywords so two queries that differ only in their parameter values
- * end up in the same bucket.
- */
-function normalizeQueryShape(query: string): string {
-  return query
-    // Quoted strings (single + double) → ?
-    .replace(/'(?:[^']|'')*'/g, '?')
-    .replace(/"(?:[^"]|"")*"/g, '?')
-    // Numbers → ?
-    .replace(/\b\d+(?:\.\d+)?\b/g, '?')
-    // Multi-value IN lists → IN (?)
-    .replace(/IN\s*\([^)]*\)/gi, 'IN (?)')
-    // Collapse whitespace
-    .replace(/\s+/g, ' ')
-    .trim()
-    .toUpperCase()
-}
-
-/**
- * Add a query to the recent queries list for error context.
- * Uses a circular buffer for O(1) insert instead of array.shift().
- *
- * Also runs N+1 detection: when the same query *shape* (with bound
- * values normalized away) repeats more than `N1_THRESHOLD` times within
- * a single request lifecycle, we warn once via `log.warn`. The signal
- * is highly correlated with missing eager loading.
- */
-export function trackQuery(query: string, time?: number, connection?: string): void {
-  const track = getQueryTrack()
-  track.buffer[track.writeIndex] = { query, time, connection }
-  track.writeIndex = (track.writeIndex + 1) % MAX_QUERIES
-  if (track.count < MAX_QUERIES) track.count++
-
-  // N+1 heuristic — only active in dev. The check is deliberately cheap
-  // (one normalize + map increment per query) so we can leave it on by
-  // default without measurably increasing query latency.
-  if (!isDebugAllowed()) return
-  const shape = normalizeQueryShape(query)
-  // Skip framework's own bookkeeping queries (query_logs INSERT, EXPLAIN).
-  if (shape.startsWith('INSERT INTO QUERY_LOGS') || shape.startsWith('EXPLAIN')) return
-  const next = (track.shapeCounts.get(shape) ?? 0) + 1
-  track.shapeCounts.set(shape, next)
-  if (next === N1_THRESHOLD + 1 && !track.n1Warned.has(shape)) {
-    track.n1Warned.add(shape)
-    // Lazy import so this file stays free of @stacksjs/logging in case
-    // logging is the failing component during error rendering.
-    import('@stacksjs/logging').then(({ log }) => {
-      log.warn(
-        `[orm] Possible N+1 - query shape ran ${next}× in this request:\n  ${shape}\n  `
-        + `Hint: load related rows with .with('relation') or eager-load via includes() before iterating.`,
-      )
-    }).catch(() => { /* logging unavailable — silently skip */ })
-  }
-}
-
-// A global handoff keeps database query diagnostics available without making
-// every router import eagerly load the optional database package. It also
-// works in either import order: query-logger reads the slot when a query runs.
-const QUERY_TRACKER_KEY = Symbol.for('stacks.database.queryTracker')
-;(globalThis as Record<symbol, unknown>)[QUERY_TRACKER_KEY] = trackQuery
-
-/**
- * Get tracked queries in insertion order (for the active request, or
- * the fallback bucket when called outside a request scope).
- */
-function getRecentQueries(): Array<{ query: string, time?: number, connection?: string }> {
-  const track = getQueryTrack()
-  if (track.count === 0) return []
-  const result: Array<{ query: string, time?: number, connection?: string }> = []
-  const start = track.count < MAX_QUERIES ? 0 : track.writeIndex
-  for (let i = 0; i < track.count; i++) {
-    const entry = track.buffer[(start + i) % MAX_QUERIES]
-    if (entry) result.push(entry)
-  }
-  return result
-}
-
-/**
- * Snapshot of query shape counts for the active request. Useful for
- * tests asserting that an action ran a single query for `posts`
- * instead of one-per-user.
- */
-export function getQueryShapeCounts(): ReadonlyMap<string, number> {
-  return new Map(getQueryTrack().shapeCounts)
-}
-
-/**
- * Reset query tracking for the active scope.
- *
- * Inside a request, this clears the per-request tracking object — but
- * the object is also auto-collected when the request goes out of scope,
- * so the explicit call is mainly useful for tests that re-use a single
- * request. Outside a request, this clears the process-wide fallback.
- */
-export function clearTrackedQueries(): void {
-  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
-  if (req) {
-    // A database-free request has no tracking state to clear. In particular,
-    // do not allocate a 50-slot buffer or reset the unrelated fallback bucket
-    // merely because the router performs end-of-request cleanup.
-    if (req[REQUEST_QUERY_TRACK_KEY])
-      delete (req as Record<symbol, unknown>)[REQUEST_QUERY_TRACK_KEY]
-    return
-  }
-  fallbackTrack = undefined
 }
 
 /**
