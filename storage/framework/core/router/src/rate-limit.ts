@@ -36,7 +36,7 @@ type Period = keyof typeof PERIOD_SECONDS
  * (the bucket scope is the *value* passed to `enforce(key)`, not the
  * RateLimiter instance).
  */
-const limiterCache = new Map<string, RateLimiter>()
+let limiterCache: Map<string, RateLimiter> | undefined
 let limiterModulePromise: Promise<typeof import('ts-rate-limiter')> | undefined
 
 function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
@@ -45,7 +45,7 @@ function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
 
 async function getLimiter(max: number, windowMs: number): Promise<RateLimiter> {
   const cacheKey = `${windowMs}:${max}`
-  let limiter = limiterCache.get(cacheKey)
+  let limiter = limiterCache?.get(cacheKey)
   if (!limiter) {
     const { RateLimiter } = await loadLimiterModule()
     limiter = new RateLimiter({
@@ -57,7 +57,8 @@ async function getLimiter(max: number, windowMs: number): Promise<RateLimiter> {
       standardHeaders: false,
       legacyHeaders: false,
     })
-    limiterCache.set(cacheKey, limiter)
+    const cache = limiterCache ??= new Map()
+    cache.set(cacheKey, limiter)
   }
   return limiter
 }

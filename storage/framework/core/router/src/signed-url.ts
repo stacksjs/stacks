@@ -124,10 +124,11 @@ export function signUrl(input: string, options: SignedUrlOptions = {}): string {
 }
 
 /** One-time warning gate. Keyed so future warnings here can share it. */
-const _warnedKeys = new Set<string>()
+let _warnedKeys: Set<string> | undefined
 function warnOnce(key: string, message: string): void {
-  if (_warnedKeys.has(key)) return
-  _warnedKeys.add(key)
+  if (_warnedKeys?.has(key)) return
+  const warnedKeys = _warnedKeys ??= new Set()
+  warnedKeys.add(key)
   console.warn(message)
 }
 

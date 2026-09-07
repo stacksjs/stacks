@@ -48,7 +48,7 @@ export interface RouteModelResolution {
   model?: unknown
 }
 
-const bindings = new Map<string, RouteModelResolver>()
+let bindings: Map<string, RouteModelResolver> | undefined
 let fallbackResolver: RouteModelResolver | null = null
 
 /**
@@ -62,7 +62,8 @@ let fallbackResolver: RouteModelResolver | null = null
  * binding without having to unregister one.
  */
 export function defineRouteModelBinding(param: string, resolver: RouteModelResolver): void {
-  bindings.set(param, resolver)
+  const registry = bindings ??= new Map()
+  registry.set(param, resolver)
 }
 
 /**
@@ -78,11 +79,11 @@ export function setRouteModelFallback(resolver: RouteModelResolver | null): void
 
 /** Registered parameter names, for diagnostics and tests. */
 export function routeModelBindings(): string[] {
-  return [...bindings.keys()].sort()
+  return bindings ? [...bindings.keys()].sort() : []
 }
 
 export function clearRouteModelBindings(): void {
-  bindings.clear()
+  bindings = undefined
   fallbackResolver = null
 }
 
@@ -99,7 +100,7 @@ export async function resolveRouteModel(
   value: string,
   request?: unknown,
 ): Promise<RouteModelResolution> {
-  const resolver = bindings.get(param) ?? fallbackResolver
+  const resolver = bindings?.get(param) ?? fallbackResolver
 
   if (!resolver)
     return { bound: false }
