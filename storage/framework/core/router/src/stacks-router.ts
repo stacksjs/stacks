@@ -484,7 +484,7 @@ interface RouteRateLimitConfig {
   windowSeconds: number
 }
 interface RouteRuntimeState {
-  middleware: string[]
+  middleware?: string[]
   csrfMode: RouteCsrfMode
   rateLimit?: RouteRateLimitConfig
 }
@@ -1515,8 +1515,10 @@ export function clearRouteMiddlewareRegistry(): void {
   // be read without a Map lookup on every dispatch. Empty those arrays before
   // dropping the registry entries so this test/reset seam still affects live
   // handlers exactly as it did before.
-  for (const state of routeStateRegistry.values())
-    state.middleware.length = 0
+  for (const state of routeStateRegistry.values()) {
+    if (state.middleware)
+      state.middleware.length = 0
+  }
   routeStateRegistry.clear()
 }
 
@@ -1613,6 +1615,8 @@ export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: 
   const usage = new Map<string, { parsed: ParsedMiddleware, routes: string[] }>()
   for (const [routeKey, state] of routeStateRegistry) {
     const entries = state.middleware
+    if (!entries)
+      continue
     for (const entry of entries) {
       const parsed = await parseMiddlewareEntry(entry)
       // Reported without the parameters - those are the middleware's argument,
@@ -1659,7 +1663,6 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
   const routeState = routeStateRegistry.get(routeKey)
-  const routeMiddleware = routeState?.middleware ?? EMPTY_MIDDLEWARE_ENTRIES
 
   /*
    * Everything about this route that a request cannot change, decided here.
@@ -1833,7 +1836,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       !hasPreparedBaseResult
       && synchronousInlineHandler
       && !routeAcceptsCsrf
-      && routeMiddleware.length === 0
+      && !routeState?.middleware?.length
       && !routeState?.rateLimit
     ) {
       preparedBaseResult = runWithRequestArgument(enhancedReq, wrappedBase, enhancedReq)
@@ -1867,7 +1870,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
         }
       }
 
-      const userMiddleware = routeMiddleware
+      const userMiddleware = routeState?.middleware ?? EMPTY_MIDDLEWARE_ENTRIES
 
       // Default-on CSRF: every state-mutating method gets `csrf` injected
       // at the front of the chain unless:
@@ -2351,7 +2354,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
     return rememberStacksRouteHandler(handleAsync)
 
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
-    if (routeMiddleware.length !== 0 || routeState?.rateLimit)
+    if (routeState?.middleware?.length || routeState?.rateLimit)
       return handleAsync(req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
@@ -2435,9 +2438,9 @@ function createChainableRoute(routeKey: string, shadowed = false): ChainableRout
      * cheapest possible place to learn about it.
      */
     middleware(name: MiddlewareReference | readonly MiddlewareReference[]) {
-      const middlewareList = routeState?.middleware
-      if (!middlewareList)
+      if (!routeState)
         return chain
+      const middlewareList = routeState.middleware ??= []
 
       for (const entry of Array.isArray(name) ? name : [name]) {
         if (typeof entry !== 'string') {
@@ -4463,14 +4466,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     if (!shadowed)
       registeredRouteKeys.add(routeKey)
 
-    // Create the route-owned array before its request handler so the handler
-    // can retain the reference. Chainable `.middleware()` calls mutate this
-    // same array after registration without requiring a Map lookup per request.
+    // Routes without middleware share the frozen empty-list fast path. A
+    // route-owned array is allocated only for group middleware or when the
+    // chainable `.middleware()` API is actually used.
     if (!shadowed) {
-      routeStateRegistry.set(routeKey, {
-        middleware: [...currentGroupMiddleware],
-        csrfMode: CSRF_DEFAULT,
-      })
+      const routeState: RouteRuntimeState = { csrfMode: CSRF_DEFAULT }
+      if (currentGroupMiddleware.length > 0)
+        routeState.middleware = [...currentGroupMiddleware]
+      routeStateRegistry.set(routeKey, routeState)
     }
 
     // Pre-populate apiResponse registry with the group flag so the request
