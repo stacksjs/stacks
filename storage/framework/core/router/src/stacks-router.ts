@@ -265,6 +265,21 @@ import { isCursorPaginator, isPaginator, isSimplePaginator } from '@stacksjs/pag
 
 
 type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
+type AsyncRouteHandlerFn = (
+  req: EnhancedRequest,
+  preparedBaseResult?: Response | Promise<Response>,
+  hasPreparedBaseResult?: boolean,
+) => Promise<Response>
+
+function bindAsyncRouteHandler(handler: AsyncRouteHandlerFn): AsyncRouteHandlerFn {
+  return (req, preparedBaseResult, hasPreparedBaseResult = false) => runWithRequestArguments(
+    req,
+    handler,
+    req,
+    preparedBaseResult,
+    hasPreparedBaseResult,
+  )
+}
 const stacksRouteHandlers = new WeakSet<RouteHandlerFn>()
 
 function rememberStacksRouteHandler(handler: RouteHandlerFn): RouteHandlerFn {
@@ -2350,30 +2365,20 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       return response
   }
 
-  const handleAsync = (
-    req: EnhancedRequest,
-    preparedBaseResult?: Response | Promise<Response>,
-    hasPreparedBaseResult = false,
-  ): Promise<Response> => runWithRequestArguments(
-    req,
-    handleAsyncInContext,
-    req,
-    preparedBaseResult,
-    hasPreparedBaseResult,
-  )
-
   if (!synchronousInlineHandler || routeMayHaveBody)
-    return rememberStacksRouteHandler(handleAsync)
+    return rememberStacksRouteHandler(bindAsyncRouteHandler(handleAsyncInContext))
+
+  let handleAsync: AsyncRouteHandlerFn | undefined
 
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
     if (routeState?.middleware?.length || routeState?.rateLimit)
-      return handleAsync(req)
+      return (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
     if (routeRendersCsrf && !csrfHandledByOuter && requestMayRenderHtml(req)) {
       const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding)
-        return renderTokenSeeding.then(() => handleAsync(req))
+        return renderTokenSeeding.then(() => (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req))
     }
 
     if (forcesJsonByGroup)
@@ -2393,7 +2398,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
         return finished
     }
 
-    return handleAsync(req, preparedBaseResult, true)
+    return (handleAsync ??= bindAsyncRouteHandler(handleAsyncInContext))(req, preparedBaseResult, true)
   }
 
   return rememberStacksRouteHandler(handleSynchronous)
