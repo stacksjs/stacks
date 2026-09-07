@@ -415,7 +415,9 @@ describe('the request path keeps its defaults', () => {
 
     try {
       const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
-      const getAnswer = await nativeRoutes['/_hot/csrf-disabled'].GET(new Request('http://localhost/_hot/csrf-disabled'))
+      const getResult = nativeRoutes['/_hot/csrf-disabled'].GET(new Request('http://localhost/_hot/csrf-disabled'))
+      expect(getResult).toBeInstanceOf(Response)
+      const getAnswer = await getResult
       const postAnswer = await nativeRoutes['/_hot/csrf-disabled'].POST(new Request('http://localhost/_hot/csrf-disabled', { method: 'POST' }))
 
       expect(await getAnswer.json()).toEqual({ ok: true })
