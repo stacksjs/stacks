@@ -1762,7 +1762,8 @@ function finishSynchronousResult(
 
 function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnabled: boolean): number {
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-  const forcesJson = routeApiResponseRegistry?.has(routeKey) === true
+  const action = isRouterAction(handler) ? handler : undefined
+  const forcesJson = routeApiResponseRegistry?.has(routeKey) === true || action?.apiResponse === true
   let flags = 0
   if (csrfEnabled && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE'))
     flags |= ROUTE_ACCEPTS_CSRF
@@ -1774,7 +1775,7 @@ function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnab
     flags |= ROUTE_SEEDS_CSRF
   if (forcesJson)
     flags |= ROUTE_FORCES_JSON
-  if (isRouterAction(handler) && (handler.skipCsrf === true || handler.csrf === false))
+  if (action && (action.skipCsrf === true || action.csrf === false))
     flags |= ROUTE_ACTION_SKIPS_CSRF
   return flags
 }

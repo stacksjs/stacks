@@ -427,6 +427,29 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('does not mint a render token for a forced-JSON action object', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/api-action/native-csrf', {
+      apiResponse: true,
+      handle: request => ({ minted: Boolean(request._csrfToken) }),
+    } as any)
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const answer = await nativeRoutes['/_hot/api-action/native-csrf'].GET(new Request('http://localhost/_hot/api-action/native-csrf', {
+        headers: { accept: 'text/html,application/xhtml+xml' },
+      }))
+
+      expect(await answer.json()).toEqual({ minted: false })
+      expect(answer.headers.get('set-cookie') ?? '').toContain('X-CSRF-Token=')
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('does not mint a render token for an OPTIONS route', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()
