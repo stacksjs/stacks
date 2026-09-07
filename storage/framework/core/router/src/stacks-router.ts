@@ -4296,23 +4296,31 @@ function incomingRequestId(req: EnhancedRequest): string | undefined {
 // Cache the two low base36 digits: only the block counter needs number-to-string
 // conversion, once per 1,296 requests instead of once per request. The block's
 // safe integer range still lasts for thousands of years at current throughput.
-const requestIdPrefix = crypto.randomUUID().replaceAll('-', '').slice(0, 16)
 const REQUEST_ID_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
 const REQUEST_ID_SUFFIX_COUNT = 36 * 36
-const requestIdSuffixes = Array.from(
-  { length: REQUEST_ID_SUFFIX_COUNT },
-  (_, value) => REQUEST_ID_DIGITS[Math.floor(value / 36)]! + REQUEST_ID_DIGITS[value % 36]!,
-)
-let requestIdBlock = 0
-let requestIdSuffix = 0
-let requestIdBlockPrefix = `${requestIdPrefix}-0`
-function generateRequestId(): string {
-  requestIdSuffix++
-  if (requestIdSuffix === REQUEST_ID_SUFFIX_COUNT) {
-    requestIdSuffix = 0
-    requestIdBlockPrefix = `${requestIdPrefix}-${(++requestIdBlock).toString(36)}`
+function createRequestIdGenerator(): () => string {
+  const prefix = crypto.randomUUID().replaceAll('-', '').slice(0, 16)
+  const suffixes = Array.from(
+    { length: REQUEST_ID_SUFFIX_COUNT },
+    (_, value) => REQUEST_ID_DIGITS[Math.floor(value / 36)]! + REQUEST_ID_DIGITS[value % 36]!,
+  )
+  let block = 0
+  let suffix = 0
+  let blockPrefix = `${prefix}-0`
+
+  return () => {
+    suffix++
+    if (suffix === REQUEST_ID_SUFFIX_COUNT) {
+      suffix = 0
+      blockPrefix = `${prefix}-${(++block).toString(36)}`
+    }
+    return blockPrefix + suffixes[suffix]
   }
-  return requestIdBlockPrefix + requestIdSuffixes[requestIdSuffix]
+}
+
+let generateRequestId = (): string => {
+  generateRequestId = createRequestIdGenerator()
+  return generateRequestId()
 }
 
 function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = ''): RouteHandlerFn {

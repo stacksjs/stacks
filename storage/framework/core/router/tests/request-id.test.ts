@@ -28,6 +28,29 @@ afterAll(() => {
 })
 
 describe('a request', () => {
+  it('defers generator state when request IDs are disabled', async () => {
+    const child = Bun.spawn([
+      process.execPath,
+      `--config=${import.meta.dir}/fixtures/cold-start.toml`,
+      `${import.meta.dir}/fixtures/lazy-request-id.ts`,
+    ], { stdout: 'pipe', stderr: 'pipe' })
+    const timeout = setTimeout(() => child.kill(), 10_000)
+    try {
+      const [exitCode, stdout, stderr] = await Promise.all([
+        child.exited,
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+      ])
+      expect(exitCode, stderr).toBe(0)
+      expect(stdout).toContain('lazy-request-id-ok')
+    }
+    finally {
+      clearTimeout(timeout)
+      child.kill()
+      await child.exited
+    }
+  }, 15_000)
+
   it('gets an id, echoed to the client', async () => {
     const answer = await fetch(`http://127.0.0.1:${port}/_rid`)
     const body: any = await answer.json()
