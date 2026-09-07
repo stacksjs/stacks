@@ -1683,6 +1683,63 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
   throw new Error(`[Router] Unresolvable middleware alias(es): ${detail}. Check the alias map in app/Middleware.ts or add app/Middleware/<Class>.ts.`)
 }
 
+function finishSynchronousResult(
+  req: EnhancedRequest,
+  response: Response,
+  csrfHandledByOuter: boolean,
+  routeSeedsCsrf: boolean,
+): Response | undefined {
+  const frameworkMetadataApplied = typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
+  if (
+    response.status >= 400
+    || req._corsConfig
+    || req._compress === true
+    || req._startNs != null
+    || Array.isArray(req._afterResponse)
+    || req._responseHeaders
+  ) {
+    return
+  }
+
+  // formatJsonResult already applied every framework-owned header. A route
+  // with CSRF disabled has no remaining response work, so keep its
+  // synchronous result on the direct path without probing request markers.
+  if (frameworkMetadataApplied && !routeSeedsCsrf)
+    return response
+
+  let finalized = response
+  if (
+    routeSeedsCsrf
+    && !csrfHandledByOuter
+    && (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
+  ) {
+    const mod = loadCsrfModule()
+    if (mod instanceof Promise)
+      return
+    if (mod) {
+      finalized = mod.seedCsrfCookieIfMissing(
+        req as unknown as Request,
+        finalized,
+        (req as unknown as { _csrfToken?: string })._csrfToken,
+        frameworkMetadataApplied,
+      )
+    }
+  }
+
+  if (!frameworkMetadataApplied) {
+    try {
+      const requestId = req._requestId
+      if (requestId)
+        finalized.headers.set('X-Request-ID', requestId)
+      applySecurityHeaders(finalized.headers)
+    }
+    catch {
+      return
+    }
+  }
+  return finalized
+}
+
 /**
  * Create a wrapped handler with middleware support
  */
@@ -1744,62 +1801,6 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       const settled = () => { actionPrefetch = null }
       actionPrefetch = pending.then(settled, settled)
     }
-  }
-
-  const finishSynchronousResult = (
-    req: EnhancedRequest,
-    response: Response,
-    csrfHandledByOuter: boolean,
-  ): Response | undefined => {
-    const frameworkMetadataApplied = typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
-    if (
-      response.status >= 400
-      || req._corsConfig
-      || req._compress === true
-      || req._startNs != null
-      || Array.isArray(req._afterResponse)
-      || req._responseHeaders
-    ) {
-      return
-    }
-
-    // formatJsonResult already applied every framework-owned header. A route
-    // with CSRF disabled has no remaining response work, so keep its
-    // synchronous result on the direct path without probing request markers.
-    if (frameworkMetadataApplied && !routeSeedsCsrf)
-      return response
-
-    let finalized = response
-    if (
-      routeSeedsCsrf
-      && !csrfHandledByOuter
-      && (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] !== true
-    ) {
-      const mod = loadCsrfModule()
-      if (mod instanceof Promise)
-        return
-      if (mod) {
-        finalized = mod.seedCsrfCookieIfMissing(
-          req as unknown as Request,
-          finalized,
-          (req as unknown as { _csrfToken?: string })._csrfToken,
-          frameworkMetadataApplied,
-        )
-      }
-    }
-
-    if (!frameworkMetadataApplied) {
-      try {
-        const requestId = req._requestId
-        if (requestId)
-          finalized.headers.set('X-Request-ID', requestId)
-        applySecurityHeaders(finalized.headers)
-      }
-      catch {
-        return
-      }
-    }
-    return finalized
   }
 
   const handleAsyncInContext = async (
@@ -1869,7 +1870,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       preparedBaseResult = runWithRequestArgument(enhancedReq, wrappedBase, enhancedReq)
       hasPreparedBaseResult = true
       if (preparedBaseResult instanceof Response) {
-        const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter)
+        const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter, routeSeedsCsrf)
         if (finished)
           return finished
       }
@@ -2391,7 +2392,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
     }
 
     if (preparedBaseResult instanceof Response) {
-      const finished = finishSynchronousResult(req, preparedBaseResult, csrfHandledByOuter)
+      const finished = finishSynchronousResult(req, preparedBaseResult, csrfHandledByOuter, routeSeedsCsrf)
       if (finished)
         return finished
     }
