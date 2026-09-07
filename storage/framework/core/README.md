@@ -157,7 +157,7 @@ buddy make:lang de # bootstraps a lang/de.yml language file
 buddy make:stack my-project # scaffolds a project-shaped registry stack
 
 buddy migrate # runs database migrations
-buddy migrate:dns # sets the ./config/dns.ts file
+buddy dns:pull # prints the live zone as a ./config/dns.ts block
 
 buddy dns example.com # list all DNS records for example.com
 buddy dns example.com --type MX # list MX records for example.com

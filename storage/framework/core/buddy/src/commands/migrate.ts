@@ -1056,34 +1056,6 @@ export function migrate(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy
-    .command('migrate:dns', descriptions.migrate)
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions) => {
-      log.debug('Running `buddy migrate:dns` ...', options)
-
-      const perf = await intro('buddy migrate:dns')
-      const result = await runAction(Action.MigrateDns, { ...options })
-
-      if (resultFailed(result)) {
-        await outro(
-          'While running the migrate:dns command, there was an issue',
-          { startTime: perf, useSeconds: true },
-          result.error,
-        )
-        process.exit(ExitCode.FatalError)
-      }
-
-      const APP_URL = process.env.APP_URL || 'undefined'
-
-      await outro(`Migrated your ${APP_URL} DNS.`, {
-        startTime: perf,
-        useSeconds: true,
-      })
-      process.exit(ExitCode.Success)
-    })
-
   // `buddy migrate:switch <driver>` — pre-flight + plan for flipping
   // DB_CONNECTION between sqlite / mysql / vitess / postgres
   // (stacksjs/stacks#1915 D-4).

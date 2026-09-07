@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **322 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **321 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -45,7 +45,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `mail` | 32 |
 | `make` | 18 |
 | `marketing` | 2 |
-| `migrate` | 6 |
+| `migrate` | 5 |
 | `monitoring` | 2 |
 | `package` | 1 |
 | `phone` | 4 |
@@ -3437,20 +3437,6 @@ Migrates your database
 | `--from-db` | Diff against the live database schema instead of the snapshot (self-heal drift) | boolean, optional | `false` |
 | `--no-rename` | Treat renamed columns as drop + add instead of a data-preserving rename | boolean, optional, negated | `true` |
 | `--no-generate` | Apply committed migration files only; do not generate new ones from your models | boolean, optional, negated | `true` |
-| `--verbose` | Enable verbose output | boolean, optional | `false` |
-
-### `migrate:dns`
-
-Migrates your database
-
-- Usage: `$ buddy migrate:dns`
-- Namespace: `migrate`
-- Aliases: none
-- Arguments: none
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `migrate:fresh`

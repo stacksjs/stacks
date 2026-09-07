@@ -22,9 +22,12 @@ describe('buddy migrate guarantee-table ordering (stacksjs/stacks#1952)', () => 
   // Slice the source into per-command sections so each assertion can't
   // accidentally match the other command's body.
   const freshIdx = source.indexOf(`.command('migrate:fresh'`)
-  const dnsIdx = source.indexOf(`.command('migrate:dns'`)
+  // The command that follows `migrate:fresh`, whatever it is: pinning a
+  // specific name here meant the section silently became the rest of the file
+  // the day that command was removed.
+  const afterFresh = source.indexOf('.command(', freshIdx + 1)
   const migrateSection = source.slice(0, freshIdx)
-  const freshSection = source.slice(freshIdx, dnsIdx)
+  const freshSection = source.slice(freshIdx, afterFresh)
   const freshAction = readFileSync(resolve(__dirname, '../../actions/src/migrate/fresh.ts'), 'utf-8')
 
   it('migrate: runs migrateAuthTables before the isErr FatalError exit', () => {

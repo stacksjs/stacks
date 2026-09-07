@@ -166,7 +166,7 @@ buddy make:stack my-plugin # scaffolds a project-shaped registry stack (new proj
 
 buddy migrate # runs database migrations
 buddy migrate:fresh # drops all tables & re-runs migrations (destroys all data; --seed reseeds)
-buddy migrate:dns # sets the ./config/dns.ts file
+buddy dns:pull # prints the live zone as a ./config/dns.ts block
 buddy seed # runs database seeders
 
 buddy dns example.com # list all DNS records for example.com

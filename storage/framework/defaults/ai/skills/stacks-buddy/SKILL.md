@@ -225,7 +225,7 @@ buddy migrate:fresh -s/--seed   # seed after fresh migration
 buddy migrate:fresh -a/--auth   # include auth tables
 buddy migrate:fresh -d/--diff   # show SQL without running
 
-buddy migrate:dns            # DNS migration for APP_URL domain
+buddy dns:sync               # create the config/dns.ts records at the registrar
 ```
 
 Both `migrate` and `migrate:fresh` validate that models exist in `app/Models` or `storage/framework/defaults/app/Models` before running.

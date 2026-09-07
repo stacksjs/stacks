@@ -104,7 +104,6 @@ const commandRegistry: Record<string, CommandLoader> = {
   'migrate': { path: './commands/migrate.ts', exportName: 'migrate' },
   'migrate:fresh': { path: './commands/migrate.ts', exportName: 'migrate' },
   'migrate:switch': { path: './commands/migrate.ts', exportName: 'migrate' },
-  'migrate:dns': { path: './commands/migrate.ts', exportName: 'migrate' },
   'migrate:project': { path: './commands/migrate-project.ts', exportName: 'migrateProject' },
   'outdated': { path: './commands/outdated.ts', exportName: 'outdated' },
   'package': { path: './commands/package.ts', exportName: 'packageCommands' },

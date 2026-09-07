@@ -23,7 +23,7 @@ buddy migrate --diff                # show SQL without running
 buddy migrate --auth                # include auth tables
 buddy migrate:fresh                 # drop ALL tables and re-migrate
 buddy migrate:fresh --seed          # drop, migrate, then seed
-buddy migrate:dns                   # DNS-specific migration
+buddy dns:pull                      # live zone as a config/dns.ts block
 buddy make:migration <name>         # create new migration file
 buddy seed                          # seed database
 buddy generate:migrations           # generate migrations from model diffs

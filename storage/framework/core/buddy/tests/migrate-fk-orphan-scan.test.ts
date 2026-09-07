@@ -16,9 +16,12 @@ describe('buddy migrate FK orphan scan (#1951)', () => {
   const source = readFileSync(migratePath, 'utf-8')
 
   const freshIdx = source.indexOf(`.command('migrate:fresh'`)
-  const dnsIdx = source.indexOf(`.command('migrate:dns'`)
+  // The command that follows `migrate:fresh`, whatever it is: pinning a
+  // specific name here meant the section silently became the rest of the file
+  // the day that command was removed.
+  const afterFresh = source.indexOf('.command(', freshIdx + 1)
   const migrateSection = source.slice(0, freshIdx)
-  const freshSection = source.slice(freshIdx, dnsIdx)
+  const freshSection = source.slice(freshIdx, afterFresh)
 
   it('defines a read-only, non-fatal reportFkOrphans helper', () => {
     expect(source).toContain('async function reportFkOrphans()')

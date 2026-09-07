@@ -21,7 +21,6 @@ buddy migrate:fresh
 ```bash
 buddy migrate [options]
 buddy migrate:fresh [options]
-buddy migrate:dns [options]
 ```
 
 ### Options for `migrate`
@@ -67,11 +66,9 @@ buddy db:fresh
 
 ### DNS Migration
 
-Migrate DNS configuration:
-
-```bash
-buddy migrate:dns
-```
+DNS is not migrated from here. `buddy dns:pull` prints a domain's live records
+as a `config/dns.ts` block, `buddy dns:diff` shows what the file declares and the
+zone is missing, and `buddy dns:sync` creates those records at the registrar.
 
 ## Examples
 
