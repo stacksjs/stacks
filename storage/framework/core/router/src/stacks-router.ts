@@ -2539,12 +2539,13 @@ function assertSafeHandlerPath(handlerPath: string): void {
 // /cms and /blog) causes two parallel imports of the same module — and
 // the second one races against the first's mid-evaluation state, which
 // Bun surfaces as `Cannot access 'default' before initialization`.
-const _moduleImportCache = new Map<string, Promise<any>>()
+let _moduleImportCache: Map<string, Promise<any>> | undefined
 function cachedImport(fullPath: string): Promise<any> {
-  let p = _moduleImportCache.get(fullPath)
+  const cache = _moduleImportCache ??= new Map()
+  let p = cache.get(fullPath)
   if (!p) {
     p = import(fullPath)
-    _moduleImportCache.set(fullPath, p)
+    cache.set(fullPath, p)
   }
   return p
 }
@@ -2557,18 +2558,19 @@ function cachedImport(fullPath: string): Promise<any> {
 // warm requests need no resolution await. Evicts on rejection for retries.
 // Same lifetime as `cachedImport` — a dev hot-reload restarts the process and
 // clears both, so this never serves a stale handler.
-const _resolvedHandlerCache = new Map<string, RouteHandlerFn | Promise<RouteHandlerFn>>()
+let _resolvedHandlerCache: Map<string, RouteHandlerFn | Promise<RouteHandlerFn>> | undefined
 function resolveStringHandler(handlerPath: string): RouteHandlerFn | Promise<RouteHandlerFn> {
-  let resolved = _resolvedHandlerCache.get(handlerPath)
+  const cache = _resolvedHandlerCache ??= new Map()
+  let resolved = cache.get(handlerPath)
   if (!resolved) {
     resolved = resolveStringHandlerUncached(handlerPath).then((handler) => {
-      _resolvedHandlerCache.set(handlerPath, handler)
+      cache.set(handlerPath, handler)
       return handler
     }, (error) => {
-      _resolvedHandlerCache.delete(handlerPath)
+      cache.delete(handlerPath)
       throw error
     })
-    _resolvedHandlerCache.set(handlerPath, resolved)
+    cache.set(handlerPath, resolved)
   }
   return resolved
 }
