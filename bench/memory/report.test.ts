@@ -19,6 +19,7 @@ describe('memory benchmark report', () => {
         sourceAtEnd: { revision: 'b'.repeat(40), dirty: false },
         runtimeRequirement: { range: '1.4.1', matches: true },
         driver: 'oha',
+        driverVersion: 'oha 1.16.0',
         publishable: true,
         scenario: 'static-json',
         connections: 64,
@@ -47,6 +48,7 @@ describe('memory benchmark report', () => {
     expect(report).toContain(`| Source at end | \`${'b'.repeat(40)}\` (clean working tree) |`)
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
     expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
+    expect(report).toContain('| Load generator version | oha 1.16.0 |')
     expect(report).toContain('| Architecture | x64 |')
     expect(report).not.toContain('Runtime mismatch:')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')

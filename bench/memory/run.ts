@@ -261,6 +261,7 @@ async function main(): Promise<void> {
   const targets = resolveTargets(options.targets, options.requestRate)
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
+  const driverVersion = await driver.version()
   if (!driver.supportsFixedRate)
     throw new Error(`Load driver '${driver.name}' cannot enforce a fixed request rate. Install oha and rerun this benchmark.`)
 
@@ -282,6 +283,7 @@ async function main(): Promise<void> {
   }
   const publicationProfile = {
     driverPublishable: driver.publishable,
+    driverVersion,
     platform: machine.platform,
     arch: machine.arch,
     dedicated: process.env.BENCH_DEDICATED === '1',
@@ -302,6 +304,7 @@ async function main(): Promise<void> {
     source,
     runtimeRequirement,
     driver: driver.name,
+    driverVersion,
     publishable: publicationIssues.length === 0,
     publicationIssues,
     busyHostProcesses: [...observedBusyProcesses.values()],

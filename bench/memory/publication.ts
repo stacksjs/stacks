@@ -15,6 +15,7 @@ export interface MemoryPublicationTarget {
 
 export interface MemoryPublicationProfile {
   driverPublishable: boolean
+  driverVersion: string | null
   platform: string
   arch: string
   dedicated: boolean
@@ -34,6 +35,8 @@ export function memoryPublicationIssues(profile: MemoryPublicationProfile): stri
   const issues: string[] = []
   if (!profile.driverPublishable)
     issues.push('load generator is not publishable')
+  if (!profile.driverVersion)
+    issues.push('load generator version is unavailable')
   if (profile.platform !== 'linux')
     issues.push(`host OS is ${profile.platform}, not linux`)
   if (profile.arch !== 'x64')

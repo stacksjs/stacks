@@ -66,8 +66,8 @@ which is what it was written for. Every report it produces is stamped
 
 ## The machine matters
 
-Anything published needs a documented machine: CPU model, core count, OS, and
-Bun version, all of which the report records automatically. A laptop throttles
+Anything published needs a documented machine and load tool: CPU model, core
+count, OS, Bun version, and exact generator version, all of which the report records automatically. A laptop throttles
 and a shared cloud VM has neighbours; neither produces a number worth quoting.
 Use a dedicated or reserved instance, and run the load generator on a different
 machine from the server — a generator competing for the server's cores

@@ -41,6 +41,7 @@ export interface RunMeta {
   sourceAtEnd?: SourceState
   runtimeRequirement?: RuntimeRequirement
   driver: string
+  driverVersion?: string | null
   publishable: boolean
   publicationIssues?: string[]
   connections: number
@@ -109,6 +110,7 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Source at end | ${formatSourceState(meta.sourceAtEnd)} |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
+  lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)
   lines.push(`| Connections | ${meta.connections} |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
   lines.push(`| Persistent query history | ${meta.persistentQueryLogging ? 'enabled (opt-in)' : 'disabled (production default)'} |`)

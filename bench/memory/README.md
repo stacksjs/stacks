@@ -54,7 +54,7 @@ Every run writes:
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
 The report and metadata include the Git revision and working-tree state captured
-before and after measurement, plus the machine architecture. Ignored files are
+before and after measurement, plus the machine architecture and exact load-generator version. Ignored files are
 excluded; source archives without Git are marked unavailable. A revision or
 cleanliness change during measurement invalidates publication.
 

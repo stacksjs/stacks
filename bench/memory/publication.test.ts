@@ -3,6 +3,7 @@ import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './p
 
 const publishable = {
   driverPublishable: true,
+  driverVersion: 'oha 1.16.0',
   platform: 'linux',
   arch: 'x64',
   dedicated: true,
@@ -27,6 +28,7 @@ describe('memory benchmark publication profile', () => {
     expect(memoryPublicationIssues({
       ...publishable,
       driverPublishable: false,
+      driverVersion: null,
       platform: 'darwin',
       arch: 'arm64',
       dedicated: false,
@@ -42,6 +44,7 @@ describe('memory benchmark publication profile', () => {
       busyHostProcesses: [{ pid: 42, cpuPercent: 90, command: 'compiler' }],
     })).toEqual([
       'load generator is not publishable',
+      'load generator version is unavailable',
       'host OS is darwin, not linux',
       'host architecture is arm64, not x64',
       'BENCH_DEDICATED=1 is not set',

@@ -28,6 +28,7 @@ export interface MemoryRunMeta {
   sourceAtEnd?: SourceState
   runtimeRequirement?: RuntimeRequirement
   driver: string
+  driverVersion?: string | null
   publishable: boolean
   publicationIssues?: string[]
   busyHostProcesses?: BusyProcess[]
@@ -107,6 +108,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push(`| Settled window | Median of the final ${meta.settleSeconds}s of idle |`)
   lines.push(`| Repeats | ${meta.runs}, median reported |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
+  lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
   lines.push(`| Architecture | ${meta.machine.arch} |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)

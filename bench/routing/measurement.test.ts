@@ -28,6 +28,7 @@ describe('benchmark CPU window', () => {
     }
     const driver: Driver = {
       name: 'fixture',
+      version: async () => 'fixture 1.0.0',
       publishable: false,
       supportsFixedRate: true,
       isAvailable: async () => true,
@@ -83,6 +84,7 @@ describe('cumulative CPU time formats', () => {
     try {
       const measured = await measureLoad({
         name,
+        version: async () => 'fixture 1.0.0',
         publishable: false,
         supportsFixedRate: false,
         isAvailable: async () => true,

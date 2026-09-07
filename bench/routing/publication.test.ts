@@ -3,6 +3,7 @@ import { routingMeasurementPublicationIssues, routingPublicationIssues } from '.
 
 const publishable = {
   driverPublishable: true,
+  driverVersion: 'oha 1.16.0',
   dedicated: true,
   runtimeRequirement: { range: '1.4.1', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
@@ -21,6 +22,7 @@ describe('routing benchmark publication profile', () => {
     expect(routingPublicationIssues({
       ...publishable,
       driverPublishable: false,
+      driverVersion: null,
       dedicated: false,
       runtimeRequirement: { range: '1.4.1', matches: false },
       source: { revision: null, dirty: null },
@@ -30,6 +32,7 @@ describe('routing benchmark publication profile', () => {
       busyHostProcesses: [{ pid: 42, cpuPercent: 90, command: 'compiler' }],
     })).toEqual([
       'load generator is not publishable',
+      'load generator version is unavailable',
       'BENCH_DEDICATED=1 is not set',
       'runtime does not match package.json engines.bun',
       'source revision is unavailable or the working tree is not clean',

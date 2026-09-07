@@ -134,6 +134,7 @@ async function main(): Promise<void> {
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[bench] ${runtimeWarning}`)
   const driver: Driver = await pickDriver(opts.driver)
+  const driverVersion = await driver.version()
 
   const scenarios = SCENARIOS.filter(s => opts.scenarios.includes(s.id) && (opts.db || !s.requiresDb))
   const targets = TARGETS.filter(t => opts.targets.includes(t.id))
@@ -152,6 +153,7 @@ async function main(): Promise<void> {
 
   const publicationProfile = {
     driverPublishable: driver.publishable,
+    driverVersion,
     dedicated: process.env.BENCH_DEDICATED === '1',
     runtimeRequirement,
     source,
@@ -166,6 +168,7 @@ async function main(): Promise<void> {
     source,
     runtimeRequirement,
     driver: driver.name,
+    driverVersion,
     publishable: publicationIssues.length === 0,
     publicationIssues,
     connections: opts.connections,

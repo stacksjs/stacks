@@ -44,6 +44,7 @@ export interface LoadResult {
 
 export interface Driver {
   name: string
+  version: () => Promise<string | null>
   /** Whether numbers from this driver may be published. */
   publishable: boolean
   supportsFixedRate: boolean
@@ -91,6 +92,15 @@ async function capture(cmd: string[], env?: Record<string, string>): Promise<str
   return out
 }
 
+async function commandVersion(command: string): Promise<string | null> {
+  try {
+    return (await capture([command, '--version'])).trim().split('\n')[0] || null
+  }
+  catch {
+    return null
+  }
+}
+
 function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, headerFlag: string): string[] {
   const args: string[] = []
   if (req.method !== 'GET') {
@@ -105,6 +115,7 @@ function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, head
 /** `oha` — the preferred tool. Percentiles come straight out of its JSON. */
 const oha: Driver = {
   name: 'oha',
+  version: () => commandVersion('oha'),
   drainsRequests: true,
   publishable: true,
   supportsFixedRate: true,
@@ -144,6 +155,7 @@ const oha: Driver = {
 /** `bombardier` — latencies in microseconds. */
 const bombardier: Driver = {
   name: 'bombardier',
+  version: () => commandVersion('bombardier'),
   publishable: true,
   supportsFixedRate: false,
   isAvailable: () => which('bombardier'),
@@ -174,6 +186,7 @@ const bombardier: Driver = {
 /** `autocannon` — the JS-native fallback. Latencies already in ms. */
 const autocannon: Driver = {
   name: 'autocannon',
+  version: () => commandVersion('autocannon'),
   publishable: true,
   supportsFixedRate: false,
   isAvailable: () => which('autocannon'),
@@ -215,6 +228,7 @@ const WORKER = fileURLToPath(new URL('./load-worker.ts', import.meta.url))
  */
 const builtin: Driver = {
   name: 'builtin',
+  version: async () => `Bun ${Bun.version}`,
   drainsRequests: true,
   publishable: false,
   supportsFixedRate: false,

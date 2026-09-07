@@ -15,6 +15,7 @@ export interface RoutingPublicationScenario {
 
 export interface RoutingPublicationProfile {
   driverPublishable: boolean
+  driverVersion: string | null
   dedicated: boolean
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
@@ -28,6 +29,8 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
   const issues: string[] = []
   if (!profile.driverPublishable)
     issues.push('load generator is not publishable')
+  if (!profile.driverVersion)
+    issues.push('load generator version is unavailable')
   if (!profile.dedicated)
     issues.push('BENCH_DEDICATED=1 is not set')
   if (profile.runtimeRequirement?.matches !== true)
