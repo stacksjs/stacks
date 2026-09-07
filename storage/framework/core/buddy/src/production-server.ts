@@ -219,6 +219,14 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { config, overridesReady, resolveViewPatterns } = await import('@stacksjs/config')
   await overridesReady
 
+  // Before anything reads the manifest. `resolveViewPatterns` appends each
+  // discovered package's view roots and `injectGlobalAutoImports` builds the
+  // barrel that carries their models, and both are below this line. Discovery
+  // previously ran only under `buddy dev`, so a deployed server resolved
+  // whatever manifest a developer's machine left in the tarball.
+  const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
+  await ensureDiscoveredPackages()
+
   const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not

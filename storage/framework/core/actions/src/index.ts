@@ -84,7 +84,7 @@ export {
   setDryRun,
 } from './make'
 
-export { discoverPackages } from './discover-packages'
+export { discoverPackages, ensureDiscoveredPackages } from './discover-packages'
 export { parseFields, scaffoldCrud } from './scaffold-crud'
 export type { CrudField } from './scaffold-crud'
 export { installStack, uninstallStack, listStacks } from './stacks'

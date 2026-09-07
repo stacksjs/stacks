@@ -1,5 +1,6 @@
 import type { StackDirectory } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
+import { existsSync, renameSync, unlinkSync } from 'node:fs'
+import process from 'node:process'
 import { isAbsolute, join, relative } from 'node:path'
 import { projectPath, storagePath } from '@stacksjs/path'
 
@@ -219,9 +220,58 @@ export async function discoverPackages(
     // Missing or unreadable manifests are regenerated below.
   }
 
-  await Bun.write(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`)
+  // Written through a temp file and renamed, because more than one process
+  // reaches this. Both production entries discover at boot and systemd starts
+  // them together, so a direct write leaves a window in which the other
+  // process reads a half-written file. Every reader degrades an unparseable
+  // manifest to "no packages", which would silently drop a package's routes
+  // and models for the lifetime of that boot. `rename` within a directory is
+  // atomic, so a reader sees either the old manifest or the new one.
+  const temp = `${manifestPath}.${process.pid}.tmp`
+  try {
+    await Bun.write(temp, `${JSON.stringify(manifest, null, 2)}\n`)
+    renameSync(temp, manifestPath)
+  }
+  catch (error) {
+    try {
+      unlinkSync(temp)
+    }
+    catch {
+      // Already gone, or never created.
+    }
+    throw error
+  }
 
   return manifest
+}
+
+/**
+ * Discover packages, and never fail a boot for it.
+ *
+ * The production entries call this; `buddy dev` and `buddy package:discover`
+ * call `discoverPackages` directly because they want the result or the error.
+ *
+ * Discovery used to run in exactly two places, `dev/api.ts` and the
+ * `package:discover` command, and the manifest it writes is gitignored. A
+ * deployed application therefore ran whatever manifest happened to ride along
+ * in the tarball from a developer's machine, or none at all - so a package's
+ * routes, models and migrations worked in `buddy dev` and silently did not in
+ * production. Worse than absent: a manifest naming a package that is no longer
+ * installed makes `assertRouteMiddlewareResolvable()` throw during router boot.
+ *
+ * Swallowing the error is deliberate. An application's own routes and models do
+ * not depend on discovery having succeeded, and a server that refuses to start
+ * because one dependency shipped an unreadable directory is worse than one that
+ * starts without that dependency's routes.
+ */
+export async function ensureDiscoveredPackages(): Promise<void> {
+  try {
+    await discoverPackages()
+  }
+  catch (error) {
+    const { log } = await import('@stacksjs/logging')
+    log.warn(`[discovery] Could not refresh the package manifest: ${error instanceof Error ? error.message : String(error)}`)
+  }
 }
 
 function toRelative(projectRoot: string, dir: string): string {

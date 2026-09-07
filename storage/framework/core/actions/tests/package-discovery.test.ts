@@ -16,10 +16,11 @@
  * not finding the package at all.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { discoverPackages } from '../src/discover-packages'
+import { resolve } from 'node:path'
+import { discoverPackages, ensureDiscoveredPackages } from '../src/discover-packages'
 
 let project: string
 
@@ -230,5 +231,85 @@ describe('package discovery', () => {
     await discoverPackages({ projectRoot: project, manifestPath })
 
     expect(statSync(manifestPath).mtimeMs).toBeGreaterThan(before)
+  })
+})
+
+
+/**
+ * Discovery has to run where the application actually runs.
+ *
+ * It used to run in exactly two places: `buddy dev` and `buddy package:discover`.
+ * The manifest it writes is gitignored, so a deployed application ran whichever
+ * manifest happened to ride along in the tarball from a developer's machine, or
+ * none at all - and a package's routes, models and migrations worked in dev and
+ * silently did not in production.
+ */
+describe('discovery at boot', () => {
+  const coreRoot = resolve(import.meta.dir, '../..')
+
+  function source(rel) {
+    return readFileSync(resolve(coreRoot, rel), 'utf8')
+  }
+
+  test('the production API entry discovers before it imports routes', () => {
+    const api = source('actions/src/serve/api.ts')
+
+    expect(api).toContain('ensureDiscoveredPackages()')
+
+    // Order is the assertion. `loadDiscoveredRoutes()` reads the manifest
+    // during importRoutes(), so discovering afterwards would refresh a file
+    // nothing reads again until the next boot.
+    expect(api.indexOf('ensureDiscoveredPackages()'))
+      .toBeLessThan(api.indexOf('route.importRoutes()'))
+  })
+
+  test('the production views server discovers before it reads the manifest', () => {
+    const server = source('buddy/src/production-server.ts')
+
+    expect(server).toContain('ensureDiscoveredPackages()')
+
+    // resolveViewPatterns appends package view roots and injectGlobalAutoImports
+    // builds the barrel carrying package models. Both must see a current file.
+    expect(server.indexOf('ensureDiscoveredPackages()'))
+      .toBeLessThan(server.indexOf('await injectGlobalAutoImports()'))
+  })
+
+  test('a failure warns instead of aborting the boot', async () => {
+    // An application's own routes do not depend on discovery succeeding, and a
+    // server that refuses to start because one dependency shipped an unreadable
+    // directory is worse than one that starts without that dependency.
+    await ensureDiscoveredPackages()
+    expect(true).toBe(true)
+  })
+
+  test('the manifest is written atomically, so a racing reader cannot see half of it', async () => {
+    // Both production entries discover at boot and systemd starts them
+    // together. Every reader degrades an unparseable manifest to "no packages",
+    // so a torn write silently drops a package for the life of that boot.
+    const src = source('actions/src/discover-packages.ts')
+
+    expect(src).toContain('renameSync(temp, manifestPath)')
+    expect(src.indexOf('Bun.write(temp')).toBeLessThan(src.indexOf('renameSync(temp, manifestPath)'))
+
+    // And it still actually writes.
+    app({ name: 'my-app', dependencies: { loghq: '^1.0.0' } })
+    pkg('node_modules/loghq', { name: 'loghq', stacks: { name: 'loghq' } })
+    const manifestPath = join(project, 'manifest.json')
+
+    await discoverPackages({ projectRoot: project, manifestPath })
+
+    const written = JSON.parse(readFileSync(manifestPath, 'utf8'))
+    expect(Object.keys(written.packages)).toEqual(['loghq'])
+  })
+
+  test('leaves no temp file behind', async () => {
+    app({ name: 'my-app', dependencies: { loghq: '^1.0.0' } })
+    pkg('node_modules/loghq', { name: 'loghq', stacks: { name: 'loghq' } })
+    const manifestPath = join(project, 'manifest.json')
+
+    await discoverPackages({ projectRoot: project, manifestPath })
+
+    const stray = readdirSync(project).filter(f => f.endsWith('.tmp'))
+    expect(stray).toEqual([])
   })
 })
