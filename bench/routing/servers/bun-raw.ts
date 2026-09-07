@@ -22,7 +22,7 @@ let selectItem: import('bun:sqlite').Statement | undefined
 if (withDb && serves('db-roundtrip')) {
   const { Database } = await import('bun:sqlite')
   const db = new Database(process.env.BENCH_DB_FILE!, { readonly: true })
-  selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1 LIMIT 1')
+  selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = ? LIMIT 1')
 }
 
 if (serves('static-json'))
@@ -47,7 +47,7 @@ if (serves('post-validate')) {
 if (selectItem) {
   routes['/bench/db'] = {
     GET() {
-      const row = selectItem.get() as { id: number, name: string }
+      const row = selectItem.get(1) as { id: number, name: string }
       return new Response(JSON.stringify({ id: row.id, name: row.name }), { headers: JSON_HEADERS })
     },
   }

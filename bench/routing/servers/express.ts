@@ -32,9 +32,9 @@ if (serves('post-validate')) {
 if (withDb && serves('db-roundtrip')) {
   const { Database } = await import('bun:sqlite')
   const db = new Database(process.env.BENCH_DB_FILE!, { readonly: true })
-  const selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1 LIMIT 1')
+  const selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = ? LIMIT 1')
   app.get('/bench/db', (_req: any, res: any) => {
-    const row = selectItem.get() as { id: number, name: string }
+    const row = selectItem.get(1) as { id: number, name: string }
     return res.json({ id: row.id, name: row.name })
   })
 }
