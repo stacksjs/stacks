@@ -234,6 +234,10 @@ async function measure(
     if (settled.length === 0 || underLoad.length === 0)
       throw new Error(`RSS sampling returned no ${settled.length === 0 ? 'settled idle' : 'load'} readings`)
 
+    // Confirm sustained load and the idle period did not change the target's
+    // status, response bytes, media type, or validation contract.
+    await assertParity(target, scenario)
+
     return {
       measurement: {
         settledRssBytes: median(settled.map(sample => sample.rssBytes)),

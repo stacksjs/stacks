@@ -274,6 +274,10 @@ async function main(): Promise<void> {
             if (persistence.status === 'unverified')
               console.error(`[bench] ${persistence.reason}`)
           }
+          // Re-run the full parity and validation probe set after load. The
+          // first probe proves startup behavior; this one catches a target that
+          // changes status, output, or validation behavior after sustained use.
+          await assertParity(target, scenario)
           console.error(`[bench]   run ${run} ${target.id}: ${Math.round(result.rpsMean).toLocaleString()} req/s`)
         }
         finally {
