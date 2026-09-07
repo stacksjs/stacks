@@ -1,5 +1,5 @@
-import { join } from 'node:path'
-import { BENCH_ROOT } from './runtime'
+import { resolveBenchmarkServerModules } from './provenance'
+import { REPO_ROOT } from './runtime'
 
 const PEER_PACKAGES: Readonly<Record<string, string>> = {
   elysia: 'elysia',
@@ -18,11 +18,12 @@ export function selectedPeerPackages(targetIds: readonly string[]): string[] {
 /** Read versions from the package files the benchmark servers actually resolve. */
 export async function resolvePeerVersions(targetIds: readonly string[]): Promise<Record<string, string>> {
   const versions: Record<string, string> = {}
-  const resolveFrom = join(BENCH_ROOT, 'servers', 'version-probe.ts')
+  const packageNames = selectedPeerPackages(targetIds)
 
-  for (const packageName of selectedPeerPackages(targetIds)) {
+  for (const packageName of packageNames) {
     try {
-      const packageFile = Bun.resolveSync(`${packageName}/package.json`, resolveFrom)
+      const packageSpecifier = `${packageName}/package.json`
+      const packageFile = resolveBenchmarkServerModules(REPO_ROOT, [packageSpecifier])[packageSpecifier]!
       const manifest = await Bun.file(packageFile).json() as { version?: unknown }
       versions[packageName] = typeof manifest.version === 'string' ? manifest.version : 'unavailable'
     }

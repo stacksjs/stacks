@@ -12,6 +12,32 @@ export const STACKS_BENCHMARK_MODULES = [
 export type StacksBenchmarkModule = typeof STACKS_BENCHMARK_MODULES[number]
 export type StacksSourceModules = Record<StacksBenchmarkModule, string>
 
+/** Resolve package specifiers with the executable context used by target servers. */
+export function resolveBenchmarkServerModules(repoRoot: string, specifiers: readonly string[]): Record<string, string> {
+  if (specifiers.length === 0)
+    return {}
+
+  const probe = Bun.spawnSync([
+    process.execPath,
+    `--config=${join(repoRoot, 'bench', 'routing', 'bunfig.toml')}`,
+    join(repoRoot, 'bench', 'routing', 'fixtures', 'source-probe.ts'),
+    ...specifiers,
+  ], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  if (probe.exitCode !== 0)
+    throw new Error(`Could not resolve modules in the benchmark server environment: ${probe.stderr.toString().trim()}`)
+
+  const modules = JSON.parse(probe.stdout.toString()) as Record<string, string>
+  for (const specifier of specifiers) {
+    if (typeof modules[specifier] !== 'string')
+      throw new TypeError(`Benchmark server source probe did not resolve ${specifier}`)
+  }
+  return modules
+}
+
 export function stacksSourceIssues(repoRoot: string, modules: StacksSourceModules): string[] {
   const issues: string[] = []
   for (const specifier of STACKS_BENCHMARK_MODULES) {
@@ -26,24 +52,7 @@ export function stacksSourceIssues(repoRoot: string, modules: StacksSourceModule
 }
 
 export function resolveStacksSourceModules(repoRoot: string): StacksSourceModules {
-  const probe = Bun.spawnSync([
-    process.execPath,
-    `--config=${join(repoRoot, 'bench', 'routing', 'bunfig.toml')}`,
-    join(repoRoot, 'bench', 'routing', 'fixtures', 'source-probe.ts'),
-    ...STACKS_BENCHMARK_MODULES,
-  ], {
-    cwd: repoRoot,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
-  if (probe.exitCode !== 0)
-    throw new Error(`Could not resolve Stacks modules in the benchmark server environment: ${probe.stderr.toString().trim()}`)
-
-  const modules = JSON.parse(probe.stdout.toString()) as StacksSourceModules
-  for (const specifier of STACKS_BENCHMARK_MODULES) {
-    if (typeof modules[specifier] !== 'string')
-      throw new TypeError(`Benchmark server source probe did not resolve ${specifier}`)
-  }
+  const modules = resolveBenchmarkServerModules(repoRoot, STACKS_BENCHMARK_MODULES) as StacksSourceModules
   const issues = stacksSourceIssues(repoRoot, modules)
   if (issues.length > 0)
     throw new Error(`Stacks benchmark must execute framework source through public package entry points:\n${issues.join('\n')}`)
