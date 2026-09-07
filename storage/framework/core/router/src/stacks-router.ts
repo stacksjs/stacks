@@ -699,7 +699,7 @@ const EMPTY_MIDDLEWARE_ENTRIES: readonly string[] = []
 const CSRF_ONLY_MIDDLEWARE: readonly string[] = ['csrf']
 
 /** Finished middleware descriptors, reused until a development cache clear. */
-let resolvedMiddlewareEntryCache = new Map<string, ResolvedMiddleware>()
+let resolvedMiddlewareEntryCache: Map<string, ResolvedMiddleware> | undefined
 let resolvedCsrfOnlyMiddleware: ResolvedMiddleware[] | undefined
 
 /**
@@ -1081,7 +1081,12 @@ function adaptMiddlewareForBunRouter(
 /**
  * Cache for loaded middleware handlers
  */
-const middlewareCache = new Map<string, MiddlewareHandler | null>()
+let middlewareCache: Map<string, MiddlewareHandler | null> | undefined
+
+function cacheMiddleware(name: string, handler: MiddlewareHandler | null): void {
+  const cache = middlewareCache ??= new Map()
+  cache.set(name, handler)
+}
 
 /**
  * Cache for the middleware alias map (loaded once from app/Middleware.ts).
@@ -1141,17 +1146,18 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
  * memory-wise but skips the split-filter-map pipeline on every request.
  */
 const PASCAL_SPLIT_REGEX = /[-_\s]+/
-const pascalCaseCache = new Map<string, string>()
+let pascalCaseCache: Map<string, string> | undefined
 function toPascalCase(input: string): string {
   if (!input) return input
-  const cached = pascalCaseCache.get(input)
+  const cached = pascalCaseCache?.get(input)
   if (cached !== undefined) return cached
   const out = input
     .split(PASCAL_SPLIT_REGEX)
     .filter(Boolean)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
-  pascalCaseCache.set(input, out)
+  const cache = pascalCaseCache ??= new Map()
+  cache.set(input, out)
   return out
 }
 
@@ -1217,8 +1223,9 @@ async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
  * the file in dev fixes the alias without a restart.
  */
 async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
-  if (middlewareCache.has(name)) {
-    return middlewareCache.get(name) ?? null
+  const cachedMiddleware = middlewareCache
+  if (cachedMiddleware?.has(name)) {
+    return cachedMiddleware.get(name) ?? null
   }
 
   const className = await resolveMiddlewareName(name)
@@ -1234,10 +1241,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
       const handler = (middleware.default ?? null) as MiddlewareHandler | null
       if (!handler || typeof handler.handle !== 'function') {
         log.error(`[Router] Middleware '${name}' resolved to ${registered}, but the file has no default export with a handle() method`)
-        middlewareCache.set(name, null)
+        cacheMiddleware(name, null)
         return null
       }
-      middlewareCache.set(name, handler)
+      cacheMiddleware(name, handler)
       return handler
     }
     catch (err: unknown) {
@@ -1259,10 +1266,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
       // default export here is a bug in the user's middleware, not a
       // reason to silently fall back to different behavior.
       log.error(`[Router] Middleware '${name}' resolved to ${userPath}, but the file has no default export with a handle() method`)
-      middlewareCache.set(name, null)
+      cacheMiddleware(name, null)
       return null
     }
-    middlewareCache.set(name, handler)
+    cacheMiddleware(name, handler)
     return handler
   }
   catch (err: unknown) {
@@ -1276,10 +1283,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
     const handler = (middleware.default ?? null) as MiddlewareHandler | null
     if (!handler || typeof handler.handle !== 'function') {
       log.error(`[Router] Middleware '${name}' resolved to ${defaultPath}, but the file has no default export with a handle() method`)
-      middlewareCache.set(name, null)
+      cacheMiddleware(name, null)
       return null
     }
-    middlewareCache.set(name, handler)
+    cacheMiddleware(name, handler)
     return handler
   }
   catch (err: unknown) {
@@ -1404,7 +1411,7 @@ function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHan
 function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | null | Promise<MiddlewareHandler | null> {
   // Resolved modules are synchronous values. Keep cached failures as null so
   // the caller still fails closed, and use the same cache hot reload clears.
-  const cached = middlewareCache.get(parsed.name)
+  const cached = middlewareCache?.get(parsed.name)
   if (cached !== undefined)
     return cached && parsed.negated ? negateMiddleware(parsed.name, cached) : cached
 
@@ -1420,13 +1427,13 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
  * called from the dev server — production should never invoke it.
  */
 export function clearMiddlewareCache(): void {
-  middlewareCache.clear()
+  middlewareCache = undefined
   negatedMiddlewareCache = undefined
-  resolvedMiddlewareEntryCache = new Map()
+  resolvedMiddlewareEntryCache = undefined
   resolvedCsrfOnlyMiddleware = undefined
   // In-flight parses keep their original map and cannot refill this cache
   // with aliases from before a reload.
-  parsedMiddlewareCache = new Map()
+  parsedMiddlewareCache = undefined
   middlewareAliasesPromise = null
   middlewareRegistryPromise = null
   actionRegistryPromise = null
@@ -1541,10 +1548,10 @@ interface ParsedMiddleware {
   readonly params?: string
 }
 
-let parsedMiddlewareCache = new Map<string, ParsedMiddleware | Promise<ParsedMiddleware>>()
+let parsedMiddlewareCache: Map<string, ParsedMiddleware | Promise<ParsedMiddleware>> | undefined
 
 function parseMiddlewareEntry(middleware: string): ParsedMiddleware | Promise<ParsedMiddleware> {
-  const cache = parsedMiddlewareCache
+  const cache = parsedMiddlewareCache ??= new Map()
   let parsed = cache.get(middleware)
   if (!parsed) {
     parsed = parseMiddlewareEntryUncached(middleware).then((resolved) => {
@@ -1939,7 +1946,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
         const resolved: ResolvedMiddleware[] = cachedCsrfOnlyMiddleware ?? []
         const unresolvedEntries = cachedCsrfOnlyMiddleware ? EMPTY_MIDDLEWARE_ENTRIES : middlewareEntries
         for (const middlewareEntry of unresolvedEntries) {
-          let resolvedEntry = resolvedMiddlewareEntryCache.get(middlewareEntry)
+          let resolvedEntry = resolvedMiddlewareEntryCache?.get(middlewareEntry)
           if (!resolvedEntry) {
             const pending = parseMiddlewareEntry(middlewareEntry)
             const parsed = pending instanceof Promise ? await pending : pending
@@ -1962,7 +1969,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
                 parameterName: parsed.params ? parsed.name : undefined,
                 params: parsed.params,
               }
-              resolvedMiddlewareEntryCache.set(middlewareEntry, resolvedEntry)
+              const cache = resolvedMiddlewareEntryCache ??= new Map()
+              cache.set(middlewareEntry, resolvedEntry)
             }
           }
 
