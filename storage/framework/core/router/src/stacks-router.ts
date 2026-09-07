@@ -1762,16 +1762,17 @@ function finishSynchronousResult(
 
 function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnabled: boolean): number {
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
+  const forcesJson = routeApiResponseRegistry?.has(routeKey) === true
   let flags = 0
   if (csrfEnabled && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE'))
     flags |= ROUTE_ACCEPTS_CSRF
   if (routeMethod !== 'GET' && routeMethod !== 'HEAD')
     flags |= ROUTE_MAY_HAVE_BODY
-  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD'))
+  if (csrfEnabled && !forcesJson && (routeMethod === 'GET' || routeMethod === 'HEAD'))
     flags |= ROUTE_RENDERS_CSRF
   if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'))
     flags |= ROUTE_SEEDS_CSRF
-  if (routeApiResponseRegistry?.has(routeKey))
+  if (forcesJson)
     flags |= ROUTE_FORCES_JSON
   if (isRouterAction(handler) && (handler.skipCsrf === true || handler.csrf === false))
     flags |= ROUTE_ACTION_SKIPS_CSRF
