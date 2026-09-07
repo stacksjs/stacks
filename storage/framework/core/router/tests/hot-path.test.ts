@@ -140,6 +140,28 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('keeps request context for a synchronous inline handler that returns a promise', async () => {
+    const [{ createStacksRouter }, { getCurrentRequest }] = await Promise.all([
+      import('../src'),
+      import('../src/request-context'),
+    ])
+    const direct = createStacksRouter({ csrf: false, requestIds: false })
+    direct.get('/_hot/native-promise-returning', request => Promise.resolve().then(() => ({
+      contextMatches: getCurrentRequest() === request,
+    })))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const answer = await fetch(`http://127.0.0.1:${nativeServer.port}/_hot/native-promise-returning`)
+
+      expect(answer.status).toBe(200)
+      expect(await answer.json()).toEqual({ contextMatches: true })
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('keeps a user-built native Response synchronous', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter()

@@ -257,7 +257,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
   return hasEligibleRoute
 }
 
-import { runWithRequestArgument, runWithRequestArguments } from './request-context'
+import { runWithRequestArguments } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
@@ -301,6 +301,18 @@ function rememberStacksRouteHandler(handler: RouteHandlerFn): RouteHandlerFn {
  * by then `formatResult` has already run.
  */
 type InlineRouteHandler = (_req: EnhancedRequest) => ActionResult | Promise<ActionResult>
+
+/** Format an inline result without retaining one wrapper closure per route. */
+function invokeInlineHandler(
+  req: EnhancedRequest,
+  handler: InlineRouteHandler,
+  _unused: undefined,
+): Response | Promise<Response> {
+  const result = handler(req)
+  if (result instanceof Promise)
+    return result.then(value => formatResult(value, req))
+  return formatResult(result, req)
+}
 
 /**
  * The same, with `request.params` narrowed to what the path declares.
@@ -1744,8 +1756,6 @@ function finishSynchronousResult(
  * Create a wrapped handler with middleware support
  */
 function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
-  // Create the base handler with skipParsing=true since we'll do it ourselves
-  const wrappedBase = wrapHandler(handler, true, routeKey)
   const routeState = routeStates.get(routeKey)
 
   /*
@@ -1773,10 +1783,17 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
   const handlerKey = typeof handler === 'string' ? handler : undefined
   const synchronousInlineHandler = typeof handler === 'function'
     && handler.constructor.name !== 'AsyncFunction'
+    ? handler as InlineRouteHandler
+    : undefined
   const asynchronousInlineHandler = typeof handler === 'function'
     && handler.constructor.name === 'AsyncFunction'
     ? handler as InlineRouteHandler
     : undefined
+  // Inline handlers use their shared formatter below. String handlers and
+  // direct actions still need their specialized wrapper.
+  const wrappedBase = typeof handler === 'function'
+    ? undefined
+    : wrapHandler(handler, true, routeKey)
 
   /*
    * Pre-resolve string handlers so action-level CSRF flags (skipCsrf) are
@@ -1867,7 +1884,13 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       && !routeState?.middleware?.length
       && !routeState?.rateLimit
     ) {
-      preparedBaseResult = runWithRequestArgument(enhancedReq, wrappedBase, enhancedReq)
+      preparedBaseResult = runWithRequestArguments(
+        enhancedReq,
+        invokeInlineHandler,
+        enhancedReq,
+        synchronousInlineHandler,
+        undefined,
+      )
       hasPreparedBaseResult = true
       if (preparedBaseResult instanceof Response) {
         const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter, routeSeedsCsrf)
@@ -2168,7 +2191,9 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
         ? preparedBaseResult!
         : asynchronousInlineHandler
           ? asynchronousInlineHandler(enhancedReq)
-          : wrappedBase(enhancedReq)
+          : synchronousInlineHandler
+            ? invokeInlineHandler(enhancedReq, synchronousInlineHandler, undefined)
+            : wrappedBase!(enhancedReq)
       const resolvedResult = baseResult instanceof Response ? baseResult : await baseResult
       let response = formatsResolvedInlineResult
         ? formatResult(resolvedResult, enhancedReq)
@@ -2385,7 +2410,13 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
 
     let preparedBaseResult: Response | Promise<Response>
     try {
-      preparedBaseResult = runWithRequestArgument(req, wrappedBase, req)
+      preparedBaseResult = runWithRequestArguments(
+        req,
+        invokeInlineHandler,
+        req,
+        synchronousInlineHandler,
+        undefined,
+      )
     }
     catch (error) {
       return Promise.reject(error)
