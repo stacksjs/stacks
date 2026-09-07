@@ -41,6 +41,7 @@ export interface RunMeta {
   runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
+  publicationIssues?: string[]
   connections: number
   warmupSeconds: number
   durationSeconds: number
@@ -86,6 +87,10 @@ export function renderReport(input: ReportInput): string {
     lines.push('> **Direction-only.** This run used the harness\'s built-in Bun load generator, which')
     lines.push('> shares the machine and the runtime with the server under test. Use `oha` or')
     lines.push('> `bombardier` for any number that leaves this directory.')
+    lines.push('')
+  }
+  if (meta.publicationIssues?.length) {
+    lines.push(`> **Publication blockers.** ${meta.publicationIssues.join('; ')}.`)
     lines.push('')
   }
   const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)

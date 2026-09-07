@@ -84,4 +84,19 @@ describe('routing benchmark report', () => {
     expect(report).toContain('built-in Bun load generator')
     expect(report).toContain('| Load generator | `builtin` (direction-only) |')
   })
+
+  test('lists publication blockers', () => {
+    const report = renderReport({
+      meta: {
+        ...meta,
+        publishable: false,
+        publicationIssues: ['BENCH_DEDICATED=1 is not set', 'measurement window is 3s; at least 30s is required'],
+      },
+      scenarios: [],
+      targets: [],
+      measurements: [],
+    })
+
+    expect(report).toContain('**Publication blockers.** BENCH_DEDICATED=1 is not set; measurement window is 3s; at least 30s is required.')
+  })
 })

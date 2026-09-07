@@ -26,6 +26,7 @@ import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
+import { routingPublicationIssues } from './publication'
 import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { rotateTargets } from './schedule'
@@ -149,12 +150,24 @@ async function main(): Promise<void> {
   const rawDir = join(outDir, 'raw')
   mkdirSync(rawDir, { recursive: true })
 
+  const publicationProfile = {
+    driverPublishable: driver.publishable,
+    dedicated: process.env.BENCH_DEDICATED === '1',
+    runtimeRequirement,
+    source,
+    warmupSeconds: opts.warmupSeconds,
+    durationSeconds: opts.durationSeconds,
+    runs: opts.runs,
+    busyHostProcesses: [...observedBusyProcesses.values()],
+  }
+  const publicationIssues = routingPublicationIssues(publicationProfile)
   const meta: RunMeta = {
     startedAt,
     source,
     runtimeRequirement,
     driver: driver.name,
-    publishable: driver.publishable && observedBusyProcesses.size === 0,
+    publishable: publicationIssues.length === 0,
+    publicationIssues,
     connections: opts.connections,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
@@ -171,8 +184,8 @@ async function main(): Promise<void> {
     },
   }
 
-  if (!driver.publishable)
-    console.error('[bench] using the built-in generator — direction-only, do not publish these numbers')
+  if (!meta.publishable)
+    console.error(`[bench] direction-only: ${publicationIssues.join('; ')}`)
 
   const measurements: Measurement[] = []
   const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
@@ -191,8 +204,9 @@ async function main(): Promise<void> {
 
         await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
         meta.busyHostProcesses = [...observedBusyProcesses.values()]
-        if (observedBusyProcesses.size > 0)
-          meta.publishable = false
+        publicationProfile.busyHostProcesses = meta.busyHostProcesses
+        meta.publicationIssues = routingPublicationIssues(publicationProfile)
+        meta.publishable = meta.publicationIssues.length === 0
 
         // A fresh process keeps route-table size, database imports, and warm
         // state from one measurement out of every other measurement. Rotating

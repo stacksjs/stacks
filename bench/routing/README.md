@@ -72,6 +72,11 @@ Use a dedicated or reserved instance, and run the load generator on a different
 machine from the server — a generator competing for the server's cores
 understates the server, every time.
 
+Set `BENCH_DEDICATED=1` only on that dedicated server. The runner additionally
+requires a clean identified revision, the configured Bun runtime, at least 5
+seconds of warm-up, 30 measured seconds, three repeats, and no observed busy
+process. Reports list every unmet publication prerequisite.
+
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the actual runtime version and warns
 when they differ. Alternate runtimes are allowed for explicit runtime comparisons:
