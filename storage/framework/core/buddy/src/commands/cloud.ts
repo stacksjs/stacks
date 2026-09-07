@@ -434,6 +434,198 @@ export async function destroyEffects(tsCloudConfig: any, current: any, environme
   return effects
 }
 
+/**
+ * The side effects a site move needs, wired to two boxes of this project's fleet.
+ *
+ * Everything here is the SAME primitive the deploy path uses, deliberately: the
+ * DNS cutover is `reconcileHetznerDns`, the gateway refresh is the rpx fragment
+ * refresh, the certificates are ts-cloud's own pack/unpack scripts. A move that
+ * published its hostnames differently from a deploy would be a second answer to
+ * "which names does this site serve", and the two would drift.
+ *
+ * The archive is carried THROUGH the operator rather than box-to-box: a direct
+ * hop needs the source to hold a key for the target, which is a trust
+ * relationship a move should not create on its own.
+ */
+async function moveEffects(context: {
+  tsCloudConfig: any
+  slug: string
+  siteName: string
+  rawSite: any
+  source: any
+  target: any
+  hostnames: string[]
+}): Promise<any> {
+  const { slug, siteName, rawSite, source, target, tsCloudConfig } = context
+  const {
+    buildCertificatePackScript,
+    buildCertificateStateScript,
+    buildCertificateUnpackScript,
+    buildRpxConfig,
+    buildRpxFragmentRefreshScript,
+    buildSshArgs,
+    certificatesMatch,
+    DEFAULT_RPX_CERTS_DIR,
+    parseCertificateState,
+    probeHostRoutes,
+    sshExec,
+    sshExecOrThrow,
+  } = await import('@stacksjs/ts-cloud')
+  const { reconcileHetznerDns } = await import('./deploy')
+
+  const ssh = { user: 'root', connectTimeoutSec: 10 }
+  const runOnSource = (script: string) => sshExecOrThrow(source.ipv4, script, ssh)
+  const runOnTarget = (script: string) => sshExecOrThrow(target.ipv4, script, ssh)
+
+  /** Stream a file from one box to the other through this process. */
+  async function carry(path: string): Promise<void> {
+    const args = buildSshArgs(ssh, 'ssh')
+    const reader = Bun.spawn(['ssh', ...args, `root@${source.ipv4}`, `cat ${path}`], { stdout: 'pipe', stderr: 'pipe' })
+    const writer = Bun.spawn(['ssh', ...args, `root@${target.ipv4}`, `cat > ${path}`], {
+      stdin: reader.stdout,
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+    const [readCode, writeCode] = await Promise.all([reader.exited, writer.exited])
+    if (readCode !== 0 || writeCode !== 0) {
+      const why = (await new Response(readCode === 0 ? writer.stderr : reader.stderr).text()).trim()
+      throw new Error(why || `Carrying ${path} from ${source.name} to ${target.name} failed.`)
+    }
+  }
+
+  const staged = async (path: string): Promise<boolean> =>
+    (await sshExec(target.ipv4, `test -s ${path} && echo staged`, ssh)).stdout.includes('staged')
+
+  const { siteMoveArchivePath, siteMoveCertArchivePath } = await import('@stacksjs/ts-cloud')
+  const archive = siteMoveArchivePath(slug, siteName)
+
+  const effects: Record<string, unknown> = {
+    runOnSource,
+    runOnTarget,
+    archiveStaged: () => staged(archive),
+    transferArchive: () => carry(archive),
+
+    publishedAddress: async () => {
+      const host = context.hostnames[0]
+      if (!host)
+        return undefined
+      try {
+        const { resolve4 } = await import('node:dns/promises')
+        return (await resolve4(host))[0]
+      }
+      catch {
+        // A name that does not resolve yet is not a cutover that failed - it is
+        // a cutover that has not happened, which is what the step is for.
+        return undefined
+      }
+    },
+
+    cutoverDns: async () => {
+      const warnings: string[] = []
+      const collect = new Proxy(log, {
+        get: (target_, key) => key === 'warn'
+          ? (message: string) => { warnings.push(String(message)) }
+          : (target_ as any)[key],
+      })
+      await reconcileHetznerDns(
+        { [siteName]: rawSite },
+        target.ipv4,
+        collect as typeof log,
+        target.ipv6,
+        tsCloudConfig?.infrastructure?.compute?.proxy?.autoWww,
+      )
+      return warnings
+    },
+
+    targetRoutesSite: async () => {
+      const probe = await probeHostRoutes(target, (host: string, command: string) => sshExec(host, command, ssh))
+      if (probe.unavailable)
+        return false
+      return probe.routes.some((route: any) => context.hostnames.includes(String(route.host)))
+    },
+
+    refreshTargetGateway: async () => {
+      const rpx = buildRpxConfig(tsCloudConfig?.sites ?? {}, {
+        proxy: tsCloudConfig?.infrastructure?.compute?.proxy ?? {},
+        slug,
+      })
+      await runOnTarget(buildRpxFragmentRefreshScript({ config: rpx, slug }).join('\n'))
+    },
+  }
+
+  // TLS lives in the gateway's cert directory, which belongs to the box rather
+  // than to the site: left behind, the cutover lands on a box with no
+  // certificate for the hostname and every browser refuses it.
+  const certArchive = siteMoveCertArchivePath(slug, siteName)
+  effects.certificates = {
+    inPlace: async () => {
+      const read = async (run: (script: string) => Promise<string>) =>
+        parseCertificateState(await run(buildCertificateStateScript(DEFAULT_RPX_CERTS_DIR, context.hostnames)))
+      return certificatesMatch(await read(runOnSource), await read(runOnTarget))
+    },
+    carry: async () => {
+      await runOnSource(buildCertificatePackScript(DEFAULT_RPX_CERTS_DIR, context.hostnames, certArchive))
+      await carry(certArchive)
+      await runOnTarget(buildCertificateUnpackScript(DEFAULT_RPX_CERTS_DIR, certArchive))
+    },
+  }
+
+  return effects
+}
+
+/**
+ * The box whose gateway currently answers for one of these hostnames.
+ *
+ * Asked of the boxes rather than read from config, because config says where a
+ * site is DECLARED to live and a move is about where it actually is - which are
+ * the same thing right up until the moment somebody needs to move it.
+ */
+export async function serverServing(
+  servers: any[],
+  hosts: string[],
+  probe: (server: any) => Promise<{ routes?: any[], unavailable?: string }>,
+): Promise<any | undefined> {
+  for (const candidate of servers) {
+    if (!candidate?.ipv4)
+      continue
+    const result = await probe(candidate)
+    // A box that could not be asked is not a box that said no, but it is also
+    // not an answer - so it is skipped and the operator is told to name --from.
+    if (!result.unavailable && (result.routes ?? []).some((route: any) => hosts.includes(String(route.host))))
+      return candidate
+  }
+  return undefined
+}
+
+/**
+ * The on-box engine database this project owns, when it has one.
+ *
+ * Named in `SiteMoveOptions` and NOT given effects, which is what makes
+ * `planSiteMove` refuse: a Postgres or MySQL database lives in the engine's own
+ * data directory rather than in the site tree, so moving the tree alone would
+ * pass every check in the plan - the app starts, answers its health gate, takes
+ * the DNS cutover - and then serve production an empty database. Carrying one
+ * needs a dump, a role, and a restore on the target, and until that exists the
+ * honest answer is to refuse the move rather than to make it silently.
+ *
+ * SQLite is not this case: it lives under `shared/`, which the tree carries
+ * already. An external database is not either - the target reaches the same
+ * endpoint the source did.
+ */
+export async function onBoxDatabase(tsCloudConfig: any): Promise<{ name: string } | undefined> {
+  const { isLocalDatabase, resolveAppDatabase } = await import('@stacksjs/ts-cloud')
+  const database = resolveAppDatabase(tsCloudConfig)
+  if (!database || !isLocalDatabase(database))
+    return undefined
+
+  const engine = String((database as any).engine || (database as any).driver || '')
+  if (engine === 'sqlite' || engine === 'better-sqlite3')
+    return undefined
+
+  const name = String((database as any).name || '')
+  return name ? { name } : undefined
+}
+
 /** Only an SSH-deployed fleet can be listed, and saying so beats printing an empty one. */
 async function assertFleetProvider(tsCloudConfig: any, command: string): Promise<void> {
   const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
@@ -604,6 +796,12 @@ export function cloud(buddy: CLI): void {
     destroyJson: 'Emit the teardown plan as JSON',
     destroyConfirm: 'The exact server name, which an irreversible step requires before it runs',
     destroyDiscardDrained: 'Destroy it even though it still holds site trees that are somebody\'s rollback',
+    move: 'Move a deployed site to another server, cutting DNS over once the target serves it',
+    moveTo: 'Server to move the site to, by provider name or by owning project slug',
+    moveFrom: 'Server the site is on now, when more than one could be serving it',
+    moveEnv: 'Environment whose fleet and sites to move within',
+    moveJson: 'Emit the move plan as JSON',
+    moveConfirm: 'The exact site name, which the irreversible steps require before they run',
     attachServer: 'Server to attach to, by provider name or by owning project slug',
     dryRun: 'Print the plan and change nothing',
     sitesEnv: 'Environment to take the inventory for',
@@ -1593,6 +1791,157 @@ export function cloud(buddy: CLI): void {
       }
 
       await log.success(`Destroyed ${server}`)
+    })
+
+  buddy
+    .command('cloud:move <site>', descriptions.move)
+    .option('--to <server>', descriptions.moveTo)
+    .option('--from <server>', descriptions.moveFrom)
+    .option('--env [env]', descriptions.moveEnv)
+    .option('--confirm <site>', descriptions.moveConfirm)
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('-J, --json', descriptions.moveJson, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (site: string, options: CloudCliOptions & { to?: string, from?: string, confirm?: string, env?: string, dryRun?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:move` ...', options)
+
+      const {
+        applyPlan,
+        formatPlan,
+        gatewayHostnames,
+        pendingSteps,
+        planSiteMove,
+        probeHostRoutes,
+        resolveAttachTarget,
+        resolvePlan,
+        siteInstallBase,
+        sshExec,
+      } = await import('@stacksjs/ts-cloud')
+      const { loadTsCloudConfig } = await import('./deploy')
+
+      if (!options.to)
+        return await refuse('Move it where? Pass --to <name|owner-slug>. `buddy cloud:sites` lists them.')
+
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      const slug = String(tsCloudConfig?.project?.slug || 'app')
+      await assertFleetProvider(tsCloudConfig, 'cloud:move')
+
+      // Deliberately untyped: this is handed straight to ts-cloud, whose
+      // SiteConfig is the authority on the shape, and buddy re-declaring it is
+      // how the two drift.
+      const rawSite: any = (tsCloudConfig?.sites ?? {})[site]
+      if (!rawSite)
+        return await refuse(`config/cloud.ts declares no site named '${site}'.`)
+
+      const listing = await listFleet(tsCloudConfig)
+      if (listing.problem)
+        return await refuse(listing.problem)
+
+      const resolvedTarget = resolveAttachTarget(listing.servers, String(options.to), environment)
+      if ('problem' in resolvedTarget)
+        return await refuse(`${resolvedTarget.problem} \`buddy cloud:sites\` lists what is there.`)
+      const target = resolvedTarget.server
+
+      const hostnames: string[] = gatewayHostnames(
+        { [site]: rawSite },
+        { autoWww: Boolean(tsCloudConfig?.infrastructure?.compute?.proxy?.autoWww) },
+      )
+
+      const source = options.from
+        ? listing.servers.find((s: any) => s?.name === options.from)
+        : await serverServing(listing.servers, hostnames, (candidate: any) =>
+            probeHostRoutes(candidate, (host: string, command: string) => sshExec(host, command, { user: 'root', connectTimeoutSec: 10 })))
+
+      if (!source) {
+        return await refuse(
+          options.from
+            ? `No server named ${options.from}.`
+            : `Could not tell which server serves '${site}'. Pass --from <name> to say.`,
+        )
+      }
+
+      if (source.name === target.name)
+        return await refuse(`'${site}' is already on ${target.name}.`)
+      if (!source.ipv4 || !target.ipv4)
+        return await refuse(`A move needs an address for both boxes, and ${(source.ipv4 ? target : source).name} has none.`)
+
+      let plan
+      try {
+        plan = await planSiteMove(
+          {
+            slug,
+            siteName: site,
+            appBase: siteInstallBase(slug, site),
+            from: source.name,
+            to: target.name,
+            targetAddress: target.ipv4,
+            port: Number(rawSite?.port) || undefined,
+            database: await onBoxDatabase(tsCloudConfig),
+          },
+          await moveEffects({ tsCloudConfig, slug, siteName: site, rawSite, source, target, hostnames }),
+        )
+      }
+      catch (error) {
+        // Preconditions are checked while the plan is built, so this is a move
+        // that must not happen rather than one that failed part-way.
+        return await refuse(error instanceof Error ? error.message : String(error))
+      }
+
+      const resolved = await resolvePlan(plan)
+      const pending = pendingSteps(resolved)
+
+      if (options.json) {
+        console.log(JSON.stringify({
+          operation: plan.operation,
+          target: plan.target,
+          from: source.name,
+          to: target.name,
+          hostnames,
+          steps: resolved.map(entry => ({
+            id: entry.step.id,
+            title: entry.step.title,
+            state: entry.state,
+            reason: entry.reason,
+            destructive: entry.step.destructive,
+            change: entry.step.change,
+          })),
+        }, null, 2))
+        return
+      }
+
+      console.log('')
+      for (const line of formatPlan(plan, resolved))
+        console.log(line)
+      console.log('')
+
+      if (options.dryRun) {
+        await log.info(`Dry run: ${pending.length} step(s) would run. Nothing changed.`)
+        return
+      }
+
+      if (pending.length === 0) {
+        await log.success(`'${site}' is already on ${target.name}, serving and cut over.`)
+        return
+      }
+
+      const outcome = await applyPlan(plan, resolved, {
+        log: message => console.log(`  ${message}`),
+        confirm: options.confirm,
+      })
+
+      if (!outcome.success) {
+        const failed = outcome.steps.find(step => step.state === 'failed')
+        return await refuse(
+          `Stopped at: ${failed?.title ?? 'an unnamed step'}`,
+          failed?.error ?? 'The step gave no reason.',
+          `The source still holds the site's files - that is the rollback. Re-run `
+          + `\`buddy cloud:move ${site} --to ${target.name}\` to continue: completed steps skip themselves.`,
+        )
+      }
+
+      await log.success(`Moved '${site}' from ${source.name} to ${target.name}`)
+
     })
 
   onUnknownSubcommand(buddy, "cloud")

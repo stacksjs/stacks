@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **321 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **322 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 1 |
 | `auth` | 4 |
 | `build` | 16 |
-| `cloud` | 11 |
+| `cloud` | 12 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `commerce` | 2 |
@@ -631,6 +631,25 @@ Invalidate the CloudFront cache
 | --- | --- | --- | --- |
 | `--paths` | The paths to invalidate | value, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:move`
+
+Move a deployed site to another server, cutting DNS over once the target serves it
+
+- Usage: `$ buddy cloud:move <site>`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: `<site>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--to` | Server to move the site to, by provider name or by owning project slug | value, required | - |
+| `--from` | Server the site is on now, when more than one could be serving it | value, required | - |
+| `--env` | Environment whose fleet and sites to move within | value, optional | - |
+| `--confirm` | The exact site name, which the irreversible steps require before they run | value, required | - |
+| `--dry-run` | Print the plan and change nothing | boolean, optional | `false` |
+| `-J`, `--json` | Emit the move plan as JSON | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:optimize-cost`

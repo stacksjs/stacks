@@ -4638,7 +4638,16 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
   }
 }
 
-async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string, autoWww?: boolean): Promise<string[]> {
+/**
+ * Publish A (and AAAA) records for every hostname the gateway will answer for
+ * `sites`, at `ip`, and report the FQDNs this run actually created.
+ *
+ * Exported because a DNS cutover is not only part of a deploy: `cloud:move`
+ * repoints a site at another box with exactly this reconciliation, and a second
+ * implementation of "which names does this site publish, and at which
+ * registrar" is the drift this function exists to prevent.
+ */
+export async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string, autoWww?: boolean): Promise<string[]> {
   // FQDNs this run actually published, so the caller can re-issue TLS for
   // names that did not resolve when the gateway was last reloaded.
   const published: string[] = []
