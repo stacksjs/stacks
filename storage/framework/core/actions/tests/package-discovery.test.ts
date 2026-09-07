@@ -16,7 +16,7 @@
  * not finding the package at all.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { discoverPackages } from '../src/discover-packages'
@@ -188,5 +188,47 @@ describe('package discovery', () => {
     // `generated_at` moves on every run, so comparing whole manifests would
     // dirty a committed file on every boot.
     expect(second.generated_at).toBe(first.generated_at)
+  })
+
+  test('leaves the manifest file untouched when the set is unchanged', async () => {
+    // The returned manifest being equal is not the same claim as the file not
+    // being written. Rewriting identical bytes would satisfy the test above
+    // and still move the mtime - and `autoImportsAreStale()` reads that mtime
+    // to decide whether the package set moved, so a no-op rewrite here means
+    // every boot regenerates the whole auto-import barrel.
+    app({ name: 'my-app', dependencies: { loghq: '^1.0.0' } })
+    pkg('node_modules/loghq', { name: 'loghq', stacks: { name: 'loghq' } })
+    const manifestPath = join(project, 'manifest.json')
+
+    await discoverPackages({ projectRoot: project, manifestPath })
+
+    // Backdated rather than slept on, so the assertion cannot pass by two
+    // writes landing inside one filesystem timestamp tick.
+    const past = new Date(Date.now() - 60_000)
+    utimesSync(manifestPath, past, past)
+    const before = statSync(manifestPath).mtimeMs
+
+    await discoverPackages({ projectRoot: project, manifestPath })
+
+    expect(statSync(manifestPath).mtimeMs).toBe(before)
+  })
+
+  test('moves the manifest mtime when a package is installed', async () => {
+    // The other half: the mtime has to actually move when the set changes, or
+    // a newly installed package's models never reach the barrel.
+    app({ name: 'my-app', dependencies: { loghq: '^1.0.0' } })
+    pkg('node_modules/loghq', { name: 'loghq', stacks: { name: 'loghq' } })
+    const manifestPath = join(project, 'manifest.json')
+
+    await discoverPackages({ projectRoot: project, manifestPath })
+    const past = new Date(Date.now() - 60_000)
+    utimesSync(manifestPath, past, past)
+    const before = statSync(manifestPath).mtimeMs
+
+    app({ name: 'my-app', dependencies: { loghq: '^1.0.0', bughq: '^1.0.0' } })
+    pkg('node_modules/bughq', { name: 'bughq', stacks: { name: 'bughq' } })
+    await discoverPackages({ projectRoot: project, manifestPath })
+
+    expect(statSync(manifestPath).mtimeMs).toBeGreaterThan(before)
   })
 })

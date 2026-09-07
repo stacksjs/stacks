@@ -42,6 +42,22 @@ const hostname = resolveApiHost()
 // "missing" alone was the other extreme, and left projects running a
 // manifest that still described files renamed or deleted months earlier.
 // initiateImports() handles live updates under the bundler plugin.
+//
+// Discovery runs FIRST. The barrel now includes the models an installed
+// package ships, so building it from a manifest written before the package
+// was installed produces a barrel missing them - and the staleness check
+// below is what decides whether to rebuild, so it has to be looking at a
+// current manifest when it does. Ordered the other way round, `bun add loghq`
+// needs two boots before its models resolve.
+try {
+  const { discoverPackages } = await import('../discover-packages')
+  await discoverPackages()
+}
+catch {
+  // A project without the actions package, or an unreadable pantry: the
+  // application's own models are unaffected and boot continues.
+}
+
 const modelsIndex = path.storagePath('framework/auto-imports/models.ts')
 if (!existsSync(modelsIndex) || autoImportsAreStale())
   await generateAutoImportFiles()
