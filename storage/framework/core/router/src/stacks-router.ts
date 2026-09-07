@@ -18,10 +18,9 @@ import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync } from 'node:fs'
 import { timingSafeEqual } from 'node:crypto'
-import { collect } from '@stacksjs/collections'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
-import { UploadedFile } from '@stacksjs/storage/uploaded-file'
+import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
 import { applyRequestEnhancements, applyResponseCompression, Router, runWithRequest as runWithBunRouterRequest } from '@stacksjs/bun-router'
 import { checkApplicationHealth } from './health'
 
@@ -3584,6 +3583,12 @@ const nativeRequestArrayBuffer = Request.prototype.arrayBuffer
 const nativeRequestBlob = Request.prototype.blob
 const nativeRequestClone = Request.prototype.clone
 const requestBodyEncoder = new TextEncoder()
+let UploadedFileConstructor: typeof import('@stacksjs/storage/uploaded-file').UploadedFile | undefined
+
+function createUploadedFile(file: File): UploadedFile {
+  UploadedFileConstructor ??= (require('@stacksjs/storage/uploaded-file') as typeof import('@stacksjs/storage/uploaded-file')).UploadedFile
+  return new UploadedFileConstructor(file)
+}
 
 // Shared implementations of the Laravel-style request helpers. Assigned onto
 // each request by a single `Object.assign` (reference copy) instead of
@@ -3762,6 +3767,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     return enumKey in enumType ? enumType[enumKey] : null
   },
   collect(key: string) {
+    const { collect } = require('@stacksjs/collections') as typeof import('@stacksjs/collections')
     const value = getAllInputFor(this)[key]
     if (Array.isArray(value))
       return collect(value)
@@ -3854,7 +3860,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (!file)
       return null
     const rawFile = Array.isArray(file) ? file[0] : file
-    return rawFile ? new UploadedFile(rawFile) : null
+    return rawFile ? createUploadedFile(rawFile) : null
   },
   getFiles(key: string) {
     const files = (this.files || {}) as Record<string, File | File[]>
@@ -3862,7 +3868,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (!file)
       return []
     const fileArray = Array.isArray(file) ? file : [file]
-    return fileArray.map(f => new UploadedFile(f))
+    return fileArray.map(createUploadedFile)
   },
   hasFile(key: string) {
     const files = (this.files || {}) as Record<string, File | File[]>
@@ -3873,9 +3879,9 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     const result: Record<string, UploadedFile | UploadedFile[]> = {}
     for (const [key, value] of Object.entries(files)) {
       if (Array.isArray(value))
-        result[key] = value.map(f => new UploadedFile(f as File))
+        result[key] = value.map(f => createUploadedFile(f as File))
       else
-        result[key] = new UploadedFile(value as File)
+        result[key] = createUploadedFile(value as File)
     }
     return result
   },
