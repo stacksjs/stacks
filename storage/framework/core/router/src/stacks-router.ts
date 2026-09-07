@@ -1290,6 +1290,33 @@ export async function middlewareAliases(): Promise<Record<string, string>> {
 }
 
 /**
+ * Load the application's middleware behind every alias and class name.
+ *
+ * The returned values are the same class-style handlers used by API routes.
+ * Renderers such as stx can therefore use `app/Middleware.ts` and
+ * `app/Middleware/*.ts` as the single middleware registry instead of asking
+ * the application to define a second set of anonymous page-only functions.
+ */
+export async function loadMiddlewareHandlers(): Promise<Record<string, MiddlewareHandler>> {
+  const aliases = await getMiddlewareAliases()
+  const generated = await getMiddlewareRegistry()
+  const references = new Set([
+    ...Object.keys(aliases),
+    ...Object.values(aliases),
+    ...Object.keys(generated ?? {}),
+  ])
+  const handlers: Record<string, MiddlewareHandler> = {}
+
+  await Promise.all([...references].map(async (reference) => {
+    const handler = await loadMiddleware(reference)
+    if (handler)
+      handlers[reference] = handler
+  }))
+
+  return handlers
+}
+
+/**
  * Negated middleware, by the name of the middleware being negated.
  *
  * Kept separate from `middlewareCache` so `'auth'` and `'!auth'` never collide,

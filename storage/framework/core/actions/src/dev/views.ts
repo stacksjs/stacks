@@ -8,6 +8,7 @@ import { projectPath, siteConfigPath } from '@stacksjs/path'
 import { seedCsrfPageResponse } from './csrf'
 import { resolveDefaultsResources } from './defaults-resources'
 import { exitWithParent } from './exit-with-parent'
+import type { EnhancedRequest } from '@stacksjs/router'
 
 /**
  * Boot the views/SSR dev server.
@@ -178,7 +179,9 @@ async function startDefaultServer() {
   // Cookie name the SPA writes when a user logs in. Defaults to whatever
   // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
   const { authCookieName, stxPageAuthMiddleware } = await import('@stacksjs/auth')
+  const { enhanceRequest, loadMiddlewareHandlers } = await import('@stacksjs/router')
   const authCookie = authCookieName()
+  const pageMiddleware = await loadMiddlewareHandlers()
 
   // Which of the framework's default views this app serves (#2237). Defaults
   // to all of them, so an app that says nothing is unaffected.
@@ -218,7 +221,11 @@ async function startDefaultServer() {
     // Override stx-serve's built-in `auth`/`guest` gate, which only checks
     // that the cookie EXISTS — `document.cookie = 'auth-token=x'` satisfied
     // it (stacksjs/stacks#2274). These validate the token like a bearer.
-    middleware: stxPageAuthMiddleware({ cookieName: authCookie, redirectTo: '/login' }),
+    middleware: {
+      ...pageMiddleware,
+      ...stxPageAuthMiddleware({ cookieName: authCookie, redirectTo: '/login' }),
+    },
+    prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
     onRequest: async (req: Request) => {
       const url = new URL(req.url)
 

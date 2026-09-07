@@ -155,6 +155,29 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 })
 ```
 
+### STX Pages
+
+The frontend and API share the same middleware definitions. Stacks loads the
+aliases from `app/Middleware.ts` and the class-style handlers from
+`app/Middleware/` into the normal stx dev and production page servers.
+
+Declare an alias from that registry in a page's server metadata:
+
+```stx
+<script server>
+definePageMeta({ middleware: ['auth', 'verified', 'role:admin'] })
+</script>
+```
+
+Do not create a second frontend-only middleware registry. A custom middleware
+is defined once with `new Middleware({ name, priority, handle })`, added to
+`app/Middleware.ts`, and may then guard an API route, an stx page, or both.
+
+STX prepares the incoming request with the same EnhancedRequest helpers before
+calling `handle`, sorts the combined page chain by priority, writes parameters
+to `request._middlewareParams`, supports exact aliases containing colons and
+`!alias` inversion, and fails closed when an alias is missing.
+
 Group middleware is prepended to all routes inside the callback. Groups can be nested — middleware accumulates.
 
 ### Parameterized Middleware

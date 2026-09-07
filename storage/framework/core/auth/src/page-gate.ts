@@ -40,7 +40,10 @@ export interface PageGateOptions {
   validate?: (token: string) => Promise<unknown>
 }
 
-type StxPageMiddleware = (req: Request, ctx: StxPageContext) => Promise<Response | null>
+// eslint-disable-next-line pickier/no-unused-vars
+type StxPageMiddleware = ((request: Request, context: StxPageContext) => Promise<Response | null>) & {
+  priority: number
+}
 
 /**
  * The `middleware` map to pass to stx-serve, overriding its existence-only
@@ -66,21 +69,21 @@ export function stxPageAuthMiddleware(options: PageGateOptions = {}): Record<'au
     }
   }
 
-  return {
-    auth: async (_req, ctx) => {
+  const auth = Object.assign(async (_req: Request, ctx: StxPageContext) => {
       if (await signedInUser(ctx))
         return null
 
       return ctx.redirect(redirectTo)
-    },
+  }, { priority: 1 })
 
-    guest: async (_req, ctx) => {
+  const guest = Object.assign(async (_req: Request, ctx: StxPageContext) => {
       // Only a VALID session bounces a visitor off a guest page — a stale
       // or forged cookie no longer locks a signed-out browser out of /login.
       if (await signedInUser(ctx))
         return Response.redirect(home, 302)
 
       return null
-    },
-  }
+  }, { priority: 1 })
+
+  return { auth, guest }
 }

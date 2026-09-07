@@ -28,6 +28,13 @@ function validatorAccepting(validToken: string) {
 }
 
 describe('stxPageAuthMiddleware', () => {
+  it('runs auth and guest at the same priority as the shared API middleware', () => {
+    const { auth, guest } = stxPageAuthMiddleware()
+
+    expect(auth.priority).toBe(1)
+    expect(guest.priority).toBe(1)
+  })
+
   it('auth redirects when there is no cookie at all', async () => {
     const { auth } = stxPageAuthMiddleware({ validate: validatorAccepting('real') })
     const ctx = ctxWith({})

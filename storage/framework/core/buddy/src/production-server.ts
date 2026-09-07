@@ -7,6 +7,7 @@ import { log } from '@stacksjs/logging'
 import { siteConfigPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { resolveStxSource } from './stx-source'
+import type { EnhancedRequest } from '@stacksjs/router'
 
 /**
  * Request-scoped context (query string + parsed cookies) for `<script
@@ -224,6 +225,8 @@ export async function startProductionServer(options?: { port?: string | number, 
   // drift, and then this half kept its own.
   const { resolveDefaultsResources } = await import('@stacksjs/actions/dev/defaults-resources')
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
+  const { enhanceRequest, loadMiddlewareHandlers } = await import('@stacksjs/router')
+  const pageMiddleware = await loadMiddlewareHandlers()
   await injectGlobalAutoImports()
 
       // Resolve the stx `serve` implementation.
@@ -383,7 +386,11 @@ export async function startProductionServer(options?: { port?: string | number, 
         // satisfied it (stacksjs/stacks#2274). These validate the token like
         // a bearer. Mirrors the dev views server so a page gated under
         // `buddy dev` is gated identically under `buddy serve`.
-        middleware: stxPageAuthMiddleware(),
+        middleware: {
+          ...pageMiddleware,
+          ...stxPageAuthMiddleware(),
+        },
+        prepareMiddlewareRequest: (request: Request) => enhanceRequest(request as EnhancedRequest),
         // Maintenance / coming-soon gate runs first so it intercepts every
         // request. The gate allowlists `/coming-soon`, the secret bypass URL,
         // and static assets, so the holding page renders and visitors with a

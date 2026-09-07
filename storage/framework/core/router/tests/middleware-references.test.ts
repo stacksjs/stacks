@@ -22,7 +22,7 @@
 import { afterAll, beforeEach, describe, expect, test } from 'bun:test'
 import { config, overridesReady } from '@stacksjs/config'
 import { appPath } from '@stacksjs/path'
-import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware, middlewareAliases } from '../src/stacks-router'
+import { clearMiddlewareCache, clearRouteMiddlewareRegistry, createStacksRouter, findUnresolvableRouteMiddleware, loadMiddlewareHandlers, middlewareAliases } from '../src/stacks-router'
 import defaultAliases from '../../../defaults/app/Middleware'
 
 beforeEach(async () => {
@@ -252,5 +252,15 @@ describe('the alias map merges over the framework defaults', () => {
 
     const unresolvable = await findUnresolvableRouteMiddleware()
     expect(unresolvable.map(u => u.alias)).not.toContain('EnvNotProduction')
+  })
+
+  test('page renderers receive the same handlers under aliases and class names', async () => {
+    const handlers = await loadMiddlewareHandlers()
+
+    expect(handlers.auth).toBeDefined()
+    expect(handlers.Auth).toBe(handlers.auth)
+    expect(handlers.auth?.priority).toBe(1)
+    expect(typeof handlers.auth?.handle).toBe('function')
+    expect(handlers.EnvNotProduction).toBeDefined()
   })
 })

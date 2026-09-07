@@ -170,7 +170,7 @@
         "@stacksjs/types": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/whois": "workspace:*",
-        "bun-plugin-stx": "^0.2.274"
+        "bun-plugin-stx": "^0.2.279"
       },
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
@@ -357,7 +357,7 @@
         "@stacksjs/validation": "^0.74.27",
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
-        "bun-plugin-stx": "^0.2.274",
+        "bun-plugin-stx": "^0.2.279",
         "ts-pantry": "^0.11.35"
       },
       "devDependencies": {
@@ -1488,7 +1488,7 @@
         "@stacksjs/types": "workspace:*",
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/whois": "workspace:*",
-        "bun-plugin-stx": "^0.2.274"
+        "bun-plugin-stx": "^0.2.279"
       },
       "peerDependencies": {
         "craft-native": ">=0.0.72",
@@ -1691,7 +1691,7 @@
         "@stacksjs/validation": "^0.74.27",
         "ajv": "^8.20.0",
         "ajv-formats": "^3.0.1",
-        "bun-plugin-stx": "^0.2.274",
+        "bun-plugin-stx": "^0.2.279",
         "ts-pantry": "^0.11.35"
       },
       "bin": {
@@ -3053,12 +3053,12 @@
         "@stacksjs/dtsx": "0.11.10"
       }
     },
-    "bun-plugin-stx@0.2.274": {
+    "bun-plugin-stx@0.2.279": {
       "name": "bun-plugin-stx",
-      "version": "0.2.274",
+      "version": "0.2.279",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.274.tgz",
-      "integrity": "sha512-IHbyzD3sM3Aswju9LGPPJjVIdbBxaBajIODmxKuGsTIL+WueMOFNrpur5JqrdoAeoJ1XCKXIlfw95bAnsWgzBA==",
+      "resolved": "https://registry.npmjs.org/bun-plugin-stx/-/bun-plugin-stx-0.2.279.tgz",
+      "integrity": "sha512-khLwSARx9bxYUgvt9LEfmlYhUdllWoZXmKPcGcnQ5AUeBxcEvpCddTVl/u01MNnZQiY7K8jJjxkhQt/w5v5MTQ==",
       "dependencies": {
         "@stacksjs/stx": "^0.2.227",
         "stx-router": "^0.2.227"
