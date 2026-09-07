@@ -45,6 +45,7 @@ These are the fields the framework reads today.
 | `routeMiddleware` | `string \| string[]` | Middleware applied to every one of those routes. |
 | `views` | `string \| string[]` | Template directories. Appended after the application's own, so nothing that already resolves changes. |
 | `migrations` | `string \| string[]` | SQL migration directories. Defaults to `database/migrations`. |
+| `components` | `string \| string[]` | stx component directories. **No default - must be declared.** |
 | `name` | `string` | Stack extension name, for a package that provides whole top-level directories. |
 | `description` | `string` | Stack extension description. |
 | `directories` | `string[]` | Which top-level directories a stack extension provides. |
@@ -61,11 +62,31 @@ paths.
 to fall back to, and registering every `.ts` file under a package's `routes/`
 directory would register whatever a package happened to leave there.
 
+### Components are opt-in
+
+Every other surface here has a conventional default. `components` deliberately
+does not, and a package contributes none unless it declares them:
+
+```json
+{ "stacks": { "components": ["resources/components"] } }
+```
+
+The others are namespaced at the point of use. A view is reached by its path, a
+model by its name, a migration by its filename, so a directory picked up by
+convention stays inert until something asks for it. A component is reached by
+bare tag name across every template the process renders, so implying
+`resources/components` would enrol any package that happens to have that
+directory into global tag resolution.
+
+Package components are **additive**. The framework's own components are
+searched first, so a package answers for a tag nothing else defines and cannot
+replace one the framework already provides.
+
 ### Declared but not yet read
 
-`PackageStacksMeta` also accepts `providers`, `components`, `commands` and
-`middleware`. Nothing consumes them yet. They are reserved rather than
-functional, and a package that sets one today gets no behaviour from it.
+`PackageStacksMeta` also accepts `providers`, `commands` and `middleware`.
+Nothing consumes them yet. They are reserved rather than functional, and a
+package that sets one today gets no behaviour from it.
 
 ## The manifest
 
