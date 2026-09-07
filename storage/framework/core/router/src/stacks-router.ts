@@ -1759,6 +1759,24 @@ function finishSynchronousResult(
   return finalized
 }
 
+function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnabled: boolean): number {
+  const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
+  let flags = 0
+  if (csrfEnabled && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE'))
+    flags |= ROUTE_ACCEPTS_CSRF
+  if (routeMethod !== 'GET' && routeMethod !== 'HEAD')
+    flags |= ROUTE_MAY_HAVE_BODY
+  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD'))
+    flags |= ROUTE_RENDERS_CSRF
+  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'))
+    flags |= ROUTE_SEEDS_CSRF
+  if (routeApiResponseRegistry?.has(routeKey))
+    flags |= ROUTE_FORCES_JSON
+  if (isRouterAction(handler) && (handler.skipCsrf === true || handler.csrf === false))
+    flags |= ROUTE_ACTION_SKIPS_CSRF
+  return flags
+}
+
 /**
  * Create a wrapped handler with middleware support
  */
@@ -1775,23 +1793,7 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
    * still mutate after registration (`.middleware()`, `.skipCsrf()`,
    * `.rateLimit()`) are retained as route-owned state so updates stay live.
    */
-  const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-  let routeFlags = 0
-  if (csrfEnabled && (routeMethod === 'POST' || routeMethod === 'PUT' || routeMethod === 'PATCH' || routeMethod === 'DELETE'))
-    routeFlags |= ROUTE_ACCEPTS_CSRF
-  if (routeMethod !== 'GET' && routeMethod !== 'HEAD')
-    routeFlags |= ROUTE_MAY_HAVE_BODY
-  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD'))
-    routeFlags |= ROUTE_RENDERS_CSRF
-  if (csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'))
-    routeFlags |= ROUTE_SEEDS_CSRF
-  if (routeApiResponseRegistry?.has(routeKey))
-    routeFlags |= ROUTE_FORCES_JSON
-  // Direct actions are already resolved and immutable, so retain their CSRF
-  // flag now. Only string actions need the shared cache that their lazy import
-  // fills later.
-  if (isRouterAction(handler) && (handler.skipCsrf === true || handler.csrf === false))
-    routeFlags |= ROUTE_ACTION_SKIPS_CSRF
+  const routeFlags = routeCapabilityFlags(routeKey, handler, csrfEnabled)
   const handlerKey = typeof handler === 'string' ? handler : undefined
   const synchronousInlineHandler = typeof handler === 'function'
     && handler.constructor.name !== 'AsyncFunction'
