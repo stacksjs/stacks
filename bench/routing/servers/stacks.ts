@@ -22,6 +22,7 @@ import process from 'node:process'
 import { createStacksRouter, disableViewRouting } from '@stacksjs/router'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
+const hostname = '127.0.0.1'
 const minimal = process.env.BENCH_MODE === 'minimal'
 const withDb = process.env.BENCH_DB === '1'
 const sqliteProfile = process.env.BENCH_SQLITE_PROFILE ?? 'stock'
@@ -95,5 +96,5 @@ if (withDb && serves('db-roundtrip')) {
   })
 }
 
-const server = await router.serve({ port })
+const server = await router.serve({ port, hostname })
 console.error(`[bench] stacks (${minimal ? 'minimal' : 'secure'}) listening on ${server.port}`)

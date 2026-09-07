@@ -11,6 +11,7 @@
 import process from 'node:process'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
+const hostname = '127.0.0.1'
 const withDb = process.env.BENCH_DB === '1'
 const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
@@ -56,5 +57,5 @@ if (withDb && serves('db-roundtrip')) {
   })
 }
 
-Bun.serve({ port, fetch: app.fetch })
+Bun.serve({ port, hostname, fetch: app.fetch })
 console.error(`[bench] hono listening on ${port}`)

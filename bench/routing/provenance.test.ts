@@ -69,4 +69,12 @@ describe('Stacks benchmark source provenance', () => {
       expect(source).toContain('name: row.name')
     }
   })
+
+  it('binds every benchmark server to the same loopback interface', () => {
+    for (const server of ['bun-raw.ts', 'elysia.ts', 'express.ts', 'fastify.ts', 'hono.ts', 'stacks.ts']) {
+      const source = readFileSync(join(import.meta.dir, 'servers', server), 'utf8')
+      expect(source).toContain("const hostname = '127.0.0.1'")
+      expect(source.match(/\bhostname\b/g)?.length).toBeGreaterThanOrEqual(2)
+    }
+  })
 })
