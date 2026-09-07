@@ -1035,7 +1035,11 @@ export function cloud(buddy: CLI): void {
     .alias('cloud:rm')
     .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
-    .option('--force', 'Force deletion of stack in bad state', { default: false })
+    // No `--force`: it was declared for a year and read by nothing, so a stack
+    // stuck in DELETE_FAILED failed the same way with or without it. Forcing
+    // past that means retaining the resources CloudFormation could not delete,
+    // which `undeployStack` has no notion of - a feature to build, not a flag
+    // to leave lying around promising it.
     .option('--yes', 'Skip confirmation prompts', { default: false })
     // .option('--realtime-cdn-logs', 'Remove the CDN Realtime Log Stream', { default: false }) // TODO: implement this
     .option('-p, --project [project]', descriptions.project, { default: false })

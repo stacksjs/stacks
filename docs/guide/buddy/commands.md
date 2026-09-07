@@ -679,7 +679,6 @@ Remove the Stacks Cloud. In case it fails, try again
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--jump-box` | Remove the jump-box | boolean, optional | `false` |
-| `--force` | Force deletion of stack in bad state | boolean, optional | `false` |
 | `--yes` | Skip confirmation prompts | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
@@ -4935,16 +4934,12 @@ Generate the types of & for your library/libraries
 
 ### `unlink:core`
 
-Go back to the installed @stacksjs/* packages
+Go back to the installed @stacksjs/* packages (all of them, unless you name some)
 
 - Usage: `$ buddy unlink:core [...packages]`
 - Namespace: `unlink`
 - Aliases: none
 - Arguments: `[packages...]`
-
-| Option | Description | Contract | Default |
-| --- | --- | --- | --- |
-| `--all` | Unlink everything that was linked | boolean, optional | `false` |
 
 Examples:
 

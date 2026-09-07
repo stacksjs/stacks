@@ -200,10 +200,9 @@ export function link(buddy: CLI): void {
     })
 
   buddy
-    .command('unlink:core [...packages]', 'Go back to the installed @stacksjs/* packages')
-    .option('--all', 'Unlink everything that was linked', { default: false })
+    .command('unlink:core [...packages]', 'Go back to the installed @stacksjs/* packages (all of them, unless you name some)')
     .example('buddy unlink:core')
-    .action(async (packages: string[] | undefined, _options?: { all?: boolean }) => {
+    .action(async (packages: string[] | undefined) => {
       const record = readRecord()
       const modulesDir = join(process.cwd(), 'node_modules')
 
