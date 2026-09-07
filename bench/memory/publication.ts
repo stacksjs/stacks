@@ -4,6 +4,7 @@ import type { ScenarioParityEvidence } from '../routing/runtime'
 import type { SourceState } from '../routing/source'
 import type { MemoryMeasurement } from './report'
 import { selectedPeerPackages } from '../routing/peer-versions'
+import { STACKS_RUNTIME_PACKAGES } from '../routing/provenance'
 import { isValidParityEvidence } from '../routing/runtime'
 import { MAX_STABLE_RANGE, relativeRange } from '../routing/statistics'
 import { EQUAL_RATE_API_PROFILE } from './profile'
@@ -26,6 +27,7 @@ export interface MemoryPublicationProfile {
   source?: SourceState
   targetIds: string[]
   peerVersions: Record<string, string>
+  stacksRuntimeDependencies: Record<string, { version: string, path: string }>
   scenario: string
   connections: number
   loadSeconds: number
@@ -63,6 +65,14 @@ export function memoryPublicationIssues(profile: MemoryPublicationProfile): stri
     .filter(packageName => !profile.peerVersions[packageName] || profile.peerVersions[packageName] === 'unavailable')
   if (unidentifiedPeers.length > 0)
     issues.push(`peer framework version is unavailable for ${unidentifiedPeers.join(', ')}`)
+  if (profile.targetIds.some(id => id.startsWith('stacks'))) {
+    const unavailableDependencies = STACKS_RUNTIME_PACKAGES.filter((packageName) => {
+      const dependency = profile.stacksRuntimeDependencies[packageName]
+      return !dependency || dependency.version === 'unavailable' || dependency.path === 'unavailable'
+    })
+    if (unavailableDependencies.length > 0)
+      issues.push(`Stacks runtime dependency is unavailable for ${unavailableDependencies.join(', ')}`)
+  }
   const expectedTargets = EQUAL_RATE_API_PROFILE.map(target => target.targetId)
   if (profile.targetIds.length !== expectedTargets.length
     || new Set(profile.targetIds).size !== expectedTargets.length

@@ -50,7 +50,9 @@ study requires external orchestration and must not be presented as runner output
 The same source-provenance preflight uses the benchmark server's Bun executable,
 working directory, and isolated config. It requires every Stacks package used
 by the fixture to resolve from its framework source tree through a public
-package entry point, and records those paths in the report.
+package entry point, and records those paths in the report. It also records the
+exact version and resolved entry path of the published `@stacksjs/bun-router`
+runtime, and treats an unidentified runtime dependency as non-publishable.
 The Stacks fixture also disables file-based view discovery through the public
 router API, so the repository's application pages do not enter a one-route API
 memory comparison.

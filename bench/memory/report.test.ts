@@ -22,6 +22,9 @@ describe('memory benchmark report', () => {
         driverVersion: 'oha 1.16.0',
         loadTopology: 'same-host',
         peerVersions: { elysia: '1.4.30', hono: '4.13.5' },
+        stacksRuntimeDependencies: {
+          '@stacksjs/bun-router': { version: '0.1.11', path: 'node_modules/@stacksjs/bun-router/dist/index.js' },
+        },
         publishable: true,
         scenario: 'static-json',
         connections: 64,
@@ -53,6 +56,7 @@ describe('memory benchmark report', () => {
     expect(report).toContain('| Load generator version | oha 1.16.0 |')
     expect(report).toContain('| Load topology | same host as target server |')
     expect(report).toContain('| Peer framework versions | `elysia`: 1.4.30<br>`hono`: 4.13.5 |')
+    expect(report).toContain('| Stacks runtime dependencies | `@stacksjs/bun-router`: 0.1.11 at `node_modules/@stacksjs/bun-router/dist/index.js` |')
     expect(report).toContain('| Architecture | x64 |')
     expect(report).not.toContain('Runtime mismatch:')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')

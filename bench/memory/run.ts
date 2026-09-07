@@ -23,7 +23,7 @@ import { createFixture } from '../routing/fixture'
 import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
 import { resolvePeerVersions } from '../routing/peer-versions'
 import { assertParity, assertStableParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
-import { resolveStacksSourceModules } from '../routing/provenance'
+import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from '../routing/provenance'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
@@ -277,6 +277,9 @@ async function main(): Promise<void> {
   const stacksSourceModules = targets.some(({ target }) => target.server === 'stacks.ts')
     ? resolveStacksSourceModules(REPO_ROOT)
     : undefined
+  const stacksRuntimeDependencies = targets.some(({ target }) => target.server === 'stacks.ts')
+    ? resolveStacksRuntimeDependencies(REPO_ROOT)
+    : {}
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
   const driverVersion = await driver.version()
@@ -309,6 +312,7 @@ async function main(): Promise<void> {
     source,
     targetIds: targets.map(target => target.targetId),
     peerVersions,
+    stacksRuntimeDependencies,
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,
@@ -323,6 +327,7 @@ async function main(): Promise<void> {
     startedAt,
     source,
     stacksSourceModules,
+    stacksRuntimeDependencies,
     runtimeRequirement,
     driver: driver.name,
     driverVersion,

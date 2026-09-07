@@ -12,6 +12,9 @@ const publishable = {
   source: { revision: 'a'.repeat(40), dirty: false },
   targetIds: EQUAL_RATE_API_PROFILE.map(target => target.targetId),
   peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.7' },
+  stacksRuntimeDependencies: {
+    '@stacksjs/bun-router': { version: '0.1.11', path: 'node_modules/@stacksjs/bun-router/dist/index.js' },
+  },
   scenario: 'static-json',
   connections: 64,
   loadSeconds: 60,
@@ -56,6 +59,9 @@ describe('memory benchmark publication profile', () => {
       source: { revision: null, dirty: null },
       targetIds: ['stacks-warm'],
       peerVersions: {},
+      stacksRuntimeDependencies: {
+        '@stacksjs/bun-router': { version: 'unavailable', path: 'unavailable' },
+      },
       scenario: 'db-roundtrip',
       connections: 16,
       loadSeconds: 10,
@@ -72,6 +78,7 @@ describe('memory benchmark publication profile', () => {
       'BENCH_DEDICATED=1 is not set',
       'runtime does not match package.json engines.bun',
       'source revision is unavailable or the working tree is not clean',
+      'Stacks runtime dependency is unavailable for @stacksjs/bun-router',
       'target set does not match the equal-rate API profile',
       'scenario is db-roundtrip, not static-json',
       'connection count is 16, not 64',

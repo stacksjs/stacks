@@ -1,7 +1,7 @@
 import type { SourceState } from '../routing/source'
 import type { BusyProcess } from '../routing/host-load'
 import type { RuntimeRequirement } from '../routing/runtime-version'
-import type { StacksSourceModules } from '../routing/provenance'
+import type { StacksRuntimeDependencies, StacksSourceModules } from '../routing/provenance'
 import { formatBusyProcess } from '../routing/host-load'
 import { formatSourceState } from '../routing/source'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
@@ -28,6 +28,7 @@ export interface MemoryRunMeta {
   source?: SourceState
   sourceAtEnd?: SourceState
   stacksSourceModules?: StacksSourceModules
+  stacksRuntimeDependencies?: StacksRuntimeDependencies
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
@@ -108,6 +109,12 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   if (meta.stacksSourceModules) {
     const modules = Object.entries(meta.stacksSourceModules).map(([specifier, path]) => `\`${specifier}\`: \`${path}\``).join('<br>')
     lines.push(`| Stacks source modules | ${modules} |`)
+  }
+  if (meta.stacksRuntimeDependencies) {
+    const dependencies = Object.entries(meta.stacksRuntimeDependencies)
+      .map(([specifier, dependency]) => `\`${specifier}\`: ${dependency.version} at \`${dependency.path}\``)
+      .join('<br>')
+    lines.push(`| Stacks runtime dependencies | ${dependencies} |`)
   }
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
   if (meta.runtimeRequirement)
