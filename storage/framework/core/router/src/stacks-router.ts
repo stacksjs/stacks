@@ -4075,6 +4075,15 @@ function requestMayRenderHtml(req: Request): boolean {
     || req.headers.get('sec-fetch-dest') === 'document'
 }
 
+/** Recognize the cookie shape Stacks emits before scanning a mixed jar. */
+function hasCsrfCookie(cookieHeader: string): boolean {
+  return cookieHeader.length !== 0 && (
+    cookieHeader.startsWith('X-CSRF-Token=')
+    || cookieHeader.includes('X-CSRF-Token=')
+    || cookieHeader.includes('csrf-token=')
+  )
+}
+
 /**
  * Returns a promise ONLY when it has to wait for the module's first load.
  * Every other call - the overwhelming majority - finishes synchronously, so
@@ -4082,7 +4091,7 @@ function requestMayRenderHtml(req: Request): boolean {
  * and a request that has nothing to seed never allocates a promise at all.
  */
 function seedCsrfTokenForRender(req: Request & { _csrfToken?: string }, cookieHeader = req.headers?.get?.('cookie') ?? ''): void | Promise<void> {
-  if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token='))
+  if (hasCsrfCookie(cookieHeader))
     return
 
   const mod = loadCsrfModule()
@@ -5145,7 +5154,7 @@ function wrapHandleRequestForCsrf(bunRouter: Router): void {
 
   const handleSafeRequest = (request: Request, rendersCsrf: boolean): Promise<Response> => {
     const cookieHeader = request.headers.get('cookie') ?? ''
-    if (cookieHeader.includes('X-CSRF-Token=') || cookieHeader.includes('csrf-token=')) {
+    if (hasCsrfCookie(cookieHeader)) {
       ;(request as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
       return original(request)
     }
@@ -5587,7 +5596,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
           if (safeMethod && csrfEnabled) {
             const cookie = request.headers.get('cookie') ?? ''
             const markedRequest = request as unknown as Record<symbol, unknown>
-            if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {
+            if (hasCsrfCookie(cookie)) {
               markedRequest[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
             }
             else {
