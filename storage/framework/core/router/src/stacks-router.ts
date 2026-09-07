@@ -1691,7 +1691,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
     }
 
     let finalized = response
-    if (routeSeedsCsrf && !csrfHandledByOuter) {
+    const csrfSeededDuringFormatting = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
+    if (routeSeedsCsrf && !csrfHandledByOuter && !csrfSeededDuringFormatting) {
       const mod = loadCsrfModule()
       if (mod instanceof Promise)
         return
@@ -2097,7 +2098,8 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       // read but never written. See stacksjs/stacks#1859 (CSRF
       // seeding INVESTIGATE → confirmed broken-by-default).
       if (response) {
-        if (routeSeedsCsrf && !csrfHandledByOuter) {
+        const csrfSeededDuringFormatting = (enhancedReq as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
+        if (routeSeedsCsrf && !csrfHandledByOuter && !csrfSeededDuringFormatting) {
           try {
             const mod = loadCsrfModule()
             const csrf = mod instanceof Promise ? await mod : mod
