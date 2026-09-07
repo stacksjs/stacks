@@ -67,6 +67,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Routing', link: '/basics/routing' },
+            { text: 'Requests', link: '/basics/requests' },
             { text: 'Middleware', link: '/basics/middleware' },
             { text: 'Models', link: '/basics/models' },
             { text: 'Views', link: '/basics/views' },
