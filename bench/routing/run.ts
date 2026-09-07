@@ -29,6 +29,7 @@ import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, 
 import { rotateTargets } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState } from './source'
+import { median, relativeThroughput } from './statistics'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -111,12 +112,6 @@ const HELP = `bun bench/routing/run.ts [flags]
   --no-db        skip the SQLite fixture and the db-roundtrip scenario
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
-
-function median(values: number[]): number {
-  const sorted = [...values].sort((a, b) => a - b)
-  const mid = Math.floor(sorted.length / 2)
-  return sorted.length % 2 === 0 ? (sorted[mid - 1]! + sorted[mid]!) / 2 : sorted[mid]!
-}
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2))
@@ -244,6 +239,7 @@ async function main(): Promise<void> {
       const { results, cpuReadings } = bucket
       const rpsValues = results.map(r => r.rpsMean)
       const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
+      const rawResults = collected.get(`bun-raw:${scenario.id}`)?.results
       measurements.push({
         targetId: target.id,
         scenarioId: scenario.id,
@@ -257,6 +253,9 @@ async function main(): Promise<void> {
         errorRate: results.reduce((sum, r) => sum + (r.requests ? r.errors / r.requests : 0), 0) / results.length,
         cpuPercent: cpuReadings.length ? median(cpuReadings) : null,
         spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
+        relativeToRaw: rawResults
+          ? relativeThroughput(rpsValues, rawResults.map(r => r.rpsMean))
+          : null,
         runs: opts.runs,
       })
     }

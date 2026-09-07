@@ -8,6 +8,7 @@
 
 import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
+import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
 import { formatSourceState } from './source'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
@@ -24,6 +25,8 @@ export interface Measurement {
   cpuPercent: number | null
   /** Lowest and highest rps across the repeats, so spread is visible. */
   spread: { min: number, max: number }
+  /** Median and spread of run-paired throughput ratios against Bun raw. */
+  relativeToRaw?: RelativeThroughput | null
   runs: number
 }
 
@@ -99,29 +102,39 @@ export function renderReport(input: ReportInput): string {
   for (const scenario of scenarios) {
     const rows = measurements.filter(m => m.scenarioId === scenario.id)
     if (rows.length === 0) continue
+    const hasRawComparison = rows.some(row => row.relativeToRaw != null)
 
     lines.push(`## ${scenario.title}`)
     lines.push('')
     lines.push(`\`${scenario.method} ${scenario.path}\``)
     lines.push('')
-    lines.push('| Target | req/s | req/s p50 | spread | p50 ms | p90 ms | p99 ms | errors | CPU |')
-    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|')
+    lines.push(`| Target | req/s | req/s p50 | spread |${hasRawComparison ? ' Bun raw |' : ''} p50 ms | p90 ms | p99 ms | errors | CPU |`)
+    lines.push(`|---|---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
 
     for (const row of rows) {
       const target = targets.find(t => t.id === row.targetId)
-      lines.push([
+      const cells = [
         '',
         target?.label ?? row.targetId,
         fmt(row.rpsMean),
         row.rpsP50 == null ? '-' : fmt(row.rpsP50),
         `${fmt(row.spread.min)}-${fmt(row.spread.max)}`,
+      ]
+      if (hasRawComparison) {
+        const relative = row.relativeToRaw
+        cells.push(relative
+          ? `${fmt(relative.median * 100, 1)}% (${fmt(relative.spread.min * 100, 1)}%-${fmt(relative.spread.max * 100, 1)}%)`
+          : '-')
+      }
+      cells.push(
         fmt(row.latencyMs.p50, 2),
         fmt(row.latencyMs.p90, 2),
         fmt(row.latencyMs.p99, 2),
         `${(row.errorRate * 100).toFixed(2)}%`,
         row.cpuPercent == null ? '-' : `${fmt(row.cpuPercent)}%`,
         '',
-      ].join(' | ').trim())
+      )
+      lines.push(cells.join(' | ').trim())
     }
     lines.push('')
   }

@@ -19,7 +19,7 @@ throughout a run.
 ## Why the harness looks like this
 
 A throughput number is easy to produce and easy to produce dishonestly by
-accident. Four things in here exist only to stop that:
+accident. The safeguards here exist only to stop that:
 
 - **Response parity is asserted before anything is measured.** Every target has
   to answer every scenario with byte-identical bodies (`scenarios.ts` holds the
@@ -32,6 +32,9 @@ accident. Four things in here exist only to stop that:
 - **Every measurement gets a fresh server process.** Target order rotates
   between runs so route warm state, target position, and a warming or
   throttling host cannot consistently favor one implementation.
+- **Comparisons are paired within each rotated run.** When Bun raw is selected,
+  the `Bun raw` column reports the median target-to-raw ratio and its range.
+  This exposes host drift that separate target medians can conceal.
 - **CPU is reported per row.** Deltas of the server's cumulative CPU time over
   the wall clock of the measured load invocation, after warm-up has finished.
   This includes load-tool startup and shutdown overhead. A win bought by burning more CPU is visible here
