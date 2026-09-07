@@ -527,40 +527,41 @@ function rateLimitWindowToSeconds(window: 'second' | 'minute' | 'hour' | 'day' |
  * get would buy nothing since reads dominate.
  */
 class BoundedMap<K, V> {
-  private map = new Map<K, V>()
+  private map: Map<K, V> | undefined
 
   constructor(private readonly max: number) {}
 
   get(key: K): V | undefined {
-    return this.map.get(key)
+    return this.map?.get(key)
   }
 
   has(key: K): boolean {
-    return this.map.has(key)
+    return this.map?.has(key) ?? false
   }
 
   set(key: K, value: V): this {
+    const map = this.map ??= new Map()
     // If we already have the key, refreshing its insertion order by
     // delete+set means newer writes survive eviction longer.
-    if (this.map.has(key)) this.map.delete(key)
-    this.map.set(key, value)
-    if (this.map.size > this.max) {
-      const oldest = this.map.keys().next().value
-      if (oldest !== undefined) this.map.delete(oldest)
+    if (map.has(key)) map.delete(key)
+    map.set(key, value)
+    if (map.size > this.max) {
+      const oldest = map.keys().next().value
+      if (oldest !== undefined) map.delete(oldest)
     }
     return this
   }
 
   delete(key: K): boolean {
-    return this.map.delete(key)
+    return this.map?.delete(key) ?? false
   }
 
   clear(): void {
-    this.map.clear()
+    this.map = undefined
   }
 
   get size(): number {
-    return this.map.size
+    return this.map?.size ?? 0
   }
 }
 
