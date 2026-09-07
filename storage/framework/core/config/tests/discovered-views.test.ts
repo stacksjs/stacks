@@ -16,7 +16,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { packageMigrationRoots, packageModelRoots, packageViewRoots } from '../src/discovered-resources'
+import { packageComponentRoots, packageMigrationRoots, packageModelRoots, packageViewRoots } from '../src/discovered-resources'
 import { resolveViewPatterns } from '../src/views'
 
 function project(): string {
@@ -290,6 +290,80 @@ describe('package migration roots', () => {
       const file = manifest(root, { table: { root: 'node_modules/table' } })
 
       expect(packageMigrationRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+})
+
+
+/**
+ * Components are the one OPT-IN surface.
+ *
+ * Views, models and migrations are namespaced at the point of use: a view is
+ * reached by path, a model by name, a migration by filename, so a package
+ * contributing one it did not intend to is inert until something asks for it.
+ * A component is reached by BARE TAG NAME across every template in the
+ * process. Implying `resources/components` would enrol any package that
+ * happens to have that directory into global tag resolution.
+ */
+describe('package component roots', () => {
+  test('a package that declares components contributes them', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/resources/components'), { recursive: true })
+      const file = manifest(root, {
+        loghq: { root: 'node_modules/loghq', components: ['resources/components'] },
+      })
+
+      expect(packageComponentRoots({ manifestPath: file, projectRoot: root }).map(r => r.dir))
+        .toEqual([join(root, 'node_modules/loghq/resources/components')])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('a package with a components directory it did NOT declare contributes nothing', () => {
+    const root = project()
+    try {
+      // The whole point. This directory exists and is conventionally named,
+      // and it still must not enter global tag resolution unasked.
+      mkdirSync(join(root, 'node_modules/table/resources/components'), { recursive: true })
+      const file = manifest(root, { table: { root: 'node_modules/table' } })
+
+      expect(packageComponentRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('views and migrations keep their implied directories', () => {
+    // Guards the asymmetry above: the opt-in rule is specific to components,
+    // and must not be generalised to the surfaces that rely on convention.
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/resources/views'), { recursive: true })
+      mkdirSync(join(root, 'node_modules/loghq/database/migrations'), { recursive: true })
+      mkdirSync(join(root, 'node_modules/loghq/resources/components'), { recursive: true })
+      const file = manifest(root, { loghq: { root: 'node_modules/loghq' } })
+
+      const opts = { manifestPath: file, projectRoot: root }
+      expect(packageViewRoots(opts)).toHaveLength(1)
+      expect(packageMigrationRoots(opts)).toHaveLength(1)
+      expect(packageComponentRoots(opts)).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('refuses a declared path that escapes the package', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'resources/components'), { recursive: true })
+      mkdirSync(join(root, 'node_modules/loghq'), { recursive: true })
+      const file = manifest(root, {
+        loghq: { root: 'node_modules/loghq', components: ['../../resources/components'] },
+      })
+
+      // Otherwise a package could register the application's own components
+      // and, depending on search order, answer for its tags.
+      expect(packageComponentRoots({ manifestPath: file, projectRoot: root })).toEqual([])
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })

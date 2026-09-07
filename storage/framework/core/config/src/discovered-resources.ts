@@ -28,14 +28,26 @@ interface DiscoveredEntry {
   root?: string
   views?: string | string[]
   migrations?: string | string[]
+  components?: string | string[]
 }
 
-/** Directories a package is taken to provide when it declares no explicit list. */
-const IMPLIED_DIRS = {
+/**
+ * Directories a package is taken to provide when it declares no explicit list.
+ *
+ * `components` is deliberately absent, which makes it the one opt-in surface.
+ * The others are namespaced at the point of use - a view is reached by its
+ * path, a model by its name, a migration by its filename - and a package
+ * contributing one it did not mean to is inert until something asks for it.
+ * Components are reached by BARE TAG NAME across every template in the process,
+ * so implying `resources/components` would enrol any package that happens to
+ * have that directory into global tag resolution. A package has to say
+ * `"components": [...]` and mean it.
+ */
+const IMPLIED_DIRS: Record<string, readonly string[] | undefined> = {
   views: ['resources/views'],
   models: ['app/Models'],
   migrations: ['database/migrations'],
-} as const
+}
 
 export interface PackageResourceOptions {
   manifestPath?: string
@@ -74,7 +86,7 @@ function readManifest(manifestPath: string): Record<string, DiscoveredEntry> {
  * shipping an optional subtree is not an error.
  */
 function resourceRoots(
-  field: 'views' | 'models' | 'migrations',
+  field: 'views' | 'models' | 'migrations' | 'components',
   options: PackageResourceOptions = {},
 ): PackageResourceRoot[] {
   const manifestPath = options.manifestPath ?? path.storagePath('framework/discovered-packages.json')
@@ -87,6 +99,8 @@ function resourceRoots(
     // Models have no manifest key of their own, so a package that ships them
     // is taken to put them where every Stacks application does. Views keep
     // their explicit key, which a package uses to ship more than one subtree.
+    // Components have no implied directory at all, so a package that does not
+    // declare them contributes none - see IMPLIED_DIRS.
     const declared = (meta as Record<string, unknown>)?.[field] ?? IMPLIED_DIRS[field]
     if (!declared)
       continue
@@ -131,6 +145,23 @@ function resourceRoots(
  */
 export function packageMigrationRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
   return resourceRoots('migrations', options)
+}
+
+/**
+ * Component directories each discovered package contributes.
+ *
+ * Opt-in, unlike every other surface here: a package contributes components
+ * only by declaring `"components"` in its `stacks` key. Components resolve by
+ * bare tag name across every template in the process, so a directory picked up
+ * by convention would silently enter that namespace.
+ *
+ * The caller decides precedence. Placing these AFTER the framework's own
+ * component directories makes a package purely additive, which is what the
+ * shipped stx plugin does - stx searches its component list in order and takes
+ * the first match.
+ */
+export function packageComponentRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+  return resourceRoots('components', options)
 }
 
 /** View directories each discovered package contributes. */
