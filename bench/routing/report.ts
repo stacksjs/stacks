@@ -10,6 +10,8 @@ import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
 import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
+import type { BusyProcess } from './host-load'
+import { formatBusyProcess } from './host-load'
 import { formatSourceState } from './source'
 import { MAX_STABLE_RANGE } from './statistics'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
@@ -44,6 +46,7 @@ export interface RunMeta {
   durationSeconds: number
   runs: number
   persistentQueryLogging: boolean
+  busyHostProcesses?: BusyProcess[]
   machine: {
     platform: string
     release: string
@@ -87,6 +90,10 @@ export function renderReport(input: ReportInput): string {
   const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)
   if (runtimeWarning) {
     lines.push(`> ${runtimeWarning}`)
+    lines.push('')
+  }
+  if (meta.busyHostProcesses?.length) {
+    lines.push(`> **Busy-host override.** ${meta.busyHostProcesses.map(formatBusyProcess).join(', ')}. This run is direction-only and must not be published.`)
     lines.push('')
   }
   lines.push('| | |')

@@ -54,4 +54,18 @@ describe('routing benchmark report', () => {
 
     expect(report).not.toContain('Bun raw')
   })
+
+  test('marks a busy-host override as direction-only', () => {
+    const report = renderReport({
+      meta: {
+        ...meta,
+        busyHostProcesses: [{ pid: 42, cpuPercent: 91.25, command: 'compiler' }],
+      },
+      scenarios: [],
+      targets: [],
+      measurements: [],
+    })
+
+    expect(report).toContain('> **Busy-host override.** compiler (PID 42, 91.3% CPU). This run is direction-only and must not be published.')
+  })
 })

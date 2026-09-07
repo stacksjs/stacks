@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { pickDriver } from './drivers'
 import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
+import { detectBusyProcesses, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
 import { renderReport } from './report'
@@ -43,6 +44,7 @@ interface Options {
   durationSeconds: number
   runs: number
   db: boolean
+  allowBusyHost: boolean
 }
 
 export function parseArgs(argv: string[]): Options {
@@ -54,6 +56,7 @@ export function parseArgs(argv: string[]): Options {
     durationSeconds: 30,
     runs: 3,
     db: true,
+    allowBusyHost: false,
   }
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i]!
@@ -71,6 +74,7 @@ export function parseArgs(argv: string[]): Options {
       case '--duration': case '-d': opts.durationSeconds = Number(next()); break
       case '--runs': opts.runs = Number(next()); break
       case '--no-db': opts.db = false; break
+      case '--allow-busy-host': opts.allowBusyHost = true; break
       case '--help': case '-h':
         console.log(HELP)
         process.exit(0)
@@ -110,11 +114,19 @@ const HELP = `bun bench/routing/run.ts [flags]
   --duration     positive seconds measured (default 30)
   --runs         positive integer repeats per scenario, median reported (default 3)
   --no-db        skip the SQLite fixture and the db-roundtrip scenario
+  --allow-busy-host
+                 run despite another process consuming at least 75% of a core
 
 Available targets: ${TARGETS.map(t => t.id).join(', ')}`
 
 async function main(): Promise<void> {
   const opts = parseArgs(process.argv.slice(2))
+  const busyProcesses = await detectBusyProcesses()
+  if (busyProcesses.length > 0 && !opts.allowBusyHost) {
+    throw new Error(`Host is busy: ${busyProcesses.map(formatBusyProcess).join(', ')}. Stop competing work or pass --allow-busy-host for a direction-only run.`)
+  }
+  if (busyProcesses.length > 0)
+    console.error(`[bench] busy-host override: ${busyProcesses.map(formatBusyProcess).join(', ')}`)
   const runtimeRequirement = await readRuntimeRequirement(REPO_ROOT)
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[bench] ${runtimeWarning}`)
@@ -146,6 +158,7 @@ async function main(): Promise<void> {
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
     persistentQueryLogging: benchmarkQueryLoggingEnabled(),
+    busyHostProcesses: busyProcesses,
     machine: {
       platform: platform(),
       release: release(),

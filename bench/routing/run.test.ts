@@ -11,11 +11,13 @@ describe('routing benchmark options', () => {
       durationSeconds: 30,
       runs: 3,
       db: true,
+      allowBusyHost: false,
     })
     expect(parseArgs(['-c', '2', '-d', '0.5', '--warmup', '0.25', '--runs', '1'])).toMatchObject({
       connections: 2, durationSeconds: 0.5, warmupSeconds: 0.25, runs: 1,
     })
     expect(parseArgs(['--warmup', '0']).warmupSeconds).toBe(0)
+    expect(parseArgs(['--allow-busy-host']).allowBusyHost).toBe(true)
   })
 
   it.each(['--connections', '--runs'])('requires a positive safe integer for %s', (flag) => {
