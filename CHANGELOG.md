@@ -1,5 +1,144 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.27...v0.74.28)
+
+## 💥 Breaking Changes
+
+- feat(orm)!: drop the deprecated `meta` from the index response (#1960) ([a7de7ca](https://github.com/stacksjs/stacks/commit/a7de7ca)) _(by Chris <chris@stacksjs.com>)_ ([#1960](https://github.com/stacksjs/stacks/issues/1960), [#1960](https://github.com/stacksjs/stacks/issues/1960), [#1960](https://github.com/stacksjs/stacks/issues/1960), [#1960](https://github.com/stacksjs/stacks/issues/1960))
+
+## ✨ Features
+
+- **middleware**: share guards with stx pages ([c9dab1b](https://github.com/stacksjs/stacks/commit/c9dab1b)) _(by Chris <chris@stacksjs.com>)_
+- **cloud**: move a deployed site between servers with `buddy cloud:move` ([aa59aba](https://github.com/stacksjs/stacks/commit/aa59aba)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2342](https://github.com/stacksjs/stacks/issues/2342))
+- **cloud**: tear a drained server down with `buddy cloud:destroy` ([db2db55](https://github.com/stacksjs/stacks/commit/db2db55)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2342](https://github.com/stacksjs/stacks/issues/2342))
+- **cloud**: rename a server in place with `buddy cloud:rename` ([06bbb42](https://github.com/stacksjs/stacks/commit/06bbb42)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2342](https://github.com/stacksjs/stacks/issues/2342))
+- **router**: allow token-only CSRF opt-out ([711bb10](https://github.com/stacksjs/stacks/commit/711bb10)) _(by Chris <chris@stacksjs.com>)_
+- **router**: allow proxy-owned request ids ([c1babc8](https://github.com/stacksjs/stacks/commit/c1babc8)) _(by Chris <chris@stacksjs.com>)_
+- **database**: expose synchronous SQLite reads ([a022779](https://github.com/stacksjs/stacks/commit/a022779)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **buddy**: stop twenty commands closing a failure with a green line ([6c20143](https://github.com/stacksjs/stacks/commit/6c20143)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cli**: let outro report at the level its caller asked for ([d4d55f0](https://github.com/stacksjs/stacks/commit/d4d55f0)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **deps**: commit the lockfile for the bun-plugin-stx bump ([40574f3](https://github.com/stacksjs/stacks/commit/40574f3)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **cloud**: refuse a move that would strand the sites sharing its hostname ([04a2904](https://github.com/stacksjs/stacks/commit/04a2904)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: guard the lockfile-version comparison against a null ([7dabce7](https://github.com/stacksjs/stacks/commit/7dabce7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **release**: do not stage a lockfile the repository ignores ([abd96c5](https://github.com/stacksjs/stacks/commit/abd96c5)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: remove migrate:dns, a command that could never run ([50ce367](https://github.com/stacksjs/stacks/commit/50ce367)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: make advertised flags reach the code that runs ([3f0bdf7](https://github.com/stacksjs/stacks/commit/3f0bdf7)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **email**: drop the `mail` alias, which never resolved ([92d9b75](https://github.com/stacksjs/stacks/commit/92d9b75)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **buddy**: stop aliases from silently claiming another command's name ([4213528](https://github.com/stacksjs/stacks/commit/4213528)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#1923](https://github.com/stacksjs/stacks/issues/1923))
+- **bench**: isolate API route fixtures ([1e1d1b4](https://github.com/stacksjs/stacks/commit/1e1d1b4)) _(by Chris <chris@stacksjs.com>)_
+- **assets**: give the example apps a favicon that is a real PNG ([ac717a5](https://github.com/stacksjs/stacks/commit/ac717a5)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2433](https://github.com/stacksjs/stacks/issues/2433))
+- **bench**: equalize minimal request headers ([8c6541a](https://github.com/stacksjs/stacks/commit/8c6541a)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: equalize memory load rates ([2d0a2af](https://github.com/stacksjs/stacks/commit/2d0a2af)) _(by Chris <chris@stacksjs.com>)_
+- **cloud**: resolve the Hetzner token with the resolver that takes a config ([8b3b753](https://github.com/stacksjs/stacks/commit/8b3b753)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2344](https://github.com/stacksjs/stacks/issues/2344))
+- **deploy**: make --verbose mean something (#853) ([e4552ca](https://github.com/stacksjs/stacks/commit/e4552ca)) _(by Chris <chris@stacksjs.com>)_ ([#853](https://github.com/stacksjs/stacks/issues/853), [#853](https://github.com/stacksjs/stacks/issues/853))
+- **router**: compress native route responses ([88126d3](https://github.com/stacksjs/stacks/commit/88126d3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: preserve native database context ([edffccf](https://github.com/stacksjs/stacks/commit/edffccf)) _(by Chris <chris@stacksjs.com>)_
+- **database**: preserve SQLite range bounds ([c078ce1](https://github.com/stacksjs/stacks/commit/c078ce1)) _(by Chris <chris@stacksjs.com>)_
+- **testing**: build the entry points the package exports ([a7ee0a7](https://github.com/stacksjs/stacks/commit/a7ee0a7)) _(by Chris <chris@stacksjs.com>)_
+- **docs,http**: emit the declarations these packages claim to ship ([8bd30b2](https://github.com/stacksjs/stacks/commit/8bd30b2)) _(by Chris <chris@stacksjs.com>)_
+- **shell**: ship the zsh plugin the manifest says it ships ([76dc16d](https://github.com/stacksjs/stacks/commit/76dc16d)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: bring the server's bun up to the lockfile it has to read ([ed2e8ec](https://github.com/stacksjs/stacks/commit/ed2e8ec)) _(by Chris <chris@stacksjs.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: finish CSRF-free JSON responses early ([7b19a1b](https://github.com/stacksjs/stacks/commit/7b19a1b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: keep CSRF-free GETs synchronous ([c04c1d4](https://github.com/stacksjs/stacks/commit/c04c1d4)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: sample Linux memory without ps ([4a06c7b](https://github.com/stacksjs/stacks/commit/4a06c7b)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: record load generator versions ([f535250](https://github.com/stacksjs/stacks/commit/f535250)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: verify ending source state ([6c91902](https://github.com/stacksjs/stacks/commit/6c91902)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: recheck host load after runs ([74688bc](https://github.com/stacksjs/stacks/commit/74688bc)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce memory protocol ([c1e9292](https://github.com/stacksjs/stacks/commit/c1e9292)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: validate routing measurements ([134b96d](https://github.com/stacksjs/stacks/commit/134b96d)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce routing publication profile ([796bd12](https://github.com/stacksjs/stacks/commit/796bd12)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: support explicit routing output ([287d2ad](https://github.com/stacksjs/stacks/commit/287d2ad)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: invalidate busy routing runs ([10ff4ca](https://github.com/stacksjs/stacks/commit/10ff4ca)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: validate memory measurements ([af9a8e6](https://github.com/stacksjs/stacks/commit/af9a8e6)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce memory publication profile ([51f565b](https://github.com/stacksjs/stacks/commit/51f565b)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: record machine architecture ([97f4443](https://github.com/stacksjs/stacks/commit/97f4443)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: guard memory runs from host load ([85198d4](https://github.com/stacksjs/stacks/commit/85198d4)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: rotate memory target order ([03a6552](https://github.com/stacksjs/stacks/commit/03a6552)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: recheck host load per run ([825299d](https://github.com/stacksjs/stacks/commit/825299d)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reject busy benchmark hosts ([6cb221c](https://github.com/stacksjs/stacks/commit/6cb221c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip redundant CSRF fallback ([d5d1f18](https://github.com/stacksjs/stacks/commit/d5d1f18)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: flag unstable measurements ([9e17547](https://github.com/stacksjs/stacks/commit/9e17547)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: disable CSRF in minimal profile ([8972984](https://github.com/stacksjs/stacks/commit/8972984)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: use Bun native baseline routes ([08960a3](https://github.com/stacksjs/stacks/commit/08960a3)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: report paired raw throughput ([c7b9e77](https://github.com/stacksjs/stacks/commit/c7b9e77)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: rotate target measurement order ([b0e111e](https://github.com/stacksjs/stacks/commit/b0e111e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: isolate scenario server processes ([8c06bc5](https://github.com/stacksjs/stacks/commit/8c06bc5)) _(by Chris <chris@stacksjs.com>)_
+- **router**: preapply native CSRF cookies ([7c2fcdc](https://github.com/stacksjs/stacks/commit/7c2fcdc)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: use synchronous first-row reads ([328b444](https://github.com/stacksjs/stacks/commit/328b444)) _(by Chris <chris@stacksjs.com>)_
+- **database**: avoid first-row result arrays ([f760b06](https://github.com/stacksjs/stacks/commit/f760b06)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: return validated action input ([2b91bac](https://github.com/stacksjs/stacks/commit/2b91bac)) _(by Chris <chris@stacksjs.com>)_
+- **router**: keep sized responses synchronous ([b1e04b3](https://github.com/stacksjs/stacks/commit/b1e04b3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: stabilize no-id response headers ([b3445b2](https://github.com/stacksjs/stacks/commit/b3445b2)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: model proxy-owned request ids ([1b4979b](https://github.com/stacksjs/stacks/commit/1b4979b)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reuse invariant SQLite query ([34c715a](https://github.com/stacksjs/stacks/commit/34c715a)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: use synchronous SQLite reads ([1f971aa](https://github.com/stacksjs/stacks/commit/1f971aa)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse validated JSON input ([6aad01d](https://github.com/stacksjs/stacks/commit/6aad01d)) _(by Chris <chris@stacksjs.com>)_
+- **database**: use single-row SQLite reads ([47a112a](https://github.com/stacksjs/stacks/commit/47a112a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse action query detection ([93b8e3a](https://github.com/stacksjs/stacks/commit/93b8e3a)) _(by Chris <chris@stacksjs.com>)_
+- **database**: cache unfiltered SQLite reads ([5a97371](https://github.com/stacksjs/stacks/commit/5a97371)) _(by Chris <chris@stacksjs.com>)_
+- **database**: reuse SQLite query executor ([ff3a4f9](https://github.com/stacksjs/stacks/commit/ff3a4f9)) _(by Chris <chris@stacksjs.com>)_
+- **database**: avoid scalar selection arrays ([9025747](https://github.com/stacksjs/stacks/commit/9025747)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse JSON response init ([ce506a3](https://github.com/stacksjs/stacks/commit/ce506a3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid async context closures ([527c521](https://github.com/stacksjs/stacks/commit/527c521)) _(by Chris <chris@stacksjs.com>)_
+- **router**: fuse async inline result formatting ([97485ad](https://github.com/stacksjs/stacks/commit/97485ad)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer secure CSRF transport markers ([c4ab8ea](https://github.com/stacksjs/stacks/commit/c4ab8ea)) _(by Chris <chris@stacksjs.com>)_
+- **router**: reuse native route params ([d042e42](https://github.com/stacksjs/stacks/commit/d042e42)) _(by Chris <chris@stacksjs.com>)_
+- **database**: skip unused replica policy ([0295ba4](https://github.com/stacksjs/stacks/commit/0295ba4)) _(by Chris <chris@stacksjs.com>)_
+- **database**: streamline SQLite scalar promises ([da3f432](https://github.com/stacksjs/stacks/commit/da3f432)) _(by Chris <chris@stacksjs.com>)_
+- **database**: streamline SQLite execution promises ([7d8137f](https://github.com/stacksjs/stacks/commit/7d8137f)) _(by Chris <chris@stacksjs.com>)_
+- **database**: stabilize typed read entry points ([730e3e3](https://github.com/stacksjs/stacks/commit/730e3e3)) _(by Chris <chris@stacksjs.com>)_
+- **database**: stabilize write builder entry points ([4bc78a7](https://github.com/stacksjs/stacks/commit/4bc78a7)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- remove the hardcoded bun version and a dead entry point ([c6ab6c1](https://github.com/stacksjs/stacks/commit/c6ab6c1)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **bench**: correct baseline topology steps ([9c28a5b](https://github.com/stacksjs/stacks/commit/9c28a5b)) _(by Chris <chris@stacksjs.com>)_
+- add the Requests page (#861) ([38615a9](https://github.com/stacksjs/stacks/commit/38615a9)) _(by Chris <chris@stacksjs.com>)_ ([#861](https://github.com/stacksjs/stacks/issues/861), [#861](https://github.com/stacksjs/stacks/issues/861), [#861](https://github.com/stacksjs/stacks/issues/861))
+- correct four comments that outlived what they described ([646870e](https://github.com/stacksjs/stacks/commit/646870e)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **bench**: align database handler work ([06a1a9c](https://github.com/stacksjs/stacks/commit/06a1a9c)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: equalize validated response work ([3086407](https://github.com/stacksjs/stacks/commit/3086407)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: balance target measurement order ([75086c5](https://github.com/stacksjs/stacks/commit/75086c5)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: forbid framework benchmark shortcuts ([df3874e](https://github.com/stacksjs/stacks/commit/df3874e)) _(by Chris <chris@stacksjs.com>)_
+- **router**: clear route-model bindings before each case, not only after ([c6acdb2](https://github.com/stacksjs/stacks/commit/c6acdb2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: require exact success statuses ([7615081](https://github.com/stacksjs/stacks/commit/7615081)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require peer version provenance ([db7d98a](https://github.com/stacksjs/stacks/commit/db7d98a)) _(by Chris <chris@stacksjs.com>)_
+- **release**: assert the lockfile comparison, not its guard chain ([fe442d4](https://github.com/stacksjs/stacks/commit/fe442d4)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: catch lockfile drift before CI does ([16b3501](https://github.com/stacksjs/stacks/commit/16b3501)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: align memory provenance metadata ([3a31743](https://github.com/stacksjs/stacks/commit/3a31743)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: record peer framework versions ([c867e75](https://github.com/stacksjs/stacks/commit/c867e75)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: disclose load generator topology ([461c073](https://github.com/stacksjs/stacks/commit/461c073)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reject JS-only publication drivers ([9caefe2](https://github.com/stacksjs/stacks/commit/9caefe2)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require complete memory matrix ([a0e8094](https://github.com/stacksjs/stacks/commit/a0e8094)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: separate memory security profiles ([5c59a9e](https://github.com/stacksjs/stacks/commit/5c59a9e)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce framework source provenance ([300b298](https://github.com/stacksjs/stacks/commit/300b298)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: verify validation workload parity ([1669044](https://github.com/stacksjs/stacks/commit/1669044)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: enforce exact response parity ([594315c](https://github.com/stacksjs/stacks/commit/594315c)) _(by Chris <chris@stacksjs.com>)_
+- **buddy**: skip the `files` entry that exists only after a build ([3188028](https://github.com/stacksjs/stacks/commit/3188028)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: pin the resolver against refs that only look like main ([865aca4](https://github.com/stacksjs/stacks/commit/865aca4)) _(by Chris <chris@stacksjs.com>)_ ([#2068](https://github.com/stacksjs/stacks/issues/2068))
+
+## 🔧 Chores
+
+- **bench**: separate status parity work ([6716b5b](https://github.com/stacksjs/stacks/commit/6716b5b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: separate middleware loader work ([8187b2e](https://github.com/stacksjs/stacks/commit/8187b2e)) _(by Chris <chris@stacksjs.com>)_
+- **deps**: ts-cloud 0.12.15 ([c8c27f9](https://github.com/stacksjs/stacks/commit/c8c27f9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- wip ([de02018](https://github.com/stacksjs/stacks/commit/de02018)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.26...v0.74.27)
 
 ## 🐛 Bug Fixes
