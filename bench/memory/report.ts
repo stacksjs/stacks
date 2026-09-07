@@ -31,6 +31,9 @@ export interface MemoryRunMeta {
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
+  /** Where the load process runs relative to the target server. */
+  loadTopology: 'same-host'
+  peerVersions?: Record<string, string>
   publishable: boolean
   publicationIssues?: string[]
   busyHostProcesses?: BusyProcess[]
@@ -115,6 +118,11 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push(`| Repeats | ${meta.runs}, median reported |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)
+  lines.push('| Load topology | same host as target server |')
+  if (meta.peerVersions && Object.keys(meta.peerVersions).length > 0) {
+    const versions = Object.entries(meta.peerVersions).map(([name, version]) => `\`${name}\`: ${version}`).join('<br>')
+    lines.push(`| Peer framework versions | ${versions} |`)
+  }
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
   lines.push(`| Architecture | ${meta.machine.arch} |`)
   lines.push(`| OS | ${meta.machine.platform} ${meta.machine.release} |`)

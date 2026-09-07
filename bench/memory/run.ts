@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url'
 import { pickDriver } from '../routing/drivers'
 import { createFixture } from '../routing/fixture'
 import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
+import { resolvePeerVersions } from '../routing/peer-versions'
 import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { resolveStacksSourceModules } from '../routing/provenance'
 import { SCENARIOS } from '../routing/scenarios'
@@ -260,6 +261,7 @@ async function main(): Promise<void> {
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[memory] ${runtimeWarning}`)
   const targets = resolveTargets(options.targets, options.requestRate)
+  const peerVersions = await resolvePeerVersions(targets.map(target => target.targetId))
   const stacksSourceModules = targets.some(({ target }) => target.server === 'stacks.ts')
     ? resolveStacksSourceModules(REPO_ROOT)
     : undefined
@@ -311,6 +313,8 @@ async function main(): Promise<void> {
     runtimeRequirement,
     driver: driver.name,
     driverVersion,
+    loadTopology: 'same-host',
+    peerVersions,
     publishable: publicationIssues.length === 0,
     publicationIssues,
     busyHostProcesses: [...observedBusyProcesses.values()],

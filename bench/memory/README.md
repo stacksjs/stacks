@@ -37,6 +37,10 @@ server registers only the selected scenario, so an unrelated validator or
 database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
 cannot consistently favor the same implementation.
+The load generator runs on the same host as the target server for every row.
+This symmetric topology can understate absolute throughput when the generator
+and server compete for CPU, so the report records it explicitly. A remote load
+study requires external orchestration and must not be presented as runner output.
 The same source-provenance preflight also requires every Stacks package used by
 the fixture to resolve from its framework source tree through a public package
 entry point, and records those paths in the report.
@@ -69,9 +73,10 @@ Every run writes:
 - `raw/<target>--run<N>.json`, every RSS sample and raw load-generator result
 
 The report and metadata include the Git revision and working-tree state captured
-before and after measurement, plus the machine architecture and exact load-generator version. Ignored files are
-excluded; source archives without Git are marked unavailable. A revision or
-cleanliness change during measurement invalidates publication.
+before and after measurement, plus the machine architecture, exact load-generator
+version, load topology, and exact versions resolved for selected peer frameworks.
+Ignored files are excluded; source archives without Git are marked unavailable.
+A revision or cleanliness change during measurement invalidates publication.
 
 The report declares the requested and delivered rate. A row below 98% rate
 attainment is marked invalid and cannot be used for a memory win. Fixed-rate

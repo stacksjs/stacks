@@ -20,6 +20,8 @@ describe('memory benchmark report', () => {
         runtimeRequirement: { range: '1.4.1', matches: true },
         driver: 'oha',
         driverVersion: 'oha 1.16.0',
+        loadTopology: 'same-host',
+        peerVersions: { elysia: '1.4.30', hono: '4.13.5' },
         publishable: true,
         scenario: 'static-json',
         connections: 64,
@@ -49,6 +51,8 @@ describe('memory benchmark report', () => {
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
     expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
     expect(report).toContain('| Load generator version | oha 1.16.0 |')
+    expect(report).toContain('| Load topology | same host as target server |')
+    expect(report).toContain('| Peer framework versions | `elysia`: 1.4.30<br>`hono`: 4.13.5 |')
     expect(report).toContain('| Architecture | x64 |')
     expect(report).not.toContain('Runtime mismatch:')
     expect(report).toContain('| Stacks | 40,000 | 39,950 | 99.9% | 110.0 | 100.0-120.0 | 160.0 | 1 |')
@@ -57,7 +61,7 @@ describe('memory benchmark report', () => {
   it('flags a runtime comparison without hiding the measured runtime', () => {
     const report = renderMemoryReport({
       meta: {
-        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: true,
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', loadTopology: 'same-host', publishable: true,
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
         machine: { arch: 'x64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.3.14' },
@@ -73,7 +77,7 @@ describe('memory benchmark report', () => {
   it('flags a busy-host override as non-publishable', () => {
     const report = renderMemoryReport({
       meta: {
-        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: false,
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', loadTopology: 'same-host', publishable: false,
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
         busyHostProcesses: [{ pid: 20, cpuPercent: 88.44, command: 'compiler' }],
@@ -87,7 +91,7 @@ describe('memory benchmark report', () => {
   it('lists publication blockers', () => {
     const report = renderMemoryReport({
       meta: {
-        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: false,
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', loadTopology: 'same-host', publishable: false,
         publicationIssues: ['host architecture is arm64, not x64', 'only 1 fresh-process run(s) were requested; at least 3 are required'],
         scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
         sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
