@@ -1,6 +1,17 @@
 import type { BusyProcess } from './host-load'
+import type { Measurement } from './report'
 import type { RuntimeRequirement } from './runtime-version'
 import type { SourceState } from './source'
+import { MAX_STABLE_RANGE } from './statistics'
+
+export interface RoutingPublicationTarget {
+  id: string
+  skipped?: string
+}
+
+export interface RoutingPublicationScenario {
+  id: string
+}
 
 export interface RoutingPublicationProfile {
   driverPublishable: boolean
@@ -31,5 +42,51 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
     issues.push(`only ${profile.runs} run(s) were requested; at least 3 are required`)
   if (profile.busyHostProcesses.length > 0)
     issues.push('competing host processes were observed')
+  return issues
+}
+
+function measurementRange(measurement: Measurement): number {
+  return measurement.rangeRatio
+    ?? (measurement.spread.max - measurement.spread.min) / measurement.rpsMean
+}
+
+export function routingMeasurementPublicationIssues(
+  targets: RoutingPublicationTarget[],
+  scenarios: readonly RoutingPublicationScenario[],
+  measurements: Measurement[],
+  expectedRuns: number,
+): string[] {
+  const issues: string[] = []
+  for (const target of targets) {
+    if (target.skipped) {
+      issues.push(`${target.id} was skipped`)
+      continue
+    }
+
+    for (const scenario of scenarios) {
+      const rows = measurements.filter(row => row.targetId === target.id && row.scenarioId === scenario.id)
+      const key = `${target.id}:${scenario.id}`
+      if (rows.length !== 1 || rows[0]?.runs !== expectedRuns) {
+        issues.push(`${key} did not complete ${expectedRuns} required run(s)`)
+        continue
+      }
+
+      const row = rows[0]
+      if (!Number.isFinite(row.rpsMean) || row.rpsMean <= 0
+        || (row.rpsP50 != null && (!Number.isFinite(row.rpsP50) || row.rpsP50 < 0))
+        || !Number.isFinite(row.spread.min) || row.spread.min <= 0
+        || !Number.isFinite(row.spread.max) || row.spread.max < row.spread.min
+        || !Object.values(row.latencyMs).every(value => Number.isFinite(value) && value >= 0)
+        || !Number.isFinite(row.errorRate) || row.errorRate < 0 || row.errorRate > 1
+        || (row.rangeRatio != null && (!Number.isFinite(row.rangeRatio) || row.rangeRatio < 0)))
+        issues.push(`${key} contains an invalid measurement`)
+      if (row.errorRate > 0)
+        issues.push(`${key} recorded request errors`)
+      if (row.cpuPercent == null || !Number.isFinite(row.cpuPercent) || row.cpuPercent < 0)
+        issues.push(`${key} has no valid server CPU reading`)
+      if (measurementRange(row) > MAX_STABLE_RANGE)
+        issues.push(`${key} exceeded the 10% throughput stability range`)
+    }
+  }
   return issues
 }

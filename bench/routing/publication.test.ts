@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { routingPublicationIssues } from './publication'
+import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 
 const publishable = {
   driverPublishable: true,
@@ -37,6 +37,39 @@ describe('routing benchmark publication profile', () => {
       'measurement window is 10s; at least 30s is required',
       'only 1 run(s) were requested; at least 3 are required',
       'competing host processes were observed',
+    ])
+  })
+
+  it('accepts complete, stable, error-free measurements with CPU evidence', () => {
+    expect(routingMeasurementPublicationIssues(
+      [{ id: 'stacks' }],
+      [{ id: 'static-json' }],
+      [{
+        targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: 99,
+        latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0, cpuPercent: 98,
+        spread: { min: 98, max: 102 }, rangeRatio: 0.04, runs: 3,
+      }],
+      3,
+    )).toEqual([])
+  })
+
+  it('rejects skipped, incomplete, invalid, failed, unprofiled, and unstable measurements', () => {
+    expect(routingMeasurementPublicationIssues(
+      [{ id: 'missing', skipped: 'dependency unavailable' }, { id: 'stacks' }],
+      [{ id: 'static-json' }, { id: 'path-param' }],
+      [{
+        targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: -1,
+        latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0.01, cpuPercent: null,
+        spread: { min: 90, max: 110 }, rangeRatio: 0.2, runs: 3,
+      }],
+      3,
+    )).toEqual([
+      'missing was skipped',
+      'stacks:static-json contains an invalid measurement',
+      'stacks:static-json recorded request errors',
+      'stacks:static-json has no valid server CPU reading',
+      'stacks:static-json exceeded the 10% throughput stability range',
+      'stacks:path-param did not complete 3 required run(s)',
     ])
   })
 })

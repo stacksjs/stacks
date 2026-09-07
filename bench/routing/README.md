@@ -77,6 +77,10 @@ requires a clean identified revision, the configured Bun runtime, at least 5
 seconds of warm-up, 30 measured seconds, three repeats, and no observed busy
 process. Reports list every unmet publication prerequisite.
 
+Publication additionally requires every selected target and scenario to finish
+all repeats, return valid measurements without request errors, include a server
+CPU reading, and stay within the 10% throughput stability range.
+
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the actual runtime version and warns
 when they differ. Alternate runtimes are allowed for explicit runtime comparisons:

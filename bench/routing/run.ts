@@ -26,7 +26,7 @@ import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
-import { routingPublicationIssues } from './publication'
+import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { rotateTargets } from './schedule'
@@ -296,6 +296,12 @@ async function main(): Promise<void> {
       })
     }
   }
+
+  meta.publicationIssues = [...new Set([
+    ...(meta.publicationIssues ?? []),
+    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs),
+  ])]
+  meta.publishable = meta.publicationIssues.length === 0
 
   const report = renderReport({ meta, scenarios, targets: targetRows, measurements })
   writeFileSync(join(outDir, 'report.md'), report)
