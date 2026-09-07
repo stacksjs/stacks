@@ -1,5 +1,123 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.28...v0.74.29)
+
+## ✨ Features
+
+- **packages**: let an installed package ship background jobs (#2443) ([cbf0e81](https://github.com/stacksjs/stacks/commit/cbf0e81)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2443](https://github.com/stacksjs/stacks/issues/2443), [#2443](https://github.com/stacksjs/stacks/issues/2443))
+- **packages**: let an installed package ship stx components (#2441) ([6a52f6a](https://github.com/stacksjs/stacks/commit/6a52f6a)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2441](https://github.com/stacksjs/stacks/issues/2441), [#2441](https://github.com/stacksjs/stacks/issues/2441))
+- **packages**: run the migrations an installed package ships (#2438) ([6f39209](https://github.com/stacksjs/stacks/commit/6f39209)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2438](https://github.com/stacksjs/stacks/issues/2438), [#2438](https://github.com/stacksjs/stacks/issues/2438))
+- **packages**: resolve an installed package's models on the first boot (#2437) ([a98121e](https://github.com/stacksjs/stacks/commit/a98121e)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2437](https://github.com/stacksjs/stacks/issues/2437), [#2437](https://github.com/stacksjs/stacks/issues/2437))
+
+## 🐛 Bug Fixes
+
+- **server**: inject auto-imports in the production API server (#2444) ([f70241b](https://github.com/stacksjs/stacks/commit/f70241b)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2442](https://github.com/stacksjs/stacks/issues/2442), [#2444](https://github.com/stacksjs/stacks/issues/2444), [#2444](https://github.com/stacksjs/stacks/issues/2444))
+- **packages**: discover installed packages in production, not only in dev (#2440) ([140eb2d](https://github.com/stacksjs/stacks/commit/140eb2d)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2440](https://github.com/stacksjs/stacks/issues/2440), [#2440](https://github.com/stacksjs/stacks/issues/2440), [#2437](https://github.com/stacksjs/stacks/issues/2437), [#2438](https://github.com/stacksjs/stacks/issues/2438))
+- **router**: repair three type errors left by the perf series (#2436) ([48f42ec](https://github.com/stacksjs/stacks/commit/48f42ec)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2436](https://github.com/stacksjs/stacks/issues/2436), [#2436](https://github.com/stacksjs/stacks/issues/2436))
+- **models**: drop useActivityLog, a trait nothing implemented ([8cdab3b](https://github.com/stacksjs/stacks/commit/8cdab3b)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2435](https://github.com/stacksjs/stacks/issues/2435))
+- **ci**: build @stacksjs/database before the jobs that import its subpath ([80f912b](https://github.com/stacksjs/stacks/commit/80f912b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: resolve database subpaths to source ([dd43f95](https://github.com/stacksjs/stacks/commit/dd43f95)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: stabilize validation parity probes ([0ad1052](https://github.com/stacksjs/stacks/commit/0ad1052)) _(by Chris <chris@stacksjs.com>)_
+- **ledger**: an index dropped with its table is not drift ([c5b598c](https://github.com/stacksjs/stacks/commit/c5b598c)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **seeder**: keep a unique column's generated values distinct ([dbe9846](https://github.com/stacksjs/stacks/commit/dbe9846)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **migrations**: stop generated migrations sorting before the tables they alter ([d88f0d1](https://github.com/stacksjs/stacks/commit/d88f0d1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: streamline compiled validation loops ([d5843e5](https://github.com/stacksjs/stacks/commit/d5843e5)) _(by Chris <chris@stacksjs.com>)_
+- **router**: streamline incoming request IDs ([9c2aa82](https://github.com/stacksjs/stacks/commit/9c2aa82)) _(by Chris <chris@stacksjs.com>)_
+- **router**: compile JSON action capability ([de82b98](https://github.com/stacksjs/stacks/commit/de82b98)) _(by Chris <chris@stacksjs.com>)_
+- **security**: cache CSRF cookie suffixes ([f8d85ef](https://github.com/stacksjs/stacks/commit/f8d85ef)) _(by Chris <chris@stacksjs.com>)_
+- **router**: shrink request ID state ([dad085a](https://github.com/stacksjs/stacks/commit/dad085a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip render seeding for JSON routes ([b5b8e56](https://github.com/stacksjs/stacks/commit/b5b8e56)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer request ID generator ([9f7d95c](https://github.com/stacksjs/stacks/commit/9f7d95c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid unused compression variance ([208ccfd](https://github.com/stacksjs/stacks/commit/208ccfd)) _(by Chris <chris@stacksjs.com>)_
+- **router**: specialize direct native dispatch ([fe622d5](https://github.com/stacksjs/stacks/commit/fe622d5)) _(by Chris <chris@stacksjs.com>)_
+- **router**: load only project path helpers ([313db67](https://github.com/stacksjs/stacks/commit/313db67)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid eager crypto runtime ([89d4e1f](https://github.com/stacksjs/stacks/commit/89d4e1f)) _(by Chris <chris@stacksjs.com>)_
+- **csrf**: use direct hex encoding ([f0d0f53](https://github.com/stacksjs/stacks/commit/f0d0f53)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid exact small JSON byte scan ([976d6a2](https://github.com/stacksjs/stacks/commit/976d6a2)) _(by Chris <chris@stacksjs.com>)_
+- **router**: capture immutable route flags ([fec230e](https://github.com/stacksjs/stacks/commit/fec230e)) _(by Chris <chris@stacksjs.com>)_
+- **router**: pack route capability flags ([d6126f6](https://github.com/stacksjs/stacks/commit/d6126f6)) _(by Chris <chris@stacksjs.com>)_
+- **router**: share inline result formatter ([72b8b41](https://github.com/stacksjs/stacks/commit/72b8b41)) _(by Chris <chris@stacksjs.com>)_
+- **router**: share synchronous finalizer ([f977717](https://github.com/stacksjs/stacks/commit/f977717)) _(by Chris <chris@stacksjs.com>)_
+- **router**: call sync fallbacks directly ([7e180b0](https://github.com/stacksjs/stacks/commit/7e180b0)) _(by Chris <chris@stacksjs.com>)_
+- **router**: create async fallback lazily ([0542768](https://github.com/stacksjs/stacks/commit/0542768)) _(by Chris <chris@stacksjs.com>)_
+- **router**: index route state once ([040a932](https://github.com/stacksjs/stacks/commit/040a932)) _(by Chris <chris@stacksjs.com>)_
+- **router**: allocate route middleware lazily ([b8c9b20](https://github.com/stacksjs/stacks/commit/b8c9b20)) _(by Chris <chris@stacksjs.com>)_
+- **router**: consolidate route policy state ([644c860](https://github.com/stacksjs/stacks/commit/644c860)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer root route tracking ([aa7bdf6](https://github.com/stacksjs/stacks/commit/aa7bdf6)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid route prefix lookup array ([f19928e](https://github.com/stacksjs/stacks/commit/f19928e)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid rate period lookup state ([ee80461](https://github.com/stacksjs/stacks/commit/ee80461)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer request body encoder ([9301e1f](https://github.com/stacksjs/stacks/commit/9301e1f)) _(by Chris <chris@stacksjs.com>)_
+- **router**: avoid fixed method sets ([fc202f3](https://github.com/stacksjs/stacks/commit/fc202f3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer boot-only registries ([c5d3c31](https://github.com/stacksjs/stacks/commit/c5d3c31)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer middleware caches ([2e43001](https://github.com/stacksjs/stacks/commit/2e43001)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer string handler caches ([a82d01c](https://github.com/stacksjs/stacks/commit/a82d01c)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer bounded cache storage ([b7524b3](https://github.com/stacksjs/stacks/commit/b7524b3)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer unused route registries ([d896bbf](https://github.com/stacksjs/stacks/commit/d896bbf)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer optional feature registries ([a580d17](https://github.com/stacksjs/stacks/commit/a580d17)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer fallback query tracking ([7e58afc](https://github.com/stacksjs/stacks/commit/7e58afc)) _(by Chris <chris@stacksjs.com>)_
+- **router**: lazy-load optional request helpers ([8ad7118](https://github.com/stacksjs/stacks/commit/8ad7118)) _(by Chris <chris@stacksjs.com>)_
+- **router**: consolidate response metadata markers ([b12b03d](https://github.com/stacksjs/stacks/commit/b12b03d)) _(by Chris <chris@stacksjs.com>)_
+- **router**: skip inactive csrf marker reads ([7c8f6cc](https://github.com/stacksjs/stacks/commit/7c8f6cc)) _(by Chris <chris@stacksjs.com>)_
+- **router**: fast-path plain JSON results ([be6c9af](https://github.com/stacksjs/stacks/commit/be6c9af)) _(by Chris <chris@stacksjs.com>)_
+- **router**: isolate programmatic route discovery ([b412053](https://github.com/stacksjs/stacks/commit/b412053)) _(by Chris <chris@stacksjs.com>)_
+- **router**: fast-path csrf cookie detection ([5c88fff](https://github.com/stacksjs/stacks/commit/5c88fff)) _(by Chris <chris@stacksjs.com>)_
+- **router**: let Bun derive JSON lengths ([0eb073b](https://github.com/stacksjs/stacks/commit/0eb073b)) _(by Chris <chris@stacksjs.com>)_
+- **router**: load lightweight replica context ([faf97b6](https://github.com/stacksjs/stacks/commit/faf97b6)) _(by Chris <chris@stacksjs.com>)_
+- **router**: load database context directly ([8ac87a2](https://github.com/stacksjs/stacks/commit/8ac87a2)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- **path**: expose lightweight project paths ([deeaa8a](https://github.com/stacksjs/stacks/commit/deeaa8a)) _(by Chris <chris@stacksjs.com>)_
+- **router**: isolate error response formatting ([827356e](https://github.com/stacksjs/stacks/commit/827356e)) _(by Chris <chris@stacksjs.com>)_
+- **router**: isolate query diagnostics ([133a816](https://github.com/stacksjs/stacks/commit/133a816)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- document package discovery and the manifest schema (#2439) ([84042d3](https://github.com/stacksjs/stacks/commit/84042d3)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2439](https://github.com/stacksjs/stacks/issues/2439), [#2439](https://github.com/stacksjs/stacks/issues/2439))
+- **bench**: pin peer setup instructions ([ac366c1](https://github.com/stacksjs/stacks/commit/ac366c1)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **router**: inspect local import graph entry ([2170eef](https://github.com/stacksjs/stacks/commit/2170eef)) _(by Chris <chris@stacksjs.com>)_
+- **router**: inspect resolved import graph ([8d02543](https://github.com/stacksjs/stacks/commit/8d02543)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: record memory runtime provenance ([6c7bce4](https://github.com/stacksjs/stacks/commit/6c7bce4)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: record router runtime provenance ([7086fb0](https://github.com/stacksjs/stacks/commit/7086fb0)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reject non-object validation bodies ([0281ef0](https://github.com/stacksjs/stacks/commit/0281ef0)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require JSON validation errors ([91fd468](https://github.com/stacksjs/stacks/commit/91fd468)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: equalize sqlite parameter binding ([d45a2bd](https://github.com/stacksjs/stacks/commit/d45a2bd)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: lock database terminal disclosure ([9929204](https://github.com/stacksjs/stacks/commit/9929204)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require memory parity evidence ([1a078fd](https://github.com/stacksjs/stacks/commit/1a078fd)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require routing parity evidence ([74387fb](https://github.com/stacksjs/stacks/commit/74387fb)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: retain memory parity evidence ([2c95da7](https://github.com/stacksjs/stacks/commit/2c95da7)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: retain response parity evidence ([7326f2b](https://github.com/stacksjs/stacks/commit/7326f2b)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require the full routing matrix ([48542b7](https://github.com/stacksjs/stacks/commit/48542b7)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: embed workload metadata ([4ee2972](https://github.com/stacksjs/stacks/commit/4ee2972)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: recheck parity after load ([76ed63f](https://github.com/stacksjs/stacks/commit/76ed63f)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: resolve peers in server context ([e2fbd9c](https://github.com/stacksjs/stacks/commit/e2fbd9c)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: probe source in server context ([0624507](https://github.com/stacksjs/stacks/commit/0624507)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: require exact load statuses ([28521e3](https://github.com/stacksjs/stacks/commit/28521e3)) _(by Chris <chris@stacksjs.com>)_
+- **bench**: reject aggregate host load ([769f29a](https://github.com/stacksjs/stacks/commit/769f29a)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- **git**: untrack the two generated files .gitignore already names ([cbcac9b](https://github.com/stacksjs/stacks/commit/cbcac9b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **git**: untrack the router package's runtime sqlite files ([20ca38d](https://github.com/stacksjs/stacks/commit/20ca38d)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **bench**: update Hono comparator ([30f06d2](https://github.com/stacksjs/stacks/commit/30f06d2)) _(by Chris <chris@stacksjs.com>)_
+
+## ⏪ Reverts
+
+- keep query diagnostics inline ([6674d12](https://github.com/stacksjs/stacks/commit/6674d12)) _(by Chris <chris@stacksjs.com>)_
+- restore inline error formatting ([5f5caf9](https://github.com/stacksjs/stacks/commit/5f5caf9)) _(by Chris <chris@stacksjs.com>)_
+- remove redundant paginator fast path ([17cb5fd](https://github.com/stacksjs/stacks/commit/17cb5fd)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.27...v0.74.28)
 
 ## 💥 Breaking Changes
