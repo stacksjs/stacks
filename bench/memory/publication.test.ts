@@ -96,12 +96,12 @@ describe('memory benchmark publication profile', () => {
 
   it('rejects targets and rates outside the declared comparison profile', () => {
     expect(memoryMeasurementPublicationIssues(
-      [{ id: 'stacks-minimal', requestRate: 40_000 }, { id: 'bun-raw', requestRate: 25_000 }],
+      [{ id: 'stacks-wal-full', requestRate: 40_000 }, { id: 'bun-raw', requestRate: 25_000 }],
       [],
       3,
     )).toEqual([
-      'stacks-minimal is not in the equal-rate API memory profile',
-      'stacks-minimal completed 0 of 3 required run(s)',
+      'stacks-wal-full is not in the equal-rate API memory profile',
+      'stacks-wal-full completed 0 of 3 required run(s)',
       'bun-raw completed 0 of 3 required run(s)',
     ])
     expect(memoryMeasurementPublicationIssues(

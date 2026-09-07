@@ -19,6 +19,11 @@ requests per second for every target. The lower common rate is intentional:
 using the 40,000 and 25,000 tiers from Bun's graphic would expose frameworks to
 different allocation pressure and make both peak and settled RSS less directly
 comparable.
+It reports Stacks twice: stock defaults with a returning client's CSRF cookie,
+and the explicitly labeled minimal API profile with CSRF, framework security
+headers, and framework-owned request IDs disabled. The stock row shows what
+users receive by default. The minimal row is the capability-equivalent
+comparison with peers that do not enable those features in their fixtures.
 
 Next.js SSR and Vite dev are separate workload classes. They are not included
 in the API table because comparing an SSR render or development transform with
