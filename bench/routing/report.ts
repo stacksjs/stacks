@@ -11,6 +11,7 @@ import type { SourceState } from './source'
 import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
 import { formatSourceState } from './source'
+import { MAX_STABLE_RANGE } from './statistics'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 
 export interface Measurement {
@@ -25,6 +26,8 @@ export interface Measurement {
   cpuPercent: number | null
   /** Lowest and highest rps across the repeats, so spread is visible. */
   spread: { min: number, max: number }
+  /** Full rps range divided by the median. */
+  rangeRatio?: number
   /** Median and spread of run-paired throughput ratios against Bun raw. */
   relativeToRaw?: RelativeThroughput | null
   runs: number
@@ -59,6 +62,14 @@ export interface ReportInput {
 
 function fmt(n: number, digits = 0): string {
   return n.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+}
+
+function measurementRange(row: Measurement): number {
+  if (row.rangeRatio != null)
+    return row.rangeRatio
+  if (!(row.rpsMean > 0))
+    return Number.POSITIVE_INFINITY
+  return (row.spread.max - row.spread.min) / row.rpsMean
 }
 
 export function renderReport(input: ReportInput): string {
@@ -108,6 +119,15 @@ export function renderReport(input: ReportInput): string {
     lines.push('')
     lines.push(`\`${scenario.method} ${scenario.path}\``)
     lines.push('')
+    const unstableRows = rows.filter(row => measurementRange(row) > MAX_STABLE_RANGE)
+    if (unstableRows.length > 0) {
+      const labels = unstableRows.map((row) => {
+        const target = targets.find(target => target.id === row.targetId)
+        return `**${target?.label ?? row.targetId}** (${fmt(measurementRange(row) * 100, 1)}% range)`
+      })
+      lines.push(`> **Unstable result.** ${labels.join(', ')} exceeded the ${fmt(MAX_STABLE_RANGE * 100)}% range limit. Treat this scenario as invalid and rerun on an isolated host.`)
+      lines.push('')
+    }
     lines.push(`| Target | req/s | req/s p50 | spread |${hasRawComparison ? ' Bun raw |' : ''} p50 ms | p90 ms | p99 ms | errors | CPU |`)
     lines.push(`|---|---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
 
@@ -118,7 +138,7 @@ export function renderReport(input: ReportInput): string {
         target?.label ?? row.targetId,
         fmt(row.rpsMean),
         row.rpsP50 == null ? '-' : fmt(row.rpsP50),
-        `${fmt(row.spread.min)}-${fmt(row.spread.max)}`,
+        `${fmt(row.spread.min)}-${fmt(row.spread.max)} (${fmt(measurementRange(row) * 100, 1)}%)`,
       ]
       if (hasRawComparison) {
         const relative = row.relativeToRaw

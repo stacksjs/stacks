@@ -28,7 +28,8 @@ accident. The safeguards here exist only to stop that:
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
-  median is not telling you much.
+  median is not telling you much. A full range above 10% of the median marks
+  that scenario unstable and invalid for comparison.
 - **Every measurement gets a fresh server process.** Target order rotates
   between runs so route warm state, target position, and a warming or
   throttling host cannot consistently favor one implementation.

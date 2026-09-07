@@ -40,7 +40,8 @@ describe('routing benchmark report', () => {
     })
 
     expect(report).toContain('| Target | req/s | req/s p50 | spread | Bun raw |')
-    expect(report).toContain('| Stacks minimal | 85 | 84 | 80-90 | 85.0% (80.0%-90.0%) |')
+    expect(report).toContain('> **Unstable result.** **Stacks minimal** (11.8% range) exceeded the 10% range limit.')
+    expect(report).toContain('| Stacks minimal | 85 | 84 | 80-90 (11.8%) | 85.0% (80.0%-90.0%) |')
   })
 
   test('omits the comparison column when Bun raw was not measured', () => {

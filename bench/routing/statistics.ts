@@ -12,6 +12,16 @@ export interface RelativeThroughput {
   spread: { min: number, max: number }
 }
 
+export const MAX_STABLE_RANGE = 0.1
+
+/** Full sample range as a fraction of its median. */
+export function relativeRange(values: readonly number[]): number {
+  const center = median(values)
+  if (!(center > 0))
+    return Number.POSITIVE_INFINITY
+  return (Math.max(...values) - Math.min(...values)) / center
+}
+
 /** Compare measurements made in the same rotated run, then summarize those ratios. */
 export function relativeThroughput(
   targetValues: readonly number[],

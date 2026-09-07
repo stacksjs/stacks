@@ -29,7 +29,7 @@ import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, 
 import { rotateTargets } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState } from './source'
-import { median, relativeThroughput } from './statistics'
+import { median, relativeRange, relativeThroughput } from './statistics'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -253,6 +253,7 @@ async function main(): Promise<void> {
         errorRate: results.reduce((sum, r) => sum + (r.requests ? r.errors / r.requests : 0), 0) / results.length,
         cpuPercent: cpuReadings.length ? median(cpuReadings) : null,
         spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
+        rangeRatio: relativeRange(rpsValues),
         relativeToRaw: rawResults
           ? relativeThroughput(rpsValues, rawResults.map(r => r.rpsMean))
           : null,
