@@ -174,6 +174,26 @@ function packageModelDirs(): string[] {
 }
 
 /**
+ * The job directories that discovered packages contribute.
+ *
+ * Same shape and same failure rule as `packageModelDirs`: a boot that cannot
+ * read the manifest still has the application's own jobs, and refusing to
+ * build the barrel would take those away too.
+ */
+function packageJobDirs(): string[] {
+  try {
+    // eslint-disable-next-line ts/no-require-imports
+    const { packageJobRoots } = require('@stacksjs/config') as {
+      packageJobRoots: () => Array<{ package: string, dir: string }>
+    }
+    return packageJobRoots().map(root => root.dir)
+  }
+  catch {
+    return []
+  }
+}
+
+/**
  * Resolve the set of directories to scan for framework-default models.
  * Always returns the Models root itself (for top-level files), then includes
  * each opt-in subdir only if its gating config file exists in the project.
@@ -442,6 +462,7 @@ export function autoImportSourceDirs(): string[] {
     ...resolveDefaultModelDirs(),
     path.userJobsPath(),
     frameworkDefaultsDir('app/Jobs'),
+    ...packageJobDirs(),
     path.userControllersPath(),
     frameworkDefaultsDir('app/Controllers'),
     // The name registries. Left out, and the barrel that names an action or a
@@ -596,7 +617,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   // `resolveJobFile` resolved every one of them - which made them unschedulable
   // by type and un-auto-imported at runtime, for no reason anyone chose.
   const jobsIndexPath = `${outputDir}/jobs.ts`
-  await generateDefineModelIndex(existingDirs([userJobsPath, frameworkDefaultsDir('app/Jobs')]), jobsIndexPath)
+  await generateDefineModelIndex(existingDirs([userJobsPath, frameworkDefaultsDir('app/Jobs'), ...packageJobDirs()]), jobsIndexPath)
 
   /*
    * Lazy indexes: the name-addressed registries.
@@ -761,8 +782,24 @@ export function initiateImports(): void {
     ...enabledSubdirs.flatMap(d => scanDefineModelExports(d)),
   ]
 
-  // Scan job definitions (default exports, same pattern as models)
-  const jobExports = scanDefineModelExports(userJobsPath)
+  // Scan job definitions (default exports, same pattern as models).
+  //
+  // Deduplicated first-wins, so an application's own job keeps the name when a
+  // package ships one called the same thing. Models were already deduped and
+  // jobs were not, which did not matter while jobs came from a single
+  // directory - two entries with the same `as` name produce a barrel that
+  // fails to load with "Cannot export a duplicate name", taking every job with
+  // it, not just the colliding one.
+  const seenJobs = new Set<string>()
+  const jobExports = [
+    ...scanDefineModelExports(userJobsPath),
+    ...packageJobDirs().flatMap(dir => scanDefineModelExports(dir)),
+  ].filter((exp) => {
+    if (seenJobs.has(exp.name))
+      return false
+    seenJobs.add(exp.name)
+    return true
+  })
 
   // Deduplicate: user models override framework models override defaults
   const seen = new Set<string>()
