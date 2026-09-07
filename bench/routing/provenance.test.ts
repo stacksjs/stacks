@@ -65,6 +65,11 @@ describe('Stacks benchmark source provenance', () => {
   })
 
   it('keeps peer database statements and result shaping equivalent', () => {
+    const stacksSource = readFileSync(join(import.meta.dir, 'servers', 'stacks.ts'), 'utf8')
+    const readme = readFileSync(join(import.meta.dir, 'README.md'), 'utf8')
+    expect(stacksSource).toContain('selectItem.executeTakeFirstSync()')
+    expect(readme).toContain('`executeTakeFirstSync()` terminal')
+
     for (const server of ['bun-raw.ts', 'elysia.ts', 'express.ts', 'fastify.ts', 'hono.ts']) {
       const source = readFileSync(join(import.meta.dir, 'servers', server), 'utf8')
       expect(source).toContain("SELECT id, name FROM bench_items WHERE id = 1 LIMIT 1")

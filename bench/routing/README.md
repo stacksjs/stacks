@@ -151,9 +151,9 @@ runner points `DB_DATABASE_PATH` at the fixture); the others open it with
 idiomatic path. That asymmetry favours them, and it is stated here rather than
 papered over. The Stacks route builds its invariant typed query once at startup,
 matching the prepared statements used by the direct `bun:sqlite` targets, then
-uses the SQLite-only `executeSync()` terminal because Bun SQLite performs the
-read synchronously either way. This avoids adding Promise scheduling that the
-other targets do not have. `post-validate` has the same shape: Elysia uses its `t` schema,
+uses the SQLite-only `executeTakeFirstSync()` terminal because Bun SQLite performs
+the read synchronously either way. This avoids both a one-row array and Promise
+scheduling that the other targets do not have. `post-validate` has the same shape: Elysia uses its `t` schema,
 Hono a hand-written check behind its own `validator()` seam, and both are
 cheaper than a compiled rule set.
 
