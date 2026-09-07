@@ -474,6 +474,27 @@ export async function destroyEffects(tsCloudConfig: any, current: any): Promise<
 }
 
 /**
+ * The other declared sites that answer on the same hostnames as this one.
+ *
+ * A move repoints DNS, and DNS is per HOSTNAME, not per site. This project
+ * mounts four sites on `stacksjs.com` - `main` at `/`, `docs` at `/docs`, `blog`
+ * at `/blog`, `discord` at `/discord` - so moving `docs` alone carries its tree
+ * to the target and points the whole apex there, leaving the other three
+ * serving from a box nothing resolves to any more.
+ *
+ * ts-cloud cannot see this: it is handed one site and one hostname, and both are
+ * correct in isolation. The sharing lives in the project's own site model, so
+ * the check does too.
+ */
+export function sitesSharingHostnames(sites: Record<string, any>, siteName: string, hostnames: string[], hostsOf: (name: string, site: any) => string[]): string[] {
+  return Object.entries(sites ?? {})
+    .filter(([name]) => name !== siteName)
+    .filter(([name, site]) => hostsOf(name, site).some(host => hostnames.includes(host)))
+    .map(([name, site]) => `${name} (${String(site?.path ?? '/')})`)
+    .sort()
+}
+
+/**
  * The side effects a site move needs, wired to two boxes of this project's fleet.
  *
  * Everything here is the SAME primitive the deploy path uses, deliberately: the
@@ -1893,6 +1914,24 @@ export function cloud(buddy: CLI): void {
         { [site]: rawSite },
         { autoWww: Boolean(tsCloudConfig?.infrastructure?.compute?.proxy?.autoWww) },
       )
+
+      const shared = sitesSharingHostnames(
+        tsCloudConfig?.sites ?? {},
+        site,
+        hostnames,
+        (name, declared) => gatewayHostnames(
+          { [name]: declared },
+          { autoWww: Boolean(tsCloudConfig?.infrastructure?.compute?.proxy?.autoWww) },
+        ),
+      )
+      if (shared.length > 0) {
+        return await refuse(
+          `'${site}' answers on ${hostnames.join(', ')}, and so do ${shared.length} other site(s): ${shared.join(', ')}.`,
+          'A move repoints the hostname, not the path - so this would carry one tree to the target and send every '
+          + 'request for the others to a box that does not have them.',
+          'Give the site its own hostname first, or move the whole set to the target and deploy once.',
+        )
+      }
 
       const source = options.from
         ? listing.servers.find((s: any) => s?.name === options.from)

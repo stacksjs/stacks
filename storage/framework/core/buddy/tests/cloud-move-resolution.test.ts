@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { serverServing } from '../src/commands/cloud'
+import { serverServing, sitesSharingHostnames } from '../src/commands/cloud'
 
 /**
  * A move has to know which box the site is on NOW, and config cannot say:
@@ -67,5 +67,51 @@ describe('serverServing', () => {
     const found = await serverServing(boxes, ['shop.example.com', 'www.shop.example.com'], probe)
 
     expect(found?.name).toBe('shop-production-lb')
+  })
+})
+
+/**
+ * A move repoints DNS, and DNS is per hostname rather than per site. This
+ * project mounts four sites on `stacksjs.com` - `main` at `/`, `docs` at
+ * `/docs`, `blog` at `/blog`, `discord` at `/discord` - so moving `docs` alone
+ * would carry one tree to the target and point the whole apex there, leaving
+ * the other three on a box nothing resolves to.
+ *
+ * ts-cloud cannot see this: it is handed one site and one hostname, and both are
+ * correct in isolation. The sharing lives in the project's site model.
+ */
+describe('sitesSharingHostnames', () => {
+  const hostsOf = (_name: string, site: any) => (site?.domain ? [String(site.domain)] : [])
+
+  const sites = {
+    main: { domain: 'shop.com', path: '/' },
+    docs: { domain: 'shop.com', path: '/docs' },
+    blog: { domain: 'shop.com', path: '/blog' },
+    api: { domain: 'api.shop.com', path: '/' },
+  }
+
+  it('names every other site on the same hostname, with its path', () => {
+    expect(sitesSharingHostnames(sites, 'docs', ['shop.com'], hostsOf)).toEqual(['blog (/blog)', 'main (/)'])
+  })
+
+  it('says nothing for a site that owns its hostname outright', () => {
+    expect(sitesSharingHostnames(sites, 'api', ['api.shop.com'], hostsOf)).toEqual([])
+  })
+
+  it('never counts the site being moved as sharing with itself', () => {
+    expect(sitesSharingHostnames({ only: sites.docs }, 'only', ['shop.com'], hostsOf)).toEqual([])
+  })
+
+  /** A loopback-only site has no hostname, so it cannot collide with one. */
+  it('ignores sites the gateway never routes', () => {
+    const withInternal = { ...sites, worker: { path: '/' } }
+
+    expect(sitesSharingHostnames(withInternal, 'api', ['api.shop.com'], hostsOf)).toEqual([])
+  })
+
+  it('matches on any of the moving site\'s hostnames', () => {
+    const wwwToo = { alt: { domain: 'www.shop.com', path: '/' }, docs: sites.docs }
+
+    expect(sitesSharingHostnames(wwwToo, 'docs', ['shop.com', 'www.shop.com'], hostsOf)).toEqual(['alt (/)'])
   })
 })
