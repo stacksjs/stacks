@@ -167,16 +167,23 @@ async function main(): Promise<void> {
 
   for (const target of targets) {
     console.error(`\n[bench] === ${target.label}`)
-    const booted = await boot(target, withDb)
-    if ('skipped' in booted) {
-      console.error(`[bench] skipped: ${booted.skipped}`)
-      targetRows.push({ id: target.id, label: target.label, skipped: booted.skipped })
-      continue
-    }
-    targetRows.push({ id: target.id, label: target.label })
+    let targetAvailable = false
+    for (const scenario of scenarios) {
+      // One process per scenario keeps route-table size, database imports, and
+      // warm state from one measurement out of every other measurement.
+      const booted = await boot(target, scenario.requiresDb === true, scenario)
+      if ('skipped' in booted) {
+        console.error(`[bench] skipped: ${booted.skipped}`)
+        if (!targetAvailable)
+          targetRows.push({ id: target.id, label: target.label, skipped: booted.skipped })
+        break
+      }
+      if (!targetAvailable) {
+        targetAvailable = true
+        targetRows.push({ id: target.id, label: target.label })
+      }
 
-    try {
-      for (const scenario of scenarios) {
+      try {
         await assertParity(target, scenario)
 
         const results: LoadResult[] = []
@@ -229,9 +236,9 @@ async function main(): Promise<void> {
           runs: opts.runs,
         })
       }
-    }
-    finally {
-      await stop(booted)
+      finally {
+        await stop(booted)
+      }
     }
   }
 
