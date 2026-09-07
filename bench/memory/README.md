@@ -62,10 +62,12 @@ runs require `oha`; the runner fails instead of silently substituting a
 saturating driver.
 
 No baseline is checked in. A publishable baseline requires Bun 1.4.1 from the
-Pantry environment, `oha`, and dedicated Linux x64 hardware. Set
-`BENCH_DEDICATED=1` only on such a machine. Other runs are marked
-direction-only. The weekly GitHub Actions run is a regression signal and
-uploads its raw samples, but shared-runner numbers are not publishable.
+Pantry environment, `oha`, at least three fresh-process repeats, a clean Git
+revision, and dedicated Linux x64 hardware with no observed competing process.
+Set `BENCH_DEDICATED=1` only on such a machine. Other runs list their publication
+blockers and are marked direction-only. The weekly GitHub Actions run is a
+regression signal and uploads its raw samples, but shared-runner numbers are not
+publishable.
 
 ## Flags
 

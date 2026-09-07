@@ -28,6 +28,7 @@ import { rotateTargets } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
 import { BUN_141_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
+import { memoryPublicationIssues } from './publication'
 import { median, renderMemoryReport } from './report'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -271,13 +272,32 @@ async function main(): Promise<void> {
   const rawDir = join(outDir, 'raw')
   mkdirSync(rawDir, { recursive: true })
 
-  const dedicatedHost = driver.publishable && platform() === 'linux' && process.env.BENCH_DEDICATED === '1'
+  const machine = {
+    arch: arch(),
+    platform: platform(),
+    release: release(),
+    cpu: cpus()[0]?.model ?? 'unknown',
+    cores: cpus().length,
+    bun: Bun.version,
+  }
+  const publicationProfile = {
+    driverPublishable: driver.publishable,
+    platform: machine.platform,
+    arch: machine.arch,
+    dedicated: process.env.BENCH_DEDICATED === '1',
+    runtimeRequirement,
+    source,
+    runs: options.runs,
+    busyHostProcesses: [...observedBusyProcesses.values()],
+  }
+  const publicationIssues = memoryPublicationIssues(publicationProfile)
   const meta: MemoryRunMeta = {
     startedAt,
     source,
     runtimeRequirement,
     driver: driver.name,
-    publishable: dedicatedHost && observedBusyProcesses.size === 0,
+    publishable: publicationIssues.length === 0,
+    publicationIssues,
     busyHostProcesses: [...observedBusyProcesses.values()],
     scenario: scenario.id,
     connections: options.connections,
@@ -286,18 +306,11 @@ async function main(): Promise<void> {
     sampleIntervalMs: options.sampleIntervalMs,
     settleSeconds: options.settleSeconds,
     runs: options.runs,
-    machine: {
-      arch: arch(),
-      platform: platform(),
-      release: release(),
-      cpu: cpus()[0]?.model ?? 'unknown',
-      cores: cpus().length,
-      bun: Bun.version,
-    },
+    machine,
   }
 
-  if (!dedicatedHost)
-    console.error('[memory] this is a direction-only run; publishing requires oha on dedicated Linux x64 hardware')
+  if (!meta.publishable)
+    console.error(`[memory] direction-only: ${publicationIssues.join('; ')}`)
 
   const measurements: MemoryMeasurement[] = []
   const targetRows: Array<{ id: string, label: string, requestRate: number, skipped?: string }> = []
@@ -312,8 +325,9 @@ async function main(): Promise<void> {
       const busyCount = observedBusyProcesses.size
       await checkHostLoad(options.allowBusyHost, observedBusyProcesses)
       meta.busyHostProcesses = [...observedBusyProcesses.values()]
-      if (observedBusyProcesses.size > 0)
-        meta.publishable = false
+      publicationProfile.busyHostProcesses = meta.busyHostProcesses
+      meta.publicationIssues = memoryPublicationIssues(publicationProfile)
+      meta.publishable = meta.publicationIssues.length === 0
       if (observedBusyProcesses.size > busyCount)
         console.error(`[memory] busy-host override: ${[...observedBusyProcesses.values()].map(formatBusyProcess).join(', ')}`)
       console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)

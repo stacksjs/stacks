@@ -28,6 +28,7 @@ export interface MemoryRunMeta {
   runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
+  publicationIssues?: string[]
   busyHostProcesses?: BusyProcess[]
   scenario: string
   connections: number
@@ -76,6 +77,10 @@ export function renderMemoryReport(input: MemoryReportInput): string {
 
   if (!meta.publishable) {
     lines.push('> **Direction-only.** Publish only dedicated Linux x64 runs driven by `oha`.')
+    lines.push('')
+  }
+  if (meta.publicationIssues?.length) {
+    lines.push(`> **Publication blockers.** ${meta.publicationIssues.join('; ')}.`)
     lines.push('')
   }
   const runtimeWarning = runtimeMismatchWarning(meta.runtimeRequirement, meta.machine.bun)

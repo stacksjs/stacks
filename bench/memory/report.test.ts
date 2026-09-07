@@ -79,4 +79,18 @@ describe('memory benchmark report', () => {
     })
     expect(report).toContain('**Busy-host override.** compiler (PID 20, 88.4% CPU). This run is direction-only and must not be published.')
   })
+
+  it('lists publication blockers', () => {
+    const report = renderMemoryReport({
+      meta: {
+        startedAt: '2026-09-05T00:00:00Z', driver: 'oha', publishable: false,
+        publicationIssues: ['host architecture is arm64, not x64', 'only 1 fresh-process run(s) were requested; at least 3 are required'],
+        scenario: 'static-json', connections: 64, loadSeconds: 60, idleSeconds: 180,
+        sampleIntervalMs: 100, settleSeconds: 10, runs: 1,
+        machine: { arch: 'arm64', platform: 'linux', release: 'test', cpu: 'test', cores: 1, bun: '1.4.1' },
+      },
+      targets: [], measurements: [],
+    })
+    expect(report).toContain('**Publication blockers.** host architecture is arm64, not x64; only 1 fresh-process run(s) were requested; at least 3 are required.')
+  })
 })
