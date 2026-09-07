@@ -16,7 +16,7 @@ import { describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { packageComponentRoots, packageMigrationRoots, packageModelRoots, packageViewRoots } from '../src/discovered-resources'
+import { packageComponentRoots, packageJobRoots, packageMigrationRoots, packageModelRoots, packageViewRoots } from '../src/discovered-resources'
 import { resolveViewPatterns } from '../src/views'
 
 function project(): string {
@@ -364,6 +364,46 @@ describe('package component roots', () => {
       // Otherwise a package could register the application's own components
       // and, depending on search order, answer for its tags.
       expect(packageComponentRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+})
+
+
+describe('package job roots', () => {
+  test('a package that ships app/Jobs is found without declaring anything', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/app/Jobs'), { recursive: true })
+      const file = manifest(root, { loghq: { root: 'node_modules/loghq' } })
+
+      // Conventional like models, not opt-in like components: a job is reached
+      // by name from the barrel and is inert until something dispatches it.
+      expect(packageJobRoots({ manifestPath: file, projectRoot: root }).map(r => r.dir))
+        .toEqual([join(root, 'node_modules/loghq/app/Jobs')])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('a package with no jobs contributes nothing', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/table/resources'), { recursive: true })
+      const file = manifest(root, { table: { root: 'node_modules/table' } })
+
+      expect(packageJobRoots({ manifestPath: file, projectRoot: root })).toEqual([])
+    }
+    finally { rmSync(root, { recursive: true, force: true }) }
+  })
+
+  test('honours an explicitly declared directory', () => {
+    const root = project()
+    try {
+      mkdirSync(join(root, 'node_modules/loghq/queue'), { recursive: true })
+      const file = manifest(root, { loghq: { root: 'node_modules/loghq', jobs: ['queue'] } })
+
+      expect(packageJobRoots({ manifestPath: file, projectRoot: root }).map(r => r.dir))
+        .toEqual([join(root, 'node_modules/loghq/queue')])
     }
     finally { rmSync(root, { recursive: true, force: true }) }
   })

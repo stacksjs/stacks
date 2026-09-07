@@ -47,6 +47,7 @@ const IMPLIED_DIRS: Record<string, readonly string[] | undefined> = {
   views: ['resources/views'],
   models: ['app/Models'],
   migrations: ['database/migrations'],
+  jobs: ['app/Jobs'],
 }
 
 export interface PackageResourceOptions {
@@ -86,7 +87,7 @@ function readManifest(manifestPath: string): Record<string, DiscoveredEntry> {
  * shipping an optional subtree is not an error.
  */
 function resourceRoots(
-  field: 'views' | 'models' | 'migrations' | 'components',
+  field: 'views' | 'models' | 'migrations' | 'components' | 'jobs',
   options: PackageResourceOptions = {},
 ): PackageResourceRoot[] {
   const manifestPath = options.manifestPath ?? path.storagePath('framework/discovered-packages.json')
@@ -145,6 +146,18 @@ function resourceRoots(
  */
 export function packageMigrationRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
   return resourceRoots('migrations', options)
+}
+
+/**
+ * Job directories each discovered package contributes.
+ *
+ * Conventional, like models, rather than opt-in like components. A job is
+ * reached by its exported name from the barrel and is inert until something
+ * dispatches or schedules it, so a package shipping `app/Jobs` it did not mean
+ * to publish costs a name in the barrel and nothing else.
+ */
+export function packageJobRoots(options: PackageResourceOptions = {}): PackageResourceRoot[] {
+  return resourceRoots('jobs', options)
 }
 
 /**

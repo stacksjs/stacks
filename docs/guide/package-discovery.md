@@ -46,12 +46,15 @@ These are the fields the framework reads today.
 | `views` | `string \| string[]` | Template directories. Appended after the application's own, so nothing that already resolves changes. |
 | `migrations` | `string \| string[]` | SQL migration directories. Defaults to `database/migrations`. |
 | `components` | `string \| string[]` | stx component directories. **No default - must be declared.** |
+| `jobs` | `string \| string[]` | Background job directories. Defaults to `app/Jobs`. |
 | `name` | `string` | Stack extension name, for a package that provides whole top-level directories. |
 | `description` | `string` | Stack extension description. |
 | `directories` | `string[]` | Which top-level directories a stack extension provides. |
 
 **Models have no field.** A package that ships `app/Models` is found without
 declaring anything, because that is where every Stacks application puts them.
+Jobs work the same way through `app/Jobs`, and an application's own job of the
+same name keeps the name.
 
 `views` and `migrations` have defaults too, so a package that only ships views,
 migrations and models needs no more than `"stacks": {}`. Declaring them
