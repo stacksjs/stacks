@@ -2063,7 +2063,21 @@ export interface StacksModelDefinition extends Omit<BQBModelDefinition, 'attribu
       readonly routes?: readonly string[]
       readonly middleware?: ApiMiddleware
     }
-  } & Record<string, unknown>
+    /**
+     * The traits Stacks adds on top of bun-query-builder's set.
+     *
+     * Named rather than swept up by an index signature. This used to end
+     * `& Record<string, unknown>`, added to clear a TypeScript 7 error over
+     * `commentable` - bun-query-builder declares the plural `commentables` -
+     * and the cost was that EVERY key typechecked. `traits: { useTimestamp:
+     * true }`, one letter short of `useTimestamps`, compiled clean and the
+     * model simply had no `created_at`, which is the kind of thing you find
+     * from a column that is missing rather than from an error that says so.
+     */
+    commentable?: boolean | object
+    broadcastOn?: (model: any) => string[]
+    broadcastWith?: (model: any) => Record<string, unknown>
+  }
   indexes?: Array<{ name: string, columns: string[], unique?: boolean, where?: string }>
   casts?: Record<string, CastType | CasterInterface>
   attributes: Record<string, StacksModelAttribute>
@@ -2209,8 +2223,54 @@ interface ModelStaticHelpers {
   withoutEvents: <T>(_fn: () => T | Promise<T>) => Promise<T>
 }
 
+/**
+ * Every trait Stacks reads, as values rather than types.
+ *
+ * Types are erased, and the type alone cannot catch this anyway: `defineModel`
+ * is generic, so TypeScript infers the definition's own shape and then checks it
+ * against the constraint - and assignability permits extra properties. So
+ * `traits: { useTimestamp: true }`, one letter short of `useTimestamps`,
+ * compiled clean, and the model simply had no `created_at`. You find that from
+ * a column that is missing, not from anything that says so.
+ *
+ * Aliases are listed beside their canonical spelling because both are honoured.
+ */
+const KNOWN_TRAITS: ReadonlySet<string> = new Set([
+  'useUuid',
+  'useTimestamps',
+  'timestampable',
+  'useSoftDeletes',
+  'softDeletable',
+  'useApi',
+  'useAuth',
+  'authenticatable',
+  'useSearch',
+  'searchable',
+  'useSeeder',
+  'seedable',
+  'useSocials',
+  'billable',
+  'observe',
+  'likeable',
+  'taggable',
+  'categorizable',
+  'commentable',
+  'commentables',
+  'broadcastOn',
+  'broadcastWith',
+])
+
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef): StacksModelStatic<TDef> {
   log.debug(`[orm] Defining model: ${definition.name} (table: ${definition.table})`)
+
+  // A warning rather than a throw: a package may ship a model declaring a trait
+  // this version of the framework does not know, and refusing to define the
+  // model would take the whole application down over a feature it is not using.
+  // Saying so once, by name, is what the silence cost.
+  for (const trait of Object.keys(definition.traits ?? {})) {
+    if (!KNOWN_TRAITS.has(trait))
+      log.warn(`[orm] Model '${definition.name}' declares an unknown trait '${trait}'. It does nothing. Known traits: ${[...KNOWN_TRAITS].sort().join(', ')}.`)
+  }
 
   // Build event hooks from observer configuration and search indexing
   const observeHooks = buildEventHooks(definition as unknown as BQBModelDefinition)
