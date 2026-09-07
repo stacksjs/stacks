@@ -165,23 +165,22 @@ export function createJsonSecurityHeaders(): Headers {
 
 /** Create an already-serialized JSON response from the cached template. */
 export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string, csrfCookie?: string): Response {
-  const baseHeaders = jsonSecurityHeadersTemplate()
   if (bodyLength === undefined) {
     const templates = _jsonMetadataHeaderTemplates ??= {}
     if (!requestId && !csrfCookie)
-      return new Response(body, templates.plain ??= { headers: baseHeaders })
+      return new Response(body, templates.plain ??= { headers: jsonSecurityHeadersTemplate() })
 
     if (csrfCookie) {
       const responseInit = requestId
-        ? templates.withCsrfAndRequestId ??= { headers: new Headers(baseHeaders) }
-        : templates.withCsrf ??= { headers: new Headers(baseHeaders) }
+        ? templates.withCsrfAndRequestId ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
+        : templates.withCsrf ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
       responseInit.headers.set('Set-Cookie', csrfCookie)
       if (requestId)
         responseInit.headers.set('X-Request-ID', requestId)
       return new Response(body, responseInit)
     }
 
-    const responseInit = templates.withRequestId ??= { headers: new Headers(baseHeaders) }
+    const responseInit = templates.withRequestId ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
     if (requestId)
       responseInit.headers.set('X-Request-ID', requestId)
     return new Response(body, responseInit)
@@ -190,7 +189,7 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
   const templates = _jsonLengthHeaderTemplateCache ??= new Map()
   let lengthTemplates = templates.get(bodyLength)
   if (!lengthTemplates && templates.size < JSON_LENGTH_HEADER_CACHE_LIMIT) {
-    const headers = new Headers(baseHeaders)
+    const headers = new Headers(jsonSecurityHeadersTemplate())
     headers.set('Content-Length', String(bodyLength))
     lengthTemplates = { plain: { headers } }
     templates.set(bodyLength, lengthTemplates)
@@ -218,7 +217,7 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
     return new Response(body, responseInit)
   }
 
-  const response = new Response(body, { headers: baseHeaders })
+  const response = new Response(body, { headers: jsonSecurityHeadersTemplate() })
   response.headers.set('Content-Length', String(bodyLength))
   if (requestId)
     response.headers.set('X-Request-ID', requestId)
