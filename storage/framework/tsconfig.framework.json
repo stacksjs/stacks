@@ -21,6 +21,7 @@
     "tsBuildInfoFile": "./.cache/typescript/framework.tsbuildinfo",
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/browser/*": ["./core/browser/src/*"],
       "@stacksjs/composables/*": ["./core/composables/src/*"],
       "@stacksjs/desktop-build": ["./core/desktop/src"],

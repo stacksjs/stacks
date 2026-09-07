@@ -19,6 +19,7 @@
     "tsBuildInfoFile": "./.cache/typescript/defaults.tsbuildinfo",
     "paths": {
       "@stacksjs/actions/*": ["./core/actions/src/*"],
+      "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
