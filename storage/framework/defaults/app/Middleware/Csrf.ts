@@ -81,7 +81,7 @@ const RIGHT_TOKEN_BYTES = new Uint8Array(TOKEN_HEX_LENGTH)
  */
 export function generateCsrfToken(): string {
   crypto.getRandomValues(TOKEN_RANDOM_BYTES)
-  return TOKEN_RANDOM_BYTES.toString('hex')
+  return TOKEN_RANDOM_BYTES.toHex()
 }
 
 /**
