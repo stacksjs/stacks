@@ -32,10 +32,11 @@ accident. The safeguards here exist only to stop that:
   every target must reject missing fields and wrong field types with a client
   error, then accept an extra input field without echoing it. These setup-only
   probes keep a no-op or permissive handler out of the comparison.
-- **Stacks runs the real framework source.** The runner resolves every Stacks
-  dependency through its public `@stacksjs/*` package entry point, requires the
-  result to live under that package's `storage/framework/core/*/src` tree, and
-  records every resolved path. The Stacks fixture may configure and call public
+- **Stacks runs the real framework source.** A subprocess using the same Bun
+  executable, working directory, and isolated config as every benchmark server
+  resolves each public `@stacksjs/*` package entry point. The runner requires
+  every result to live under that package's `storage/framework/core/*/src` tree
+  and records every resolved path. The Stacks fixture may configure and call public
   APIs, but may not import framework internals or reimplement a data path with
   `bun:sqlite`. Tests also reject benchmark selectors in framework source and
   prevent the fixture from bypassing the router with direct Bun serving,

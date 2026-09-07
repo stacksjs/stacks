@@ -1,5 +1,5 @@
-import { relative, resolve, sep } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import process from 'node:process'
+import { join, relative, resolve, sep } from 'node:path'
 
 export const STACKS_BENCHMARK_MODULES = [
   '@stacksjs/actions',
@@ -26,10 +26,24 @@ export function stacksSourceIssues(repoRoot: string, modules: StacksSourceModule
 }
 
 export function resolveStacksSourceModules(repoRoot: string): StacksSourceModules {
-  const modules = Object.fromEntries(STACKS_BENCHMARK_MODULES.map(specifier => [
-    specifier,
-    fileURLToPath(import.meta.resolve(specifier)),
-  ])) as StacksSourceModules
+  const probe = Bun.spawnSync([
+    process.execPath,
+    `--config=${join(repoRoot, 'bench', 'routing', 'bunfig.toml')}`,
+    join(repoRoot, 'bench', 'routing', 'fixtures', 'source-probe.ts'),
+    ...STACKS_BENCHMARK_MODULES,
+  ], {
+    cwd: repoRoot,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+  if (probe.exitCode !== 0)
+    throw new Error(`Could not resolve Stacks modules in the benchmark server environment: ${probe.stderr.toString().trim()}`)
+
+  const modules = JSON.parse(probe.stdout.toString()) as StacksSourceModules
+  for (const specifier of STACKS_BENCHMARK_MODULES) {
+    if (typeof modules[specifier] !== 'string')
+      throw new TypeError(`Benchmark server source probe did not resolve ${specifier}`)
+  }
   const issues = stacksSourceIssues(repoRoot, modules)
   if (issues.length > 0)
     throw new Error(`Stacks benchmark must execute framework source through public package entry points:\n${issues.join('\n')}`)

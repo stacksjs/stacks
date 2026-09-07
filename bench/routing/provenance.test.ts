@@ -6,7 +6,7 @@ import { REPO_ROOT } from './runtime'
 import { resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, stacksSourceIssues } from './provenance'
 
 describe('Stacks benchmark source provenance', () => {
-  it('resolves every framework dependency through its public entry point to source', () => {
+  it('resolves every framework dependency through the server config to source', () => {
     const modules = resolveStacksSourceModules(REPO_ROOT)
     expect(Object.keys(modules).sort()).toEqual([...STACKS_BENCHMARK_MODULES].sort())
     for (const [specifier, path] of Object.entries(modules)) {

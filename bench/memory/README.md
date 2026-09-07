@@ -44,9 +44,10 @@ The load generator runs on the same host as the target server for every row.
 This symmetric topology can understate absolute throughput when the generator
 and server compete for CPU, so the report records it explicitly. A remote load
 study requires external orchestration and must not be presented as runner output.
-The same source-provenance preflight also requires every Stacks package used by
-the fixture to resolve from its framework source tree through a public package
-entry point, and records those paths in the report.
+The same source-provenance preflight uses the benchmark server's Bun executable,
+working directory, and isolated config. It requires every Stacks package used
+by the fixture to resolve from its framework source tree through a public
+package entry point, and records those paths in the report.
 The Stacks fixture also disables file-based view discovery through the public
 router API, so the repository's application pages do not enter a one-route API
 memory comparison.
