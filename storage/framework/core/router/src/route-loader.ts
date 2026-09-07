@@ -46,10 +46,10 @@ export interface RootMountedAppRoute {
  * process itself. Reporting those would bury the one route the developer just
  * wrote in a list of ninety-nine that are fine.
  */
-const rootMountedAppRoutes: RootMountedAppRoute[] = []
+let rootMountedAppRoutes: RootMountedAppRoute[] | undefined
 
 export function listRootMountedAppRoutes(): readonly RootMountedAppRoute[] {
-  return rootMountedAppRoutes
+  return rootMountedAppRoutes ??= []
 }
 
 /**
@@ -91,7 +91,8 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
             continue
           // The registry names a file relative to routes/, so print the
           // path a reader can actually open.
-          rootMountedAppRoutes.push({ method, path, file: `routes/${config.path}.ts` })
+          const routes = rootMountedAppRoutes ??= []
+          routes.push({ method, path, file: `routes/${config.path}.ts` })
         }
       }
     }
