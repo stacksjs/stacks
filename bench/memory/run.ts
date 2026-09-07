@@ -296,6 +296,7 @@ async function main(): Promise<void> {
     runtimeRequirement,
     source,
     targetIds: targets.map(target => target.targetId),
+    peerVersions,
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,

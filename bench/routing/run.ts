@@ -163,6 +163,8 @@ async function main(): Promise<void> {
     dedicated: process.env.BENCH_DEDICATED === '1',
     runtimeRequirement,
     source,
+    targetIds: targets.map(target => target.id),
+    peerVersions,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,

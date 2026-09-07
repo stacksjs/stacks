@@ -2,6 +2,7 @@ import type { BusyProcess } from './host-load'
 import type { Measurement } from './report'
 import type { RuntimeRequirement } from './runtime-version'
 import type { SourceState } from './source'
+import { selectedPeerPackages } from './peer-versions'
 import { MAX_STABLE_RANGE } from './statistics'
 
 export interface RoutingPublicationTarget {
@@ -19,6 +20,8 @@ export interface RoutingPublicationProfile {
   dedicated: boolean
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
+  targetIds: string[]
+  peerVersions: Record<string, string>
   warmupSeconds: number
   durationSeconds: number
   runs: number
@@ -37,6 +40,10 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
     issues.push('runtime does not match package.json engines.bun')
   if (!profile.source?.revision || profile.source.dirty !== false)
     issues.push('source revision is unavailable or the working tree is not clean')
+  const unidentifiedPeers = selectedPeerPackages(profile.targetIds)
+    .filter(packageName => !profile.peerVersions[packageName] || profile.peerVersions[packageName] === 'unavailable')
+  if (unidentifiedPeers.length > 0)
+    issues.push(`peer framework version is unavailable for ${unidentifiedPeers.join(', ')}`)
   if (profile.warmupSeconds < 5)
     issues.push(`warm-up is ${profile.warmupSeconds}s; at least 5s is required`)
   if (profile.durationSeconds < 30)

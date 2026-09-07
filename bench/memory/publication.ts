@@ -2,6 +2,7 @@ import type { BusyProcess } from '../routing/host-load'
 import type { RuntimeRequirement } from '../routing/runtime-version'
 import type { SourceState } from '../routing/source'
 import type { MemoryMeasurement } from './report'
+import { selectedPeerPackages } from '../routing/peer-versions'
 import { MAX_STABLE_RANGE, relativeRange } from '../routing/statistics'
 import { EQUAL_RATE_API_PROFILE } from './profile'
 
@@ -22,6 +23,7 @@ export interface MemoryPublicationProfile {
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
   targetIds: string[]
+  peerVersions: Record<string, string>
   scenario: string
   connections: number
   loadSeconds: number
@@ -48,6 +50,10 @@ export function memoryPublicationIssues(profile: MemoryPublicationProfile): stri
     issues.push('runtime does not match package.json engines.bun')
   if (!profile.source?.revision || profile.source.dirty !== false)
     issues.push('source revision is unavailable or the working tree is not clean')
+  const unidentifiedPeers = selectedPeerPackages(profile.targetIds)
+    .filter(packageName => !profile.peerVersions[packageName] || profile.peerVersions[packageName] === 'unavailable')
+  if (unidentifiedPeers.length > 0)
+    issues.push(`peer framework version is unavailable for ${unidentifiedPeers.join(', ')}`)
   const expectedTargets = EQUAL_RATE_API_PROFILE.map(target => target.targetId)
   if (profile.targetIds.length !== expectedTargets.length
     || new Set(profile.targetIds).size !== expectedTargets.length

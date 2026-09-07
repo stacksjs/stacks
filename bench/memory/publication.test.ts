@@ -11,6 +11,7 @@ const publishable = {
   runtimeRequirement: { range: '1.4.1', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
   targetIds: EQUAL_RATE_API_PROFILE.map(target => target.targetId),
+  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.5' },
   scenario: 'static-json',
   connections: 64,
   loadSeconds: 60,
@@ -37,6 +38,7 @@ describe('memory benchmark publication profile', () => {
       runtimeRequirement: { range: '1.4.1', matches: false },
       source: { revision: null, dirty: null },
       targetIds: ['stacks-warm'],
+      peerVersions: {},
       scenario: 'db-roundtrip',
       connections: 16,
       loadSeconds: 10,
@@ -69,6 +71,13 @@ describe('memory benchmark publication profile', () => {
     expect(memoryPublicationIssues({ ...publishable, targetIds: ['stacks-warm'] })).toContain('target set does not match the equal-rate API profile')
     expect(memoryPublicationIssues({ ...publishable, targetIds: [...publishable.targetIds, 'stacks-wal-full'] })).toContain('target set does not match the equal-rate API profile')
     expect(memoryPublicationIssues({ ...publishable, targetIds: publishable.targetIds.map(() => 'stacks-warm') })).toContain('target set does not match the equal-rate API profile')
+  })
+
+  it('rejects an unidentified peer framework build', () => {
+    expect(memoryPublicationIssues({
+      ...publishable,
+      peerVersions: { ...publishable.peerVersions, hono: 'unavailable' },
+    })).toContain('peer framework version is unavailable for hono')
   })
 
   it('accepts complete, stable, error-free fixed-rate measurements', () => {
