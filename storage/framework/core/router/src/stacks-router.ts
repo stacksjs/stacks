@@ -257,7 +257,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
   return hasEligibleRoute
 }
 
-import { runWithRequestArguments } from './request-context'
+import { runWithRequestArgument, runWithRequestArguments } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
@@ -1992,6 +1992,12 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
           const pathStart = schemeEnd === -1 ? 0 : req.url.indexOf('/', schemeEnd + 3)
           const q = req.url.indexOf('?', pathStart < 0 ? 0 : pathStart)
           const urlPath = pathStart < 0 ? '/' : req.url.slice(pathStart, q === -1 ? undefined : q)
+          // The method lives in the route key, which is where
+          // `routeCapabilityFlags` reads it from too. Derived inside the gate
+          // rather than hoisted alongside `routeFlags`: this log line is its
+          // only consumer, so a route serving requests with debug logging off
+          // should not pay to compute it.
+          const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
           log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${routeMethod} ${urlPath}`)
         }
 
@@ -2410,13 +2416,13 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
 
   const handleSynchronous = (req: EnhancedRequest): Response | Promise<Response> => {
     if (routeState?.middleware?.length || routeState?.rateLimit)
-      return runWithRequestArguments(req, handleAsyncInContext, req)
+      return runWithRequestArgument(req, handleAsyncInContext, req)
 
     const csrfHandledByOuter = (req as unknown as Record<symbol, unknown>)[CSRF_SEEDED_BY_HANDLE_REQUEST] === true
     if ((routeFlags & ROUTE_RENDERS_CSRF) !== 0 && !csrfHandledByOuter && requestMayRenderHtml(req)) {
       const renderTokenSeeding = seedCsrfTokenForRender(req as unknown as Request & { _csrfToken?: string })
       if (renderTokenSeeding)
-        return renderTokenSeeding.then(() => runWithRequestArguments(req, handleAsyncInContext, req))
+        return renderTokenSeeding.then(() => runWithRequestArgument(req, handleAsyncInContext, req))
     }
 
     if ((routeFlags & ROUTE_FORCES_JSON) !== 0)
