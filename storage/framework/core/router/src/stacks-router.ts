@@ -3143,7 +3143,11 @@ function validateActionInputSync(
   // a strict `typeof value === 'number'` check. See stacksjs/stacks#1865.
   const input = getRequestInput(req, entries, mayHaveRouteParams, requestHasQuery)
 
-  for (const [field, validation, ruleTests] of entries) {
+  for (let entryIndex = 0; entryIndex < entries.length; entryIndex++) {
+    const entry = entries[entryIndex]!
+    const field = entry[0]
+    const validation = entry[1]
+    const ruleTests = entry[2]
     const value = input[field]
     let result: { valid: boolean, errors?: Array<{ message: string }> } | undefined
 
