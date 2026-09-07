@@ -28,7 +28,23 @@ export const PACKAGE_MIGRATION_BAND = 9_000_000_000
  * those run in loops over a directory listing where opening each file would be
  * the expensive part.
  */
+export const PACKAGE_MIGRATION_BAND_END = 9_999_999_999
+
 export function isPackageMigration(file: string): boolean {
   const ordinal = /^(\d+)-/.exec(file)?.[1]
-  return ordinal !== undefined && Number.parseInt(ordinal, 10) >= PACKAGE_MIGRATION_BAND
+  if (ordinal === undefined)
+    return false
+
+  const value = Number.parseInt(ordinal, 10)
+  // Bounded, not open-ended. `buddy make:migration` names its files
+  // `${Date.now()}-…`, which is thirteen digits and therefore ABOVE an
+  // open-ended `>= PACKAGE_MIGRATION_BAND` - so every hand-made migration read
+  // as a package's. `nextMigrationNumber` then skipped all fifty of them and
+  // handed the next generated migration ordinal 172, which sorts before every
+  // one: `0000000172-alter-pledges-columns.sql` ran before
+  // `1785502251845-create-pledges-table.sql` created the table, and
+  // `buddy migrate:fresh` died on "no such table: pledges".
+  //
+  // Ten digits is what the band was always documented as.
+  return value >= PACKAGE_MIGRATION_BAND && value <= PACKAGE_MIGRATION_BAND_END
 }
