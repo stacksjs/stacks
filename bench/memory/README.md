@@ -69,6 +69,10 @@ blockers and are marked direction-only. The weekly GitHub Actions run is a
 regression signal and uploads its raw samples, but shared-runner numbers are not
 publishable.
 
+Publication also requires every selected target to finish every requested run,
+attain at least 98% of its fixed request rate in each run, return zero errors,
+and keep the full settled-RSS range within 10% of the median.
+
 ## Flags
 
 ```text

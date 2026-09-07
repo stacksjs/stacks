@@ -28,7 +28,7 @@ import { rotateTargets } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
 import { BUN_141_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
-import { memoryPublicationIssues } from './publication'
+import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './publication'
 import { median, renderMemoryReport } from './report'
 
 const HERE = fileURLToPath(new URL('.', import.meta.url))
@@ -355,6 +355,12 @@ async function main(): Promise<void> {
       console.error(`[memory] settled RSS: ${(result.measurement.settledRssBytes / 1024 / 1024).toFixed(1)} MiB`)
     }
   }
+
+  meta.publicationIssues = [...new Set([
+    ...(meta.publicationIssues ?? []),
+    ...memoryMeasurementPublicationIssues(targetRows, measurements, options.runs),
+  ])]
+  meta.publishable = meta.publicationIssues.length === 0
 
   const report = renderMemoryReport({ meta, targets: targetRows, measurements })
   writeFileSync(join(outDir, 'report.md'), report)
