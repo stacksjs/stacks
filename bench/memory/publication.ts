@@ -3,6 +3,7 @@ import type { RuntimeRequirement } from '../routing/runtime-version'
 import type { SourceState } from '../routing/source'
 import type { MemoryMeasurement } from './report'
 import { MAX_STABLE_RANGE, relativeRange } from '../routing/statistics'
+import { BUN_141_API_PROFILE } from './profile'
 
 export const MIN_MEMORY_RATE_ATTAINMENT = 0.98
 
@@ -19,6 +20,12 @@ export interface MemoryPublicationProfile {
   dedicated: boolean
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
+  scenario: string
+  connections: number
+  loadSeconds: number
+  idleSeconds: number
+  sampleIntervalMs: number
+  settleSeconds: number
   runs: number
   busyHostProcesses: BusyProcess[]
 }
@@ -37,6 +44,18 @@ export function memoryPublicationIssues(profile: MemoryPublicationProfile): stri
     issues.push('runtime does not match package.json engines.bun')
   if (!profile.source?.revision || profile.source.dirty !== false)
     issues.push('source revision is unavailable or the working tree is not clean')
+  if (profile.scenario !== 'static-json')
+    issues.push(`scenario is ${profile.scenario}, not static-json`)
+  if (profile.connections !== 64)
+    issues.push(`connection count is ${profile.connections}, not 64`)
+  if (profile.loadSeconds !== 60)
+    issues.push(`load window is ${profile.loadSeconds}s, not 60s`)
+  if (profile.idleSeconds !== 180)
+    issues.push(`idle window is ${profile.idleSeconds}s, not 180s`)
+  if (profile.sampleIntervalMs !== 100)
+    issues.push(`sampling interval is ${profile.sampleIntervalMs}ms, not 100ms`)
+  if (profile.settleSeconds !== 10)
+    issues.push(`settled window is ${profile.settleSeconds}s, not 10s`)
   if (profile.runs < 3)
     issues.push(`only ${profile.runs} fresh-process run(s) were requested; at least 3 are required`)
   if (profile.busyHostProcesses.length > 0)
@@ -51,6 +70,13 @@ export function memoryMeasurementPublicationIssues(
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
+    const profileTarget = BUN_141_API_PROFILE.find(candidate => candidate.targetId === target.id)
+    if (!profileTarget) {
+      issues.push(`${target.id} is not in the Bun 1.4.1 API memory profile`)
+    }
+    else if (target.requestRate !== profileTarget.requestRate) {
+      issues.push(`${target.id} requested ${target.requestRate} req/s, not the profile rate of ${profileTarget.requestRate} req/s`)
+    }
     if (target.skipped) {
       issues.push(`${target.id} was skipped`)
       continue

@@ -72,6 +72,9 @@ publishable.
 Publication also requires every selected target to finish every requested run,
 attain at least 98% of its fixed request rate in each run, return zero errors,
 and keep the full settled-RSS range within 10% of the median.
+The scenario, connection count, load and idle windows, sampling interval,
+settled window, target set, and fixed rates must match the Bun 1.4.1 API profile
+described above; altered smoke or diagnostic runs remain direction-only.
 
 ## Flags
 

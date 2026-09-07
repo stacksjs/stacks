@@ -287,6 +287,12 @@ async function main(): Promise<void> {
     dedicated: process.env.BENCH_DEDICATED === '1',
     runtimeRequirement,
     source,
+    scenario: scenario.id,
+    connections: options.connections,
+    loadSeconds: options.loadSeconds,
+    idleSeconds: options.idleSeconds,
+    sampleIntervalMs: options.sampleIntervalMs,
+    settleSeconds: options.settleSeconds,
     runs: options.runs,
     busyHostProcesses: [...observedBusyProcesses.values()],
   }
