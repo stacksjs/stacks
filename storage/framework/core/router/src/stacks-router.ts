@@ -165,9 +165,9 @@ let __defaultsPkgRoot: string | null | undefined
  * before it answered anything. Whether this checkout is vendored or installed
  * from node_modules is decided at install time, not at request time.
  */
-const __defaultsPathCache = new Map<string, string>()
+let __defaultsPathCache: Map<string, string> | undefined
 function resolveDefaultsPath(rel: string): string {
-  const cached = __defaultsPathCache.get(rel)
+  const cached = __defaultsPathCache?.get(rel)
   if (cached !== undefined)
     return cached
 
@@ -177,7 +177,8 @@ function resolveDefaultsPath(rel: string): string {
   if (rel.startsWith('app/')) {
     const published = p.appPath(rel.slice('app/'.length))
     if (existsSync(published)) {
-      __defaultsPathCache.set(rel, published)
+      const cache = __defaultsPathCache ??= new Map()
+      cache.set(rel, published)
       return published
     }
   }
@@ -200,7 +201,8 @@ function resolveDefaultsPath(rel: string): string {
     resolved = __defaultsPkgRoot ? `${__defaultsPkgRoot}/${rel}` : vendored
   }
 
-  __defaultsPathCache.set(rel, resolved)
+  const cache = __defaultsPathCache ??= new Map()
+  cache.set(rel, resolved)
   return resolved
 }
 
@@ -1534,7 +1536,7 @@ export function clearRouteMiddlewareRegistry(): void {
  * Action-level `apiResponse` (read from the resolved Action instance) is
  * applied separately and wins over the group setting.
  */
-const routeApiResponseRegistry = new Set<string>()
+let routeApiResponseRegistry: Set<string> | undefined
 
 /** One middleware reference, taken apart. */
 interface ParsedMiddleware {
@@ -1683,7 +1685,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
   const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
   const routeRendersCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD')
   const routeSeedsCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS')
-  const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
+  const forcesJsonByGroup = routeApiResponseRegistry?.has(routeKey) ?? false
   // Direct actions are already resolved and immutable, so retain their CSRF
   // flag now. Only string actions need the shared cache that their lazy import
   // fills later.
@@ -4488,7 +4490,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Pre-populate apiResponse registry with the group flag so the request
     // handler can flip `req._forceJson` without re-walking the group stack.
     if (!shadowed && currentGroupApiResponse) {
-      routeApiResponseRegistry.add(routeKey)
+      const registry = routeApiResponseRegistry ??= new Set()
+      registry.add(routeKey)
     }
 
     // Track string handlers so the CSRF gate can look up action-level
