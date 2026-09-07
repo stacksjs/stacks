@@ -300,6 +300,12 @@ interface StacksRouterConfig {
    * @default true
    */
   requestIds?: boolean
+  /**
+   * Protect cookie-authenticated state-changing routes and seed browser CSRF
+   * cookies. Disable only for APIs that never authenticate with cookies.
+   * @default true
+   */
+  csrf?: boolean
 }
 
 interface GroupOptions {
@@ -664,6 +670,7 @@ const FRAMEWORK_RESPONSE_METADATA_APPLIED = Symbol('stacks.router.frameworkRespo
 const FRAMEWORK_RESPONSE_BODY_LENGTH = Symbol('stacks.router.frameworkResponseBodyLength')
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const secureNativeRouteRouters = new WeakSet<Router>()
+const csrfEnabledNativeRouteRouters = new WeakSet<Router>()
 
 interface ResolvedMiddleware {
   name: string
@@ -1605,7 +1612,7 @@ export async function assertRouteMiddlewareResolvable(): Promise<void> {
 /**
  * Create a wrapped handler with middleware support
  */
-function createMiddlewareHandler(routeKey: string, handler: StacksHandler): RouteHandlerFn {
+function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true, routeKey)
   const routeMiddleware = routeMiddlewareRegistry.get(routeKey) ?? EMPTY_MIDDLEWARE_ENTRIES
@@ -1623,10 +1630,10 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
    * `.rateLimit()`) are retained as route-owned state so updates stay live.
    */
   const routeMethod = routeKey.slice(0, routeKey.indexOf(':')).toUpperCase()
-  const routeAcceptsCsrf = CSRF_PROTECTED_METHODS.has(routeMethod)
+  const routeAcceptsCsrf = csrfEnabled && CSRF_PROTECTED_METHODS.has(routeMethod)
   const routeMayHaveBody = routeMethod !== 'GET' && routeMethod !== 'HEAD'
-  const routeRendersCsrf = routeMethod === 'GET' || routeMethod === 'HEAD'
-  const routeSeedsCsrf = routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS'
+  const routeRendersCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD')
+  const routeSeedsCsrf = csrfEnabled && (routeMethod === 'GET' || routeMethod === 'HEAD' || routeMethod === 'OPTIONS')
   const forcesJsonByGroup = routeApiResponseRegistry.has(routeKey)
   // Direct actions are already resolved and immutable, so retain their CSRF
   // flag now. Only string actions need the shared cache that their lazy import
@@ -4332,6 +4339,9 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   const bunRouter = new Router({
     verbose: config.verbose ?? false,
   })
+  const csrfEnabled = config.csrf !== false
+  if (csrfEnabled)
+    csrfEnabledNativeRouteRouters.add(bunRouter)
   fuseRequestEnhancements(bunRouter, config.requestIds !== false)
 
   let currentPrefix = ''
@@ -4422,37 +4432,37 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('GET', path, handler)
-      bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.get(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
     post(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('POST', path, handler)
-      bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.post(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
     put(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PUT', path, handler)
-      bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.put(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
     patch(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PATCH', path, handler)
-      bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.patch(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
     delete(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('DELETE', path, handler)
-      bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.delete(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
     options(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('OPTIONS', path, handler)
-      bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler))
+      bunRouter.options(fullPath, createMiddlewareHandler(routeKey, handler, csrfEnabled))
       return createChainableRoute(routeKey, shadowed)
     },
 
@@ -4594,7 +4604,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
         if (index === 0)
           firstShadowed = shadowed
-        const wrappedHandler = createMiddlewareHandler(routeKey, handler)
+        const wrappedHandler = createMiddlewareHandler(routeKey, handler, csrfEnabled)
         switch (m) {
           case 'GET':
             bunRouter.get(fullPath, wrappedHandler)
@@ -4797,7 +4807,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
       // A view served from here never reaches the route pipeline, so the CSRF
       // cookie was only ever seeded on API responses. See the wrapper.
-      wrapHandleRequestForCsrf(bunRouter)
+      if (csrfEnabled)
+        wrapHandleRequestForCsrf(bunRouter)
 
       // Directly served requests need the same read-after-write tracking as
       // serverResponse(), including requests that bypass the route pipeline.
@@ -5523,6 +5534,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
     }
     const directHandlers = buildDirectNativeHandlers(router, finalizeResponse)
     const secureTransport = secureNativeRouteRouters.has(router)
+    const csrfEnabled = csrfEnabledNativeRouteRouters.has(router)
 
     for (const [path, methods] of Object.entries(routes)) {
       for (const [method, handler] of Object.entries(methods)) {
@@ -5531,7 +5543,7 @@ function wrapNativeRoutesForDatabaseContext(router: Router, dispatchInRoutingCon
           ?? (method === 'HEAD' ? directHandlers.get(`GET:${path}`) : undefined)
         const dispatch = directDispatch ?? handler
         methods[method] = (request) => {
-          if (safeMethod) {
+          if (safeMethod && csrfEnabled) {
             const cookie = request.headers.get('cookie') ?? ''
             const markedRequest = request as unknown as Record<symbol, unknown>
             if (cookie.includes('X-CSRF-Token=') || cookie.includes('csrf-token=')) {

@@ -406,6 +406,28 @@ describe('the request path keeps its defaults', () => {
     }
   })
 
+  it('allows token-only APIs to disable CSRF globally', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter({ csrf: false, requestIds: false })
+    direct.get('/_hot/csrf-disabled', () => ({ ok: true }))
+    direct.post('/_hot/csrf-disabled', () => ({ saved: true }))
+    const nativeServer = await direct.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes: true })
+
+    try {
+      const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
+      const getAnswer = await nativeRoutes['/_hot/csrf-disabled'].GET(new Request('http://localhost/_hot/csrf-disabled'))
+      const postAnswer = await nativeRoutes['/_hot/csrf-disabled'].POST(new Request('http://localhost/_hot/csrf-disabled', { method: 'POST' }))
+
+      expect(await getAnswer.json()).toEqual({ ok: true })
+      expect(getAnswer.headers.get('set-cookie')).toBeNull()
+      expect(await postAnswer.json()).toEqual({ saved: true })
+      expect(postAnswer.status).toBe(200)
+    }
+    finally {
+      nativeServer.stop()
+    }
+  })
+
   it('still seeds a CSRF cookie on a cold GET', async () => {
     const answer = await get('/_hot/plain')
 
