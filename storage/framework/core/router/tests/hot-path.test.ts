@@ -149,10 +149,13 @@ describe('the request path keeps its defaults', () => {
 
     try {
       const nativeRoutes = (direct.bunRouter as any)._buildNativeRoutes()
-      const answer = nativeRoutes['/_hot/native-small-json'].GET(new Request('http://localhost/_hot/native-small-json'))
+      const answer = nativeRoutes['/_hot/native-small-json'].GET(new Request('http://localhost/_hot/native-small-json', {
+        headers: { 'accept-encoding': 'gzip' },
+      }))
 
       expect(answer).toBeInstanceOf(Response)
       expect(await (answer as Response).json()).toEqual({ ok: true })
+      expect((answer as Response).headers.get('vary')).toBeNull()
       expect(byteLength.mock.calls.some(([body]) => body === '{"ok":true}')).toBe(false)
     }
     finally {

@@ -144,13 +144,12 @@ describe('applySecurityHeaders', () => {
     expect(second.get('Strict-Transport-Security')).toBe('max-age=31536000; includeSubDomains')
   })
 
-  test('includes invariant JSON transport headers in its own cloned template', () => {
+  test('keeps compression variance out of its cloned JSON template', () => {
     const first = createJsonSecurityHeaders()
     first.delete('Content-Type')
-    first.delete('Vary')
 
     expect(createJsonSecurityHeaders().get('Content-Type')).toBe('application/json;charset=utf-8')
-    expect(createJsonSecurityHeaders().get('Vary')).toBe('Accept-Encoding')
+    expect(createJsonSecurityHeaders().get('Vary')).toBeNull()
     expect(createSecurityHeaders().get('Content-Type')).toBeNull()
     expect(createSecurityHeaders().get('Vary')).toBeNull()
   })
@@ -159,12 +158,11 @@ describe('applySecurityHeaders', () => {
     const serialized = secureSerializedJsonResponse('{"ok":true}', 11)
     serialized.headers.set('X-Frame-Options', 'DENY')
     serialized.headers.delete('Content-Type')
-    serialized.headers.delete('Vary')
     serialized.headers.set('Content-Length', '999')
 
     expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
     expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Content-Type')).toBe('application/json;charset=utf-8')
-    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Vary')).toBe('Accept-Encoding')
+    expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Vary')).toBeNull()
     expect(secureSerializedJsonResponse('{"ok":true}', 11).headers.get('Content-Length')).toBe('11')
   })
 

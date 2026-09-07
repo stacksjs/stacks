@@ -50,10 +50,12 @@ try {
     throw new Error(`Native request contexts leaked: ${JSON.stringify(isolated)}`)
   if (contextHasWritten())
     throw new Error('Native routing context leaked outside the request')
-  if (!reader.headers.get('vary')?.includes('Accept-Encoding'))
-    throw new Error('Native response did not preserve compression variance')
+  if (reader.headers.has('vary'))
+    throw new Error('Small native response retained unused compression variance')
   if (compressed.headers.get('content-encoding') !== 'gzip')
     throw new Error('Native response did not preserve compression')
+  if (!compressed.headers.get('vary')?.includes('Accept-Encoding'))
+    throw new Error('Compressed native response lost compression variance')
 
   console.log('native-routing-context-ok')
 }
