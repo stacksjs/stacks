@@ -84,6 +84,16 @@ export const SCENARIOS: readonly Scenario[] = [
         expected: { kind: 'client-error' },
       },
       {
+        id: 'null-body',
+        body: 'null',
+        expected: { kind: 'client-error' },
+      },
+      {
+        id: 'array-body',
+        body: '[]',
+        expected: { kind: 'client-error' },
+      },
+      {
         id: 'allow-listed-output',
         body: JSON.stringify({ name: 'bench', count: 7, ignored: 'must-not-echo' }),
         expected: { kind: 'success', body: '{"name":"bench","count":7}' },

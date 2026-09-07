@@ -145,7 +145,7 @@ describe('benchmark response parity', () => {
   })
 
   it('requires successful probes to preserve exact output parity', async () => {
-    const probe = SCENARIOS.find(candidate => candidate.id === 'post-validate')!.probes![2]!
+    const probe = SCENARIOS.find(candidate => candidate.id === 'post-validate')!.probes!.find(candidate => candidate.id === 'allow-listed-output')!
     await expect(assertProbeResponse(target, scenario, probe, new Response(probe.expected.kind === 'success' ? probe.expected.body : '', {
       headers: { 'content-type': 'application/json' },
     }))).resolves.toMatchObject({ status: 200, mediaType: 'application/json' })

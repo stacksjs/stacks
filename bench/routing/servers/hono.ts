@@ -36,7 +36,7 @@ if (serves('post-validate')) {
   app.post(
     '/bench/echo',
     validator('json', (value: any, c: any) => {
-      if (typeof value.name !== 'string' || typeof value.count !== 'number')
+      if (!value || typeof value !== 'object' || Array.isArray(value) || typeof value.name !== 'string' || typeof value.count !== 'number')
         return c.json({ errors: {} }, 422)
       return value
     }),

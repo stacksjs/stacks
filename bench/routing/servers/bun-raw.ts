@@ -36,8 +36,8 @@ if (serves('path-param')) {
 if (serves('post-validate')) {
   routes['/bench/echo'] = {
     async POST(req: Request) {
-      const body = await req.json() as { name?: unknown, count?: unknown }
-      if (typeof body.name !== 'string' || typeof body.count !== 'number')
+      const body = await req.json() as { name?: unknown, count?: unknown } | unknown[] | null
+      if (!body || Array.isArray(body) || typeof body.name !== 'string' || typeof body.count !== 'number')
         return new Response('{"errors":{}}', { status: 422, headers: JSON_HEADERS })
       return new Response(JSON.stringify({ name: body.name, count: body.count }), { headers: JSON_HEADERS })
     },

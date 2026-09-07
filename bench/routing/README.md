@@ -33,10 +33,11 @@ accident. The safeguards here exist only to stop that:
   is fast because it returns a different result is not a faster server, and this
   checks are what catch it, including behavior that drifts after sustained load.
 - **Validation is probed, not assumed.** Before `post-validate` is measured,
-  every target must reject missing fields and wrong field types with a client
-  error whose media type is `application/json` and whose body is a JSON object,
-  then accept an extra input field without echoing it. These setup-only probes
-  keep a no-op, permissive, or non-JSON handler out of the comparison.
+  every target must reject missing fields, wrong field types, and non-object
+  JSON bodies with a client error whose media type is `application/json` and
+  whose body is a JSON object, then accept an extra input field without echoing
+  it. These setup-only probes keep a no-op, permissive, throwing, or non-JSON
+  handler out of the comparison.
 - **Parity evidence is retained.** `measurements.json` records the exact status,
   media type, body byte count, and SHA-256 body digest before and after each
   timed run for the primary request and every validation probe. A target whose

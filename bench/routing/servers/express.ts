@@ -21,7 +21,9 @@ if (serves('static-json'))
 if (serves('path-param'))
   app.get('/bench/users/:id', (req: any, res: any) => res.json({ id: req.params.id }))
 if (serves('post-validate')) {
-  app.use(express.json())
+  // Let the route validate every valid JSON value. Express' default strict
+  // parser rejects JSON primitives before the handler and emits an HTML error.
+  app.use(express.json({ strict: false }))
   app.post('/bench/echo', (req: any, res: any) => {
     const { name, count } = req.body ?? {}
     if (typeof name !== 'string' || typeof count !== 'number') return res.status(422).json({ errors: {} })
