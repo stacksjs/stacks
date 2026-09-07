@@ -491,6 +491,20 @@ export function autoImportsAreStale(): boolean {
     return true
   }
 
+  // The set of installed packages is a source too, and the only one that is
+  // not a directory of .ts files. A package's own model files are no help
+  // here: package managers preserve the mtimes from the tarball, so a freshly
+  // installed package's models are routinely OLDER than the barrel and would
+  // never trip an mtime comparison. The discovery manifest is written by the
+  // framework at discovery time, and only when the discovered set actually
+  // changed, so its mtime is exactly "when the package set last moved".
+  const discovered = path.storagePath('framework/discovered-packages.json')
+  try {
+    if (existsSync(discovered) && statSync(discovered).mtimeMs > manifestTime)
+      return true
+  }
+  catch { /* unreadable manifest is not a reason to force a regenerate */ }
+
   // Directory mtimes catch adds, renames, and deletes; file mtimes catch
   // edits to a file's exports. A source newer than the manifest means the
   // manifest is describing a tree that has since changed.
