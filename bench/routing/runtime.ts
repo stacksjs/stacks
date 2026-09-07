@@ -2,6 +2,7 @@
 
 import type { Scenario, ScenarioProbe } from './scenarios'
 import type { Target } from './targets'
+import { createHash } from 'node:crypto'
 import { join } from 'node:path'
 import process from 'node:process'
 import { fileURLToPath } from 'node:url'
@@ -23,6 +24,27 @@ export function benchmarkQueryLoggingEnabled(): boolean {
 export interface BootedServer {
   proc: ReturnType<typeof Bun.spawn>
   pid: number
+}
+
+export interface ResponseParityEvidence {
+  status: number
+  mediaType: string | null
+  bodyBytes: number
+  bodySha256: string
+}
+
+export interface ScenarioParityEvidence {
+  primary: ResponseParityEvidence
+  probes: Array<{ id: string, response: ResponseParityEvidence }>
+}
+
+function responseParityEvidence(status: number, mediaType: string | null, body: string): ResponseParityEvidence {
+  return {
+    status,
+    mediaType,
+    bodyBytes: Buffer.byteLength(body),
+    bodySha256: createHash('sha256').update(body).digest('hex'),
+  }
 }
 
 /** Keep benchmark targets out of the application's preload graph. */
@@ -134,7 +156,7 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
 }
 
 /** Require identical status, JSON media type, and body bytes before measuring. */
-export async function assertResponseParity(target: Target, scenario: Scenario, res: Response): Promise<void> {
+export async function assertResponseParity(target: Target, scenario: Scenario, res: Response): Promise<ResponseParityEvidence> {
   const body = await res.text()
   if (res.status !== 200)
     throw new Error(`${target.id} answered ${res.status} for ${scenario.id}, expected 200: ${body.slice(0, 200)}`)
@@ -143,22 +165,24 @@ export async function assertResponseParity(target: Target, scenario: Scenario, r
   const mediaType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
   if (mediaType !== 'application/json')
     throw new Error(`${target.id} answered ${scenario.id} with ${mediaType ?? 'no content type'}, expected application/json`)
+  return responseParityEvidence(res.status, mediaType, body)
 }
 
-export async function assertProbeResponse(target: Target, scenario: Scenario, probe: ScenarioProbe, res: Response): Promise<void> {
+export async function assertProbeResponse(target: Target, scenario: Scenario, probe: ScenarioProbe, res: Response): Promise<ResponseParityEvidence> {
   const probeId = `${scenario.id}/${probe.id}`
   if (probe.expected.kind === 'client-error') {
-    await res.arrayBuffer()
+    const body = await res.text()
     if (res.status < 400 || res.status >= 500)
       throw new Error(`${target.id} answered ${res.status} for ${probeId}, expected a client error`)
-    return
+    const mediaType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() ?? null
+    return responseParityEvidence(res.status, mediaType, body)
   }
 
-  await assertResponseParity(target, { ...scenario, id: probeId, expect: probe.expected.body }, res)
+  return assertResponseParity(target, { ...scenario, id: probeId, expect: probe.expected.body }, res)
 }
 
 /** Probe the live target before measuring it. */
-export async function assertParity(target: Target, scenario: Scenario): Promise<void> {
+export async function assertParity(target: Target, scenario: Scenario): Promise<ScenarioParityEvidence> {
   const requiresQueryLog = benchmarkQueryLoggingEnabled() && target.server === 'stacks.ts' && scenario.requiresDb
   if (requiresQueryLog)
     resetFixtureLogs(FIXTURE)
@@ -168,7 +192,8 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
     headers: headersFor(target, scenario),
     ...(scenario.body != null ? { body: scenario.body } : {}),
   })
-  await assertResponseParity(target, scenario, res)
+  const primary = await assertResponseParity(target, scenario, res)
+  const probes: ScenarioParityEvidence['probes'] = []
   for (const probe of scenario.probes ?? []) {
     const probeScenario = { ...scenario, body: probe.body }
     const probeResponse = await fetch(`http://127.0.0.1:${PORT}${scenario.path}`, {
@@ -176,8 +201,15 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
       headers: headersFor(target, probeScenario),
       body: probe.body,
     })
-    await assertProbeResponse(target, scenario, probe, probeResponse)
+    probes.push({ id: probe.id, response: await assertProbeResponse(target, scenario, probe, probeResponse) })
   }
   if (requiresQueryLog)
     await assertFixtureQueryLogged(FIXTURE)
+  return { primary, probes }
+}
+
+/** Require a target's complete response contract to remain exact after load. */
+export function assertStableParity(target: Target, scenario: Scenario, before: ScenarioParityEvidence, after: ScenarioParityEvidence): void {
+  if (JSON.stringify(before) !== JSON.stringify(after))
+    throw new Error(`${target.id} changed response evidence under load for ${scenario.id}`)
 }

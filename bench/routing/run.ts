@@ -15,6 +15,7 @@
 import type { Driver, LoadResult } from './drivers'
 import type { BusyProcess } from './host-load'
 import type { Measurement, RunMeta } from './report'
+import type { ScenarioParityEvidence } from './runtime'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release } from 'node:os'
 import { join } from 'node:path'
@@ -30,7 +31,7 @@ import { verifyLoadPersistence } from './persistence'
 import { resolveStacksSourceModules } from './provenance'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 import { renderReport } from './report'
-import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
+import { assertParity, assertStableParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { balancedTargetOrder } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState, sourceStateChanged } from './source'
@@ -214,6 +215,13 @@ async function main(): Promise<void> {
   }
 
   const measurements: Measurement[] = []
+  const parityChecks: Array<{
+    targetId: string
+    scenarioId: string
+    run: number
+    before: ScenarioParityEvidence
+    after: ScenarioParityEvidence
+  }> = []
   const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
   const availableTargets = new Set<string>()
   const unavailableTargets = new Set<string>()
@@ -246,7 +254,7 @@ async function main(): Promise<void> {
         }
 
         try {
-          await assertParity(target, scenario)
+          const parityBefore = await assertParity(target, scenario)
           if (scenario.requiresDb)
             resetFixtureLogs(FIXTURE)
           const { result, cpuPercent, warmupResult } = await measureLoad(driver, {
@@ -278,7 +286,9 @@ async function main(): Promise<void> {
           // Re-run the full parity and validation probe set after load. The
           // first probe proves startup behavior; this one catches a target that
           // changes status, output, or validation behavior after sustained use.
-          await assertParity(target, scenario)
+          const parityAfter = await assertParity(target, scenario)
+          assertStableParity(target, scenario, parityBefore, parityAfter)
+          parityChecks.push({ targetId: target.id, scenarioId: scenario.id, run, before: parityBefore, after: parityAfter })
           console.error(`[bench]   run ${run} ${target.id}: ${Math.round(result.rpsMean).toLocaleString()} req/s`)
         }
         finally {
@@ -347,6 +357,7 @@ async function main(): Promise<void> {
         body: scenario.body,
         headers: headersFor(target, scenario),
       }))),
+      parityChecks,
     },
     measurements,
   }, null, 2)}\n`)

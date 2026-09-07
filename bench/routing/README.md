@@ -36,6 +36,10 @@ accident. The safeguards here exist only to stop that:
   every target must reject missing fields and wrong field types with a client
   error, then accept an extra input field without echoing it. These setup-only
   probes keep a no-op or permissive handler out of the comparison.
+- **Parity evidence is retained.** `measurements.json` records the exact status,
+  media type, body byte count, and SHA-256 body digest before and after each
+  timed run for the primary request and every validation probe. A target whose
+  fingerprint changes under load aborts the run.
 - **Stacks runs the real framework source.** A subprocess using the same Bun
   executable, working directory, and isolated config as every benchmark server
   resolves each public `@stacksjs/*` package entry point. The runner requires
