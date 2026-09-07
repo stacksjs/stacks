@@ -1,5 +1,13 @@
 import process from 'node:process'
-import { join, relative, resolve, sep } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { dirname, join, relative, resolve, sep } from 'node:path'
+
+export const STACKS_RUNTIME_PACKAGES = ['@stacksjs/bun-router'] as const
+
+export type StacksRuntimeDependencies = Record<typeof STACKS_RUNTIME_PACKAGES[number], {
+  version: string
+  path: string
+}>
 
 export const STACKS_FIXTURE_MODULES = [
   '@stacksjs/actions',
@@ -66,4 +74,25 @@ export function resolveStacksSourceModules(repoRoot: string): StacksSourceModule
     specifier,
     relative(repoRoot, path),
   ])) as StacksSourceModules
+}
+
+/** Identify published runtime packages that supply the measured Stacks path. */
+export function resolveStacksRuntimeDependencies(repoRoot: string): StacksRuntimeDependencies {
+  const specifiers = STACKS_RUNTIME_PACKAGES.flatMap(packageName => [packageName, `${packageName}/package.json`])
+  const modules = resolveBenchmarkServerModules(repoRoot, specifiers)
+
+  return Object.fromEntries(STACKS_RUNTIME_PACKAGES.map((packageName) => {
+    const entry = resolve(modules[packageName]!)
+    const manifestFile = resolve(modules[`${packageName}/package.json`]!)
+    const packageRoot = dirname(manifestFile)
+    const fromPackageRoot = relative(packageRoot, entry)
+    if (fromPackageRoot === '..' || fromPackageRoot.startsWith(`..${sep}`))
+      throw new Error(`${packageName} resolved outside its package root: ${entry}`)
+
+    const manifest = JSON.parse(readFileSync(manifestFile, 'utf8')) as { version?: unknown }
+    return [packageName, {
+      version: typeof manifest.version === 'string' ? manifest.version : 'unavailable',
+      path: relative(repoRoot, entry),
+    }]
+  })) as StacksRuntimeDependencies
 }

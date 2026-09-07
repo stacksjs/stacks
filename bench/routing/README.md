@@ -46,8 +46,10 @@ accident. The safeguards here exist only to stop that:
   executable, working directory, and isolated config as every benchmark server
   resolves each public `@stacksjs/*` package entry point. The runner requires
   every result to live under that package's `storage/framework/core/*/src` tree
-  and records every resolved path. The Stacks fixture may configure and call public
-  APIs, but may not import framework internals or reimplement a data path with
+  and records every resolved path. It also records the exact version and entry
+  path of the published `@stacksjs/bun-router` runtime that supplies native
+  dispatch. The Stacks fixture may configure and call public APIs, but may not
+  import framework internals or reimplement a data path with
   `bun:sqlite`. Tests also reject benchmark selectors in framework source and
   prevent the fixture from bypassing the router with direct Bun serving,
   prebuilt responses, or manual JSON serialization.

@@ -12,6 +12,9 @@ const publishable = {
   targetIds: DEFAULT_TARGETS.map(target => target.id),
   scenarioIds: SCENARIOS.map(scenario => scenario.id),
   peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.7' },
+  stacksRuntimeDependencies: {
+    '@stacksjs/bun-router': { version: '0.1.11', path: 'node_modules/@stacksjs/bun-router/dist/index.js' },
+  },
   warmupSeconds: 5,
   durationSeconds: 30,
   runs: 3,
@@ -50,6 +53,9 @@ describe('routing benchmark publication profile', () => {
       runtimeRequirement: { range: '1.4.1', matches: false },
       source: { revision: null, dirty: null },
       peerVersions: { elysia: 'unavailable' },
+      stacksRuntimeDependencies: {
+        '@stacksjs/bun-router': { version: 'unavailable', path: 'unavailable' },
+      },
       warmupSeconds: 1,
       durationSeconds: 10,
       runs: 1,
@@ -61,6 +67,7 @@ describe('routing benchmark publication profile', () => {
       'runtime does not match package.json engines.bun',
       'source revision is unavailable or the working tree is not clean',
       'peer framework version is unavailable for elysia, express, fastify, hono',
+      'Stacks runtime dependency is unavailable for @stacksjs/bun-router',
       'warm-up is 1s; at least 5s is required',
       'measurement window is 10s; at least 30s is required',
       'only 1 run(s) were requested; at least 3 are required',

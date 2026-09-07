@@ -28,7 +28,7 @@ import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { resolvePeerVersions } from './peer-versions'
 import { verifyLoadPersistence } from './persistence'
-import { resolveStacksSourceModules } from './provenance'
+import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from './provenance'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 import { renderReport } from './report'
 import { assertParity, assertStableParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
@@ -145,6 +145,9 @@ async function main(): Promise<void> {
   const stacksSourceModules = targets.some(target => target.server === 'stacks.ts')
     ? resolveStacksSourceModules(REPO_ROOT)
     : undefined
+  const stacksRuntimeDependencies = targets.some(target => target.server === 'stacks.ts')
+    ? resolveStacksRuntimeDependencies(REPO_ROOT)
+    : {}
   const withDb = scenarios.some(s => s.requiresDb)
 
   if (withDb) {
@@ -167,6 +170,7 @@ async function main(): Promise<void> {
     targetIds: targets.map(target => target.id),
     scenarioIds: scenarios.map(scenario => scenario.id),
     peerVersions,
+    stacksRuntimeDependencies,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
@@ -177,6 +181,7 @@ async function main(): Promise<void> {
     startedAt,
     source,
     stacksSourceModules,
+    stacksRuntimeDependencies,
     runtimeRequirement,
     driver: driver.name,
     driverVersion,

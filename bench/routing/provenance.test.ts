@@ -3,7 +3,7 @@ import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { REPO_ROOT } from './runtime'
-import { resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
+import { resolveStacksRuntimeDependencies, resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
 
 describe('Stacks benchmark source provenance', () => {
   it('resolves every framework dependency through the server config to source', () => {
@@ -24,6 +24,12 @@ describe('Stacks benchmark source provenance', () => {
     modules['@stacksjs/database'] = join(REPO_ROOT, 'storage', 'framework', 'core', 'router', 'src', 'index.ts')
 
     expect(stacksSourceIssues(REPO_ROOT, modules)).toHaveLength(2)
+  })
+
+  it('records the exact published router runtime used by Stacks source', () => {
+    const dependencies = resolveStacksRuntimeDependencies(REPO_ROOT)
+    expect(dependencies['@stacksjs/bun-router'].version).toMatch(/^\d+\.\d+\.\d+/)
+    expect(dependencies['@stacksjs/bun-router'].path).toEndWith('/@stacksjs/bun-router/dist/index.js')
   })
 
   it('keeps benchmark-only implementations out of the Stacks fixture', () => {

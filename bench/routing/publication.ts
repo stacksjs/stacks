@@ -4,6 +4,7 @@ import type { RuntimeRequirement } from './runtime-version'
 import type { ScenarioParityEvidence } from './runtime'
 import type { SourceState } from './source'
 import { selectedPeerPackages } from './peer-versions'
+import { STACKS_RUNTIME_PACKAGES } from './provenance'
 import { isValidParityEvidence } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { MAX_STABLE_RANGE } from './statistics'
@@ -36,6 +37,7 @@ export interface RoutingPublicationProfile {
   targetIds: string[]
   scenarioIds: string[]
   peerVersions: Record<string, string>
+  stacksRuntimeDependencies: Record<string, { version: string, path: string }>
   warmupSeconds: number
   durationSeconds: number
   runs: number
@@ -69,6 +71,14 @@ export function routingPublicationIssues(profile: RoutingPublicationProfile): st
     .filter(packageName => !profile.peerVersions[packageName] || profile.peerVersions[packageName] === 'unavailable')
   if (unidentifiedPeers.length > 0)
     issues.push(`peer framework version is unavailable for ${unidentifiedPeers.join(', ')}`)
+  if (profile.targetIds.some(id => id.startsWith('stacks'))) {
+    const unavailableDependencies = STACKS_RUNTIME_PACKAGES.filter((packageName) => {
+      const dependency = profile.stacksRuntimeDependencies[packageName]
+      return !dependency || dependency.version === 'unavailable' || dependency.path === 'unavailable'
+    })
+    if (unavailableDependencies.length > 0)
+      issues.push(`Stacks runtime dependency is unavailable for ${unavailableDependencies.join(', ')}`)
+  }
   if (profile.warmupSeconds < 5)
     issues.push(`warm-up is ${profile.warmupSeconds}s; at least 5s is required`)
   if (profile.durationSeconds < 30)

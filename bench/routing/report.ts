@@ -10,7 +10,7 @@ import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
 import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
-import type { StacksSourceModules } from './provenance'
+import type { StacksRuntimeDependencies, StacksSourceModules } from './provenance'
 import type { BusyProcess } from './host-load'
 import { formatBusyProcess } from './host-load'
 import { formatSourceState } from './source'
@@ -41,6 +41,7 @@ export interface RunMeta {
   source?: SourceState
   sourceAtEnd?: SourceState
   stacksSourceModules?: StacksSourceModules
+  stacksRuntimeDependencies?: StacksRuntimeDependencies
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
@@ -117,6 +118,12 @@ export function renderReport(input: ReportInput): string {
   if (meta.stacksSourceModules) {
     const modules = Object.entries(meta.stacksSourceModules).map(([specifier, path]) => `\`${specifier}\`: \`${path}\``).join('<br>')
     lines.push(`| Stacks source modules | ${modules} |`)
+  }
+  if (meta.stacksRuntimeDependencies) {
+    const dependencies = Object.entries(meta.stacksRuntimeDependencies)
+      .map(([specifier, dependency]) => `\`${specifier}\`: ${dependency.version} at \`${dependency.path}\``)
+      .join('<br>')
+    lines.push(`| Stacks runtime dependencies | ${dependencies} |`)
   }
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)

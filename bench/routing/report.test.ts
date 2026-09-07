@@ -15,6 +15,9 @@ const meta: RunMeta = {
     '@stacksjs/router': 'storage/framework/core/router/src/index.ts',
     '@stacksjs/validation': 'storage/framework/core/validation/src/index.ts',
   },
+  stacksRuntimeDependencies: {
+    '@stacksjs/bun-router': { version: '0.1.11', path: 'node_modules/@stacksjs/bun-router/dist/index.js' },
+  },
   driver: 'oha',
   driverVersion: 'oha 1.16.0',
   loadTopology: 'same-host',
@@ -58,6 +61,7 @@ describe('routing benchmark report', () => {
     expect(report).toContain('| Load topology | same host as target server |')
     expect(report).toContain('| Peer framework versions | `elysia`: 1.4.30<br>`hono`: 4.13.5 |')
     expect(report).toContain('`@stacksjs/router`: `storage/framework/core/router/src/index.ts`')
+    expect(report).toContain('| Stacks runtime dependencies | `@stacksjs/bun-router`: 0.1.11 at `node_modules/@stacksjs/bun-router/dist/index.js` |')
     expect(report).toContain(`| Source at end | \`${'a'.repeat(40)}\` (clean working tree) |`)
     expect(report).toContain('> **Unstable result.** **Stacks minimal** (11.8% range) exceeded the 10% range limit.')
     expect(report).toContain('| Stacks minimal | 85 | 84 | 80-90 (11.8%) | 85.0% (80.0%-90.0%) |')
