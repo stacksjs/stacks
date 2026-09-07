@@ -97,7 +97,7 @@ describe('planServerDestroy', () => {
 
 describe('destroyEffects', () => {
   it('refuses to pretend it deleted anything without a provider API', async () => {
-    const effects = await destroyEffects({ project: { slug: 'shop' }, cloud: { provider: 'ssh' } }, server, 'production')
+    const effects = await destroyEffects({ project: { slug: 'shop' }, cloud: { provider: 'ssh' } }, server)
 
     expect(await effects.providerExists()).toBe(true)
     expect(effects.deleteProvider()).rejects.toThrow(/cannot be deleted from here/)
@@ -105,7 +105,7 @@ describe('destroyEffects', () => {
 
   it('empties the pin rather than deleting the file, so the stack re-provisions', async () => {
     pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 501, serverName: 'shop-production-app', publicIp: '1.2.3.4' })
-    const effects = await destroyEffects(hetzner, server, 'production')
+    const effects = await destroyEffects(hetzner, server)
 
     expect(await effects.pinnedName!()).toBe('shop-production-app')
     await effects.clearPin!()
@@ -119,7 +119,7 @@ describe('destroyEffects', () => {
 
   it('leaves a pin that names some other server alone', async () => {
     pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 77, serverName: 'shop-production-lb' })
-    const effects = await destroyEffects(hetzner, server, 'production')
+    const effects = await destroyEffects(hetzner, server)
 
     expect(effects.clearPin).toBeUndefined()
   })

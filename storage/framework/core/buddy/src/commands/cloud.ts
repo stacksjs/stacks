@@ -1,6 +1,6 @@
 import type { OperationPlan } from '@stacksjs/ts-cloud'
 import type { CLI, CloudCliOptions } from '@stacksjs/types'
-import { existsSync, readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import process from 'node:process'
 import { intro, italic, log, onUnknownSubcommand, outro, prompts, runCommand, text, underline } from "@stacksjs/cli"
@@ -224,6 +224,56 @@ async function refuse(...messages: string[]): Promise<never> {
 }
 
 /**
+ * Every local driver-state pin that records `serverName`, and what it says.
+ *
+ * Asked of the files rather than reconstructed from a stack name, because
+ * reconstructing it requires knowing the environment - and the environment a
+ * fleet command has to hand is whatever `NODE_ENV` happens to be, which is
+ * `development` on a laptop while the fleet it just listed is production. That
+ * spelling looked right and quietly found nothing, so the rename dropped its
+ * state step: exactly the failure ts-cloud warns about, where a provider rename
+ * leaves a pin naming a server that no longer exists and `findComputeTargets`
+ * then refuses to use it.
+ *
+ * It also finds ALL of them. This repository holds two pins for the same box
+ * (`stacks-production` and `stacks-production-resize`), and a rename invalidates
+ * both.
+ */
+async function driverStatePins(): Promise<Array<{ file: string, state: any }>> {
+  const { driverStatePath } = await import('@stacksjs/ts-cloud')
+  const dir = join(driverStatePath('probe'), '..')
+
+  let files: string[]
+  try {
+    files = readdirSync(dir).filter(name => name.endsWith('.json'))
+  }
+  catch {
+    return []
+  }
+
+  const pins: Array<{ file: string, state: any }> = []
+  for (const name of files) {
+    const file = join(dir, name)
+    try {
+      const state = JSON.parse(readFileSync(file, 'utf8'))
+      if (typeof state?.serverName === 'string')
+        pins.push({ file, state })
+    }
+    catch {
+      // A pin that is not readable JSON is not this command's to repair, and
+      // refusing the whole operation over one would be worse than skipping it.
+    }
+  }
+  return pins
+}
+
+/** Rewrite `serverName` in place, leaving every other field of the pin alone. */
+function writePinName(file: string, next: string): void {
+  const state = JSON.parse(readFileSync(file, 'utf8'))
+  writeFileSync(file, `${JSON.stringify({ ...state, serverName: next }, null, 2)}\n`)
+}
+
+/**
  * The side effects a rename needs, wired to whichever fleet this project has.
  *
  * `ServerRenameEffects` keeps every capability optional but the taken-name check
@@ -246,12 +296,7 @@ async function refuse(...messages: string[]): Promise<never> {
  *    provider fleet the provider record IS the inventory, and the write here is
  *    against the snapshot this run is holding.
  */
-export async function renameEffects(
-  tsCloudConfig: any,
-  servers: any[],
-  current: any,
-  environment: string,
-): Promise<any> {
+export async function renameEffects(tsCloudConfig: any, servers: any[], current: any): Promise<any> {
   const taken = servers.map((s: any) => String(s?.name)).filter(Boolean)
 
   const effects: Record<string, unknown> = {
@@ -264,20 +309,17 @@ export async function renameEffects(
     },
   }
 
-  const stackName = tsCloudConfig?.project?.stackName || `${tsCloudConfig?.project?.slug || 'app'}-${environment}`
-  const { readDriverState, writeDriverState } = await import('@stacksjs/ts-cloud')
-  const pin = await readDriverState(stackName).catch(() => null)
-  // Only a provider pin records a server name at all: the ssh driver pins the
-  // host it adopted, which a rename does not touch.
-  if (pin?.provider === 'hetzner' && pin.serverName && pin.serverName === current?.name) {
+  const pinned = (await driverStatePins()).filter(pin => pin.state.serverName === current?.name)
+  if (pinned.length > 0) {
+    // `stateName` reports the first pin still holding the old name, so the step
+    // stays unsatisfied until every one of them has been rewritten.
     effects.stateName = async () => {
-      const latest = await readDriverState(stackName)
-      return latest?.provider === 'hetzner' ? latest.serverName : undefined
+      const stale = (await driverStatePins()).find(pin => pin.state.serverName === current?.name)
+      return stale ? String(stale.state.serverName) : undefined
     }
     effects.writeStateName = async (next: string) => {
-      const latest = await readDriverState(stackName)
-      if (latest?.provider === 'hetzner')
-        await writeDriverState(stackName, { ...latest, serverName: next })
+      for (const pin of pinned)
+        writePinName(pin.file, next)
     }
   }
 
@@ -374,10 +416,8 @@ export function planServerDestroy(name: string, effects: ServerDestroyEffects): 
 }
 
 /** {@link ServerDestroyEffects} wired to this project's fleet. */
-export async function destroyEffects(tsCloudConfig: any, current: any, environment: string): Promise<ServerDestroyEffects> {
-  const stackName = tsCloudConfig?.project?.stackName || `${tsCloudConfig?.project?.slug || 'app'}-${environment}`
-  const { readDriverState, writeDriverState } = await import('@stacksjs/ts-cloud')
-  const pin = await readDriverState(stackName).catch(() => null)
+export async function destroyEffects(tsCloudConfig: any, current: any): Promise<ServerDestroyEffects> {
+  const pinned = (await driverStatePins()).filter(pin => pin.state.serverName === current?.name)
 
   const effects: ServerDestroyEffects = {
     // Without a provider there is nothing this command can delete, and saying so
@@ -388,20 +428,19 @@ export async function destroyEffects(tsCloudConfig: any, current: any, environme
     },
   }
 
-  if (pin?.provider === 'hetzner' && pin.serverName === current?.name) {
+  if (pinned.length > 0) {
     effects.pinnedName = async () => {
-      const latest = await readDriverState(stackName)
-      return latest?.provider === 'hetzner' ? latest.serverName : undefined
+      const stale = (await driverStatePins()).find(pin => pin.state.serverName === current?.name)
+      return stale ? String(stale.state.serverName) : undefined
     }
     effects.clearPin = async () => {
-      const latest = await readDriverState(stackName)
-      if (latest?.provider !== 'hetzner')
-        return
-      // The pin is emptied rather than deleted: a stack whose box is gone should
-      // re-provision on the next deploy, and the file is where that decision is
+      // Emptied rather than deleted: a stack whose box is gone should
+      // re-provision on its next deploy, and the file is where that decision is
       // recorded. `destroyCompute` clears the same two fields.
-      const { serverId: _id, serverName: _name, ...rest } = latest
-      await writeDriverState(stackName, rest as typeof latest)
+      for (const pin of pinned) {
+        const { serverId: _id, serverName: _name, ...rest } = JSON.parse(readFileSync(pin.file, 'utf8'))
+        writeFileSync(pin.file, `${JSON.stringify(rest, null, 2)}\n`)
+      }
     }
   }
 
@@ -989,7 +1028,10 @@ export function cloud(buddy: CLI): void {
 
   buddy
     .command('cloud:remove', descriptions.remove)
-    .alias('cloud:destroy')
+    // NOT `cloud:destroy`: that is now a command of its own, for one server,
+    // and an alias claiming the same name won - so `buddy cloud:destroy <box>`
+    // silently ran the whole-cloud teardown instead. `cloud:rm` and `undeploy`
+    // still mean this.
     .alias('cloud:rm')
     .alias('undeploy')
     .option('--jump-box', 'Remove the jump-box', { default: false })
@@ -1619,7 +1661,7 @@ export function cloud(buddy: CLI): void {
       if (server === next)
         return await refuse(`${server} is already called that.`)
 
-      const plan = await planServerRename(server, next, await renameEffects(tsCloudConfig, listing.servers, current, environment))
+      const plan = await planServerRename(server, next, await renameEffects(tsCloudConfig, listing.servers, current))
       const resolved = await resolvePlan(plan)
       const pending = pendingSteps(resolved)
 
@@ -1731,7 +1773,7 @@ export function cloud(buddy: CLI): void {
         }
       }
 
-      const plan = planServerDestroy(server, await destroyEffects(tsCloudConfig, current, environment))
+      const plan = planServerDestroy(server, await destroyEffects(tsCloudConfig, current))
       const resolved = await resolvePlan(plan)
       const pending = pendingSteps(resolved)
 

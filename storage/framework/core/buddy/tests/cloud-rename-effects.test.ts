@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -13,7 +13,7 @@ import { renameEffects } from '../src/commands/cloud'
  * wrongly-present one makes the plan promise work it cannot do.
  */
 
-const TOKEN_VARS = ['HCLOUD_TOKEN', 'HETZNER_API_TOKEN', 'CLOUD_PROVIDER', 'TS_CLOUD_STATE_DIR'] as const
+const TOKEN_VARS = ['HCLOUD_TOKEN', 'HETZNER_API_TOKEN', 'CLOUD_PROVIDER', 'TS_CLOUD_STATE_DIR', 'NODE_ENV', 'APP_ENV'] as const
 
 let saved: Record<string, string | undefined>
 let cwd: string
@@ -36,23 +36,24 @@ afterEach(() => {
 })
 
 const hetzner = { project: { slug: 'shop' }, cloud: { provider: 'hetzner' } }
+const pinPath = 'storage/cloud/state/shop-production.json'
 const server = { id: '501', name: 'shop-production-app', ipv4: '167.233.116.134' }
 
 function pin(state: Record<string, unknown>): void {
   mkdirSync('storage/cloud/state', { recursive: true })
-  writeFileSync('storage/cloud/state/shop-production.json', JSON.stringify(state))
+  writeFileSync(pinPath, JSON.stringify(state))
 }
 
 describe('renameEffects', () => {
   it('offers the names already taken, so the plan can refuse a collision', async () => {
-    const effects = await renameEffects(hetzner, [server, { name: 'shop-production-lb' }], server, 'production')
+    const effects = await renameEffects(hetzner, [server, { name: 'shop-production-lb' }], server)
 
     expect(await effects.takenNames()).toEqual(['shop-production-app', 'shop-production-lb'])
   })
 
   it('renames the inventory snapshot this run is holding', async () => {
     const held = { ...server }
-    const effects = await renameEffects(hetzner, [held], held, 'production')
+    const effects = await renameEffects(hetzner, [held], held)
 
     expect(effects.inventoryName()).toBe('shop-production-app')
     await effects.renameInventory('shop-production-web')
@@ -72,10 +73,10 @@ describe('renameEffects', () => {
   })
 
   it('gives a Hetzner fleet a provider step once a token can be resolved', async () => {
-    expect((await renameEffects(hetzner, [server], server, 'production')).renameProvider).toBeUndefined()
+    expect((await renameEffects(hetzner, [server], server)).renameProvider).toBeUndefined()
 
     process.env.HCLOUD_TOKEN = 'tok'
-    const effects = await renameEffects(hetzner, [server], server, 'production')
+    const effects = await renameEffects(hetzner, [server], server)
 
     expect(typeof effects.renameProvider).toBe('function')
     expect(typeof effects.providerName).toBe('function')
@@ -83,7 +84,7 @@ describe('renameEffects', () => {
 
   it('has no provider step for a server the listing gave no numeric id', async () => {
     process.env.HCLOUD_TOKEN = 'tok'
-    const effects = await renameEffects(hetzner, [server], { ...server, id: 'srv-abc' }, 'production')
+    const effects = await renameEffects(hetzner, [server], { ...server, id: 'srv-abc' })
 
     expect(effects.renameProvider).toBeUndefined()
   })
@@ -94,31 +95,69 @@ describe('renameEffects', () => {
    */
   it('rewrites the state pin when it names this server', async () => {
     pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 501, serverName: 'shop-production-app' })
-    const effects = await renameEffects(hetzner, [server], server, 'production')
+    const effects = await renameEffects(hetzner, [server], server)
 
+    // ts-cloud's step is satisfied when `stateName` reports the new name or
+    // nothing, so reporting the pins still holding the OLD one is what keeps it
+    // pending until every one of them has been rewritten.
     expect(await effects.stateName()).toBe('shop-production-app')
     await effects.writeStateName('shop-production-web')
-    expect(await effects.stateName()).toBe('shop-production-web')
+    expect(await effects.stateName()).toBeUndefined()
+    expect(JSON.parse(readFileSync(pinPath, 'utf8')).serverName).toBe('shop-production-web')
+  })
+
+  /**
+   * The checkout this was written in holds two pins for one box
+   * (`stacks-production` and `stacks-production-resize`), and a provider rename
+   * invalidates both: `findComputeTargets` rejects a pin whose recorded name no
+   * longer matches the live one.
+   */
+  it('rewrites every pin naming the server, not just the first', async () => {
+    pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 501, serverName: 'shop-production-app' })
+    writeFileSync(
+      'storage/cloud/state/shop-production-resize.json',
+      JSON.stringify({ stackName: 'shop-production', serverId: 501, serverName: 'shop-production-app' }),
+    )
+    const effects = await renameEffects(hetzner, [server], server)
+
+    await effects.writeStateName('shop-production-web')
+
+    expect(await effects.stateName()).toBeUndefined()
+    for (const file of ['shop-production.json', 'shop-production-resize.json'])
+      expect(JSON.parse(readFileSync(`storage/cloud/state/${file}`, 'utf8')).serverName).toBe('shop-production-web')
+  })
+
+  /**
+   * The stack name used to be reconstructed as `<slug>-<NODE_ENV>`, which on a
+   * laptop is `shop-development` while the fleet just listed is production - so
+   * the lookup found nothing and the rename silently dropped its state step,
+   * leaving the pin naming a server that no longer exists.
+   */
+  it('finds the pin without being told which environment it belongs to', async () => {
+    pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 501, serverName: 'shop-production-app' })
+    process.env.NODE_ENV = 'development'
+
+    expect(await (await renameEffects(hetzner, [server], server)).stateName()).toBe('shop-production-app')
   })
 
   it('leaves a pin that names some other server alone', async () => {
     pin({ provider: 'hetzner', stackName: 'shop-production', serverId: 77, serverName: 'shop-production-lb' })
-    const effects = await renameEffects(hetzner, [server], server, 'production')
+    const effects = await renameEffects(hetzner, [server], server)
 
     expect(effects.writeStateName).toBeUndefined()
   })
 
   it('has no state step when nothing is pinned', async () => {
-    const effects = await renameEffects(hetzner, [server], server, 'production')
+    const effects = await renameEffects(hetzner, [server], server)
 
     expect(effects.stateName).toBeUndefined()
   })
 
   it('has no hostname step for a box with no address to reach', async () => {
-    const effects = await renameEffects(hetzner, [server], { ...server, ipv4: undefined }, 'production')
+    const effects = await renameEffects(hetzner, [server], { ...server, ipv4: undefined })
 
     expect(effects.setRemoteHostname).toBeUndefined()
-    expect(typeof (await renameEffects(hetzner, [server], server, 'production')).setRemoteHostname).toBe('function')
+    expect(typeof (await renameEffects(hetzner, [server], server)).setRemoteHostname).toBe('function')
   })
 })
 

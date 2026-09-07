@@ -20,6 +20,37 @@ import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { reportFailure, resultFailed } from '../result'
 
+/**
+ * Generate types, then refresh the database schema augmentation.
+ *
+ * Shared because two commands spell this: `generate:types` and `types:generate`.
+ * They used to be two implementations - the second called only `generateTypes`
+ * and stopped - and `generate:types` also claimed `types:generate` as an alias,
+ * so which behaviour you got depended on which registration the CLI resolved
+ * first. It resolved the lesser one, which meant `project-setup` and anyone
+ * typing `types:generate` regenerated types and left `database/types.d.ts`
+ * stale.
+ */
+export async function runTypeGeneration(options: GeneratorOptions & { watch?: boolean }): Promise<void> {
+  await generateTypes(options)
+
+  // Refresh database/types.d.ts so userland's `db.selectFrom(...)` keeps
+  // getting table-name autocomplete (stacksjs/stacks#1923). Failure is
+  // non-fatal - the main type-gen succeeded, and the augmentation file is
+  // purely additive (its absence falls back to the `(string & {})` branch in
+  // `DatabaseSchema`).
+  try {
+    const { buildDatabaseSchema } = await import('@stacksjs/orm')
+    await buildDatabaseSchema()
+  }
+  catch (err) {
+    log.warn(`[generate:db-types] skipped: ${(err as Error).message}`)
+  }
+
+  if (options.watch)
+    await watchTypes(options)
+}
+
 export function generate(buddy: CLI): void {
   const descriptions = {
     command:
@@ -90,26 +121,9 @@ export function generate(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-w, --watch', 'Re-run on changes to models/ and config/', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .alias('types:generate')
     .action(async (options: GeneratorOptions & { watch?: boolean }) => {
       log.debug('Running `buddy generate:types` ...', options)
-      await generateTypes(options)
-      // Also refresh database/types.d.ts so userland's
-      // `db.selectFrom(...)` keeps getting table-name autocomplete
-      // (stacksjs/stacks#1923). Failure is non-fatal — the main
-      // type-gen succeeded, and the augmentation file is purely
-      // additive (its absence falls back to the `(string & {})`
-      // branch in `DatabaseSchema`).
-      try {
-        const { buildDatabaseSchema } = await import('@stacksjs/orm')
-        await buildDatabaseSchema()
-      }
-      catch (err) {
-        log.warn(`[generate:db-types] skipped: ${(err as Error).message}`)
-      }
-      if (options.watch) {
-        await watchTypes(options)
-      }
+      await runTypeGeneration(options)
     })
 
   // `./buddy generate:db-types` — scoped subcommand so users (and CI)

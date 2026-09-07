@@ -673,7 +673,7 @@ Remove the Stacks Cloud. In case it fails, try again
 
 - Usage: `$ buddy cloud:remove`
 - Namespace: `cloud`
-- Aliases: `cloud:destroy`, `cloud:rm`, `undeploy`
+- Aliases: `cloud:rm`, `undeploy`
 - Arguments: none
 
 | Option | Description | Contract | Default |
@@ -2295,7 +2295,7 @@ Generate your TypeScript types
 
 - Usage: `$ buddy generate:types`
 - Namespace: `generate`
-- Aliases: `types:generate`
+- Aliases: none
 - Arguments: none
 
 | Option | Description | Contract | Default |
@@ -4930,6 +4930,7 @@ Generate the types of & for your library/libraries
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `-w`, `--watch` | Re-run on changes to models/ and config/ | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `unlink:core`
