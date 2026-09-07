@@ -275,7 +275,12 @@ async function listFleet(tsCloudConfig: any): Promise<{ servers: any[], problem?
     }
   }
 
-  const { HetznerClient, resolveHetznerApiToken, toInventoryServer } = await import('@stacksjs/ts-cloud')
+  const { HetznerClient, toInventoryServer } = await import('@stacksjs/ts-cloud')
+  // ts-cloud exports a resolver of the same name whose first parameter is the
+  // token, not the config - passing a config there made it call `.trim()` on an
+  // object and every Hetzner listing died with `t?.trim is not a function`. The
+  // buddy resolver takes the config, and is the one the deploy path already uses.
+  const { resolveHetznerApiToken } = await import('./deploy')
   const apiToken = resolveHetznerApiToken(tsCloudConfig)
 
   if (!apiToken) {
