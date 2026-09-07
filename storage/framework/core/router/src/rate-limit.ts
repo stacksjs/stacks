@@ -18,13 +18,7 @@
 import type { RateLimiter } from 'ts-rate-limiter'
 import { getCurrentRequest } from './request-context'
 
-const PERIOD_SECONDS = {
-  second: 1,
-  minute: 60,
-  hour: 3600,
-  day: 86_400,
-} as const
-type Period = keyof typeof PERIOD_SECONDS
+type Period = 'second' | 'minute' | 'hour' | 'day'
 
 /**
  * Per-(key,window) limiter cache. Reusing the same `RateLimiter`
@@ -123,7 +117,15 @@ export function rateLimit(
 
   return {
     async per(period) {
-      const seconds = PERIOD_SECONDS[period]
+      const seconds = period === 'second'
+        ? 1
+        : period === 'minute'
+          ? 60
+          : period === 'hour'
+            ? 3600
+            : period === 'day'
+              ? 86_400
+              : undefined
       if (!seconds) throw new Error(`rateLimit().per: unknown period '${period}'`)
       await run(seconds * 1000)
     },
