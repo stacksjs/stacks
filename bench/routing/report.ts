@@ -10,6 +10,7 @@ import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
 import type { RelativeThroughput } from './statistics'
 import type { RuntimeRequirement } from './runtime-version'
+import type { StacksSourceModules } from './provenance'
 import type { BusyProcess } from './host-load'
 import { formatBusyProcess } from './host-load'
 import { formatSourceState } from './source'
@@ -39,6 +40,7 @@ export interface RunMeta {
   startedAt: string
   source?: SourceState
   sourceAtEnd?: SourceState
+  stacksSourceModules?: StacksSourceModules
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
@@ -109,6 +111,10 @@ export function renderReport(input: ReportInput): string {
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Source at end | ${formatSourceState(meta.sourceAtEnd)} |`)
+  if (meta.stacksSourceModules) {
+    const modules = Object.entries(meta.stacksSourceModules).map(([specifier, path]) => `\`${specifier}\`: \`${path}\``).join('<br>')
+    lines.push(`| Stacks source modules | ${modules} |`)
+  }
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)
   lines.push(`| Connections | ${meta.connections} |`)

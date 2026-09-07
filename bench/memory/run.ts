@@ -21,6 +21,7 @@ import { pickDriver } from '../routing/drivers'
 import { createFixture } from '../routing/fixture'
 import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
 import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
+import { resolveStacksSourceModules } from '../routing/provenance'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
@@ -259,6 +260,9 @@ async function main(): Promise<void> {
   const runtimeWarning = runtimeMismatchWarning(runtimeRequirement, Bun.version)
   if (runtimeWarning) console.error(`[memory] ${runtimeWarning}`)
   const targets = resolveTargets(options.targets, options.requestRate)
+  const stacksSourceModules = targets.some(({ target }) => target.server === 'stacks.ts')
+    ? resolveStacksSourceModules(REPO_ROOT)
+    : undefined
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
   const driverVersion = await driver.version()
@@ -302,6 +306,7 @@ async function main(): Promise<void> {
   const meta: MemoryRunMeta = {
     startedAt,
     source,
+    stacksSourceModules,
     runtimeRequirement,
     driver: driver.name,
     driverVersion,

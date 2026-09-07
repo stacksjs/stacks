@@ -1,6 +1,7 @@
 import type { SourceState } from '../routing/source'
 import type { BusyProcess } from '../routing/host-load'
 import type { RuntimeRequirement } from '../routing/runtime-version'
+import type { StacksSourceModules } from '../routing/provenance'
 import { formatBusyProcess } from '../routing/host-load'
 import { formatSourceState } from '../routing/source'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
@@ -26,6 +27,7 @@ export interface MemoryRunMeta {
   startedAt: string
   source?: SourceState
   sourceAtEnd?: SourceState
+  stacksSourceModules?: StacksSourceModules
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
@@ -100,6 +102,10 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
   lines.push(`| Source at end | ${formatSourceState(meta.sourceAtEnd)} |`)
+  if (meta.stacksSourceModules) {
+    const modules = Object.entries(meta.stacksSourceModules).map(([specifier, path]) => `\`${specifier}\`: \`${path}\``).join('<br>')
+    lines.push(`| Stacks source modules | ${modules} |`)
+  }
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
   if (meta.runtimeRequirement)
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)

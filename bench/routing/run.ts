@@ -26,6 +26,7 @@ import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
 import { verifyLoadPersistence } from './persistence'
+import { resolveStacksSourceModules } from './provenance'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
@@ -138,6 +139,9 @@ async function main(): Promise<void> {
 
   const scenarios = SCENARIOS.filter(s => opts.scenarios.includes(s.id) && (opts.db || !s.requiresDb))
   const targets = TARGETS.filter(t => opts.targets.includes(t.id))
+  const stacksSourceModules = targets.some(target => target.server === 'stacks.ts')
+    ? resolveStacksSourceModules(REPO_ROOT)
+    : undefined
   const withDb = scenarios.some(s => s.requiresDb)
 
   if (withDb) {
@@ -166,6 +170,7 @@ async function main(): Promise<void> {
   const meta: RunMeta = {
     startedAt,
     source,
+    stacksSourceModules,
     runtimeRequirement,
     driver: driver.name,
     driverVersion,

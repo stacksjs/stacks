@@ -32,6 +32,9 @@ server registers only the selected scenario, so an unrelated validator or
 database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
 cannot consistently favor the same implementation.
+The same source-provenance preflight also requires every Stacks package used by
+the fixture to resolve from its framework source tree through a public package
+entry point, and records those paths in the report.
 
 Before and after each measurement, the runner refuses to proceed when another
 process is using at least 75% of one CPU core. Pass `--allow-busy-host` only for

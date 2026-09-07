@@ -29,6 +29,12 @@ accident. The safeguards here exist only to stop that:
   every target must reject missing fields and wrong field types with a client
   error, then accept an extra input field without echoing it. These setup-only
   probes keep a no-op or permissive handler out of the comparison.
+- **Stacks runs the real framework source.** The runner resolves every Stacks
+  dependency through its public `@stacksjs/*` package entry point, requires the
+  result to live under that package's `storage/framework/core/*/src` tree, and
+  records every resolved path. The Stacks fixture may configure and call public
+  APIs, but may not import framework internals or reimplement a data path with
+  `bun:sqlite`.
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
 - **Busy hosts are rejected around every measurement.** Any competing process
   using at least 75% of one core before a server starts or after it stops aborts
