@@ -291,9 +291,16 @@ type TypedInlineRouteHandler<TPath extends string>
 
 export type StacksHandler = ActionPath | InlineRouteHandler | RouterAction
 
-interface StacksRouterConfig {
+export interface StacksRouterConfig {
   verbose?: boolean
   apiPrefix?: string
+  /**
+   * Discover route modules under the project's `routes/` directory when the
+   * server starts. Disable this for programmatic routers whose complete route
+   * table is registered through this instance.
+   * @default true
+   */
+  autoDiscoverRoutes?: boolean
   /**
    * Generate and echo an `X-Request-ID` for every request. Disable only when
    * an upstream proxy already owns request correlation.
@@ -4383,6 +4390,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   const bunRouter = new Router({
     verbose: config.verbose ?? false,
   })
+  if (config.autoDiscoverRoutes === false) {
+    // bun-router performs route-directory discovery inside `serve()`. Marking
+    // that phase complete is its internal opt-out seam; keeping this detail in
+    // the Stacks adapter gives programmatic servers a stable public option and
+    // keeps callers away from private router fields.
+    ;(bunRouter as Router & { _apiRoutesInitialized: boolean })._apiRoutesInitialized = true
+  }
   const csrfEnabled = config.csrf !== false
   if (csrfEnabled)
     csrfEnabledNativeRouteRouters.add(bunRouter)

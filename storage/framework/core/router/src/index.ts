@@ -24,7 +24,7 @@ export type { StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers
 // Export Stacks-specific action resolver and URL helper
 export { assertRouteMiddlewareResolvable,
   configureViewDirectories, clearCsrfModuleCache, clearMiddlewareCache, createStacksRouter, disableViewRouting, enhanceRequest, findUnresolvableRouteMiddleware, installMiddlewareHotReload, loadMiddlewareHandlers, resetBootHooks, route, runBootHooks, serve, serverResponse, url, warnOnMultipleRouterInstances } from './stacks-router'
-export type { BootHook } from './stacks-router'
+export type { BootHook, StacksRouterConfig } from './stacks-router'
 
 // Export request context helpers
 export { cacheRequestQuery, clearCurrentRequest, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'

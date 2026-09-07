@@ -50,10 +50,12 @@ accident. The safeguards here exist only to stop that:
   prevent the fixture from bypassing the router with direct Bun serving,
   prebuilt responses, or manual JSON serialization.
 - **Every process exposes only benchmark routes.** The Stacks fixture uses the
-  framework's public API-server configuration to disable file-based view
-  discovery. Without it, this repository's application views would add routes
-  during `serve()` even though every peer process contains only the selected
-  scenario.
+  framework's public programmatic-router configuration to disable application
+  route discovery, and its public API-server configuration to disable view
+  discovery. Without both, this repository's `routes/` modules and application
+  views would load during `serve()` even though every peer process contains
+  only the selected scenario. The fixture does not touch bun-router internals
+  or point discovery at a benchmark-owned empty directory.
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
 - **Busy hosts are rejected around every measurement.** One competing process,
   or combined competing work, using at least 75% of one core before a server

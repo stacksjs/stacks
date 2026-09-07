@@ -35,11 +35,16 @@ if (withDb && sqliteProfile === 'wal-full') {
 const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
-const router = createStacksRouter({ requestIds: !minimal, csrf: !minimal })
-// This is an API benchmark. The repository also contains application views,
-// and bun-router otherwise discovers and registers them during serve(). Every
-// peer process registers only the selected benchmark route, so use Stacks'
-// public API-server configuration here too.
+const router = createStacksRouter({
+  autoDiscoverRoutes: false,
+  requestIds: !minimal,
+  csrf: !minimal,
+})
+// This programmatic API server registers its complete route table above and
+// below. The repository also contains application route files and views, and
+// bun-router otherwise discovers both during serve(). Every peer process
+// registers only the selected benchmark route, so use Stacks' public server
+// configuration to do the same.
 disableViewRouting(router.bunRouter)
 
 if (serves('static-json'))

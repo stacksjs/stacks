@@ -41,7 +41,10 @@ describe('Stacks benchmark source provenance', () => {
     expect(source).not.toMatch(/\bJSON\.stringify\s*\(/)
     expect(source).not.toMatch(/return\s+request\.getValidated\(\)/)
     expect(source).toContain('return { name: validated.name, count: validated.count }')
+    expect(source).toContain('autoDiscoverRoutes: false')
     expect(source).toContain('disableViewRouting(router.bunRouter)')
+    expect(source).not.toContain('._apiRoutesInitialized')
+    expect(source).not.toContain('.routesFrom(')
   })
 
   it('keeps benchmark selectors out of framework source', () => {
