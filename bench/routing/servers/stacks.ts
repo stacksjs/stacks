@@ -7,7 +7,7 @@
  *                        the render-token seed on every GET, security headers
  *                        on every response, request-id,
  *                        AsyncLocalStorage request context.
- *   minimal            — `.skipCsrf()` on the mutating route and
+ *   minimal            — CSRF disabled for a token-only API and
  *                        `STACKS_SECURITY_HEADERS_DISABLE=true` (set by the
  *                        runner), with request IDs owned by an upstream proxy.
  *                        Everything else is unchanged: this profile exists to
@@ -34,7 +34,7 @@ if (withDb && sqliteProfile === 'wal-full') {
 const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
-const router = createStacksRouter({ requestIds: !minimal })
+const router = createStacksRouter({ requestIds: !minimal, csrf: !minimal })
 
 if (serves('static-json'))
   router.get('/bench/json', () => ({ hello: 'world' }))
@@ -71,7 +71,7 @@ if (serves('post-validate')) {
     },
   })
 
-  createTypedRouter(router).post('/bench/echo', EchoAction, minimal ? { skipCsrf: true } : undefined)
+  createTypedRouter(router).post('/bench/echo', EchoAction)
 }
 
 if (withDb && serves('db-roundtrip')) {

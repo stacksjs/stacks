@@ -43,7 +43,7 @@ export const TARGETS: readonly Target[] = [
   },
   {
     id: 'stacks-minimal',
-    label: 'Stacks (proxy IDs, security headers off, route skipCsrf)',
+    label: 'Stacks (proxy IDs, security headers and CSRF off)',
     server: 'stacks.ts',
     env: { BENCH_MODE: 'minimal', STACKS_SECURITY_HEADERS_DISABLE: 'true' },
     cookie: true,
