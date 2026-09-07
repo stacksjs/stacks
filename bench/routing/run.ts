@@ -25,6 +25,7 @@ import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-versio
 import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess } from './host-load'
 import { measureLoad } from './measurement'
+import { resolvePeerVersions } from './peer-versions'
 import { verifyLoadPersistence } from './persistence'
 import { resolveStacksSourceModules } from './provenance'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
@@ -139,6 +140,7 @@ async function main(): Promise<void> {
 
   const scenarios = SCENARIOS.filter(s => opts.scenarios.includes(s.id) && (opts.db || !s.requiresDb))
   const targets = TARGETS.filter(t => opts.targets.includes(t.id))
+  const peerVersions = await resolvePeerVersions(targets.map(target => target.id))
   const stacksSourceModules = targets.some(target => target.server === 'stacks.ts')
     ? resolveStacksSourceModules(REPO_ROOT)
     : undefined
@@ -175,6 +177,7 @@ async function main(): Promise<void> {
     driver: driver.name,
     driverVersion,
     loadTopology: 'same-host',
+    peerVersions,
     publishable: publicationIssues.length === 0,
     publicationIssues,
     connections: opts.connections,

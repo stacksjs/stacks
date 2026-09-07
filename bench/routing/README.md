@@ -15,6 +15,8 @@ Reports and metadata record the Git revision and working-tree state both before
 and after measurement, plus the machine architecture. Ignored files are
 excluded from that state; source archives without Git are marked unavailable.
 A revision or cleanliness change during measurement invalidates publication.
+Reports also record the versions resolved for every selected peer framework,
+so a copied result remains tied to the code that actually ran.
 
 ## Why the harness looks like this
 
