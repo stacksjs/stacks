@@ -10,35 +10,11 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
+import { buildErrorJson, getJsonHeaders, getJsonHeadersFull } from './error-response'
 import { getRecentQueries, isDebugAllowed } from './query-tracker'
+export { createValidationErrorResponse } from './error-response'
+export type { ErrorResponseBody } from './error-response'
 export { clearTrackedQueries, getQueryShapeCounts, trackQuery } from './query-tracker'
-
-/**
- * Standard error response structure used across all JSON error responses.
- */
-export interface ErrorResponseBody {
-  error: string
-  message: string
-  status: number
-  timestamp: string
-  details?: Record<string, unknown>
-}
-
-function buildErrorJson(opts: {
-  error: string
-  message: string
-  status: number
-  details?: Record<string, unknown>
-}): string {
-  const body: ErrorResponseBody = {
-    error: opts.error,
-    message: opts.message,
-    status: opts.status,
-    timestamp: new Date().toISOString(),
-  }
-  if (opts.details) body.details = opts.details
-  return JSON.stringify(body)
-}
 
 /**
  * Single source of truth for "is this deployment allowed to surface
@@ -53,23 +29,6 @@ function buildErrorJson(opts: {
  * deployments often touch real data and real third-party tokens, so
  * those leaks are exploitable. See stacksjs/stacks#1859 H-10.
  */
-function getJsonHeaders(): Record<string, string> {
-  // CORS headers used to be emitted here directly using `APP_URL` env,
-  // independent of the configured CORS policy. That meant error
-  // responses could advertise different allowed origins than success
-  // responses (and in dev defaulted to `*` regardless of policy).
-  // The router's post-response CORS wrapper now owns all CORS header
-  // injection, applying the configured policy uniformly to success
-  // and error paths. See stacksjs/stacks#1859 H-3.
-  return { 'Content-Type': 'application/json' }
-}
-
-function getJsonHeadersFull(): Record<string, string> {
-  // Same rationale as `getJsonHeaders` — defer CORS to the post-response
-  // wrapper rather than emit policy-inconsistent headers from here.
-  return getJsonHeaders()
-}
-
 /**
  * Get the error handler configuration
  */
@@ -411,24 +370,6 @@ export async function createMiddlewareErrorResponse(
       status,
     }),
     { status, headers: getJsonHeaders() },
-  )
-}
-
-/**
- * Create a validation error response
- */
-export function createValidationErrorResponse(
-  errors: Record<string, string[]>,
-  _request: Request | EnhancedRequest,
-): Response {
-  return new Response(
-    buildErrorJson({
-      error: 'ValidationError',
-      message: 'Validation failed',
-      status: 422,
-      details: { errors },
-    }),
-    { status: 422, headers: getJsonHeaders() },
   )
 }
 
