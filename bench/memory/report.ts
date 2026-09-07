@@ -103,7 +103,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
   if (meta.runtimeRequirement)
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
-  lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections, fixed per-target request rates |`)
+  lines.push(`| Scenario | \`${meta.scenario}\`, ${meta.connections} connections, one fixed request rate for every target |`)
   lines.push(`| Method | ${meta.loadSeconds}s sustained load, ${meta.idleSeconds}s idle, ${meta.sampleIntervalMs}ms RSS sampling |`)
   lines.push(`| Settled window | Median of the final ${meta.settleSeconds}s of idle |`)
   lines.push(`| Repeats | ${meta.runs}, median reported |`)

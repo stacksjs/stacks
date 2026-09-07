@@ -3,7 +3,7 @@ import type { RuntimeRequirement } from '../routing/runtime-version'
 import type { SourceState } from '../routing/source'
 import type { MemoryMeasurement } from './report'
 import { MAX_STABLE_RANGE, relativeRange } from '../routing/statistics'
-import { BUN_141_API_PROFILE } from './profile'
+import { EQUAL_RATE_API_PROFILE } from './profile'
 
 export const MIN_MEMORY_RATE_ATTAINMENT = 0.98
 
@@ -73,9 +73,9 @@ export function memoryMeasurementPublicationIssues(
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
-    const profileTarget = BUN_141_API_PROFILE.find(candidate => candidate.targetId === target.id)
+    const profileTarget = EQUAL_RATE_API_PROFILE.find(candidate => candidate.targetId === target.id)
     if (!profileTarget) {
-      issues.push(`${target.id} is not in the Bun 1.4.1 API memory profile`)
+      issues.push(`${target.id} is not in the equal-rate API memory profile`)
     }
     else if (target.requestRate !== profileTarget.requestRate) {
       issues.push(`${target.id} requested ${target.requestRate} req/s, not the profile rate of ${profileTarget.requestRate} req/s`)

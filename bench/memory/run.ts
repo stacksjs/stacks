@@ -26,7 +26,7 @@ import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 import { rotateTargets } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
-import { BUN_141_API_PROFILE } from './profile'
+import { EQUAL_RATE_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
 import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './publication'
 import { median, renderMemoryReport } from './report'
@@ -63,7 +63,7 @@ function positiveInteger(flag: string, value: string): number {
 
 export function parseArgs(argv: string[]): Options {
   const options: Options = {
-    targets: BUN_141_API_PROFILE.map(target => target.targetId),
+    targets: EQUAL_RATE_API_PROFILE.map(target => target.targetId),
     scenario: 'static-json',
     connections: 64,
     loadSeconds: 60,
@@ -131,7 +131,7 @@ function resolveTargets(ids: string[], requestRate?: number): SelectedTarget[] {
   if (unknown.length > 0) throw new Error(`Unknown target(s): ${unknown.join(', ')}`)
   return ids.map((id) => {
     const target = TARGETS.find(candidate => candidate.id === id)!
-    const profile = BUN_141_API_PROFILE.find(candidate => candidate.targetId === id)
+    const profile = EQUAL_RATE_API_PROFILE.find(candidate => candidate.targetId === id)
     const rate = requestRate ?? profile?.requestRate
     if (rate == null) throw new Error(`Target '${id}' has no fixed request rate; pass --rate`)
     return { target, targetId: id, label: profile?.label ?? target.label, requestRate: rate }

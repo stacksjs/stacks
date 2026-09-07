@@ -1,9 +1,8 @@
 # Idle memory benchmark
 
 This suite measures resident memory after a server has handled sustained load
-and then sat completely idle. Its default API profile follows the Bun 1.4.1
-comparison method: 60 seconds of load, 180 seconds of idle, 64 connections,
-and RSS sampled every 100 milliseconds.
+and then sat completely idle. Its default API profile uses 60 seconds of load,
+180 seconds of idle, 64 connections, and RSS sampled every 100 milliseconds.
 
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the measured runtime and warns when
@@ -15,10 +14,11 @@ bun install --cwd bench/routing --frozen-lockfile
 BENCH_DEDICATED=1 bun run bench:memory --driver oha --runs 3
 ```
 
-The default profile compares byte-identical JSON responses at the fixed rates
-shown in the Bun graphic. Stacks, Elysia, Hono, and the raw Bun baseline receive
-40,000 requests per second. Express and Fastify receive 25,000. Stacks is held
-to the higher tier rather than being assigned an easier rate.
+The default profile compares byte-identical JSON responses at exactly 25,000
+requests per second for every target. The lower common rate is intentional:
+using the 40,000 and 25,000 tiers from Bun's graphic would expose frameworks to
+different allocation pressure and make both peak and settled RSS less directly
+comparable.
 
 Next.js SSR and Vite dev are separate workload classes. They are not included
 in the API table because comparing an SSR render or development transform with
@@ -79,7 +79,7 @@ Publication also requires every selected target to finish every requested run,
 attain at least 98% of its fixed request rate in each run, return zero errors,
 and keep the full settled-RSS range within 10% of the median.
 The scenario, connection count, load and idle windows, sampling interval,
-settled window, target set, and fixed rates must match the Bun 1.4.1 API profile
+settled window, target set, and equal fixed rate must match the API profile
 described above; altered smoke or diagnostic runs remain direction-only.
 
 ## Flags
