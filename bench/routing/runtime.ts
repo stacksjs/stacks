@@ -168,6 +168,18 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
   return headers
 }
 
+/** Keep setup-only validation evidence stable without changing measured traffic. */
+export function probeHeadersFor(target: Target, scenario: Scenario): Record<string, string> {
+  return {
+    ...headersFor(target, scenario),
+    // Stacks includes its request ID in JSON error envelopes. A fresh ID would
+    // make the exact body digest differ before and after load even when the
+    // validation contract is unchanged. Send the same header to every peer,
+    // and only on untimed probes, so no target receives measured work relief.
+    'x-request-id': 'benchmark-parity-probe',
+  }
+}
+
 /** Require identical status, JSON media type, and body bytes before measuring. */
 export async function assertResponseParity(target: Target, scenario: Scenario, res: Response): Promise<ResponseParityEvidence> {
   const body = await res.text()
@@ -211,7 +223,7 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
     const probeScenario = { ...scenario, body: probe.body }
     const probeResponse = await fetch(`http://127.0.0.1:${PORT}${scenario.path}`, {
       method: scenario.method,
-      headers: headersFor(target, probeScenario),
+      headers: probeHeadersFor(target, probeScenario),
       body: probe.body,
     })
     probes.push({ id: probe.id, response: await assertProbeResponse(target, scenario, probe, probeResponse) })

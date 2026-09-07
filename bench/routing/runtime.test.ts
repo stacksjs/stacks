@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { assertProbeResponse, assertResponseParity, assertStableParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, serverCommand, serverEnvironment } from './runtime'
+import { assertProbeResponse, assertResponseParity, assertStableParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, probeHeadersFor, serverCommand, serverEnvironment } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
@@ -83,6 +83,17 @@ describe('benchmark server isolation', () => {
     expect(headersFor(targetById('stacks-minimal')!, scenario)).toEqual(headersFor(targetById('elysia')!, scenario))
     expect(headersFor(targetById('stacks-minimal')!, scenario)).toEqual({})
     expect(headersFor(targetById('stacks-warm')!, scenario)).toHaveProperty('cookie')
+  })
+
+  it('stabilizes only setup probe request IDs across every target', () => {
+    const scenario = SCENARIOS.find(candidate => candidate.id === 'post-validate')!
+    const stacksHeaders = probeHeadersFor(targetById('stacks')!, scenario)
+    const peerHeaders = probeHeadersFor(targetById('elysia')!, scenario)
+
+    expect(stacksHeaders['x-request-id']).toBe('benchmark-parity-probe')
+    expect(peerHeaders['x-request-id']).toBe('benchmark-parity-probe')
+    expect(headersFor(targetById('stacks')!, scenario)['x-request-id']).toBeUndefined()
+    expect(headersFor(targetById('elysia')!, scenario)['x-request-id']).toBeUndefined()
   })
 })
 
