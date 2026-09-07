@@ -2444,18 +2444,37 @@ async function runSshDeploy(args: {
 
   const startTime = performance.now()
   const targetLabel = deployTargetLabel(provider, sshTarget?.profile)
+  /*
+   * One header line by default, the itemised block under `--verbose`.
+   *
+   * This printed five lines of context before any work started, and
+   * `--verbose` changed nothing - the flag was read and then never consulted,
+   * so the default output was already the verbose output (stacksjs/stacks#853).
+   * The facts are the same either way; the default just fits on one line.
+   */
+  const host = sshTarget
+    ? `${sshTarget.user}@${sshTarget.host}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}`
+    : `${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'} · ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`
+
   console.log('')
   console.log(`🚀 Deploy → ${targetLabel}`)
-  console.log('')
-  log.info(`Project: ${tsCloudConfig.project?.slug}`)
-  log.info(`Environment: ${environment}`)
-  if (sshTarget) {
-    log.info(`Host: ${sshTarget.user}@${sshTarget.host}${sshTarget.port === 22 ? '' : `:${sshTarget.port}`}`)
+
+  if (verbose) {
+    console.log('')
+    log.info(`Project: ${tsCloudConfig.project?.slug}`)
+    log.info(`Environment: ${environment}`)
+    if (sshTarget) {
+      log.info(`Host: ${host}`)
+    }
+    else {
+      log.info(`Location: ${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'}`)
+      log.info(`Size: ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`)
+    }
   }
   else {
-    log.info(`Location: ${tsCloudConfig.hetzner?.location || process.env.HCLOUD_LOCATION || 'fsn1'}`)
-    log.info(`Size: ${tsCloudConfig.infrastructure?.compute?.size || 'small'}`)
+    console.log(`   ${tsCloudConfig.project?.slug} → ${environment} · ${host}`)
   }
+  console.log('')
 
   // Auto-inject the ts-cloud management dashboard (a `dashboard.<apex>` site,
   // behind Basic auth) BEFORE provisioning, so the dashboard flows through the
