@@ -60,4 +60,13 @@ describe('Stacks benchmark source provenance', () => {
 
     expect(filesWithBenchmarkSelectors).toEqual([])
   })
+
+  it('keeps peer database statements and result shaping equivalent', () => {
+    for (const server of ['bun-raw.ts', 'elysia.ts', 'express.ts', 'fastify.ts', 'hono.ts']) {
+      const source = readFileSync(join(import.meta.dir, 'servers', server), 'utf8')
+      expect(source).toContain("SELECT id, name FROM bench_items WHERE id = 1 LIMIT 1")
+      expect(source).toContain('id: row.id')
+      expect(source).toContain('name: row.name')
+    }
+  })
 })

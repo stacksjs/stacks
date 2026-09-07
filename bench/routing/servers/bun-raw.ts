@@ -21,7 +21,7 @@ let selectItem: import('bun:sqlite').Statement | undefined
 if (withDb && serves('db-roundtrip')) {
   const { Database } = await import('bun:sqlite')
   const db = new Database(process.env.BENCH_DB_FILE!, { readonly: true })
-  selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1')
+  selectItem = db.prepare('SELECT id, name FROM bench_items WHERE id = 1 LIMIT 1')
 }
 
 if (serves('static-json'))
