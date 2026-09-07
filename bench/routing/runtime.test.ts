@@ -128,9 +128,20 @@ describe('benchmark response parity', () => {
 
   it('requires validation probes to reject bad input with a client error', async () => {
     const probe = SCENARIOS.find(candidate => candidate.id === 'post-validate')!.probes![0]!
-    await expect(assertProbeResponse(target, scenario, probe, new Response('{}', { status: 422 }))).resolves.toMatchObject({ status: 422, bodyBytes: 2 })
+    await expect(assertProbeResponse(target, scenario, probe, new Response('{}', {
+      status: 422,
+      headers: { 'content-type': 'application/json' },
+    }))).resolves.toMatchObject({ status: 422, bodyBytes: 2, mediaType: 'application/json' })
     await expect(assertProbeResponse(target, scenario, probe, new Response('{}'))).rejects.toThrow('expected a client error')
     await expect(assertProbeResponse(target, scenario, probe, new Response('{}', { status: 500 }))).rejects.toThrow('expected a client error')
+    await expect(assertProbeResponse(target, scenario, probe, new Response('{}', {
+      status: 422,
+      headers: { 'content-type': 'text/html' },
+    }))).rejects.toThrow('expected application/json')
+    await expect(assertProbeResponse(target, scenario, probe, new Response('not-json', {
+      status: 422,
+      headers: { 'content-type': 'application/json' },
+    }))).rejects.toThrow('expected a JSON error body')
   })
 
   it('requires successful probes to preserve exact output parity', async () => {

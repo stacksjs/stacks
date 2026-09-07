@@ -200,6 +200,16 @@ export async function assertProbeResponse(target: Target, scenario: Scenario, pr
     if (res.status < 400 || res.status >= 500)
       throw new Error(`${target.id} answered ${res.status} for ${probeId}, expected a client error`)
     const mediaType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase() ?? null
+    if (mediaType !== 'application/json')
+      throw new Error(`${target.id} answered ${probeId} with ${mediaType ?? 'no content type'}, expected application/json`)
+    try {
+      const parsed = JSON.parse(body)
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed))
+        throw new TypeError('not an object')
+    }
+    catch {
+      throw new Error(`${target.id} answered ${probeId} without a JSON error object, expected a JSON error body`)
+    }
     return responseParityEvidence(res.status, mediaType, body)
   }
 
