@@ -22,6 +22,7 @@ import { config, overridesReady } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { disableViewRouting, route } from '@stacksjs/router'
+import { ensureDiscoveredPackages } from '../discover-packages'
 import { resolveApiHost } from '../helpers/api-host'
 
 /**
@@ -79,6 +80,17 @@ log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
 const corsMod = await import(resolveDefaultsFile('app/Middleware/Cors.ts'))
 const corsMiddleware: Middleware = corsMod.default
 route.use(corsMiddleware.toRouterHandler())
+
+// Refresh the discovered-package manifest before any of it is read.
+//
+// `loadDiscoveredRoutes()` reads this manifest during `importRoutes()`, and
+// `assertRouteMiddlewareResolvable()` throws for a middleware alias that no
+// longer resolves. Discovery used to run only in `buddy dev` and the
+// `package:discover` command, and the manifest is gitignored - so this process
+// ran whatever a developer's machine happened to leave in the tarball. A
+// package installed since that manifest was written contributed nothing here,
+// and one uninstalled since could abort the boot.
+await ensureDiscoveredPackages()
 
 // Import routes
 await route.importRoutes()
