@@ -2234,6 +2234,10 @@ interface ModelStaticHelpers {
  * a column that is missing, not from anything that says so.
  *
  * Aliases are listed beside their canonical spelling because both are honoured.
+ * The list is checked against the framework's own reads rather than against the
+ * built-in models: `useAudit`, `prunable` and `sharding` are all implemented and
+ * used by none of the 97, so a list validated only against those models warned
+ * on three working traits.
  */
 const KNOWN_TRAITS: ReadonlySet<string> = new Set([
   'useUuid',
@@ -2251,6 +2255,9 @@ const KNOWN_TRAITS: ReadonlySet<string> = new Set([
   'useSocials',
   'billable',
   'observe',
+  'useAudit',
+  'prunable',
+  'sharding',
   'likeable',
   'taggable',
   'categorizable',

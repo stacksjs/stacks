@@ -61,10 +61,60 @@ describe('defineModel', () => {
   })
 
   /**
-   * The list is values, and the models are the check on it: a trait the
-   * framework's own models rely on that is missing here would warn on every
-   * boot of every application.
+   * The list is values, so the framework's own READS are the check on it.
+   *
+   * Checking it against the built-in models is not enough and was actively
+   * misleading: `useAudit`, `prunable` and `sharding` are all implemented, and
+   * not one of the 97 models declares any of them - so a list validated that
+   * way passed while warning on three working traits.
    */
+  it('knows every trait the framework reads', async () => {
+    const core = join(import.meta.dir, '..', '..')
+    const read = new Set<string>()
+
+    const walk = (d: string) => {
+      let entries
+      try {
+        entries = readdirSync(d, { withFileTypes: true })
+      }
+      catch {
+        return
+      }
+      for (const entry of entries) {
+        const p = join(d, entry.name)
+        if (entry.isDirectory()) {
+          walk(p)
+          continue
+        }
+        if (!entry.name.endsWith('.ts') || entry.name.endsWith('.test.ts'))
+          continue
+        const source = readFileSync(p, 'utf8')
+          // Prose in a docblock is not a read.
+          .split('\n').filter(line => !/^\s*(\*|\/\/)/.test(line)).join('\n')
+        // `traits.join(', ')` is an array method on a local of that name, and
+        // `types/traits.d.ts` is a filename. Neither is a trait read.
+        for (const match of source.matchAll(/traits\??\.\??([a-zA-Z_]\w*)(.?)/g)) {
+          if (match[2] === '(' || match[1] === 'd')
+            continue
+          read.add(match[1])
+        }
+      }
+    }
+
+    for (const pkg of readdirSync(core))
+      walk(join(core, pkg, 'src'))
+
+    expect(read.size).toBeGreaterThan(10)
+
+    const unknown: string[] = []
+    for (const trait of read) {
+      if ((await define({ [trait]: true })).length > 0)
+        unknown.push(trait)
+    }
+
+    expect(unknown.sort()).toEqual([])
+  })
+
   it('knows every trait the built-in models declare', async () => {
     const dir = join(import.meta.dir, '..', '..', '..', 'defaults', 'app', 'Models')
     const files: string[] = []
