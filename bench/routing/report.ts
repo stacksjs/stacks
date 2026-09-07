@@ -82,7 +82,7 @@ export function renderReport(input: ReportInput): string {
 
   lines.push('# Routing benchmark')
   lines.push('')
-  if (!meta.publishable) {
+  if (!meta.publishable && meta.driver === 'builtin') {
     lines.push('> **Direction-only.** This run used the harness\'s built-in Bun load generator, which')
     lines.push('> shares the machine and the runtime with the server under test. Use `oha` or')
     lines.push('> `bombardier` for any number that leaves this directory.')

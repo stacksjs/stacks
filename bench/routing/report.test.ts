@@ -60,6 +60,7 @@ describe('routing benchmark report', () => {
     const report = renderReport({
       meta: {
         ...meta,
+        publishable: false,
         busyHostProcesses: [{ pid: 42, cpuPercent: 91.25, command: 'compiler' }],
       },
       scenarios: [],
@@ -68,5 +69,19 @@ describe('routing benchmark report', () => {
     })
 
     expect(report).toContain('> **Busy-host override.** compiler (PID 42, 91.3% CPU). This run is direction-only and must not be published.')
+    expect(report).toContain('| Load generator | `oha` (direction-only) |')
+    expect(report).not.toContain('built-in Bun load generator')
+  })
+
+  test('explains why the built-in generator is direction-only', () => {
+    const report = renderReport({
+      meta: { ...meta, driver: 'builtin', publishable: false },
+      scenarios: [],
+      targets: [],
+      measurements: [],
+    })
+
+    expect(report).toContain('built-in Bun load generator')
+    expect(report).toContain('| Load generator | `builtin` (direction-only) |')
   })
 })

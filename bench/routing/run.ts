@@ -151,7 +151,7 @@ async function main(): Promise<void> {
     source,
     runtimeRequirement,
     driver: driver.name,
-    publishable: driver.publishable,
+    publishable: driver.publishable && observedBusyProcesses.size === 0,
     connections: opts.connections,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
@@ -188,6 +188,8 @@ async function main(): Promise<void> {
 
         await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
         meta.busyHostProcesses = [...observedBusyProcesses.values()]
+        if (observedBusyProcesses.size > 0)
+          meta.publishable = false
 
         // A fresh process keeps route-table size, database imports, and warm
         // state from one measurement out of every other measurement. Rotating
