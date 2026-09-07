@@ -46,8 +46,6 @@ const knownCorrupt = new Set<string>([
   'public/images/avatars/avatar-3.png',
   'public/images/avatars/avatar-4.png',
   'public/images/avatars/avatar-5.png',
-  'storage/framework/libs/examples/vue/favicon.png',
-  'storage/framework/libs/examples/web/favicon.png',
 ])
 
 function startsWith(head: Uint8Array, signature: Uint8Array): boolean {
