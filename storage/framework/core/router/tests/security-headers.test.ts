@@ -200,6 +200,16 @@ describe('applySecurityHeaders', () => {
     expect(absent.headers.get('Set-Cookie')).toBeNull()
   })
 
+  test('keeps cached plain response metadata isolated', () => {
+    const first = secureSerializedJsonResponse('{}')
+    first.headers.set('X-Frame-Options', 'DENY')
+    first.headers.delete('Content-Type')
+
+    const second = secureSerializedJsonResponse('{}')
+    expect(second.headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
+    expect(second.headers.get('Content-Type')).toBe('application/json;charset=utf-8')
+  })
+
   test('isolates CSRF cookies stored in shared length templates', () => {
     const first = secureSerializedJsonResponse('{}', 2, 'request-one', 'csrf=one')
     const second = secureSerializedJsonResponse('{}', 2, 'request-two', 'csrf=two')

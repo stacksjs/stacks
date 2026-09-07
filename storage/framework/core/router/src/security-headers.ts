@@ -37,7 +37,12 @@ interface JsonLengthHeaderTemplates {
   withCsrf?: { headers: Headers }
   withCsrfAndRequestId?: { headers: Headers }
 }
-type JsonMetadataHeaderTemplates = Omit<JsonLengthHeaderTemplates, 'plain'>
+interface JsonMetadataHeaderTemplates {
+  plain?: { headers: Headers }
+  withRequestId?: { headers: Headers }
+  withCsrf?: { headers: Headers }
+  withCsrfAndRequestId?: { headers: Headers }
+}
 let _jsonMetadataHeaderTemplates: JsonMetadataHeaderTemplates | undefined
 let _jsonLengthHeaderTemplateCache: Map<number, JsonLengthHeaderTemplates> | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
@@ -162,10 +167,10 @@ export function createJsonSecurityHeaders(): Headers {
 export function secureSerializedJsonResponse(body: string, bodyLength?: number, requestId?: string, csrfCookie?: string): Response {
   const baseHeaders = jsonSecurityHeadersTemplate()
   if (bodyLength === undefined) {
-    if (!requestId && !csrfCookie)
-      return new Response(body, { headers: baseHeaders })
-
     const templates = _jsonMetadataHeaderTemplates ??= {}
+    if (!requestId && !csrfCookie)
+      return new Response(body, templates.plain ??= { headers: baseHeaders })
+
     if (csrfCookie) {
       const responseInit = requestId
         ? templates.withCsrfAndRequestId ??= { headers: new Headers(baseHeaders) }
