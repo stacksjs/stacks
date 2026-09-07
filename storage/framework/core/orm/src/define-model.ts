@@ -2154,6 +2154,7 @@ import { createLikeableMethods } from './traits/likeable'
 import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
 import { applyAudit, resolveAuditOptions } from './traits/audit'
+import { applyActivityLog, resolveActivityLogOptions } from './traits/activity-log'
 import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } from './utils/encrypted'
 
 /**
@@ -2256,6 +2257,7 @@ const KNOWN_TRAITS: ReadonlySet<string> = new Set([
   'billable',
   'observe',
   'useAudit',
+  'useActivityLog',
   'prunable',
   'sharding',
   'likeable',
@@ -2364,6 +2366,19 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   if (useAuditDecl) {
     const auditOpts = resolveAuditOptions(useAuditDecl)
     applyAudit(baseModel, definition.name, definition.primaryKey || 'id', auditOpts)
+  }
+
+  // The activity feed, wrapped the same way and for the same reason: the
+  // lifecycle hooks do not fire for the static `update` / `delete` paths.
+  const activityOptions = resolveActivityLogOptions((definition as { traits?: { useActivityLog?: unknown } }).traits?.useActivityLog)
+  if (activityOptions) {
+    applyActivityLog(
+      baseModel,
+      definition.name,
+      definition.primaryKey || 'id',
+      activityOptions,
+      [...hiddenAttributeNames(definition as unknown as BQBModelDefinition)],
+    )
   }
 
   // Declared `validation.rule`s, enforced on direct writes (#2233). Applied

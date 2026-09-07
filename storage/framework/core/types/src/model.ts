@@ -219,6 +219,16 @@ export interface SeedOptions {
   fixtures?: Array<Record<string, unknown>>
 }
 
+/** Which attributes `traits.useActivityLog` records. See the trait's docblock. */
+interface ActivityLogOption {
+  /** Record only these. Wins over `include` when both are given. */
+  logOnly?: string[]
+  /** Spatie's spelling of `logOnly`. */
+  include?: string[]
+  /** Drop these, after the selection above. */
+  exclude?: string[]
+}
+
 export interface Relations {
   hasOne: HasOne<ModelNames> | ModelNames[]
   hasMany: HasMany<ModelNames> | ModelNames[]
@@ -330,6 +340,19 @@ export interface ModelOptions extends Base {
     useApi?: ApiOptions | boolean
     observe?: string[] | boolean
     billable?: boolean
+    /**
+     * Write an `activities` row per create, update and delete.
+     *
+     * A readable feed - what happened, to which record, by whom, from where -
+     * as distinct from `useAudit`, which writes `model_audits` rows carrying an
+     * old/new diff for forensics. A model may declare both.
+     *
+     * `true` records every attribute but the model's `hidden` ones and the
+     * shared sensitive-field denylist. The object form narrows it: `logOnly`
+     * (or Spatie's `include`) records only what it names, `exclude` drops what
+     * it names afterwards. Neither can pull a hidden attribute back in.
+     */
+    useActivityLog?: boolean | ActivityLogOption
 
     likeable?: boolean | LikeableOptions
 
