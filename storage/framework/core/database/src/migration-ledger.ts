@@ -779,13 +779,22 @@ export async function auditMigrationLedger(options: {
   // name, nor an index of that name on a different migration's behalf.
   const readFiles = [...sources.keys()]
   const removedLater = new Map<string, Set<string>>()
+  // Tables a later migration drops. Everything ON a dropped table goes with it
+  // - indexes, columns, constraints - and no engine records those individually,
+  // so an index effect is not looked for by name once its table is gone.
+  const tablesDroppedLater = new Map<string, Set<string>>()
   for (let i = 0; i < readFiles.length; i++) {
     const laterKeys = new Set<string>()
+    const laterTables = new Set<string>()
     for (let j = i + 1; j < readFiles.length; j++) {
-      for (const removal of migrationRemovals(sources.get(readFiles[j]!)!))
+      for (const removal of migrationRemovals(sources.get(readFiles[j]!)!)) {
         laterKeys.add(removalKey(removal))
+        if (removal.kind === 'table')
+          laterTables.add(removal.name.toLowerCase())
+      }
     }
     removedLater.set(readFiles[i]!, laterKeys)
+    tablesDroppedLater.set(readFiles[i]!, laterTables)
   }
 
   const entries: MigrationLedgerEntry[] = []
@@ -804,8 +813,24 @@ export async function auditMigrationLedger(options: {
      * treating the first as REVERTED reported healthy, intentional history as
      * drift that no command could ever clear.
      */
+    const droppedTables = tablesDroppedLater.get(file) ?? new Set<string>()
+    /*
+     * …and so does an effect ON a table a later migration dropped.
+     *
+     * bun-query-builder rebuilds a SQLite table by creating `_qb_tmp_<name>`,
+     * copying into it, dropping the original and renaming the scaffold into
+     * place - which takes every index the original carried, under whatever name
+     * it had then. `payments_payments_transaction_id_unique` (the doubled
+     * spelling an older migration used) is gone for exactly that reason and the
+     * correctly-named index is there instead, so the schema is right and the
+     * migration that created the old one reported REVERTED forever. It was 22
+     * of them here, on a database `migrate:fresh` had just built from the
+     * corpus, which is the one state that has to come out clean.
+     */
     const survives = (effect: MigrationEffect): boolean =>
-      effectPresent(effect, schema) || dropped.has(removalKey(effect))
+      effectPresent(effect, schema)
+      || dropped.has(removalKey(effect))
+      || (effect.table !== undefined && droppedTables.has(effect.table.toLowerCase()))
     const present = effects.filter(survives)
     const absent = effects.filter(effect => !survives(effect))
     const isRecorded = recorded.has(file)

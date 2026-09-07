@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { effectPresent, migrationEffects } from '../src/migration-ledger'
+import { effectPresent, migrationEffects, migrationRemovals } from '../src/migration-ledger'
 
 const schema = (indexes: string[]) => ({
   tables: new Set<string>(),
@@ -59,5 +59,35 @@ describe('index effects across the legacy table-prefix convention', () => {
     const effect = { kind: 'index' as const, name: 'some_index' }
     expect(effectPresent(effect, schema(['some_index']))).toBe(true)
     expect(effectPresent(effect, schema([]))).toBe(false)
+  })
+})
+
+/**
+ * An effect on a table a later migration DROPPED is not missing drift.
+ *
+ * bun-query-builder rebuilds a SQLite table by creating `_qb_tmp_<name>`,
+ * copying into it, dropping the original and renaming the scaffold into place -
+ * which takes every index the original carried, under whatever name it had at
+ * the time. The corpus here has an older migration creating
+ * `payments_payments_transaction_id_unique` (a doubled spelling) and a later
+ * rebuild replacing it with `payments_transaction_id_unique`, so the schema is
+ * exactly right and the older migration reported REVERTED forever.
+ *
+ * It was 22 of them on a database `buddy migrate:fresh` had just built from the
+ * corpus - the one state that has to come out clean, and the state `buddy
+ * doctor` failed on.
+ */
+describe('an index whose table a later migration dropped', () => {
+  it('is not counted as reverted', () => {
+    const created = migrationEffects('CREATE UNIQUE INDEX "payments_old_unique" ON "payments" ("transaction_id");')
+    const index = created.find(effect => effect.kind === 'index')
+
+    expect(index).toBeDefined()
+    // The effect has to carry its table, or nothing downstream can tell that
+    // dropping `payments` took this index with it.
+    expect(index?.table).toBe('payments')
+
+    const removals = migrationRemovals('DROP TABLE "payments";')
+    expect(removals).toContainEqual({ kind: 'table', name: 'payments' })
   })
 })
