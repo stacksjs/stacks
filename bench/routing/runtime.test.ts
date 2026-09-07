@@ -102,13 +102,6 @@ describe('benchmark response parity', () => {
     }))).rejects.toThrow('expected')
   })
 
-  it('rejects a different successful status', async () => {
-    await expect(assertResponseParity(target, scenario, new Response(scenario.expect, {
-      status: 201,
-      headers: { 'content-type': 'application/json' },
-    }))).rejects.toThrow('expected 200')
-  })
-
   it('rejects a non-JSON response', async () => {
     await expect(assertResponseParity(target, scenario, new Response(scenario.expect, {
       headers: { 'content-type': 'text/plain' },

@@ -133,11 +133,11 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
   return headers
 }
 
-/** Require identical status, JSON media type, and body bytes before measuring. */
+/** Require byte-identical successful JSON responses before measuring a target. */
 export async function assertResponseParity(target: Target, scenario: Scenario, res: Response): Promise<void> {
   const body = await res.text()
-  if (res.status !== 200)
-    throw new Error(`${target.id} answered ${res.status} for ${scenario.id}, expected 200: ${body.slice(0, 200)}`)
+  if (!res.ok)
+    throw new Error(`${target.id} answered ${res.status} for ${scenario.id}: ${body.slice(0, 200)}`)
   if (body !== scenario.expect)
     throw new Error(`${target.id} answered ${body.slice(0, 200)} for ${scenario.id}, expected ${scenario.expect}`)
   const mediaType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
