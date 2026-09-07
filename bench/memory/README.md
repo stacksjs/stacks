@@ -33,9 +33,10 @@ database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
 cannot consistently favor the same implementation.
 
-Before each measurement, the runner refuses to proceed when another process is
-using at least 75% of one CPU core. Pass `--allow-busy-host` only for diagnostic
-runs; the report records every observed process and remains non-publishable.
+Before and after each measurement, the runner refuses to proceed when another
+process is using at least 75% of one CPU core. Pass `--allow-busy-host` only for
+diagnostic runs; the report records every observed process and remains
+non-publishable.
 
 ## Reported value
 

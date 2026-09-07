@@ -187,6 +187,17 @@ async function main(): Promise<void> {
   if (!meta.publishable)
     console.error(`[bench] direction-only: ${publicationIssues.join('; ')}`)
 
+  const refreshHostLoad = async (): Promise<void> => {
+    const busyCount = observedBusyProcesses.size
+    await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
+    meta.busyHostProcesses = [...observedBusyProcesses.values()]
+    publicationProfile.busyHostProcesses = meta.busyHostProcesses
+    meta.publicationIssues = routingPublicationIssues(publicationProfile)
+    meta.publishable = meta.publicationIssues.length === 0
+    if (observedBusyProcesses.size > busyCount)
+      console.error(`[bench] busy-host override: ${meta.busyHostProcesses.map(formatBusyProcess).join(', ')}`)
+  }
+
   const measurements: Measurement[] = []
   const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
   const availableTargets = new Set<string>()
@@ -202,11 +213,7 @@ async function main(): Promise<void> {
         if (unavailableTargets.has(target.id))
           continue
 
-        await checkHostLoad(opts.allowBusyHost, observedBusyProcesses)
-        meta.busyHostProcesses = [...observedBusyProcesses.values()]
-        publicationProfile.busyHostProcesses = meta.busyHostProcesses
-        meta.publicationIssues = routingPublicationIssues(publicationProfile)
-        meta.publishable = meta.publicationIssues.length === 0
+        await refreshHostLoad()
 
         // A fresh process keeps route-table size, database imports, and warm
         // state from one measurement out of every other measurement. Rotating
@@ -260,6 +267,7 @@ async function main(): Promise<void> {
         finally {
           await stop(booted)
         }
+        await refreshHostLoad()
       }
     }
   }

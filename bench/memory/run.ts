@@ -318,6 +318,17 @@ async function main(): Promise<void> {
   if (!meta.publishable)
     console.error(`[memory] direction-only: ${publicationIssues.join('; ')}`)
 
+  const refreshHostLoad = async (): Promise<void> => {
+    const busyCount = observedBusyProcesses.size
+    await checkHostLoad(options.allowBusyHost, observedBusyProcesses)
+    meta.busyHostProcesses = [...observedBusyProcesses.values()]
+    publicationProfile.busyHostProcesses = meta.busyHostProcesses
+    meta.publicationIssues = memoryPublicationIssues(publicationProfile)
+    meta.publishable = meta.publicationIssues.length === 0
+    if (observedBusyProcesses.size > busyCount)
+      console.error(`[memory] busy-host override: ${meta.busyHostProcesses.map(formatBusyProcess).join(', ')}`)
+  }
+
   const measurements: MemoryMeasurement[] = []
   const targetRows: Array<{ id: string, label: string, requestRate: number, skipped?: string }> = []
   const availableTargets = new Set<string>()
@@ -328,17 +339,11 @@ async function main(): Promise<void> {
       const { target, requestRate } = selected
       if (unavailableTargets.has(target.id))
         continue
-      const busyCount = observedBusyProcesses.size
-      await checkHostLoad(options.allowBusyHost, observedBusyProcesses)
-      meta.busyHostProcesses = [...observedBusyProcesses.values()]
-      publicationProfile.busyHostProcesses = meta.busyHostProcesses
-      meta.publicationIssues = memoryPublicationIssues(publicationProfile)
-      meta.publishable = meta.publicationIssues.length === 0
-      if (observedBusyProcesses.size > busyCount)
-        console.error(`[memory] busy-host override: ${[...observedBusyProcesses.values()].map(formatBusyProcess).join(', ')}`)
+      await refreshHostLoad()
       console.error(`\n[memory] === ${selected.label} at ${requestRate.toLocaleString('en-US')} req/s`)
       console.error(`[memory] run ${run}: ${options.loadSeconds}s load, then ${options.idleSeconds}s idle`)
       const result = await measure(target, scenario, driver, options, requestRate)
+      await refreshHostLoad()
       if ('skipped' in result) {
         if (availableTargets.has(target.id))
           throw new Error(`${target.id} became unavailable after earlier measurements: ${result.skipped}`)
