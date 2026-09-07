@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { assertProbeResponse, assertResponseParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
+import { assertProbeResponse, assertResponseParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, serverCommand, serverEnvironment } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
@@ -76,6 +76,13 @@ describe('benchmark server isolation', () => {
         else process.env[key] = value
       })
     }
+  })
+
+  it('sends equal GET request headers to the minimal profile and framework peers', () => {
+    const scenario = SCENARIOS.find(candidate => candidate.id === 'static-json')!
+    expect(headersFor(targetById('stacks-minimal')!, scenario)).toEqual(headersFor(targetById('elysia')!, scenario))
+    expect(headersFor(targetById('stacks-minimal')!, scenario)).toEqual({})
+    expect(headersFor(targetById('stacks-warm')!, scenario)).toHaveProperty('cookie')
   })
 })
 

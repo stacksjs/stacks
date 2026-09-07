@@ -46,7 +46,6 @@ export const TARGETS: readonly Target[] = [
     label: 'Stacks (proxy IDs, security headers and CSRF off)',
     server: 'stacks.ts',
     env: { BENCH_MODE: 'minimal', STACKS_SECURITY_HEADERS_DISABLE: 'true' },
-    cookie: true,
   },
   {
     id: 'elysia',
