@@ -54,10 +54,13 @@ accident. The safeguards here exist only to stop that:
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much. A full range above 10% of the median marks
   that scenario unstable and invalid for comparison.
-- **Every measurement gets a fresh server process.** Target order rotates
-  between runs so route warm state, target position, and a warming or
-  throttling host cannot consistently favor one implementation.
-- **Comparisons are paired within each rotated run.** When Bun raw is selected,
+- **Every measurement gets a fresh server process.** Target order follows a
+  balanced triplet plus complementary pairs, so every target's cumulative
+  position is equal, or differs by the mathematically unavoidable single
+  position for an odd number of runs over an even-sized matrix. Route warm state
+  and a warming or throttling host therefore cannot consistently favor one
+  implementation.
+- **Comparisons are paired within each scheduled run.** When Bun raw is selected,
   the `Bun raw` column reports the median target-to-raw ratio and its range.
   This exposes host drift that separate target medians can conceal.
 - **CPU is reported per row.** Deltas of the server's cumulative CPU time over

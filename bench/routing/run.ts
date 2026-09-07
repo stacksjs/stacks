@@ -31,7 +31,7 @@ import { resolveStacksSourceModules } from './provenance'
 import { routingMeasurementPublicationIssues, routingPublicationIssues } from './publication'
 import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
-import { rotateTargets } from './schedule'
+import { balancedTargetOrder } from './schedule'
 import { SCENARIOS } from './scenarios'
 import { readSourceState, sourceStateChanged } from './source'
 import { median, relativeRange, relativeThroughput } from './statistics'
@@ -218,12 +218,10 @@ async function main(): Promise<void> {
   const unavailableTargets = new Set<string>()
   const collected = new Map<string, { results: LoadResult[], cpuReadings: number[] }>()
 
-  for (let scenarioIndex = 0; scenarioIndex < scenarios.length; scenarioIndex++) {
-    const scenario = scenarios[scenarioIndex]!
+  for (const scenario of scenarios) {
     console.error(`\n[bench] === ${scenario.title}`)
     for (let run = 1; run <= opts.runs; run++) {
-      const measurementIndex = scenarioIndex * opts.runs + run - 1
-      for (const target of rotateTargets(targets, measurementIndex)) {
+      for (const target of balancedTargetOrder(targets, run - 1, opts.runs)) {
         if (unavailableTargets.has(target.id))
           continue
 

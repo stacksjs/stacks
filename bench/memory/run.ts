@@ -26,7 +26,7 @@ import { resolveStacksSourceModules } from '../routing/provenance'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
-import { rotateTargets } from '../routing/schedule'
+import { balancedTargetOrder } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
 import { EQUAL_RATE_API_PROFILE } from './profile'
 import { residentTreeBytes } from './process'
@@ -349,7 +349,7 @@ async function main(): Promise<void> {
   const unavailableTargets = new Set<string>()
 
   for (let run = 1; run <= options.runs; run++) {
-    for (const selected of rotateTargets(targets, run - 1)) {
+    for (const selected of balancedTargetOrder(targets, run - 1, options.runs)) {
       const { target, requestRate } = selected
       if (unavailableTargets.has(target.id))
         continue

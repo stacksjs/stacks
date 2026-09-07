@@ -36,7 +36,10 @@ hide worker memory. The separately launched load generator is not counted. Each
 server registers only the selected scenario, so an unrelated validator or
 database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
-cannot consistently favor the same implementation.
+cannot consistently favor the same implementation. The balanced triplet plus
+complementary pairs give every target the same cumulative position in the
+seven-target matrix instead of moving each target only one place per repeat
+across the hour-long suite.
 The load generator runs on the same host as the target server for every row.
 This symmetric topology can understate absolute throughput when the generator
 and server compete for CPU, so the report records it explicitly. A remote load
