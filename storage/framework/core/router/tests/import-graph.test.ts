@@ -18,7 +18,8 @@ describe('router import graph', () => {
     expect(indexDatabaseImports).toEqual([])
 
     const routerEntry = Object.entries(result.metafile?.inputs ?? {})
-      .find(([source]) => source.endsWith('router/src/stacks-router.ts'))
+      .find(([source]) => source.endsWith('src/stacks-router.ts'))
+    expect(routerEntry).toBeDefined()
     const eagerStorageBarrelImports = routerEntry?.[1].imports
       .filter(entry => entry.path.endsWith('storage/src/index.ts') && entry.kind !== 'dynamic-import') ?? []
     expect(eagerStorageBarrelImports).toEqual([])
