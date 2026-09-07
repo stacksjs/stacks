@@ -63,6 +63,8 @@ const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport
 const CSRF_HEADER_NAME = 'x-csrf-token'
 const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
+const CSRF_COOKIE_SUFFIX = '; Path=/; SameSite=Lax; Max-Age=7200'
+const CSRF_COOKIE_SECURE_SUFFIX = `${CSRF_COOKIE_SUFFIX}; Secure`
 const TOKEN_BYTES = 32
 const TOKEN_HEX_LENGTH = TOKEN_BYTES * 2
 const TOKEN_RANDOM_BYTES = Buffer.allocUnsafe(TOKEN_BYTES)
@@ -131,10 +133,10 @@ function responseAlreadySeeds(response: Response): boolean {
 export function createCsrfCookie(req: Request, minted?: string): string {
   const token = minted || generateCsrfToken()
   const knownSecureTransport = (req as unknown as Record<symbol, unknown>)[CSRF_SECURE_TRANSPORT]
-  const secure = knownSecureTransport === true || (knownSecureTransport === undefined && req.url.startsWith('https://'))
-    ? '; Secure'
-    : ''
-  return `${CSRF_COOKIE_NAME}=${token}; Path=/; SameSite=Lax; Max-Age=7200${secure}`
+  const suffix = knownSecureTransport === true || (knownSecureTransport === undefined && req.url.startsWith('https://'))
+    ? CSRF_COOKIE_SECURE_SUFFIX
+    : CSRF_COOKIE_SUFFIX
+  return `${CSRF_COOKIE_PREFIX}${token}${suffix}`
 }
 
 export function seedCsrfCookieIfMissing(req: Request, response: Response, minted?: string, responseHasNoCookies = false): Response {
