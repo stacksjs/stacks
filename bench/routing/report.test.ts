@@ -16,6 +16,7 @@ const meta: RunMeta = {
   },
   driver: 'oha',
   driverVersion: 'oha 1.16.0',
+  loadTopology: 'same-host',
   publishable: true,
   connections: 16,
   warmupSeconds: 1,
@@ -52,6 +53,7 @@ describe('routing benchmark report', () => {
     expect(report).toContain('| Target | req/s | req/s p50 | spread | Bun raw |')
     expect(report).toContain('| Architecture | arm64 |')
     expect(report).toContain('| Load generator version | oha 1.16.0 |')
+    expect(report).toContain('| Load topology | same host as target server |')
     expect(report).toContain('`@stacksjs/router`: `storage/framework/core/router/src/index.ts`')
     expect(report).toContain(`| Source at end | \`${'a'.repeat(40)}\` (clean working tree) |`)
     expect(report).toContain('> **Unstable result.** **Stacks minimal** (11.8% range) exceeded the 10% range limit.')

@@ -44,6 +44,8 @@ export interface RunMeta {
   runtimeRequirement?: RuntimeRequirement
   driver: string
   driverVersion?: string | null
+  /** Where the load process runs relative to the target server. */
+  loadTopology: 'same-host'
   publishable: boolean
   publicationIssues?: string[]
   connections: number
@@ -117,6 +119,7 @@ export function renderReport(input: ReportInput): string {
   }
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Load generator version | ${meta.driverVersion ?? 'unavailable'} |`)
+  lines.push('| Load topology | same host as target server |')
   lines.push(`| Connections | ${meta.connections} |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
   lines.push(`| Persistent query history | ${meta.persistentQueryLogging ? 'enabled (opt-in)' : 'disabled (production default)'} |`)

@@ -174,6 +174,7 @@ async function main(): Promise<void> {
     runtimeRequirement,
     driver: driver.name,
     driverVersion,
+    loadTopology: 'same-host',
     publishable: publicationIssues.length === 0,
     publicationIssues,
     connections: opts.connections,

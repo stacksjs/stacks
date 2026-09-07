@@ -82,11 +82,16 @@ will read.
 ## The machine matters
 
 Anything published needs a documented machine and load tool: CPU model, core
-count, OS, Bun version, and exact generator version, all of which the report records automatically. A laptop throttles
-and a shared cloud VM has neighbours; neither produces a number worth quoting.
-Use a dedicated or reserved instance, and run the load generator on a different
-machine from the server — a generator competing for the server's cores
-understates the server, every time.
+count, OS, Bun version, exact generator version, and load topology. The report
+records all of them automatically. A laptop throttles and a shared cloud VM has
+neighbours; neither produces a number worth quoting.
+
+This runner launches the generator on the same host as the target and labels
+that topology in every report. Rotated target order keeps the comparison
+symmetric, but generator and server still share CPU caches and memory
+bandwidth, so absolute throughput may be understated. A separate generator
+host is preferable for a saturation study, but requires external orchestration
+and must not be presented as output from this single-host runner.
 
 Set `BENCH_DEDICATED=1` only on that dedicated server. The runner additionally
 requires a clean identified revision, the configured Bun runtime, at least 5
