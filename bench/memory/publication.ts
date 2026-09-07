@@ -21,6 +21,7 @@ export interface MemoryPublicationProfile {
   dedicated: boolean
   runtimeRequirement?: RuntimeRequirement
   source?: SourceState
+  targetIds: string[]
   scenario: string
   connections: number
   loadSeconds: number
@@ -47,6 +48,11 @@ export function memoryPublicationIssues(profile: MemoryPublicationProfile): stri
     issues.push('runtime does not match package.json engines.bun')
   if (!profile.source?.revision || profile.source.dirty !== false)
     issues.push('source revision is unavailable or the working tree is not clean')
+  const expectedTargets = EQUAL_RATE_API_PROFILE.map(target => target.targetId)
+  if (profile.targetIds.length !== expectedTargets.length
+    || new Set(profile.targetIds).size !== expectedTargets.length
+    || expectedTargets.some(target => !profile.targetIds.includes(target)))
+    issues.push('target set does not match the equal-rate API profile')
   if (profile.scenario !== 'static-json')
     issues.push(`scenario is ${profile.scenario}, not static-json`)
   if (profile.connections !== 64)

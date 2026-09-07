@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { EQUAL_RATE_API_PROFILE } from './profile'
 import { memoryMeasurementPublicationIssues, memoryPublicationIssues } from './publication'
 
 const publishable = {
@@ -9,6 +10,7 @@ const publishable = {
   dedicated: true,
   runtimeRequirement: { range: '1.4.1', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
+  targetIds: EQUAL_RATE_API_PROFILE.map(target => target.targetId),
   scenario: 'static-json',
   connections: 64,
   loadSeconds: 60,
@@ -34,6 +36,7 @@ describe('memory benchmark publication profile', () => {
       dedicated: false,
       runtimeRequirement: { range: '1.4.1', matches: false },
       source: { revision: null, dirty: null },
+      targetIds: ['stacks-warm'],
       scenario: 'db-roundtrip',
       connections: 16,
       loadSeconds: 10,
@@ -50,6 +53,7 @@ describe('memory benchmark publication profile', () => {
       'BENCH_DEDICATED=1 is not set',
       'runtime does not match package.json engines.bun',
       'source revision is unavailable or the working tree is not clean',
+      'target set does not match the equal-rate API profile',
       'scenario is db-roundtrip, not static-json',
       'connection count is 16, not 64',
       'load window is 10s, not 60s',
@@ -59,6 +63,12 @@ describe('memory benchmark publication profile', () => {
       'only 1 fresh-process run(s) were requested; at least 3 are required',
       'competing host processes were observed',
     ])
+  })
+
+  it('rejects missing, extra, and duplicate comparison targets', () => {
+    expect(memoryPublicationIssues({ ...publishable, targetIds: ['stacks-warm'] })).toContain('target set does not match the equal-rate API profile')
+    expect(memoryPublicationIssues({ ...publishable, targetIds: [...publishable.targetIds, 'stacks-wal-full'] })).toContain('target set does not match the equal-rate API profile')
+    expect(memoryPublicationIssues({ ...publishable, targetIds: publishable.targetIds.map(() => 'stacks-warm') })).toContain('target set does not match the equal-rate API profile')
   })
 
   it('accepts complete, stable, error-free fixed-rate measurements', () => {

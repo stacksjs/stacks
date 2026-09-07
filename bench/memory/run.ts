@@ -293,6 +293,7 @@ async function main(): Promise<void> {
     dedicated: process.env.BENCH_DEDICATED === '1',
     runtimeRequirement,
     source,
+    targetIds: targets.map(target => target.targetId),
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,
