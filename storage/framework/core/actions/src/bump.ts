@@ -368,7 +368,11 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
     //     the stale one. Telling the operator to re-run under the declared
     //     toolchain is exactly what they just did, and the release aborts again
     //     on every attempt until someone regenerates the lockfile on purpose.
-    const remedy = producedVersion != null && producedVersion > expectedLockfileVersion
+    // `expectedLockfileVersion` is null when the committed lockfile carries no
+    // parseable version - one of the two ways into this branch. There is no
+    // "newer than" to compare against then, so fall through to the remedy that
+    // does not claim one.
+    const remedy = producedVersion != null && expectedLockfileVersion != null && producedVersion > expectedLockfileVersion
       ? 'the committed lockfile predates the Bun this repository declares. Regenerate it once with that toolchain '
         + '(`bun install --lockfile-only`) and commit the result as its own change, then re-run the release.'
       : "this machine's Bun is older than the one that wrote the committed lockfile. Re-run the release with the "
