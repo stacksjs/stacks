@@ -16,6 +16,7 @@ describe('memory benchmark report', () => {
       meta: {
         startedAt: '2026-09-04T00:00:00.000Z',
         source: { revision: 'a'.repeat(40), dirty: true },
+        sourceAtEnd: { revision: 'b'.repeat(40), dirty: false },
         runtimeRequirement: { range: '1.4.1', matches: true },
         driver: 'oha',
         publishable: true,
@@ -43,6 +44,7 @@ describe('memory benchmark report', () => {
     })
 
     expect(report).toContain(`| Source at start | \`${'a'.repeat(40)}\` (modified working tree) |`)
+    expect(report).toContain(`| Source at end | \`${'b'.repeat(40)}\` (clean working tree) |`)
     expect(report).toContain('| Runtime | Bun 1.4.1 |')
     expect(report).toContain('| Project Bun requirement | 1.4.1 (matched) |')
     expect(report).toContain('| Architecture | x64 |')

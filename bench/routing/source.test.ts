@@ -2,7 +2,15 @@ import { expect, it } from 'bun:test'
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { readSourceState } from './source'
+import { readSourceState, sourceStateChanged } from './source'
+
+it('detects revision and working-tree changes', () => {
+  const clean = { revision: 'a'.repeat(40), dirty: false }
+  expect(sourceStateChanged(clean, clean)).toBe(false)
+  expect(sourceStateChanged(clean, { ...clean, dirty: true })).toBe(true)
+  expect(sourceStateChanged(clean, { revision: 'b'.repeat(40), dirty: false })).toBe(true)
+  expect(sourceStateChanged(clean, undefined)).toBe(true)
+})
 
 it('records the revision and tracked, staged, or untracked changes in a real repository', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'stacks-bench-source-'))

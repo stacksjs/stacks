@@ -28,3 +28,7 @@ export function formatSourceState(source?: SourceState): string {
   const state = source.dirty === true ? 'modified working tree' : source.dirty === false ? 'clean working tree' : 'working tree state unavailable'
   return `\`${source.revision}\` (${state})`
 }
+
+export function sourceStateChanged(start: SourceState | undefined, end: SourceState | undefined): boolean {
+  return start?.revision !== end?.revision || start?.dirty !== end?.dirty
+}

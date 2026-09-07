@@ -31,7 +31,7 @@ import { renderReport } from './report'
 import { assertParity, benchmarkQueryLoggingEnabled, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from './runtime'
 import { rotateTargets } from './schedule'
 import { SCENARIOS } from './scenarios'
-import { readSourceState } from './source'
+import { readSourceState, sourceStateChanged } from './source'
 import { median, relativeRange, relativeThroughput } from './statistics'
 import { DEFAULT_TARGETS, TARGETS } from './targets'
 
@@ -309,6 +309,9 @@ async function main(): Promise<void> {
     ...(meta.publicationIssues ?? []),
     ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs),
   ])]
+  meta.sourceAtEnd = await readSourceState(REPO_ROOT)
+  if (sourceStateChanged(meta.source, meta.sourceAtEnd))
+    meta.publicationIssues.push('source state changed during the benchmark')
   meta.publishable = meta.publicationIssues.length === 0
 
   const report = renderReport({ meta, scenarios, targets: targetRows, measurements })

@@ -22,7 +22,7 @@ import { createFixture } from '../routing/fixture'
 import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
 import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { SCENARIOS } from '../routing/scenarios'
-import { readSourceState } from '../routing/source'
+import { readSourceState, sourceStateChanged } from '../routing/source'
 import { readRuntimeRequirement, runtimeMismatchWarning } from '../routing/runtime-version'
 import { rotateTargets } from '../routing/schedule'
 import { TARGETS } from '../routing/targets'
@@ -371,6 +371,9 @@ async function main(): Promise<void> {
     ...(meta.publicationIssues ?? []),
     ...memoryMeasurementPublicationIssues(targetRows, measurements, options.runs),
   ])]
+  meta.sourceAtEnd = await readSourceState(REPO_ROOT)
+  if (sourceStateChanged(meta.source, meta.sourceAtEnd))
+    meta.publicationIssues.push('source state changed during the benchmark')
   meta.publishable = meta.publicationIssues.length === 0
 
   const report = renderMemoryReport({ meta, targets: targetRows, measurements })

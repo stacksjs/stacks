@@ -25,6 +25,7 @@ export interface MemoryMeasurement {
 export interface MemoryRunMeta {
   startedAt: string
   source?: SourceState
+  sourceAtEnd?: SourceState
   runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
@@ -97,6 +98,7 @@ export function renderMemoryReport(input: MemoryReportInput): string {
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
+  lines.push(`| Source at end | ${formatSourceState(meta.sourceAtEnd)} |`)
   lines.push(`| Runtime | Bun ${meta.machine.bun} |`)
   if (meta.runtimeRequirement)
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)

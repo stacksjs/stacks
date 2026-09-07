@@ -38,6 +38,7 @@ export interface Measurement {
 export interface RunMeta {
   startedAt: string
   source?: SourceState
+  sourceAtEnd?: SourceState
   runtimeRequirement?: RuntimeRequirement
   driver: string
   publishable: boolean
@@ -106,6 +107,7 @@ export function renderReport(input: ReportInput): string {
   lines.push('|---|---|')
   lines.push(`| Started | ${meta.startedAt} |`)
   lines.push(`| Source at start | ${formatSourceState(meta.source)} |`)
+  lines.push(`| Source at end | ${formatSourceState(meta.sourceAtEnd)} |`)
   lines.push(`| Load generator | \`${meta.driver}\`${meta.publishable ? '' : ' (direction-only)'} |`)
   lines.push(`| Connections | ${meta.connections} |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
