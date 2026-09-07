@@ -673,7 +673,8 @@ const routeActionRegistry = new Map<string, RouterAction>()
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_SEEDED_BY_HANDLE_REQUEST = Symbol.for('stacks.router.csrfSeededByHandleRequest')
-const FRAMEWORK_RESPONSE_METADATA_APPLIED = Symbol('stacks.router.frameworkResponseMetadataApplied')
+// Present only when formatJsonResult preapplied every framework header. The
+// numeric value doubles as the metadata marker and the compression input.
 const FRAMEWORK_RESPONSE_BODY_LENGTH = Symbol('stacks.router.frameworkResponseBodyLength')
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const secureNativeRouteRouters = new WeakSet<Router>()
@@ -1712,7 +1713,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
     response: Response,
     csrfHandledByOuter: boolean,
   ): Response | undefined => {
-    const frameworkMetadataApplied = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
+    const frameworkMetadataApplied = typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
     if (
       response.status >= 400
       || req._corsConfig
@@ -2155,7 +2156,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
                 response,
                 // The value the render already embedded, when there was one.
                 (enhancedReq as unknown as { _csrfToken?: string })._csrfToken,
-                (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true,
+                typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number',
               )
             }
           }
@@ -2187,7 +2188,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler, csrfE
       const after = enhancedReq._afterResponse
       const requested = enhancedReq._responseHeaders
       const frameworkMetadataApplied = response
-        && (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_METADATA_APPLIED] === true
+        && typeof (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_LENGTH] === 'number'
       // Framework JSON responses already carry their request id and security
       // defaults from `formatJsonResult`. When no middleware requested later
       // work, leave the native Headers object untouched and avoid allocating
@@ -3426,7 +3427,6 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
     const frameworkResponse = response as unknown as Record<symbol, unknown>
-    frameworkResponse[FRAMEWORK_RESPONSE_METADATA_APPLIED] = true
     frameworkResponse[FRAMEWORK_RESPONSE_BODY_LENGTH] = bodyLength
   }
   if (csrfCookie)
