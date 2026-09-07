@@ -11,6 +11,7 @@ import type { BusyProcess } from '../routing/host-load'
 import type { MemoryMeasurement, MemoryRunMeta, MemorySample } from './report'
 import type { Scenario } from '../routing/scenarios'
 import type { Target } from '../routing/targets'
+import type { ScenarioParityEvidence } from '../routing/runtime'
 import type { MemoryProfileTarget } from './profile'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release } from 'node:os'
@@ -21,7 +22,7 @@ import { pickDriver } from '../routing/drivers'
 import { createFixture } from '../routing/fixture'
 import { checkHostLoad, formatBusyProcess } from '../routing/host-load'
 import { resolvePeerVersions } from '../routing/peer-versions'
-import { assertParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
+import { assertParity, assertStableParity, boot, FIXTURE, headersFor, PORT, REPO_ROOT, stop } from '../routing/runtime'
 import { resolveStacksSourceModules } from '../routing/provenance'
 import { SCENARIOS } from '../routing/scenarios'
 import { readSourceState, sourceStateChanged } from '../routing/source'
@@ -207,13 +208,18 @@ async function measure(
   requestRate: number,
 ): Promise<
   | { skipped: string }
-  | { measurement: Omit<MemoryMeasurement, 'targetId' | 'run' | 'requestRate'>, samples: MemorySample[], load: LoadResult }
+  | {
+    measurement: Omit<MemoryMeasurement, 'targetId' | 'run' | 'requestRate'>
+    samples: MemorySample[]
+    load: LoadResult
+    parity: { before: ScenarioParityEvidence, after: ScenarioParityEvidence }
+  }
 > {
   const booted = await boot(target, Boolean(scenario.requiresDb), scenario)
   if ('skipped' in booted) return booted
 
   try {
-    await assertParity(target, scenario)
+    const parityBefore = await assertParity(target, scenario)
     const samples: MemorySample[] = []
     const startedAt = performance.now()
     const load = await sampleLoad(booted.pid, options.sampleIntervalMs, startedAt, driver.run({
@@ -236,7 +242,8 @@ async function measure(
 
     // Confirm sustained load and the idle period did not change the target's
     // status, response bytes, media type, or validation contract.
-    await assertParity(target, scenario)
+    const parityAfter = await assertParity(target, scenario)
+    assertStableParity(target, scenario, parityBefore, parityAfter)
 
     return {
       measurement: {
@@ -248,6 +255,7 @@ async function measure(
       },
       samples,
       load,
+      parity: { before: parityBefore, after: parityAfter },
     }
   }
   finally {
@@ -348,6 +356,12 @@ async function main(): Promise<void> {
   }
 
   const measurements: MemoryMeasurement[] = []
+  const parityChecks: Array<{
+    targetId: string
+    run: number
+    before: ScenarioParityEvidence
+    after: ScenarioParityEvidence
+  }> = []
   const targetRows: Array<{ id: string, label: string, requestRate: number, skipped?: string }> = []
   const availableTargets = new Set<string>()
   const unavailableTargets = new Set<string>()
@@ -375,11 +389,13 @@ async function main(): Promise<void> {
         targetRows.push({ id: target.id, label: selected.label, requestRate })
       }
       measurements.push({ targetId: target.id, run, requestRate, ...result.measurement })
+      parityChecks.push({ targetId: target.id, run, ...result.parity })
       writeFileSync(join(rawDir, `${target.id}--run${run}.json`), `${JSON.stringify({
         targetId: target.id,
         run,
         samples: result.samples,
         load: result.load,
+        parity: result.parity,
       }, null, 2)}\n`)
       console.error(`[memory] settled RSS: ${(result.measurement.settledRssBytes / 1024 / 1024).toFixed(1)} MiB`)
     }
@@ -410,6 +426,7 @@ async function main(): Promise<void> {
         body: scenario.body,
         headers: headersFor(target, scenario),
       })),
+      parityChecks,
     },
     measurements,
   }, null, 2)}\n`)

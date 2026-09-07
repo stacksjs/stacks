@@ -31,9 +31,11 @@ a static JSON response would be misleading. They need equivalent Stacks SSR
 and Stacks dev fixtures before becoming executable profiles.
 
 The runner uses the same byte-for-byte response parity checks as
-`bench/routing`, both before load and after the idle period. It samples the
-entire server process tree, so launchers cannot
-hide worker memory. The separately launched load generator is not counted. Each
+`bench/routing`, both before load and after the idle period. The JSON artifact
+retains status, media type, body byte count, and SHA-256 body digest evidence
+for the primary request and every validation probe. Any change across load and
+idle aborts the run. It samples the entire server process tree, so launchers
+cannot hide worker memory. The separately launched load generator is not counted. Each
 server registers only the selected scenario, so an unrelated validator or
 database route cannot inflate one framework's static JSON result. This applies
 identically to every target. Repeated runs rotate target order so host drift
