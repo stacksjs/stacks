@@ -1571,7 +1571,7 @@ Email server management commands
 
 - Usage: `$ buddy email`
 - Namespace: none
-- Aliases: `mail`
+- Aliases: none
 - Arguments: none
 
 ### `email:inbox`

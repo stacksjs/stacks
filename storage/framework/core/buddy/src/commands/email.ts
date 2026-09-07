@@ -123,7 +123,11 @@ const descriptions = {
 export function email(buddy: CLI): void {
   buddy
     .command('email', descriptions.email)
-    .alias('mail')
+    // NOT aliased to `mail`: a `mail:` namespace already exists (the mail
+    // server), and an alias that spells a namespace never resolves - `buddy
+    // mail` printed the general help for the life of the alias. It would also
+    // be the wrong pointer even if it worked, since `mail:*` and `email:*` are
+    // different subsystems.
     .action(async () => {
       console.log('\n📧 Email Server Commands\n')
       console.log('  buddy email:verify      - Check domain verification status')

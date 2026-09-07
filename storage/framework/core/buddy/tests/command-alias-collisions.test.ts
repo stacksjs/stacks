@@ -45,6 +45,26 @@ describe('command names and aliases', () => {
     expect(shared.sort()).toEqual([])
   })
 
+  /**
+   * `email` was aliased to `mail` while a whole `mail:` namespace exists, and
+   * the alias simply never resolved - `buddy mail` printed the general help for
+   * as long as it was there, and a skill documented it as working. An alias that
+   * spells a namespace cannot win against the commands under it.
+   */
+  it('never aliases a name that is already a namespace', () => {
+    const namespaces = new Set(
+      inventory.commands.filter(command => command.name.includes(':')).map(command => command.name.split(':')[0]),
+    )
+
+    const shadowed = inventory.commands.flatMap(command =>
+      (command.aliases ?? [])
+        .filter(alias => !alias.includes(':') && namespaces.has(alias))
+        .map(alias => `${command.name} aliases '${alias}', which is the '${alias}:' namespace`),
+    )
+
+    expect(shadowed.sort()).toEqual([])
+  })
+
   it('never registers one name twice', () => {
     const seen = new Map<string, number>()
     for (const command of inventory.commands)
