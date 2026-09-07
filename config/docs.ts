@@ -86,6 +86,7 @@ const config: BunPressOptions = {
           collapsed: true,
           items: [
             { text: 'Authentication', link: '/guide/auth' },
+            { text: 'Package Discovery', link: '/guide/package-discovery' },
             { text: 'Database', link: '/packages/database' },
             { text: 'Scaling the Database', link: '/guide/database-scaling' },
             { text: 'Cache', link: '/packages/cache' },
