@@ -35,6 +35,11 @@ accident. The safeguards here exist only to stop that:
   records every resolved path. The Stacks fixture may configure and call public
   APIs, but may not import framework internals or reimplement a data path with
   `bun:sqlite`.
+- **Every process exposes only benchmark routes.** The Stacks fixture uses the
+  framework's public API-server configuration to disable file-based view
+  discovery. Without it, this repository's application views would add routes
+  during `serve()` even though every peer process contains only the selected
+  scenario.
 - **Warm-up is discarded, not measured.** 5 seconds by default, then 30 measured.
 - **Busy hosts are rejected around every measurement.** Any competing process
   using at least 75% of one core before a server starts or after it stops aborts

@@ -35,5 +35,6 @@ describe('Stacks benchmark source provenance', () => {
     expect(specifiers).not.toContain('bun:sqlite')
     expect(source).not.toMatch(/@stacksjs\/[^'"]+\/src(?:\/|['"])/)
     expect(source).not.toContain('storage/framework/core')
+    expect(source).toContain('disableViewRouting(router.bunRouter)')
   })
 })

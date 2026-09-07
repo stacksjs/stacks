@@ -19,7 +19,7 @@
  */
 
 import process from 'node:process'
-import { createStacksRouter } from '@stacksjs/router'
+import { createStacksRouter, disableViewRouting } from '@stacksjs/router'
 
 const port = Number(process.env.BENCH_PORT ?? 3999)
 const minimal = process.env.BENCH_MODE === 'minimal'
@@ -35,6 +35,11 @@ const scenario = process.env.BENCH_SCENARIO
 const serves = (id: string) => !scenario || scenario === id
 
 const router = createStacksRouter({ requestIds: !minimal, csrf: !minimal })
+// This is an API benchmark. The repository also contains application views,
+// and bun-router otherwise discovers and registers them during serve(). Every
+// peer process registers only the selected benchmark route, so use Stacks'
+// public API-server configuration here too.
+disableViewRouting(router.bunRouter)
 
 if (serves('static-json'))
   router.get('/bench/json', () => ({ hello: 'world' }))

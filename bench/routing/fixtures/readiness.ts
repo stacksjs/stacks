@@ -16,6 +16,10 @@ else {
   if ('skipped' in server) throw new Error(server.skipped)
   try {
     await assertParity(target, scenario ?? scenarioById('static-json')!)
+    const unrelated = await fetch(`http://127.0.0.1:${process.env.BENCH_PORT}/`)
+    await unrelated.body?.cancel()
+    if (unrelated.status !== 404)
+      throw new Error(`benchmark server exposed unrelated route / with status ${unrelated.status}`)
     await Bun.write(Bun.stdout, 'benchmark-readiness-ok\n')
   }
   finally {

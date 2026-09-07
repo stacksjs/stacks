@@ -35,6 +35,9 @@ cannot consistently favor the same implementation.
 The same source-provenance preflight also requires every Stacks package used by
 the fixture to resolve from its framework source tree through a public package
 entry point, and records those paths in the report.
+The Stacks fixture also disables file-based view discovery through the public
+router API, so the repository's application pages do not enter a one-route API
+memory comparison.
 
 Before and after each measurement, the runner refuses to proceed when another
 process is using at least 75% of one CPU core. Pass `--allow-busy-host` only for
