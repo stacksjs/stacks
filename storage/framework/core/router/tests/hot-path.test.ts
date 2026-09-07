@@ -450,6 +450,21 @@ describe('the request path keeps its defaults', () => {
     expect(second.headers.get('x-request-id')).not.toBe(first.headers.get('x-request-id'))
   })
 
+  it('keeps request ids unique across generator block rollovers', async () => {
+    const { createStacksRouter } = await import('../src')
+    const direct = createStacksRouter()
+    direct.get('/_hot/request-id-rollover', () => ({ ok: true }))
+    const ids = new Set<string>()
+
+    for (let index = 0; index < 100; index++) {
+      const response = await direct.bunRouter.handleRequest(new Request('http://localhost/_hot/request-id-rollover'))
+      ids.add(response.headers.get('x-request-id') ?? '')
+    }
+
+    expect(ids.has('')).toBe(false)
+    expect(ids.size).toBe(100)
+  })
+
   it('allows an upstream proxy to own request ids', async () => {
     const { createStacksRouter } = await import('../src')
     const direct = createStacksRouter({ requestIds: false })

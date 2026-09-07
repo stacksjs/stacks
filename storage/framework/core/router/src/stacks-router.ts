@@ -4294,17 +4294,14 @@ function incomingRequestId(req: EnhancedRequest): string | undefined {
 
 // A random process prefix plus a monotonic sequence is globally unique for
 // request-correlation purposes without asking the system RNG for every request.
-// Cache the two low base36 digits: only the block counter needs number-to-string
-// conversion, once per 1,296 requests instead of once per request. The block's
+// Index the low base36 digit directly: only the block counter needs
+// number-to-string conversion, once per 36 requests instead of once per
+// request. The block's
 // safe integer range still lasts for thousands of years at current throughput.
 const REQUEST_ID_DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
-const REQUEST_ID_SUFFIX_COUNT = 36 * 36
+const REQUEST_ID_SUFFIX_COUNT = 36
 function createRequestIdGenerator(): () => string {
   const prefix = crypto.randomUUID().replaceAll('-', '').slice(0, 16)
-  const suffixes = Array.from(
-    { length: REQUEST_ID_SUFFIX_COUNT },
-    (_, value) => REQUEST_ID_DIGITS[Math.floor(value / 36)]! + REQUEST_ID_DIGITS[value % 36]!,
-  )
   let block = 0
   let suffix = 0
   let blockPrefix = `${prefix}-0`
@@ -4315,7 +4312,7 @@ function createRequestIdGenerator(): () => string {
       suffix = 0
       blockPrefix = `${prefix}-${(++block).toString(36)}`
     }
-    return blockPrefix + suffixes[suffix]
+    return blockPrefix + REQUEST_ID_DIGITS[suffix]
   }
 }
 
