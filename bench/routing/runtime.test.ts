@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { assertResponseParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
+import { assertProbeResponse, assertResponseParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
@@ -99,6 +99,20 @@ describe('benchmark response parity', () => {
     await expect(assertResponseParity(target, scenario, new Response(scenario.expect, {
       headers: { 'content-type': 'text/plain' },
     }))).rejects.toThrow('expected application/json')
+  })
+
+  it('requires validation probes to reject bad input with a client error', async () => {
+    const probe = SCENARIOS.find(candidate => candidate.id === 'post-validate')!.probes![0]!
+    await expect(assertProbeResponse(target, scenario, probe, new Response('{}', { status: 422 }))).resolves.toBeUndefined()
+    await expect(assertProbeResponse(target, scenario, probe, new Response('{}'))).rejects.toThrow('expected a client error')
+    await expect(assertProbeResponse(target, scenario, probe, new Response('{}', { status: 500 }))).rejects.toThrow('expected a client error')
+  })
+
+  it('requires successful probes to preserve exact output parity', async () => {
+    const probe = SCENARIOS.find(candidate => candidate.id === 'post-validate')!.probes![2]!
+    await expect(assertProbeResponse(target, scenario, probe, new Response(probe.expected.kind === 'success' ? probe.expected.body : '', {
+      headers: { 'content-type': 'application/json' },
+    }))).resolves.toBeUndefined()
   })
 })
 

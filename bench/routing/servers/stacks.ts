@@ -60,8 +60,8 @@ if (serves('post-validate')) {
   const EchoAction = new Action({
     name: 'BenchEcho',
     validations: {
-      name: { rule: schema.string() },
-      count: { rule: schema.number() },
+      name: { rule: schema.string().required() },
+      count: { rule: schema.number().required() },
     },
     // The action pipeline already produced the exact allow-listed payload.
     // Return it directly instead of re-reading both fields and allocating a

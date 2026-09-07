@@ -25,6 +25,14 @@ export interface Scenario {
   requiresDb?: boolean
   /** Exact response body every server must return, for the parity check. */
   expect: string
+  /** Additional setup-only requests that prove the advertised contract. */
+  probes?: readonly ScenarioProbe[]
+}
+
+export type ScenarioProbe = {
+  id: string
+  body: string
+  expected: { kind: 'success', body: string } | { kind: 'client-error' }
 }
 
 /**
@@ -64,6 +72,23 @@ export const SCENARIOS: readonly Scenario[] = [
     path: '/bench/echo',
     body: JSON.stringify({ name: 'bench', count: 7 }),
     expect: '{"name":"bench","count":7}',
+    probes: [
+      {
+        id: 'missing-required-field',
+        body: JSON.stringify({ name: 'bench' }),
+        expected: { kind: 'client-error' },
+      },
+      {
+        id: 'wrong-field-types',
+        body: JSON.stringify({ name: 7, count: 'bench' }),
+        expected: { kind: 'client-error' },
+      },
+      {
+        id: 'allow-listed-output',
+        body: JSON.stringify({ name: 'bench', count: 7, ignored: 'must-not-echo' }),
+        expected: { kind: 'success', body: '{"name":"bench","count":7}' },
+      },
+    ],
   },
   {
     id: 'db-roundtrip',

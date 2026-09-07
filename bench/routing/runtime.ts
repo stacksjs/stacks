@@ -1,6 +1,6 @@
 /** Shared server lifecycle and parity checks for the benchmark suites. */
 
-import type { Scenario } from './scenarios'
+import type { Scenario, ScenarioProbe } from './scenarios'
 import type { Target } from './targets'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -145,6 +145,18 @@ export async function assertResponseParity(target: Target, scenario: Scenario, r
     throw new Error(`${target.id} answered ${scenario.id} with ${mediaType ?? 'no content type'}, expected application/json`)
 }
 
+export async function assertProbeResponse(target: Target, scenario: Scenario, probe: ScenarioProbe, res: Response): Promise<void> {
+  const probeId = `${scenario.id}/${probe.id}`
+  if (probe.expected.kind === 'client-error') {
+    await res.arrayBuffer()
+    if (res.status < 400 || res.status >= 500)
+      throw new Error(`${target.id} answered ${res.status} for ${probeId}, expected a client error`)
+    return
+  }
+
+  await assertResponseParity(target, { ...scenario, id: probeId, expect: probe.expected.body }, res)
+}
+
 /** Probe the live target before measuring it. */
 export async function assertParity(target: Target, scenario: Scenario): Promise<void> {
   const requiresQueryLog = benchmarkQueryLoggingEnabled() && target.server === 'stacks.ts' && scenario.requiresDb
@@ -157,6 +169,15 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
     ...(scenario.body != null ? { body: scenario.body } : {}),
   })
   await assertResponseParity(target, scenario, res)
+  for (const probe of scenario.probes ?? []) {
+    const probeScenario = { ...scenario, body: probe.body }
+    const probeResponse = await fetch(`http://127.0.0.1:${PORT}${scenario.path}`, {
+      method: scenario.method,
+      headers: headersFor(target, probeScenario),
+      body: probe.body,
+    })
+    await assertProbeResponse(target, scenario, probe, probeResponse)
+  }
   if (requiresQueryLog)
     await assertFixtureQueryLogged(FIXTURE)
 }
