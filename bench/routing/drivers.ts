@@ -1,9 +1,11 @@
 /**
  * Load-generator adapters.
  *
- * `oha` and `bombardier` are the ones whose numbers are fit to publish: both
- * are native, both report percentiles, both cost almost nothing per request.
- * `autocannon` is the JS-native fallback. `builtin` is a Bun implementation
+ * `oha` is the driver whose numbers are fit to publish: it is native, reports
+ * percentiles, and exposes exact status-code counts for the measured load.
+ * `bombardier`, `autocannon`, and `builtin` remain direction-only because they
+ * cannot prove that every response kept the scenario's exact HTTP 200 status.
+ * `builtin` is a Bun implementation
  * that ships with this harness so the suite runs on a clean checkout with
  * nothing installed. Both are fine for "did that change help", and their
  * output is labelled `direction-only` everywhere it appears, because a
@@ -130,7 +132,7 @@ const oha: Driver = {
     let ok = 0
     let bad = 0
     for (const [code, count] of Object.entries(codes)) {
-      if (Number(code) >= 200 && Number(code) < 400) ok += count
+      if (Number(code) === 200) ok += count
       else bad += count
     }
     const transportErrors = Object.values(json.errorDistribution as Record<string, number> ?? {}).reduce((sum, count) => sum + count, 0)
@@ -155,7 +157,7 @@ const oha: Driver = {
 const bombardier: Driver = {
   name: 'bombardier',
   version: () => commandVersion('bombardier'),
-  publishable: true,
+  publishable: false,
   supportsFixedRate: false,
   isAvailable: () => which('bombardier'),
   async run(req) {
@@ -279,7 +281,7 @@ const builtin: Driver = {
 
 export const DRIVERS: readonly Driver[] = [oha, bombardier, autocannon, builtin]
 
-/** First available driver, preferring the publishable native ones. */
+/** First available driver, preferring the publication-capable native driver. */
 export async function pickDriver(preferred?: string): Promise<Driver> {
   if (preferred) {
     const named = DRIVERS.find(d => d.name === preferred)

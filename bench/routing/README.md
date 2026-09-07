@@ -74,7 +74,7 @@ accident. The safeguards here exist only to stop that:
 | Driver | Publishable | Notes |
 |---|---|---|
 | `oha` | yes | Preferred. `brew install oha` or `cargo install oha`. |
-| `bombardier` | yes | `brew install bombardier`. |
+| `bombardier` | **no** | Native direction-only fallback. It reports status classes, not exact codes. |
 | `autocannon` | **no** | JS fallback for direction-only comparisons. |
 | `builtin` | **no** | Ships with the harness so a clean checkout can run. |
 
@@ -85,8 +85,7 @@ driver is Bun subprocesses driving `fetch`, so it also competes with the server
 under test for the same cores and runtime. They are genuinely useful for "did
 that change help", which is what they are kept for. Every report they produce
 is stamped `direction-only`, and numbers from them must not leave this
-directory. Install `oha` or `bombardier` before producing anything anyone else
-will read.
+directory. Install `oha` before producing anything anyone else will read.
 
 ## The machine matters
 

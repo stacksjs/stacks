@@ -3,8 +3,8 @@ import process from 'node:process'
 import { DRIVERS, ohaArgs } from './drivers'
 
 describe('publication-capable drivers', () => {
-  it('allows only native generators that can saturate the server', () => {
-    expect(DRIVERS.filter(driver => driver.publishable).map(driver => driver.name)).toEqual(['oha', 'bombardier'])
+  it('allows only the native generator that exposes exact status counts', () => {
+    expect(DRIVERS.filter(driver => driver.publishable).map(driver => driver.name)).toEqual(['oha'])
   })
 })
 
@@ -27,7 +27,7 @@ describe('oha command', () => {
 
   it.each([
     ['transport failures only', {}, { 'Connection refused (os error 61)': 20 }, 20, 20],
-    ['mixed responses and transport failures', { 200: 70, 302: 10, 500: 10 }, { timeout: 10 }, 100, 20],
+    ['mixed responses and transport failures', { 200: 70, 302: 10, 500: 10 }, { timeout: 10 }, 100, 30],
     ['responses without transport failures', { 200: 20 }, undefined, 20, 0],
   ] as const)('counts every completed or failed request: %s', async (name, codes, transportErrors, requests, errors) => {
     const raw = JSON.stringify({

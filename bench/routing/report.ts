@@ -92,8 +92,8 @@ export function renderReport(input: ReportInput): string {
   lines.push('')
   if (!meta.publishable && meta.driver === 'builtin') {
     lines.push('> **Direction-only.** This run used the harness\'s built-in Bun load generator, which')
-    lines.push('> shares the machine and the runtime with the server under test. Use `oha` or')
-    lines.push('> `bombardier` for any number that leaves this directory.')
+    lines.push('> shares the machine and the runtime with the server under test. Use `oha` for')
+    lines.push('> any number that leaves this directory.')
     lines.push('')
   }
   if (meta.publicationIssues?.length) {
