@@ -252,13 +252,18 @@ Stacks is".
 
 To record a real baseline:
 
-1. Get a dedicated or reserved instance, and a second machine for the generator.
+1. Get a dedicated or reserved instance for the runner and target server.
 2. Install `oha` there (`brew install oha` / `cargo install oha`).
-3. `bun add -d elysia hono` so the comparison targets are not skipped.
+3. Run `bun install --cwd bench/routing --frozen-lockfile` so every pinned peer
+   framework is present.
 4. `bun bench/routing/run.ts` with the defaults (5s warm-up, 30s measured, 3 runs).
 5. Commit the whole `results/<timestamp>/` directory - report, measurements, and
    the raw per-run output. The spread column is the honesty check: if it is
    wide, the run is noise and the median means nothing.
+
+For a remote-generator study, orchestrate the two hosts outside this runner and
+label the resulting topology separately. Do not present it as this runner's
+same-host output.
 
 Only then does any public-facing comparison get to quote a number, and only with
 the profile it came from named beside it.
