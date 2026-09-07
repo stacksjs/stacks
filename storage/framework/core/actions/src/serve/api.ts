@@ -92,6 +92,25 @@ route.use(corsMiddleware.toRouterHandler())
 // and one uninstalled since could abort the boot.
 await ensureDiscoveredPackages()
 
+// Put models, jobs and framework primitives on `globalThis` before any route
+// file is imported.
+//
+// Every other entry did this and the production API did not, so an app that
+// followed the documented pattern - `await User.find(1)` with no import, which
+// `server-auto-imports.d.ts` declares and so typechecks clean - worked under
+// `buddy dev` and threw `ReferenceError: User is not defined` once its action
+// was served here (stacksjs/stacks#2442). Framework default actions were
+// unaffected throughout, because they import their models explicitly.
+//
+// Before `importRoutes()` for the same reason discovery is: route files pull in
+// the actions that read these names at module-evaluation time.
+//
+// Safe to call unconditionally. It is idempotent, it collects failures and
+// warns rather than throwing, and it puts a per-package timeout on every import
+// so one slow module cannot hold up a boot.
+const { injectGlobalAutoImports } = await import('@stacksjs/server')
+await injectGlobalAutoImports()
+
 // Import routes
 await route.importRoutes()
 
