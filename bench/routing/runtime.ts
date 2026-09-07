@@ -133,7 +133,19 @@ export function headersFor(target: Target, scenario: Scenario): Record<string, s
   return headers
 }
 
-/** Require byte-identical successful responses before measuring a target. */
+/** Require byte-identical successful JSON responses before measuring a target. */
+export async function assertResponseParity(target: Target, scenario: Scenario, res: Response): Promise<void> {
+  const body = await res.text()
+  if (!res.ok)
+    throw new Error(`${target.id} answered ${res.status} for ${scenario.id}: ${body.slice(0, 200)}`)
+  if (body !== scenario.expect)
+    throw new Error(`${target.id} answered ${body.slice(0, 200)} for ${scenario.id}, expected ${scenario.expect}`)
+  const mediaType = res.headers.get('content-type')?.split(';', 1)[0]?.trim().toLowerCase()
+  if (mediaType !== 'application/json')
+    throw new Error(`${target.id} answered ${scenario.id} with ${mediaType ?? 'no content type'}, expected application/json`)
+}
+
+/** Probe the live target before measuring it. */
 export async function assertParity(target: Target, scenario: Scenario): Promise<void> {
   const requiresQueryLog = benchmarkQueryLoggingEnabled() && target.server === 'stacks.ts' && scenario.requiresDb
   if (requiresQueryLog)
@@ -144,11 +156,7 @@ export async function assertParity(target: Target, scenario: Scenario): Promise<
     headers: headersFor(target, scenario),
     ...(scenario.body != null ? { body: scenario.body } : {}),
   })
-  const body = (await res.text()).trim()
-  if (!res.ok)
-    throw new Error(`${target.id} answered ${res.status} for ${scenario.id}: ${body.slice(0, 200)}`)
-  if (body !== scenario.expect)
-    throw new Error(`${target.id} answered ${body.slice(0, 200)} for ${scenario.id}, expected ${scenario.expect}`)
+  await assertResponseParity(target, scenario, res)
   if (requiresQueryLog)
     await assertFixtureQueryLogged(FIXTURE)
 }

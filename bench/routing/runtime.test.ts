@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
+import { assertResponseParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, serverCommand, serverEnvironment } from './runtime'
+import { SCENARIOS } from './scenarios'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
 describe('benchmark server isolation', () => {
@@ -75,6 +76,29 @@ describe('benchmark server isolation', () => {
         else process.env[key] = value
       })
     }
+  })
+})
+
+describe('benchmark response parity', () => {
+  const target = { id: 'fixture', label: 'Fixture', server: 'fixture.ts' }
+  const scenario = SCENARIOS[0]!
+
+  it('accepts the exact JSON bytes and a parameterized JSON media type', async () => {
+    await expect(assertResponseParity(target, scenario, new Response(scenario.expect, {
+      headers: { 'content-type': 'application/json; charset=utf-8' },
+    }))).resolves.toBeUndefined()
+  })
+
+  it('rejects extra response bytes', async () => {
+    await expect(assertResponseParity(target, scenario, new Response(`${scenario.expect}\n`, {
+      headers: { 'content-type': 'application/json' },
+    }))).rejects.toThrow('expected')
+  })
+
+  it('rejects a non-JSON response', async () => {
+    await expect(assertResponseParity(target, scenario, new Response(scenario.expect, {
+      headers: { 'content-type': 'text/plain' },
+    }))).rejects.toThrow('expected application/json')
   })
 })
 
