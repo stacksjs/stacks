@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **319 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **320 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -15,7 +15,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `ai` | 1 |
 | `auth` | 4 |
 | `build` | 16 |
-| `cloud` | 9 |
+| `cloud` | 10 |
 | `cms` | 2 |
 | `coming-soon` | 1 |
 | `commerce` | 2 |
@@ -645,6 +645,23 @@ Remove the Stacks Cloud. In case it fails, try again
 | `--force` | Force deletion of stack in bad state | boolean, optional | `false` |
 | `--yes` | Skip confirmation prompts | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `cloud:rename`
+
+Rename a server in place, keeping the provider, state pin, hostname and inventory in step
+
+- Usage: `$ buddy cloud:rename <server>`
+- Namespace: `cloud`
+- Aliases: none
+- Arguments: `<server>`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--to` | The new server name | value, required | - |
+| `--env` | Environment whose fleet and state pin to rename in | value, optional | - |
+| `--dry-run` | Print the plan and change nothing | boolean, optional | `false` |
+| `-J`, `--json` | Emit the rename plan as JSON | boolean, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `cloud:sites`

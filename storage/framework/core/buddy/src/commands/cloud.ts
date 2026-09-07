@@ -222,6 +222,103 @@ async function refuse(...messages: string[]): Promise<never> {
   return log.exit(messages[messages.length - 1] as string, ExitCode.FatalError)
 }
 
+/**
+ * The side effects a rename needs, wired to whichever fleet this project has.
+ *
+ * `ServerRenameEffects` keeps every capability optional but the taken-name check
+ * and the inventory, and DROPS the step for anything a fleet cannot do - so this
+ * supplies what it can and lets the plan come out shorter rather than pretending
+ * a step ran.
+ *
+ * The four records and where each one lives here:
+ *
+ * 1. **Provider.** `HetznerClient.renameServer`. Only Hetzner has one; an ssh
+ *    fleet is named in `config/cloud.ts`, which a command must not rewrite
+ *    behind the author's back, so that fleet gets no provider step.
+ * 2. **State pin** (`storage/cloud/state/<stack>.json`). Offered only when a pin
+ *    exists AND names this server: `findComputeTargets` rejects a pin whose
+ *    recorded name no longer matches the live one, so a provider rename that
+ *    skips this quietly invalidates the pin. A pin naming some other server is
+ *    not this rename's business.
+ * 3. **Hostname.** Set over SSH, and only when the box has an address to reach.
+ * 4. **Inventory.** Derived, not stored (`toInventoryServer`) - so for a
+ *    provider fleet the provider record IS the inventory, and the write here is
+ *    against the snapshot this run is holding.
+ */
+export async function renameEffects(
+  tsCloudConfig: any,
+  servers: any[],
+  current: any,
+  environment: string,
+): Promise<any> {
+  const taken = servers.map((s: any) => String(s?.name)).filter(Boolean)
+
+  const effects: Record<string, unknown> = {
+    takenNames: async () => taken,
+    inventoryName: () => String(current?.name ?? ''),
+    // Derived rather than stored: the provider record above is the inventory,
+    // so all that is left is keeping this run's own snapshot honest.
+    renameInventory: (next: string) => {
+      current.name = next
+    },
+  }
+
+  const stackName = tsCloudConfig?.project?.stackName || `${tsCloudConfig?.project?.slug || 'app'}-${environment}`
+  const { readDriverState, writeDriverState } = await import('@stacksjs/ts-cloud')
+  const pin = await readDriverState(stackName).catch(() => null)
+  // Only a provider pin records a server name at all: the ssh driver pins the
+  // host it adopted, which a rename does not touch.
+  if (pin?.provider === 'hetzner' && pin.serverName && pin.serverName === current?.name) {
+    effects.stateName = async () => {
+      const latest = await readDriverState(stackName)
+      return latest?.provider === 'hetzner' ? latest.serverName : undefined
+    }
+    effects.writeStateName = async (next: string) => {
+      const latest = await readDriverState(stackName)
+      if (latest?.provider === 'hetzner')
+        await writeDriverState(stackName, { ...latest, serverName: next })
+    }
+  }
+
+  const host = current?.ipv4
+  if (host) {
+    const { sshExec, buildSetHostnameScript } = await import('@stacksjs/ts-cloud')
+    const ssh = { user: 'root', connectTimeoutSec: 10 }
+    effects.remoteHostname = async () => {
+      const result = await sshExec(host, 'hostname', ssh)
+      // An unreachable box resolves the step to `unknown`, which the plan then
+      // shows and runs, rather than being read as "the hostname is already right".
+      if (result.code !== 0)
+        throw new Error(result.stderr.trim() || `Could not reach ${host} over SSH.`)
+      return result.stdout.trim()
+    }
+    effects.setRemoteHostname = async (next: string) => {
+      const result = await sshExec(host, buildSetHostnameScript(next), ssh)
+      if (result.code !== 0)
+        throw new Error(result.stderr.trim() || `Setting the hostname on ${host} failed.`)
+    }
+  }
+
+  const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
+  if (provider !== 'hetzner')
+    return effects
+
+  const { HetznerClient } = await import('@stacksjs/ts-cloud')
+  const { resolveHetznerApiToken } = await import('./deploy')
+  const apiToken = resolveHetznerApiToken(tsCloudConfig)
+  const serverId = Number(current?.id)
+  if (!apiToken || !Number.isFinite(serverId))
+    return effects
+
+  const client = new HetznerClient({ apiToken })
+  effects.providerName = async () => (await client.getServer(serverId))?.name
+  effects.renameProvider = async (next: string) => {
+    await client.renameServer(serverId, next)
+  }
+
+  return effects
+}
+
 /** Only an SSH-deployed fleet can be listed, and saying so beats printing an empty one. */
 async function assertFleetProvider(tsCloudConfig: any, command: string): Promise<void> {
   const provider = tsCloudConfig?.cloud?.provider || process.env.CLOUD_PROVIDER || 'aws'
@@ -383,6 +480,10 @@ export function cloud(buddy: CLI): void {
     dashboard: 'Run the local Stacks Cloud management cockpit (servers, sites, deploys)',
     sites: 'List every server and what each one is hosting, across projects',
     attach: 'Attach this project to a server another project owns, after checking it is safe',
+    rename: 'Rename a server in place, keeping the provider, state pin, hostname and inventory in step',
+    renameTo: 'The new server name',
+    renameEnv: 'Environment whose fleet and state pin to rename in',
+    renameJson: 'Emit the rename plan as JSON',
     attachServer: 'Server to attach to, by provider name or by owning project slug',
     dryRun: 'Print the plan and change nothing',
     sitesEnv: 'Environment to take the inventory for',
@@ -1156,6 +1257,101 @@ export function cloud(buddy: CLI): void {
           return { state: 'refused', reason: error instanceof Error ? error.message : String(error) }
         }
       }
+    })
+
+  buddy
+    .command('cloud:rename <server>', descriptions.rename)
+    .option('--to <name>', descriptions.renameTo)
+    .option('--env [env]', descriptions.renameEnv)
+    .option('--dry-run', descriptions.dryRun, { default: false })
+    .option('-J, --json', descriptions.renameJson, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (server: string, options: CloudCliOptions & { to?: string, env?: string, dryRun?: boolean, json?: boolean }) => {
+      log.debug('Running `buddy cloud:rename` ...', options)
+
+      const { applyPlan, formatPlan, pendingSteps, planServerRename, resolvePlan, validateServerName } = await import('@stacksjs/ts-cloud')
+      const { loadTsCloudConfig } = await import('./deploy')
+
+      if (!options.to)
+        return await refuse('Rename it to what? Pass --to <name>.')
+
+      const next = String(options.to)
+      try {
+        // A server name becomes a hostname, so the provider's rules are the
+        // framework's rules. Saying which character is wrong beats a 422 from
+        // the provider three steps later.
+        validateServerName(next)
+      }
+      catch (error) {
+        return await refuse(error instanceof Error ? error.message : String(error))
+      }
+
+      const environment = String(options.env || process.env.APP_ENV || process.env.NODE_ENV || 'production')
+      const tsCloudConfig = await loadTsCloudConfig(options.env ? environment : undefined)
+      await assertFleetProvider(tsCloudConfig, 'cloud:rename')
+
+      const listing = await listFleet(tsCloudConfig)
+      if (listing.problem)
+        return await refuse(listing.problem)
+
+      const current = listing.servers.find((s: any) => s?.name === server)
+      if (!current)
+        return await refuse(`No server named ${server}. \`buddy cloud:sites\` lists what is there.`)
+
+      if (server === next)
+        return await refuse(`${server} is already called that.`)
+
+      const plan = await planServerRename(server, next, await renameEffects(tsCloudConfig, listing.servers, current, environment))
+      const resolved = await resolvePlan(plan)
+      const pending = pendingSteps(resolved)
+
+      if (options.json) {
+        console.log(JSON.stringify({
+          operation: plan.operation,
+          target: plan.target,
+          to: next,
+          steps: resolved.map(entry => ({
+            id: entry.step.id,
+            title: entry.step.title,
+            state: entry.state,
+            reason: entry.reason,
+            change: entry.step.change,
+          })),
+        }, null, 2))
+        return
+      }
+
+      console.log('')
+      // ts-cloud formats its own plans, so two runs of an unchanged plan print
+      // identically and can be diffed - which is the point of planning first.
+      for (const line of formatPlan(plan, resolved))
+        console.log(line)
+      console.log('')
+
+      if (options.dryRun) {
+        await log.info(`Dry run: ${pending.length} step(s) would run. Nothing changed.`)
+        return
+      }
+
+      if (pending.length === 0) {
+        await log.success(`${server} is already named ${next} everywhere. Nothing to do.`)
+        return
+      }
+
+      const outcome = await applyPlan(plan, resolved, { log: message => console.log(`  ${message}`) })
+
+      if (!outcome.success) {
+        // Steps re-derive their own state, so a run that stopped part-way is
+        // fixed by running it again rather than by undoing anything.
+        const failed = outcome.steps.find(step => step.state === 'failed')
+        return await refuse(
+          `Stopped at: ${failed?.title ?? 'an unnamed step'}`,
+          failed?.error ?? 'The step gave no reason.',
+          `Re-run \`buddy cloud:rename ${server} --to ${next}\` to continue: completed steps skip themselves.`,
+        )
+      }
+
+      await log.success(`Renamed ${server} to ${next}`)
     })
 
   onUnknownSubcommand(buddy, "cloud")
