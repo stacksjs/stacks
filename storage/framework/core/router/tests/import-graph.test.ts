@@ -49,6 +49,10 @@ describe('router import graph', () => {
       .filter(entry => entry.kind !== 'dynamic-import' && entry.path.endsWith('router/src/rate-limit.ts')) ?? []
     expect(eagerRateLimiterImports).toEqual([])
 
+    const eagerCryptoImports = routerEntry?.[1].imports
+      .filter(entry => entry.kind !== 'dynamic-import' && entry.original === 'node:crypto') ?? []
+    expect(eagerCryptoImports).toEqual([])
+
     const rateLimitEntry = Object.entries(result.metafile?.inputs ?? {})
       .find(([source]) => source.endsWith('router/src/rate-limit.ts'))
     const eagerActionLimiterDependencies = rateLimitEntry?.[1].imports

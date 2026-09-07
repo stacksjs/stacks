@@ -228,6 +228,38 @@ describe('Health check', () => {
     const found = router.routes.some(r => r.path === '/api/health' && r.method === 'GET')
     expect(found).toBe(true)
   })
+
+  test('route introspection accepts only the configured token in production', async () => {
+    const previousAppEnv = process.env.APP_ENV
+    const previousNodeEnv = process.env.NODE_ENV
+    const previousToken = process.env.STACKS_EXPOSE_ROUTES
+    process.env.APP_ENV = 'production'
+    process.env.NODE_ENV = 'production'
+    process.env.STACKS_EXPOSE_ROUTES = 'benchmark-secret'
+
+    try {
+      const router = createStacksRouter()
+      router.health()
+
+      const accepted = await router.handleRequest(new Request('http://localhost/__routes', {
+        headers: { 'x-stacks-routes-token': 'benchmark-secret' },
+      }))
+      const rejected = await router.handleRequest(new Request('http://localhost/__routes', {
+        headers: { 'x-stacks-routes-token': 'benchmark-secrex' },
+      }))
+
+      expect(accepted.status).toBe(200)
+      expect(rejected.status).toBe(404)
+    }
+    finally {
+      if (previousAppEnv === undefined) delete process.env.APP_ENV
+      else process.env.APP_ENV = previousAppEnv
+      if (previousNodeEnv === undefined) delete process.env.NODE_ENV
+      else process.env.NODE_ENV = previousNodeEnv
+      if (previousToken === undefined) delete process.env.STACKS_EXPOSE_ROUTES
+      else process.env.STACKS_EXPOSE_ROUTES = previousToken
+    }
+  })
 })
 
 // ---------------------------------------------------------------------------

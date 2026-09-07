@@ -17,7 +17,6 @@ import './request-augmentation'
 import process from 'node:process'
 import { Buffer } from 'node:buffer'
 import { existsSync } from 'node:fs'
-import { timingSafeEqual } from 'node:crypto'
 import { log, report } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import type { UploadedFile } from '@stacksjs/storage/uploaded-file'
@@ -636,7 +635,8 @@ function isExposeRoutesAuthorized(req: Request): boolean {
     || ''
   if (typeof submitted !== 'string' || submitted.length === 0 || submitted.length !== flag.length) return false
   try {
-    return timingSafeEqual(Buffer.from(submitted), Buffer.from(flag))
+    const encoder = new TextEncoder()
+    return crypto.timingSafeEqual(encoder.encode(submitted), encoder.encode(flag))
   }
   catch {
     return false
