@@ -1,8 +1,10 @@
 import type { BusyProcess } from '../routing/host-load'
 import type { RuntimeRequirement } from '../routing/runtime-version'
+import type { ScenarioParityEvidence } from '../routing/runtime'
 import type { SourceState } from '../routing/source'
 import type { MemoryMeasurement } from './report'
 import { selectedPeerPackages } from '../routing/peer-versions'
+import { isValidParityEvidence } from '../routing/runtime'
 import { MAX_STABLE_RANGE, relativeRange } from '../routing/statistics'
 import { EQUAL_RATE_API_PROFILE } from './profile'
 
@@ -32,6 +34,13 @@ export interface MemoryPublicationProfile {
   settleSeconds: number
   runs: number
   busyHostProcesses: BusyProcess[]
+}
+
+export interface MemoryParityCheck {
+  targetId: string
+  run: number
+  before: ScenarioParityEvidence
+  after: ScenarioParityEvidence
 }
 
 export function memoryPublicationIssues(profile: MemoryPublicationProfile): string[] {
@@ -82,6 +91,7 @@ export function memoryMeasurementPublicationIssues(
   targets: MemoryPublicationTarget[],
   measurements: MemoryMeasurement[],
   expectedRuns: number,
+  parityChecks: MemoryParityCheck[],
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -103,6 +113,21 @@ export function memoryMeasurementPublicationIssues(
       && Array.from({ length: expectedRuns }, (_, index) => index + 1).every(run => runs.has(run))
     if (rows.length !== expectedRuns || !hasEveryRun)
       issues.push(`${target.id} completed ${runs.size} of ${expectedRuns} required run(s)`)
+    else {
+      const checks = parityChecks.filter(check => check.targetId === target.id)
+      const completeChecks = checks.length === expectedRuns
+        && new Set(checks.map(check => check.run)).size === expectedRuns
+        && checks.every(check => Number.isSafeInteger(check.run) && check.run >= 1 && check.run <= expectedRuns)
+      if (!completeChecks) {
+        issues.push(`${target.id} did not retain ${expectedRuns} required parity check(s)`)
+      }
+      else {
+        if (!checks.every(check => isValidParityEvidence(check.before, []) && isValidParityEvidence(check.after, [])))
+          issues.push(`${target.id} contains invalid parity evidence`)
+        if (checks.some(check => JSON.stringify(check.before) !== JSON.stringify(check.after)))
+          issues.push(`${target.id} changed parity evidence across load and idle`)
+      }
+    }
 
     if (rows.some(row => !Number.isFinite(row.settledRssBytes) || row.settledRssBytes <= 0
       || !Number.isFinite(row.peakLoadRssBytes) || row.peakLoadRssBytes <= 0

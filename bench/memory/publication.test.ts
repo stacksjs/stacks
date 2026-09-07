@@ -11,7 +11,7 @@ const publishable = {
   runtimeRequirement: { range: '1.4.1', matches: true },
   source: { revision: 'a'.repeat(40), dirty: false },
   targetIds: EQUAL_RATE_API_PROFILE.map(target => target.targetId),
-  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.5' },
+  peerVersions: { elysia: '1.4.30', express: '5.2.1', fastify: '5.12.3', hono: '4.13.7' },
   scenario: 'static-json',
   connections: 64,
   loadSeconds: 60,
@@ -20,6 +20,23 @@ const publishable = {
   settleSeconds: 10,
   runs: 3,
   busyHostProcesses: [],
+}
+
+const responseEvidence = {
+  status: 200,
+  mediaType: 'application/json',
+  bodyBytes: 17,
+  bodySha256: 'a'.repeat(64),
+}
+
+function parityChecks(targetId: string, runs = 3) {
+  const evidence = { primary: responseEvidence, probes: [] }
+  return Array.from({ length: runs }, (_, index) => ({
+    targetId,
+    run: index + 1,
+    before: evidence,
+    after: evidence,
+  }))
 }
 
 describe('memory benchmark publication profile', () => {
@@ -89,6 +106,7 @@ describe('memory benchmark publication profile', () => {
         { targetId: 'stacks-warm', run: 3, requestRate: 25_000, settledRssBytes: 101, peakLoadRssBytes: 122, rpsMean: 25_000, requests: 25_000, errors: 0 },
       ],
       3,
+      parityChecks('stacks-warm'),
     )).toEqual([])
   })
 
@@ -103,6 +121,7 @@ describe('memory benchmark publication profile', () => {
         { targetId: 'stacks-warm', run: 1, requestRate: 25_000, settledRssBytes: 120, peakLoadRssBytes: 0, rpsMean: 24_750, requests: 24_750, errors: 0 },
       ],
       2,
+      [],
     )).toEqual([
       'express was skipped',
       'stacks-warm completed 1 of 2 required run(s)',
@@ -118,6 +137,7 @@ describe('memory benchmark publication profile', () => {
       [{ id: 'stacks-wal-full', requestRate: 40_000 }, { id: 'bun-raw', requestRate: 25_000 }],
       [],
       3,
+      [],
     )).toEqual([
       'stacks-wal-full is not in the equal-rate API memory profile',
       'stacks-wal-full completed 0 of 3 required run(s)',
@@ -127,9 +147,37 @@ describe('memory benchmark publication profile', () => {
       [{ id: 'bun-raw', requestRate: 40_000 }],
       [],
       3,
+      [],
     )).toEqual([
       'bun-raw requested 40000 req/s, not the profile rate of 25000 req/s',
       'bun-raw completed 0 of 3 required run(s)',
     ])
+  })
+
+  it('rejects missing, malformed, and changing parity evidence', () => {
+    const measurements = [1, 2, 3].map(run => ({
+      targetId: 'stacks-warm', run, requestRate: 25_000,
+      settledRssBytes: 100, peakLoadRssBytes: 120, rpsMean: 25_000, requests: 25_000, errors: 0,
+    }))
+    const malformed = parityChecks('stacks-warm')
+    malformed[0] = {
+      ...malformed[0]!,
+      after: { primary: { ...responseEvidence, bodyBytes: -1 }, probes: [] },
+    }
+    expect(memoryMeasurementPublicationIssues(
+      [{ id: 'stacks-warm', requestRate: 25_000 }],
+      measurements,
+      3,
+      malformed,
+    )).toEqual([
+      'stacks-warm contains invalid parity evidence',
+      'stacks-warm changed parity evidence across load and idle',
+    ])
+    expect(memoryMeasurementPublicationIssues(
+      [{ id: 'stacks-warm', requestRate: 25_000 }],
+      measurements,
+      3,
+      parityChecks('stacks-warm', 2),
+    )).toContain('stacks-warm did not retain 3 required parity check(s)')
   })
 })

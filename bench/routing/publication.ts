@@ -4,6 +4,7 @@ import type { RuntimeRequirement } from './runtime-version'
 import type { ScenarioParityEvidence } from './runtime'
 import type { SourceState } from './source'
 import { selectedPeerPackages } from './peer-versions'
+import { isValidParityEvidence } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { MAX_STABLE_RANGE } from './statistics'
 import { DEFAULT_TARGETS } from './targets'
@@ -132,18 +133,8 @@ export function routingMeasurementPublicationIssues(
       }
 
       const expectedProbeIds = scenario.probes?.map(probe => probe.id) ?? []
-      const validEvidence = checks.every(check => [check.before, check.after].every((evidence) => {
-        const responses = [evidence.primary, ...evidence.probes.map(probe => probe.response)]
-        return evidence.primary.status === 200
-          && evidence.primary.mediaType === 'application/json'
-          && evidence.probes.length === expectedProbeIds.length
-          && evidence.probes.every((probe, index) => probe.id === expectedProbeIds[index])
-          && responses.every(response => Number.isSafeInteger(response.status)
-            && response.status >= 100 && response.status <= 599
-            && (response.mediaType === null || typeof response.mediaType === 'string')
-            && Number.isSafeInteger(response.bodyBytes) && response.bodyBytes >= 0
-            && /^[a-f\d]{64}$/.test(response.bodySha256))
-      }))
+      const validEvidence = checks.every(check => [check.before, check.after]
+        .every(evidence => isValidParityEvidence(evidence, expectedProbeIds)))
       if (!validEvidence)
         issues.push(`${key} contains invalid parity evidence`)
       if (checks.some(check => JSON.stringify(check.before) !== JSON.stringify(check.after)))

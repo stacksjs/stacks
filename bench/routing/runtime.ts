@@ -38,6 +38,19 @@ export interface ScenarioParityEvidence {
   probes: Array<{ id: string, response: ResponseParityEvidence }>
 }
 
+export function isValidParityEvidence(evidence: ScenarioParityEvidence, expectedProbeIds: readonly string[]): boolean {
+  const responses = [evidence.primary, ...evidence.probes.map(probe => probe.response)]
+  return evidence.primary.status === 200
+    && evidence.primary.mediaType === 'application/json'
+    && evidence.probes.length === expectedProbeIds.length
+    && evidence.probes.every((probe, index) => probe.id === expectedProbeIds[index])
+    && responses.every(response => Number.isSafeInteger(response.status)
+      && response.status >= 100 && response.status <= 599
+      && (response.mediaType === null || typeof response.mediaType === 'string')
+      && Number.isSafeInteger(response.bodyBytes) && response.bodyBytes >= 0
+      && /^[a-f\d]{64}$/.test(response.bodySha256))
+}
+
 function responseParityEvidence(status: number, mediaType: string | null, body: string): ResponseParityEvidence {
   return {
     status,

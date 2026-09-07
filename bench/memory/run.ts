@@ -403,7 +403,7 @@ async function main(): Promise<void> {
 
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
-    ...memoryMeasurementPublicationIssues(targetRows, measurements, options.runs),
+    ...memoryMeasurementPublicationIssues(targetRows, measurements, options.runs, parityChecks),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
   if (sourceStateChanged(meta.source, meta.sourceAtEnd))

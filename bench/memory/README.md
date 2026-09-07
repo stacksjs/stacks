@@ -102,7 +102,8 @@ publishable.
 
 Publication also requires every selected target to finish every requested run,
 attain at least 98% of its fixed request rate in each run, return zero errors,
-and keep the full settled-RSS range within 10% of the median.
+retain complete and stable parity evidence, and keep the full settled-RSS range
+within 10% of the median.
 The scenario, connection count, load and idle windows, sampling interval,
 settled window, target set, and equal fixed rate must match the API profile
 described above; altered smoke or diagnostic runs remain direction-only.
