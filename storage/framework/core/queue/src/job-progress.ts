@@ -15,6 +15,7 @@
 const PROGRESS_KEY = (jobId: string): string => `__job_progress__:${jobId}`
 const CANCEL_KEY = (jobId: string): string => `__job_cancel__:${jobId}`
 const TTL_SECONDS = 60 * 60
+let progressCacheModule: typeof import('@stacksjs/cache') | undefined
 
 interface JobProgress {
   /** Percent complete, 0-100. Float for sub-percent precision (e.g. 12.5%). */
@@ -56,7 +57,7 @@ export async function setJobProgress(
   percent: number,
   message?: string,
 ): Promise<void> {
-  const { cache } = await import('@stacksjs/cache')
+  const { cache } = progressCacheModule ??= await import('@stacksjs/cache')
   await cache.set(
     PROGRESS_KEY(jobId),
     { percent: clampProgressPercent(percent), message, updatedAt: Date.now() } as JobProgress,
@@ -69,7 +70,7 @@ export async function setJobProgress(
  * been recorded yet (job hasn't started, or the entry expired).
  */
 export async function getJobProgress(jobId: string): Promise<JobProgress | null> {
-  const { cache } = await import('@stacksjs/cache')
+  const { cache } = progressCacheModule ??= await import('@stacksjs/cache')
   return (await cache.get<JobProgress>(PROGRESS_KEY(jobId))) ?? null
 }
 
@@ -89,7 +90,7 @@ export async function getJobProgress(jobId: string): Promise<JobProgress | null>
  * ```
  */
 export async function cancelJob(jobId: string): Promise<void> {
-  const { cache } = await import('@stacksjs/cache')
+  const { cache } = progressCacheModule ??= await import('@stacksjs/cache')
   await cache.set(CANCEL_KEY(jobId), 1, TTL_SECONDS)
 }
 
@@ -99,7 +100,7 @@ export async function cancelJob(jobId: string): Promise<void> {
  * promptly without preempting in-flight work.
  */
 export async function isJobCancelled(jobId: string): Promise<boolean> {
-  const { cache } = await import('@stacksjs/cache')
+  const { cache } = progressCacheModule ??= await import('@stacksjs/cache')
   return Boolean(await cache.get(CANCEL_KEY(jobId)))
 }
 
@@ -111,7 +112,7 @@ export async function isJobCancelled(jobId: string): Promise<boolean> {
  * No-op if no entries exist for the id — safe to call always.
  */
 export async function clearJobState(jobId: string): Promise<void> {
-  const { cache } = await import('@stacksjs/cache')
+  const { cache } = progressCacheModule ??= await import('@stacksjs/cache')
   await Promise.all([
     cache.del(PROGRESS_KEY(jobId)),
     cache.del(CANCEL_KEY(jobId)),
