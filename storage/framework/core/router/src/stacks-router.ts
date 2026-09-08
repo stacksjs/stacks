@@ -3090,7 +3090,7 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
  * Promise-based for compatibility with callers that chain or await it.
  */
 type ActionRuleTest = (value: unknown) => boolean
-type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?]
+type ActionValidationEntry = [string, ActionValidations[string], ActionRuleTest[]?, ReturnType<typeof createValidationFieldLabel>?]
 const EMPTY_VALIDATION_ERRORS = Object.freeze({}) as Record<string, string[]>
 const VALID_ACTION_VALIDATION_RESULT = Object.freeze({
   valid: true,
@@ -3113,6 +3113,8 @@ function propertyOwner(value: object, property: PropertyKey): object | undefined
  * implementations) remain entirely on their own code path.
  */
 function compileActionValidationEntries(validations: ActionValidations): ActionValidationEntry[] {
+  // Reserve the label slot so a first rejection does not resize the entry.
+  // The label and its formatter are still created only when needed.
   return Object.entries(validations).map(([field, validation]) => {
     const rule = validation.rule as {
       getRules?: () => Array<{ test?: ActionRuleTest }>
@@ -3122,15 +3124,29 @@ function compileActionValidationEntries(validations: ActionValidations): ActionV
       typeof rule.getRules !== 'function'
       || propertyOwner(rule, 'validate') !== propertyOwner(rule, 'getRules')
     ) {
-      return [field, validation]
+      return [field, validation, undefined, undefined]
     }
 
     const rules = rule.getRules()
     if (!Array.isArray(rules) || rules.some(entry => typeof entry?.test !== 'function'))
-      return [field, validation]
+      return [field, validation, undefined, undefined]
 
-    return [field, validation, rules.map(entry => entry.test as ActionRuleTest)]
+    return [field, validation, rules.map(entry => entry.test as ActionRuleTest), undefined]
   })
+}
+
+function createValidationFieldLabel(field: string): { label: string, decorate: (message: string) => string } {
+  const label = field
+    .replace(/[-_]+/g, ' ')
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, c => c.toUpperCase())
+  const lowerField = field.toLowerCase()
+  return {
+    label,
+    decorate: (message: string) => (message.toLowerCase().startsWith(lowerField) || message.includes(label))
+      ? message
+      : `${label} ${message}`,
+  }
 }
 
 function validateActionInputSync(
@@ -3144,7 +3160,7 @@ function validateActionInputSync(
   let errors: Record<string, string[]> | undefined
   const validated: Record<string, unknown> = {}
   let valid = true
-  const entries = compiledEntries ?? Object.entries(validations)
+  const entries: ActionValidationEntry[] = compiledEntries ?? Object.entries(validations)
 
   // Pass `validations` so wire-stringified path/query values get coerced
   // to the type the rule expects before they're tested. Without this,
@@ -3190,13 +3206,9 @@ function validateActionInputSync(
       // Friendlier label: snake_case → "snake case", camelCase → "camel case",
       // capitalized so messages read naturally (`"Email is invalid"` rather
       // than the bare `"is invalid"` clients used to receive).
-      const label = field
-        .replace(/[-_]+/g, ' ')
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/^./, c => c.toUpperCase())
-      const decorate = (msg: string): string => (msg.toLowerCase().startsWith(field.toLowerCase()) || msg.includes(label))
-        ? msg
-        : `${label} ${msg}`
+      // Compiled entries belong to the route. Cache only their fixed label
+      // and formatter, lazily, so accepted fields need no extra metadata.
+      const { label, decorate } = entry[3] ??= createValidationFieldLabel(field)
 
       if (result.errors && result.errors.length > 0) {
         // Use custom message if provided, otherwise decorate the

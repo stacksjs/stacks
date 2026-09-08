@@ -71,3 +71,75 @@ describe('the router records what it validated', () => {
     expect(onlyEmail).toEqual({ email: 'a@b.com' })
   })
 })
+
+describe('action validation error labels', () => {
+  it('keeps labels and request-specific messages correct across repeated failures', async () => {
+    const router = createStacksRouter()
+    let handled = false
+    router.post('/validation-labels', {
+      skipCsrf: true,
+      validations: {
+        display_name: {
+          rule: { validate: value => ({ valid: false, errors: [{ message: `cannot use ${value}` }, { message: 'must be public' }] }) },
+        },
+        'contact-email': {
+          rule: { validate: () => ({ valid: false, errors: [{ message: 'Contact email is unavailable' }] }) },
+        },
+        apiKey: {
+          rule: { validate: () => ({ valid: false, errors: [{ message: 'APIKEY was revoked' }, { message: 'must be active' }] }) },
+        },
+      },
+      handle() { handled = true; return { ok: true } },
+    })
+
+    const send = (value: string) => router.handleRequest(new Request('http://localhost/validation-labels', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ display_name: value }),
+    }))
+    const first = await send('first')
+    const second = await send('second')
+
+    for (const [response, value] of [[first, 'first'], [second, 'second']] as const) {
+      expect(response.status).toBe(422)
+      expect(await response.json()).toEqual({
+        success: false,
+        message: 'Validation failed',
+        request_id: expect.any(String),
+        errors: {
+          display_name: [`Display name cannot use ${value}`, 'Display name must be public'],
+          'contact-email': ['Contact email is unavailable'],
+          apiKey: ['APIKEY was revoked', 'Api Key must be active'],
+        },
+      })
+    }
+    expect(handled).toBe(false)
+  })
+
+  it('preserves custom messages, missing details and thrown validators on warm requests', async () => {
+    const router = createStacksRouter()
+    router.post('/validation-custom-labels', {
+      skipCsrf: true,
+      validations: {
+        custom_text: { rule: { validate: () => ({ valid: false, errors: [{ message: 'ignored' }] }) }, message: 'Custom text override' },
+        custom_map: { rule: { validate: () => ({ valid: false, errors: [{ message: 'ignored' }] }) }, message: { custom_map: 'Custom map override' } },
+        fallback_map: { rule: { validate: () => ({ valid: false, errors: [{ message: 'must be accepted' }] }) }, message: {} },
+        missing_details: { rule: { validate: () => ({ valid: false }) } },
+        throwing_rule: { rule: { validate() { throw new Error('validator failed') } } },
+      },
+      handle: () => ({ ok: true }),
+    })
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const response = await router.handleRequest(new Request('http://localhost/validation-custom-labels', { method: 'POST' }))
+      expect(response.status).toBe(422)
+      expect((await response.json()).errors).toEqual({
+        custom_text: ['Custom text override'],
+        custom_map: ['Custom map override'],
+        fallback_map: ['Fallback map must be accepted'],
+        missing_details: ['Missing details is invalid'],
+        throwing_rule: ['throwing_rule validation failed'],
+      })
+    }
+  })
+})
