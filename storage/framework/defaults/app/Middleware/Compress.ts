@@ -37,7 +37,7 @@ import { Middleware } from '@stacksjs/router'
  *   - **Skip** for already-compressed content types (image/*, video/*,
  *     audio/*, application/zip, gzip, octet-stream).
  *   - **Skip** SSE / WebSocket upgrades (`text/event-stream`).
- *   - **Prefer brotli** when `br` is offered. Brotli typically
+ *   - **Prefer the highest accepted weight**, using brotli on ties. Brotli typically
  *     achieves ~20% better ratios than gzip on HTML/JSON/CSS/JS at
  *     comparable CPU cost — well worth the swap when the client
  *     supports it.
@@ -75,17 +75,58 @@ const SKIP_CONTENT_TYPE_PREFIXES = [
   'text/event-stream',
 ]
 
-/** Parse the q-weighted Accept-Encoding header into a preference set. */
+type Encoding = 'br' | 'gzip' | null
+
+let lastAcceptEncoding: string | null | undefined
+let lastEncoding: Encoding = null
+
+/** Repeated offers reuse one pure result, without retaining a growing cache. */
 function pickEncoding(acceptEncoding: string | null): 'br' | 'gzip' | null {
-  if (!acceptEncoding) return null
-  // We don't fully implement q-value parsing — it's overkill for the
-  // brotli-vs-gzip choice. We just check for token presence.
-  const lc = acceptEncoding.toLowerCase()
-  // Brotli first because it ratios better on text — typical 20% smaller
-  // than gzip on HTML/JSON. CPU cost per byte is similar at default
-  // quality on Node's libbrotli.
-  if (lc.includes('br')) return 'br'
-  if (lc.includes('gzip')) return 'gzip'
+  if (acceptEncoding === lastAcceptEncoding)
+    return lastEncoding
+  const encoding = parseEncoding(acceptEncoding)
+  lastAcceptEncoding = acceptEncoding
+  lastEncoding = encoding
+  return encoding
+}
+
+/** Exact HTTP coding tokens and qualities, with Brotli first on equal weights. */
+function parseEncoding(header: string | null): Encoding {
+  if (!header)
+    return null
+
+  let br: number | undefined
+  let gzip: number | undefined
+  let identity = 0
+  let wildcard = 0
+  for (const part of header.split(',')) {
+    const separator = part.indexOf(';')
+    const name = (separator < 0 ? part : part.slice(0, separator)).trim().toLowerCase()
+    if (name !== 'br' && name !== 'gzip' && name !== 'identity' && name !== '*')
+      continue
+
+    let quality = 1
+    if (separator >= 0) {
+      const weight = /^;[\t ]*q=(0(?:\.\d{0,3})?|1(?:\.0{0,3})?)[\t ]*$/i.exec(part.slice(separator))
+      quality = weight ? Number(weight[1]) : 0
+    }
+    if (name === 'br')
+      br = quality
+    else if (name === 'gzip')
+      gzip = quality
+    else if (name === 'identity')
+      identity = quality
+    else
+      wildcard = quality
+  }
+  br ??= wildcard
+  gzip ??= wildcard
+  if (identity > Math.max(br, gzip))
+    return null
+  if (br > 0 && br >= gzip)
+    return 'br'
+  if (gzip > 0)
+    return 'gzip'
   return null
 }
 
