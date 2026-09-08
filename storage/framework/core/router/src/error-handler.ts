@@ -11,6 +11,7 @@ import { log } from '@stacksjs/logging'
 import type { ErrorPageConfig } from '@stacksjs/error-handling'
 import { isApiRequest } from './api-shape'
 import { getCurrentRequest } from './request-context'
+import { applySecurityHeaders, createSecurityHeaders } from './security-headers'
 
 /**
  * Standard error response structure used across all JSON error responses.
@@ -59,7 +60,15 @@ function isDebugAllowed(): boolean {
   return false
 }
 
-function getJsonHeaders(): Record<string, string> {
+function getErrorHeaders(contentType: string, extra?: Record<string, string>): Headers {
+  const headers = extra ? new Headers(extra) : createSecurityHeaders()
+  if (extra)
+    applySecurityHeaders(headers)
+  headers.set('Content-Type', contentType)
+  return headers
+}
+
+function getJsonHeaders(extra?: Record<string, string>): Headers {
   // CORS headers used to be emitted here directly using `APP_URL` env,
   // independent of the configured CORS policy. That meant error
   // responses could advertise different allowed origins than success
@@ -67,10 +76,10 @@ function getJsonHeaders(): Record<string, string> {
   // The router's post-response CORS wrapper now owns all CORS header
   // injection, applying the configured policy uniformly to success
   // and error paths. See stacksjs/stacks#1859 H-3.
-  return { 'Content-Type': 'application/json' }
+  return getErrorHeaders('application/json', extra)
 }
 
-function getJsonHeadersFull(): Record<string, string> {
+function getJsonHeadersFull(): Headers {
   // Same rationale as `getJsonHeaders` — defer CORS to the post-response
   // wrapper rather than emit policy-inconsistent headers from here.
   return getJsonHeaders()
@@ -410,7 +419,7 @@ export async function createErrorResponse(
     const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
     return new Response(renderProductionErrorPage(status), {
       status,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: getErrorHeaders('text/html; charset=utf-8'),
     })
   }
 
@@ -498,10 +507,9 @@ export async function createErrorResponse(
     const html = await handler.render(error, status)
     return new Response(html, {
       status,
-      headers: {
-        'Content-Type': 'text/html; charset=utf-8',
+      headers: getErrorHeaders('text/html; charset=utf-8', {
         'Access-Control-Allow-Origin': corsOrigin,
-      },
+      }),
     })
   }
   catch (renderError) {
@@ -519,7 +527,7 @@ export async function createErrorResponse(
       </html>
     `, {
       status,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: getErrorHeaders('text/html; charset=utf-8'),
     })
   }
 }
@@ -547,9 +555,7 @@ export async function createMiddlewareErrorResponse(
     // Merge in any per-error headers (e.g. `Retry-After` from
     // rate-limit 429s — stacksjs/stacks#1870 R-8). JSON headers
     // win on collision so content-type stays correct.
-    const headers = error.headers
-      ? { ...error.headers, ...getJsonHeaders() }
-      : getJsonHeaders()
+    const headers = getJsonHeaders(error.headers)
     return new Response(
       buildErrorJson({
         error: error.name || 'ClientError',
@@ -625,6 +631,6 @@ export async function createNotFoundResponse(
   const { renderProductionErrorPage } = await import('@stacksjs/error-handling/error-page')
   return new Response(renderProductionErrorPage(404), {
     status: 404,
-    headers: { 'Content-Type': 'text/html; charset=utf-8' },
+    headers: getErrorHeaders('text/html; charset=utf-8'),
   })
 }
