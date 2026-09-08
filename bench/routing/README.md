@@ -104,6 +104,14 @@ directory. Install `oha` before producing anything anyone else will read.
 
 ## The machine matters
 
+The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
+can be dispatched manually to run the full default matrix on Ubuntu with pinned,
+checksummed oha, five seconds of warm-up, thirty measured seconds and three repeats.
+It uploads the report, metadata and raw samples as a `routing-diagnostic` artifact.
+The hosted runner is shared, so the workflow explicitly sets `BENCH_DEDICATED=0`.
+Use these artifacts for investigation, not published rankings. Source resolution,
+parity, busy-host and stability checks still apply.
+
 Anything published needs a documented machine and load tool: CPU model, core
 count, OS, Bun version, exact generator version, and load topology. The report
 records all of them automatically. A laptop throttles and a shared cloud VM has

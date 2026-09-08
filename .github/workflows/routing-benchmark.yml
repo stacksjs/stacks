@@ -1,0 +1,58 @@
+name: Routing diagnostic
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: routing-benchmark
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      # Hosted runners are shared machines, not publication hosts.
+      BENCH_DEDICATED: '0'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        with:
+          version: '0.11.55'
+          install: 'false'
+
+      - name: Install project and benchmark dependencies
+        run: |
+          pantry install
+          bun install --cwd bench/routing --frozen-lockfile
+
+      - name: Install oha 1.16.0
+        env:
+          OHA_SHA256: 620bb9e16fb53eabc9a3fc45f88bdb41fefa3fee5c05e75892011ce320391716
+        run: |
+          mkdir -p "$RUNNER_TEMP/oha/bin"
+          pantry/curl.se/v8.22.0/bin/curl -fsSL \
+            https://github.com/hatoo/oha/releases/download/v1.16.0/oha-linux-amd64 \
+            -o "$RUNNER_TEMP/oha/bin/oha"
+          echo "$OHA_SHA256  $RUNNER_TEMP/oha/bin/oha" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/oha/bin/oha"
+          echo "$RUNNER_TEMP/oha/bin" >> "$GITHUB_PATH"
+
+      - name: Measure the full routing matrix
+        run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 --output bench/routing/results/ci
+
+      - name: Upload report and raw samples
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: routing-diagnostic-${{ github.run_id }}
+          path: bench/routing/results/ci
+          if-no-files-found: error
+          retention-days: 30
