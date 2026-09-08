@@ -1790,7 +1790,7 @@ function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnab
 /**
  * Create a wrapped handler with middleware support
  */
-function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
+function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteRuntimeState>, routeKey: string, handler: StacksHandler, csrfEnabled = true): RouteHandlerFn {
   const routeState = routeStates.get(routeKey)
 
   /*
@@ -1908,13 +1908,18 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       && !routeState?.middleware?.length
       && !routeState?.rateLimit
     ) {
-      preparedBaseResult = runWithRequestArguments(
-        enhancedReq,
-        invokeInlineHandler,
-        enhancedReq,
-        synchronousInlineHandler,
-        undefined,
-      )
+      try {
+        preparedBaseResult = runWithRequestArguments(
+          enhancedReq,
+          invokeInlineHandler,
+          enhancedReq,
+          synchronousInlineHandler,
+          undefined,
+        )
+      }
+      catch (error) {
+        preparedBaseResult = createHandlerErrorResponse(error, enhancedReq, routeKey, router)
+      }
       hasPreparedBaseResult = true
       if (preparedBaseResult instanceof Response) {
         const finished = finishSynchronousResult(enhancedReq, preparedBaseResult, csrfHandledByOuter, (routeFlags & ROUTE_SEEDS_CSRF) !== 0)
@@ -2217,17 +2222,23 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       // in this continuation avoids creating a `.then(formatResult)` promise
       // in `wrappedBase` only to await it immediately.
       const formatsResolvedInlineResult = asynchronousInlineHandler !== undefined && !hasPreparedBaseResult
-      const baseResult = hasPreparedBaseResult
-        ? preparedBaseResult!
-        : asynchronousInlineHandler
-          ? asynchronousInlineHandler(enhancedReq)
-          : synchronousInlineHandler
-            ? invokeInlineHandler(enhancedReq, synchronousInlineHandler, undefined)
-            : wrappedBase!(enhancedReq)
-      const resolvedResult = baseResult instanceof Response ? baseResult : await baseResult
-      let response = formatsResolvedInlineResult
-        ? formatResult(resolvedResult, enhancedReq)
-        : resolvedResult as Response
+      let response: Response
+      try {
+        const baseResult = hasPreparedBaseResult
+          ? preparedBaseResult!
+          : asynchronousInlineHandler
+            ? asynchronousInlineHandler(enhancedReq)
+            : synchronousInlineHandler
+              ? invokeInlineHandler(enhancedReq, synchronousInlineHandler, undefined)
+              : wrappedBase!(enhancedReq)
+        const resolvedResult = baseResult instanceof Response ? baseResult : await baseResult
+        response = formatsResolvedInlineResult
+          ? formatResult(resolvedResult, enhancedReq)
+          : resolvedResult as Response
+      }
+      catch (error) {
+        response = await createHandlerErrorResponse(error, enhancedReq, handlerKey || routeKey, router)
+      }
 
       // CSRF cookie seeding — on safe-method responses (GET/HEAD/OPTIONS),
       // attach a fresh `X-CSRF-Token` cookie when none is present so SPAs
@@ -2449,7 +2460,8 @@ function createMiddlewareHandler(routeStates: Map<string, RouteRuntimeState>, ro
       )
     }
     catch (error) {
-      return Promise.reject(error)
+      // Recover into the common finalizer without invoking the handler again.
+      preparedBaseResult = createHandlerErrorResponse(error, req, routeKey, router)
     }
 
     if (preparedBaseResult instanceof Response) {
@@ -4363,6 +4375,26 @@ let generateRequestId = (): string => {
   return generateRequestId()
 }
 
+/** Share action error status validation and redaction with inline handlers. */
+function createHandlerErrorResponse(error: unknown, req: EnhancedRequest, handlerPath: string, router?: Router): Promise<Response> {
+  // Explicit bun-router error handlers own the response. Let the dispatcher
+  // invoke them, as it did before inline errors gained a framework default.
+  if ((router as unknown as NativeRouterInternals | undefined)?.errorHandler)
+    return Promise.reject(error)
+  // 4xx stays out of the error stream; unexpected errors retain their stack.
+  report(error, { label: `[Router] ${handlerPath}` })
+  const rawStatus = (error as { statusCode?: unknown, status?: unknown })?.statusCode
+    ?? (error as { status?: unknown })?.status
+  const status = typeof rawStatus === 'number' && Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus < 600
+    ? rawStatus
+    : undefined
+  return createErrorResponse(
+    error instanceof Error ? error : new Error(String(error)),
+    req,
+    { handlerPath, status },
+  )
+}
+
 function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = ''): RouteHandlerFn {
   // An action handed over directly is already resolved; there is nothing to
   // import and nothing to wait for.
@@ -4388,28 +4420,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false, handlerKey = '
         return await resolvedHandler(req)
       }
       catch (error) {
-        // Single chokepoint (stacksjs/stacks#1933): 5xx + non-HTTP
-        // throws log at error with full stack; thrown 4xx HttpErrors
-        // are kept out of the error stream.
-        report(error, { label: `[Router] ${handlerPath}` })
-        // Extract a thrown 4xx/5xx status (HttpError + duck-typed shapes)
-        // and forward it, mirroring createMiddlewareErrorResponse. Without
-        // this, createErrorResponse defaults every handler-thrown error to
-        // 500 (error-handler.ts: `options?.status || 500`), flattening a
-        // thrown HttpError(409) to a masked 500 on the wire. With it, #1946's
-        // production 4xx branch surfaces the clean message. 5xx and plain
-        // Errors stay undefined -> 500 default, still masked. See #1957.
-        const rawStatus = (error as { statusCode?: unknown, status?: unknown })?.statusCode
-          ?? (error as { status?: unknown })?.status
-        const status = typeof rawStatus === 'number' && Number.isInteger(rawStatus) && rawStatus >= 400 && rawStatus < 600
-          ? rawStatus
-          : undefined
-        // Return Ignition-style error page in development, JSON in production
-        return await createErrorResponse(
-          error instanceof Error ? error : new Error(String(error)),
-          req,
-          { handlerPath, status },
-        )
+        return await createHandlerErrorResponse(error, req, handlerPath)
       }
     }
   }
@@ -4625,37 +4636,37 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // HTTP methods with string handler support
     get(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('GET', path, handler)
-      bunRouter.get(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.get(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     post(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('POST', path, handler)
-      bunRouter.post(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.post(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     put(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PUT', path, handler)
-      bunRouter.put(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.put(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     patch(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('PATCH', path, handler)
-      bunRouter.patch(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.patch(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     delete(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('DELETE', path, handler)
-      bunRouter.delete(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.delete(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
     options(path: string, handler: StacksHandler) {
       const { fullPath, routeKey, shadowed } = registerRoute('OPTIONS', path, handler)
-      bunRouter.options(fullPath, createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled))
+      bunRouter.options(fullPath, createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled))
       return createChainableRoute(routeStates, routeKey, shadowed)
     },
 
@@ -4797,7 +4808,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const { fullPath, routeKey, shadowed } = registerRoute(m, path, handler)
         if (index === 0)
           firstShadowed = shadowed
-        const wrappedHandler = createMiddlewareHandler(routeStates, routeKey, handler, csrfEnabled)
+        const wrappedHandler = createMiddlewareHandler(bunRouter, routeStates, routeKey, handler, csrfEnabled)
         switch (m) {
           case 'GET':
             bunRouter.get(fullPath, wrappedHandler)
