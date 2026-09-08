@@ -19,7 +19,20 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-const coreDir = join(new URL('../../', import.meta.url).pathname, 'storage/framework/core')
+const root = new URL('../../', import.meta.url).pathname
+const coreDir = join(root, 'storage/framework/core')
+
+/**
+ * Where subpath imports are written.
+ *
+ * The core packages' own sources, AND `storage/framework/defaults` - which
+ * typecheck and the test suite both compile. Scanning only `core/*` is how
+ * `browser` fell off this list: nothing under `core` imports it by subpath, but
+ * `defaults/functions/dashboard-api.ts` imports
+ * `@stacksjs/browser/composables/csrf`, and dropping it turned every test run
+ * into `Cannot find module`.
+ */
+const SCAN_ROOTS = [coreDir, join(root, 'storage/framework/defaults')]
 
 /** Workspace package names, by the directory that holds them. */
 function workspacePackages(): Map<string, string> {
@@ -75,32 +88,35 @@ export function subpathBuildTargets(): string[] {
   const packages = workspacePackages()
   const needed = new Set<string>()
 
-  for (const dir of packages.values()) {
-    for (const file of sourceFiles(join(coreDir, dir, 'src'))) {
-      // Comment lines first. Half these packages document themselves with
-      // `* import { X } from '@stacksjs/email/drivers/log'` in a JSDoc block,
-      // and counting those puts four packages on the list that CI never needs
-      // to build.
-      const source = readFileSync(file, 'utf8')
-        .split('\n')
-        .filter((line) => {
-          const code = line.trimStart()
-          return !code.startsWith('*') && !code.startsWith('//') && !code.startsWith('/*')
-        })
-        .join('\n')
+  const files = [
+    ...[...packages.values()].flatMap(dir => sourceFiles(join(coreDir, dir, 'src'))),
+    ...sourceFiles(join(root, 'storage/framework/defaults')),
+  ]
 
-      const specifiers = [
-        ...source.matchAll(/from '(@stacksjs\/[a-z0-9-]+)\/[^']+'/g),
-        ...source.matchAll(/\bimport\('(@stacksjs\/[a-z0-9-]+)\/[^']+'\)/g),
-      ]
+  for (const file of files) {
+    // Comment lines first. Half these packages document themselves with
+    // `* import { X } from '@stacksjs/email/drivers/log'` in a JSDoc block,
+    // and counting those puts four packages on the list that CI never needs
+    // to build.
+    const source = readFileSync(file, 'utf8')
+      .split('\n')
+      .filter((line) => {
+        const code = line.trimStart()
+        return !code.startsWith('*') && !code.startsWith('//') && !code.startsWith('/*')
+      })
+      .join('\n')
 
-      for (const match of specifiers) {
-        // A package importing its OWN subpath needs a dist too - `storage`
-        // does exactly that with `@stacksjs/storage/image`.
-        const importedDir = packages.get(match[1]!)
-        if (importedDir)
-          needed.add(importedDir)
-      }
+    const specifiers = [
+      ...source.matchAll(/from '(@stacksjs\/[a-z0-9-]+)\/[^']+'/g),
+      ...source.matchAll(/\bimport\('(@stacksjs\/[a-z0-9-]+)\/[^']+'\)/g),
+    ]
+
+    for (const match of specifiers) {
+      // A package importing its OWN subpath needs a dist too - `storage`
+      // does exactly that with `@stacksjs/storage/image`.
+      const importedDir = packages.get(match[1]!)
+      if (importedDir)
+        needed.add(importedDir)
     }
   }
 

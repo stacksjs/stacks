@@ -76,8 +76,18 @@ describe('subpath imports', () => {
     const listed = new Set(subpathBuildTargets())
 
     const needed = new Set<string>()
-    for (const [name, dir] of packages) {
-      for (const file of sourceFiles(join(coreDir, dir, 'src'))) {
+    // The defaults tree as well as the core packages. Nothing under `core`
+    // imports `@stacksjs/browser` by subpath, but
+    // `defaults/functions/dashboard-api.ts` imports
+    // `@stacksjs/browser/composables/csrf` - so a scan of `core` alone said
+    // `browser` was unneeded, and dropping it turned every test run into
+    // `Cannot find module`.
+    const scanned = [
+      ...[...packages.values()].flatMap(dir => sourceFiles(join(coreDir, dir, 'src'))),
+      ...sourceFiles(join(root, 'storage/framework/defaults')),
+    ]
+    {
+      for (const file of scanned) {
         /*
          * Real import statements only. Half these packages document themselves
          * with `* import { X } from '@stacksjs/email/drivers/log'` in a JSDoc
