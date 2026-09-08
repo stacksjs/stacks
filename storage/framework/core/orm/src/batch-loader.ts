@@ -1,100 +1,111 @@
 /**
- * Per-request DataLoader-style batcher for `Model.findMany([id])`-style
- * lookups. The classic N+1 antidote isn't always reachable through
- * `.with(...)` (e.g. fetching siblings in an STX component, computing
- * something off the side of the request, jobs that fan out per-item
- * rather than per-row). This module provides a `batchLoad(model, id)`
- * helper that collects ids on the same tick, fires a single
- * `WHERE id IN (...)` query, and resolves every caller from the
- * shared result.
- *
- * The batch is scoped to the current request via the same
- * `cacheRequestQuery` mechanism — so two unrelated requests handling
- * the same id concurrently still get isolated queries. Outside of a
- * request scope, calls fall through to a single-id lookup with no
- * batching.
+ * Per-request batching for model lookups. Synchronous calls for distinct IDs
+ * share a query; repeated IDs reuse the pending or settled result. Both the
+ * queue and its cache belong to the request and model object that created them.
+ * Outside a request, each call performs an independent single-ID lookup.
  */
 
-import { cacheRequestQuery } from '@stacksjs/router'
+import { getCurrentRequest } from '@stacksjs/router'
+
+interface BatchModel<TKey, TValue> {
+  name?: string
+  findMany?: (ids: TKey[]) => Promise<TValue[]>
+  find?: (id: TKey) => Promise<TValue | undefined>
+}
 
 interface PendingBatch<TKey, TValue> {
   keys: TKey[]
   resolvers: Array<{ key: TKey, resolve: (v: TValue | undefined) => void, reject: (err: unknown) => void }>
-  scheduled: boolean
 }
 
-const batches = new WeakMap<object, PendingBatch<unknown, unknown>>()
+interface ModelBatches<TKey, TValue> {
+  cache: Map<TKey, Promise<TValue | undefined>>
+  pending?: PendingBatch<TKey, TValue>
+}
+
+// Models have different key and row types. Recover those types only after
+// looking up the same request and model identities that own the state.
+const requests = new WeakMap<object, WeakMap<object, unknown>>()
+
+function indexRows<TValue>(rows: TValue[]): Map<unknown, TValue> {
+  const byKey = new Map<unknown, TValue>()
+  for (const row of rows) {
+    // Model primary keys use `id`, matching the existing batchLoad contract.
+    const id = (row as Record<string, unknown> | null | undefined)?.id
+    if (id !== undefined) byKey.set(id, row)
+  }
+  return byKey
+}
+
+async function loadSingle<TKey, TValue>(model: BatchModel<TKey, TValue>, key: TKey): Promise<TValue | undefined> {
+  if (typeof model.find === 'function') return model.find(key)
+  const rows = await model.findMany?.([key])
+  return indexRows(rows ?? []).get(key)
+}
+
+async function drainBatch<TKey, TValue>(
+  model: BatchModel<TKey, TValue>,
+  state: ModelBatches<TKey, TValue>,
+  batch: PendingBatch<TKey, TValue>,
+): Promise<void> {
+  // A later lookup may start a new batch while this query is in flight.
+  state.pending = undefined
+  try {
+    const rows = typeof model.findMany === 'function'
+      ? await model.findMany(batch.keys)
+      : await Promise.all(batch.keys.map(key => model.find?.(key)))
+    const byKey = indexRows(rows ?? [])
+    for (const entry of batch.resolvers) entry.resolve(byKey.get(entry.key))
+  }
+  catch (error) {
+    for (const entry of batch.resolvers) entry.reject(error)
+  }
+}
 
 /**
- * Per-tick batched load against a Stacks model. The model object is the
- * batch identity — one queue per `model`. Ids posted in the same
- * microtask are merged into a single `findMany([...])` call.
+ * Batch model lookups within the current request. Model objects and keys retain
+ * their identities, including the distinction between numeric and string IDs.
  *
  * @example
  * ```ts
- * import { batchLoad } from '@stacksjs/orm'
- * import User from '~/app/Models/User'
- *
- * // Without batching: 100 SELECTs
- * for (const id of orderUserIds) await User.find(id)
- *
- * // With batching: 1 SELECT (`WHERE id IN (1, 2, … 100)`)
- * await Promise.all(orderUserIds.map(id => batchLoad(User, id)))
+ * const users = await Promise.all(orderUserIds.map(id => batchLoad(User, id)))
  * ```
  */
-// eslint-disable-next-line pickier/no-unused-vars
 export function batchLoad<TKey = number | string, TValue = Record<string, unknown>>(
-  model: {
-    name?: string
-    findMany?: (ids: TKey[]) => Promise<TValue[]>
-    find?: (id: TKey) => Promise<TValue | undefined>
-  },
+  model: BatchModel<TKey, TValue>,
   key: TKey,
 ): Promise<TValue | undefined> {
-  // No request scope — just fall through to a single-id call.
-  // (cacheRequestQuery's no-op fallback will run the fetcher once.)
-  return cacheRequestQuery(`batchLoad:${model.name ?? 'model'}:${String(key)}`, async () => {
-    return new Promise<TValue | undefined>((resolve, reject) => {
-      let batch = batches.get(model as object) as PendingBatch<TKey, TValue> | undefined
-      if (!batch) {
-        batch = { keys: [], resolvers: [], scheduled: false }
-        batches.set(model as object, batch as unknown as PendingBatch<unknown, unknown>)
-      }
-      batch.keys.push(key)
-      batch.resolvers.push({ key, resolve, reject })
+  const request = getCurrentRequest()
+  if (!request) return loadSingle(model, key)
 
-      if (batch.scheduled) return
-      batch.scheduled = true
+  let models = requests.get(request)
+  if (!models) {
+    models = new WeakMap()
+    requests.set(request, models)
+  }
+  let state = models.get(model) as ModelBatches<TKey, TValue> | undefined
+  if (!state) {
+    state = { cache: new Map() }
+    models.set(model, state)
+  }
+  const existing = state.cache.get(key)
+  if (existing) return existing.then()
 
-      // Drain on the next microtask. Promise.resolve() is the right cue:
-      // anything synchronous + sync-microtask completes before we fire,
-      // but we don't wait for I/O.
-      Promise.resolve().then(async () => {
-        const drained = batches.get(model as object) as PendingBatch<TKey, TValue> | undefined
-        if (!drained) return
-        batches.delete(model as object)
-        const uniqueKeys = Array.from(new Set(drained.keys))
-
-        try {
-          const rows = typeof model.findMany === 'function'
-            ? await model.findMany(uniqueKeys)
-            : await Promise.all(uniqueKeys.map(k => model.find?.(k)))
-          const byKey = new Map<unknown, unknown>()
-          for (const row of rows ?? []) {
-            // We assume the primary key is `id` — same convention as
-            // the rest of the framework's findMany. Custom-keyed models
-            // can resolve via `model.findMany` directly.
-            const idVal = (row as Record<string, unknown> | null | undefined)?.id
-            if (idVal !== undefined) byKey.set(idVal, row)
-          }
-          for (const r of drained.resolvers) {
-            r.resolve(byKey.get(r.key) as TValue | undefined)
-          }
-        }
-        catch (err) {
-          for (const r of drained.resolvers) r.reject(err)
-        }
-      })
-    })
+  let batch = state.pending
+  if (!batch) {
+    batch = { keys: [], resolvers: [] }
+    state.pending = batch
+    const pending = batch
+    const owner = state
+    queueMicrotask(() => { void drainBatch(model, owner, pending) })
+  }
+  const promise = new Promise<TValue | undefined>((resolve, reject) => {
+    batch.keys.push(key)
+    batch.resolvers.push({ key, resolve, reject })
   })
+  state.cache.set(key, promise)
+  const cache = state.cache
+  promise.catch(() => cache.delete(key))
+  // Keep rejection handling per caller while sharing only the query operation.
+  return promise.then()
 }
