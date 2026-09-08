@@ -4563,6 +4563,8 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
   }
 }
 
+let signedStorageModule: typeof import('@stacksjs/storage') | undefined
+
 /**
  * Create a Stacks-enhanced router
  */
@@ -4923,7 +4925,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           return new Response('Forbidden', { status: 403 })
         }
 
-        const { verifySignedStorageToken, Storage } = await import('@stacksjs/storage')
+        const { verifySignedStorageToken, Storage } = signedStorageModule ??= await import('@stacksjs/storage')
         const v = verifySignedStorageToken(token, rawPath)
         if (!v.valid) {
           // Differentiated body for dev visibility, generic for prod —
