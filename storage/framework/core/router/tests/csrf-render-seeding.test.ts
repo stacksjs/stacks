@@ -110,6 +110,38 @@ describe('seedCsrfCookieIfMissing', () => {
     expect(seeded.join('\n')).toContain(`${CSRF_COOKIE_NAME}=`)
   })
 
+  test.each([
+    { name: CSRF_COOKIE_NAME, fallback: false },
+    { name: 'csrf-token', fallback: false },
+    { name: CSRF_COOKIE_NAME, fallback: true },
+    { name: 'csrf-token', fallback: true },
+  ])('preserves upstream tokens among multiple cookies: %j', ({ name, fallback }) => {
+    const res = response()
+    const upstream = 'b'.repeat(64)
+    const cookies = ['session=opaque; Expires=Wed, 09 Jun 2027 10:18:14 GMT', `${name}=${upstream}; Path=/`, 'theme=dark']
+    for (const cookie of cookies) res.headers.append('Set-Cookie', cookie)
+    const readCookies = res.headers.getSetCookie.bind(res.headers)
+    if (fallback) Object.defineProperty(res.headers, 'getSetCookie', { value: undefined })
+
+    expect(seedCsrfCookieIfMissing(request(), res, 'a'.repeat(64))).toBe(res)
+    expect(readCookies()).toEqual(cookies)
+  })
+
+  test('the joined-header fallback still seeds alongside unrelated cookies', () => {
+    const res = response()
+    res.headers.append('Set-Cookie', 'session=opaque; Expires=Wed, 09 Jun 2027 10:18:14 GMT')
+    res.headers.append('Set-Cookie', 'theme=dark')
+    const readCookies = res.headers.getSetCookie.bind(res.headers)
+    Object.defineProperty(res.headers, 'getSetCookie', { value: undefined })
+
+    seedCsrfCookieIfMissing(request(), res, 'a'.repeat(64))
+    expect(readCookies()).toEqual([
+      'session=opaque; Expires=Wed, 09 Jun 2027 10:18:14 GMT',
+      'theme=dark',
+      `${CSRF_COOKIE_NAME}=${'a'.repeat(64)}; Path=/; SameSite=Lax; Max-Age=7200`,
+    ])
+  })
+
   test('a token is long enough not to be guessed', () => {
     expect(generateCsrfToken()).toMatch(/^[0-9a-f]{64}$/)
     expect(generateCsrfToken()).not.toBe(generateCsrfToken())

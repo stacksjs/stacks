@@ -63,6 +63,8 @@ const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport
 const CSRF_HEADER_NAME = 'x-csrf-token'
 const CSRF_COOKIE_PREFIX = `${CSRF_COOKIE_NAME}=`
 const LEGACY_CSRF_COOKIE_PREFIX = 'csrf-token='
+const JOINED_CSRF_COOKIE_PREFIX = `, ${CSRF_COOKIE_PREFIX}`
+const JOINED_LEGACY_CSRF_COOKIE_PREFIX = `, ${LEGACY_CSRF_COOKIE_PREFIX}`
 const CSRF_COOKIE_SUFFIX = '; Path=/; SameSite=Lax; Max-Age=7200'
 const CSRF_COOKIE_SECURE_SUFFIX = `${CSRF_COOKIE_SUFFIX}; Secure`
 const TOKEN_BYTES = 32
@@ -122,12 +124,15 @@ function responseAlreadySeeds(response: Response): boolean {
     ? headers.getSetCookie()
     : [headers.get('set-cookie') || '']
 
-  return cookies.some(cookie =>
-    cookie.startsWith(`${CSRF_COOKIE_NAME}=`)
-    || cookie.startsWith('csrf-token=')
-    || cookie.includes(`, ${CSRF_COOKIE_NAME}=`)
-    || cookie.includes(', csrf-token='),
-  )
+  for (const cookie of cookies) {
+    if (
+      cookie.startsWith(CSRF_COOKIE_PREFIX)
+      || cookie.startsWith(LEGACY_CSRF_COOKIE_PREFIX)
+      || cookie.includes(JOINED_CSRF_COOKIE_PREFIX)
+      || cookie.includes(JOINED_LEGACY_CSRF_COOKIE_PREFIX)
+    ) return true
+  }
+  return false
 }
 
 export function createCsrfCookie(req: Request, minted?: string): string {
