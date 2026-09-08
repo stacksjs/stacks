@@ -31,12 +31,25 @@ export interface LoadRequest {
   requestRate?: number
 }
 
+/**
+ * Latency percentiles, where a percentile the tool did not report is `null`.
+ *
+ * Never `0`. A tool that omits `p99` is saying it has no evidence, and zero is
+ * the best possible latency - so coercing one to the other turns missing
+ * evidence into a perfect result, which then passes every downstream check.
+ */
+export interface LatencyPercentiles {
+  p50: number | null
+  p90: number | null
+  p99: number | null
+}
+
 export interface LoadResult {
   /** Requests per second over the measured window. */
   rpsMean: number
   /** Median of the per-second request counts. `null` when the tool omits it. */
   rpsP50: number | null
-  latencyMs: { p50: number, p90: number, p99: number }
+  latencyMs: LatencyPercentiles
   requests: number
   errors: number
   /** Raw stdout from the tool, committed alongside the report. */
@@ -113,6 +126,17 @@ function methodArgs(req: LoadRequest, methodFlag: string, bodyFlag: string, head
   return args
 }
 
+/*
+ * Unit converters that preserve absence.
+ *
+ * Each returns `null` for anything that is not a finite number, so a tool that
+ * omits a percentile, reports it as null, or emits a string is recorded as
+ * "not measured" rather than as zero latency or as NaN.
+ */
+const millis = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value : null
+const seconds = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value * 1000 : null
+const micros = (value: unknown): number | null => typeof value === 'number' && Number.isFinite(value) ? value / 1000 : null
+
 /** `oha` — the preferred tool. Percentiles come straight out of its JSON. */
 const oha: Driver = {
   name: 'oha',
@@ -140,9 +164,9 @@ const oha: Driver = {
       rpsMean: json.summary.requestsPerSec,
       rpsP50: json.rps?.percentiles?.['p50'] ?? null,
       latencyMs: {
-        p50: (json.latencyPercentiles?.p50 ?? 0) * 1000,
-        p90: (json.latencyPercentiles?.p90 ?? 0) * 1000,
-        p99: (json.latencyPercentiles?.p99 ?? 0) * 1000,
+        p50: seconds(json.latencyPercentiles?.p50),
+        p90: seconds(json.latencyPercentiles?.p90),
+        p99: seconds(json.latencyPercentiles?.p99),
       },
       // Failed connections have no status code, but still belong in the
       // denominator. Otherwise a wholly failed run can report 0% errors.
@@ -173,9 +197,9 @@ const bombardier: Driver = {
       rpsMean: r.rps?.mean ?? 0,
       rpsP50: r.rps?.percentiles?.['50'] ?? null,
       latencyMs: {
-        p50: (pct['50'] ?? 0) / 1000,
-        p90: (pct['90'] ?? 0) / 1000,
-        p99: (pct['99'] ?? 0) / 1000,
+        p50: micros(pct['50']),
+        p90: micros(pct['90']),
+        p99: micros(pct['99']),
       },
       requests: ok + bad,
       errors: bad,
@@ -206,9 +230,9 @@ const autocannon: Driver = {
       rpsMean: json.requests?.average ?? 0,
       rpsP50: json.requests?.p50 ?? null,
       latencyMs: {
-        p50: json.latency?.p50 ?? 0,
-        p90: json.latency?.p90 ?? 0,
-        p99: json.latency?.p99 ?? 0,
+        p50: millis(json.latency?.p50),
+        p90: millis(json.latency?.p90),
+        p99: millis(json.latency?.p99),
       },
       // Autocannon's total counts HTTP responses only. Its errors already
       // include timeouts, so add that count once to include failed attempts.
@@ -255,7 +279,7 @@ const builtin: Driver = {
 
     const latencies: number[] = results.flatMap(r => r.samples as number[])
     latencies.sort((a, b) => a - b)
-    const pick = (q: number) => latencies.length === 0 ? 0 : latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * q))]!
+    const pick = (q: number) => latencies.length === 0 ? null : latencies[Math.min(latencies.length - 1, Math.floor(latencies.length * q))]!
 
     const seconds = Math.max(...results.map(r => (r.perSecond as number[]).length))
     const perSecond = Array.from({ length: seconds }, (_, i) =>

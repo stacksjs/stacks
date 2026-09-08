@@ -159,3 +159,116 @@ describe('routing benchmark publication profile', () => {
     )).toContain('stacks:static-json did not retain 3 required parity check(s)')
   })
 })
+
+/**
+ * Missing evidence must not become a valid aggregate (stacksjs/stacks#2470).
+ *
+ * The three holes were: the oha adapter substituting 0 for an absent latency
+ * percentile, the runner dropping null CPU readings before taking a median,
+ * and publication validating only the aggregate row. Each is covered here
+ * against a row that would otherwise look publishable.
+ */
+describe('per-repeat publication gating', () => {
+  const target = [{ id: 'stacks' }]
+  const scenario = [{ id: 'static-json' }]
+
+  /** A row that passes every aggregate check, so only the repeats can fail. */
+  const row = (over = {}) => ({
+    targetId: 'stacks',
+    scenarioId: 'static-json',
+    rpsMean: 100,
+    rpsP50: 99,
+    latencyMs: { p50: 1, p90: 2, p99: 3 },
+    errorRate: 0,
+    cpuPercent: 98,
+    spread: { min: 98, max: 102 },
+    rangeRatio: 0.04,
+    runs: 3,
+    ...over,
+  })
+
+  const repeat = (run: number, over = {}) => ({
+    targetId: 'stacks',
+    scenarioId: 'static-json',
+    run,
+    rpsMean: 100,
+    rpsP50: 99,
+    latencyMs: { p50: 1, p90: 2, p99: 3 },
+    requests: 1000,
+    errors: 0,
+    cpuPercent: 98,
+    rawBytes: 512,
+    ...over,
+  })
+
+  const check = (rows: unknown[], repeats: unknown[]) =>
+    routingMeasurementPublicationIssues(
+      target as never,
+      scenario as never,
+      rows as never,
+      3,
+      parityChecks('stacks', 'static-json'),
+      repeats as never,
+    )
+
+  it('accepts three complete valid repeats', () => {
+    expect(check([row()], [repeat(1), repeat(2), repeat(3)])).toEqual([])
+  })
+
+  it('rejects a repeat with no CPU reading, which the aggregate hides', () => {
+    // The aggregate row still carries a CPU number, because the old runner
+    // medianed the readings it had. The repeat is the only place the gap shows.
+    expect(check([row()], [repeat(1), repeat(2, { cpuPercent: null }), repeat(3)]))
+      .toContain('stacks:static-json run 2 has no valid server CPU reading')
+  })
+
+  it('rejects a repeat with an absent latency percentile', () => {
+    expect(check([row()], [repeat(1, { latencyMs: { p50: 1, p90: 2, p99: null } }), repeat(2), repeat(3)]))
+      .toContain('stacks:static-json run 1 is missing a latency percentile')
+  })
+
+  it('rejects a repeat that served no requests', () => {
+    // This is the one that used to contribute a free 0% error rate.
+    expect(check([row()], [repeat(1), repeat(2), repeat(3, { requests: 0 })]))
+      .toContain('stacks:static-json run 3 recorded no requests')
+  })
+
+  it('rejects a repeat whose raw output was not preserved', () => {
+    expect(check([row()], [repeat(1, { rawBytes: 0 }), repeat(2), repeat(3)]))
+      .toContain('stacks:static-json run 1 preserved no raw output')
+  })
+
+  it('rejects a malformed throughput measurement in one repeat', () => {
+    expect(check([row()], [repeat(1), repeat(2, { rpsMean: Number.NaN }), repeat(3)]))
+      .toContain('stacks:static-json run 2 has an invalid throughput measurement')
+  })
+
+  it('rejects more errors than requests', () => {
+    expect(check([row()], [repeat(1, { requests: 10, errors: 11 }), repeat(2), repeat(3)]))
+      .toContain('stacks:static-json run 1 has an invalid error count')
+  })
+
+  it('requires complete unique run identities', () => {
+    // Two repeats both claiming run 1 is two measurements of one scheduled
+    // run, or one measurement counted twice. Either way the set is not three.
+    expect(check([row()], [repeat(1), repeat(1), repeat(3)]))
+      .toContain('stacks:static-json did not retain 3 identified repeat(s)')
+    expect(check([row()], [repeat(1), repeat(2)]))
+      .toContain('stacks:static-json did not retain 3 identified repeat(s)')
+    expect(check([row()], [repeat(1), repeat(2), repeat(4)]))
+      .toContain('stacks:static-json did not retain 3 identified repeat(s)')
+  })
+
+  it('names a null aggregate rather than treating it as zero', () => {
+    expect(check([row({ errorRate: null })], [repeat(1), repeat(2), repeat(3)]))
+      .toContain('stacks:static-json recorded no requests, so it has no error rate')
+    expect(check([row({ latencyMs: { p50: 1, p90: null, p99: 3 } })], [repeat(1), repeat(2), repeat(3)]))
+      .toContain('stacks:static-json is missing a latency percentile')
+  })
+
+  it('stays backward compatible when no repeats are supplied', () => {
+    // The argument is optional so the existing call sites and tests keep
+    // working; supplying none means the aggregate checks alone apply.
+    expect(check([row()], [])).toEqual([])
+  })
+})
