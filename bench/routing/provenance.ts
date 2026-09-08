@@ -26,7 +26,7 @@ export type StacksBenchmarkModule = typeof STACKS_BENCHMARK_MODULES[number]
 export type StacksSourceModules = Record<StacksBenchmarkModule, string>
 
 /** Resolve package specifiers with the executable context used by target servers. */
-export function resolveBenchmarkServerModules(repoRoot: string, specifiers: readonly string[]): Record<string, string> {
+export function resolveBenchmarkServerModules(repoRoot: string, specifiers: readonly string[], importer?: string): Record<string, string> {
   if (specifiers.length === 0)
     return {}
 
@@ -34,6 +34,7 @@ export function resolveBenchmarkServerModules(repoRoot: string, specifiers: read
     process.execPath,
     `--config=${join(repoRoot, 'bench', 'routing', 'bunfig.toml')}`,
     join(repoRoot, 'bench', 'routing', 'fixtures', 'source-probe.ts'),
+    ...(importer ? ['--importer', importer] : []),
     ...specifiers,
   ], {
     cwd: repoRoot,
@@ -79,7 +80,9 @@ export function resolveStacksSourceModules(repoRoot: string): StacksSourceModule
 /** Identify published runtime packages that supply the measured Stacks path. */
 export function resolveStacksRuntimeDependencies(repoRoot: string): StacksRuntimeDependencies {
   const specifiers = STACKS_RUNTIME_PACKAGES.flatMap(packageName => [packageName, `${packageName}/package.json`])
-  const modules = resolveBenchmarkServerModules(repoRoot, specifiers)
+  // The runtime is a dependency of the framework router, not of the fixture.
+  // Package-scoped installs can give each importer a different version.
+  const modules = resolveBenchmarkServerModules(repoRoot, specifiers, '@stacksjs/router')
 
   return Object.fromEntries(STACKS_RUNTIME_PACKAGES.map((packageName) => {
     const entry = resolve(modules[packageName]!)

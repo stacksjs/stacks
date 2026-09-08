@@ -1,7 +1,8 @@
 import type { StacksSourceModules } from './provenance'
 import { describe, expect, it } from 'bun:test'
-import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { dirname, join, relative } from 'node:path'
 import { REPO_ROOT } from './runtime'
 import { resolveStacksRuntimeDependencies, resolveStacksSourceModules, STACKS_BENCHMARK_MODULES, STACKS_FIXTURE_MODULES, stacksSourceIssues } from './provenance'
 
@@ -31,6 +32,50 @@ describe('Stacks benchmark source provenance', () => {
     expect(dependencies['@stacksjs/bun-router'].version).toMatch(/^\d+\.\d+\.\d+/)
     expect(dependencies['@stacksjs/bun-router'].path).toEndWith('/@stacksjs/bun-router/dist/index.js')
   })
+
+  for (const rootCopy of [false, true]) {
+    it(`records the importing package's runtime with root copy=${rootCopy}`, () => {
+      const root = realpathSync(mkdtempSync(join(tmpdir(), 'stacks-provenance-')))
+      const write = (path: string, contents: string) => {
+        mkdirSync(dirname(path), { recursive: true })
+        writeFileSync(path, contents)
+      }
+      const runtime = (parent: string, version: string) => {
+        const directory = join(parent, 'node_modules/@stacksjs/bun-router')
+        write(join(directory, 'package.json'), JSON.stringify({
+          name: '@stacksjs/bun-router', version, type: 'module',
+          exports: { '.': './dist/index.js', './package.json': './package.json' },
+        }))
+        write(join(directory, 'dist/index.js'), `export const version = '${version}'; export const path = import.meta.filename`)
+      }
+      try {
+        write(join(root, 'bench/routing/bunfig.toml'), '# Isolated resolution fixture\n')
+        write(join(root, 'tsconfig.json'), JSON.stringify({ compilerOptions: {
+          baseUrl: '.', paths: { '@stacksjs/router': ['./storage/framework/core/router/src/index.ts'] },
+        } }))
+        const importer = join(root, 'storage/framework/core/router')
+        runtime(importer, '1.2.3')
+        if (rootCopy) runtime(root, '9.8.7')
+        write(join(importer, 'src/index.ts'), "export { version, path } from '@stacksjs/bun-router'")
+        const probe = join(root, 'bench/routing/fixtures/source-probe.ts')
+        mkdirSync(dirname(probe), { recursive: true })
+        copyFileSync(join(import.meta.dir, 'fixtures/source-probe.ts'), probe)
+        const observed = join(root, 'bench/routing/fixtures/observed-runtime.ts')
+        write(observed, "import { version, path } from '@stacksjs/router'; console.log(JSON.stringify({ version, path }))")
+        const actual = Bun.spawnSync([process.execPath, `--config=${join(root, 'bench/routing/bunfig.toml')}`, observed], { cwd: root })
+        expect(actual.exitCode).toBe(0)
+        const loaded = JSON.parse(actual.stdout.toString()) as { version: string, path: string }
+        expect(loaded.version).toBe('1.2.3')
+        expect(resolveStacksRuntimeDependencies(root)['@stacksjs/bun-router']).toEqual({
+          version: loaded.version,
+          path: relative(root, loaded.path),
+        })
+      }
+      finally {
+        rmSync(root, { recursive: true, force: true })
+      }
+    })
+  }
 
   it('keeps benchmark-only implementations out of the Stacks fixture', () => {
     const source = readFileSync(join(import.meta.dir, 'servers', 'stacks.ts'), 'utf8')
