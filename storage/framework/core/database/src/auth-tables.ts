@@ -93,6 +93,50 @@ export function usersStripeIdSql(): string {
 }
 
 /**
+ * The polymorphic owner columns on `oauth_access_tokens`.
+ *
+ * A token used to belong to a user and only a user: the table's owner column
+ * was `user_id NOT NULL`, so `Author` - which declares `useAuth` exactly as
+ * `User` does - could not hold one. Sanctum's shape is a `tokenable_type` /
+ * `tokenable_id` pair, and that is what every read and write now uses.
+ *
+ * `tokenable_type` holds the owner's TABLE name (`users`, `authors`), matching
+ * what the framework's other polymorphic traits already write
+ * (`taggable_type: tableName`) rather than introducing a second convention.
+ *
+ * Nullable here and backfilled by {@link oauthAccessTokenTokenableBackfillSql},
+ * because an ADD COLUMN cannot be NOT NULL on a table that already has rows.
+ * A fresh install gets them NOT NULL from the CREATE.
+ *
+ * Same pure-builder + try/catch-swallow pattern as the device columns above:
+ * no generated migration creates this table, so both schema paths have to be
+ * able to add to it idempotently.
+ */
+export function oauthAccessTokenTokenableColumnsSql(): string[] {
+  return [
+    `ALTER TABLE oauth_access_tokens ADD COLUMN tokenable_type VARCHAR(255)`,
+    `ALTER TABLE oauth_access_tokens ADD COLUMN tokenable_id INTEGER`,
+  ]
+}
+
+/**
+ * Give every pre-existing token an owner in the new columns.
+ *
+ * Every row that predates the pair belonged to a user by construction - there
+ * was no other option - so `user_id` is exactly the tokenable id, and the type
+ * is the users table. Guarded on `tokenable_id IS NULL` so it is safe to run on
+ * every boot, and so it never overwrites a row a newer write already owns.
+ *
+ * Runs before the reads switch over: a token whose owner columns were empty
+ * would otherwise stop authenticating the moment this ships.
+ */
+export function oauthAccessTokenTokenableBackfillSql(usersTable: string = 'users'): string[] {
+  return [
+    `UPDATE oauth_access_tokens SET tokenable_type = '${usersTable}', tokenable_id = user_id WHERE tokenable_id IS NULL`,
+  ]
+}
+
+/**
  * Defensive ALTERs guaranteeing the device columns on
  * `oauth_access_tokens` - `user_agent` and `ip_address`.
  *
@@ -208,7 +252,17 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS oauth_access_tokens (
         ${pkColumn},
-        user_id INTEGER NOT NULL,
+        -- The owner, polymorphically: users, authors, any table whose model
+        -- declares useAuth. Before this pair, the owner was user_id and a token
+        -- could belong to nothing else.
+        tokenable_type VARCHAR(255) NOT NULL,
+        tokenable_id INTEGER NOT NULL,
+        -- Legacy, and deliberately still here. An install that predates the
+        -- pair has this column NOT NULL, so an INSERT that omitted it would
+        -- fail there - and one INSERT that works on every install is worth more
+        -- than a column removed early. It is written as a copy of tokenable_id
+        -- and read by nothing; it can go once no install predates the pair.
+        user_id INTEGER,
         oauth_client_id INTEGER NOT NULL,
         token TEXT NOT NULL,
         name VARCHAR(255),
@@ -239,6 +293,30 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       }
       catch {
         if (options.verbose) log.debug(`[auth-tables] Skipped (already applied): ${alterSql}`)
+      }
+    }
+
+    // The polymorphic owner pair, then the backfill that gives every existing
+    // token an owner in it. Order matters and the backfill is not optional: the
+    // reads switched to these columns, so a row left with an empty
+    // `tokenable_id` stops authenticating.
+    for (const alterSql of oauthAccessTokenTokenableColumnsSql()) {
+      try {
+        await db.unsafe(alterSql).execute()
+      }
+      catch {
+        if (options.verbose) log.debug(`[auth-tables] Skipped (already applied): ${alterSql}`)
+      }
+    }
+
+    for (const backfillSql of oauthAccessTokenTokenableBackfillSql()) {
+      try {
+        await db.unsafe(backfillSql).execute()
+      }
+      catch (err) {
+        // A fresh install has no `user_id` column to read from, which is the
+        // one expected failure here. Anything else is worth seeing.
+        if (options.verbose) log.debug(`[auth-tables] Tokenable backfill skipped: ${(err as Error)?.message}`)
       }
     }
 

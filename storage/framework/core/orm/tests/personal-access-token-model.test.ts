@@ -31,8 +31,14 @@ describe('the PersonalAccessToken model', () => {
     expect(model).not.toContain("table: 'personal_access_tokens'")
   })
 
-  it('belongs to the user the auth layer keys tokens by', () => {
-    expect(model).toContain("belongsTo: ['User']")
+  /**
+   * The owner is a `tokenable_type` / `tokenable_id` pair, so a users-only
+   * foreign key would be a claim the column no longer makes - the FK preflight
+   * reported exactly that while `belongsTo: ['User']` was still there.
+   */
+  it('claims no users-only foreign key, because the owner is polymorphic', () => {
+    expect(model).not.toContain("belongsTo: ['User']")
+    expect(model).toContain("ownership: selfOwnership('tokenable_id')")
   })
 
   /**
@@ -49,27 +55,37 @@ describe('the PersonalAccessToken model', () => {
   })
 
   /**
-   * A generic `store` would insert a row whose plaintext nobody ever saw, since
-   * only `createToken` returns it.
+   * Minting and revoking both carry semantics a generic CRUD route does not.
+   * `createToken` returns the plaintext once, so a generated `store` writes a
+   * row nobody holds the token for; and revocation must take the paired refresh
+   * token with it (#2306), which a row delete does not.
+   *
+   * It also keeps the write surface honest: row scoping compares one field, and
+   * this table's owner is a pair - a `destroy` scoped to `tokenable_id` alone
+   * would let a user destroy an author's token whenever the ids matched.
    */
-  it('exposes no store route', () => {
-    const routes = /routes:\s*\[([^\]]*)\]/.exec(model)?.[1] ?? ''
-
-    expect(routes).toContain("'index'")
-    expect(routes).toContain("'destroy'")
-    expect(routes).not.toContain("'store'")
+  it('generates no CRUD routes', () => {
+    // The prose mentions it; a declaration would be `useApi:`.
+    expect(model).not.toContain('useApi:')
   })
 })
 
-describe('User', () => {
+describe('token owners', () => {
   const user = readFileSync(
     join(import.meta.dir, '..', '..', '..', 'defaults', 'app', 'Models', 'User.ts'),
     'utf8',
   )
 
-  it('relates to its personal access tokens', () => {
-    const hasMany = /hasMany:\s*\[([\s\S]*?)\]/.exec(user)?.[1] ?? ''
+  it('relates to its personal access tokens, polymorphically', () => {
+    expect(user).toContain("morphMany: { tokenable: 'PersonalAccessToken' }")
+  })
 
-    expect(hasMany).toContain("'PersonalAccessToken'")
+  it('include Author, which is the whole point of the pair', () => {
+    const author = readFileSync(
+      join(import.meta.dir, '..', '..', '..', 'defaults', 'app', 'Models', 'Content', 'Author.ts'),
+      'utf8',
+    )
+
+    expect(author).toContain("morphMany: { tokenable: 'PersonalAccessToken' }")
   })
 })

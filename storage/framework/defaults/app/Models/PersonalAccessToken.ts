@@ -1,4 +1,4 @@
-import { defineModel } from '@stacksjs/orm'
+import { defineModel, selfOwnership } from '@stacksjs/orm'
 import { schema } from '@stacksjs/validation'
 
 /**
@@ -28,18 +28,32 @@ export default defineModel({
 
   traits: {
     useTimestamps: true,
-    useApi: {
-      uri: 'personal-access-tokens',
-      // No `store`: a token is minted by `createToken`, which returns the
-      // plaintext exactly once. A generic create would write a row nobody holds
-      // the token for.
-      routes: ['index', 'show', 'destroy'],
-      middleware: ['auth'],
-    },
+    // Deliberately no `useApi`.
+    //
+    // Minting and revoking both have semantics a generic CRUD route does not
+    // carry. `createToken` returns the plaintext exactly once, so a generic
+    // `store` would write a row nobody holds the token for; and revocation has
+    // to take the paired refresh token with it (stacksjs/stacks#2306), which a
+    // row delete does not. `@stacksjs/auth` owns both operations.
+    //
+    // It also keeps the write surface honest: row scoping compares ONE field,
+    // and this table's owner is a `tokenable_type` / `tokenable_id` pair - so a
+    // generated `destroy` scoped to `tokenable_id` alone would let a user
+    // destroy an author's token whenever the two ids happened to match.
   },
 
-  belongsTo: ['User'],
+  /**
+   * Rows belong to whoever the pair names. Declared even with no generated
+   * routes, so adding `useApi` later cannot ship an unscoped write by omission
+   * (stacksjs/stacks#2375) - though see the note above about the one field this
+   * can express.
+   */
+  ownership: selfOwnership('tokenable_id'),
 
+  // No `belongsTo`: the owner is polymorphic. `tokenable_type` names the
+  // owner's table, so a users-only foreign key would be a claim the column no
+  // longer makes - and the FK preflight reported exactly that once the legacy
+  // `user_id` stopped being the owner.
   attributes: {
     name: {
       order: 1,

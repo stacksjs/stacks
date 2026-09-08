@@ -126,6 +126,16 @@ function generateSecureToken(bytes: number = 40): string {
  * can read the stamp inside its own transaction.
  */
 /**
+ * The table a token's owner lives in when nobody says otherwise.
+ *
+ * `oauth_access_tokens` is polymorphic - `tokenable_type` holds the owner's
+ * TABLE name, matching what the framework's other polymorphic traits write
+ * (`taggable_type: tableName`) - but every caller that predates the pair passes
+ * a user id and nothing else, so this is what they get.
+ */
+export const DEFAULT_TOKENABLE_TYPE = 'users'
+
+/**
  * The token tables, as these queries select them.
  *
  * `db.unsafe` answers `Record<string, unknown>`, so every field read off a
@@ -141,6 +151,13 @@ function generateSecureToken(bytes: number = 40): string {
  */
 interface AccessTokenRow {
   id: number
+  /** The owner's table, and its id there. See {@link DEFAULT_TOKENABLE_TYPE}. */
+  tokenable_type: string
+  tokenable_id: number
+  /**
+   * Legacy. Written as a copy of `tokenable_id` so an install predating the
+   * polymorphic pair still satisfies its `NOT NULL`; read by nothing.
+   */
   user_id: number
   name: string
   scopes: string | null
@@ -212,15 +229,16 @@ export function isIssuedBeforePasswordChange(createdAt: unknown, changedAt: Date
  * import { tokens } from '@stacksjs/auth'
  * const userTokens = await tokens(user.id)
  */
-export async function tokens(userId: number): Promise<AccessToken[]> {
+export async function tokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<AccessToken[]> {
   const rows = await db.unsafe(`
     SELECT t.*, c.provider as client_provider
     FROM oauth_access_tokens t
     LEFT JOIN oauth_clients c ON t.oauth_client_id = c.id
-    WHERE t.user_id = ${param(1)}
+    WHERE t.tokenable_id = ${param(1)}
+    AND t.tokenable_type = ${param(2)}
     AND t.revoked = ${boolFalse}
     ORDER BY t.created_at DESC
-  `, [userId])
+  `, [userId, tokenableType])
 
   return (rows as unknown as AccessTokenRow[]).map(row => ({
     id: row.id,
@@ -449,6 +467,13 @@ export async function createToken(
     userAgent?: string | null
     /** Where the request came from, for the same list. */
     ipAddress?: string | null
+    /**
+     * The owner's table, for a token that does not belong to a user.
+     *
+     * `oauth_access_tokens` is polymorphic; a caller that passes only an id
+     * gets `users`, which is what every caller predating the pair meant.
+     */
+    tokenableType?: string
   } = {}
 ): Promise<PersonalAccessTokenResult> {
   const {
@@ -457,6 +482,7 @@ export async function createToken(
     refreshExpiresInDays = 30,
     userAgent = null,
     ipAddress = null,
+    tokenableType = DEFAULT_TOKENABLE_TYPE,
   } = options
 
   // Get the personal access client
@@ -486,14 +512,14 @@ export async function createToken(
   // Insert access token
   if (isPostgres) {
     await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, false, $6, $7, $8, ${appNow()}, ${appNow()})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
+      INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+      VALUES ($1, $2, $2, $3, $4, $5, $6, false, $7, $8, $9, ${appNow()}, ${appNow()})
+    `, [tokenableType, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
   } else {
     await db.unsafe(`
-      INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?, ${appNow()}, ${appNow()})
-    `, [userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
+      INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, user_agent, ip_address, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ${appNow()}, ${appNow()})
+    `, [tokenableType, userId, userId, client.id, hashedToken, name, JSON.stringify(scopes), sqlDateTime(expiresAt), agent, address])
   }
 
   // Get the inserted token
@@ -610,7 +636,7 @@ export async function refreshToken(
     // server dialects. See stacksjs/stacks#1985.
     const forUpdate = (isPostgres || isMysql) ? ' FOR UPDATE' : ''
     const refreshRows = await trx.unsafe(`
-      SELECT r.*, t.user_id, t.oauth_client_id, t.name, t.scopes
+      SELECT r.*, t.tokenable_type, t.tokenable_id, t.oauth_client_id, t.name, t.scopes
       FROM oauth_refresh_tokens r
       JOIN oauth_access_tokens t ON r.access_token_id = t.id
       WHERE r.token = ${param(1)}
@@ -627,7 +653,7 @@ export async function refreshToken(
     // Reject a refresh token issued before the user last changed their
     // password. Same generic message as the not-found branch so the
     // endpoint never becomes a token-state oracle (#1957).
-    if (isIssuedBeforePasswordChange(refreshRow.created_at, await getPasswordChangedAt(refreshRow.user_id, trx))) {
+    if (isIssuedBeforePasswordChange(refreshRow.created_at, await getPasswordChangedAt(refreshRow.tokenable_id, trx))) {
       throw new HttpError(401, 'Invalid or expired refresh token')
     }
 
@@ -661,14 +687,14 @@ export async function refreshToken(
 
     if (isPostgres) {
       await trx.unsafe(`
-        INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-        VALUES ($1, $2, $3, $4, $5, false, $6, ${appNow()}, ${appNow()})
-      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
+        INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
+        VALUES ($1, $2, $2, $3, $4, $5, $6, false, $7, ${appNow()}, ${appNow()})
+      `, [refreshRow.tokenable_type, refreshRow.tokenable_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     } else {
       await trx.unsafe(`
-        INSERT INTO oauth_access_tokens (user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, 0, ?, ${appNow()}, ${appNow()})
-      `, [refreshRow.user_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
+        INSERT INTO oauth_access_tokens (tokenable_type, tokenable_id, user_id, oauth_client_id, token, name, scopes, revoked, expires_at, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?, ${appNow()}, ${appNow()})
+      `, [refreshRow.tokenable_type, refreshRow.tokenable_id, refreshRow.tokenable_id, refreshRow.oauth_client_id, hashedToken, refreshRow.name, refreshRow.scopes, sqlDateTime(expiresAt)])
     }
 
     // Get the new access token
@@ -779,14 +805,14 @@ export async function revokeRefreshToken(refreshTokenPlain: string): Promise<voi
  * import { revokeAllRefreshTokens } from '@stacksjs/auth'
  * await revokeAllRefreshTokens(user.id)
  */
-export async function revokeAllRefreshTokens(userId: number): Promise<void> {
+export async function revokeAllRefreshTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
   await db.unsafe(`
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
     WHERE access_token_id IN (
-      SELECT id FROM oauth_access_tokens WHERE user_id = ${param(1)}
+      SELECT id FROM oauth_access_tokens WHERE tokenable_id = ${param(1)} AND tokenable_type = ${param(2)}
     )
-  `, [userId])
+  `, [userId, tokenableType])
 }
 
 /**
@@ -900,15 +926,15 @@ export async function revokeTokenById(tokenId: number): Promise<void> {
  * import { revokeAllTokens } from '@stacksjs/auth'
  * await revokeAllTokens(user.id)
  */
-export async function revokeAllTokens(userId: number): Promise<void> {
+export async function revokeAllTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
   // Revoke all refresh tokens first
   await revokeAllRefreshTokens(userId)
 
   await db.unsafe(`
     UPDATE oauth_access_tokens
     SET revoked = ${boolTrue}, updated_at = ${appNow()}
-    WHERE user_id = ${param(1)}
-  `, [userId])
+    WHERE tokenable_id = ${param(1)} AND tokenable_type = ${param(2)}
+  `, [userId, tokenableType])
 }
 
 /**
@@ -918,7 +944,7 @@ export async function revokeAllTokens(userId: number): Promise<void> {
  * import { revokeOtherTokens } from '@stacksjs/auth'
  * await revokeOtherTokens(user.id)
  */
-export async function revokeOtherTokens(userId: number): Promise<void> {
+export async function revokeOtherTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
   const current = await currentAccessToken()
   if (!current) {
     return revokeAllTokens(userId)
@@ -930,28 +956,28 @@ export async function revokeOtherTokens(userId: number): Promise<void> {
       UPDATE oauth_refresh_tokens
       SET revoked = true
       WHERE access_token_id IN (
-        SELECT id FROM oauth_access_tokens WHERE user_id = $1 AND id != $2
+        SELECT id FROM oauth_access_tokens WHERE tokenable_id = $1 AND tokenable_type = $3 AND id != $2
       )
-    `, [userId, current.id])
+    `, [userId, current.id, tokenableType])
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
       SET revoked = true, updated_at = ${appNow()}
-      WHERE user_id = $1 AND id != $2
+      WHERE tokenable_id = $1 AND tokenable_type = $3 AND id != $2
     `, [userId, current.id])
   } else {
     await db.unsafe(`
       UPDATE oauth_refresh_tokens
       SET revoked = 1
       WHERE access_token_id IN (
-        SELECT id FROM oauth_access_tokens WHERE user_id = ? AND id != ?
+        SELECT id FROM oauth_access_tokens WHERE tokenable_id = ? AND tokenable_type = ? AND id != ?
       )
-    `, [userId, current.id])
+    `, [userId, tokenableType, current.id])
 
     await db.unsafe(`
       UPDATE oauth_access_tokens
       SET revoked = 1, updated_at = ${appNow()}
-      WHERE user_id = ? AND id != ?
+      WHERE tokenable_id = ? AND tokenable_type = ? AND id != ?
     `, [userId, current.id])
   }
 }

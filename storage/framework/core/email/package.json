@@ -65,13 +65,13 @@
     "@stacksjs/database": "workspace:*",
     "@stacksjs/events": "workspace:*",
     "@stacksjs/logging": "workspace:*",
+    "@stacksjs/mail": "^0.3.6",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/stx": "^0.2.274",
     "@stacksjs/ts-cloud": "^0.12.15",
-    "@stacksjs/utils": "workspace:*",
-    "postal-mime": "^2.7.6"
+    "@stacksjs/utils": "workspace:*"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",

@@ -61,7 +61,7 @@ function authStateOrNull(): RequestAuthState | null {
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
-import { createToken as createRawToken, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
+import { createToken as createRawToken, DEFAULT_TOKENABLE_TYPE, getPasswordChangedAt, isIssuedBeforePasswordChange, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -713,7 +713,7 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
-    if (!accessToken?.user_id)
+    if (!accessToken?.tokenable_id)
       return undefined
 
     const user = await User.find(accessToken.user_id as number)
@@ -840,7 +840,8 @@ export class Auth {
       return []
 
     const tokens = await db.selectFrom('oauth_access_tokens')
-      .where('user_id', '=', uid)
+      .where('tokenable_id', '=', uid)
+      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .where('revoked', '=', false)
       .selectAll()
       .execute()
@@ -919,7 +920,8 @@ export class Auth {
     // Same reasoning as `revokeToken`: "sign out everywhere" that leaves the
     // paired refresh tokens alive is not signing out everywhere (#2306).
     const accessTokens = await db.selectFrom('oauth_access_tokens')
-      .where('user_id', '=', uid)
+      .where('tokenable_id', '=', uid)
+      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .select(['id'])
       .execute()
 
@@ -928,7 +930,8 @@ export class Auth {
 
     await db.updateTable('oauth_access_tokens')
       .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('user_id', '=', uid)
+      .where('tokenable_id', '=', uid)
+      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .execute()
   }
 
@@ -946,7 +949,8 @@ export class Auth {
 
     await db.updateTable('oauth_access_tokens')
       .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('user_id', '=', uid)
+      .where('tokenable_id', '=', uid)
+      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
       .where('id', '!=', currentToken.id)
       .execute()
   }

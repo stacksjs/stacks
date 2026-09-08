@@ -1,5 +1,5 @@
-import type { Address, Mailbox } from 'postal-mime'
-import PostalMime from 'postal-mime'
+import type { Address, Mailbox } from '@stacksjs/mail/mime'
+import { MimeParser } from '@stacksjs/mail/mime'
 import { inboundMailboxRecipient } from './inbox-mailbox'
 import { inboxAttachmentContentType } from './sdk/inbox-attachments'
 
@@ -75,7 +75,7 @@ export async function parseInboundEmail(rawEmail: string | Uint8Array): Promise<
   if (byteLength > MAX_RAW_EMAIL_BYTES)
     throw new RangeError(`Raw email exceeds the ${MAX_RAW_EMAIL_BYTES} byte parsing limit.`)
 
-  const parsed = await PostalMime.parse(rawEmail, {
+  const parsed = await MimeParser.parse(rawEmail, {
     attachmentEncoding: 'arraybuffer',
     maxHeadersSize: 512 * 1024,
     maxNestingDepth: 64,

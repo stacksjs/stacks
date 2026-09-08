@@ -12696,10 +12696,101 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "oauth_access_tokens",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "token",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "scopes",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "revoked",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": false
+          },
+          {
+            "name": "expires_at",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "user_agent",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "ip_address",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 45
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": []
       }
     ]
   },
-  "hash": "42a2e84f74ea0b19473fd2f3b6d117caa482bfcd4a7fd557a2a69b2ee3d334f0",
+  "hash": "928907d166c1cb0c5d4cb9fb12480fce6cef5e20323c01449f9bbc9d1d8d4b1b",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-05T01:48:15.006Z"
+  "updatedAt": "2026-09-08T14:23:48.283Z"
 }

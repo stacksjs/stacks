@@ -45,6 +45,15 @@ export default defineModel({
     observe: true,
   },
 
+  /**
+   * Sanctum-shaped API tokens, the same as any other model declaring `useAuth`.
+   *
+   * This is what the polymorphic owner columns are for: before them a token's
+   * owner was `user_id` and an author could not hold one, however plainly the
+   * model declared itself authenticatable.
+   */
+  morphMany: { tokenable: 'PersonalAccessToken' },
+
   hasMany: ['Post'],
   belongsTo: ['User'],
 
