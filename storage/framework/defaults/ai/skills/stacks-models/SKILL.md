@@ -98,7 +98,7 @@ generated model types stay precise.
 | `useUuid` | UUID column alongside the primary key |
 | `useTimestamps` (alias `timestampable`) | `created_at` / `updated_at`. On by default |
 | `useSoftDeletes` (alias `softDeletable`) | `deleted_at` plus soft-delete query scopes |
-| `useAuth` (alias `authenticatable`) | Auth columns; `{ usePasskey: true }` adds passkeys |
+| `useAuth` (alias `authenticatable`) | Auth columns; `{ usePasskey: true }` adds passkeys. Also confers `morphMany: { tokenable: 'PersonalAccessToken' }`, so any authenticatable model can hold API tokens |
 | `useApi` | Generates REST actions and routes: `{ uri, routes, middleware? }` |
 | `useSearch` (alias `searchable`) | Search-engine indexing: `{ displayable, searchable, sortable, filterable }` |
 | `useSocials` | OAuth identities, e.g. `['github']` |
