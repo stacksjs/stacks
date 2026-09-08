@@ -108,7 +108,38 @@ await ensureDiscoveredPackages()
 // Safe to call unconditionally. It is idempotent, it collects failures and
 // warns rather than throwing, and it puts a per-package timeout on every import
 // so one slow module cannot hold up a boot.
-const { injectGlobalAutoImports } = await import('@stacksjs/server')
+const { autoImportsAreStale, generateAutoImportFiles, injectGlobalAutoImports } = await import('@stacksjs/server')
+
+// Rebuild the barrels when the installed package set moved since they were
+// written (stacksjs/stacks#2445).
+//
+// `storage/framework/auto-imports/*.ts` is COMMITTED and nothing regenerates
+// it on the box, so a package added since the last `buddy generate` reached
+// production with its routes and migrations working and its models and jobs
+// missing from `globalThis` - silent until the first request touching one.
+//
+// `autoImportsAreStale()` compares the discovery manifest's mtime against the
+// barrel's. `deploy` is not a preloader fast command, so the manifest is
+// rewritten before the tarball is packed and tar preserves mtimes; on the box
+// the comparison is therefore true exactly when the package set moved. It also
+// covers restarts, rollbacks and a `bun add` performed on the server, none of
+// which a build-time step would catch.
+//
+// Declarations are deliberately not rewritten: `storage/framework/types declarations`
+// describes the tree for editors and `tsc`, nothing at runtime reads it, and a
+// release should not diverge from the commit it was built from.
+try {
+  if (autoImportsAreStale()) {
+    log.info('[Stacks API] Installed packages moved since the auto-import barrel was written; rebuilding it.')
+    await generateAutoImportFiles({ declarations: false })
+  }
+}
+catch (error) {
+  // Warn, never refuse to boot. A server that starts without one package's
+  // globals is better than one that does not start at all.
+  log.warn(`[Stacks API] Could not refresh the auto-import barrel: ${error instanceof Error ? error.message : String(error)}`)
+}
+
 await injectGlobalAutoImports()
 
 // Import routes

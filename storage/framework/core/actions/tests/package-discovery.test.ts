@@ -331,6 +331,42 @@ describe('discovery at boot', () => {
     expect(fastCommands).toContain(`'generate'`)
   })
 
+  test('both production entries rebuild a stale barrel before injecting', () => {
+    // The barrels are COMMITTED and nothing regenerates them on the box, so a
+    // package added since the last `buddy generate` reached production with
+    // its routes working and its models and jobs missing from globalThis
+    // (stacksjs/stacks#2445).
+    for (const [label, rel] of [
+      ['api', 'actions/src/serve/api.ts'],
+      ['views', 'buddy/src/production-server.ts'],
+    ]) {
+      const text = source(rel)
+
+      expect(text).toContain('autoImportsAreStale()')
+      expect(text).toContain('generateAutoImportFiles({ declarations: false })')
+
+      // Rebuild before injecting, or the process injects the barrel it just
+      // decided was out of date.
+      expect(text.indexOf('autoImportsAreStale()'), label)
+        .toBeLessThan(text.indexOf('await injectGlobalAutoImports()'))
+
+      // And after discovery, since the manifest is the staleness signal.
+      expect(text.indexOf('ensureDiscoveredPackages()'), label)
+        .toBeLessThan(text.indexOf('autoImportsAreStale()'))
+    }
+  })
+
+  test('the box never rewrites the TypeScript declarations', () => {
+    // `storage/framework/types/*.d.ts` describes the tree for editors and
+    // `tsc`; nothing at runtime reads it. Rewriting it on a server makes the
+    // release differ from the commit it was built from, for no benefit.
+    for (const rel of ['actions/src/serve/api.ts', 'buddy/src/production-server.ts']) {
+      const text = source(rel)
+      expect(text).toContain('declarations: false')
+      expect(text).not.toContain('generateAutoImportFiles()')
+    }
+  })
+
   test('a failure warns instead of aborting the boot', async () => {
     // An application's own routes do not depend on discovery succeeding, and a
     // server that refuses to start because one dependency shipped an unreadable

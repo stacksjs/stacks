@@ -1,5 +1,5 @@
 import type { AutoImportsOptions } from 'bun-plugin-auto-imports'
-import { existsSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, renameSync, statSync, unlinkSync } from 'node:fs'
 import { dirname, relative, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { plugin } from 'bun'
@@ -180,6 +180,37 @@ function packageModelDirs(): string[] {
  * read the manifest still has the application's own jobs, and refusing to
  * build the barrel would take those away too.
  */
+/**
+ * Write a generated file so a reader never sees half of it.
+ *
+ * The barrels are read by `injectGlobalAutoImports()` at boot, and since
+ * stacksjs/stacks#2440 the production entries discover packages at boot too -
+ * so a regeneration can now overlap with a process starting up. A torn barrel
+ * is the worst failure this system has: nothing it exports is available, and
+ * the symptom is a template rendering empty rather than an error naming the
+ * file.
+ *
+ * `rename` within a directory is atomic, so a reader gets the old file or the
+ * new one. Mirrors what `discoverPackages()` already does for the manifest
+ * next door, for the same reason.
+ */
+async function writeGeneratedFile(outputPath: string, contents: string): Promise<void> {
+  const temp = `${outputPath}.${process.pid}.tmp`
+  try {
+    await Bun.write(temp, contents)
+    renameSync(temp, outputPath)
+  }
+  catch (error) {
+    try {
+      unlinkSync(temp)
+    }
+    catch {
+      // Already gone, or never created.
+    }
+    throw error
+  }
+}
+
 function packageJobDirs(): string[] {
   try {
     // eslint-disable-next-line ts/no-require-imports
@@ -336,7 +367,7 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
     }
   }
 
-  await Bun.write(outputPath, lines.join('\n') + '\n')
+  await writeGeneratedFile(outputPath, `${lines.join('\n')}\n`)
 }
 
 /**
@@ -445,7 +476,7 @@ async function generatePathIndex(
     '',
   ]
 
-  await Bun.write(outputPath, lines.join('\n'))
+  await writeGeneratedFile(outputPath, lines.join('\n'))
 }
 
 /**
@@ -557,7 +588,22 @@ export function autoImportsAreStale(): boolean {
  * This creates index files that can be imported to get all auto-imports,
  * including defineModel()-based model definitions and resource functions.
  */
-export async function generateAutoImportFiles(): Promise<void> {
+export interface GenerateAutoImportOptions {
+  /**
+   * Also rewrite the TypeScript declarations. Default true.
+   *
+   * A deployed server regenerates the barrels at boot when an installed
+   * package moved (stacksjs/stacks#2445), and it must not touch
+   * `storage/framework/types declarations` while doing it. Those describe the tree
+   * for editors and `tsc`, nothing at runtime reads them, and rewriting them
+   * on the box makes the release differ from the commit it was built from for
+   * no benefit. `invalidateTypeScriptBuildInfo()` is skipped with them, since
+   * there is no TypeScript build on a server.
+   */
+  declarations?: boolean
+}
+
+export async function generateAutoImportFiles(options: GenerateAutoImportOptions = {}): Promise<void> {
   const userFunctionsPath = path.resourcesPath('functions')
   // Framework-default functions (e.g. defaults/functions/commerce/coupons.ts →
   // useCoupons) are also auto-importable so dashboard pages can call them
@@ -675,7 +721,7 @@ export * from './models'
 export * from './jobs'
 export * from './controllers'
 `
-  await Bun.write(`${outputDir}/index.ts`, combinedContent)
+  await writeGeneratedFile(`${outputDir}/index.ts`, combinedContent)
 
   // Generate globals injection script
   const globalsPath = `${outputDir}/globals.ts`
@@ -691,19 +737,21 @@ export * from './controllers'
    * - which is exactly how it came to describe a different set than the one
    * that gets injected.
    */
-  await generateServerAutoImportTypes()
+  if (options.declarations !== false) {
+    await generateServerAutoImportTypes()
 
-  // The browser declaration is pruned rather than written: which names are
-  // ambient in a template is the stx plugin's decision, and it does not export
-  // that list. What can be established here is that a declared name resolves.
-  const pruned = await pruneBrowserAutoImportTypes()
-  if (pruned.length > 0)
-    log.debug(`[auto-imports] dropped ${pruned.length} browser globals that resolve to nothing`)
+    // The browser declaration is pruned rather than written: which names are
+    // ambient in a template is the stx plugin's decision, and it does not export
+    // that list. What can be established here is that a declared name resolves.
+    const pruned = await pruneBrowserAutoImportTypes()
+    if (pruned.length > 0)
+      log.debug(`[auto-imports] dropped ${pruned.length} browser globals that resolve to nothing`)
 
-  // Everything above rewrote inputs that other TypeScript projects compile
-  // against, so any incremental state describing them is now a description of
-  // files that no longer exist.
-  await invalidateTypeScriptBuildInfo()
+    // Everything above rewrote inputs that other TypeScript projects compile
+    // against, so any incremental state describing them is now a description of
+    // files that no longer exist.
+    await invalidateTypeScriptBuildInfo()
+  }
 
   log.debug('Auto-import files generated successfully')
 }
@@ -936,7 +984,7 @@ export async function generateServerAutoImportTypes(): Promise<void> {
   }
 
   lines.push('}', '')
-  await Bun.write(outputPath, lines.join('\n'))
+  await writeGeneratedFile(outputPath, lines.join('\n'))
 
   /*
    * The eslint globals manifest, from the same filtered list.
