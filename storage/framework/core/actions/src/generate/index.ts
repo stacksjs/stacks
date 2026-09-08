@@ -62,6 +62,33 @@ export async function invoke(options?: GeneratorOptions): Promise<void> {
 async function generateEverything(options?: GeneratorOptions): Promise<void> {
   log.info('Generating types, entry points, component meta and the OpenAPI spec...')
 
+  /*
+   * Discover installed packages FIRST, because this command is the one place
+   * that could not see them.
+   *
+   * The auto-import barrels include the models and jobs a discovered package
+   * ships, read from the discovery manifest. Everywhere else that manifest is
+   * already current by the time generation runs: `buddy dev` discovers
+   * explicitly before it regenerates, and any command that goes through the
+   * preloader gets `discoverPackages()` on the way in.
+   *
+   * `generate` is a `fastCommand` (defaults/resources/plugins/preloader.ts),
+   * so it skips the preloader and got neither. That made it the only command
+   * whose regeneration was package-blind - and it is the command that
+   * `check-generated-barrels.ts` tells you to run when a barrel is stale, so
+   * the documented remedy could not fix a barrel that was stale for this
+   * reason. It could produce one: regenerating here dropped a package's jobs
+   * from `jobs.ts`, which CI then regenerated WITH, having discovered them.
+   */
+  try {
+    const { discoverPackages } = await import('../discover-packages')
+    await discoverPackages()
+  }
+  catch {
+    // An unreadable package tree is not a reason to refuse to regenerate the
+    // application's own artifacts, which is most of what this command does.
+  }
+
   // Types first: the name registries it refreshes are what the later
   // generators read, so the order is a dependency rather than a preference.
   await generateTypes({ ...options, types: true })

@@ -162,7 +162,9 @@ async function main(): Promise<void> {
   console.error('\nGenerated barrels do not match the source they describe:\n')
   for (const path of stale)
     console.error(`  ${path}`)
-  console.error('\nRun `buddy generate` and commit the result.\n')
+  console.error('\nRun `buddy generate` and commit the result.')
+  console.error('If a barrel is stale because a package was installed, `buddy generate`')
+  console.error('now discovers first, so it is still the right command.\n')
   process.exit(1)
 }
 
