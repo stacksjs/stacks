@@ -53,25 +53,42 @@ describe('compression with a known byte upper bound', () => {
       expect(JSON.parse(new TextDecoder().decode(compressed ? Bun.gunzipSync(bytes) : bytes))).toEqual(payload)
     }
   })
-  test('native serving preserves small Unicode JSON and its response metadata', async () => {
+  test.each([false, true])('HTTP compression preserves UTF-8 thresholds and metadata (nativeRoutes=%s)', async (nativeRoutes) => {
     const router = createStacksRouter({ autoDiscoverRoutes: false })
-    const payload = { value: 'é😀漢字' }
-    router.get('/native-small', () => payload).middleware('compress')
-    const server = await router.serve({ port: 0, nativeRoutes: true })
+    const payloads = [
+      { value: 'é😀漢字' },
+      { value: 'x'.repeat(700) },
+      { value: 'é'.repeat(340) },
+      { value: 'x'.repeat(1011) },
+      { value: 'x'.repeat(1012) },
+      { value: 'x'.repeat(1013) },
+      { value: '漢'.repeat(400) },
+    ]
+    for (const [index, payload] of payloads.entries())
+      router.get(`/compression-bytes-${index}`, () => payload).middleware('compress')
+    const server = await router.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes })
     try {
-      const response = await fetch(`http://localhost:${server.port}/native-small`, {
-        headers: { 'accept-encoding': 'gzip', 'x-request-id': 'small-compression-test' },
-      })
-      expect(response.headers.get('content-encoding')).toBeNull()
-      expect(response.headers.get('x-request-id')).toBe('small-compression-test')
-      expect(response.headers.get('x-content-type-options')).toBe('nosniff')
-      const bytes = await response.bytes()
-      expect(Number(response.headers.get('content-length'))).toBe(bytes.byteLength)
-      expect(JSON.parse(new TextDecoder().decode(bytes))).toEqual(payload)
+      for (const [index, payload] of payloads.entries()) {
+        const body = JSON.stringify(payload)
+        const compressed = new TextEncoder().encode(body).byteLength >= 1024
+        const requestId = `compression-byte-test-${index}`
+        const response = await fetch(`http://127.0.0.1:${server.port}/compression-bytes-${index}`, {
+          headers: { 'accept-encoding': 'gzip', 'x-request-id': requestId },
+          decompress: false,
+        })
+        expect(response.status).toBe(200)
+        expect(response.headers.get('content-encoding')).toBe(compressed ? 'gzip' : null)
+        expect(response.headers.get('x-request-id')).toBe(requestId)
+        expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+        const bytes = await response.bytes()
+        const declaredLength = response.headers.get('content-length')
+        if (declaredLength !== null)
+          expect(Number(declaredLength)).toBe(bytes.byteLength)
+        expect(new TextDecoder().decode(compressed ? Bun.gunzipSync(bytes) : bytes)).toBe(body)
+      }
     }
     finally {
       await server.stop(true)
     }
   })
-
 })

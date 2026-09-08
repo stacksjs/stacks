@@ -3585,7 +3585,7 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
     const frameworkResponse = response as unknown as Record<symbol, unknown>
-    frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] = body.length * 3
+    frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] = bodyLength ?? body.length * 3
   }
   if (csrfCookie)
     requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
