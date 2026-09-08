@@ -14460,88 +14460,6 @@ export interface paths {
   }
     trace?: never
   }
-  "/api/personal-access-tokens": {
-    get: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      "200": { content: { "application/json": { "data": Array<{ "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string }> } } }
-      "422": { content: never }
-      "500": { content: never }
-    }
-  }
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  "/api/personal-access-tokens/bulk-delete": {
-    get?: never
-    put?: never
-    post: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      "200": { content: { "application/json": Record<string, unknown> } }
-      "422": { content: never }
-      "500": { content: never }
-    }
-  }
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  "/api/personal-access-tokens/{id}": {
-    get: {
-    parameters: {
-      query?: never
-      header?: never
-      path: { "id": string }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
-      "422": { content: never }
-      "500": { content: never }
-    }
-  }
-    put?: never
-    post?: never
-    delete: {
-    parameters: {
-      query?: never
-      header?: never
-      path: { "id": string }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      "200": { content: { "application/json": { "data": { "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string } } } }
-      "422": { content: never }
-      "500": { content: never }
-    }
-  }
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   "/api/pledges": {
     get: {
     parameters: {
@@ -22226,7 +22144,6 @@ export interface components {
     "Order": { "id": number; "uuid": string; "status"?: string; "total_amount"?: number; "currency"?: string; "tax_amount"?: number; "discount_amount"?: number; "delivery_fee"?: number; "tip_amount"?: number; "order_type"?: string; "delivery_address"?: string; "special_instructions"?: string; "estimated_delivery_time"?: string; "tracking_token"?: string; "delivery_latitude"?: number; "delivery_longitude"?: number; "applied_coupon_id"?: string; "customer_id"?: number; "coupon_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Page": { "id": number; "uuid": string; "title": string; "slug"?: string; "path"?: string; "parent_id"?: number; "template": string; "blocks"?: unknown; "meta_description"?: string; "status"?: "draft" | "published" | "scheduled" | "archived"; "scheduled_at"?: unknown; "views"?: number; "published_at"?: unknown; "conversions"?: number; "author_id"?: number; "site_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Payment": { "id": number; "uuid": string; "amount"?: number; "method"?: "cash" | "creditCard" | "debitCard" | "paypal" | "applePay" | "googlePay" | "bankTransfer" | "giftCard"; "status"?: "pending" | "processing" | "completed" | "failed" | "refunded" | "partiallyRefunded" | "succeeded"; "currency"?: string; "reference_number"?: string; "card_last_four"?: string; "card_brand"?: string; "billing_email"?: string; "transaction_id"?: string; "payment_provider"?: string; "refund_amount"?: number; "notes"?: string; "order_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }
-    "PersonalAccessToken": { "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Pledge": { "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }
     "Post": { "id": number; "uuid": string; "title": string; "slug"?: string; "poster"?: string; "content": string; "excerpt"?: string; "focus_keyword"?: string; "meta_description"?: string; "canonical_url"?: string; "views"?: number; "published_at"?: unknown; "status": "published" | "draft" | "archived"; "is_featured"?: number; "author_id"?: number; "site_id"?: number; "created_at"?: string; "updated_at"?: string }
     "PrintDevice": { "id": number; "uuid": string; "name"?: string; "mac_address"?: string; "location"?: string; "terminal"?: string; "status"?: "online" | "offline" | "warning"; "last_ping"?: unknown; "print_count"?: number; "created_at"?: string; "updated_at"?: string }
