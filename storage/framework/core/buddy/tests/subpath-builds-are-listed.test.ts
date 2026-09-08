@@ -13,9 +13,13 @@
  * sitting there, which is exactly why nobody notices until CI does
  * (stacksjs/stacks#2056).
  *
- * `ci.yml` carries the list by hand. This checks the list still matches what
- * the source actually imports, so adding the next subpath import fails here
- * rather than in a red typecheck nobody expected.
+ * `ci.yml` no longer carries the list by hand - it runs
+ * `.github/scripts/subpath-packages.ts`, which computes it. This checks the
+ * script still agrees with what the source actually imports, and that CI is
+ * still asking it. The hand-written list was checked the same way, and the
+ * check worked: it named `database`, then `path`. Both times it named them
+ * after main had already gone red, for a package nobody had reason to know
+ * needed listing.
  */
 import { describe, expect, it } from 'bun:test'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
@@ -66,12 +70,10 @@ function sourceFiles(dir: string, found: string[] = []): string[] {
 }
 
 describe('subpath imports', () => {
-  it('only name packages that ci.yml builds first', () => {
+  it('are all built first, per the script ci.yml runs', async () => {
     const packages = workspacePackages()
-    const workflow = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')
-    const listed = new Set(
-      (workflow.match(/for pkg in ([a-z0-9 -]+); do/)?.[1] ?? '').split(/\s+/).filter(Boolean),
-    )
+    const { subpathBuildTargets } = await import('../../../../../.github/scripts/subpath-packages')
+    const listed = new Set(subpathBuildTargets())
 
     const needed = new Set<string>()
     for (const [name, dir] of packages) {
@@ -112,5 +114,20 @@ describe('subpath imports', () => {
 
     const missing = [...needed].filter(dir => !listed.has(dir))
     expect(missing.sort()).toEqual([])
+  })
+
+  /**
+   * The script is only worth anything if CI actually runs it. A workflow that
+   * went back to a hand-written list would pass the check above and be exactly
+   * as stale as before.
+   */
+  it('are built by the computed set, not a list typed into the workflow', () => {
+    const workflow = readFileSync(join(root, '.github/workflows/ci.yml'), 'utf-8')
+
+    const loops = [...workflow.matchAll(/for pkg in (.+?); do/g)].map(match => match[1]!)
+
+    expect(loops.length).toBeGreaterThan(0)
+    for (const loop of loops)
+      expect(loop).toBe('$(bun .github/scripts/subpath-packages.ts)')
   })
 })
