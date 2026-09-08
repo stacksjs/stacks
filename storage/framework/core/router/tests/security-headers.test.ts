@@ -225,4 +225,47 @@ describe('applySecurityHeaders', () => {
     expect(absent.headers.get('Set-Cookie')).toBeNull()
     expect(absent.headers.get('X-Request-ID')).toBeNull()
   })
+
+  test('isolates response metadata across varied JSON lengths', async () => {
+    process.env.APP_ENV = 'production'
+    process.env.STACKS_CSP = "default-src 'self'"
+    const responses = Array.from({ length: 256 }, (_, index) => {
+      const body = JSON.stringify({ message: 'é😀'.repeat(index) })
+      const length = Buffer.byteLength(body)
+      const requestId = index % 2 === 0 ? `request-${index}` : undefined
+      const cookie = index % 4 < 2 ? `csrf=${index}` : undefined
+      const response = secureSerializedJsonResponse(body, length, requestId, cookie)
+      return { response, body, length, requestId, cookie }
+    })
+
+    // Inspect retained responses only after all the other sizes and metadata
+    // combinations have been constructed, then mutate one independently.
+    responses[200]!.response.headers.set('X-Frame-Options', 'DENY')
+    for (const [index, { response, body, length, requestId, cookie }] of responses.entries()) {
+      expect(await response.text()).toBe(body)
+      expect(response.headers.get('Content-Length')).toBe(String(length))
+      expect(response.headers.get('X-Request-ID')).toBe(requestId ?? null)
+      expect(response.headers.get('Set-Cookie')).toBe(cookie ?? null)
+      expect(response.headers.get('Content-Type')).toBe('application/json;charset=utf-8')
+      expect(response.headers.get('X-Frame-Options')).toBe(index === 200 ? 'DENY' : 'SAMEORIGIN')
+      expect(response.headers.get('Strict-Transport-Security')).toBe('max-age=31536000; includeSubDomains')
+      expect(response.headers.get('Content-Security-Policy')).toBe("default-src 'self'")
+    }
+
+    const noLength = secureSerializedJsonResponse('{}')
+    expect(noLength.headers.get('Content-Length')).toBeNull()
+    expect(noLength.headers.get('X-Request-ID')).toBeNull()
+    expect(noLength.headers.get('Set-Cookie')).toBeNull()
+
+    delete process.env.STACKS_CSP
+    process.env.STACKS_SECURITY_HEADERS_DISABLE = 'true'
+    __resetSecurityHeadersCache()
+    for (let index = 0; index < 256; index++) {
+      const body = JSON.stringify('x'.repeat(index))
+      const response = secureSerializedJsonResponse(body, body.length)
+      expect(response.headers.get('Content-Length')).toBe(String(body.length))
+      expect(response.headers.get('Content-Security-Policy')).toBeNull()
+      expect(response.headers.get('X-Frame-Options')).toBeNull()
+    }
+  })
 })

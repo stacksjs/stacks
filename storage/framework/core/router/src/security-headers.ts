@@ -45,6 +45,7 @@ interface JsonMetadataHeaderTemplates {
 }
 let _jsonMetadataHeaderTemplates: JsonMetadataHeaderTemplates | undefined
 let _jsonLengthHeaderTemplateCache: Map<number, JsonLengthHeaderTemplates> | undefined
+let _jsonUncachedLengthHeaderTemplates: JsonMetadataHeaderTemplates | undefined
 const JSON_LENGTH_HEADER_CACHE_LIMIT = 64
 
 function isProduction(): boolean {
@@ -217,13 +218,23 @@ export function secureSerializedJsonResponse(body: string, bodyLength?: number, 
     return new Response(body, responseInit)
   }
 
-  const response = new Response(body, { headers: jsonSecurityHeadersTemplate() })
-  response.headers.set('Content-Length', String(bodyLength))
+  // Varied payloads outgrow the length cache. Keep just one template per
+  // metadata shape for these lengths, and let Response copy the completed
+  // headers synchronously instead of materializing and mutating its headers.
+  const uncached = _jsonUncachedLengthHeaderTemplates ??= {}
+  const responseInit = csrfCookie
+    ? requestId
+      ? uncached.withCsrfAndRequestId ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
+      : uncached.withCsrf ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
+    : requestId
+      ? uncached.withRequestId ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
+      : uncached.plain ??= { headers: new Headers(jsonSecurityHeadersTemplate()) }
+  responseInit.headers.set('Content-Length', String(bodyLength))
   if (requestId)
-    response.headers.set('X-Request-ID', requestId)
+    responseInit.headers.set('X-Request-ID', requestId)
   if (csrfCookie)
-    response.headers.append('Set-Cookie', csrfCookie)
-  return response
+    responseInit.headers.set('Set-Cookie', csrfCookie)
+  return new Response(body, responseInit)
 }
 
 /** Test helper — reset the cached env-derived flags. */
@@ -235,4 +246,5 @@ export function __resetSecurityHeadersCache(): void {
   _jsonHeaderTemplateCache = undefined
   _jsonMetadataHeaderTemplates = undefined
   _jsonLengthHeaderTemplateCache = undefined
+  _jsonUncachedLengthHeaderTemplates = undefined
 }
