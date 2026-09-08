@@ -133,7 +133,8 @@ function parseEncoding(header: string | null): Encoding {
 /** Heuristic: is this content type worth compressing? */
 function shouldCompressContentType(contentType: string | null): boolean {
   if (!contentType) return true // unknown → assume text-like
-  const ct = (contentType.toLowerCase().split(';')[0] ?? '').trim()
+  const separator = contentType.indexOf(';')
+  const ct = (separator < 0 ? contentType : contentType.slice(0, separator)).trim().toLowerCase()
   for (const prefix of SKIP_CONTENT_TYPE_PREFIXES) {
     if (ct.startsWith(prefix)) return false
   }
