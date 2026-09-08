@@ -227,7 +227,7 @@ async function startStxServer(): Promise<void> {
   // `storage/framework/defaults/views/dashboard/layouts/default.stx`.
   let dashboardIconCss: Promise<string> | null = null
   async function buildDashboardIconCss(): Promise<string> {
-    const { generateCrosswindCSS } = await import('@stacksjs/stx')
+    const { generateCss } = await import('@stacksjs/stx')
     const dirs = [dashboardPath, userDashboardPath, storagePath('framework/defaults/resources/components/Dashboard')]
     const icons = new Set<string>()
     for (const dir of dirs) {
@@ -243,7 +243,7 @@ async function startStxServer(): Promise<void> {
     }
     if (icons.size === 0)
       return ''
-    return generateCrosswindCSS(`<div class="${[...icons].join(' ')}"></div>`, process.cwd())
+    return generateCss(`<div class="${[...icons].join(' ')}"></div>`, process.cwd())
   }
 
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
