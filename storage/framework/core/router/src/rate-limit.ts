@@ -31,17 +31,22 @@ type Period = 'second' | 'minute' | 'hour' | 'day'
  * RateLimiter instance).
  */
 let limiterCache: Map<string, RateLimiter> | undefined
+let limiterModule: typeof import('ts-rate-limiter') | undefined
 let limiterModulePromise: Promise<typeof import('ts-rate-limiter')> | undefined
 
 function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
-  return limiterModulePromise ??= import('ts-rate-limiter')
+  return limiterModulePromise ??= import('ts-rate-limiter').then(module => limiterModule = module)
 }
 
-async function getLimiter(max: number, windowMs: number): Promise<RateLimiter> {
+function getLimiter(max: number, windowMs: number): RateLimiter | Promise<RateLimiter> {
   const cacheKey = `${windowMs}:${max}`
   let limiter = limiterCache?.get(cacheKey)
   if (!limiter) {
-    const { RateLimiter } = await loadLimiterModule()
+    if (!limiterModule) {
+      // Re-enter after loading so concurrent cold callers share the cached instance.
+      return loadLimiterModule().then(() => getLimiter(max, windowMs))
+    }
+    const { RateLimiter } = limiterModule
     limiter = new RateLimiter({
       windowMs,
       maxRequests: max,
@@ -62,11 +67,12 @@ async function getLimiter(max: number, windowMs: number): Promise<RateLimiter> {
  * `defaultIdentity(req)` from `ts-rate-limiter` (auth user → token →
  * IP → 'anon'); callers can override via `options.identity`.
  */
-async function resolveIdentity(explicit?: string): Promise<string> {
+function resolveIdentity(explicit?: string): string | Promise<string> {
   if (explicit !== undefined) return explicit
   const req = getCurrentRequest() as Request | undefined
-  const { defaultIdentity } = await loadLimiterModule()
-  return req ? defaultIdentity(req) : 'anon'
+  if (!req) return 'anon'
+  if (limiterModule) return limiterModule.defaultIdentity(req)
+  return loadLimiterModule().then(module => module.defaultIdentity(req))
 }
 
 /**
@@ -90,10 +96,11 @@ export function rateLimit(
     over: (ttlSeconds: number) => Promise<void>
   } {
   const run = async (windowMs: number): Promise<void> => {
-    const [id, limiter] = await Promise.all([
-      resolveIdentity(options.identity),
-      getLimiter(max, windowMs),
-    ])
+    const identity = resolveIdentity(options.identity)
+    const pendingLimiter = getLimiter(max, windowMs)
+    const [id, limiter] = typeof identity === 'string' && !(pendingLimiter instanceof Promise)
+      ? [identity, pendingLimiter] as const
+      : await Promise.all([identity, pendingLimiter])
     const bucketKey = `${key}:${id}`
     try {
       await limiter.enforce(bucketKey)
@@ -150,10 +157,11 @@ export async function rateLimitStatus(
   windowSeconds: number,
   options: { identity?: string } = {},
 ): Promise<{ count: number, limit: number, remaining: number } | null> {
-  const [id, limiter] = await Promise.all([
-    resolveIdentity(options.identity),
-    getLimiter(max, windowSeconds * 1000),
-  ])
+  const identity = resolveIdentity(options.identity)
+  const pendingLimiter = getLimiter(max, windowSeconds * 1000)
+  const [id, limiter] = typeof identity === 'string' && !(pendingLimiter instanceof Promise)
+    ? [identity, pendingLimiter] as const
+    : await Promise.all([identity, pendingLimiter])
   const bucketKey = `${key}:${id}`
   const result = await limiter.peek(bucketKey)
   if (!result) return null
@@ -174,10 +182,11 @@ export async function clearRateLimit(
   windowSeconds: number,
   options: { identity?: string } = {},
 ): Promise<void> {
-  const [id, limiter] = await Promise.all([
-    resolveIdentity(options.identity),
-    getLimiter(max, windowSeconds * 1000),
-  ])
+  const identity = resolveIdentity(options.identity)
+  const pendingLimiter = getLimiter(max, windowSeconds * 1000)
+  const [id, limiter] = typeof identity === 'string' && !(pendingLimiter instanceof Promise)
+    ? [identity, pendingLimiter] as const
+    : await Promise.all([identity, pendingLimiter])
   const bucketKey = `${key}:${id}`
   await limiter.reset(bucketKey)
 }
