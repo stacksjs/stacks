@@ -65,7 +65,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-620 default actions and 97 built-in models you can use or override.
+620 default actions and 98 built-in models you can use or override.
 
 ---
 
@@ -190,7 +190,7 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 97 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- All 98 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
 - Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
 
 Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to

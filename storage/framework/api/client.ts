@@ -5427,6 +5427,34 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/personal-access-tokens
+   */
+  getPersonalAccessTokens(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
+    return request(config, "GET", "/api/personal-access-tokens", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/personal-access-tokens/bulk-delete
+   */
+  postPersonalAccessTokensBulkDelete(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/personal-access-tokens/bulk-delete", {}, [], false, options)
+  },
+
+  /**
+   * GET /api/personal-access-tokens/{id}
+   */
+  getPersonalAccessTokensId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "GET", "/api/personal-access-tokens/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
+   * DELETE /api/personal-access-tokens/{id}
+   */
+  deletePersonalAccessTokensId(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<{ "data": { "id": number; "name"?: string; "scopes"?: string; "revoked"?: boolean; "expires_at"?: string; "user_agent"?: string; "ip_address"?: string; "user_id"?: number; "created_at"?: string; "updated_at"?: string } }>> {
+    return request(config, "DELETE", "/api/personal-access-tokens/{id}", input ?? {}, [], false, options)
+  },
+
+  /**
    * GET /api/pledges
    */
   getPledges(options?: RequestOptions): Promise<ApiResult<{ "data": Array<{ "id": number; "uuid": string; "donor_name"?: string; "donor_email"?: string; "amount"?: number; "level"?: string; "status"?: "pending" | "confirmed" | "cancelled"; "auction_id"?: number; "customer_id"?: number; "created_at"?: string; "updated_at"?: string }> }>> {
