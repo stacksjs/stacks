@@ -291,6 +291,46 @@ describe('discovery at boot', () => {
       .toBeLessThan(server.indexOf('await injectGlobalAutoImports()'))
   })
 
+  test('buddy generate discovers before it regenerates the barrels', () => {
+    // `generate` is a fastCommand in the preloader, so it skips the
+    // preloader's discoverPackages() that every non-fast command gets. That
+    // made it the ONLY command whose regeneration was package-blind - and it
+    // is the command `check-generated-barrels.ts` tells you to run when a
+    // barrel is stale, so the documented remedy could not fix a barrel that
+    // was stale for this reason, only produce one.
+    const file = source('actions/src/generate/index.ts')
+
+    // Scoped to `generateEverything`'s own body: `generateTypes` is called
+    // from more than one function, and an unscoped search compares positions
+    // in unrelated code.
+    const start = file.indexOf('async function generateEverything')
+    expect(start).toBeGreaterThan(-1)
+    const body = file.slice(start, file.indexOf('\nasync function ', start + 1))
+
+    expect(body).toContain('await discoverPackages()')
+
+    // Before the generators, for the same reason `buddy dev` orders it that
+    // way: the manifest is what the barrels are built from.
+    expect(body.indexOf('await discoverPackages()'))
+      .toBeLessThan(body.indexOf('await generateTypes('))
+  })
+
+  test('generate is still a preloader fast command, which is why the above matters', () => {
+    // If `generate` ever leaves fastCommands it would get discovery from the
+    // preloader and the call above becomes redundant rather than load-bearing.
+    // Pinned so that change is a deliberate one and this comment gets revisited.
+    const preloader = readFileSync(
+      resolve(coreRoot, '../defaults/resources/plugins/preloader.ts'),
+      'utf8',
+    )
+    const fastCommands = preloader.slice(
+      preloader.indexOf('const fastCommands'),
+      preloader.indexOf(']', preloader.indexOf('const fastCommands')),
+    )
+
+    expect(fastCommands).toContain(`'generate'`)
+  })
+
   test('a failure warns instead of aborting the boot', async () => {
     // An application's own routes do not depend on discovery succeeding, and a
     // server that refuses to start because one dependency shipped an unreadable
