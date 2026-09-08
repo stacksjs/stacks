@@ -25,8 +25,15 @@ describe('make: commands', () => {
     expect([...registered].filter(name => name.startsWith('make:')).length).toBeGreaterThan(15)
   })
 
+  /**
+   * `AGENTS.md`, not `CLAUDE.md`. The latter is generated from
+   * `storage/framework/defaults/ai/` by `buddy setup:ai` and is gitignored, so
+   * reading it passed on a developer machine and failed in CI with an empty
+   * set - which is exactly the shape this file is meant to catch, and it caught
+   * itself.
+   */
   it('include every one the project docs name', () => {
-    const docs = readFileSync(join(root, 'CLAUDE.md'), 'utf8')
+    const docs = readFileSync(join(root, 'AGENTS.md'), 'utf8')
     const named = new Set([...docs.matchAll(/`?(make:[a-z-]+)`?/g)].map(match => match[1]))
 
     expect(named.size).toBeGreaterThan(10)
