@@ -11,6 +11,9 @@ import { enrichPaginatorUrls, resolveCursorArgs, resolvePageArgs } from './pagin
 import { validateWriteBody } from './auto-crud'
 import type { BelongsToForeignKeys } from './model-types'
 
+// Cache only the loaded namespace; listener state stays in the live event bus.
+let modelEventsModule: typeof import('@stacksjs/events') | undefined
+
 /**
  * Event-suppression scope. When the current async context's store reports
  * `suppressed: true`, every model lifecycle dispatcher (`creating`,
@@ -2540,7 +2543,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   const dispatchEvent = async (event: string, data: any) => {
     if (eventsAreSuppressed()) return
     try {
-      const { dispatch } = await import('@stacksjs/events')
+      const { dispatch } = modelEventsModule ??= await import('@stacksjs/events')
       /*
        * Composed at runtime - `${modelName}:created` - so it cannot be a
        * literal member of the event union here, though every name it produces
@@ -2608,7 +2611,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
     if (eventsAreSuppressed()) return true
     let eventsModule: typeof import('@stacksjs/events') | undefined
     try {
-      eventsModule = await import('@stacksjs/events')
+      eventsModule = modelEventsModule ??= await import('@stacksjs/events')
       const { dispatchAndCollect } = eventsModule
       // Collect outcomes because dispatchAsync logs and swallows failures.
       // Explicit cancellation still wins when the swallow opt-out is enabled.
@@ -3025,7 +3028,7 @@ function applySoftDeletes(
   const fireRestoring = async (id: number | string): Promise<boolean> => {
     if (!observeOn || eventsAreSuppressed()) return true
     try {
-      const { dispatchAsync } = await import('@stacksjs/events')
+      const { dispatchAsync } = modelEventsModule ??= await import('@stacksjs/events')
       const results = (await dispatchAsync(`${modelName}:restoring` as Parameters<typeof dispatchAsync>[0], { id })) as unknown[]
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
@@ -3038,7 +3041,7 @@ function applySoftDeletes(
   const fireRestored = async (id: number | string): Promise<void> => {
     if (!observeOn || eventsAreSuppressed()) return
     try {
-      const { dispatch } = await import('@stacksjs/events')
+      const { dispatch } = modelEventsModule ??= await import('@stacksjs/events')
       await dispatch(`${modelName}:restored` as Parameters<typeof dispatch>[0], { id })
     }
     catch (err: any) {
