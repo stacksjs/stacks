@@ -213,7 +213,7 @@ export default new Middleware({
   // to the action — the post-action wrapper picks it up by name.
   priority: 100,
 
-  async handle(request) {
+  handle(request) {
     // Stamp the request so the post-response wrapper knows to compress.
     // This is read by the router's response-finalization step.
     ;request._compress = true
