@@ -12,6 +12,7 @@
  * requests per second is a test that fails on somebody else's laptop.
  */
 
+import type { RouterAction } from '../src/stacks-router'
 import { afterAll, beforeAll, describe, expect, it, spyOn } from 'bun:test'
 
 let server: any = null
@@ -75,6 +76,97 @@ describe('the request path keeps its defaults', () => {
 
     expect(answer).toBeInstanceOf(Response)
     expect(await (answer as Response).json()).toEqual({ ok: true })
+  })
+
+  it('runs synchronous action hooks without suspending between stages', async () => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/synchronous-hooks') as any)
+    const calls: string[] = []
+    const wrapped = wrapAction({
+      authorize() { calls.push('authorize'); return true },
+      before() { calls.push('before') },
+      handle() { calls.push('handle'); return { ok: true } },
+    }, 'GET:/_hot/synchronous-hooks')
+
+    const answer = wrapped(request)
+
+    expect(calls).toEqual(['authorize', 'before', 'handle'])
+    expect(await (await answer).json()).toEqual({ ok: true })
+  })
+
+  it.each(['authorize', 'before'] as const)('waits for a pending %s hook before handling', async (phase) => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/pending-hook') as any)
+    const pending = Promise.withResolvers<boolean | Response>()
+    let handled = false
+    const hooks: Pick<RouterAction, 'authorize' | 'before'> = {
+      authorize: () => true,
+      before: () => undefined,
+    }
+    hooks[phase] = () => pending.promise
+    const wrapped = wrapAction({ ...hooks, handle() { handled = true; return { ok: true } } }, 'GET:/_hot/pending-hook')
+
+    const answer = wrapped(request)
+    expect(handled).toBe(false)
+    pending.resolve(phase === 'authorize' ? false : new Response('stopped', { status: 409 }))
+
+    expect((await answer).status).toBe(phase === 'authorize' ? 403 : 409)
+    expect(handled).toBe(false)
+  })
+
+  it.each(['authorize', 'before'] as const)('assimilates custom %s thenables with one getter read', async (phase) => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    for (const callable of [false, true]) {
+      const request = enhanceRequest(new Request('http://localhost/_hot/thenable-hook') as any)
+      let reads = 0
+      let handled = false
+      const thenable = Object.defineProperty(callable ? () => {} : {}, 'then', {
+        get() {
+          reads++
+          return (resolve: (value: boolean | Response) => void) => {
+            queueMicrotask(() => resolve(phase === 'authorize' ? false : new Response('stopped', { status: 409 })))
+          }
+        },
+      })
+      const hooks: Pick<RouterAction, 'authorize' | 'before'> = { authorize: () => true, before: () => undefined }
+      hooks[phase] = () => thenable
+      const wrapped = wrapAction({ ...hooks, handle() { handled = true; return { ok: true } } }, 'GET:/_hot/thenable-hook')
+
+      const answer = wrapped(request)
+      expect(handled).toBe(false)
+      expect((await answer).status).toBe(phase === 'authorize' ? 403 : 409)
+      expect(reads).toBe(1)
+      expect(handled).toBe(false)
+    }
+  })
+
+  it('continues through asynchronous action hooks in order', async () => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/async-hooks') as any)
+    const calls: string[] = []
+    const wrapped = wrapAction({
+      async authorize() { calls.push('authorize'); return true },
+      async before() { calls.push('before') },
+      handle() { calls.push('handle'); return { ok: true } },
+    }, 'GET:/_hot/async-hooks')
+
+    const answer = wrapped(request)
+    expect(calls).toEqual(['authorize'])
+    expect(await (await answer).json()).toEqual({ ok: true })
+    expect(calls).toEqual(['authorize', 'before', 'handle'])
+  })
+
+  it.each(['authorize', 'before'] as const)('propagates rejected %s hooks without handling', async (phase) => {
+    const { enhanceRequest, wrapAction } = await import('../src/stacks-router')
+    const request = enhanceRequest(new Request('http://localhost/_hot/rejected-hook') as any)
+    const failure = new Error(`${phase} failed`)
+    let handled = false
+    const hooks: Pick<RouterAction, 'authorize' | 'before'> = { authorize: () => true, before: () => undefined }
+    hooks[phase] = () => Promise.reject(failure)
+    const wrapped = wrapAction({ ...hooks, handle() { handled = true; return { ok: true } } }, 'GET:/_hot/rejected-hook')
+
+    await expect(wrapped(request)).rejects.toBe(failure)
+    expect(handled).toBe(false)
   })
 
   it('keeps concurrent async action response metadata isolated', async () => {

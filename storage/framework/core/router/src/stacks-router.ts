@@ -3044,7 +3044,13 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
       // opaque to avoid info-disclosure); returning a Response lets
       // the caller customise the status/body.
       if (typeof action.authorize === 'function') {
-        const auth = await action.authorize(req)
+        const pendingAuth = action.authorize(req)
+        // Only objects and functions can be thenables. Keep their native
+        // await semantics, including a single read of a custom `then` getter,
+        // without scheduling a continuation for booleans or void results.
+        const auth = pendingAuth !== null && (typeof pendingAuth === 'object' || typeof pendingAuth === 'function')
+          ? await pendingAuth
+          : pendingAuth
         if (auth instanceof Response) return auth
         if (auth === false) {
           return Response.json({ error: 'Forbidden' }, { status: 403 })
@@ -3054,7 +3060,10 @@ export function wrapAction(action: RouterAction, handlerKey: string): RouteHandl
       // `before` runs after authorize; returning a Response still
       // short-circuits, returning void continues into `handle()`.
       if (typeof action.before === 'function') {
-        const pre = await action.before(req)
+        const pendingBefore = action.before(req)
+        const pre = pendingBefore !== null && (typeof pendingBefore === 'object' || typeof pendingBefore === 'function')
+          ? await pendingBefore
+          : pendingBefore
         if (pre instanceof Response) return pre
       }
 
