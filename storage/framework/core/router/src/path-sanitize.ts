@@ -78,6 +78,35 @@ export class PathParamError extends Error {
 // could sanitize anything, and it took the framework build down with it.
 const CONTROL_CHARS = /[\x00-\x1F\x7F]/
 
+function pathParamRejection(value: string, options: SanitizePathParamOptions): PathParamRejection | undefined {
+  if (value.length === 0) {
+    return 'empty'
+  }
+  const maxLength = options.maxLength ?? 255
+  if (value.length > maxLength) {
+    return 'too-long'
+  }
+  if (value.includes('\0')) {
+    return 'null-byte'
+  }
+  if (CONTROL_CHARS.test(value)) {
+    return 'control-char'
+  }
+  if (value.startsWith('/') || /^[A-Z]:[\\/]/i.test(value)) {
+    return 'absolute-path'
+  }
+  // `..` as a segment OR `..` adjacent to a separator. Plain `..foo`
+  // is fine (a filename starting with two dots). Same logic for both
+  // POSIX and Windows separators.
+  if (/(^|[\\/])\.\.([\\/]|$)/.test(value)) {
+    return 'traversal'
+  }
+  if (!options.allowSlashes && /[\\/]/.test(value)) {
+    return 'traversal'
+  }
+  return undefined
+}
+
 /**
  * Validate and return a path parameter, throwing if it's unsafe to use
  * in filesystem interpolation.
@@ -93,30 +122,9 @@ export function sanitizePathParam(value: unknown, options: SanitizePathParamOpti
   if (typeof value !== 'string') {
     throw new PathParamError('not-string', value, options.context)
   }
-  if (value.length === 0) {
-    throw new PathParamError('empty', value, options.context)
-  }
-  const maxLength = options.maxLength ?? 255
-  if (value.length > maxLength) {
-    throw new PathParamError('too-long', value, options.context)
-  }
-  if (value.includes('\0')) {
-    throw new PathParamError('null-byte', value, options.context)
-  }
-  if (CONTROL_CHARS.test(value)) {
-    throw new PathParamError('control-char', value, options.context)
-  }
-  if (value.startsWith('/') || /^[A-Z]:[\\/]/i.test(value)) {
-    throw new PathParamError('absolute-path', value, options.context)
-  }
-  // `..` as a segment OR `..` adjacent to a separator. Plain `..foo`
-  // is fine (a filename starting with two dots). Same logic for both
-  // POSIX and Windows separators.
-  if (/(^|[\\/])\.\.([\\/]|$)/.test(value)) {
-    throw new PathParamError('traversal', value, options.context)
-  }
-  if (!options.allowSlashes && /[\\/]/.test(value)) {
-    throw new PathParamError('traversal', value, options.context)
+  const reason = pathParamRejection(value, options)
+  if (reason) {
+    throw new PathParamError(reason, value, options.context)
   }
   return value
 }
@@ -128,7 +136,10 @@ export function sanitizePathParam(value: unknown, options: SanitizePathParamOpti
  */
 export function safePathParam(value: unknown, options: SanitizePathParamOptions = {}): string | null {
   try {
-    return sanitizePathParam(value, options)
+    if (typeof value !== 'string' || pathParamRejection(value, options)) {
+      return null
+    }
+    return value
   }
   catch {
     return null
