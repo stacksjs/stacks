@@ -7,6 +7,7 @@
  */
 
 import type { StacksConfig } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { defaults } from './defaults'
@@ -131,7 +132,20 @@ export const overrides: StacksConfig = sharedOverrides ?? (() => {
 
 // Files we attempt to load. The key on the left is the property name on
 // `overrides`; the path on the right is the project-local config file.
-const userConfigs: Array<[keyof StacksConfig, string]> = [
+/**
+ * `[configKey, filename, ...alternativeFilenames]`.
+ *
+ * The alternatives exist because stx accepts either name for its own config:
+ * `loadStxConfig` resolves `{ name: 'stx', alias: 'ui' }`, so an app can write
+ * `config/stx.ts` and stx reads it happily - while this loader looked only for
+ * `config/ui.ts` and left `config.ui` undefined. `resolveViewPatterns` treats
+ * undefined exactly like `true`, so such an app kept mounting the framework's
+ * demo views through a green build and a green deploy (stacksjs/stacks#2446).
+ *
+ * The first name that exists wins, and the primary stays first, so no app that
+ * resolves today resolves differently.
+ */
+const userConfigs: Array<[keyof StacksConfig, string, ...string[]]> = [
   ['ai', 'ai'],
   ['analytics', 'analytics'],
   ['app', 'app'],
@@ -178,8 +192,36 @@ const userConfigs: Array<[keyof StacksConfig, string]> = [
   ['services', 'services'],
   ['filesystems', 'filesystems'],
   ['team', 'team'],
-  ['ui', 'ui'],
+  ['ui', 'ui', 'stx'],
 ]
+
+/**
+ * Which of a config's accepted filenames this project actually ships.
+ *
+ * The first one on disk wins, and the primary name is first, so no project
+ * that resolves today resolves differently. Falling through the list rather
+ * than importing a missing path keeps the loader's ENOENT handling meaning
+ * "this project ships no config of this kind" rather than "the primary name
+ * was absent" - which is what made the stx/ui split invisible: `config/stx.ts`
+ * is a name stx itself accepts, and this loader read straight past it, leaving
+ * `config.ui` undefined while stx reported the file loaded fine
+ * (stacksjs/stacks#2446).
+ *
+ * Both present is ambiguous rather than wrong, so it warns and takes the
+ * primary instead of guessing silently.
+ */
+export function resolveUserConfigName(names: [string, ...string[]], cwd = process.cwd()): string {
+  const present = names.filter(candidate => existsSync(resolve(cwd, 'config', `${candidate}.ts`)))
+
+  if (present.length > 1) {
+    console.warn(
+      `[config] config/${present.join('.ts and config/')}.ts both exist and configure the same thing. `
+      + `Using config/${present[0]}.ts; delete the other so every consumer agrees on one.`,
+    )
+  }
+
+  return present[0] ?? names[0]
+}
 
 export function userConfigUrl(name: string, cwd = process.cwd()): string {
   return pathToFileURL(resolve(cwd, 'config', `${name}.ts`)).href
@@ -202,7 +244,8 @@ const sharedReady = globalScope[READY_KEY] as Promise<StacksConfig> | undefined
 export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
   const promise = skipConfigLoading
     ? Promise.resolve(overrides)
-    : Promise.all(userConfigs.map(async ([key, name]) => {
+    : Promise.all(userConfigs.map(async ([key, ...names]) => {
+      const name = resolveUserConfigName(names as [string, ...string[]])
       const modulePath = userConfigUrl(name)
       try {
         const mod = await import(modulePath)
