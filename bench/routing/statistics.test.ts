@@ -24,6 +24,14 @@ describe('benchmark statistics', () => {
 
   test('rejects samples that cannot be paired', () => {
     expect(() => relativeThroughput([1], [])).toThrow('equal non-empty samples')
-    expect(() => relativeThroughput([1], [0])).toThrow('positive baseline samples')
+  })
+
+  test.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])('leaves ratios unavailable for an invalid repeat (%s) so diagnostics can still be written', (invalid) => {
+    expect(relativeThroughput([100, 100, 100], [100, invalid, 100])).toBeNull()
+    expect(relativeThroughput([100, invalid, 100], [100, 100, 100])).toBeNull()
+  })
+
+  test('does not report a ratio that overflows despite finite input values', () => {
+    expect(relativeThroughput([Number.MAX_VALUE], [Number.MIN_VALUE])).toBeNull()
   })
 })

@@ -22,20 +22,20 @@ export function relativeRange(values: readonly number[]): number {
   return (Math.max(...values) - Math.min(...values)) / center
 }
 
-/** Compare measurements made in the same rotated run, then summarize those ratios. */
+/** Compare paired valid samples; unavailable ratios must not prevent diagnostic output. */
 export function relativeThroughput(
   targetValues: readonly number[],
   baselineValues: readonly number[],
-): RelativeThroughput {
+): RelativeThroughput | null {
   if (targetValues.length === 0 || targetValues.length !== baselineValues.length)
     throw new Error('Relative throughput requires equal non-empty samples')
 
-  const ratios = targetValues.map((value, index) => {
-    const baseline = baselineValues[index]!
-    if (!(baseline > 0))
-      throw new Error('Relative throughput requires positive baseline samples')
-    return value / baseline
-  })
+  if ([...targetValues, ...baselineValues].some(value => !Number.isFinite(value) || value <= 0))
+    return null
+
+  const ratios = targetValues.map((value, index) => value / baselineValues[index]!)
+  if (ratios.some(value => !Number.isFinite(value)))
+    return null
 
   return {
     median: median(ratios),
