@@ -1,5 +1,228 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.29...v0.74.31)
+
+## ✨ Features
+
+- **commerce**: ship commerce off by default (#2488) ([f8654b6](https://github.com/stacksjs/stacks/commit/f8654b6)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2476](https://github.com/stacksjs/stacks/issues/2476), [#2488](https://github.com/stacksjs/stacks/issues/2488), [#2488](https://github.com/stacksjs/stacks/issues/2488))
+- **orm**: useAuth confers the personal-access-token relation ([fa52df9](https://github.com/stacksjs/stacks/commit/fa52df9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: personal access tokens belong to any authenticatable, not just User ([6909fcf](https://github.com/stacksjs/stacks/commit/6909fcf)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2306](https://github.com/stacksjs/stacks/issues/2306))
+- **models**: give personal access tokens a model, restoring User.hasMany ([62ee7bb](https://github.com/stacksjs/stacks/commit/62ee7bb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: implement useActivityLog, the trait that only ever promised ([83d92f1](https://github.com/stacksjs/stacks/commit/83d92f1)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2435](https://github.com/stacksjs/stacks/issues/2435))
+
+## 🐛 Bug Fixes
+
+- restore the v2 lockfile format ([e97f05e](https://github.com/stacksjs/stacks/commit/e97f05e)) _(by Chris <chris@stacksjs.com>)_
+- **css**: follow the engine's CssOptions rename ([072ad2b](https://github.com/stacksjs/stacks/commit/072ad2b)) _(by Chris <chris@stacksjs.com>)_
+- **config**: check CSS overrides against engine options ([3f539d1](https://github.com/stacksjs/stacks/commit/3f539d1)) _(by Chris <chris@stacksjs.com>)_ ([#2511](https://github.com/stacksjs/stacks/issues/2511), [#2510](https://github.com/stacksjs/stacks/issues/2510))
+- **auth**: preserve request receiver when resolving user ([5855880](https://github.com/stacksjs/stacks/commit/5855880)) _(by Chris <chris@stacksjs.com>)_ ([#2505](https://github.com/stacksjs/stacks/issues/2505), [#2504](https://github.com/stacksjs/stacks/issues/2504))
+- **migrate**: say what to do about a ledger row whose file is gone ([ad6a1fb](https://github.com/stacksjs/stacks/commit/ad6a1fb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **test**: read AGENTS.md, the committed one, not generated CLAUDE.md ([b07c3c6](https://github.com/stacksjs/stacks/commit/b07c3c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **make**: scaffold an action with an extension, and register the two missing makers ([5a16fbe](https://github.com/stacksjs/stacks/commit/5a16fbe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: apply security defaults to early error responses ([0522544](https://github.com/stacksjs/stacks/commit/0522544)) _(by Chris <chris@stacksjs.com>)_ ([#2491](https://github.com/stacksjs/stacks/issues/2491), [#2490](https://github.com/stacksjs/stacks/issues/2490))
+- **compression**: honor weighted Brotli and gzip offers ([9716221](https://github.com/stacksjs/stacks/commit/9716221)) _(by Chris <chris@stacksjs.com>)_ ([#2485](https://github.com/stacksjs/stacks/issues/2485), [#2462](https://github.com/stacksjs/stacks/issues/2462))
+- **models**: declare the token owner columns instead of casting past them ([b9f716b](https://github.com/stacksjs/stacks/commit/b9f716b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: read the stx config under either name it accepts (#2483) ([f03616f](https://github.com/stacksjs/stacks/commit/f03616f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2446](https://github.com/stacksjs/stacks/issues/2446), [#2483](https://github.com/stacksjs/stacks/issues/2483), [#2483](https://github.com/stacksjs/stacks/issues/2483))
+- **database**: stop one unrunnable migration blocking the whole batch (#2480) ([900dd97](https://github.com/stacksjs/stacks/commit/900dd97)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2477](https://github.com/stacksjs/stacks/issues/2477), [#2480](https://github.com/stacksjs/stacks/issues/2480), [#2480](https://github.com/stacksjs/stacks/issues/2480), [#1916](https://github.com/stacksjs/stacks/issues/1916))
+- unbreak main after the polymorphic token change (#2482) ([485d4b1](https://github.com/stacksjs/stacks/commit/485d4b1)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2482](https://github.com/stacksjs/stacks/issues/2482), [#2482](https://github.com/stacksjs/stacks/issues/2482), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+- **bench**: preserve diagnostics for invalid throughput ([d35183b](https://github.com/stacksjs/stacks/commit/d35183b)) _(by Chris <chris@stacksjs.com>)_ ([#2478](https://github.com/stacksjs/stacks/issues/2478), [#2470](https://github.com/stacksjs/stacks/issues/2470), [#2475](https://github.com/stacksjs/stacks/issues/2475))
+- **bench**: retain and validate every routing measurement sample (#2475) ([b8046ad](https://github.com/stacksjs/stacks/commit/b8046ad)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2470](https://github.com/stacksjs/stacks/issues/2470), [#2475](https://github.com/stacksjs/stacks/issues/2475), [#2475](https://github.com/stacksjs/stacks/issues/2475))
+- **packages**: rebuild a stale auto-import barrel at boot (#2474) ([290ccda](https://github.com/stacksjs/stacks/commit/290ccda)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2445](https://github.com/stacksjs/stacks/issues/2445), [#2474](https://github.com/stacksjs/stacks/issues/2474), [#2474](https://github.com/stacksjs/stacks/issues/2474))
+- **generate**: discover installed packages before regenerating barrels (#2471) ([5ba4441](https://github.com/stacksjs/stacks/commit/5ba4441)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2471](https://github.com/stacksjs/stacks/issues/2471), [#2471](https://github.com/stacksjs/stacks/issues/2471), [#2443](https://github.com/stacksjs/stacks/issues/2443))
+- **bench**: resolve runtime provenance from its importer ([b02bc66](https://github.com/stacksjs/stacks/commit/b02bc66)) _(by Chris <chris@stacksjs.com>)_ ([#2469](https://github.com/stacksjs/stacks/issues/2469), [#2468](https://github.com/stacksjs/stacks/issues/2468))
+- **router**: isolate middleware caches across reloads ([297fd7a](https://github.com/stacksjs/stacks/commit/297fd7a)) _(by Chris <chris@stacksjs.com>)_ ([#2467](https://github.com/stacksjs/stacks/issues/2467), [#2466](https://github.com/stacksjs/stacks/issues/2466))
+- **router**: preserve errors from inline route handlers ([0358941](https://github.com/stacksjs/stacks/commit/0358941)) _(by Chris <chris@stacksjs.com>)_ ([#2459](https://github.com/stacksjs/stacks/issues/2459))
+- **ci**: scan the defaults tree for subpath imports too ([c898590](https://github.com/stacksjs/stacks/commit/c898590)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: nine useSearch columns that do not exist ([dcbdc5b](https://github.com/stacksjs/stacks/commit/dcbdc5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: drop User.hasMany PersonalAccessToken, a relation with no model ([72b10a9](https://github.com/stacksjs/stacks/commit/72b10a9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: compute the subpath build set instead of typing it into the workflow ([ef452ae](https://github.com/stacksjs/stacks/commit/ef452ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: build @stacksjs/path before the jobs that import its subpath ([8dc738f](https://github.com/stacksjs/stacks/commit/8dc738f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: scope batch queues and caches to request identities ([f323523](https://github.com/stacksjs/stacks/commit/f323523)) _(by Chris <chris@stacksjs.com>)_ ([#2456](https://github.com/stacksjs/stacks/issues/2456))
+- **router**: bind framework types to public entry ([342792f](https://github.com/stacksjs/stacks/commit/342792f)) _(by Chris <chris@stacksjs.com>)_ ([#2452](https://github.com/stacksjs/stacks/issues/2452))
+- **orm**: the known-trait list was missing three working traits ([21eb7a2](https://github.com/stacksjs/stacks/commit/21eb7a2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: say when a model declares a trait nothing reads ([b399413](https://github.com/stacksjs/stacks/commit/b399413)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: cache HTTP error imports on refusal paths ([3858bd4](https://github.com/stacksjs/stacks/commit/3858bd4)) _(by Chris <chris@stacksjs.com>)_ ([#2515](https://github.com/stacksjs/stacks/issues/2515))
+- **middleware**: remove discarded throttle body decoding ([3a1c00b](https://github.com/stacksjs/stacks/commit/3a1c00b)) _(by Chris <chris@stacksjs.com>)_ ([#2510](https://github.com/stacksjs/stacks/issues/2510), [#2509](https://github.com/stacksjs/stacks/issues/2509), [#2511](https://github.com/stacksjs/stacks/issues/2511))
+- **router**: cache the HTTP error module for quota refusals ([277ed1b](https://github.com/stacksjs/stacks/commit/277ed1b)) _(by Chris <chris@stacksjs.com>)_ ([#2509](https://github.com/stacksjs/stacks/issues/2509), [#2508](https://github.com/stacksjs/stacks/issues/2508))
+- **router**: cache the lazy route limiter module ([68656af](https://github.com/stacksjs/stacks/commit/68656af)) _(by Chris <chris@stacksjs.com>)_ ([#2508](https://github.com/stacksjs/stacks/issues/2508), [#2506](https://github.com/stacksjs/stacks/issues/2506), [#2507](https://github.com/stacksjs/stacks/issues/2507))
+- **router**: retain the validation module between requests ([44b77d0](https://github.com/stacksjs/stacks/commit/44b77d0)) _(by Chris <chris@stacksjs.com>)_ ([#2507](https://github.com/stacksjs/stacks/issues/2507), [#2506](https://github.com/stacksjs/stacks/issues/2506))
+- **router**: retain the gate module for request authorization ([1c5baba](https://github.com/stacksjs/stacks/commit/1c5baba)) _(by Chris <chris@stacksjs.com>)_ ([#2506](https://github.com/stacksjs/stacks/issues/2506), [#2504](https://github.com/stacksjs/stacks/issues/2504))
+- **auth**: narrow authorization middleware imports ([200af2b](https://github.com/stacksjs/stacks/commit/200af2b)) _(by Chris <chris@stacksjs.com>)_ ([#2504](https://github.com/stacksjs/stacks/issues/2504), [#2503](https://github.com/stacksjs/stacks/issues/2503), [#2505](https://github.com/stacksjs/stacks/issues/2505))
+- **auth**: narrow middleware imports to required entrypoints ([b2054f8](https://github.com/stacksjs/stacks/commit/b2054f8)) _(by Chris <chris@stacksjs.com>)_ ([#2503](https://github.com/stacksjs/stacks/issues/2503), [#2502](https://github.com/stacksjs/stacks/issues/2502))
+- **router**: skip awaiting cached boot middleware parses ([d6940bf](https://github.com/stacksjs/stacks/commit/d6940bf)) _(by Chris <chris@stacksjs.com>)_ ([#2502](https://github.com/stacksjs/stacks/issues/2502))
+- **router**: index route names once per snapshot ([7aaf2b9](https://github.com/stacksjs/stacks/commit/7aaf2b9)) _(by Chris <chris@stacksjs.com>)_ ([#2501](https://github.com/stacksjs/stacks/issues/2501))
+- **server**: reuse site-mode paths within the working directory ([96fc5a8](https://github.com/stacksjs/stacks/commit/96fc5a8)) _(by Chris <chris@stacksjs.com>)_ ([#2498](https://github.com/stacksjs/stacks/issues/2498))
+- **middleware**: retain the loaded maintenance module ([10c069b](https://github.com/stacksjs/stacks/commit/10c069b)) _(by Chris <chris@stacksjs.com>)_ ([#2497](https://github.com/stacksjs/stacks/issues/2497))
+- **router**: bound incoming request IDs before scanning ([5de1194](https://github.com/stacksjs/stacks/commit/5de1194)) _(by Chris <chris@stacksjs.com>)_ ([#2495](https://github.com/stacksjs/stacks/issues/2495))
+- **server**: release settled auto-import timers ([942f719](https://github.com/stacksjs/stacks/commit/942f719)) _(by Chris <chris@stacksjs.com>)_ ([#2493](https://github.com/stacksjs/stacks/issues/2493))
+- **csrf**: scan mixed cookies without splitting every pair ([10e25e5](https://github.com/stacksjs/stacks/commit/10e25e5)) _(by Chris <chris@stacksjs.com>)_ ([#2490](https://github.com/stacksjs/stacks/issues/2490), [#2491](https://github.com/stacksjs/stacks/issues/2491))
+- **router**: avoid recopying replayed request buffers ([f781f7c](https://github.com/stacksjs/stacks/commit/f781f7c)) _(by Chris <chris@stacksjs.com>)_ ([#2487](https://github.com/stacksjs/stacks/issues/2487), [#2484](https://github.com/stacksjs/stacks/issues/2484))
+- **compression**: skip unused content-type parameters ([7e7392b](https://github.com/stacksjs/stacks/commit/7e7392b)) _(by Chris <chris@stacksjs.com>)_ ([#2486](https://github.com/stacksjs/stacks/issues/2486), [#2462](https://github.com/stacksjs/stacks/issues/2462))
+- **compression**: avoid recopying owned codec output ([cf94285](https://github.com/stacksjs/stacks/commit/cf94285)) _(by Chris <chris@stacksjs.com>)_ ([#2484](https://github.com/stacksjs/stacks/issues/2484))
+- **router**: finalize warm CORS headers synchronously ([5096623](https://github.com/stacksjs/stacks/commit/5096623)) _(by Chris <chris@stacksjs.com>)_ ([#2465](https://github.com/stacksjs/stacks/issues/2465))
+- **middleware**: keep API and CORS guards synchronous ([fbb3e89](https://github.com/stacksjs/stacks/commit/fbb3e89)) _(by Chris <chris@stacksjs.com>)_ ([#2464](https://github.com/stacksjs/stacks/issues/2464))
+- **middleware**: complete the compression marker synchronously ([4f4eca4](https://github.com/stacksjs/stacks/commit/4f4eca4)) _(by Chris <chris@stacksjs.com>)_ ([#2460](https://github.com/stacksjs/stacks/issues/2460))
+- **compression**: skip reads for proven small JSON bodies ([651ca23](https://github.com/stacksjs/stacks/commit/651ca23)) _(by Chris <chris@stacksjs.com>)_ ([#2463](https://github.com/stacksjs/stacks/issues/2463))
+- **router**: reuse the resolved response compression function ([b15429d](https://github.com/stacksjs/stacks/commit/b15429d)) _(by Chris <chris@stacksjs.com>)_ ([#2461](https://github.com/stacksjs/stacks/issues/2461))
+- **router**: reuse the resolved CORS header function ([3ecf977](https://github.com/stacksjs/stacks/commit/3ecf977)) _(by Chris <chris@stacksjs.com>)_ ([#2458](https://github.com/stacksjs/stacks/issues/2458))
+- **router**: streamline response CSRF cookie scanning ([481ed7b](https://github.com/stacksjs/stacks/commit/481ed7b)) _(by Chris <chris@stacksjs.com>)_ ([#2457](https://github.com/stacksjs/stacks/issues/2457))
+- **router**: streamline cached query promise forwarding ([3e0dbd7](https://github.com/stacksjs/stacks/commit/3e0dbd7)) _(by Chris <chris@stacksjs.com>)_ ([#2455](https://github.com/stacksjs/stacks/issues/2455))
+- **router**: avoid errors for safe path rejection ([94367ed](https://github.com/stacksjs/stacks/commit/94367ed)) _(by Chris <chris@stacksjs.com>)_ ([#2454](https://github.com/stacksjs/stacks/issues/2454))
+- **router**: reuse initialized action rate limiters ([ef5bb90](https://github.com/stacksjs/stacks/commit/ef5bb90)) _(by Chris <chris@stacksjs.com>)_ ([#2451](https://github.com/stacksjs/stacks/issues/2451))
+- **router**: reuse validation error field labels ([ae32fcd](https://github.com/stacksjs/stacks/commit/ae32fcd)) _(by Chris <chris@stacksjs.com>)_ ([#2449](https://github.com/stacksjs/stacks/issues/2449))
+- **router**: avoid awaiting primitive action-hook results ([e645e41](https://github.com/stacksjs/stacks/commit/e645e41)) _(by Chris <chris@stacksjs.com>)_ ([#2448](https://github.com/stacksjs/stacks/issues/2448))
+- **router**: prepare headers for uncached JSON lengths ([9b68e5f](https://github.com/stacksjs/stacks/commit/9b68e5f)) _(by Chris <chris@stacksjs.com>)_ ([#2447](https://github.com/stacksjs/stacks/issues/2447))
+- **router**: expose serialized JSON lengths ([6bf8eea](https://github.com/stacksjs/stacks/commit/6bf8eea)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer cached header lookup ([c646042](https://github.com/stacksjs/stacks/commit/c646042)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- move the CSS engine to @stacksjs/ts-css ([1595ebf](https://github.com/stacksjs/stacks/commit/1595ebf)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: document the personal access token surface ([efd73fd](https://github.com/stacksjs/stacks/commit/efd73fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **defaults**: copy the whole @stacksjs/path source into the preloader fixture ([2009268](https://github.com/stacksjs/stacks/commit/2009268)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: check the polymorphic relation targets too ([6ec076e](https://github.com/stacksjs/stacks/commit/6ec076e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- regenerate the artifacts a 98th model made stale (#2472) ([9279097](https://github.com/stacksjs/stacks/commit/9279097)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+
+## bench
+
+- add a manual HTTP CPU profiling workflow mode ([517dc67](https://github.com/stacksjs/stacks/commit/517dc67)) _(by Chris <chris@stacksjs.com>)_ ([#2479](https://github.com/stacksjs/stacks/issues/2479))
+- capture warmed production HTTP CPU profiles ([a96f670](https://github.com/stacksjs/stacks/commit/a96f670)) _(by Chris <chris@stacksjs.com>)_ ([#2479](https://github.com/stacksjs/stacks/issues/2479))
+- add a manual Linux routing diagnostic ([ca1f418](https://github.com/stacksjs/stacks/commit/ca1f418)) _(by Chris <chris@stacksjs.com>)_ ([#2468](https://github.com/stacksjs/stacks/issues/2468))
+
+## 🎉 Miscellaneous
+
+- Reapply "chore: regenerate the artifacts a 98th model made stale (#2472)" ([eb86fd8](https://github.com/stacksjs/stacks/commit/eb86fd8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+- Revert "chore: regenerate the artifacts a 98th model made stale (#2472)" ([3cdb41b](https://github.com/stacksjs/stacks/commit/3cdb41b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.29...v0.74.30)
+
+## ✨ Features
+
+- **commerce**: ship commerce off by default (#2488) ([f8654b6](https://github.com/stacksjs/stacks/commit/f8654b6)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2476](https://github.com/stacksjs/stacks/issues/2476), [#2488](https://github.com/stacksjs/stacks/issues/2488), [#2488](https://github.com/stacksjs/stacks/issues/2488))
+- **orm**: useAuth confers the personal-access-token relation ([fa52df9](https://github.com/stacksjs/stacks/commit/fa52df9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **auth**: personal access tokens belong to any authenticatable, not just User ([6909fcf](https://github.com/stacksjs/stacks/commit/6909fcf)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2306](https://github.com/stacksjs/stacks/issues/2306))
+- **models**: give personal access tokens a model, restoring User.hasMany ([62ee7bb](https://github.com/stacksjs/stacks/commit/62ee7bb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: implement useActivityLog, the trait that only ever promised ([83d92f1](https://github.com/stacksjs/stacks/commit/83d92f1)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2435](https://github.com/stacksjs/stacks/issues/2435))
+
+## 🐛 Bug Fixes
+
+- **css**: follow the engine's CssOptions rename ([072ad2b](https://github.com/stacksjs/stacks/commit/072ad2b)) _(by Chris <chris@stacksjs.com>)_
+- **config**: check CSS overrides against engine options ([3f539d1](https://github.com/stacksjs/stacks/commit/3f539d1)) _(by Chris <chris@stacksjs.com>)_ ([#2511](https://github.com/stacksjs/stacks/issues/2511), [#2510](https://github.com/stacksjs/stacks/issues/2510))
+- **auth**: preserve request receiver when resolving user ([5855880](https://github.com/stacksjs/stacks/commit/5855880)) _(by Chris <chris@stacksjs.com>)_ ([#2505](https://github.com/stacksjs/stacks/issues/2505), [#2504](https://github.com/stacksjs/stacks/issues/2504))
+- **migrate**: say what to do about a ledger row whose file is gone ([ad6a1fb](https://github.com/stacksjs/stacks/commit/ad6a1fb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **test**: read AGENTS.md, the committed one, not generated CLAUDE.md ([b07c3c6](https://github.com/stacksjs/stacks/commit/b07c3c6)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **make**: scaffold an action with an extension, and register the two missing makers ([5a16fbe](https://github.com/stacksjs/stacks/commit/5a16fbe)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **router**: apply security defaults to early error responses ([0522544](https://github.com/stacksjs/stacks/commit/0522544)) _(by Chris <chris@stacksjs.com>)_ ([#2491](https://github.com/stacksjs/stacks/issues/2491), [#2490](https://github.com/stacksjs/stacks/issues/2490))
+- **compression**: honor weighted Brotli and gzip offers ([9716221](https://github.com/stacksjs/stacks/commit/9716221)) _(by Chris <chris@stacksjs.com>)_ ([#2485](https://github.com/stacksjs/stacks/issues/2485), [#2462](https://github.com/stacksjs/stacks/issues/2462))
+- **models**: declare the token owner columns instead of casting past them ([b9f716b](https://github.com/stacksjs/stacks/commit/b9f716b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **config**: read the stx config under either name it accepts (#2483) ([f03616f](https://github.com/stacksjs/stacks/commit/f03616f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2446](https://github.com/stacksjs/stacks/issues/2446), [#2483](https://github.com/stacksjs/stacks/issues/2483), [#2483](https://github.com/stacksjs/stacks/issues/2483))
+- **database**: stop one unrunnable migration blocking the whole batch (#2480) ([900dd97](https://github.com/stacksjs/stacks/commit/900dd97)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2477](https://github.com/stacksjs/stacks/issues/2477), [#2480](https://github.com/stacksjs/stacks/issues/2480), [#2480](https://github.com/stacksjs/stacks/issues/2480), [#1916](https://github.com/stacksjs/stacks/issues/1916))
+- unbreak main after the polymorphic token change (#2482) ([485d4b1](https://github.com/stacksjs/stacks/commit/485d4b1)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2482](https://github.com/stacksjs/stacks/issues/2482), [#2482](https://github.com/stacksjs/stacks/issues/2482), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+- **bench**: preserve diagnostics for invalid throughput ([d35183b](https://github.com/stacksjs/stacks/commit/d35183b)) _(by Chris <chris@stacksjs.com>)_ ([#2478](https://github.com/stacksjs/stacks/issues/2478), [#2470](https://github.com/stacksjs/stacks/issues/2470), [#2475](https://github.com/stacksjs/stacks/issues/2475))
+- **bench**: retain and validate every routing measurement sample (#2475) ([b8046ad](https://github.com/stacksjs/stacks/commit/b8046ad)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2470](https://github.com/stacksjs/stacks/issues/2470), [#2475](https://github.com/stacksjs/stacks/issues/2475), [#2475](https://github.com/stacksjs/stacks/issues/2475))
+- **packages**: rebuild a stale auto-import barrel at boot (#2474) ([290ccda](https://github.com/stacksjs/stacks/commit/290ccda)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2445](https://github.com/stacksjs/stacks/issues/2445), [#2474](https://github.com/stacksjs/stacks/issues/2474), [#2474](https://github.com/stacksjs/stacks/issues/2474))
+- **generate**: discover installed packages before regenerating barrels (#2471) ([5ba4441](https://github.com/stacksjs/stacks/commit/5ba4441)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2471](https://github.com/stacksjs/stacks/issues/2471), [#2471](https://github.com/stacksjs/stacks/issues/2471), [#2443](https://github.com/stacksjs/stacks/issues/2443))
+- **bench**: resolve runtime provenance from its importer ([b02bc66](https://github.com/stacksjs/stacks/commit/b02bc66)) _(by Chris <chris@stacksjs.com>)_ ([#2469](https://github.com/stacksjs/stacks/issues/2469), [#2468](https://github.com/stacksjs/stacks/issues/2468))
+- **router**: isolate middleware caches across reloads ([297fd7a](https://github.com/stacksjs/stacks/commit/297fd7a)) _(by Chris <chris@stacksjs.com>)_ ([#2467](https://github.com/stacksjs/stacks/issues/2467), [#2466](https://github.com/stacksjs/stacks/issues/2466))
+- **router**: preserve errors from inline route handlers ([0358941](https://github.com/stacksjs/stacks/commit/0358941)) _(by Chris <chris@stacksjs.com>)_ ([#2459](https://github.com/stacksjs/stacks/issues/2459))
+- **ci**: scan the defaults tree for subpath imports too ([c898590](https://github.com/stacksjs/stacks/commit/c898590)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: nine useSearch columns that do not exist ([dcbdc5b](https://github.com/stacksjs/stacks/commit/dcbdc5b)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **models**: drop User.hasMany PersonalAccessToken, a relation with no model ([72b10a9](https://github.com/stacksjs/stacks/commit/72b10a9)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: compute the subpath build set instead of typing it into the workflow ([ef452ae](https://github.com/stacksjs/stacks/commit/ef452ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **ci**: build @stacksjs/path before the jobs that import its subpath ([8dc738f](https://github.com/stacksjs/stacks/commit/8dc738f)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: scope batch queues and caches to request identities ([f323523](https://github.com/stacksjs/stacks/commit/f323523)) _(by Chris <chris@stacksjs.com>)_ ([#2456](https://github.com/stacksjs/stacks/issues/2456))
+- **router**: bind framework types to public entry ([342792f](https://github.com/stacksjs/stacks/commit/342792f)) _(by Chris <chris@stacksjs.com>)_ ([#2452](https://github.com/stacksjs/stacks/issues/2452))
+- **orm**: the known-trait list was missing three working traits ([21eb7a2](https://github.com/stacksjs/stacks/commit/21eb7a2)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: say when a model declares a trait nothing reads ([b399413](https://github.com/stacksjs/stacks/commit/b399413)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ⚡ Performance Improvements
+
+- **router**: cache HTTP error imports on refusal paths ([3858bd4](https://github.com/stacksjs/stacks/commit/3858bd4)) _(by Chris <chris@stacksjs.com>)_ ([#2515](https://github.com/stacksjs/stacks/issues/2515))
+- **middleware**: remove discarded throttle body decoding ([3a1c00b](https://github.com/stacksjs/stacks/commit/3a1c00b)) _(by Chris <chris@stacksjs.com>)_ ([#2510](https://github.com/stacksjs/stacks/issues/2510), [#2509](https://github.com/stacksjs/stacks/issues/2509), [#2511](https://github.com/stacksjs/stacks/issues/2511))
+- **router**: cache the HTTP error module for quota refusals ([277ed1b](https://github.com/stacksjs/stacks/commit/277ed1b)) _(by Chris <chris@stacksjs.com>)_ ([#2509](https://github.com/stacksjs/stacks/issues/2509), [#2508](https://github.com/stacksjs/stacks/issues/2508))
+- **router**: cache the lazy route limiter module ([68656af](https://github.com/stacksjs/stacks/commit/68656af)) _(by Chris <chris@stacksjs.com>)_ ([#2508](https://github.com/stacksjs/stacks/issues/2508), [#2506](https://github.com/stacksjs/stacks/issues/2506), [#2507](https://github.com/stacksjs/stacks/issues/2507))
+- **router**: retain the validation module between requests ([44b77d0](https://github.com/stacksjs/stacks/commit/44b77d0)) _(by Chris <chris@stacksjs.com>)_ ([#2507](https://github.com/stacksjs/stacks/issues/2507), [#2506](https://github.com/stacksjs/stacks/issues/2506))
+- **router**: retain the gate module for request authorization ([1c5baba](https://github.com/stacksjs/stacks/commit/1c5baba)) _(by Chris <chris@stacksjs.com>)_ ([#2506](https://github.com/stacksjs/stacks/issues/2506), [#2504](https://github.com/stacksjs/stacks/issues/2504))
+- **auth**: narrow authorization middleware imports ([200af2b](https://github.com/stacksjs/stacks/commit/200af2b)) _(by Chris <chris@stacksjs.com>)_ ([#2504](https://github.com/stacksjs/stacks/issues/2504), [#2503](https://github.com/stacksjs/stacks/issues/2503), [#2505](https://github.com/stacksjs/stacks/issues/2505))
+- **auth**: narrow middleware imports to required entrypoints ([b2054f8](https://github.com/stacksjs/stacks/commit/b2054f8)) _(by Chris <chris@stacksjs.com>)_ ([#2503](https://github.com/stacksjs/stacks/issues/2503), [#2502](https://github.com/stacksjs/stacks/issues/2502))
+- **router**: skip awaiting cached boot middleware parses ([d6940bf](https://github.com/stacksjs/stacks/commit/d6940bf)) _(by Chris <chris@stacksjs.com>)_ ([#2502](https://github.com/stacksjs/stacks/issues/2502))
+- **router**: index route names once per snapshot ([7aaf2b9](https://github.com/stacksjs/stacks/commit/7aaf2b9)) _(by Chris <chris@stacksjs.com>)_ ([#2501](https://github.com/stacksjs/stacks/issues/2501))
+- **server**: reuse site-mode paths within the working directory ([96fc5a8](https://github.com/stacksjs/stacks/commit/96fc5a8)) _(by Chris <chris@stacksjs.com>)_ ([#2498](https://github.com/stacksjs/stacks/issues/2498))
+- **middleware**: retain the loaded maintenance module ([10c069b](https://github.com/stacksjs/stacks/commit/10c069b)) _(by Chris <chris@stacksjs.com>)_ ([#2497](https://github.com/stacksjs/stacks/issues/2497))
+- **router**: bound incoming request IDs before scanning ([5de1194](https://github.com/stacksjs/stacks/commit/5de1194)) _(by Chris <chris@stacksjs.com>)_ ([#2495](https://github.com/stacksjs/stacks/issues/2495))
+- **server**: release settled auto-import timers ([942f719](https://github.com/stacksjs/stacks/commit/942f719)) _(by Chris <chris@stacksjs.com>)_ ([#2493](https://github.com/stacksjs/stacks/issues/2493))
+- **csrf**: scan mixed cookies without splitting every pair ([10e25e5](https://github.com/stacksjs/stacks/commit/10e25e5)) _(by Chris <chris@stacksjs.com>)_ ([#2490](https://github.com/stacksjs/stacks/issues/2490), [#2491](https://github.com/stacksjs/stacks/issues/2491))
+- **router**: avoid recopying replayed request buffers ([f781f7c](https://github.com/stacksjs/stacks/commit/f781f7c)) _(by Chris <chris@stacksjs.com>)_ ([#2487](https://github.com/stacksjs/stacks/issues/2487), [#2484](https://github.com/stacksjs/stacks/issues/2484))
+- **compression**: skip unused content-type parameters ([7e7392b](https://github.com/stacksjs/stacks/commit/7e7392b)) _(by Chris <chris@stacksjs.com>)_ ([#2486](https://github.com/stacksjs/stacks/issues/2486), [#2462](https://github.com/stacksjs/stacks/issues/2462))
+- **compression**: avoid recopying owned codec output ([cf94285](https://github.com/stacksjs/stacks/commit/cf94285)) _(by Chris <chris@stacksjs.com>)_ ([#2484](https://github.com/stacksjs/stacks/issues/2484))
+- **router**: finalize warm CORS headers synchronously ([5096623](https://github.com/stacksjs/stacks/commit/5096623)) _(by Chris <chris@stacksjs.com>)_ ([#2465](https://github.com/stacksjs/stacks/issues/2465))
+- **middleware**: keep API and CORS guards synchronous ([fbb3e89](https://github.com/stacksjs/stacks/commit/fbb3e89)) _(by Chris <chris@stacksjs.com>)_ ([#2464](https://github.com/stacksjs/stacks/issues/2464))
+- **middleware**: complete the compression marker synchronously ([4f4eca4](https://github.com/stacksjs/stacks/commit/4f4eca4)) _(by Chris <chris@stacksjs.com>)_ ([#2460](https://github.com/stacksjs/stacks/issues/2460))
+- **compression**: skip reads for proven small JSON bodies ([651ca23](https://github.com/stacksjs/stacks/commit/651ca23)) _(by Chris <chris@stacksjs.com>)_ ([#2463](https://github.com/stacksjs/stacks/issues/2463))
+- **router**: reuse the resolved response compression function ([b15429d](https://github.com/stacksjs/stacks/commit/b15429d)) _(by Chris <chris@stacksjs.com>)_ ([#2461](https://github.com/stacksjs/stacks/issues/2461))
+- **router**: reuse the resolved CORS header function ([3ecf977](https://github.com/stacksjs/stacks/commit/3ecf977)) _(by Chris <chris@stacksjs.com>)_ ([#2458](https://github.com/stacksjs/stacks/issues/2458))
+- **router**: streamline response CSRF cookie scanning ([481ed7b](https://github.com/stacksjs/stacks/commit/481ed7b)) _(by Chris <chris@stacksjs.com>)_ ([#2457](https://github.com/stacksjs/stacks/issues/2457))
+- **router**: streamline cached query promise forwarding ([3e0dbd7](https://github.com/stacksjs/stacks/commit/3e0dbd7)) _(by Chris <chris@stacksjs.com>)_ ([#2455](https://github.com/stacksjs/stacks/issues/2455))
+- **router**: avoid errors for safe path rejection ([94367ed](https://github.com/stacksjs/stacks/commit/94367ed)) _(by Chris <chris@stacksjs.com>)_ ([#2454](https://github.com/stacksjs/stacks/issues/2454))
+- **router**: reuse initialized action rate limiters ([ef5bb90](https://github.com/stacksjs/stacks/commit/ef5bb90)) _(by Chris <chris@stacksjs.com>)_ ([#2451](https://github.com/stacksjs/stacks/issues/2451))
+- **router**: reuse validation error field labels ([ae32fcd](https://github.com/stacksjs/stacks/commit/ae32fcd)) _(by Chris <chris@stacksjs.com>)_ ([#2449](https://github.com/stacksjs/stacks/issues/2449))
+- **router**: avoid awaiting primitive action-hook results ([e645e41](https://github.com/stacksjs/stacks/commit/e645e41)) _(by Chris <chris@stacksjs.com>)_ ([#2448](https://github.com/stacksjs/stacks/issues/2448))
+- **router**: prepare headers for uncached JSON lengths ([9b68e5f](https://github.com/stacksjs/stacks/commit/9b68e5f)) _(by Chris <chris@stacksjs.com>)_ ([#2447](https://github.com/stacksjs/stacks/issues/2447))
+- **router**: expose serialized JSON lengths ([6bf8eea](https://github.com/stacksjs/stacks/commit/6bf8eea)) _(by Chris <chris@stacksjs.com>)_
+- **router**: defer cached header lookup ([c646042](https://github.com/stacksjs/stacks/commit/c646042)) _(by Chris <chris@stacksjs.com>)_
+
+## ♻️ Code Refactoring
+
+- move the CSS engine to @stacksjs/ts-css ([1595ebf](https://github.com/stacksjs/stacks/commit/1595ebf)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **skills**: document the personal access token surface ([efd73fd](https://github.com/stacksjs/stacks/commit/efd73fd)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## ✅ Tests
+
+- **defaults**: copy the whole @stacksjs/path source into the preloader fixture ([2009268](https://github.com/stacksjs/stacks/commit/2009268)) _(by Chris <chrisbreuer93@gmail.com>)_
+- **orm**: check the polymorphic relation targets too ([6ec076e](https://github.com/stacksjs/stacks/commit/6ec076e)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+## 🔧 Chores
+
+- regenerate the artifacts a 98th model made stale (#2472) ([9279097](https://github.com/stacksjs/stacks/commit/9279097)) _(by Chris <chrisbreuer93@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+
+## bench
+
+- add a manual HTTP CPU profiling workflow mode ([517dc67](https://github.com/stacksjs/stacks/commit/517dc67)) _(by Chris <chris@stacksjs.com>)_ ([#2479](https://github.com/stacksjs/stacks/issues/2479))
+- capture warmed production HTTP CPU profiles ([a96f670](https://github.com/stacksjs/stacks/commit/a96f670)) _(by Chris <chris@stacksjs.com>)_ ([#2479](https://github.com/stacksjs/stacks/issues/2479))
+- add a manual Linux routing diagnostic ([ca1f418](https://github.com/stacksjs/stacks/commit/ca1f418)) _(by Chris <chris@stacksjs.com>)_ ([#2468](https://github.com/stacksjs/stacks/issues/2468))
+
+## 🎉 Miscellaneous
+
+- Reapply "chore: regenerate the artifacts a 98th model made stale (#2472)" ([eb86fd8](https://github.com/stacksjs/stacks/commit/eb86fd8)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+- Revert "chore: regenerate the artifacts a 98th model made stale (#2472)" ([3cdb41b](https://github.com/stacksjs/stacks/commit/3cdb41b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2472](https://github.com/stacksjs/stacks/issues/2472), [#2472](https://github.com/stacksjs/stacks/issues/2472))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.28...v0.74.29)
 
 ## ✨ Features
