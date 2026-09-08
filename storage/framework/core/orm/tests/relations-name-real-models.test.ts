@@ -21,6 +21,14 @@ import { join } from 'node:path'
 const root = join(import.meta.dir, '..', '..', '..', '..', '..')
 const RELATION_KINDS = ['belongsTo', 'hasMany', 'hasOne', 'belongsToMany'] as const
 
+/**
+ * The polymorphic kinds, which are declared as records rather than arrays -
+ * `morphMany: { tokenable: 'PersonalAccessToken' }`. Checked too, because
+ * `useAuth` now confers one and a target that stops existing fails the same
+ * way: advertised by the ORM, throwing on use.
+ */
+const MORPH_KINDS = ['morphMany', 'morphOne', 'morphTo', 'morphToMany', 'morphedByMany'] as const
+
 function modelFiles(dir: string, found: string[] = []): string[] {
   let entries
   try {
@@ -69,6 +77,17 @@ describe('model relations', () => {
         // The array form. The object form spells its targets as keys, which
         // `defineModel`'s own types already constrain to model names.
         const block = new RegExp(`${kind}\\s*:\\s*\\[([^\\]]*)\\]`).exec(source)
+        if (!block)
+          continue
+
+        for (const target of block[1].matchAll(/'([A-Za-z]\w*)'/g)) {
+          if (!declared.has(target[1]))
+            dangling.push(`${self}.${kind} names '${target[1]}', which is not a model`)
+        }
+      }
+
+      for (const kind of MORPH_KINDS) {
+        const block = new RegExp(`${kind}\\s*:\\s*\\{([^}]*)\\}`).exec(source)
         if (!block)
           continue
 
