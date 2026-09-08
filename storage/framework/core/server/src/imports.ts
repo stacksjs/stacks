@@ -1217,12 +1217,19 @@ export async function injectGlobalAutoImports(): Promise<void> {
   // Anything that doesn't load in 4s gets logged and skipped — the package
   // can still be reached via explicit `import` from user code.
   const importWithTimeout = async (pkg: string) => {
-    return Promise.race([
-      import(pkg),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`auto-import timed out: ${pkg}`)), 4000),
-      ),
-    ])
+    let timer: ReturnType<typeof setTimeout> | undefined
+    try {
+      return await Promise.race([
+        import(pkg),
+        new Promise<never>((_, reject) => {
+          timer = setTimeout(() => reject(new Error(`auto-import timed out: ${pkg}`)), 4000)
+        }),
+      ])
+    }
+    finally {
+      if (timer !== undefined)
+        clearTimeout(timer)
+    }
   }
 
   // Import every primitive concurrently. They're independent packages that
