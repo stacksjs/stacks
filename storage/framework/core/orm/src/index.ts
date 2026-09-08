@@ -339,6 +339,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Release', [''], 'dashboard'],
   ['Notification', [''], 'dashboard'],
   ['NotificationDelivery', [''], 'dashboard'],
+  ['PersonalAccessToken', [''], 'dashboard'],
   ['MailPreference', [''], 'dashboard'],
   ['Log', [''], 'dashboard'],
   ['Request', [''], 'dashboard'],
@@ -514,6 +515,7 @@ export const Notification = lazyModel<typeof import('../../../defaults/app/Model
 export const NotificationDelivery = lazyModel<typeof import('../../../defaults/app/Models/NotificationDelivery').default>('NotificationDelivery')
 export const Order = lazyModel<typeof import('../../../defaults/app/Models/commerce/Order').default>('Order')
 export const OrderIdempotency = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderIdempotency').default>('OrderIdempotency')
+export const PersonalAccessToken = lazyModel<typeof import('../../../defaults/app/Models/PersonalAccessToken').default>('PersonalAccessToken')
 export const OrderItem = lazyModel<typeof import('../../../defaults/app/Models/commerce/OrderItem').default>('OrderItem')
 export const Page = lazyModel<typeof import('../../../defaults/app/Models/Content/Page').default>('Page')
 export const Payment = lazyModel<typeof import('../../../defaults/app/Models/commerce/Payment').default>('Payment')

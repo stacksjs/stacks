@@ -32,6 +32,7 @@ export { default as NotificationDelivery } from '../defaults/app/Models/Notifica
 export { default as PaymentMethod } from '../defaults/app/Models/PaymentMethod'
 export { default as PaymentProduct } from '../defaults/app/Models/PaymentProduct'
 export { default as PaymentTransaction } from '../defaults/app/Models/PaymentTransaction'
+export { default as PersonalAccessToken } from '../defaults/app/Models/PersonalAccessToken'
 export { default as QueryLog } from '../defaults/app/Models/QueryLog'
 export { default as Release } from '../defaults/app/Models/Release'
 // Skipped 'Request' - would shadow a built-in global. Import directly if needed.

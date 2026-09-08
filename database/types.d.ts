@@ -963,6 +963,20 @@ declare module '@stacksjs/database' {
       read_at: string
       user_id: number
     }
+    oauth_access_tokens: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      name: string
+      token: string
+      scopes: string
+      revoked: number
+      expires_at: string
+      user_agent: string
+      ip_address: string
+      user_id: number
+    }
     order_idempotency: {
       // columns
       id: number

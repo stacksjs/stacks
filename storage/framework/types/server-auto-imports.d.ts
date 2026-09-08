@@ -89,6 +89,7 @@ declare global {
   const PaymentMethod: typeof import('../defaults/app/Models/PaymentMethod')['default']
   const PaymentProduct: typeof import('../defaults/app/Models/PaymentProduct')['default']
   const PaymentTransaction: typeof import('../defaults/app/Models/PaymentTransaction')['default']
+  const PersonalAccessToken: typeof import('../defaults/app/Models/PersonalAccessToken')['default']
   const QueryLog: typeof import('../defaults/app/Models/QueryLog')['default']
   const Release: typeof import('../defaults/app/Models/Release')['default']
   const SenderDomain: typeof import('../defaults/app/Models/SenderDomain')['default']
