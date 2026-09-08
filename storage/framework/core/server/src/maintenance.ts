@@ -70,15 +70,25 @@ function defaultsForMode(mode: SiteMode): Partial<MaintenancePayload> {
   return mode === 'coming-soon' ? DEFAULT_COMING_SOON_PAYLOAD : DEFAULT_MAINTENANCE_PAYLOAD
 }
 
+// Cache filenames only. Gate checks still read the live files on every request.
+let siteModePaths: { cwd: string, maintenance?: string, comingSoon?: string } | undefined
+
+function currentSiteModePaths(): NonNullable<typeof siteModePaths> {
+  const cwd = process.cwd()
+  if (siteModePaths?.cwd !== cwd)
+    siteModePaths = { cwd }
+  return siteModePaths
+}
+
 /**
  * Get the path to the maintenance file
  */
 export function maintenanceFilePath(): string {
-  return p.storagePath('framework/down')
+  return currentSiteModePaths().maintenance ??= p.storagePath('framework/down')
 }
 
 export function comingSoonFilePath(): string {
-  return p.storagePath('framework/coming-soon')
+  return currentSiteModePaths().comingSoon ??= p.storagePath('framework/coming-soon')
 }
 
 export function siteModeFilePath(mode: SiteMode): string {
