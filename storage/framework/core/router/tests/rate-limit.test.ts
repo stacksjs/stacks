@@ -1,6 +1,7 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { describe, expect, it } from 'bun:test'
 import process from 'node:process'
+import { HttpError } from '@stacksjs/error-handling/http'
 import { clearRateLimit, rateLimit, rateLimitStatus } from '../src/rate-limit'
 import { runWithRequest } from '../src/request-context'
 import { createStacksRouter } from '../src/stacks-router'
@@ -73,6 +74,31 @@ describe('action rate limiting', () => {
 
   it('rejects an unknown period at runtime', async () => {
     await expect(rateLimit('invalid-period', 1).per('week' as 'minute')).rejects.toThrow('unknown period')
+  })
+
+  it('keeps warm quota errors and recovery specific to each bucket', async () => {
+    for (const max of [1, 2]) {
+      const key = `warm-quota-error-${max}`
+      const options = { identity: `client-${max}` }
+      for (let i = 0; i < max; i++)
+        await rateLimit(key, max, options).per('hour')
+      try {
+        await rateLimit(key, max, options).per('hour')
+        throw new Error('Expected quota rejection')
+      }
+      catch (error) {
+        expect(error).toBeInstanceOf(HttpError)
+        const failure = error as HttpError & { headers: Record<string, string> }
+        expect(failure.status).toBe(429)
+        expect(failure.details).toEqual({ key, max, retryAfter: expect.any(Number) })
+        expect(failure.headers['RateLimit-Limit']).toBe(String(max))
+        expect(failure.headers['RateLimit-Remaining']).toBe('0')
+        expect(Number(failure.headers['Retry-After'])).toBeGreaterThan(0)
+      }
+      await clearRateLimit(key, max, 3600, options)
+      await rateLimit(key, max, options).per('hour')
+      expect(await rateLimitStatus(key, max, 3600, options)).toEqual({ count: 1, limit: max, remaining: max - 1 })
+    }
   })
 
   it.each([false, true])('enforces a declarative route limit before the handler runs again (nativeRoutes=%s)', async (nativeRoutes) => {

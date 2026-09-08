@@ -32,6 +32,7 @@ type Period = 'second' | 'minute' | 'hour' | 'day'
  */
 let limiterCache: Map<string, RateLimiter> | undefined
 let limiterModule: typeof import('ts-rate-limiter') | undefined
+let httpErrorModule: typeof import('@stacksjs/error-handling/http') | undefined
 let limiterModulePromise: Promise<typeof import('ts-rate-limiter')> | undefined
 
 function loadLimiterModule(): Promise<typeof import('ts-rate-limiter')> {
@@ -108,7 +109,7 @@ export function rateLimit(
     catch (err) {
       const { RateLimitError } = await loadLimiterModule()
       if (err instanceof RateLimitError) {
-        const { HttpError } = await import('@stacksjs/error-handling/http')
+        const { HttpError } = httpErrorModule ??= await import('@stacksjs/error-handling/http')
         throw Object.assign(
           new HttpError(429, 'Too many requests', {
             key,
