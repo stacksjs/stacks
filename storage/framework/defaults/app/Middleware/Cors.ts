@@ -294,7 +294,7 @@ export default new Middleware({
   // actual auth failure).
   priority: 0,
 
-  async handle(request) {
+  handle(request) {
     const cfg = resolveCorsConfig()
 
     // Preflight short-circuit — throwing a Response is the documented way

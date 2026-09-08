@@ -16,7 +16,7 @@ export default new Middleware({
   name: 'api',
   priority: 1,
 
-  async handle(request) {
+  handle(request) {
     // Ensure the request accepts JSON
     const accept = request.headers.get('accept') || ''
     if (!accept.includes('application/json') && !accept.includes('*/*')) {
