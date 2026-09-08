@@ -16,10 +16,10 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'cartId', 'productId', 'quantity', 'unitPrice', 'totalPrice'],
-      searchable: ['id', 'cartId', 'productId'],
+      displayable: ['id', 'cartId', 'productName', 'productSku', 'quantity', 'unitPrice', 'totalPrice'],
+      searchable: ['id', 'cartId', 'productName', 'productSku'],
       sortable: ['createdAt', 'updatedAt', 'quantity', 'unitPrice'],
-      filterable: ['cartId', 'productId'],
+      filterable: ['cartId', 'productSku'],
     },
 
     useSeeder: {

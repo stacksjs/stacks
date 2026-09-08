@@ -16,9 +16,9 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'name', 'email', 'phone', 'partySize', 'notificationPreference', 'source', 'notes', 'status'],
+      displayable: ['id', 'name', 'email', 'phone', 'quantity', 'notificationPreference', 'source', 'notes', 'status'],
       searchable: ['name', 'email', 'phone', 'source'],
-      sortable: ['name', 'partySize', 'createdAt', 'updatedAt', 'status'],
+      sortable: ['name', 'quantity', 'createdAt', 'updatedAt', 'status'],
       filterable: ['notificationPreference', 'source', 'status'],
     },
 

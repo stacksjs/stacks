@@ -16,10 +16,10 @@ export default defineModel({
     useUuid: true,
     useTimestamps: true,
     useSearch: {
-      displayable: ['id', 'orderId', 'customerId', 'amount', 'method', 'status', 'date'],
+      displayable: ['id', 'orderId', 'customerId', 'amount', 'method', 'status', 'createdAt'],
       searchable: ['orderId', 'customerId', 'referenceNumber'],
       sortable: ['amount', 'createdAt'],
-      filterable: ['method', 'status', 'date'],
+      filterable: ['method', 'status', 'createdAt'],
     },
 
     useSeeder: {
