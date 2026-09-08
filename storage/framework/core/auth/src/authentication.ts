@@ -713,7 +713,13 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
-    if (!accessToken?.tokenable_id)
+    // `tokenable_id` is added by a defensive ALTER in auth-tables, not declared
+    // on the model, so the generated row type for `oauth_access_tokens` does
+    // not carry it. The column is real at runtime: this is a `selectAll()` on
+    // the durable table rather than an ORM instance, so unlike the
+    // `password_changed_at` case below the read genuinely works - only the
+    // type is missing.
+    if (!(accessToken as { tokenable_id?: number | null }).tokenable_id)
       return undefined
 
     const user = await User.find(accessToken.user_id as number)
