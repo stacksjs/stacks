@@ -4908,16 +4908,15 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // token, every response is 403. The token is verified against
       // both the path AND the expiry, so a leaked URL stops working
       // at `exp` regardless of who holds it.
-      bunRouter.get('/__storage/:path', async (req: Request) => {
+      bunRouter.get('/__storage/{path}', async (req: Request) => {
         const url = new URL(req.url)
         const token = url.searchParams.get('token')
-        // Pull the storage-relative path from the route param. We
-        // decodeURIComponent because the signer URL-encodes the path
-        // (slashes, spaces, etc.) when minting the URL — the JWT
-        // claim is the raw path, so we must decode here to compare.
+        // Route parameters are already decoded. Decode only the URL
+        // fallback so literal percent signs and encoded-looking filenames
+        // retain the same path that was signed.
         const params = (req as Request & { params?: Record<string, string> }).params
         const rawPath = params?.path
-          ? decodeURIComponent(params.path)
+          ? params.path
           : decodeURIComponent(url.pathname.replace(/^\/__storage\//, ''))
 
         if (!token || typeof rawPath !== 'string' || rawPath.length === 0) {
