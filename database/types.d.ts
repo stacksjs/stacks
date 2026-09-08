@@ -968,6 +968,8 @@ declare module '@stacksjs/database' {
       id: number
       created_at: string
       updated_at: string | null
+      tokenable_type: string
+      tokenable_id: number
       name: string
       token: string
       scopes: string
@@ -975,7 +977,6 @@ declare module '@stacksjs/database' {
       expires_at: string
       user_agent: string
       ip_address: string
-      user_id: number
     }
     order_idempotency: {
       // columns

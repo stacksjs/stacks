@@ -12784,13 +12784,30 @@
             "isUnique": false,
             "isNullable": true,
             "hasDefault": false
+          },
+          {
+            "name": "tokenable_type",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false,
+            "maxLength": 255
+          },
+          {
+            "name": "tokenable_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
           }
         ],
         "indexes": []
       }
     ]
   },
-  "hash": "928907d166c1cb0c5d4cb9fb12480fce6cef5e20323c01449f9bbc9d1d8d4b1b",
+  "hash": "f63db4ca1f73436cdc8c1094bc71b9b4d2743aaa953689843093bbe6d242905a",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-08T14:23:48.283Z"
+  "updatedAt": "2026-09-08T14:50:23.748Z"
 }

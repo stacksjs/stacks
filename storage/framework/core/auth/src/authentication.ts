@@ -627,7 +627,7 @@ export class Auth {
     // Reject tokens issued before the user last changed their password
     // (stacksjs/stacks#1957). Binds validity to the durable users row,
     // so a stolen token survives neither a reset nor the sweep gap.
-    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.user_id)))
+    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
       return false
 
     // Mark the token as freshly-used. Used to be a rotation path here
@@ -713,16 +713,10 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
-    // `tokenable_id` is added by a defensive ALTER in auth-tables, not declared
-    // on the model, so the generated row type for `oauth_access_tokens` does
-    // not carry it. The column is real at runtime: this is a `selectAll()` on
-    // the durable table rather than an ORM instance, so unlike the
-    // `password_changed_at` case below the read genuinely works - only the
-    // type is missing.
-    if (!(accessToken as { tokenable_id?: number | null }).tokenable_id)
+    if (!accessToken?.tokenable_id)
       return undefined
 
-    const user = await User.find(accessToken.user_id as number)
+    const user = await User.find(accessToken.tokenable_id as number)
 
     // Reject tokens issued before the user last changed their password
     // (stacksjs/stacks#1957). The previous code read
@@ -734,7 +728,7 @@ export class Auth {
     // `validateToken` path (query-backed) worked. Query the durable users
     // row exactly like `validateToken`; getPasswordChangedAt degrades to
     // legacy-allow on a missing column/table. See stacksjs/stacks#1985.
-    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.user_id)))
+    if (isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id)))
       return undefined
 
     return user

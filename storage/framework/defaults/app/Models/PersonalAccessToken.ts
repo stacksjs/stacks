@@ -55,8 +55,34 @@ export default defineModel({
   // longer makes - and the FK preflight reported exactly that once the legacy
   // `user_id` stopped being the owner.
   attributes: {
-    name: {
+    /**
+     * The owner: the table it lives in, and its id there.
+     *
+     * Declared so the generated row type carries them. They are written by
+     * `@stacksjs/auth` when a token is minted and never by a caller, so both
+     * are guarded - an owner a request could set is an owner a request could
+     * change.
+     */
+    tokenableType: {
       order: 1,
+      guarded: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: () => 'users',
+    },
+
+    tokenableId: {
+      order: 2,
+      guarded: true,
+      validation: {
+        rule: schema.number(),
+      },
+      factory: () => 1,
+    },
+
+    name: {
+      order: 3,
       fillable: true,
       validation: {
         rule: schema.string().max(255),
@@ -65,7 +91,7 @@ export default defineModel({
     },
 
     token: {
-      order: 2,
+      order: 4,
       // The stored hash. Never serialised, never mass-assignable.
       hidden: true,
       guarded: true,
@@ -75,7 +101,7 @@ export default defineModel({
     },
 
     scopes: {
-      order: 3,
+      order: 5,
       type: 'text',
       fillable: true,
       validation: {
@@ -85,7 +111,7 @@ export default defineModel({
     },
 
     revoked: {
-      order: 4,
+      order: 6,
       fillable: true,
       default: false,
       validation: {
@@ -95,7 +121,7 @@ export default defineModel({
     },
 
     expiresAt: {
-      order: 5,
+      order: 7,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -110,7 +136,7 @@ export default defineModel({
      * nothing authorises on either.
      */
     userAgent: {
-      order: 6,
+      order: 8,
       fillable: true,
       validation: {
         rule: schema.string().max(255),
@@ -118,7 +144,7 @@ export default defineModel({
     },
 
     ipAddress: {
-      order: 7,
+      order: 9,
       fillable: true,
       validation: {
         rule: schema.string().max(45),

@@ -214,7 +214,9 @@ describe('registration + session enforcement wiring (#1985)', () => {
 describe('auth correctness sweep source-shape (#1985)', () => {
   it('getUserFromToken queries password_changed_at instead of the always-undefined property read', () => {
     const s = src('authentication.ts')
-    expect(s).toContain('isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.user_id))')
+    // `tokenable_id` since the token table went polymorphic: the owner column
+    // is the pair, and `user_id` is a legacy copy nothing reads.
+    expect(s).toContain('isIssuedBeforePasswordChange(accessToken.created_at, await getPasswordChangedAt(accessToken.tokenable_id))')
     // the always-undefined bare-property read is gone from getUserFromToken
     expect(s).not.toContain('(user as any)?.password_changed_at')
   })
