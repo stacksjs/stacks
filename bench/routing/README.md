@@ -104,6 +104,20 @@ directory. Install `oha` before producing anything anyone else will read.
 
 ## The machine matters
 
+For request-path CPU investigation, run `bun bench/routing/profile.ts`. This
+captures the existing cold/warm Stacks clients across all four scenarios with
+stock protections enabled. Each fresh HTTP server receives five seconds of
+warm-up before sampling around a ten-second oha load through `bun:jsc.profile()`.
+The generator runs in a separate process. Its startup, draining, and result
+parsing are inside the capture window. Server startup, warm-up, artifact writes,
+and post-load parity checks are outside the capture window.
+
+The output retains source/runtime provenance, raw stack samples, function and
+bytecode summaries, load output, parity evidence, and worker logs. Sampling
+changes execution cost, so these artifacts are never publishable throughput
+comparisons. The same busy-host guard applies, with no profiling override.
+Use `--output <directory>` to select the artifact directory.
+
 The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
 can be dispatched manually to run the full default matrix on Ubuntu with pinned,
 checksummed oha, five seconds of warm-up, thirty measured seconds and three repeats.
