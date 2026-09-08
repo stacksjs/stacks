@@ -51,4 +51,29 @@ describe('request validation helpers', () => {
     const validated = await request.validate()
     expect(validated.name).toBe('Native model')
   })
+
+  it('keeps warmed validation rules and results specific to each request', async () => {
+    const rules = { name: { rule: schema.string().required().min(3) } }
+    const first = requestWith({ name: 'Stacks' })
+    const second = requestWith({ name: 42 })
+    const results = await Promise.all([
+      first.validate(rules),
+      second.validate({ name: schema.number().required() }),
+    ])
+    expect(results).toEqual([{ name: 'Stacks' }, { name: 42 }])
+    expect(first.getValidated()).toEqual({ name: 'Stacks' })
+    expect(second.getValidated()).toEqual({ name: 42 })
+
+    rules.name.rule = schema.string().required().max(2)
+    await expect(requestWith({ name: 'Stacks' }).validate(rules)).rejects.toBeInstanceOf(HttpError)
+    rules.name.rule = schema.string().required().min(3)
+    expect(await requestWith({ name: 'Changed' }).validate(rules)).toEqual({ name: 'Changed' })
+  })
+
+  it('retains empty-rule input and rejects string rules after warming', async () => {
+    const request = requestWith({ name: 'Stacks', extra: true })
+    await request.validate({ name: schema.string().required() })
+    expect(await request.validate({})).toEqual({ name: 'Stacks', extra: true })
+    await expect(request.validate({ name: 'required' })).rejects.toBeInstanceOf(TypeError)
+  })
 })
