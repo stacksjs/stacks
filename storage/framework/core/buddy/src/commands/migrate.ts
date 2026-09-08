@@ -1473,6 +1473,16 @@ ${unrebuildable.map(t => `      ${t}`).join('\n')}
       if (fixed.remapped.length === 0 && fixed.recorded.length === 0 && fixed.pruned.length === 0)
         log.info('Nothing could be repaired automatically.')
 
+      // A ledger row whose file is gone is left alone on purpose - pruning it
+      // would let the migration run a second time - but saying only that leaves
+      // the operator at a dead end: `doctor` keeps failing, the repair it names
+      // declines, and nothing says what to do next. Both ways out, once.
+      if (fixed.skipped.some(entry => entry.reason.includes('no longer exists on disk'))) {
+        log.info('A recorded migration with no file is not repaired automatically: removing the row would let it run again.')
+        log.info('  Restore the file if it went missing by accident - a bad merge, a partial checkout.')
+        log.info('  Delete the row by hand if the migration is genuinely retired: DELETE FROM migrations WHERE migration = \'<file>\'.')
+      }
+
       await outro('Reconciled.', { startTime: perf!, useSeconds: true })
       process.exit(ExitCode.Success)
     })
