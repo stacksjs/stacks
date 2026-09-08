@@ -14,6 +14,7 @@
       // "Cannot find module" on a clean checkout and in CI, and are four of the
       // six errors that have kept the typecheck job red.
       "@stacksjs/actions/*": ["./actions/src/*"],
+      "@stacksjs/auth/*": ["./auth/src/*"],
       // Deep runtime entrypoints must resolve to source in a clean checkout.
       "@stacksjs/database/*": ["./database/src/*"],
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],

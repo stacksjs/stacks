@@ -1,4 +1,5 @@
-import { Auth, authCookieName } from '@stacksjs/auth'
+import { Auth } from '@stacksjs/auth/authentication'
+import { authCookieName } from '@stacksjs/auth/cookie'
 import { HttpError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { Middleware } from '@stacksjs/router'
@@ -54,7 +55,7 @@ export default new Middleware({
 
     if (sessionId) {
       log.debug(`[middleware:auth] Validating session`)
-      const { sessionUser } = await import('@stacksjs/auth')
+      const { sessionUser } = await import('@stacksjs/auth/session-auth')
       const user = await sessionUser(sessionId)
       if (!user)
         throw new HttpError(401, 'Unauthorized. Session expired.')
