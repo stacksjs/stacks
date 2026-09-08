@@ -110,12 +110,23 @@ function getRequestCache(): RequestQueryCache | undefined {
  * const user = await cacheRequestQuery(`User.find:${id}`, () => User.find(id))
  * ```
  */
-export async function cacheRequestQuery<T>(key: string, fetcher: () => T | Promise<T>): Promise<T> {
-  const cache = getRequestCache()
-  if (!cache) return fetcher() as Promise<T>
-  const existing = cache.map.get(key)
-  if (existing) return existing as Promise<T>
-  const promise = Promise.resolve().then(() => fetcher()) as Promise<T>
+export function cacheRequestQuery<T>(key: string, fetcher: () => T | Promise<T>): Promise<T> {
+  try {
+    const cache = getRequestCache()
+    const existing = cache?.map.get(key)
+    // Forward the settled value to this caller without an async adoption
+    // step. Keep a separate promise so each caller owns its rejection.
+    if (existing) return (existing as Promise<T>).then()
+    return startQuery(cache, key, fetcher)
+  }
+  catch (error) {
+    return Promise.reject(error)
+  }
+}
+
+async function startQuery<T>(cache: RequestQueryCache | undefined, key: string, fetcher: () => T | Promise<T>): Promise<T> {
+  if (!cache) return fetcher()
+  const promise = Promise.resolve().then(() => fetcher())
   cache.map.set(key, promise)
   // Drop failures so a transient DB error doesn't poison the slot for
   // the rest of the request.
