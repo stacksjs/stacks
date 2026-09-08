@@ -65,8 +65,12 @@ export default defineModel({
 
   hasOne: ['Subscriber', 'Courier', 'Author'],
 
+  // No `PersonalAccessToken`: there is no such model and no such table. Bearer
+  // tokens live in `oauth_access_tokens` / `oauth_refresh_tokens`, which the
+  // auth layer owns directly and gives no model. Declaring it put the name in
+  // the ORM's own "Available:" list, so `User.with('PersonalAccessToken')`
+  // read as supported and threw `no such table: personal_access_tokens`.
   hasMany: [
-    'PersonalAccessToken',
     'Customer',
     'TeamMember',
   ],
