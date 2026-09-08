@@ -1689,7 +1689,9 @@ export async function findUnresolvableRouteMiddleware(): Promise<Array<{ alias: 
       if (!entries)
         continue
       for (const entry of entries) {
-        const parsed = await parseMiddlewareEntry(entry)
+        // Shared aliases are synchronous after their first parse.
+        const pending = parseMiddlewareEntry(entry)
+        const parsed = pending instanceof Promise ? await pending : pending
         // Reported without the parameters - those are the middleware's argument,
         // not part of what has to resolve - but WITH the `!`, because `auth` and
         // `!auth` are two different things to look up.

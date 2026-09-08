@@ -133,6 +133,29 @@ describe('boot-time validation', () => {
     expect(unresolvable.map(entry => entry.alias)).toContain('missing-from-second-router')
   })
 
+  test('keeps complete alias reports through cold, warm and cleared parse caches', async () => {
+    const router = createStacksRouter()
+    for (const suffix of ['one', 'two', 'three']) {
+      router.get(`/mw-parse-cache/${suffix}`, (() => ({})) as any).middleware([
+        'missing-parse-cache:first',
+        '!missing-parse-cache:second',
+        'missing-parse-cache:third',
+      ])
+    }
+    const keys = ['one', 'two', 'three'].map(suffix => `GET:/mw-parse-cache/${suffix}`)
+    const expected = [
+      { alias: 'missing-parse-cache', routes: keys.flatMap(key => [key, key]) },
+      { alias: '!missing-parse-cache', routes: keys },
+    ]
+    const report = async () => (await findUnresolvableRouteMiddleware())
+      .filter(entry => entry.alias.includes('missing-parse-cache'))
+
+    expect(await report()).toEqual(expected)
+    expect(await report()).toEqual(expected)
+    clearMiddlewareCache()
+    expect(await report()).toEqual(expected)
+  })
+
   test('assertRouteMiddlewareResolvable rejects naming the bad alias and its route', async () => {
     // 'no-such-mw' was registered by the previous test (module-scoped
     // registry) — the assertion must surface it.
