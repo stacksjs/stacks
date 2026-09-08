@@ -45,11 +45,16 @@ describe('preprocessSqliteMigrations - keep portable files (stacksjs/stacks#1916
 
   it('keeps ALTER TABLE ADD CONSTRAINT files on disk (portable to MySQL/Postgres)', () => {
     const fkFile = join(migrationsDir, '0000000010-alter-posts-user_id.sql')
-    writeFileSync(fkFile, 'ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE;')
+    const fkSql = 'ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE;'
+    writeFileSync(fkFile, fkSql)
 
     preprocessSqliteMigrations()
 
     expect(existsSync(fkFile)).toBe(true)
+    // Byte-for-byte. Without this, a future per-statement fix could gut every
+    // constraint file and stay green, which is exactly the failure mode that
+    // makes a filename-keyed ledger dangerous.
+    expect(readFileSync(fkFile, 'utf-8')).toBe(fkSql)
   })
 
   it('keeps CREATE UNIQUE INDEX files on disk (portable to MySQL/Postgres)', () => {
@@ -353,5 +358,122 @@ describe('preprocessSqliteMigrations - unique-index files must run (stacksjs/sta
       expect(content).not.toContain('SELECT 1')
       expect(content).toMatch(/CREATE\s+UNIQUE\s+INDEX\s+IF\s+NOT\s+EXISTS/i)
     }
+  })
+})
+
+
+/**
+ * A migration SQLite can only partly execute (stacksjs/stacks#2477).
+ *
+ * The guard used to be `statements.every(s => addConstraintPattern.test(s))`,
+ * so a file was only set aside when ALL of it was unsupported. A generated
+ * file mixing a supported statement with an `ADD CONSTRAINT` fell through to
+ * the runner, SQLite rejected it with `near "FOREIGN": syntax error`, and the
+ * batch aborted - so one bad file stopped every later migration from applying.
+ *
+ * Both existing ADD CONSTRAINT tests above write SINGLE-statement files, which
+ * is precisely why the defect survived: on a one-statement file, per-file and
+ * per-statement are indistinguishable.
+ */
+describe('preprocessSqliteMigrations - mixed files (stacksjs/stacks#2477)', () => {
+  let workspace: string
+  let migrationsDir: string
+  let originalCwd: string
+
+  beforeEach(() => {
+    originalCwd = process.cwd()
+    workspace = mkdtempSync(join(tmpdir(), 'preprocess-sqlite-mixed-'))
+    migrationsDir = join(workspace, 'database', 'migrations')
+    mkdirSync(migrationsDir, { recursive: true })
+    process.chdir(workspace)
+  })
+
+  afterEach(() => {
+    process.chdir(originalCwd)
+    rmSync(workspace, { recursive: true, force: true })
+  })
+
+  const mixedFk = 'CREATE TABLE "posts" ("id" INTEGER PRIMARY KEY, "user_id" INTEGER);\n'
+    + 'ALTER TABLE "posts" ADD CONSTRAINT "posts_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "users"("id");\n'
+
+  it('leaves no file SQLite cannot execute in the corpus for the runner', () => {
+    const file = '0000000200-alter-posts-columns.sql'
+    writeFileSync(join(migrationsDir, file), mixedFk)
+
+    const quarantined = preprocessSqliteMigrations()
+
+    // Red on main: the file stayed put and was handed to SQLite verbatim.
+    expect(existsSync(join(migrationsDir, file))).toBe(false)
+    // Basenames: macOS resolves the temp dir through /private, so the absolute
+    // paths differ in form while naming the same file.
+    expect(quarantined.map(q => q.original.split('/').pop())).toEqual([file])
+  })
+
+  it('preserves the quarantined file verbatim, so restoring it loses nothing', () => {
+    const file = '0000000200-alter-posts-columns.sql'
+    writeFileSync(join(migrationsDir, file), mixedFk)
+
+    preprocessSqliteMigrations()
+
+    expect(readFileSync(join(migrationsDir, `${file}.unsupported`), 'utf-8')).toBe(mixedFk)
+  })
+
+  it('does NOT record a mixed file as executed', () => {
+    // This is what blocks the obvious wrong fix. Swapping `.every()` for
+    // `.some()` would mark the file applied on a filename-keyed ledger while
+    // its CREATE TABLE never ran - a table missing, asserted as created, with
+    // nothing downstream able to detect it.
+    const file = '0000000200-alter-posts-columns.sql'
+    writeFileSync(join(migrationsDir, file), mixedFk)
+
+    preprocessSqliteMigrations()
+
+    const db = new Database(join(workspace, 'database', 'stacks.sqlite'))
+    try {
+      const table = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name='migrations'").get()
+      if (table) {
+        const row = db.query('SELECT migration FROM migrations WHERE migration = ?').get(file)
+        expect(row).toBeNull()
+      }
+    }
+    finally { db.close() }
+  })
+
+  it('still applies the same treatment to CREATE TYPE, which had the identical defect', () => {
+    const file = '0000000201-auto-misc.sql'
+    writeFileSync(join(migrationsDir, file),
+      'CREATE TABLE "orders" ("id" INTEGER PRIMARY KEY);\n'
+      + `CREATE TYPE "order_status" AS ENUM ('open', 'closed');\n`)
+
+    const quarantined = preprocessSqliteMigrations()
+
+    expect(existsSync(join(migrationsDir, file))).toBe(false)
+    expect(quarantined).toHaveLength(1)
+  })
+
+  it('leaves a fully-unsupported file exactly as before', () => {
+    // The #1916 contract: all-unsupported still stays on disk, unquarantined,
+    // so a later DB_CONNECTION flip can replay it.
+    const file = '0000000202-alter-posts-fk.sql'
+    const sql = 'ALTER TABLE "posts" ADD CONSTRAINT "a" FOREIGN KEY ("b") REFERENCES "c"("d");\n'
+    writeFileSync(join(migrationsDir, file), sql)
+
+    const quarantined = preprocessSqliteMigrations()
+
+    expect(existsSync(join(migrationsDir, file))).toBe(true)
+    expect(readFileSync(join(migrationsDir, file), 'utf-8')).toBe(sql)
+    expect(quarantined).toEqual([])
+  })
+
+  it('restores a sidecar left behind by a killed run', () => {
+    const file = '0000000203-alter-posts-columns.sql'
+    writeFileSync(join(migrationsDir, `${file}.unsupported`), mixedFk)
+
+    preprocessSqliteMigrations()
+
+    // Swept back in, then quarantined again by this run - either way it is
+    // never silently absent from the corpus.
+    expect(existsSync(join(migrationsDir, `${file}.unsupported`))).toBe(true)
+    expect(readFileSync(join(migrationsDir, `${file}.unsupported`), 'utf-8')).toBe(mixedFk)
   })
 })
