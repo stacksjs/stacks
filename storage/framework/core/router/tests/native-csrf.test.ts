@@ -72,6 +72,46 @@ describe('standalone CSRF validator promise contract', () => {
   })
 })
 
+for (const nativeRoutes of [false, true]) {
+  test(`mixed-cookie CSRF decisions reach HTTP clients (nativeRoutes=${nativeRoutes})`, async () => {
+    const router = createStacksRouter({ autoDiscoverRoutes: false })
+    let handlerRuns = 0
+    router.post('/mixed-csrf', () => {
+      handlerRuns++
+      return { ok: true }
+    })
+    const cases = [
+      [`session=opaque; X-CSRF-Token=${token}; theme=dark`, 200],
+      [`${'malformed; '.repeat(50)}X-CSRF-Token=${token}`, 200],
+      [`csrf-token=${token}; X-CSRF-Token=wrong; X-CSRF-Token=`, 200],
+      [`X-CSRF-Token=${token}; X-CSRF-Token=wrong; csrf-token=${token}`, 403],
+      [`prefixX-CSRF-Token=${token}; X-CSRF-Token-extra=${token}`, 403],
+      [`X-CSRF-Token=${token}=extra; theme=dark`, 403],
+    ] as const
+    const server = await router.serve({ port: 0, nativeRoutes })
+    try {
+      await Promise.all(cases.map(async ([cookie, status], id) => {
+        const response = await fetch(`http://localhost:${server.port}/mixed-csrf`, {
+          method: 'POST',
+          headers: { cookie, 'x-csrf-token': token, 'x-request-id': `mixed-csrf-${id}` },
+        })
+        expect(response.status).toBe(status)
+        expect(response.headers.get('x-request-id')).toBe(`mixed-csrf-${id}`)
+        expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+        const payload = await response.json()
+        if (status === 200)
+          expect(payload).toEqual({ ok: true })
+        else
+          expect(payload.message).toBe('CSRF token mismatch')
+      }))
+      expect(handlerRuns).toBe(3)
+    }
+    finally {
+      await server.stop(true)
+    }
+  })
+}
+
 describe('built-in CSRF middleware hot path', () => {
   test('valid requests complete synchronously', () => {
     const request = new Request('http://localhost/native-csrf', {

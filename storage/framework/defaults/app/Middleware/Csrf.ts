@@ -204,14 +204,26 @@ function csrfCookieToken(req: Request): string {
   }
   let canonical = ''
   let legacy = ''
-  for (const part of header.split(';')) {
-    const idx = part.indexOf('=')
-    if (idx === -1) continue
-    const name = part.slice(0, idx).trim()
+  let start = 0
+  while (start < header.length) {
+    // Scan each name only once, stopping at '=' or a malformed pair's ';'.
+    let equals = start
+    while (equals < header.length && header.charCodeAt(equals) !== 61 && header.charCodeAt(equals) !== 59)
+      equals++
+    if (equals === header.length)
+      break
+    if (header.charCodeAt(equals) === 59) {
+      start = equals + 1
+      continue
+    }
+    const separator = header.indexOf(';', equals + 1)
+    const end = separator === -1 ? header.length : separator
+    const name = header.slice(start, equals).trim()
     if (name === CSRF_COOKIE_NAME)
-      canonical = part.slice(idx + 1).trim()
+      canonical = header.slice(equals + 1, end).trim()
     else if (name === 'csrf-token')
-      legacy = part.slice(idx + 1).trim()
+      legacy = header.slice(equals + 1, end).trim()
+    start = end + 1
   }
   return canonical || legacy
 }
