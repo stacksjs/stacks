@@ -9,6 +9,12 @@ mock.module(Bun.resolveSync('ts-rate-limiter', import.meta.dir), () => {
 })
 const { runWithRequest } = await import('../../src/request-context')
 const { clearRateLimit, rateLimit, rateLimitStatus } = await import('../../src/rate-limit')
+const { createStacksRouter } = await import('../../src/stacks-router')
+const router = createStacksRouter({ autoDiscoverRoutes: false })
+router.get('/without-rate-limit', () => ({ ok: true }))
+const response = await router.handleRequest(new Request('http://localhost/without-rate-limit'))
+assert.equal(response.status, 200)
+assert.deepEqual(await response.json(), { ok: true })
 const unhandled: unknown[] = []
 process.on('unhandledRejection', reason => unhandled.push(reason))
 const request = new Request('http://localhost', { headers: { 'x-real-ip': '192.0.2.1' } }) as EnhancedRequest

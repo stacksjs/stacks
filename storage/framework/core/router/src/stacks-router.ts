@@ -1807,6 +1807,8 @@ function routeCapabilityFlags(routeKey: string, handler: StacksHandler, csrfEnab
   return flags
 }
 
+let routeRateLimitModule: typeof import('./rate-limit') | undefined
+
 /**
  * Create a wrapped handler with middleware support
  */
@@ -1956,7 +1958,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
       const rl = routeState?.rateLimit
       if (rl) {
         try {
-          const { rateLimit: enforceRateLimit } = await import('./rate-limit')
+          const { rateLimit: enforceRateLimit } = routeRateLimitModule ??= await import('./rate-limit')
           await enforceRateLimit(routeKey, rl.max).over(rl.windowSeconds)
         }
         catch (err) {

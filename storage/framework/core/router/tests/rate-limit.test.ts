@@ -75,16 +75,20 @@ describe('action rate limiting', () => {
     await expect(rateLimit('invalid-period', 1).per('week' as 'minute')).rejects.toThrow('unknown period')
   })
 
-  it('enforces a declarative route limit before the handler runs again', async () => {
+  it.each([false, true])('enforces a declarative route limit before the handler runs again (nativeRoutes=%s)', async (nativeRoutes) => {
     const router = createStacksRouter({ autoDiscoverRoutes: false, csrf: false })
     let calls = 0
-    router.get('/route-limit-contract', () => ({ calls: ++calls })).rateLimit(1, 'minute')
-    const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
+    const path = `/route-limit-contract-${nativeRoutes}`
+    router.get(path, () => ({ calls: ++calls })).rateLimit(1, 'minute')
+    const server = await router.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes })
 
     try {
-      const url = `http://127.0.0.1:${server.port}/route-limit-contract`
+      const url = `http://127.0.0.1:${server.port}${path}`
       expect((await fetch(url)).status).toBe(200)
-      expect((await fetch(url)).status).toBe(429)
+      const denied = await fetch(url)
+      expect(denied.status).toBe(429)
+      expect(Number(denied.headers.get('retry-after'))).toBeGreaterThan(0)
+      expect(denied.headers.get('x-content-type-options')).toBe('nosniff')
       expect(calls).toBe(1)
     }
     finally {
