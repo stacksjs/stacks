@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { mkdir, mkdtemp, rm } from 'node:fs/promises'
+import { mkdir, mkdtemp, readdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { resolve } from 'node:path'
 
@@ -59,9 +59,16 @@ describe('default preloader', () => {
     await Promise.all(['plugin.ts', 'crypto.ts', 'parser.ts'].map(file =>
       Bun.write(resolve(isolatedEnvRoot, file), Bun.file(resolve(envRoot, file))),
     ))
-    await Bun.write(
-      resolve(isolatedPathRoot, 'index.ts'),
-      Bun.file(resolve(import.meta.dir, '../../path/src/index.ts')),
+    // Every source file, not just `index.ts`. The package was one file when
+    // this fixture was written; `index.ts` now imports `./project`, and copying
+    // the entry alone left the isolated tree unable to resolve
+    // `@stacksjs/path` at all. Copying the directory means the next split does
+    // not break this test either.
+    const pathSrc = resolve(import.meta.dir, '../../path/src')
+    await Promise.all(
+      (await readdir(pathSrc))
+        .filter(file => file.endsWith('.ts'))
+        .map(file => Bun.write(resolve(isolatedPathRoot, file), Bun.file(resolve(pathSrc, file)))),
     )
     await Bun.write(isolatedRunner, `await import('./storage/framework/defaults/resources/plugins/preloader.ts')\n`)
 
