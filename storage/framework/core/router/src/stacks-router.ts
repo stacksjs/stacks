@@ -967,6 +967,15 @@ export function listNamedRoutes(): Record<string, string> {
  * time; it was simply not being reported.
  */
 export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> {
+  // Index once per snapshot, preserving the first alias in insertion order.
+  // Rebuild on every call so assigning an existing name to a new path is live.
+  const namesByPath = namedRouteRegistry ? new Map<string, string>() : undefined
+  if (namesByPath && namedRouteRegistry) {
+    for (const [name, named] of namedRouteRegistry) {
+      if (!namesByPath.has(named.path))
+        namesByPath.set(named.path, name)
+    }
+  }
   const out: Array<{ method: string, path: string, name?: string, handler?: string, action?: RouterAction }> = []
   // Route-state keys look like 'METHOD:/path'. We intentionally walk them
   // (not bunRouter.routes) so this works before serve() is called.
@@ -979,12 +988,7 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
       if (idx === -1) continue
       const method = key.slice(0, idx)
       const path = key.slice(idx + 1)
-      let routeName: string | undefined
-      if (namedRouteRegistry) {
-        for (const [n, named] of namedRouteRegistry) {
-          if (named.path === path) { routeName = n; break }
-        }
-      }
+      const routeName = namesByPath?.get(path)
       out.push({
         method,
         path,
