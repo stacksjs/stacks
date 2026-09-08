@@ -4,13 +4,21 @@ import type { CommerceConfig } from '@stacksjs/types'
  * **Commerce Configuration**
  *
  * Controls the commerce feature bundle (Order, Cart, Product, Customer,
- * Coupon, GiftCard, Receipt, Shipping models + storefront API). Flip
- * `enabled` to `false` to leave the bundle inert at boot. Manage via
+ * Coupon, GiftCard, Receipt, Shipping models + storefront API).
+ *
+ * **Off by default**, because most applications are not shops. It used to
+ * ship on, so a one-page site with a contact form was created with tables for
+ * gift cards, loyalty rewards, delivery routes and restaurant waitlists
+ * (stacksjs/stacks#2476). Turn it on with `./buddy commerce:install`.
+ *
+ * Flipping `enabled` back to `false` later leaves the bundle inert at boot and
+ * KEEPS the tables you already have: the migrations that created them are
+ * hidden from subsequent runs, not reversed. Manage via
  * `./buddy commerce:install` / `./buddy commerce:uninstall` rather than
  * editing this file by hand.
  */
 export default {
-  enabled: true,
+  enabled: false,
 
   /** Default storefront currency (ISO 4217). */
   currency: 'USD',
