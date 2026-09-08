@@ -76,8 +76,15 @@ describe('token owners', () => {
     'utf8',
   )
 
-  it('relates to its personal access tokens, polymorphically', () => {
-    expect(user).toContain("morphMany: { tokenable: 'PersonalAccessToken' }")
+  /**
+   * Neither model declares the relation. `useAuth` confers it, which is what
+   * the polymorphic pair is for: before it, tokens belonged to `user_id` and
+   * only `User` could hold one however plainly another model declared itself
+   * authenticatable.
+   */
+  it('do not restate the relation, because useAuth confers it', () => {
+    expect(user).toContain('useAuth')
+    expect(user).not.toContain("morphMany: { tokenable:")
   })
 
   it('include Author, which is the whole point of the pair', () => {
@@ -86,6 +93,20 @@ describe('token owners', () => {
       'utf8',
     )
 
-    expect(author).toContain("morphMany: { tokenable: 'PersonalAccessToken' }")
+    expect(author).toContain('useAuth')
+    expect(author).not.toContain("morphMany: { tokenable:")
+  })
+
+  /** The conferral itself, rather than its absence from the two models. */
+  it('get it from the trait, for any model that declares useAuth', () => {
+    const defineModel = readFileSync(
+      join(import.meta.dir, '..', 'src', 'define-model.ts'),
+      'utf8',
+    )
+
+    expect(defineModel).toContain("tokenable: 'PersonalAccessToken'")
+    // An explicit declaration has to win, or a model could not point the
+    // relation somewhere else.
+    expect(defineModel).toContain("!('tokenable' in declared)")
   })
 })

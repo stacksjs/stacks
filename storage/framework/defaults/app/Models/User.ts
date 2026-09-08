@@ -70,15 +70,6 @@ export default defineModel({
     'TeamMember',
   ],
 
-  /**
-   * Sanctum-shaped API tokens, polymorphically.
-   *
-   * `oauth_access_tokens` is keyed by `tokenable_type` / `tokenable_id`, so any
-   * model declaring `useAuth` can own tokens - not only this one. The relation
-   * lists exactly what `createToken()` minted, and revoking a row here is the
-   * same revocation the auth layer reads.
-   */
-  morphMany: { tokenable: 'PersonalAccessToken' },
   attributes: {
     name: {
       order: 2,

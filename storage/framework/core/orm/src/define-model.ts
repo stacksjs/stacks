@@ -2296,6 +2296,26 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
   ;(definition as unknown as Record<string, unknown>).__traitMethods = traitMethods
 
+  // A model that declares `useAuth` can hold personal access tokens, so it gets
+  // the relation rather than restating it. That is the whole point of the
+  // token table being keyed by `tokenable_type` / `tokenable_id`: before the
+  // pair, tokens belonged to `user_id` and only `User` could have them, however
+  // plainly another model declared itself authenticatable.
+  //
+  // An explicit declaration wins - a model may point `tokenable` somewhere else
+  // - and the token model itself is skipped, since it is the far side of this
+  // relation rather than an owner.
+  const authenticatable = (definition as unknown as { traits?: { useAuth?: unknown, authenticatable?: unknown } }).traits
+  if ((authenticatable?.useAuth || authenticatable?.authenticatable) && definition.name !== 'PersonalAccessToken') {
+    const declared = (definition as unknown as { morphMany?: Record<string, string> }).morphMany
+    if (!declared || !('tokenable' in declared)) {
+      ;(definition as unknown as { morphMany?: Record<string, string> }).morphMany = {
+        ...(declared ?? {}),
+        tokenable: 'PersonalAccessToken',
+      }
+    }
+  }
+
   // Merge hooks into definition
   const defWithHooks = hooks
     ? { ...definition, hooks: { ...(definition as unknown as BQBModelDefinition).hooks, ...hooks } }
