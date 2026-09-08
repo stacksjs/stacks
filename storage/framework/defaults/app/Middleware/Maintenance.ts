@@ -1,5 +1,7 @@
 import { Middleware } from '@stacksjs/router'
 
+let serverModule: typeof import('@stacksjs/server') | undefined
+
 /**
  * Maintenance / Coming-Soon Middleware
  *
@@ -27,7 +29,7 @@ export default new Middleware({
   priority: 0, // Run first, before all other middleware
 
   async handle(request) {
-    const { maintenanceGate } = await import('@stacksjs/server')
+    const { maintenanceGate } = serverModule ??= await import('@stacksjs/server')
 
     const gated = await maintenanceGate(request)
     if (gated)
