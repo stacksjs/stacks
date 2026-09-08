@@ -1,4 +1,4 @@
-import { authenticatedUser } from '@stacksjs/auth'
+import { authenticatedUser } from '@stacksjs/auth/middleware'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
@@ -32,7 +32,7 @@ export default new Middleware({
       throw new HttpError(401, 'Unauthenticated.')
     }
 
-    const { hasAnyPermission } = await import('@stacksjs/auth')
+    const { hasAnyPermission } = await import('@stacksjs/auth/rbac')
 
     const hasRequired = await hasAnyPermission(user, requiredPermissions)
 

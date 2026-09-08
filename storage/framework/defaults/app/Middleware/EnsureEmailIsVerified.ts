@@ -1,4 +1,4 @@
-import { authenticatedUser } from '@stacksjs/auth'
+import { authenticatedUser } from '@stacksjs/auth/middleware'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
