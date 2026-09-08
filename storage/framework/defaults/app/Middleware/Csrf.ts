@@ -1,6 +1,6 @@
 import { timingSafeEqual } from 'node:crypto'
 import { HttpError } from '@stacksjs/error-handling'
-import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { EnhancedRequest } from '@stacksjs/router'
 import { Middleware } from '@stacksjs/router'
 
 /**

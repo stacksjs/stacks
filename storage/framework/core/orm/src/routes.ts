@@ -19,7 +19,7 @@
 
 import process from 'node:process'
 import type { DbWriteResult } from '@stacksjs/database'
-import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { EnhancedRequest } from '@stacksjs/router'
 import { route } from '@stacksjs/router'
 import { env } from '@stacksjs/env'
 import { projectPath, storagePath } from '@stacksjs/path'

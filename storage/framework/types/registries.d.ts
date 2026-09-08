@@ -82,15 +82,14 @@ type MiddlewareReferenceName = MiddlewareAliasName | MiddlewareClassName
  */
 type NamedRoutes = typeof import('../auto-imports/routes')['routeNames']
 
-declare module '@stacksjs/bun-router' {
+// Augment the public entry so declarations follow the router's own dependency instance.
+declare module '@stacksjs/router' {
   interface RouterTypeRegistry {
     actions: ActionName | `${string}Controller@${string}`
     middleware: MiddlewareReferenceName | `!${MiddlewareReferenceName}`
     routes: NamedRoutes
   }
-}
 
-declare module '@stacksjs/router' {
   interface MiddlewareClasses extends Record<MiddlewareClassName, true> {}
 }
 
