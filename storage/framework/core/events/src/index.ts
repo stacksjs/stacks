@@ -136,6 +136,7 @@ function priorityOf(handler: unknown): number {
  * load-bearing.
  */
 function sortByPriority<T>(handlers: T[]): T[] {
+  if (handlers.length < 2) return handlers
   // Decorate-sort-undecorate keeps the sort stable (Array.sort is
   // stable in modern engines but the decorate avoids relying on it).
   return handlers

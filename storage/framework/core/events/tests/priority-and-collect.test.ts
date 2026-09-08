@@ -101,3 +101,42 @@ describe('emitAndCollect (stacksjs/stacks#1878 E-1)', () => {
     expect(results).toEqual([])
   })
 })
+
+for (const method of ['emit', 'emitAsync', 'emitAndCollect'] as const) {
+  test(`${method} preserves snapshots and priority as handler counts change`, async () => {
+    const bus = createEmitter<{ event: null }>()
+    const order: string[] = []
+    let added = false
+    const second = () => { order.push('second'); return 'second' }
+    const first = () => {
+      order.push('first')
+      if (!added) {
+        added = true
+        bus.on('event', second, { priority: 100 })
+      }
+      return 'first'
+    }
+    const emit = () => bus[method]('event', null)
+    bus.on('event', first, { priority: -10 })
+    await emit()
+    // A listener added by the sole handler belongs to the next snapshot.
+    expect(order).toEqual(['first'])
+    order.length = 0
+    await emit()
+    expect(order).toEqual(['second', 'first'])
+    bus.off('event', second)
+    order.length = 0
+    await emit()
+    expect(order).toEqual(['first'])
+    bus.off('event', first)
+    order.length = 0
+    const empty = await emit()
+    expect(order).toEqual([])
+    if (method !== 'emit') expect(empty).toEqual([])
+    bus.on('event', second, { priority: 100 })
+    const last = await emit()
+    expect(order).toEqual(['second'])
+    if (method === 'emitAsync') expect(last).toEqual(['second'])
+    if (method === 'emitAndCollect') expect(last).toEqual([{ ok: true, value: 'second' }])
+  })
+}
