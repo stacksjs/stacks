@@ -1400,6 +1400,7 @@ export async function loadMiddlewareHandlers(): Promise<Record<string, Middlewar
  * and cleared alongside it on hot reload.
  */
 let negatedMiddlewareCache: Map<string, MiddlewareHandler> | undefined
+let routerHttpErrorModule: typeof import('@stacksjs/error-handling/http') | undefined
 
 /**
  * Whether a thrown value is a middleware saying "no" rather than crashing.
@@ -1450,7 +1451,7 @@ function negateMiddleware(name: string, inner: MiddlewareHandler, cache: Map<str
         throw thrown
       }
 
-      const { HttpError } = await import('@stacksjs/error-handling')
+      const { HttpError } = routerHttpErrorModule ??= await import('@stacksjs/error-handling/http')
       throw new HttpError(403, `Access denied. This route requires "${name}" not to apply.`)
     },
   }
@@ -4506,7 +4507,7 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
         }
         catch (parseErr) {
           const message = parseErr instanceof Error ? parseErr.message : 'Invalid JSON'
-          const { HttpError } = await import('@stacksjs/error-handling')
+          const { HttpError } = routerHttpErrorModule ??= await import('@stacksjs/error-handling/http')
           throw new HttpError(400, `Invalid JSON body: ${message}`)
         }
       }
