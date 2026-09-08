@@ -82,7 +82,7 @@ export async function authenticatedUser(request: any): Promise<any | undefined> 
 
   const macro = request?.user
   if (typeof macro === 'function') {
-    const resolved = await macro()
+    const resolved = await macro.call(request)
     return isUserLike(resolved) ? resolved : undefined
   }
 

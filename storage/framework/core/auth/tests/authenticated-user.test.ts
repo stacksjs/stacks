@@ -14,6 +14,14 @@ import { authenticatedUser } from '../src/middleware'
  */
 
 describe('authenticatedUser', () => {
+  it('preserves the request receiver when resolving its user method', async () => {
+    const request = {
+      resolvedUser: { id: 17 },
+      async user() { return this.resolvedUser },
+    }
+    expect(await authenticatedUser(request)).toBe(request.resolvedUser)
+  })
+
   it('returns the user stamped on the request by the auth middleware', async () => {
     const user = { id: 7, email: 'a@b.c' }
     expect(await authenticatedUser({ _authenticatedUser: user })).toBe(user)
