@@ -3,6 +3,8 @@ import { env as envVars } from '@stacksjs/env'
 import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from './envelope'
 import { runNamedAction } from './action-runner'
 
+let testingModule: Promise<typeof import('./testing')> | undefined
+
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
 }
@@ -84,7 +86,10 @@ export class Job<T = unknown> {
    */
   async dispatch(...[payload]: JobPayloadArgs<T>): Promise<void> {
     // Check if queue is faked (testing mode)
-    const { isFaked, getFakeQueue } = await import('./testing')
+    const { isFaked, getFakeQueue } = await (testingModule ??= import('./testing').catch((error) => {
+      testingModule = undefined
+      throw error
+    }))
     if (isFaked()) {
       getFakeQueue()?.dispatch(this.name || 'UnknownJob', payload, {
         queue: this.queue,
