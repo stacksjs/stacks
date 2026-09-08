@@ -151,7 +151,7 @@ export async function applyCompression(request: Request, response: Response, bod
     })
   }
 
-  let compressed: Buffer
+  let compressed: Uint8Array<ArrayBuffer>
   if (encoding === 'br') {
     // Brotli quality 5 is the sweet spot for dynamic responses:
     // quality 11 (max) is ~10× slower for ~5% smaller output.
@@ -167,7 +167,7 @@ export async function applyCompression(request: Request, response: Response, bod
     // for typical response sizes — used here in preference to
     // node:zlib for the gzip path. Brotli has no Bun-native API yet
     // (as of writing) so we use node:zlib for that branch.
-    compressed = Buffer.from(Bun.gzipSync(bodyBuf))
+    compressed = Bun.gzipSync(bodyBuf)
   }
 
   const newHeaders = new Headers(response.headers)
@@ -186,9 +186,8 @@ export async function applyCompression(request: Request, response: Response, bod
     newHeaders.set('Vary', 'Accept-Encoding')
   }
 
-  // Node's Buffer satisfies BodyInit at runtime but not in the DOM lib's
-  // types; the underlying bytes are what Response wants either way.
-  return new Response(new Uint8Array(compressed), {
+  // Both codecs return owned, non-shared bytes accepted directly by Response.
+  return new Response(compressed, {
     status: response.status,
     statusText: response.statusText,
     headers: newHeaders,
