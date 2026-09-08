@@ -645,6 +645,8 @@ function isExposeRoutesAuthorized(req: Request): boolean {
 
 type CorsHeaderApplier = (req: Request, res: Response, cfg?: unknown) => Response
 let corsHeaderApplierCache: { apply?: CorsHeaderApplier } = {}
+type CompressionApplier = (req: Request, res: Response) => Promise<Response>
+let compressionApplierCache: { apply?: CompressionApplier } = {}
 
 /**
  * Apply the configured CORS policy to an outgoing response. Pulled
@@ -1470,6 +1472,7 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
 export function clearMiddlewareCache(): void {
   // Pending imports retain their old owner and cannot refill the new cache.
   corsHeaderApplierCache = {}
+  compressionApplierCache = {}
   middlewareCache = undefined
   negatedMiddlewareCache = undefined
   resolvedMiddlewareEntryCache = undefined
@@ -2418,8 +2421,9 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
       // compression don't pay the load cost.
       if (enhancedReq._compress === true && response) {
         try {
-          const { applyCompression } = await import(resolveDefaultsPath('app/Middleware/Compress.ts'))
-          return await (applyCompression as (req: Request, res: Response) => Promise<Response>)(enhancedReq as unknown as Request, response)
+          const cache = compressionApplierCache
+          const applyCompression = cache.apply ??= (await import(resolveDefaultsPath('app/Middleware/Compress.ts'))).applyCompression
+          return await applyCompression(enhancedReq as unknown as Request, response)
         }
         catch (err) {
           // Compression failure must NEVER drop the response — log and
