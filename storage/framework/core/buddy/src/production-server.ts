@@ -235,6 +235,21 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { stxPageAuthMiddleware } = await import('@stacksjs/auth')
   const { enhanceRequest, loadMiddlewareHandlers } = await import('@stacksjs/router')
   const pageMiddleware = await loadMiddlewareHandlers()
+  // Rebuild the barrels when the installed package set moved since they were
+  // written (stacksjs/stacks#2445). Same guard as the API entry; see the
+  // comment there for why the manifest mtime is the right trigger. Warns
+  // rather than throws, and leaves `storage/framework/types declarations` alone.
+  try {
+    const { autoImportsAreStale, generateAutoImportFiles } = await import('@stacksjs/server')
+    if (autoImportsAreStale()) {
+      log.info('[server] Installed packages moved since the auto-import barrel was written; rebuilding it.')
+      await generateAutoImportFiles({ declarations: false })
+    }
+  }
+  catch (error) {
+    log.warn(`[server] Could not refresh the auto-import barrel: ${error instanceof Error ? error.message : String(error)}`)
+  }
+
   await injectGlobalAutoImports()
 
       // Resolve the stx `serve` implementation.
