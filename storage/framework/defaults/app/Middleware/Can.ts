@@ -3,6 +3,8 @@ import { authenticatedUser } from '@stacksjs/auth/middleware'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware, resolveRouteModel, setRouteModelFallback } from '@stacksjs/router'
 
+let ormModule: typeof import('@stacksjs/orm') | undefined
+
 /**
  * Convention binding: parameter `site` resolves through the `Site` model
  * (stacksjs/stacks#2231).
@@ -24,7 +26,7 @@ setRouteModelFallback(async (value, { param }) => {
   // touched: lowercasing the rest would turn `blogPost` into `Blogpost`.
   const modelName = param.charAt(0).toUpperCase() + param.slice(1)
 
-  const orm = await import('@stacksjs/orm') as Record<string, any>
+  const orm = (ormModule ??= await import('@stacksjs/orm')) as Record<string, any>
   const model = orm[modelName]
 
   // No model of that name — decline, so the raw string passes through exactly
