@@ -1138,11 +1138,6 @@ function adaptMiddlewareForBunRouter(
  */
 let middlewareCache: Map<string, MiddlewareHandler | null> | undefined
 
-function cacheMiddleware(name: string, handler: MiddlewareHandler | null): void {
-  const cache = middlewareCache ??= new Map()
-  cache.set(name, handler)
-}
-
 /**
  * Cache for the middleware alias map (loaded once from app/Middleware.ts).
  *
@@ -1278,8 +1273,10 @@ async function getMiddlewareRegistry(): Promise<Record<string, string> | null> {
  * the file in dev fixes the alias without a restart.
  */
 async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
-  const cachedMiddleware = middlewareCache
-  if (cachedMiddleware?.has(name)) {
+  // Imports that outlive a reload may finish for their original request, but
+  // must only populate the cache they started with.
+  const cachedMiddleware = middlewareCache ??= new Map()
+  if (cachedMiddleware.has(name)) {
     return cachedMiddleware.get(name) ?? null
   }
 
@@ -1296,10 +1293,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
       const handler = (middleware.default ?? null) as MiddlewareHandler | null
       if (!handler || typeof handler.handle !== 'function') {
         log.error(`[Router] Middleware '${name}' resolved to ${registered}, but the file has no default export with a handle() method`)
-        cacheMiddleware(name, null)
+        cachedMiddleware.set(name, null)
         return null
       }
-      cacheMiddleware(name, handler)
+      cachedMiddleware.set(name, handler)
       return handler
     }
     catch (err: unknown) {
@@ -1321,10 +1318,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
       // default export here is a bug in the user's middleware, not a
       // reason to silently fall back to different behavior.
       log.error(`[Router] Middleware '${name}' resolved to ${userPath}, but the file has no default export with a handle() method`)
-      cacheMiddleware(name, null)
+      cachedMiddleware.set(name, null)
       return null
     }
-    cacheMiddleware(name, handler)
+    cachedMiddleware.set(name, handler)
     return handler
   }
   catch (err: unknown) {
@@ -1338,10 +1335,10 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
     const handler = (middleware.default ?? null) as MiddlewareHandler | null
     if (!handler || typeof handler.handle !== 'function') {
       log.error(`[Router] Middleware '${name}' resolved to ${defaultPath}, but the file has no default export with a handle() method`)
-      cacheMiddleware(name, null)
+      cachedMiddleware.set(name, null)
       return null
     }
-    cacheMiddleware(name, handler)
+    cachedMiddleware.set(name, handler)
     return handler
   }
   catch (err: unknown) {
@@ -1431,8 +1428,8 @@ function isShortCircuit(thrown: unknown): boolean {
  * treats as fatal, so the documented syntax aborted boot with "Unresolvable
  * middleware alias(es)".
  */
-function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHandler {
-  const cached = negatedMiddlewareCache?.get(name)
+function negateMiddleware(name: string, inner: MiddlewareHandler, cache: Map<string, MiddlewareHandler>): MiddlewareHandler {
+  const cached = cache.get(name)
   if (cached)
     return cached
 
@@ -1454,7 +1451,6 @@ function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHan
     },
   }
 
-  const cache = negatedMiddlewareCache ??= new Map()
   cache.set(name, negated)
 
   return negated
@@ -1464,14 +1460,17 @@ function negateMiddleware(name: string, inner: MiddlewareHandler): MiddlewareHan
  * Load the handler a parsed reference names, negated when it asked to be.
  */
 function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | null | Promise<MiddlewareHandler | null> {
+  // Capture before loading: an old import must not fill a replacement cache
+  // with a negation of the old handler.
+  const negatedCache = parsed.negated ? (negatedMiddlewareCache ??= new Map()) : undefined
   // Resolved modules are synchronous values. Keep cached failures as null so
   // the caller still fails closed, and use the same cache hot reload clears.
   const cached = middlewareCache?.get(parsed.name)
   if (cached !== undefined)
-    return cached && parsed.negated ? negateMiddleware(parsed.name, cached) : cached
+    return cached && negatedCache ? negateMiddleware(parsed.name, cached, negatedCache) : cached
 
   return loadMiddleware(parsed.name).then(handler =>
-    handler && parsed.negated ? negateMiddleware(parsed.name, handler) : handler,
+    handler && negatedCache ? negateMiddleware(parsed.name, handler, negatedCache) : handler,
   )
 }
 
@@ -2042,9 +2041,10 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
           ? resolvedCsrfOnlyMiddleware
           : undefined
         const resolved: ResolvedMiddleware[] = cachedCsrfOnlyMiddleware ?? []
+        const resolvedCache = resolvedMiddlewareEntryCache ??= new Map()
         const unresolvedEntries = cachedCsrfOnlyMiddleware ? EMPTY_MIDDLEWARE_ENTRIES : middlewareEntries
         for (const middlewareEntry of unresolvedEntries) {
-          let resolvedEntry = resolvedMiddlewareEntryCache?.get(middlewareEntry)
+          let resolvedEntry = resolvedCache.get(middlewareEntry)
           if (!resolvedEntry) {
             const pending = parseMiddlewareEntry(middlewareEntry)
             const parsed = pending instanceof Promise ? await pending : pending
@@ -2067,8 +2067,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
                 parameterName: parsed.params ? parsed.name : undefined,
                 params: parsed.params,
               }
-              const cache = resolvedMiddlewareEntryCache ??= new Map()
-              cache.set(middlewareEntry, resolvedEntry)
+              resolvedCache.set(middlewareEntry, resolvedEntry)
             }
           }
 
@@ -2095,7 +2094,7 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
           resolved.push(resolvedEntry)
         }
 
-        if (middlewareEntries === CSRF_ONLY_MIDDLEWARE && !cachedCsrfOnlyMiddleware && resolved.length === 1)
+        if (middlewareEntries === CSRF_ONLY_MIDDLEWARE && !cachedCsrfOnlyMiddleware && resolved.length === 1 && resolvedCache === resolvedMiddlewareEntryCache)
           resolvedCsrfOnlyMiddleware = resolved
 
         // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
