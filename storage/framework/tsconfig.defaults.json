@@ -22,6 +22,7 @@
       "@stacksjs/auth/*": ["./core/auth/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
       "@stacksjs/orm/routes": ["./core/orm/src/routes.ts"],
+      "@stacksjs/types/exit-code": ["./core/types/src/exit-code.ts"],
       "@stacksjs/*": ["./core/*/src"],
       "stacks/*": ["./core/*/src"],
       "buddy": ["./core/buddy/src/index.ts"],

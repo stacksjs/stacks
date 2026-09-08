@@ -31,6 +31,7 @@
       // lives in `core/desktop/`. `@stacksjs/*` looks for `./desktop-build/src`
       // and misses, which is the remaining pair of typecheck errors.
       "@stacksjs/desktop-build": ["./desktop/src"],
+      "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
       "@stacksjs/*": ["./*/src"],
       "stacks/*": ["./*/src"],
       "buddy": ["./buddy/src/index.ts"],

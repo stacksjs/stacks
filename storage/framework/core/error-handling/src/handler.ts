@@ -12,7 +12,7 @@ function stripAnsi(str: string): string {
   return str.replace(/\x1B\[[0-9;]*m/g, '')
 }
 import * as path from '@stacksjs/path'
-import { ExitCode } from '@stacksjs/types'
+import { ExitCode } from '@stacksjs/types/exit-code'
 
 /**
  * Context information attached to errors for better debugging.

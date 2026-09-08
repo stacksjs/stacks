@@ -30,6 +30,7 @@
       "@stacksjs/error-handling/*": ["./error-handling/src/*"],
       "@stacksjs/path/*": ["./path/src/*"],
       "@stacksjs/storage/*": ["./storage/src/*"],
+      "@stacksjs/types/exit-code": ["./types/src/exit-code.ts"],
       "@stacksjs/*": ["./*/src"],
       "ts-pantry": ["../../../node_modules/ts-pantry"],
       // Bun uses these paths while building and running source. Prefer the
