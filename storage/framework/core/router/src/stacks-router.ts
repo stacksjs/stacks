@@ -3740,6 +3740,8 @@ const nativeRequestBlob = Request.prototype.blob
 const nativeRequestClone = Request.prototype.clone
 let requestBodyEncoder: TextEncoder | undefined
 let UploadedFileConstructor: typeof import('@stacksjs/storage/uploaded-file').UploadedFile | undefined
+// Keep the module, not authorization decisions: gate definitions remain live.
+let requestGateModule: typeof import('@stacksjs/auth/gate') | undefined
 
 function createUploadedFile(file: File): UploadedFile {
   UploadedFileConstructor ??= (require('@stacksjs/storage/uploaded-file') as typeof import('@stacksjs/storage/uploaded-file')).UploadedFile
@@ -4088,13 +4090,13 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   async tokenCant(ability: string) {
     return !(await this.tokenCan!(ability))
   },
-  // Gate / Policy macros (stacksjs/stacks#1874 F-9). Lazy-import `@stacksjs/auth`
-  // to dodge the router←auth cycle; resolve the user from `_authenticatedUser`,
+  // Gate / Policy macros (stacksjs/stacks#1874 F-9). Load the gate entrypoint
+  // on first use; resolve the user from `_authenticatedUser`,
   // passing `null` when missing so public-read policies still get a chance.
   async can(ability: string, ...args: unknown[]) {
     if (typeof ability !== 'string' || ability.length === 0)
       return false
-    const { Gate } = await import('@stacksjs/auth')
+    const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
     const user = (this._authenticatedUser as Parameters<typeof Gate.allows>[1]) ?? null
     return Gate.allows(ability, user, ...args)
   },
@@ -4104,7 +4106,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
   // Throw-on-deny variant (Laravel's `$this->authorize(...)`). Throws
   // AuthorizationException (403) on deny.
   async authorize(ability: string, ...args: unknown[]) {
-    const { Gate } = await import('@stacksjs/auth')
+    const { Gate } = requestGateModule ??= await import('@stacksjs/auth/gate')
     const user = (this._authenticatedUser as Parameters<typeof Gate.authorize>[1]) ?? null
     await Gate.authorize(ability, user, ...args)
   },

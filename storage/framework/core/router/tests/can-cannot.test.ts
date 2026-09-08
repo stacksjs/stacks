@@ -69,6 +69,31 @@ describe('req.can / req.cannot (stacksjs/stacks#1874 F-9)', () => {
     const req = makeEnhancedRequest({}) // no _authenticatedUser
     expect(await req.can!('view-public')).toBe(true)
   })
+
+  test('warm request helpers observe gate changes and each request user', async () => {
+    const owner = makeEnhancedRequest({ user: { id: 7 } })
+    const other = makeEnhancedRequest({ user: { id: 8 } })
+    const resource = { ownerId: 7 }
+    Gate.define('edit-resource', async (user, value) => {
+      await Promise.resolve()
+      return user?.id === value.ownerId
+    })
+    expect(await Promise.all([
+      owner.can!('edit-resource', resource),
+      other.can!('edit-resource', resource),
+    ])).toEqual([true, false])
+    await expect(owner.authorize!('edit-resource', resource)).resolves.toBeUndefined()
+
+    Gate.define('edit-resource', () => false)
+    expect(await owner.can!('edit-resource', resource)).toBe(false)
+    const { AuthorizationException } = await import('@stacksjs/auth')
+    await expect(owner.authorize!('edit-resource', resource)).rejects.toBeInstanceOf(AuthorizationException)
+
+    Gate.flush()
+    expect(await owner.cannot!('edit-resource', resource)).toBe(true)
+    Gate.define('edit-resource', () => true)
+    expect(await other.can!('edit-resource', resource)).toBe(true)
+  })
 })
 
 describe('req.authorize (Laravel-style throw-on-deny)', () => {
