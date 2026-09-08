@@ -643,6 +643,9 @@ function isExposeRoutesAuthorized(req: Request): boolean {
   }
 }
 
+type CorsHeaderApplier = (req: Request, res: Response, cfg?: unknown) => Response
+let corsHeaderApplierCache: { apply?: CorsHeaderApplier } = {}
+
 /**
  * Apply the configured CORS policy to an outgoing response. Pulled
  * out as a helper so success-path and error-path responses both flow
@@ -655,8 +658,9 @@ function isExposeRoutesAuthorized(req: Request): boolean {
 async function applyCorsIfConfigured(req: EnhancedRequest, response: Response): Promise<Response> {
   if (!req._corsConfig || !response) return response
   try {
-    const { applyCorsHeaders } = await import(resolveDefaultsPath('app/Middleware/Cors.ts'))
-    return (applyCorsHeaders as (req: Request, res: Response, cfg?: unknown) => Response)(
+    const cache = corsHeaderApplierCache
+    const applyCorsHeaders = cache.apply ??= (await import(resolveDefaultsPath('app/Middleware/Cors.ts'))).applyCorsHeaders
+    return applyCorsHeaders(
       req as unknown as Request,
       response,
       req._corsConfig,
@@ -1464,6 +1468,8 @@ function loadParsedMiddleware(parsed: ParsedMiddleware): MiddlewareHandler | nul
  * called from the dev server — production should never invoke it.
  */
 export function clearMiddlewareCache(): void {
+  // Pending imports retain their old owner and cannot refill the new cache.
+  corsHeaderApplierCache = {}
   middlewareCache = undefined
   negatedMiddlewareCache = undefined
   resolvedMiddlewareEntryCache = undefined
