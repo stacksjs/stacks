@@ -166,11 +166,13 @@ export function createEmitter<Events extends EventMap>(
   const map = all ?? new Map<keyof Events | '*', any>()
 
   // Match a glob-pattern key (`user:*`, `*.created`) against a concrete event
-  // type. Compiled regexes are cached on the key string so the hot path
-  // doesn't recompile on every emit.
-  const patternCache = new Map<string, RegExp>()
-  const matchPattern = (key: string, type: string): boolean => {
-    let re = patternCache.get(key)
+  // type. Weak ownership lets unreferenced buckets and their compiled patterns
+  // be collected after deletion or replacement through the public map.
+  const patternCache = new WeakMap<object, { key: string, re: RegExp }>()
+  const matchPattern = (key: string, type: string, handlers: object): boolean => {
+    const cached = patternCache.get(handlers)
+    // Public map entries can share one bucket under different pattern keys.
+    let re = cached?.key === key ? cached.re : undefined
     if (!re) {
       // Preserve mitt's loose semantics: `*` is a glob (any chars) and
       // every other char is treated as a literal regex char. We do NOT
@@ -178,7 +180,7 @@ export function createEmitter<Events extends EventMap>(
       // `*.created` matching `user:created` / `post-created` / etc.
       // (treating `.` as "any char", not literal dot).
       re = new RegExp(`^${key.replace(/\*/g, '.*')}$`)
-      patternCache.set(key, re)
+      patternCache.set(handlers, { key, re })
     }
     return re.test(type)
   }
@@ -261,7 +263,7 @@ export function createEmitter<Events extends EventMap>(
     map.forEach((patternHandlers, key) => {
       const keyStr = String(key)
       if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
-      if (matchPattern(keyStr, typeStr)) {
+      if (matchPattern(keyStr, typeStr, patternHandlers)) {
         for (const handler of sortByPriority((patternHandlers as WildcardHandler<any>[]).slice())) {
           try {
             const result = handler(type, evt)
@@ -310,10 +312,10 @@ export function createEmitter<Events extends EventMap>(
 
     const typeStr = String(type)
     const patternKeys: string[] = []
-    map.forEach((_, key) => {
+    map.forEach((patternHandlers, key) => {
       const keyStr = String(key)
       if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
-      if (matchPattern(keyStr, typeStr)) patternKeys.push(keyStr)
+      if (matchPattern(keyStr, typeStr, patternHandlers)) patternKeys.push(keyStr)
     })
     for (const key of patternKeys)
       // `patternKeys` are matched at runtime, so they are strings rather than
@@ -362,10 +364,10 @@ export function createEmitter<Events extends EventMap>(
 
     const typeStr = String(type)
     const patternKeys: string[] = []
-    map.forEach((_, key) => {
+    map.forEach((patternHandlers, key) => {
       const keyStr = String(key)
       if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
-      if (matchPattern(keyStr, typeStr)) patternKeys.push(keyStr)
+      if (matchPattern(keyStr, typeStr, patternHandlers)) patternKeys.push(keyStr)
     })
     for (const key of patternKeys)
       // `patternKeys` are matched at runtime, so they are strings rather than
