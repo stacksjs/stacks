@@ -12,9 +12,9 @@
  * with no artifact behind it is not a number this project publishes.
  */
 
-import type { Driver, LoadResult } from './drivers'
+import type { Driver } from './drivers'
 import type { BusyProcess } from './host-load'
-import type { Measurement, RunMeta } from './report'
+import type { Measurement, RoutingRepeat, RunMeta } from './report'
 import type { ScenarioParityEvidence } from './runtime'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { arch, cpus, platform, release } from 'node:os'
@@ -230,7 +230,7 @@ async function main(): Promise<void> {
   const targetRows: Array<{ id: string, label: string, skipped?: string }> = []
   const availableTargets = new Set<string>()
   const unavailableTargets = new Set<string>()
-  const collected = new Map<string, { results: LoadResult[], cpuReadings: number[] }>()
+  const collected = new Map<string, RoutingRepeat[]>()
 
   for (const scenario of scenarios) {
     console.error(`\n[bench] === ${scenario.title}`)
@@ -272,11 +272,24 @@ async function main(): Promise<void> {
             durationSeconds: opts.durationSeconds,
           }, booted.pid)
           const key = `${target.id}:${scenario.id}`
-          const bucket = collected.get(key) ?? { results: [], cpuReadings: [] }
+          const bucket = collected.get(key) ?? []
           collected.set(key, bucket)
-          if (cpuPercent != null) bucket.cpuReadings.push(cpuPercent)
 
-          bucket.results.push(result)
+          // Every repeat is retained, including one that produced no CPU
+          // reading. Dropping those before the median made a repeat with no
+          // CPU evidence invisible to the quality gate (stacksjs/stacks#2470).
+          bucket.push({
+            targetId: target.id,
+            scenarioId: scenario.id,
+            run,
+            rpsMean: result.rpsMean,
+            rpsP50: result.rpsP50,
+            latencyMs: result.latencyMs,
+            requests: result.requests,
+            errors: result.errors,
+            cpuPercent,
+            rawBytes: result.raw.length,
+          })
           writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}.txt`), result.raw)
           if (warmupResult)
             writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}--warmup.txt`), warmupResult.raw)
@@ -308,38 +321,58 @@ async function main(): Promise<void> {
     if (!availableTargets.has(target.id))
       continue
     for (const scenario of scenarios) {
-      const bucket = collected.get(`${target.id}:${scenario.id}`)
-      if (!bucket || bucket.results.length !== opts.runs)
+      const results = collected.get(`${target.id}:${scenario.id}`)
+      if (!results || results.length !== opts.runs)
         throw new Error(`Incomplete measurements for ${target.id}:${scenario.id}`)
-      const { results, cpuReadings } = bucket
       const rpsValues = results.map(r => r.rpsMean)
       const p50s = results.map(r => r.rpsP50).filter((v): v is number => v != null)
-      const rawResults = collected.get(`bun-raw:${scenario.id}`)?.results
+      const rawResults = collected.get(`bun-raw:${scenario.id}`)
+
+      /*
+       * Aggregate all-or-nothing.
+       *
+       * A median taken over the repeats that happened to report a metric is a
+       * number with no stated coverage: it reads the same whether three
+       * repeats agreed or one repeat was the only evidence. Where a metric is
+       * missing from any repeat the aggregate is `null`, which the report
+       * renders as `-` and publication rejects with a reason naming the run.
+       */
+      const everyValue = (pick: (r: RoutingRepeat) => number | null): number | null => {
+        const values = results.map(pick)
+        return values.every((v): v is number => v != null && Number.isFinite(v)) ? median(values) : null
+      }
+
+      // Pooled rather than the mean of per-repeat rates, so a repeat that
+      // served fewer requests carries proportionally less weight - and a
+      // repeat that served none contributes nothing instead of a free 0.
+      const pooledRequests = results.reduce((sum, r) => sum + r.requests, 0)
+      const pooledErrors = results.reduce((sum, r) => sum + r.errors, 0)
+
       measurements.push({
         targetId: target.id,
         scenarioId: scenario.id,
         rpsMean: median(rpsValues),
         rpsP50: p50s.length ? median(p50s) : null,
         latencyMs: {
-          p50: median(results.map(r => r.latencyMs.p50)),
-          p90: median(results.map(r => r.latencyMs.p90)),
-          p99: median(results.map(r => r.latencyMs.p99)),
+          p50: everyValue(r => r.latencyMs.p50),
+          p90: everyValue(r => r.latencyMs.p90),
+          p99: everyValue(r => r.latencyMs.p99),
         },
-        errorRate: results.reduce((sum, r) => sum + (r.requests ? r.errors / r.requests : 0), 0) / results.length,
-        cpuPercent: cpuReadings.length ? median(cpuReadings) : null,
+        errorRate: pooledRequests > 0 ? pooledErrors / pooledRequests : null,
+        cpuPercent: everyValue(r => r.cpuPercent),
         spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
         rangeRatio: relativeRange(rpsValues),
         relativeToRaw: rawResults
           ? relativeThroughput(rpsValues, rawResults.map(r => r.rpsMean))
           : null,
-        runs: opts.runs,
+        runs: results.length,
       })
     }
   }
 
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
-    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks),
+    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks, [...collected.values()].flat()),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
   if (sourceStateChanged(meta.source, meta.sourceAtEnd))
@@ -349,6 +382,18 @@ async function main(): Promise<void> {
   const report = renderReport({ meta, scenarios, targets: targetRows, measurements })
   writeFileSync(join(outDir, 'report.md'), report)
   writeFileSync(join(outDir, 'measurements.json'), `${JSON.stringify({
+    /*
+     * 2: latency percentiles and errorRate became nullable, errorRate became
+     * pooled rather than the mean of per-repeat rates, cpuPercent requires
+     * every repeat to have reported, and `runs` counts repeats RETAINED
+     * rather than requested (stacksjs/stacks#2470).
+     *
+     * The values are unchanged for a clean run - verified against diagnostic
+     * 34196555986, where pooled and mean-of-rates agree on all 32 rows - but
+     * the definitions differ the moment a repeat fails, so a committed
+     * baseline needs to say which rules produced it.
+     */
+    schemaVersion: 2,
     meta,
     targets: targetRows,
     workload: {

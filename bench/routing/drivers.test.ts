@@ -135,3 +135,83 @@ describe('autocannon load isolation', () => {
     }
   })
 })
+
+/**
+ * A percentile the tool did not report must stay absent (stacksjs/stacks#2470).
+ *
+ * The oha adapter used `?? 0`, so a missing p99 became 0 ms - the best
+ * possible latency - and every downstream check passed it. The fixture in the
+ * request-counting tests above omits `latencyPercentiles` entirely, which is
+ * exactly why the substitution went unnoticed for so long.
+ *
+ * The key path and units here were taken from real captured oha output
+ * (routing diagnostic run 34196555986): `latencyPercentiles` holds seconds,
+ * so 0.000407146 is 0.407 ms.
+ */
+describe('latency percentiles preserve absence', () => {
+  const runOha = async (json: unknown) => {
+    const spawn = spyOn(Bun, 'spawn').mockReturnValue({
+      stdout: new Response(JSON.stringify(json)).body,
+      stderr: new Response('').body,
+      exited: Promise.resolve(0),
+    } as unknown as ReturnType<typeof Bun.spawn>)
+    try {
+      const driver = DRIVERS.find(d => d.name === 'oha')!
+      return await driver.run({
+        url: 'http://127.0.0.1:39400/bench/json',
+        method: 'GET',
+        headers: {},
+        connections: 8,
+        warmupSeconds: 0,
+        durationSeconds: 1,
+      })
+    }
+    finally {
+      spawn.mockRestore()
+    }
+  }
+
+  const base = {
+    summary: { requestsPerSec: 100 },
+    statusCodeDistribution: { 200: 100 },
+  }
+
+  it('converts real oha seconds into milliseconds', async () => {
+    const result = await runOha({
+      ...base,
+      latencyPercentiles: { p50: 0.000407146, p90: 0.00050315, p99: 0.00076389 },
+    })
+
+    expect(result.latencyMs.p50).toBeCloseTo(0.407146, 6)
+    expect(result.latencyMs.p90).toBeCloseTo(0.50315, 6)
+    expect(result.latencyMs.p99).toBeCloseTo(0.76389, 6)
+  })
+
+  it('reports an absent percentile as null, never as zero latency', async () => {
+    const result = await runOha({ ...base, latencyPercentiles: { p50: 0.0004, p90: 0.0005 } })
+
+    expect(result.latencyMs.p50).toBeCloseTo(0.4, 6)
+    expect(result.latencyMs.p99).toBeNull()
+  })
+
+  it('reports an explicitly null percentile as null', async () => {
+    const result = await runOha({ ...base, latencyPercentiles: { p50: null, p90: null, p99: null } })
+
+    expect(result.latencyMs).toEqual({ p50: null, p90: null, p99: null })
+  })
+
+  it('reports a missing percentile block as null rather than three zeroes', async () => {
+    const result = await runOha(base)
+
+    expect(result.latencyMs).toEqual({ p50: null, p90: null, p99: null })
+  })
+
+  it('rejects a non-numeric percentile instead of producing NaN', async () => {
+    // `'fast' * 1000` is NaN, which is finite-checked nowhere upstream and
+    // renders as NaN in the report.
+    const result = await runOha({ ...base, latencyPercentiles: { p50: 'fast', p90: 0.0005, p99: 0.0007 } })
+
+    expect(result.latencyMs.p50).toBeNull()
+    expect(result.latencyMs.p90).toBeCloseTo(0.5, 6)
+  })
+})

@@ -137,6 +137,20 @@ all repeats, return valid measurements without request errors, include a server
 CPU reading, retain a complete and stable parity fingerprint for every repeat,
 and stay within the 10% throughput stability range.
 
+Every repeat is validated individually, not just the aggregate row. A median
+can hide one invalid latency, and a repeat that served no requests used to
+contribute a zero error rate to the mean. Each repeat is retained with the CPU
+reading taken during it and its run ordinal, so an issue names the run whose
+raw output should be read.
+
+Missing evidence stays missing. A latency percentile the load tool did not
+report is `null` rather than `0`, and the report renders it as `-`. An
+aggregate is `null` unless every repeat measured it. `measurements.json`
+carries `schemaVersion: 2` to mark these rules: `errorRate` is pooled errors
+over pooled requests rather than the mean of per-repeat rates, `cpuPercent`
+requires every repeat to have reported one, and `runs` counts the repeats
+retained rather than the number requested.
+
 Use the Bun version requested by `package.json`'s `engines.bun` for the baseline.
 The runner records that requirement beside the actual runtime version and warns
 when they differ. Alternate runtimes are allowed for explicit runtime comparisons:

@@ -1,5 +1,5 @@
 import type { BusyProcess } from './host-load'
-import type { Measurement } from './report'
+import type { Measurement, RoutingRepeat } from './report'
 import type { RuntimeRequirement } from './runtime-version'
 import type { ScenarioParityEvidence } from './runtime'
 import type { SourceState } from './source'
@@ -101,6 +101,7 @@ export function routingMeasurementPublicationIssues(
   measurements: Measurement[],
   expectedRuns: number,
   parityChecks: RoutingParityCheck[],
+  repeats: RoutingRepeat[] = [],
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -122,16 +123,62 @@ export function routingMeasurementPublicationIssues(
         || (row.rpsP50 != null && (!Number.isFinite(row.rpsP50) || row.rpsP50 < 0))
         || !Number.isFinite(row.spread.min) || row.spread.min <= 0
         || !Number.isFinite(row.spread.max) || row.spread.max < row.spread.min
-        || !Object.values(row.latencyMs).every(value => Number.isFinite(value) && value >= 0)
-        || !Number.isFinite(row.errorRate) || row.errorRate < 0 || row.errorRate > 1
+        || !Object.values(row.latencyMs).every(value => value == null || (Number.isFinite(value) && value >= 0))
+        || (row.errorRate != null && (!Number.isFinite(row.errorRate) || row.errorRate < 0 || row.errorRate > 1))
         || (row.rangeRatio != null && (!Number.isFinite(row.rangeRatio) || row.rangeRatio < 0)))
         issues.push(`${key} contains an invalid measurement`)
-      if (row.errorRate > 0)
+      // Distinguished from "no errors". A row with no requests has no error
+      // rate to report, and reading that as 0% is how a wholly failed run
+      // passed the gate.
+      if (row.errorRate == null)
+        issues.push(`${key} recorded no requests, so it has no error rate`)
+      else if (row.errorRate > 0)
         issues.push(`${key} recorded request errors`)
+      if (Object.values(row.latencyMs).some(value => value == null))
+        issues.push(`${key} is missing a latency percentile`)
       if (row.cpuPercent == null || !Number.isFinite(row.cpuPercent) || row.cpuPercent < 0)
         issues.push(`${key} has no valid server CPU reading`)
       if (measurementRange(row) > MAX_STABLE_RANGE)
         issues.push(`${key} exceeded the 10% throughput stability range`)
+
+      /*
+       * Every repeat, not just the aggregate.
+       *
+       * A median hides an individual invalid latency, and a repeat that served
+       * no requests used to contribute a zero error rate to the mean. The run
+       * ordinal is named so the raw output for the offending repeat can be
+       * found on disk (stacksjs/stacks#2470).
+       */
+      const runs = repeats.filter(r => r.targetId === target.id && r.scenarioId === scenario.id)
+      if (repeats.length > 0) {
+        // Same completeness predicate the parity checks below already use:
+        // the right count, no duplicates, and every ordinal in range.
+        const completeRepeats = runs.length === expectedRuns
+          && new Set(runs.map(r => r.run)).size === expectedRuns
+          && runs.every(r => Number.isSafeInteger(r.run) && r.run >= 1 && r.run <= expectedRuns)
+        if (!completeRepeats) {
+          issues.push(`${key} did not retain ${expectedRuns} identified repeat(s)`)
+        }
+        else {
+          for (const repeat of runs) {
+            const at = `${key} run ${repeat.run}`
+            if (!Number.isFinite(repeat.rpsMean) || repeat.rpsMean <= 0)
+              issues.push(`${at} has an invalid throughput measurement`)
+            if (Object.values(repeat.latencyMs).some(value => value == null || !Number.isFinite(value) || value < 0))
+              issues.push(`${at} is missing a latency percentile`)
+            if (repeat.cpuPercent == null || !Number.isFinite(repeat.cpuPercent) || repeat.cpuPercent < 0)
+              issues.push(`${at} has no valid server CPU reading`)
+            if (!Number.isSafeInteger(repeat.requests) || repeat.requests <= 0)
+              issues.push(`${at} recorded no requests`)
+            if (!Number.isSafeInteger(repeat.errors) || repeat.errors < 0 || repeat.errors > repeat.requests)
+              issues.push(`${at} has an invalid error count`)
+            // Raw output is the only way to audit a disputed repeat, and an
+            // empty capture means there is nothing to audit.
+            if (!Number.isSafeInteger(repeat.rawBytes) || repeat.rawBytes <= 0)
+              issues.push(`${at} preserved no raw output`)
+          }
+        }
+      }
 
       const checks = parityChecks.filter(check => check.targetId === target.id && check.scenarioId === scenario.id)
       const completeRuns = checks.length === expectedRuns

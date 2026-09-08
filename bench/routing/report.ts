@@ -6,6 +6,7 @@
  * argued with, and this repo does not publish numbers like that.
  */
 
+import type { LatencyPercentiles } from './drivers'
 import type { Scenario } from './scenarios'
 import type { SourceState } from './source'
 import type { RelativeThroughput } from './statistics'
@@ -17,15 +18,43 @@ import { formatSourceState } from './source'
 import { MAX_STABLE_RANGE } from './statistics'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 
+/**
+ * One measured repeat, retained with the CPU reading taken during it.
+ *
+ * Repeats used to be reduced to an aggregate immediately, and null CPU
+ * readings were dropped before the median was taken - so a repeat that
+ * produced no CPU evidence left no trace, and the quality gate saw a complete
+ * row (stacksjs/stacks#2470). Retaining them lets publication check each one
+ * and name the run that failed.
+ */
+export interface RoutingRepeat {
+  targetId: string
+  scenarioId: string
+  /** 1-based scheduled run ordinal, so a missing repeat is identifiable. */
+  run: number
+  rpsMean: number
+  rpsP50: number | null
+  latencyMs: LatencyPercentiles
+  requests: number
+  errors: number
+  /** `null` when no CPU evidence was captured during this repeat. */
+  cpuPercent: number | null
+  /** Bytes of raw tool output recorded for this repeat. */
+  rawBytes: number
+}
+
 export interface Measurement {
   targetId: string
   scenarioId: string
   /** Median of the repeated runs. */
   rpsMean: number
   rpsP50: number | null
-  latencyMs: { p50: number, p90: number, p99: number }
-  errorRate: number
-  /** CPU time as a percentage of one core during measured load, excluding warmup. */
+  /** Median across the repeats. A percentile is `null` unless every repeat measured it. */
+  latencyMs: LatencyPercentiles
+  /** Pooled errors over pooled requests. `null` when no requests were recorded. */
+  errorRate: number | null
+  /** CPU as a percentage of one core during measured load, excluding warmup.
+   * `null` unless EVERY repeat produced a reading. */
   cpuPercent: number | null
   /** Lowest and highest rps across the repeats, so spread is visible. */
   spread: { min: number, max: number }
@@ -185,12 +214,16 @@ export function renderReport(input: ReportInput): string {
           ? `${fmt(relative.median * 100, 1)}% (${fmt(relative.spread.min * 100, 1)}%-${fmt(relative.spread.max * 100, 1)}%)`
           : '-')
       }
+      // A metric nothing measured renders as `-`, the same as the CPU column
+      // already did. Rendering a null as 0.00 would put the best possible
+      // latency in the table for a run that produced no latency evidence.
+      const measured = (value: number | null, digits: number) => value == null ? '-' : fmt(value, digits)
       cells.push(
-        fmt(row.latencyMs.p50, 2),
-        fmt(row.latencyMs.p90, 2),
-        fmt(row.latencyMs.p99, 2),
-        `${(row.errorRate * 100).toFixed(2)}%`,
-        row.cpuPercent == null ? '-' : `${fmt(row.cpuPercent)}%`,
+        measured(row.latencyMs.p50, 2),
+        measured(row.latencyMs.p90, 2),
+        measured(row.latencyMs.p99, 2),
+        row.errorRate == null ? '-' : `${(row.errorRate * 100).toFixed(2)}%`,
+        measured(row.cpuPercent, 0),
         '',
       )
       lines.push(cells.join(' | ').trim())
