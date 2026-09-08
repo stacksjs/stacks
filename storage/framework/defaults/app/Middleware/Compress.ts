@@ -109,6 +109,9 @@ function shouldCompressContentType(contentType: string | null): boolean {
  * JSON/HTML response sizes we're targeting (KB to single-digit MB).
  * For multi-MB streamed responses, the middleware should be skipped
  * (the SSE / event-stream check above handles the most common case).
+ * A caller that already knows a conservative UTF-8 byte upper bound may
+ * supply it to leave a proven sub-threshold body unconsumed. This must come
+ * from the body itself, not an unverified Content-Length header.
  *
  * @example
  * ```ts
@@ -117,10 +120,13 @@ function shouldCompressContentType(contentType: string | null): boolean {
  * // → response with `Content-Encoding: br` and a brotli-compressed body
  * ```
  */
-export async function applyCompression(request: Request, response: Response): Promise<Response> {
+export async function applyCompression(request: Request, response: Response, bodySizeUpperBound?: number): Promise<Response> {
   // Already encoded — leave it alone. Re-encoding would corrupt the
   // body, and the client already knows what to expect.
   if (response.headers.get('content-encoding')) return response
+
+  if (bodySizeUpperBound !== undefined && Number.isSafeInteger(bodySizeUpperBound) && bodySizeUpperBound >= 0 && bodySizeUpperBound < MIN_COMPRESS_BYTES)
+    return response
 
   // No body or non-text content streams (SSE, etc.) — skip.
   if (!response.body) return response

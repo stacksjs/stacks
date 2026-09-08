@@ -645,7 +645,7 @@ function isExposeRoutesAuthorized(req: Request): boolean {
 
 type CorsHeaderApplier = (req: Request, res: Response, cfg?: unknown) => Response
 let corsHeaderApplierCache: { apply?: CorsHeaderApplier } = {}
-type CompressionApplier = (req: Request, res: Response) => Promise<Response>
+type CompressionApplier = (req: Request, res: Response, bodySizeUpperBound?: number) => Promise<Response>
 let compressionApplierCache: { apply?: CompressionApplier } = {}
 
 /**
@@ -2423,7 +2423,8 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
         try {
           const cache = compressionApplierCache
           const applyCompression = cache.apply ??= (await import(resolveDefaultsPath('app/Middleware/Compress.ts'))).applyCompression
-          return await applyCompression(enhancedReq as unknown as Request, response)
+          const bodySizeUpperBound = (response as unknown as Record<symbol, unknown>)[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND]
+          return await applyCompression(enhancedReq as unknown as Request, response, typeof bodySizeUpperBound === 'number' ? bodySizeUpperBound : undefined)
         }
         catch (err) {
           // Compression failure must NEVER drop the response — log and
