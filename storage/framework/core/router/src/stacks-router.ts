@@ -657,10 +657,22 @@ let compressionApplierCache: { apply?: CompressionApplier } = {}
  * Maintenance 503) to hand-roll `Access-Control-Allow-Origin: *`
  * regardless of policy. See stacksjs/stacks#1859 H-3, R-3.
  */
-async function applyCorsIfConfigured(req: EnhancedRequest, response: Response): Promise<Response> {
+function applyCorsIfConfigured(req: EnhancedRequest, response: Response): Response | Promise<Response> {
   if (!req._corsConfig || !response) return response
+  const cache = corsHeaderApplierCache
+  if (!cache.apply)
+    return loadAndApplyCorsHeaders(req, response, cache)
   try {
-    const cache = corsHeaderApplierCache
+    return cache.apply(req as unknown as Request, response, req._corsConfig)
+  }
+  catch (err) {
+    log.warn('[router] CORS header injection failed', { error: err })
+    return response
+  }
+}
+
+async function loadAndApplyCorsHeaders(req: EnhancedRequest, response: Response, cache: typeof corsHeaderApplierCache): Promise<Response> {
+  try {
     const applyCorsHeaders = cache.apply ??= (await import(resolveDefaultsPath('app/Middleware/Cors.ts'))).applyCorsHeaders
     return applyCorsHeaders(
       req as unknown as Request,
@@ -2283,8 +2295,10 @@ function createMiddlewareHandler(router: Router, routeStates: Map<string, RouteR
       // same `applyCorsIfConfigured` helper as the error paths above
       // so policy enforcement is consistent across all responses
       // (stacksjs/stacks#1859 H-3).
-      if (response && enhancedReq._corsConfig)
-        response = await applyCorsIfConfigured(enhancedReq, response)
+      if (response && enhancedReq._corsConfig) {
+        const corsResponse = applyCorsIfConfigured(enhancedReq, response)
+        response = corsResponse instanceof Response ? corsResponse : await corsResponse
+      }
 
       // Echo X-Request-ID + Server-Timing on every response, AND stitch
       // the request_id into JSON error bodies so SPA error toasts can show

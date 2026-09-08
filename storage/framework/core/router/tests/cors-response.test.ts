@@ -57,12 +57,16 @@ describe('CORS response finalization', () => {
   test('a throwing origin policy does not poison later requests', async () => {
     const router = createStacksRouter({ autoDiscoverRoutes: false })
     router.get('/cors-policy-error', () => ({ ok: true })).middleware('cors')
-    config.cors = { origin: () => { throw new Error('policy unavailable') } }
-    const failed = await router.handleRequest(request('/cors-policy-error'))
-    expect(failed.status).toBe(200)
-    expect(failed.headers.get('access-control-allow-origin')).toBeNull()
-    config.cors = { origin: '*' }
-    expect((await router.handleRequest(request('/cors-policy-error'))).headers.get('access-control-allow-origin')).toBe('*')
+    // Exercise the initial load and the already-resolved function separately.
+    for (let round = 0; round < 2; round++) {
+      config.cors = { origin: () => { throw new Error('policy unavailable') } }
+      const failed = await router.handleRequest(request('/cors-policy-error'))
+      expect(failed.status).toBe(200)
+      expect(failed.headers.get('access-control-allow-origin')).toBeNull()
+      expect(await failed.json()).toEqual({ ok: true })
+      config.cors = { origin: '*' }
+      expect((await router.handleRequest(request('/cors-policy-error'))).headers.get('access-control-allow-origin')).toBe('*')
+    }
   })
 
   test('error responses retain CORS and existing Vary dimensions', async () => {
