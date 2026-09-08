@@ -7401,41 +7401,6 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
-   * POST /delivery/pings
-   */
-  postDeliveryPings(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/delivery/pings", {}, [], false, options)
-  },
-
-  /**
-   * POST /delivery/routes/{id}/start
-   */
-  postDeliveryRoutesIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/delivery/routes/{id}/start", input ?? {}, [], false, options)
-  },
-
-  /**
-   * POST /delivery/stops/{id}/complete
-   */
-  postDeliveryStopsIdComplete(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/delivery/stops/{id}/complete", input ?? {}, [], false, options)
-  },
-
-  /**
-   * POST /delivery/stops/{id}/fail
-   */
-  postDeliveryStopsIdFail(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/delivery/stops/{id}/fail", input ?? {}, [], false, options)
-  },
-
-  /**
-   * POST /delivery/stops/{id}/start
-   */
-  postDeliveryStopsIdStart(input: { "id": string }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
-    return request(config, "POST", "/delivery/stops/{id}/start", input ?? {}, [], false, options)
-  },
-
-  /**
    * GET /deployments/
    */
   getDeployments2(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
