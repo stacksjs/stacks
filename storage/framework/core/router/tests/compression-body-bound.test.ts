@@ -91,4 +91,34 @@ describe('compression with a known byte upper bound', () => {
       await server.stop(true)
     }
   })
+
+  test.each([false, true])('JSON size bounds retain custom and disabled compression (nativeRoutes=%s)', async (nativeRoutes) => {
+    const values = ['x'.repeat(50), 'x'.repeat(700), 'é'.repeat(340), '漢'.repeat(400), 'x'.repeat(1012), 'x'.repeat(1500), 'x'.repeat(2500)]
+    for (const compression of [{ enabled: false, threshold: 128 }, { enabled: true, threshold: 128 }, { enabled: true, threshold: 2048 }]) {
+      const router = createStacksRouter({ autoDiscoverRoutes: false })
+      router.bunRouter.config.compression = { ...router.bunRouter.config.compression, ...compression }
+      for (const [index, value] of values.entries())
+        router.get(`/custom-threshold-${index}`, () => ({ value }))
+      const server = await router.serve({ port: 0, hostname: '127.0.0.1', nativeRoutes })
+      try {
+        for (const [index, value] of values.entries()) {
+          const body = JSON.stringify({ value })
+          const compressed = compression.enabled && new TextEncoder().encode(body).byteLength >= compression.threshold
+          const response = await fetch(`http://127.0.0.1:${server.port}/custom-threshold-${index}`, {
+            headers: { 'accept-encoding': 'gzip', 'x-request-id': `custom-threshold-${index}` },
+            decompress: false,
+          })
+          expect(response.status).toBe(200)
+          expect(response.headers.get('content-encoding')).toBe(compressed ? 'gzip' : null)
+          expect(response.headers.get('x-request-id')).toBe(`custom-threshold-${index}`)
+          expect(response.headers.get('x-content-type-options')).toBe('nosniff')
+          const bytes = await response.bytes()
+          expect(new TextDecoder().decode(compressed ? Bun.gunzipSync(bytes) : bytes)).toBe(body)
+        }
+      }
+      finally {
+        await server.stop(true)
+      }
+    }
+  })
 })

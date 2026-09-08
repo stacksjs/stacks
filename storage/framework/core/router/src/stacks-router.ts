@@ -3561,10 +3561,9 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
   // while the serialized body is already available.
   const body = JSON.stringify(result) ?? ''
   const requestMarkers = req as unknown as Record<symbol, unknown>
-  // Native direct dispatch already gives its response finalizer the upper
-  // bound below, so retain its no-rescan path. Generic dispatch needs the
-  // exact standard header to let bun-router reject small bodies without
-  // opening their streams.
+  // Native direct dispatch supplies its size bound to the finalizer below.
+  // Generic dispatch needs the exact standard header so bun-router can
+  // reject small bodies without opening their streams.
   const directNativeRequest = typeof requestMarkers[CSRF_SECURE_TRANSPORT] === 'boolean'
     || requestMarkers[NATIVE_DIRECT_ROUTE_REQUEST] === true
   const bodyLength = canPreapplyMetadata && directNativeRequest
@@ -3585,7 +3584,10 @@ function formatJsonResult(result: unknown, req: EnhancedRequest, linkHeader?: st
     response.headers.set('Link', linkHeader)
   if (canPreapplyMetadata) {
     const frameworkResponse = response as unknown as Record<symbol, unknown>
-    frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] = bodyLength ?? body.length * 3
+    // Count native UTF-8 bytes only when the default compression threshold
+    // falls between the possible sizes. Other native bodies need no scan.
+    frameworkResponse[FRAMEWORK_RESPONSE_BODY_SIZE_UPPER_BOUND] = bodyLength
+      ?? (body.length * 3 >= 1024 && body.length < 1024 ? Buffer.byteLength(body) : body.length * 3)
   }
   if (csrfCookie)
     requestMarkers[CSRF_SEEDED_BY_HANDLE_REQUEST] = true
