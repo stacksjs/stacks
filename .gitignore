@@ -163,3 +163,10 @@ storage/framework/core/defaults/*
 !storage/framework/core/defaults/tests/
 !storage/framework/core/defaults/tests/**
 /storage/framework/stacks/storage/framework/stx/bundle-tmp
+
+# Migration files set aside during a run: the SQLite quarantine
+# (stacksjs/stacks#2477) and the feature gate's own sidecars. All three are
+# restored when the run finishes, so one on disk means a run was killed.
+database/migrations/*.sql.unsupported
+database/migrations/*.sql.disabled
+database/migrations/*.sql.ungated

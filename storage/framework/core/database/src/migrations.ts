@@ -9,7 +9,7 @@ import type { UnsafeRowsResult } from './utils'
 import type { Result } from '@stacksjs/error-handling'
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from 'node:fs'
 import { isPackageMigration, stagePackageMigrations } from './package-migrations'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized.
@@ -554,14 +554,44 @@ function enumMembers(list: string): string[] {
   return [...list.matchAll(/'(?:[^']|'')*'/g)].map(match => match[0])
 }
 
-export function preprocessSqliteMigrations(): void {
+export function preprocessSqliteMigrations(): Array<{ original: string, hidden: string, feature: string }> {
   const migrationsDir = migrationDirectory('sqlite')
+  /*
+   * Files moved aside because SQLite cannot execute part of them.
+   *
+   * Returned rather than handled here so the caller can put them back through
+   * the same `restoreHiddenMigrations` path the feature gate already uses, and
+   * so it can refuse to report success while any of them are still pending.
+   */
+  const quarantined: Array<{ original: string, hidden: string, feature: string }> = []
+  /*
+   * Put back anything a previous run left quarantined.
+   *
+   * The restore normally happens in `runDatabaseMigration`'s `finally`, but a
+   * SIGKILL between the rename and that block would strand the file outside
+   * the corpus - invisible, and silently absent from every later run. This
+   * runs under the migration lock, so no other process is mid-rename.
+   */
+  try {
+    for (const stale of readdirSync(migrationsDir).filter(f => f.endsWith('.sql.unsupported'))) {
+      const original = join(migrationsDir, stale.slice(0, -'.unsupported'.length))
+      try {
+        if (!existsSync(original))
+          renameSync(join(migrationsDir, stale), original)
+        else
+          unlinkSync(join(migrationsDir, stale))
+      }
+      catch { /* best effort: the sweep must never stop a migrate */ }
+    }
+  }
+  catch { /* directory does not exist yet; handled below */ }
+
   let files: string[]
   try {
     files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
   }
   catch {
-    return // directory doesn't exist yet
+    return quarantined // directory doesn't exist yet
   }
 
   // Track which migrations we drop so we can mark them executed in the
@@ -573,6 +603,60 @@ export function preprocessSqliteMigrations(): void {
     log.info(`Skipping migration on SQLite (${reason}): ${file}`)
     droppedMigrations.push(file)
   }
+  /*
+   * What to do with a file containing SQL that SQLite cannot execute.
+   *
+   * ALL unsupported: the historical behaviour, unchanged. The file is valid on
+   * MySQL/Postgres, so it stays on disk and is only marked executed for SQLite
+   * (stacksjs/stacks#1916).
+   *
+   * MIXED: quarantined. It used to fall straight through to the runner, which
+   * handed SQLite an `ADD CONSTRAINT` and got `near "FOREIGN": syntax error`,
+   * aborting the whole batch - so ONE bad file stopped every later migration
+   * from applying (stacksjs/stacks#2477).
+   *
+   * Quarantine moves it aside so the rest of the corpus applies, and leaves it
+   * PENDING. It is deliberately not run-the-supported-half-and-record: nothing
+   * here executes SQL, so the only way to run half a file is to rewrite it, and
+   * recording it afterwards would claim on a filename-keyed ledger that a
+   * statement ran when it never did. A table without the foreign key its model
+   * declares, asserted as complete, is worse than a failure that keeps saying so.
+   */
+  const partitionUnsupported = (
+    file: string,
+    filePath: string,
+    statements: string[],
+    pattern: RegExp,
+    feature: string,
+  ): 'skipped' | 'quarantined' | 'runnable' => {
+    const unsupported = statements.filter(s => pattern.test(s))
+    if (unsupported.length === statements.length) {
+      skipMigration(file, `SQLite does not support ${feature}`)
+      return 'skipped'
+    }
+
+    const hiddenPath = `${filePath}.unsupported`
+    try {
+      renameSync(filePath, hiddenPath)
+    }
+    catch (error) {
+      // A read-only corpus. Fall through to the runner and let it fail loudly,
+      // which is today's behaviour. Never mark it executed: the statements did
+      // not run, and saying otherwise is permanent and undetectable.
+      log.error(`[migration] Could not quarantine ${file}: ${error instanceof Error ? error.message : String(error)}`)
+      return 'runnable'
+    }
+
+    quarantined.push({ original: filePath, hidden: hiddenPath, feature })
+    log.warn(
+      `[migration] ${file} mixes ${unsupported.length} ${feature} statement(s) SQLite cannot run `
+      + `with ${statements.length - unsupported.length} it can, so none of it was applied. `
+      + `Split them into separate migrations, or run this app on MySQL/Postgres. `
+      + `The rest of the corpus was applied.`,
+    )
+    return 'quarantined'
+  }
+
   const deleteMigration = (file: string, filePath: string, reason: string): void => {
     // Genuinely dead file — duplicate or unreachable. Safe to remove.
     log.info(`Dropping no-op migration (${reason}): ${file}`)
@@ -730,10 +814,16 @@ export function preprocessSqliteMigrations(): void {
     // it as executed in the migrations table for SQLite. A later
     // DB_CONNECTION flip can replay these files against the new
     // backend. (stacksjs/stacks#1916)
-    const allAddConstraint = statements.every(s => addConstraintPattern.test(s))
-    if (allAddConstraint) {
-      skipMigration(file, 'SQLite does not support ALTER TABLE ADD CONSTRAINT')
-      continue
+    if (statements.some(s => addConstraintPattern.test(s))) {
+      const disposition = partitionUnsupported(
+        file,
+        filePath,
+        statements,
+        addConstraintPattern,
+        'ALTER TABLE ADD CONSTRAINT',
+      )
+      if (disposition !== 'runnable')
+        continue
     }
 
     // Skip files that only contain CREATE TYPE ... AS ENUM (Postgres enum
@@ -744,10 +834,16 @@ export function preprocessSqliteMigrations(): void {
     // migrate with `near "TYPE": syntax error`. Same skip-and-keep policy
     // as ADD CONSTRAINT above: the file is valid on MySQL/Postgres, so
     // leave it on disk and just mark it executed for SQLite. (#1916)
-    const allCreateType = statements.every(s => createTypePattern.test(s))
-    if (allCreateType) {
-      skipMigration(file, 'SQLite does not support CREATE TYPE (enum types)')
-      continue
+    if (statements.some(s => createTypePattern.test(s))) {
+      const disposition = partitionUnsupported(
+        file,
+        filePath,
+        statements,
+        createTypePattern,
+        'CREATE TYPE (enum types)',
+      )
+      if (disposition !== 'runnable')
+        continue
     }
 
     /*
@@ -933,6 +1029,8 @@ export function preprocessSqliteMigrations(): void {
       log.debug(`[migration] Could not record dropped migrations as executed: ${e}`)
     }
   }
+
+  return quarantined
 }
 
 /**
@@ -1512,6 +1610,12 @@ function makeMigrationsIdempotent(): void {
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
+  /*
+   * Files SQLite could not execute, set aside so the rest of the corpus could
+   * apply. Tracked here because a migrate that left one of these pending has
+   * not finished, and must not report success (stacksjs/stacks#2477).
+   */
+  let quarantinedMigrations: Array<{ original: string, hidden: string, feature: string }> = []
   // Lock handle is acquired AFTER ensureDatabaseExists (PG/MySQL need
   // the target DB to exist before we can connect to it for the
   // advisory lock). SQLite is fine to lock immediately.
@@ -1577,7 +1681,10 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // the lock is held so concurrent processes can't corrupt each
     // other's disk state (stacksjs/stacks#1876 D-2).
     if (dialect === 'sqlite') {
-      preprocessSqliteMigrations()
+      // Anything quarantined joins the feature gate's own hidden list, so the
+      // `finally` below restores it through one path.
+      quarantinedMigrations = preprocessSqliteMigrations()
+      hidden.push(...quarantinedMigrations)
     }
     else if (dialect === 'postgres') {
       // Make ALTER migrations idempotent so re-runs / replays of "transient"
@@ -1657,6 +1764,28 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     await writeMigrateMarker(appliedCount)
 
     log.debug(`Database migration completed in ${Date.now() - startedAt}ms (applied ${appliedCount}).`)
+
+    /*
+     * A migrate that left a file pending has not finished.
+     *
+     * Reported AFTER everything else has applied, on purpose: the point of
+     * quarantining is that one unrunnable file no longer blocks the other
+     * hundred. But returning `ok` here would turn a loud abort into a green
+     * deploy, which is strictly worse than the bug this fixes - the incident
+     * in stacksjs/stacks#2477 was six days of invisibility, not a syntax error.
+     */
+    if (quarantinedMigrations.length > 0 && process.env.STACKS_ALLOW_PENDING_MIGRATIONS !== '1') {
+      const names = quarantinedMigrations.map(q => basename(q.original))
+      return err(new Error(
+        `Applied ${appliedCount} migration${appliedCount === 1 ? '' : 's'}, but `
+        + `${names.length} could not run on SQLite and ${names.length === 1 ? 'is' : 'are'} still pending: `
+        + `${names.join(', ')}. `
+        + `${names.length === 1 ? 'It mixes' : 'They mix'} statements SQLite cannot execute with statements it can, `
+        + `so splitting them into separate migrations lets the runnable half apply. `
+        + `Set STACKS_ALLOW_PENDING_MIGRATIONS=1 to proceed anyway.`,
+      ))
+    }
+
     return ok(appliedCount === 0
       ? 'Nothing to migrate.'
       : `Applied ${appliedCount} migration${appliedCount === 1 ? '' : 's'}.`)
