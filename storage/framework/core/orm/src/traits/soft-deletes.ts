@@ -97,7 +97,7 @@ export function createSoftDeleteMethods(model: SoftDeleteCapableModel, primaryKe
     },
 
     async restore(id) {
-      const q: any = (model).where(primaryKey, id)
+      const q: any = (model).where(primaryKey, id).withTrashed()
       if (typeof q?.update === 'function') {
         await q.update({ [DELETED_AT_COLUMN]: null })
         return true
