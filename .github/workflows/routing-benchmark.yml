@@ -53,19 +53,35 @@ jobs:
           chmod +x "$RUNNER_TEMP/oha/bin/oha"
           echo "$RUNNER_TEMP/oha/bin" >> "$GITHUB_PATH"
 
+      # Diagnostic artifacts must not change the source state being measured.
+      - name: Record source before measurement
+        run: |
+          mkdir -p "$RUNNER_TEMP/routing-diagnostic"
+          git rev-parse HEAD > "$RUNNER_TEMP/routing-diagnostic/source-before-revision.txt"
+          git status --porcelain=v1 --untracked-files=all > "$RUNNER_TEMP/routing-diagnostic/source-before-status.txt"
+          git diff --binary HEAD > "$RUNNER_TEMP/routing-diagnostic/source-before.patch"
+
       - name: Measure the full routing matrix
         if: inputs.mode != 'profile'
-        run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 --output bench/routing/results/ci
+        run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Capture stock HTTP CPU profiles
         if: inputs.mode == 'profile'
-        run: bun bench/routing/profile.ts --output bench/routing/results/ci
+        run: bun bench/routing/profile.ts --output "$RUNNER_TEMP/routing-diagnostic"
+
+      - name: Record source after measurement
+        if: always()
+        run: |
+          mkdir -p "$RUNNER_TEMP/routing-diagnostic"
+          git rev-parse HEAD > "$RUNNER_TEMP/routing-diagnostic/source-after-revision.txt"
+          git status --porcelain=v1 --untracked-files=all > "$RUNNER_TEMP/routing-diagnostic/source-after-status.txt"
+          git diff --binary HEAD > "$RUNNER_TEMP/routing-diagnostic/source-after.patch"
 
       - name: Upload diagnostic artifacts
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: routing-diagnostic-${{ github.run_id }}
-          path: bench/routing/results/ci
+          path: ${{ runner.temp }}/routing-diagnostic
           if-no-files-found: error
           retention-days: 30
