@@ -2606,17 +2606,22 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   // fails on listener error unless STACKS_ORM_EVENT_ERRORS=swallow.
   const dispatchBeforeEvent = async (event: string, data: any): Promise<boolean> => {
     if (eventsAreSuppressed()) return true
+    let eventsModule: typeof import('@stacksjs/events') | undefined
     try {
-      const { dispatchAsync } = await import('@stacksjs/events')
-      // dispatchAsync awaits every matching handler and returns their results;
-      // any explicit `false` return from a listener cancels the operation.
-      // `event` is a runtime-composed name (`model:created` and friends), not one
-    // of the declared AppEvents keys.
-    const results = (await dispatchAsync(event as Parameters<typeof dispatchAsync>[0], data)) as unknown[]
-      if (Array.isArray(results) && results.some(r => r === false)) return false
+      eventsModule = await import('@stacksjs/events')
+      const { dispatchAndCollect } = eventsModule
+      // Collect outcomes because dispatchAsync logs and swallows failures.
+      // Explicit cancellation still wins when the swallow opt-out is enabled.
+      // The event name is composed from the model at runtime.
+      const results = await dispatchAndCollect(event as Parameters<typeof dispatchAndCollect>[0], data)
+      if (results.some(result => result.ok && result.value === false)) return false
+      const failure = results.find(result => !result.ok)
+      if (failure && !failure.ok) throw failure.error
     }
     catch (err) {
-      if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
+      // Only a failed module load is optional. A listener's missing dependency
+      // is a real handler failure and must reach the configured error policy.
+      if (!eventsModule && err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
         return true
       console.error(`[ORM] Before-event '${event}' handler error:`, err)
       if (process.env.STACKS_ORM_EVENT_ERRORS !== 'swallow') throw err
