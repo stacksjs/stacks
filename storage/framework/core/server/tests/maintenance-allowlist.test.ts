@@ -21,7 +21,7 @@ describe('isAlwaysAllowed', () => {
     expect(isAlwaysAllowed('/css/app.css')).toBe(true)
     expect(isAlwaysAllowed('/images/logo.svg')).toBe(true)
     expect(isAlwaysAllowed('/fonts/inter.woff2')).toBe(true)
-    expect(isAlwaysAllowed('/_stx/crosswind.abc123.css')).toBe(true)
+    expect(isAlwaysAllowed('/_stx/css.abc123.css')).toBe(true)
   })
 
   it('lets a stylesheet through wherever it is served from', () => {

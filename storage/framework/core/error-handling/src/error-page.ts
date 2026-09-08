@@ -548,7 +548,7 @@ export class ErrorPageHandler {
     }
   }
 
-  /** Legacy inline fallback when STX/Crosswind rendering is unavailable. */
+  /** Legacy inline fallback when STX/ts-css rendering is unavailable. */
   private renderFallback(error: Error, status: number): string {
     const frames = parseStackTrace(error.stack, this.config.basePaths, {
       includeFrameworkFrames: this.config.showFrameworkFrames === true,

@@ -1608,7 +1608,7 @@ export function frameworkRuntimePath(path?: string): string {
 /**
  * Returns the path to stx's build cache and generated route manifest.
  *
- * stx writes its compiled-template cache, Crosswind CSS cache, client-script
+ * stx writes its compiled-template cache, ts-css CSS cache, client-script
  * bundles and `routes.ts` manifest here. It used to be `./.stx` in the project
  * root; stx now takes the location from its own `stateDir` config option, which
  * `config/ui.ts` sets to this directory and {@link runtimeDirectoryEnv} exports

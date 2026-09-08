@@ -8,7 +8,7 @@ const { startTime } = await intro({
 // barrel re-exports named bindings that Bun's bundler mangles.
 await transpilePackage({
   dir: import.meta.dir,
-  external: frameworkExternal(['@cwcss/crosswind']),
+  external: frameworkExternal(['@stacksjs/ts-css']),
 })
 
 await outro({

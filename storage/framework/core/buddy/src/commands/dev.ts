@@ -723,7 +723,7 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
   // Signal subprocesses that the main dev server manages the reverse proxy,
   // so they don't start their own (which would conflict on port 443).
-  // Suppress early Crosswind/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
+  // Suppress early ts-css/STX/auth config noise — `printDevEngineNotes()` prints after "ready in".
   process.env.STACKS_PROXY_MANAGED = '1'
   process.env.STACKS_DEV_QUIET = '1'
 

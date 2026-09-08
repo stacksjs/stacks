@@ -1,9 +1,9 @@
-// Local mirror of crosswind's `Options` shape so we don't bring crosswind
-// into @stacksjs/types as a hard dependency. Apps that import these types
-// only need the structural surface (shortcuts/theme/variants); when full
-// crosswind type fidelity is needed, projects can import directly from
-// `crosswind`.
-interface CrosswindOptions {
+// Local mirror of the CSS engine's config shape so we don't bring
+// @stacksjs/ts-css into @stacksjs/types as a hard dependency. Apps that
+// import these types only need the structural surface
+// (shortcuts/theme/variants); when full fidelity is needed, projects can
+// import `TsCssConfig` from `@stacksjs/ts-css/engine` directly.
+interface CssConfig {
   shortcuts?: unknown
   theme?: unknown
   variants?: unknown
@@ -13,7 +13,7 @@ interface CrosswindOptions {
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons' | 'hugeicons'
 export type WebFontsProviders = 'google' | 'bunny' | 'fontshare'
-export type Shortcuts = CrosswindOptions['shortcuts']
+export type Shortcuts = CssConfig['shortcuts']
 
 export interface FontInfo {
   title: string
@@ -181,10 +181,10 @@ export interface UiOptions {
   icons: Icon | Icon[]
   // icons: Record<string, () => Promise<any>>
 
-  theme: CrosswindOptions['theme']
-  // plugins: CrosswindOptions['plugins']
-  // corePlugins: CrosswindOptions['corePlugins']
-  variants: CrosswindOptions['variants']
+  theme: CssConfig['theme']
+  // plugins: CssConfig['plugins']
+  // corePlugins: CssConfig['corePlugins']
+  variants: CssConfig['variants']
   // darkMode: UserConfig['darkMode']
   // extend: UserConfig['extend']
   // screens: UserConfig['screens']

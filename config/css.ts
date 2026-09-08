@@ -1,7 +1,7 @@
-import type { CrosswindOptions } from '@cwcss/crosswind'
+import type { TsCssConfig as CssConfig } from '@stacksjs/ts-css/engine'
 
 /**
- * Crosswind (utility CSS) — content globs for STX views.
+ * ts-css (utility CSS) — content globs for STX views.
  *
  * `satisfies` rather than a bare object: this was the one config file checked
  * against nothing, so a misspelled key sat here doing nothing at all. `minify`
@@ -19,7 +19,7 @@ export default {
     './storage/framework/core/error-handling/src/views/**/*.{stx,html}',
   ],
   /*
-   * No `preflight` key. There was one - `preflight: true` - and crosswind has
+   * No `preflight` key. There was one - `preflight: true` - and the engine has
    * never had such an option: the real one is `preflights`, and it takes an
    * array of Preflight objects rather than a boolean. So it did nothing, in
    * both spellings, for as long as it was here.
@@ -29,4 +29,4 @@ export default {
    * for.
    */
   minify: false,
-} satisfies CrosswindOptions
+} satisfies CssConfig

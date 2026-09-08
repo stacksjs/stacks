@@ -12,7 +12,7 @@ const result = await Bun.build({
   target: 'bun',
   // sourcemap: 'linked',
   minify: true,
-  external: frameworkExternal(['crosswind']),
+  external: frameworkExternal(['@stacksjs/ts-css']),
   plugins: [
     dts({
       root: './src',

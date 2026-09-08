@@ -1,5 +1,5 @@
 import { ui } from '@stacksjs/config'
-import * as CssEngine from '@cwcss/crosswind'
+import * as CssEngine from '@stacksjs/ts-css/engine'
 
 export { CssEngine, ui }
 

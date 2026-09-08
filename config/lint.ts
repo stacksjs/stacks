@@ -35,7 +35,7 @@ const config: LintConfig = {
       'doctype-no-nolayout': 5,
 
       // Two templates still carry a <style> block; the destination is
-      // config/crosswind.ts preflights.
+      // config/css.ts preflights.
       'style-block': 2,
 
       // coming-soon.stx and index.stx are still imperative.
