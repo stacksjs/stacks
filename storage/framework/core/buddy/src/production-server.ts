@@ -137,18 +137,36 @@ function containsTemplates(dir: string): boolean {
  * it {@link resolveUserPartialsPath} falls back to the conventions.
  */
 export async function loadStxPartialsDir(cwd = process.cwd()): Promise<string | undefined> {
-  const configPath = join(cwd, 'config/stx.ts')
-  if (!existsSync(configPath))
-    return undefined
+  /*
+   * Either filename, because stx itself accepts either.
+   *
+   * `loadStxConfig` resolves `{ name: 'stx', alias: 'ui' }`, and the Stacks
+   * starter produces `config/ui.ts` - so this, looking only for `config/stx.ts`,
+   * returned undefined for every scaffolded app and `partialsDir` was
+   * unreadable. A probe fallback in `resolveUserPartialsPath` quietly covered
+   * for it, which is why nothing ever reported the miss (stacksjs/stacks#2446).
+   *
+   * `stx.ts` stays first so no app that resolves today resolves differently.
+   */
+  for (const name of ['stx', 'ui']) {
+    const configPath = join(cwd, `config/${name}.ts`)
+    if (!existsSync(configPath))
+      continue
 
-  try {
-    const mod = await import(configPath)
-    const dir = mod.default?.partialsDir
-    return typeof dir === 'string' && dir.length > 0 ? dir : undefined
+    try {
+      const mod = await import(configPath)
+      const dir = mod.default?.partialsDir
+      if (typeof dir === 'string' && dir.length > 0)
+        return dir
+    }
+    catch {
+      // A malformed config is not this function's problem to report: the
+      // config loader surfaces it, and refusing to serve over it would be
+      // worse than falling back to the probe.
+    }
   }
-  catch {
-    return undefined
-  }
+
+  return undefined
 }
 
 /**
