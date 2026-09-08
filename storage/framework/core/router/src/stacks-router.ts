@@ -3770,7 +3770,7 @@ const REQUEST_METHODS: Record<string, (...args: any[]) => any> & ThisType<Enhanc
     if (this._rawBody === undefined)
       return nativeRequestArrayBuffer.call(this)
     const bytes = (requestBodyEncoder ??= new TextEncoder()).encode(this._rawBody)
-    return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength) as ArrayBuffer)
+    return Promise.resolve(bytes.buffer)
   },
   blob() {
     return this._rawBody === undefined
