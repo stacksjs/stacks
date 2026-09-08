@@ -2,6 +2,8 @@ import { authenticatedUser } from '@stacksjs/auth/middleware'
 import { HttpError } from '@stacksjs/error-handling'
 import { Middleware } from '@stacksjs/router'
 
+let rbacModule: typeof import('@stacksjs/auth/rbac') | undefined
+
 /**
  * Role Middleware
  *
@@ -32,7 +34,7 @@ export default new Middleware({
     }
 
     // Dynamically import to avoid circular dependency
-    const { hasAnyRole } = await import('@stacksjs/auth/rbac')
+    const { hasAnyRole } = rbacModule ??= await import('@stacksjs/auth/rbac')
 
     const hasRequired = await hasAnyRole(user, requiredRoles)
 

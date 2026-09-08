@@ -19,13 +19,14 @@ assert.equal(auth.authenticatedUser, users.authenticatedUser)
 
 // A registered store exercises real RBAC lookups and caches. Unexpected store
 // operations throw instead of silently supplying a permissive test default.
+let privilegedUserId = 1
 const reads = {
   async getUserRoles(id: number) {
-    return [{ id, name: id === 1 ? 'admin' : 'viewer', guard_name: 'web' }]
+    return [{ id, name: id === privilegedUserId ? 'admin' : 'viewer', guard_name: 'web' }]
   },
   async getUserDirectPermissions() { return [] },
   async getRolePermissions(id: number) {
-    return id === 1 ? [{ id: 11, name: 'edit', guard_name: 'web' }] : []
+    return id === privilegedUserId ? [{ id: 11, name: 'edit', guard_name: 'web' }] : []
   },
 }
 auth.setRbacStore(new Proxy(reads, {
@@ -65,6 +66,39 @@ for (const [name, key, value] of [['Role', 'role', 'admin'], ['Permission', 'per
   await check(name, { id: 1 }, { [key]: value })
   await check(name, { id: 2 }, { [key]: value }, 403)
 }
+// Warm middleware must still use each request's requirements and the current
+// root RBAC store/cache, including changes to inherited permissions.
+for (const privileged of [2, 1]) {
+  privilegedUserId = privileged
+  auth.flushRbacCache()
+  const other = privileged === 1 ? 2 : 1
+  await Promise.all([
+    check('Role', { id: privileged }, { role: 'missing, admin' }),
+    check('Role', { id: other }, { role: 'admin' }, 403),
+    check('Role', { id: privileged }, { role: 'viewer' }, 403),
+    check('Permission', { id: privileged }, { permission: 'missing, edit' }),
+    check('Permission', { id: other }, { permission: 'edit' }, 403),
+    check('Permission', { id: privileged }, { permission: 'publish' }, 403),
+  ])
+}
+
+// Replacing the store must invalidate earlier grants. This store grants only
+// a direct permission, so Role must refuse while Permission still allows.
+const replacement = {
+  async getUserRoles() { return [] },
+  async getUserDirectPermissions() { return [{ id: 12, name: 'publish', guard_name: 'web' }] },
+  async getRolePermissions() { return [] },
+}
+auth.setRbacStore(new Proxy(replacement, {
+  get(target, key) {
+    assert(key in target, `Unexpected RBAC store operation: ${String(key)}`)
+    return Reflect.get(target, key)
+  },
+}) as unknown as RbacStore)
+await check('Role', { id: 1 }, { role: 'admin' }, 403)
+await check('Permission', { id: 1 }, { permission: 'edit' }, 403)
+await check('Permission', { id: 1 }, { permission: 'publish' })
+
 await check('Can', { id: 1 }, { can: 'entrypoint-edit,document' })
 await check('Can', { id: 2 }, { can: 'entrypoint-edit,document' }, 403)
 await check('Can', undefined, { can: 'entrypoint-edit,document' }, 403)
