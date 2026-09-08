@@ -652,6 +652,66 @@ export function make(buddy: CLI): void {
       await makePage(options)
     })
 
+  // `make:middleware` and `make:page` were reachable only as `buddy make
+  // middleware Foo`. Every other maker has a colon command, the docs list these
+  // two in that form, and `buddy make:middleware Foo` answered "Command not
+  // found" - so the documented spelling was the one that did not work.
+  buddy
+    .command('make:middleware [name]', descriptions.middleware)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: MakeOptions) => {
+      log.debug('Running `buddy make:middleware` ...', options)
+
+      const perf = await intro('buddy make:middleware')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        await outro('A middleware name is required (e.g. `buddy make:middleware EnsureSubscribed`).', {
+          startTime: perf,
+          useSeconds: true,
+          type: 'error',
+        })
+        process.exit(ExitCode.FatalError)
+      }
+
+      await createMiddleware(options)
+
+      await outro(`Created your ${italic(name)} middleware.`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('make:page [name]', descriptions.page)
+    .option('-n, --name [name]', descriptions.name, { default: false })
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: MakeOptions) => {
+      log.debug('Running `buddy make:page` ...', options)
+
+      const perf = await intro('buddy make:page')
+
+      name = name ?? options.name
+      options.name = name
+
+      if (!name) {
+        await outro('A page name is required (e.g. `buddy make:page Pricing`).', {
+          startTime: perf,
+          useSeconds: true,
+          type: 'error',
+        })
+        process.exit(ExitCode.FatalError)
+      }
+
+      await createPage(options)
+
+      await outro(`Created your ${italic(name)} page.`, { startTime: perf, useSeconds: true })
+      process.exit(ExitCode.Success)
+    })
+
   buddy
     .command('make:job [name]', descriptions.job)
     .option('-n, --name [name]', descriptions.name, { default: false })

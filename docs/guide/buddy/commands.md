@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **321 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **323 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -43,7 +43,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `link` | 1 |
 | `lint` | 1 |
 | `mail` | 32 |
-| `make` | 18 |
+| `make` | 20 |
 | `marketing` | 2 |
 | `migrate` | 5 |
 | `monitoring` | 2 |
@@ -3250,6 +3250,21 @@ buddy make:mail welcome-back  // PascalCases to WelcomeBack, kebab-cases to welc
 buddy make:mail Welcome --force  // overwrite existing files
 ```
 
+### `make:middleware`
+
+Create a new middleware
+
+- Usage: `$ buddy make:middleware [name]`
+- Namespace: `make`
+- Aliases: none
+- Arguments: `[name]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-n`, `--name` | The name of the action | value, optional | `false` |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
 ### `make:migration`
 
 Create a new migration
@@ -3295,6 +3310,21 @@ Create a new notification
 | `-e`, `--email` | Is it an email notification? | boolean, optional | `true` |
 | `-c`, `--chat` | Is it a chat notification? | boolean, optional | `false` |
 | `-s`, `--sms` | Is it a SMS notification? | boolean, optional | `false` |
+| `-p`, `--project` | Target a specific project | value, optional | `false` |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `make:page`
+
+Create a new page
+
+- Usage: `$ buddy make:page [name]`
+- Namespace: `make`
+- Aliases: none
+- Arguments: `[name]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `-n`, `--name` | The name of the action | value, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 

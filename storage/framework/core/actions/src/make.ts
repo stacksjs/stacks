@@ -147,7 +147,7 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
 }
 
 export async function createAction(options: MakeOptions): Promise<void> {
-  const name = requireName(options, 'component')
+  const name = requireName(options, 'action')
   // Pick the variant based on opt-in flags. Falls back to the bare
   // action stub when neither is set so the existing `buddy make:action
   // Foo` behavior is unchanged.
@@ -162,7 +162,12 @@ export async function createAction(options: MakeOptions): Promise<void> {
         ? 'actionWithAuth'
         : 'action'
 
-  await createFileWithTemplate(p.userActionsPath(name), templateKey, name)
+  // `.ts`, like every other maker. Without it the scaffold wrote
+  // `app/Actions/Foo` with no extension - valid TypeScript that
+  // `resolveActionFile` cannot find, since it looks for `${action}.ts` or
+  // `.js`. `buddy make:action Foo` therefore reported success and produced an
+  // action nothing could run.
+  await createFileWithTemplate(p.userActionsPath(`${name}.ts`), templateKey, name)
 }
 
 /**
