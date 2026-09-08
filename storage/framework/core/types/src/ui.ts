@@ -2,7 +2,7 @@
 // @stacksjs/ts-css into @stacksjs/types as a hard dependency. Apps that
 // import these types only need the structural surface
 // (shortcuts/theme/variants); when full fidelity is needed, projects can
-// import `TsCssConfig` from `@stacksjs/ts-css/engine` directly.
+// import `CssConfig` from `@stacksjs/ts-css/engine` directly.
 interface CssConfig {
   shortcuts?: unknown
   theme?: unknown

@@ -1,4 +1,4 @@
-import type { TsCssOptions } from '@stacksjs/ts-css/engine'
+import type { CssOptions } from '@stacksjs/ts-css/engine'
 
 /**
  * ts-css (utility CSS) — content globs for STX views.
@@ -29,4 +29,4 @@ export default {
    * for.
    */
   minify: false,
-} satisfies TsCssOptions
+} satisfies CssOptions

@@ -1409,7 +1409,7 @@
       "dependencies": {
         "@stacksjs/components": "^0.2.246",
         "@stacksjs/config": "workspace:*",
-        "@stacksjs/ts-css": "^0.3.1",
+        "@stacksjs/ts-css": "^0.3.2",
       },
       "devDependencies": {
         "@stacksjs/build": "workspace:*",
@@ -1728,7 +1728,7 @@
 
     "@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.12.15", "", { "dependencies": { "@stacksjs/ts-xml": "^0.1.2", "@ts-cloud/aws-types": "0.12.15", "@ts-cloud/core": "0.12.15", "hash-wasm": "^4.12.0" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-VJVl5w2fgShMWf5LQASZno20ykiNAHfNW+Ys1tJBj9PSsBab8nD1M4a0b0TuNzMK3ynmmuSiJduerMC53eOaTw=="],
 
-    "@stacksjs/ts-css": ["@stacksjs/ts-css@0.3.1", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "cssx": "./dist/bin/cssx.js", "ts-css": "./dist/bin/cli.js" } }, "sha512-VAfsDecBsp57wcR1+U02y/N5VVkeB3wRKLSqgdJ+6QEM0SRqBJadvSI6yP45npLastDOp2cfKP5b2HOFt4zbSg=="],
+    "@stacksjs/ts-css": ["@stacksjs/ts-css@0.3.2", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "bunfig": "^0.15.17" }, "bin": { "cssx": "./dist/bin/cssx.js", "ts-css": "./dist/bin/cli.js" } }, "sha512-t/cqMxmh3xv2gihfiGRE2y+roT01JUetEbYe0/J3lcaYhGF4MOuZsyfmYtcK02gWZeEHMWDr3W0FrFt1lHa4RA=="],
 
     "@stacksjs/ts-faker": ["@stacksjs/ts-faker@0.1.8", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0" }, "bin": { "@stacksjs/ts-faker": "dist/bin/cli.js", "faker": "dist/bin/cli.js", "fake": "dist/bin/cli.js", "mock": "dist/bin/cli.js" } }, "sha512-YEOIr9mlMeXodcl8FmX3Rq7fqZDcubi7nwdl7lCKr682GIimOQjdN8miQmVEgbBYlpwP1cOn8eO6DhVotMwWnw=="],
 
