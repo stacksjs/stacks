@@ -2,6 +2,14 @@ name: Routing diagnostic
 
 on:
   workflow_dispatch:
+    inputs:
+      mode:
+        description: Run the throughput matrix or capture stock HTTP CPU profiles
+        type: choice
+        default: benchmark
+        options:
+          - benchmark
+          - profile
 
 permissions:
   contents: read
@@ -46,9 +54,14 @@ jobs:
           echo "$RUNNER_TEMP/oha/bin" >> "$GITHUB_PATH"
 
       - name: Measure the full routing matrix
+        if: inputs.mode != 'profile'
         run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 --output bench/routing/results/ci
 
-      - name: Upload report and raw samples
+      - name: Capture stock HTTP CPU profiles
+        if: inputs.mode == 'profile'
+        run: bun bench/routing/profile.ts --output bench/routing/results/ci
+
+      - name: Upload diagnostic artifacts
         if: always()
         uses: actions/upload-artifact@v6
         with:

@@ -125,6 +125,8 @@ It uploads the report, metadata and raw samples as a `routing-diagnostic` artifa
 The hosted runner is shared, so the workflow explicitly sets `BENCH_DEDICATED=0`.
 Use these artifacts for investigation, not published rankings. Source resolution,
 parity, busy-host and stability checks still apply.
+Select its `profile` mode to capture stock HTTP CPU profiles instead; the default
+`benchmark` mode retains the full throughput matrix and measurement windows.
 
 Anything published needs a documented machine and load tool: CPU model, core
 count, OS, Bun version, exact generator version, and load topology. The report
