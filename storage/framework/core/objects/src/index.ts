@@ -2,6 +2,8 @@ import type { DeepMerge } from '@stacksjs/types'
 import { notNullish } from '@stacksjs/utils'
 import { isObject } from '@stacksjs/validation'
 
+export * from './transform'
+
 /**
  * Map key/value pairs for an object, and construct a new one
  *
@@ -29,15 +31,15 @@ import { isObject } from '@stacksjs/validation'
  * // { b: 2 }
  * ```
  */
-export function objectMap<K extends string, V, NK = K, NV = V>(
+export function objectMap<K extends string, V, NK extends PropertyKey = K, NV = V>(
   obj: Record<K, V>,
   fn: (key: K, value: V) => [NK, NV] | undefined,
-): Record<K, V> {
+): Record<NK, NV> {
   return Object.fromEntries(
     Object.entries(obj)
       .map(([k, v]) => fn(k as K, v as V))
       .filter(notNullish),
-  )
+  ) as Record<NK, NV>
 }
 
 /**
