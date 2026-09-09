@@ -14,6 +14,7 @@ import { config as queryBuilderConfig, createQueryBuilder, registerPersistentQue
 // These can be overridden later once config is fully loaded
 // Read from environment variables first
 import { SQL } from 'bun'
+import { runInTransactionScope } from './transaction-context'
 import { env as envVars } from '@stacksjs/env'
 import type { QueryBuilderDialect } from './dialect'
 import type { FrameworkSchema } from './framework-schema'
@@ -592,6 +593,38 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
 }
 
 /**
+ * Open the after-commit dispatch scope for every `db.transaction()` call.
+ *
+ * `runInTransactionScope` is what `isInTransaction()` and
+ * `enqueueAfterCommit()` read, and it was only ever opened by
+ * `@stacksjs/orm`'s `transaction()`. The raw builder's own
+ * `db.transaction()` got SQLite serialization and replica routing but not
+ * this - so a `job(...).dispatch()` inside its callback saw
+ * `isInTransaction() === false` and dispatched immediately instead of
+ * buffering until commit (stacksjs/stacks#2539).
+ *
+ * That is not merely early. A rollback then leaves the side effect done: the
+ * row can roll back with the shared SQLite connection, but a Redis push or an
+ * HTTP call cannot, which is exactly what after-commit buffering exists to
+ * prevent. The queue's own comments describe `db.transaction(...)` as
+ * activating it.
+ *
+ * Applied BEFORE the routing patch, so routing stays the outermost wrapper as
+ * documented below and the buffered callbacks flush while the routing context
+ * is still open. Flushing outside it would send an after-commit read to a
+ * replica, which can lag the commit that callback is predicated on.
+ *
+ * Reentrant, so the ORM's `transaction()` wrapping this one is a no-op beyond
+ * depth tracking, and `transactional()` / `savepoint()` - which call
+ * `this.transaction(...)` internally - are covered by the same patch.
+ */
+function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
+  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
+  ;(instance).transaction = (...args: any[]) =>
+    runInTransactionScope(() => original(...args))
+}
+
+/**
  * Mark the routing context as "inside a transaction" for the duration of
  * every `db.transaction()` call.
  *
@@ -625,6 +658,8 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
     // transaction serialization patch is needed here.
     if (getDialect() === 'sqlite')
       applySqliteTransactionSerialization(_dbInstance)
+    // Before the routing patch on purpose; see applyTransactionDispatchScope.
+    applyTransactionDispatchScope(_dbInstance)
     // Applied after the sqlite patch so the routing context is the
     // outermost wrapper — a read issued while queued behind another
     // transaction is then treated as in-transaction and stays on the
