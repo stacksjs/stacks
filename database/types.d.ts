@@ -1285,6 +1285,25 @@ declare module '@stacksjs/database' {
       source: "slug-change" | "manual"
       site_id: number
     }
+    referral_codes: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      user_id: number
+      code: string
+    }
+    referrals: {
+      // columns
+      id: number
+      created_at: string
+      updated_at: string | null
+      referrer_id: number
+      referred_user_id: number
+      code: string
+      status: "registered" | "qualified"
+      qualified_at: string | null
+    }
     releases: {
       // columns
       id: number

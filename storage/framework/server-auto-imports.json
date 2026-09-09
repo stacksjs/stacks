@@ -86,6 +86,8 @@
     "QueryLog": true,
     "Receipt": true,
     "Redirect": true,
+    "Referral": true,
+    "ReferralCode": true,
     "Release": true,
     "Review": true,
     "SendCampaignJob": true,

@@ -60515,6 +60515,56 @@
         }
       }
     },
+    "/referrals": {
+      "get": {
+        "summary": "/referrals",
+        "operationId": "get__referrals",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/referrals/code": {
+      "post": {
+        "summary": "/referrals/code",
+        "operationId": "post__referrals_code",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/register": {
       "post": {
         "summary": "/register",

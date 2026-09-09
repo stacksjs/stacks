@@ -7933,6 +7933,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /referrals
+   */
+  getReferrals(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/referrals", {}, [], false, options)
+  },
+
+  /**
+   * POST /referrals/code
+   */
+  postReferralsCode(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/referrals/code", {}, [], false, options)
+  },
+
+  /**
    * POST /register
    */
   postRegister(input: { body: { "email": string; "password": string; "name": string } }, options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

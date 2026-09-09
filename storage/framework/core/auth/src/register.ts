@@ -7,6 +7,7 @@ import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
 import { isUniqueViolation } from './rbac-store-bqb'
+import { attributeReferral } from './referrals'
 
 /**
  * The error thrown when a registration collides with an existing email.
@@ -66,7 +67,7 @@ export interface RegistrationResult {
  *
  * Additive, so `const { token } = await register(...)` is unaffected.
  */
-export async function register(credentials: NewUser): Promise<RegistrationResult> {
+export async function register(credentials: NewUser & { referralCode?: string }): Promise<RegistrationResult> {
   const { email, password, name } = credentials
 
   // Cheap structural validation before we hit the DB. Bad-email registration
@@ -131,6 +132,9 @@ export async function register(credentials: NewUser): Promise<RegistrationResult
 
     if (!created)
       throw new Error('Failed to retrieve created user')
+
+    if (credentials.referralCode)
+      await attributeReferral(Number(created.id), credentials.referralCode, trx)
 
     return Number(created.id)
   })

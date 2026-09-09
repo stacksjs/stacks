@@ -12804,10 +12804,170 @@
           }
         ],
         "indexes": []
+      },
+      {
+        "table": "referrals",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "referrer_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "referred_user_id",
+            "type": "integer",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 24
+          },
+          {
+            "name": "status",
+            "type": "enum",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "registered",
+            "enumValues": [
+              "registered",
+              "qualified"
+            ]
+          },
+          {
+            "name": "qualified_at",
+            "type": "date",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "referrals_referrer_status",
+            "columns": [
+              "referrer_id",
+              "status"
+            ],
+            "type": "index"
+          },
+          {
+            "name": "referrals_referred_user_id_unique",
+            "columns": [
+              "referred_user_id"
+            ],
+            "type": "unique"
+          }
+        ]
+      },
+      {
+        "table": "referral_codes",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "user_id",
+            "type": "bigint",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "references": {
+              "table": "users",
+              "column": "id"
+            }
+          },
+          {
+            "name": "code",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 24
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "referral_codes_user_id_unique",
+            "columns": [
+              "user_id"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "referral_codes_code_unique",
+            "columns": [
+              "code"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "f63db4ca1f73436cdc8c1094bc71b9b4d2743aaa953689843093bbe6d242905a",
+  "hash": "d21269e6b54bab87d7225dcc6d14e3de4742d856ef7d429152f0fd5e643144ac",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-08T14:50:23.748Z"
+  "updatedAt": "2026-09-09T05:05:23.528Z"
 }

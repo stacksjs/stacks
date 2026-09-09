@@ -74,6 +74,8 @@ route.group({ prefix: '/auth' }, () => {
 })
 
 route.group({ middleware: 'auth' }, () => {
+  route.get('/referrals', 'Actions/Auth/ReferralSummaryAction').rateLimit(60, 'minute')
+  route.post('/referrals/code', 'Actions/Auth/CreateReferralCodeAction').rateLimit(10, 'minute')
   route.get('/me', 'Actions/Auth/AuthUserAction')
   route.post('/logout', 'Actions/Auth/LogoutAction')
   // Sign out everywhere: revoke every access/refresh token AND destroy

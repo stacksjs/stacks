@@ -58,3 +58,6 @@ export * from './two-factor'
 
 // Team resolution from auth credentials (dashboard-form scoping)
 export * from './team'
+
+// Referral codes, signup attribution, and server-verified conversions.
+export * from './referrals'

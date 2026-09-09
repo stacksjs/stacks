@@ -30,7 +30,8 @@ export default new Action({
     const password = request.get('password')
     const name = request.get('name')
 
-    const result = await register({ email, password, name })
+    const referralCode = request.get('referralCode')
+    const result = await register({ email, password, name, referralCode: typeof referralCode === 'string' ? referralCode : undefined })
 
     if (result) {
       const user = await Auth.getUserFromToken(result.token)

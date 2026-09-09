@@ -91,6 +91,8 @@ declare global {
   const PaymentTransaction: typeof import('../defaults/app/Models/PaymentTransaction')['default']
   const PersonalAccessToken: typeof import('../defaults/app/Models/PersonalAccessToken')['default']
   const QueryLog: typeof import('../defaults/app/Models/QueryLog')['default']
+  const Referral: typeof import('../defaults/app/Models/Referral')['default']
+  const ReferralCode: typeof import('../defaults/app/Models/ReferralCode')['default']
   const Release: typeof import('../defaults/app/Models/Release')['default']
   const SenderDomain: typeof import('../defaults/app/Models/SenderDomain')['default']
   const Site: typeof import('../defaults/app/Models/Site')['default']
