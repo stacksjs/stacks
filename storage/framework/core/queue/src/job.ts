@@ -665,17 +665,21 @@ export async function resolveJobFile(name: string): Promise<string | null> {
     frameworkPath(`defaults/app/Jobs/${name}.ts`),
   ]
 
-  try {
-    const pkgUrl = import.meta.resolve('@stacksjs/defaults/package.json')
-    const root = new URL('.', pkgUrl).pathname
-    candidates.push(`${root}app/Jobs/${name}.ts`)
-  }
-  catch { /* not installed in this layout; the two paths above still apply */ }
-
   for (const candidate of candidates) {
     if (await Bun.file(candidate).exists())
       return candidate
   }
+
+  let packageCandidate: string | undefined
+  try {
+    const pkgUrl = import.meta.resolve('@stacksjs/defaults/package.json')
+    const root = new URL('.', pkgUrl).pathname
+    packageCandidate = `${root}app/Jobs/${name}.ts`
+  }
+  catch { /* not installed in this layout */ }
+
+  if (packageCandidate && await Bun.file(packageCandidate).exists())
+    return packageCandidate
   return null
 }
 

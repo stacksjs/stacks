@@ -12,7 +12,7 @@
  */
 
 import { afterAll, describe, expect, it } from 'bun:test'
-import { existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { resolveJobFile } from '../src/job'
 
@@ -31,6 +31,34 @@ describe('resolveJobFile (#2225)', () => {
     // Must be null rather than a non-existent path, so `runJob` can raise a
     // message naming every place it looked instead of a module-resolution error.
     expect(await resolveJobFile('__NoSuchJobAnywhere__')).toBeNull()
+  })
+
+  it('observes new defaults, new overrides, and removals between lookups', async () => {
+    const name = `__Lookup_${crypto.randomUUID().replaceAll('-', '')}`
+    const userCopy = appPath(`Jobs/${name}.ts`)
+    const defaultCopy = frameworkPath(`defaults/app/Jobs/${name}.ts`)
+    let userCreated = false
+    let defaultCreated = false
+    try {
+      expect(await resolveJobFile(name)).toBeNull()
+      writeFileSync(defaultCopy, 'export default { handle: () => {} }\n', { flag: 'wx' })
+      defaultCreated = true
+      expect(await resolveJobFile(name)).toBe(defaultCopy)
+      mkdirSync(appPath('Jobs'), { recursive: true })
+      writeFileSync(userCopy, 'export default { handle: () => {} }\n', { flag: 'wx' })
+      userCreated = true
+      expect(await resolveJobFile(name)).toBe(userCopy)
+      unlinkSync(userCopy)
+      userCreated = false
+      expect(await resolveJobFile(name)).toBe(defaultCopy)
+      unlinkSync(defaultCopy)
+      defaultCreated = false
+      expect(await resolveJobFile(name)).toBeNull()
+    }
+    finally {
+      if (userCreated) unlinkSync(userCopy)
+      if (defaultCreated) unlinkSync(defaultCopy)
+    }
   })
 
   it('resolves the other shipped defaults too, not just one special case', async () => {
