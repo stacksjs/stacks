@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.32...v0.74.33)
+
+## ✨ Features
+
+- **analytics**: implement every documented driver, and dispatch on the configured one (#2567) ([4e22868](https://github.com/stacksjs/stacks/commit/4e22868)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2565](https://github.com/stacksjs/stacks/issues/2565), [#2567](https://github.com/stacksjs/stacks/issues/2567), [#2567](https://github.com/stacksjs/stacks/issues/2567))
+
+## 🐛 Bug Fixes
+
+- **core**: write the remaining raw NUL bytes as escapes (#2572) ([2087daa](https://github.com/stacksjs/stacks/commit/2087daa)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2572](https://github.com/stacksjs/stacks/issues/2572), [#2572](https://github.com/stacksjs/stacks/issues/2572), [#2571](https://github.com/stacksjs/stacks/issues/2571))
+- **database**: write the NUL in UNSAFE_IDENTIFIER_CHARS as an escape (#2571) ([e99fc24](https://github.com/stacksjs/stacks/commit/e99fc24)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2571](https://github.com/stacksjs/stacks/issues/2571), [#2571](https://github.com/stacksjs/stacks/issues/2571))
+- **setup**: fail the install when the initial migration fails (#2569) ([ed5318c](https://github.com/stacksjs/stacks/commit/ed5318c)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2560](https://github.com/stacksjs/stacks/issues/2560), [#2569](https://github.com/stacksjs/stacks/issues/2569), [#2569](https://github.com/stacksjs/stacks/issues/2569), [#2534](https://github.com/stacksjs/stacks/issues/2534))
+- **auth**: accept the user id shape the database returns (#2566) ([5daca85](https://github.com/stacksjs/stacks/commit/5daca85)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2562](https://github.com/stacksjs/stacks/issues/2562), [#2566](https://github.com/stacksjs/stacks/issues/2566), [#2566](https://github.com/stacksjs/stacks/issues/2566), [#1860](https://github.com/stacksjs/stacks/issues/1860), [#1860](https://github.com/stacksjs/stacks/issues/1860))
+- **database**: open the after-commit scope for db.transaction() (#2564) ([aa86ebf](https://github.com/stacksjs/stacks/commit/aa86ebf)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2539](https://github.com/stacksjs/stacks/issues/2539), [#2564](https://github.com/stacksjs/stacks/issues/2564), [#2564](https://github.com/stacksjs/stacks/issues/2564))
+- **database**: gate a SQLite table rebuild as one block (#2559) ([36f458f](https://github.com/stacksjs/stacks/commit/36f458f)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2534](https://github.com/stacksjs/stacks/issues/2534), [#2559](https://github.com/stacksjs/stacks/issues/2559), [#2559](https://github.com/stacksjs/stacks/issues/2559), [#2488](https://github.com/stacksjs/stacks/issues/2488), [#2477](https://github.com/stacksjs/stacks/issues/2477))
+- **env**: stop env:set stranding a file's existing encrypted values (#2558) ([06980fc](https://github.com/stacksjs/stacks/commit/06980fc)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2489](https://github.com/stacksjs/stacks/issues/2489), [#2558](https://github.com/stacksjs/stacks/issues/2558), [#2558](https://github.com/stacksjs/stacks/issues/2558), [#2348](https://github.com/stacksjs/stacks/issues/2348))
+- **orm**: expose referral models and inspect declared traits ([449f063](https://github.com/stacksjs/stacks/commit/449f063)) _(by Chris <chris@stacksjs.com>)_ ([#2557](https://github.com/stacksjs/stacks/issues/2557))
+
+## ⚡ Performance Improvements
+
+- **database**: render compound SQLite predicates in one bounded traversal (#2570) ([b84eec4](https://github.com/stacksjs/stacks/commit/b84eec4)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2556](https://github.com/stacksjs/stacks/issues/2556), [#2570](https://github.com/stacksjs/stacks/issues/2570), [#2570](https://github.com/stacksjs/stacks/issues/2570))
+
+## ✅ Tests
+
+- **auth**: pin the two RBAC regressions that made it unusable (#2568) ([9d9c6cc](https://github.com/stacksjs/stacks/commit/9d9c6cc)) _(by Glenn Michael Torregosa <gtorregosa@gmail.com>)_ ([#2561](https://github.com/stacksjs/stacks/issues/2561), [#2568](https://github.com/stacksjs/stacks/issues/2568), [#2568](https://github.com/stacksjs/stacks/issues/2568), [#2561](https://github.com/stacksjs/stacks/issues/2561), [#2563](https://github.com/stacksjs/stacks/issues/2563), [#2563](https://github.com/stacksjs/stacks/issues/2563))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _Glenn Michael Torregosa <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.31...v0.74.32)
 
 ## ✨ Features
