@@ -35,7 +35,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -80,7 +80,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -178,7 +178,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -280,7 +280,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -350,7 +350,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -511,7 +511,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
@@ -586,7 +586,7 @@ jobs:
           install: 'false'
 
       - name: Use cached node_modules
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('**/bun.lock') }}
