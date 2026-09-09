@@ -1,2 +1,5 @@
 export * from './fathom'
+export * from './google-analytics'
+export * from './plausible'
 export * from './self-hosted'
+export * from './shared'

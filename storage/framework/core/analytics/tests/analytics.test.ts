@@ -11,7 +11,7 @@ describe('Analytics Module Exports', () => {
   test('fathom driver is exported', async () => {
     const mod = await import('../src/drivers/fathom')
     expect(mod).toBeDefined()
-    expect(mod.fathomWip).toBe(1)
+    expect(typeof mod.generateFathomScript).toBe('function')
   })
 
   test('self-hosted driver exports generateSelfHostedScript', () => {

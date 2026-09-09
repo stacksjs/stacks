@@ -213,6 +213,7 @@
       "version": "0.74.32",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
+        "@stacksjs/types": "workspace:*",
       },
       "devDependencies": {
         "better-dx": "^0.2.24",
