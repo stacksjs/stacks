@@ -11,6 +11,8 @@ import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { setupPrettyDevEnvironment } from './dev'
+import type { Reachability } from '../initial-migration'
+import { runInitialMigration } from '../initial-migration'
 import { resultFailed } from '../result'
 
 interface SetupOptions extends CliOptions {
@@ -265,36 +267,36 @@ export async function ensureAppKey(cwd: string): Promise<void> {
   log.success('Generated application key')
 }
 
-async function runInitialMigration(cwd: string): Promise<void> {
-  // Setup also runs on deploy/CI targets, where onboarding must not touch
-  // the database. Only a local/dev context gets the automatic first pass.
-  const appEnv = (process.env.APP_ENV || process.env.NODE_ENV || 'local').toLowerCase()
-
-  if (!['local', 'development', 'dev', 'test'].includes(appEnv)) {
-    log.info(`Skipping initial migration in the ${appEnv} environment`)
-    return
-  }
-
-  log.info('Running initial database migration...')
-
+/**
+ * Can the configured database be reached right now?
+ *
+ * This is the whole basis for "required vs best-effort" in
+ * `runInitialMigration`. Nothing here decides whether a migration is a good
+ * idea - only whether a failure would mean the schema is wrong (the database
+ * answered) or that the environment is not ready (it did not).
+ *
+ * SQLite and DynamoDB have no target to probe: SQLite creates its file on
+ * open, so it counts as reachable. When the probe itself cannot run, the
+ * migration gets to speak for itself rather than being pre-emptively excused.
+ */
+async function databaseIsReachable(): Promise<Reachability> {
   try {
-    // The migrate action is non-interactive (the confirmation guards live in
-    // the `buddy migrate` command, not the action), so this is safe to run
-    // unattended. Best-effort either way: a fresh project may have no models
-    // or no reachable database yet, and neither should fail onboarding.
-    const result = await runAction(Action.Migrate, { cwd })
+    const { describeTarget, probeTargetDatabase, resolveConnectionTarget } = await import('@stacksjs/database')
+    const target = resolveConnectionTarget()
 
-    if (resultFailed(result)) {
-      log.warn('Initial migration did not complete - you can run it later via ./buddy migrate')
-      log.debug(result.error)
-      return
-    }
+    if (!target)
+      return { ok: true }
 
-    log.success('Database is migrated')
+    const probe = await probeTargetDatabase(target)
+
+    if (probe.ok)
+      return { ok: true }
+
+    return { ok: false, reason: `${describeTarget(target)} is not reachable yet (${probe.kind})` }
   }
-  catch (error) {
-    log.warn('Initial migration did not complete - you can run it later via ./buddy migrate')
-    log.debug(error)
+  catch {
+    // Could not tell. Run the migration and judge it on its own result.
+    return { ok: true }
   }
 }
 
@@ -309,7 +311,13 @@ async function initializeProject(options: SetupOptions): Promise<void> {
     await ensureAppKey(cwd)
   }
 
-  await runInitialMigration(cwd)
+  const migration = await runInitialMigration({
+    appEnv: process.env.APP_ENV || process.env.NODE_ENV || 'local',
+    isReachable: databaseIsReachable,
+    migrate: () => runAction(Action.Migrate, { cwd }),
+    failed: resultFailed,
+    log,
+  })
 
   ensureIdeSettings(cwd)
 
@@ -336,6 +344,19 @@ async function initializeProject(options: SetupOptions): Promise<void> {
       log.warn('AWS not configured - you can do this later via ./buddy configure:aws')
       log.debug(error)
     }
+  }
+
+  // stacksjs/stacks#2560: the remaining steps above are worth finishing either
+  // way - IDE settings and AWS do not depend on the schema - but setup does not
+  // get to claim success over a database that a migration failed on. Written
+  // synchronously to stderr because the logger writes asynchronously and a
+  // hard exit drops anything it has not flushed yet.
+  if (migration === 'failed') {
+    process.stderr.write('\nInitial database migration FAILED, so this project is not set up.\n')
+    process.stderr.write('Its database did not receive the schema; the error is above.\n')
+    process.stderr.write('Fix the migration, then run `./buddy migrate`.\n')
+    await log.flush()
+    process.exit(ExitCode.FatalError)
   }
 
   log.success('Project is setup')
