@@ -39,14 +39,13 @@ const signatures: Record<string, Uint8Array[]> = {
  * touched them already carried the damage. Replace the file, then delete its
  * line here; the test below fails if one of these turns out to be valid, so the
  * list cannot rot into a permanent exemption.
+ *
+ * Empty since the five testimonial avatars were redrawn (#2433). Keep the set
+ * and both tests: the exemption mechanism is what makes a future breakage
+ * recordable without disabling the check, and the second test is what stops a
+ * recorded exemption from outliving its repair.
  */
-const knownCorrupt = new Set<string>([
-  'public/images/avatars/avatar-1.png',
-  'public/images/avatars/avatar-2.png',
-  'public/images/avatars/avatar-3.png',
-  'public/images/avatars/avatar-4.png',
-  'public/images/avatars/avatar-5.png',
-])
+const knownCorrupt = new Set<string>([])
 
 function startsWith(head: Uint8Array, signature: Uint8Array): boolean {
   return signature.every((byte, index) => head[index] === byte)
