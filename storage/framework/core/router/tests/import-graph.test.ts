@@ -1,14 +1,31 @@
+import type { BuildOutput } from 'bun'
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
 
+/**
+ * One build, shared by every assertion below.
+ *
+ * Bundling the router barrel twice in a process that has already registered
+ * the stx plugin fails the second build outright ("Unexpected reading file
+ * .../bun-plugin-stx/dist/index.js"), which only shows up in a whole-suite run
+ * where another file has loaded the plugin first. Memoizing is also simply
+ * cheaper: this entrypoint pulls in 445 modules.
+ */
+let cachedRouterBuild: Promise<BuildOutput> | undefined
+
+function routerBuild(): Promise<BuildOutput> {
+  cachedRouterBuild ??= Bun.build({
+    entrypoints: [join(import.meta.dir, 'fixtures/import-router.ts')],
+    target: 'bun',
+    metafile: true,
+    write: false,
+  })
+  return cachedRouterBuild
+}
+
 describe('router import graph', () => {
   it('keeps optional subsystems out of the success path', async () => {
-    const result = await Bun.build({
-      entrypoints: [join(import.meta.dir, 'fixtures/import-router.ts')],
-      target: 'bun',
-      metafile: true,
-      write: false,
-    })
+    const result = await routerBuild()
 
     expect(result.success).toBe(true)
     const indexEntry = Object.entries(result.metafile?.inputs ?? {})
@@ -67,6 +84,29 @@ describe('router import graph', () => {
       .filter(entry => entry.kind !== 'dynamic-import'
         && (entry.path.includes('ts-rate-limiter') || entry.path.endsWith('error-handling/src/http.ts'))) ?? []
     expect(eagerActionLimiterDependencies).toEqual([])
+  })
+
+  /**
+   * The barrel re-exports the signed-URL helpers, so a static `node:crypto`
+   * import anywhere under `src/` initialises the optional native subsystem for
+   * every application that imports the router - including the great majority
+   * that never verify a signed URL. Asserting over the whole source tree rather
+   * than one file is the point: this was reintroduced once already by a helper
+   * added beside `stacks-router.ts` (stacksjs/stacks#2450).
+   */
+  it('keeps native crypto out of every router source file', async () => {
+    const result = await routerBuild()
+
+    expect(result.success).toBe(true)
+    const eagerCryptoImporters = Object.entries(result.metafile?.inputs ?? {})
+      .filter(([source]) => source.startsWith('src/') || source.includes('router/src/'))
+      .filter(([, meta]) => meta.imports.some(entry =>
+        entry.kind !== 'dynamic-import'
+        && (entry.original === 'node:crypto' || entry.original === 'crypto'),
+      ))
+      .map(([source]) => source)
+
+    expect(eagerCryptoImporters).toEqual([])
   })
 
   it('defers session encryption until an encrypted store is used', async () => {

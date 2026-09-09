@@ -16,7 +16,6 @@
 
 import type { EnhancedRequest, KnownRouteName } from '@stacksjs/bun-router'
 import type { UrlParams } from './stacks-router'
-import { timingSafeEqual } from 'node:crypto'
 import { Buffer } from 'node:buffer'
 import process from 'node:process'
 import { url as buildUrl } from './stacks-router'
@@ -46,6 +45,33 @@ function getSigningSecret(): string {
 
 function hmacHex(payload: string, secret: string): string {
   return new Bun.CryptoHasher('sha256', secret).update(payload).digest('hex')
+}
+
+/**
+ * `node:crypto.timingSafeEqual`, resolved on first verification instead of at
+ * import.
+ *
+ * This module is re-exported from the router barrel, so a static
+ * `import ... from 'node:crypto'` here made every `import { route } from
+ * '@stacksjs/router'` initialise the optional native crypto subsystem -
+ * including in the overwhelming majority of applications that never verify a
+ * signed URL. Signing itself never needed it: that path is `Bun.CryptoHasher`.
+ *
+ * `process.getBuiltinModule` is the synchronous way to reach a builtin without
+ * putting it in the import graph, which matters twice over: `verifySignedUrl`
+ * is a synchronous API and cannot await a dynamic import, and a static import
+ * would be hoisted back to load time no matter where it sat in the file.
+ *
+ * The resolved function is cached, so the cost is paid once per process by
+ * whoever verifies first rather than by everyone who imports the router.
+ *
+ * See stacksjs/stacks#2450.
+ */
+let nativeTimingSafeEqual: ((a: Buffer, b: Buffer) => boolean) | undefined
+
+function timingSafeEqual(a: Buffer, b: Buffer): boolean {
+  nativeTimingSafeEqual ??= (process.getBuiltinModule('node:crypto') as typeof import('node:crypto')).timingSafeEqual
+  return nativeTimingSafeEqual(a, b)
 }
 
 /**
