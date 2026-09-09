@@ -88,7 +88,16 @@ describe('Mac App Store desktop automation', () => {
 describe('desktop:apple:doctor output', () => {
   test('prints each missing prerequisite exactly once, and exits non-zero', async () => {
     const root = new URL('../../../../../', import.meta.url).pathname
-    const result = Bun.spawnSync(['./buddy', 'desktop:apple:doctor'], {
+    /*
+     * The CLI entrypoint directly, not the `./buddy` shim.
+     *
+     * The shim bootstraps pantry when `pantry/` is missing or half-finished,
+     * which on a CI runner that has only done `bun install` means a full
+     * provisioning run - inside a test, with a 600s timeout, writing a tree
+     * that every package tested afterwards resolves through. Nothing about
+     * this test wants that; it wants one process's stderr.
+     */
+    const result = Bun.spawnSync(['bun', 'storage/framework/core/buddy/src/cli.ts', 'desktop:apple:doctor'], {
       cwd: root,
       stdout: 'pipe',
       stderr: 'pipe',
