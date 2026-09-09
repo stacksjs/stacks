@@ -122,3 +122,55 @@ describe('action rate limiting', () => {
     }
   })
 })
+
+/**
+ * A burst against a fresh quota admits exactly `max` of them.
+ *
+ * ts-rate-limiter's fixed-window strategy returned its own mutable increment
+ * result, so every caller in a simultaneous burst read whatever the counter had
+ * reached by the time it looked rather than the count its own call produced. At
+ * a quota of 3, ten simultaneous requests were all rejected - including the
+ * three that should have been admitted. Fixed upstream in ts-rate-limiter
+ * bbf0ba1 by snapshotting count and resetTime per call, adopted here
+ * (stacksjs/stacks#2453).
+ *
+ * Both a cold quota (nothing has loaded the module or built this limiter) and a
+ * warm one, because the two take different paths through the limiter cache and
+ * the defect was only ever visible on a burst.
+ */
+describe('burst admission', () => {
+  it.each([
+    ['cold', 991],
+    ['warm', 992],
+  ] as const)('admits exactly the quota from a %s burst of ten', async (_state, windowSeconds) => {
+    const key = `burst-${windowSeconds}`
+    const options = { identity: 'burst-client' }
+    await clearRateLimit(key, 3, windowSeconds, options)
+
+    if (_state === 'warm')
+      await clearRateLimit(key, 3, windowSeconds, options)
+
+    const outcomes = await Promise.all(
+      Array.from({ length: 10 }, () =>
+        rateLimit(key, 3, options).over(windowSeconds).then(() => 'admitted' as const, (error: unknown) => error)),
+    )
+
+    const admitted = outcomes.filter(outcome => outcome === 'admitted')
+    const rejected = outcomes.filter(outcome => outcome !== 'admitted')
+
+    expect(admitted).toHaveLength(3)
+    expect(rejected).toHaveLength(7)
+
+    for (const rejection of rejected) {
+      expect(rejection).toBeInstanceOf(HttpError)
+      expect(rejection).toMatchObject({
+        status: 429,
+        headers: { 'RateLimit-Limit': '3', 'RateLimit-Remaining': '0' },
+      })
+      expect(Number((rejection as HttpError).headers?.['Retry-After'])).toBeGreaterThan(0)
+    }
+
+    expect(await rateLimitStatus(key, 3, windowSeconds, options)).toMatchObject({ limit: 3, remaining: 0 })
+    await clearRateLimit(key, 3, windowSeconds, options)
+  })
+})

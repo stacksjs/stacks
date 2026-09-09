@@ -1070,7 +1070,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "ts-rate-limiter": "^0.4.2"
+        "ts-rate-limiter": "^0.4.10"
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -2476,7 +2476,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/storage": "workspace:*",
-        "ts-rate-limiter": "^0.4.2"
+        "ts-rate-limiter": "^0.4.10"
       },
       "peerDependencies": {
         "@stacksjs/api": "workspace:*",
@@ -3309,12 +3309,12 @@
         "qrx": "./dist/cli.js"
       }
     },
-    "ts-rate-limiter@0.4.8": {
+    "ts-rate-limiter@0.4.10": {
       "name": "ts-rate-limiter",
-      "version": "0.4.8",
+      "version": "0.4.10",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-rate-limiter/-/ts-rate-limiter-0.4.8.tgz",
-      "integrity": "sha512-Khs8/A4IetgV9vRPHIKcECCypTGjw+JytkayilRqW6kSO7qc4NyFcvVfukNrD3sjnrYe4lAA4DsTI460aReYNQ==",
+      "resolved": "https://registry.npmjs.org/ts-rate-limiter/-/ts-rate-limiter-0.4.10.tgz",
+      "integrity": "sha512-z6ZbPeGYOf65oJvvapuChN7hA7180hPeDvUVhQCgVy7kgk8dH42NA6pCB9Ni/O2vdxPQnpqDdL385RyFZgOaJg==",
       "bin": {
         "ts-rate-limiter": "./dist/bin/init-config.js"
       }
