@@ -295,22 +295,26 @@ jobs:
       - name: Install the pantry tree
         run: pantry install
 
-      # An install must not change the lockfiles that describe it.
+      # An install must not change the lockfile that describes it.
       #
-      # `bun install --frozen-lockfile` refuses to write, so it says nothing
-      # about `pantry.lock`, and `check-lockfile-version.ts` only reads the
-      # version line. Between them a lockfile can drift from the workspace it
-      # records and nothing notices: `pantry.lock` sat on workspace packages at
-      # 0.74.31 - integrity hashes and dependency edges to match - long after
-      # the packages had moved on, so every install re-derived 329 lines and
-      # looked like nondeterminism rather than the one-time correction it was
-      # (#2533). Running the install and then asking git whether anything moved
-      # is the only check that covers both files and every kind of drift.
-      - name: Check the lockfiles still describe this workspace
+      # `bun install --frozen-lockfile` refuses to write, so it proves nothing
+      # about what an install would have produced, and check-lockfile-version.ts
+      # reads one line. This runs the install and asks git whether anything
+      # moved, which is the only check that covers every kind of drift.
+      #
+      # bun.lock only, deliberately. `pantry.lock` is not platform-independent
+      # today: this same step on Linux rewrites it with 144 additions and 1,278
+      # deletions against a macOS-generated lock - adding native toolchain
+      # records (gnu.org/gcc, gnu.org/binutils, gnu.org/mpfr, tukaani.org/xz and
+      # the rest) and dropping 80-odd `"source": "npm"` workspace records that
+      # macOS keeps. Nothing committed can satisfy both platforms while that is
+      # true, so asserting it here would demand the impossible. Tracked in
+      # #2533; guard it here the moment the lock is platform-independent.
+      - name: Check bun.lock still describes this workspace
         run: |
-          if ! git diff --exit-code --stat bun.lock pantry.lock; then
-            echo "::error::Installing changed bun.lock or pantry.lock. A committed lockfile must survive an install of the tree it describes. Run 'pantry install && bun install' with the pinned Bun (engines.bun) and commit both files."
-            git diff -- bun.lock pantry.lock
+          if ! git diff --exit-code --stat bun.lock; then
+            echo "::error::Installing changed bun.lock. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit the result."
+            git diff -- bun.lock
             exit 1
           fi
 
