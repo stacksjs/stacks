@@ -32,6 +32,23 @@ try {
     assert.deepEqual(await query([10, 20]).limit(1).execute(), [{ id: 1 }])
     assert.deepEqual(await query([10, 20]).limit(1).offset(1).execute(), [{ id: 2 }])
   }
+  for (const [firstLength, secondLength] of [[0, 3], [1, 0], [2, 8], [64, 1], [3, 2], [1, 64]]) {
+    const rows = await query(Array(firstLength).fill(10)).where('id', 'in', Array(secondLength).fill(1)).execute()
+    assert.deepEqual(rows, firstLength && secondLength ? [{ id: 1 }] : [])
+  }
+  const invalidLengths = [0.5, -1, Number.NaN, Number.POSITIVE_INFINITY, 0x100000000]
+  const opaqueLength = { [Symbol.toPrimitive]() { throw new Error('Custom slice length must not be coerced') } }
+  for (const length of [0, 1, '0', undefined, false, opaqueLength, 2, ...invalidLengths]) {
+    const values = [10]
+    values.slice = () => ({ length, *[Symbol.iterator]() { yield 10 } }) as unknown as number[]
+    const read = db.selectFrom('statement_items').select('id').whereIn('value', values).execute()
+    if (invalidLengths.includes(length as number))
+      await assert.rejects(read, RangeError)
+    else if (length === 2)
+      await assert.rejects(read)
+    else
+      assert.deepEqual(await read, length === 0 ? [] : [{ id: 1 }])
+  }
   const retained = query([10])
   assert.deepEqual(await retained.execute(), [{ id: 1 }])
   for (let index = 0; index < 100; index++)

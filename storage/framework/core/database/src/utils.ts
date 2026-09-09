@@ -1508,6 +1508,18 @@ function runFastSqliteSql(
   return (instance.unsafe(sql, params) as unknown as UnsafeReturn).executeSync()
 }
 
+let lastSqlitePlaceholders: { length: number, sql: string } | undefined
+
+function renderSqlitePlaceholders(length: number): string {
+  const cached = lastSqlitePlaceholders
+  if (cached && cached.length === length)
+    return cached.sql
+  const sql = Array(length).fill('?').join(', ')
+  if (typeof length === 'number')
+    lastSqlitePlaceholders = { length, sql }
+  return sql
+}
+
 function snapshotSimpleSqliteMembershipValues(values: unknown[]): unknown[] | undefined {
   // Inspect stored values without invoking user getters, iterators or species.
   // Complex arrays stay on the upstream path with their original binding arity.
@@ -1722,7 +1734,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (predicateColumn !== undefined) {
       query += ` WHERE ${predicateColumn} ${predicateOperator}`
       if (predicateValues) {
-        query += ` (${Array(predicateValues.length).fill('?').join(', ')})`
+        query += ` (${renderSqlitePlaceholders(predicateValues.length)})`
         params.push(...predicateValues)
       }
       else if (predicateParameterized) {
@@ -1733,7 +1745,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         query += ` AND ${additionalPredicates.map((predicate) => {
           if (predicate.values) {
             params.push(...predicate.values)
-            return `${predicate.column} ${predicate.operator} (${Array(predicate.values.length).fill('?').join(', ')})`
+            return `${predicate.column} ${predicate.operator} (${renderSqlitePlaceholders(predicate.values.length)})`
           }
           if (predicate.parameterized) {
             params.push(predicate.value)
