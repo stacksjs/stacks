@@ -220,14 +220,40 @@ function getUserId(user: UserModel | { id: number } | number): number {
       throw new TypeError('RBAC user id must be a positive number')
     return user
   }
-  const id = (user as { id?: unknown }).id
-  if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
-    // Validate at the boundary so `user.id === undefined` doesn't
-    // collapse into a shared `undefined` cache slot (every such user
-    // would share the same cached roles/permissions). See
-    // stacksjs/stacks#1860 M-6.
-    throw new TypeError(`RBAC user id must be a positive number, got ${typeof id} (${String(id)})`)
-  }
+  const raw = (user as { id?: unknown }).id
+
+  /*
+   * Coerce, then validate.
+   *
+   * This required `typeof id === 'number'`, which made RBAC unusable on
+   * Postgres: `users.id` is BIGSERIAL and `bun:sql` returns it as a STRING, so
+   * every call carrying a user loaded from the database threw - `hasRole`,
+   * `hasAnyRole`, `hasPermission`, `assignRole`, `syncRoles`, all of them
+   * (stacksjs/stacks#2562).
+   *
+   * The guard's original reason still holds and is preserved: an `undefined`
+   * id must never collapse into a shared cache slot where every such user
+   * would read the same roles (stacksjs/stacks#1860 M-6). That argument is
+   * about nullish and nonsense ids, not about "125".
+   *
+   * Only number, string and bigint are coerced. `Number()` would happily turn
+   * `true` into 1 and `['125']` into 125, and an id arriving as either of
+   * those is a bug worth surfacing rather than silently authorising against
+   * user 1.
+   */
+  if (typeof raw !== 'number' && typeof raw !== 'string' && typeof raw !== 'bigint')
+    throw new TypeError(`RBAC user id must be a positive number, got ${typeof raw} (${String(raw)})`)
+
+  const id = Number(raw)
+  if (!Number.isInteger(id) || id <= 0)
+    throw new TypeError(`RBAC user id must be a positive number, got ${typeof raw} (${String(raw)})`)
+
+  // Above Number.MAX_SAFE_INTEGER two distinct BIGSERIAL ids can round to the
+  // same double, which would share a cache slot - the exact failure #1860 M-6
+  // exists to prevent, arriving by a different route.
+  if (!Number.isSafeInteger(id))
+    throw new TypeError(`RBAC user id exceeds the safe integer range, got ${String(raw)}`)
+
   return id
 }
 
