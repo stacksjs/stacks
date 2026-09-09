@@ -1777,17 +1777,38 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         params.push(predicateValue)
       }
       if (additionalPredicates) {
-        query += ` AND ${additionalPredicates.map((predicate) => {
+        // Appended in place rather than through `map(...).join(' AND ')`, which
+        // allocated a temporary array of rendered fragments and invoked a
+        // closure per predicate on every execution.
+        //
+        // The traversal is bounded by the length read BEFORE visiting anything,
+        // which is the one guarantee `map` was providing: binding a predicate's
+        // parameters can run user code, and a predicate appended by that code
+        // must not execute in the same traversal. The array itself is dense by
+        // construction - every element arrives through a `push` in this module -
+        // so there are no holes for `map`'s hole-skipping to matter on.
+        //
+        // A defined-but-empty `additionalPredicates` cannot occur (the array is
+        // created by `??= []` immediately before its first push), and the
+        // unconditional separator keeps the emitted SQL identical if it ever did.
+        const additionalCount = additionalPredicates.length
+        query += ' AND '
+        for (let index = 0; index < additionalCount; index++) {
+          if (index > 0)
+            query += ' AND '
+          const predicate = additionalPredicates[index]!
           if (predicate.values) {
             params.push(...predicate.values)
-            return `${predicate.column} ${predicate.operator} (${renderSqlitePlaceholders(predicate.values.length)})`
+            query += `${predicate.column} ${predicate.operator} (${renderSqlitePlaceholders(predicate.values.length)})`
+            continue
           }
           if (predicate.parameterized) {
             params.push(predicate.value)
-            return `${predicate.column} ${predicate.operator} ?`
+            query += `${predicate.column} ${predicate.operator} ?`
+            continue
           }
-          return `${predicate.column} ${predicate.operator}`
-        }).join(' AND ')}`
+          query += `${predicate.column} ${predicate.operator}`
+        }
       }
     }
     if (orderings)
