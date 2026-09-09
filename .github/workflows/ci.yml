@@ -320,6 +320,20 @@ jobs:
             exit 1
           fi
 
+      # Temporary: the committed lock is generated on macOS and has never held
+      # the seven native records Linux needs (binutils, libstdcxx, gmp, mpfr,
+      # mpc, libiconv, gettext). pantry 0.11.57 preserves foreign-platform pins
+      # once they are in the file, but nothing can put Linux's there from a Mac.
+      # This hands the Linux-generated lock back so it can be committed once;
+      # remove the step after (#2533).
+      - name: Upload the Linux-generated lockfile
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-pantry-lock
+          path: pantry.lock
+          retention-days: 1
+
       # The binaries are built only by the release job, on a tag, after npm
       # publish. So a dependency that grows a top-level await — which
       # `bun build --compile` refuses to bundle through a `require()` — took
