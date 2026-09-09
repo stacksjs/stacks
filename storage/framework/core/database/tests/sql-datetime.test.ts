@@ -30,6 +30,20 @@ describe('sqlDateTime - the write format', () => {
     expect(parsed.getTime()).toBeLessThanOrEqual(Date.now() + 1000)
   })
 
+  /**
+   * If this fails locally and passes in CI, check your Bun before the code.
+   *
+   * `setSystemTime(new Date(0))` is a no-op on Bun 1.3.14 - `Date.now()` keeps
+   * whatever the previous mocked value was - so the epoch entry below reads as
+   * the timestamp before it and this looks exactly like a caching bug in
+   * `sqlDateTime`. It is fixed in the 1.4.1 this repository pins in
+   * `engines.bun`, which is what CI runs and what `./pantry/.bin/bun` is
+   * (#2533). One line reproduces it, with no Stacks code involved:
+   *
+   *   setSystemTime(new Date('2024-02-29T23:59:59.998Z'))
+   *   setSystemTime(new Date('1970-01-01T00:00:00.000Z'))
+   *   Date.now()  // 1709251199998 on 1.3.14, 0 on 1.4.1
+   */
   test('default timestamps preserve milliseconds across clock boundaries and backward changes', () => {
     try {
       for (const timestamp of [
