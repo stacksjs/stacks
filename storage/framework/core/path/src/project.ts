@@ -1,13 +1,25 @@
 import { relative, resolve } from 'node:path'
 import process from 'node:process'
 
-export function projectPath(filePath = '', options?: { relative: boolean }): string {
-  let path = process.cwd()
+let cachedCwd: string | undefined
+let cachedProjectRoot = ''
 
-  while (path.includes('storage')) {
-    const parent = resolve(path, '..')
-    if (parent === path) break
-    path = parent
+export function projectPath(filePath = '', options?: { relative: boolean }): string {
+  const cwd = process.cwd()
+  let path: string
+
+  if (cwd === cachedCwd) {
+    path = cachedProjectRoot
+  }
+  else {
+    path = cwd
+    while (path.includes('storage')) {
+      const parent = resolve(path, '..')
+      if (parent === path) break
+      path = parent
+    }
+    cachedCwd = cwd
+    cachedProjectRoot = path
   }
 
   const finalPath = resolve(path, filePath)
