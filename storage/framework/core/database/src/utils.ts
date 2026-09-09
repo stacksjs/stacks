@@ -2178,20 +2178,37 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     },
   }
 
+  let forwardedMethods: Record<string | symbol, unknown> | undefined
   proxy = new Proxy(base as Record<string | symbol, unknown>, {
     get(target, property) {
+      if (materialized) {
+        const builder = materialized as unknown as Record<string | symbol, unknown>
+        const value = builder[property]
+        return typeof value === 'function' ? value.bind(builder) : value
+      }
+      const cached = forwardedMethods?.[property]
+      if (cached !== undefined)
+        return cached
       const value = target[property]
-      if (value !== undefined)
+        ?? resolveDeferredSqliteTerminal(target, property, executeStatement, executeFirstStatement, materialize, proxy)
+        ?? (extensions ??= createExtensions())[property as string]
+      if (value === undefined) {
+        const builder = materialize() as unknown as Record<string | symbol, unknown>
+        const fallback = builder[property]
+        return typeof fallback === 'function' ? fallback.bind(builder) : fallback
+      }
+      if (typeof value !== 'function')
         return value
-      const terminal = resolveDeferredSqliteTerminal(target, property, executeStatement, executeFirstStatement, materialize, proxy)
-      if (terminal !== undefined)
-        return terminal
-      const extension = (extensions ??= createExtensions())[property as string]
-      if (extension !== undefined)
-        return extension
-      const builder = materialize() as unknown as Record<string | symbol, unknown>
-      const fallback = builder[property]
-      return typeof fallback === 'function' ? fallback.bind(builder) : fallback
+      // Callers may retain or bind a method before another operation forces
+      // fallback. Those methods must follow the builder that now owns the query.
+      const forward = (...args: unknown[]) => {
+        const builder = materialized as unknown as Record<string | symbol, unknown> | undefined
+        return builder
+          ? Reflect.apply(builder[property] as (...values: unknown[]) => unknown, builder, args)
+          : Reflect.apply(value, proxy, args)
+      }
+      ;(forwardedMethods ??= Object.create(null))[property] = forward
+      return forward
     },
   })
   return proxy

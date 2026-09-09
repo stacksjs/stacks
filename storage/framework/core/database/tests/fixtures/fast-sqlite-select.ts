@@ -1,10 +1,12 @@
 import { config as queryBuilderConfig, setConfig } from '@stacksjs/query-builder'
-import { db, initializeDbConfig } from '../../src/utils'
+import assert from 'node:assert/strict'
+import { db, ensureDatabaseConfigLoaded, initializeDbConfig } from '../../src/utils'
 
 const databasePath = process.argv[2]
 if (!databasePath)
   throw new Error('Expected an isolated SQLite path')
 
+await ensureDatabaseConfigLoaded()
 initializeDbConfig({
   app: { env: 'production' },
   database: {
@@ -304,6 +306,40 @@ async function supportedMatrix() {
   }
 }
 
+async function retainedBuilderMatrix() {
+  const retained = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
+  const execute = retained.execute.bind(retained)
+  const where = retained.where.bind(retained)
+  const count = retained.count.bind(retained)
+  const pluck = retained.pluck.bind(retained)
+  const first = retained.executeTakeFirst.bind(retained)
+  const select = retained.select.bind(retained)
+  retained.whereRaw('id >= 2')
+  where('id', '<', 3)
+  const results = {
+    retained: await retained.execute(),
+    captured: await execute(),
+    count: await count(),
+    pluck: await pluck('id'),
+    first: await first(),
+  }
+  assert.deepEqual(results, {
+    retained: [{ id: 2 }],
+    captured: [{ id: 2 }],
+    count: 1,
+    pluck: [2],
+    first: { id: 2 },
+  })
+  select('name')
+  assert.deepEqual(await execute(), [{ name: 'beta' }])
+  const extended = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
+  const whereIn = extended.whereIn.bind(extended)
+  extended.whereRaw('id >= 2')
+  whereIn('active', [1])
+  assert.deepEqual(await extended.execute(), [{ id: 2 }])
+  return results
+}
+
 async function offsetOnlyRejections() {
   const rejects: boolean[] = []
   for (const terminal of ['execute', 'first'] as const) {
@@ -329,6 +365,7 @@ async function repeatedDistinctRejects() {
 }
 
 const lightweightMatrix = await supportedMatrix()
+const lightweightRetainedMatrix = await retainedBuilderMatrix()
 const lightweightOffsetOnlyRejections = await offsetOnlyRejections()
 const lightweightRepeatedDistinctRejection = await repeatedDistinctRejects()
 
@@ -339,6 +376,8 @@ setConfig({
   },
 })
 const upstreamMatrix = await supportedMatrix()
+const upstreamRetainedMatrix = await retainedBuilderMatrix()
+assert.deepEqual(lightweightRetainedMatrix, upstreamRetainedMatrix)
 const upstreamOffsetOnlyRejections = await offsetOnlyRejections()
 const upstreamRepeatedDistinctRejection = await repeatedDistinctRejects()
 if (JSON.stringify(lightweightMatrix) !== JSON.stringify(upstreamMatrix))
