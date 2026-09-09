@@ -36,6 +36,29 @@ try {
     const rows = await query(Array(firstLength).fill(10)).where('id', 'in', Array(secondLength).fill(1)).execute()
     assert.deepEqual(rows, firstLength && secondLength ? [{ id: 1 }] : [])
   }
+  // Compound predicates: every additional-predicate kind, and shapes that
+  // change arity and kind between executions. The rendering walks the predicate
+  // list in one bounded traversal and shares a single-entry placeholder cache,
+  // so alternating shapes is the case that would show a leak between them.
+  await db.unsafe('CREATE TABLE statement_facets (id INTEGER PRIMARY KEY, value INTEGER, label TEXT)').execute()
+  await db.unsafe(`INSERT INTO statement_facets VALUES (1, 10, 'alpha'), (2, 20, 'beta'), (3, 30, NULL)`).execute()
+  const facets = () => db.selectFrom('statement_facets').select('id')
+  for (let repeat = 0; repeat < 3; repeat++) {
+    assert.deepEqual(await facets().whereIn('value', [10, 20]).whereLike('label', 'a%').orderBy('id').execute(), [{ id: 1 }])
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereNotLike('label', 'a%').orderBy('id').execute(), [{ id: 2 }])
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereNull('label').orderBy('id').execute(), [{ id: 3 }])
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereNotNull('label').orderBy('id').execute(), [{ id: 1 }, { id: 2 }])
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereNotIn('value', [20]).orderBy('id').execute(), [{ id: 1 }, { id: 3 }])
+    // Three predicates from two calls: whereBetween pushes both bounds.
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereBetween('id', [1, 2]).orderBy('id').execute(), [{ id: 1 }, { id: 2 }])
+    // Mixed arity in one statement, then the same shape at a different arity.
+    assert.deepEqual(await facets().whereIn('value', [10]).whereIn('id', [1, 2, 3]).orderBy('id').execute(), [{ id: 1 }])
+    assert.deepEqual(await facets().whereIn('value', [10, 20, 30]).whereIn('id', [2]).orderBy('id').execute(), [{ id: 2 }])
+    // An empty membership renders zero placeholders on either side.
+    assert.deepEqual(await facets().whereIn('value', []).whereIn('id', [1]).orderBy('id').execute(), [])
+    assert.deepEqual(await facets().whereIn('value', [10]).whereIn('id', []).orderBy('id').execute(), [])
+  }
+  await db.unsafe('DROP TABLE statement_facets').execute()
   const invalidLengths = [0.5, -1, Number.NaN, Number.POSITIVE_INFINITY, 0x100000000]
   const opaqueLength = { [Symbol.toPrimitive]() { throw new Error('Custom slice length must not be coerced') } }
   for (const length of [0, 1, '0', undefined, false, opaqueLength, 2, ...invalidLengths]) {
