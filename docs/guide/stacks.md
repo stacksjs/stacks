@@ -6,7 +6,9 @@ description: "Stacks is a full-stack TypeScript framework for web, API, desktop,
 
 Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and cloud applications. Bun is the runtime, package manager, test runner, and bundler. Framework packages are first-party and available under `storage/framework/core/`.
 
-[Open the interactive runtime architecture diagram](/diagrams/stacks-runtime.html).
+[![Stacks runtime architecture](/diagrams/stacks-runtime/light.png)](/diagrams/stacks-runtime)
+
+[Open the interactive runtime architecture diagram](/diagrams/stacks-runtime) for a theme toggle and SVG, PNG, JPEG, and WebP exports. Its source lives in [`docs/public/diagrams/stacks-runtime/`](https://github.com/stacksjs/stacks/tree/main/docs/public/diagrams/stacks-runtime), rendered by the `stacks-technical-diagrams` skill.
 
 ## Application and framework layers
 

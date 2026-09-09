@@ -4,31 +4,30 @@
   "meta": {
     "title": "Stacks Runtime Architecture",
     "subtitle": "One TypeScript framework from local development to cloud deployment",
-    "output": "stacks-runtime.html",
-    "viewBox": [1220, 760]
+    "output": "index.html"
   },
   "layout": {
     "mode": "grid",
     "cols": 7,
-    "origin": [45, 130],
-    "gapX": 45,
-    "gapY": 100,
-    "cellW": 120,
+    "origin": [45, 72],
+    "gapX": 40,
+    "gapY": 90,
+    "cellW": 140,
     "cellH": 60
   },
   "components": [
     { "id": "developer", "type": "external", "label": "Developer", "sublabel": "TypeScript project", "row": 0, "col": 0 },
     { "id": "buddy", "type": "backend", "label": "Buddy CLI", "sublabel": "dev / build / deploy", "row": 0, "col": 1 },
-    { "id": "cloud", "type": "cloud", "label": "Stacks Cloud", "sublabel": "server or serverless", "row": 0, "col": 6 },
+    { "id": "cloud", "type": "cloud", "label": "Stacks Cloud", "sublabel": "server or serverless", "row": 0, "col": 6, "size": [160, 60] },
     { "id": "browser", "type": "frontend", "label": "Web Client", "sublabel": "browser", "row": 1, "col": 0 },
     { "id": "proxy", "type": "security", "label": "rpx + tlsx", "sublabel": "pretty HTTPS URLs", "row": 1, "col": 1 },
     { "id": "stx", "type": "frontend", "label": "stx", "sublabel": "views + components", "row": 1, "col": 2 },
     { "id": "router", "type": "backend", "label": "Router", "sublabel": "routes + middleware", "row": 1, "col": 3 },
     { "id": "actions", "type": "backend", "label": "Actions", "sublabel": "application logic", "row": 1, "col": 4 },
     { "id": "orm", "type": "backend", "label": "ORM", "sublabel": "models + queries", "row": 1, "col": 5 },
-    { "id": "database", "type": "database", "label": "Database", "sublabel": "SQLite / SQL / DynamoDB", "row": 1, "col": 6 },
+    { "id": "database", "type": "database", "label": "Database", "sublabel": "SQLite / SQL / DynamoDB", "row": 1, "col": 6, "size": [160, 60] },
     { "id": "craft", "type": "frontend", "label": "Craft", "sublabel": "desktop + tray", "row": 2, "col": 0 },
-    { "id": "events", "type": "messagebus", "label": "Events + Queues", "sublabel": "async application work", "row": 2, "col": 4 },
+    { "id": "events", "type": "messagebus", "label": "Events + Queues", "sublabel": "async application work", "row": 2, "col": 4, "size": [150, 60] },
     { "id": "workers", "type": "backend", "label": "Workers", "sublabel": "jobs + schedules", "row": 2, "col": 5 }
   ],
   "boundaries": [
