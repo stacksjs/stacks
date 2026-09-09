@@ -1,3 +1,4 @@
+import type { Font } from 'ts-images'
 import type { ImagesConfig } from '@stacksjs/types'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
@@ -7,6 +8,7 @@ import { generateAppStoreScreenshotSet } from '../src/app-store'
 import { generateAppIconSet } from '../src/app-icons'
 import { generateImages } from '../src/generate'
 import { resolveFontPath } from '../src/fonts'
+import { drawsGlyphs } from '../src/fonts'
 import { renderOnDemandSocialCard, socialCardName, socialMetaTags } from '../src/social'
 import { generateSocialCardSet } from '../src/social'
 import { background, color, device, themed } from '../src/theme'
@@ -250,11 +252,15 @@ describe('renderOnDemandSocialCard', () => {
   /**
    * A face that actually draws.
    *
-   * This repository ships exactly one .ttf and it draws nothing - `Monaco.ttf`
-   * maps every character and returns an empty outline for all of them, which is
-   * what #2575 is about. So the drawing tests need a face from outside, and say
-   * so rather than quietly passing against a blank card, which is what they did
-   * before that was understood.
+   * This repository ships no TrueType face at all. It shipped one, `Monaco.ttf`,
+   * which loaded without error and drew nothing - so these tests passed against
+   * a blank 1200x630 card, which is how #2575 was found - and it was removed
+   * rather than replaced, because a face that cannot draw sitting in
+   * `resources/assets/fonts/` is a trap and choosing a licensed replacement is
+   * not this test's call.
+   *
+   * So the drawing tests need a face from outside and say so, rather than
+   * quietly asserting magic bytes against an empty image.
    */
   const drawableFont = process.env.STACKS_TEST_FONT
   const drawing = drawableFont ? test : test.skip
@@ -337,19 +343,60 @@ describe('renderOnDemandSocialCard', () => {
       .rejects.toThrow(/No font configured/)
   })
 
-  /**
-   * The failure that used to be silent. `Monaco.ttf` is the only .ttf in this
-   * repository and the obvious thing to point `images.fonts.title` at, and it
-   * draws nothing - so this used to write a valid, blank 1200x630 card and
-   * report success (#2575). Both paths must refuse it, not just the one.
-   */
-  test('refuses a face that loads and draws nothing, rather than writing a blank card', async () => {
-    const images: ImagesConfig = {
-      fonts: { title: 'storage/framework/defaults/resources/assets/fonts/Monaco.ttf' },
-      social: { enabled: true, brand: 'Stacks' },
-    }
+})
 
-    await expect(renderOnDemandSocialCard(images, { title: 'Blank' }, root)).rejects.toThrow(/draws no glyphs/)
-    await expect(generateSocialCardSet(images, root)).rejects.toThrow(/draws no glyphs/)
+/**
+ * The check that turns a silently blank card into a failure (#2575).
+ *
+ * Tested against constructed faces rather than a file. It used to use
+ * `Monaco.ttf`, the only .ttf this repository shipped, which was a real
+ * instance of exactly this - and which has since been removed, because a face
+ * that cannot draw sitting in `resources/assets/fonts/` is the trap the issue
+ * was about. Constructed faces are the better fixture anyway: the interesting
+ * case is a precise combination of answers, and stating it is clearer than
+ * shipping 53KB of binary that happens to produce it.
+ */
+describe('drawsGlyphs', () => {
+  function face(overrides: Partial<Font>): Font {
+    return {
+      unitsPerEm: 2048,
+      ascender: 1600,
+      descender: -400,
+      lineGap: 0,
+      glyphCount: 100,
+      glyphIdFor: () => 1,
+      advanceWidth: () => 1000,
+      outline: () => [[{ x: 0, y: 0, onCurve: true }, { x: 10, y: 10, onCurve: true }]],
+      variable: false,
+      ...overrides,
+    } as Font
+  }
+
+  test('accepts a face that returns outlines', () => {
+    expect(drawsGlyphs(face({}))).toBe(true)
+  })
+
+  /**
+   * The case that shipped blank cards, and the reason this reaches the
+   * outlines: every character maps to a glyph, so a cmap check passes.
+   */
+  test('refuses a face that maps every character and draws none of them', () => {
+    expect(drawsGlyphs(face({ glyphCount: 6, outline: () => [] }))).toBe(false)
+  })
+
+  test('refuses a face whose contours are empty rather than absent', () => {
+    // A contour list that exists but holds no points draws nothing either.
+    expect(drawsGlyphs(face({ outline: () => [[], []] }))).toBe(false)
+  })
+
+  test('refuses a face that maps nothing', () => {
+    expect(drawsGlyphs(face({ glyphIdFor: () => 0 }))).toBe(false)
+  })
+
+  test('accepts a face that draws only some of the sample', () => {
+    // Coverage of your copy is not this check's question - "does it draw at
+    // all" is. A face missing one character should not be refused.
+    let call = 0
+    expect(drawsGlyphs(face({ outline: () => (++call === 3 ? [[{ x: 0, y: 0, onCurve: true }]] : []) }))).toBe(true)
   })
 })

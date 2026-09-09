@@ -66,11 +66,12 @@ const SAMPLE_CHARACTERS = 'AaEeHhNnOoRrSsTt0123'
  * the situation the feature exists for, because nobody looks at their own
  * og:image (stacksjs/stacks#2575).
  *
- * The check has to reach the outlines. `Monaco.ttf`, which ships in this
- * repository and is the obvious thing to point `images.fonts.title` at, maps
- * all 20 sample characters to a glyph id and returns an **empty contour list
- * for every one of them** - it carries 6 glyphs and no drawable Latin. A cmap
- * check would pass it.
+ * The check has to reach the outlines, and it is worth saying why rather than
+ * leaving it to look like belt and braces. The face that prompted this -
+ * `Monaco.ttf`, which this repository used to ship in the obvious place to
+ * point `images.fonts.title` at, and no longer does - mapped all 20 sample
+ * characters to a glyph id and returned an **empty contour list for every one
+ * of them**: 6 glyphs, no drawable Latin. A cmap check passes that.
  */
 export function drawsGlyphs(font: Font): boolean {
   for (const character of SAMPLE_CHARACTERS) {
