@@ -20,7 +20,7 @@
  * is missing (no poison detection, no quarantine).
  */
 
-import { createHash } from 'node:crypto'
+import { hash } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { isMissingTableError } from './missing-table'
 
@@ -53,7 +53,7 @@ export function hashPayload(payload: unknown): string {
   let serialized: string
   try { serialized = typeof payload === 'string' ? payload : JSON.stringify(payload ?? null) }
   catch { serialized = String(payload) }
-  return createHash('sha256').update(serialized).digest('hex').slice(0, 32)
+  return hash('sha256', serialized, 'hex').slice(0, 32)
 }
 
 /**
