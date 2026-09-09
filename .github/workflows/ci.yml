@@ -51,6 +51,12 @@ jobs:
       - name: Check lockfile version
         run: bun .github/scripts/check-lockfile-version.ts
 
+      # Warns rather than fails: the runtime is usable, and the point is to say
+      # so at the top of the log rather than leave a rewritten lockfile to be
+      # explained three commits later.
+      - name: Check the running Bun is the pinned one
+        run: bun .github/scripts/check-bun-version.ts
+
       - name: Check dependency state
         env:
           DEPENDENCY_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
@@ -288,6 +294,25 @@ jobs:
       # held back. So this installs the same tree the release does.
       - name: Install the pantry tree
         run: pantry install
+
+      # An install must not change the lockfiles that describe it.
+      #
+      # `bun install --frozen-lockfile` refuses to write, so it says nothing
+      # about `pantry.lock`, and `check-lockfile-version.ts` only reads the
+      # version line. Between them a lockfile can drift from the workspace it
+      # records and nothing notices: `pantry.lock` sat on workspace packages at
+      # 0.74.31 - integrity hashes and dependency edges to match - long after
+      # the packages had moved on, so every install re-derived 329 lines and
+      # looked like nondeterminism rather than the one-time correction it was
+      # (#2533). Running the install and then asking git whether anything moved
+      # is the only check that covers both files and every kind of drift.
+      - name: Check the lockfiles still describe this workspace
+        run: |
+          if ! git diff --exit-code --stat bun.lock pantry.lock; then
+            echo "::error::Installing changed bun.lock or pantry.lock. A committed lockfile must survive an install of the tree it describes. Run 'pantry install && bun install' with the pinned Bun (engines.bun) and commit both files."
+            git diff -- bun.lock pantry.lock
+            exit 1
+          fi
 
       # The binaries are built only by the release job, on a tag, after npm
       # publish. So a dependency that grows a top-level await — which

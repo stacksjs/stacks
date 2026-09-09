@@ -181,6 +181,36 @@ export function doctor(buddy: CLI): void {
         })
       }
 
+      /*
+       * The minimum above is not the whole story: `engines.bun` names one
+       * exact Bun, because the lockfile format and the resolver both move
+       * between releases. Installing with a different one that still clears
+       * the minimum does not fail - it quietly writes a different bun.lock. On
+       * a clean checkout of this repository, Bun 1.3.14 turned the pinned
+       * 1.4.1's lockfile from version 2 to 1 and resolved three packages
+       * differently, `@types/node` 26.5.0 down to 22.20.2 among them, which
+       * changes what typechecks (#2533).
+       *
+       * A warning rather than a failure: the runtime is usable, and this is
+       * about not committing a lockfile nobody asked for.
+       */
+      try {
+        const pinnedBun = ((await storage.readPackageJson('./package.json')) as { engines?: { bun?: string } }).engines?.bun
+        if (pinnedBun && bunVersion && bunVersion !== pinnedBun) {
+          checks.push({
+            name: 'Pinned Bun',
+            status: 'warn',
+            message: `v${bunVersion} is not the pinned v${pinnedBun} (engines.bun). Installing rewrites bun.lock - use \`./pantry/.bin/bun install\`, the pinned toolchain this checkout already carries, and \`git checkout -- bun.lock\` if it already changed.`,
+          })
+        }
+        else if (pinnedBun && bunVersion) {
+          checks.push({ name: 'Pinned Bun', status: 'pass', message: `v${bunVersion} matches engines.bun` })
+        }
+      }
+      catch {
+        // No readable package.json; the check above already reports that.
+      }
+
       // Check Node version (optional but nice to have)
       const nodeVersion = process.versions.node
       if (nodeVersion) {
