@@ -303,7 +303,7 @@ function eventsOf(listensTo: unknown): string[] {
 const claimed = new Set<string>()
 
 function claim(event: string, moduleId: string): boolean {
-  const key = `${event} ${moduleId}`
+  const key = `${event}\0${moduleId}`
 
   if (claimed.has(key))
     return false
