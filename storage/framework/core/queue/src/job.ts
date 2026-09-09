@@ -15,6 +15,8 @@ import { claimDispatchKey, releaseDispatchKey } from './idempotency'
 import { isQuarantined } from './poison'
 import { runNamedAction } from './action-runner'
 
+let testingModule: Promise<typeof import('./testing')> | undefined
+
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
 }
@@ -191,7 +193,10 @@ class JobBuilder {
    */
   async dispatch(): Promise<void> {
     // Check if queue is faked (testing mode)
-    const { isFaked, getFakeQueue } = await import('./testing')
+    const { isFaked, getFakeQueue } = await (testingModule ??= import('./testing').catch((error) => {
+      testingModule = undefined
+      throw error
+    }))
     if (isFaked()) {
       getFakeQueue()?.dispatch(this.name, this.payload, this.options)
       return
