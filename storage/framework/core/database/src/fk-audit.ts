@@ -425,7 +425,7 @@ export async function findFkOrphans(dialect?: 'sqlite' | 'mysql' | 'postgres' | 
       }
     }
 
-    const key = `${table} ${parent} ${fkid}`
+    const key = `${table}\0${parent}\0${fkid}`
     let entry = grouped.get(key)
     if (!entry) {
       entry = { table, column, parent, count: 0, sampleRowids: [] }
