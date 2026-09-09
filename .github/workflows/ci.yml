@@ -302,37 +302,28 @@ jobs:
       # reads one line. This runs the install and asks git whether anything
       # moved, which is the only check that covers every kind of drift.
       #
-      # Both files, as of pantry 0.11.57.
+      # bun.lock only, still - but for one remaining record rather than 1,278.
       #
-      # `pantry.lock` was excluded here because a Linux install rewrote it with
-      # 144 additions and 1,278 deletions against a macOS-generated lock, which
-      # looked like platform dependence. Two of those three causes are now
-      # fixed upstream - foreign-platform native pins survive regeneration
-      # (pantry-pm/pantry#231), and a frozen install no longer rejects a lock
-      # the tool just wrote (pantry-pm/pantry#233) - and the third was this
-      # repository's own committed lock, written by pantry 0.11.48, recording
-      # 80 workspace members as npm packages (#2533).
-      - name: Check the lockfiles still describe this workspace
+      # Three causes made a Linux install rewrite `pantry.lock` with 144
+      # additions and 1,278 deletions. Two are fixed upstream: foreign-platform
+      # pins survive regeneration and their own dependencies come with them
+      # (pantry-pm/pantry#231, 0.11.58), and a frozen install no longer rejects
+      # a lock it just wrote (pantry-pm/pantry#233). The third was this
+      # repository's own lock, written by pantry 0.11.48 recording 80 workspace
+      # members as npm packages, corrected in f21708e705.
+      #
+      # What is left is `gnu.org/gettext`, which resolves to 1.0.0 on macOS and
+      # 0.21.1 on Linux. The lock holds one version per package name, so
+      # whichever platform installs last collapses the other's - a property of
+      # the format rather than a bug to fix here. One record cannot be asserted
+      # away, so `pantry.lock` waits for that; #2533 tracks it.
+      - name: Check bun.lock still describes this workspace
         run: |
-          if ! git diff --exit-code --stat bun.lock pantry.lock; then
-            echo "::error::Installing changed bun.lock or pantry.lock. A committed lockfile must survive an install of the tree it describes. Run 'pantry install' and './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit both."
-            git diff -- bun.lock pantry.lock
+          if ! git diff --exit-code --stat bun.lock; then
+            echo "::error::Installing changed bun.lock. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit the result."
+            git diff -- bun.lock
             exit 1
           fi
-
-      # Temporary: the committed lock is generated on macOS and has never held
-      # the seven native records Linux needs (binutils, libstdcxx, gmp, mpfr,
-      # mpc, libiconv, gettext). pantry 0.11.57 preserves foreign-platform pins
-      # once they are in the file, but nothing can put Linux's there from a Mac.
-      # This hands the Linux-generated lock back so it can be committed once;
-      # remove the step after (#2533).
-      - name: Upload the Linux-generated lockfile
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: linux-pantry-lock
-          path: pantry.lock
-          retention-days: 1
 
       # The binaries are built only by the release job, on a tag, after npm
       # publish. So a dependency that grows a top-level await — which
