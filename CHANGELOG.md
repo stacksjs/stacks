@@ -1,5 +1,60 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.31...v0.74.32)
+
+## ✨ Features
+
+- **auth**: add native signup referrals and qualification tracking ([68234eb](https://github.com/stacksjs/stacks/commit/68234eb)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **database**: preserve sparse SQLite membership values ([7732edb](https://github.com/stacksjs/stacks/commit/7732edb)) _(by Chris <chris@stacksjs.com>)_ ([#2550](https://github.com/stacksjs/stacks/issues/2550), [#2548](https://github.com/stacksjs/stacks/issues/2548))
+- **database**: preserve retained builders after materialization ([202581c](https://github.com/stacksjs/stacks/commit/202581c)) _(by Chris <chris@stacksjs.com>)_ ([#2549](https://github.com/stacksjs/stacks/issues/2549), [#2548](https://github.com/stacksjs/stacks/issues/2548))
+- **events**: release unreferenced pattern cache entries ([4bfb73e](https://github.com/stacksjs/stacks/commit/4bfb73e)) _(by Chris <chris@stacksjs.com>)_ ([#2530](https://github.com/stacksjs/stacks/issues/2530))
+- **orm**: include deleted rows in restore queries ([a919c4a](https://github.com/stacksjs/stacks/commit/a919c4a)) _(by Chris <chris@stacksjs.com>)_ ([#2528](https://github.com/stacksjs/stacks/issues/2528), [#2526](https://github.com/stacksjs/stacks/issues/2526))
+- **orm**: abort writes when before-event listeners fail ([f1a66d0](https://github.com/stacksjs/stacks/commit/f1a66d0)) _(by Chris <chris@stacksjs.com>)_ ([#2527](https://github.com/stacksjs/stacks/issues/2527), [#2526](https://github.com/stacksjs/stacks/issues/2526))
+- **dashboard**: use the published STX CSS API ([327afa7](https://github.com/stacksjs/stacks/commit/327afa7)) _(by Chris <chris@stacksjs.com>)_ ([#2524](https://github.com/stacksjs/stacks/issues/2524))
+- **router**: restore signed-storage download routing ([b76d790](https://github.com/stacksjs/stacks/commit/b76d790)) _(by Chris <chris@stacksjs.com>)_ ([#2520](https://github.com/stacksjs/stacks/issues/2520), [#2519](https://github.com/stacksjs/stacks/issues/2519))
+
+## ⚡ Performance Improvements
+
+- **database**: reuse membership placeholder text ([b1d246e](https://github.com/stacksjs/stacks/commit/b1d246e)) _(by Chris <chris@stacksjs.com>)_ ([#2555](https://github.com/stacksjs/stacks/issues/2555))
+- **database**: reuse the last general SQLite statement ([fa37b99](https://github.com/stacksjs/stacks/commit/fa37b99)) _(by Chris <chris@stacksjs.com>)_ ([#2554](https://github.com/stacksjs/stacks/issues/2554), [#2553](https://github.com/stacksjs/stacks/issues/2553))
+- **database**: apply membership snapshots without convenience methods ([202cb5e](https://github.com/stacksjs/stacks/commit/202cb5e)) _(by Chris <chris@stacksjs.com>)_ ([#2553](https://github.com/stacksjs/stacks/issues/2553), [#2548](https://github.com/stacksjs/stacks/issues/2548), [#2551](https://github.com/stacksjs/stacks/issues/2551), [#2552](https://github.com/stacksjs/stacks/issues/2552))
+- **database**: lazily guard first-row execution ([b0d9794](https://github.com/stacksjs/stacks/commit/b0d9794)) _(by Chris <chris@stacksjs.com>)_ ([#2552](https://github.com/stacksjs/stacks/issues/2552), [#2551](https://github.com/stacksjs/stacks/issues/2551), [#2549](https://github.com/stacksjs/stacks/issues/2549))
+- **database**: forward common SQLite methods directly ([7adbf48](https://github.com/stacksjs/stacks/commit/7adbf48)) _(by Chris <chris@stacksjs.com>)_ ([#2551](https://github.com/stacksjs/stacks/issues/2551), [#2549](https://github.com/stacksjs/stacks/issues/2549), [#2548](https://github.com/stacksjs/stacks/issues/2548))
+- **database**: keep simple membership predicates lightweight ([9d2f10b](https://github.com/stacksjs/stacks/commit/9d2f10b)) _(by Chris <chris@stacksjs.com>)_ ([#2548](https://github.com/stacksjs/stacks/issues/2548), [#2547](https://github.com/stacksjs/stacks/issues/2547), [#2549](https://github.com/stacksjs/stacks/issues/2549), [#2550](https://github.com/stacksjs/stacks/issues/2550), [#2551](https://github.com/stacksjs/stacks/issues/2551))
+- **queue**: hash quarantine payloads in one shot ([77461b5](https://github.com/stacksjs/stacks/commit/77461b5)) _(by Chris <chris@stacksjs.com>)_ ([#2546](https://github.com/stacksjs/stacks/issues/2546))
+- **queue**: reuse the awaited builder database module ([c9dbd28](https://github.com/stacksjs/stacks/commit/c9dbd28)) _(by Chris <chris@stacksjs.com>)_ ([#2545](https://github.com/stacksjs/stacks/issues/2545))
+- **queue**: reuse the awaited class dispatch database module ([26bfcf0](https://github.com/stacksjs/stacks/commit/26bfcf0)) _(by Chris <chris@stacksjs.com>)_ ([#2544](https://github.com/stacksjs/stacks/issues/2544))
+- **queue**: reuse the awaited idempotency database module ([cb42211](https://github.com/stacksjs/stacks/commit/cb42211)) _(by Chris <chris@stacksjs.com>)_ ([#2543](https://github.com/stacksjs/stacks/issues/2543))
+- **path**: cache the project root by current directory ([71b9f72](https://github.com/stacksjs/stacks/commit/71b9f72)) _(by Chris <chris@stacksjs.com>)_ ([#2542](https://github.com/stacksjs/stacks/issues/2542))
+- **queue**: defer installed-package job resolution ([6e86cf2](https://github.com/stacksjs/stacks/commit/6e86cf2)) _(by Chris <chris@stacksjs.com>)_ ([#2541](https://github.com/stacksjs/stacks/issues/2541), [#2540](https://github.com/stacksjs/stacks/issues/2540), [#2225](https://github.com/stacksjs/stacks/issues/2225))
+- **queue**: reuse the awaited trace module ([a41bf93](https://github.com/stacksjs/stacks/commit/a41bf93)) _(by Chris <chris@stacksjs.com>)_ ([#2540](https://github.com/stacksjs/stacks/issues/2540), [#2538](https://github.com/stacksjs/stacks/issues/2538), [#2536](https://github.com/stacksjs/stacks/issues/2536))
+- **queue**: reuse the awaited fluent dispatch testing module ([0c16ebb](https://github.com/stacksjs/stacks/commit/0c16ebb)) _(by Chris <chris@stacksjs.com>)_ ([#2538](https://github.com/stacksjs/stacks/issues/2538), [#2536](https://github.com/stacksjs/stacks/issues/2536), [#2539](https://github.com/stacksjs/stacks/issues/2539))
+- **queue**: reuse the awaited dispatch testing module ([63f6161](https://github.com/stacksjs/stacks/commit/63f6161)) _(by Chris <chris@stacksjs.com>)_ ([#2536](https://github.com/stacksjs/stacks/issues/2536))
+- **queue**: reuse the loaded progress cache module ([881f1ee](https://github.com/stacksjs/stacks/commit/881f1ee)) _(by Chris <chris@stacksjs.com>)_ ([#2535](https://github.com/stacksjs/stacks/issues/2535))
+- **events**: skip sorting empty and singleton snapshots ([ab2ef72](https://github.com/stacksjs/stacks/commit/ab2ef72)) _(by Chris <chris@stacksjs.com>)_ ([#2529](https://github.com/stacksjs/stacks/issues/2529))
+- **orm**: reuse the loaded lifecycle event module ([e5f9774](https://github.com/stacksjs/stacks/commit/e5f9774)) _(by Chris <chris@stacksjs.com>)_ ([#2526](https://github.com/stacksjs/stacks/issues/2526), [#2527](https://github.com/stacksjs/stacks/issues/2527), [#2528](https://github.com/stacksjs/stacks/issues/2528))
+- **router**: refine native JSON bounds near compression threshold ([6f219f8](https://github.com/stacksjs/stacks/commit/6f219f8)) _(by Chris <chris@stacksjs.com>)_ ([#2522](https://github.com/stacksjs/stacks/issues/2522))
+- **router**: reuse exact JSON lengths for compression bounds ([1454f39](https://github.com/stacksjs/stacks/commit/1454f39)) _(by Chris <chris@stacksjs.com>)_ ([#2521](https://github.com/stacksjs/stacks/issues/2521))
+- **router**: cache the signed-storage module namespace ([84ad27c](https://github.com/stacksjs/stacks/commit/84ad27c)) _(by Chris <chris@stacksjs.com>)_ ([#2519](https://github.com/stacksjs/stacks/issues/2519), [#2520](https://github.com/stacksjs/stacks/issues/2520))
+- **error-handling**: load the exit-code entrypoint directly ([9512aed](https://github.com/stacksjs/stacks/commit/9512aed)) _(by Chris <chris@stacksjs.com>)_ ([#2518](https://github.com/stacksjs/stacks/issues/2518))
+- **auth**: cache the ORM namespace for convention binding ([4da1f27](https://github.com/stacksjs/stacks/commit/4da1f27)) _(by Chris <chris@stacksjs.com>)_ ([#2517](https://github.com/stacksjs/stacks/issues/2517))
+- **auth**: cache RBAC modules in authorization middleware ([e6dca6c](https://github.com/stacksjs/stacks/commit/e6dca6c)) _(by Chris <chris@stacksjs.com>)_ ([#2516](https://github.com/stacksjs/stacks/issues/2516))
+
+## ✅ Tests
+
+- **types**: install runtime dependencies in consumer fixture ([5a48028](https://github.com/stacksjs/stacks/commit/5a48028)) _(by Chris <chris@stacksjs.com>)_ ([#2523](https://github.com/stacksjs/stacks/issues/2523), [#2518](https://github.com/stacksjs/stacks/issues/2518))
+
+## 🔧 Chores
+
+- **bench**: retain routing diagnostic source changes ([916b3d2](https://github.com/stacksjs/stacks/commit/916b3d2)) _(by Chris <chris@stacksjs.com>)_ ([#2532](https://github.com/stacksjs/stacks/issues/2532))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.29...v0.74.31)
 
 ## ✨ Features
