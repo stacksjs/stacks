@@ -2,12 +2,12 @@ import type { ImagesConfig } from '@stacksjs/types'
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
-import { createImageData, encode } from 'ts-images'
+import { createImageData, encode, getMetadata } from 'ts-images'
 import { generateAppStoreScreenshotSet } from '../src/app-store'
 import { generateAppIconSet } from '../src/app-icons'
 import { generateImages } from '../src/generate'
 import { resolveFontPath } from '../src/fonts'
-import { socialCardName, socialMetaTags } from '../src/social'
+import { renderOnDemandSocialCard, socialCardName, socialMetaTags } from '../src/social'
 import { generateSocialCardSet } from '../src/social'
 import { background, color, device, themed } from '../src/theme'
 
@@ -232,5 +232,97 @@ describe('font resolution', () => {
     // A project that has not opted in should never fail an unrelated build
     // over a font it was never asked for.
     await expect(generateImages({ social: {} })).resolves.toBeDefined()
+  })
+})
+
+/**
+ * The request-time half of stacksjs/stacks#357.
+ *
+ * `generateSocialCardSet` covers pages a site can enumerate at build time. An
+ * app with a page per entity cannot, so the card has to be drawn when somebody
+ * asks for it - and drawn from the same `config/images.ts` the build-time set
+ * uses, or it silently disagrees with the cards on disk in someone else's
+ * timeline.
+ */
+describe('renderOnDemandSocialCard', () => {
+  const font = 'storage/framework/defaults/resources/assets/fonts/Monaco.ttf'
+  const root = resolve(import.meta.dir, '../../../../..')
+
+  const config = (extra: Partial<NonNullable<ImagesConfig['social']>> = {}): ImagesConfig => ({
+    fonts: { title: font },
+    social: { enabled: true, brand: 'Stacks', ...extra },
+  })
+
+  test('answers null rather than throwing when cards are not enabled', async () => {
+    // An unconfigured app should be able to answer 404 from this, not 500.
+    expect(await renderOnDemandSocialCard({ social: { enabled: false } }, { title: 'x' }, root)).toBeNull()
+    expect(await renderOnDemandSocialCard({}, { title: 'x' }, root)).toBeNull()
+  })
+
+  /**
+   * The contract worth testing is not "bytes came out" - a blank card passes
+   * that, and one did while this test was being written. It is that the card
+   * drawn at request time is *the same card* the build would have written for
+   * the same inputs, because a card that quietly disagrees with the ones on
+   * disk only reveals itself in someone else's timeline.
+   *
+   * Comparing against `generateSocialCardSet` also makes the assertion
+   * independent of whether the font in the repository draws glyphs, which is
+   * its own problem and not this function's.
+   */
+  test('draws byte-for-byte what the build-time set would have written', async () => {
+    const page = {
+      title: 'stacksjs/stacks',
+      eyebrow: 'Repository',
+      subtitle: 'The Modern Full-Stack Framework',
+    }
+    const outputDir = resolve(import.meta.dir, 'fixtures-on-demand')
+
+    const [built] = await generateSocialCardSet(
+      { ...config({ format: 'png', outputDir }), social: { ...config({ format: 'png', outputDir }).social!, pages: [{ path: '/', ...page }] } },
+      root,
+    )
+    const rendered = await renderOnDemandSocialCard(config({ format: 'png' }), page, root)
+
+    try {
+      expect(rendered).not.toBeNull()
+      expect(rendered!.width).toBe(1200)
+      expect(rendered!.height).toBe(630)
+      expect(rendered!.contentType).toBe('image/png')
+      expect([...rendered!.bytes]).toEqual([...new Uint8Array(await Bun.file(built!.files.og!).arrayBuffer())])
+    }
+    finally {
+      await rm(outputDir, { recursive: true, force: true })
+    }
+  }, 30000)
+
+  test('produces a decodable image of the declared size', async () => {
+    const card = await renderOnDemandSocialCard(config(), { title: 'stacksjs/stacks' }, root)
+
+    // JPEG's SOI marker, and dimensions read back out of the encoded bytes
+    // rather than taken from the options that asked for them.
+    expect([...card!.bytes.subarray(0, 3)]).toEqual([0xFF, 0xD8, 0xFF])
+    expect(await getMetadata(card!.bytes)).toMatchObject({ width: 1200, height: 630, format: 'jpeg' })
+  }, 30000)
+
+  test('takes the crop from the preset, not from the configured set', async () => {
+    // `presets` names which FILES the set writes. A single card is one image,
+    // so the size comes from the preset asked for here.
+    const card = await renderOnDemandSocialCard(config({ presets: ['og'] }), { title: 'Square', preset: 'square' }, root)
+
+    expect(card!.width).toBe(1200)
+    expect(card!.height).toBe(1200)
+  }, 30000)
+
+  test('carries the configured format into the bytes and the content type', async () => {
+    const card = await renderOnDemandSocialCard(config({ format: 'png' }), { title: 'PNG' }, root)
+
+    expect(card!.contentType).toBe('image/png')
+    expect([...card!.bytes.subarray(0, 8)]).toEqual([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A])
+  }, 30000)
+
+  test('refuses to draw without a configured face, like the build-time set', async () => {
+    await expect(renderOnDemandSocialCard({ social: { enabled: true } }, { title: 'x' }, root))
+      .rejects.toThrow(/No font configured/)
   })
 })
