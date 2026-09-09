@@ -299,6 +299,33 @@ async function refreshPantryLock(): Promise<void> {
   }
 }
 
+// Capture the committed lockfiles BEFORE anything in this release can rewrite
+// them. They are the baseline for both the restore paths and the format check
+// below, and a baseline read too late is not a baseline at all.
+//
+// `refreshPantryLock()` runs `pantry install`, which reaches for Bun and
+// rewrites bun.lock once `pinLockstepDeps` has changed the manifests. Reading
+// the bun.lock baseline after that compared an already-rewritten file against
+// itself: on a machine whose Bun predates the committed format, `expected` and
+// `produced` were both the downgraded version, so the guard below passed on
+// exactly the lockfile it exists to reject. v0.74.33 committed a v1 lockfile
+// into a repository that requires v2, and CI failed on the release commit.
+const bunLockPath = p.projectPath('bun.lock')
+const pantryLockPath = p.projectPath('pantry.lock')
+const committedBunLock = existsSync(bunLockPath) ? readFileSync(bunLockPath) : null
+const committedPantryLock = existsSync(pantryLockPath) ? readFileSync(pantryLockPath) : null
+
+// An aborted release must leave the lockfiles exactly as it found them. Only
+// bun.lock used to be restored, so a release that stopped here still left a
+// pantry.lock rewritten by the failed attempt in the working tree - with, on
+// this machine, the `bun.sh` toolchain pin silently dropped from it.
+function restoreCommittedLockfiles(): void {
+  if (committedBunLock)
+    writeFileSync(bunLockPath, committedBunLock)
+  if (committedPantryLock)
+    writeFileSync(pantryLockPath, committedPantryLock)
+}
+
 if (!isDryRun)
   await refreshPantryLock()
 
@@ -306,9 +333,9 @@ if (!isDryRun)
 // Keep the root Bun lockfile synchronized in the same release commit; otherwise
 // every post-release CI job using `bun install --frozen-lockfile` fails before
 // lint, typecheck, or tests can run.
-if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
-  const lockPath = p.projectPath('bun.lock')
-  const previousLock = readFileSync(lockPath)
+if (!isDryRun && committedBunLock) {
+  const lockPath = bunLockPath
+  const previousLock = committedBunLock
 
   // Bun updates package resolutions in place, but it does not rewrite stale
   // workspace manifest snapshots after the release changes lockstep ranges.
@@ -322,7 +349,7 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
     })
   }
   catch (error) {
-    writeFileSync(lockPath, previousLock)
+    restoreCommittedLockfiles()
     throw error
   }
 
@@ -343,7 +370,7 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
    * Restore first, then say which it was.
    */
   if (!existsSync(lockPath)) {
-    writeFileSync(lockPath, previousLock)
+    restoreCommittedLockfiles()
     throw new Error(
       'Release aborted: `bun install --lockfile-only` wrote no lockfile, so the previous one has been restored. '
       + 'This usually means a dependency range this bump just raised names a version that is not published yet - '
@@ -355,7 +382,7 @@ if (!isDryRun && existsSync(p.projectPath('bun.lock'))) {
   const regeneratedLock = readFileSync(lockPath, 'utf8')
   const producedVersion = lockfileVersion(regeneratedLock)
   if (expectedLockfileVersion == null || producedVersion !== expectedLockfileVersion) {
-    writeFileSync(lockPath, previousLock)
+    restoreCommittedLockfiles()
 
     // Say which side is behind. The mismatch has two opposite causes and only
     // one of them is the operator's Bun:
