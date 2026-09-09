@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { resolve } from 'node:path'
 import {
   renderAppEntitlements,
   renderAppleWorkflowCaller,
@@ -89,15 +90,22 @@ describe('desktop:apple:doctor output', () => {
   test('prints each missing prerequisite exactly once, and exits non-zero', async () => {
     const root = new URL('../../../../../', import.meta.url).pathname
     /*
-     * The CLI entrypoint directly, not the `./buddy` shim.
+     * This package's own CLI entrypoint, not the `./buddy` shim.
      *
      * The shim bootstraps pantry when `pantry/` is missing or half-finished,
-     * which on a CI runner that has only done `bun install` means a full
-     * provisioning run - inside a test, with a 600s timeout, writing a tree
-     * that every package tested afterwards resolves through. Nothing about
-     * this test wants that; it wants one process's stderr.
+     * which on a CI runner that has only run `bun install` means a full
+     * provisioning run happening inside a test, with a 600s timeout, writing a
+     * tree that every package tested afterwards resolves through. Nothing here
+     * wants that; it wants one process's stderr.
+     *
+     * Resolved relative to this file rather than to the project root: an
+     * application that installs the framework from npm has no
+     * `storage/framework/core/`, and a path assuming one is wrong everywhere
+     * except a vendored checkout. This test ships inside the buddy package, so
+     * `../src/cli.ts` is next to it in every layout.
      */
-    const result = Bun.spawnSync(['bun', 'storage/framework/core/buddy/src/cli.ts', 'desktop:apple:doctor'], {
+    const cli = resolve(import.meta.dir, '../src/cli.ts')
+    const result = Bun.spawnSync(['bun', cli, 'desktop:apple:doctor'], {
       cwd: root,
       stdout: 'pipe',
       stderr: 'pipe',
