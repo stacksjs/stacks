@@ -57,7 +57,26 @@ describe('docs link checker (stacksjs/stacks#2056)', () => {
     })
 
     it('resolves an absolute link against the docs root', () => {
-      expect(resolveCandidates('/guide/intro.md', fileDir, docsRoot)).toEqual(['/docs/guide/intro.md'])
+      expect(resolveCandidates('/guide/intro.md', fileDir, docsRoot)).toContain('/docs/guide/intro.md')
+    })
+
+    // BunPress copies `docs/public/**` to the site root, so an absolute link is
+    // served from either root. Only checking `docsRoot` reported every link to
+    // a static asset as broken.
+    it('also resolves an absolute link against docs/public', () => {
+      expect(resolveCandidates('/diagrams/x/light.png', fileDir, docsRoot)).toContain('/docs/public/diagrams/x/light.png')
+    })
+
+    it('offers .html and index.html candidates under docs/public for a clean URL', () => {
+      const candidates = resolveCandidates('/diagrams/x', fileDir, docsRoot)
+      expect(candidates).toContain('/docs/public/diagrams/x/index.html')
+      expect(candidates).toContain('/docs/public/diagrams/x.html')
+      // The markdown root still offers its own clean-URL candidates.
+      expect(candidates).toContain('/docs/diagrams/x.md')
+    })
+
+    it('does not offer .md candidates under docs/public, which serves files as-is', () => {
+      expect(resolveCandidates('/diagrams/x', fileDir, docsRoot)).not.toContain('/docs/public/diagrams/x.md')
     })
 
     it('offers .md and index.md candidates for an extensionless (clean-URL) link', () => {

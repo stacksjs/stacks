@@ -197,25 +197,53 @@ export function extractLinks(content: string): Array<{ target: string, line: num
 }
 
 /**
+ * Candidates under a single root, for a link the site serves from markdown
+ * (`.md` / `index.md` clean URLs) or as a static file (`.html` / `index.html`).
+ */
+function candidatesUnder(base: string, clean: string, staticRoot: boolean): string[] {
+  const candidates = [base]
+
+  if (!/\.\w+$/.test(clean)) {
+    candidates.push(...(staticRoot
+      ? [`${base}.html`, join(base, 'index.html')]
+      : [`${base}.md`, join(base, 'index.md')]))
+  }
+  else if (clean.endsWith('.html') && !staticRoot) {
+    candidates.push(base.replace(/\.html$/, '.md'), join(base.replace(/\.html$/, ''), 'index.md'))
+  }
+
+  return candidates
+}
+
+/**
  * On-disk paths a link could legitimately resolve to. Absolute (`/x`) links are
  * rooted at `docsRoot`; relative links at the file's directory. Extensionless
  * links also try `.md` and `index.md` (VitePress clean URLs), and `.html` links
  * try their `.md` source.
+ *
+ * An absolute link is ALSO rooted at `docs/public`, because that is the second
+ * place the built site serves from: BunPress renders the markdown under `docs/`
+ * into pages and copies everything in `docs/public` to the site root, so
+ * `/diagrams/x/light.png` is `docs/public/diagrams/x/light.png` and the clean
+ * URL `/diagrams/x` is that directory's `index.html`. Resolving only against
+ * `docsRoot` called every link to a static asset broken — and, worse, passed a
+ * link to a page-shaped file sitting outside `public/`, which exists on disk
+ * and is never published at all. This checker reported the runtime architecture
+ * diagram as fine for as long as it lived in `docs/diagrams/`, which no reader
+ * could open.
  */
 export function resolveCandidates(target: string, fileDir: string, docsRoot: string): string[] {
   const clean = target.split('#')[0]!.split('?')[0]!
   if (!clean)
     return []
 
-  const base = clean.startsWith('/') ? join(docsRoot, clean.slice(1)) : resolve(fileDir, clean)
-  const candidates = [base]
+  if (!clean.startsWith('/'))
+    return candidatesUnder(resolve(fileDir, clean), clean, false)
 
-  if (!/\.\w+$/.test(clean))
-    candidates.push(`${base}.md`, join(base, 'index.md'))
-  else if (clean.endsWith('.html'))
-    candidates.push(base.replace(/\.html$/, '.md'), join(base.replace(/\.html$/, ''), 'index.md'))
-
-  return candidates
+  return [
+    ...candidatesUnder(join(docsRoot, clean.slice(1)), clean, false),
+    ...candidatesUnder(join(docsRoot, 'public', clean.slice(1)), clean, true),
+  ]
 }
 
 function walkMarkdown(dir: string): string[] {
