@@ -1353,13 +1353,57 @@ export function statementReferencesTable(statement: string, table: string): bool
  *
  * A statement whose table cannot be identified is kept.
  */
+/**
+ * The table a SQLite rebuild is rebuilding, for either end of the dance.
+ *
+ * bun-query-builder cannot ALTER a column in place, so it emits a rebuild:
+ *
+ *   CREATE TABLE "_qb_tmp_receipts" (…)
+ *   INSERT INTO "_qb_tmp_receipts" (…) SELECT … FROM "receipts"
+ *   DROP TABLE "receipts"
+ *   ALTER TABLE "_qb_tmp_receipts" RENAME TO "receipts"
+ *   CREATE UNIQUE INDEX … ON "receipts" (…)
+ *
+ * Only the middle statements name `receipts` in a way the gate could see:
+ * `statementTable` reads the ALTER's SOURCE table (`_qb_tmp_receipts`), and
+ * `statementReferencesTable` matches FROM/JOIN/UPDATE/INTO but never RENAME TO.
+ *
+ * So gating a disabled feature's table deleted the INSERT, the DROP and the
+ * index while KEEPING the create and the rename - turning a rebuild into a bare
+ * create. The gated table was created anyway, without its unique indexes, and a
+ * second rebuild of the same table then renamed onto it:
+ * "there is already another table or index with this name: receipts"
+ * (stacksjs/stacks#2534).
+ *
+ * The crash was the lucky half. A table rebuilt only once got no error at all
+ * and simply existed, so a commerce-disabled install carried 34 of 41 commerce
+ * tables with non-unique uuid columns and nothing said so.
+ *
+ * Resolving both ends to the same name is what makes the gate treat the block
+ * as a unit: the create and the rename can no longer disagree about whether
+ * this table is gated.
+ */
+function rebuiltTable(statement: string): string | null {
+  const rename = /^\s*ALTER\s+TABLE\s+["`]?([a-z0-9_]+)["`]?\s+RENAME\s+TO\s+["`]?([a-z0-9_]+)["`]?/i.exec(statement)
+  if (rename?.[2])
+    return rename[2].toLowerCase()
+
+  const table = statementTable(statement)
+  if (table?.startsWith('_qb_tmp_'))
+    return table.slice('_qb_tmp_'.length)
+
+  return null
+}
+
 export function withoutGatedStatements(sql: string, gated: ReadonlySet<string>): string {
   if (gated.size === 0)
     return sql
 
   const statements = sql.split(';').map(s => s.trim()).filter(Boolean)
   const kept = statements.filter((statement) => {
-    const table = statementTable(statement)
+    // A rebuild's temp-table statements resolve to the table being rebuilt, so
+    // every statement in the block gates together (stacksjs/stacks#2534).
+    const table = rebuiltTable(statement) ?? statementTable(statement)
     if (table && gated.has(table))
       return false
 
