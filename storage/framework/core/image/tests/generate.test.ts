@@ -245,11 +245,22 @@ describe('font resolution', () => {
  * timeline.
  */
 describe('renderOnDemandSocialCard', () => {
-  const font = 'storage/framework/defaults/resources/assets/fonts/Monaco.ttf'
   const root = resolve(import.meta.dir, '../../../../..')
 
+  /**
+   * A face that actually draws.
+   *
+   * This repository ships exactly one .ttf and it draws nothing - `Monaco.ttf`
+   * maps every character and returns an empty outline for all of them, which is
+   * what #2575 is about. So the drawing tests need a face from outside, and say
+   * so rather than quietly passing against a blank card, which is what they did
+   * before that was understood.
+   */
+  const drawableFont = process.env.STACKS_TEST_FONT
+  const drawing = drawableFont ? test : test.skip
+
   const config = (extra: Partial<NonNullable<ImagesConfig['social']>> = {}): ImagesConfig => ({
-    fonts: { title: font },
+    fonts: { title: drawableFont ?? 'unset' },
     social: { enabled: true, brand: 'Stacks', ...extra },
   })
 
@@ -270,7 +281,7 @@ describe('renderOnDemandSocialCard', () => {
    * independent of whether the font in the repository draws glyphs, which is
    * its own problem and not this function's.
    */
-  test('draws byte-for-byte what the build-time set would have written', async () => {
+  drawing('draws byte-for-byte what the build-time set would have written', async () => {
     const page = {
       title: 'stacksjs/stacks',
       eyebrow: 'Repository',
@@ -296,7 +307,7 @@ describe('renderOnDemandSocialCard', () => {
     }
   }, 30000)
 
-  test('produces a decodable image of the declared size', async () => {
+  drawing('produces a decodable image of the declared size', async () => {
     const card = await renderOnDemandSocialCard(config(), { title: 'stacksjs/stacks' }, root)
 
     // JPEG's SOI marker, and dimensions read back out of the encoded bytes
@@ -305,7 +316,7 @@ describe('renderOnDemandSocialCard', () => {
     expect(await getMetadata(card!.bytes)).toMatchObject({ width: 1200, height: 630, format: 'jpeg' })
   }, 30000)
 
-  test('takes the crop from the preset, not from the configured set', async () => {
+  drawing('takes the crop from the preset, not from the configured set', async () => {
     // `presets` names which FILES the set writes. A single card is one image,
     // so the size comes from the preset asked for here.
     const card = await renderOnDemandSocialCard(config({ presets: ['og'] }), { title: 'Square', preset: 'square' }, root)
@@ -314,7 +325,7 @@ describe('renderOnDemandSocialCard', () => {
     expect(card!.height).toBe(1200)
   }, 30000)
 
-  test('carries the configured format into the bytes and the content type', async () => {
+  drawing('carries the configured format into the bytes and the content type', async () => {
     const card = await renderOnDemandSocialCard(config({ format: 'png' }), { title: 'PNG' }, root)
 
     expect(card!.contentType).toBe('image/png')
@@ -324,5 +335,21 @@ describe('renderOnDemandSocialCard', () => {
   test('refuses to draw without a configured face, like the build-time set', async () => {
     await expect(renderOnDemandSocialCard({ social: { enabled: true } }, { title: 'x' }, root))
       .rejects.toThrow(/No font configured/)
+  })
+
+  /**
+   * The failure that used to be silent. `Monaco.ttf` is the only .ttf in this
+   * repository and the obvious thing to point `images.fonts.title` at, and it
+   * draws nothing - so this used to write a valid, blank 1200x630 card and
+   * report success (#2575). Both paths must refuse it, not just the one.
+   */
+  test('refuses a face that loads and draws nothing, rather than writing a blank card', async () => {
+    const images: ImagesConfig = {
+      fonts: { title: 'storage/framework/defaults/resources/assets/fonts/Monaco.ttf' },
+      social: { enabled: true, brand: 'Stacks' },
+    }
+
+    await expect(renderOnDemandSocialCard(images, { title: 'Blank' }, root)).rejects.toThrow(/draws no glyphs/)
+    await expect(generateSocialCardSet(images, root)).rejects.toThrow(/draws no glyphs/)
   })
 })

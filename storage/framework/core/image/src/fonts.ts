@@ -47,6 +47,59 @@ export function resolveFontPath(value: string, root: string = process.cwd()): st
   }
 }
 
+/**
+ * Characters a title face has to be able to draw.
+ *
+ * Common Latin letters and digits, which is what a card headline is made of.
+ * Deliberately not exhaustive: the question is "does this face draw anything at
+ * all", not "does it cover your copy", and a face missing one accented
+ * character should not be refused.
+ */
+const SAMPLE_CHARACTERS = 'AaEeHhNnOoRrSsTt0123'
+
+/**
+ * Whether a loaded face actually produces outlines.
+ *
+ * A face can load without error, report a glyph for every character, and draw
+ * nothing - which writes a card of the right dimensions with a background and
+ * no text, reports success, and exits 0. The failure is invisible in exactly
+ * the situation the feature exists for, because nobody looks at their own
+ * og:image (stacksjs/stacks#2575).
+ *
+ * The check has to reach the outlines. `Monaco.ttf`, which ships in this
+ * repository and is the obvious thing to point `images.fonts.title` at, maps
+ * all 20 sample characters to a glyph id and returns an **empty contour list
+ * for every one of them** - it carries 6 glyphs and no drawable Latin. A cmap
+ * check would pass it.
+ */
+export function drawsGlyphs(font: Font): boolean {
+  for (const character of SAMPLE_CHARACTERS) {
+    const glyphId = font.glyphIdFor(character.codePointAt(0)!)
+    if (glyphId > 0 && font.outline(glyphId).some(contour => contour.length > 0))
+      return true
+  }
+
+  return false
+}
+
+function loadDrawableFont(bytes: Uint8Array, path: string, option: 'title' | 'body'): Font {
+  const font = loadFont(bytes)
+
+  if (!drawsGlyphs(font)) {
+    throw new Error(
+      `[image] Font draws no glyphs: ${path}\n`
+      + `It loaded, and it reports ${font.glyphCount} glyph(s), but every outline for `
+      + `common Latin characters is empty - a card drawn with it would be a background `
+      + `and no text, written successfully and silently wrong.\n`
+      + `Set \`images.fonts.${option}\` in config/images.ts to a TrueType face with `
+      + `drawable outlines. Bitmap-only faces and .ttf files wrapping OpenType/CFF `
+      + `outlines both look like this.`,
+    )
+  }
+
+  return font
+}
+
 export async function loadFonts(fonts: ImageFontConfig | undefined, root: string = process.cwd()): Promise<ResolvedFonts> {
   if (!fonts?.title) {
     throw new Error(
@@ -55,10 +108,14 @@ export async function loadFonts(fonts: ImageFontConfig | undefined, root: string
     )
   }
 
-  const title = loadFont(new Uint8Array(await readFile(resolveFontPath(fonts.title, root))))
-  const body = fonts.body
-    ? loadFont(new Uint8Array(await readFile(resolveFontPath(fonts.body, root))))
-    : title
+  const titlePath = resolveFontPath(fonts.title, root)
+  const title = loadDrawableFont(new Uint8Array(await readFile(titlePath)), titlePath, 'title')
+
+  let body = title
+  if (fonts.body) {
+    const bodyPath = resolveFontPath(fonts.body, root)
+    body = loadDrawableFont(new Uint8Array(await readFile(bodyPath)), bodyPath, 'body')
+  }
 
   return { title, body }
 }
