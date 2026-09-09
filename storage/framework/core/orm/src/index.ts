@@ -297,6 +297,8 @@ export const FailedJob = lazyModel<typeof import('../../../defaults/app/Models/F
 // ---------------------------------------------------------------------------
 const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: string]> = [
   // Auth
+  ['Referral', [''], 'auth'],
+  ['ReferralCode', [''], 'auth'],
   ['Team', [''], 'auth'],
   ['TeamInvitation', [''], 'auth'],
   ['TeamMember', [''], 'auth'],
@@ -529,6 +531,8 @@ export const ProductUnit = lazyModel<typeof import('../../../defaults/app/Models
 export const ProductVariant = lazyModel<typeof import('../../../defaults/app/Models/commerce/ProductVariant').default>('ProductVariant')
 export const QueryLog = lazyModel<typeof import('../../../defaults/app/Models/QueryLog').default>('QueryLog')
 export const Receipt = lazyModel<typeof import('../../../defaults/app/Models/commerce/Receipt').default>('Receipt')
+export const Referral = lazyModel<typeof import('../../../defaults/app/Models/Referral').default>('Referral')
+export const ReferralCode = lazyModel<typeof import('../../../defaults/app/Models/ReferralCode').default>('ReferralCode')
 export const Release = lazyModel<typeof import('../../../defaults/app/Models/Release').default>('Release')
 export const Request = lazyModel<typeof import('../../../defaults/app/Models/Request').default>('Request')
 export const Review = lazyModel<typeof import('../../../defaults/app/Models/commerce/Review').default>('Review')

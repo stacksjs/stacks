@@ -1,6 +1,7 @@
-import { describe, expect, it, mock } from 'bun:test'
+import { afterAll, describe, expect, it, spyOn } from 'bun:test'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { log } from '@stacksjs/logging'
 
 /**
  * A trait Stacks does not read says so, once, by name.
@@ -19,16 +20,8 @@ import { join } from 'node:path'
 
 const warnings: string[] = []
 
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    debug: () => {},
-    info: () => {},
-    error: () => {},
-    success: () => {},
-    warn: (message: string) => { warnings.push(String(message)) },
-    flush: () => Promise.resolve(),
-  },
-}))
+const warn = spyOn(log, 'warn').mockImplementation((message) => { warnings.push(String(message)) })
+afterAll(() => warn.mockRestore())
 
 async function define(traits: Record<string, unknown>): Promise<string[]> {
   warnings.length = 0
@@ -131,12 +124,11 @@ describe('defineModel', () => {
 
     const declared = new Set<string>()
     for (const file of files) {
-      const block = readFileSync(file, 'utf8').match(/traits:\s*\{([\s\S]*?)\n {2}\}/)
-      if (!block)
-        continue
-      for (const key of block[1].matchAll(/^ {4}(\w+)\s*:/gm))
-        declared.add(key[1])
+      const model = (await import(file)).default
+      for (const trait of Object.keys(model.getDefinition().traits ?? {}))
+        declared.add(trait)
     }
+    expect(declared.has('useTimestamps')).toBe(true)
 
     const unknown: string[] = []
     for (const trait of declared) {

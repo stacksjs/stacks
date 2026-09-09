@@ -38,4 +38,32 @@ describe('framework model exports', () => {
         expect(ormSource).toContain(`['${name}', [`)
     }
   })
+
+  test('loads referral exports only when auth is enabled', async () => {
+    for (const enabled of [true, false]) {
+      const script = `
+        import assert from 'node:assert/strict'
+        const { enableFeature, disableFeature } = await import(${JSON.stringify(resolve(import.meta.dir, '../../config/src/features.ts'))})
+        ${enabled ? 'enableFeature' : 'disableFeature'}('auth')
+        const { ormReady, Referral, ReferralCode } = await import(${JSON.stringify(resolve(import.meta.dir, '../src/index.ts'))})
+        await ormReady
+        assert.equal(Referral.getDefinition?.().table, ${enabled ? "'referrals'" : 'undefined'})
+        assert.equal(ReferralCode.getDefinition?.().table, ${enabled ? "'referral_codes'" : 'undefined'})
+        console.log('referral-exports-ok')
+      `
+      const child = Bun.spawn([process.execPath, '-e', script], {
+        cwd: resolve(import.meta.dir, '../../../../..'),
+        env: { ...process.env, DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:' },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      })
+      const [stdout, stderr, code] = await Promise.all([
+        new Response(child.stdout).text(),
+        new Response(child.stderr).text(),
+        child.exited,
+      ])
+      expect(code, stderr).toBe(0)
+      expect(stdout).toContain('referral-exports-ok')
+    }
+  })
 })
