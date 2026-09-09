@@ -26,6 +26,23 @@ export type StackDirectory =
 //   - The source repository must use the Stacks project directory structure
 //   - The package.json must contain a valid `stacks` field with a matching `name`
 //   - The description should be concise (under 80 chars)
+//
+// Naming, for a stack published as more than one package (stacksjs/stacks#2424):
+//
+//   <app>         umbrella, carries the one `stacks` manifest, depends on both
+//   @<app>/core   models, migrations, actions, jobs, routes, config defaults
+//   @<app>/ui     dashboard views and components
+//
+// `<app>` is what goes in this registry, because it is the package a person
+// installs and the only one carrying the manifest discovery reads.
+//
+// Not `@<app>/stx`: every tier of the chain - the customer's app, the
+// integration, the service - is an stx app, so the word cannot say which tier
+// a package belongs to. Not `@<app>/components` either: `@stacksjs/components`
+// exists and is a component library, so it would read as importable primitives
+// rather than the whole dashboard pages these hold. `@stacksjs/ui` exists too
+// and `ui` is not an unclaimed word, but the reading stays correct - `@<app>/ui`
+// is that app's user interface - and the scope prefix does the disambiguating.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface StackRegistryEntry {
