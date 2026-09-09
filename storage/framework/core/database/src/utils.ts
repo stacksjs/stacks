@@ -656,6 +656,7 @@ let _replicaInstances = new Map<string, ReturnType<typeof createQueryBuilder>>()
  */
 export function resetDatabaseConnection(): void {
   resetQueryBuilderConnection()
+  lastGeneralSqliteStatement = undefined
   _dbInstance = null
   _replicaInstances = new Map()
 }
@@ -1465,6 +1466,9 @@ interface FastSqliteDatabase {
 
 const fastSqliteDatabaseCache = new WeakMap<object, FastSqliteDatabase | null>()
 
+// Keep only the most recent general SELECT statement, never bound values or rows.
+let lastGeneralSqliteStatement: { database: FastSqliteDatabase, sql: string, statement: FastSqliteStatement } | undefined
+
 /**
  * Resolve bun-query-builder's already-bootstrapped SQLite connection.
  *
@@ -1494,8 +1498,12 @@ function runFastSqliteSql(
   params?: unknown[],
 ): UnsafeRow[] {
   if (sqliteDatabase) {
-    const statement = sqliteDatabase.query(sql)
-    return params ? statement.all(...params) : statement.all()
+    let cached = lastGeneralSqliteStatement
+    if (!cached || cached.database !== sqliteDatabase || cached.sql !== sql) {
+      cached = { database: sqliteDatabase, sql, statement: sqliteDatabase.query(sql) }
+      lastGeneralSqliteStatement = cached
+    }
+    return params ? cached.statement.all(...params) : cached.statement.all()
   }
   return (instance.unsafe(sql, params) as unknown as UnsafeReturn).executeSync()
 }
