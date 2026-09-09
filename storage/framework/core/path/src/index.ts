@@ -1763,14 +1763,24 @@ export function ensureRuntimeDirectories(): RuntimeDirectoryState[] {
     const targetPath = target()
 
     try {
-      mkdirSync(targetPath, { recursive: true })
-
       const stats = lstatSync(legacyPath, { throwIfNoEntry: false })
 
+      // Nothing at the legacy path means there is no migration to run, and
+      // therefore nothing to ensure. Creating the target here anyway is what
+      // made every command that reaches this - including read-only ones like
+      // `doctor` - write three directories into whatever directory it was
+      // invoked from, before deciding it was not even in a Stacks project
+      // (stacksjs/stacks#2576). stx and ts-cloud create their own state
+      // directory when they first write to it, which is where it belongs: a
+      // directory nobody has written to does not need to exist.
       if (!stats) {
         results.push({ legacy: legacyPath, target: targetPath, cleared: true })
         continue
       }
+
+      // Past here there really is something to move, so the destination has to
+      // exist before anything is merged into it.
+      mkdirSync(targetPath, { recursive: true })
 
       if (stats.isSymbolicLink()) {
         const pointsAtTarget = resolve(dirname(legacyPath), readlinkSync(legacyPath)) === resolve(targetPath)
