@@ -247,6 +247,7 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/files/uploads', 'Actions/Dashboard/Content/FileUploadAction'))
   guard(route.patch('/files', 'Actions/Dashboard/Content/FileRenameAction'))
   guard(route.put('/files/visibility', 'Actions/Dashboard/Content/FileVisibilityAction'))
+  guard(route.post('/files/duplicates', 'Actions/Dashboard/Content/FileDuplicateAction'))
   guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
 
   guard(route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction'))

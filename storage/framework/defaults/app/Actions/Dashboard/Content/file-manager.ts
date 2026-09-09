@@ -560,6 +560,96 @@ export async function setDashboardFileVisibility(
   return { path, visibility, type: 'directory', changed }
 }
 
+/**
+ * The name a duplicate gets when the caller does not choose one.
+ *
+ * `readme.txt` becomes `readme copy.txt`, then `readme copy 2.txt` - the
+ * suffix goes before the extension, because `readme.txt copy` is a file whose
+ * type the operating system, the browser and this dashboard's own type
+ * grouping all read as unknown.
+ *
+ * A directory has no extension to preserve, and `posix.extname` returns `''`
+ * for one, so the same code handles both.
+ */
+async function availableCopyName(path: string, exists: (candidate: string) => Promise<boolean>): Promise<string> {
+  const base = posix.basename(path)
+  const extension = posix.extname(base)
+  const stem = extension ? base.slice(0, -extension.length) : base
+  const parent = path.slice(0, Math.max(0, path.length - base.length - 1))
+
+  for (let attempt = 1; attempt <= 100; attempt++) {
+    const suffix = attempt === 1 ? 'copy' : `copy ${attempt}`
+    const candidate = `${stem} ${suffix}${extension}`
+    const full = [parent, candidate].filter(Boolean).join('/')
+    if (!(await exists(full)))
+      return candidate
+  }
+
+  throw new DashboardFileError('Too many copies of this item already exist.', 409, {
+    name: 'Rename some copies, or choose a name.',
+  })
+}
+
+/**
+ * Copy a file, or a folder and everything in it, beside the original.
+ *
+ * Deep-walks a directory for the same reason rename and visibility do: object
+ * storage has no folder to copy, only a shared key prefix, so duplicating one
+ * means copying every object beneath it.
+ *
+ * The name is optional. A file manager's "Duplicate" is a single gesture that
+ * has to produce something, so an omitted name becomes `<name> copy`, then
+ * `<name> copy 2` - checked for availability rather than assumed, since the
+ * first copy is usually not the only one.
+ *
+ * See stacksjs/stacks#245.
+ */
+export async function duplicateDashboardFile(
+  input: { disk?: string, path: unknown, name?: unknown },
+  manager: Manager = Storage,
+): Promise<{ from: string, to: string, type: 'file' | 'directory', copied: number }> {
+  const selected = resolveDisk(manager, input.disk)
+  const from = normalizeDashboardFilePath(input.path)
+  const taken = async (candidate: string): Promise<boolean> =>
+    await selected.adapter.fileExists(candidate) || await selected.adapter.directoryExists(candidate)
+
+  const name = input.name === undefined || input.name === null || input.name === ''
+    ? await availableCopyName(from, taken)
+    : normalizeDashboardFileName(input.name)
+
+  const separator = from.lastIndexOf('/')
+  const parent = separator === -1 ? '' : from.slice(0, separator)
+  const to = [parent, name].filter(Boolean).join('/')
+
+  if (to === from)
+    throw new DashboardFileError('A copy needs a different name.', 422, { name: 'Choose a different name.' })
+  if (await taken(to))
+    throw new DashboardFileError(`An item named "${name}" already exists.`, 409, { name: 'Choose a different name.' })
+
+  if (await selected.adapter.fileExists(from)) {
+    await selected.adapter.copyFile(from, to)
+    return { from, to, type: 'file', copied: 1 }
+  }
+
+  if (!(await selected.adapter.directoryExists(from)))
+    throw new DashboardFileError(`Storage item "${from}" was not found.`, 404)
+
+  // Collected before anything is written, so a copy cannot pick up the files
+  // it is itself creating - `to` sits beside `from` under the same parent, and
+  // a deep listing that ran while copying could see them.
+  const files: string[] = []
+  for await (const entry of selected.adapter.list(from, { deep: true })) {
+    const listed = normalizeListedPath(String(entry.path))
+    if (entry.type === 'file' && listed)
+      files.push(listed.startsWith(`${from}/`) ? listed : `${from}/${listed}`)
+  }
+
+  for (const file of files)
+    await selected.adapter.copyFile(file, `${to}/${file.slice(from.length + 1)}`)
+
+  return { from, to, type: 'directory', copied: files.length }
+}
+
 export async function uploadDashboardFiles(
   input: { disk?: string, path?: string, files: UploadedFileLike[] },
   manager: Manager = Storage,

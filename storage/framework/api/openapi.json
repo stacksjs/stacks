@@ -21487,6 +21487,31 @@
         }
       }
     },
+    "/api/dashboard/files/duplicates": {
+      "post": {
+        "summary": "/api/dashboard/files/duplicates",
+        "operationId": "post__api_dashboard_files_duplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/files/uploads": {
       "post": {
         "summary": "/api/dashboard/files/uploads",

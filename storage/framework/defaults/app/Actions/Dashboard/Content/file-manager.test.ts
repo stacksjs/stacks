@@ -6,6 +6,7 @@ import { StorageManager } from '@stacksjs/storage'
 import {
   createDashboardDirectory,
   deleteDashboardFile,
+  duplicateDashboardFile,
   getDashboardFileSnapshot,
   normalizeDashboardFileName,
   normalizeDashboardFileLimit,
@@ -291,6 +292,72 @@ describe('setDashboardFileVisibility', () => {
 
   test('is a 404 when the item does not exist', async () => {
     await expect(setDashboardFileVisibility({ path: 'nope.txt', visibility: 'private' }, manager))
+      .rejects.toMatchObject({ status: 404 })
+  })
+})
+
+describe('duplicateDashboardFile', () => {
+  test('names the copy before the extension, not after it', async () => {
+    const disk = manager.disk('public')
+    await disk.write('documents/readme.txt', 'hello')
+
+    const result = await duplicateDashboardFile({ path: 'documents/readme.txt' }, manager)
+
+    // `readme.txt copy` is a file whose type the OS, the browser and this
+    // dashboard's own type grouping would all read as unknown.
+    expect(result).toEqual({ from: 'documents/readme.txt', to: 'documents/readme copy.txt', type: 'file', copied: 1 })
+    expect(await disk.readToString('documents/readme copy.txt')).toBe('hello')
+    expect(await disk.readToString('documents/readme.txt')).toBe('hello')
+  })
+
+  test('counts up rather than colliding when a copy already exists', async () => {
+    const disk = manager.disk('public')
+    await disk.write('a.txt', 'x')
+
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy.txt')
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy 2.txt')
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy 3.txt')
+  })
+
+  test('takes an explicit name when given one', async () => {
+    await manager.disk('public').write('a.txt', 'x')
+
+    expect((await duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager)).to).toBe('b.txt')
+    await expect(duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager))
+      .rejects.toMatchObject({ status: 409 })
+    await expect(duplicateDashboardFile({ path: 'a.txt', name: '../escaped.txt' }, manager))
+      .rejects.toMatchObject({ status: 422 })
+  })
+
+  test('copies a folder and everything under it, leaving the original whole', async () => {
+    const disk = manager.disk('public')
+    await disk.write('images/logo.png', 'a')
+    await disk.write('images/icons/favicon.png', 'b')
+
+    const result = await duplicateDashboardFile({ path: 'images' }, manager)
+
+    expect(result).toEqual({ from: 'images', to: 'images copy', type: 'directory', copied: 2 })
+    expect(await disk.readToString('images copy/logo.png')).toBe('a')
+    expect(await disk.readToString('images copy/icons/favicon.png')).toBe('b')
+    expect(await disk.readToString('images/logo.png')).toBe('a')
+  })
+
+  /**
+   * The copy lands beside the original under the same parent, so a deep listing
+   * taken while copying could see the files it is itself creating. Paths are
+   * collected first; this is what says so.
+   */
+  test('does not copy the copy it is making', async () => {
+    const disk = manager.disk('public')
+    await disk.write('media/one.txt', '1')
+    await disk.write('media/two.txt', '2')
+
+    expect((await duplicateDashboardFile({ path: 'media' }, manager)).copied).toBe(2)
+    expect(await disk.fileExists('media copy/media copy/one.txt')).toBe(false)
+  })
+
+  test('is a 404 when the item does not exist', async () => {
+    await expect(duplicateDashboardFile({ path: 'nope.txt' }, manager))
       .rejects.toMatchObject({ status: 404 })
   })
 })

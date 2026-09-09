@@ -3250,6 +3250,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * POST /api/dashboard/files/duplicates
+   */
+  postDashboardFilesDuplicates(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/files/duplicates", {}, [], false, options)
+  },
+
+  /**
    * POST /api/dashboard/files/uploads
    */
   postDashboardFilesUploads(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
