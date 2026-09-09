@@ -340,6 +340,28 @@ async function retainedBuilderMatrix() {
   return results
 }
 
+async function sparseMembershipMatrix() {
+  const values: unknown[] = Array(2)
+  values[1] = 2
+  const results: unknown[] = []
+  for (const method of ['whereIn', 'whereNotIn'] as const) {
+    for (const additional of [false, true]) {
+      for (const fallback of [false, true]) {
+        const builder = db.selectFrom('fast_items').select('id')
+        if (additional)
+          builder.where('active', '=', 1)
+        builder[method]('id', values)
+        if (fallback)
+          builder.groupBy('id')
+        const rows = await builder.execute()
+        assert.deepEqual(rows, method === 'whereIn' ? [{ id: 2 }] : [])
+        results.push(rows)
+      }
+    }
+  }
+  return results
+}
+
 async function offsetOnlyRejections() {
   const rejects: boolean[] = []
   for (const terminal of ['execute', 'first'] as const) {
@@ -366,6 +388,7 @@ async function repeatedDistinctRejects() {
 
 const lightweightMatrix = await supportedMatrix()
 const lightweightRetainedMatrix = await retainedBuilderMatrix()
+const lightweightSparseMatrix = await sparseMembershipMatrix()
 const lightweightOffsetOnlyRejections = await offsetOnlyRejections()
 const lightweightRepeatedDistinctRejection = await repeatedDistinctRejects()
 
@@ -377,7 +400,9 @@ setConfig({
 })
 const upstreamMatrix = await supportedMatrix()
 const upstreamRetainedMatrix = await retainedBuilderMatrix()
+const upstreamSparseMatrix = await sparseMembershipMatrix()
 assert.deepEqual(lightweightRetainedMatrix, upstreamRetainedMatrix)
+assert.deepEqual(lightweightSparseMatrix, upstreamSparseMatrix)
 const upstreamOffsetOnlyRejections = await offsetOnlyRejections()
 const upstreamRepeatedDistinctRejection = await repeatedDistinctRejects()
 if (JSON.stringify(lightweightMatrix) !== JSON.stringify(upstreamMatrix))

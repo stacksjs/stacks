@@ -1695,7 +1695,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
     if (predicateColumn !== undefined) {
       query += ` WHERE ${predicateColumn} ${predicateOperator}`
       if (predicateValues) {
-        query += ` (${predicateValues.map(() => '?').join(', ')})`
+        query += ` (${Array(predicateValues.length).fill('?').join(', ')})`
         params.push(...predicateValues)
       }
       else if (predicateParameterized) {
@@ -1706,7 +1706,7 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         query += ` AND ${additionalPredicates.map((predicate) => {
           if (predicate.values) {
             params.push(...predicate.values)
-            return `${predicate.column} ${predicate.operator} (${predicate.values.map(() => '?').join(', ')})`
+            return `${predicate.column} ${predicate.operator} (${Array(predicate.values.length).fill('?').join(', ')})`
           }
           if (predicate.parameterized) {
             params.push(predicate.value)
