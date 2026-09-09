@@ -51,7 +51,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/database": "workspace:*"
+    "@stacksjs/database": "workspace:*",
+    "@stacksjs/types": "workspace:*"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"
