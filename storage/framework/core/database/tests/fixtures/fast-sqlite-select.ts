@@ -341,6 +341,21 @@ async function retainedBuilderMatrix() {
     return events
   }
   assert.deepEqual(await settlementTrace(execute), await settlementTrace(owner.execute.bind(owner)))
+  assert.deepEqual(await settlementTrace(first), await settlementTrace(owner.executeTakeFirst.bind(owner)))
+  for (const methods of [['first', 'executeTakeFirst'], ['executeTakeFirst', 'first']] as const) {
+    const aliased = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
+    const captured = methods.map(method => aliased[method].bind(aliased))
+    assert.deepEqual(await captured[0](), { id: 1 })
+    assert.deepEqual(await captured[1](), { id: 1 })
+    const fallback = aliased.whereRaw('id >= 2')
+    for (let index = 0; index < methods.length; index++) {
+      assert.deepEqual(await captured[index](), { id: 2 })
+      assert.deepEqual(await settlementTrace(captured[index]), await settlementTrace(fallback[methods[index]].bind(fallback)))
+    }
+    fallback.where('id', '>', 999)
+    for (const read of captured)
+      assert.equal(await read(), undefined)
+  }
   select('name')
   assert.deepEqual(await execute(), [{ name: 'beta' }])
   const extended = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
@@ -359,6 +374,14 @@ async function retainedBuilderMatrix() {
   })
   assert.ok(rejected instanceof Promise)
   await assert.rejects(rejected)
+  for (const method of ['first', 'executeTakeFirst'] as const) {
+    let failure: unknown
+    assert.doesNotThrow(() => {
+      failure = db.selectFrom('fast_missing_items').where('id', '=', 1)[method]()
+    })
+    assert.ok(failure instanceof Promise)
+    await assert.rejects(failure)
+  }
   return results
 }
 

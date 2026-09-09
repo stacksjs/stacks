@@ -1372,10 +1372,9 @@ function resolveDeferredSqliteTerminal(
     target.selectAll = selectAll
     return selectAll
   }
-  if (property === 'first' || property === 'executeTakeFirst') {
+  if (property === 'first') {
     const first = async () => executeFirstStatement()
     target.first = first
-    target.executeTakeFirst = first
     return first
   }
   if (property === 'firstOrFail' || property === 'executeTakeFirstOrThrow') {
@@ -2232,6 +2231,18 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         const builder = materialized as unknown as Record<string | symbol, unknown>
         const value = builder[property]
         return typeof value === 'function' ? value.bind(builder) : value
+      }
+      if (property === 'executeTakeFirst') {
+        return target.executeTakeFirst ??= function () {
+          if (materialized)
+            return Reflect.apply(materialized.executeTakeFirst, materialized, arguments)
+          try {
+            return Promise.resolve(executeFirstStatement())
+          }
+          catch (error) {
+            return Promise.reject(error)
+          }
+        }
       }
       if (GUARDED_SQLITE_SELECT_METHODS.has(property))
         return target[property]
