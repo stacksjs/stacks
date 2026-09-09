@@ -28,6 +28,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { DialectCapabilities } from './dialect'
+import type { DialectCapabilityOptions } from './dialect'
 import { dialectCapabilities } from './dialect'
 import { stripSqlNoise } from './migration-dialect'
 
@@ -92,8 +93,8 @@ function supports(caps: DialectCapabilities, capability: DdlCapability): boolean
 }
 
 /** Find capability violations in one file's SQL. */
-export function auditDdlSql(sql: string, file: string, dialect: string): DdlViolation[] {
-  const caps = dialectCapabilities(dialect)
+export function auditDdlSql(sql: string, file: string, dialect: string, options: DialectCapabilityOptions = {}): DdlViolation[] {
+  const caps = dialectCapabilities(dialect, options)
   const cleaned = stripSqlNoise(sql)
   const lines = cleaned.split('\n')
   const rawLines = sql.split('\n')
@@ -122,8 +123,8 @@ export function auditDdlSql(sql: string, file: string, dialect: string): DdlViol
 export function auditDdlConstraints(options: {
   dir: string
   dialect: string
-}): DdlConstraintAudit {
-  const { dir, dialect } = options
+} & DialectCapabilityOptions): DdlConstraintAudit {
+  const { dir, dialect, ...capabilities } = options
 
   if (!existsSync(dir))
     return { total: 0, violations: [], empty: true }
@@ -145,7 +146,7 @@ export function auditDdlConstraints(options: {
     catch {
       continue
     }
-    violations.push(...auditDdlSql(sql, file, dialect))
+    violations.push(...auditDdlSql(sql, file, dialect, capabilities))
   }
 
   return { total: files.length, violations, empty: files.length === 0 }

@@ -25,8 +25,24 @@ import { dialectCapabilities, isMysqlWire, toQueryBuilderDialect } from '../src/
 import { auditMigrationCorpus } from '../src/migration-dialect'
 import { sqlHelpers } from '../src/sql-helpers'
 
+/**
+ * Sharded, said out loud.
+ *
+ * Every assertion below is about what a *sharded* keyspace refuses, and the
+ * topology is resolved from `DB_VITESS_SHARDED` when nobody says. So these
+ * used to depend on that variable being unset in whatever process ran them -
+ * and `.env.example` sets it to `false`, which is what a fresh checkout copies
+ * into `.env`. The whole file inverted, 12 tests at once, for a reason that
+ * had nothing to do with the code under test.
+ *
+ * Worse, `caps` is captured when the module loads rather than when a test
+ * runs, so the value depended on the environment at import time - a thing no
+ * assertion in the file mentions.
+ */
+const SHARDED = { vitessSharded: true } as const
+
 describe('vitess dialect capabilities', () => {
-  const caps = dialectCapabilities('vitess')
+  const caps = dialectCapabilities('vitess', SHARDED)
 
   test('speaks MySQL and routes to the upstream vitess driver', () => {
     expect(caps.wire).toBe('mysql')
@@ -54,7 +70,7 @@ describe('vitess dialect capabilities', () => {
 
 describe('sqlHelpers for a dialect without auto-increment', () => {
   test('emits a plain primary key, never AUTO_INCREMENT', () => {
-    const h = sqlHelpers('vitess')
+    const h = sqlHelpers('vitess', SHARDED)
     // Emitting AUTO_INCREMENT here would not be a syntax error, which is
     // exactly why it is dangerous: each shard would independently hand out
     // the same values and collide.
@@ -68,7 +84,7 @@ describe('sqlHelpers for a dialect without auto-increment', () => {
     // parses MySQL, so the invariant is "renders identically to mysql", and
     // pinning the literal would make this fail whenever MySQL's rendering is
     // legitimately changed elsewhere.
-    const vitess = sqlHelpers('vitess')
+    const vitess = sqlHelpers('vitess', SHARDED)
     const mysql = sqlHelpers('mysql')
     expect(vitess.isMysql).toBe(true)
     expect(vitess.now).toBe(mysql.now)
@@ -101,7 +117,7 @@ describe('auditDdlSql', () => {
 );`
 
   test('flags foreign keys and auto-increment on vitess', () => {
-    const violations = auditDdlSql(FK_SQL, 'posts.sql', 'vitess')
+    const violations = auditDdlSql(FK_SQL, 'posts.sql', 'vitess', SHARDED)
     const capabilities = new Set(violations.map(v => v.capability))
     expect(capabilities.has('foreignKeys')).toBe(true)
     expect(capabilities.has('autoIncrement')).toBe(true)
@@ -114,17 +130,11 @@ describe('auditDdlSql', () => {
   })
 
   test('accepts MySQL relational DDL for an unsharded Vitess keyspace', () => {
-    const previous = process.env.DB_VITESS_SHARDED
-    process.env.DB_VITESS_SHARDED = 'false'
-    try {
-      expect(auditDdlSql(FK_SQL, 'posts.sql', 'vitess')).toEqual([])
-    }
-    finally {
-      if (previous === undefined)
-        delete process.env.DB_VITESS_SHARDED
-      else
-        process.env.DB_VITESS_SHARDED = previous
-    }
+    // The other side of the same option. This used to reach for the
+    // environment variable and put it back afterwards, which worked but left
+    // the file's behaviour dependent on a global that another file - or a
+    // `.env` - could be holding at the wrong value.
+    expect(auditDdlSql(FK_SQL, 'posts.sql', 'vitess', { vitessSharded: false })).toEqual([])
   })
 
   test('flags foreign keys but not auto-increment on singlestore', () => {
@@ -137,7 +147,7 @@ describe('auditDdlSql', () => {
   })
 
   test('reports the line number and a snippet', () => {
-    const violation = auditDdlSql(FK_SQL, 'posts.sql', 'vitess')
+    const violation = auditDdlSql(FK_SQL, 'posts.sql', 'vitess', SHARDED)
       .find(v => v.capability === 'foreignKeys')
     expect(violation?.line).toBe(4)
     expect(violation?.file).toBe('posts.sql')
@@ -160,14 +170,14 @@ describe('foreign keys are detected however the identifiers are quoted', () => {
 
   for (const [label, sql] of forms) {
     test(`flags an inline reference: ${label}`, () => {
-      const violations = auditDdlSql(sql, 't.sql', 'vitess')
+      const violations = auditDdlSql(sql, 't.sql', 'vitess', SHARDED)
       expect(violations.some(v => v.capability === 'foreignKeys')).toBe(true)
     })
   }
 
   test('flags a table-level FOREIGN KEY constraint with quoted names', () => {
     const sql = '  CONSTRAINT `fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)'
-    expect(auditDdlSql(sql, 't.sql', 'vitess').some(v => v.capability === 'foreignKeys')).toBe(true)
+    expect(auditDdlSql(sql, 't.sql', 'vitess', SHARDED).some(v => v.capability === 'foreignKeys')).toBe(true)
   })
 
   test('still says nothing for a dialect that supports foreign keys', () => {
@@ -185,7 +195,7 @@ describe('auditDdlSql false-positive resistance', () => {
     ].join('\n')
     // The dialect auditor was once reporting 40 nonexistent FK migrations
     // for exactly this reason; the shared `stripSqlNoise` is what fixes it.
-    expect(auditDdlSql(sql, 't.sql', 'vitess')).toEqual([])
+    expect(auditDdlSql(sql, 't.sql', 'vitess', SHARDED)).toEqual([])
   })
 
   test('ignores constructs inside quoted identifiers and strings', () => {
@@ -193,7 +203,7 @@ describe('auditDdlSql false-positive resistance', () => {
       'CREATE TABLE t (`auto_increment` VARCHAR(20));',
       `INSERT INTO notes (body) VALUES ('we removed the FOREIGN KEY here');`,
     ].join('\n')
-    expect(auditDdlSql(sql, 't.sql', 'vitess')).toEqual([])
+    expect(auditDdlSql(sql, 't.sql', 'vitess', SHARDED)).toEqual([])
   })
 
   test('does not flag AUTO_INCREMENT as a table option', () => {
@@ -201,7 +211,7 @@ describe('auditDdlSql false-positive resistance', () => {
     // capability rather than fatal, so flagging it would reject corpora
     // that would actually migrate.
     const sql = 'CREATE TABLE t (id BIGINT) ENGINE=InnoDB AUTO_INCREMENT=5;'
-    expect(auditDdlSql(sql, 't.sql', 'vitess')).toEqual([])
+    expect(auditDdlSql(sql, 't.sql', 'vitess', SHARDED)).toEqual([])
   })
 })
 
@@ -211,7 +221,7 @@ describe('the two audits answer different questions', () => {
     // Valid MySQL syntax — nothing dialect-exclusive to find.
     expect(auditMigrationCorpus({ dir: '/nonexistent', target: 'mysql' }).empty).toBe(true)
     // But the feature is unavailable on vitess.
-    expect(auditDdlSql(sql, 'fk.sql', 'vitess').length).toBeGreaterThan(0)
+    expect(auditDdlSql(sql, 'fk.sql', 'vitess', SHARDED).length).toBeGreaterThan(0)
     expect(auditDdlSql(sql, 'fk.sql', 'mysql')).toEqual([])
   })
 })
@@ -234,13 +244,13 @@ describe('auditDdlConstraints over a directory', () => {
   })
 
   test('reads only .sql files', () => {
-    const audit = auditDdlConstraints({ dir, dialect: 'vitess' })
+    const audit = auditDdlConstraints({ dir, dialect: 'vitess', ...SHARDED })
     expect(audit.total).toBe(2)
     expect(audit.violations.every(v => v.file.endsWith('.sql'))).toBe(true)
   })
 
   test('finds the violating file and leaves the clean one alone', () => {
-    const audit = auditDdlConstraints({ dir, dialect: 'vitess' })
+    const audit = auditDdlConstraints({ dir, dialect: 'vitess', ...SHARDED })
     const files = new Set(audit.violations.map(v => v.file))
     expect(files.has('002-posts.sql')).toBe(true)
     expect(files.has('001-users.sql')).toBe(false)
@@ -251,14 +261,14 @@ describe('auditDdlConstraints over a directory', () => {
   })
 
   test('a missing directory is empty rather than an error', () => {
-    const audit = auditDdlConstraints({ dir: join(dir, 'nope'), dialect: 'vitess' })
+    const audit = auditDdlConstraints({ dir: join(dir, 'nope'), dialect: 'vitess', ...SHARDED })
     expect(audit.empty).toBe(true)
     expect(audit.violations).toEqual([])
   })
 })
 
 describe('formatDdlConstraintError', () => {
-  const audit = auditDdlConstraints({ dir: '/nonexistent', dialect: 'vitess' })
+  const audit = auditDdlConstraints({ dir: '/nonexistent', dialect: 'vitess', ...SHARDED })
 
   test('names the capability, the remedy, and the override', () => {
     const withViolations = {
@@ -268,6 +278,7 @@ describe('formatDdlConstraintError', () => {
         'CREATE TABLE posts (id INTEGER AUTO_INCREMENT, FOREIGN KEY (u) REFERENCES users(id));',
         '002-posts.sql',
         'vitess',
+        SHARDED,
       ),
     }
     const message = formatDdlConstraintError(withViolations, 'vitess', 'database/migrations')

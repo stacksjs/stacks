@@ -9,6 +9,7 @@
  * SQL fragments, that one decides what each dialect is.
  */
 
+import type { DialectCapabilityOptions } from './dialect'
 import { dialectCapabilities } from './dialect'
 
 export interface SqlDialectHelpers {
@@ -224,7 +225,7 @@ export function parseSqlDateTime(value: unknown): Date | null {
  * await db.unsafe(`SELECT * FROM users WHERE id = ${sql.param(1)}`, [userId])
  * ```
  */
-export function sqlHelpers(driver: string): SqlDialectHelpers {
+export function sqlHelpers(driver: string, options: DialectCapabilityOptions = {}): SqlDialectHelpers {
   // Wire protocol, not feature set: this function only decides how SQL is
   // rendered (placeholders, quoting, `NOW()` vs `datetime('now')`), and every
   // MySQL-wire dialect renders identically. What each one *accepts* in DDL
@@ -235,7 +236,7 @@ export function sqlHelpers(driver: string): SqlDialectHelpers {
   // that missed one fell through to the SQLite branch — emitting
   // `datetime('now')` and `AUTOINCREMENT` at a MySQL server, failing only at
   // execution time.
-  const caps = dialectCapabilities(driver)
+  const caps = dialectCapabilities(driver, options)
   const isPostgres = caps.wire === 'postgres'
   const isMysql = caps.wire === 'mysql'
   const isSqlite = caps.wire === 'sqlite'
