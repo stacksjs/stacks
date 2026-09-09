@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { backblazeDisk, r2Disk } from '../src/types/filesystem'
+import { backblazeDisk, gcsDisk, r2Disk } from '../src/types/filesystem'
 
 /**
  * The S3-compatible presets, alongside `hetzner-disk.test.ts`.
@@ -100,5 +100,38 @@ describe('backblazeDisk', () => {
     expect(disk.credentials).toEqual({ key: 'B2_KEY_ID', secret: 'B2_APP_KEY' })
     expect(disk.visibility).toBe('public')
     expect(disk.endpoint).toBe('https://s3.us-west-004.backblazeb2.com')
+  })
+})
+
+describe('gcsDisk', () => {
+  it('points at the interoperability endpoint rather than a per-bucket host', () => {
+    expect(gcsDisk('media')).toEqual({
+      driver: 's3',
+      bucket: 'media',
+      region: 'auto',
+      endpoint: 'https://storage.googleapis.com',
+      visibility: 'private',
+    })
+  })
+
+  /*
+   * One endpoint serves every bucket and every location, so the bucket never
+   * reaches the hostname. A name containing dots is therefore fine here, unlike
+   * a virtual-hosted-style provider whose wildcard certificate covers one label.
+   */
+  it('keeps a dotted bucket name out of the host', () => {
+    const disk = gcsDisk('my.bucket.with.dots')
+
+    expect(disk.endpoint).toBe('https://storage.googleapis.com')
+    expect(disk.bucket).toBe('my.bucket.with.dots')
+  })
+
+  it('takes a real bucket location when one is required', () => {
+    expect(gcsDisk('eu-media', { region: 'europe-west4' }).region).toBe('europe-west4')
+  })
+
+  it('stays private unless asked otherwise, like every other preset here', () => {
+    expect(gcsDisk('assets').visibility).toBe('private')
+    expect(gcsDisk('assets', { visibility: 'public' }).visibility).toBe('public')
   })
 })

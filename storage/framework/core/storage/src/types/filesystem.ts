@@ -229,6 +229,43 @@ export function r2Disk(bucket: string, accountId: string, options?: Partial<Omit
 }
 
 /**
+ * Helper to create a Google Cloud Storage disk config (stacksjs/stacks#1896).
+ *
+ * GCS publishes an S3-compatible XML API at `storage.googleapis.com`, which
+ * Google calls interoperability mode, so this reuses the `s3` adapter rather
+ * than pulling in `@google-cloud/storage`. That SDK is heavy, it brings its own
+ * auth-flow surface, and - the reason it never landed - there is no way to
+ * exercise it without a real Google account, which is a poor trade for the
+ * common case of reading and writing objects.
+ *
+ * Two things to know, because they are the ways this differs from a bucket you
+ * would drive with the official SDK:
+ *
+ * - **Credentials are HMAC keys, not a service account.** Create them under
+ *   Cloud Storage > Settings > Interoperability; a service-account JSON file
+ *   will not authenticate here. Supply them via `options.credentials` or the
+ *   AWS_* env vars, like every other S3-compatible disk.
+ * - **The interop API is a subset.** Object CRUD, listing and signed URLs work;
+ *   GCS-only features - resumable-upload sessions, object lifecycle management,
+ *   customer-managed encryption keys - do not, because they have no S3 verb. A
+ *   project needing those wants the official SDK and a dedicated adapter.
+ *
+ * `region` defaults to `auto`, which the interop endpoint accepts for a
+ * single-region or multi-region bucket alike. Pass the bucket's real location
+ * (`us-east1`, `europe-west4`) when you have configured one that requires it.
+ */
+export function gcsDisk(bucket: string, options?: Partial<Omit<S3DiskConfig, 'driver' | 'bucket'>>): S3DiskConfig {
+  return {
+    driver: 's3',
+    bucket,
+    region: 'auto',
+    endpoint: 'https://storage.googleapis.com',
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
  * Hetzner's object-storage locations, which double as the S3 region name.
  * Kept a union rather than `string` so a typo is a compile error instead of a
  * request to a host that does not resolve.
