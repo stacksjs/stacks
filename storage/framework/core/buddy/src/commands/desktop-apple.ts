@@ -404,9 +404,19 @@ function validateOrUpload(packagePath: string, config: AppleDesktopConfig, valid
   if (!validateOnly) command(['xcrun', 'altool', '--upload-app', ...common])
 }
 
-function fail(error: unknown): never {
-  const message = error instanceof Error ? error.message : String(error)
+/**
+ * What a failure prints, as a value.
+ *
+ * Split out so it can be asserted without running a command: `fail` itself
+ * ends in `process.exit`, so the only other way to see its output is to spawn
+ * a process, and spawning this CLI is not free - it refuses to start outside a
+ * Stacks project and writes into the one it finds.
+ */
+export function renderFailure(error: unknown): string {
+  return `${error instanceof Error ? error.message : String(error)}\n`
+}
 
+function fail(error: unknown): never {
   // Write synchronously before exiting. `await log.error()` resolves on its own
   // schedule, and `process.exit()` on the next line tore the process down
   // first, so every failure in these commands printed nothing at all —
@@ -418,7 +428,7 @@ function fail(error: unknown): never {
   // printed twice - `desktop:apple:doctor` listing its eleven missing
   // credentials, then listing them again, which reads like two separate runs
   // disagreeing about nothing.
-  process.stderr.write(`${message}\n`)
+  process.stderr.write(renderFailure(error))
   process.exit(1)
 }
 

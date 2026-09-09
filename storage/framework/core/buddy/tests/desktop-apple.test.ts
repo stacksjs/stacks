@@ -1,7 +1,9 @@
-import { describe, expect, test } from 'bun:test'
+import { describe, expect, it, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   renderAppEntitlements,
+  renderFailure,
   renderAppleWorkflowCaller,
   renderHelperEntitlements,
   renderInfoPlist,
@@ -75,60 +77,47 @@ describe('Mac App Store desktop automation', () => {
 })
 
 /**
- * `desktop:apple:doctor` exists to name what is missing, so what it prints is
- * its entire output contract. It has been wrong in both directions: first
- * silent, because `await log.error()` resolves on its own schedule and
- * `process.exit()` tore the process down first, leaving a bare exit code 1;
- * then doubled, because the fix for that wrote through `process.stderr.write`
- * *and* `console.error` and both go to stderr. Eleven missing credentials
- * listed twice reads like two runs disagreeing about nothing.
+ * A failure prints its message once.
  *
- * Driving the real command in a subprocess is the only way to see this: the
- * duplication lived in a helper that neither exports nor returns anything.
+ * `desktop:apple:doctor` exists to name what is missing, so what it prints is
+ * its whole output contract, and that contract has been wrong in both
+ * directions. First silent: `await log.error()` resolves on its own schedule
+ * and `process.exit()` tore the process down first, so the command reported a
+ * bare exit code 1 and no diagnosis. Then doubled: the fix arrived as
+ * `process.stderr.write` *and* `console.error`, and both go to stderr, so
+ * eleven missing credentials were listed and then listed again.
+ *
+ * Asserted on the rendered value and on the source, rather than by running the
+ * command. An earlier version of this test spawned the CLI, which is not free:
+ * it refuses to start outside a Stacks project, and inside one it writes - a
+ * bare `bun cli.ts` in an empty directory creates `storage/`. A test that
+ * mutates the tree every other package is then tested against is a bad trade
+ * for observing one string.
  */
 describe('desktop:apple:doctor output', () => {
-  test('prints each missing prerequisite exactly once, and exits non-zero', async () => {
-    const root = new URL('../../../../../', import.meta.url).pathname
-    /*
-     * This package's own CLI entrypoint, not the `./buddy` shim.
-     *
-     * The shim bootstraps pantry when `pantry/` is missing or half-finished,
-     * which on a CI runner that has only run `bun install` means a full
-     * provisioning run happening inside a test, with a 600s timeout, writing a
-     * tree that every package tested afterwards resolves through. Nothing here
-     * wants that; it wants one process's stderr.
-     *
-     * Resolved relative to this file rather than to the project root: an
-     * application that installs the framework from npm has no
-     * `storage/framework/core/`, and a path assuming one is wrong everywhere
-     * except a vendored checkout. This test ships inside the buddy package, so
-     * `../src/cli.ts` is next to it in every layout.
-     */
-    const cli = resolve(import.meta.dir, '../src/cli.ts')
-    const result = Bun.spawnSync(['bun', cli, 'desktop:apple:doctor'], {
-      cwd: root,
-      stdout: 'pipe',
-      stderr: 'pipe',
-      // A machine that really has these configured would pass the check and
-      // print nothing to assert on.
-      env: {
-        ...process.env,
-        APPLE_BUNDLE_ID: '',
-        APPLE_TEAM_ID: '',
-        APPLE_APP_SIGNING_IDENTITY: '',
-        APPLE_INSTALLER_SIGNING_IDENTITY: '',
-        APPLE_PROVISIONING_PROFILE: '',
-        APP_STORE_CONNECT_API_KEY_ID: '',
-        APP_STORE_CONNECT_API_ISSUER_ID: '',
-        APP_STORE_CONNECT_API_KEY_PATH: '',
-      },
-    })
+  it('renders the message once, with a trailing newline', () => {
+    expect(renderFailure(new Error('APPLE_TEAM_ID is required'))).toBe('APPLE_TEAM_ID is required\n')
+    expect(renderFailure('plain string')).toBe('plain string\n')
+  })
 
-    const output = `${result.stdout.toString()}${result.stderr.toString()}`
-    const occurrences = (needle: string) => output.split(needle).length - 1
+  it('keeps every line of a multi-line diagnosis', () => {
+    // The doctor's real shape: one line per missing prerequisite, joined.
+    const message = ['APPLE_BUNDLE_ID must be a reverse-DNS bundle identifier', 'APPLE_TEAM_ID is required'].join('\n')
 
-    expect(result.exitCode).not.toBe(0)
-    expect(occurrences('APPLE_TEAM_ID must be')).toBe(1)
-    expect(occurrences('APP_STORE_CONNECT_API_KEY_ID is required')).toBe(1)
-  }, 30000)
+    expect(renderFailure(new Error(message))).toBe(`${message}\n`)
+  })
+
+  /**
+   * The invariant that actually broke, and it is a property of the source
+   * rather than of any value: two writes to stderr print twice however
+   * correctly each one renders. Source-scanned because `fail` ends in
+   * `process.exit` and cannot be called in-process.
+   */
+  it('writes to stderr exactly once', () => {
+    const source = readFileSync(resolve(import.meta.dir, '../src/commands/desktop-apple.ts'), 'utf-8')
+    const body = source.slice(source.indexOf('function fail('), source.indexOf('export function desktopApple('))
+
+    expect(body).toContain('process.exit(1)')
+    expect(body.match(/process\.stderr\.write\(|console\.(?:error|warn|log)\(/g) ?? []).toHaveLength(1)
+  })
 })
