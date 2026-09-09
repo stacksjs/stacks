@@ -16,6 +16,14 @@ import { isQuarantined } from './poison'
 import { runNamedAction } from './action-runner'
 
 let testingModule: Promise<typeof import('./testing')> | undefined
+let traceModule: Promise<typeof import('@stacksjs/router')> | undefined
+
+function loadTraceModule(): Promise<typeof import('@stacksjs/router')> {
+  return traceModule ??= import('@stacksjs/router').catch((error) => {
+    traceModule = undefined
+    throw error
+  })
+}
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -685,7 +693,7 @@ export async function resolveJobFile(name: string): Promise<string | null> {
  * background work is at least correlatable to itself.
  */
 export async function runJob(name: string, options: { payload?: any; context?: any; traceId?: string } = {}): Promise<void> {
-  const { withTraceId } = await import('@stacksjs/router')
+  const { withTraceId } = await loadTraceModule()
   const traceId = options.traceId ?? `job:${name}:${Math.random().toString(36).slice(2, 10)}`
 
   await withTraceId(traceId, async () => {
@@ -739,7 +747,7 @@ export async function runJob(name: string, options: { payload?: any; context?: a
  */
 async function currentTraceId(): Promise<string | undefined> {
   try {
-    const { getTraceId } = await import('@stacksjs/router')
+    const { getTraceId } = await loadTraceModule()
 
     return getTraceId()
   }

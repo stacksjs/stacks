@@ -112,3 +112,19 @@ test('builder dispatch remains buffered until ORM transaction commit and discard
   const rows = await db.selectFrom('jobs').orderBy('id', 'asc').selectAll().execute()
   expect(rows.map(row => JSON.parse(row.payload).payload.value)).toEqual([0, 1])
 })
+
+test('warm enqueues read each concurrent trace context and leave untraced envelopes untraced', async () => {
+  await job('Inspire', { value: 0 }).dispatch()
+  await Promise.all(['alpha', 'beta'].map(trace => withTraceId(trace, async () => {
+    await Promise.resolve()
+    await job('Inspire', { value: trace }).dispatch()
+  })))
+  await job('Inspire', { value: 3 }).dispatch()
+  const envelopes = (await db.selectFrom('jobs').orderBy('id', 'asc').selectAll().execute()).map(row => JSON.parse(row.payload))
+  expect(envelopes).toHaveLength(4)
+  expect(envelopes[0]).not.toHaveProperty('traceId')
+  expect(envelopes[3]).not.toHaveProperty('traceId')
+  for (const trace of ['alpha', 'beta']) {
+    expect(envelopes.find(envelope => envelope.payload.value === trace)).toMatchObject({ traceId: trace })
+  }
+})
