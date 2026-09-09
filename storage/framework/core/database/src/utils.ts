@@ -1841,16 +1841,6 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
-      if (typeof column === 'string' && isSimpleSqliteColumn(column) && typeof operator === 'string') {
-        const normalized = operator.toLowerCase()
-        if (normalized === 'in' || normalized === 'not in') {
-          const values = Array.isArray(value) ? snapshotSimpleSqliteMembershipValues(value) : [value]
-          if (values !== undefined) {
-            const method = normalized === 'in' ? 'whereIn' : 'whereNotIn'
-            return (proxy[method] as (column: string, values: unknown[]) => unknown)(column, values)
-          }
-        }
-      }
       if (column !== null && typeof column === 'object' && !Array.isArray(column) && operator === undefined && value === undefined) {
         const prototype = Object.getPrototypeOf(column)
         const entries = prototype === Object.prototype || prototype === null
@@ -2176,6 +2166,26 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       if (materialized)
         return Reflect.apply(materialized.where, materialized, arguments)
       if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || (operator !== '=' && !SIMPLE_SQLITE_OPERATORS.has(operator) && !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))) {
+        if (typeof column === 'string' && isSimpleSqliteColumn(column) && typeof operator === 'string') {
+          const normalized = operator.toLowerCase()
+          if (normalized === 'in' || normalized === 'not in') {
+            const values = Array.isArray(value) ? snapshotSimpleSqliteMembershipValues(value) : [value]
+            if (values !== undefined) {
+              const membershipOperator = normalized === 'in' ? 'IN' : 'NOT IN'
+              if (predicateColumn === undefined) {
+                predicateColumn = column
+                predicateOperator = membershipOperator
+                predicateValue = undefined
+                predicateParameterized = false
+                predicateValues = values
+              }
+              else {
+                ;(additionalPredicates ??= []).push({ column, operator: membershipOperator, value: undefined, parameterized: false, values })
+              }
+              return proxy
+            }
+          }
+        }
         const extended = extensions ??= createExtensions()
         return (extended.where as (column: unknown, operator?: unknown, value?: unknown) => unknown)(column, operator, value)
       }

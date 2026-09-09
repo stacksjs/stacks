@@ -57,6 +57,17 @@ async function matrix() {
       const rows = await membership('value', operator, values).execute()
       assert.deepEqual(rows, (operator.toLowerCase() === 'in' ? included : excluded).map(id => ({ id })))
       results.push(rows)
+      // Apply generic membership before any convenience method is requested.
+      for (const additional of [false, true]) {
+        const bare = db.selectFrom('membership_items').select('id')
+        if (additional)
+          bare.where('id', '>', 1)
+        const where = bare.where as unknown as (column: unknown, operator: unknown, value: unknown) => typeof bare
+        const actual = await where.call(bare, 'value', operator, values).orderBy('id').execute()
+        const expected = (operator.toLowerCase() === 'in' ? included : excluded).filter(id => !additional || id > 1)
+        assert.deepEqual(actual, expected.map(id => ({ id })))
+        results.push(actual)
+      }
     }
   }
 
@@ -124,6 +135,11 @@ async function matrix() {
       results.push(rows)
     }
   }
+  const capturedBuilder = db.selectFrom('membership_items').select('id').where('id', '>', 1)
+  const capturedWhere = capturedBuilder.where.bind(capturedBuilder)
+  capturedBuilder.whereRaw('id < 4')
+  capturedWhere('value', 'in', [2, 3])
+  assert.deepEqual(await capturedBuilder.execute(), [{ id: 3 }])
   const retained = membership('value', 'in', [1, 2])
   retained.whereRaw('id = 3')
   assert.deepEqual(await retained.execute(), [{ id: 3 }])
