@@ -37,6 +37,15 @@
 
 import { isMissingTableError } from './missing-table'
 
+let databaseModule: Promise<typeof import('@stacksjs/database')> | undefined
+
+function loadDatabaseModule(): Promise<typeof import('@stacksjs/database')> {
+  return databaseModule ??= import('@stacksjs/database').catch((error) => {
+    databaseModule = undefined
+    throw error
+  })
+}
+
 let warnedAboutMissingJobIdempotencyTable = false
 
 function warnOnceAboutMissingTable(): void {
@@ -58,7 +67,7 @@ function warnOnceAboutMissingTable(): void {
  */
 export async function hasDispatchedKey(key: string): Promise<boolean> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await loadDatabaseModule()
     const row = await db
       .selectFrom('job_idempotency')
       .where('idempotency_key', '=', key)
@@ -88,7 +97,7 @@ export async function recordDispatchedKey(
   queue?: string,
 ): Promise<void> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await loadDatabaseModule()
     await db
       .insertInto('job_idempotency')
       .values({
@@ -128,7 +137,7 @@ export type DispatchKeyClaim = 'claimed' | 'duplicate' | 'unenforced'
  */
 export async function claimDispatchKey(key: string, jobName: string, queue?: string): Promise<DispatchKeyClaim> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await loadDatabaseModule()
     await db
       .insertInto('job_idempotency')
       .values({
@@ -161,7 +170,7 @@ export async function claimDispatchKey(key: string, jobName: string, queue?: str
  */
 export async function releaseDispatchKey(key: string): Promise<void> {
   try {
-    const { db } = await import('@stacksjs/database')
+    const { db } = await loadDatabaseModule()
     await db.deleteFrom('job_idempotency').where('idempotency_key', '=', key).execute()
   }
   catch {
