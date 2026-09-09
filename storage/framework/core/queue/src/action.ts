@@ -4,6 +4,7 @@ import { assertEnvelopeSerializable, createEnvelope, serializeEnvelope } from '.
 import { runNamedAction } from './action-runner'
 
 let testingModule: Promise<typeof import('./testing')> | undefined
+let databaseModule: Promise<typeof import('@stacksjs/database')> | undefined
 
 function getQueueDriver(): string {
   return envVars.QUEUE_DRIVER || 'sync'
@@ -210,7 +211,10 @@ export class Job<T = unknown> {
      */
     const payloadJson = serializeEnvelope(envelope)
 
-    const { db } = await import('@stacksjs/database')
+    const { db } = await (databaseModule ??= import('@stacksjs/database').catch((error) => {
+      databaseModule = undefined
+      throw error
+    }))
 
     await db
       .insertInto('jobs')
