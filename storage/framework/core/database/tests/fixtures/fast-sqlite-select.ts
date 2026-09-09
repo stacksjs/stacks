@@ -314,7 +314,7 @@ async function retainedBuilderMatrix() {
   const pluck = retained.pluck.bind(retained)
   const first = retained.executeTakeFirst.bind(retained)
   const select = retained.select.bind(retained)
-  retained.whereRaw('id >= 2')
+  const owner = retained.whereRaw('id >= 2')
   where('id', '<', 3)
   const results = {
     retained: await retained.execute(),
@@ -330,6 +330,17 @@ async function retainedBuilderMatrix() {
     pluck: [2],
     first: { id: 2 },
   })
+  async function settlementTrace(read: () => unknown) {
+    const events: string[] = []
+    const settled = Promise.resolve(read()).then(() => events.push('settled'))
+    for (let tick = 0; tick < 4; tick++) {
+      await Promise.resolve()
+      events.push(`tick ${tick}`)
+    }
+    await settled
+    return events
+  }
+  assert.deepEqual(await settlementTrace(execute), await settlementTrace(owner.execute.bind(owner)))
   select('name')
   assert.deepEqual(await execute(), [{ name: 'beta' }])
   const extended = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
@@ -337,6 +348,17 @@ async function retainedBuilderMatrix() {
   extended.whereRaw('id >= 2')
   whereIn('active', [1])
   assert.deepEqual(await extended.execute(), [{ id: 2 }])
+  const limited = db.selectFrom('fast_items').select('id').whereIn('id', [1, 2, 3])
+  const limit = limited.limit.bind(limited)
+  limited.whereRaw('id >= 2')
+  limit(1)
+  assert.deepEqual(await limited.execute(), [{ id: 2 }])
+  let rejected: unknown
+  assert.doesNotThrow(() => {
+    rejected = db.selectFrom('fast_missing_items').where('id', '=', 1).execute()
+  })
+  assert.ok(rejected instanceof Promise)
+  await assert.rejects(rejected)
   return results
 }
 

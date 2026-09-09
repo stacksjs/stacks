@@ -1347,6 +1347,10 @@ let lastUnparameterizedSqliteSelect: {
 // validated list so caller mutation cannot make cached SQL describe new input.
 let lastSqliteSelection: { columns: string[], sql: string } | undefined
 
+// These methods forward retained calls themselves, avoiding a second closure.
+const GUARDED_SQLITE_SELECT_METHODS = new Set<string | symbol>(['select', 'where', 'limit', 'execute', 'executeSync', 'executeTakeFirstSync'])
+
+
 function hasActiveQueryBuilderHooks(): boolean {
   return Boolean(queryBuilderConfig.hooks && Object.values(queryBuilderConfig.hooks).some(value => value !== undefined))
 }
@@ -2124,6 +2128,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
   let extensions: Record<string, unknown> | undefined
   const base = {
     select(value: unknown) {
+      if (materialized)
+        return Reflect.apply(materialized.select as (...args: unknown[]) => unknown, materialized, arguments)
       if (typeof value === 'string') {
         if (value !== '*' && !isSimpleSqliteSelection(value)) {
           const builder = materialize()
@@ -2168,6 +2174,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     where(column: unknown, operator?: unknown, value?: unknown) {
+      if (materialized)
+        return Reflect.apply(materialized.where, materialized, arguments)
       if (typeof column !== 'string' || !isSimpleSqliteColumn(column) || typeof operator !== 'string' || (operator !== '=' && !SIMPLE_SQLITE_OPERATORS.has(operator) && !SIMPLE_SQLITE_OPERATORS.has(operator.toLowerCase()))) {
         const extended = extensions ??= createExtensions()
         return (extended.where as (column: unknown, operator?: unknown, value?: unknown) => unknown)(column, operator, value)
@@ -2185,6 +2193,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       return proxy
     },
     limit(value: unknown) {
+      if (materialized)
+        return Reflect.apply(materialized.limit, materialized, arguments)
       if (typeof value !== 'number' || value < 0 || !Number.isInteger(value)) {
         const builder = materialize()
         const apply = builder.limit as unknown as (value: unknown) => typeof builder
@@ -2193,13 +2203,24 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
       rowLimit = value
       return proxy
     },
-    async execute() {
-      return executeStatement()
+    execute() {
+      if (materialized)
+        return Reflect.apply(materialized.execute, materialized, arguments)
+      try {
+        return Promise.resolve(executeStatement())
+      }
+      catch (error) {
+        return Promise.reject(error)
+      }
     },
     executeSync() {
+      if (materialized)
+        return Reflect.apply((materialized as unknown as Record<'executeSync', () => unknown>).executeSync, materialized, arguments)
       return executeStatement()
     },
     executeTakeFirstSync() {
+      if (materialized)
+        return Reflect.apply((materialized as unknown as Record<'executeTakeFirstSync', () => unknown>).executeTakeFirstSync, materialized, arguments)
       return executeFirstStatement()
     },
   }
@@ -2212,6 +2233,8 @@ function createDeferredSqliteSelect(instance: RawQueryBuilder, table: string): u
         const value = builder[property]
         return typeof value === 'function' ? value.bind(builder) : value
       }
+      if (GUARDED_SQLITE_SELECT_METHODS.has(property))
+        return target[property]
       const cached = forwardedMethods?.[property]
       if (cached !== undefined)
         return cached
