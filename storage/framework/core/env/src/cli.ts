@@ -189,6 +189,70 @@ export function envKeyNames(file?: string): { publicKeyName: string, privateKeyN
  * With no ciphertext there is nothing to stay consistent with, so a fresh
  * keypair is both safe and correct.
  */
+/**
+ * Every public-key name a file may legitimately declare, in preference order.
+ *
+ * `dotenvx` accepts both the suffixed `DOTENV_PUBLIC_KEY_<ENV>` and the plain
+ * `DOTENV_PUBLIC_KEY`, and real projects use the plain form. Looking only for
+ * the suffixed name meant a file declaring the plain one appeared to have no
+ * key at all, so a fresh keypair was generated, a SECOND declaration was
+ * prepended, and every value already encrypted under the original key was
+ * stranded (stacksjs/stacks#2489).
+ */
+export function envPublicKeyNames(file?: string): string[] {
+  const { publicKeyName } = envKeyNames(file)
+  return publicKeyName === 'DOTENV_PUBLIC_KEY' ? [publicKeyName] : [publicKeyName, 'DOTENV_PUBLIC_KEY']
+}
+
+/** Likewise for the private half. */
+export function envPrivateKeyNames(file?: string): string[] {
+  const { privateKeyName } = envKeyNames(file)
+  return privateKeyName === 'DOTENV_PRIVATE_KEY' ? [privateKeyName] : [privateKeyName, 'DOTENV_PRIVATE_KEY']
+}
+
+/**
+ * Does this file already hold ciphertext, under any key name?
+ *
+ * The witness that makes rotation unsafe. If ANY value is encrypted, some key
+ * out there decrypts it, and generating a new one strands those values whether
+ * or not we recognise the name their public key was declared under. Deliberately
+ * name-agnostic: the name is exactly what the previous guards got wrong.
+ */
+export function envHasCiphertext(envContent: string): boolean {
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#'))
+      continue
+    const match = trimmed.match(/^([^=]+)=(.*)$/)
+    if (!match?.[1] || match[2] === undefined)
+      continue
+    const value = match[2].trim().replace(/^["']|["']$/g, '')
+    if (value.startsWith('encrypted:') || value.startsWith('enc:'))
+      return true
+  }
+  return false
+}
+
+/**
+ * The public key an env file declares, whichever accepted name it uses, plus
+ * that name so callers write back to the same line instead of adding a second.
+ */
+export function declaredEnvPublicKey(envContent: string, file?: string): { name: string, key: string } | undefined {
+  const names = envPublicKeyNames(file)
+  for (const line of envContent.split('\n')) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#'))
+      continue
+    const match = trimmed.match(/^([^=]+)=["']?([^"'\n]+)["']?/)
+    if (!match?.[1] || !match[2])
+      continue
+    const key = match[1].trim()
+    if (names.includes(key))
+      return { name: key, key: match[2] }
+  }
+  return undefined
+}
+
 export function reusableEnvPublicKey(envContent: string, publicKeyName: string): string | undefined {
   let publicKey: string | undefined
   let hasCiphertext = false
@@ -434,7 +498,18 @@ export function setEnv(
 ): { success: boolean, output?: string, error?: string } {
   const cwd = options.cwd || process.cwd()
   const envPath = resolve(cwd, options.file || '.env')
-  const keysPath = resolve(cwd, options.keysFile || '.env.keys')
+  /*
+   * Beside the env file, not beside the process.
+   *
+   * This resolved against the CWD, so `env:set --file ../other/.env` wrote its
+   * keys into whatever directory you happened to be standing in - landing on
+   * that project's own `.env.keys` and replacing the private halves for every
+   * value it had already encrypted, while reporting success
+   * (stacksjs/stacks#2489).
+   */
+  const keysPath = options.keysFile
+    ? resolve(cwd, options.keysFile)
+    : resolve(dirname(envPath), '.env.keys')
 
   try {
     let content = ''
@@ -456,17 +531,12 @@ export function setEnv(
     const publicKeyName = env ? `DOTENV_PUBLIC_KEY_${env}` : 'DOTENV_PUBLIC_KEY'
     const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
 
-    // First pass: find public key for this file
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (trimmed.startsWith(`${publicKeyName}=`)) {
-        const match = trimmed.match(/^[^=]+=["']?([^"'\n]+)["']?/)
-        if (match) {
-          publicKey = match[1]
-        }
-        break
-      }
-    }
+    // The key the file actually declares, under EITHER accepted name, and the
+    // name it used - so the write below updates that line instead of adding a
+    // second declaration beside it (stacksjs/stacks#2489).
+    const declared = declaredEnvPublicKey(content, options.file)
+    const declaredName = declared?.name ?? publicKeyName
+    publicKey = declared?.key
 
     // A public key found in the .env file is only usable if its matching
     // private key is actually saved in the keys file. Reusing a public key
@@ -479,7 +549,8 @@ export function setEnv(
       if (existsSync(keysPath)) {
         const keysContent = readFileSync(keysPath, 'utf-8')
         const { parsed: keys } = parse(keysContent)
-        hasMatchingPrivateKey = Boolean(keys[privateKeyName])
+        // Either accepted name, matching the public half.
+        hasMatchingPrivateKey = envPrivateKeyNames(options.file).some(name => Boolean(keys[name]))
       }
 
       // Missing locally is not the same as missing. `.env.keys` is gitignored,
@@ -493,9 +564,32 @@ export function setEnv(
       // this public key is the one the rest of the file already uses and it has
       // to stay. Only when the file carries no ciphertext, and no private key is
       // reachable either way, is a fresh keypair the safe answer.
-      if (!hasMatchingPrivateKey && !process.env[privateKeyName]
-        && !reusableEnvPublicKey(content, publicKeyName)) {
+      const privateKeyInEnv = envPrivateKeyNames(options.file).some(name => Boolean(process.env[name]))
+      if (!hasMatchingPrivateKey && !privateKeyInEnv && !envHasCiphertext(content)) {
         publicKey = undefined
+      }
+    }
+
+    /*
+     * Never rotate a key for a file that already holds ciphertext.
+     *
+     * This is the invariant stacksjs/stacks#2348 wanted and #2489 showed was
+     * still reachable. If any value in the file is encrypted, some key decrypts
+     * it; generating a new one re-encrypts nothing and silently strands every
+     * one of them. Failing here is the only honest option, because there is no
+     * way to proceed that keeps them readable.
+     *
+     * A round-trip check on the value being written would NOT catch this: the
+     * new value encrypts and decrypts perfectly under the new key. It is the
+     * OTHER values that die.
+     */
+    if (!options.plain && !publicKey && envHasCiphertext(content)) {
+      return {
+        success: false,
+        error: `${options.file || '.env'} already contains encrypted values, but no key that can be used to add another was found.\n`
+          + `Generating one would leave every existing encrypted value unreadable.\n`
+          + `Provide the private key as ${envPrivateKeyNames(options.file)[0]} in the environment, restore ${keysPath}, `
+          + `or use --plain to write this value unencrypted.`,
       }
     }
 
@@ -515,15 +609,20 @@ export function setEnv(
 
       // Drop any stale/orphaned public key line(s) for this file before
       // adding the fresh one, so repeated regeneration can't pile up
-      // duplicate DOTENV_PUBLIC_KEY* lines.
+      // duplicate DOTENV_PUBLIC_KEY* lines. BOTH accepted names, or a file
+      // declaring the plain form ends up with two declarations naming
+      // different keys (stacksjs/stacks#2489).
+      const staleNames = envPublicKeyNames(options.file)
       for (let i = lines.length - 1; i >= 0; i--) {
         const lineEntry = lines[i]
-        if (lineEntry !== undefined && lineEntry.trim().startsWith(`${publicKeyName}=`))
+        if (lineEntry !== undefined && staleNames.some(name => lineEntry.trim().startsWith(`${name}=`)))
           lines.splice(i, 1)
       }
 
-      // Add public key to .env file
-      lines.unshift(`${publicKeyName}="${publicKey}"`)
+      // Under the name the file already used, so a project that deliberately
+      // writes the plain `DOTENV_PUBLIC_KEY` keeps it and dotenvx keeps
+      // looking for the private half under the matching plain name.
+      lines.unshift(`${declaredName}="${publicKey}"`)
     }
 
     // Encrypt value if needed
