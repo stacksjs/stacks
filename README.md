@@ -15,9 +15,14 @@
 
 Stacks is a rapid development framework, where the goal is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. _An all-in-one toolkit that meets all your full stack needs._
 
-[![Stacks runtime architecture](./docs/diagrams/stacks-runtime.png)](./docs/diagrams/stacks-runtime.html)
+<a href="https://stacksjs.com/docs/diagrams/stacks-runtime">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/public/diagrams/stacks-runtime/dark.png">
+    <img alt="Stacks runtime architecture: developer to Buddy CLI to Stacks Cloud, and web or desktop client through rpx to stx, router, actions, ORM, and database" src="./docs/public/diagrams/stacks-runtime/light.png">
+  </picture>
+</a>
 
-_Open the diagram for light and dark themes plus SVG, PNG, JPEG, and WebP exports._
+_[Open the interactive diagram](https://stacksjs.com/docs/diagrams/stacks-runtime) for a theme toggle and SVG, PNG, JPEG, and WebP exports._
 
 - Web & Desktop Applications _(including system tray apps)_
 - Serverless & Traditional APIs
@@ -61,6 +66,8 @@ panx @stacksjs/buddy new my-project
 
 Pantry executes Buddy in an isolated environment and provisions the generated project's declared toolchain during setup.
 
+From there: the [documentation](https://stacksjs.com/docs/guide/intro), the [Buddy command reference](https://stacksjs.com/docs/guide/buddy/commands), and the [agent skills](https://stacksjs.com/docs/skills) that teach Claude Code, Codex, and Cursor how each subsystem works.
+
 For frontend experiments in the browser, open the live stx starter:
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/stacksjs/stackblitz?title=Stacks%20Starter)
@@ -78,7 +85,7 @@ buddy make:action UpdateUser   # scaffold a new Action (also: model, view, job, 
 buddy --help       # show every available command
 ```
 
-For the full command reference, see the collapsible section below or the [Buddy CLI documentation](https://stacksjs.com/docs/cli).
+For the full command reference, see the collapsible section below or the [Buddy CLI documentation](https://stacksjs.com/docs/guide/buddy/commands).
 
 <details>
 <summary>View the complete Buddy Toolkit</summary>
@@ -245,7 +252,7 @@ buddy test:types # runs typecheck
 
 </details>
 
-Read more about the Buddy CLI in the [official docs](https://stacksjs.com/docs/cli) — every command, every flag, every prompt explained.
+Read more about the Buddy CLI in the [official docs](https://stacksjs.com/docs/guide/buddy/commands): every command, every flag, every prompt explained.
 
 ## Features
 
