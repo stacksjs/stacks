@@ -412,8 +412,13 @@ function fail(error: unknown): never {
   // first, so every failure in these commands printed nothing at all —
   // including `desktop:apple:doctor`, whose entire job is naming what is
   // missing. It reported a bare exit code 1 and no diagnosis.
+  //
+  // One write, not two. The fix for that arrived as a belt-and-braces pair,
+  // and since `console.error` also goes to stderr the result was every failure
+  // printed twice - `desktop:apple:doctor` listing its eleven missing
+  // credentials, then listing them again, which reads like two separate runs
+  // disagreeing about nothing.
   process.stderr.write(`${message}\n`)
-  console.error(message)
   process.exit(1)
 }
 

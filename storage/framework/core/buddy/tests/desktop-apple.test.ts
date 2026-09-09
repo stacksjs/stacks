@@ -72,3 +72,46 @@ describe('Mac App Store desktop automation', () => {
     expect(errors).toContain('APP_STORE_CONNECT_API_KEY_PATH must point to an existing .p8 file')
   })
 })
+
+/**
+ * `desktop:apple:doctor` exists to name what is missing, so what it prints is
+ * its entire output contract. It has been wrong in both directions: first
+ * silent, because `await log.error()` resolves on its own schedule and
+ * `process.exit()` tore the process down first, leaving a bare exit code 1;
+ * then doubled, because the fix for that wrote through `process.stderr.write`
+ * *and* `console.error` and both go to stderr. Eleven missing credentials
+ * listed twice reads like two runs disagreeing about nothing.
+ *
+ * Driving the real command in a subprocess is the only way to see this: the
+ * duplication lived in a helper that neither exports nor returns anything.
+ */
+describe('desktop:apple:doctor output', () => {
+  test('prints each missing prerequisite exactly once, and exits non-zero', async () => {
+    const root = new URL('../../../../../', import.meta.url).pathname
+    const result = Bun.spawnSync(['./buddy', 'desktop:apple:doctor'], {
+      cwd: root,
+      stdout: 'pipe',
+      stderr: 'pipe',
+      // A machine that really has these configured would pass the check and
+      // print nothing to assert on.
+      env: {
+        ...process.env,
+        APPLE_BUNDLE_ID: '',
+        APPLE_TEAM_ID: '',
+        APPLE_APP_SIGNING_IDENTITY: '',
+        APPLE_INSTALLER_SIGNING_IDENTITY: '',
+        APPLE_PROVISIONING_PROFILE: '',
+        APP_STORE_CONNECT_API_KEY_ID: '',
+        APP_STORE_CONNECT_API_ISSUER_ID: '',
+        APP_STORE_CONNECT_API_KEY_PATH: '',
+      },
+    })
+
+    const output = `${result.stdout.toString()}${result.stderr.toString()}`
+    const occurrences = (needle: string) => output.split(needle).length - 1
+
+    expect(result.exitCode).not.toBe(0)
+    expect(occurrences('APPLE_TEAM_ID must be')).toBe(1)
+    expect(occurrences('APP_STORE_CONNECT_API_KEY_ID is required')).toBe(1)
+  }, 30000)
+})
