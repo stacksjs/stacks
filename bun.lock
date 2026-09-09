@@ -259,7 +259,7 @@
       "name": "@stacksjs/auth",
       "version": "0.74.32",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1127,7 +1127,7 @@
       "name": "@stacksjs/router",
       "version": "0.74.32",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1551,7 +1551,7 @@
 
     "@stacksjs/bun-queue": ["@stacksjs/bun-queue@0.1.8", "", {}, "sha512-4nrKGXksRW/57VJqpLQmnX5SI9yE4OsRKp60jE8MoZI4vzH45MJQrBzFgAiGITzmjnbmxHN1c5a9kG+kbp94rw=="],
 
-    "@stacksjs/bun-router": ["@stacksjs/bun-router@0.1.11", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "ts-rate-limiter": "^0.4.2" }, "peerDependencies": { "@stacksjs/stx": ">=0.2.227" }, "optionalPeers": ["@stacksjs/stx"], "bin": { "bun-router": "./dist/cli.js", "router": "./bin/cli.ts" } }, "sha512-V2aK/LfGypDnfJxTvEMzeSQnYHuesvZQfJ09+MzqpxT9CjIBRtFoHp1+PyRQEGAbdQ6ZfHtLqCHqDdGPpbqEfw=="],
+    "@stacksjs/bun-router": ["@stacksjs/bun-router@0.1.15", "", { "dependencies": { "@stacksjs/clapp": "^0.2.0", "ts-rate-limiter": "^0.4.2" }, "peerDependencies": { "@stacksjs/stx": ">=0.2.227" }, "optionalPeers": ["@stacksjs/stx"], "bin": { "bun-router": "./dist/cli.js", "router": "./dist/cli.js" } }, "sha512-iXjoYXwlylneZHCOB+nF1lzjX8b8WEaioP7vAlXQpnwOzx1rklaYojjXszfMeNoNtCJrSNlyhcgsoa3izdII8A=="],
 
     "@stacksjs/bunpress": ["@stacksjs/bunpress@0.2.14", "", { "dependencies": { "@cwcss/crosswind": "^0.2.16", "@stacksjs/clapp": "^0.2.0", "@stacksjs/stx": "^0.2.171", "@stacksjs/ts-i18n": "^0.1.11", "bunfig": "^0.15.17", "ts-syntax-highlighter": "^0.2.14" }, "peerDependencies": { "@stacksjs/ts-cloud": "^0.7.51" }, "optionalPeers": ["@stacksjs/ts-cloud"], "bin": { "bunpress": "./dist/bin/cli.js" } }, "sha512-o0Bf8b7kXKSyH5xXrVrdA46gPzMVssLBnbP82t8WzF17gIveFLNW+CzEZe3n9o+Ui2wiy2+6IF5SwGfrdTtWcQ=="],
 

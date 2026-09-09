@@ -204,7 +204,8 @@
       "name": "@stacksjs/analytics",
       "version": "0.74.32",
       "dependencies": {
-        "@stacksjs/database": "workspace:*"
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/types": "workspace:*"
       },
       "devDependencies": {
         "better-dx": "^0.2.24"
@@ -244,7 +245,7 @@
       "name": "@stacksjs/auth",
       "version": "0.74.32",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1059,7 +1060,7 @@
       "name": "@stacksjs/router",
       "version": "0.74.32",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1422,12 +1423,12 @@
       "resolved": "https://registry.npmjs.org/@loghq/stacks/-/stacks-0.2.6.tgz",
       "integrity": "sha512-7E4v4nWUDgKuuyFZwa5VZxuRGewMGwAcclCAcm+fm36rGdWnLx6TTdRwMhADlzAYw3nCRyljpnVrViiExQ0UDg=="
     },
-    "@stacksjs/actions@0.74.31": {
+    "@stacksjs/actions@0.74.32": {
       "name": "@stacksjs/actions",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/actions/-/actions-0.74.31.tgz",
-      "integrity": "sha512-yjz6BWSBPk73ss0r9DxIxyrT5B+KGUTIYH1oFCpCY9YI9zl/nvR30/Xw1Nyi4oatvOeIbx3rDdYwCCsXZt0zUw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/actions/-/actions-0.74.32.tgz",
+      "integrity": "sha512-g8aBKlWr8ANGGE4w2priRYgPJv/z/+zk/MITOBmTwp9vWgFaKYxET9VmP5qsfrRU8kgGNQtDX0T62FcktLypTQ==",
       "dependencies": {
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/ai": "workspace:*",
@@ -1482,12 +1483,12 @@
       },
       "optionalPeers": ["craft-native", "pickier"]
     },
-    "@stacksjs/ai@0.74.31": {
+    "@stacksjs/ai@0.74.32": {
       "name": "@stacksjs/ai",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ai/-/ai-0.74.31.tgz",
-      "integrity": "sha512-K3I0t6X1iMeD+hYNMaY+QbJUhMe5woN2axU2eXMyTrTpXZHEorArruXczR/mkkiQh2P/BiFiaU5+MFlb+hu00A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ai/-/ai-0.74.32.tgz",
+      "integrity": "sha512-OcsZ7J7uzoei+xC84BWEeDbySsJ7eVk2anxf1U202QzfuHGkdAof+XLaHpzmngvMCrBftzGI45aYbOQk9dzqtA==",
       "dependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1498,32 +1499,33 @@
       },
       "optionalPeers": ["@anthropic-ai/claude-agent-sdk"]
     },
-    "@stacksjs/alias@0.74.31": {
+    "@stacksjs/alias@0.74.32": {
       "name": "@stacksjs/alias",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/alias/-/alias-0.74.31.tgz",
-      "integrity": "sha512-QFkkF9dw8XMquFFKEBbGjnRHsYX4IJMzLgYB1lDzKRomnDGsxJ+i29uG5BpOxwfy6NWFGJtfxrUOKrRoeO89XA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/alias/-/alias-0.74.32.tgz",
+      "integrity": "sha512-pGrWWwqtRKCQhsv4QS4lTlw4MA9eaMhihXw8r3se7MleNOhlhZ0KWVpTddk9VYe8ZvVOr1t+ipf5K6gWmvQz4A==",
       "dependencies": {
         "@stacksjs/path": "workspace:*"
       }
     },
-    "@stacksjs/analytics@0.74.31": {
+    "@stacksjs/analytics@0.74.32": {
       "name": "@stacksjs/analytics",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/analytics/-/analytics-0.74.31.tgz",
-      "integrity": "sha512-w8FebWPzOXnlJshm5077UwJM/TJ+q+VNQ6VogKc87+EbJb3vz66Dnvy0AAiK/dZKh5hAPDjduEn9j8XCZElcXg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/analytics/-/analytics-0.74.32.tgz",
+      "integrity": "sha512-HrpDlnfp987fA18VR/pbvVIYtzi//VuxBi489FWzxSs0FrwEIvreaq1I3enAk6DAOXNPi2vjVIECpciZDZfPGw==",
       "dependencies": {
-        "@stacksjs/database": "workspace:*"
+        "@stacksjs/database": "workspace:*",
+        "@stacksjs/types": "workspace:*"
       }
     },
-    "@stacksjs/api@0.74.31": {
+    "@stacksjs/api@0.74.32": {
       "name": "@stacksjs/api",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/api/-/api-0.74.31.tgz",
-      "integrity": "sha512-S4+8Rt7SBf4p1IxcI1X9Ha0ZnSX1T7CKZt1quybo9TTsc0Th67vaMKraC/i+Pb2yNm1xNP9IsKcZIitqtmpX7A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/api/-/api-0.74.32.tgz",
+      "integrity": "sha512-u4mIUaoiRybIDeLnJlGS11GyzZkpPe2C5jlH6QkPVLYKglJOpVXxSLAJiGRXFJ0G9doDc2mEMhh6S7JIA95jQA==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*"
@@ -1533,32 +1535,32 @@
       },
       "optionalPeers": ["@stacksjs/router"]
     },
-    "@stacksjs/arrays@0.74.31": {
+    "@stacksjs/arrays@0.74.32": {
       "name": "@stacksjs/arrays",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/arrays/-/arrays-0.74.31.tgz",
-      "integrity": "sha512-Ala3QaxjnVR3GlEdfgYAHS1CYZuEX70tA8e6120sxf3uY+epp3HelSxEhRupn9W+9da5WfnOaw4QF/ieQy7tLA=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/arrays/-/arrays-0.74.32.tgz",
+      "integrity": "sha512-zO0EGGPmqqombSY5aXoIXEKL0fcZh1H1bzEZv3SRgJNo9lKMHWPJy2xCstSxEZrhtP1mHDUyxxtr4jRPhsFjPA=="
     },
-    "@stacksjs/audio@0.74.31": {
+    "@stacksjs/audio@0.74.32": {
       "name": "@stacksjs/audio",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/audio/-/audio-0.74.31.tgz",
-      "integrity": "sha512-nLUdKjNDhThC2W1Fqd4Wq2+fLVpudZXw9+B6zPwN0lQqjXxFA3v1aKHcxzzD3Hf6mkzW5P7E2a4kAI9BiY6r5A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/audio/-/audio-0.74.32.tgz",
+      "integrity": "sha512-ev5wUex7/Lbpzt00MjlL31eVIJb/sn/X1x8kV6U9HSZ1eJt0kATgRNIcf7hmcPtqnx5VKmzyXq1vo8SYmlOVNw==",
       "dependencies": {
         "@ts-audio/core": "^0.1.1",
         "ts-video-player": "^0.1.1"
       }
     },
-    "@stacksjs/auth@0.74.31": {
+    "@stacksjs/auth@0.74.32": {
       "name": "@stacksjs/auth",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/auth/-/auth-0.74.31.tgz",
-      "integrity": "sha512-kmhX/kdS/li0+jejxY23u+dZ+u+T0cNkT5cjmb5MGAvPQ+fMpcTFGmnVY/SLcXvNwCw2KO7o6OCn/8t8gZl5eg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/auth/-/auth-0.74.32.tgz",
+      "integrity": "sha512-agxU3cEJqEcu/3/7mFJnDrvEISSU5ZHn+YLKPKNZeV15gYehJ0dktortNsLVd+BO3HC0fFQkAk1jp3kRDuNG9Q==",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -1575,12 +1577,12 @@
         "ts-qr-codes": "^0.1.8"
       }
     },
-    "@stacksjs/browser-extension@0.74.31": {
+    "@stacksjs/browser-extension@0.74.32": {
       "name": "@stacksjs/browser-extension",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/browser-extension/-/browser-extension-0.74.31.tgz",
-      "integrity": "sha512-OC99V9FMs54J1nkv6nxLtqNkFbYk3pYCmRPR45WvR7jQukwZeYOIvbRFk8OjNVl22XAHu+YxZqHI5zitqLe5Ew==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/browser-extension/-/browser-extension-0.74.32.tgz",
+      "integrity": "sha512-LduduG3rTCsCOxnYuMZQMPAUwvXyDEDPgdJea5gRwT0733JF3/qhINO66o/WRcRHSNieAivQSvtGcuVn4Uu94g==",
       "dependencies": {
         "bun-plugin-stx": "^0.2.274",
         "ts-pantry": "^0.11.35"
@@ -1590,12 +1592,12 @@
       },
       "optionalPeers": ["web-ext"]
     },
-    "@stacksjs/browser@0.74.31": {
+    "@stacksjs/browser@0.74.32": {
       "name": "@stacksjs/browser",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/browser/-/browser-0.74.31.tgz",
-      "integrity": "sha512-5a/Tkq8OiLXe6FOCsGXexUlL1QtKaP6wx/2Cs/B4bFXzuAj71SaRXoRG/Hq/X90F6zyE3VPzxDgADzTtbnn/1A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/browser/-/browser-0.74.32.tgz",
+      "integrity": "sha512-mfzAm+btDc40UXjozvBZlDSRIh6A+2KRBDuIzQW8dDR0JdvYTyOL4QVzCQJae7kqSzkDOkwjOmKdHL0jEN066Q==",
       "dependencies": {
         "@stacksjs/composables": "workspace:*",
         "@stacksjs/datetime": "workspace:*",
@@ -1608,12 +1610,12 @@
       },
       "optionalPeers": ["@stripe/stripe-js"]
     },
-    "@stacksjs/buddy@0.74.31": {
+    "@stacksjs/buddy@0.74.32": {
       "name": "@stacksjs/buddy",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/buddy/-/buddy-0.74.31.tgz",
-      "integrity": "sha512-DGRPqmS62PC327BvoMR9utxuIYwiLXEyO3mo/j4E+O095CmCUtqb2Ga4ulDstCCr0YfOhAKWAzaqi6yP3l1VPw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/buddy/-/buddy-0.74.32.tgz",
+      "integrity": "sha512-rUy/X/J0+Nz1tpL8FTEiCVO7GStkUcWagJLKTFaEtwkBVD07eh/hbfEYbkedooOvuFOT6p5TfwKlwLoj1anTZA==",
       "dependencies": {
         "@stacksjs/actions": "^0.74.32",
         "@stacksjs/ai": "^0.74.32",
@@ -1686,12 +1688,12 @@
         "stacks": "dist/cli.js"
       }
     },
-    "@stacksjs/build@0.74.31": {
+    "@stacksjs/build@0.74.32": {
       "name": "@stacksjs/build",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/build/-/build-0.74.31.tgz",
-      "integrity": "sha512-UbabTd4ZzWk1lamp1zK8fsTu41dAZlZ9xdqHxo1OAE8gmCwpRdmZfpw817tkCAFGI0AYZM8GGmAAo6JZ5/Nz6w==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/build/-/build-0.74.32.tgz",
+      "integrity": "sha512-WHoHbez8/m8Cwi53DkrtJpxzEJ+/p2vGvs1UkCtY5ieHIzlIzGx+FM4IxrO0AHs+asY+eoTsOorNWY3PWfUEOA==",
       "dependencies": {
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -1721,12 +1723,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/bun-queue/-/bun-queue-0.1.8.tgz",
       "integrity": "sha512-4nrKGXksRW/57VJqpLQmnX5SI9yE4OsRKp60jE8MoZI4vzH45MJQrBzFgAiGITzmjnbmxHN1c5a9kG+kbp94rw=="
     },
-    "@stacksjs/bun-router@0.1.11": {
+    "@stacksjs/bun-router@0.1.15": {
       "name": "@stacksjs/bun-router",
-      "version": "0.1.11",
+      "version": "0.1.15",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.11.tgz",
-      "integrity": "sha512-V2aK/LfGypDnfJxTvEMzeSQnYHuesvZQfJ09+MzqpxT9CjIBRtFoHp1+PyRQEGAbdQ6ZfHtLqCHqDdGPpbqEfw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/bun-router/-/bun-router-0.1.15.tgz",
+      "integrity": "sha512-iXjoYXwlylneZHCOB+nF1lzjX8b8WEaioP7vAlXQpnwOzx1rklaYojjXszfMeNoNtCJrSNlyhcgsoa3izdII8A==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "ts-rate-limiter": "^0.4.2"
@@ -1736,7 +1738,7 @@
       },
       "bin": {
         "bun-router": "./dist/cli.js",
-        "router": "./bin/cli.ts"
+        "router": "./dist/cli.js"
       },
       "optionalPeers": ["@stacksjs/stx"]
     },
@@ -1762,45 +1764,45 @@
       },
       "optionalPeers": ["@stacksjs/ts-cloud"]
     },
-    "@stacksjs/cache@0.74.31": {
+    "@stacksjs/cache@0.74.32": {
       "name": "@stacksjs/cache",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/cache/-/cache-0.74.31.tgz",
-      "integrity": "sha512-6SuG0zACtJHktpKUgsjUpyihDbiHIX5hziMJi/CnDetu+vrXE6qRgVVUZy7zugtPr0vRn7psmZeXrk8PlFnI4Q==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/cache/-/cache-0.74.32.tgz",
+      "integrity": "sha512-wLfGw+EJuDZoed8rGm2rNcyBo0q4Z1okN3BcMP6i6lsYbGm1V96o/n8RinIBqHaWElwc/pQxJ+ACwkV4N8j1sg==",
       "dependencies": {
         "@stacksjs/ts-cache": "^0.1.5"
       }
     },
-    "@stacksjs/calendar-api@0.74.31": {
+    "@stacksjs/calendar-api@0.74.32": {
       "name": "@stacksjs/calendar-api",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/calendar-api/-/calendar-api-0.74.31.tgz",
-      "integrity": "sha512-qnfVUv/D0PdEvR6StQS54USPXddseZBYFko/pnkiQmcuslk0PccJQD1ME+IFBuxguwUgKdQodN7e7rLa+cCQPw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/calendar-api/-/calendar-api-0.74.32.tgz",
+      "integrity": "sha512-rzYjpLowWL4bv8Iv5dcP/gqkEXuBqpqbjE/nbY7KneRitUfNjZMOZER2FYEm+uuxhUFaasjoavMun5+eIQDFvg==",
       "dependencies": {
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/stx": "^0.2.274"
       }
     },
-    "@stacksjs/charts@0.74.31": {
+    "@stacksjs/charts@0.74.32": {
       "name": "@stacksjs/charts",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/charts/-/charts-0.74.31.tgz",
-      "integrity": "sha512-9+ZQ4NErwTejXCwwEA6DHVIWwt50lyXCmqHfaNNL6NeysKwSIomIaFYB5h0wJaKqNNpw3vD8bK3TPtX++X29KA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/charts/-/charts-0.74.32.tgz",
+      "integrity": "sha512-k65J5HdtIcnQ1wwU9SwbgD7VrGPe8cd67VPYqUlSB1ojDinai5J5var8vrD4CQMOoq5SB9/n2VqdqWQgdyBCHw==",
       "dependencies": {
         "@ts-charts/format": "^0.2.6",
         "@ts-charts/scale": "^0.2.6",
         "@ts-charts/shape": "^0.2.6"
       }
     },
-    "@stacksjs/chat@0.74.31": {
+    "@stacksjs/chat@0.74.32": {
       "name": "@stacksjs/chat",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/chat/-/chat-0.74.31.tgz",
-      "integrity": "sha512-KlSSw/+DfW6badbgJn6HgalVSwqdVcA0aCzuwNyFBhXUPKH3PUHTRYi5DsLIWh/06kGyljpRkeMMIRi0nzc85g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/chat/-/chat-0.74.32.tgz",
+      "integrity": "sha512-tVADG9Us3NcUqaLe4dnJAEUQ/1qompL8c5/ZBxpJn40fM7nDE1sbopH7nvAXLswsBgbPC8bPnv/+kFZgKpoS5w==",
       "dependencies": {
         "@stacksjs/logging": "workspace:*"
       }
@@ -1825,12 +1827,12 @@
         "clarity": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/cli@0.74.31": {
+    "@stacksjs/cli@0.74.32": {
       "name": "@stacksjs/cli",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/cli/-/cli-0.74.31.tgz",
-      "integrity": "sha512-AIHNhXndH2mIFByhKslBhjoBkdFuw3ihB2oe6rfEj2pRaULT01Zu2KqBrsq6X1NTC3qB0oIF+G04wkZekFDYcw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/cli/-/cli-0.74.32.tgz",
+      "integrity": "sha512-2h3Il1HUvA1k1DvET6IDhGU3xEb3vlWVkcjTTe4Pr2jALrYly5aMc9e0gzEiDAEatgukpZOVM2PaEJE09+Xexw==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.12",
         "@stacksjs/collections": "workspace:*",
@@ -1839,12 +1841,12 @@
         "@stacksjs/types": "workspace:*"
       }
     },
-    "@stacksjs/cloud@0.74.31": {
+    "@stacksjs/cloud@0.74.32": {
       "name": "@stacksjs/cloud",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/cloud/-/cloud-0.74.31.tgz",
-      "integrity": "sha512-+NKmIU5vmflQcnLZxFmXD9pPYNuYvV1E+v52hboNJ2GRdPH/33gdanpvRVZ7Yk/efkbzvaAu7q9pt0oZgnFDyw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/cloud/-/cloud-0.74.32.tgz",
+      "integrity": "sha512-Gk0Lv71Xr2AHyb+dUdw7kHRjo9KJqJDxHRQVa2GiOtJnBF/edSbAEzEdZj3CysJgNsj+B1xv/DWds5a4WgGFvA==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
@@ -1855,12 +1857,12 @@
         "@stacksjs/ts-xml": "^0.1.0"
       }
     },
-    "@stacksjs/cms@0.74.31": {
+    "@stacksjs/cms@0.74.32": {
       "name": "@stacksjs/cms",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/cms/-/cms-0.74.31.tgz",
-      "integrity": "sha512-h6cfL6CHk5BexDHITH71V+XQCLGGGaeZfJh7iUyGBsnHAznh07MlzBliasjJwTaIiJXYA1EGPPlt32WEGlwqLw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/cms/-/cms-0.74.32.tgz",
+      "integrity": "sha512-BYS1EWGo/qHukOofy72a3PS7o3NZyMesW0AXrKFqDMUli9rpymIwPhlG7smnm2sncTjZgWLTxK4FCwv5MgEFqA==",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
@@ -1874,22 +1876,22 @@
         "ts-spreadsheets": "^0.2.0"
       }
     },
-    "@stacksjs/collections@0.74.31": {
+    "@stacksjs/collections@0.74.32": {
       "name": "@stacksjs/collections",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/collections/-/collections-0.74.31.tgz",
-      "integrity": "sha512-MUiIIzMJJXikVzXPTA1KvbOCoUSeb5ayZcaT/VmhI54jvNVe6b1PVHlxdBagvriCrg7CYkzINrYcDy9hOoITDQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/collections/-/collections-0.74.32.tgz",
+      "integrity": "sha512-vZghxqa+FlYxLlo3SJBQpfq2E10cyDuzIBVDlo16aQDzLzzS9mJWaK0Zwmj863IVB0PJidN/T9VWXHCbv+v2rA==",
       "dependencies": {
         "ts-collect": "^0.4.3"
       }
     },
-    "@stacksjs/commerce@0.74.31": {
+    "@stacksjs/commerce@0.74.32": {
       "name": "@stacksjs/commerce",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/commerce/-/commerce-0.74.31.tgz",
-      "integrity": "sha512-KTfLx/PFinhGaT0kPsVOyI5/L5KxL0VZPwZTE+4DgPXt8tSUmpX7qoG+z/s3plGs+0UY1mC3RL28ZPDlQnj/Lw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/commerce/-/commerce-0.74.32.tgz",
+      "integrity": "sha512-l2vHEdKQsWen4MN/nKa597sYtH11ISXfjx7GctJKguHhQZNKPopcyXcVC/BrHKML8gyIizrNbEmM1gT91IJutw==",
       "dependencies": {
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -1919,23 +1921,23 @@
         "ts-syntax-highlighter": "^0.2.1"
       }
     },
-    "@stacksjs/composables@0.74.31": {
+    "@stacksjs/composables@0.74.32": {
       "name": "@stacksjs/composables",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/composables/-/composables-0.74.31.tgz",
-      "integrity": "sha512-ZPBENQ/RQywH6n4JG5CSnudb9pfGMbZcMk+E/qF/zS59IPNv+IUKJICqDVYkHNE1bwKqAB2ZeoA4xA4RQlJaLQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/composables/-/composables-0.74.32.tgz",
+      "integrity": "sha512-ZKNP7hyOwn9DAGbAwQTdA+qCJlW/xNDhe+CICqHSJvMbf4n3prkhA4bVzoqEoJGnrRS4ahxHKyZjMBE/m08oIw==",
       "dependencies": {
         "@stacksjs/datetime": "workspace:*",
         "@stacksjs/stx": "^0.2.274"
       }
     },
-    "@stacksjs/config@0.74.31": {
+    "@stacksjs/config@0.74.32": {
       "name": "@stacksjs/config",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/config/-/config-0.74.31.tgz",
-      "integrity": "sha512-DDH2AWxeu/EJuqmchm4uU7uxCGXN1/tcbJfBMrIeuzl+dOnFRCcDtLXJiN4B96gibnCXt5pWJE4u3CV2HxJ7UA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/config/-/config-0.74.32.tgz",
+      "integrity": "sha512-9o9PmgJMuucxY3XAjakkXhcqwXeBuGQmbDqY3EnhXWy3vgqwr3b7ImudZs+/sqVFrqr3L9YCosI/0B8LSUNUnA==",
       "dependencies": {
         "@stacksjs/events": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -1943,19 +1945,19 @@
         "ts-pantry": "^0.11.35"
       }
     },
-    "@stacksjs/cron@0.74.31": {
+    "@stacksjs/cron@0.74.32": {
       "name": "@stacksjs/cron",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/cron/-/cron-0.74.31.tgz",
-      "integrity": "sha512-7RTO1a5CBEGxea97qQNaJwYbpLi4FJ0zleNXT3Q1Ak0ZvEKylfWSYo1DdYAI6krsj7thgyUudJ7PvjxJwNCj+A=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/cron/-/cron-0.74.32.tgz",
+      "integrity": "sha512-vPwjoHMEGHC6rU7U0g8EUAzaAGZ/BYm/R8fQN5rKa5qHaFe1T1MsslAU3f672O997I3Bvz/FPe+ABXF6rWdpzA=="
     },
-    "@stacksjs/database@0.74.31": {
+    "@stacksjs/database@0.74.32": {
       "name": "@stacksjs/database",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/database/-/database-0.74.31.tgz",
-      "integrity": "sha512-BCyuhnuS3hYLzvknE9/eSC3jDOiVnBXAzYhmHLAruYLO0pQzlTdCFnnDRfe8JtM4zKvWDu8An2cmd5mO/j0NOw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/database/-/database-0.74.32.tgz",
+      "integrity": "sha512-kesQaZz3XCuUjKt8rmsqgiYlpPrIG9Rk58e+1+XZ+odkj9XR5/ouOzb+Go/3MavBOVv5XTcsKtYWCPEmpQRS/A==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/env": "workspace:*",
@@ -1974,19 +1976,19 @@
         "dynamodb-tooling": "^0.3.2"
       }
     },
-    "@stacksjs/datetime@0.74.31": {
+    "@stacksjs/datetime@0.74.32": {
       "name": "@stacksjs/datetime",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/datetime/-/datetime-0.74.31.tgz",
-      "integrity": "sha512-TqvcBxqjWT9uFLxlvd/DcsSN3kOY+H1Q30+w2EQ2mNnh6pDPthIvMP4mlJEj4vVgH6uE8wNgXyCFPMcYF5OPKg=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/datetime/-/datetime-0.74.32.tgz",
+      "integrity": "sha512-oxZNcI/G+9Z2sIayO5+31V2n0cVx0z8v2mT85AIYYpCrA7Y/BlbJePCC8AgLhC+zUZcbfRTt5UwiYQTfeDwF+g=="
     },
-    "@stacksjs/defaults@0.74.31": {
+    "@stacksjs/defaults@0.74.32": {
       "name": "@stacksjs/defaults",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/defaults/-/defaults-0.74.31.tgz",
-      "integrity": "sha512-LmrbvCpolTRJaHC5U/vmGSp5fa8al6n1lFP6Ntz/1SKOUJsM5+54Hf2FAWk2natLKFK1wFlResjDmamMTnWXOA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/defaults/-/defaults-0.74.32.tgz",
+      "integrity": "sha512-lv7Jl/Y4sI/oCMQo+eCsjl4esK2SRjAoKspGOBIKITp63+bvRPsfoT7UFx4wUPONgAlXo12tvXqp0rvEnXExNw==",
       "dependencies": {
         "@iconify-json/f7": "^1.2.2",
         "@iconify-json/hugeicons": "^1.2.27",
@@ -1995,12 +1997,12 @@
         "ts-qr-codes": "^0.1.8"
       }
     },
-    "@stacksjs/desktop-build@0.74.31": {
+    "@stacksjs/desktop-build@0.74.32": {
       "name": "@stacksjs/desktop-build",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/desktop-build/-/desktop-build-0.74.31.tgz",
-      "integrity": "sha512-iXx9nrFryZ81jmRH+wrKZYslravn3Amd2XLKOP/wG16XK7BWD89wdgDX+6v5C1qpTnof8OxSwRlQ9u5zfyKjDg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/desktop-build/-/desktop-build-0.74.32.tgz",
+      "integrity": "sha512-xyWnvLlprRhBrn7cs+ypF0qgEheH8YwIliZlDwVj4suvHVFYsDPVNeumAqMfHOOe6gTkSoUNdUTn/JYQXIpNiw==",
       "dependencies": {
         "craft-native": ">=0.0.55"
       }
@@ -2015,12 +2017,12 @@
         "craft-native": ">=0.0.76"
       }
     },
-    "@stacksjs/dns@0.74.31": {
+    "@stacksjs/dns@0.74.32": {
       "name": "@stacksjs/dns",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/dns/-/dns-0.74.31.tgz",
-      "integrity": "sha512-AAioIt4lKff3Xnv8sPamaFHjJ3NB97esZqBisU/Qah6/C7r+z744gEUe0NDdzF/y55J7Xxnv4SETW+dJhdIYZQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/dns/-/dns-0.74.32.tgz",
+      "integrity": "sha512-4P7/0hQNvYvV26hbXzHIMyViLFdHfQ6B4/yAucGSTe+hQfspNSHwvX6+jKTRcCa+Rjnt3eSgMXsjkHN4sdCaJg==",
       "dependencies": {
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2043,24 +2045,24 @@
         "dnsx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/docs@0.74.31": {
+    "@stacksjs/docs@0.74.32": {
       "name": "@stacksjs/docs",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/docs/-/docs-0.74.31.tgz",
-      "integrity": "sha512-xmBXg/z7shWTEGmDGnP1ovU39UGr+9jfZePg8xXiEFcZav9MfN3+cadzRkYNCO9pgLHBzxopxmeRMxkD6axZ6w==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/docs/-/docs-0.74.32.tgz",
+      "integrity": "sha512-UjDmSUUo/M2LChRpC/bBQw8/lG80QboqjtF3nyCJfN8SmpOtKOTfnAYqft23eGoAa+fAZVNrPe4pEQb6QzQMWw==",
       "dependencies": {
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/path": "workspace:*"
       }
     },
-    "@stacksjs/email@0.74.31": {
+    "@stacksjs/email@0.74.32": {
       "name": "@stacksjs/email",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/email/-/email-0.74.31.tgz",
-      "integrity": "sha512-sV1Cf2MMmG6upEv9nj/k41HMdMD3C6DbKTVEnEW601FJV6b+MVZQQllWKvODzbSjLjrgeDmo2ZjiMvuAwY3aWA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/email/-/email-0.74.32.tgz",
+      "integrity": "sha512-6swu36gBBd4SXFcY936U2G1rIq8ZcahxA5MmKafWAThlYev7pj2S3xyQRA+nShInKmOfIWNTtdu/nHsqGYGwnQ==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -2079,29 +2081,29 @@
       },
       "optionalPeers": ["@stacksjs/queue"]
     },
-    "@stacksjs/enums@0.74.31": {
+    "@stacksjs/enums@0.74.32": {
       "name": "@stacksjs/enums",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/enums/-/enums-0.74.31.tgz",
-      "integrity": "sha512-zBTbXF0RUI0n85v91z/SYnXQ8ol/Kc+kgFS0GWadUAqKaHnMIsqqRzgzXm9gXGQlr1xfMZOT5TjIYcXJuOM1qg=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/enums/-/enums-0.74.32.tgz",
+      "integrity": "sha512-9aL8l+PeIswERfZ9p/FZQOhBS0pZKBbhxllkHavep/WhNf74PuqCaWMl1e7Sj+BppB9uWqxLxoDZmJsYrkLwrA=="
     },
-    "@stacksjs/env@0.74.31": {
+    "@stacksjs/env@0.74.32": {
       "name": "@stacksjs/env",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/env/-/env-0.74.31.tgz",
-      "integrity": "sha512-cbFrP7uZQSyWd2D2C72yLJDVN66jnoOB2DCMlUIhgdGs4G4yVj3stX4VIrq6IdRHaMjaol26bkTA0Pg/rzFBgg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/env/-/env-0.74.32.tgz",
+      "integrity": "sha512-5eVbnvkZ58+nelAYMy+lqWWbOBBY9Di1vVMOAVDGbZPQLvVdDPUBG4biaF5tBXWgsto6WeodXL5xatSEbVk43Q==",
       "dependencies": {
         "@stacksjs/path": "workspace:*"
       }
     },
-    "@stacksjs/error-handling@0.74.31": {
+    "@stacksjs/error-handling@0.74.32": {
       "name": "@stacksjs/error-handling",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/error-handling/-/error-handling-0.74.31.tgz",
-      "integrity": "sha512-BeQPX62qZ8ZELKaSmb7osQemzZE+AmOYF6AbpUaOLsaaI7g45dqvfcl5phAbi419NW3ZDWFO2aR357E4APRKzA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/error-handling/-/error-handling-0.74.32.tgz",
+      "integrity": "sha512-BRHRL7Jdxi1YZ4Q56MCmK9kdsLNrX82YxTTZdSRXSdY2Y9Fg25pRJeyNX+PWXOYKHAiqUgFD5dxImhQQOU4Kcw==",
       "dependencies": {
         "@stacksjs/path": "workspace:*",
         "@stacksjs/stx": "^0.2.274",
@@ -2110,50 +2112,50 @@
         "ts-syntax-highlighter": "^0.2.1"
       }
     },
-    "@stacksjs/events@0.74.31": {
+    "@stacksjs/events@0.74.32": {
       "name": "@stacksjs/events",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/events/-/events-0.74.31.tgz",
-      "integrity": "sha512-ckHKgYmD/tkZztM8Lj8httbKbPhzVfnL+5YKtTMcb1gSLM5wwvkkZqyZ07xn8GKGSOChWsuGOTE9NReICh0RzA=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/events/-/events-0.74.32.tgz",
+      "integrity": "sha512-LjaWLqiTmU8BHiPUZESa/8Fb0t2KGPA/bfzJqdZOWRjda19Polzv4sWxJ17mxUzC/CqjmWMPxOYLKvjXAasFfw=="
     },
-    "@stacksjs/faker@0.74.31": {
+    "@stacksjs/faker@0.74.32": {
       "name": "@stacksjs/faker",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/faker/-/faker-0.74.31.tgz",
-      "integrity": "sha512-W8wUmcGvuEG/TNi2Bid440BLBBR40uXGCciBjl783QnoGkounTZlU0FyhAHFQm2Vwo8RWaMgANyjQMENPDGiUA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/faker/-/faker-0.74.32.tgz",
+      "integrity": "sha512-nC0rI/1RroSM4pHInzsyA/DyxDEsLFfnK6FgfeRGWDFqZpsYuaYUuoEeGcBmMvu3uZwJFw8aBBsZsrcnijMgng==",
       "dependencies": {
         "@stacksjs/ts-faker": "^0.1.7"
       }
     },
-    "@stacksjs/feature-flags@0.74.31": {
+    "@stacksjs/feature-flags@0.74.32": {
       "name": "@stacksjs/feature-flags",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/feature-flags/-/feature-flags-0.74.31.tgz",
-      "integrity": "sha512-lZbGHioWcCz4czeXvGzbJQVtYogN/8DWmRKDgkZ1W1eZVjzUXamCj+Uv5MCJFzQdV3jDoGHFmYq7m6OyInVBtw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/feature-flags/-/feature-flags-0.74.32.tgz",
+      "integrity": "sha512-SZ0hYz6PvD0hlBflQhLP4qrq+/ERlUgsChqYOuF+6PKv2Foe0aD24MlLTGIBxsKR2twmUNgDJ2YahR6ohWhMLw==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*"
       }
     },
-    "@stacksjs/git@0.74.31": {
+    "@stacksjs/git@0.74.32": {
       "name": "@stacksjs/git",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/git/-/git-0.74.31.tgz",
-      "integrity": "sha512-lMGcoOkc8C9BWjVliSi7BsK7HgmbrmADCXFYZDIzpPdnOJ5qbTVmzFxpXSnApwU0A/M7/1xrebOVwzCrG/32IQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/git/-/git-0.74.32.tgz",
+      "integrity": "sha512-yPDISGdJhz2mnI9B+URt3QW8qeaLAlZ6rLgzks0U9uW8DnF4z5WGluMahqf15bl93cmETyvtf5sHPXSHWlr/UA==",
       "dependencies": {
         "cz-git": "^1.13.1"
       }
     },
-    "@stacksjs/github@0.74.31": {
+    "@stacksjs/github@0.74.32": {
       "name": "@stacksjs/github",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/github/-/github-0.74.31.tgz",
-      "integrity": "sha512-iu5uxpwRz5YexbA5MiTrUUOIHM5gAxyzgUbXybVY8wDqAVux/clUXR3ialvyER4xEe9RzqJQKhGRvzbsHHO4jQ=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/github/-/github-0.74.32.tgz",
+      "integrity": "sha512-xaDghgGUllqjGAZltnL5y/rLDJTNwoCK73E9XMbSO25D4BNLNCV6FfLsTSak/Ui1DwL+dg2gF9Upz/ejJ7+p9g=="
     },
     "@stacksjs/gitit@0.2.5": {
       "name": "@stacksjs/gitit",
@@ -2165,19 +2167,19 @@
         "gitit": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/health@0.74.31": {
+    "@stacksjs/health@0.74.32": {
       "name": "@stacksjs/health",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/health/-/health-0.74.31.tgz",
-      "integrity": "sha512-jSfeli1qkmKeKr2+AccpVbOiXOJQF+EI80+itgjEXAA6yNivXgugMVn+7JR2BRHuENtsbX7ajGKPC5/lelhtlw=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/health/-/health-0.74.32.tgz",
+      "integrity": "sha512-UX5VtZcXaDOyMiqQbZcWHk92hVi8f826GK2W3+s0pRTCa/v6zacxPx8d2LUttrLJVFf67dBmMkVYKLJ0tB4f1A=="
     },
-    "@stacksjs/http@0.74.31": {
+    "@stacksjs/http@0.74.32": {
       "name": "@stacksjs/http",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/http/-/http-0.74.31.tgz",
-      "integrity": "sha512-csrJnprlJT907RhfzAJCHmHR8RgAw+l+stk3P/2S/6pZDxf6jZXf+3hWBIK1OZ0nCEP4g+L8IZjNtYxfn5fxDQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/http/-/http-0.74.32.tgz",
+      "integrity": "sha512-kTagRoU0ydPltHboYDbT/O4pmgXAVbzJfMfx++5diKSh+WKoaMdvxpEP+rUGQT8mWhovndW7OL4Mf0OxHajWwA==",
       "dependencies": {
         "@stacksjs/httx": "^0.1.10"
       }
@@ -2197,12 +2199,12 @@
         "httx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/i18n@0.74.31": {
+    "@stacksjs/i18n@0.74.32": {
       "name": "@stacksjs/i18n",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/i18n/-/i18n-0.74.31.tgz",
-      "integrity": "sha512-iq10ZG9VZUInORCOm/d19k/YTG1cH+KJEzy55vJ1rYuiLotdxMI2KsiiXR2XjoOGUp85Dvh3mLbqxdmhxnd4CQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/i18n/-/i18n-0.74.32.tgz",
+      "integrity": "sha512-P3/G66Btfr6DX69QSUAh0uyB6X986Cn+6w9imFM6rKd3GF3gIPbnXyU5dNd50kfQYpqJHGBInuBlyAj0XgFHAA==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/logging": "workspace:*",
@@ -2210,33 +2212,33 @@
         "@stacksjs/ts-i18n": "^0.1.9"
       }
     },
-    "@stacksjs/image@0.74.31": {
+    "@stacksjs/image@0.74.32": {
       "name": "@stacksjs/image",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/image/-/image-0.74.31.tgz",
-      "integrity": "sha512-/2zdMQGOyS7Hef3QPBJSbVqqFovRfvYAwMtcqdL5cCYh+Al4oT9tW4jHZXcnkyqqu+LmUGDsan+9gR5O0GOUSA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/image/-/image-0.74.32.tgz",
+      "integrity": "sha512-K/9LBqPuWVSLTbv8v4dfBFfmtqbfM4Bdpg53tO8zFvmrG9x5jWmH5R4L2YNKm2F63VmfglRsdf4/h5bFnERkJQ==",
       "dependencies": {
         "@stacksjs/types": "workspace:*",
         "ts-images": "^0.2.11"
       }
     },
-    "@stacksjs/lint@0.74.31": {
+    "@stacksjs/lint@0.74.32": {
       "name": "@stacksjs/lint",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/lint/-/lint-0.74.31.tgz",
-      "integrity": "sha512-XdLud1TOq3iGPuM34kTBGRemG4NaNk8ukM+3Px4coaZx3sOwi1uGX0PBjAqejwfOzvU1MRMOjtc6jZREwUVGRg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/lint/-/lint-0.74.32.tgz",
+      "integrity": "sha512-P75CKa2rWqoDFAf+1eQZjr0L06mHrHh94mjIi+381fJhhKP7rNqDFUrsw78rB2+ZCzSLlyLBeuHbIrZMBDGEdQ==",
       "dependencies": {
         "pickier": "^0.1.58"
       }
     },
-    "@stacksjs/logging@0.74.31": {
+    "@stacksjs/logging@0.74.32": {
       "name": "@stacksjs/logging",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/logging/-/logging-0.74.31.tgz",
-      "integrity": "sha512-mtIJBhLF2C6mUx5XVqRRj+8rQa5hUu6Au2P56ygU2s4UMLRJv2YEfKjLvbzqZ9iUyVsCtVZilEYw9vauDm1i/A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/logging/-/logging-0.74.32.tgz",
+      "integrity": "sha512-TdDuLhuTXym4NZGgfXgl15kjy/sB7LVZYTx2354E7w5YQ9xroReLMMu/7CYGHe7WHe/nx2b7GE+UhI5YqLmksg==",
       "dependencies": {
         "@loghq/stacks": "^0.2.3",
         "@stacksjs/clarity": "^0.3.33",
@@ -2269,22 +2271,22 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/mail/-/mail-0.3.8.tgz",
       "integrity": "sha512-KF6yOTCieIaVvYOK72CGVFxMSx2XpaRaDbIt5yY4WmTs4d6ZFsr4UKhk/4G0psQjCXx7ATx+i11JVOaPZde3pQ=="
     },
-    "@stacksjs/mobile@0.74.31": {
+    "@stacksjs/mobile@0.74.32": {
       "name": "@stacksjs/mobile",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/mobile/-/mobile-0.74.31.tgz",
-      "integrity": "sha512-SWkGLXJZCAbHwfuLPbNzev3YLQwqG6VaRT9H880D1+rWEaRjU9swJCbttfHgnGRuKapOLnxySAkQodBdw+kvdQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/mobile/-/mobile-0.74.32.tgz",
+      "integrity": "sha512-jW96klCXSwfc4Mp0HL2KqqK5bvSIr0mpwC64xhv9h1AYgoQOQrnqEYERaleZbUbmf2lb+0n+0XyROIU2E9B51A==",
       "dependencies": {
         "craft-native": ">=0.0.72"
       }
     },
-    "@stacksjs/newsletter@0.74.31": {
+    "@stacksjs/newsletter@0.74.32": {
       "name": "@stacksjs/newsletter",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/newsletter/-/newsletter-0.74.31.tgz",
-      "integrity": "sha512-AOHeB09wlo4KMwMKye+A6h+TZM3jasGbRoF/1ygA29vqpELENPzze60CsJOPphHH4ywIcksl+ceRIViL+IOC8Q==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/newsletter/-/newsletter-0.74.32.tgz",
+      "integrity": "sha512-hgLbTUW0szFbHF84pqFunohApoq7Wp4zZ72AF3cCOPq4XLGCDB/Q/60W1DWgeDT86YvTQnRtQzYSw03NOIPrnA==",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
         "@stacksjs/email": "workspace:*",
@@ -2292,12 +2294,12 @@
         "@stacksjs/queue": "workspace:*"
       }
     },
-    "@stacksjs/notifications@0.74.31": {
+    "@stacksjs/notifications@0.74.32": {
       "name": "@stacksjs/notifications",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/notifications/-/notifications-0.74.31.tgz",
-      "integrity": "sha512-UqVvvgaUjAQF2J0XnZIeiC6Kydh84gDsCRORwxxKt3MmT5pJQeOAtV6taP/CdJyVFl2VT4Pn6hh5VVJnfxyjJA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/notifications/-/notifications-0.74.32.tgz",
+      "integrity": "sha512-l+JsF3kne9USwjroeJQHF4xVI2LoIs2okN+X+wEUMUm4D12fvv/QX7iw14b1VTPlB2nccPwt1aQl87DH6yCIkQ==",
       "dependencies": {
         "@stacksjs/chat": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -2309,23 +2311,23 @@
         "@stacksjs/sms": "workspace:*"
       }
     },
-    "@stacksjs/objects@0.74.31": {
+    "@stacksjs/objects@0.74.32": {
       "name": "@stacksjs/objects",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/objects/-/objects-0.74.31.tgz",
-      "integrity": "sha512-TJAcsfP9lrmtlUtsV+dQr69G9Cs7IkLgcNaNJntlMfdg6pUta//wvz1Euot0k0LPgXf5K/BnXOvBeCUPHkpQAg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/objects/-/objects-0.74.32.tgz",
+      "integrity": "sha512-uS2Y597j+vtYh20czssWzh1eorXuehvI8hVjrp+hOEPhTBT7AgyU7if/bf4cINr5Zy5GEKUtk0lW8UnbVQNbBQ==",
       "dependencies": {
         "@stacksjs/utils": "workspace:*",
         "@stacksjs/validation": "workspace:*"
       }
     },
-    "@stacksjs/orm@0.74.31": {
+    "@stacksjs/orm@0.74.32": {
       "name": "@stacksjs/orm",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/orm/-/orm-0.74.31.tgz",
-      "integrity": "sha512-tvGQnoFN2vv24FtawUmv6hd8zWkBX8o5zjsWGf0dMUIDb1gB5ilNKC9S5MoJAcnScabfdR1OXbPS0GAC76lAQQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/orm/-/orm-0.74.32.tgz",
+      "integrity": "sha512-gzylN1X7AExUnjksPCdARBsJda5GLNJiNR7yMBP211A8UR1EHUZbwMZWGYa2oTA0Elhki/MLHTP+3FQwb9sJsw==",
       "dependencies": {
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -2356,19 +2358,19 @@
       },
       "optionalPeers": ["@stacksjs/auth", "@stacksjs/payments", "@stacksjs/queue", "@stacksjs/search-engine", "stripe"]
     },
-    "@stacksjs/path@0.74.31": {
+    "@stacksjs/path@0.74.32": {
       "name": "@stacksjs/path",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/path/-/path-0.74.31.tgz",
-      "integrity": "sha512-mqn3ZuGE7a2HkmPMsEQLTnYyNJGqA5Gb8PNKUrfX+ntrn1Vy55ARSQgWZL1yBW36nesRCopwFltrrZ0vOCtt1w=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/path/-/path-0.74.32.tgz",
+      "integrity": "sha512-zgEC+blQKZl9qm/wd5GbsMX7Kj3sxHaVYiL/5ytow7bNhLj1LudaadohbhzTK/T3F51Fm8ao1qBgOn9BcfHb+g=="
     },
-    "@stacksjs/payments@0.74.31": {
+    "@stacksjs/payments@0.74.32": {
       "name": "@stacksjs/payments",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/payments/-/payments-0.74.31.tgz",
-      "integrity": "sha512-TyOX1TR43eAOevMBtbSb650Pqn7YbtjS4K8k2Qj1sQI02P/ubuQaFWsiyxquHRzZc8TeqQuzk1LFheDIsltEXg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/payments/-/payments-0.74.32.tgz",
+      "integrity": "sha512-Q10ecdKcR52gAyCbxiaSk0jdqOq3pmG4FFusuNvO2Du4l81HERD+2zoWw3G4Z0ClnedoSTqr/evYYKwFup00Cg==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/database": "workspace:*",
@@ -2382,32 +2384,32 @@
       },
       "optionalPeers": ["@stripe/stripe-js", "stripe"]
     },
-    "@stacksjs/push@0.74.31": {
+    "@stacksjs/push@0.74.32": {
       "name": "@stacksjs/push",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/push/-/push-0.74.31.tgz",
-      "integrity": "sha512-JEJQWglxtirZqlghzKhKw3QX0LBYez3hH8WKQP7/MoNd8iEnwGrCRv4iQ+DK66/dXnfKHx8VCoK1yBqIU8GJnQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/push/-/push-0.74.32.tgz",
+      "integrity": "sha512-CDeVLTlL8uF4/vMLZqXODoAiyGNaKrvEUb3r9XblRq4npfaJUecWLqiwaxu8dbPzSjPrfKwzJJSastvp2T22+Q==",
       "dependencies": {
         "@stacksjs/cli": "workspace:*"
       }
     },
-    "@stacksjs/query-builder@0.74.31": {
+    "@stacksjs/query-builder@0.74.32": {
       "name": "@stacksjs/query-builder",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/query-builder/-/query-builder-0.74.31.tgz",
-      "integrity": "sha512-pxLSCupHxyuhPThQCMTFFpwNKEGs6obz4TvkKLYpVLWbS+r0RLgBH6dmSvrAAATAHMSIZpvlDzbmTRjDtC2PaQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/query-builder/-/query-builder-0.74.32.tgz",
+      "integrity": "sha512-zT3zor764Hpxe2XWa74tzeibw4wswqGREFgYS0BEg5LBrFEHhv/sd5K6OJ/jdhI1UgoIUQGbXeG/nPYI+mCdDw==",
       "dependencies": {
         "bun-query-builder": "^0.2.69"
       }
     },
-    "@stacksjs/queue@0.74.31": {
+    "@stacksjs/queue@0.74.32": {
       "name": "@stacksjs/queue",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/queue/-/queue-0.74.31.tgz",
-      "integrity": "sha512-vNzQ2pJWosJhzikyIAHrEbfmaL8UIklrdXZQZw+jQhNCFL+Q5pLNfafIG956Yk4wrLR726tV7k+ARW8O8ceXiA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/queue/-/queue-0.74.32.tgz",
+      "integrity": "sha512-5NQPPZoSwuuVatMeQ23YjO+laWrNq9lCibAx3GYFN2/hre2jzE76FhJ0mCE4nqh7ynWiPzOBelV1cswtpuHLcg==",
       "dependencies": {
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/bun-queue": "^0.1.8",
@@ -2425,46 +2427,46 @@
       },
       "optionalPeers": ["@stacksjs/email", "@stacksjs/router"]
     },
-    "@stacksjs/realtime@0.74.31": {
+    "@stacksjs/realtime@0.74.32": {
       "name": "@stacksjs/realtime",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/realtime/-/realtime-0.74.31.tgz",
-      "integrity": "sha512-BqjM6jyVrF/fiWwIrjNB7VisFRYQW2FZxxuJMpyecMS5L4+biybxHBUTotf+nMIQ9vy6qhINdFSPogPHyT8q6Q==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/realtime/-/realtime-0.74.32.tgz",
+      "integrity": "sha512-mQRJCqDty/pYWcterbGLN8dXSAo8GfnB6YI3NNJXs/g26DicP2lN9zapspIEZyT2HhcDljom1YG5ViGNE6phBA==",
       "dependencies": {
         "@stacksjs/logging": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "ts-broadcasting": "^0.0.9"
       }
     },
-    "@stacksjs/registry@0.74.31": {
+    "@stacksjs/registry@0.74.32": {
       "name": "@stacksjs/registry",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/registry/-/registry-0.74.31.tgz",
-      "integrity": "sha512-Cf47LAgliDViI/FqJpMDrb05wgExJVKWvQdmr/b4oLiS6rrxC88VKblf0lhFI+WvFXcthznRyTa6QFtFiOY9aw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/registry/-/registry-0.74.32.tgz",
+      "integrity": "sha512-Ly205TRU5McH+Mb0+me7u961weXs4goUmGGj8djTbK+ydpj+lPC6MflKpISGraVRfUwiODQki6p/qpWMwbZN8g==",
       "dependencies": {
         "@stacksjs/types": "workspace:*"
       }
     },
-    "@stacksjs/repl@0.74.31": {
+    "@stacksjs/repl@0.74.32": {
       "name": "@stacksjs/repl",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/repl/-/repl-0.74.31.tgz",
-      "integrity": "sha512-hJrwzK8JsCL7SXbTmMtvc30dyeinjIioWpMifHg4+MqX38a5C99xx/pKvS31M9h6arqZLGF6Rb1Yb+Job7QE2A==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/repl/-/repl-0.74.32.tgz",
+      "integrity": "sha512-QnHFBO49wk97ZzMx98ibfaM28WiFQl4RJdw5TVWhzoaWsqoOsuaOr8TNxgkEPOKglBqlxPGWA6ZWoomMGFhcdQ==",
       "dependencies": {
         "@stacksjs/tinker": "workspace:*"
       }
     },
-    "@stacksjs/router@0.74.31": {
+    "@stacksjs/router@0.74.32": {
       "name": "@stacksjs/router",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/router/-/router-0.74.31.tgz",
-      "integrity": "sha512-IWjztdia2yzlyRdbiZxNnN83CsAWz0DZEvUuPIZksmg3ZbghmTKURDflX5JcDgDa0Us8LL54son74OjDNygCXQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/router/-/router-0.74.32.tgz",
+      "integrity": "sha512-ThPf8DUoaZFKSIzT5lQsz9naZ+jQn6vnQZLdDcrPCcDDAowzueWZ/cEfd4IY4u/8beLmH9MCyuhfAVcZmMdsgQ==",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.1.11",
+        "@stacksjs/bun-router": "^0.1.15",
         "@stacksjs/cache": "workspace:*",
         "@stacksjs/collections": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2507,12 +2509,12 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/sanitizer/-/sanitizer-0.2.279.tgz",
       "integrity": "sha512-eDEexdiWZ5shxCkojFx+3hkuw6xv57YD6ZU9xt26yqWNyLsPqXVivgaMRpH4UuMlGLnaIDiX9U8g3FD4rjED5w=="
     },
-    "@stacksjs/scheduler@0.74.31": {
+    "@stacksjs/scheduler@0.74.32": {
       "name": "@stacksjs/scheduler",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/scheduler/-/scheduler-0.74.31.tgz",
-      "integrity": "sha512-27mDMsllaaPAk52rJkYueyq1O0PSVer75v3zTxWGvQWe4+nZmAi0cReN4qPs8VPZ5d0NW5DQoevHO5XGNzJFQA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/scheduler/-/scheduler-0.74.32.tgz",
+      "integrity": "sha512-U6FkMbiS/MayUA3LBgBBvxPGZNMDWb/pJ5L8qHWs9eHKGNKGXs45P1dqjJbKrXmvHGqB7b2LZKs3QTHZuq9r+Q==",
       "dependencies": {
         "@stacksjs/action-runner": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -2528,12 +2530,12 @@
         "@stacksjs/types": "workspace:*"
       }
     },
-    "@stacksjs/search-engine@0.74.31": {
+    "@stacksjs/search-engine@0.74.32": {
       "name": "@stacksjs/search-engine",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/search-engine/-/search-engine-0.74.31.tgz",
-      "integrity": "sha512-4x1x/Il9fRPQfXcwD0795mTWk6HwIeJ201QPh17HqwLuA3gr3MRkqAibuqZoHWqGKOsm7NdTsN08YbFUFqW1Lg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/search-engine/-/search-engine-0.74.32.tgz",
+      "integrity": "sha512-ldPpGvYz94x7N4xL2dX7o2fSEiytMW3n7ARu843/GR525B+UNwRsbdAtYZia/B8pQWQ4JTC9z4ROY4TBqIV17w==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
@@ -2548,23 +2550,23 @@
       },
       "optionalPeers": ["meilisearch"]
     },
-    "@stacksjs/security@0.74.31": {
+    "@stacksjs/security@0.74.32": {
       "name": "@stacksjs/security",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/security/-/security-0.74.31.tgz",
-      "integrity": "sha512-AKXGoZTQm95IkrRSyFs6hJbHky34YcdzNZFXn/HVDJsQWXMoA1Ms412TTbfrHeJEdAHBA1a6w5PvSIISfcwrZQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/security/-/security-0.74.32.tgz",
+      "integrity": "sha512-zW5lk+ATGDFfhqE8AD/CRrQFgQ7pmvbhYCenmMnbvIM0y86ARaX0pWGvRYXCLk4WcU2CCojWmZ4a2/F3N3fhIw==",
       "dependencies": {
         "@stacksjs/config": "workspace:*",
         "ts-security-crypto": "0.0.2"
       }
     },
-    "@stacksjs/server@0.74.31": {
+    "@stacksjs/server@0.74.32": {
       "name": "@stacksjs/server",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/server/-/server-0.74.31.tgz",
-      "integrity": "sha512-MkLq8fSPJPNIuXZJmwTxY9Q148X712DU//sg/c/deZYhCREkYeNsFse0QNF9bVFdBYtJP3pApAfuQ+JeBV4pcw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/server/-/server-0.74.32.tgz",
+      "integrity": "sha512-yDceNzSmayViNpZU0l4FeibSrgKChICnAHdeY1MFlZGln/zkRW1lBSyvZ9V5EjHw/fCE3Lr2/WjYPVgaeeLivA==",
       "dependencies": {
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2578,19 +2580,19 @@
         "bun-plugin-auto-imports": "^0.4.2"
       }
     },
-    "@stacksjs/shell@0.74.31": {
+    "@stacksjs/shell@0.74.32": {
       "name": "@stacksjs/shell",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/shell/-/shell-0.74.31.tgz",
-      "integrity": "sha512-Rhi/dVYcaTDrw3Fr+R7ezmTTw63svTF64MlUYQnmMETgIFZiKU/OqKjG+fcKaqGMYBGzk+R//Iic4SgpknnsrA=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/shell/-/shell-0.74.32.tgz",
+      "integrity": "sha512-oh/pQr0+Zm3zaA43BxJ2jED/qoJ9KjDFP/Vwo/K3PPsfJzbR1sszDfSi29VD1qjdpMk6mqBrG51+jB1rxfXoqA=="
     },
-    "@stacksjs/sites@0.74.31": {
+    "@stacksjs/sites@0.74.32": {
       "name": "@stacksjs/sites",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/sites/-/sites-0.74.31.tgz",
-      "integrity": "sha512-Om2cb6TozzGzchwaGAK+JZo7VyTkhT40phOD4TEvRmRLzSFQXB6ggBpnS8pPqGnKbObwYVhAd1YSclQg8MtHtA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/sites/-/sites-0.74.32.tgz",
+      "integrity": "sha512-aZ6mar0Ajig83SHbvi2rWicfSmkyi4zSiy0mzic+qg6Yqr39pCVMG39ym4YcFiOQ6r96A0iQM/E7FYPA4ds6WA==",
       "dependencies": {
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -2602,56 +2604,56 @@
       },
       "optionalPeers": ["@stacksjs/cms"]
     },
-    "@stacksjs/skills@0.74.31": {
+    "@stacksjs/skills@0.74.32": {
       "name": "@stacksjs/skills",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/skills/-/skills-0.74.31.tgz",
-      "integrity": "sha512-ZvknpGJHGH/JzOupcTzg3UmRZUG7LmOnzIs8nanL2+WkCEC78I0MwwS8Cn1+7x5CP9Da6MhISaeT1AkpFC5ixA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/skills/-/skills-0.74.32.tgz",
+      "integrity": "sha512-yufIJMVOhOi8PT7iUNFY56remfSQGdi1wHdAniev4u5pHPSrQvfFFBP+Z7q4WicdEvwuRD0yZwaOmGXDvRhKFA==",
       "dependencies": {
         "@stacksjs/path": "workspace:*",
         "@stacksjs/storage": "workspace:*"
       }
     },
-    "@stacksjs/slug@0.74.31": {
+    "@stacksjs/slug@0.74.32": {
       "name": "@stacksjs/slug",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/slug/-/slug-0.74.31.tgz",
-      "integrity": "sha512-iZ7xCGOdMjVAMPvtliO9Bm0bmssCGkJiT1OTTULJH5DiZesWpjnAxVwVAhzG93wBhiVinaN+X+kvbSYx4nExcQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/slug/-/slug-0.74.32.tgz",
+      "integrity": "sha512-YdWEyMwz0/6H4dGHRIvwrt8eKQNdJe4TwZR4+eRsyZ5wVhA2oRjtlCjz0jwzV0rNKb8CfmmC/J/LMDpbHDpU4g==",
       "dependencies": {
         "@stacksjs/database": "workspace:*",
         "ts-slug": "^0.1.0"
       }
     },
-    "@stacksjs/sms@0.74.31": {
+    "@stacksjs/sms@0.74.32": {
       "name": "@stacksjs/sms",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/sms/-/sms-0.74.31.tgz",
-      "integrity": "sha512-ava0r/zY7Kf3N6CzKYReqiGF9Q+xMbLtJYP9i4avAVCHCPJdXo+Avqqb6Xe77bTJsM7/s7G1csxyBEve3giQeQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/sms/-/sms-0.74.32.tgz",
+      "integrity": "sha512-TFpOQIHFMNskfOIZz7Lg+SyVnJRohI3XuAcXc10C8iKgy48T50LOgDL677hT28/l/H4ZUqvkoJffD8AdBb9QqA==",
       "dependencies": {
         "@stacksjs/database": "workspace:*"
       }
     },
-    "@stacksjs/socials@0.74.31": {
+    "@stacksjs/socials@0.74.32": {
       "name": "@stacksjs/socials",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/socials/-/socials-0.74.31.tgz",
-      "integrity": "sha512-/VCrQDTBVlcxDaRPtu2al+Ds8tUzWXSVyshAP+ZEugpAY5/dr53x/JHDql2CIE1jB0bndH2pSOZyhtUyxPh22g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/socials/-/socials-0.74.32.tgz",
+      "integrity": "sha512-VuN4t6x5Ggq1ke8B2eMeRKCWNzZ7NhThowNwjCQsnmgS+Of7RWd/SSyKJLxS6DugtXrcdqme/aS3a6OVLhgr2g==",
       "dependencies": {
         "@stacksjs/api": "workspace:*",
         "@stacksjs/composables": "workspace:*",
         "@stacksjs/config": "workspace:*"
       }
     },
-    "@stacksjs/storage@0.74.31": {
+    "@stacksjs/storage@0.74.32": {
       "name": "@stacksjs/storage",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/storage/-/storage-0.74.31.tgz",
-      "integrity": "sha512-FLiHd90UIirfETaKx0UsDuOr1rwVdq6OIVhOyw8WZZsHiufAfDHtIG3uuMMpQ+C1nAqyWbEX+81HJDpcjfLrww==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/storage/-/storage-0.74.32.tgz",
+      "integrity": "sha512-OLBrLrPdkiK654zaPmLFZHRdF8C1toQ3nWcvTaahESUafGi5QaTPBO8ssAlhOp2fJnPpmHVAhMz0N2pHLnad7g==",
       "dependencies": {
         "@stacksjs/arrays": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -2665,12 +2667,12 @@
         "ts-images": "^0.2.11"
       }
     },
-    "@stacksjs/strings@0.74.31": {
+    "@stacksjs/strings@0.74.32": {
       "name": "@stacksjs/strings",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/strings/-/strings-0.74.31.tgz",
-      "integrity": "sha512-aVM7zdKsSVPXwzPsOqgYos3cvFD1uR9LMAj/GhhZVC7ArAwNFjsk8FKwxfEiDMEvARkMyb5F+y0t88AOCWXjqA=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/strings/-/strings-0.74.32.tgz",
+      "integrity": "sha512-o0X9RKV+JvJH1MFhVOdHurgPSy7OY5wV6MrKhOr4jz0yeexEnroxOH84TGNHaTATXq1q0bOek05PMvgxUtj97g=="
     },
     "@stacksjs/stx@0.2.279": {
       "name": "@stacksjs/stx",
@@ -2695,12 +2697,12 @@
         "stx": "./dist/cli.js"
       }
     },
-    "@stacksjs/testing@0.74.31": {
+    "@stacksjs/testing@0.74.32": {
       "name": "@stacksjs/testing",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/testing/-/testing-0.74.31.tgz",
-      "integrity": "sha512-VkSmFrXQDdVv9wasJD1uBqKcnjXFWkXHZ030zCE7XTtdQOZv94YUHsar7rSKhPws1GFPP7b9G7Qb38UcVFFPKw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/testing/-/testing-0.74.32.tgz",
+      "integrity": "sha512-pLxG6zEguLDJpqO1atYkU7HYe54V80bqOxMvbn8dEibw277kjP0jEw4gcDhPtUzIvBkOpa1SwWzMlIW1SVjVGw==",
       "dependencies": {
         "@stacksjs/auth": "workspace:*",
         "@stacksjs/cache": "workspace:*",
@@ -2712,12 +2714,12 @@
         "@stacksjs/ts-cloud": "^0.12.15"
       }
     },
-    "@stacksjs/tinker@0.74.31": {
+    "@stacksjs/tinker@0.74.32": {
       "name": "@stacksjs/tinker",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/tinker/-/tinker-0.74.31.tgz",
-      "integrity": "sha512-p38hBAFAGGA/whOcOzohhA3gvEsrTA/bsL/Sn+MwV7iRfo//ygs5XbHFlym19sq/rdkUJACi9cA4C+RzhwRnww=="
+      "resolved": "https://registry.npmjs.org/@stacksjs/tinker/-/tinker-0.74.32.tgz",
+      "integrity": "sha512-2v24yBP2cQj+mFLaGCrsZ2oXh5R08GCAqFIuaclJD/kJH5+extVYtI6JvCgWfIPYmr/AOoSDVpOIXQXVyu5n1g=="
     },
     "@stacksjs/tlsx@0.13.19": {
       "name": "@stacksjs/tlsx",
@@ -2843,22 +2845,22 @@
       "resolved": "https://registry.npmjs.org/@stacksjs/ts-xml/-/ts-xml-0.1.2.tgz",
       "integrity": "sha512-G20EuKCmpwWwnXfFlX0kxCXnJ6ocTgBl8lcHkOzmomC8L/Ld+UKeNLlvOQf9ArnS7/SHUQ2+fZpM0t6lhwoyPw=="
     },
-    "@stacksjs/tunnel@0.74.31": {
+    "@stacksjs/tunnel@0.74.32": {
       "name": "@stacksjs/tunnel",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/tunnel/-/tunnel-0.74.31.tgz",
-      "integrity": "sha512-ivIE5wppYX/hbHcecyFvw1fGCuAAVFGnEPzPsFSgBiMogmfWosbbnqeMn6ymn2hLIJ0StyChny82KoABFiDc3w==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/tunnel/-/tunnel-0.74.32.tgz",
+      "integrity": "sha512-8Iic2Ez/tHiN+kcolCHLvGvU9aHu8VconT1r7/vbJGrM75WldmmCIj0S/Epo3h7rkf7pIEwczhVu1KXsAcx/eg==",
       "dependencies": {
         "localtunnels": "^0.2.13"
       }
     },
-    "@stacksjs/types@0.74.31": {
+    "@stacksjs/types@0.74.32": {
       "name": "@stacksjs/types",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/types/-/types-0.74.31.tgz",
-      "integrity": "sha512-IOb/aaNsqBpo8LRb3devB78E2e/hyv34p+AOSc9N4OTnTdeFCXlt5ZjfI2/yp10G+EIIov1gKmSNJrZ1egeERw==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/types/-/types-0.74.32.tgz",
+      "integrity": "sha512-Loj5qsH+0PkWVNmdmIxvGSoYQ5wPOJtIOtxbCX0WkPHhncQz89kmdD8OVP2y6OHviKN/miwAhv3giRsnX7Jf/g==",
       "dependencies": {
         "@stacksjs/bunpress": "^0.2.8",
         "@stacksjs/clapp": "^0.2.12",
@@ -2873,24 +2875,24 @@
       },
       "optionalPeers": ["meilisearch"]
     },
-    "@stacksjs/ui@0.74.31": {
+    "@stacksjs/ui@0.74.32": {
       "name": "@stacksjs/ui",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ui/-/ui-0.74.31.tgz",
-      "integrity": "sha512-s2utXAGLmTZ4BxByh3Hz96L1PTjWtzur+8nBNAONsviPPgChMexXV0dek8kZ++EaXM1D0PEZelKLUAEMwGoQZA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/ui/-/ui-0.74.32.tgz",
+      "integrity": "sha512-A4MdW/kNHCT4l+q1l94blS+Jij5b+ySUVgX2rpxNrsaeJB1QemFJ1jefbohh0mrXF+1JSQYUeVl1526aAoFQIw==",
       "dependencies": {
         "@stacksjs/components": "^0.2.246",
         "@stacksjs/config": "workspace:*",
         "@stacksjs/ts-css": "^0.3.2"
       }
     },
-    "@stacksjs/utils@0.74.31": {
+    "@stacksjs/utils@0.74.32": {
       "name": "@stacksjs/utils",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/utils/-/utils-0.74.31.tgz",
-      "integrity": "sha512-8UzCNt+vR0T8XGY8A7f+vKvj4d33gkOlpUuxhN990TPtMAaHZSFz+i6YCXhHcmCdk2sNIqzFQ9hq7JmSJlhmiQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/utils/-/utils-0.74.32.tgz",
+      "integrity": "sha512-PifCJCRLohKe6D8UkeEVLPYhGOEJYjfFbG002YaY6SzaaXPyRk+rG4M9+lvmveJyj7qIKLSYnv03mOVU/9aHQQ==",
       "dependencies": {
         "@stacksjs/browser": "workspace:*",
         "@stacksjs/cli": "workspace:*",
@@ -2904,12 +2906,12 @@
         "@stacksjs/types": "workspace:*"
       }
     },
-    "@stacksjs/validation@0.74.31": {
+    "@stacksjs/validation@0.74.32": {
       "name": "@stacksjs/validation",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/validation/-/validation-0.74.31.tgz",
-      "integrity": "sha512-lBOt81oqZFfl7oCLS+ZhEuVv2Zv9vcmTxUrPjOD9pALWVvYXj5OMKIGAYLI118PbYQbsPe24JbsdOFB53UsjQQ==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/validation/-/validation-0.74.32.tgz",
+      "integrity": "sha512-+swUVvTC5cizkmSvIztp3hbSjaoITb+zYrd4gFI1baSZsYmga5XG8rXD8AYLxcR4fn+k41hrzwRs+VECt0F0eQ==",
       "dependencies": {
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/path": "workspace:*",
@@ -2923,23 +2925,23 @@
       },
       "optionalPeers": ["@stacksjs/database"]
     },
-    "@stacksjs/video@0.74.31": {
+    "@stacksjs/video@0.74.32": {
       "name": "@stacksjs/video",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/video/-/video-0.74.31.tgz",
-      "integrity": "sha512-8vDw45p0xxleWoWYWlx751FPVKRWuFF0wk7w4Uxzgvq6zGCImX866Eyhdyz+LOr7F2geIfMDgwUa7mPK/qF7Zg==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/video/-/video-0.74.32.tgz",
+      "integrity": "sha512-js5jWjgNcft5cgNCO+sjz1zXk+nIzQGDEOKY4FFgyfsp6ii/gsTMVUGyOpbehAcFQmdfq1RCX9lRY9zRS4y5Qg==",
       "dependencies": {
         "ts-video-player": "^0.1.1",
         "ts-videos": "^0.1.1"
       }
     },
-    "@stacksjs/whois@0.74.31": {
+    "@stacksjs/whois@0.74.32": {
       "name": "@stacksjs/whois",
-      "version": "0.74.31",
+      "version": "0.74.32",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/whois/-/whois-0.74.31.tgz",
-      "integrity": "sha512-+4cBs+pAscroNHuydI4xg5PEYQz5/+nwrHwljlu7tYrD3UUbxtByiC/vK0X1J1ch64M+k+jhFFMUIEbuFMMSVA==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/whois/-/whois-0.74.32.tgz",
+      "integrity": "sha512-BaGm4pyC7Q4XstMGf5aoi+kiE38cSyhXohH1Zcx6P3Pnb1u6qQNEK5eJjOnKayAEieClMf+XYMM/LrKZ172Z0w==",
       "dependencies": {
         "@stacksjs/logging": "workspace:*"
       }
