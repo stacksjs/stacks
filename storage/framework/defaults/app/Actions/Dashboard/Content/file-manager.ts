@@ -443,6 +443,72 @@ export async function deleteDashboardFile(
   throw new DashboardFileError(`Storage item "${path}" was not found.`, 404)
 }
 
+/**
+ * Rename a file or a folder in place.
+ *
+ * The parent stays put and only the last segment changes, which is what a
+ * rename in a file manager means - moving something elsewhere is a different
+ * gesture and would want a different endpoint.
+ *
+ * A directory is renamed by moving what is inside it rather than by moving the
+ * directory. On a local disk `moveFile` is `fs.rename` and would happily move a
+ * whole tree, but object storage has no directories at all: a folder there is a
+ * shared key prefix, and renaming it means rewriting the key of every object
+ * under it. Doing it the same way on both is the only version that is not
+ * quietly wrong on one of them.
+ *
+ * See stacksjs/stacks#245.
+ */
+export async function renameDashboardFile(
+  input: { disk?: string, path: unknown, name: unknown },
+  manager: Manager = Storage,
+): Promise<{ from: string, to: string, type: 'file' | 'directory', moved: number }> {
+  const selected = resolveDisk(manager, input.disk)
+  const from = normalizeDashboardFilePath(input.path)
+  const name = normalizeDashboardFileName(input.name)
+
+  const separator = from.lastIndexOf('/')
+  const parent = separator === -1 ? '' : from.slice(0, separator)
+  const to = [parent, name].filter(Boolean).join('/')
+
+  if (to === from)
+    throw new DashboardFileError('The new name matches the current one.', 422, { name: 'Choose a different name.' })
+
+  if (await selected.adapter.fileExists(to) || await selected.adapter.directoryExists(to))
+    throw new DashboardFileError(`An item named "${name}" already exists.`, 409, { name: 'Choose a different name.' })
+
+  if (await selected.adapter.fileExists(from)) {
+    await selected.adapter.moveFile(from, to)
+    return { from, to, type: 'file', moved: 1 }
+  }
+
+  if (!(await selected.adapter.directoryExists(from)))
+    throw new DashboardFileError(`Storage item "${from}" was not found.`, 404)
+
+  // Collected before anything moves. Mutating a tree while iterating it is how
+  // a rename half-completes and leaves files under both names.
+  const files: string[] = []
+  for await (const entry of selected.adapter.list(from, { deep: true })) {
+    const path = normalizeListedPath(String(entry.path))
+    if (entry.type === 'file' && path)
+      files.push(path)
+  }
+
+  for (const file of files) {
+    // `list` may answer absolute-from-root or relative-to-`from` paths
+    // depending on the adapter; both end with the part that has to be kept.
+    const relative = file.startsWith(`${from}/`) ? file.slice(from.length + 1) : file
+    await selected.adapter.moveFile(file.startsWith(`${from}/`) ? file : `${from}/${relative}`, `${to}/${relative}`)
+  }
+
+  // An empty source is what is left, and it should not be: a rename leaves one
+  // item, not two. Directories are implicit on object storage, so this is a
+  // no-op there rather than a failure.
+  await selected.adapter.deleteDirectory(from)
+
+  return { from, to, type: 'directory', moved: files.length }
+}
+
 export async function uploadDashboardFiles(
   input: { disk?: string, path?: string, files: UploadedFileLike[] },
   manager: Manager = Storage,

@@ -3236,6 +3236,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * PATCH /api/dashboard/files
+   */
+  patchDashboardFiles(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PATCH", "/api/dashboard/files", {}, [], false, options)
+  },
+
+  /**
    * POST /api/dashboard/files/directories
    */
   postDashboardFilesDirectories(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

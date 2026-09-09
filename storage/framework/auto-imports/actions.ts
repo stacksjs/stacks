@@ -334,6 +334,7 @@ export const actions = {
   'Actions/Dashboard/Content/FileDestroyAction': '../defaults/app/Actions/Dashboard/Content/FileDestroyAction.ts',
   'Actions/Dashboard/Content/FileDirectoryStoreAction': '../defaults/app/Actions/Dashboard/Content/FileDirectoryStoreAction.ts',
   'Actions/Dashboard/Content/FileIndexAction': '../defaults/app/Actions/Dashboard/Content/FileIndexAction.ts',
+  'Actions/Dashboard/Content/FileRenameAction': '../defaults/app/Actions/Dashboard/Content/FileRenameAction.ts',
   'Actions/Dashboard/Content/FileUploadAction': '../defaults/app/Actions/Dashboard/Content/FileUploadAction.ts',
   'Actions/Dashboard/Content/PageDestroyAction': '../defaults/app/Actions/Dashboard/Content/PageDestroyAction.ts',
   'Actions/Dashboard/Content/PageIndexAction': '../defaults/app/Actions/Dashboard/Content/PageIndexAction.ts',

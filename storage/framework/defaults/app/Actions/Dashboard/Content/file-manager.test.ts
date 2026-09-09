@@ -10,6 +10,7 @@ import {
   normalizeDashboardFileName,
   normalizeDashboardFileLimit,
   normalizeDashboardFilePath,
+  renameDashboardFile,
   uploadDashboardFiles,
 } from './file-manager'
 
@@ -161,5 +162,80 @@ describe('dashboard file manager', () => {
     expect(() => normalizeDashboardFilePath('/absolute')).toThrow('relative')
     expect(() => normalizeDashboardFileName('.hidden')).toThrow('Hidden')
     expect(() => normalizeDashboardFileName('nested/name')).toThrow('separators')
+  })
+})
+
+describe('renameDashboardFile', () => {
+  test('renames a file and leaves nothing behind under the old name', async () => {
+    const disk = manager.disk('public')
+    await disk.write('documents/readme.txt', 'hello')
+
+    const result = await renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager)
+
+    expect(result).toEqual({ from: 'documents/readme.txt', to: 'documents/guide.txt', type: 'file', moved: 1 })
+    expect(await disk.fileExists('documents/guide.txt')).toBe(true)
+    expect(await disk.fileExists('documents/readme.txt')).toBe(false)
+    expect(await disk.readToString('documents/guide.txt')).toBe('hello')
+  })
+
+  test('renames at the top level, where there is no parent to keep', async () => {
+    const disk = manager.disk('public')
+    await disk.write('notes.txt', 'top level')
+
+    expect(await renameDashboardFile({ path: 'notes.txt', name: 'todo.txt' }, manager))
+      .toEqual({ from: 'notes.txt', to: 'todo.txt', type: 'file', moved: 1 })
+    expect(await disk.readToString('todo.txt')).toBe('top level')
+  })
+
+  /**
+   * The parent is kept deliberately. Renaming is changing the last segment;
+   * moving something elsewhere is a different gesture and would want its own
+   * endpoint, so a name is a name and never a path.
+   */
+  test('refuses a name that is really a path', async () => {
+    await manager.disk('public').write('a/b.txt', 'x')
+
+    await expect(renameDashboardFile({ path: 'a/b.txt', name: '../escaped.txt' }, manager))
+      .rejects.toMatchObject({ status: 422 })
+    await expect(renameDashboardFile({ path: 'a/b.txt', name: 'nested/deep.txt' }, manager))
+      .rejects.toMatchObject({ status: 422 })
+  })
+
+  test('renames a directory by moving what is inside it, at any depth', async () => {
+    const disk = manager.disk('public')
+    await disk.write('images/logo.png', 'a')
+    await disk.write('images/icons/favicon.png', 'b')
+
+    const result = await renameDashboardFile({ path: 'images', name: 'media' }, manager)
+
+    expect(result).toEqual({ from: 'images', to: 'media', type: 'directory', moved: 2 })
+    expect(await disk.readToString('media/logo.png')).toBe('a')
+    expect(await disk.readToString('media/icons/favicon.png')).toBe('b')
+    expect(await disk.fileExists('images/logo.png')).toBe(false)
+    expect(await disk.directoryExists('images')).toBe(false)
+  })
+
+  test('refuses to overwrite an existing name', async () => {
+    const disk = manager.disk('public')
+    await disk.write('documents/readme.txt', 'keep me')
+    await disk.write('documents/guide.txt', 'me too')
+
+    await expect(renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager))
+      .rejects.toMatchObject({ status: 409 })
+    // Neither side moved: a refused rename is not a partial one.
+    expect(await disk.readToString('documents/readme.txt')).toBe('keep me')
+    expect(await disk.readToString('documents/guide.txt')).toBe('me too')
+  })
+
+  test('says so rather than silently doing nothing when the name is unchanged', async () => {
+    await manager.disk('public').write('a.txt', 'x')
+
+    await expect(renameDashboardFile({ path: 'a.txt', name: 'a.txt' }, manager))
+      .rejects.toMatchObject({ status: 422 })
+  })
+
+  test('is a 404 when the item does not exist', async () => {
+    await expect(renameDashboardFile({ path: 'nope.txt', name: 'yes.txt' }, manager))
+      .rejects.toMatchObject({ status: 404 })
   })
 })
