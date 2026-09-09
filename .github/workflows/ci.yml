@@ -29,9 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -74,9 +74,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -172,9 +172,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -274,9 +274,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -302,19 +302,21 @@ jobs:
       # reads one line. This runs the install and asks git whether anything
       # moved, which is the only check that covers every kind of drift.
       #
-      # bun.lock only, deliberately. `pantry.lock` is not platform-independent
-      # today: this same step on Linux rewrites it with 144 additions and 1,278
-      # deletions against a macOS-generated lock - adding native toolchain
-      # records (gnu.org/gcc, gnu.org/binutils, gnu.org/mpfr, tukaani.org/xz and
-      # the rest) and dropping 80-odd `"source": "npm"` workspace records that
-      # macOS keeps. Nothing committed can satisfy both platforms while that is
-      # true, so asserting it here would demand the impossible. Tracked in
-      # #2533; guard it here the moment the lock is platform-independent.
-      - name: Check bun.lock still describes this workspace
+      # Both files, as of pantry 0.11.57.
+      #
+      # `pantry.lock` was excluded here because a Linux install rewrote it with
+      # 144 additions and 1,278 deletions against a macOS-generated lock, which
+      # looked like platform dependence. Two of those three causes are now
+      # fixed upstream - foreign-platform native pins survive regeneration
+      # (pantry-pm/pantry#231), and a frozen install no longer rejects a lock
+      # the tool just wrote (pantry-pm/pantry#233) - and the third was this
+      # repository's own committed lock, written by pantry 0.11.48, recording
+      # 80 workspace members as npm packages (#2533).
+      - name: Check the lockfiles still describe this workspace
         run: |
-          if ! git diff --exit-code --stat bun.lock; then
-            echo "::error::Installing changed bun.lock. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit the result."
-            git diff -- bun.lock
+          if ! git diff --exit-code --stat bun.lock pantry.lock; then
+            echo "::error::Installing changed bun.lock or pantry.lock. A committed lockfile must survive an install of the tree it describes. Run 'pantry install' and './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit both."
+            git diff -- bun.lock pantry.lock
             exit 1
           fi
 
@@ -337,9 +339,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -430,9 +432,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Install Dependencies
@@ -455,9 +457,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       # Run from the script's own directory so the repo's `bunfig.toml` does not
@@ -498,9 +500,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
@@ -573,9 +575,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@4fa8b3a4df8bea73b3b4b17480b7b1654f638d0f # v0.11.55
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
         with:
-          version: '0.11.55'
+          version: '0.11.57'
           install: 'false'
 
       - name: Use cached node_modules
