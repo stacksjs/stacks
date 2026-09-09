@@ -60,7 +60,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "sideEffects": false
 }

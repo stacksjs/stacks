@@ -334,7 +334,7 @@
     "@stacksjs/config": "^0.74.33",
     "@stacksjs/database": "^0.74.33",
     "@stacksjs/defaults": "^0.74.33",
-    "@stacksjs/desktop": "^0.2.197",
+    "@stacksjs/desktop": "^0.2.284",
     "@stacksjs/dns": "^0.74.33",
     "@stacksjs/email": "^0.74.33",
     "@stacksjs/enums": "^0.74.33",
@@ -361,7 +361,7 @@
     "@stacksjs/storage": "^0.74.33",
     "@stacksjs/strings": "^0.74.33",
     "@stacksjs/tlsx": "^0.13.19",
-    "@stacksjs/ts-cloud": "^0.12.15",
+    "@stacksjs/ts-cloud": "^0.12.16",
     "@stacksjs/tunnel": "^0.74.33",
     "@stacksjs/types": "^0.74.33",
     "@stacksjs/ui": "^0.74.33",
@@ -399,9 +399,9 @@
     "@stacksjs/newsletter": "^0.74.33",
     "@stacksjs/i18n": "^0.74.33",
     "@stacksjs/cron": "^0.74.33",
-    "bun-query-builder": "^0.2.68"
+    "bun-query-builder": "^0.2.69"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

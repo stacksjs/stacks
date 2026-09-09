@@ -58,9 +58,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "cz-git": "^1.13.1"
+    "cz-git": "^1.14.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

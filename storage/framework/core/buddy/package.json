@@ -106,7 +106,7 @@
     "@stacksjs/build": "^0.74.33",
     "@stacksjs/cache": "^0.74.33",
     "@stacksjs/chat": "^0.74.33",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.16",
     "@stacksjs/cli": "^0.74.33",
     "@stacksjs/cloud": "^0.74.33",
     "@stacksjs/cms": "^0.74.33",
@@ -125,7 +125,7 @@
     "@stacksjs/git": "^0.74.33",
     "@stacksjs/gitit": "^0.2.5",
     "@stacksjs/health": "^0.74.33",
-    "@stacksjs/httx": "^0.1.10",
+    "@stacksjs/httx": "^0.1.11",
     "@stacksjs/image": "^0.74.33",
     "@stacksjs/lint": "^0.74.33",
     "@stacksjs/logging": "^0.74.33",
@@ -145,7 +145,7 @@
     "@stacksjs/skills": "^0.74.33",
     "@stacksjs/storage": "^0.74.33",
     "@stacksjs/strings": "^0.74.33",
-    "@stacksjs/stx": "^0.2.274",
+    "@stacksjs/stx": "^0.2.284",
     "@stacksjs/testing": "^0.74.33",
     "@stacksjs/tinker": "^0.74.33",
     "@stacksjs/tlsx": "^0.13.19",
@@ -157,11 +157,11 @@
     "@stacksjs/validation": "^0.74.33",
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
-    "bun-plugin-stx": "^0.2.279",
-    "ts-pantry": "^0.11.35"
+    "bun-plugin-stx": "^0.2.284",
+    "ts-pantry": "^0.11.57"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "web-types": "./web-types.json"
 }

@@ -61,9 +61,9 @@
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
-    "bun-plugin-dtsx": "^0.11.10"
+    "bun-plugin-dtsx": "^0.11.12"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

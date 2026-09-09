@@ -57,14 +57,14 @@
   },
   "dependencies": {
     "@stacksjs/database": "workspace:*",
-    "ts-slug": "^0.1.0"
+    "ts-slug": "^0.1.2"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "sideEffects": false
 }

@@ -66,7 +66,7 @@
   },
   "devDependencies": {
     "@stacksjs/utils": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   },
   "peerDependencies": {
     "@stacksjs/router": "workspace:*"

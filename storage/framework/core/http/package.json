@@ -58,9 +58,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/httx": "^0.1.10"
+    "@stacksjs/httx": "^0.1.11"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }

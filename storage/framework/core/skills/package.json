@@ -62,7 +62,7 @@
     "@stacksjs/storage": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.24",
+    "better-dx": "^0.2.25",
     "@stacksjs/types": "workspace:*"
   }
 }

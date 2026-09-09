@@ -70,10 +70,10 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/ts-cloud": "^0.12.16",
-    "ts-images": "^0.2.11"
+    "ts-images": "^0.2.17"
   },
   "devDependencies": {
     "@stacksjs/types": "workspace:*",
-    "better-dx": "^0.2.24"
+    "better-dx": "^0.2.25"
   }
 }
