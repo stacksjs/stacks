@@ -96,3 +96,73 @@ describe('withoutGatedStatements', () => {
     expect(withoutGatedStatements(sql, gated)).toBe('')
   })
 })
+
+/**
+ * A SQLite table rebuild has to gate as one block (stacksjs/stacks#2534).
+ *
+ * bun-query-builder cannot ALTER a column in place, so it rebuilds:
+ * create a `_qb_tmp_<t>`, copy into it, drop `<t>`, rename the temp over it,
+ * recreate the indexes.
+ *
+ * Only the copy and the drop name `<t>` in a way the gate could see. The ALTER
+ * names the temp table as its SOURCE, and `statementReferencesTable` matches
+ * FROM/JOIN/UPDATE/INTO but never RENAME TO. So gating deleted the copy, the
+ * drop and the index while KEEPING the create and the rename - and a rebuild
+ * became a bare create of the very table the gate was meant to suppress.
+ *
+ * A fresh commerce-disabled install therefore carried 34 of 41 commerce tables,
+ * each missing its unique indexes, and a table rebuilt twice crashed the
+ * install outright with "there is already another table or index with this
+ * name: receipts".
+ */
+describe('a gated table rebuild', () => {
+  const rebuild = [
+    'PRAGMA foreign_keys=OFF',
+    'BEGIN',
+    'CREATE TABLE "_qb_tmp_coupons" (\n  "id" INTEGER PRIMARY KEY,\n  "uuid" TEXT\n)',
+    'INSERT INTO "_qb_tmp_coupons" ("id", "uuid") SELECT "id", "uuid" FROM "coupons"',
+    'DROP TABLE "coupons"',
+    'ALTER TABLE "_qb_tmp_coupons" RENAME TO "coupons"',
+    'CREATE UNIQUE INDEX IF NOT EXISTS "coupons_uuid_unique" ON "coupons" ("uuid")',
+    'PRAGMA foreign_key_check',
+    'COMMIT',
+  ].join(';\n')
+
+  test('drops the temp create, so the gated table is never made', () => {
+    const kept = withoutGatedStatements(rebuild, gated)
+
+    // The statement that actually created the table on a commerce-disabled
+    // install. Red before the fix.
+    expect(kept).not.toContain('_qb_tmp_coupons')
+  })
+
+  test('drops the rename, which is what materialised the table', () => {
+    expect(withoutGatedStatements(rebuild, gated)).not.toContain('RENAME TO "coupons"')
+  })
+
+  test('leaves no half of the rebuild behind', () => {
+    const kept = withoutGatedStatements(rebuild, gated)
+
+    // A kept CREATE with a dropped RENAME strands a temp table; a kept RENAME
+    // with a dropped CREATE fails outright. Both ends gate together or neither.
+    expect(kept).not.toContain('coupons')
+    // The transaction scaffolding names no table and is still there.
+    expect(kept).toContain('BEGIN')
+    expect(kept).toContain('COMMIT')
+  })
+
+  test('leaves an ungated table\'s rebuild completely intact', () => {
+    const ungated = rebuild.replace(/coupons/g, 'receipts_kept')
+
+    const kept = withoutGatedStatements(ungated, gated)
+
+    expect(kept).toContain('CREATE TABLE "_qb_tmp_receipts_kept"')
+    expect(kept).toContain('DROP TABLE "receipts_kept"')
+    expect(kept).toContain('RENAME TO "receipts_kept"')
+    expect(kept).toContain('CREATE UNIQUE INDEX IF NOT EXISTS "coupons_uuid_unique"'.replace('coupons', 'receipts_kept'))
+  })
+
+  test('is a no-op when nothing is gated', () => {
+    expect(withoutGatedStatements(rebuild, new Set())).toBe(rebuild)
+  })
+})
