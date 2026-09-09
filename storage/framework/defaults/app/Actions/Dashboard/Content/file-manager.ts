@@ -1,7 +1,7 @@
 import type { ResponseStatus } from '@stacksjs/bun-router'
 import { statfs } from 'node:fs/promises'
 import { posix } from 'node:path'
-import type { StorageAdapter, StorageManager, UploadedFileLike } from '@stacksjs/storage'
+import type { StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
 import { Storage } from '@stacksjs/storage'
 
 const DEFAULT_DISK = 'public'
@@ -507,6 +507,57 @@ export async function renameDashboardFile(
   await selected.adapter.deleteDirectory(from)
 
   return { from, to, type: 'directory', moved: files.length }
+}
+
+/**
+ * Make a file, or everything in a folder, public or private.
+ *
+ * A folder is applied file by file rather than to the folder itself, for the
+ * same reason a rename is: object storage has no directories, only a shared key
+ * prefix, and an ACL belongs to an object. `directoryExists` there is a
+ * prefix-has-objects check with nothing at that key, so asking to change the
+ * "directory" would address something that does not exist.
+ *
+ * It is also the right answer on a local disk, where a mode on a directory
+ * controls listing and traversal but not whether a file inside it can be read.
+ * The files are what gate access on both, so the files are what this sets.
+ *
+ * See stacksjs/stacks#245.
+ */
+export async function setDashboardFileVisibility(
+  input: { disk?: string, path: unknown, visibility: unknown },
+  manager: Manager = Storage,
+): Promise<{ path: string, visibility: Visibility, type: 'file' | 'directory', changed: number }> {
+  const selected = resolveDisk(manager, input.disk)
+  const path = normalizeDashboardFilePath(input.path)
+
+  if (input.visibility !== 'public' && input.visibility !== 'private') {
+    throw new DashboardFileError('Visibility must be "public" or "private".', 422, {
+      visibility: 'Choose either public or private.',
+    })
+  }
+  const visibility = input.visibility as Visibility
+
+  if (await selected.adapter.fileExists(path)) {
+    await selected.adapter.changeVisibility(path, visibility)
+    return { path, visibility, type: 'file', changed: 1 }
+  }
+
+  if (!(await selected.adapter.directoryExists(path)))
+    throw new DashboardFileError(`Storage item "${path}" was not found.`, 404)
+
+  let changed = 0
+  for await (const entry of selected.adapter.list(path, { deep: true })) {
+    if (entry.type !== 'file')
+      continue
+    const listed = normalizeListedPath(String(entry.path))
+    if (!listed)
+      continue
+    await selected.adapter.changeVisibility(listed.startsWith(`${path}/`) ? listed : `${path}/${listed}`, visibility)
+    changed++
+  }
+
+  return { path, visibility, type: 'directory', changed }
 }
 
 export async function uploadDashboardFiles(

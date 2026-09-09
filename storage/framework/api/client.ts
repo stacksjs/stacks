@@ -3257,6 +3257,13 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * PUT /api/dashboard/files/visibility
+   */
+  putDashboardFilesVisibility(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/dashboard/files/visibility", {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/health
    */
   getDashboardHealth(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

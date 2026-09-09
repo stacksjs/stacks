@@ -11,6 +11,7 @@ import {
   normalizeDashboardFileLimit,
   normalizeDashboardFilePath,
   renameDashboardFile,
+  setDashboardFileVisibility,
   uploadDashboardFiles,
 } from './file-manager'
 
@@ -236,6 +237,60 @@ describe('renameDashboardFile', () => {
 
   test('is a 404 when the item does not exist', async () => {
     await expect(renameDashboardFile({ path: 'nope.txt', name: 'yes.txt' }, manager))
+      .rejects.toMatchObject({ status: 404 })
+  })
+})
+
+describe('setDashboardFileVisibility', () => {
+  test('flips a single file and reads back as the adapter sees it', async () => {
+    const disk = manager.disk('public')
+    await disk.write('documents/readme.txt', 'hello')
+
+    expect(await setDashboardFileVisibility({ path: 'documents/readme.txt', visibility: 'private' }, manager))
+      .toEqual({ path: 'documents/readme.txt', visibility: 'private', type: 'file', changed: 1 })
+    expect(await disk.visibility('documents/readme.txt')).toBe('private')
+
+    await setDashboardFileVisibility({ path: 'documents/readme.txt', visibility: 'public' }, manager)
+    expect(await disk.visibility('documents/readme.txt')).toBe('public')
+  })
+
+  /**
+   * A folder is applied file by file, not to the folder. Object storage has no
+   * directories to carry an ACL, and on a local disk a directory's mode gates
+   * listing rather than reading - the files are what gate access on both.
+   */
+  test('applies to every file beneath a folder, at any depth', async () => {
+    const disk = manager.disk('public')
+    await disk.write('images/logo.png', 'a')
+    await disk.write('images/icons/favicon.png', 'b')
+
+    expect(await setDashboardFileVisibility({ path: 'images', visibility: 'private' }, manager))
+      .toEqual({ path: 'images', visibility: 'private', type: 'directory', changed: 2 })
+    expect(await disk.visibility('images/logo.png')).toBe('private')
+    expect(await disk.visibility('images/icons/favicon.png')).toBe('private')
+  })
+
+  test('leaves files outside the folder alone', async () => {
+    const disk = manager.disk('public')
+    await disk.write('images/logo.png', 'a')
+    await disk.write('documents/readme.txt', 'b')
+
+    await setDashboardFileVisibility({ path: 'images', visibility: 'private' }, manager)
+
+    expect(await disk.visibility('documents/readme.txt')).toBe('public')
+  })
+
+  test('rejects anything that is not public or private', async () => {
+    await manager.disk('public').write('a.txt', 'x')
+
+    for (const visibility of ['world-readable', '', 'PUBLIC', true, undefined]) {
+      await expect(setDashboardFileVisibility({ path: 'a.txt', visibility }, manager))
+        .rejects.toMatchObject({ status: 422 })
+    }
+  })
+
+  test('is a 404 when the item does not exist', async () => {
+    await expect(setDashboardFileVisibility({ path: 'nope.txt', visibility: 'private' }, manager))
       .rejects.toMatchObject({ status: 404 })
   })
 })
