@@ -31,7 +31,7 @@ describe('toPaginator', () => {
   test('from / to are null on an empty page', () => {
     const result = toPaginator({
       data: [],
-      meta: { perPage: 10, page: 5, total: 0, lastPage: 1 },
+      meta: { perPage: 10, page: 5, total: 0, lastPage: 0 },
     })
     expect(result.from).toBeNull()
     expect(result.to).toBeNull()
@@ -43,6 +43,36 @@ describe('toPaginator', () => {
       data: [{ id: 9 }],
       meta: { perPage: 3, page: 3, total: 9, lastPage: 3 },
     })
+    expect(result.has_more_pages).toBe(false)
+  })
+
+  test('reports one empty page rather than zero pages', () => {
+    // bqb computes `lastPage` as `Math.ceil(total / perPage)`, which is 0 when
+    // the table is empty. Forwarding that produced `current_page: 1` of
+    // `last_page: 0` - a current page outside its own range, and a control
+    // drawing `1..last_page` drawing nothing.
+    const result = toPaginator({
+      data: [],
+      meta: { perPage: 15, page: 1, total: 0, lastPage: 0 },
+    })
+
+    expect(result.last_page).toBe(1)
+    expect(result.total).toBe(0)
+    expect(result.current_page).toBeLessThanOrEqual(result.last_page)
+    expect(result.has_more_pages).toBe(false)
+  })
+
+  test('leaves current_page at the page that was asked for', () => {
+    // Over-paging is not clamped: the returned page number matches the empty
+    // `data` it came back with, which is what Laravel's paginator does too.
+    const result = toPaginator({
+      data: [],
+      meta: { perPage: 3, page: 99, total: 9, lastPage: 3 },
+    })
+
+    expect(result.current_page).toBe(99)
+    expect(result.last_page).toBe(3)
+    expect(result.from).toBeNull()
     expect(result.has_more_pages).toBe(false)
   })
 

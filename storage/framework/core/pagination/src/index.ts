@@ -30,7 +30,15 @@
 export interface Paginator<T> {
   /** Rows on the current page. */
   data: T[]
-  /** 1-indexed current page number. Clamped to `[1, last_page]`. */
+  /**
+   * 1-indexed current page number: the page that was asked for.
+   *
+   * Not clamped to `last_page` - this said it was, and clamping would make it
+   * disagree with the `data` actually returned. Asking for page 99 of a
+   * 3-page result gives `current_page: 99` with an empty `data`, `from`/`to`
+   * of `null` and `has_more_pages: false`, which is both coherent and what
+   * Laravel's paginator does.
+   */
   current_page: number
   /** Page size. */
   per_page: number
@@ -151,7 +159,13 @@ export function toPaginator<T>(
     current_page: page,
     per_page: perPage,
     total,
-    last_page: lastPage,
+    // bqb computes `Math.ceil(total / perPage)`, which is 0 for an empty
+    // table - and this forwarded it, so an empty result reported
+    // `current_page: 1` of `last_page: 0`. A page count below one is not a
+    // state any consumer can render: a control drawing `1..last_page` draws
+    // nothing, and the current page sits outside its own range. One empty page
+    // is the honest answer, and the interface has always documented it.
+    last_page: Math.max(1, lastPage),
     from,
     to,
     has_more_pages: page < lastPage,
