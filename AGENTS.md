@@ -54,7 +54,7 @@ relevant `SKILL.md` before doing non-trivial work in that area rather than guess
 | `config/` | ~52 typed config files (`app.ts`, `database.ts`, `auth.ts`, `api` via `services.ts`, `queue.ts`, `cache.ts`, `email.ts`, `commerce.ts`, `cms.ts`, `payment.ts`, `ai.ts`, `cloud.ts`, `ui.ts`, `crosswind.ts`, ...) |
 | `database/` | `migrations/`, seeders, and the local SQLite files |
 | `resources/` | stx frontend: `views/`, `components/`, `layouts/`, `partials/` |
-| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 60+ built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
+| `storage/framework/` | Framework internals + **defaults** (`defaults/app/` including the 102 built-in `Models/`, `defaults/ai/` with the agent skills, `core/` packages, `server/`, dashboard, and the auto-import manifests); read-only reference, do not edit unless working on the framework |
 | `storage/` | Also holds all machine-local runtime state: `framework/stx/` (stx build cache), `framework/runtime/` (migration lock, temp bundles), `cloud/` (cloud driver state). All gitignored, all safe to delete |
 | `tests/` | Test suites (Bun test) |
 | `cloud/` | AWS infrastructure (CDK / CloudFormation) for deploys |
@@ -228,7 +228,7 @@ schema once in the model; Stacks diffs it against the database and generates the
 
 ### Define a model
 Models live in `app/Models/` (your custom models and overrides) and
-`storage/framework/defaults/app/Models/` (60+ built-ins, grouped into `commerce/`, `Content/`, etc.).
+`storage/framework/defaults/app/Models/` (102 built-ins, grouped into `commerce/`, `Content/`, etc.).
 Use `defineModel()`; the whole schema, validation, factory, relationships, and behavior traits are
 declared in one place.
 

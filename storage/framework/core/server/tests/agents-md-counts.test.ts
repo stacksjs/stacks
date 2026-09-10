@@ -75,6 +75,14 @@ const claims: Array<{ what: string, pattern: RegExp, actual: () => number }> = [
     actual: () => readdirSync(join(root, 'database/migrations')).filter(f => f.endsWith('.sql')).length,
   },
   {
+    what: 'dashboard components',
+    pattern: /widgets \(([\d,]+) components\)/,
+    actual: () => walk(
+      join(root, 'storage/framework/defaults/resources/components'),
+      name => name.endsWith('.stx'),
+    ),
+  },
+  {
     what: 'typed config files',
     pattern: /~([\d,]+) typed config files/,
     actual: () => readdirSync(join(root, 'config')).filter(f => f.endsWith('.ts')).length,
@@ -96,6 +104,16 @@ describe('the counts AGENTS.md quotes', () => {
         .toEqual({ claim: claim.what, said: drift > TOLERANCE ? real : said })
     })
   }
+
+  it('quotes one model count, not two', () => {
+    // The file said `60+ built-ins` in two places and `102 built-in models` in
+    // a third. Both were true, but an agent reading the vaguer one enumerates
+    // expecting sixty and stops forty short.
+    const spellings = [...doc.replace(/\s+/g, ' ').matchAll(/([\d]+)\+? (?:built-in|models|built-ins)/g)]
+      .map(match => Number(match[1]!))
+
+    expect([...new Set(spellings)]).toEqual([102])
+  })
 
   it('reads the AGENTS.md that agents actually read', () => {
     // The copy under `storage/framework/defaults/ai/` is a different, much
