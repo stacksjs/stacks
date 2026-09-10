@@ -1,6 +1,22 @@
 import type { TaggableTable } from '@stacksjs/orm'
+import { sql } from '@stacksjs/database'
 import { getDb } from '../database'
 import { findOrCreate } from './store'
+
+/**
+ * Which table the `taggable_models` pivot points at (stacksjs/stacks#2579).
+ *
+ * `tags`, not `taggables`. The four aggregates below joined `taggables`, and
+ * every writer of that pivot writes a `tags` id: the dashboard validates
+ * `tagIds` against `tags`, writes them in `syncPostRelations`, reads them back
+ * in `PostIndexAction`, and counts them in `TagIndexAction`. The migration's own
+ * comment says `taggables` and is wrong too.
+ *
+ * `taggables` is a real table, but a different mechanism - the `taggable` trait
+ * in `@stacksjs/orm` writes tag names straight into it with no pivot row at
+ * all. Joining the pivot to it produced a silent empty result set, or worse, a
+ * row whose id happened to collide.
+ */
 
 /**
  * Fetch a tag by its ID
@@ -143,17 +159,15 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
   try {
     let query = db
       .selectFrom('taggable_models')
-      .innerJoin('taggables', 'taggables.id', '=', 'taggable_models.tag_id')
-      .select([
-        'taggables.name',
-      ])
-      .groupBy('taggables.name')
+      .innerJoin('tags', 'tags.id', '=', 'taggable_models.tag_id')
+      .select(['tags.name', sql`count(*)`.as('usage_count')])
+      .groupBy('tags.name')
 
     if (taggableType)
       query = query.where('taggable_models.taggable_type', '=', taggableType)
 
     const result = await query
-      .orderBy('taggables.name', 'asc')
+      .orderBy('usage_count', 'desc')
       .executeTakeFirst()
 
     if (!result) {
@@ -184,12 +198,10 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
   try {
     const result = await (db
       .selectFrom('taggable_models')
-      .innerJoin('taggables', 'taggables.id', '=', 'taggable_models.tag_id')
-      .select([
-        'taggables.name',
-      ])
-      .groupBy('taggables.name'))
-      .orderBy('taggables.name', 'asc')
+      .innerJoin('tags', 'tags.id', '=', 'taggable_models.tag_id')
+      .select(['tags.name', sql`count(*)`.as('usage_count')])
+      .groupBy('tags.name'))
+      .orderBy('usage_count', 'asc')
       .executeTakeFirst()
 
     if (!result) {
@@ -219,13 +231,11 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, p
   const db = await getDb()
   try {
     const result = await (db
-      .selectFrom('taggables')
-      .leftJoin('taggable_models', 'taggables.id', '=', 'taggable_models.tag_id')
-      .select([
-        'taggables.name',
-      ])
-      .groupBy('taggables.name'))
-      .orderBy('taggables.name', 'desc')
+      .selectFrom('tags')
+      .leftJoin('taggable_models', 'tags.id', '=', 'taggable_models.tag_id')
+      .select(['tags.name', sql`count(taggable_models.id)`.as('post_count')])
+      .groupBy('tags.name'))
+      .orderBy('post_count', 'desc')
       .limit(10)
       .execute()
 
@@ -252,13 +262,11 @@ export async function fetchTagDistribution(): Promise<Array<{ name: string, coun
   const db = await getDb()
   try {
     const result = await (db
-      .selectFrom('taggables')
-      .leftJoin('taggable_models', 'taggables.id', '=', 'taggable_models.tag_id')
-      .select([
-        'taggables.name',
-      ])
-      .groupBy('taggables.name'))
-      .orderBy('taggables.name', 'desc')
+      .selectFrom('tags')
+      .leftJoin('taggable_models', 'tags.id', '=', 'taggable_models.tag_id')
+      .select(['tags.name', sql`count(taggable_models.id)`.as('count')])
+      .groupBy('tags.name'))
+      .orderBy('count', 'desc')
       .execute()
 
     const typedResult = result as Record<string, unknown>[]

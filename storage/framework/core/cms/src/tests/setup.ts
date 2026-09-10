@@ -116,6 +116,24 @@ await db.unsafe(`
   )
 `).execute()
 
+// The vocabulary `taggable_models.tag_id` points at. Absent from this harness
+// until stacksjs/stacks#2579, which is why four queries could join the pivot to
+// `taggables` - a different table, belonging to a different mechanism - and
+// return nothing without a test noticing.
+await db.unsafe(`
+  CREATE TABLE IF NOT EXISTS tags (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name VARCHAR(255),
+    slug VARCHAR(255),
+    description TEXT,
+    post_count INTEGER DEFAULT 0,
+    color VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    uuid VARCHAR(255)
+  )
+`).execute()
+
 // Real-pages tables: pages carries the block-document columns the Page model
 // declares; the rest back revisions, redirects and menus. Hand-created here
 // for the same reason as the trait tables — this harness runs without the
@@ -202,7 +220,7 @@ await db.unsafe(`
   )
 `).execute()
 
-const tableNames = ['categorizables', 'categorizable_models', 'taggable_models', 'pages', 'page_revisions', 'redirects', 'menus', 'menu_items']
+const tableNames = ['categorizables', 'categorizable_models', 'taggable_models', 'tags', 'pages', 'page_revisions', 'redirects', 'menus', 'menu_items']
 
 /**
  * Wipe the trait tables between tests. DELETE (not DROP) keeps the

@@ -1,8 +1,16 @@
--- Join table linking a taggable row to owning model instances. `tag_id` ->
--- taggables.id, `taggable_type` -> the owning table (e.g. 'posts'). Matches
--- TaggableModelsTable in
--- storage/framework/core/orm/src/generated/table-traits.ts and the CMS
--- taggables module's `selectFrom('taggable_models')` reads.
+-- Join table linking a TAG to owning model instances. `tag_id` -> tags.id,
+-- `taggable_type` -> the owning table (e.g. 'posts', 'storage_items').
+--
+-- `tags`, not `taggables`. This comment said `taggables` for the life of the
+-- table and was wrong (stacksjs/stacks#2579): every writer of this pivot writes
+-- a `tags` id - the dashboard validates `tagIds` against `tags` in
+-- `post-input.ts`, writes them in `syncPostRelations`, reads them back in
+-- `PostIndexAction` and counts them in `TagIndexAction` - and the `Post` and
+-- `Tag` models both declare the relation as `model: 'Tag'`.
+--
+-- `taggables` is a real table, but a different mechanism: `createTaggableMethods`
+-- in @stacksjs/orm writes tag names straight into it with no pivot row at all.
+-- Four queries in the CMS joined this pivot to it and silently returned nothing.
 CREATE TABLE IF NOT EXISTS "taggable_models" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "tag_id" INTEGER NOT NULL,

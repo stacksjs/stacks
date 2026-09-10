@@ -40,14 +40,18 @@ import { schema } from '@stacksjs/validation'
  *
  * ## Tags are the existing vocabulary, reached the way the CMS reaches it
  *
- * #2577 asks for the `taggable` trait rather than a second tag vocabulary, and
- * that trait is `taggables` (the words) joined through `taggable_models` (the
- * pivot), with `taggable_type` keeping one model's rows away from another's.
- * `@stacksjs/cms`'s taggables module is what reads and writes it, so
- * `file-metadata.ts` calls that rather than declaring a `belongsToMany` here:
- * the ORM relation would resolve `tag_id` against the `tags` TABLE, which is a
- * different table from `taggables` and a different set of words. Declaring one
- * would have created exactly the second vocabulary the issue says not to.
+ * #2577 asks for the existing vocabulary rather than a second one. That is the
+ * `tags` table, joined through the `taggable_models` pivot, with
+ * `taggable_type` keeping one model's attachments away from another's - which
+ * is what the dashboard's own tag manager writes and reads.
+ *
+ * `file-metadata-store.ts` queries it directly rather than declaring a
+ * `belongsToMany` here, because every operation is a set operation over a
+ * subtree and the relation would do them a row at a time. The relation would
+ * resolve correctly, though: `taggable_models.tag_id` is a `tags` id, which
+ * took stacksjs/stacks#2579 to establish - the migration comment and four
+ * queries in `@stacksjs/cms` said `taggables`, a different table belonging to a
+ * different mechanism.
  */
 export default defineModel({
   name: 'StorageItem',

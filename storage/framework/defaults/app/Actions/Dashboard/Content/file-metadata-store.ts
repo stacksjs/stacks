@@ -10,9 +10,18 @@ import { isEmptyMetadata, isUnderPrefix, normalizeTags, repathUnderPrefix, STORA
  * parameter, and for the same reason.
  *
  * Two tables. `storage_items` holds the row per `(disk, path)`; tags go through
- * `taggables` and `taggable_models`, which is the trait the CMS already uses and
- * which #2577 asks for by name. `taggable_type` is `storage_items`, so a file's
- * tags and a post's live in the same vocabulary table without colliding.
+ * `tags` and `taggable_models`, which is the vocabulary #2577 asks for by name -
+ * the one the dashboard's own tag manager writes and reads. `taggable_type` is
+ * `storage_items`, so a file's tags and a post's share the vocabulary without
+ * their pivot rows colliding.
+ *
+ * `tags`, not `taggables`, and the distinction is not cosmetic
+ * (stacksjs/stacks#2579). `taggables` is a different mechanism: the `taggable`
+ * trait writes tag names straight into it with no pivot row. Everything that
+ * writes `taggable_models` writes a `tags` id - the dashboard validates against
+ * `tags`, writes them, reads them back and counts them - so a join to
+ * `taggables` returns an empty set, or worse a row whose id happened to
+ * collide.
  *
  * Written against the query builder rather than the `StorageItem` model because
  * every operation here is a set operation - one query for a subtree, one prefix
@@ -90,8 +99,8 @@ async function tagsFor(ids: number[]): Promise<Map<number, string[]>> {
 
   const rows = await db
     .selectFrom('taggable_models')
-    .innerJoin('taggables', 'taggables.id', '=', 'taggable_models.tag_id')
-    .select(['taggable_models.taggable_id as itemId', 'taggables.name as name'])
+    .innerJoin('tags', 'tags.id', '=', 'taggable_models.tag_id')
+    .select(['taggable_models.taggable_id as itemId', 'tags.name as name'])
     .where('taggable_models.taggable_type', '=', STORAGE_ITEM_TYPE)
     .where('taggable_models.taggable_id', 'in', ids)
     .execute() as Array<{ itemId: number, name: string }>
@@ -110,37 +119,41 @@ async function tagsFor(ids: number[]): Promise<Map<number, string[]>> {
   return byItem
 }
 
-/** The `taggables` row for a name, created if this is the first file to use it. */
+/**
+ * The `tags` row for a name, created if this is the first thing to use it.
+ *
+ * Shared with posts rather than scoped to files, which is the point: a tag is a
+ * word somebody chose, and having "invoice" mean one thing on a post and a
+ * different thing on a file is how a tag list stops being useful. The pivot's
+ * `taggable_type` is what keeps the two sets of ATTACHMENTS apart.
+ */
 async function tagIdFor(name: string): Promise<number> {
   const existing = await db
-    .selectFrom('taggables')
+    .selectFrom('tags')
     .select(['id'])
     .where('name', '=', name)
-    .where('taggable_type', '=', STORAGE_ITEM_TYPE)
     .executeTakeFirst() as { id: number } | undefined
 
   if (existing)
     return existing.id
 
   await db
-    .insertInto('taggables')
+    .insertInto('tags')
     .values({
       name,
       slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
-      taggable_type: STORAGE_ITEM_TYPE,
-      is_active: true,
       created_at: sqlDateTime(),
       updated_at: sqlDateTime(),
+      uuid: crypto.randomUUID(),
     })
     .execute()
 
   // Re-selected rather than read from the write's return value, which on SQLite
   // is only `{ changes, lastInsertRowid }`.
   const created = await db
-    .selectFrom('taggables')
+    .selectFrom('tags')
     .select(['id'])
     .where('name', '=', name)
-    .where('taggable_type', '=', STORAGE_ITEM_TYPE)
     .executeTakeFirst() as { id: number } | undefined
 
   if (!created)
