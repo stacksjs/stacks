@@ -1,0 +1,94 @@
+name: Lighthouse
+
+# Audits the built documentation site (stacksjs/stacks#1222).
+#
+# The docs are the only thing this repository serves that a Lighthouse run can
+# meaningfully score: the framework itself has no pages, and a scaffolded app's
+# score would measure the template rather than the framework.
+#
+# Not part of `ci.yml`. It builds the docs and drives a headless Chrome, which
+# is minutes on every push for a number that only moves when the docs build or
+# the theme changes - so it runs when those change, on a weekly schedule to
+# catch drift from dependencies, and on demand.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'config/docs.ts'
+      - '.github/workflows/lighthouse.yml'
+  pull_request:
+    paths:
+      - 'docs/**'
+      - 'config/docs.ts'
+      - '.github/workflows/lighthouse.yml'
+  schedule:
+    # Mondays 06:00 UTC. Dependencies move the score without anything here
+    # changing, and a weekly run is enough to notice.
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v6
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@fa35547da630b14beda5b26a2625490864d5c963 # v0.11.60
+        with:
+          version: '0.11.60'
+          install: 'false'
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build the documentation
+        run: ./buddy build:docs
+
+      # `dist/docs/.bunpress`, not `dist/docs`. `config/docs.ts` sets
+      # `outDir: './dist/docs'` and bunpress appends its own `.bunpress`
+      # subdirectory underneath - so a server pointed at the configured path
+      # serves nothing, and Lighthouse would score an empty directory as a
+      # healthy site. Verified against a real build before this was written.
+      #
+      # Failing here rather than letting the audit run on nothing.
+      - name: Verify the build produced pages
+        run: |
+          if [ ! -f dist/docs/.bunpress/index.html ]; then
+            echo "::error::dist/docs/.bunpress/index.html is missing - the docs build produced nothing to audit."
+            find dist -maxdepth 3 -type d 2>/dev/null || echo "(dist does not exist)"
+            exit 1
+          fi
+          echo "Built $(find dist/docs/.bunpress -name '*.html' | wc -l) page(s)"
+
+      # LHCI starts and stops the server itself, via `collect.startServerCommand`
+      # in the config. A process backgrounded in one `run:` step surviving into
+      # the next is not something to rely on.
+      #
+      # The server is a committed script rather than `bunx serve`, because
+      # `bun-plugin-stx` ships a bin of that name and the resolution would
+      # depend on what happens to be installed. It is testable locally, and was
+      # tested: all three audited URLs return 200, a missing page returns 404
+      # rather than falling back to the home page, and `..` cannot escape the
+      # build directory.
+      #
+      # Accessibility, best practices and SEO fail the build; performance only
+      # warns. Performance on a shared runner moves several points between runs
+      # for reasons unrelated to the change, and an erroring budget there is a
+      # flaky build everyone learns to re-run.
+      - name: Run Lighthouse
+        uses: treosh/lighthouse-ci-action@512cc908a55bfb0ad231facca52adf3d3a651df4 # v12.6.2
+        with:
+          configPath: .github/lighthouse/config.json
+          uploadArtifacts: true
+          temporaryPublicStorage: true
