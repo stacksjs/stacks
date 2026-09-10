@@ -1,5 +1,35 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.37...v0.74.38)
+
+## ✨ Features
+
+- **server**: declarative page caching in config/server.ts ([f8b00fb](https://github.com/stacksjs/stacks/commit/f8b00fb)) _(by Chris <chris@stacksjs.com>)_
+- **server**: declarative rewrites in config/server.ts ([02cdc3d](https://github.com/stacksjs/stacks/commit/02cdc3d)) _(by Chris <chris@stacksjs.com>)_
+- **storage**: storage backups, and fix the zip helpers they exposed (#269) ([3f30319](https://github.com/stacksjs/stacks/commit/3f30319)) _(by Chris <chris@stacksjs.com>)_ ([#269](https://github.com/stacksjs/stacks/issues/269), [#269](https://github.com/stacksjs/stacks/issues/269), [#269](https://github.com/stacksjs/stacks/issues/269))
+- **notifications**: make delivery tracking configurable (#328) ([9d652b6](https://github.com/stacksjs/stacks/commit/9d652b6)) _(by Chris <chris@stacksjs.com>)_ ([#328](https://github.com/stacksjs/stacks/issues/328), [#328](https://github.com/stacksjs/stacks/issues/328), [#328](https://github.com/stacksjs/stacks/issues/328))
+- **generate**: buddy generate:erd-diagram (#439) ([94b126d](https://github.com/stacksjs/stacks/commit/94b126d)) _(by Chris <chris@stacksjs.com>)_ ([#439](https://github.com/stacksjs/stacks/issues/439), [#439](https://github.com/stacksjs/stacks/issues/439))
+- **config**: type the topology vocabulary and require versioned provider evidence (#2056) ([c98ccc2](https://github.com/stacksjs/stacks/commit/c98ccc2)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 🐛 Bug Fixes
+
+- **cli**: make --no-interaction real (#853) ([aa0d202](https://github.com/stacksjs/stacks/commit/aa0d202)) _(by Chris <chris@stacksjs.com>)_ ([#853](https://github.com/stacksjs/stacks/issues/853), [#853](https://github.com/stacksjs/stacks/issues/853))
+- **cli,logging**: make --quiet and --verbose actually do something (#853) ([8817be9](https://github.com/stacksjs/stacks/commit/8817be9)) _(by Chris <chris@stacksjs.com>)_ ([#853](https://github.com/stacksjs/stacks/issues/853), [#853](https://github.com/stacksjs/stacks/issues/853), [#853](https://github.com/stacksjs/stacks/issues/853))
+- **deploy**: read the cloud config freshly, and never guess a hosted zone (#685) ([a3c5ef8](https://github.com/stacksjs/stacks/commit/a3c5ef8)) _(by Chris <chris@stacksjs.com>)_ ([#685](https://github.com/stacksjs/stacks/issues/685), [#685](https://github.com/stacksjs/stacks/issues/685), [#685](https://github.com/stacksjs/stacks/issues/685))
+- **testing,buddy**: two build-independence failures in this issue's own guards (#2581) ([66e1838](https://github.com/stacksjs/stacks/commit/66e1838)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 📝 Documentation
+
+- clear the last docs-import failures, baseline now empty (#2581) ([0881be7](https://github.com/stacksjs/stacks/commit/0881be7)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581), [#2580](https://github.com/stacksjs/stacks/issues/2580))
+
+## ✅ Tests
+
+- **auth**: complete the mail stub so a caught error stops looking like a failure ([35d75ad](https://github.com/stacksjs/stacks/commit/35d75ad)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.36...v0.74.37)
 
 ## ✨ Features
