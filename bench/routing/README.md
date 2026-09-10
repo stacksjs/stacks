@@ -65,7 +65,11 @@ accident. The safeguards here exist only to stop that:
   or combined competing work, using at least 75% of one core before a server
   starts or after it stops aborts
   the run. `--allow-busy-host` is an explicit direction-only override, recorded
-  in the report.
+  in the report. What each process is using is measured the same way the CPU
+  column is - two readings of cumulative CPU time a few hundred milliseconds
+  apart - because `ps -o %cpu` is an average over a process's whole lifetime,
+  which cannot see a long-idle neighbour that has just started saturating a
+  core, and keeps reporting a burst that finished an hour ago.
 - **Three runs, median reported, spread printed beside it.** A single run on a
   laptop is a mood, not a measurement. If the `spread` column is wide, the
   median is not telling you much. A full range above 10% of the median marks

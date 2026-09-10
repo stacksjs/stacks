@@ -58,7 +58,9 @@ router API, so the repository's application pages do not enter a one-route API
 memory comparison.
 
 Before and after each measurement, the runner refuses to proceed when one
-process or combined competing work is using at least 75% of one CPU core.
+process or combined competing work is using at least 75% of one CPU core,
+measured as the delta of cumulative CPU time over a short window rather than
+from a lifetime average.
 Pass `--allow-busy-host` only for
 diagnostic runs; the report records every observed process and remains
 non-publishable.
