@@ -1,5 +1,15 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.39...v0.74.40)
+
+## 🐛 Bug Fixes
+
+- **server**: make the declared document cache actually apply ([1cf5e9c](https://github.com/stacksjs/stacks/commit/1cf5e9c)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.38...v0.74.39)
 
 ## ⚡ Performance Improvements
