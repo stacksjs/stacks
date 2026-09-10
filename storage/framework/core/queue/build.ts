@@ -14,6 +14,7 @@ const result = await Bun.build({
   // `Queue` and the middleware classes has never worked (stacksjs/stacks#2581).
   entrypoints: ['./src/index.ts', './src/bun-queue.ts', './src/drivers/redis.ts'],
   outdir: './dist',
+  splitting: true,
   format: 'esm',
   target: 'bun',
   // sourcemap: 'linked',
