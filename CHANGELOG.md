@@ -1,5 +1,42 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.36...v0.74.37)
+
+## ✨ Features
+
+- **env,config**: environment predicates and the two missing config helpers (#2581) ([1bbe698](https://github.com/stacksjs/stacks/commit/1bbe698)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **cli**: build the terminal primitives the docs describe (#2581) ([4252391](https://github.com/stacksjs/stacks/commit/4252391)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **testing**: event and mail fakes, and drop the DynamoDB helper that threw (#2581) ([12ec8c4](https://github.com/stacksjs/stacks/commit/12ec8c4)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **queue,testing**: one queue entry, and model-backed test factories (#2581) ([3413437](https://github.com/stacksjs/stacks/commit/3413437)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **testing**: add the `http` client and `actingAs` the docs already document (#2581) ([116e7c2](https://github.com/stacksjs/stacks/commit/116e7c2)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **testing**: implement the clock and console helpers (#2581) ([e6ea80c](https://github.com/stacksjs/stacks/commit/e6ea80c)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581), [#2576](https://github.com/stacksjs/stacks/issues/2576))
+- **testing**: implement the database assertions the docs promised (#2581) ([27a055e](https://github.com/stacksjs/stacks/commit/27a055e)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 🐛 Bug Fixes
+
+- **testing**: declare the packages it imports ([ff0d8dd](https://github.com/stacksjs/stacks/commit/ff0d8dd)) _(by Chris <chris@stacksjs.com>)_
+- keep the Linux-only entries a macOS pantry install prunes ([8845903](https://github.com/stacksjs/stacks/commit/8845903)) _(by Chris <chris@stacksjs.com>)_
+- **queue,orm**: build the subpaths these packages advertise (#2581) ([863f608](https://github.com/stacksjs/stacks/commit/863f608)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 📝 Documentation
+
+- **auth,commerce,payments**: point the SaaS how-tos at real APIs (#2581) ([27319ca](https://github.com/stacksjs/stacks/commit/27319ca)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **ai**: rewrite the AI package page against the real surface (#2581) ([f930d21](https://github.com/stacksjs/stacks/commit/f930d21)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **database,api**: point the samples at the real packages (#2581) ([6bb8eb6](https://github.com/stacksjs/stacks/commit/6bb8eb6)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **cloud**: rewrite the cloud pages against the declarative model (#2581) ([a3a3df5](https://github.com/stacksjs/stacks/commit/a3a3df5)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **basics**: rewrite the functions page against what exists (#2581) ([428c31e](https://github.com/stacksjs/stacks/commit/428c31e)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+- **testing**: remove the browser-testing page and the mock server (#2581) ([faf1c9d](https://github.com/stacksjs/stacks/commit/faf1c9d)) _(by Chris <chris@stacksjs.com>)_ ([#2581](https://github.com/stacksjs/stacks/issues/2581), [#2581](https://github.com/stacksjs/stacks/issues/2581))
+
+## 🔧 Chores
+
+- upgrade @stacksjs/ts-cloud to 0.15.1 ([5c99194](https://github.com/stacksjs/stacks/commit/5c99194)) _(by Chris <chris@stacksjs.com>)_
+- upgrade @stacksjs/ts-cloud to 0.15.0 ([aa8562a](https://github.com/stacksjs/stacks/commit/aa8562a)) _(by Chris <chris@stacksjs.com>)_
+- add splitting to build ([0371955](https://github.com/stacksjs/stacks/commit/0371955)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.35...v0.74.36)
 
 ## ✨ Features
