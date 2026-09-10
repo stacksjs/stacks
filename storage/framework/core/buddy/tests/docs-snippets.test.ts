@@ -158,3 +158,45 @@ describe('the generated tsconfig is build-independent', () => {
     expect(generatedTsconfig().include).toEqual(['./*.ts'])
   })
 })
+
+/**
+ * The second thing that broke CI (stacksjs/stacks#2580).
+ *
+ * The compiler is given one file per unique STATEMENT - compiling the same
+ * import twice proves nothing. But the findings must map back to every
+ * DOCUMENT that contains it, not just the first: attributing a shared broken
+ * import to whichever document the directory walk reached first made the answer
+ * depend on `readdirSync` order, which differs between macOS and Linux. Nine
+ * findings then looked new on CI against a baseline that already contained
+ * them, under a different filename.
+ */
+describe('a shared import belongs to every document that has it', () => {
+  it('extracts the same statement separately from each file', () => {
+    const statement = "import { dispatch } from '@stacksjs/queue'"
+    const a = extractImports('docs/a.md', ['```ts', statement, '```'].join('\n'))
+    const b = extractImports('docs/b.md', ['```ts', statement, '```'].join('\n'))
+
+    expect(a).toHaveLength(1)
+    expect(b).toHaveLength(1)
+    // Same statement, different documents - and the key that a baseline is
+    // matched on includes the file, so these are two distinct findings.
+    expect(findingKey({ file: a[0]!.file, specifier: a[0]!.specifier, message: 'm' }))
+      .not.toBe(findingKey({ file: b[0]!.file, specifier: b[0]!.specifier, message: 'm' }))
+  })
+
+  it('keeps both occurrences within one document', () => {
+    // Two blocks in one file with the same import: both are reported, so
+    // fixing one and leaving the other does not read as fixed.
+    const found = extractImports('docs/a.md', [
+      '```ts',
+      "import { x } from '@stacksjs/cli'",
+      '```',
+      '```ts',
+      "import { x } from '@stacksjs/cli'",
+      '```',
+    ].join('\n'))
+
+    expect(found).toHaveLength(2)
+    expect(found[0]!.line).not.toBe(found[1]!.line)
+  })
+})

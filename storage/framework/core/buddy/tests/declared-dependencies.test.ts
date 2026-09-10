@@ -21,6 +21,24 @@ import { describe, expect, it } from 'bun:test'
 
 const packageRoot = dirname(import.meta.dir)
 
+/**
+ * Source with its comments removed, so prose ABOUT an import is not read as one.
+ *
+ * `snippets.ts` documents why a regex cannot follow `export * from
+ * '@stacksjs/bun-router'`, and this scanner - being a regex - promptly read that
+ * sentence as an import and demanded the package be declared. The irony is
+ * enjoyable and the false positive is not: a comment is the one place a
+ * specifier appears without being a dependency.
+ *
+ * Block comments first, then line comments, and only `//` that starts a line or
+ * follows whitespace - so a `https://` inside a string survives.
+ */
+export function withoutComments(source: string): string {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|\s)\/\/[^\n]*/g, '$1')
+}
+
 /** Every `@stacksjs/*` specifier under `src`, from static and dynamic imports. */
 function importedScopedPackages(dir: string, found = new Set<string>()): Set<string> {
   for (const entry of readdirSync(dir)) {
@@ -34,7 +52,7 @@ function importedScopedPackages(dir: string, found = new Set<string>()): Set<str
     if (!path.endsWith('.ts'))
       continue
 
-    const source = readFileSync(path, 'utf-8')
+    const source = withoutComments(readFileSync(path, 'utf-8'))
 
     for (const match of source.matchAll(/from\s+['"](@stacksjs\/[a-z0-9-]+)['"]/g))
       found.add(match[1]!)
@@ -64,5 +82,32 @@ describe('the manifest covers what the source imports', () => {
       .sort()
 
     expect(undeclared).toEqual([])
+  })
+})
+
+describe('withoutComments', () => {
+  it('drops a specifier that only appears in prose', () => {
+    // The case that broke this: a docblock explaining a re-export.
+    const source = "/**\n * `export * from '@stacksjs/bun-router'` is why.\n */\nexport const x = 1\n"
+    expect(withoutComments(source)).not.toContain('@stacksjs/bun-router')
+  })
+
+  it('drops a line comment', () => {
+    expect(withoutComments("// import { a } from '@stacksjs/cli'\nconst b = 1")).not.toContain('@stacksjs/cli')
+  })
+
+  it('keeps a real import', () => {
+    const source = "import { log } from '@stacksjs/cli'\n"
+    expect(withoutComments(source)).toContain('@stacksjs/cli')
+  })
+
+  it('keeps a URL inside a string, which is not a comment', () => {
+    // `//` after a colon is part of a URL. Stripping it would truncate the
+    // string and could take a real import on the same line with it.
+    expect(withoutComments("const url = 'https://example.com/x'\n")).toContain('https://example.com/x')
+  })
+
+  it('keeps an import that follows a block comment on the same line', () => {
+    expect(withoutComments("/* note */ import { a } from '@stacksjs/cli'")).toContain('@stacksjs/cli')
   })
 })

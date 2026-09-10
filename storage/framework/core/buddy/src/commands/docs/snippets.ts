@@ -128,7 +128,8 @@ export function extractImports(file: string, contents: string): DocsImport[] {
 
 /** Every markdown file under `docs/`. */
 function markdownFiles(dir: string): string[] {
-  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+  // Sorted, so the report and the baseline read the same on any filesystem.
+  return readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name)).flatMap((entry) => {
     const full = join(dir, entry.name)
     if (entry.isDirectory())
       return markdownFiles(full)
@@ -196,12 +197,23 @@ function compile(imports: DocsImport[]): SnippetFinding[] {
   rmSync(workDir, { force: true, recursive: true })
   mkdirSync(workDir, { recursive: true })
 
-  const byName = new Map<string, DocsImport>()
+  // One compiled file per unique STATEMENT, but every occurrence of it kept.
+  //
+  // Deduping the occurrences too - reporting only the first document that
+  // contains a given import - made the result depend on directory order, and
+  // `readdirSync` returns a different order on macOS than on Linux. The same
+  // broken import was then attributed to a different file on CI than locally,
+  // so nine findings looked new against a baseline that already contained them.
+  // Two documents sharing a broken import are two broken documents anyway.
+  const byName = new Map<string, DocsImport[]>()
   for (const entry of imports) {
     const name = `i${createHash('sha1').update(entry.text).digest('hex').slice(0, 16)}`
-    if (byName.has(name))
+    const existing = byName.get(name)
+    if (existing) {
+      existing.push(entry)
       continue
-    byName.set(name, entry)
+    }
+    byName.set(name, [entry])
     // `export {}` makes each file a module, so two samples importing the same
     // name do not collide as duplicate top-level identifiers.
     writeFileSync(join(workDir, `${name}.ts`), `${entry.text}\nexport {}\n`)
@@ -222,18 +234,20 @@ function compile(imports: DocsImport[]): SnippetFinding[] {
     const match = line.match(/docs-imports\/(i[0-9a-f]+)\.ts.*?error (TS\d+): (.*)$/)
     if (!match)
       continue
-    const entry = byName.get(match[1]!)
-    if (!entry)
+    const occurrences = byName.get(match[1]!)
+    if (!occurrences || occurrences.length === 0)
       continue
-    if (!inScope(entry.specifier, match[2]!))
+    if (!inScope(occurrences[0]!.specifier, match[2]!))
       continue
-    findings.push({
-      file: entry.file,
-      line: entry.line,
-      specifier: entry.specifier,
-      code: match[2]!,
-      message: match[3]!.trim(),
-    })
+    for (const entry of occurrences) {
+      findings.push({
+        file: entry.file,
+        line: entry.line,
+        specifier: entry.specifier,
+        code: match[2]!,
+        message: match[3]!.trim(),
+      })
+    }
   }
 
   rmSync(workDir, { force: true, recursive: true })
