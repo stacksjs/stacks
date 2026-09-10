@@ -19,6 +19,15 @@ is a driver you cannot select.
 - **experimental** - Usable, but without retained evidence.
 - **unsupported** - Cannot be selected; configuring it fails loudly.
 
+> **How current is this?** This table is generated from `capabilityRegistry`
+> in `@stacksjs/config`, and `docs:capabilities:check` fails CI when the two
+> disagree - so it is verified at every commit, not as of some date.
+>
+> The claims themselves are checked by `capabilities.test.ts`: every cited
+> file must exist, anything short of `supported` must give a reason, and a
+> `supported` driver on a remote topology must name the provider version it
+> was proven against.
+
 ### Database
 
 | Driver | Status | Topology | Live service | Evidence |

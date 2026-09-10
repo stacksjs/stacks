@@ -1,15 +1,74 @@
 export type CapabilityCategory = 'database' | 'queue' | 'cache' | 'storage' | 'mail' | 'realtime' | 'deploy'
 export type CapabilityStatus = 'supported' | 'partial' | 'experimental' | 'unsupported'
 
+/**
+ * Where a driver's work actually happens.
+ *
+ * A closed vocabulary rather than a free string, for two reasons. A typo in a
+ * free string is invisible - `in-process` and `inprocess` would sit next to
+ * each other in the matrix forever. And the split below is load-bearing:
+ * whether a driver depends on something outside this process decides whether
+ * calling it `supported` requires a versioned provider contract
+ * (stacksjs/stacks#2056).
+ */
+export type CapabilityTopology = LocalTopology | RemoteTopology
+
+/** Runs inside this process, or on its filesystem. Nothing to version. */
+export type LocalTopology =
+  | 'embedded'
+  | 'inline'
+  | 'in-process'
+  | 'local-file'
+  | 'local-filesystem'
+  | 'single-process-websocket'
+  | 'worker-and-embedded-sqlite'
+
+/** Depends on something outside this process, whose version is a fact about the claim. */
+export type RemoteTopology =
+  | 'client-server'
+  | 'managed-service'
+  | 'managed-object-storage'
+  | 'mysql-behind-vtgate'
+  | 'smtp-server'
+  | 'worker-and-redis'
+  | 'hetzner-vm-systemd-rpx'
+  | 'ssh-box-systemd-rpx'
+
+/** The remote half, as a value, so a check can ask rather than restate it. */
+export const REMOTE_TOPOLOGIES: ReadonlySet<CapabilityTopology> = new Set<CapabilityTopology>([
+  'client-server',
+  'managed-service',
+  'managed-object-storage',
+  'mysql-behind-vtgate',
+  'smtp-server',
+  'worker-and-redis',
+  'hetzner-vm-systemd-rpx',
+  'ssh-box-systemd-rpx',
+])
+
+/** Whether this driver's behaviour depends on a service this repository does not own. */
+export function isRemoteTopology(topology: CapabilityTopology): boolean {
+  return REMOTE_TOPOLOGIES.has(topology)
+}
+
 export interface CapabilityDriver {
   category: CapabilityCategory
   name: string
   status: CapabilityStatus
   implementation: string | null
   testEvidence: string[]
-  topology: string
+  topology: CapabilityTopology
   prerequisites: string[]
   limitations: string[]
+  /**
+   * The provider version the `supported` claim was established against, and the
+   * workflow that establishes it.
+   *
+   * Required for a `supported` driver on a remote topology, and enforced in
+   * `capabilities.test.ts`. "Redis works" is not a checkable claim; "Redis
+   * 8.8.0 works, and this workflow proves it" is, and it is the difference
+   * between a matrix a reader can act on and one they have to take on faith.
+   */
   liveServiceContract?: { service: string, version: string, workflow: string }
 }
 

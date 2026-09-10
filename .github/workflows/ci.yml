@@ -418,9 +418,10 @@ jobs:
         run: bun run docs:links:check
 
       # The imports in docs code samples, compiled for real
-      # (stacksjs/stacks#2580). Baselined rather than clean: 197 documented
-      # imports do not compile today, and this fails only on a NEW one, so the
-      # guard lands before the backlog is cleared and the list can only shrink.
+      # (stacksjs/stacks#2580). The baseline started at 170 and is now EMPTY
+      # (#2581): every documented import compiles. A failure here is a
+      # regression, not a backlog item - fix the sample rather than recording
+      # it, unless the exception is deliberate and explained.
       - name: docs:snippets:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:snippets:check

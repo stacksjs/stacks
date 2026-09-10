@@ -78,6 +78,34 @@ function section(category: CapabilityCategory, heading: string): string[] {
   ]
 }
 
+/**
+ * How current this page is, and why.
+ *
+ * #2056 asks capability pages to expose a last-verified revision. A git-derived
+ * stamp was the obvious answer and the wrong one: the revision changes when the
+ * registry changes, so every commit touching `capabilities.ts` would leave this
+ * page stale and `docs:capabilities:check` red until a second commit
+ * regenerated it. A freshness marker that breaks CI to stay fresh is worse than
+ * none, and a hand-maintained date is the first thing to rot.
+ *
+ * What a reader is actually asking - "can I trust this today?" - has a stronger
+ * answer than a date. The page is generated from the registry and CI fails when
+ * the two disagree, so it is verified at every commit rather than at one.
+ */
+function verifiedLine(): string[] {
+  return [
+    '> **How current is this?** This table is generated from `capabilityRegistry`',
+    '> in `@stacksjs/config`, and `docs:capabilities:check` fails CI when the two',
+    '> disagree - so it is verified at every commit, not as of some date.',
+    '>',
+    '> The claims themselves are checked by `capabilities.test.ts`: every cited',
+    '> file must exist, anything short of `supported` must give a reason, and a',
+    '> `supported` driver on a remote topology must name the provider version it',
+    '> was proven against.',
+    '',
+  ]
+}
+
 export function render(): string {
   const statuses = Object.entries(STATUS_NOTE).map(([status, note]) => `- **${status}** - ${note}`)
 
@@ -89,6 +117,7 @@ export function render(): string {
     '',
     ...statuses,
     '',
+    ...verifiedLine(),
     ...CATEGORIES.flatMap(([category, heading]) => section(category, heading)),
     END,
   ].join('\n')

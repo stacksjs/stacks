@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 import { existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
-import { assertCapabilityAvailable, capabilityDrivers, capabilityRegistry, findCapability } from '../src/capabilities'
+import { assertCapabilityAvailable, capabilityDrivers, capabilityRegistry, findCapability, isRemoteTopology } from '../src/capabilities'
 
 /** The repository root, resolved from this file rather than the working directory. */
 const root = join(import.meta.dir, '../../../../../')
@@ -68,6 +68,31 @@ describe('the registry\'s claims are checkable', () => {
       expect(existsSync(join(root, driver.liveServiceContract.workflow))).toBeTrue()
       expect(driver.liveServiceContract.version.length).toBeGreaterThan(0)
     }
+  })
+
+  it('makes a supported REMOTE driver name the provider version it was proven against', () => {
+    // "Redis works" is not a checkable claim. "Redis 8.8.0 works, and this
+    // workflow proves it" is, and it is the difference between a matrix a
+    // reader can act on and one they take on faith.
+    //
+    // Only `supported` and only remote: a local driver has no provider to
+    // version, and a `partial` or `experimental` one is already saying its
+    // evidence is incomplete.
+    const unversioned = capabilityRegistry
+      .filter(driver => driver.status === 'supported' && isRemoteTopology(driver.topology) && !driver.liveServiceContract)
+      .map(driver => `${driver.category}/${driver.name} (${driver.topology})`)
+
+    expect(unversioned).toEqual([])
+  })
+
+  it('does not attach a live-service contract to a local driver', () => {
+    // A version for something that runs in this process is a claim about
+    // nothing, and it would make the matrix's version column mean two things.
+    const misplaced = capabilityRegistry
+      .filter(driver => driver.liveServiceContract && !isRemoteTopology(driver.topology))
+      .map(driver => `${driver.category}/${driver.name} (${driver.topology})`)
+
+    expect(misplaced).toEqual([])
   })
 
   it('names every driver at most once per category', () => {
