@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.40...v0.74.41)
+
+## ✨ Features
+
+- cookie consent banner and useCookieConsent (#365) ([8330b3a](https://github.com/stacksjs/stacks/commit/8330b3a)) _(by Chris <chris@stacksjs.com>)_ ([#365](https://github.com/stacksjs/stacks/issues/365), [#365](https://github.com/stacksjs/stacks/issues/365), [#365](https://github.com/stacksjs/stacks/issues/365))
+- GitHub Codespaces support (#236) ([d395fe5](https://github.com/stacksjs/stacks/commit/d395fe5)) _(by Chris <chris@stacksjs.com>)_ ([#236](https://github.com/stacksjs/stacks/issues/236), [#236](https://github.com/stacksjs/stacks/issues/236))
+
+## 🐛 Bug Fixes
+
+- **setup**: refuse --dry-run rather than migrating the database (#853) ([01f98f0](https://github.com/stacksjs/stacks/commit/01f98f0)) _(by Chris <chris@stacksjs.com>)_ ([#853](https://github.com/stacksjs/stacks/issues/853), [#853](https://github.com/stacksjs/stacks/issues/853))
+- **storage**: honour the documented s3.usePathStyleEndpoint (#266) ([c94a776](https://github.com/stacksjs/stacks/commit/c94a776)) _(by Chris <chris@stacksjs.com>)_ ([#266](https://github.com/stacksjs/stacks/issues/266), [#266](https://github.com/stacksjs/stacks/issues/266))
+
+## 🔧 Chores
+
+- upgrade stx to 0.2.285 ([5e89570](https://github.com/stacksjs/stacks/commit/5e89570)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.39...v0.74.40)
 
 ## 🐛 Bug Fixes
