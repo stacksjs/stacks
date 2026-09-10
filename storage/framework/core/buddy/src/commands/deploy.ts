@@ -1,3 +1,4 @@
+import type { DnsConfig } from '@stacksjs/ts-cloud'
 import type { CLI, DeploymentPreview, DeploymentSiteKind, DeployOptions } from '@stacksjs/types'
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
@@ -1893,26 +1894,20 @@ export interface TsCloudInfrastructure {
       cdn?: { provider?: string }
     }
   }
-  dns?: {
-    domain?: string
-    provider?: string
-    hostedZoneId?: string
-    /**
-     * Where the domain is REGISTERED, when that is not where its DNS is served.
-     *
-     * Mirrors `DelegationConfig['registrar']` in `@stacksjs/ts-cloud`, which is
-     * what `delegateZoneFromConfig` reads. This interface is a hand-written
-     * mirror of the config shape rather than an import, so it goes stale
-     * silently: `registrar` shipped in ts-cloud 0.13.0 and this kept the 0.12
-     * shape, which is what broke the typecheck on 6bbe94aa66.
-     */
-    registrar?: {
-      provider?: 'porkbun' | 'godaddy'
-      proxied?: string[]
-      dryRun?: boolean
-      delegate?: boolean
-    }
-  }
+  /**
+   * The DNS block, taken straight from `@stacksjs/ts-cloud` rather than
+   * mirrored here.
+   *
+   * It used to be a hand-written copy, which goes stale in silence: `registrar`
+   * shipped in ts-cloud 0.13.0, this kept the 0.12 shape, and the typecheck
+   * broke on 6bbe94aa66 for a field nobody had touched. `import type` is erased
+   * at compile time, so the runtime `await import()` below stays lazy.
+   *
+   * `Partial` because every read of this is optional-chained and the shape is
+   * whatever a project's `config/cloud.ts` happens to declare — a config that
+   * names only `provider` is a legitimate one, not a type error.
+   */
+  dns?: Partial<DnsConfig>
 }
 
 export interface TsCloudConfig {
@@ -4684,7 +4679,13 @@ export async function delegateDeclaredZone(
     return
 
   try {
-    const { delegateZoneFromConfig, describeDelegation } = await import('@stacksjs/ts-cloud')
+    const {
+      applyDeclaredZoneSettings,
+      delegateZoneFromConfig,
+      describeDelegation,
+      describeZoneSettings,
+    } = await import('@stacksjs/ts-cloud')
+
     const result = await delegateZoneFromConfig(dns as any)
 
     for (const line of describeDelegation(result))
@@ -4695,9 +4696,22 @@ export async function delegateDeclaredZone(
     // a deploy whose application changes are unrelated.
     if (result.status === 'blocked')
       logger.warn('DNS: delegation did not complete; the domain still resolves through its registrar.')
+
+    // Zone settings are reconciled whatever the delegation did, including when
+    // it was skipped because the zone is already where it belongs. They are the
+    // half that drifts: a delegation happens once, but somebody can change
+    // `ssl` in a dashboard any afternoon, and declaring it is only worth
+    // anything if the next deploy puts it back.
+    const settings = await applyDeclaredZoneSettings(dns as any)
+
+    for (const line of describeZoneSettings(settings))
+      logger.info(line)
+
+    if (settings.status !== 'skipped' && settings.failed.length > 0)
+      logger.warn(`DNS: ${settings.failed.length} zone setting(s) could not be applied; the zone is serving with its previous values.`)
   }
   catch (error) {
-    logger.warn(`DNS: delegation could not run: ${error instanceof Error ? error.message : String(error)}`)
+    logger.warn(`DNS: zone reconciliation could not run: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
