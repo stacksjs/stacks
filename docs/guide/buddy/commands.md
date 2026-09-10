@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **330 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **333 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -66,6 +66,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `simulator` | 2 |
 | `sms` | 6 |
 | `stack` | 3 |
+| `storage` | 3 |
 | `stripe` | 1 |
 | `test` | 4 |
 | `types` | 2 |
@@ -4865,6 +4866,63 @@ Check whether the application is in maintenance or coming-soon mode
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `storage:backup`
+
+Archive a storage disk to a file
+
+- Usage: `$ buddy storage:backup [disk]`
+- Namespace: `storage`
+- Aliases: none
+- Arguments: `[disk]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where to write the archive (default: storage/backups/storage) | value, optional | - |
+| `--retain` | How many archives to keep, per disk | value, optional | `"7"` |
+| `--destination` | Copy the archive offsite: s3://bucket/prefix or disk://name/prefix | value, optional | - |
+| `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy storage:backup
+buddy storage:backup public --retain 30
+buddy storage:backup --destination disk://backups/uploads
+```
+
+### `storage:backups`
+
+List the storage archives that have been taken
+
+- Usage: `$ buddy storage:backups`
+- Namespace: `storage`
+- Aliases: none
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where the archives are (default: storage/backups/storage) | value, optional | - |
+
+### `storage:restore`
+
+Restore a storage disk from an archive
+
+- Usage: `$ buddy storage:restore <archive> [disk]`
+- Namespace: `storage`
+- Aliases: none
+- Arguments: `<archive>`, `[disk]`
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--out` | Where the archives are (default: storage/backups/storage) | value, optional | - |
+| `--force` | Restore even though it overwrites files that are there now | boolean, optional | `false` |
+
+Examples:
+
+```bash
+buddy storage:restore 2026-09-10T08-15-00-000.local.zip
+```
 
 ### `stripe:setup`
 

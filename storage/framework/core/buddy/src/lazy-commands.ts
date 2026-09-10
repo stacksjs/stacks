@@ -76,6 +76,13 @@ const commandRegistry: Record<string, CommandLoader> = {
   // db.ts also registers the list and restore halves.
   'db:backups': { path: './commands/db.ts', exportName: 'db' },
   'db:restore': { path: './commands/db.ts', exportName: 'db' },
+
+  // The uploaded-files half of backups (stacksjs/stacks#269); `db:*` above is
+  // the data half. Deliberately separate artifacts: a dump and the uploads it
+  // references are restored independently.
+  'storage:backup': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
+  'storage:backups': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
+  'storage:restore': { path: './commands/storage-backup.ts', exportName: 'storageBackup' },
   'fresh': { path: './commands/fresh.ts', exportName: 'fresh' },
   'generate': { path: './commands/generate.ts', exportName: 'generate' },
   'http': { path: './commands/http.ts', exportName: 'http' },

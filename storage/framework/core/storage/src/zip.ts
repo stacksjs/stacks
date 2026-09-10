@@ -3,13 +3,25 @@ import type { CommandError, Subprocess } from '@stacksjs/types'
 import type { ZlibCompressionOptions } from 'bun'
 import { runCommand } from '@stacksjs/cli'
 
-function shellEscape(_arg: string): string {
-  return `'${_arg.replace(/'/g, "'\\''")}'`
-}
-
 interface ZipOptions {
   cwd?: string
 }
+
+/*
+ * Arguments go as an ARRAY, never as a joined string.
+ *
+ * These used to build a shell command and single-quote each path with a
+ * `shellEscape` helper. `runCommand` spawns without a shell, so those quotes
+ * arrived as literal characters in the filename: `zip` looked for a file
+ * called `'uploads'`, quotes included, and answered `zip error: Nothing to
+ * do!` on a directory that was plainly not empty. Every one of these
+ * functions was therefore broken for every input it escaped - which is to say
+ * all of them - and nothing noticed, because they had no caller until
+ * `storage:backup` (stacksjs/stacks#269).
+ *
+ * The array form is what `exec` uses as argv directly, so a path with a space
+ * in it also works now, which the string form could never have managed.
+ */
 
 export async function zip(
   from: string | string[],
@@ -17,36 +29,34 @@ export async function zip(
   options?: ZipOptions,
 ): Promise<Result<Subprocess, CommandError>> {
   const toPath = to || 'archive.zip'
+  const sources = Array.isArray(from) ? from : [from]
 
-  if (Array.isArray(from)) {
-    const fromPath = from.map(f => shellEscape(f)).join(' ')
-    return runCommand(`zip -r ${shellEscape(toPath)} ${fromPath}`, options)
-  }
-
-  return runCommand(`zip -r ${shellEscape(toPath)} ${shellEscape(from)}`, options)
+  return runCommand(['zip', '-r', toPath, ...sources], options)
 }
 
-export async function unzip(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  if (Array.isArray(paths))
-    return runCommand(`unzip ${paths.map(p => shellEscape(p)).join(' ')}`)
+export async function unzip(
+  paths: string | string[],
+  options?: ZipOptions,
+): Promise<Result<Subprocess, CommandError>> {
+  const sources = Array.isArray(paths) ? paths : [paths]
 
-  return runCommand(`unzip ${shellEscape(paths)}`)
+  return runCommand(['unzip', '-o', ...sources], options)
 }
 
-export function archive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths)
+export function archive(paths: string | string[], to?: string, options?: ZipOptions): Promise<Result<Subprocess, CommandError>> {
+  return zip(paths, to, options)
 }
 
-export function unarchive(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths)
+export function unarchive(paths: string | string[], options?: ZipOptions): Promise<Result<Subprocess, CommandError>> {
+  return unzip(paths, options)
 }
 
-export function compress(paths: string[]): Promise<Result<Subprocess, CommandError>> {
-  return zip(paths)
+export function compress(paths: string[], to?: string, options?: ZipOptions): Promise<Result<Subprocess, CommandError>> {
+  return zip(paths, to, options)
 }
 
-export function decompress(paths: string | string[]): Promise<Result<Subprocess, CommandError>> {
-  return unzip(paths)
+export function decompress(paths: string | string[], options?: ZipOptions): Promise<Result<Subprocess, CommandError>> {
+  return unzip(paths, options)
 }
 
 /*
