@@ -937,13 +937,21 @@ export function logsPath(path?: string): string {
 }
 
 /**
- * Returns the path to the `models` directory within the app directory.
+ * Returns the path to the `Models` directory within the app directory.
  *
- * @param path - The relative path to the file or directory within the `models` directory.
- * @returns The absolute path to the specified file or directory within the `models` directory.
+ * Capital `M`. This built `app/models`, the only one of the twelve
+ * `appPath`-relative helpers that did not match the directory it names -
+ * which resolves anyway on a case-insensitive filesystem, so it worked on
+ * macOS and Windows and found nothing on Linux.
+ *
+ * Delegates to {@link userModelsPath} rather than repeating the segment, so
+ * the two cannot disagree again.
+ *
+ * @param path - The relative path to the file or directory within the `Models` directory.
+ * @returns The absolute path to the specified file or directory within the `Models` directory.
  */
 export function modelsPath(path?: string): string {
-  return appPath(`models/${path || ''}`)
+  return userModelsPath(path)
 }
 
 /**
