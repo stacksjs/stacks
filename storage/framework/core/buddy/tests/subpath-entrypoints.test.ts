@@ -32,6 +32,23 @@ const scanRoots = [
 
 const SUBPATH = /@stacksjs\/([a-z][\w-]*)\/([\w./-]+)/g
 
+/** Only the fenced code blocks in `source`, joined. */
+export function fencedCode(source: string): string {
+  const blocks: string[] = []
+  let inside = false
+
+  for (const line of source.split('\n')) {
+    if (line.startsWith('```')) {
+      inside = !inside
+      continue
+    }
+    if (inside)
+      blocks.push(line)
+  }
+
+  return blocks.join('\n')
+}
+
 /** Every `@stacksjs/<pkg>/<subpath>` named in real code under `dir`. */
 function collectSubpaths(dir: string, found = new Map<string, Set<string>>()): Map<string, Set<string>> {
   for (const entry of readdirSync(dir)) {
@@ -48,11 +65,14 @@ function collectSubpaths(dir: string, found = new Map<string, Set<string>>()): M
     if (!/\.(?:ts|md)$/.test(entry))
       continue
 
-    // Markdown is scanned whole: a fenced sample is the documentation making
-    // the same promise the exports map does. TypeScript has its comments
-    // stripped, since prose about a specifier is not an import of it.
+    // Only the parts that make a promise. In TypeScript that is everything
+    // except the comments; in markdown it is the fenced code blocks, because
+    // prose is where a document EXPLAINS a subpath - including, in
+    // `docs/packages/cloud.md`, a sentence about why `@stacksjs/cloud/imap/s3`
+    // cannot work. Reading that as a promise failed this test on the one page
+    // that documents the trap it guards against.
     const source = readFileSync(path, 'utf8')
-    const scanned = entry.endsWith('.md') ? source : withoutComments(source)
+    const scanned = entry.endsWith('.md') ? fencedCode(source) : withoutComments(source)
 
     for (const match of scanned.matchAll(SUBPATH)) {
       const [, pkg, subpath] = match

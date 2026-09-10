@@ -1,5 +1,8 @@
 import { afterEach, describe, expect, it } from 'bun:test'
-import { CaptureEmailDriver } from '@stacksjs/email/drivers/capture'
+// From the barrel, not `@stacksjs/email/drivers/capture`: the subpath resolves
+// to `dist`, which does not exist on a runner that only ran `bun install`, and
+// in a built checkout it is a different module graph with its own store.
+import { CaptureEmailDriver } from '@stacksjs/email'
 import { emailsTo, lastEmail, mailFake, mailIsFaked, restoreMail, sentEmails } from '../src/mail'
 
 afterEach(() => {
