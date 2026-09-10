@@ -4146,6 +4146,20 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * GET /api/dashboard/remote/commands
+   */
+  getDashboardRemoteCommands(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "GET", "/api/dashboard/remote/commands", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/remote/run
+   */
+  postDashboardRemoteRun(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/remote/run", {}, [], false, options)
+  },
+
+  /**
    * GET /api/dashboard/requests
    */
   getDashboardRequests(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

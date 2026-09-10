@@ -44,6 +44,21 @@ export default defineGates({
       return user !== null
     },
 
+    /**
+     * Whether a user may run a configured operation on a configured host
+     * (stacksjs/stacks#960).
+     *
+     * Receives the host key and the command key, so scope by either or both.
+     * Declaring a host in `config/remote.ts` does NOT grant anyone access to
+     * it - without this gate defined, every run is refused, which is the
+     * correct default for a surface that runs commands on a server.
+     *
+     * @example Only the on-call team, and only on the app box
+     * 'run-remote-command': (user, hostKey) =>
+     *   hostKey === 'app' && user?.email?.endsWith('@example.com') === true,
+     */
+    // 'run-remote-command': (user: UserModel | null, hostKey: string, commandKey: string) => false,
+
     // Add more gates here...
     // 'ability-name': (user, ...args) => boolean,
   },

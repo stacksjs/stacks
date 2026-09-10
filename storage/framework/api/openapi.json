@@ -25115,6 +25115,56 @@
         }
       }
     },
+    "/api/dashboard/remote/commands": {
+      "get": {
+        "summary": "/api/dashboard/remote/commands",
+        "operationId": "get__api_dashboard_remote_commands",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/dashboard/remote/run": {
+      "post": {
+        "summary": "/api/dashboard/remote/run",
+        "operationId": "post__api_dashboard_remote_run",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation failed"
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
     "/api/dashboard/requests": {
       "get": {
         "summary": "/api/dashboard/requests",

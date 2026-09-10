@@ -112,6 +112,36 @@ Derivatives are written back to the same disk under `.variants/<path>/`. The
 leading dot keeps them out of the listing, which skips hidden components - a
 folder of thirty derivatives beside every photo makes the browser useless.
 
+### Remote commands (stacksjs/stacks#960)
+
+Running a configured operation on a configured host over SSH. Deliberately NOT
+a terminal: the request names a host KEY and a command KEY, both from
+`config/remote.ts`, so there is nothing to escape and no shell to reach. An
+interactive session is tracked separately - `Bun.spawn` has no PTY, and
+`ssh -tt` gives a remote one but cannot propagate a window resize.
+
+Four things make it safe to expose, and each is a rule to keep:
+
+- **Host keys are verified.** `StrictHostKeyChecking=yes` against the host's
+  declared `knownHosts`. Do NOT reuse `sshExec` from `@stacksjs/ts-cloud` for
+  anything long-lived: it disables host key checking on purpose, for boxes a
+  minute old whose keys cannot be known.
+- **Hosts and commands come from config, never the request.** A `RemoteCommand`
+  carries an `argv` ARRAY that is never interpolated.
+- **The routes do NOT use `guard()`.** That helper drops auth entirely under
+  `APP_ENV=local|development|test`, which here would be an unauthenticated
+  command runner on any dev machine on the network. They use
+  `authenticatedGuard`, and `remote-routes.test.ts` asserts it.
+- **Authorization fails CLOSED.** The `run-remote-command` gate receives the
+  host and command keys; with no gate defined, every run is refused. This is the
+  opposite of the websocket authenticator in `@stacksjs/realtime`, which
+  proceeds when none is installed.
+
+Runs are recorded before AND after - a run recorded only on completion loses the
+command that hung and the one whose process died with the box. The audit sink
+writes to the application log rather than the dashboard's own database, which is
+the thing an operator with dashboard access could edit.
+
 **There is no ffmpeg.** #2578 asked whether video was in scope given the
 external binary, its licensing and its provisioning; `@stacksjs/video` is built
 on `ts-videos`, which encodes itself, so that question was already answered.

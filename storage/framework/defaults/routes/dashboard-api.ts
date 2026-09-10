@@ -260,6 +260,21 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/files/duplicates', 'Actions/Dashboard/Content/FileDuplicateAction'))
   guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
 
+  /*
+   * Remote commands (stacksjs/stacks#960).
+   *
+   * Deliberately NOT behind `guard()`. That helper drops auth entirely when
+   * `APP_ENV` is local, development or test - which is a reasonable trade for
+   * operational telemetry on a developer machine, and an unauthenticated
+   * command runner for this. `authenticatedGuard` keeps `auth` in every
+   * environment, the same treatment billing gets and for the same reason.
+   *
+   * Authorization proper is the `run-remote-command` gate, checked per host and
+   * per command inside the action. Being authenticated is not being allowed.
+   */
+  authenticatedGuard(route.get('/remote/commands', 'Actions/Dashboard/Remote/RemoteCommandIndexAction'))
+  authenticatedGuard(route.post('/remote/run', 'Actions/Dashboard/Remote/RemoteCommandRunAction'))
+
   guard(route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction'))
   // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run
   // job detail. On-demand reads so the polled snapshot stays cheap.
