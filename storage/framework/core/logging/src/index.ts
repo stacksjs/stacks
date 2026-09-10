@@ -69,6 +69,17 @@ const LEVEL_RANK: Record<LogLevel, number> = {
   error: 3,
 }
 
+/**
+ * Whether a record at `level` is below the level in force right now.
+ *
+ * Resolved per call rather than snapshotted, because `LOG_LEVEL` is routinely
+ * set from inside the process - a `buddy` subcommand applying `--quiet`, a
+ * test pinning a level - after the logger was built.
+ */
+export function suppressedAtCurrentLevel(level: LogLevel): boolean {
+  return LEVEL_RANK[level] < LEVEL_RANK[currentLevel()]
+}
+
 function addTransport(candidate: unknown): (() => void) | null {
   const t = candidate as LogTransport | undefined
   if (!t || typeof t !== 'object' || typeof t.log !== 'function') {
@@ -803,7 +814,24 @@ function isLegacyErrorOptions(v: unknown): v is LogErrorOptions {
 
 export const log: Log = {
   info: async (...args: any[]) => {
+    // Level checked at EMIT time, the way `debug` below already does it.
+    //
+    // The underlying logger is constructed with a snapshot of the level, so a
+    // `LOG_LEVEL` set after this module loaded had no effect on `info` - which
+    // contradicts `currentLevel()`'s own contract, and made `buddy --quiet` a
+    // flag that printed everything it promised to suppress
+    // (stacksjs/stacks#853). A transport still sees the line: one may want
+    // records the console does not.
+    const suppressed = suppressedAtCurrentLevel('info')
+    if (suppressed && _transports.length === 0)
+      return
+
     const message = formatMessage(...args)
+    if (suppressed) {
+      dispatch('info', message, args)
+      return
+    }
+
     const logger = await getLogger()
     // Before the write, not after: a transport should still see the line if
     // the console or file write is the thing that fails.
@@ -812,6 +840,17 @@ export const log: Log = {
   },
 
   success: async (message: string) => {
+    // `success` ranks with `info`, so it is suppressed with it. A "quiet"
+    // deploy that still narrated every step it completed would not be quiet.
+    const suppressed = suppressedAtCurrentLevel('success')
+    if (suppressed && _transports.length === 0)
+      return
+
+    if (suppressed) {
+      dispatch('success', message, [message])
+      return
+    }
+
     const logger = await getLogger()
     dispatch('success', message, [message])
     await logger.success(message)

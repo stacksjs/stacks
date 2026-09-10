@@ -37,6 +37,33 @@ const isHelpMode = requestedCommand === 'help' || (isHelpFlag && args.length <= 
 const skipAppKeyCheck = shouldSkipAppKeyCheck(requestedCommand, { isHelpFlag, isHelpMode })
 const needsFullSetup = !isVersionOnly
 
+/**
+ * Make `--quiet` and `--verbose` actually do something (stacksjs/stacks#853).
+ *
+ * Both are registered as process-wide options and printed in every command's
+ * help, and **neither had any effect**: `--quiet` set `buddy.isQuiet` and
+ * nothing read it, so `buddy db:backups -q` printed exactly what
+ * `buddy db:backups` printed. A documented flag that silently does nothing is
+ * worse than an undocumented one.
+ *
+ * Wired through `LOG_LEVEL` rather than a parallel mechanism, because the
+ * logger already resolves **env > config > default** and re-reads the env var
+ * per call precisely so a subcommand can set it after the module has loaded.
+ *
+ * Read from argv here, at module scope, rather than from parsed options: the
+ * first log line is written before any command action runs, so a flag applied
+ * in an action would arrive after the output it was meant to suppress.
+ *
+ * An explicit `LOG_LEVEL` still wins. Someone who set it meant it, and a flag
+ * quietly overriding it would be the same class of surprise in reverse.
+ */
+if (!process.env.LOG_LEVEL) {
+  if (args.includes('--quiet') || args.includes('-q'))
+    process.env.LOG_LEVEL = 'warn'
+  else if (args.includes('--verbose') || args.includes('-v'))
+    process.env.LOG_LEVEL = 'debug'
+}
+
 // Setup global error handlers (skip for minimal commands for performance)
 if (needsFullSetup) {
   // Write the stack synchronously to stderr BEFORE exiting. `log.error` alone
