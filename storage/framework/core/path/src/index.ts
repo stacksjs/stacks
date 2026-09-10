@@ -683,23 +683,30 @@ export function docsPath(path?: string): string {
 }
 
 /**
- * Returns the path to the `domains` directory within the core directory.
+ * Returns the path to the `dns` directory within the core directory.
  *
- * @param path - The relative path to the file or directory within the `domains` directory.
- * @returns The absolute path to the specified file or directory within the `domains` directory.
+ * The package is `core/dns`. This said `core/domains` - a directory that has
+ * not existed for as long as the package has been called `@stacksjs/dns`.
+ *
+ * @param path - The relative path to the file or directory within the `dns` directory.
+ * @returns The absolute path to the specified file or directory within the `dns` directory.
  */
 export function dnsPath(path?: string): string {
-  return corePath(`domains/${path || ''}`)
+  return corePath(`dns/${path || ''}`)
 }
 
 /**
- * Returns the path to the `email` directory within the `notifications` directory.
+ * Returns the path to the `email` directory within the core directory.
+ *
+ * `core/email`, not `core/notifications/email`. Email, push and sms were all
+ * nested under `notifications` once and were promoted to top-level packages;
+ * these three helpers kept pointing at where they used to be.
  *
  * @param path - The relative path to the file or directory within the email directory.
  * @returns The absolute path to the specified file or directory within the email directory.
  */
 export function emailPath(path?: string): string {
-  return notificationsPath(`email/${path || ''}`)
+  return corePath(`email/${path || ''}`)
 }
 
 /**
@@ -829,13 +836,17 @@ export function gitPath(path?: string): string {
 }
 
 /**
- * Returns the path to the `lang` directory, optionally relative to the project directory.
+ * Returns the path to the translations directory, optionally relative to the project directory.
  *
- * @param path - The relative path to the file or directory within the lang directory.
- * @returns The absolute path to the specified file or directory within the lang directory.
+ * That directory is `locales/` at the project root - `en.yml`, `de.yml`. This
+ * returned `resources/lang/`, which is Laravel's convention and has never been
+ * where Stacks keeps translations.
+ *
+ * @param path - The relative path to the file or directory within the translations directory.
+ * @returns The absolute path to the specified file or directory within the translations directory.
  */
 export function langPath(path?: string): string {
-  return resourcesPath(`lang/${path || ''}`)
+  return projectPath(`locales/${path || ''}`)
 }
 
 /**
@@ -1208,13 +1219,15 @@ export function inspectDefaultsProvenance(projectRoot: string = projectPath()): 
 }
 
 /**
- * Returns the path to the `push` directory within the `notifications` directory.
+ * Returns the path to the `push` directory within the core directory.
+ *
+ * `core/push`, not `core/notifications/push` - see {@link emailPath}.
  *
  * @param path - The relative path to the file or directory within the push directory.
  * @returns The absolute path to the specified file or directory within the push directory.
  */
 export function pushPath(path?: string): string {
-  return notificationsPath(`push/${path || ''}`)
+  return corePath(`push/${path || ''}`)
 }
 
 /**
@@ -1405,13 +1418,15 @@ export function slugPath(path?: string): string {
 }
 
 /**
- * Returns the path to the `sms` directory within the `notifications` directory.
+ * Returns the path to the `sms` directory within the core directory.
+ *
+ * `core/sms`, not `core/notifications/sms` - see {@link emailPath}.
  *
  * @param path - The relative path to the file or directory within the `sms` directory.
  * @returns The absolute path to the specified file or directory within the `sms` directory.
  */
 export function smsPath(path?: string): string {
-  return notificationsPath(`sms/${path || ''}`)
+  return corePath(`sms/${path || ''}`)
 }
 
 /**

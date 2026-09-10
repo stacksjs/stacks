@@ -149,10 +149,12 @@ export const alias: Record<string, string> = {
   'stacks/datetime': p.datetimePath('src/index.ts'),
   '@stacksjs/datetime/*': p.datetimePath('src/*'),
   'stacks/datetime/*': p.datetimePath('src/*'),
-  '@stacksjs/development': p.developmentPath('src/index.ts'),
-  'stacks/development': p.developmentPath('src/index.ts'),
-  '@stacksjs/development/*': p.developmentPath('src/*'),
-  'stacks/development/*': p.developmentPath('src/*'),
+  // `index.ts` at the package root, not `src/index.ts`: this package has no
+  // `src` directory and its `main` is the root file.
+  '@stacksjs/development': p.developmentPath('index.ts'),
+  'stacks/development': p.developmentPath('index.ts'),
+  '@stacksjs/development/*': p.developmentPath('*'),
+  'stacks/development/*': p.developmentPath('*'),
   // The build/launcher helper. `@stacksjs/desktop` is deliberately NOT aliased
   // here: that name belongs to the stx native desktop API a Stacks app imports
   // from node_modules, and aliasing it locally shadowed that package.
@@ -338,7 +340,9 @@ export const alias: Record<string, string> = {
   '~/config/cloud': p.projectConfigPath('cloud.ts'),
   '~/config/database': p.projectConfigPath('database.ts'),
   '~/config/dns': p.projectConfigPath('dns.ts'),
-  '~/config/docs': p.docsPath('config.ts'),
+  // `config/docs.ts`, like every other entry here. `docsPath('config.ts')`
+  // pointed into the `@stacksjs/docs` package, which has no `config.ts`.
+  '~/config/docs': p.projectConfigPath('docs.ts'),
   '~/config/errors': p.projectConfigPath('errors.ts'),
   '~/.env': p.projectConfigPath('env.ts'),
   '~/config/email': p.projectConfigPath('email.ts'),
@@ -353,10 +357,12 @@ export const alias: Record<string, string> = {
   '~/config/search-engine': p.projectConfigPath('search-engine.ts'),
   '~/config/security': p.projectConfigPath('security.ts'),
   '~/config/services': p.projectConfigPath('services.ts'),
-  '~/config/storage': p.projectConfigPath('storage.ts'),
   '~/config/team': p.projectConfigPath('team.ts'),
   '~/config/ui': p.projectConfigPath('ui.ts'),
+  // Both names for the same directory: the helper is `langPath`, the directory
+  // on disk is `locales/`.
   '~/lang/*': p.langPath('*'),
+  '~/locales/*': p.langPath('*'),
   '~/components/*': p.componentsPath('*'),
   '~/functions/*': p.functionsPath('*'),
   '~/resources/*': p.resourcesPath('*'),

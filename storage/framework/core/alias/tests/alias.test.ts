@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test'
+import { existsSync } from 'node:fs'
 import path from 'node:path'
 import { alias } from '../src/index'
 
@@ -40,6 +41,38 @@ describe('@stacksjs/alias', () => {
     Object.keys(alias).forEach((key) => {
       expect(key).toMatch(/^(@stacksjs\/|stacks\/|~\/|framework\/|@\/)?[a-z\d.*-]*(\/[a-z\d.*-]+)*(\*)?$/)
     })
+  })
+
+  /**
+   * The map is 350+ entries of shape-checked strings, and every check above
+   * passes just as happily on a path to nothing.
+   *
+   * Six entries pointed at nothing: `@stacksjs/email`, `/push` and `/sms` were
+   * still resolved through `core/notifications/<name>` after all three were
+   * promoted to top-level packages, `@stacksjs/dns` through `core/domains`,
+   * `@stacksjs/development` through a `src` directory it does not have, and
+   * `~/config/docs` into the docs PACKAGE rather than `config/docs.ts`.
+   *
+   * None of them failed anything, because nothing in this repository imports
+   * the map - it is published for apps and bundlers to consume, so a stale
+   * entry surfaces as a resolution error in someone else's project.
+   */
+  it('resolves every alias to something that exists on disk', () => {
+    const dangling = Object.entries(alias)
+      .filter(([key]) => !key.includes('*'))
+      .filter(([, value]) => !existsSync(value))
+
+    expect(Object.fromEntries(dangling)).toEqual({})
+  })
+
+  it('resolves every wildcard alias to a directory that exists', () => {
+    // `foo/src/*` can only resolve if `foo/src` is there.
+    const dangling = Object.entries(alias)
+      .filter(([key]) => key.includes('*'))
+      .map(([key, value]) => [key, value.replace(/\*.*$/, '')] as const)
+      .filter(([, base]) => !existsSync(base))
+
+    expect(Object.fromEntries(dangling)).toEqual({})
   })
 
   it('should map a substantial set of aliases', () => {
