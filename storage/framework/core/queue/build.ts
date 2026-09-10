@@ -6,7 +6,13 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  // Every subpath the package advertises needs its own entry: the exports map
+  // sends `@stacksjs/queue/bun-queue` to `dist/bun-queue.js`, and building only
+  // `index.ts` meant that file never existed. The types resolved (dtsx emits a
+  // `.d.ts` per source file), so the import typechecked and then failed at
+  // runtime in every installed app - the documented way to reach `dispatch`,
+  // `Queue` and the middleware classes has never worked (stacksjs/stacks#2581).
+  entrypoints: ['./src/index.ts', './src/bun-queue.ts', './src/drivers/redis.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

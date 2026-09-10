@@ -419,7 +419,7 @@ export default async function GetDashboard(ctx: FunctionContext) {
 ## Background Jobs
 
 ```typescript
-import { dispatch } from '@stacksjs/queue'
+import { dispatch } from '@stacksjs/queue/bun-queue'
 
 export default async function CreateOrder(ctx: FunctionContext) {
   const order = await db

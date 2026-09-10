@@ -336,34 +336,45 @@ export default {
 
 ### Queue Email Jobs
 
-```ts
-import { queue } from '@stacksjs/queue'
+Sending in the background is a method on `mail`, not a separate queue call. There
+is nothing to register: `mail.queue()` dispatches to the framework's shipped
+`SendEmailJob` handler, on the `emails` queue, with three tries and a 10s/30s/60s
+backoff.
 
-interface SendEmailJob {
-  to: string
-  subject: string
-  template: string
-  data: Record<string, any>
-}
+```ts
+import { mail } from '@stacksjs/email'
 
 // Queue an email
-await queue.push<SendEmailJob>('send-email', {
+await mail.queue({
   to: 'user@example.com',
   subject: 'Welcome!',
   template: 'welcome',
   data: { name: 'John' },
 })
 
-// Process email jobs
-queue.process<SendEmailJob>('send-email', async (job) => {
-  await mail.send({
-    to: job.data.to,
-    subject: job.data.subject,
-    template: job.data.template,
-    data: job.data.data,
-  })
+// Queue it for five minutes from now
+await mail.later(300, {
+  to: 'user@example.com',
+  subject: 'Did you get set up?',
+  template: 'onboarding-nudge',
+})
+
+// Queue it on a different queue
+await mail.queueOn('bulk', {
+  to: 'user@example.com',
+  subject: 'Monthly digest',
+  template: 'digest',
 })
 ```
+
+A worker has to be running for these to leave the `jobs` table:
+
+```bash
+buddy queue:work --queue emails
+```
+
+If the queue cannot be reached, `mail.queue()` logs the dispatch failure and
+sends synchronously rather than dropping the message.
 
 ## Email Tracking
 

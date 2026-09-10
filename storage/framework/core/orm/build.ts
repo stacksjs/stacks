@@ -14,7 +14,13 @@ const result = await Bun.build({
   // `@stacksjs/orm/routes`, and without this there is nothing behind that
   // specifier — which is why every npm-installed app logged "model useApi
   // endpoints are unavailable" and served none of them.
-  entrypoints: ['./src/index.ts', './src/routes.ts'],
+  // `model-registry` is here for the same reason `routes` is: `@stacksjs/api`
+  // imports `@stacksjs/orm/model-registry` to load model schemas for the
+  // OpenAPI spec, and with no `dist/model-registry.js` behind that specifier
+  // the import threw, the relative fallback beside it pointed at a source tree
+  // no installed app has, and `generateOpenApi` emitted model-free schemas
+  // while logging a warning nobody read (stacksjs/stacks#2581).
+  entrypoints: ['./src/index.ts', './src/routes.ts', './src/model-registry.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

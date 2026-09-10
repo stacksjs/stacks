@@ -15,7 +15,8 @@ bun add @stacksjs/queue
 ## Basic Usage
 
 ```typescript
-import { dispatch, Job, Queue, Worker } from '@stacksjs/queue'
+import { Job } from '@stacksjs/queue'
+import { dispatch, Queue, Worker } from '@stacksjs/queue/bun-queue'
 
 // Dispatch a job
 await dispatch('send-email', { to: 'user@example.com', subject: 'Welcome' })
@@ -60,7 +61,7 @@ export default class SendWelcomeEmail extends Job {
 ### Inline Jobs
 
 ```typescript
-import { dispatch, JobBase } from '@stacksjs/queue'
+import { dispatch, JobBase } from '@stacksjs/queue/bun-queue'
 
 // Simple inline job
 await dispatch('process-order', {
@@ -88,7 +89,7 @@ await dispatch(new ProcessPayment(), { paymentId: 456 })
 ### Basic Dispatch
 
 ```typescript
-import { dispatch, dispatchSync } from '@stacksjs/queue'
+import { dispatch, dispatchSync } from '@stacksjs/queue/bun-queue'
 
 // Async dispatch (queued)
 await dispatch('job-name', { key: 'value' })
@@ -100,7 +101,7 @@ await dispatchSync('job-name', { key: 'value' })
 ### Conditional Dispatch
 
 ```typescript
-import { dispatchIf, dispatchUnless } from '@stacksjs/queue'
+import { dispatchIf, dispatchUnless } from '@stacksjs/queue/bun-queue'
 
 // Dispatch only if condition is true
 await dispatchIf(user.isActive, 'send-notification', { userId: user.id })
@@ -112,7 +113,7 @@ await dispatchUnless(user.optedOut, 'send-marketing', { userId: user.id })
 ### Delayed Dispatch
 
 ```typescript
-import { dispatchAfter } from '@stacksjs/queue'
+import { dispatchAfter } from '@stacksjs/queue/bun-queue'
 
 // Dispatch after 60 seconds
 await dispatchAfter(60, 'reminder-email', { userId: 1 })
@@ -124,7 +125,7 @@ await dispatchAfter(new Date('2024-12-25'), 'christmas-promo', {})
 ### Job Chains
 
 ```typescript
-import { dispatchChain, chain } from '@stacksjs/queue'
+import { dispatchChain, chain } from '@stacksjs/queue/bun-queue'
 
 // Execute jobs in sequence
 await dispatchChain([
@@ -185,7 +186,7 @@ buddy queue:work --stop-when-empty
 ### Programmatic Workers
 
 ```typescript
-import { Worker, QueueWorker, WorkerManager } from '@stacksjs/queue'
+import { Worker, QueueWorker, WorkerManager } from '@stacksjs/queue/bun-queue'
 
 // Start a worker
 const worker = new QueueWorker({
@@ -361,7 +362,7 @@ export default class SyncData extends Job {
 ## Priority Queues
 
 ```typescript
-import { PriorityQueue } from '@stacksjs/queue'
+import { PriorityQueue } from '@stacksjs/queue/bun-queue'
 
 const queue = new PriorityQueue('orders')
 
@@ -376,7 +377,7 @@ await queue.add({ orderId: 3 }, { priority: 1 })  // Low priority
 ## Dead Letter Queue
 
 ```typescript
-import { DeadLetterQueue } from '@stacksjs/queue'
+import { DeadLetterQueue } from '@stacksjs/queue/bun-queue'
 
 const dlq = new DeadLetterQueue({
   maxRetries: 3,
@@ -594,7 +595,7 @@ const scheduledJobs = getScheduledJobs()
 ## Rate Limiting & Locking
 
 ```typescript
-import { RateLimiter, DistributedLock } from '@stacksjs/queue'
+import { RateLimiter, DistributedLock } from '@stacksjs/queue/bun-queue'
 
 // Rate limiter
 const limiter = new RateLimiter({
@@ -623,7 +624,7 @@ if (await lock.acquire(30)) { // 30 second lock
 ## Leader Election
 
 ```typescript
-import { LeaderElection } from '@stacksjs/queue'
+import { LeaderElection } from '@stacksjs/queue/bun-queue'
 
 // For horizontal scaling
 const election = new LeaderElection('worker-leader')
@@ -657,17 +658,18 @@ export default class LongRunningJob extends Job {
 ### Graceful Shutdown
 
 ```typescript
-import { gracefulShutdown } from '@stacksjs/queue'
+import { stopProcessor } from '@stacksjs/queue'
 
 process.on('SIGTERM', async () => {
-  // Wait for current jobs to complete
-  await gracefulShutdown({
-    timeout: 30000, // Max wait time
-    force: false    // Don't force-kill jobs
-  })
+  // Stop reserving new jobs, then wait out the in-flight ones.
+  await stopProcessor({ graceMs: 30_000 })
   process.exit(0)
 })
 ```
+
+There is no force option, because there is nothing to force: a job that is still
+running when the grace period expires keeps its reservation, and the next
+worker's sweep reclaims it. `graceMs` defaults to 10 seconds.
 
 ### Job Retries with Backoff
 

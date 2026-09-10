@@ -461,7 +461,7 @@ await notification.send()
 Send notifications asynchronously via queue:
 
 ```typescript
-import { dispatch } from '@stacksjs/queue'
+import { dispatch } from '@stacksjs/queue/bun-queue'
 
 // Queue notification for async processing
 await dispatch('send-notification', {
