@@ -47,7 +47,14 @@ const realEmail = { ...await import('@stacksjs/email') }
 mock.module('@stacksjs/email', () => ({
   ...realEmail,
   template: async () => ({ html: '<p>x</p>', text: 'x' }),
-  mail: { send: async () => {} },
+  // Both send paths. `sendOrFail` was missing, and the password-changed
+  // notification calls it - the resulting TypeError is caught and logged by
+  // design ("the password was already changed successfully"), so the test
+  // still passed while printing a failure that looks real in CI logs.
+  mail: {
+    send: async () => ({ success: true, message: 'stubbed', provider: 'stub' }),
+    sendOrFail: async () => ({ success: true, message: 'stubbed', provider: 'stub' }),
+  },
 }))
 
 const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig } = await import('@stacksjs/database')
