@@ -4,13 +4,37 @@ export function isDependencyCommit(subject: string): boolean {
   return dependencyCommitPattern.test(subject.trim())
 }
 
+/**
+ * The files a `chore(deps)` commit is allowed to be about.
+ *
+ * Two kinds. The manifests and lockfiles are dependency STATE - which versions
+ * this workspace resolves. The rest is dependency POLICY - which bot proposes
+ * changes to that state, and how. Renaming a bot's config to `chore(config)`
+ * would be worse than admitting both are dependency work: the guard exists so a
+ * `chore(deps)` commit is really about dependencies, and configuring the bot
+ * that opens every dependency pull request plainly is (stacksjs/stacks#2574).
+ *
+ * What stays out is everything else, which is the point: a `chore(deps)` commit
+ * touching only source, docs or a changelog is mislabeled.
+ */
+const DEPENDENCY_POLICY_FILES = new Set([
+  'config/deps.ts',
+  'config/buddy-bot.ts',
+  '.github/renovate.json',
+  '.github/dependabot.yml',
+  '.github/workflows/buddy-bot.yml',
+])
+
 export function hasDependencyStateChange(files: string[]): boolean {
   return files.some(file =>
     file === 'bun.lock'
     || file === 'pantry.lock'
-    || file === 'config/deps.ts'
     || file === 'package.json'
-    || file.endsWith('/package.json'),
+    || file.endsWith('/package.json')
+    || DEPENDENCY_POLICY_FILES.has(file)
+    // The same policy files inside the app template, which a scaffold change
+    // touches instead of the ones above.
+    || /^storage\/framework\/defaults\/(?:vcs\/github|scaffold\/config)\/.*(?:buddy-bot|renovate|dependabot)/.test(file),
   )
 }
 
@@ -54,7 +78,7 @@ if (import.meta.main) {
   const range = resolveRange()
   const errors = checkDependencyCommits(range)
   if (errors.length > 0) {
-    console.error('Dependency commits must change a manifest, bun.lock, or pantry.lock:')
+    console.error('Dependency commits must change a manifest, a lockfile, or a dependency-bot config:')
     for (const error of errors)
       console.error(`  ${error}`)
     process.exit(1)
