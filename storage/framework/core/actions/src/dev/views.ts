@@ -81,7 +81,7 @@ function parseCookies(req: Request): Record<string, string> {
 async function startDefaultServer() {
   await overridesReady
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, isApiBoundRequest, proxyToBackend, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirect, resolveRedirectRules, resolveRewrite, resolveRewriteRules } = await import('@stacksjs/server')
   const { applyRequestLocale } = await import('@stacksjs/i18n')
   await injectGlobalAutoImports()
 
@@ -126,6 +126,7 @@ async function startDefaultServer() {
   // differently depending on how far boot had progressed.
   const apiProxyRules = resolveApiProxyRules(config.server?.proxy)
   const redirectRules = resolveRedirectRules(config.server?.redirects)
+  const rewriteRules = resolveRewriteRules(config.server?.rewrites)
   const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
 
   // Announce the rules only when the app has widened them. A route that
@@ -149,6 +150,8 @@ async function startDefaultServer() {
   if (redirectRules.size > 0) {
     // eslint-disable-next-line no-console
     console.log(`  Redirects: ${describeRedirectRules(redirectRules)}`)
+  if (rewriteRules.size > 0)
+    console.log(`  Rewrites: ${describeRewriteRules(rewriteRules)}`)
   }
 
   // Whether `/docs` belongs to the docs dev server at all
@@ -245,6 +248,15 @@ async function startDefaultServer() {
       const redirected = resolveRedirect(url, redirectRules)
       if (redirected)
         return redirected
+
+      // Declared rewrites, answered here rather than redirected so the client
+      // keeps the URL it asked for. Same position as in `buddy serve`, so a
+      // path that resolves in development resolves in production.
+      const rewritten = resolveRewrite(url.pathname, rewriteRules)
+      if (rewritten) {
+        const target = new URL(`${rewritten}${url.search}`, url.origin)
+        return proxyToBackend(new Request(target, req), apiBase)
+      }
 
       // Blog rendering. By default the blog is rendered by BunPress with a
       // custom Stacks theme (see ./blog.ts) — intercept /blog and /blog/<slug>

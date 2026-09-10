@@ -83,12 +83,45 @@ export type RedirectsOptions = Record<string, string | {
   preserveQuery?: boolean
 }>
 
+/**
+ * Paths the API process answers under a different path.
+ *
+ * `proxy.paths` forwards a path unchanged, which is enough when the API
+ * registered that same URL. It is not enough when the public path and the
+ * registered route differ — `routes/api.ts` carries an `/api` prefix, so a
+ * handler whose home is the site root is registered at `/api/...` and the root
+ * path 404s with nothing to say why.
+ *
+ * ```ts
+ * rewrites: {
+ *   '/sitemap.xml': '/api/sitemap.xml',
+ *   '/sitemap-trails-*': '/api/sitemap-trails-*',
+ *   '/.well-known/': '/api/well-known/',
+ * }
+ * ```
+ *
+ * Unlike a redirect this is invisible to the client: the request is answered
+ * where it was made, so the URL a crawler indexes is the one it asked for. Use
+ * a redirect when the URL genuinely moved, and a rewrite when it did not.
+ *
+ * A rule ending in `*` claims every path starting with it and appends the
+ * remainder to the target — one rule for a chunked resource whose count
+ * changes. An exact rule beats a prefix one; the longest prefix wins among
+ * prefixes. Rules are answered before a page is looked for and before
+ * `public/` is searched, so one shadows a static file of the same name.
+ * A rewrite whose source is already under `/api/` is ignored.
+ */
+export type RewritesOptions = Record<string, string>
+
 export interface ServerConfig {
   /** Which requests reach the API process. See {@link ApiProxyOptions}. */
   proxy?: ApiProxyOptions
 
   /** Old URLs and where they go now. See {@link RedirectsOptions}. */
   redirects?: RedirectsOptions
+
+  /** Root paths the API serves under another path. See {@link RewritesOptions}. */
+  rewrites?: RewritesOptions
 
   /** Security headers on rendered pages. See {@link ServerSecurityOptions}. */
   security?: ServerSecurityOptions

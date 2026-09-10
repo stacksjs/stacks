@@ -245,7 +245,7 @@ export async function startProductionServer(options?: { port?: string | number, 
   const { ensureDiscoveredPackages } = await import('@stacksjs/actions')
   await ensureDiscoveredPackages()
 
-  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules } = await import('@stacksjs/server')
+  const { applyViewSecurityHeaders, describeApiProxyRules, describeRedirectRules, describeRewriteRules, injectGlobalAutoImports, resolveApiBase, resolveApiProxyRules, resolveEmbeddableRules, resolveRedirectRules, resolveRewriteRules } = await import('@stacksjs/server')
   // The one copy of this. It used to be duplicated here verbatim — the shared
   // module was extracted precisely so the dev and production servers could not
   // drift, and then this half kept its own.
@@ -372,6 +372,10 @@ export async function startProductionServer(options?: { port?: string | number, 
       if (redirectRules.size > 0)
         log.info(`Redirects: ${describeRedirectRules(redirectRules)}`)
 
+      const rewriteRules = resolveRewriteRules(config.server?.rewrites)
+      if (rewriteRules.size > 0)
+        log.info(`Rewrites: ${describeRewriteRules(rewriteRules)}`)
+
       // Resolved at boot for the same reason (stacksjs/stacks#2325).
       const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
       if (embeddableRules.paths.length > 0 || embeddableRules.prefixes.length > 0)
@@ -437,7 +441,7 @@ export async function startProductionServer(options?: { port?: string | number, 
         // and static assets, so the holding page renders and visitors with a
         // valid bypass cookie pass through.
         onRequest: async (req: Request) => {
-          const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect } = await import('@stacksjs/server')
+          const { maintenanceGate, isApiBoundRequest: isApiBound, proxyToBackend, resolveRedirect, resolveRewrite } = await import('@stacksjs/server')
           const gated = await maintenanceGate(req)
           if (gated)
             return gated
@@ -451,6 +455,27 @@ export async function startProductionServer(options?: { port?: string | number, 
           const redirected = resolveRedirect(url, redirectRules)
           if (redirected)
             return redirected
+
+          // Declared rewrites. A path the API owns under another name is
+          // answered here rather than redirected, so the URL the client asked
+          // for is the URL it gets — which for a sitemap or a feed is the
+          // whole point of putting it at the root.
+          const rewritten = resolveRewrite(url.pathname, rewriteRules)
+          if (rewritten) {
+            if (!apiBase) {
+              log.error(`No API target configured for ${url.pathname} (rewritten to ${rewritten}); refusing to proxy.`)
+              return new Response('Bad Gateway', { status: 502 })
+            }
+
+            try {
+              const target = new URL(`${rewritten}${url.search}`, url.origin)
+              return await proxyToBackend(new Request(target, req), apiBase)
+            }
+            catch (error) {
+              log.error(`Rewrite of ${url.pathname} to ${rewritten} failed: ${(error as Error).message}`)
+              return new Response('Bad Gateway', { status: 502 })
+            }
+          }
 
           // Mirror the dev server's API forwarding: `/api/**`, any mutating
           // verb, and anything `config/server.ts` adds under `proxy` belong to
