@@ -22,7 +22,7 @@ Stacks is a rapid development framework, where the goal is to _help you_ create 
   </picture>
 </a>
 
-_[Open the interactive diagram](https://stacksjs.com/docs/diagrams/stacks-runtime) for a theme toggle and SVG, PNG, JPEG, and WebP exports._
+_[Open the interactive diagram](https://stacksjs.com/docs/diagrams/stacks-runtime) for a theme toggle, node search, route tracing, presentation mode, and SVG, PNG, JPEG, WebP and share-card exports._
 
 - Web & Desktop Applications _(including system tray apps)_
 - Serverless & Traditional APIs

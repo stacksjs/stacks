@@ -8,7 +8,7 @@ Stacks is a full-stack TypeScript framework for web, API, desktop, CLI, and clou
 
 [![Stacks runtime architecture](/diagrams/stacks-runtime/light.png)](/diagrams/stacks-runtime)
 
-[Open the interactive runtime architecture diagram](/diagrams/stacks-runtime) for a theme toggle and SVG, PNG, JPEG, and WebP exports. Its source lives in [`docs/public/diagrams/stacks-runtime/`](https://github.com/stacksjs/stacks/tree/main/docs/public/diagrams/stacks-runtime), rendered by the `stacks-technical-diagrams` skill.
+[Open the interactive runtime architecture diagram](/diagrams/stacks-runtime) for a theme toggle, node search, route tracing, presentation mode, and SVG, PNG, JPEG, WebP and share-card exports. Its source lives in [`docs/public/diagrams/stacks-runtime/`](https://github.com/stacksjs/stacks/tree/main/docs/public/diagrams/stacks-runtime), rendered by the `stacks-technical-diagrams` skill.
 
 ## Application and framework layers
 
