@@ -651,3 +651,61 @@ security:
 - [Testing](/guide/testing) - Writing tests
 - [Linting](/guide/linting) - Code standards
 - [Cloud Deployment](/guide/cloud) - Deploying applications
+
+## Push-to-deploy environments
+
+This framework repository routes exactly one branch at exactly one environment:
+`main` at `production`. That is enforced rather than conventional -
+`.github/scripts/deploy/resolve-target.ts` is the only place a branch becomes a
+deployment target, and it rejects every ref it does not recognise.
+
+Nothing falls through. A push to a branch with no mapping fails with the branch
+name and a pointer, instead of selecting a target that is not there. That
+matters more than it sounds: routing `stage` at an environment nobody
+provisioned does not fail cleanly, it deploys somewhere unintended or half-way.
+
+### What an environment declares
+
+```ts
+main: {
+  environment: 'production',
+  flag: '--prod',
+  requires: ['DOTENV_PRIVATE_KEY_PRODUCTION'],
+}
+```
+
+`requires` names the secrets and variables the deploy **cannot run without**.
+It is checked by `resolve-target.ts --preflight`, which runs in the deploy job
+before the install and the build - the only job that can see that environment's
+secrets. A missing value fails in seconds naming what is absent.
+
+Only list what is fatal. `DEPLOY_SSH_KEY`, `SSH_KNOWN_HOSTS` and the Cloudflare
+pair each degrade deliberately and the workflow says so at each; requiring them
+would turn a documented degradation into a failed deploy.
+
+An empty value counts as missing. A GitHub secret that was never set arrives as
+the empty string rather than being absent, so checking that the key exists
+passes for a secret nobody configured.
+
+### Adding one
+
+Both halves are required, and the order matters - a mapping without the
+infrastructure is the thing this design exists to prevent.
+
+1. **Provision it first.** A GitHub environment with its protection rules, and
+   an isolated ts-cloud target: its own project, credentials, state directory,
+   DNS and rollback policy. An environment sharing production's state is not a
+   separate environment.
+2. **Add the row** to `branchTargets`, with `requires` naming that environment's
+   fatal values.
+3. **Pass those secrets** to the preflight step in `.github/workflows/ci.yml`.
+   GitHub does not expose secrets a workflow has not named, so a value in
+   `requires` that the step does not pass will read as missing.
+4. **Extend the environment union** on `DeploymentTarget`, so an unknown name is
+   a type error rather than a string.
+
+`resolve-target.test.ts` covers the resolution and the preflight; add cases for
+the new branch there, including that its unprovisioned neighbours still resolve
+to nothing.
+
+Tracked in [stacksjs/stacks#2068](https://github.com/stacksjs/stacks/issues/2068).

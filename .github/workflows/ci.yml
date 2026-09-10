@@ -534,6 +534,21 @@ jobs:
           version: '0.11.60'
           install: 'false'
 
+      # Before the install and the build, and inside the job that can actually
+      # see this environment's secrets (stacksjs/stacks#2068). A missing
+      # decryption key used to surface inside `buddy deploy`, minutes in and
+      # after the release was built - and its symptom is not an error but every
+      # configured value silently being its default.
+      #
+      # Run from the script's own directory for the same reason the resolver is:
+      # this repo's bunfig preloads the whole framework for a script that
+      # imports node:fs.
+      - name: Preflight ${{ env.DEPLOY_ENVIRONMENT }} credentials
+        working-directory: .github/scripts/deploy
+        env:
+          DOTENV_PRIVATE_KEY_PRODUCTION: ${{ secrets.DOTENV_PRIVATE_KEY_PRODUCTION }}
+        run: bun resolve-target.ts --ref "$GITHUB_REF" --preflight
+
       - name: Use cached node_modules
         uses: actions/cache@v5
         with:
