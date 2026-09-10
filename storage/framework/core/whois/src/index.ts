@@ -18,18 +18,37 @@ export async function findWhoIsServer(tld: string): Promise<string> {
 
   try {
     const res = await fetch(chkURL)
-    if (res.ok) {
-      const body = await res.text()
-      const server = body.match(/whois:\s+(\S+)/)
-      if (server?.[1])
-        return server[1]
-    }
+    if (res.ok)
+      return parseIanaWhoisServer(await res.text())
   }
   catch (err) {
     console.error('Error in getting WhoIs server data from IANA', err)
   }
 
   return ''
+}
+
+/**
+ * The whois server named in an IANA TLD record, or `''` when there is none.
+ *
+ * Split out of {@link findWhoIsServer} so the parsing can be tested without
+ * reaching IANA over the network. It was inlined, so the only coverage it had
+ * was a test that made a live request - which turned this repository's CI red
+ * whenever IANA was slow, with `Expected: > 0` as the whole explanation.
+ *
+ * IANA's response is a plain-text record with one `field: value` per line. The
+ * pattern is anchored to the start of a line: `whois:` also appears inside the
+ * prose of some records ("...contact the whois: server..."), and an unanchored
+ * match picked the first of those instead of the field.
+ *
+ * @example
+ * ```ts
+ * parseIanaWhoisServer('domain: app\nwhois: whois.nic.google\n') // 'whois.nic.google'
+ * parseIanaWhoisServer('domain: example\n')                      // ''
+ * ```
+ */
+export function parseIanaWhoisServer(body: string): string {
+  return body.match(/^whois:\s+(\S+)/m)?.[1] ?? ''
 }
 
 /**
