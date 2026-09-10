@@ -1,5 +1,27 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.41...v0.74.42)
+
+## ✨ Features
+
+- **storage**: fileInfo for any file (#308) ([063803c](https://github.com/stacksjs/stacks/commit/063803c)) _(by Chris <chris@stacksjs.com>)_ ([#308](https://github.com/stacksjs/stacks/issues/308), [#308](https://github.com/stacksjs/stacks/issues/308), [#270](https://github.com/stacksjs/stacks/issues/270), [#264](https://github.com/stacksjs/stacks/issues/264), [#308](https://github.com/stacksjs/stacks/issues/308))
+- **release**: calendar versioning (#475) ([d3ccc7d](https://github.com/stacksjs/stacks/commit/d3ccc7d)) _(by Chris <chris@stacksjs.com>)_ ([#475](https://github.com/stacksjs/stacks/issues/475), [#475](https://github.com/stacksjs/stacks/issues/475))
+- **ci**: Lighthouse audit of the built documentation (#1222) ([fec6eb5](https://github.com/stacksjs/stacks/commit/fec6eb5)) _(by Chris <chris@stacksjs.com>)_ ([#1222](https://github.com/stacksjs/stacks/issues/1222), [#1222](https://github.com/stacksjs/stacks/issues/1222))
+
+## 🐛 Bug Fixes
+
+- **release**: stop a slow CDN failing a good release ([35f7dea](https://github.com/stacksjs/stacks/commit/35f7dea)) _(by Chris <chris@stacksjs.com>)_
+- **ci**: keep serve.ts side effects behind import.meta.main ([a374e84](https://github.com/stacksjs/stacks/commit/a374e84)) _(by Chris <chris@stacksjs.com>)_
+- **blog**: say which config flags are honoured, and which are not ([7a7cdb0](https://github.com/stacksjs/stacks/commit/7a7cdb0)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- re-render the runtime architecture diagram on the 2.17 renderer ([0a8c6d0](https://github.com/stacksjs/stacks/commit/0a8c6d0)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.40...v0.74.41)
 
 ## ✨ Features
