@@ -23,6 +23,7 @@
       "@stacksjs/actions/*": ["./core/actions/src/*"],
       "@stacksjs/auth/*": ["./core/auth/src/*"],
       "@stacksjs/database/*": ["./core/database/src/*"],
+      "@stacksjs/testing/*": ["./core/testing/src/*"],
       "@stacksjs/browser/*": ["./core/browser/src/*"],
       "@stacksjs/composables/*": ["./core/composables/src/*"],
       "@stacksjs/desktop-build": ["./core/desktop/src"],

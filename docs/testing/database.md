@@ -245,7 +245,7 @@ Verify a record exists with specific attributes:
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { assertDatabaseHas, assertDatabaseMissing } from '@stacksjs/testing'
+import { assertDatabaseHas, assertDatabaseMissing } from '@stacksjs/testing/database'
 
 describe('User Registration', () => {
   it('creates user in database', async () => {
@@ -280,7 +280,7 @@ describe('User Registration', () => {
 Verify a record does not exist:
 
 ```typescript
-import { assertDatabaseMissing } from '@stacksjs/testing'
+import { assertDatabaseMissing } from '@stacksjs/testing/database'
 
 it('deletes user from database', async () => {
   const user = await UserFactory.create()
@@ -296,7 +296,7 @@ it('deletes user from database', async () => {
 Verify the number of matching records:
 
 ```typescript
-import { assertDatabaseCount } from '@stacksjs/testing'
+import { assertDatabaseCount } from '@stacksjs/testing/database'
 
 it('creates multiple orders', async () => {
   await createBulkOrders([
@@ -315,7 +315,7 @@ it('creates multiple orders', async () => {
 For soft-deletable models:
 
 ```typescript
-import { assertSoftDeleted, assertNotSoftDeleted } from '@stacksjs/testing'
+import { assertSoftDeleted, assertNotSoftDeleted } from '@stacksjs/testing/database'
 
 it('soft deletes user', async () => {
   const user = await UserFactory.create()

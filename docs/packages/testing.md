@@ -189,7 +189,7 @@ describe('User Model', () => {
 ### Database Assertions
 
 ```typescript
-import { assertDatabaseHas, assertDatabaseMissing } from '@stacksjs/testing'
+import { assertDatabaseHas, assertDatabaseMissing } from '@stacksjs/testing/database'
 
 it('should save user to database', async () => {
   await User.create({ name: 'John', email: 'john@test.com' })
@@ -214,7 +214,7 @@ it('should delete user', async () => {
 ### Database Count Assertions
 
 ```typescript
-import { assertDatabaseCount } from '@stacksjs/testing'
+import { assertDatabaseCount } from '@stacksjs/testing/database'
 
 it('should have correct number of users', async () => {
   await User.create({ name: 'User 1' })
@@ -227,7 +227,7 @@ it('should have correct number of users', async () => {
 ### Soft Delete Assertions
 
 ```typescript
-import { assertSoftDeleted, assertNotSoftDeleted } from '@stacksjs/testing'
+import { assertSoftDeleted, assertNotSoftDeleted } from '@stacksjs/testing/database'
 
 it('should soft delete user', async () => {
   const user = await User.create({ name: 'John' })

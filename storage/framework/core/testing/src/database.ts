@@ -273,3 +273,154 @@ export function useTransactionalTests(): {
     },
   }
 }
+
+/**
+ * Database assertions (stacksjs/stacks#2581).
+ *
+ * Documented for a long time and never implemented, so every sample teaching
+ * them imported from `@stacksjs/testing` and failed. They live HERE rather than
+ * at the package root for the reason the file header gives: the root
+ * deliberately does not import `@stacksjs/database`, because doing so eagerly
+ * deadlocks bun's module loader outside the framework's preloader.
+ *
+ * Each throws rather than returning a boolean. A test asserting on a database
+ * wants the row it was expecting in the failure message - `expect(true).toBe(
+ * true)` on a helper that returned false tells nobody anything - so the message
+ * carries the table, the criteria, and what was actually there.
+ */
+
+/** Column/value pairs a row must match. Every pair is ANDed. */
+export type RowCriteria = Record<string, unknown>
+
+function describeCriteria(criteria: RowCriteria): string {
+  const pairs = Object.entries(criteria).map(([column, value]) => `${column}=${JSON.stringify(value)}`)
+  return pairs.length > 0 ? pairs.join(', ') : '(no criteria)'
+}
+
+/** Rows in `table` matching every pair in `criteria`. */
+async function matching(table: string, criteria: RowCriteria): Promise<Record<string, unknown>[]> {
+  let query = db.selectFrom(table).selectAll()
+  for (const [column, value] of Object.entries(criteria))
+    query = query.where(column, '=', value as never)
+  return await query.execute() as unknown as Record<string, unknown>[]
+}
+
+/**
+ * Assert at least one row in `table` matches `criteria`.
+ *
+ * @example
+ * ```ts
+ * await assertDatabaseHas('users', { email: 'john@example.com' })
+ * ```
+ */
+export async function assertDatabaseHas(table: string, criteria: RowCriteria): Promise<void> {
+  const rows = await matching(table, criteria)
+  if (rows.length > 0)
+    return
+
+  // The count of rows in the table is the useful second fact: zero means the
+  // write never happened, and non-zero means it happened differently.
+  const total = await matching(table, {})
+  throw new Error(
+    `Expected ${table} to have a row matching ${describeCriteria(criteria)}, but none did `
+    + `(${total.length} row(s) in the table).`,
+  )
+}
+
+/**
+ * Assert no row in `table` matches `criteria`.
+ *
+ * @example
+ * ```ts
+ * await assertDatabaseMissing('users', { id: user.id })
+ * ```
+ */
+export async function assertDatabaseMissing(table: string, criteria: RowCriteria): Promise<void> {
+  const rows = await matching(table, criteria)
+  if (rows.length === 0)
+    return
+
+  throw new Error(
+    `Expected ${table} to have no row matching ${describeCriteria(criteria)}, but found ${rows.length}: `
+    + `${JSON.stringify(rows.slice(0, 3))}${rows.length > 3 ? ' …' : ''}`,
+  )
+}
+
+/**
+ * Assert exactly `count` rows in `table` match `criteria`.
+ *
+ * Omit `criteria` to count the whole table.
+ *
+ * @example
+ * ```ts
+ * await assertDatabaseCount('orders', 3)
+ * await assertDatabaseCount('orders', 2, { product_id: 1 })
+ * ```
+ */
+export async function assertDatabaseCount(table: string, count: number, criteria: RowCriteria = {}): Promise<void> {
+  if (!Number.isInteger(count) || count < 0)
+    throw new TypeError(`assertDatabaseCount expects a non-negative integer, got ${count}`)
+
+  const rows = await matching(table, criteria)
+  if (rows.length === count)
+    return
+
+  throw new Error(
+    `Expected ${count} row(s) in ${table} matching ${describeCriteria(criteria)}, found ${rows.length}.`,
+  )
+}
+
+/**
+ * Assert a matching row exists and is soft-deleted.
+ *
+ * Soft deletion is `deleted_at` being set - the column the `useSoftDeletes`
+ * trait adds. A row that is not there at all fails differently from one that is
+ * there and not deleted, because those are different bugs: the first means the
+ * delete removed the row outright, the second that it did nothing.
+ *
+ * @example
+ * ```ts
+ * await assertSoftDeleted('users', { id: user.id })
+ * ```
+ */
+export async function assertSoftDeleted(table: string, criteria: RowCriteria): Promise<void> {
+  const rows = await matching(table, criteria)
+  if (rows.length === 0) {
+    throw new Error(
+      `Expected ${table} to have a soft-deleted row matching ${describeCriteria(criteria)}, but no row matched at all `
+      + '- a hard delete removes the row rather than setting deleted_at.',
+    )
+  }
+
+  const live = rows.filter(row => row.deleted_at === null || row.deleted_at === undefined)
+  if (live.length === 0)
+    return
+
+  throw new Error(
+    `Expected every ${table} row matching ${describeCriteria(criteria)} to be soft-deleted, `
+    + `but ${live.length} of ${rows.length} still has a null deleted_at.`,
+  )
+}
+
+/**
+ * Assert a matching row exists and is NOT soft-deleted.
+ *
+ * @example
+ * ```ts
+ * await assertNotSoftDeleted('users', { id: user.id })
+ * ```
+ */
+export async function assertNotSoftDeleted(table: string, criteria: RowCriteria): Promise<void> {
+  const rows = await matching(table, criteria)
+  if (rows.length === 0)
+    throw new Error(`Expected ${table} to have a row matching ${describeCriteria(criteria)}, but none did.`)
+
+  const deleted = rows.filter(row => row.deleted_at !== null && row.deleted_at !== undefined)
+  if (deleted.length === 0)
+    return
+
+  throw new Error(
+    `Expected no ${table} row matching ${describeCriteria(criteria)} to be soft-deleted, `
+    + `but ${deleted.length} of ${rows.length} has a deleted_at set.`,
+  )
+}
