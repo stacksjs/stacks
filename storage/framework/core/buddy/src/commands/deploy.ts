@@ -1893,7 +1893,26 @@ export interface TsCloudInfrastructure {
       cdn?: { provider?: string }
     }
   }
-  dns?: { provider?: string, hostedZoneId?: string }
+  dns?: {
+    domain?: string
+    provider?: string
+    hostedZoneId?: string
+    /**
+     * Where the domain is REGISTERED, when that is not where its DNS is served.
+     *
+     * Mirrors `DelegationConfig['registrar']` in `@stacksjs/ts-cloud`, which is
+     * what `delegateZoneFromConfig` reads. This interface is a hand-written
+     * mirror of the config shape rather than an import, so it goes stale
+     * silently: `registrar` shipped in ts-cloud 0.13.0 and this kept the 0.12
+     * shape, which is what broke the typecheck on 6bbe94aa66.
+     */
+    registrar?: {
+      provider?: 'porkbun' | 'godaddy'
+      proxied?: string[]
+      dryRun?: boolean
+      delegate?: boolean
+    }
+  }
 }
 
 export interface TsCloudConfig {
