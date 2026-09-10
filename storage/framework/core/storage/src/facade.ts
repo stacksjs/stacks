@@ -84,7 +84,16 @@ function buildConfig(): FilesystemConfig {
       prefix: s3Config.prefix,
       endpoint: s3Config.endpoint,
       url: filesystems.publicUrl?.domain,
-      usePathStyleEndpoint: !!s3Config.endpoint,
+      // The configured value wins; `!!endpoint` is only the default.
+      //
+      // `s3.usePathStyleEndpoint` is documented on `FilesystemsConfig` and was
+      // never read here, so setting it had no effect and every custom endpoint
+      // got path-style forced on it. That is right for Hetzner and MinIO and
+      // wrong for Filebase, R2 and GCS - and it made the two ways of
+      // configuring one provider disagree: `filebaseDisk()` leaves the flag
+      // unset (virtual-hosted), while the same provider configured through
+      // `config/filesystems.ts` got path-style (stacksjs/stacks#266).
+      usePathStyleEndpoint: s3Config.usePathStyleEndpoint ?? !!s3Config.endpoint,
       visibility: filesystems.defaultVisibility || 'private',
       credentials: s3Config.credentials
         ? { key: s3Config.credentials.accessKeyId, secret: s3Config.credentials.secretAccessKey }

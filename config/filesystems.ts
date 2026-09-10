@@ -46,7 +46,14 @@ export default {
           secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
         }
       : undefined,
-    // endpoint: 'https://s3-compatible-service.com', // For S3-compatible services
+    // For S3-compatible services. Setting this turns on path-style addressing
+    // (`host/bucket/key`) by default, which Hetzner and MinIO require.
+    // endpoint: 'https://s3-compatible-service.com',
+
+    // Filebase, Cloudflare R2 and Google Cloud Storage serve virtual-hosted
+    // style instead, so they need this off. `filebaseDisk()`, `r2Disk()` and
+    // `gcsDisk()` from `@stacksjs/storage` set the whole disk up for you.
+    // usePathStyleEndpoint: false,
   },
 
   /**
