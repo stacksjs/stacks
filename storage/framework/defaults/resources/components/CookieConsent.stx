@@ -1,0 +1,146 @@
+<script client>
+/**
+ * Cookie consent banner (stacksjs/stacks#365).
+ *
+ * The decision logic is `useCookieConsent` in `@stacksjs/composables`, which
+ * is where the rule that matters lives: every optional category is declined
+ * until the visitor says otherwise, and there is no way to ask for a
+ * permissive default.
+ *
+ * This is the surface. Three things about it are compliance decisions rather
+ * than design ones, and each is easy to get wrong:
+ *
+ * - **"Decline" is as prominent as "Accept".** A banner where refusing is a
+ *   greyed-out link and accepting is the primary button is the pattern
+ *   regulators call out, and it is what most implementations ship.
+ * - **Nothing is preselected.** The per-category toggles start off, because
+ *   the stored decision starts empty.
+ * - **The banner does not block the page.** It is a dialog in the
+ *   accessibility sense but not a modal that traps the visitor until they
+ *   choose - consent obtained by making the site unusable is not freely given.
+ *
+ * `onChange` is where an app loads what a category gates, and where it records
+ * a `ConsentEvent` if it wants the audit trail.
+ */
+
+import type { ConsentCategory } from '@stacksjs/composables'
+import { useCookieConsent } from '@stacksjs/composables'
+
+interface CookieConsentProps {
+  /**
+   * Bump this when the cookie policy changes. Every stored decision under a
+   * previous version is discarded and the banner asks again, because consent
+   * to a previous policy is not consent to this one.
+   * @default '1.0'
+   */
+  policyVersion?: string
+  /** Where "read our policy" points. */
+  policyUrl?: string
+  /** Heading text. */
+  title?: string
+  /** Body text. Keep it about what is collected and why. */
+  message?: string
+}
+
+const {
+  policyVersion = '1.0',
+  policyUrl = '/privacy',
+  title = 'Cookies',
+  message = 'We use necessary cookies to make this site work. With your permission we would also like to use optional ones to understand how it is used and to improve it.',
+} = defineProps<CookieConsentProps>()
+
+const { needsDecision, allows, acceptAll, declineAll, accept } = useCookieConsent({ policyVersion })
+
+// Per-category toggles for the "choose" panel, starting from what is actually
+// consented - which on a first visit is nothing.
+const showChoices = state(false)
+const preferences = state(allows('preferences'))
+const analytics = state(allows('analytics'))
+const marketing = state(allows('marketing'))
+
+function saveChoices() {
+  const chosen: ConsentCategory[] = []
+  if (preferences()) chosen.push('preferences')
+  if (analytics()) chosen.push('analytics')
+  if (marketing()) chosen.push('marketing')
+  accept(chosen)
+}
+</script>
+
+<template>
+  @if(needsDecision)
+    <div
+      role="region"
+      aria-label="Cookie consent"
+      class="fixed bottom-0 inset-x-0 z-50 p-4 sm:p-6"
+    >
+      <div class="mx-auto max-w-3xl rounded-lg border border-gray-200 bg-white p-4 shadow-lg dark:border-neutral-700 dark:bg-neutral-900 sm:p-6">
+        <h2 class="text-base font-semibold text-gray-900 dark:text-white">{{ title }}</h2>
+
+        <p class="mt-2 text-sm text-gray-600 dark:text-neutral-300">
+          {{ message }}
+          <a :href="policyUrl" class="underline hover:no-underline">Read our policy</a>.
+        </p>
+
+        @if(showChoices())
+          <fieldset class="mt-4 space-y-3">
+            <legend class="sr-only">Cookie categories</legend>
+
+            <label class="flex items-start gap-3 text-sm">
+              <input type="checkbox" checked disabled class="mt-0.5" />
+              <span>
+                <span class="font-medium text-gray-900 dark:text-white">Necessary</span>
+                <span class="block text-gray-600 dark:text-neutral-400">Required for the site to work. Cannot be turned off.</span>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm">
+              <input type="checkbox" :checked="preferences()" @change="preferences.set(!preferences())" class="mt-0.5" />
+              <span>
+                <span class="font-medium text-gray-900 dark:text-white">Preferences</span>
+                <span class="block text-gray-600 dark:text-neutral-400">Remembers choices such as language and theme.</span>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm">
+              <input type="checkbox" :checked="analytics()" @change="analytics.set(!analytics())" class="mt-0.5" />
+              <span>
+                <span class="font-medium text-gray-900 dark:text-white">Analytics</span>
+                <span class="block text-gray-600 dark:text-neutral-400">Helps us understand how the site is used.</span>
+              </span>
+            </label>
+
+            <label class="flex items-start gap-3 text-sm">
+              <input type="checkbox" :checked="marketing()" @change="marketing.set(!marketing())" class="mt-0.5" />
+              <span>
+                <span class="font-medium text-gray-900 dark:text-white">Marketing</span>
+                <span class="block text-gray-600 dark:text-neutral-400">Used to measure and target campaigns.</span>
+              </span>
+            </label>
+          </fieldset>
+        @endif
+
+        {{-- Decline is a peer of Accept, not a lesser link. --}}
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+          @if(showChoices())
+            <button type="button" @click="saveChoices()" class="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-neutral-200">
+              Save choices
+            </button>
+          @else
+            <button type="button" @click="showChoices.set(true)" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 dark:border-neutral-600 dark:text-white dark:hover:bg-neutral-800">
+              Choose
+            </button>
+          @endif
+
+          <button type="button" @click="declineAll()" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 dark:border-neutral-600 dark:text-white dark:hover:bg-neutral-800">
+            Decline
+          </button>
+
+          <button type="button" @click="acceptAll()" class="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-50 dark:border-neutral-600 dark:text-white dark:hover:bg-neutral-800">
+            Accept all
+          </button>
+        </div>
+      </div>
+    </div>
+  @endif
+</template>

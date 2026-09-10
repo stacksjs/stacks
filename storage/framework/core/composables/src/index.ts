@@ -38,6 +38,8 @@ export type {
 } from './useQuery'
 
 // Form primitive (stacksjs/stacks#1940)
+export { emptyCategories, OPTIONAL_CATEGORIES, parseDecision, useCookieConsent } from './useCookieConsent'
+export type { ConsentCategory, ConsentDecision, UseCookieConsentOptions, UseCookieConsentResult } from './useCookieConsent'
 export { useForm } from './useForm'
 export type {
   FormFieldAccessor,
