@@ -171,7 +171,6 @@ const config: BunPressOptions = {
             { text: 'Unit Tests', link: '/testing/unit-tests' },
             { text: 'Feature Tests', link: '/testing/feature-tests' },
             { text: 'Http Tests', link: '/testing/http-tests' },
-            { text: 'Browser Tests', link: '/testing/browser-tests' },
           ],
         },
         {

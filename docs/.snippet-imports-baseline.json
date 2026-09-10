@@ -94,12 +94,9 @@
     "docs/packages/router.md :: @stacksjs/router :: Module '\"@stacksjs/router\"' has no exported member 'json'.",
     "docs/packages/router.md :: @stacksjs/router :: Module '\"@stacksjs/router\"' has no exported member 'redirect'.",
     "docs/packages/router.md :: @stacksjs/router :: Module '\"@stacksjs/router\"' has no exported member 'view'.",
-    "docs/testing/browser-tests.md :: @stacksjs/testing :: Module '\"@stacksjs/testing\"' has no exported member 'browser'.",
-    "docs/testing/browser-tests.md :: @stacksjs/testing :: Module '\"@stacksjs/testing\"' has no exported member 'page'.",
     "docs/testing/database.md :: @stacksjs/database :: '\"@stacksjs/database\"' has no exported member named 'beginTransaction'. Did you mean 'isInTransaction'?",
     "docs/testing/database.md :: @stacksjs/database :: Module '\"@stacksjs/database\"' has no exported member 'migrate'.",
     "docs/testing/database.md :: @stacksjs/database :: Module '\"@stacksjs/database\"' has no exported member 'rollbackTransaction'.",
-    "docs/testing/mocking.md :: @stacksjs/testing :: Module '\"@stacksjs/testing\"' has no exported member 'mockServer'.",
     "docs/testing/unit-tests.md :: @stacksjs/utils :: Module '\"@stacksjs/utils\"' has no exported member 'Result'.",
     "docs/testing/unit-tests.md :: @stacksjs/utils :: Module '\"@stacksjs/utils\"' has no exported member 'parseJSON'."
   ]

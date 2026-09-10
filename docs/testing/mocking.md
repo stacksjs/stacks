@@ -223,49 +223,73 @@ describe('API Client', () => {
 })
 ```
 
-### Using Mock Server
+### Using a Real Server
+
+There is no `mockServer` helper. `Bun.serve` starts a real one in a couple of
+lines, and a real server on a real port exercises the parts a mock skips - the
+fetch call, the status code, the JSON round-trip:
 
 ```typescript
+import type { Server } from 'bun'
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test'
-import { mockServer } from '@stacksjs/testing'
+
+let server: Server
+
+beforeAll(() => {
+  server = Bun.serve({
+    port: 0, // any free port, so parallel test files never collide
+    fetch(request) {
+      const { pathname } = new URL(request.url)
+
+      if (request.method === 'GET' && pathname === '/api/users')
+        return Response.json([{ id: 1, name: 'User 1' }])
+
+      if (request.method === 'POST' && pathname === '/api/users')
+        return request.json().then(body => Response.json({ id: 2, ...body }, { status: 201 }))
+
+      const match = pathname.match(/^\/api\/users\/(\d+)$/)
+      if (match)
+        return Response.json({ id: match[1], name: `User ${match[1]}` })
+
+      return new Response('Not Found', { status: 404 })
+    },
+  })
+})
+
+afterAll(() => {
+  server.stop()
+})
 
 describe('External API', () => {
-  beforeAll(() => {
-    mockServer.start()
-
-    // Define mock routes
-    mockServer.get('/api/users', () => ({
-      status: 200,
-      body: [{ id: 1, name: 'User 1' }],
-    }))
-
-    mockServer.post('/api/users', (req) => ({
-      status: 201,
-      body: { id: 2, ...req.body },
-    }))
-
-    mockServer.get('/api/users/:id', (req) => ({
-      status: 200,
-      body: { id: req.params.id, name: `User ${req.params.id}` },
-    }))
-  })
-
-  afterAll(() => {
-    mockServer.stop()
-  })
-
   it('fetches users', async () => {
-    const users = await apiClient.getUsers()
+    const users = await apiClient.getUsers({ baseUrl: server.url.origin })
     expect(users).toHaveLength(1)
   })
 
   it('creates user', async () => {
-    const user = await apiClient.createUser({ name: 'New User' })
+    const user = await apiClient.createUser({ name: 'New User' }, { baseUrl: server.url.origin })
     expect(user.id).toBe(2)
-    expect(user.name).toBe('New User')
   })
 })
 ```
+
+`port: 0` matters: a hard-coded port makes two test files that both start a
+server fail intermittently, and the failure looks like a bug in the code under
+test.
+
+For a client whose base URL is not injectable, mock the module instead:
+
+```typescript
+import { mock } from 'bun:test'
+
+mock.module('./api-client', () => ({
+  getUsers: async () => [{ id: 1, name: 'User 1' }],
+}))
+```
+
+Note that `mock.module` is never rolled back between test files in the same
+process - Bun does not restore it - so a file that mocks a module should mock
+it for the whole file, not for one test.
 
 ## Time Mocking
 

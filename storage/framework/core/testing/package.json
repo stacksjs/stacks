@@ -27,7 +27,6 @@
     "testing",
     "utilities",
     "functions",
-    "playwright",
     "stacks"
   ],
   "exports": {

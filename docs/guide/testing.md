@@ -478,6 +478,5 @@ coverageThreshold = {
 - [Unit Tests](/testing/unit-tests) - Unit testing guide
 - [Feature Tests](/testing/feature-tests) - Integration testing
 - [HTTP Tests](/testing/http-tests) - API testing
-- [Browser Tests](/testing/browser-tests) - E2E testing
 - [Mocking](/testing/mocking) - Mocking guide
 - [Database Testing](/testing/database) - Database utilities

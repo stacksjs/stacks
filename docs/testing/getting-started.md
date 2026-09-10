@@ -158,31 +158,30 @@ describe('MyFeature', () => {
 
 ### Test Configuration
 
-Configure tests in `stacks.config.ts`:
+Tests are configured in `bunfig.toml`, not in a Stacks config file - `bun test`
+reads it directly:
 
-```typescript
-export default {
-  testing: {
-    // Test directories
-    unit: 'tests/Unit',
-    feature: 'tests/Feature',
-    browser: 'tests/Browser',
+```toml
+[test]
+# Where the tests are. Without this, `bun test` walks the whole project,
+# `pantry/` included, and runs out of file descriptors following its symlinks.
+root = "tests"
 
-    // Coverage settings
-    coverage: {
-      enabled: true,
-      threshold: 80,
-      exclude: ['**/node_modules/**', '**/dist/**']
-    },
+# Tests get the same env layer as production boot, so encrypted .env values
+# resolve during the suite rather than through a test-only decrypt path.
+preload = [
+  "./storage/framework/core/env/plugin.ts",
+  "./tests/setup.ts",
+]
 
-    // Timeout settings
-    timeout: 5000,
-
-    // Parallel execution
-    parallel: true,
-  }
-}
+coverage = false
 ```
+
+Per-run settings are flags rather than config: `--timeout`, `--coverage`,
+`--bail`, `-t <pattern>`. See `bun test --help`.
+
+A package under `storage/framework/core/*` with tests of its own carries its
+own `bunfig.toml` and is unaffected by the root one.
 
 ### Environment Variables
 
@@ -200,7 +199,6 @@ QUEUE_DRIVER=sync
 - **[Unit Tests](/testing/unit-tests)** - Writing unit tests
 - **[Feature Tests](/testing/feature-tests)** - Testing application features
 - **[HTTP Tests](/testing/http-tests)** - Testing API endpoints
-- **[Browser Tests](/testing/browser-tests)** - Testing UI components
 - **[Database Testing](/testing/database)** - Database test utilities
 - **[Mocking](/testing/mocking)** - Mocking dependencies
 
