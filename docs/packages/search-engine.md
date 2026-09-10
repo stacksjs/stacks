@@ -122,10 +122,15 @@ console.log(results.facetDistribution)
 ### Indexing Documents
 
 ```typescript
-import { addDocuments, updateDocuments, deleteDocuments } from '@stacksjs/search-engine'
+import { useSearchEngine } from '@stacksjs/search-engine'
+
+// Index operations live on the driver, not as free functions - the driver is
+// resolved from `config/search-engine.ts` so the same code works on
+// Meilisearch, Algolia, OpenSearch or Typesense.
+const search = useSearchEngine()
 
 // Add documents
-await addDocuments('products', [
+await search.addDocuments('products', [
   {
     id: 1,
     name: 'Wireless Mouse',
@@ -149,12 +154,12 @@ await addDocuments('products', [
 ])
 
 // Update documents (merges with existing)
-await updateDocuments('products', [
+await search.updateDocuments('products', [
   { id: 1, price: 44.99 } // Only updates price
 ])
 
 // Delete documents
-await deleteDocuments('products', [1, 2])
+await search.deleteDocuments('products', [1, 2])
 
 // Delete all documents
 await flushDocuments('products')
@@ -163,28 +168,32 @@ await flushDocuments('products')
 ### Index Management
 
 ```typescript
-import { indexList, createIndex, deleteIndex } from '@stacksjs/search-engine'
+import { useSearchEngine } from '@stacksjs/search-engine'
+
+const search = useSearchEngine()
 
 // List all indexes
-const indexes = await indexList()
+const indexes = await search.listAllIndexes()
 
 // Create index with primary key
-await createIndex('products', 'id')
+await search.createIndex('products', { primaryKey: 'id' })
 
 // Delete index
-await deleteIndex('products')
+await search.deleteIndex('products')
 ```
 
 ### Index Settings
 
 ```typescript
-import { getSettings, updateSettings } from '@stacksjs/search-engine'
+import { useSearchEngine } from '@stacksjs/search-engine'
+
+const search = useSearchEngine()
 
 // Get current settings
-const settings = await getSettings('products')
+const settings = await search.getSettings('products')
 
 // Update settings
-await updateSettings('products', {
+await search.updateSettings('products', {
   // Searchable attributes (in priority order)
   searchableAttributes: [
     'name',
@@ -445,31 +454,44 @@ const results = await search.search('products', 'laptop', {
 })
 ```
 
-## Real-time Updates
+## Keeping the index in step
 
-### Webhook Integration
+Indexing is driven from the model rather than called by hand. A model with the
+`useSearch` trait writes to the index on create, update and delete, so there is
+nothing to remember at each call site:
 
-```typescript
-// Listen for search index updates
-import { onIndexUpdate } from '@stacksjs/search-engine'
-
-onIndexUpdate('products', async (event) => {
-  console.log('Index updated:', event.type) // 'add', 'update', 'delete'
-  console.log('Documents:', event.documentIds)
+```ts
+// app/Models/Product.ts
+export default defineModel({
+  name: 'Product',
+  traits: {
+    useSearch: {
+      searchable: ['name', 'description'],
+      filterable: ['status'],
+      // Dispatch to the queue instead of writing inline. Worth turning on
+      // whenever the search backend is on another host: a slow upsert or a
+      // transient outage then costs a retry rather than the user's write.
+      queueable: true,
+    },
+  },
+  // ...
 })
 ```
 
-### Queue Integration
+With `queueable: true` the model's hooks dispatch `SyncSearchIndexJob`, which
+retries with backoff. Without it the write happens inline, which is fine for a
+local Meilisearch and not for a managed one across a network.
 
-```typescript
-// Async indexing via queue
-import { queueIndex, queueDelete } from '@stacksjs/search-engine'
+To reindex on demand - after changing `searchable`, or to backfill - go through
+the driver:
 
-// Queue document for indexing
-await queueIndex('products', product.toSearchableArray())
+```ts
+import { useSearchEngine } from '@stacksjs/search-engine'
 
-// Queue deletion
-await queueDelete('products', product.id)
+const search = useSearchEngine()
+const products = await Product.all()
+
+await search.addDocuments('products', products.map(p => p.toSearchableArray()))
 ```
 
 ## Edge Cases
@@ -482,7 +504,7 @@ const products = await Product.all()
 const batches = chunk(products, 500)
 
 for (const batch of batches) {
-  await addDocuments('products', batch.map(p => p.toSearchableArray()))
+  await search.addDocuments('products', batch.map(p => p.toSearchableArray()))
   // Optional: Add delay to avoid rate limiting
   await sleep(100)
 }
@@ -508,10 +530,10 @@ try {
 ```typescript
 // Create new index version
 const newIndex = 'products_v2'
-await createIndex(newIndex)
+await search.createIndex(newIndex)
 
 // Populate new index
-await addDocuments(newIndex, documents)
+await search.addDocuments(newIndex, documents)
 
 // Swap indexes atomically
 await swapIndexes('products', newIndex)
@@ -546,20 +568,20 @@ if (results.hits.length === 0) {
 
 | Function | Description |
 |----------|-------------|
-| `addDocuments(index, docs)` | Add documents to index |
-| `updateDocuments(index, docs)` | Update existing documents |
-| `deleteDocuments(index, ids)` | Delete documents by ID |
+| `search.addDocuments(index, docs)` | Add documents to index |
+| `search.updateDocuments(index, docs)` | Update existing documents |
+| `search.deleteDocuments(index, ids)` | Delete documents by ID |
 | `flushDocuments(index)` | Delete all documents |
 
 ### Index Operations
 
 | Function | Description |
 |----------|-------------|
-| `indexList()` | List all indexes |
-| `createIndex(name, key?)` | Create new index |
-| `deleteIndex(name)` | Delete index |
-| `getSettings(index)` | Get index settings |
-| `updateSettings(index, settings)` | Update settings |
+| `search.listAllIndexes()` | List all indexes |
+| `search.createIndex(name, key?)` | Create new index |
+| `search.deleteIndex(name)` | Delete index |
+| `search.getSettings(index)` | Get index settings |
+| `search.updateSettings(index, settings)` | Update settings |
 
 ### Search Methods
 
