@@ -154,16 +154,24 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // Real-pages additions: revisions snapshot pages, redirects + menus key
     // to sites/pages, so they gate out together with the rest of the CMS.
     'page_revisions', 'redirects', 'menus', 'menu_items',
-    // `categories` and `categorizable_models` are deliberately absent, per the
-    // shared-table rule above. They were claimed here, but `categories` is
-    // declared by exactly one model - `app/Models/commerce/Category.ts` - which
-    // COMMERCE installs. With cms disabled and commerce enabled, the gate hid
-    // the table out from under a model it had just copied in. Both features
-    // categorize (cms through `Post`, commerce through `Category`), so neither
-    // owns them and they stay ungated: an unused empty table is harmless, a
-    // missing one is not.
+    // `categories` moved to commerce, which is where its model lives, and
+    // `categorizable_models` left the manifest entirely - see both notes there.
   ],
   commerce: [
+    // `categories` is declared by exactly one model, `app/Models/commerce/
+    // Category.ts`, which commerce installs - so commerce is what owns it. It
+    // was claimed by cms, and with cms disabled and commerce enabled the gate
+    // hid the table out from under a model it had just copied in.
+    //
+    // cms categorizes too, through `Post`, so gating it with commerce degrades
+    // post categorization when commerce is off. That is the lesser of the two:
+    // with commerce disabled there is no `Category` model being maintained, so
+    // no `categories` table is coherent, whereas the old arrangement broke the
+    // table's own model. The pivot `categorizable_models` is genuinely shared
+    // and stays out of the manifest per the rule above - it carries no foreign
+    // keys, `@stacksjs/database` creates it at runtime anyway, and an unused
+    // empty pivot is harmless where a missing one is not.
+    'categories',
     'products', 'product_variants', 'product_units', 'manufacturers',
     'orders', 'order_items', 'order_idempotency', 'carts', 'cart_items',
     'payments', 'payment_methods', 'payment_products', 'payment_transactions',
