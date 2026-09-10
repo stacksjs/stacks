@@ -101,6 +101,8 @@ const CLAIMS: Claim[] = [
       // covers, which is a different number from how many exist - so the site
       // pinned here is the sentence naming the total.
       { file: `${SKILLS}/stacks-models/SKILL.md`, pattern: /holds (\d+), and that/ },
+      { file: `${SKILLS}/stacks-models/SKILL.md`, pattern: /the (\d+) built-in framework models/ },
+      { file: `${SKILLS}/stacks-orm/SKILL.md`, pattern: /(\d+) built-in models/ },
     ],
   },
   {
@@ -126,7 +128,10 @@ const CLAIMS: Claim[] = [
     what: 'default actions',
     measure: () => readFileSync(abs('storage/framework/auto-imports/actions.ts'), 'utf-8')
       .split('\n').filter(line => /^\s+'/.test(line)).length,
-    sites: [{ file: AGENTS, pattern: /(\d+) default actions/ }],
+    sites: [
+      { file: AGENTS, pattern: /(\d+) default actions/ },
+      { file: `${SKILLS}/stacks-actions/SKILL.md`, pattern: /(\d+) default framework actions/ },
+    ],
   },
   {
     what: 'migrations',
@@ -134,6 +139,8 @@ const CLAIMS: Claim[] = [
     sites: [
       { file: AGENTS, pattern: /(\d+) migrations ship for/ },
       { file: `${SKILLS}/stacks-migrations/SKILL.md`, pattern: /(\d+) built-in migration files/ },
+      { file: `${SKILLS}/stacks-migrations/SKILL.md`, pattern: /(\d+) migration files exist by default/ },
+      { file: `${SKILLS}/stacks-database/SKILL.md`, pattern: /\((\d+) migration files/ },
     ],
   },
   {
@@ -149,7 +156,32 @@ const CLAIMS: Claim[] = [
       readFileSync(abs('storage/framework/core/composables/src/index.ts'), 'utf-8')
         .match(/\buse[A-Z][A-Za-z0-9]*/g) ?? [],
     ).size,
-    sites: [{ file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) composables/ }],
+    sites: [
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) composables/ },
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) reactive composables for STX/ },
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /Only 27 of the (\d+) composables/ },
+    ],
+  },
+  {
+    /*
+     * How many of them a template gets for free, which is a different number
+     * from how many exist and the one that decides whether code runs.
+     *
+     * `stacks-composables` said "All are auto-imported in STX templates" in two
+     * places while 27 of 154 are. That is the failure `AGENTS.md` records under
+     * "200+ composables": a name reached for on that authority is not there,
+     * and the template does not run.
+     */
+    what: 'auto-imported composables',
+    measure: () => Object.keys(JSON.parse(
+      readFileSync(abs('storage/framework/browser-auto-imports.json'), 'utf-8'),
+    ).globals).filter(name => /^use[A-Z]/.test(name)).length,
+    sites: [
+      { file: AGENTS, pattern: /(\d+) of which are `use\*` composables/ },
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /\*\*(\d+) of them are auto-imported\*\*/ },
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /Only (\d+) of the \d+ composables/ },
+      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /83 names in total, (\d+) of which/ },
+    ],
   },
   {
     what: 'config files',

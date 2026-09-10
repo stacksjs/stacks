@@ -119,6 +119,6 @@ The framework includes migrations for all built-in models:
 - Do not commit a second snapshot under `.qb/`; that indicates a missing `snapshotDir` configuration
 - If a generated SQLite migration rebuilds tables, test it against a copy of the current database and run `PRAGMA integrity_check` plus `PRAGMA foreign_key_check`
 - `--seed` flag after `migrate:fresh` seeds the database with factory data
-- 96+ migration files exist by default for all framework models
+- 228 migration files exist by default for all framework models
 - SQLite >= 3.47.2 is required (system requirement)
 - For the database API (queries, connections), see the `stacks-database` skill

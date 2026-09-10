@@ -8,7 +8,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Composables
 
-90+ reactive composables for STX templates. All are auto-imported in STX templates.
+154 reactive composables for STX templates. **27 of them are auto-imported**;
+the rest need an explicit import from `@stacksjs/composables`.
+
+`storage/framework/browser-auto-imports.json` is the authority, and it declares
+83 names in total, 27 of which are `use*`. This page said "All are auto-imported
+in STX templates", which is the same mistake `AGENTS.md` carries a scar about
+under "200+ composables": an agent reaching for a name on that authority writes
+a template that does not run, and reads the failure as a framework bug.
 
 ## Key Path
 - Core package: `storage/framework/core/composables/src/`
@@ -153,7 +160,9 @@ isRef(val)           // type guard
 - `and`, `or`, `logicNot`, `logicOr`
 
 ## Gotchas
-- All composables are auto-imported in STX templates — no import needed
+- Only 27 of the 154 composables are auto-imported in STX templates. Check
+  `storage/framework/browser-auto-imports.json` before relying on a bare name;
+  everything else needs `import { … } from '@stacksjs/composables'`
 - NEVER use vanilla JS (`var`, `document.*`, `window.*`) in STX `<script>` tags
 - Only use stx-compatible code: signals, composables, directives
 - Auto-imports defined in `storage/framework/browser-auto-imports.json`
