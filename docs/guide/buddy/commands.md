@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **329 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **330 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -36,7 +36,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `format` | 1 |
 | `forms` | 2 |
 | `general` | 50 |
-| `generate` | 16 |
+| `generate` | 17 |
 | `inspire` | 1 |
 | `key` | 1 |
 | `libs` | 2 |
@@ -2261,6 +2261,22 @@ Generate your function & Component Library Entry Points
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
+
+### `generate:erd-diagram`
+
+Derive an entity-relationship diagram from your models (writes docs/erd.md)
+
+- Usage: `$ buddy generate:erd-diagram`
+- Namespace: `generate`
+- Aliases: `generate:erd`
+- Arguments: none
+
+| Option | Description | Contract | Default |
+| --- | --- | --- | --- |
+| `--dry-run` | Print the diagram without writing it | boolean, optional | `false` |
+| `--out` | Where to write the diagram; a .md target gets a fenced mermaid block | value, optional | `"docs/erd.md"` |
+| `--no-columns` | Relationships only, without the column lists | boolean, optional, negated | `true` |
+| `--only` | Comma-separated tables or model names to include | value, optional | `""` |
 
 ### `generate:ide-helpers`
 

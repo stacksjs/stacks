@@ -133,6 +133,7 @@ export * from './ddl-constraints'
 // VSchema derivation — turns the model relationship graph into a Vitess
 // keyspace topology, co-locating child tables with their parents so joins
 // between them do not scatter across shards.
+export * from './erd'
 export * from './vschema'
 
 // SQL dialect helpers & connection defaults

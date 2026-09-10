@@ -15,6 +15,10 @@ import { generateRouteNames } from './action-types'
 export { generateProjectImages } from './images'
 export type { GenerateImagesActionOptions } from './images'
 
+// An entity-relationship diagram, derived from the models (#439).
+export { generateErd, wrapForTarget } from './erd'
+export type { GenerateErdOptions, GenerateErdResult } from './erd'
+
 // Vitess keyspace VSchema, derived from the model relationship graph.
 export { generateVSchema } from './vschema'
 export type { GenerateVSchemaOptions, GenerateVSchemaResult } from './vschema'

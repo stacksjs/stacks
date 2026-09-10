@@ -170,3 +170,10 @@ storage/framework/core/defaults/*
 database/migrations/*.sql.unsupported
 database/migrations/*.sql.disabled
 database/migrations/*.sql.ungated
+
+# The ERD `buddy generate:erd` writes (stacksjs/stacks#439). Generated on
+# demand from the models, so committing it here would add a 1500-line file
+# that goes stale the moment a model changes - the rot this framework's other
+# generated artifacts each carry a CI freshness check to avoid. An application
+# that wants it in review can un-ignore it and add its own check.
+docs/erd.md

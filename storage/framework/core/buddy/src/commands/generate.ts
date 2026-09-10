@@ -189,6 +189,47 @@ export function generate(buddy: CLI): void {
         log.success(`Wrote ${result.path} (${result.tableCount} tables)`)
     })
 
+  // `./buddy generate:erd` - an entity-relationship diagram from the models
+  // (stacksjs/stacks#439). Mermaid rather than an image: the docs render it
+  // natively, it diffs as text, and it needs no toolchain. A generated PNG
+  // would be a binary blob nobody can review in a pull request.
+  buddy
+    .command('generate:erd-diagram', 'Derive an entity-relationship diagram from your models (writes docs/erd.md)')
+    .alias('generate:erd')
+    .option('--dry-run', 'Print the diagram without writing it', { default: false })
+    .option('--out [path]', 'Where to write the diagram; a .md target gets a fenced mermaid block', { default: 'docs/erd.md' })
+    // clapp maps `--no-columns` to `columns`, so the default is TRUE: columns
+    // are shown unless the flag is passed. Defaulting it to false suppressed
+    // them always, which is the trap this comment exists to stop.
+    .option('--no-columns', 'Relationships only, without the column lists', { default: true })
+    .option('--only [tables]', 'Comma-separated tables or model names to include', { default: '' })
+    .action(async (options: { dryRun?: boolean, out?: string, columns?: boolean, only?: string }) => {
+      const { generateErd } = await import('@stacksjs/actions')
+      const only = (options.only ?? '').split(',').map(entry => entry.trim()).filter(Boolean)
+
+      const result = await generateErd({
+        dryRun: options.dryRun,
+        out: options.out,
+        // clapp turns `--no-columns` into `columns: false`.
+        noColumns: options.columns === false,
+        only,
+      })
+
+      if (!result.ok) {
+        console.error(`\n❌ ${result.error}\n`)
+        process.exit(ExitCode.FatalError)
+      }
+
+      if (options.dryRun) {
+        console.log(result.diagram)
+        return
+      }
+
+      log.success(`Wrote ${result.path} (${result.modelCount} models)`)
+      if (result.skipped.length > 0)
+        log.warn(`${result.skipped.length} model(s) could not be read and are missing from the diagram`)
+    })
+
   buddy
     .command('generate:entries', descriptions.entries)
     .option('-p, --project [project]', descriptions.project, { default: false })
