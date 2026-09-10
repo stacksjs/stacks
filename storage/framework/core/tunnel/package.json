@@ -2,7 +2,7 @@
   "name": "@stacksjs/tunnel",
   "type": "module",
   "sideEffects": false,
-  "version": "0.74.38",
+  "version": "0.74.39",
   "description": "Local development tunnel.",
   "author": "Chris Breuer",
   "contributors": [

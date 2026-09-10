@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.38...v0.74.39)
+
+## ⚡ Performance Improvements
+
+- **router**: avoid async adoption on query cache misses ([202be49](https://github.com/stacksjs/stacks/commit/202be49)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2582](https://github.com/stacksjs/stacks/issues/2582), [#2582](https://github.com/stacksjs/stacks/issues/2582))
+
+## 🔧 Chores
+
+- upgrade @stacksjs/ts-cloud to 0.16.0 ([1d2c987](https://github.com/stacksjs/stacks/commit/1d2c987)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.37...v0.74.38)
 
 ## ✨ Features
