@@ -192,10 +192,10 @@ describe('formatCurrency', () => {
 ```typescript
 // tests/feature/auth.test.ts
 import { describe, expect, it } from 'bun:test'
-import { createTestClient } from '@stacksjs/testing'
+import { featureTest } from '@stacksjs/testing'
 
 describe('Authentication', () => {
-  const client = createTestClient()
+  const client = featureTest()
 
   it('can login with valid credentials', async () => {
     const response = await client.post('/api/auth/login', {
@@ -204,7 +204,7 @@ describe('Authentication', () => {
     })
 
     expect(response.status).toBe(200)
-    expect(response.body).toHaveProperty('token')
+    expect(await response.json()).toHaveProperty('token')
   })
 
   it('rejects invalid credentials', async () => {
@@ -269,21 +269,25 @@ Create a setup file for global test configuration:
 
 ```typescript
 // tests/setup.ts
-import { beforeAll, afterAll, afterEach } from 'bun:test'
-import { setupTestDatabase, teardownTestDatabase } from '@stacksjs/testing'
+import { beforeAll, beforeEach } from 'bun:test'
+import { refreshDatabase, setupDatabase } from '@stacksjs/testing/database'
 
+// Creates the test database (MySQL) and runs migrations, once.
 beforeAll(async () => {
-  await setupTestDatabase()
+  await setupDatabase()
 })
 
-afterEach(async () => {
-  // Clean up after each test
-})
-
-afterAll(async () => {
-  await teardownTestDatabase()
+// Truncates every table, so each test starts from a known empty state.
+beforeEach(async () => {
+  await refreshDatabase()
 })
 ```
+
+There is no teardown counterpart: the test database is left in place for the
+next run, which is what makes `setupDatabase()` cheap after the first call. For
+a suite that would rather roll each test back than truncate between them, use
+`useTransaction()` instead of `refreshDatabase()` - see
+[Database Testing](/testing/database).
 
 ## CI/CD Integration
 

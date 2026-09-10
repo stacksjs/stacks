@@ -101,15 +101,15 @@ describe('User Registration', () => {
 import { describe, expect, it } from 'bun:test'
 import { actingAs, http } from '@stacksjs/testing'
 import { assertDatabaseHas, useTransaction } from '@stacksjs/testing/database'
-import { UserFactory, ProductFactory } from '../factories'
+import { factory } from '@stacksjs/testing/database'
 
 describe('Checkout Flow', () => {
   useTransaction()
 
   it('completes a full checkout', async () => {
     // Setup: Create user and products
-    const user = await UserFactory.create()
-    const product = await ProductFactory.create({ price: 29.99, stock: 10 })
+    const user = await factory('User').create()
+    const product = await factory('Product').create({ price: 29.99, stock: 10 })
 
     // Step 1: Add to cart
     const addToCartResponse = await actingAs(user).post('/api/cart', {
@@ -165,38 +165,28 @@ describe('Checkout Flow', () => {
 
 ### Using Factories
 
+The model's own attribute factories are the definition; there is no separate
+factory file:
+
 ```typescript
-// tests/factories/UserFactory.ts
-import { Factory } from '@stacksjs/testing'
-import { db } from '@stacksjs/database'
-
-export const UserFactory = new Factory({
-  definition() {
-    return {
-      name: this.faker.person.fullName(),
-      email: this.faker.internet.email(),
-      password: 'hashed_password',
-      email_verified_at: new Date(),
-    }
-  },
-
-  async create(attributes = {}) {
-    const data = { ...this.make(), ...attributes }
-    return db.insertInto('users')
-      .values(data)
-      .returning('_')
-      .executeTakeFirstOrThrow()
-  },
-
-  states: {
-    unverified() {
-      return { email_verified_at: null }
-    },
-    admin() {
-      return { role: 'admin' }
-    },
+// app/Models/User.ts
+export default defineModel({
+  name: 'User',
+  attributes: {
+    name: { fillable: true, factory: faker => faker.person.fullName() },
+    email: { fillable: true, unique: true, factory: faker => faker.internet.email() },
+    password: { fillable: true, factory: () => 'password' },
+    email_verified_at: { fillable: true, factory: () => new Date() },
   },
 })
+```
+
+```typescript
+import { factory } from '@stacksjs/testing/database'
+
+const user = await factory('User').create()
+const unverified = await factory('User').create({ email_verified_at: null })
+const admins = await factory('User').createMany(3, { role: 'admin' })
 ```
 
 ### Using Seeders
@@ -205,7 +195,7 @@ export const UserFactory = new Factory({
 // tests/Feature/DashboardTest.ts
 import { beforeAll, describe, expect, it } from 'bun:test'
 import { actingAs, http } from '@stacksjs/testing'
-import { UserFactory, PostFactory } from '../factories'
+import { factory } from '@stacksjs/testing/database'
 
 describe('Dashboard', () => {
   let adminUser: User
@@ -213,8 +203,8 @@ describe('Dashboard', () => {
 
   beforeAll(async () => {
     // Seed test data
-    adminUser = await UserFactory.state('admin').create()
-    posts = await PostFactory.createMany(10, { user_id: adminUser.id })
+    adminUser = await factory('User').create({ role: 'admin' })
+    posts = await factory('Post').createMany(10, { user_id: adminUser.id })
   })
 
   it('shows admin dashboard with stats', async () => {
@@ -238,7 +228,7 @@ describe('Authentication', () => {
   useTransaction()
 
   it('logs in with valid credentials', async () => {
-    const user = await UserFactory.create({
+    const user = await factory('User').create({
       email: 'test@example.com',
       password: await hash('secret123'),
     })
@@ -258,7 +248,7 @@ describe('Authentication', () => {
   })
 
   it('fails with invalid credentials', async () => {
-    await UserFactory.create({
+    await factory('User').create({
       email: 'test@example.com',
       password: await hash('secret123'),
     })
@@ -274,7 +264,7 @@ describe('Authentication', () => {
   })
 
   it('returns user profile when authenticated', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     const response = await actingAs(user).get('/api/me')
 
@@ -293,7 +283,7 @@ describe('Admin Access', () => {
   useTransaction()
 
   it('allows admins to access admin routes', async () => {
-    const admin = await UserFactory.state('admin').create()
+    const admin = await factory('User').create({ role: 'admin' })
 
     const response = await actingAs(admin).get('/api/admin/users')
 
@@ -301,7 +291,7 @@ describe('Admin Access', () => {
   })
 
   it('denies regular users admin access', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     const response = await actingAs(user).get('/api/admin/users')
 
@@ -328,7 +318,7 @@ describe('Payment Processing', () => {
   useTransaction()
 
   it('processes payment successfully', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     // Mock external payment API
     spyOn(paymentService, 'chargeCard').mockResolvedValue({
@@ -351,7 +341,7 @@ describe('Payment Processing', () => {
   })
 
   it('handles payment failure gracefully', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     spyOn(paymentService, 'chargeCard').mockResolvedValue({
       success: false,
@@ -384,7 +374,7 @@ describe('Order Processing Jobs', () => {
   afterEach(() => restore())
 
   it('dispatches email job after order', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     await actingAs(user).post('/api/orders', {
       body: { items: [{ product_id: 1, quantity: 1 }] },
@@ -399,7 +389,7 @@ describe('Order Processing Jobs', () => {
   })
 
   it('dispatches inventory update job', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     await actingAs(user).post('/api/orders', {
       body: { items: [{ product_id: 1, quantity: 2 }] },

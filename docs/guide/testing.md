@@ -142,8 +142,6 @@ tests/
 │       └── UsersTest.ts
 ├── Browser/              # E2E tests
 │   └── CheckoutTest.ts
-├── factories/            # Test factories
-│   └── UserFactory.ts
 └── helpers/              # Test utilities
     └── index.ts
 ```
@@ -249,23 +247,33 @@ describe('User Model', () => {
 
 ### Factories
 
+A factory is not a separate file. It is the `factory` you already declared on
+each attribute of the model:
+
 ```typescript
-// tests/factories/UserFactory.ts
-import { Factory } from '@stacksjs/testing'
-import { User } from '@/models/User'
-
-export const UserFactory = new Factory(User, {
-  name: () => faker.person.fullName(),
-  email: () => faker.internet.email(),
-  password: () => 'password',
+// app/Models/User.ts
+export default defineModel({
+  name: 'User',
+  attributes: {
+    name: { fillable: true, factory: faker => faker.person.fullName() },
+    email: { fillable: true, unique: true, factory: faker => faker.internet.email() },
+    password: { fillable: true, factory: () => 'password' },
+  },
 })
+```
 
-// Usage in tests
+`factory('User')` builds rows from those declarations - the same generator
+`buddy seed` uses, so password columns are hashed, unique columns are kept
+distinct across a batch, and relation columns are filled:
+
+```typescript
+import { factory, useTransaction } from '@stacksjs/testing/database'
+
 describe('UserService', () => {
   useTransaction()
 
   it('finds user by email', async () => {
-    const user = await UserFactory.create({
+    const user = await factory('User').create({
       email: 'specific@example.com',
     })
 
@@ -274,13 +282,18 @@ describe('UserService', () => {
   })
 
   it('lists all users', async () => {
-    await UserFactory.createMany(5)
+    await factory('User').createMany(5)
 
     const users = await UserService.all()
     expect(users).toHaveLength(5)
   })
 })
 ```
+
+`make()` and `makeMany(n)` are the same thing without the insert, for a test that
+wants attributes rather than rows. There is no singular/plural mode switch:
+`make` and `create` always return one row, `makeMany` and `createMany` always
+return an array.
 
 ## HTTP Testing
 
@@ -290,13 +303,13 @@ describe('UserService', () => {
 import { describe, expect, it } from 'bun:test'
 import { http } from '@stacksjs/testing'
 import { useTransaction } from '@stacksjs/testing/database'
-import { UserFactory } from '../factories/UserFactory'
+import { factory } from '@stacksjs/testing/database'
 
 describe('Users API', () => {
   useTransaction()
 
   it('lists users', async () => {
-    await UserFactory.createMany(3)
+    await factory('User').createMany(3)
 
     const response = await http.get('/api/users')
 
@@ -341,7 +354,7 @@ describe('Profile API', () => {
   useTransaction()
 
   it('gets current user profile', async () => {
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
     const response = await actingAs(user).get('/api/profile')
 

@@ -457,3 +457,96 @@ export function useTransaction(): void {
   beforeEach(tx.begin)
   afterEach(tx.rollback)
 }
+
+/**
+ * Rows built from a model's own declared attribute factories.
+ *
+ * `docs/` documented a `Factory` class in four places, with four mutually
+ * incompatible signatures - `new Factory(User, attrs)`, `new Factory({
+ * definition() })`, `new Factory<User>({ definition() })` and
+ * `Factory.define(fn)` - and none of them ever existed. That is a fair sign
+ * nobody had one, and a fifth invented shape would not help.
+ *
+ * What DOES exist is the factory a model already declares:
+ *
+ * ```ts
+ * attributes: {
+ *   email: { factory: faker => faker.internet.email() },
+ * }
+ * ```
+ *
+ * so this exposes that, rather than asking a test to restate it. The rows come
+ * out of the same generator `buddy seed` uses, which is the point: password
+ * columns are hashed, unique columns are disambiguated across the batch, and
+ * relation columns are filled. A test factory that reimplemented this would
+ * differ from the seeder in exactly the ways that are invisible until a test
+ * passes for the wrong reason.
+ *
+ * @example
+ * ```ts
+ * const attrs = await factory('User').make()                 // not persisted
+ * const user = await factory('User').create()                // one row
+ * const admins = await factory('User').createMany(3, { role: 'admin' })
+ * ```
+ */
+export interface ModelFactory {
+  /** Attributes for one row, without writing anything. */
+  make: (overrides?: RowCriteria) => Promise<Record<string, unknown>>
+  /** Attributes for `count` rows, without writing anything. */
+  makeMany: (count: number, overrides?: RowCriteria) => Promise<Record<string, unknown>[]>
+  /** Insert one row and return it as inserted. */
+  create: (overrides?: RowCriteria) => Promise<Record<string, unknown>>
+  /** Insert `count` rows and return them as inserted. */
+  createMany: (count: number, overrides?: RowCriteria) => Promise<Record<string, unknown>[]>
+}
+
+/**
+ * A factory for `modelName`, e.g. `factory('User')`.
+ *
+ * There is deliberately no singular/plural mode switch: `make` and `create`
+ * always return one row, `makeMany` and `createMany` always return an array.
+ * A helper whose return type depends on whether `.count()` was called earlier
+ * in the chain cannot be typed honestly, and the caller always knows which
+ * one they want.
+ */
+export function factory(modelName: string): ModelFactory {
+  async function tableFor(): Promise<string> {
+    // The table name follows the model name by the framework's own convention,
+    // which `assertDatabaseHas` and friends already rely on.
+    const { plural, snakeCase } = await import('@stacksjs/strings')
+    return plural(snakeCase(modelName))
+  }
+
+  async function build(count: number, overrides: RowCriteria): Promise<Record<string, unknown>[]> {
+    const { makeModelRecords } = await import('@stacksjs/database')
+    return makeModelRecords(modelName, count, overrides)
+  }
+
+  async function insert(rows: Record<string, unknown>[]): Promise<Record<string, unknown>[]> {
+    const { db } = await import('@stacksjs/database')
+    const table = await tableFor()
+    const inserted: Record<string, unknown>[] = []
+    for (const row of rows) {
+      // One at a time, returning each row: a batch insert gives back a count,
+      // and a test that just created a user needs its id.
+      const result = await db.insertInto(table).values(row).returningAll().executeTakeFirst()
+      inserted.push((result ?? row) as Record<string, unknown>)
+    }
+    return inserted
+  }
+
+  return {
+    async make(overrides = {}) {
+      return (await build(1, overrides))[0]!
+    },
+    async makeMany(count, overrides = {}) {
+      return build(count, overrides)
+    },
+    async create(overrides = {}) {
+      return (await insert(await build(1, overrides)))[0]!
+    },
+    async createMany(count, overrides = {}) {
+      return insert(await build(count, overrides))
+    },
+  }
+}

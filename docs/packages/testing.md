@@ -323,74 +323,82 @@ it('should access protected route', async () => {
 
 ### Defining Factories
 
-```typescript
-// tests/factories/UserFactory.ts
-import { Factory } from '@stacksjs/testing'
-import { faker } from '@stacksjs/faker'
+A factory is declared once, on the model, per attribute:
 
-export const UserFactory = Factory.define(() => ({
-  name: faker.person.fullName(),
-  email: faker.internet.email(),
-  password: faker.internet.password(),
-  createdAt: faker.date.past()
-}))
+```typescript
+// app/Models/User.ts
+export default defineModel({
+  name: 'User',
+  attributes: {
+    name: { fillable: true, factory: faker => faker.person.fullName() },
+    email: { fillable: true, unique: true, factory: faker => faker.internet.email() },
+    password: { fillable: true, factory: faker => faker.internet.password() },
+  },
+})
 ```
 
 ### Using Factories
 
 ```typescript
-import { UserFactory, PostFactory } from 'tests/factories'
+import { factory } from '@stacksjs/testing/database'
 
 it('should create user with factory', async () => {
   // Create single record
-  const user = await UserFactory.create()
+  const user = await factory('User').create()
   expect(user.id).toBeDefined()
 
   // Create multiple records
-  const users = await UserFactory.createMany(5)
+  const users = await factory('User').createMany(5)
   expect(users).toHaveLength(5)
 
   // Create with overrides
-  const admin = await UserFactory.create({
+  const admin = await factory('User').create({
     role: 'admin',
     email: 'admin@test.com'
   })
   expect(admin.role).toBe('admin')
+
+  // Attributes only, nothing written
+  const attrs = await factory('User').make({ name: 'Test User' })
+  expect(attrs.name).toBe('Test User')
 })
 ```
 
 ### Factory States
 
-```typescript
-export const UserFactory = Factory.define(() => ({
-  name: faker.person.fullName(),
-  email: faker.internet.email()
-}))
-  .state('admin', () => ({
-    role: 'admin',
-    permissions: ['all']
-  }))
-  .state('unverified', () => ({
-    emailVerifiedAt: null
-  }))
+A state is an override object at the call site, not a name registered up front:
 
-// Usage
-const admin = await UserFactory.state('admin').create()
-const unverified = await UserFactory.state('unverified').create()
+```typescript
+const admin = await factory('User').create({ role: 'admin' })
+const unverified = await factory('User').create({ email_verified_at: null })
+```
+
+For a state used across a file, give the object a name where you use it:
+
+```typescript
+const admin = { role: 'admin', email_verified_at: new Date() }
+
+const one = await factory('User').create(admin)
+const many = await factory('User').createMany(3, admin)
 ```
 
 ### Factory Relationships
 
-```typescript
-export const PostFactory = Factory.define(() => ({
-  title: faker.lorem.sentence(),
-  content: faker.lorem.paragraphs()
-}))
-  .hasMany('comments', CommentFactory, 3)
-  .belongsTo('author', UserFactory)
+`belongsTo` columns are filled automatically - the generator creates the parent
+row and uses its id, because that is what `buddy seed` has to do to satisfy the
+foreign key:
 
-// Creates post with author and 3 comments
-const post = await PostFactory.create()
+```typescript
+// Post belongsTo User, so post.user_id points at a real row
+const post = await factory('Post').create()
+```
+
+The other direction is explicit, since only the test knows how many children it
+wants:
+
+```typescript
+const post = await factory('Post').create()
+const comments = await factory('Comment').createMany(3, { post_id: post.id })
 ```
 
 ## Mocking

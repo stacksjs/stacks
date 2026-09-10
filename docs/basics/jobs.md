@@ -20,7 +20,7 @@ The job system helps you:
 ### Dispatching Jobs
 
 ```typescript
-import { dispatch } from '@stacksjs/queue/bun-queue'
+import { dispatch } from '@stacksjs/queue'
 
 // Dispatch a job
 await dispatch('send-email', {
@@ -79,7 +79,7 @@ export default class SendWelcomeEmail extends Job {
 ### Basic Dispatch
 
 ```typescript
-import { dispatch, dispatchSync } from '@stacksjs/queue/bun-queue'
+import { dispatch, dispatchSync } from '@stacksjs/queue'
 
 // Queue the job (async processing)
 await dispatch('process-order', { orderId: 123 })
@@ -91,7 +91,7 @@ await dispatchSync('process-order', { orderId: 123 })
 ### Conditional Dispatch
 
 ```typescript
-import { dispatchIf, dispatchUnless } from '@stacksjs/queue/bun-queue'
+import { dispatchIf, dispatchUnless } from '@stacksjs/queue'
 
 // Dispatch only if condition is true
 await dispatchIf(
@@ -111,7 +111,7 @@ await dispatchUnless(
 ### Delayed Dispatch
 
 ```typescript
-import { dispatchAfter } from '@stacksjs/queue/bun-queue'
+import { dispatchAfter } from '@stacksjs/queue'
 
 // Dispatch after 60 seconds
 await dispatchAfter(60, 'send-reminder', { userId: 1 })
@@ -129,7 +129,7 @@ await dispatchAfter(
 Execute jobs in sequence:
 
 ```typescript
-import { chain } from '@stacksjs/queue/bun-queue'
+import { chain } from '@stacksjs/queue'
 
 await chain()
   .add('validate-order', { orderId: 1 })
@@ -206,7 +206,7 @@ export default class LongRunningJob extends Job {
 Prevent duplicate jobs:
 
 ```typescript
-import { UniqueJobMiddleware } from '@stacksjs/queue/bun-queue'
+import { UniqueJobMiddleware } from '@stacksjs/queue'
 
 export default class ProcessOrder extends Job {
   middleware = [
@@ -221,7 +221,7 @@ export default class ProcessOrder extends Job {
 ### Rate Limiting
 
 ```typescript
-import { RateLimitMiddleware } from '@stacksjs/queue/bun-queue'
+import { RateLimitMiddleware } from '@stacksjs/queue'
 
 export default class SendNotification extends Job {
   middleware = [
@@ -258,7 +258,7 @@ buddy queue:work --stop-when-empty
 ### Programmatic Workers
 
 ```typescript
-import { QueueWorker, WorkerManager } from '@stacksjs/queue/bun-queue'
+import { QueueWorker, WorkerManager } from '@stacksjs/queue'
 
 // Single worker
 const worker = new QueueWorker({
@@ -316,8 +316,7 @@ export default class ImportData extends Job {
 ### Managing Failed Jobs
 
 ```typescript
-import { retryFailedJob, executeFailedJobs } from '@stacksjs/queue'
-import { FailedJobManager } from '@stacksjs/queue/bun-queue'
+import { retryFailedJob, executeFailedJobs, FailedJobManager } from '@stacksjs/queue'
 
 const manager = new FailedJobManager()
 

@@ -1,35 +1,24 @@
-import { dts } from 'bun-plugin-dtsx'
-import { frameworkExternal, intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro, transpilePackage } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
 })
 
-const result = await Bun.build({
-  // Every subpath the package advertises needs its own entry: the exports map
-  // sends `@stacksjs/queue/bun-queue` to `dist/bun-queue.js`, and building only
-  // `index.ts` meant that file never existed. The types resolved (dtsx emits a
-  // `.d.ts` per source file), so the import typechecked and then failed at
-  // runtime in every installed app - the documented way to reach `dispatch`,
-  // `Queue` and the middleware classes has never worked (stacksjs/stacks#2581).
-  entrypoints: ['./src/index.ts', './src/bun-queue.ts', './src/drivers/redis.ts'],
-  outdir: './dist',
-  splitting: true,
-  format: 'esm',
-  target: 'bun',
-  // sourcemap: 'linked',
-  minify: true,
+// Transpile file-by-file instead of bundling. The barrel re-exports bun-queue's
+// named bindings (`export * from './bun-queue'`), and Bun's minifying bundler
+// mangles those into `export { x as y }` where `x` is never declared - the
+// "cannot be imported" failure `validateRuntimeExports` catches. It is the same
+// reason `auth` and `browser` transpile.
+//
+// It also means every source file gets a dist file, so `./drivers/redis` - which
+// `getRedisQueue()` imports at runtime - exists without being listed anywhere.
+await transpilePackage({
+  dir: import.meta.dir,
   external: frameworkExternal(),
-  plugins: [
-    dts({
-      root: './src',
-      outdir: './dist',
-    }),
-  ],
 })
 
 await outro({
   dir: import.meta.dir,
   startTime,
-  result,
+  result: { errors: [], warnings: [] },
 })

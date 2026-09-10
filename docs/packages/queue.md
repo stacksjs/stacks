@@ -15,8 +15,7 @@ bun add @stacksjs/queue
 ## Basic Usage
 
 ```typescript
-import { Job } from '@stacksjs/queue'
-import { dispatch, Queue, Worker } from '@stacksjs/queue/bun-queue'
+import { Job, dispatch, Queue, Worker } from '@stacksjs/queue'
 
 // Dispatch a job
 await dispatch('send-email', { to: 'user@example.com', subject: 'Welcome' })
@@ -61,7 +60,7 @@ export default class SendWelcomeEmail extends Job {
 ### Inline Jobs
 
 ```typescript
-import { dispatch, JobBase } from '@stacksjs/queue/bun-queue'
+import { dispatch, JobBase } from '@stacksjs/queue'
 
 // Simple inline job
 await dispatch('process-order', {
@@ -89,7 +88,7 @@ await dispatch(new ProcessPayment(), { paymentId: 456 })
 ### Basic Dispatch
 
 ```typescript
-import { dispatch, dispatchSync } from '@stacksjs/queue/bun-queue'
+import { dispatch, dispatchSync } from '@stacksjs/queue'
 
 // Async dispatch (queued)
 await dispatch('job-name', { key: 'value' })
@@ -101,7 +100,7 @@ await dispatchSync('job-name', { key: 'value' })
 ### Conditional Dispatch
 
 ```typescript
-import { dispatchIf, dispatchUnless } from '@stacksjs/queue/bun-queue'
+import { dispatchIf, dispatchUnless } from '@stacksjs/queue'
 
 // Dispatch only if condition is true
 await dispatchIf(user.isActive, 'send-notification', { userId: user.id })
@@ -113,7 +112,7 @@ await dispatchUnless(user.optedOut, 'send-marketing', { userId: user.id })
 ### Delayed Dispatch
 
 ```typescript
-import { dispatchAfter } from '@stacksjs/queue/bun-queue'
+import { dispatchAfter } from '@stacksjs/queue'
 
 // Dispatch after 60 seconds
 await dispatchAfter(60, 'reminder-email', { userId: 1 })
@@ -125,7 +124,7 @@ await dispatchAfter(new Date('2024-12-25'), 'christmas-promo', {})
 ### Job Chains
 
 ```typescript
-import { dispatchChain, chain } from '@stacksjs/queue/bun-queue'
+import { dispatchChain, chain } from '@stacksjs/queue'
 
 // Execute jobs in sequence
 await dispatchChain([
@@ -186,7 +185,7 @@ buddy queue:work --stop-when-empty
 ### Programmatic Workers
 
 ```typescript
-import { Worker, QueueWorker, WorkerManager } from '@stacksjs/queue/bun-queue'
+import { Worker, QueueWorker, WorkerManager } from '@stacksjs/queue'
 
 // Start a worker
 const worker = new QueueWorker({
@@ -239,9 +238,9 @@ await stopProcessor()
 
 ```typescript
 import {
-  FailedJobManager,
   executeFailedJobs,
-  retryFailedJob
+  retryFailedJob,
+  FailedJobManager,
 } from '@stacksjs/queue'
 
 // Get failed jobs
@@ -305,7 +304,7 @@ import {
   ThrottleMiddleware,
   WithoutOverlappingMiddleware,
   SkipIfMiddleware,
-  FailureMiddleware
+  FailureMiddleware,
 } from '@stacksjs/queue'
 
 // Rate limiting
@@ -362,7 +361,7 @@ export default class SyncData extends Job {
 ## Priority Queues
 
 ```typescript
-import { PriorityQueue } from '@stacksjs/queue/bun-queue'
+import { PriorityQueue } from '@stacksjs/queue'
 
 const queue = new PriorityQueue('orders')
 
@@ -377,7 +376,7 @@ await queue.add({ orderId: 3 }, { priority: 1 })  // Low priority
 ## Dead Letter Queue
 
 ```typescript
-import { DeadLetterQueue } from '@stacksjs/queue/bun-queue'
+import { DeadLetterQueue } from '@stacksjs/queue'
 
 const dlq = new DeadLetterQueue({
   maxRetries: 3,
@@ -595,7 +594,7 @@ const scheduledJobs = getScheduledJobs()
 ## Rate Limiting & Locking
 
 ```typescript
-import { RateLimiter, DistributedLock } from '@stacksjs/queue/bun-queue'
+import { RateLimiter, DistributedLock } from '@stacksjs/queue'
 
 // Rate limiter
 const limiter = new RateLimiter({
@@ -624,7 +623,7 @@ if (await lock.acquire(30)) { // 30 second lock
 ## Leader Election
 
 ```typescript
-import { LeaderElection } from '@stacksjs/queue/bun-queue'
+import { LeaderElection } from '@stacksjs/queue'
 
 // For horizontal scaling
 const election = new LeaderElection('worker-leader')

@@ -49,6 +49,7 @@ const {
   assertDatabaseMissing,
   assertNotSoftDeleted,
   assertSoftDeleted,
+  factory,
 } = await import('../src/database')
 
 await db.unsafe(`
@@ -180,5 +181,30 @@ describe('assertNotSoftDeleted', () => {
     // "Not soft-deleted" is not satisfied by absence - a missing row is a
     // different failure from a live one, and silently passing would hide it.
     expect(assertNotSoftDeleted('widgets', { name: 'ghost' })).rejects.toThrow(/but none did/)
+  })
+})
+
+describe('factory', () => {
+  it('exposes make/makeMany/create/createMany and nothing else', () => {
+    // The absent member is the point: there is no `.count()` / `.state()`
+    // chain, because a return type that depends on an earlier call in the
+    // chain cannot be typed honestly.
+    expect(Object.keys(factory('User')).sort()).toEqual(['create', 'createMany', 'make', 'makeMany'])
+  })
+
+  it('builds a fresh builder per call, so two models never share state', () => {
+    expect(factory('User')).not.toBe(factory('Post'))
+  })
+
+  it('rejects a non-positive count before touching the database', async () => {
+    // The guard lives in `makeModelRecords`; this asserts the testing package
+    // routes through it rather than silently producing an empty array.
+    await expect(factory('User').makeMany(0)).rejects.toThrow(/positive integer count/)
+    await expect(factory('User').makeMany(-1)).rejects.toThrow(/positive integer count/)
+    await expect(factory('User').makeMany(1.5)).rejects.toThrow(/positive integer count/)
+  })
+
+  it('names the models it knows when asked for one that does not exist', async () => {
+    await expect(factory('NotARealModel').make()).rejects.toThrow(/Model not found: NotARealModel/)
   })
 })

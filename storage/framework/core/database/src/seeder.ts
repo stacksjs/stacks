@@ -1277,6 +1277,50 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 }
 
 /**
+ * Rows for `modelName`, built from its declared attribute factories but NOT
+ * written anywhere.
+ *
+ * This is `seedModel$` with the insert removed, and it exists because a test
+ * wants what a seeder produces without wanting what a seeder does. Rebuilding
+ * it in the test package would mean reimplementing the parts that are easy to
+ * get wrong and invisible when wrong: password hashing, unique-column
+ * disambiguation across a batch, and relation columns. A hand-rolled test
+ * factory that skips the hash writes a password nobody can sign in with.
+ *
+ * `overrides` are applied last and are taken verbatim - a test setting
+ * `{ email: 'known@example.com' }` gets exactly that, uniqueness logic
+ * included, because it has already decided what the value is.
+ *
+ * Added for the model factories `@stacksjs/testing` exposes (stacksjs/stacks#2581).
+ */
+export async function makeModelRecords(
+  modelName: string,
+  count: number = 1,
+  overrides: Record<string, unknown> = {},
+  options: { verbose?: boolean } = {},
+): Promise<Record<string, unknown>[]> {
+  if (!Number.isInteger(count) || count < 1)
+    throw new TypeError(`makeModelRecords(${modelName}) needs a positive integer count; got ${count}`)
+
+  const models = await loadAllModels(path.userModelsPath(), options.verbose ?? false, true)
+  const model = models.find(m => m.name === modelName)
+  if (!model) {
+    throw new Error(
+      `Model not found: ${modelName}. `
+      + `Known models: ${models.map(m => m.name).sort().join(', ') || '(none loaded)'}`,
+    )
+  }
+
+  const records = await generateRecords({ ...model, count }, { verbose: options.verbose ?? false })
+  return records.map(record => ({ ...record, ...snakeCaseKeys(overrides) }))
+}
+
+/** `{ emailVerifiedAt }` -> `{ email_verified_at }`, matching the column names. */
+function snakeCaseKeys(input: Record<string, unknown>): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(input).map(([key, value]) => [snakeCase(key), value]))
+}
+
+/**
  * Seed a specific model by name
  * Searches both default and user models
  */

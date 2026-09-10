@@ -2,9 +2,25 @@
  * @stacksjs/queue
  *
  * A thin wrapper around bun-queue that integrates with Stacks conventions.
- * Core Stacks queue exports are always available. For advanced bun-queue
- * features (Queue, Worker, dispatch, etc.), import from '@stacksjs/queue/bun-queue'.
+ *
+ * Everything is on this one entry, including `Queue`, `Worker`, `dispatch` and
+ * the middleware classes. Those used to sit behind a `@stacksjs/queue/bun-queue`
+ * subpath, on the theory that a bun-queue with unresolvable dependencies would
+ * otherwise take the whole barrel down with it. It never did - bun-queue is a
+ * declared dependency of this package - and the split cost more than it saved:
+ * the subpath had no `dist` file for its entire life, so the documented import
+ * typechecked and then threw (stacksjs/stacks#2581). One entry cannot drift
+ * from itself.
  */
+
+// =============================================================================
+// bun-queue: Queue, Worker, dispatch, middleware, batching, rate limiting
+// =============================================================================
+// `Job` is deliberately NOT among these. The name belongs to the Stacks job
+// class below - the one `app/Jobs/*.ts` files construct - and bun-queue's is
+// re-exported as `BunJob`. Two different `Job`s under one name would resolve
+// to whichever export came last.
+export * from './bun-queue'
 
 // =============================================================================
 // Stacks Job class for file-based jobs (app/Jobs/*.ts)
@@ -212,9 +228,10 @@ export {
 // =============================================================================
 // Redis queue driver
 // =============================================================================
-// Redis driver is lazily loaded to avoid requiring bun-queue when not using Redis.
-// Use: const { RedisQueue } = await import('@stacksjs/queue/drivers/redis')
-// Or access via the queue manager which dynamically imports the driver.
+// Lazily loaded, so an app that does not use Redis does not pay for the driver
+// at import time. Reach it through `getRedisQueue()` rather than a subpath: the
+// package has one public entry, and the driver moving files should not be a
+// breaking change for anyone.
 export async function getRedisQueue() {
   const { RedisQueue } = await import('./drivers/redis')
   return RedisQueue

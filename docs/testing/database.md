@@ -112,55 +112,35 @@ describe('Order Model', () => {
 
 ### Defining Factories
 
-Create factories to generate test data:
+Test data comes from the `factory` functions the model already declares, one
+per attribute:
 
 ```typescript
-// tests/factories/UserFactory.ts
-import { Factory } from '@stacksjs/testing'
-import { db } from '@stacksjs/database'
-import type { User } from '@/types'
-
-export const UserFactory = new Factory<User>({
-  // Define default attributes
-  definition() {
-    return {
-      name: this.faker.person.fullName(),
-      email: this.faker.internet.email(),
-      password: this.faker.internet.password(),
-      created_at: new Date(),
-    }
-  },
-
-  // Create in database
-  async create(attributes = {}) {
-    const data = { ...this.make(), ...attributes }
-    return db.insertInto('users')
-      .values(data)
-      .returning('_')
-      .executeTakeFirstOrThrow()
-  },
-
-  // Make without saving
-  make(attributes = {}) {
-    return { ...this.definition(), ...attributes }
+// app/Models/User.ts
+export default defineModel({
+  name: 'User',
+  attributes: {
+    name: { fillable: true, factory: faker => faker.person.fullName() },
+    email: { fillable: true, unique: true, factory: faker => faker.internet.email() },
+    password: { fillable: true, factory: faker => faker.internet.password() },
+    role: { fillable: true, default: 'user' },
+    email_verified_at: { fillable: true, factory: () => null },
   },
 })
 ```
 
-### Using Factories
+There is no separate factory file and no second place to declare the same
+attributes. `factory('User')` reads that model:
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { UserFactory } from '../factories/UserFactory'
-import { PostFactory } from '../factories/PostFactory'
+import { factory } from '@stacksjs/testing/database'
 
 describe('User Posts', () => {
   it('creates user with posts', async () => {
-    // Create a user
-    const user = await UserFactory.create()
+    const user = await factory('User').create()
 
-    // Create posts for the user
-    const posts = await PostFactory.createMany(3, {
+    const posts = await factory('Post').createMany(3, {
       user_id: user.id,
     })
 
@@ -168,8 +148,8 @@ describe('User Posts', () => {
     expect(posts[0].user_id).toBe(user.id)
   })
 
-  it('creates user without saving', () => {
-    const user = UserFactory.make({ name: 'Test User' })
+  it('creates user without saving', async () => {
+    const user = await factory('User').make({ name: 'Test User' })
 
     expect(user.name).toBe('Test User')
     expect(user.email).toBeDefined()
@@ -177,64 +157,38 @@ describe('User Posts', () => {
 })
 ```
 
-### Factory States
+Rows come out of the same generator `buddy seed` uses, which matters in three
+ways a hand-rolled factory tends to miss: password columns are hashed with the
+configured algorithm, so the row can actually be signed in as; columns marked
+`unique` are kept distinct across a batch, so `createMany(50)` does not collide;
+and `belongsTo` columns are filled with real parent ids.
 
-Define different states for your factories:
+### States
+
+A state is an override object, passed at the call site:
 
 ```typescript
-// tests/factories/UserFactory.ts
-export const UserFactory = new Factory<User>({
-  definition() {
-    return {
-      name: this.faker.person.fullName(),
-      email: this.faker.internet.email(),
-      role: 'user',
-      email_verified_at: null,
-    }
-  },
-
-  // Define states
-  states: {
-    admin() {
-      return { role: 'admin' }
-    },
-
-    verified() {
-      return { email_verified_at: new Date() }
-    },
-
-    unverified() {
-      return { email_verified_at: null }
-    },
-  },
+const admin = await factory('User').create({ role: 'admin' })
+const verified = await factory('User').create({ email_verified_at: new Date() })
+const verifiedAdmin = await factory('User').create({
+  role: 'admin',
+  email_verified_at: new Date(),
 })
-
-// Usage
-const admin = await UserFactory.state('admin').create()
-const verifiedUser = await UserFactory.state('verified').create()
-const verifiedAdmin = await UserFactory
-  .state('admin')
-  .state('verified')
-  .create()
 ```
 
-### Factory Sequences
+Overrides are applied last and taken verbatim, uniqueness handling included: a
+test asking for `{ email: 'known@example.com' }` has already decided what the
+value is. Keys are converted to their column names, so `emailVerifiedAt` and
+`email_verified_at` both work.
 
-Generate unique sequential values:
+For a state you use across many tests, name it where it belongs - in the test
+file, as an object:
 
 ```typescript
-export const UserFactory = new Factory<User>({
-  definition() {
-    return {
-      name: this.faker.person.fullName(),
-      email: this.sequence((n) => `user${n}@example.com`),
-      username: this.sequence((n) => `user_${n}`),
-    }
-  },
-})
+const admin = { role: 'admin', email_verified_at: new Date() }
 
-// Creates user1@example.com, user2@example.com, etc.
-const users = await UserFactory.createMany(3)
+const one = await factory('User').create(admin)
+const many = await factory('User').createMany(3, admin)
 ```
 
 ## Database Assertions
@@ -283,7 +237,7 @@ Verify a record does not exist:
 import { assertDatabaseMissing } from '@stacksjs/testing/database'
 
 it('deletes user from database', async () => {
-  const user = await UserFactory.create()
+  const user = await factory('User').create()
 
   await deleteUser(user.id)
 
@@ -318,7 +272,7 @@ For soft-deletable models:
 import { assertSoftDeleted, assertNotSoftDeleted } from '@stacksjs/testing/database'
 
 it('soft deletes user', async () => {
-  const user = await UserFactory.create()
+  const user = await factory('User').create()
 
   await softDeleteUser(user.id)
 
@@ -326,7 +280,7 @@ it('soft deletes user', async () => {
 })
 
 it('restores soft deleted user', async () => {
-  const user = await UserFactory.create()
+  const user = await factory('User').create()
   await softDeleteUser(user.id)
 
   await restoreUser(user.id)
@@ -342,13 +296,13 @@ it('restores soft deleted user', async () => {
 ```typescript
 import { describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
-import { UserFactory } from '../factories/UserFactory'
+import { factory } from '@stacksjs/testing/database'
 
 describe('User Queries', () => {
   it('finds users by role', async () => {
-    await UserFactory.state('admin').create()
-    await UserFactory.create()  // Regular user
-    await UserFactory.state('admin').create()
+    await factory('User').create({ role: 'admin' })
+    await factory('User').create()  // Regular user
+    await factory('User').create({ role: 'admin' })
 
     const admins = await db.selectFrom('users')
       .where('role', '=', 'admin')
@@ -360,10 +314,10 @@ describe('User Queries', () => {
   })
 
   it('orders users by created_at', async () => {
-    const older = await UserFactory.create({
+    const older = await factory('User').create({
       created_at: new Date('2024-01-01'),
     })
-    const newer = await UserFactory.create({
+    const newer = await factory('User').create({
       created_at: new Date('2024-06-01'),
     })
 
@@ -383,12 +337,12 @@ describe('User Queries', () => {
 ```typescript
 import { describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
-import { UserFactory, PostFactory, CommentFactory } from '../factories'
+import { factory } from '@stacksjs/testing/database'
 
 describe('Post Relationships', () => {
   it('loads post with author', async () => {
-    const user = await UserFactory.create({ name: 'Jane Doe' })
-    const post = await PostFactory.create({ user_id: user.id })
+    const user = await factory('User').create({ name: 'Jane Doe' })
+    const post = await factory('Post').create({ user_id: user.id })
 
     const postWithAuthor = await db.selectFrom('posts')
       .innerJoin('users', 'users.id', 'posts.user_id')
@@ -404,8 +358,8 @@ describe('Post Relationships', () => {
   })
 
   it('counts post comments', async () => {
-    const post = await PostFactory.create()
-    await CommentFactory.createMany(5, { post_id: post.id })
+    const post = await factory('Post').create()
+    await factory('Comment').createMany(5, { post_id: post.id })
 
     const postWithCount = await db.selectFrom('posts')
       .leftJoin('comments', 'comments.post_id', 'posts.id')
@@ -428,12 +382,12 @@ describe('Post Relationships', () => {
 ```typescript
 import { describe, expect, it } from 'bun:test'
 import { db } from '@stacksjs/database'
-import { UserFactory, AccountFactory } from '../factories'
+import { factory } from '@stacksjs/testing/database'
 
 describe('Money Transfer', () => {
   it('transfers money atomically', async () => {
-    const sender = await AccountFactory.create({ balance: 100 })
-    const receiver = await AccountFactory.create({ balance: 50 })
+    const sender = await factory('Account').create({ balance: 100 })
+    const receiver = await factory('Account').create({ balance: 50 })
 
     await transferMoney(sender.id, receiver.id, 30)
 
@@ -452,8 +406,8 @@ describe('Money Transfer', () => {
   })
 
   it('rolls back on failure', async () => {
-    const sender = await AccountFactory.create({ balance: 100 })
-    const receiver = await AccountFactory.create({ balance: 50 })
+    const sender = await factory('Account').create({ balance: 100 })
+    const receiver = await factory('Account').create({ balance: 50 })
 
     // Try to transfer more than available
     await expect(
@@ -478,20 +432,21 @@ describe('Money Transfer', () => {
 ```typescript
 // tests/seeders/TestSeeder.ts
 import { Seeder } from '@stacksjs/database'
-import { UserFactory, PostFactory } from '../factories'
+import { factory } from '@stacksjs/testing/database'
 
 export class TestSeeder extends Seeder {
   async run() {
     // Create admin user
-    const admin = await UserFactory.state('admin').create({
+    const admin = await factory('User').create({
+      role: 'admin',
       email: 'admin@example.com',
     })
 
     // Create regular users with posts
-    const users = await UserFactory.createMany(5)
+    const users = await factory('User').createMany(5)
 
     for (const user of users) {
-      await PostFactory.createMany(3, { user_id: user.id })
+      await factory('Post').createMany(3, { user_id: user.id })
     }
   }
 }
