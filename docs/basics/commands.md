@@ -199,13 +199,13 @@ export default function (cli: CLI) {
 
 ```typescript
 
-import { prompt, confirm, select, multiselect } from '@stacksjs/cli'
+import { prompts, confirm, select, multiselect } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
   cli.command('setup', 'Interactive setup')
     .action(async () => {
       // Text input
-      const name = await prompt('What is your name?')
+      const name = await prompts.text('What is your name?')
 
       // Confirmation
       const proceed = await confirm('Do you want to continue?')

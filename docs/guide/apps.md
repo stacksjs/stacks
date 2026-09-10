@@ -324,31 +324,24 @@ export default class InitCommand extends Command {
 ### Interactive Prompts
 
 ```typescript
-import { prompt } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 
-const answers = await prompt([
-  {
-    type: 'text',
-    name: 'name',
-    message: 'Project name:',
-  },
-  {
-    type: 'select',
-    name: 'template',
-    message: 'Choose a template:',
-    choices: [
-      { title: 'Default', value: 'default' },
-      { title: 'Minimal', value: 'minimal' },
-      { title: 'Full', value: 'full' },
-    ],
-  },
-  {
-    type: 'confirm',
-    name: 'typescript',
-    message: 'Use TypeScript?',
-    initial: true,
-  },
-])
+// One call per question, awaited in order. There is no array form.
+const name = await prompts.text('Project name:')
+
+const template = await prompts.select({
+  message: 'Choose a template:',
+  choices: [
+    { label: 'Default', value: 'default' },
+    { label: 'Minimal', value: 'minimal' },
+    { label: 'Full', value: 'full' },
+  ],
+})
+
+const typescript = await prompts.confirm({
+  message: 'Use TypeScript?',
+  initial: true,
+})
 ```
 
 ## Code Sharing

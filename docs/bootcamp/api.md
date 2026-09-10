@@ -623,10 +623,10 @@ await user.delete()
 ### Query Builder
 
 ```typescript
-import { DB } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 
 // Raw queries
-const users = await DB.table('users')
+const users = await db.table('users')
   .select('id', 'name', 'email')
   .where('status', 'active')
   .orderBy('name')
@@ -634,15 +634,15 @@ const users = await DB.table('users')
   .get()
 
 // Joins
-const posts = await DB.table('posts')
+const posts = await db.table('posts')
   .join('users', 'posts.user_id', '=', 'users.id')
   .select('posts.*', 'users.name as author')
   .get()
 
 // Aggregates
-const count = await DB.table('users').count()
-const total = await DB.table('orders').sum('amount')
-const avg = await DB.table('products').avg('price')
+const count = await db.table('users').count()
+const total = await db.table('orders').sum('amount')
+const avg = await db.table('products').avg('price')
 ```
 
 ### Pagination

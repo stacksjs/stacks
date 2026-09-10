@@ -40,9 +40,9 @@ config/
 
 ```typescript
 // config/app.ts
-import { defineAppConfig } from '@stacksjs/config'
+import { defineApp } from '@stacksjs/config'
 
-export default defineAppConfig({
+export default defineApp({
   name: 'My App',
   env: process.env.APP_ENV || 'development',
   debug: process.env.APP_DEBUG === 'true',
@@ -63,9 +63,9 @@ export default defineAppConfig({
 
 ```typescript
 // config/database.ts
-import { defineDatabaseConfig } from '@stacksjs/config'
+import { defineDatabase } from '@stacksjs/config'
 
-export default defineDatabaseConfig({
+export default defineDatabase({
   default: process.env.DB_CONNECTION || 'sqlite',
 
   connections: {
@@ -195,9 +195,9 @@ export default defineQueueConfig({
 
 ```typescript
 // config/mail.ts
-import { defineMailConfig } from '@stacksjs/config'
+import { defineEmail } from '@stacksjs/config'
 
-export default defineMailConfig({
+export default defineEmail({
   default: process.env.MAIL_MAILER || 'smtp',
 
   mailers: {
@@ -239,9 +239,9 @@ export default defineMailConfig({
 
 ```typescript
 // config/storage.ts
-import { defineStorageConfig } from '@stacksjs/config'
+import { defineStorage } from '@stacksjs/config'
 
-export default defineStorageConfig({
+export default defineStorage({
   default: process.env.FILESYSTEM_DISK || 'local',
 
   disks: {

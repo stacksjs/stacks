@@ -674,9 +674,19 @@ export default new Action({
 
 Create a reusable auth service:
 
+Stacks already ships one. `useAuth()` is auto-imported in stx templates and
+handles login, registration, the current user and the token - see
+`storage/framework/defaults/functions/auth.ts` for what it does. Reach for it
+before writing your own.
+
+If you do need your own, this is the shape. Reactivity comes from
+`@stacksjs/stx`, not from a `reactivity` package - there is no such package, and
+a plain TypeScript module has to import what it uses even though a template
+would not:
+
 ```typescript
 // resources/functions/auth.ts
-import { reactive } from '@stacksjs/reactivity'
+import { ref } from '@stacksjs/stx'
 
 interface User {
   id: number
@@ -684,11 +694,9 @@ interface User {
   name: string
 }
 
-export const auth = reactive({
-  user: null as User | null,
-  token: localStorage.getItem('token'),
-  isAuthenticated: !!localStorage.getItem('token'),
-})
+export const user = ref<User | null>(null)
+export const token = ref(localStorage.getItem('token'))
+export const isAuthenticated = ref(!!localStorage.getItem('token'))
 
 export async function login(email: string, password: string) {
   const res = await fetch('/api/login', {

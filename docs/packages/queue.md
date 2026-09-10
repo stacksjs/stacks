@@ -144,10 +144,10 @@ await chain()
 ### Batch Processing
 
 ```typescript
-import { batch } from '@stacksjs/queue'
+import { jobBatch } from '@stacksjs/queue'
 
 // Process jobs in batch
-const result = await batch([
+const result = await jobBatch([
   { job: 'process-user', data: { userId: 1 } },
   { job: 'process-user', data: { userId: 2 } },
   { job: 'process-user', data: { userId: 3 } }

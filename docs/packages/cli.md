@@ -15,7 +15,7 @@ bun add @stacksjs/cli
 ## Basic Usage
 
 ```typescript
-import { CLI, Command, log, prompt, spin } from '@stacksjs/cli'
+import { CLI, Command, log, prompts, spin } from '@stacksjs/cli'
 
 // Create a simple command
 const cli = new CLI('myapp')
@@ -97,9 +97,9 @@ cli.command('make')
 ### Text Input
 
 ```typescript
-import { prompt } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 
-const name = await prompt.text({
+const name = await prompts.text({
   message: 'What is your name?',
   placeholder: 'Enter your name',
   defaultValue: 'Anonymous',
@@ -112,7 +112,7 @@ const name = await prompt.text({
 ### Password Input
 
 ```typescript
-const password = await prompt.password({
+const password = await prompts.password({
   message: 'Enter your password:',
   mask: '*',
   validate: (value) => {
@@ -124,7 +124,7 @@ const password = await prompt.password({
 ### Confirm
 
 ```typescript
-const confirmed = await prompt.confirm({
+const confirmed = await prompts.confirm({
   message: 'Are you sure you want to continue?',
   initialValue: false
 })
@@ -137,7 +137,7 @@ if (confirmed) {
 ### Select (Single Choice)
 
 ```typescript
-const framework = await prompt.select({
+const framework = await prompts.select({
   message: 'Choose a framework:',
   options: [
     { value: 'stx', label: 'STX', hint: 'Recommended' },
@@ -151,7 +151,7 @@ const framework = await prompt.select({
 ### Multi-Select
 
 ```typescript
-const features = await prompt.multiselect({
+const features = await prompts.multiselect({
   message: 'Select features to install:',
   options: [
     { value: 'auth', label: 'Authentication' },
@@ -184,12 +184,12 @@ const project = await prompt.autocomplete({
 
 ```typescript
 const answers = await prompt.group({
-  name: () => prompt.text({ message: 'Project name:' }),
-  type: () => prompt.select({
+  name: () => prompts.text({ message: 'Project name:' }),
+  type: () => prompts.select({
     message: 'Project type:',
     options: ['app', 'library', 'plugin']
   }),
-  features: () => prompt.multiselect({
+  features: () => prompts.multiselect({
     message: 'Features:',
     options: ['typescript', 'eslint', 'prettier']
   }),
@@ -525,7 +525,7 @@ cli.catch((error) => {
 ### Handling Cancellation
 
 ```typescript
-const name = await prompt.text({
+const name = await prompts.text({
   message: 'Enter name:'
 })
 
@@ -539,7 +539,7 @@ if (prompt.isCancel(name)) {
 ### Handling Empty Input
 
 ```typescript
-const value = await prompt.text({
+const value = await prompts.text({
   message: 'Enter value:',
   validate: (v) => {
     if (!v || v.trim() === '') {
@@ -571,7 +571,7 @@ if (!isInteractive()) {
   log.info('Running in non-interactive mode')
   // Use default values instead of prompts
 } else {
-  const name = await prompt.text({ message: 'Name:' })
+  const name = await prompts.text({ message: 'Name:' })
 }
 ```
 
@@ -603,11 +603,11 @@ if (!isInteractive()) {
 
 | Function | Description |
 |----------|-------------|
-| `prompt.text(options)` | Text input |
-| `prompt.password(options)` | Password input |
-| `prompt.confirm(options)` | Yes/no confirmation |
-| `prompt.select(options)` | Single selection |
-| `prompt.multiselect(options)` | Multiple selection |
+| `prompts.text(options)` | Text input |
+| `prompts.password(options)` | Password input |
+| `prompts.confirm(options)` | Yes/no confirmation |
+| `prompts.select(options)` | Single selection |
+| `prompts.multiselect(options)` | Multiple selection |
 | `prompt.autocomplete(options)` | Autocomplete input |
 | `prompt.path(options)` | File/directory path |
 | `prompt.group(prompts)` | Group multiple prompts |

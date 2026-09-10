@@ -228,11 +228,12 @@ if (shouldContinue) {
 ### Text Input
 
 ```typescript
-import { prompt } from '@stacksjs/cli'
+import { prompts } from '@stacksjs/cli'
 
-const name = await prompt('What is your name?')
-const email = await prompt('What is your email?', {
-  default: 'user@example.com',
+const name = await prompts.text('What is your name?')
+const email = await prompts.text({
+  message: 'What is your email?',
+  initial: 'user@example.com',
 })
 
 log.info(`Hello, ${name} (${email})!`)
@@ -281,7 +282,7 @@ log.info(`Selected features: ${features.join(', ')}`)
 // app/Commands/Init.ts
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { confirm, log, multiselect, prompt, select } from '@stacksjs/cli'
+import { confirm, log, multiselect, prompts, select } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 
 export default function (cli: CLI) {
@@ -292,7 +293,7 @@ export default function (cli: CLI) {
       console.log('')
 
       // Get project name
-      const projectName = await prompt('Project name:', {
+      const projectName = await prompts.text('Project name:', {
         default: 'my-project',
       })
 
