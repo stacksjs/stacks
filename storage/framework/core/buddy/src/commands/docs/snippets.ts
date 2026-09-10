@@ -163,6 +163,35 @@ export function inScope(specifier: string, code: string): boolean {
   return specifier.startsWith('@stacksjs/')
 }
 
+/**
+ * The tsconfig the generated import files are compiled against.
+ *
+ * Extends the FRAMEWORK config, not the base one, for its `paths`:
+ * every `@stacksjs` package maps to its own `src` directory, so a framework
+ * package resolves from SOURCE. Resolving through `node_modules` instead depends on every workspace
+ * package having been BUILT - true on a developer machine with stale `dist`
+ * directories lying about, false on a CI runner that only ran `bun install`.
+ * That difference is not academic: it reported 343 failures on CI for packages
+ * that are perfectly fine, while reporting 2 locally.
+ *
+ * `exclude` is emptied because the framework config excludes `runtime/**`,
+ * which is exactly where these files are written.
+ */
+export function generatedTsconfig(): Record<string, unknown> {
+  return {
+    extends: '../../tsconfig.framework.json',
+    compilerOptions: {
+      noEmit: true,
+      skipLibCheck: true,
+      noUnusedLocals: false,
+      isolatedDeclarations: false,
+      verbatimModuleSyntax: false,
+    },
+    include: ['./*.ts'],
+    exclude: [],
+  }
+}
+
 function compile(imports: DocsImport[]): SnippetFinding[] {
   rmSync(workDir, { force: true, recursive: true })
   mkdirSync(workDir, { recursive: true })
@@ -178,17 +207,7 @@ function compile(imports: DocsImport[]): SnippetFinding[] {
     writeFileSync(join(workDir, `${name}.ts`), `${entry.text}\nexport {}\n`)
   }
 
-  writeFileSync(join(workDir, 'tsconfig.json'), `${JSON.stringify({
-    extends: '../../tsconfig.base.json',
-    compilerOptions: {
-      noEmit: true,
-      skipLibCheck: true,
-      noUnusedLocals: false,
-      isolatedDeclarations: false,
-      verbatimModuleSyntax: false,
-    },
-    include: ['./*.ts'],
-  }, null, 2)}\n`)
+  writeFileSync(join(workDir, 'tsconfig.json'), `${JSON.stringify(generatedTsconfig(), null, 2)}\n`)
 
   const proc = Bun.spawnSync(['bunx', '--bun', 'tsc', '--noEmit', '-p', workDir], {
     cwd: root,

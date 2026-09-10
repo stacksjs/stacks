@@ -7,7 +7,7 @@
 // reports a failure in a paragraph.
 
 import { describe, expect, it } from 'bun:test'
-import { extractImports, findingKey, inScope } from '../src/commands/docs/snippets'
+import { extractImports, findingKey, generatedTsconfig, inScope } from '../src/commands/docs/snippets'
 
 const doc = 'docs/example.md'
 
@@ -124,5 +124,37 @@ describe('findingKey', () => {
     expect(findingKey(base)).not.toBe(findingKey({ ...base, file: 'docs/b.md' }))
     expect(findingKey(base)).not.toBe(findingKey({ ...base, specifier: '@stacksjs/cache' }))
     expect(findingKey(base)).not.toBe(findingKey({ ...base, message: 'other' }))
+  })
+})
+
+/**
+ * The property that broke CI once already (stacksjs/stacks#2580).
+ *
+ * Resolving `@stacksjs/*` through `node_modules` depends on every workspace
+ * package having been BUILT. That is true on a developer machine, where stale
+ * `dist` directories are lying about from earlier work, and false on a CI
+ * runner that only ran `bun install` - so the first version of this reported 2
+ * failures locally and 343 on CI, for packages that are perfectly fine.
+ *
+ * Extending the framework config maps each package to its own `src`, which is
+ * there whether or not anything has been built.
+ */
+describe('the generated tsconfig is build-independent', () => {
+  it('extends the framework config, for its source path mappings', () => {
+    expect(generatedTsconfig().extends).toBe('../../tsconfig.framework.json')
+  })
+
+  it('does not extend the base config, which has no path mappings', () => {
+    expect(generatedTsconfig().extends).not.toBe('../../tsconfig.base.json')
+  })
+
+  it('clears the inherited excludes', () => {
+    // The framework config excludes `runtime/**`, which is where the generated
+    // files are written - inheriting it compiles nothing and reports success.
+    expect(generatedTsconfig().exclude).toEqual([])
+  })
+
+  it('compiles only its own generated files', () => {
+    expect(generatedTsconfig().include).toEqual(['./*.ts'])
   })
 })
