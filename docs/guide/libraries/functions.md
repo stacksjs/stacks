@@ -134,7 +134,7 @@ Create composables with reactive state:
 
 ```typescript
 // functions/composables/useCounter.ts
-import { ref, computed, type Ref, type ComputedRef } from '@stacksjs/stx'
+import { computed, ref, type Ref } from '@stacksjs/stx'
 
 export interface UseCounterOptions {
   min?: number
@@ -143,7 +143,7 @@ export interface UseCounterOptions {
 
 export interface UseCounterReturn {
   count: Ref<number>
-  doubled: ComputedRef<number>
+  doubled: Readonly<Ref<number>>
   increment: () => void
   decrement: () => void
   set: (value: number) => void
@@ -245,7 +245,9 @@ Handle async operations:
 
 ```typescript
 // functions/composables/useFetch.ts
-import { ref, shallowRef, type Ref, type ShallowRef } from '@stacksjs/stx'
+// stx has no `shallowRef`: its reactivity tracks the `.value` assignment,
+// not the object graph beneath it, so a plain `ref` is already shallow.
+import { ref, type Ref } from '@stacksjs/stx'
 
 export interface UseFetchOptions<T> {
   immediate?: boolean
@@ -255,8 +257,8 @@ export interface UseFetchOptions<T> {
 }
 
 export interface UseFetchReturn<T> {
-  data: ShallowRef<T | null>
-  error: ShallowRef<Error | null>
+  data: Ref<T | null>
+  error: Ref<Error | null>
   loading: Ref<boolean>
   execute: () => Promise<void>
 }
@@ -267,8 +269,8 @@ export function useFetch<T>(
 ): UseFetchReturn<T> {
   const { immediate = true, initialData = null, onSuccess, onError } = options
 
-  const data = shallowRef<T | null>(initialData)
-  const error = shallowRef<Error | null>(null)
+  const data = ref<T | null>(initialData)
+  const error = ref<Error | null>(null)
   const loading = ref(false)
 
   async function execute() {

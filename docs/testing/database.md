@@ -474,31 +474,31 @@ describe('Dashboard', () => {
 
 ## Testing Migrations
 
+Migrations are derived from models, so a migration test is really a schema
+test: run them, then assert on the tables they produced.
+
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { migrate, db } from '@stacksjs/database'
+import { db, runDatabaseMigration } from '@stacksjs/database'
 
 describe('Migrations', () => {
-  it('creates users table with correct columns', async () => {
-    await migrate.latest()
-
-    const columns = await db.introspection.getTableInfo('users')
-
-    expect(columns.some(c => c.name === 'id')).toBe(true)
-    expect(columns.some(c => c.name === 'email')).toBe(true)
-    expect(columns.some(c => c.name === 'name')).toBe(true)
-    expect(columns.some(c => c.name === 'created_at')).toBe(true)
-  })
-
-  it('rolls back migration correctly', async () => {
-    await migrate.latest()
-    await migrate.rollback()
+  it('creates the users table with the columns the model declares', async () => {
+    await runDatabaseMigration()
 
     const tables = await db.introspection.getTables()
-    expect(tables.some(t => t.name === 'users')).toBe(false)
+    const users = tables.find(table => table.name === 'users')
+
+    expect(users).toBeDefined()
+    for (const column of ['id', 'email', 'name', 'created_at'])
+      expect(users?.columns.some(c => c.name === column)).toBe(true)
   })
 })
 ```
+
+There is no `rollback()`. Migrations run forward from the models, so the way
+back is `buddy migrate:fresh`, which drops everything and re-migrates - which
+is also why a migration test wants its own throwaway database rather than the
+development one.
 
 ## Running Database Tests
 

@@ -243,7 +243,7 @@ try {
 ### Validation Errors
 
 ```typescript
-import { ValidationException } from '@stacksjs/error-handling'
+import { HttpError } from '@stacksjs/error-handling'
 
 function validateUser(data: any) {
   const errors: Record<string, string[]> = {}
@@ -256,7 +256,10 @@ function validateUser(data: any) {
   }
 
   if (Object.keys(errors).length > 0) {
-    throw new ValidationException(errors)
+    // `details` is the third argument, and it is serialized alongside the
+    // message - which is exactly why it exists: a client can render inline
+    // field errors instead of parsing them back out of `.message`.
+    throw new HttpError(422, 'Validation failed', errors)
   }
 }
 ```

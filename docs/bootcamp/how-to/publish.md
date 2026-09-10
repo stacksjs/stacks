@@ -110,47 +110,36 @@ buddy build:functions
 
 ### Build Configuration
 
+There is no `buddy.config.ts` and no `defineConfig`. Library packaging is
+`config/library.ts`, typed by `defineLibrary`:
+
 ```ts
-// buddy.config.ts
-import { defineConfig } from '@stacksjs/buddy'
+// config/library.ts
+import { defineLibrary } from '@stacksjs/config'
 
-export default defineConfig({
-  library: {
-    // Entry file
-    entry: 'src/index.ts',
+export default defineLibrary({
+  name: 'my-library',
+  description: 'What this library does.',
+  author: 'Your Name',
+  repository: 'https://github.com/you/my-library',
+  keywords: ['typescript', 'library'],
+  releaseable: true,
 
-    // Output directory
-    outDir: 'dist',
-
-    // Build formats
-    formats: ['esm', 'cjs'],
-
-    // External packages
-    external: [
-      '@stacksjs/stx',
-      '@stacksjs/stx',
-      /^@stacksjs\//,
-    ],
-
-    // Global variable name for UMD builds
-    name: 'MyLibrary',
-
-    // Minification options
-    minify: {
-      mangle: true,
-      compress: {
-        drop_console: true,
-      },
+  // One `resources/` tree, any number of npm packages. Each entry claims a
+  // slice by glob and gets its own name, manifest, dist and version.
+  packages: [
+    {
+      name: 'my-library-fx',
+      kind: 'functions',
+      description: 'The function half.',
+      include: ['*.ts'],
     },
-
-    // TypeScript configuration
-    typescript: {
-      declaration: true,
-      declarationDir: 'dist/types',
-    },
-  },
+  ],
 })
 ```
+
+Build settings are not per-library knobs: `buddy build:libs` targets Bun and
+emits ESM with declarations, which is what the registry expects.
 
 ### Multiple Entry Points
 

@@ -198,30 +198,44 @@ describe('Math utilities', () => {
 
 ### Testing with Result Types
 
+The `Result` type lives in `@stacksjs/error-handling`, not `@stacksjs/utils`,
+and there is no `parseJSON` helper - wrap the parse yourself, which is the
+point of a Result:
+
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { parseJSON, type Result } from '@stacksjs/utils'
+import { err, ok, type Result } from '@stacksjs/error-handling'
+
+function parseJSON(input: string): Result<unknown, Error> {
+  try {
+    return ok(JSON.parse(input))
+  }
+  catch (error) {
+    return err(error instanceof Error ? error : new Error(String(error)))
+  }
+}
 
 describe('parseJSON', () => {
   it('returns Ok for valid JSON', () => {
     const result = parseJSON('{"name": "John"}')
 
     expect(result.isOk()).toBe(true)
-    if (result.isOk()) {
+    if (result.isOk())
       expect(result.value).toEqual({ name: 'John' })
-    }
   })
 
   it('returns Err for invalid JSON', () => {
     const result = parseJSON('invalid json')
 
     expect(result.isErr()).toBe(true)
-    if (result.isErr()) {
-      expect(result.error).toContain('Unexpected token')
-    }
+    if (result.isErr())
+      expect(result.error.message).toContain('JSON')
   })
 })
 ```
+
+`fromPromise` does the same for anything async, and `rescue` runs a fallback
+instead of returning a Result.
 
 ### Testing Error Cases
 

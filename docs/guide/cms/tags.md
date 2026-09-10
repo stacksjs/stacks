@@ -65,16 +65,11 @@ These methods make it easy to work with tags directly from your model instances,
 
 First, import the tags functionality from the CMS package:
 
-```ts
-import { useTaggables } from '@stacksjs/cms'
+`tags` is a namespace of functions, not a `useX()` composable to destructure -
+there is no reactive `taggables` array to hold:
 
-const {
-  taggables,
-  fetchTaggables,
-  createTaggable,
-  updateTaggable,
-  deleteTaggable
-} = useTaggables()
+```ts
+import { tags } from '@stacksjs/cms'
 ```
 
 ## Basic Operations
@@ -82,13 +77,13 @@ const {
 ### Fetch All Tags
 
 ```ts
-const allTags = await fetchTaggables()
+const allTags = await tags.fetchTags()
 ```
 
 ### Create a New Tag
 
 ```ts
-const newTag = await createTaggable({
+const newTag = await tags.store({
   name: 'technology',
   description: 'Technology-related content'
 })
@@ -97,7 +92,7 @@ const newTag = await createTaggable({
 ### Update a Tag
 
 ```ts
-const updatedTag = await updateTaggable(1, {
+const updatedTag = await tags.update(1, {
   name: 'tech',
   description: 'Updated description'
 })
@@ -106,7 +101,7 @@ const updatedTag = await updateTaggable(1, {
 ### Delete a Tag
 
 ```ts
-const success = await deleteTaggable(1) // Replace 1 with the tag ID to delete
+const success = await tags.destroy(1) // Replace 1 with the tag ID to delete
 ```
 
 ## Advanced Tag Operations
@@ -171,7 +166,7 @@ The tags system uses STX composables's `useStorage` for client-side persistence:
 
 ```ts
 // Access the reactive tags array
-console.log(taggables.value)
+console.log(await tags.fetchTags())
 ```
 
 ## Error Handling
@@ -180,7 +175,7 @@ All tag operations include built-in error handling. Here's an example of how err
 
 ```ts
 try {
-  const tag = await createTaggable({
+  const tag = await tags.store({
     name: 'new-tag'
   })
 } catch (error) {

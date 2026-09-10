@@ -61,14 +61,22 @@ LOG_LEVEL=info
 # debug shows all, error shows only errors
 ```
 
-```typescript
-// Programmatic level setting
-import { Logger } from '@stacksjs/logging'
+There is no `Logger` class to construct. `logger()` resolves the configured
+instance, and the level comes from `config/logging.ts` or `LOG_LEVEL`:
 
-const logger = new Logger('myapp', {
-  level: 'debug' // 'debug' | 'info' | 'warn' | 'error'
-})
+```typescript
+import { logger } from '@stacksjs/logging'
+
+const instance = await logger()
+await instance.debug('...')
 ```
+
+```bash
+LOG_LEVEL=debug buddy dev
+```
+
+For everyday use, `log` is the facade over that instance and needs no
+resolution: `log.info(...)`, `log.warn(...)`, `log.error(...)`.
 
 ## Debugging Utilities
 
@@ -167,16 +175,20 @@ log.info(`Operation completed in ${Date.now() - start}ms`)
 ### Default Configuration
 
 ```typescript
-import { Logger } from '@stacksjs/logging'
+// config/logging.ts
+import type { LoggingConfig } from '@stacksjs/types'
+import { storagePath } from '@stacksjs/path'
 
-const logger = new Logger('myapp', {
-  level: 'info',
-  logDirectory: 'storage/logs',
-  writeToFile: true,
-  fancy: true, // Pretty console output
-  showTags: false
-})
+export default {
+  // Set to `null` to stop writing logs to a file.
+  logsPath: storagePath('logs/stacks.log'),
+  deploymentsPath: storagePath('logs/deployments.log'),
+  transports: [],
+} satisfies LoggingConfig
 ```
+
+The level is `LOG_LEVEL` in the environment, not a config key - it is the one
+logging setting you routinely change per run.
 
 ### Log Files
 
@@ -229,45 +241,48 @@ log.error(error, {
 })
 ```
 
-## Logger Configuration
+## Extra Destinations
 
-### Creating Custom Loggers
+There is no `Logger` class and no per-module logger to construct. Everything
+goes through one pipeline; to send records somewhere else, attach a transport:
 
 ```typescript
-import { Logger } from '@stacksjs/logging'
+import { registerTransport } from '@stacksjs/logging'
 
-// Create a named logger
-const apiLogger = new Logger('api', {
-  level: 'debug',
-  logDirectory: 'storage/logs/api',
-  writeToFile: true,
-  fancy: true
+const buffer: unknown[] = []
+
+const detach = registerTransport({
+  name: 'my-log-service',
+  level: 'info',
+
+  // Must return immediately. A transport doing network I/O buffers here and
+  // delivers on its own timer - blocking this call blocks the caller's log.
+  log: record => void buffer.push(record),
+
+  // Called on `beforeExit`, so the last records are not lost.
+  flush: async () => { await deliver(buffer.splice(0)) },
 })
 
-// Use the logger
-apiLogger.info('API request received')
-apiLogger.debug('Request body:', body)
+// Later
+detach()
 ```
 
-### Logger Options
+A transport receives the record BEFORE formatting, so `args` still holds the
+real `Error` and the real context object rather than their rendered strings.
+
+Transports can also be declared in `config/logging.ts`, which is the right
+place for one that should exist for the life of the process.
+
+To label records instead of separating them, add context:
 
 ```typescript
-interface LoggerOptions {
-  // Minimum log level
-  level: 'debug' | 'info' | 'warn' | 'error'
+import { log, withLogContext } from '@stacksjs/logging'
 
-  // Directory for log files
-  logDirectory: string
-
-  // Enable file writing
-  writeToFile: boolean
-
-  // Pretty console output
-  fancy: boolean
-
-  // Show category tags
-  showTags: boolean
-}
+await withLogContext({ module: 'api', requestId }, async () => {
+  // Every log inside carries that context, including from functions
+  // this one calls - it rides on AsyncLocalStorage, not on the call.
+  await log.info('API request received')
+})
 ```
 
 ## Context and Metadata

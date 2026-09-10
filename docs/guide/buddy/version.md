@@ -161,7 +161,7 @@ Your project version is defined in `package.json`:
   "name": "my-stacks-project",
   "version": "1.0.0",
   "dependencies": {
-    "@stacksjs/stacks": "^1.0.0"
+    "@stacksjs/cli": "^1.0.0"
   }
 }
 ```
@@ -262,18 +262,28 @@ buddy version
 
 Access version in your code:
 
-```typescript
-import { version } from '@stacksjs/stacks'
+There is no `@stacksjs/stacks` package to import a version from. The CLI prints
+both its own and the framework's:
 
-console.log(`Running Stacks v${version}`)
+```bash
+buddy --version    # buddy/0.74.36 stacks/0.74.36
 ```
 
-Or from package.json:
+In code, read your own manifest. Your application's version and the framework's
+are two different numbers, and application code almost always wants the first:
 
 ```typescript
-import pkg from './package.json'
+import pkg from '../package.json'
 
 console.log(`App version: ${pkg.version}`)
+```
+
+The framework's version is not importable - no `@stacksjs/*` package exports its
+`package.json` - so read it from the CLI when you need it:
+
+```typescript
+const { stdout } = Bun.spawnSync(['./buddy', '--version'])
+// buddy/0.74.36 stacks/0.74.36
 ```
 
 ## Version History

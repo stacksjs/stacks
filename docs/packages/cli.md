@@ -15,7 +15,7 @@ bun add @stacksjs/cli
 ## Basic Usage
 
 ```typescript
-import { CLI, Command, log, prompts, spin } from '@stacksjs/cli'
+import { CLI, log } from '@stacksjs/cli'
 
 // Create a simple command
 const cli = new CLI('myapp')
@@ -462,24 +462,27 @@ const args = parseArgs(process.argv.slice(2), {
 
 ### Dump and Die
 
-```typescript
-import { dump, dd } from '@stacksjs/cli'
+These live in `@stacksjs/logging`, not here - they go through the logger, so a
+dump lands in the log file as well as the terminal. Both are async: `await` them
+before a `process.exit`, or the pending write is dropped and the line vanishes.
 
-// Dump variables for debugging
-dump(someObject)
-dump(anotherObject, 'Label')
+```typescript
+import { dd, dump } from '@stacksjs/logging'
+
+await dump(someObject)
+await dump('Label', anotherObject)
 
 // Dump and exit
-dd(object) // Logs and exits with code 1
+await dd(object)
 ```
 
 ### Echo
 
 ```typescript
-import { echo } from '@stacksjs/cli'
+import { echo } from '@stacksjs/logging'
 
-echo('Simple output message')
-echo(object) // Pretty prints objects
+await echo('Simple output message')
+await echo(object)
 ```
 
 ## CLI Configuration

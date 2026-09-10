@@ -544,37 +544,6 @@ route.get('/profile', async (req) => {
 })
 ```
 
-## Response Helpers
-
-```typescript
-import { json, redirect, view } from '@stacksjs/router'
-
-// JSON response
-route.get('/api/data', () => {
-  return Response.json({ data: 'value' })
-})
-
-// With status code
-route.post('/users', () => {
-  return Response.json({ created: true }, { status: 201 })
-})
-
-// Plain text
-route.get('/health', () => {
-  return new Response('OK', { status: 200 })
-})
-
-// Redirect
-route.get('/old-path', () => {
-  return Response.redirect('/new-path', 301)
-})
-
-// No content
-route.delete('/items/:id', () => {
-  return new Response(null, { status: 204 })
-})
-```
-
 ## Health Check Route
 
 ```typescript

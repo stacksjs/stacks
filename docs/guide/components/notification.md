@@ -141,11 +141,16 @@ The notification component follows WAI-ARIA guidelines and includes:
 
 The notification component includes full TypeScript support:
 
+`@stacksjs/components` exports the components themselves, not prop-type
+aliases, so name the unions where you use them:
+
 ```ts
-import type { Position, Theme } from '@stacksjs/components'
+import { ref } from '@stacksjs/stx'
+
+type Position = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left'
 
 const position = ref<Position>('top-right')
-const theme = ref<Theme>('light')
+const theme = ref<'light' | 'dark'>('light')
 ```
 
 Still have questions about this component's usage? Contact us and we will help you out.

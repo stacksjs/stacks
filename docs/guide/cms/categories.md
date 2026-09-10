@@ -71,16 +71,11 @@ These methods make it easy to work with categories directly from your model inst
 
 First, import the categories functionality from the CMS package:
 
-```ts
-import { useCategorizables } from '@stacksjs/cms'
+`categorizable` is a namespace of functions, not a `useX()` composable to
+destructure - there is no reactive `categorizables` array to hold:
 
-const {
-  categorizables,
-  fetchCategorizables,
-  createCategorizable,
-  updateCategorizable,
-  deleteCategorizable
-} = useCategorizables()
+```ts
+import { categorizable } from '@stacksjs/cms'
 ```
 
 ## Basic Operations
@@ -88,13 +83,13 @@ const {
 ### Fetch All Categories
 
 ```ts
-const allCategories = await fetchCategorizables()
+const allCategories = await categorizable.fetchAll()
 ```
 
 ### Create a New Category
 
 ```ts
-const newCategory = await createCategorizable({
+const newCategory = await categorizable.store({
   name: 'Technology',
   description: 'Technology-related content',
   categorizable_type: 'posts',
@@ -105,7 +100,7 @@ const newCategory = await createCategorizable({
 ### Update a Category
 
 ```ts
-const updatedCategory = await updateCategorizable(1, {
+const updatedCategory = await categorizable.update(1, {
   name: 'Tech',
   description: 'Updated description',
   is_active: true
@@ -115,7 +110,7 @@ const updatedCategory = await updateCategorizable(1, {
 ### Delete a Category
 
 ```ts
-const success = await deleteCategorizable(1) // Replace 1 with the category ID to delete
+const success = await categorizable.destroy(1) // Replace 1 with the category ID to delete
 ```
 
 ## Advanced Category Operations
@@ -187,7 +182,7 @@ The categories system uses STX composables's `useStorage` for client-side persis
 
 ```ts
 // Access the reactive categories array
-console.log(categorizables.value)
+console.log(await categorizable.fetchAll())
 ```
 
 ## Type Definitions
@@ -213,7 +208,7 @@ The category system includes built-in error handling. Here's an example:
 
 ```ts
 try {
-  const category = await createCategorizable({
+  const category = await categorizable.store({
     name: 'New Category',
     categorizable_type: 'posts'
   })

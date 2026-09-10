@@ -139,7 +139,7 @@ This creates:
 ### Sending Emails
 
 ```typescript
-import { sendEmail } from '@stacksjs/email/sdk'
+import { sendEmail } from '@stacksjs/email'
 
 await sendEmail({
   to: 'recipient@example.com',
@@ -152,7 +152,7 @@ await sendEmail({
 ### Reading Inbox
 
 ```typescript
-import { getInbox, searchEmails } from '@stacksjs/email/sdk'
+import { getInbox, searchEmails } from '@stacksjs/email'
 
 // Get inbox emails
 const emails = await getInbox('user@yourdomain.com', { limit: 50 })
@@ -168,7 +168,7 @@ const results = await searchEmails('user@yourdomain.com', {
 ### Templated Emails
 
 ```typescript
-import { EmailSDK } from '@stacksjs/email/sdk'
+import { EmailSDK } from '@stacksjs/email'
 
 const email = new EmailSDK()
 

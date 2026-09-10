@@ -166,8 +166,11 @@ The popover component follows WAI-ARIA guidelines and includes the following fea
 
 The popover component includes full TypeScript support:
 
+The exported names are the components - `Popover`, `PopoverButton`,
+`PopoverPanel` - not their slot-prop types:
+
 ```ts
-import type { PopoverSlotProps } from '@stacksjs/components'
+import { Popover, PopoverButton, PopoverPanel } from '@stacksjs/components'
 import { ref } from '@stacksjs/stx'
 
 const panelOpen = ref<boolean>(false)

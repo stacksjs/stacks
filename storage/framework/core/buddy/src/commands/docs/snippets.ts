@@ -274,10 +274,11 @@ export async function run(): Promise<void> {
 
   if (process.argv.includes('--write')) {
     writeFileSync(baselinePath, `${JSON.stringify({
-      // Recorded so a check can land before the backlog is cleared. Every entry
-      // is a documented import that does not compile; the list should only ever
-      // get shorter.
-      comment: 'Known docs-import failures. Run `buddy docs:snippets` after fixing some, and commit the shorter list. See stacksjs/stacks#2580.',
+      // Recorded so a check could land before the backlog was cleared. It has
+      // since been cleared: the list is empty and should stay that way. An
+      // entry appearing here means a sample regressed, so `--write` is now for
+      // recording a deliberate, explained exception rather than a backlog.
+      comment: 'Known docs-import failures. Empty as of stacksjs/stacks#2581 - every documented import compiles. A new entry here is a regression, not a backlog item: fix the sample instead. See stacksjs/stacks#2580.',
       known: [...new Set(keys)].sort(),
     }, null, 2)}\n`)
     console.log(`✓ recorded ${new Set(keys).size} known docs-import failure(s) across ${imports.length} import(s)`)

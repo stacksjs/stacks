@@ -210,32 +210,39 @@ async function hasPermission(
 
 ### Middleware for Permission Checks
 
+Middleware is a `Middleware` instance with a `handle(request)`. There is no
+`next` to call - returning nothing continues the request, and throwing an
+`HttpError` stops it:
+
 ```ts
 // app/Middleware/TeamPermission.ts
-import type { MiddlewareNext, Request } from '@stacksjs/types'
+import { HttpError } from '@stacksjs/error-handling'
+import { Middleware } from '@stacksjs/router'
 
-export async function teamPermission(
-  request: Request,
-  next: MiddlewareNext,
-  permission: string
-) {
-  const user = request.user
-  const teamId = request.params.teamId
+export default new Middleware({
+  name: 'teamPermission',
+  priority: 2, // after auth, which is what resolves request.user
 
-  const team = await Team.find(teamId)
+  async handle(request) {
+    // The part after the colon: .middleware('teamPermission:members.invite')
+    const permission = request._middlewareParams?.teamPermission
 
-  if (!team) {
-    return Response.json({ error: 'Team not found' }, { status: 404 })
-  }
+    const team = await Team.find(request.params.teamId)
+    if (!team)
+      throw new HttpError(404, 'Team not found')
 
-  const allowed = await hasPermission(user, team, permission)
+    if (!await hasPermission(request.user, team, permission))
+      throw new HttpError(403, 'Forbidden')
+  },
+})
+```
 
-  if (!allowed) {
-    return Response.json({ error: 'Forbidden' }, { status: 403 })
-  }
+Register it in `app/Middleware.ts`, then attach it by name:
 
-  return next()
-}
+```ts
+route.post('/teams/:teamId/members', 'Actions/Team/InviteAction')
+  .middleware('auth')
+  .middleware('teamPermission:members.invite')
 ```
 
 ## Updating Team Roles

@@ -1,7 +1,7 @@
 /**
  * Terminal primitives the CLI docs have described for a long time and this
- * package did not have: `table`, `progress`, `tasks`, `note`, `dump` / `dd`,
- * `echo`, `getTerminalSize` and `isInteractive` (stacksjs/stacks#2581).
+ * package did not have: `table`, `progress`, `tasks`, `note`, `getTerminalSize`
+ * and `isInteractive` (stacksjs/stacks#2581).
  *
  * They are built rather than removed because each one is small, each one has an
  * obvious right answer, and a CLI framework that cannot print a table sends
@@ -44,36 +44,15 @@ export function note(message: string, title?: string): void {
   console.log(box(message, title === undefined ? {} : { title }))
 }
 
-/** JSON where it round-trips, `String()` otherwise (a Map, a circular ref). */
-function format(value: unknown): string {
-  try {
-    return JSON.stringify(value, null, 2) ?? String(value)
-  }
-  catch {
-    return String(value)
-  }
-}
-
-/** Print a value: strings as-is, everything else pretty-printed. */
-export function echo(value: unknown): void {
-  console.log(typeof value === 'string' ? value : format(value))
-}
-
-/**
- * Print a value with its label, for debugging.
+/*
+ * `dump`, `dd` and `echo` are NOT here, though the CLI docs asked for them.
+ * `@stacksjs/logging` already exports all three, and this package already
+ * re-exports that package's `log`. A second implementation under the same name,
+ * in a package that shares exports with the first, is how two functions called
+ * `dd` end up exiting with different codes.
  *
- * Goes to stderr, so a command whose stdout is being piped into something can
- * still be debugged without corrupting what the pipe receives.
+ *   import { dd, dump, echo } from '@stacksjs/logging'
  */
-export function dump(value: unknown, label?: string): void {
-  console.error(label === undefined ? format(value) : `${label}: ${format(value)}`)
-}
-
-/** `dump`, then exit non-zero. "Dump and die". */
-export function dd(value: unknown, label?: string): never {
-  dump(value, label)
-  process.exit(1)
-}
 
 export interface TableColumn {
   /** Key to read from each row. */
