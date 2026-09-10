@@ -14,14 +14,6 @@ import { existsSync, statSync } from 'node:fs'
 import { join, normalize, resolve } from 'node:path'
 import process from 'node:process'
 
-const root = resolve(process.argv[2] ?? 'dist/docs')
-const port = Number(process.argv[3] ?? 4173)
-
-if (!existsSync(root)) {
-  process.stderr.write(`[serve] ${root} does not exist\n`)
-  process.exit(1)
-}
-
 /**
  * Map a request path to a file inside `root`, or `null`.
  *
@@ -53,7 +45,26 @@ export function resolveFile(root: string, pathname: string): string | null {
   return null
 }
 
+/*
+ * Everything with a side effect lives behind `import.meta.main`, argv reading
+ * and the existence check included.
+ *
+ * They were at module scope, and `process.exit(1)` there killed the whole test
+ * process the moment `resolveFile` was imported - on any machine without a
+ * `dist/docs` lying around, which is every CI runner and no developer machine
+ * that has built the docs once. It passed locally and took the buddy package
+ * down on CI with no failing assertion to point at, because the process was
+ * gone before one could run.
+ */
 if (import.meta.main) {
+  const root = resolve(process.argv[2] ?? 'dist/docs')
+  const port = Number(process.argv[3] ?? 4173)
+
+  if (!existsSync(root)) {
+    process.stderr.write(`[serve] ${root} does not exist\n`)
+    process.exit(1)
+  }
+
   Bun.serve({
     port,
     fetch(request) {
