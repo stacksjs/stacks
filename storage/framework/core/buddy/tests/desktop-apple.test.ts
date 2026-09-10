@@ -7,6 +7,7 @@ import {
   renderAppleWorkflowCaller,
   renderHelperEntitlements,
   renderInfoPlist,
+  signingPlan,
   validateAppleDesktopConfig,
 } from '../src/commands/desktop-apple'
 
@@ -43,6 +44,51 @@ describe('Mac App Store desktop automation', () => {
     expect(app).toContain('<string>ABCDEFGHIJ.com.stacksjs.postline</string>')
     expect(helper).toContain('<key>com.apple.security.inherit</key>')
     expect(helper).not.toContain('<key>com.apple.security.network.client</key>')
+  })
+
+  /**
+   * The ordering invariant, which only fails on a runner with real signing
+   * identities - and this repository has none yet (stacksjs/stacks#2062), so
+   * nothing would have caught a reordering until whoever provisioned them hit
+   * it months later.
+   */
+  test('signs the embedded runtime before the bundle that contains it', () => {
+    const plan = signingPlan({
+      identity: 'Apple Distribution: Example (TEAM123456)',
+      appPath: '/build/apple/Example.app',
+      helperPath: '/build/apple/Example.app/Contents/MacOS/craft-runtime',
+      appEntitlements: '/build/apple/app.entitlements',
+      helperEntitlements: '/build/apple/helper.entitlements',
+    })
+
+    // Signing the parent seals a hash of everything inside it, so signing the
+    // helper afterwards invalidates the parent - `codesign --verify` then fails
+    // naming a file nobody touched.
+    expect(plan.map(args => args.at(-1))).toEqual([
+      '/build/apple/Example.app/Contents/MacOS/craft-runtime',
+      '/build/apple/Example.app',
+    ])
+  })
+
+  test('gives the helper and the bundle their own entitlements', () => {
+    // They cannot share one invocation: the helper needs
+    // `com.apple.security.inherit` and the parent needs the real grants.
+    const plan = signingPlan({
+      identity: 'Apple Distribution: Example (TEAM123456)',
+      appPath: '/build/apple/Example.app',
+      helperPath: '/build/apple/Example.app/Contents/MacOS/craft-runtime',
+      appEntitlements: '/build/apple/app.entitlements',
+      helperEntitlements: '/build/apple/helper.entitlements',
+    })
+
+    const entitlements = plan.map(args => args[args.indexOf('--entitlements') + 1])
+    expect(entitlements).toEqual(['/build/apple/helper.entitlements', '/build/apple/app.entitlements'])
+
+    for (const args of plan) {
+      expect(args[0]).toBe('codesign')
+      expect(args).toContain('--timestamp')
+      expect(args[args.indexOf('--sign') + 1]).toBe('Apple Distribution: Example (TEAM123456)')
+    }
   })
 
   test('generates a reusable workflow caller with validation on by default', () => {

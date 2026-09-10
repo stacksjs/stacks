@@ -251,6 +251,52 @@ function command(args: string[], cwd = projectPath()): void {
     throw new Error(`${args[0]} ${args.slice(1).join(' ')} exited with code ${result.exitCode}`)
 }
 
+/** What {@link signingPlan} needs to know; paths are absolute. */
+export interface SigningPlanInput {
+  identity: string
+  /** The `.app` bundle. */
+  appPath: string
+  /** The embedded Craft runtime inside `Contents/MacOS`. */
+  helperPath: string
+  appEntitlements: string
+  helperEntitlements: string
+}
+
+/**
+ * The `codesign` invocations for a Mac App Store bundle, in the order they
+ * must run (stacksjs/stacks#2199).
+ *
+ * **Inner code first.** Signing the parent bundle seals a hash of everything
+ * inside it, so signing the helper afterwards invalidates the parent's
+ * signature - `codesign --verify` then fails with a modification error naming a
+ * file nobody touched. It is the ordering mistake that is easiest to make and
+ * hardest to see, because it only shows up on a runner that has real signing
+ * identities, and this repository has none yet (#2062). So the order is a
+ * value that can be asserted rather than a sequence of statements that cannot.
+ *
+ * The helper gets `com.apple.security.inherit` and the parent the real
+ * entitlements, which is why they cannot share one invocation.
+ */
+export function signingPlan(input: SigningPlanInput): string[][] {
+  const sign = (entitlements: string, target: string): string[] => [
+    'codesign',
+    '--force',
+    '--timestamp',
+    '--options',
+    'runtime',
+    '--entitlements',
+    entitlements,
+    '--sign',
+    input.identity,
+    target,
+  ]
+
+  return [
+    sign(input.helperEntitlements, input.helperPath),
+    sign(input.appEntitlements, input.appPath),
+  ]
+}
+
 function signingIdentityExists(identity: string): boolean {
   if (!identity) return false
   const result = Bun.spawnSync(['security', 'find-identity', '-v'], {
@@ -328,30 +374,13 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   writeFileSync(helperEntitlements, renderHelperEntitlements())
 
   command(['plutil', '-lint', infoPlist, appEntitlements, helperEntitlements])
-  command([
-    'codesign',
-    '--force',
-    '--timestamp',
-    '--options',
-    'runtime',
-    '--entitlements',
-    helperEntitlements,
-    '--sign',
-    config.appSigningIdentity,
-    join(macosDir, 'craft-runtime'),
-  ])
-  command([
-    'codesign',
-    '--force',
-    '--timestamp',
-    '--options',
-    'runtime',
-    '--entitlements',
-    appEntitlements,
-    '--sign',
-    config.appSigningIdentity,
+  for (const args of signingPlan({
+    identity: config.appSigningIdentity,
     appPath,
-  ])
+    helperPath: join(macosDir, 'craft-runtime'),
+    appEntitlements,
+    helperEntitlements,
+  })) command(args)
   command(['codesign', '--verify', '--deep', '--strict', '--verbose=2', appPath])
   command(['codesign', '-d', '--entitlements', ':-', appPath])
 
