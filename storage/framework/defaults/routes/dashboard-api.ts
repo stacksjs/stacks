@@ -247,6 +247,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   guard(route.post('/files/uploads', 'Actions/Dashboard/Content/FileUploadAction'))
   guard(route.patch('/files', 'Actions/Dashboard/Content/FileRenameAction'))
   guard(route.put('/files/visibility', 'Actions/Dashboard/Content/FileVisibilityAction'))
+  // Favourites and tags are the metadata layer, not a storage operation: a disk
+  // has nowhere to record either, so both write `storage_items` and the listing
+  // above joins them back on (stacksjs/stacks#2577).
+  guard(route.put('/files/favorite', 'Actions/Dashboard/Content/FileFavoriteAction'))
+  guard(route.put('/files/tags', 'Actions/Dashboard/Content/FileTagsAction'))
   guard(route.post('/files/duplicates', 'Actions/Dashboard/Content/FileDuplicateAction'))
   guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
 

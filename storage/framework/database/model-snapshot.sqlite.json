@@ -12964,10 +12964,91 @@
             "type": "unique"
           }
         ]
+      },
+      {
+        "table": "storage_items",
+        "columns": [
+          {
+            "name": "id",
+            "type": "bigint",
+            "isPrimaryKey": true,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "disk",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false,
+            "maxLength": 64
+          },
+          {
+            "name": "path",
+            "type": "text",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": false
+          },
+          {
+            "name": "favorite",
+            "type": "boolean",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": true,
+            "defaultValue": false
+          },
+          {
+            "name": "created_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": false,
+            "hasDefault": true,
+            "defaultValue": "UTC_TIMESTAMP"
+          },
+          {
+            "name": "updated_at",
+            "type": "datetime",
+            "isPrimaryKey": false,
+            "isUnique": false,
+            "isNullable": true,
+            "hasDefault": false
+          },
+          {
+            "name": "uuid",
+            "type": "string",
+            "isPrimaryKey": false,
+            "isUnique": true,
+            "isNullable": true,
+            "hasDefault": false
+          }
+        ],
+        "indexes": [
+          {
+            "name": "storage_items_uuid_unique",
+            "columns": [
+              "uuid"
+            ],
+            "type": "unique"
+          },
+          {
+            "name": "storage_items_disk_path_unique",
+            "columns": [
+              "disk",
+              "path"
+            ],
+            "type": "unique"
+          }
+        ]
       }
     ]
   },
-  "hash": "d21269e6b54bab87d7225dcc6d14e3de4742d856ef7d429152f0fd5e643144ac",
+  "hash": "9f917792b0c5600f676e5e9b519d4deb023aeb05c31a579a6e9cd2a2b9cf2bc1",
   "dialect": "sqlite",
-  "updatedAt": "2026-09-09T05:05:23.528Z"
+  "updatedAt": "2026-09-10T01:05:19.030Z"
 }

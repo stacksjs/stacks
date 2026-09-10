@@ -3,6 +3,7 @@ import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { StorageManager } from '@stacksjs/storage'
+import { createMemoryMetadataStore } from './file-metadata'
 import {
   createDashboardDirectory,
   deleteDashboardFile,
@@ -18,8 +19,17 @@ import {
 
 let root = ''
 let manager: StorageManager
+/**
+ * The metadata layer, in memory (stacksjs/stacks#2577).
+ *
+ * These tests build a real disk in a temp directory; the metadata store is the
+ * one collaborator that would otherwise pull a database in, so it is injected
+ * the same way the storage manager already is.
+ */
+let store = createMemoryMetadataStore()
 
 beforeEach(async () => {
+  store = createMemoryMetadataStore()
   root = await mkdtemp(join(tmpdir(), 'stacks-dashboard-files-'))
   await mkdir(join(root, 'public'), { recursive: true })
   manager = new StorageManager().init({
@@ -47,7 +57,7 @@ describe('dashboard file manager', () => {
     await disk.write('images/logo.png', new Uint8Array([137, 80, 78, 71]))
     await disk.write('.hidden/secret.txt', 'not listed')
 
-    const snapshot = await getDashboardFileSnapshot({}, manager)
+    const snapshot = await getDashboardFileSnapshot({}, manager, store)
     const documents = snapshot.root.items?.find(item => item.path === 'documents')
     const readme = documents?.items?.find(item => item.path === 'documents/readme.txt')
 
@@ -74,7 +84,7 @@ describe('dashboard file manager', () => {
     await manager.disk('public').write('one.txt', '1')
     await manager.disk('public').write('two.txt', '2')
 
-    const snapshot = await getDashboardFileSnapshot({ maxEntries: 1 }, manager)
+    const snapshot = await getDashboardFileSnapshot({ maxEntries: 1 }, manager, store)
 
     expect(snapshot.truncated).toBe(true)
     expect(snapshot.stats.files).toBe(1)
@@ -94,7 +104,7 @@ describe('dashboard file manager', () => {
       throw new Error('metadata unavailable')
     }
 
-    await expect(getDashboardFileSnapshot({}, manager))
+    await expect(getDashboardFileSnapshot({}, manager, store))
       .rejects
       .toThrow('Metadata for storage file "unreadable.txt" could not be read')
   })
@@ -106,7 +116,7 @@ describe('dashboard file manager', () => {
       throw new Error('URL unavailable')
     }
 
-    const snapshot = await getDashboardFileSnapshot({}, manager)
+    const snapshot = await getDashboardFileSnapshot({}, manager, store)
     expect(snapshot.stats.files).toBe(1)
     expect(snapshot.warnings).toEqual(['Public URL for "document.txt" could not be resolved.'])
   })
@@ -116,10 +126,10 @@ describe('dashboard file manager', () => {
     expect(await manager.disk('public').directoryExists('Product shots')).toBe(true)
 
     await manager.disk('public').write('Product shots/photo.jpg', 'photo')
-    await deleteDashboardFile({ path: 'Product shots/photo.jpg' }, manager)
+    await deleteDashboardFile({ path: 'Product shots/photo.jpg' }, manager, store)
     expect(await manager.disk('public').fileExists('Product shots/photo.jpg')).toBe(false)
 
-    await deleteDashboardFile({ path: 'Product shots' }, manager)
+    await deleteDashboardFile({ path: 'Product shots' }, manager, store)
     expect(await manager.disk('public').directoryExists('Product shots')).toBe(false)
   })
 
@@ -172,7 +182,7 @@ describe('renameDashboardFile', () => {
     const disk = manager.disk('public')
     await disk.write('documents/readme.txt', 'hello')
 
-    const result = await renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager)
+    const result = await renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager, store)
 
     expect(result).toEqual({ from: 'documents/readme.txt', to: 'documents/guide.txt', type: 'file', moved: 1 })
     expect(await disk.fileExists('documents/guide.txt')).toBe(true)
@@ -184,7 +194,7 @@ describe('renameDashboardFile', () => {
     const disk = manager.disk('public')
     await disk.write('notes.txt', 'top level')
 
-    expect(await renameDashboardFile({ path: 'notes.txt', name: 'todo.txt' }, manager))
+    expect(await renameDashboardFile({ path: 'notes.txt', name: 'todo.txt' }, manager, store))
       .toEqual({ from: 'notes.txt', to: 'todo.txt', type: 'file', moved: 1 })
     expect(await disk.readToString('todo.txt')).toBe('top level')
   })
@@ -197,9 +207,9 @@ describe('renameDashboardFile', () => {
   test('refuses a name that is really a path', async () => {
     await manager.disk('public').write('a/b.txt', 'x')
 
-    await expect(renameDashboardFile({ path: 'a/b.txt', name: '../escaped.txt' }, manager))
+    await expect(renameDashboardFile({ path: 'a/b.txt', name: '../escaped.txt' }, manager, store))
       .rejects.toMatchObject({ status: 422 })
-    await expect(renameDashboardFile({ path: 'a/b.txt', name: 'nested/deep.txt' }, manager))
+    await expect(renameDashboardFile({ path: 'a/b.txt', name: 'nested/deep.txt' }, manager, store))
       .rejects.toMatchObject({ status: 422 })
   })
 
@@ -208,7 +218,7 @@ describe('renameDashboardFile', () => {
     await disk.write('images/logo.png', 'a')
     await disk.write('images/icons/favicon.png', 'b')
 
-    const result = await renameDashboardFile({ path: 'images', name: 'media' }, manager)
+    const result = await renameDashboardFile({ path: 'images', name: 'media' }, manager, store)
 
     expect(result).toEqual({ from: 'images', to: 'media', type: 'directory', moved: 2 })
     expect(await disk.readToString('media/logo.png')).toBe('a')
@@ -222,7 +232,7 @@ describe('renameDashboardFile', () => {
     await disk.write('documents/readme.txt', 'keep me')
     await disk.write('documents/guide.txt', 'me too')
 
-    await expect(renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager))
+    await expect(renameDashboardFile({ path: 'documents/readme.txt', name: 'guide.txt' }, manager, store))
       .rejects.toMatchObject({ status: 409 })
     // Neither side moved: a refused rename is not a partial one.
     expect(await disk.readToString('documents/readme.txt')).toBe('keep me')
@@ -232,12 +242,12 @@ describe('renameDashboardFile', () => {
   test('says so rather than silently doing nothing when the name is unchanged', async () => {
     await manager.disk('public').write('a.txt', 'x')
 
-    await expect(renameDashboardFile({ path: 'a.txt', name: 'a.txt' }, manager))
+    await expect(renameDashboardFile({ path: 'a.txt', name: 'a.txt' }, manager, store))
       .rejects.toMatchObject({ status: 422 })
   })
 
   test('is a 404 when the item does not exist', async () => {
-    await expect(renameDashboardFile({ path: 'nope.txt', name: 'yes.txt' }, manager))
+    await expect(renameDashboardFile({ path: 'nope.txt', name: 'yes.txt' }, manager, store))
       .rejects.toMatchObject({ status: 404 })
   })
 })
@@ -301,7 +311,7 @@ describe('duplicateDashboardFile', () => {
     const disk = manager.disk('public')
     await disk.write('documents/readme.txt', 'hello')
 
-    const result = await duplicateDashboardFile({ path: 'documents/readme.txt' }, manager)
+    const result = await duplicateDashboardFile({ path: 'documents/readme.txt' }, manager, store)
 
     // `readme.txt copy` is a file whose type the OS, the browser and this
     // dashboard's own type grouping would all read as unknown.
@@ -314,18 +324,18 @@ describe('duplicateDashboardFile', () => {
     const disk = manager.disk('public')
     await disk.write('a.txt', 'x')
 
-    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy.txt')
-    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy 2.txt')
-    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager)).to).toBe('a copy 3.txt')
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager, store)).to).toBe('a copy.txt')
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager, store)).to).toBe('a copy 2.txt')
+    expect((await duplicateDashboardFile({ path: 'a.txt' }, manager, store)).to).toBe('a copy 3.txt')
   })
 
   test('takes an explicit name when given one', async () => {
     await manager.disk('public').write('a.txt', 'x')
 
-    expect((await duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager)).to).toBe('b.txt')
-    await expect(duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager))
+    expect((await duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager, store)).to).toBe('b.txt')
+    await expect(duplicateDashboardFile({ path: 'a.txt', name: 'b.txt' }, manager, store))
       .rejects.toMatchObject({ status: 409 })
-    await expect(duplicateDashboardFile({ path: 'a.txt', name: '../escaped.txt' }, manager))
+    await expect(duplicateDashboardFile({ path: 'a.txt', name: '../escaped.txt' }, manager, store))
       .rejects.toMatchObject({ status: 422 })
   })
 
@@ -334,7 +344,7 @@ describe('duplicateDashboardFile', () => {
     await disk.write('images/logo.png', 'a')
     await disk.write('images/icons/favicon.png', 'b')
 
-    const result = await duplicateDashboardFile({ path: 'images' }, manager)
+    const result = await duplicateDashboardFile({ path: 'images' }, manager, store)
 
     expect(result).toEqual({ from: 'images', to: 'images copy', type: 'directory', copied: 2 })
     expect(await disk.readToString('images copy/logo.png')).toBe('a')
@@ -352,12 +362,12 @@ describe('duplicateDashboardFile', () => {
     await disk.write('media/one.txt', '1')
     await disk.write('media/two.txt', '2')
 
-    expect((await duplicateDashboardFile({ path: 'media' }, manager)).copied).toBe(2)
+    expect((await duplicateDashboardFile({ path: 'media' }, manager, store)).copied).toBe(2)
     expect(await disk.fileExists('media copy/media copy/one.txt')).toBe(false)
   })
 
   test('is a 404 when the item does not exist', async () => {
-    await expect(duplicateDashboardFile({ path: 'nope.txt' }, manager))
+    await expect(duplicateDashboardFile({ path: 'nope.txt' }, manager, store))
       .rejects.toMatchObject({ status: 404 })
   })
 })

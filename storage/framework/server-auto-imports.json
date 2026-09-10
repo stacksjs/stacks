@@ -103,6 +103,7 @@
     "SmsOptOut": true,
     "SocialAccount": true,
     "SocialPost": true,
+    "StorageItem": true,
     "Subscriber": true,
     "SubscriberEmail": true,
     "Subscription": true,

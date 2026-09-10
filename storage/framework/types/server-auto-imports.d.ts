@@ -100,6 +100,7 @@ declare global {
   const SmsOptOut: typeof import('../defaults/app/Models/SmsOptOut')['default']
   const SocialAccount: typeof import('../defaults/app/Models/SocialAccount')['default']
   const SocialPost: typeof import('../defaults/app/Models/SocialPost')['default']
+  const StorageItem: typeof import('../defaults/app/Models/StorageItem')['default']
   const Subscriber: typeof import('../defaults/app/Models/Subscriber')['default']
   const SubscriberEmail: typeof import('../defaults/app/Models/SubscriberEmail')['default']
   const Subscription: typeof import('../defaults/app/Models/Subscription')['default']

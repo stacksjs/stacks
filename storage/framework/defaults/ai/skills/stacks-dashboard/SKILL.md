@@ -61,6 +61,35 @@ dashboard data Actions.
 - `/content/comments` - comment moderation
 - `/content/files`, `/content/blog`, `/content/seo` - files, blog operations, and SEO
 
+### The file manager's two layers (stacksjs/stacks#2577)
+
+Worth knowing before adding anything to it, because the split is not obvious
+from the endpoints:
+
+- **Storage operations** map to a `StorageAdapter` method and go straight to the
+  disk: list, upload, create folder, rename, visibility, duplicate, delete.
+- **Metadata** - favourites and tags - has nowhere to live on a disk (extended
+  attributes do not survive a copy; S3 object metadata is set at write time, so
+  starring a 2 GB video would rewrite 2 GB). It lives in `storage_items`, keyed
+  by `(disk, path)`, written by `PUT /files/favorite` and `PUT /files/tags`.
+
+**The disk is authoritative and the table is advisory.** The listing comes from
+the disk and rows are joined onto it, so a path with no row is a file with
+nothing recorded - which is most files. Renames and deletes made THROUGH the
+dashboard reconcile eagerly (a folder is a prefix update, because moving a
+folder moves everything under it); a completed listing sweeps rows for paths it
+did not see, which is free because the walk already enumerated them. A TRUNCATED
+listing sweeps nothing - it has not proved a path is absent.
+
+A file renamed outside the dashboard loses its metadata, and that is by design:
+a rename and a copy-then-delete are the same two events to a bucket listing, so
+reconciling would be guessing.
+
+Tags go through `taggables` + `taggable_models` with `taggable_type =
+'storage_items'` - the trait the CMS already uses. Do NOT declare a
+`belongsToMany` to the `Tag` model for this: `taggable_models.tag_id` resolves
+against `taggables`, which is a different table from `tags`.
+
 ### Data Management
 - `/data/dashboard` - data overview
 - `/data/users` - user management

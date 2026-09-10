@@ -1479,6 +1479,16 @@ declare module '@stacksjs/database' {
       external_id: string
       user_id: number
     }
+    storage_items: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      disk: string
+      path: string
+      favorite: number
+    }
     subscriber_emails: {
       // columns
       id: number

@@ -3,12 +3,28 @@ import { statfs } from 'node:fs/promises'
 import { posix } from 'node:path'
 import type { StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
 import { Storage } from '@stacksjs/storage'
+import type { StorageMetadataStore } from './file-metadata'
+import {
+  followCopy,
+  followDelete,
+  followRename,
+  metadataFor as recordFor,
+  metadataUnder,
+  normalizeTags,
+  setFavorite as writeFavorite,
+  setTags as writeTags,
+  sweepMetadata,
+} from './file-metadata'
+import { databaseMetadataStore } from './file-metadata-store'
 
 const DEFAULT_DISK = 'public'
 const DEFAULT_MAX_ENTRIES = 1000
 const MAX_PATH_LENGTH = 2048
 const MAX_COMPONENT_LENGTH = 255
 const STAT_CONCURRENCY = 24
+/** Bounds on what a caller may attach, so one file cannot fill the tag table. */
+const MAX_TAGS = 32
+const MAX_TAG_LENGTH = 60
 
 export interface DashboardFileNode {
   id: string
@@ -20,7 +36,14 @@ export interface DashboardFileNode {
   mime_type?: string
   url?: string
   thumbnail?: string
-  starred: false
+  /**
+   * Whether somebody starred this, from `storage_items` rather than from the
+   * disk (stacksjs/stacks#2577). It was the literal `false` for as long as
+   * there was nowhere to record the answer.
+   */
+  starred: boolean
+  /** Tags from the `taggable` vocabulary, empty for a file nobody has tagged. */
+  tags: string[]
   shared: boolean
   items?: DashboardFileNode[]
 }
@@ -280,6 +303,7 @@ export function normalizeDashboardFileLimit(value: unknown): number {
 export async function getDashboardFileSnapshot(
   options: { disk?: string, maxEntries?: number } = {},
   manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
 ): Promise<DashboardFileSnapshot> {
   const selected = resolveDisk(manager, options.disk)
   const maxEntries = normalizeDashboardFileLimit(options.maxEntries)
@@ -297,12 +321,17 @@ export async function getDashboardFileSnapshot(
     entries.push({ path, type: rawEntry.type })
   }
 
-  const metadata = await mapInBatches(
+  // One query for the whole subtree, not one per file: a folder of a thousand
+  // files would otherwise be a thousand round trips to answer a question about
+  // the handful of them anybody starred (stacksjs/stacks#2577).
+  const records = await metadataUnder(store, selected.name)
+
+  const stated = await mapInBatches(
     entries,
     STAT_CONCURRENCY,
     entry => metadataFor(selected.adapter, entry, selected.public, selected.name === 'public' && selected.config.driver === 'local'),
   )
-  metadata.sort((a, b) => {
+  stated.sort((a, b) => {
     const depth = a.path.split('/').length - b.path.split('/').length
     if (depth)
       return depth
@@ -318,7 +347,10 @@ export async function getDashboardFileSnapshot(
     size: 0,
     path: '',
     lastModified: null,
+    // The disk root is not a file and has no row; a star on "everything" would
+    // not mean anything.
     starred: false,
+    tags: [],
     shared: selected.public,
     items: [],
   }
@@ -330,6 +362,17 @@ export async function getDashboardFileSnapshot(
     contentBytes: 0,
     byType: { documents: 0, images: 0, videos: 0, audio: 0, other: 0 },
     disk: capacity.stats,
+  }
+
+  /**
+   * The recorded metadata for a path, as the fields a node carries.
+   *
+   * A path with no row is a file nobody starred or tagged, which is most of
+   * them - so the absence of a row is the answer rather than a missing one.
+   */
+  function pick(path: string): Pick<DashboardFileNode, 'starred' | 'tags'> {
+    const record = recordFor(records, path)
+    return { starred: record.favorite, tags: record.tags }
   }
 
   function ensureFolder(path: string): DashboardFileNode {
@@ -346,7 +389,7 @@ export async function getDashboardFileSnapshot(
       size: 0,
       path: normalized,
       lastModified: null,
-      starred: false,
+      ...pick(normalized),
       shared: selected.public,
       items: [],
     }
@@ -356,7 +399,7 @@ export async function getDashboardFileSnapshot(
     return folder
   }
 
-  for (const entry of metadata) {
+  for (const entry of stated) {
     if (entry.type === 'directory') {
       const folder = ensureFolder(entry.path)
       folder.lastModified = entry.lastModified
@@ -375,7 +418,7 @@ export async function getDashboardFileSnapshot(
       mime_type: entry.mimeType,
       url: entry.url,
       thumbnail: entry.thumbnail,
-      starred: false,
+      ...pick(entry.path),
       shared: selected.public,
     }
     parent.items!.push(file)
@@ -392,6 +435,23 @@ export async function getDashboardFileSnapshot(
     })
   }
 
+  // Rows for paths this walk did not see are orphans - a file deleted by
+  // something other than the dashboard, which is the normal case for a bucket
+  // several systems write to. The walk already enumerated every path, so
+  // removing them costs one delete rather than a second listing pass.
+  //
+  // Skipped when the listing was TRUNCATED, and that guard is the whole reason
+  // this takes the flag: a truncated walk has not shown that a path is absent,
+  // only that it stopped before reaching it, and sweeping on that would delete
+  // the metadata of every file past the limit (stacksjs/stacks#2577).
+  await sweepMetadata(
+    store,
+    selected.name,
+    '',
+    new Set(stated.map(entry => entry.path)),
+    { truncated },
+  )
+
   return {
     disk: selected.name,
     disks: manager.getConfiguredDisks().map((name) => {
@@ -403,7 +463,7 @@ export async function getDashboardFileSnapshot(
     truncated,
     warnings: [
       ...(capacity.warning ? [capacity.warning] : []),
-      ...metadata.flatMap(entry => entry.warnings),
+      ...stated.flatMap(entry => entry.warnings),
     ],
   }
 }
@@ -427,16 +487,23 @@ export async function createDashboardDirectory(
 export async function deleteDashboardFile(
   input: { disk?: string, path: unknown },
   manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
 ): Promise<{ path: string, type: 'file' | 'directory' }> {
   const selected = resolveDisk(manager, input.disk)
   const path = normalizeDashboardFilePath(input.path)
 
+  // Metadata is forgotten AFTER the storage delete in both branches, never
+  // before: a delete that fails having already dropped the rows would leave a
+  // file that still exists with its stars and tags gone (stacksjs/stacks#2577).
   if (await selected.adapter.fileExists(path)) {
     await selected.adapter.deleteFile(path)
+    await followDelete(store, selected.name, path)
     return { path, type: 'file' }
   }
   if (await selected.adapter.directoryExists(path)) {
     await selected.adapter.deleteDirectory(path)
+    // The subtree, because deleting a folder deletes everything under it.
+    await followDelete(store, selected.name, path)
     return { path, type: 'directory' }
   }
 
@@ -462,6 +529,7 @@ export async function deleteDashboardFile(
 export async function renameDashboardFile(
   input: { disk?: string, path: unknown, name: unknown },
   manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
 ): Promise<{ from: string, to: string, type: 'file' | 'directory', moved: number }> {
   const selected = resolveDisk(manager, input.disk)
   const from = normalizeDashboardFilePath(input.path)
@@ -479,6 +547,9 @@ export async function renameDashboardFile(
 
   if (await selected.adapter.fileExists(from)) {
     await selected.adapter.moveFile(from, to)
+    // After the move, so a failed move does not leave the metadata describing a
+    // path with no file at it.
+    await followRename(store, selected.name, from, to)
     return { from, to, type: 'file', moved: 1 }
   }
 
@@ -505,6 +576,10 @@ export async function renameDashboardFile(
   // item, not two. Directories are implicit on object storage, so this is a
   // no-op there rather than a failure.
   await selected.adapter.deleteDirectory(from)
+
+  // A folder rename moves every file beneath it, so this is a prefix update
+  // rather than one row - the part #2577 flagged as the one that would bite.
+  await followRename(store, selected.name, from, to)
 
   return { from, to, type: 'directory', moved: files.length }
 }
@@ -607,6 +682,7 @@ async function availableCopyName(path: string, exists: (candidate: string) => Pr
 export async function duplicateDashboardFile(
   input: { disk?: string, path: unknown, name?: unknown },
   manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
 ): Promise<{ from: string, to: string, type: 'file' | 'directory', copied: number }> {
   const selected = resolveDisk(manager, input.disk)
   const from = normalizeDashboardFilePath(input.path)
@@ -628,6 +704,9 @@ export async function duplicateDashboardFile(
 
   if (await selected.adapter.fileExists(from)) {
     await selected.adapter.copyFile(from, to)
+    // The star and tags come with the copy. A duplicate that silently lost them
+    // reads as the copy having half-failed.
+    await followCopy(store, selected.name, from, to)
     return { from, to, type: 'file', copied: 1 }
   }
 
@@ -644,10 +723,89 @@ export async function duplicateDashboardFile(
       files.push(listed.startsWith(`${from}/`) ? listed : `${from}/${listed}`)
   }
 
-  for (const file of files)
-    await selected.adapter.copyFile(file, `${to}/${file.slice(from.length + 1)}`)
+  for (const file of files) {
+    const destination = `${to}/${file.slice(from.length + 1)}`
+    await selected.adapter.copyFile(file, destination)
+    await followCopy(store, selected.name, file, destination)
+  }
+
+  // The folder's own record, separately: it is not among the files copied.
+  await followCopy(store, selected.name, from, to)
 
   return { from, to, type: 'directory', copied: files.length }
+}
+
+/**
+ * Star or unstar a file or a folder (stacksjs/stacks#2577).
+ *
+ * Existence is checked against the DISK, not against the table: a star on a
+ * path that is not there would be an orphan the moment it was written, and the
+ * caller would get a 200 for it. Folders can be starred too - they are a path
+ * like any other to this table, even where the disk has no such thing.
+ */
+export async function setDashboardFileFavorite(
+  input: { disk?: string, path: unknown, favorite: unknown },
+  manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
+): Promise<{ path: string, favorite: boolean, tags: string[] }> {
+  const selected = resolveDisk(manager, input.disk)
+  const path = normalizeDashboardFilePath(input.path)
+
+  if (typeof input.favorite !== 'boolean') {
+    throw new DashboardFileError('Favorite must be true or false.', 422, {
+      favorite: 'Send a boolean.',
+    })
+  }
+
+  await assertExists(selected.adapter, path)
+
+  const record = await writeFavorite(store, selected.name, path, input.favorite)
+  return { path, favorite: record.favorite, tags: record.tags }
+}
+
+/**
+ * Replace a file's tags (stacksjs/stacks#2577).
+ *
+ * The whole set, not a delta: a UI that can add a tag can also remove one, and
+ * there is no separate signal for a removal. Names are trimmed, deduplicated
+ * case-insensitively and sorted, so sending the same tags in a different order
+ * produces the same record.
+ *
+ * They go into the `taggable` vocabulary the CMS already uses, scoped by
+ * `taggable_type`, rather than a second tag table - which #2577 asks for
+ * explicitly, and which matters because a tag is a word somebody chose and
+ * having it mean two things in two places is how a tag list stops being useful.
+ */
+export async function setDashboardFileTags(
+  input: { disk?: string, path: unknown, tags: unknown },
+  manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
+): Promise<{ path: string, favorite: boolean, tags: string[] }> {
+  const selected = resolveDisk(manager, input.disk)
+  const path = normalizeDashboardFilePath(input.path)
+
+  if (!Array.isArray(input.tags))
+    throw new DashboardFileError('Tags must be an array.', 422, { tags: 'Send an array of tag names.' })
+  if (input.tags.length > MAX_TAGS)
+    throw new DashboardFileError(`A file may carry at most ${MAX_TAGS} tags.`, 422, { tags: 'Too many tags.' })
+  for (const tag of input.tags) {
+    if (typeof tag !== 'string')
+      throw new DashboardFileError('Tags must be strings.', 422, { tags: 'Every tag must be a string.' })
+    if (tag.trim().length > MAX_TAG_LENGTH)
+      throw new DashboardFileError(`A tag must not exceed ${MAX_TAG_LENGTH} characters.`, 422, { tags: 'A tag is too long.' })
+  }
+
+  await assertExists(selected.adapter, path)
+
+  const record = await writeTags(store, selected.name, path, normalizeTags(input.tags))
+  return { path, favorite: record.favorite, tags: record.tags }
+}
+
+/** 404 unless the path is a file or a folder on the disk. */
+async function assertExists(adapter: StorageAdapter, path: string): Promise<void> {
+  if (await adapter.fileExists(path) || await adapter.directoryExists(path))
+    return
+  throw new DashboardFileError(`Storage item "${path}" was not found.`, 404)
 }
 
 export async function uploadDashboardFiles(
