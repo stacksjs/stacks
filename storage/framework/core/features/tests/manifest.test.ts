@@ -28,8 +28,12 @@ import {
   migrationTable,
 } from '../src/index'
 
-const MIGRATIONS = 'database/migrations'
-const DEFAULT_MODELS = 'storage/framework/defaults/app/Models'
+// Anchored to this file, not the working directory. Reading `database/
+// migrations` relative to the CWD passes only because the suite happens to be
+// launched from the repository root.
+const REPO_ROOT = join(import.meta.dir, '../../../../..')
+const MIGRATIONS = join(REPO_ROOT, 'database/migrations')
+const DEFAULT_MODELS = join(REPO_ROOT, 'storage/framework/defaults/app/Models')
 
 function walk(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry =>

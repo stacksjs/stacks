@@ -13,7 +13,7 @@
  */
 
 import { readdirSync } from 'node:fs'
-import { basename, dirname } from 'node:path'
+import { basename, dirname, join } from 'node:path'
 import { describe, expect, it } from 'bun:test'
 import {
   actionsPath,
@@ -36,7 +36,8 @@ import {
  * is always populated, and the template every scaffolded project is laid down
  * from.
  */
-const DEFAULTS_APP = 'storage/framework/defaults/app'
+// Anchored to this file rather than the working directory.
+const DEFAULTS_APP = join(import.meta.dir, '../../../defaults/app')
 const canonical = new Map(
   readdirSync(DEFAULTS_APP, { withFileTypes: true })
     .filter(entry => entry.isDirectory())
