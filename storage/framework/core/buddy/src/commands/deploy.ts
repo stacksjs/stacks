@@ -7,7 +7,7 @@ import process from 'node:process'
 import { pathToFileURL } from 'node:url'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
-import { app, dns as dnsConfig, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
+import { app, dns as dnsConfig, email as emailConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud, syncDnsConfig } from '@stacksjs/dns'
 import { loadProjectDnsConfig } from '../config'
 import { env } from '@stacksjs/env'
@@ -4988,7 +4988,11 @@ export function deploy(buddy: CLI): void {
             fallbackProjectName: app.name,
             fallbackProjectSlug: app.name?.toLowerCase().replace(/[^a-z0-9]+/g, '-') || 'app',
             fallbackProvider: 'aws',
-            fallbackMode: (cloudConfig as { mode?: string }).mode || 'server',
+            // From the freshly loaded config, not the statically imported
+            // section: that section has no `mode` key at all, so this fallback
+            // was always 'server' and a serverless project's preview said
+            // `server` (stacksjs/stacks#685).
+            fallbackMode: (tsCloudConfig as { mode?: string } | undefined)?.mode || 'server',
             fallbackRegion: process.env.AWS_REGION || 'us-east-1',
             resolveSiteKind,
             applyEnvironmentToSites,
@@ -5539,12 +5543,38 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     log.info(`Email domain: ${emailDomain}`)
     log.info(`Email server enabled: ${enableEmailServer}`)
 
-    // Get hosted zone ID from cloud config or use a lookup
-    const cloud = cloudConfig as TsCloudConfig | undefined
+    // Get the hosted zone from the TARGET environment's cloud config.
+    //
+    // This used to read the statically imported `cloudConfig` section, which
+    // could not answer: `@stacksjs/config`'s section exports are `let` bindings
+    // refreshed ONCE when the user's config files finish loading at CLI boot,
+    // and the merged `cloud` section carries only `infrastructure`, `sites` and
+    // `tenants` - with `infrastructure.dns.hostedZoneId` undefined even when
+    // `config/cloud.ts` declares it. Both reads were therefore always
+    // undefined, so a project that had correctly declared its zone fell
+    // through to `AWS_HOSTED_ZONE_ID` and then to a hardcoded literal that is
+    // **stacksjs.com's zone** - writing another project's DNS zone into this
+    // project's CloudFormation template, silently.
+    //
+    // `loadTsCloudConfig` is the function that exists for this: it cache-busts
+    // the import so `config/cloud.ts` re-evaluates against the environment's
+    // secrets, which `buddy deploy` loads into `process.env` before it runs
+    // (stacksjs/stacks#685).
+    const cloud = await loadTsCloudConfig(process.env.APP_ENV || 'production') as TsCloudConfig | undefined
     const hostedZoneId = cloud?.tsCloud?.infrastructure?.dns?.hostedZoneId
       || cloud?.infrastructure?.dns?.hostedZoneId
       || process.env.AWS_HOSTED_ZONE_ID
-      || 'Z01455702Q7952O6RCY37' // Default for stacksjs.com
+
+    // No default. A wrong zone id does not fail - CloudFormation happily writes
+    // records into whatever zone it is handed - so guessing here means
+    // discovering it from someone else's DNS.
+    if (!hostedZoneId) {
+      log.error(
+        'No Route 53 hosted zone found. Set `infrastructure.dns.hostedZoneId` in config/cloud.ts, '
+        + 'or AWS_HOSTED_ZONE_ID in this environment.',
+      )
+      return false
+    }
 
     // Create CloudFormation template for Stacks cloud infrastructure with email support
     const template: any = {
