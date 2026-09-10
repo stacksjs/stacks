@@ -4647,6 +4647,41 @@ async function reconcileConfigDns(sites: Record<string, any>, logger: typeof log
  * implementation of "which names does this site publish, and at which
  * registrar" is the drift this function exists to prevent.
  */
+/**
+ * Point the registrar at `dns.provider`, when the project says to.
+ *
+ * The whole operation lives in ts-cloud (`delegateZoneFromConfig`); this is
+ * only the deploy's call site and its logging. Every inapplicable case — no
+ * registrar declared, a runner without the credentials, an explicit opt-out —
+ * comes back as `skipped` rather than throwing, because none of them is a
+ * reason to fail a deployment that is otherwise fine.
+ */
+export async function delegateDeclaredZone(
+  config: TsCloudConfig | null | undefined,
+  logger: typeof log,
+): Promise<void> {
+  const dns = config?.tsCloud?.infrastructure?.dns ?? config?.infrastructure?.dns
+  if (!dns?.registrar)
+    return
+
+  try {
+    const { delegateZoneFromConfig, describeDelegation } = await import('@stacksjs/ts-cloud')
+    const result = await delegateZoneFromConfig(dns as any)
+
+    for (const line of describeDelegation(result))
+      logger.info(line)
+
+    // A blocked delegation is loud but not fatal: the domain is still served
+    // by the registrar, which is a working state, and failing here would block
+    // a deploy whose application changes are unrelated.
+    if (result.status === 'blocked')
+      logger.warn('DNS: delegation did not complete; the domain still resolves through its registrar.')
+  }
+  catch (error) {
+    logger.warn(`DNS: delegation could not run: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
 export async function reconcileHetznerDns(sites: Record<string, any>, ip: string, logger: typeof log, ipv6?: string, autoWww?: boolean): Promise<string[]> {
   // FQDNs this run actually published, so the caller can re-issue TLS for
   // names that did not resolve when the gateway was last reloaded.
@@ -4679,8 +4714,20 @@ export async function reconcileHetznerDns(sites: Record<string, any>, ip: string
   if (byBase.size === 0)
     return published
 
+  const tsCloudConfig = await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined)
+
+  // Move the zone onto its declared provider BEFORE writing anything into it.
+  //
+  // Order matters and only in this direction. Records reconciled first would
+  // land in whichever zone is currently authoritative — the registrar's — and
+  // the delegation would then swing the domain onto a provider that never
+  // received them. ts-cloud will not delegate into a zone it could not verify,
+  // so on any failure this leaves the domain exactly where it was and the
+  // record reconciliation below still writes somewhere that answers.
+  await delegateDeclaredZone(tsCloudConfig, logger)
+
   // Candidate provider configs, built from whatever credentials are present.
-  const declared = declaredDnsProvider(await loadTsCloudConfig(process.env.APP_ENV || 'production').catch(() => undefined))
+  const declared = declaredDnsProvider(tsCloudConfig)
   const providerConfigs = dnsProviderConfigsFromEnv(declared)
   const declaredProblem = declaredDnsProviderProblem(declared, providerConfigs)
   if (declaredProblem)
