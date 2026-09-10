@@ -1330,6 +1330,7 @@
         "@stacksjs/path": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/ts-cloud": "^0.12.16",
+        "@stacksjs/ts-xml": "^0.1.0",
         "ts-images": "^0.2.11",
       },
       "devDependencies": {

@@ -10,8 +10,11 @@ const templates = existsSync(APP_CONFIG)
   : []
 
 describe('the generated app config template', () => {
-  test('contains every infrastructure-sensitive config file', () => {
-    expect(templates.sort()).toEqual(['cloud.ts', 'dns.ts', 'email.ts', 'team.ts'])
+  test('contains every config file a generated app must not inherit', () => {
+    // `buddy-bot.ts` joined the list in stacksjs/stacks#2574: buddy-bot needs
+    // `repository.owner`/`name`, and the framework's copy names stacksjs/stacks,
+    // so an app without a template here inherits a bot aimed at this repository.
+    expect(templates.sort()).toEqual(['buddy-bot.ts', 'cloud.ts', 'dns.ts', 'email.ts', 'team.ts'])
   })
 
   test('contains no Stacks production ownership', () => {
@@ -20,8 +23,11 @@ describe('the generated app config template', () => {
       'Z01455702Q7952O6RCY37',
       'stacks-production-app',
       "domain: 'stacksjs.com'",
-      "enabled: true",
-      "chris@stacksjs.com",
+      'chris@stacksjs.com',
+      // The framework repository, which buddy-bot would otherwise open pull
+      // requests against from the app's own CI.
+      "owner: 'stacksjs'",
+      "name: 'stacks'",
     ]
 
     const offenders: string[] = []
@@ -45,7 +51,12 @@ describe('the generated app config template', () => {
     expect(cloud).toContain('APP_DOMAIN = env.APP_DOMAIN || undefined')
     expect(cloud).not.toContain('hostedZoneId')
     expect(dns).toContain('a: []')
+    // Mail-server reconciliation, specifically. This used to be enforced as a
+    // repository-wide ban on the substring `enabled: true`, which is not what
+    // it means - the first template to legitimately enable something of its own
+    // tripped it (stacksjs/stacks#2574).
     expect(email).toContain('enabled: false')
+    expect(email).not.toContain('enabled: true')
     expect(email).toContain('mailboxes: []')
     expect(team).toContain('members: {}')
   })
