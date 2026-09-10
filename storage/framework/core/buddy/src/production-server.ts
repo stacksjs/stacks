@@ -376,6 +376,13 @@ export async function startProductionServer(options?: { port?: string | number, 
       if (rewriteRules.size > 0)
         log.info(`Rewrites: ${describeRewriteRules(rewriteRules)}`)
 
+      const cacheConfig = config.server?.cache
+      const documentCacheControl = buildDocumentCacheControl(cacheConfig?.documents)
+      if (cacheConfig?.renders)
+        log.info(`Render cache: on, keyed by ${cacheConfig.renderVary ?? 'request'}${cacheConfig.prewarm ? ', prewarmed' : ''}`)
+      if (documentCacheControl)
+        log.info(`Document cache: ${documentCacheControl}`)
+
       // Resolved at boot for the same reason (stacksjs/stacks#2325).
       const embeddableRules = resolveEmbeddableRules(config.server?.security?.embeddable)
       if (embeddableRules.paths.length > 0 || embeddableRules.prefixes.length > 0)
@@ -423,6 +430,13 @@ export async function startProductionServer(options?: { port?: string | number, 
         fallbackLayoutsDir: join(defaultsResources, 'layouts'),
         fallbackPartialsDir: defaultViewsPath,
         quiet: options?.verbose !== true,
+        // Declared in `config/server.ts#cache`; stx's own defaults (no cache)
+        // stand when nothing is declared.
+        ...(cacheConfig?.renders && {
+          renderCache: true,
+          renderCacheVary: cacheConfig.renderVary ?? 'request',
+          ...(cacheConfig.prewarm && { prewarmRenderCache: true }),
+        }),
         ...(stxModule && { stxModule }),
         ...(i18nConfig && { i18n: i18nConfig }),
         ...(siteConfig?.url && { site: siteConfig }),
@@ -580,20 +594,94 @@ export async function startProductionServer(options?: { port?: string | number, 
             }
           }
 
+          let finished: Response | undefined
           try {
             const { seedCsrfCookieIfMissing } = await import(resolveCsrfMiddlewarePath())
-            return (await seedCsrfCookieIfMissing(req, current)) ?? (current === baseline ? secured : current)
+            finished = (await seedCsrfCookieIfMissing(req, current)) ?? (current === baseline ? secured : current)
           }
           catch (error) {
             // Never fail a page render over a cookie — the CSRF middleware
             // still rejects unsafe requests, so this is fail-closed.
             log.debug(`CSRF cookie seeding skipped: ${(error as Error).message}`)
-            return current === baseline ? secured : current
+            finished = current === baseline ? secured : current
           }
+
+          // Last, so it sees whatever cookies the steps above added. A
+          // document that sets one is about a single visitor and never gets a
+          // shared-cache header, however the app configured this.
+          //
+          // An app that declared no document cache keeps the existing
+          // contract exactly, `undefined` — meaning "unchanged" — included.
+          if (!documentCacheControl)
+            return finished
+
+          return applyDocumentCacheControl(finished ?? response, documentCacheControl)
         },
       })
 
   log.success(`Production server listening on http://0.0.0.0:${port}`)
+}
+
+/**
+ * The `Cache-Control` a document gets, or undefined when none was declared.
+ *
+ * `public` is deliberate: the point of declaring this is to let a shared cache
+ * — a CDN, the edge in front of the origin — serve the document, and
+ * {@link applyDocumentCacheControl} is what keeps that safe.
+ */
+export function buildDocumentCacheControl(
+  documents?: { maxAge?: number, staleWhileRevalidate?: number },
+): string | undefined {
+  if (!documents)
+    return undefined
+
+  const maxAge = Number(documents.maxAge ?? 0)
+  if (!Number.isFinite(maxAge) || maxAge <= 0)
+    return undefined
+
+  const stale = Number(documents.staleWhileRevalidate ?? 0)
+  const parts = [`public`, `max-age=${Math.floor(maxAge)}`]
+  if (Number.isFinite(stale) && stale > 0)
+    parts.push(`stale-while-revalidate=${Math.floor(stale)}`)
+
+  return parts.join(', ')
+}
+
+/**
+ * Mark a document cacheable, unless it is about one visitor.
+ *
+ * The cookie check is the whole safety of the feature and is not the caller's
+ * to remember: a response carrying `Set-Cookie` is per-visitor by definition,
+ * and a shared cache told it may reuse that document will hand one person's
+ * page — session cookie included — to the next person who asks. An app that
+ * wants its pages cached should stop setting the cookie, not have the header
+ * applied over the top of it.
+ *
+ * Anything already carrying its own `Cache-Control` is left alone; that is a
+ * decision something closer to the response already made.
+ */
+export function applyDocumentCacheControl(response: Response, cacheControl?: string): Response {
+  if (!cacheControl)
+    return response
+
+  const contentType = response.headers.get('content-type') || ''
+  if (response.status !== 200 || !contentType.startsWith('text/html'))
+    return response
+
+  if (response.headers.has('cache-control'))
+    return response
+
+  if (response.headers.getSetCookie().length > 0)
+    return response
+
+  const headers = new Headers(response.headers)
+  headers.set('cache-control', cacheControl)
+
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  })
 }
 
 /**

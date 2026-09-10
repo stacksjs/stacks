@@ -123,8 +123,61 @@ export interface ServerConfig {
   /** Root paths the API serves under another path. See {@link RewritesOptions}. */
   rewrites?: RewritesOptions
 
+  /** How rendered pages are cached. See {@link ServerCacheOptions}. */
+  cache?: ServerCacheOptions
+
   /** Security headers on rendered pages. See {@link ServerSecurityOptions}. */
   security?: ServerSecurityOptions
+}
+
+/**
+ * How the views server caches what it renders.
+ *
+ * Off by default: a page whose content depends on who is asking must not be
+ * handed to the next visitor, and the server cannot know which pages those are
+ * without being told.
+ */
+export interface ServerCacheOptions {
+  /**
+   * Keep compiled renders in memory instead of rendering each request.
+   *
+   * Worth it when views are shells — markup whose data arrives later from the
+   * API — and wrong when a view renders the record it is about, because then
+   * the cache is holding one record's page.
+   */
+  renders?: boolean
+
+  /**
+   * What a cached render is keyed by.
+   *
+   *  - `request` (default) — the whole request, so two URLs never share a
+   *    render. Also the cookies and the client address, which means a page
+   *    effectively caches per visitor.
+   *  - `source` — the view FILE alone. One render of `trail/[id].stx` is
+   *    served for every trail it answers. Correct for a data-free shell, and
+   *    the reason a `<script server>` block cannot vary such a page per
+   *    record: whichever record rendered first would supply the markup for
+   *    all of them.
+   */
+  renderVary?: 'request' | 'source'
+
+  /** Render the discoverable static routes at boot, before real traffic. */
+  prewarm?: boolean
+
+  /**
+   * `Cache-Control` for successful HTML documents.
+   *
+   * Only ever applied to a response that sets no cookie. A document carrying a
+   * `Set-Cookie` is by definition about one visitor, and telling a shared
+   * cache to reuse it is how one person's page reaches somebody else — so the
+   * header is omitted rather than the cookie being dropped to earn it.
+   */
+  documents?: {
+    /** Seconds a cache may serve the document without asking. */
+    maxAge?: number
+    /** Seconds it may keep serving a stale copy while it revalidates. */
+    staleWhileRevalidate?: number
+  }
 }
 
 /** Security headers the views server puts on rendered pages. */
