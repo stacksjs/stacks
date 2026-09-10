@@ -1,5 +1,39 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.34...v0.74.35)
+
+## ✨ Features
+
+- **docs**: compile the imports in documentation samples (#2580) ([ed5acc2](https://github.com/stacksjs/stacks/commit/ed5acc2)) _(by Chris <chris@stacksjs.com>)_ ([#2580](https://github.com/stacksjs/stacks/issues/2580), [#2580](https://github.com/stacksjs/stacks/issues/2580))
+- **deploy**: delegate the zone before reconciling records into it ([6bbe94a](https://github.com/stacksjs/stacks/commit/6bbe94a)) _(by Chris <chris@stacksjs.com>)_
+- **dashboard**: run configured operations on configured hosts (#960) ([b91482a](https://github.com/stacksjs/stacks/commit/b91482a)) _(by Chris <chris@stacksjs.com>)_ ([#960](https://github.com/stacksjs/stacks/issues/960), [#960](https://github.com/stacksjs/stacks/issues/960), [#960](https://github.com/stacksjs/stacks/issues/960))
+- **desktop**: preflight App Review rejections before the upload (#2199) ([7466fb8](https://github.com/stacksjs/stacks/commit/7466fb8)) _(by Chris <chris@stacksjs.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199), [#2199](https://github.com/stacksjs/stacks/issues/2199), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#2199](https://github.com/stacksjs/stacks/issues/2199), [#11](https://github.com/stacksjs/stacks/issues/11), [#2062](https://github.com/stacksjs/stacks/issues/2062))
+
+## 🐛 Bug Fixes
+
+- restore bun.lock to lockfileVersion 2 ([e586715](https://github.com/stacksjs/stacks/commit/e586715)) _(by Chris <chris@stacksjs.com>)_
+- **deploy**: resolve ts-cloud 0.13 so the delegation call site compiles ([85d6db2](https://github.com/stacksjs/stacks/commit/85d6db2)) _(by Chris <chris@stacksjs.com>)_
+
+## 📝 Documentation
+
+- **config**: publish the driver capability matrix, and keep it honest (#2056) ([b30782c](https://github.com/stacksjs/stacks/commit/b30782c)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2059](https://github.com/stacksjs/stacks/issues/2059), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+
+## ✅ Tests
+
+- **desktop**: pin the Mac App Store signing order (#2199) ([6397784](https://github.com/stacksjs/stacks/commit/6397784)) _(by Chris <chris@stacksjs.com>)_ ([#2199](https://github.com/stacksjs/stacks/issues/2199), [#2199](https://github.com/stacksjs/stacks/issues/2199), [#2062](https://github.com/stacksjs/stacks/issues/2062))
+
+## 💚 Continuous Integration
+
+- **deploy**: validate an environment's credentials before deploying (#2068) ([8c48450](https://github.com/stacksjs/stacks/commit/8c48450)) _(by Chris <chris@stacksjs.com>)_ ([#2068](https://github.com/stacksjs/stacks/issues/2068), [#2068](https://github.com/stacksjs/stacks/issues/2068), [#2068](https://github.com/stacksjs/stacks/issues/2068), [#2068](https://github.com/stacksjs/stacks/issues/2068))
+
+## 🔧 Chores
+
+- **deps**: ts-cloud 0.13.1, for config-driven zone delegation ([a7feaea](https://github.com/stacksjs/stacks/commit/a7feaea)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.33...v0.74.34)
 
 ## ✨ Features
