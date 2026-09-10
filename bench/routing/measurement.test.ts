@@ -1,6 +1,6 @@
 import type { Driver, LoadRequest, LoadResult } from './drivers'
 import { describe, expect, it, spyOn } from 'bun:test'
-import { measureLoad } from './measurement'
+import { cpuMicrosPerRequest, measureLoad } from './measurement'
 
 const result: LoadResult = {
   rpsMean: 42,
@@ -109,5 +109,22 @@ describe('cumulative CPU time formats', () => {
       now.mockRestore()
       spawn.mockRestore()
     }
+  })
+})
+
+describe('per-request CPU cost', () => {
+  it('divides the measured CPU window by the requests it covered', () => {
+    // 1.2 CPU seconds over 100,000 requests is 12 microseconds each.
+    expect(cpuMicrosPerRequest(1.2, 100_000)).toBeCloseTo(12, 10)
+  })
+
+  it.each([
+    ['no CPU evidence', null, 100],
+    ['a non-finite reading', Number.NaN, 100],
+    ['a negative reading', -1, 100],
+    ['no requests', 1, 0],
+    ['a negative request count', 1, -5],
+  ])('reports %s as unmeasured rather than as a cheap row', (_label, cpuSeconds, requests) => {
+    expect(cpuMicrosPerRequest(cpuSeconds, requests)).toBeNull()
   })
 })

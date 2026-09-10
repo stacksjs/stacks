@@ -14,6 +14,15 @@ export interface RelativeThroughput {
 
 export const MAX_STABLE_RANGE = 0.1
 
+/**
+ * The share of a requested fixed rate a row has to deliver to be comparable.
+ *
+ * Matches the memory runner's bar. Below it the target is not answering the
+ * workload the other rows answered, so its per-request cost is measured over
+ * different work and is not a like-for-like figure.
+ */
+export const MIN_RATE_ATTAINMENT = 0.98
+
 /** Full sample range as a fraction of its median. */
 export function relativeRange(values: readonly number[]): number {
   const center = median(values)

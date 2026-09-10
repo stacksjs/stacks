@@ -5,9 +5,10 @@ import type { ScenarioParityEvidence } from './runtime'
 import type { SourceState } from './source'
 import { selectedPeerPackages } from './peer-versions'
 import { STACKS_RUNTIME_PACKAGES } from './provenance'
+import { costRange } from './report'
 import { isValidParityEvidence } from './runtime'
 import { SCENARIOS } from './scenarios'
-import { MAX_STABLE_RANGE } from './statistics'
+import { MAX_STABLE_RANGE, MIN_RATE_ATTAINMENT } from './statistics'
 import { DEFAULT_TARGETS } from './targets'
 
 export interface RoutingPublicationTarget {
@@ -102,6 +103,7 @@ export function routingMeasurementPublicationIssues(
   expectedRuns: number,
   parityChecks: RoutingParityCheck[],
   repeats: RoutingRepeat[] = [],
+  fixedRate = false,
 ): string[] {
   const issues: string[] = []
   for (const target of targets) {
@@ -138,8 +140,26 @@ export function routingMeasurementPublicationIssues(
         issues.push(`${key} is missing a latency percentile`)
       if (row.cpuPercent == null || !Number.isFinite(row.cpuPercent) || row.cpuPercent < 0)
         issues.push(`${key} has no valid server CPU reading`)
-      if (measurementRange(row) > MAX_STABLE_RANGE)
+      /*
+       * A fixed rate pins throughput, so its range is near zero for a steady
+       * row and a noisy one alike. What varies there is the cost per request,
+       * and that is what the stability limit has to watch instead.
+       */
+      if (fixedRate) {
+        if (row.cpuMicrosPerRequest == null || !Number.isFinite(row.cpuMicrosPerRequest) || row.cpuMicrosPerRequest <= 0)
+          issues.push(`${key} has no valid per-request CPU cost`)
+        else if (costRange(row) > MAX_STABLE_RANGE)
+          issues.push(`${key} exceeded the 10% per-request CPU cost stability range`)
+        // Below the bar the target answered less work than its peers over the
+        // same window, so its cost is cheap for the wrong reason.
+        if (row.rateAttained == null || !Number.isFinite(row.rateAttained))
+          issues.push(`${key} has no rate attainment reading`)
+        else if (row.rateAttained < MIN_RATE_ATTAINMENT)
+          issues.push(`${key} delivered ${(row.rateAttained * 100).toFixed(1)}% of the requested rate`)
+      }
+      else if (measurementRange(row) > MAX_STABLE_RANGE) {
         issues.push(`${key} exceeded the 10% throughput stability range`)
+      }
 
       /*
        * Every repeat, not just the aggregate.
@@ -168,6 +188,10 @@ export function routingMeasurementPublicationIssues(
               issues.push(`${at} is missing a latency percentile`)
             if (repeat.cpuPercent == null || !Number.isFinite(repeat.cpuPercent) || repeat.cpuPercent < 0)
               issues.push(`${at} has no valid server CPU reading`)
+            if (fixedRate && (repeat.cpuMicrosPerRequest == null || !Number.isFinite(repeat.cpuMicrosPerRequest) || repeat.cpuMicrosPerRequest <= 0))
+              issues.push(`${at} has no valid per-request CPU cost`)
+            if (fixedRate && (repeat.rateAttained == null || !Number.isFinite(repeat.rateAttained) || repeat.rateAttained < MIN_RATE_ATTAINMENT))
+              issues.push(`${at} did not attain the requested rate`)
             if (!Number.isSafeInteger(repeat.requests) || repeat.requests <= 0)
               issues.push(`${at} recorded no requests`)
             if (!Number.isSafeInteger(repeat.errors) || repeat.errors < 0 || repeat.errors > repeat.requests)

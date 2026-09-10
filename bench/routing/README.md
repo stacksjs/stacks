@@ -84,6 +84,51 @@ accident. The safeguards here exist only to stop that:
   This includes load-tool startup and shutdown overhead. A win bought by burning more CPU is visible here
   rather than hidden inside "req/s".
 
+## Cost per request
+
+A saturating run answers "how fast can this box go". `--rate` answers the
+different question the optimization work actually asks: **does this change make
+the framework do less work per request?**
+
+```bash
+bun bench/routing/run.ts --rate 20000
+```
+
+Every target is held to the same fixed request rate, so every one of them does
+the same externally visible work, and the server's own CPU time divided by the
+requests it served is a direct measure of cost. The report leads with **CPU
+us/req**, lower being cheaper.
+
+This mode exists because saturating throughput is dominated by the host. On an
+ordinary developer laptop, repeated saturating runs of unchanged code vary by
+10-15%, which the stability limit correctly rejects - leaving no usable signal
+at all. Cost per request on the same machine repeats within a few percent,
+because a competing process lengthens the wall clock without adding to the
+server's own CPU accounting. That is tight enough to see a change worth half a
+microsecond.
+
+Two things keep it honest:
+
+- **The rate has to be attained.** A target that could not keep up served fewer
+  requests over the same CPU window and would otherwise appear as the cheapest
+  row in the table. Anything below 98% of the requested rate is marked invalid
+  in the report and blocks publication, naming the row.
+- **Stability is measured on the cost, not the throughput.** A fixed rate pins
+  throughput, so its spread reads near zero whether the run was steady or not.
+  The 10% limit applies to the per-request cost range instead.
+
+The Bun raw column is omitted here: it is a ratio of throughputs, and at a fixed
+rate every row delivers the same throughput by construction.
+
+The CPU window includes the load generator's startup and drain, identically for
+every target, so read the rows against each other rather than as an absolute
+per-request cost. Fixed-rate runs need a generator that can pace requests, which
+today means `oha`; the runner refuses rather than silently saturating.
+
+Publication needs everything the saturating matrix needs - dedicated hardware,
+a clean revision, the full target and scenario set, the same windows and
+repeats - plus rate attainment on every row.
+
 ## Load generators
 
 | Driver | Publishable | Notes |
@@ -294,6 +339,7 @@ reporting a zero.
 --scenarios    comma-separated scenario ids
 --driver       oha | bombardier | autocannon | builtin
 --connections  concurrent connections (default 50)
+--rate         hold every target to this fixed req/s and report CPU per request
 --warmup       seconds discarded before measuring (default 5)
 --duration     seconds measured (default 30)
 --runs         repeats per scenario, median reported (default 3)

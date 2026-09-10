@@ -15,7 +15,7 @@ import type { StacksRuntimeDependencies, StacksSourceModules } from './provenanc
 import type { BusyProcess } from './host-load'
 import { formatBusyProcess } from './host-load'
 import { formatSourceState } from './source'
-import { MAX_STABLE_RANGE } from './statistics'
+import { MAX_STABLE_RANGE, MIN_RATE_ATTAINMENT } from './statistics'
 import { formatRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 
 /**
@@ -39,6 +39,10 @@ export interface RoutingRepeat {
   errors: number
   /** `null` when no CPU evidence was captured during this repeat. */
   cpuPercent: number | null
+  /** Microseconds of server CPU per request served. `null` without evidence. */
+  cpuMicrosPerRequest: number | null
+  /** Delivered requests over requested, for fixed-rate runs. `null` otherwise. */
+  rateAttained: number | null
   /** Bytes of raw tool output recorded for this repeat. */
   rawBytes: number
 }
@@ -56,6 +60,12 @@ export interface Measurement {
   /** CPU as a percentage of one core during measured load, excluding warmup.
    * `null` unless EVERY repeat produced a reading. */
   cpuPercent: number | null
+  /** Median microseconds of server CPU per request. `null` unless every repeat measured it. */
+  cpuMicrosPerRequest: number | null
+  /** Lowest and highest per-request CPU cost across the repeats. */
+  cpuCostSpread?: { min: number, max: number } | null
+  /** Median share of the requested fixed rate that was delivered. `null` for saturating runs. */
+  rateAttained: number | null
   /** Lowest and highest rps across the repeats, so spread is visible. */
   spread: { min: number, max: number }
   /** Full rps range divided by the median. */
@@ -80,6 +90,8 @@ export interface RunMeta {
   publishable: boolean
   publicationIssues?: string[]
   connections: number
+  /** Fixed requests per second held across every target, when one was requested. */
+  requestRate?: number
   warmupSeconds: number
   durationSeconds: number
   runs: number
@@ -112,6 +124,25 @@ function measurementRange(row: Measurement): number {
   if (!(row.rpsMean > 0))
     return Number.POSITIVE_INFINITY
   return (row.spread.max - row.spread.min) / row.rpsMean
+}
+
+/**
+ * Spread of the per-request CPU cost, as a share of its median.
+ *
+ * A fixed-rate run pins throughput, so the throughput range is near zero for
+ * every target whether the measurement was steady or not. The cost column is
+ * what varies there, and it is what the stability limit has to watch.
+ */
+export function costRange(row: Measurement): number {
+  const { cpuMicrosPerRequest, cpuCostSpread } = row
+  if (cpuMicrosPerRequest == null || !(cpuMicrosPerRequest > 0) || !cpuCostSpread)
+    return Number.POSITIVE_INFINITY
+  return (cpuCostSpread.max - cpuCostSpread.min) / cpuMicrosPerRequest
+}
+
+/** The range the stability limit applies to for this run's mode. */
+export function stabilityRange(row: Measurement, fixedRate: boolean): number {
+  return fixedRate ? costRange(row) : measurementRange(row)
 }
 
 export function renderReport(input: ReportInput): string {
@@ -162,6 +193,8 @@ export function renderReport(input: ReportInput): string {
     lines.push(`| Peer framework versions | ${versions} |`)
   }
   lines.push(`| Connections | ${meta.connections} |`)
+  if (meta.requestRate != null)
+    lines.push(`| Request rate | fixed at ${fmt(meta.requestRate)} req/s for every target (cost profile) |`)
   lines.push(`| Window | ${meta.warmupSeconds}s warm-up discarded, ${meta.durationSeconds}s measured, ${meta.runs} run(s), median reported |`)
   lines.push(`| Persistent query history | ${meta.persistentQueryLogging ? 'enabled (opt-in)' : 'disabled (production default)'} |`)
   lines.push(`| CPU | ${meta.machine.cpu} (${meta.machine.cores} cores) |`)
@@ -172,6 +205,16 @@ export function renderReport(input: ReportInput): string {
     lines.push(`| Project Bun requirement | ${formatRuntimeRequirement(meta.runtimeRequirement)} |`)
   lines.push('')
 
+  if (meta.requestRate != null) {
+    lines.push('Every target answered the same fixed request rate, so the comparable column is')
+    lines.push('**CPU us/req** - microseconds of server CPU per request served. Lower is cheaper.')
+    lines.push('A row that did not attain the requested rate is not a cheaper server, it is a')
+    lines.push('slower one, and its cost figure is marked invalid rather than reported as a win.')
+    lines.push('The CPU window includes the load generator\'s startup and drain, identically for')
+    lines.push('every target, so read the rows against each other rather than as absolute costs.')
+    lines.push('')
+  }
+
   const skipped = targets.filter(t => t.skipped)
   if (skipped.length > 0) {
     lines.push('Skipped: ' + skipped.map(t => `**${t.label}** (${t.skipped})`).join(', ') + '.')
@@ -181,33 +224,56 @@ export function renderReport(input: ReportInput): string {
   for (const scenario of scenarios) {
     const rows = measurements.filter(m => m.scenarioId === scenario.id)
     if (rows.length === 0) continue
-    const hasRawComparison = rows.some(row => row.relativeToRaw != null)
+    const fixedRate = meta.requestRate != null
+    // The Bun raw column is a ratio of throughputs. At a fixed rate every
+    // target delivers the same throughput by construction, so it would read
+    // 100% for all of them and say nothing.
+    const hasRawComparison = !fixedRate && rows.some(row => row.relativeToRaw != null)
 
     lines.push(`## ${scenario.title}`)
     lines.push('')
     lines.push(`\`${scenario.method} ${scenario.path}\``)
     lines.push('')
-    const unstableRows = rows.filter(row => measurementRange(row) > MAX_STABLE_RANGE)
+    const unstableRows = rows.filter(row => stabilityRange(row, fixedRate) > MAX_STABLE_RANGE)
     if (unstableRows.length > 0) {
       const labels = unstableRows.map((row) => {
         const target = targets.find(target => target.id === row.targetId)
-        return `**${target?.label ?? row.targetId}** (${fmt(measurementRange(row) * 100, 1)}% range)`
+        return `**${target?.label ?? row.targetId}** (${fmt(stabilityRange(row, fixedRate) * 100, 1)}% range)`
       })
-      lines.push(`> **Unstable result.** ${labels.join(', ')} exceeded the ${fmt(MAX_STABLE_RANGE * 100)}% range limit. Treat this scenario as invalid and rerun on an isolated host.`)
+      lines.push(`> **Unstable result.** ${labels.join(', ')} exceeded the ${fmt(MAX_STABLE_RANGE * 100)}% ${fixedRate ? 'cost' : 'throughput'} range limit. Treat this scenario as invalid and rerun on an isolated host.`)
       lines.push('')
     }
-    lines.push(`| Target | req/s | req/s p50 | spread |${hasRawComparison ? ' Bun raw |' : ''} p50 ms | p90 ms | p99 ms | errors | CPU |`)
-    lines.push(`|---|---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
+    const costColumns = fixedRate ? ' CPU us/req | cost spread | rate |' : ''
+    lines.push(`| Target |${costColumns} req/s | req/s p50 | spread |${hasRawComparison ? ' Bun raw |' : ''} p50 ms | p90 ms | p99 ms | errors | CPU |`)
+    lines.push(`|---|${fixedRate ? '---:|---:|---:|' : ''}---:|---:|---:|${hasRawComparison ? '---:|' : ''}---:|---:|---:|---:|---:|`)
 
     for (const row of rows) {
       const target = targets.find(t => t.id === row.targetId)
       const cells = [
         '',
         target?.label ?? row.targetId,
+      ]
+      if (fixedRate) {
+        const attained = row.rateAttained
+        // An unattained rate invalidates the cost, so the two travel together:
+        // a target that could not keep up served fewer requests over the same
+        // CPU window and would otherwise show up as the cheapest row.
+        const comparable = attained != null && attained >= MIN_RATE_ATTAINMENT
+        cells.push(
+          row.cpuMicrosPerRequest == null
+            ? '-'
+            : `${fmt(row.cpuMicrosPerRequest, 2)}${comparable ? '' : ' (invalid)'}`,
+          row.cpuCostSpread == null
+            ? '-'
+            : `${fmt(row.cpuCostSpread.min, 2)}-${fmt(row.cpuCostSpread.max, 2)} (${fmt(costRange(row) * 100, 1)}%)`,
+          attained == null ? '-' : `${fmt(attained * 100, 1)}%${comparable ? '' : ' (invalid)'}`,
+        )
+      }
+      cells.push(
         fmt(row.rpsMean),
         row.rpsP50 == null ? '-' : fmt(row.rpsP50),
         `${fmt(row.spread.min)}-${fmt(row.spread.max)} (${fmt(measurementRange(row) * 100, 1)}%)`,
-      ]
+      )
       if (hasRawComparison) {
         const relative = row.relativeToRaw
         cells.push(relative

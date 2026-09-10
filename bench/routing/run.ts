@@ -25,7 +25,7 @@ import { pickDriver } from './drivers'
 import { readRuntimeRequirement, runtimeMismatchWarning } from './runtime-version'
 import { createFixture, resetFixtureLogs } from './fixture'
 import { checkHostLoad, formatBusyProcess } from './host-load'
-import { measureLoad } from './measurement'
+import { cpuMicrosPerRequest, measureLoad } from './measurement'
 import { resolvePeerVersions } from './peer-versions'
 import { verifyLoadPersistence } from './persistence'
 import { resolveStacksRuntimeDependencies, resolveStacksSourceModules } from './provenance'
@@ -45,6 +45,8 @@ interface Options {
   scenarios: string[]
   driver?: string
   connections: number
+  /** Hold every target to this fixed request rate instead of saturating. */
+  requestRate?: number
   warmupSeconds: number
   durationSeconds: number
   runs: number
@@ -76,6 +78,7 @@ export function parseArgs(argv: string[]): Options {
       case '--scenarios': opts.scenarios = next().split(','); break
       case '--driver': opts.driver = next(); break
       case '--connections': case '-c': opts.connections = Number(next()); break
+      case '--rate': opts.requestRate = Number(next()); break
       case '--warmup': opts.warmupSeconds = Number(next()); break
       case '--duration': case '-d': opts.durationSeconds = Number(next()); break
       case '--runs': opts.runs = Number(next()); break
@@ -98,6 +101,8 @@ export function parseArgs(argv: string[]): Options {
     throw new Error('--duration must be a positive finite number')
   if (!Number.isFinite(opts.warmupSeconds) || opts.warmupSeconds < 0)
     throw new Error('--warmup must be a non-negative finite number')
+  if (opts.requestRate != null && (!Number.isSafeInteger(opts.requestRate) || opts.requestRate <= 0))
+    throw new Error('--rate must be a positive safe integer')
 
   const unknownTargets = opts.targets.filter(id => !TARGETS.some(target => target.id === id))
   if (unknownTargets.length > 0)
@@ -117,6 +122,9 @@ const HELP = `bun bench/routing/run.ts [flags]
   --scenarios    comma-separated scenario ids (${SCENARIOS.map(s => s.id).join(', ')})
   --driver       oha | bombardier | autocannon | builtin  (default: first available)
   --connections  concurrent connections, positive integer (default 50)
+  --rate         hold every target to this fixed req/s and report CPU per request
+                 instead of saturating throughput (requires a driver that can
+                 pace requests)
   --warmup       non-negative seconds discarded before measuring (default 5)
   --duration     positive seconds measured (default 30)
   --runs         positive integer repeats per scenario, median reported (default 3)
@@ -138,6 +146,10 @@ async function main(): Promise<void> {
   if (runtimeWarning) console.error(`[bench] ${runtimeWarning}`)
   const driver: Driver = await pickDriver(opts.driver)
   const driverVersion = await driver.version()
+  // A driver that cannot pace requests would saturate and report a cost per
+  // request measured over a different workload for every target.
+  if (opts.requestRate != null && !driver.supportsFixedRate)
+    throw new Error(`--rate needs a load generator that can pace requests; ${driver.name} cannot`)
 
   const scenarios = SCENARIOS.filter(s => opts.scenarios.includes(s.id) && (opts.db || !s.requiresDb))
   const targets = TARGETS.filter(t => opts.targets.includes(t.id))
@@ -190,6 +202,7 @@ async function main(): Promise<void> {
     publishable: publicationIssues.length === 0,
     publicationIssues,
     connections: opts.connections,
+    requestRate: opts.requestRate,
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,
@@ -262,12 +275,13 @@ async function main(): Promise<void> {
           const parityBefore = await assertParity(target, scenario)
           if (scenario.requiresDb)
             resetFixtureLogs(FIXTURE)
-          const { result, cpuPercent, warmupResult } = await measureLoad(driver, {
+          const { result, cpuSeconds, cpuPercent, warmupResult } = await measureLoad(driver, {
             url: `http://127.0.0.1:${PORT}${scenario.path}`,
             method: scenario.method,
             body: scenario.body,
             headers: headersFor(target, scenario),
             connections: opts.connections,
+            requestRate: opts.requestRate,
             warmupSeconds: opts.warmupSeconds,
             durationSeconds: opts.durationSeconds,
           }, booted.pid)
@@ -288,6 +302,10 @@ async function main(): Promise<void> {
             requests: result.requests,
             errors: result.errors,
             cpuPercent,
+            cpuMicrosPerRequest: cpuMicrosPerRequest(cpuSeconds, result.requests),
+            rateAttained: opts.requestRate == null
+              ? null
+              : result.requests / (opts.requestRate * opts.durationSeconds),
             rawBytes: result.raw.length,
           })
           writeFileSync(join(rawDir, `${target.id}--${scenario.id}--run${run}.txt`), result.raw)
@@ -347,6 +365,8 @@ async function main(): Promise<void> {
       // repeat that served none contributes nothing instead of a free 0.
       const pooledRequests = results.reduce((sum, r) => sum + r.requests, 0)
       const pooledErrors = results.reduce((sum, r) => sum + r.errors, 0)
+      const costs = results.map(r => r.cpuMicrosPerRequest)
+      const everyCost = costs.every((v): v is number => v != null && Number.isFinite(v)) ? costs as number[] : null
 
       measurements.push({
         targetId: target.id,
@@ -360,6 +380,9 @@ async function main(): Promise<void> {
         },
         errorRate: pooledRequests > 0 ? pooledErrors / pooledRequests : null,
         cpuPercent: everyValue(r => r.cpuPercent),
+        cpuMicrosPerRequest: everyCost ? median(everyCost) : null,
+        cpuCostSpread: everyCost ? { min: Math.min(...everyCost), max: Math.max(...everyCost) } : null,
+        rateAttained: everyValue(r => r.rateAttained),
         spread: { min: Math.min(...rpsValues), max: Math.max(...rpsValues) },
         rangeRatio: relativeRange(rpsValues),
         relativeToRaw: rawResults
@@ -372,7 +395,7 @@ async function main(): Promise<void> {
 
   meta.publicationIssues = [...new Set([
     ...(meta.publicationIssues ?? []),
-    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks, [...collected.values()].flat()),
+    ...routingMeasurementPublicationIssues(targetRows, scenarios, measurements, opts.runs, parityChecks, [...collected.values()].flat(), opts.requestRate != null),
   ])]
   meta.sourceAtEnd = await readSourceState(REPO_ROOT)
   if (sourceStateChanged(meta.source, meta.sourceAtEnd))

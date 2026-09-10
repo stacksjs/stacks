@@ -98,6 +98,7 @@ describe('routing benchmark publication profile', () => {
       [{
         targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: 99,
         latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0, cpuPercent: 98,
+        cpuMicrosPerRequest: null, rateAttained: null,
         spread: { min: 98, max: 102 }, rangeRatio: 0.04, runs: 3,
       }],
       3,
@@ -112,6 +113,7 @@ describe('routing benchmark publication profile', () => {
       [{
         targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: -1,
         latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0.01, cpuPercent: null,
+        cpuMicrosPerRequest: null, rateAttained: null,
         spread: { min: 90, max: 110 }, rangeRatio: 0.2, runs: 3,
       }],
       3,
@@ -129,10 +131,52 @@ describe('routing benchmark publication profile', () => {
     ])
   })
 
+  it('holds a fixed-rate run to its cost stability and rate attainment instead of throughput spread', () => {
+    const fixedRateRow = (over: Record<string, unknown> = {}) => ({
+      targetId: 'stacks', scenarioId: 'static-json', rpsMean: 20_000, rpsP50: 20_000,
+      latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0, cpuPercent: 35,
+      cpuMicrosPerRequest: 18, cpuCostSpread: { min: 17.5, max: 18.5 }, rateAttained: 1,
+      spread: { min: 19_990, max: 20_010 }, rangeRatio: 0.001, runs: 3,
+      ...over,
+    })
+    const check = (row: ReturnType<typeof fixedRateRow>) => routingMeasurementPublicationIssues(
+      [{ id: 'stacks' }],
+      [{ id: 'static-json' }],
+      [row as never],
+      3,
+      parityChecks('stacks', 'static-json'),
+      [],
+      true,
+    )
+
+    expect(check(fixedRateRow())).toEqual([])
+    // A wide cost spread is the instability a fixed rate can show; the
+    // throughput spread stays flat whether the run was steady or not.
+    expect(check(fixedRateRow({ cpuCostSpread: { min: 16, max: 20 } })))
+      .toEqual(['stacks:static-json exceeded the 10% per-request CPU cost stability range'])
+    expect(check(fixedRateRow({ cpuMicrosPerRequest: null })))
+      .toEqual(['stacks:static-json has no valid per-request CPU cost'])
+    // The cheapest-looking row in a fixed-rate table is the one that could not
+    // keep up, so falling short of the rate has to be a blocker.
+    expect(check(fixedRateRow({ rateAttained: 0.9 })))
+      .toEqual(['stacks:static-json delivered 90.0% of the requested rate'])
+    expect(check(fixedRateRow({ rateAttained: null })))
+      .toEqual(['stacks:static-json has no rate attainment reading'])
+    // Same row, saturating rules: none of the fixed-rate gates apply.
+    expect(routingMeasurementPublicationIssues(
+      [{ id: 'stacks' }],
+      [{ id: 'static-json' }],
+      [fixedRateRow({ cpuMicrosPerRequest: null, rateAttained: null }) as never],
+      3,
+      parityChecks('stacks', 'static-json'),
+    )).toEqual([])
+  })
+
   it('rejects missing, malformed, duplicated, and changing parity evidence', () => {
     const measurement = {
       targetId: 'stacks', scenarioId: 'static-json', rpsMean: 100, rpsP50: 99,
       latencyMs: { p50: 1, p90: 2, p99: 3 }, errorRate: 0, cpuPercent: 98,
+      cpuMicrosPerRequest: null, rateAttained: null,
       spread: { min: 98, max: 102 }, rangeRatio: 0.04, runs: 3,
     }
     const malformed = parityChecks('stacks', 'static-json')
@@ -181,6 +225,8 @@ describe('per-repeat publication gating', () => {
     latencyMs: { p50: 1, p90: 2, p99: 3 },
     errorRate: 0,
     cpuPercent: 98,
+    cpuMicrosPerRequest: null,
+    rateAttained: null,
     spread: { min: 98, max: 102 },
     rangeRatio: 0.04,
     runs: 3,
@@ -197,6 +243,8 @@ describe('per-repeat publication gating', () => {
     requests: 1000,
     errors: 0,
     cpuPercent: 98,
+    cpuMicrosPerRequest: null,
+    rateAttained: null,
     rawBytes: 512,
     ...over,
   })

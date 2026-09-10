@@ -21,7 +21,12 @@ describe('routing benchmark options', () => {
     expect(parseArgs(['--output', '/tmp/routing-result']).output).toBe('/tmp/routing-result')
   })
 
-  it.each(['--connections', '--runs'])('requires a positive safe integer for %s', (flag) => {
+  it('leaves the rate unset unless asked, and takes a positive integer when it is', () => {
+    expect(parseArgs([]).requestRate).toBeUndefined()
+    expect(parseArgs(['--rate', '25000']).requestRate).toBe(25_000)
+  })
+
+  it.each(['--connections', '--runs', '--rate'])('requires a positive safe integer for %s', (flag) => {
     for (const value of ['0', '-1', '1.5', 'NaN', 'Infinity', '9007199254740992', ''])
       expect(() => parseArgs([flag, value]), `${flag} ${value}`).toThrow()
   })

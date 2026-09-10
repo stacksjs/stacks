@@ -29,19 +29,28 @@ async function cpuSeconds(pid: number): Promise<number | null> {
   }
 }
 
-async function measureCpu(pid: number): Promise<() => Promise<number | null>> {
+export interface CpuWindow {
+  /** CPU seconds the server burned during the measured load. */
+  cpuSeconds: number | null
+  /** Those seconds as a percentage of one core over the window's wall clock. */
+  cpuPercent: number | null
+}
+
+async function measureCpu(pid: number): Promise<() => Promise<CpuWindow>> {
   const before = await cpuSeconds(pid)
   const wallStart = performance.now()
   return async () => {
     const after = await cpuSeconds(pid)
     const wallSeconds = (performance.now() - wallStart) / 1000
-    if (before == null || after == null || wallSeconds <= 0) return null
-    return ((after - before) / wallSeconds) * 100
+    if (before == null || after == null || wallSeconds <= 0)
+      return { cpuSeconds: null, cpuPercent: null }
+    const used = after - before
+    return { cpuSeconds: used, cpuPercent: (used / wallSeconds) * 100 }
   }
 }
 
 /** Sample server CPU over the load window returned by the driver. */
-export async function measureLoad(driver: Driver, request: LoadRequest, pid: number): Promise<{ result: LoadResult, cpuPercent: number | null, warmupResult: LoadResult | null }> {
+export async function measureLoad(driver: Driver, request: LoadRequest, pid: number): Promise<{ result: LoadResult, cpuSeconds: number | null, cpuPercent: number | null, warmupResult: LoadResult | null }> {
   // Warm the server before taking either CPU sample. Every adapter receives
   // zero internal warmup, so throughput and CPU exclude the same phase.
   const measuredRequest = { ...request, warmupSeconds: 0 }
@@ -50,5 +59,29 @@ export async function measureLoad(driver: Driver, request: LoadRequest, pid: num
     : null
   const finishCpu = await measureCpu(pid)
   const result = await driver.run(measuredRequest)
-  return { result, cpuPercent: await finishCpu(), warmupResult }
+  const cpu = await finishCpu()
+  return { result, cpuSeconds: cpu.cpuSeconds, cpuPercent: cpu.cpuPercent, warmupResult }
+}
+
+/**
+ * Microseconds of server CPU per request served.
+ *
+ * The same CPU window divided by the work it covers rather than by the wall
+ * clock. At a fixed request rate every target answers the same number of
+ * requests, so this is a direct comparison of how much work each one does -
+ * and unlike saturating throughput it barely moves when the host is busy,
+ * because a competing process lengthens the wall clock without adding to the
+ * server's own CPU accounting.
+ *
+ * The window includes the load generator's startup and drain, so the absolute
+ * figure carries a fixed overhead shared by every target measured the same
+ * way. Compare rows within a run; do not read a row as the framework's own
+ * per-request cost in isolation.
+ */
+export function cpuMicrosPerRequest(cpuSeconds: number | null, requests: number): number | null {
+  if (cpuSeconds == null || !Number.isFinite(cpuSeconds) || cpuSeconds < 0)
+    return null
+  if (!Number.isFinite(requests) || requests <= 0)
+    return null
+  return (cpuSeconds * 1e6) / requests
 }
