@@ -264,10 +264,16 @@ pass `--allow-protected` to override.
 
 ## Built-in models by category
 
-The 46 below are the ones worth knowing by name. They are a selection, not
-the set: `storage/framework/defaults/app/Models/` holds 102, and that
-directory is the authority. This section said "All 62" while listing 46 of
-102, so an agent reading to the end had no way to tell it was short.
+The ones below are worth knowing by name. They are a selection, not the set:
+`storage/framework/defaults/app/Models/` holds 102, and that directory is the
+authority. This section said "All 62 built-in models by category" while
+listing fewer than that against 102 on disk, so an agent reading to the end
+had no way to tell it was short.
+
+No count of what this section itself lists, deliberately - that number is
+maintained by hand, drifts the moment anyone adds a bullet, and is the same
+habit that produced the "All 62". The total above is pinned by
+`buddy docs:agent-counts`.
 
 Run `find storage/framework/defaults/app/Models -name '*.ts'` for the full
 list, or `buddy list` for what a given project resolves.
