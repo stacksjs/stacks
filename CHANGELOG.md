@@ -1,5 +1,47 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.33...v0.74.34)
+
+## ✨ Features
+
+- **dashboard**: build the media pipeline behind uploads (#2578) ([394252d](https://github.com/stacksjs/stacks/commit/394252d)) _(by Chris <chris@stacksjs.com>)_ ([#2578](https://github.com/stacksjs/stacks/issues/2578), [#2578](https://github.com/stacksjs/stacks/issues/2578), [#245](https://github.com/stacksjs/stacks/issues/245))
+- **dashboard**: give the file manager a metadata layer (#2577) ([a5820d1](https://github.com/stacksjs/stacks/commit/a5820d1)) _(by Chris <chris@stacksjs.com>)_ ([#2577](https://github.com/stacksjs/stacks/issues/2577), [#2577](https://github.com/stacksjs/stacks/issues/2577), [#245](https://github.com/stacksjs/stacks/issues/245), [#2577](https://github.com/stacksjs/stacks/issues/2577), [#2577](https://github.com/stacksjs/stacks/issues/2577))
+- **storage**: add the Azure Blob Storage driver (#1896) ([90745ec](https://github.com/stacksjs/stacks/commit/90745ec)) _(by Chris <chris@stacksjs.com>)_ ([#1896](https://github.com/stacksjs/stacks/issues/1896), [#1896](https://github.com/stacksjs/stacks/issues/1896), [#1897](https://github.com/stacksjs/stacks/issues/1897))
+
+## 🐛 Bug Fixes
+
+- **cms**: the taggable_models pivot points at tags, not taggables (#2579) ([32407c2](https://github.com/stacksjs/stacks/commit/32407c2)) _(by Chris <chris@stacksjs.com>)_ ([#2579](https://github.com/stacksjs/stacks/issues/2579), [#2579](https://github.com/stacksjs/stacks/issues/2579), [#2579](https://github.com/stacksjs/stacks/issues/2579), [#2579](https://github.com/stacksjs/stacks/issues/2579), [#2577](https://github.com/stacksjs/stacks/issues/2577), [#2577](https://github.com/stacksjs/stacks/issues/2577))
+- declare ts-xml, and let a scaffold template enable its own settings ([8f7225f](https://github.com/stacksjs/stacks/commit/8f7225f)) _(by Chris <chris@stacksjs.com>)_ ([#2574](https://github.com/stacksjs/stacks/issues/2574))
+- **deps**: record the framework's own packages as workspaces, not npm (#2533) ([f21708e](https://github.com/stacksjs/stacks/commit/f21708e)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533))
+
+## 📝 Documentation
+
+- **desktop**: publish the support matrix from its source (#2059) ([c7635e9](https://github.com/stacksjs/stacks/commit/c7635e9)) _(by Chris <chris@stacksjs.com>)_ ([#2059](https://github.com/stacksjs/stacks/issues/2059), [#2059](https://github.com/stacksjs/stacks/issues/2059), [#2059](https://github.com/stacksjs/stacks/issues/2059), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#2059](https://github.com/stacksjs/stacks/issues/2059), [#2062](https://github.com/stacksjs/stacks/issues/2062), [#11](https://github.com/stacksjs/stacks/issues/11))
+
+## ✅ Tests
+
+- **whois**: stop asserting that IANA is up ([bb15844](https://github.com/stacksjs/stacks/commit/bb15844)) _(by Chris <chris@stacksjs.com>)_
+
+## 👷 Build System
+
+- pantry 0.11.60, the symmetric platform-dependence fix (#2533) ([18cef7f](https://github.com/stacksjs/stacks/commit/18cef7f)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533), [#232](https://github.com/stacksjs/stacks/issues/232))
+- put pantry.lock back under the install-stability guard (#2533) ([6d2eede](https://github.com/stacksjs/stacks/commit/6d2eede)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533), [#232](https://github.com/stacksjs/stacks/issues/232))
+
+## 💚 Continuous Integration
+
+- let a chore(deps) commit be about the bot, not only the versions (#2574) ([8053d1f](https://github.com/stacksjs/stacks/commit/8053d1f)) _(by Chris <chris@stacksjs.com>)_ ([#2574](https://github.com/stacksjs/stacks/issues/2574), [#2574](https://github.com/stacksjs/stacks/issues/2574))
+- guard bun.lock, and say what the one remaining pantry.lock record is (#2533) ([22c7c38](https://github.com/stacksjs/stacks/commit/22c7c38)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533), [#233](https://github.com/stacksjs/stacks/issues/233), [#231](https://github.com/stacksjs/stacks/issues/231), [#2533](https://github.com/stacksjs/stacks/issues/2533))
+- hand back the Linux-generated lockfile, once (#2533) ([9171ee8](https://github.com/stacksjs/stacks/commit/9171ee8)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533))
+- **deps**: move to pantry 0.11.57, and guard pantry.lock again (#2533) ([c1baf97](https://github.com/stacksjs/stacks/commit/c1baf97)) _(by Chris <chris@stacksjs.com>)_ ([#2533](https://github.com/stacksjs/stacks/issues/2533), [#2533](https://github.com/stacksjs/stacks/issues/2533), [#231](https://github.com/stacksjs/stacks/issues/231), [#233](https://github.com/stacksjs/stacks/issues/233), [#231](https://github.com/stacksjs/stacks/issues/231), [#233](https://github.com/stacksjs/stacks/issues/233))
+
+## 🔧 Chores
+
+- **deps**: let buddy-bot own dependency updates, here and in the scaffold (#2574) ([a4ada4c](https://github.com/stacksjs/stacks/commit/a4ada4c)) _(by Chris <chris@stacksjs.com>)_ ([#2574](https://github.com/stacksjs/stacks/issues/2574), [#2574](https://github.com/stacksjs/stacks/issues/2574), [#2194](https://github.com/stacksjs/stacks/issues/2194), [#2195](https://github.com/stacksjs/stacks/issues/2195), [#1825](https://github.com/stacksjs/stacks/issues/1825), [#2202](https://github.com/stacksjs/stacks/issues/2202), [#1](https://github.com/stacksjs/stacks/issues/1))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.32...v0.74.33)
 
 ## ✨ Features
