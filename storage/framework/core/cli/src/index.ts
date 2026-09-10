@@ -8,4 +8,6 @@ export * from './prompts'
 export * from './run'
 export * from './signals'
 export * from './spinner'
+// Terminal primitives: table, progress, tasks, note, dump/dd, echo (#2581).
+export * from './terminal'
 export * from './utils'

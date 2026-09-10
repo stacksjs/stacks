@@ -32,25 +32,36 @@ cli.run()
 
 ### Basic Command
 
-```typescript
-import { Command } from '@stacksjs/cli'
+There is no `Command` class. A command is a definition object passed to
+`defineCommand()`, which is what `app/Commands/*.ts` export:
 
-const command = new Command('deploy')
-  .description('Deploy the application')
-  .action(() => {
+```typescript
+import { defineCommand } from '@stacksjs/cli'
+
+export default defineCommand({
+  name: 'deploy',
+  description: 'Deploy the application',
+  handle() {
     console.log('Deploying...')
-  })
+  },
+})
 ```
 
 ### Command with Options
 
+The declarative form INFERS the handler's `options` from the flags it declares,
+so there is no hand-written options interface to keep in sync:
+
 ```typescript
-const command = new Command('build')
-  .description('Build the application')
-  .option('-e, --env <environment>', 'Target environment', 'production')
-  .option('-m, --minify', 'Minify output', false)
-  .option('-w, --watch', 'Watch for changes')
-  .action((options) => {
+export default defineCommand({
+  name: 'build',
+  description: 'Build the application',
+  options: {
+    '-e, --env <environment>': { description: 'Target environment', default: 'production' },
+    '-m, --minify': { description: 'Minify output', default: false },
+    '-w, --watch': 'Watch for changes',
+  },
+  handle(options) {
     console.log(`Building for ${options.env}`)
     if (options.minify) console.log('Minification enabled')
     if (options.watch) console.log('Watch mode enabled')
@@ -235,24 +246,24 @@ log.debug('Debug information')
 ### Styled Output
 
 ```typescript
-import { log, style } from '@stacksjs/cli'
+import { bold, blue, cyan, dim, green, italic, log, red, underline, yellow } from '@stacksjs/cli'
 
 // Colors
-console.log(style.red('Error text'))
-console.log(style.green('Success text'))
-console.log(style.yellow('Warning text'))
-console.log(style.blue('Info text'))
-console.log(style.cyan('Highlighted text'))
+console.log(red('Error text'))
+console.log(green('Success text'))
+console.log(yellow('Warning text'))
+console.log(blue('Info text'))
+console.log(cyan('Highlighted text'))
 
 // Formatting
-console.log(style.bold('Bold text'))
-console.log(style.dim('Dimmed text'))
-console.log(style.italic('Italic text'))
-console.log(style.underline('Underlined text'))
+console.log(bold('Bold text'))
+console.log(dim('Dimmed text'))
+console.log(italic('Italic text'))
+console.log(underline('Underlined text'))
 
-// Combinations
-console.log(style.bold.red('Bold red text'))
-console.log(style.dim.yellow('Dim yellow text'))
+// Combinations compose as functions - there is no `.bold.red` chain
+console.log(bold(red('Bold red text')))
+console.log(dim(yellow('Dim yellow text')))
 ```
 
 ### Notes and Messages
@@ -272,33 +283,34 @@ outro('Setup complete!')
 ### Basic Spinner
 
 ```typescript
-import { spin } from '@stacksjs/cli'
+import { spinner } from '@stacksjs/cli'
 
-const spinner = spin('Loading...')
+const spin = spinner('Loading...')
+spin.start()
 
 try {
   await performTask()
-  spinner.success('Task completed!')
+  spin.succeed('Task completed!')
 } catch (error) {
-  spinner.error('Task failed!')
+  spin.fail('Task failed!')
 }
 ```
 
 ### Spinner with Messages
 
 ```typescript
-const spinner = spin('Initializing...')
+const spin = spinner('Initializing...')
 
-spinner.message('Downloading dependencies...')
+spin.update('Downloading dependencies...')
 await downloadDeps()
 
-spinner.message('Building project...')
+spin.update('Building project...')
 await build()
 
-spinner.message('Running tests...')
+spin.update('Running tests...')
 await runTests()
 
-spinner.success('All done!')
+spin.succeed('All done!')
 ```
 
 ### Multiple Spinners
@@ -628,12 +640,13 @@ if (!isInteractive()) {
 
 | Method | Description |
 |--------|-------------|
-| `spin(message)` | Create spinner |
-| `spinner.start()` | Start spinning |
-| `spinner.stop()` | Stop spinning |
-| `spinner.success(msg)` | Stop with success |
-| `spinner.error(msg)` | Stop with error |
-| `spinner.message(msg)` | Update message |
+| `spinner(message)` | Create spinner |
+| `spinner().start()` | Start spinning |
+| `spinner().stop()` | Stop spinning |
+| `spinner().succeed(msg)` | Stop with success |
+| `spinner().fail(msg)` | Stop with error |
+| `spinner().update(msg)` | Update message |
+| `withSpinner(msg, fn)` | Run `fn` under a spinner |
 
 ### Execution Functions
 

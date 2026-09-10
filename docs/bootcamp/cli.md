@@ -372,22 +372,28 @@ const users = [
   { id: 3, name: 'Charlie', email: 'charlie@example.com', role: 'User' },
 ]
 
-table(users, {
-  columns: ['id', 'name', 'email', 'role'],
-  headers: ['ID', 'Name', 'Email', 'Role'],
-})
+console.log(table(users, {
+  columns: [
+    { key: 'id', header: 'ID', align: 'right' },
+    { key: 'name', header: 'Name' },
+    { key: 'email', header: 'Email' },
+    { key: 'role', header: 'Role' },
+  ],
+}))
 ```
+
+`table` returns a string rather than printing, so it composes with `box`, a
+logger, or a file. Column widths are measured with ANSI stripped, so a colored
+cell does not push the columns after it out of alignment.
 
 Output:
 
 ```
-┌────┬─────────┬─────────────────────────┬───────┐
-│ ID │ Name    │ Email                   │ Role  │
-├────┼─────────┼─────────────────────────┼───────┤
-│ 1  │ Alice   │ alice@example.com       │ Admin │
-│ 2  │ Bob     │ bob@example.com         │ User  │
-│ 3  │ Charlie │ charlie@example.com     │ User  │
-└────┴─────────┴─────────────────────────┴───────┘
+ID  Name     Email                Role
+--  -------  -------------------  -----
+ 1  Alice    alice@example.com    Admin
+ 2  Bob      bob@example.com      User
+ 3  Charlie  charlie@example.com  User
 ```
 
 ### Progress Bars
@@ -395,7 +401,7 @@ Output:
 ```typescript
 import { progress } from '@stacksjs/cli'
 
-const bar = progress('Processing files', { total: 100 })
+const bar = progress({ total: 100, format: 'Processing files |{bar}| {percentage}%' })
 
 for (let i = 0; i <= 100; i++) {
   await sleep(50) // Simulate work

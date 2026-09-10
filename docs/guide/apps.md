@@ -279,45 +279,37 @@ export default defineCliConfig({
 
 ### Command Implementation
 
+Commands live in `app/Commands/` and need no registration - every `.ts` file
+there is a command. `defineCommand()` infers the handler's `options` from the
+flags it declares, so there is no options interface to keep in sync:
+
 ```typescript
-// commands/init.ts
-import { Command } from '@stacksjs/cli'
+// app/Commands/Init.ts
+import { defineCommand, log } from '@stacksjs/cli'
 
-export default class InitCommand extends Command {
-  static name = 'init'
-  static description = 'Initialize a new project'
+export default defineCommand({
+  name: 'init',
+  description: 'Initialize a new project',
 
-  static options = {
-    template: {
-      type: 'string',
-      description: 'Project template',
-      default: 'default',
-    },
-    force: {
-      type: 'boolean',
-      description: 'Overwrite existing files',
-      default: false,
-    },
-  }
+  options: {
+    '-t, --template <template>': { description: 'Project template', default: 'default' },
+    '-f, --force': { description: 'Overwrite existing files', default: false },
+  },
 
-  async handle() {
-    const { template, force } = this.options
+  async handle(options) {
+    log.info(`Creating project with template: ${options.template}`)
 
-    this.info(`Creating project with template: ${template}`)
+    if (options.force)
+      log.warn('Force mode enabled - will overwrite existing files')
 
-    if (force) {
-      this.warn('Force mode enabled - will overwrite existing files')
-    }
+    await copyTemplate(options.template)
 
-    // Implementation
-    await this.copyTemplate(template)
+    log.success('Project created successfully!')
+  },
+})
 
-    this.success('Project created successfully!')
-  }
-
-  private async copyTemplate(template: string) {
-    // Template copying logic
-  }
+async function copyTemplate(template: string): Promise<void> {
+  // Template copying logic
 }
 ```
 
