@@ -171,11 +171,12 @@ expect(typeof value).toBe('number')
 ### Using Test Database
 
 ```typescript
-import { describe, it, expect, useDatabaseTransactions } from '@stacksjs/testing'
+import { describe, expect, it } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 
 describe('User Model', () => {
   // Wrap each test in a transaction that rolls back
-  useDatabaseTransactions()
+  useTransaction()
 
   it('should create user', async () => {
     const user = await User.create({ name: 'Test User', email: 'test@test.com' })
@@ -247,29 +248,26 @@ it('should restore user', async () => {
 
 ## DynamoDB Testing
 
-### DynamoDB Assertions
+Table-level fixtures only. Point `AWS_ENDPOINT_URL` at a DynamoDB you started
+yourself - DynamoDB Local, or a real region:
 
 ```typescript
-import { assertDynamoHas, assertDynamoMissing, assertDynamoCount } from '@stacksjs/testing'
+import { afterAll, beforeAll } from 'bun:test'
+import { createStacksTable, deleteStacksTable } from '@stacksjs/testing/dynamodb'
 
-it('should create item in DynamoDB', async () => {
-  await dynamo.put({ pk: 'USER#1', sk: 'PROFILE', name: 'John' })
-
-  await assertDynamoHas('users-table', {
-    pk: 'USER#1',
-    sk: 'PROFILE'
-  })
+beforeAll(async () => {
+  await createStacksTable()
 })
 
-it('should delete item', async () => {
-  await dynamo.delete({ pk: 'USER#1', sk: 'PROFILE' })
-
-  await assertDynamoMissing('users-table', {
-    pk: 'USER#1',
-    sk: 'PROFILE'
-  })
+afterAll(async () => {
+  await deleteStacksTable()
 })
 ```
+
+There are no item assertions. The `DynamoDBClient` in `@stacksjs/ts-cloud`
+covers `createTable`, `deleteTable` and `describeTable`, and no data-plane
+operations, so assert against DynamoDB through whichever client your code
+already uses to write to it.
 
 ## Feature Testing
 

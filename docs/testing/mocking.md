@@ -358,26 +358,42 @@ describe('UserService', () => {
 ### Email Service Mocking
 
 ```typescript
-import { describe, expect, it, mock } from 'bun:test'
-import { MockMailer } from '@stacksjs/testing'
+import { describe, expect, it } from 'bun:test'
+import { emailsTo, lastEmail, mailFake, sentEmails } from '@stacksjs/testing'
 
 describe('Email Notifications', () => {
-  const mailer = new MockMailer()
+  // Redirects the shared `mail` singleton into memory. Restored automatically
+  // after each test, so a fake cannot swallow the next test's email.
+  beforeEach(() => mailFake())
 
   it('sends welcome email', async () => {
     await sendWelcomeEmail('user@example.com')
 
-    expect(mailer.sent).toHaveLength(1)
-    expect(mailer.sent[0].to).toBe('user@example.com')
-    expect(mailer.sent[0].subject).toContain('Welcome')
+    expect(sentEmails()).toHaveLength(1)
+    expect(lastEmail()?.to).toBe('user@example.com')
+    expect(lastEmail()?.subject).toContain('Welcome')
   })
 
-  it('queues bulk emails', async () => {
+  it('sends to every recipient', async () => {
     await sendBulkNewsletter(['a@test.com', 'b@test.com'])
 
-    expect(mailer.queued).toHaveLength(2)
+    expect(sentEmails()).toHaveLength(2)
+    expect(emailsTo('a@test.com')).toHaveLength(1)
   })
 })
+```
+
+`sentEmails()` covers queued mail too. `mail.queue()` dispatches to the
+`SendEmailJob` handler, which calls `mail.send()` - so a queued message is
+captured once the worker runs it. To assert the DISPATCH rather than the send,
+fake the queue instead:
+
+```typescript
+import { fake, getFakeQueue } from '@stacksjs/queue'
+
+fake()
+await sendBulkNewsletter(['a@test.com', 'b@test.com'])
+expect(getFakeQueue()?.dispatched('SendEmailJob')).toHaveLength(2)
 ```
 
 ### Queue Mocking

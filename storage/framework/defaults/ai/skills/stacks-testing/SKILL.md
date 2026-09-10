@@ -42,21 +42,23 @@ await truncateMysql()    // for MySQL
 
 ## DynamoDB Testing
 
-```typescript
-import { launchServer, createStacksTable, deleteStacksTable, delay } from '@stacksjs/testing'
+Point `AWS_ENDPOINT_URL` at a DynamoDB you started yourself - DynamoDB Local, or
+a real region. The framework cannot start one for you; a `launchServer()` that
+claimed to did not work and has been removed.
 
-// Launch DynamoDB Local
-const { server, endpoint } = await launchServer()
+```typescript
+import { createStacksTable, deleteStacksTable } from '@stacksjs/testing/dynamodb'
 
 // Create test table
 await createStacksTable()
 
 // Cleanup
 await deleteStacksTable()
-
-// Utility
-await delay(1000)  // wait for async operations
 ```
+
+These are table-level only. There are no item assertions (`assertDynamoHas` and
+friends have never existed): the `DynamoDBClient` in `@stacksjs/ts-cloud` covers
+`createTable` / `deleteTable` / `describeTable` and no data-plane operations.
 
 ## Writing Tests
 

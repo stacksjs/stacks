@@ -238,6 +238,30 @@ export class Mail {
   }
 
   /**
+   * Redirect THIS instance to the in-memory capture driver.
+   *
+   * `use(driver)` deliberately returns a new `Mail` rather than mutating,
+   * because production code sending through one transport should not change
+   * what everyone else sends through. A test needs exactly the opposite: the
+   * singleton `mail` is what the code under test reaches for, so redirecting a
+   * copy proves nothing.
+   *
+   * Returns the previous driver name, which `restoreDriver()` takes back.
+   * `@stacksjs/testing`'s `mailFake()` wraps both and wires the restore to
+   * `afterEach` (stacksjs/stacks#2581).
+   */
+  public fake(): string {
+    const previous = this.defaultDriver
+    this.defaultDriver = 'capture'
+    return previous
+  }
+
+  /** Put a driver back after `fake()`. */
+  public restoreDriver(driver: string): void {
+    this.defaultDriver = driver
+  }
+
+  /**
    * Queue an email for background sending via the job system.
    * Falls back to synchronous send if the queue system isn't loaded
    * or the dispatch fails; the failure is logged so a dropped queue

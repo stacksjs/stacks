@@ -11,6 +11,12 @@ import { BaseEmailDriver } from './base'
  * does template rendering) — chosen by tests that just need to
  * assert "this flow sent that email" without any I/O side effect.
  *
+ * Import it from `@stacksjs/email`, not from
+ * `@stacksjs/email/drivers/capture`: in a workspace checkout the barrel
+ * resolves to `src` and the subpath to `dist`, which are two module graphs
+ * with two separate `captured` arrays. `@stacksjs/testing`'s `mailFake()`
+ * wraps all of this.
+ *
  * Pick this driver when:
  *   - running fast unit tests that shouldn't touch the filesystem
  *   - asserting on the exact message shape (subject/body/headers)
@@ -29,7 +35,7 @@ import { BaseEmailDriver } from './base'
  * config.email.default = 'capture'
  *
  * // in tests
- * import { CaptureEmailDriver } from '@stacksjs/email/drivers/capture'
+ * import { CaptureEmailDriver } from '@stacksjs/email'
  *
  * beforeEach(() => CaptureEmailDriver.clear())
  *

@@ -21,9 +21,13 @@ export * from './feature'
 // Clock control (stacksjs/stacks#2581). No database dependency, so unlike the
 // fixtures it is safe at the root.
 export * from './console'
+// Event fakes (stacksjs/stacks#2581). `@stacksjs/events` is a leaf package with
+// no database dependency, so unlike the fixtures it is safe at the root.
+export * from './events'
+// Mail fakes (stacksjs/stacks#2581), on top of the email package's capture driver.
+export * from './mail'
 export * from './time'
 export * from 'bun:test'
 
-// dynamodb utilities are not re-exported here because they require
-// @stacksjs/cache's dynamoDbTool which has been removed. Import
-// directly from '@stacksjs/testing/dynamodb' if needed.
+// dynamodb utilities are not re-exported here: they talk to a real DynamoDB and
+// most tests do not. Import directly from '@stacksjs/testing/dynamodb'.
