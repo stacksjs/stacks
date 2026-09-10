@@ -9,10 +9,24 @@ initializeDbConfig({
   database: { default: 'sqlite', connections: { sqlite: { database: file } } },
 })
 config.database.queryLogging = {
+  // Required fields the configured section is allowed to omit. Framework
+  // defaults, not a fixture policy: this probe only needs logging on with
+  // nothing excluded, and a configured value still wins below.
+  slowThreshold: 100,
+  retention: 7,
+  pruneFrequency: 24,
   ...config.database.queryLogging,
   enabled: true,
   excludedQueries: [],
-  analysis: { ...config.database.queryLogging?.analysis, enabled: false },
+  // Every field is required, and the configured section may carry none of
+  // them. Defaults first so a partial override cannot leave one undefined.
+  analysis: {
+    analyzeAll: false,
+    explainPlan: false,
+    suggestions: false,
+    ...config.database.queryLogging?.analysis,
+    enabled: false,
+  },
 }
 
 try {

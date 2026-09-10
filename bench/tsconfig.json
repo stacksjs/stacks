@@ -1,0 +1,24 @@
+{
+  // The benchmark harness decides what this project is allowed to publish
+  // about its own performance, so it is held to the same bar as the code it
+  // measures. Nothing included it before: the app config covers `app/`,
+  // `config/`, `resources/` and `routes/`, and the framework config is rooted
+  // at `storage/framework/`, which left roughly three thousand lines of
+  // publication logic unread by any compiler.
+  "extends": "../storage/framework/tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Each benchmark package installs its own peers. Resolve types from this
+    // directory outward so a fixture sees the exact framework version the
+    // report records for it.
+    "types": ["bun"]
+  },
+  "include": [
+    "./**/*.ts"
+  ],
+  "exclude": [
+    "./**/node_modules/**",
+    "./**/results/**",
+    "./**/.tmp/**"
+  ]
+}

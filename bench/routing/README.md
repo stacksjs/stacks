@@ -327,7 +327,8 @@ It also fixes the database driver to SQLite, matching the isolated fixture.
 ## Peer targets
 
 Elysia, Express, Fastify, and Hono are exact dependencies of the isolated
-benchmark package. Install its locked dependency set with
+benchmark package, with `@types/express` beside them so the Express fixture is
+type-checked rather than implicitly `any`. Install its locked dependency set with
 `bun install --cwd bench/routing --frozen-lockfile`. If a dependency is absent,
 the runner records that target as skipped and the report says so rather than
 reporting a zero.

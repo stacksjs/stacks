@@ -279,7 +279,10 @@ async function main(): Promise<void> {
     : undefined
   const stacksRuntimeDependencies = targets.some(({ target }) => target.server === 'stacks.ts')
     ? resolveStacksRuntimeDependencies(REPO_ROOT)
-    : {}
+    // No Stacks target selected, so there is no router runtime behind this
+    // run. Absent rather than empty: the report skips the row instead of
+    // printing a header with nothing under it.
+    : undefined
   const scenario = resolveScenario(options.scenario)
   const driver = await pickDriver(options.driver)
   const driverVersion = await driver.version()
@@ -312,7 +315,7 @@ async function main(): Promise<void> {
     source,
     targetIds: targets.map(target => target.targetId),
     peerVersions,
-    stacksRuntimeDependencies,
+    stacksRuntimeDependencies: stacksRuntimeDependencies ?? {},
     scenario: scenario.id,
     connections: options.connections,
     loadSeconds: options.loadSeconds,

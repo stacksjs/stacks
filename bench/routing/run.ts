@@ -159,7 +159,10 @@ async function main(): Promise<void> {
     : undefined
   const stacksRuntimeDependencies = targets.some(target => target.server === 'stacks.ts')
     ? resolveStacksRuntimeDependencies(REPO_ROOT)
-    : {}
+    // No Stacks target selected, so there is no router runtime behind this
+    // run. Absent rather than empty: the report skips the row instead of
+    // printing a header with nothing under it.
+    : undefined
   const withDb = scenarios.some(s => s.requiresDb)
 
   if (withDb) {
@@ -182,7 +185,7 @@ async function main(): Promise<void> {
     targetIds: targets.map(target => target.id),
     scenarioIds: scenarios.map(scenario => scenario.id),
     peerVersions,
-    stacksRuntimeDependencies,
+    stacksRuntimeDependencies: stacksRuntimeDependencies ?? {},
     warmupSeconds: opts.warmupSeconds,
     durationSeconds: opts.durationSeconds,
     runs: opts.runs,

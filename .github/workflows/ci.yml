@@ -138,6 +138,17 @@ jobs:
       - name: Typecheck views
         run: bun run typecheck:views
 
+      # `bench/` decides what this project may publish about its own
+      # performance and no config included it, so its fixtures were implicitly
+      # `any` and its provenance records could go missing unnoticed. The peer
+      # frameworks are an isolated install, and the fixtures import them, so
+      # they have to be present for the check to mean anything.
+      - name: Install benchmark peers
+        run: bun install --cwd bench/routing --frozen-lockfile
+
+      - name: Typecheck benchmarks
+        run: bun run typecheck:bench
+
   test:
     runs-on: ubuntu-latest
 
