@@ -212,12 +212,34 @@ const transaction = await manageTransaction.fetchByStripeId(stripeChargeId)
 
 ### Setting Up the Webhook Endpoint
 
+There is no ready-made handler to mount - the endpoint has to read the raw body
+and the signature header itself, which is the whole point of a webhook route:
+
 ```ts
 // routes/api.ts
-import { webhookHandler } from '@stacksjs/payments'
+import { processWebhook } from '@stacksjs/payments'
+import { response } from '@stacksjs/router'
 
-router.post('/webhooks/stripe', webhookHandler)
+route.post('/webhooks/stripe', async (request) => {
+  // The RAW body. A parsed one will not verify: the signature covers the
+  // exact bytes Stripe sent.
+  const payload = await request.text()
+  const signature = request.headers.get('stripe-signature') ?? ''
+
+  const result = await processWebhook(payload, signature, {
+    secret: env.STRIPE_WEBHOOK_SECRET,
+  })
+
+  // Answer 400 on a bad signature so Stripe retries rather than treating the
+  // delivery as accepted.
+  return result.success
+    ? response.json({ received: true })
+    : response.json({ error: result.error }, { status: 400 })
+})
 ```
+
+`processWebhook` verifies the signature, constructs the event, and dispatches it
+to whatever `onWebhookEvent(type, handler)` registered.
 
 ### Webhook Event Handler
 

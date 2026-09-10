@@ -818,7 +818,7 @@ export default new Action({
 // app/Actions/Password/PasswordResetAction.ts
 import type { RequestInstance } from '@stacksjs/types'
 import { Action } from '@stacksjs/actions'
-import { hash } from '@stacksjs/auth'
+import { hashMake } from '@stacksjs/security'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
 
@@ -868,7 +868,7 @@ export default new Action({
 
     // Update password
     await user.update({
-      password: await hash(password),
+      password: await hashMake(password),
     })
 
     // Delete used token

@@ -8,10 +8,62 @@ The Affiliates Program module provides functionality for creating and managing a
 
 ## Getting Started
 
-Import the affiliate functionality:
+::: warning These models are yours to define
+Stacks does not ship an affiliate program. `Affiliate`, `AffiliateLink`,
+`Commission` and `Payout` are models you create - this page is a guide to
+building the feature, not a reference for one that exists
+([#2581](https://github.com/stacksjs/stacks/issues/2581)).
 
-```ts
-import { Affiliate, AffiliateLink, Commission, Payout } from '@stacksjs/commerce'
+Once the model files exist under `app/Models/`, every name below is available
+as a server global with no import, like every other model.
+:::
+
+Start with the four models. Traits do the repetitive work: `useUuid` for public
+identifiers, `useTimestamps` for `created_at`/`updated_at`, and `useApi` to
+generate REST actions and routes:
+
+```typescript
+// app/Models/Affiliate.ts
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
+
+export default defineModel({
+  name: 'Affiliate',
+  table: 'affiliates',
+
+  traits: {
+    useUuid: true,
+    useTimestamps: true,
+    useApi: { uri: 'affiliates', routes: ['index', 'show', 'store', 'update'] },
+  },
+
+  belongsTo: ['User'],
+  hasMany: ['AffiliateLink', 'Commission', 'Payout'],
+
+  attributes: {
+    // The public code in every referral URL. Unique, because two affiliates
+    // sharing one code would split a conversion arbitrarily.
+    code: { fillable: true, unique: true, validation: { rule: schema.string().max(32) } },
+    company_name: { fillable: true, validation: { rule: schema.string().max(255) } },
+    website: { fillable: true, validation: { rule: schema.string().max(255) } },
+    payment_email: { fillable: true, required: true, validation: { rule: schema.string().max(255) } },
+    tax_id: { fillable: true, validation: { rule: schema.string().max(64) } },
+    status: { fillable: true, default: 'pending', validation: { rule: schema.enum(['pending', 'active', 'suspended']) } },
+  },
+})
+```
+
+`AffiliateLink` (`belongsTo: ['Affiliate']`, with `url`, `campaign` and a click
+counter), `Commission` (`belongsTo: ['Affiliate', 'Order']`, with `amount`,
+`rate` and `status`) and `Payout` (`belongsTo: ['Affiliate']`, with `amount`,
+`method` and `paid_at`) follow the same shape.
+
+Then generate and apply the migrations - Stacks derives them from the models
+rather than asking you to write them:
+
+```bash
+buddy generate:migrations
+buddy migrate
 ```
 
 ## Affiliate Registration

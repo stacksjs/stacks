@@ -421,29 +421,21 @@ route.put('/posts/:id', async (req) => {
 ### Setting Up 2FA
 
 ```typescript
-import {
-  generateTOTPSecret,
-  generateQRCodeDataURL,
-  verifyTOTP,
-  totpKeyUri
-} from '@stacksjs/auth'
+import { generateTwoFactorSetup } from '@stacksjs/auth'
 
-// Generate secret
-const secret = generateTOTPSecret()
+// Secret, otpauth:// URI and QR code in one synchronous call
+const { secret, uri, qr } = generateTwoFactorSetup(user.email, 'MyApp')
 
-// Generate QR code for authenticator app
-const uri = totpKeyUri({
-  secret,
-  issuer: 'MyApp',
-  accountName: user.email
-})
-
-const qrCode = await generateQRCodeDataURL(uri)
-// Display QR code to user
-
-// Store secret for user
-await user.update({ totpSecret: secret })
+// `qr` is an SVG string, not a data URI: it stays sharp at any size, inlines
+// into a server-rendered page or an email, and is a few hundred bytes rather
+// than tens of kilobytes.
 ```
+
+The pieces are also available individually - `generateTwoFactorSecret()`,
+`generateTwoFactorUri(email, serviceName, secret)` and
+`twoFactorQrCode(uri, size?)` - for a flow that needs to interleave its own
+steps. `stashPendingTwoFactorSecret` holds the secret server-side while the
+user scans it, so it is never enabled from an unconfirmed code.
 
 ### Verifying 2FA Code
 
@@ -614,34 +606,39 @@ route.post('/webauthn/login', async (req) => {
 
 ## Password Reset
 
+`passwordResets(email)` returns the three actions for that address, so the
+email is never a parameter you can get wrong halfway through the flow:
+
 ```typescript
-import { sendPasswordReset, resetPassword } from '@stacksjs/auth'
+import { passwordResets } from '@stacksjs/auth'
+import { response } from '@stacksjs/router'
 
 // Request password reset
 route.post('/forgot-password', async (req) => {
   const { email } = req.all()
 
-  await sendPasswordReset(email, {
-    resetUrl: 'https://myapp.com/reset-password',
-    expiresIn: 60 * 60 * 1000, // 1 hour
-  })
+  // Creates the token, invalidating any outstanding one for this address,
+  // and sends the mail. The expiry comes from config.auth.passwordReset.expire.
+  await passwordResets(email).sendEmail()
 
-  return Response.json({ message: 'Reset email sent' })
+  return response.json({ message: 'Reset email sent' })
 })
 
 // Reset password
 route.post('/reset-password', async (req) => {
-  const { token, password } = req.all()
+  const { email, token, password } = req.all()
 
-  const result = await resetPassword(token, password)
+  const result = await passwordResets(email).resetPassword(token, password)
 
-  if (result.success) {
-    return Response.json({ message: 'Password reset successfully' })
-  }
+  if (result.success)
+    return response.json({ message: 'Password reset successfully' })
 
-  return Response.json({ error: result.error }, { status: 400 })
+  return response.json({ error: result.error }, { status: 400 })
 })
 ```
+
+`verifyToken(token)` checks a token without consuming it, for a reset page that
+wants to show the form only when the link is still valid.
 
 ## Rate Limiting
 

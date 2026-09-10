@@ -8,12 +8,17 @@ The Checkout Form module provides UI components and functionality for building s
 
 ## Getting Started
 
-Import the checkout and cart functionality:
+Import the checkout helpers:
 
 ```ts
 import { manageCheckout } from '@stacksjs/payments'
-import { Cart, CartItem } from '@stacksjs/commerce'
 ```
+
+`Cart` and `CartItem` need no import. Every model is injected as a server
+global, so `await Cart.find(id)` works in routes, actions and jobs with no
+import statement. (`Error` and `Request` are the two exceptions - a global
+`Error` would mean `throw new Error(...)` constructed a database row - and
+those two are imported directly.)
 
 ## Cart Management
 

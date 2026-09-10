@@ -89,7 +89,6 @@ async function uploadDigitalProduct(file: File, productId: number) {
 
 ```ts
 import { storage } from '@stacksjs/storage'
-import { sign } from '@stacksjs/security'
 
 async function generateDownloadUrl(
   digitalDeliveryId: number,
