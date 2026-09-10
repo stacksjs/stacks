@@ -104,10 +104,41 @@ function readLineOrEof(prompt: string): Promise<string | typeof EOF> {
 }
 
 /**
+ * Whether asking a question is possible and permitted right now.
+ *
+ * `--no-interaction` is registered as a process-wide buddy option and printed
+ * in every command's help, and nothing read it (stacksjs/stacks#853). Closed
+ * stdin already resolves a prompt to its default rather than hanging, so this
+ * was not the CI hang it looks like - but a flag that promises not to prompt
+ * and then prompts is still a promise broken, and a runner whose stdin is an
+ * open pipe with no data has nothing else to save it.
+ *
+ * Read from argv rather than from parsed options: prompts are reached from
+ * library code that never sees the command's option bag.
+ */
+export function promptsAreInteractive(): boolean {
+  if (process.argv.includes('--no-interaction'))
+    return false
+
+  // Some CI providers allocate a TTY, so `isTTY` alone is not the answer.
+  if (process.env.CI)
+    return false
+
+  return Boolean(process.stdin.isTTY && process.stdout.isTTY)
+}
+
+/**
  * Read a line, treating EOF as an empty answer. Existing behaviour: callers
  * that only ever wanted "the default" on end-of-input keep getting it.
+ *
+ * Non-interactive returns the empty answer WITHOUT printing the question. The
+ * prompt text on its own line, with no answer after it, reads in a CI log like
+ * the job stalled there.
  */
 async function readLine(prompt: string): Promise<string> {
+  if (!promptsAreInteractive())
+    return ''
+
   const answer = await readLineOrEof(prompt)
   return answer === EOF ? '' : answer
 }
@@ -133,6 +164,12 @@ async function confirmOrNull(options: ConfirmOptions | string): Promise<boolean 
   const opts = typeof options === 'string' ? { message: options } : options
   const defaultValue = opts.initial ?? false
   const suffix = defaultValue ? ' (Y/n) ' : ' (y/N) '
+
+  // Non-interactive is exactly the "nobody answered" case this variant exists
+  // to report, so it reports it rather than taking the default. Callers use
+  // this for questions whose yes cannot be undone.
+  if (!promptsAreInteractive())
+    return null
 
   const answer = await readLineOrEof(`${opts.message}${suffix}`)
   if (answer === EOF)
