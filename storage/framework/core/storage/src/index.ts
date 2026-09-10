@@ -52,6 +52,8 @@ export type { ParsedDiskPath } from './path-sanitize'
 // MIME re-verification — server-side check that uploaded bytes match
 // the claimed content type. Run this after a presigned upload
 // completes since `Content-Type` on a presigned PUT is caller-attested.
+export { fileInfo, fileInfoFromBytes, fileKind, isPreviewable, resolveMime } from './file-info'
+export type { FileInfo, FileKind, ImageInfo } from './file-info'
 export { detectMimeFromMagicBytes, verifyUploadedMime } from './mime-verify'
 export type { MimeVerifyResult } from './mime-verify'
 
