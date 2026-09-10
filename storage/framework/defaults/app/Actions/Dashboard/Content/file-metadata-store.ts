@@ -1,4 +1,4 @@
-import type { StorageItemMetadata, StorageMetadataStore } from './file-metadata'
+import type { StorageItemMetadata, StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
 import { db, sqlDateTime } from '@stacksjs/database'
 import { isEmptyMetadata, isUnderPrefix, normalizeTags, repathUnderPrefix, STORAGE_ITEM_TYPE } from './file-metadata'
 
@@ -160,6 +160,48 @@ async function itemIdFor(disk: string, path: string): Promise<number | undefined
   return row?.id
 }
 
+interface StorageItemTaskRow {
+  id: number
+  disk: string
+  path: string
+  kind: StorageTaskKind
+  state: StorageTaskState
+  attempts: number | null
+  error: string | null
+  started_at: string | null
+  finished_at: string | null
+}
+
+/** The `storage_item_tasks` rows for a subtree, same prefix rules as above. */
+async function taskRowsUnder(disk: string, prefix: string): Promise<StorageItemTaskRow[]> {
+  const scopedTasks = (): ReturnType<typeof db.selectFrom> =>
+    db.selectFrom('storage_item_tasks').selectAll().where('disk', '=', disk)
+
+  const all = async (build: (q: ReturnType<typeof scopedTasks>) => ReturnType<typeof scopedTasks>): Promise<StorageItemTaskRow[]> =>
+    await build(scopedTasks()).execute() as unknown as StorageItemTaskRow[]
+
+  if (!prefix)
+    return await all(query => query)
+
+  const [exact, beneath] = await Promise.all([
+    all(query => query.where('path', '=', prefix)),
+    all(query => query.where('path', 'like', `${escapeLike(prefix)}/%`)),
+  ])
+
+  return [...exact, ...beneath]
+}
+
+function toTask(row: StorageItemTaskRow): StorageItemTask {
+  return {
+    kind: row.kind,
+    state: row.state,
+    attempts: Number(row.attempts ?? 0),
+    error: row.error ?? undefined,
+    startedAt: row.started_at ?? undefined,
+    finishedAt: row.finished_at ?? undefined,
+  }
+}
+
 async function deleteItems(ids: number[]): Promise<void> {
   if (ids.length === 0)
     return
@@ -283,12 +325,32 @@ export const databaseMetadataStore: StorageMetadataStore = {
         .execute()
     }
 
+    // Tasks follow the file, or a transcode that finished before a rename
+    // reports as never having run (stacksjs/stacks#2578).
+    for (const task of await taskRowsUnder(disk, from)) {
+      const next = repathUnderPrefix(task.path, from, to)
+      if (next === task.path)
+        continue
+
+      // A task already recorded at the destination is replaced, matching the
+      // storage move this follows: the file that was there is gone.
+      const collisions = (await taskRowsUnder(disk, next)).filter(row => row.path === next && row.kind === task.kind && row.id !== task.id)
+      await deleteTasks(collisions.map(row => row.id))
+
+      await db
+        .updateTable('storage_item_tasks')
+        .set({ path: next, updated_at: sqlDateTime() })
+        .where('id', '=', task.id)
+        .execute()
+    }
+
     return rows.length
   },
 
   async forget(disk, path) {
     const rows = await rowsUnder(disk, path)
     await deleteItems(rows.map(row => row.id))
+    await deleteTasks((await taskRowsUnder(disk, path)).map(row => row.id))
     return rows.length
   },
 
@@ -296,8 +358,62 @@ export const databaseMetadataStore: StorageMetadataStore = {
     const rows = await rowsUnder(disk, prefix)
     const orphans = rows.filter(row => isUnderPrefix(row.path, prefix) && !keep.has(row.path))
     await deleteItems(orphans.map(row => row.id))
+
+    const orphanTasks = (await taskRowsUnder(disk, prefix)).filter(row => !keep.has(row.path))
+    await deleteTasks(orphanTasks.map(row => row.id))
+
     return orphans.length
   },
+
+  async tasksUnder(disk, prefix) {
+    const byPath = new Map<string, StorageItemTask[]>()
+    for (const row of await taskRowsUnder(disk, prefix)) {
+      const existing = byPath.get(row.path)
+      if (existing)
+        existing.push(toTask(row))
+      else
+        byPath.set(row.path, [toTask(row)])
+    }
+    return byPath
+  },
+
+  async writeTask(disk, path, task) {
+    const existing = await db
+      .selectFrom('storage_item_tasks')
+      .select(['id'])
+      .where('disk', '=', disk)
+      .where('path', '=', path)
+      .where('kind', '=', task.kind)
+      .executeTakeFirst() as { id: number } | undefined
+
+    const values = {
+      state: task.state,
+      attempts: task.attempts,
+      error: task.error ?? null,
+      started_at: task.startedAt ?? null,
+      finished_at: task.finishedAt ?? null,
+      updated_at: sqlDateTime(),
+    }
+
+    // Replaced rather than appended: re-running a kind should leave one answer
+    // to "what happened to the transcode". The history of attempts belongs to
+    // the queue, not here.
+    if (existing) {
+      await db.updateTable('storage_item_tasks').set(values).where('id', '=', existing.id).execute()
+      return
+    }
+
+    await db
+      .insertInto('storage_item_tasks')
+      .values({ disk, path, kind: task.kind, ...values, created_at: sqlDateTime(), uuid: crypto.randomUUID() })
+      .execute()
+  },
+}
+
+async function deleteTasks(ids: number[]): Promise<void> {
+  if (ids.length === 0)
+    return
+  await db.deleteFrom('storage_item_tasks').where('id', 'in', ids).execute()
 }
 
 export type { StorageItemMetadata, StorageMetadataStore }

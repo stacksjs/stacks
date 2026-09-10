@@ -252,6 +252,11 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // above joins them back on (stacksjs/stacks#2577).
   guard(route.put('/files/favorite', 'Actions/Dashboard/Content/FileFavoriteAction'))
   guard(route.put('/files/tags', 'Actions/Dashboard/Content/FileTagsAction'))
+  // Re-running the background processing (stacksjs/stacks#2578). Not optional:
+  // the first version of any of these produces output somebody wants
+  // regenerated - a better ladder, a model that has improved, an optimization
+  // that ran before a preset changed.
+  guard(route.post('/files/reprocess', 'Actions/Dashboard/Content/FileReprocessAction'))
   guard(route.post('/files/duplicates', 'Actions/Dashboard/Content/FileDuplicateAction'))
   guard(route.delete('/files', 'Actions/Dashboard/Content/FileDestroyAction'))
 

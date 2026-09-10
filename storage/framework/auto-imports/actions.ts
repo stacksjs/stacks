@@ -337,6 +337,7 @@ export const actions = {
   'Actions/Dashboard/Content/FileFavoriteAction': '../defaults/app/Actions/Dashboard/Content/FileFavoriteAction.ts',
   'Actions/Dashboard/Content/FileIndexAction': '../defaults/app/Actions/Dashboard/Content/FileIndexAction.ts',
   'Actions/Dashboard/Content/FileRenameAction': '../defaults/app/Actions/Dashboard/Content/FileRenameAction.ts',
+  'Actions/Dashboard/Content/FileReprocessAction': '../defaults/app/Actions/Dashboard/Content/FileReprocessAction.ts',
   'Actions/Dashboard/Content/FileTagsAction': '../defaults/app/Actions/Dashboard/Content/FileTagsAction.ts',
   'Actions/Dashboard/Content/FileUploadAction': '../defaults/app/Actions/Dashboard/Content/FileUploadAction.ts',
   'Actions/Dashboard/Content/FileVisibilityAction': '../defaults/app/Actions/Dashboard/Content/FileVisibilityAction.ts',

@@ -1,10 +1,13 @@
 import type { ResponseStatus } from '@stacksjs/bun-router'
 import { statfs } from 'node:fs/promises'
 import { posix } from 'node:path'
+import type { JobName } from '@stacksjs/queue'
 import type { StorageAdapter, StorageManager, UploadedFileLike, Visibility } from '@stacksjs/storage'
 import { Storage } from '@stacksjs/storage'
-import type { StorageMetadataStore } from './file-metadata'
+import type { StorageItemTask, StorageMetadataStore, StorageTaskKind, StorageTaskState } from './file-metadata'
 import {
+  aggregateTaskState,
+  dispatchTasks,
   followCopy,
   followDelete,
   followRename,
@@ -13,7 +16,9 @@ import {
   normalizeTags,
   setFavorite as writeFavorite,
   setTags as writeTags,
+  STORAGE_TASK_KINDS,
   sweepMetadata,
+  tasksForContentType,
 } from './file-metadata'
 import { databaseMetadataStore } from './file-metadata-store'
 
@@ -44,6 +49,15 @@ export interface DashboardFileNode {
   starred: boolean
   /** Tags from the `taggable` vocabulary, empty for a file nobody has tagged. */
   tags: string[]
+  /**
+   * The one word for this file's background work (stacksjs/stacks#2578), or
+   * `null` when none was ever dispatched - which is not the same as work that
+   * finished. Worst-first across the kinds, because a failure is what a viewer
+   * needs to see even when two other kinds succeeded.
+   */
+  processing: StorageTaskState | null
+  /** Each kind separately, for a UI that wants to show which half failed. */
+  tasks: StorageItemTask[]
   shared: boolean
   items?: DashboardFileNode[]
 }
@@ -325,6 +339,7 @@ export async function getDashboardFileSnapshot(
   // files would otherwise be a thousand round trips to answer a question about
   // the handful of them anybody starred (stacksjs/stacks#2577).
   const records = await metadataUnder(store, selected.name)
+  const tasks = await store.tasksUnder(selected.name, '')
 
   const stated = await mapInBatches(
     entries,
@@ -348,9 +363,11 @@ export async function getDashboardFileSnapshot(
     path: '',
     lastModified: null,
     // The disk root is not a file and has no row; a star on "everything" would
-    // not mean anything.
+    // not mean anything, and nothing processes a disk.
     starred: false,
     tags: [],
+    processing: null,
+    tasks: [],
     shared: selected.public,
     items: [],
   }
@@ -370,9 +387,15 @@ export async function getDashboardFileSnapshot(
    * A path with no row is a file nobody starred or tagged, which is most of
    * them - so the absence of a row is the answer rather than a missing one.
    */
-  function pick(path: string): Pick<DashboardFileNode, 'starred' | 'tags'> {
+  function pick(path: string): Pick<DashboardFileNode, 'starred' | 'tags' | 'processing' | 'tasks'> {
     const record = recordFor(records, path)
-    return { starred: record.favorite, tags: record.tags }
+    const running = tasks.get(path) ?? []
+    return {
+      starred: record.favorite,
+      tags: record.tags,
+      processing: aggregateTaskState(running),
+      tasks: running,
+    }
   }
 
   function ensureFolder(path: string): DashboardFileNode {
@@ -808,13 +831,138 @@ async function assertExists(adapter: StorageAdapter, path: string): Promise<void
   throw new DashboardFileError(`Storage item "${path}" was not found.`, 404)
 }
 
+/**
+ * How a dispatched job reaches the queue.
+ *
+ * A parameter so the upload path can be tested without a queue, and so an app
+ * that wants a different dispatcher - a synchronous one in a test, a
+ * rate-limited one in front of a paid vision API - can supply it. The default
+ * reads `@stacksjs/queue` lazily: `uploadDashboardFiles` is on the request path
+ * and most uploads are not media.
+ */
+export type TaskDispatcher = (job: JobName, payload: Record<string, unknown>) => Promise<void>
+
+/**
+ * The job each kind of work runs.
+ *
+ * Typed as the generated `JobName` union rather than `string`, so a job renamed
+ * or removed under this map is a compile error instead of a dispatch that fails
+ * at runtime for a file nobody is watching.
+ */
+const TASK_JOBS = {
+  optimize: 'OptimizeStorageImageJob',
+  transcode: 'TranscodeStorageVideoJob',
+  tag: 'TagStorageMediaJob',
+} as const satisfies Record<StorageTaskKind, JobName>
+
+const queueDispatcher: TaskDispatcher = async (job, payload) => {
+  const { Jobs } = await import('@stacksjs/queue')
+  await Jobs.dispatch(job as JobName, payload)
+}
+
+/**
+ * Queue the processing an uploaded file calls for (stacksjs/stacks#2578).
+ *
+ * Only ever dispatches for a content type that has work to do - most uploads
+ * are documents, and a queue entry per PDF that immediately finds nothing to do
+ * is noise in the one place somebody looks when a transcode is stuck.
+ *
+ * A video is dispatched only when the caller supplies a profile: the ladder is
+ * derived from the source dimensions, and a job that guesses builds renditions
+ * nobody asked for. The dashboard knows them from the upload; a caller that
+ * does not can dispatch the transcode later through
+ * {@link reprocessDashboardFile}.
+ */
+export async function dispatchDashboardFileTasks(
+  input: { disk?: string, path: unknown, contentType?: string, videoProfile?: Record<string, unknown>, only?: readonly StorageTaskKind[] },
+  manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
+  dispatch: TaskDispatcher = queueDispatcher,
+): Promise<StorageItemTask[]> {
+  const selected = resolveDisk(manager, input.disk)
+  const path = normalizeDashboardFilePath(input.path)
+
+  const applicable = tasksForContentType(input.contentType)
+  const wanted = input.only
+    ? applicable.filter(kind => input.only!.includes(kind))
+    : applicable
+
+  const runnable = wanted.filter(kind => kind !== 'transcode' || input.videoProfile !== undefined)
+  if (runnable.length === 0)
+    return []
+
+  return await dispatchTasks(store, selected.name, path, runnable, async (kind) => {
+    await dispatch(TASK_JOBS[kind], {
+      disk: selected.name,
+      path,
+      ...(kind === 'transcode' ? { profile: input.videoProfile } : {}),
+    })
+  })
+}
+
+/**
+ * Run a file's processing again (stacksjs/stacks#2578).
+ *
+ * The re-run path the issue asked for, and it is not optional: the first
+ * version of any of these produces output somebody wants regenerated - a
+ * better ladder, a model that has since improved, an optimization that ran
+ * before a preset changed.
+ *
+ * Existence is checked against the DISK, so re-running a file that has since
+ * been deleted is a 404 rather than a job that fails minutes later in a worker
+ * log nobody reads.
+ */
+export async function reprocessDashboardFile(
+  input: { disk?: string, path: unknown, kinds?: unknown, videoProfile?: Record<string, unknown> },
+  manager: Manager = Storage,
+  store: StorageMetadataStore = databaseMetadataStore,
+  dispatch: TaskDispatcher = queueDispatcher,
+): Promise<{ path: string, tasks: StorageItemTask[] }> {
+  const selected = resolveDisk(manager, input.disk)
+  const path = normalizeDashboardFilePath(input.path)
+
+  let only: StorageTaskKind[] | undefined
+  if (input.kinds !== undefined && input.kinds !== null) {
+    if (!Array.isArray(input.kinds))
+      throw new DashboardFileError('Kinds must be an array.', 422, { kinds: 'Send an array of task kinds.' })
+    for (const kind of input.kinds) {
+      if (!STORAGE_TASK_KINDS.includes(kind as StorageTaskKind)) {
+        throw new DashboardFileError(`Unknown task kind "${String(kind)}".`, 422, {
+          kinds: `Choose from ${STORAGE_TASK_KINDS.join(', ')}.`,
+        })
+      }
+    }
+    only = input.kinds as StorageTaskKind[]
+  }
+
+  if (!(await selected.adapter.fileExists(path)))
+    throw new DashboardFileError(`Storage item "${path}" was not found.`, 404)
+
+  const tasks = await dispatchDashboardFileTasks(
+    {
+      disk: selected.name,
+      path,
+      contentType: await selected.adapter.mimeType(path),
+      videoProfile: input.videoProfile,
+      only,
+    },
+    manager,
+    store,
+    dispatch,
+  )
+
+  return { path, tasks }
+}
+
 export async function uploadDashboardFiles(
   input: { disk?: string, path?: string, files: UploadedFileLike[] },
   manager: Manager = Storage,
-): Promise<Array<{ path: string, url: string, size: number }>> {
+  store: StorageMetadataStore = databaseMetadataStore,
+  dispatch: TaskDispatcher = queueDispatcher,
+): Promise<Array<{ path: string, url: string, size: number, tasks: StorageItemTask[] }>> {
   const selected = resolveDisk(manager, input.disk)
   const directory = normalizeDashboardFilePath(input.path ?? '', { allowEmpty: true })
-  const uploaded: Array<{ path: string, url: string, size: number }> = []
+  const uploaded: Array<{ path: string, url: string, size: number, tasks: StorageItemTask[] }> = []
 
   try {
     for (const file of input.files) {
@@ -824,7 +972,7 @@ export async function uploadDashboardFiles(
         filename: 'original',
         overwrite: false,
       })
-      uploaded.push({ path: result.path, url: result.url, size: result.size })
+      uploaded.push({ path: result.path, url: result.url, size: result.size, tasks: [] })
     }
   }
   catch (error) {
@@ -847,6 +995,26 @@ export async function uploadDashboardFiles(
       )
     }
     throw error
+  }
+
+  // Dispatched after every file is safely written, not inside the loop above:
+  // the rollback path deletes what was uploaded, and a job already queued for a
+  // file that is about to be deleted would run against nothing.
+  //
+  // A dispatch failure is recorded on the task row rather than thrown, so a
+  // queue that is down does not fail an upload that succeeded - the file is
+  // there, and the dashboard shows the processing as failed.
+  for (const file of uploaded) {
+    file.tasks = await dispatchDashboardFileTasks(
+      {
+        disk: selected.name,
+        path: file.path,
+        contentType: await selected.adapter.mimeType(file.path).catch(() => undefined),
+      },
+      manager,
+      store,
+      dispatch,
+    )
   }
 
   return uploaded

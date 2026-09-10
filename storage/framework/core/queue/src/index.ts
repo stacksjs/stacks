@@ -20,6 +20,10 @@ export { type ActionRunner, getActionRunner, setActionRunner } from './action-ru
 // Stacks job helper for dispatching file-based jobs
 // =============================================================================
 export { Jobs, job, jobBatch, runJob } from './job'
+// The generated name union and its payload type. Exported because a caller
+// building a name-to-job map wants a rename to be a compile error rather than a
+// dispatch that fails at runtime (stacksjs/stacks#2578).
+export type { JobName, JobPayload } from './job'
 
 // =============================================================================
 // Job dispatch idempotency (stacksjs/stacks#1872 Q-8)

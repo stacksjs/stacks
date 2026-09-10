@@ -27,9 +27,19 @@ let manager: StorageManager
  * the same way the storage manager already is.
  */
 let store = createMemoryMetadataStore()
+/**
+ * A dispatcher that records instead of queueing (stacksjs/stacks#2578). These
+ * tests are about the storage operations, not the pipeline, and a real queue
+ * would make them depend on a worker.
+ */
+let dispatched: Array<{ job: string, payload: Record<string, unknown> }> = []
+const dispatch = async (job: string, payload: Record<string, unknown>): Promise<void> => {
+  dispatched.push({ job, payload })
+}
 
 beforeEach(async () => {
   store = createMemoryMetadataStore()
+  dispatched = []
   root = await mkdtemp(join(tmpdir(), 'stacks-dashboard-files-'))
   await mkdir(join(root, 'public'), { recursive: true })
   manager = new StorageManager().init({
@@ -140,14 +150,14 @@ describe('dashboard file manager', () => {
       bytes: async () => new TextEncoder().encode(contents),
     })
 
-    const uploaded = await uploadDashboardFiles({ path: 'documents', files: [file('first')] }, manager)
+    const uploaded = await uploadDashboardFiles({ path: 'documents', files: [file('first')] }, manager, store, dispatch)
     expect(uploaded[0]).toMatchObject({
       path: 'documents/release_notes.txt',
       url: '/storage/documents/release_notes.txt',
       size: 5,
     })
 
-    await expect(uploadDashboardFiles({ path: 'documents', files: [file('second')] }, manager))
+    await expect(uploadDashboardFiles({ path: 'documents', files: [file('second')] }, manager, store, dispatch))
       .rejects
       .toThrow('File already exists: documents/release_notes.txt')
     expect(await manager.disk('public').readToString('documents/release_notes.txt')).toBe('first')
@@ -163,7 +173,7 @@ describe('dashboard file manager', () => {
 
     await expect(uploadDashboardFiles({
       files: [file('new.txt', 'new'), file('duplicate.txt', 'replacement')],
-    }, manager)).rejects.toThrow('No files from this upload were kept')
+    }, manager, store, dispatch)).rejects.toThrow('No files from this upload were kept')
 
     expect(await manager.disk('public').fileExists('new.txt')).toBe(false)
     expect(await manager.disk('public').readToString('duplicate.txt')).toBe('existing')

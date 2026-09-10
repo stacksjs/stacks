@@ -41,6 +41,30 @@ export interface StorageItemMetadata {
   tags: string[]
 }
 
+/**
+ * The three kinds of background work a file can carry (stacksjs/stacks#2578).
+ *
+ * `optimize` builds the image variants, `transcode` the mp4 and HLS renditions,
+ * `tag` asks a vision model what is in the file. Independent: a video whose
+ * transcode finished and whose tagging failed is a normal state.
+ */
+export type StorageTaskKind = 'optimize' | 'transcode' | 'tag'
+
+export type StorageTaskState = 'queued' | 'running' | 'done' | 'failed'
+
+/** One unit of background work, as the dashboard sees it. */
+export interface StorageItemTask {
+  kind: StorageTaskKind
+  state: StorageTaskState
+  attempts: number
+  error?: string
+  startedAt?: string
+  finishedAt?: string
+}
+
+/** Every task kind, in the order a file would run them. */
+export const STORAGE_TASK_KINDS: readonly StorageTaskKind[] = ['optimize', 'transcode', 'tag']
+
 /** The `taggable_type` these rows use, which keeps them apart from the CMS's. */
 export const STORAGE_ITEM_TYPE = 'storage_items'
 
@@ -70,6 +94,18 @@ export interface StorageMetadataStore {
   forget: (disk: string, path: string) => Promise<number>
   /** Remove rows under `prefix` whose path is not in `keep`. Returns rows removed. */
   sweep: (disk: string, prefix: string, keep: ReadonlySet<string>) => Promise<number>
+
+  /**
+   * Every task on `disk` whose path is `prefix` or beneath it.
+   *
+   * Kept on the same interface as the metadata rather than a second one,
+   * because `move`, `forget` and `sweep` have to reconcile both tables and a
+   * caller that could reconcile one without the other would eventually do so.
+   */
+  tasksUnder: (disk: string, prefix: string) => Promise<Map<string, StorageItemTask[]>>
+
+  /** Record one task, replacing whatever was recorded for that kind. */
+  writeTask: (disk: string, path: string, task: StorageItemTask) => Promise<void>
 }
 
 /**
@@ -266,6 +302,151 @@ export async function sweepMetadata(
 }
 
 /**
+ * The one word the file manager shows for a file's processing.
+ *
+ * Reduces the independent tasks to a status, worst-first, because that is what
+ * a caller acts on: a failure is the thing to surface even when two other kinds
+ * finished. `null` means no work was ever dispatched for this file, which is
+ * not the same as work that finished - an image uploaded before optimization
+ * existed should not claim to have been optimized.
+ */
+export function aggregateTaskState(tasks: readonly StorageItemTask[]): StorageTaskState | null {
+  if (tasks.length === 0)
+    return null
+  if (tasks.some(task => task.state === 'failed'))
+    return 'failed'
+  if (tasks.some(task => task.state === 'running'))
+    return 'running'
+  if (tasks.some(task => task.state === 'queued'))
+    return 'queued'
+  return 'done'
+}
+
+/**
+ * Which kinds of work a file's content type calls for.
+ *
+ * Decided from the MIME type rather than the extension, when one is known: a
+ * `.mp4` that is actually a PDF should not be handed to a transcoder. Tagging
+ * applies to images and video alike, because a vision model can describe a
+ * frame as readily as a photograph.
+ */
+export function tasksForContentType(contentType: string | undefined): StorageTaskKind[] {
+  const mime = (contentType ?? '').toLowerCase().split(';')[0]?.trim() ?? ''
+
+  if (mime.startsWith('image/')) {
+    // SVG is markup, not a raster: there is nothing to re-encode, and running
+    // it through a decoder is a parser attack surface for no benefit.
+    if (mime === 'image/svg+xml')
+      return []
+    return ['optimize', 'tag']
+  }
+
+  if (mime.startsWith('video/'))
+    return ['transcode', 'tag']
+
+  return []
+}
+
+/**
+ * Queue the work a file calls for, and record it.
+ *
+ * Recording happens BEFORE the dispatch and the row is marked failed if the
+ * dispatch throws, so a queue that is down leaves a visible failure rather than
+ * a file that silently never gets processed. That is the whole reason the state
+ * is in a table the dashboard reads rather than only in the queue.
+ */
+export async function dispatchTasks(
+  store: StorageMetadataStore,
+  disk: string,
+  path: string,
+  kinds: readonly StorageTaskKind[],
+  dispatch: (kind: StorageTaskKind) => Promise<void>,
+): Promise<StorageItemTask[]> {
+  const queued: StorageItemTask[] = []
+
+  for (const kind of kinds) {
+    const task: StorageItemTask = { kind, state: 'queued', attempts: 0 }
+    await store.writeTask(disk, path, task)
+
+    try {
+      await dispatch(kind)
+      queued.push(task)
+    }
+    catch (error) {
+      const failed: StorageItemTask = {
+        kind,
+        state: 'failed',
+        attempts: 0,
+        error: describeError(error),
+        finishedAt: new Date().toISOString(),
+      }
+      await store.writeTask(disk, path, failed)
+      queued.push(failed)
+    }
+  }
+
+  return queued
+}
+
+/**
+ * Run one task, recording what happened to it either way.
+ *
+ * The three jobs share this rather than each writing their own transitions,
+ * because the transitions are the part a dashboard depends on and three
+ * hand-written copies would eventually disagree - one forgetting to clear the
+ * error on a successful retry, say, leaving a green file with a red message.
+ *
+ * Rethrows on failure after recording, so the queue still counts the attempt
+ * and applies its backoff. The row and the queue are answering different
+ * questions: the queue decides whether to try again, the row is what somebody
+ * looking at the file sees.
+ */
+export async function runTask<T>(
+  store: StorageMetadataStore,
+  disk: string,
+  path: string,
+  kind: StorageTaskKind,
+  work: () => Promise<T>,
+): Promise<T> {
+  const previous = (await store.tasksUnder(disk, path)).get(path)?.find(task => task.kind === kind)
+  const attempts = (previous?.attempts ?? 0) + 1
+  const startedAt = new Date().toISOString()
+
+  await store.writeTask(disk, path, { kind, state: 'running', attempts, startedAt })
+
+  try {
+    const result = await work()
+    await store.writeTask(disk, path, {
+      kind,
+      state: 'done',
+      attempts,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      // No `error`, so a retry that succeeds clears the previous failure rather
+      // than leaving a done task carrying a stale message.
+    })
+    return result
+  }
+  catch (error) {
+    await store.writeTask(disk, path, {
+      kind,
+      state: 'failed',
+      attempts,
+      startedAt,
+      finishedAt: new Date().toISOString(),
+      error: describeError(error),
+    })
+    throw error
+  }
+}
+
+/** A failure as a string a dashboard can show, bounded so a stack trace cannot fill the column. */
+export function describeError(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error)
+  return message.length > 2000 ? `${message.slice(0, 1997)}...` : message
+}
+
+/**
  * A {@link StorageMetadataStore} held in memory.
  *
  * The counterpart to `InMemoryStorageAdapter` next door, and there for the same
@@ -279,19 +460,24 @@ export async function sweepMetadata(
  */
 export function createMemoryMetadataStore(): StorageMetadataStore {
   const rows = new Map<string, StorageItemMetadata>()
+  const tasks = new Map<string, StorageItemTask[]>()
   const key = (disk: string, path: string): string => `${disk}\u0000${path}`
 
-  function entries(disk: string, prefix: string): Array<[string, StorageItemMetadata]> {
-    const found: Array<[string, StorageItemMetadata]> = []
-    for (const [composite, metadata] of rows) {
+  function scan<T>(source: Map<string, T>, disk: string, prefix: string): Array<[string, T]> {
+    const found: Array<[string, T]> = []
+    for (const [composite, value] of source) {
       const separator = composite.indexOf('\u0000')
       if (composite.slice(0, separator) !== disk)
         continue
       const path = composite.slice(separator + 1)
       if (isUnderPrefix(path, prefix))
-        found.push([path, metadata])
+        found.push([path, value])
     }
     return found
+  }
+
+  function entries(disk: string, prefix: string): Array<[string, StorageItemMetadata]> {
+    return scan(rows, disk, prefix)
   }
 
   return {
@@ -312,6 +498,14 @@ export function createMemoryMetadataStore(): StorageMetadataStore {
         rows.delete(key(disk, path))
         rows.set(key(disk, repathUnderPrefix(path, from, to)), metadata)
       }
+
+      // Tasks follow the file too, or a transcode that finished before a rename
+      // reports as never having run.
+      for (const [path, list] of scan(tasks, disk, from)) {
+        tasks.delete(key(disk, path))
+        tasks.set(key(disk, repathUnderPrefix(path, from, to)), list)
+      }
+
       return moving.length
     },
 
@@ -319,6 +513,8 @@ export function createMemoryMetadataStore(): StorageMetadataStore {
       const going = entries(disk, path)
       for (const [found] of going)
         rows.delete(key(disk, found))
+      for (const [found] of scan(tasks, disk, path))
+        tasks.delete(key(disk, found))
       return going.length
     },
 
@@ -326,7 +522,18 @@ export function createMemoryMetadataStore(): StorageMetadataStore {
       const orphans = entries(disk, prefix).filter(([path]) => !keep.has(path))
       for (const [path] of orphans)
         rows.delete(key(disk, path))
+      for (const [path] of scan(tasks, disk, prefix).filter(([path]) => !keep.has(path)))
+        tasks.delete(key(disk, path))
       return orphans.length
+    },
+
+    async tasksUnder(disk, prefix) {
+      return new Map(scan(tasks, disk, prefix).map(([path, list]) => [path, list.map(task => ({ ...task }))]))
+    },
+
+    async writeTask(disk, path, task) {
+      const existing = tasks.get(key(disk, path)) ?? []
+      tasks.set(key(disk, path), [...existing.filter(entry => entry.kind !== task.kind), { ...task }])
     },
   }
 }

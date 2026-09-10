@@ -85,6 +85,37 @@ A file renamed outside the dashboard loses its metadata, and that is by design:
 a rename and a copy-then-delete are the same two events to a bucket listing, so
 reconciling would be guessing.
 
+### The media pipeline (stacksjs/stacks#2578)
+
+None of the three things an upload might need can happen inside the request: a
+transcode is minutes, a vision call is a round trip to a third party. So an
+upload dispatches and the dashboard shows state.
+
+- `storage_item_tasks`, one row per `(disk, path, kind)`, kind being
+  `optimize` (images, via `ts-images`), `transcode` (video, via `ts-videos`) or
+  `tag` (a vision model). They succeed and fail independently, which is why this
+  is not a column on `storage_items` - a video whose transcode finished and
+  whose tagging failed is a normal state.
+- `dispatchDashboardFileTasks` decides from the CONTENT TYPE what a file needs.
+  Most uploads are documents and get nothing. A transcode waits for a video
+  profile, because the ladder is derived from the source dimensions.
+- A dispatch failure is RECORDED, not thrown: a queue that is down leaves a
+  visible failure rather than an upload that fails or a file that is silently
+  never processed.
+- `runTask` owns the queued -> running -> done/failed transitions so the three
+  jobs cannot disagree about them. It rethrows after recording, because the row
+  and the queue answer different questions - the queue decides whether to retry,
+  the row is what somebody looking at the file sees.
+- `POST /files/reprocess` re-runs everything, or the kinds you name.
+
+Derivatives are written back to the same disk under `.variants/<path>/`. The
+leading dot keeps them out of the listing, which skips hidden components - a
+folder of thirty derivatives beside every photo makes the browser useless.
+
+**There is no ffmpeg.** #2578 asked whether video was in scope given the
+external binary, its licensing and its provisioning; `@stacksjs/video` is built
+on `ts-videos`, which encodes itself, so that question was already answered.
+
 Tags go through `taggables` + `taggable_models` with `taggable_type =
 'storage_items'` - the trait the CMS already uses. Do NOT declare a
 `belongsToMany` to the `Tag` model for this: `taggable_models.tag_id` resolves

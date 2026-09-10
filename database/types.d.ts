@@ -1479,6 +1479,21 @@ declare module '@stacksjs/database' {
       external_id: string
       user_id: number
     }
+    storage_item_tasks: {
+      // columns
+      id: number
+      uuid: string
+      created_at: string
+      updated_at: string | null
+      disk: string
+      path: string
+      kind: "optimize" | "transcode" | "tag"
+      state: "queued" | "running" | "done" | "failed"
+      attempts: number
+      error: string
+      started_at: string
+      finished_at: string
+    }
     storage_items: {
       // columns
       id: number

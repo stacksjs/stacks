@@ -446,6 +446,32 @@ Three things behave differently from an S3 disk:
 - **The emulator scopes the account by path.** Point `endpoint` at
   `http://127.0.0.1:10000/devstoreaccount1` to run against Azurite.
 
+### File manager metadata and processing
+
+The dashboard's file manager has two layers, and the split is worth knowing
+before extending it.
+
+**Storage operations** map to a `StorageAdapter` method and go straight to the
+disk: list, upload, create folder, rename, visibility, duplicate, delete.
+
+**Metadata** has nowhere to live on a disk. Favourites and tags are in
+`storage_items` keyed by `(disk, path)`; background processing is in
+`storage_item_tasks` keyed by `(disk, path, kind)`. The listing comes from the
+disk and both are joined onto it, so the disk stays authoritative and the tables
+annotate it (stacksjs/stacks#2577, #2578).
+
+```
+PUT  /api/dashboard/files/favorite   { disk, path, favorite }
+PUT  /api/dashboard/files/tags       { disk, path, tags: [...] }
+POST /api/dashboard/files/reprocess  { disk, path, kinds?: [...], profile? }
+```
+
+An upload dispatches the work its content type calls for - image variants via
+`ts-images`, mp4 and HLS via `ts-videos`, tags from a vision model - and writes
+the derivatives back to the same disk under `.variants/<path>/`, hidden from the
+listing. Nothing runs inside the request: a transcode is minutes, and a vision
+call is a round trip to a third party.
+
 ### S3 Visibility
 
 ```typescript

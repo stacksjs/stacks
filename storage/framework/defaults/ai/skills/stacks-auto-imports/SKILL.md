@@ -66,7 +66,7 @@ globalThis.toggleDark = toggleDark
 - **Custom Functions**: From `resources/functions/` (counter, dark mode, GPX, geo utilities)
 
 ### Server Auto-Imports (100+)
-- **All ORM Models**: User, Post, Author, Product, Order, Payment, Customer, etc. (100 models)
+- **All ORM Models**: User, Post, Author, Product, Order, Payment, Customer, etc. (102 models)
 - **Request Models**: UserRequest, PostRequest, OrderRequest, etc.
 - **Actions**: Action types and helpers
 - **Schema**: validation schema builder

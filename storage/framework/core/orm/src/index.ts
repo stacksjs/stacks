@@ -347,6 +347,10 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Request', [''], 'dashboard'],
   ['AnalyticsEvent', [''], 'dashboard'],
   ['QueryLog', [''], 'dashboard'],
+  // The file manager's metadata layer: what a disk cannot record about a file
+  // (stacksjs/stacks#2577), and the background work queued for it (#2578).
+  ['StorageItem', [''], 'dashboard'],
+  ['StorageItemTask', [''], 'dashboard'],
 
   // Monitoring (Error model can be used standalone without the rest of dashboard)
   ['Error', [''], 'monitoring'],
@@ -501,6 +505,8 @@ export const Redirect = lazyModel<typeof import('../../../defaults/app/Models/Co
 export const Site = lazyModel<typeof import('../../../defaults/app/Models/Site').default>('Site')
 export const SiteDomain = lazyModel<typeof import('../../../defaults/app/Models/SiteDomain').default>('SiteDomain')
 export const SmsOptOut = lazyModel<typeof import('../../../defaults/app/Models/SmsOptOut').default>('SmsOptOut')
+export const StorageItem = lazyModel<typeof import('../../../defaults/app/Models/StorageItem').default>('StorageItem')
+export const StorageItemTask = lazyModel<typeof import('../../../defaults/app/Models/StorageItemTask').default>('StorageItemTask')
 export const EmailIdempotency = lazyModel<typeof import('../../../defaults/app/Models/EmailIdempotency').default>('EmailIdempotency')
 export const EmailSuppression = lazyModel<typeof import('../../../defaults/app/Models/EmailSuppression').default>('EmailSuppression')
 export const EmailWebhookEvent = lazyModel<typeof import('../../../defaults/app/Models/EmailWebhookEvent').default>('EmailWebhookEvent')

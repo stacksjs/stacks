@@ -3257,6 +3257,27 @@ export function createClient(config: ClientConfig) {
   },
 
   /**
+   * PUT /api/dashboard/files/favorite
+   */
+  putDashboardFilesFavorite(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/dashboard/files/favorite", {}, [], false, options)
+  },
+
+  /**
+   * POST /api/dashboard/files/reprocess
+   */
+  postDashboardFilesReprocess(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "POST", "/api/dashboard/files/reprocess", {}, [], false, options)
+  },
+
+  /**
+   * PUT /api/dashboard/files/tags
+   */
+  putDashboardFilesTags(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {
+    return request(config, "PUT", "/api/dashboard/files/tags", {}, [], false, options)
+  },
+
+  /**
    * POST /api/dashboard/files/uploads
    */
   postDashboardFilesUploads(options?: RequestOptions): Promise<ApiResult<Record<string, unknown>>> {

@@ -65,7 +65,7 @@ Stacks resolves files from `app/` first and falls back to `storage/framework/def
 customize a framework default (e.g. a CMS action), create the same path under `app/`
 (`app/Actions/Cms/PostIndexAction.ts`) and it wins. New files you add under `app/` are available to
 the app (e.g. `app/Actions/MyAction.ts` is referenced as `'Actions/MyAction'` in routes). There are
-625 default actions and 100 built-in models you can use or override.
+630 default actions and 102 built-in models you can use or override.
 
 ---
 
@@ -190,7 +190,7 @@ module imported by that script must explicitly import every function, store,
 and type it uses; entry bindings do not leak into bundled module scope.
 
 **Server** (routes, `app/Actions/`, `app/Jobs/`, models) - injected into `globalThis`:
-- All 100 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
+- All 102 models (`User`, `Product`, `Order`, ...), so `await User.find(1)` works with no import.
 - Everything exported from `app/Jobs/`, `app/Controllers/` and `resources/functions/`.
 
 Models only - **not** their `Model` / `Request` / `RequestModel` "variants". This used to
@@ -295,7 +295,7 @@ buddy generate:migrations     # 2. diff models vs current schema, emit SQL into 
 buddy migrate                 # 4. apply pending migrations   (--diff to preview SQL, --auth for auth tables)
 buddy migrate:fresh --seed    #    (dev) drop everything, re-migrate, then seed
 ```
-`buddy make:migration <name>` still exists for hand-written migrations, and 225 migrations ship for
+`buddy make:migration <name>` still exists for hand-written migrations, and 228 migrations ship for
 the built-in models. `buddy migrate` verifies models exist before running.
 
 ### Query builder
