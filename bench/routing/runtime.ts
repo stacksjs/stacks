@@ -69,10 +69,80 @@ export function serverCommand(server: string): string[] {
   ]
 }
 
+/**
+ * What a benchmark server inherits from the machine it runs on.
+ *
+ * Not the whole parent environment. The runner boots through the repository's
+ * own bunfig, which preloads `.env`, so spreading `process.env` handed every
+ * server the developer's application configuration - and only the Stacks
+ * targets read any of it. A stray `STACKS_CSP` adds a header to every Stacks
+ * response and to nobody else's; a stray query-logging threshold changes the
+ * database row for one framework. Two people on the same commit would measure
+ * different things, and the difference would land entirely on one target.
+ *
+ * So the host contributes only what a process needs to run at all, and the
+ * benchmark states everything else explicitly. `NODE_OPTIONS` is deliberately
+ * absent: it can inject a loader into one process and not another.
+ */
+const HOST_ENVIRONMENT = [
+  'PATH',
+  'HOME',
+  'USER',
+  'LOGNAME',
+  'SHELL',
+  'TERM',
+  'TMPDIR',
+  'TMP',
+  'TEMP',
+  'TZ',
+  'LANG',
+  'LC_ALL',
+  'LC_CTYPE',
+  'BUN_INSTALL',
+  'BUN_INSTALL_CACHE_DIR',
+  'XDG_CACHE_HOME',
+  'XDG_CONFIG_HOME',
+  'XDG_DATA_HOME',
+  // Windows needs these to start a process at all.
+  'APPDATA',
+  'COMSPEC',
+  'LOCALAPPDATA',
+  'PATHEXT',
+  'PROGRAMDATA',
+  'PROGRAMFILES',
+  'SYSTEMDRIVE',
+  'SYSTEMROOT',
+  'USERPROFILE',
+  'WINDIR',
+] as const
+
+/**
+ * Benchmark switches the README documents as opt-in, passed through when set.
+ *
+ * `DB_QUERY_LOGGING_ENABLED` turns the database scenario into an
+ * observability-cost profile. The runner already reads it to label the report,
+ * so the server it describes has to see the same value.
+ */
+const FORWARDED_ENVIRONMENT = ['DB_QUERY_LOGGING_ENABLED'] as const
+
+export function hostEnvironment(source: Record<string, string | undefined> = process.env): Record<string, string> {
+  const environment: Record<string, string> = {}
+  for (const name of [...HOST_ENVIRONMENT, ...FORWARDED_ENVIRONMENT]) {
+    const value = source[name]
+    if (value != null)
+      environment[name] = value
+    // Windows environment names are case-insensitive but arrive capitalized.
+    const actual = Object.keys(source).find(key => key.toUpperCase() === name && key !== name)
+    if (actual != null && source[actual] != null)
+      environment[actual] = source[actual]
+  }
+  return environment
+}
+
 /** Give every framework the same production environment. */
 export function serverEnvironment(target: Target, withDb: boolean, scenarioId?: string): Record<string, string> {
   return {
-    ...process.env,
+    ...hostEnvironment(),
     APP_ENV: 'production',
     NODE_ENV: 'production',
     BENCH_PORT: String(PORT),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { join } from 'node:path'
-import { assertProbeResponse, assertResponseParity, assertStableParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, probeHeadersFor, serverCommand, serverEnvironment } from './runtime'
+import { assertProbeResponse, assertResponseParity, assertStableParity, BENCH_ROOT, benchmarkQueryLoggingEnabled, headersFor, hostEnvironment, probeHeadersFor, serverCommand, serverEnvironment } from './runtime'
 import { SCENARIOS } from './scenarios'
 import { DEFAULT_TARGETS, targetById } from './targets'
 
@@ -25,6 +25,30 @@ describe('benchmark server isolation', () => {
     expect(env.NODE_ENV).toBe('production')
     expect(env.BENCH_MODE).toBe('minimal')
     expect(env.BENCH_SCENARIO).toBe('static-json')
+  })
+
+  it('keeps the application environment out of every server', () => {
+    // The runner boots through the repository bunfig, which preloads `.env`,
+    // and only the Stacks targets read any of it. A stray `STACKS_CSP` would
+    // add a response header to one framework and to no other.
+    const environment = hostEnvironment({
+      PATH: '/usr/bin',
+      HOME: '/home/bench',
+      STACKS_CSP: "default-src 'self'",
+      APP_KEY: 'secret',
+      MAIL_HOST: 'smtp.example.com',
+      DB_PASSWORD: 'secret',
+      DB_QUERY_LOGGING_SLOW_THRESHOLD: '1',
+      NODE_OPTIONS: '--require ./loader.js',
+    })
+
+    expect(environment).toEqual({ PATH: '/usr/bin', HOME: '/home/bench' })
+  })
+
+  it('forwards the documented benchmark opt-in so the server matches the report', () => {
+    expect(hostEnvironment({ DB_QUERY_LOGGING_ENABLED: 'true' }))
+      .toEqual({ DB_QUERY_LOGGING_ENABLED: 'true' })
+    expect(hostEnvironment({})).toEqual({})
   })
 
   it('treats persistent query logging as an explicit benchmark profile', () => {

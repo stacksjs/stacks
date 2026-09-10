@@ -53,6 +53,14 @@ accident. The safeguards here exist only to stop that:
   `bun:sqlite`. Tests also reject benchmark selectors in framework source and
   prevent the fixture from bypassing the router with direct Bun serving,
   prebuilt responses, or manual JSON serialization.
+- **No application configuration reaches a server.** The runner boots through
+  this repository's bunfig, which preloads `.env`, and only the Stacks targets
+  read any of it: a stray `STACKS_CSP` would add a response header to one
+  framework and to no other, and two people on the same commit would measure
+  different things. A server inherits only what a process needs to start -
+  `PATH`, `HOME`, locale, temp directories - and the benchmark states
+  everything else explicitly. `DB_QUERY_LOGGING_ENABLED` is forwarded because
+  the report describes it.
 - **Every process exposes only benchmark routes.** The Stacks fixture uses the
   framework's public programmatic-router configuration to disable application
   route discovery, and its public API-server configuration to disable view
