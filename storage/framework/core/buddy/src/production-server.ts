@@ -615,7 +615,7 @@ export async function startProductionServer(options?: { port?: string | number, 
           if (!documentCacheControl)
             return finished
 
-          return applyDocumentCacheControl(finished ?? response, documentCacheControl)
+          return applyDocumentCacheControl(req, finished ?? response, documentCacheControl)
         },
       })
 
@@ -648,19 +648,55 @@ export function buildDocumentCacheControl(
 }
 
 /**
+ * Does this request belong to a signed-in visitor?
+ *
+ * A page rendered for someone in particular must never be handed to a shared
+ * cache, and the response alone cannot always say so — an app that keeps its
+ * session in `localStorage` sends no cookie back, and one that reuses an
+ * existing session sets none either. So the REQUEST is what decides.
+ *
+ * The CSRF cookie is excluded deliberately: it is a double-submit token every
+ * visitor gets, signed in or not, and treating it as a session would make
+ * every page uncacheable for everybody — which is exactly the state this is
+ * here to fix.
+ */
+export function isAuthenticatedRequest(request: Request): boolean {
+  if (request.headers.get('authorization'))
+    return true
+
+  const cookie = request.headers.get('cookie') || ''
+  if (!cookie)
+    return false
+
+  return cookie
+    .split(';')
+    .map(part => part.trim().split('=')[0]?.toLowerCase() ?? '')
+    .some(name => name !== '' && !name.includes('csrf') && /session|auth|token|remember/.test(name))
+}
+
+/**
  * Mark a document cacheable, unless it is about one visitor.
  *
- * The cookie check is the whole safety of the feature and is not the caller's
- * to remember: a response carrying `Set-Cookie` is per-visitor by definition,
- * and a shared cache told it may reuse that document will hand one person's
- * page — session cookie included — to the next person who asks. An app that
- * wants its pages cached should stop setting the cookie, not have the header
- * applied over the top of it.
+ * Two guards, and both are the framework's to enforce rather than each app's
+ * to remember:
  *
- * Anything already carrying its own `Cache-Control` is left alone; that is a
- * decision something closer to the response already made.
+ *  - the response sets a cookie — it is per-visitor by definition, and a
+ *    shared cache told to reuse it serves that cookie to whoever asks next;
+ *  - the request was authenticated — the page may hold someone's data even
+ *    when the response sets nothing.
+ *
+ * Past those, the declared header REPLACES what is already there. That is the
+ * point: the page pipeline marks renders `no-store` by default, so a version
+ * that only filled in a missing header could never do anything, and an app
+ * that declared `documents` would get silence instead of caching. Declaring it
+ * is the app asserting these pages are shareable; the guards above are what
+ * keep that assertion from being taken on faith.
  */
-export function applyDocumentCacheControl(response: Response, cacheControl?: string): Response {
+export function applyDocumentCacheControl(
+  request: Request,
+  response: Response,
+  cacheControl?: string,
+): Response {
   if (!cacheControl)
     return response
 
@@ -668,10 +704,10 @@ export function applyDocumentCacheControl(response: Response, cacheControl?: str
   if (response.status !== 200 || !contentType.startsWith('text/html'))
     return response
 
-  if (response.headers.has('cache-control'))
+  if (response.headers.getSetCookie().length > 0)
     return response
 
-  if (response.headers.getSetCookie().length > 0)
+  if (isAuthenticatedRequest(request))
     return response
 
   const headers = new Headers(response.headers)

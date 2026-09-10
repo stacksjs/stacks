@@ -167,10 +167,17 @@ export interface ServerCacheOptions {
   /**
    * `Cache-Control` for successful HTML documents.
    *
-   * Only ever applied to a response that sets no cookie. A document carrying a
-   * `Set-Cookie` is by definition about one visitor, and telling a shared
-   * cache to reuse it is how one person's page reaches somebody else — so the
-   * header is omitted rather than the cookie being dropped to earn it.
+   * Declaring this asserts that these pages are the same for everybody. It
+   * REPLACES the `no-store` the page pipeline puts on a render — a version
+   * that only filled in a missing header would never fire.
+   *
+   * Two things withdraw the assertion, both enforced by the framework rather
+   * than left to the app: a response that sets a cookie (per-visitor by
+   * definition — a shared cache would serve that cookie to whoever asks next),
+   * and a request that arrived authenticated (a bearer token, or a session
+   * cookie — the page may hold someone's data even when the response sets
+   * nothing). The CSRF double-submit cookie is not treated as a session; every
+   * visitor has one, and counting it would make every page uncacheable.
    */
   documents?: {
     /** Seconds a cache may serve the document without asking. */
