@@ -400,26 +400,36 @@ await db.truncateTable('sessions').execute()
 
 ### Creating Migrations
 
+Migrations are **derived from your models**, not hand-written. Describe the
+schema once in the model, and Stacks diffs it against the database:
+
 ```typescript
-import { Migration } from '@stacksjs/database'
+// app/Models/User.ts
+import { defineModel } from '@stacksjs/orm'
+import { schema } from '@stacksjs/validation'
 
-export default class CreateUsersTable extends Migration {
-  async up() {
-    await this.schema.createTable('users', (table) => {
-      table.id()
-      table.string('name')
-      table.string('email').unique()
-      table.string('password')
-      table.boolean('is_active').default(true)
-      table.timestamps()
-    })
-  }
-
-  async down() {
-    await this.schema.dropTable('users')
-  }
-}
+export default defineModel({
+  name: 'User',
+  table: 'users',
+  traits: { useTimestamps: true },
+  attributes: {
+    name: { fillable: true, validation: { rule: schema.string() } },
+    email: { fillable: true, unique: true, validation: { rule: schema.string() } },
+    password: { fillable: true, validation: { rule: schema.string() } },
+    is_active: { fillable: true, default: true },
+  },
+})
 ```
+
+```bash
+buddy generate:migrations   # diff models vs schema, emit SQL into database/migrations/
+buddy migrate               # apply (--diff to preview the SQL first)
+buddy migrate:fresh --seed  # dev: drop everything, re-migrate, seed
+```
+
+There is no `Migration` base class to extend. For a migration the differ cannot
+derive - a data backfill, say - `buddy make:migration <name>` scaffolds a plain
+SQL file.
 
 ### Column Types
 
@@ -531,7 +541,8 @@ first, which is the usual way to re-roll a development dataset.
 ## Transactions
 
 ```typescript
-import { db, transaction } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 
 // Using transaction helper
 await transaction(async (trx) => {
@@ -638,18 +649,37 @@ database.initialize()
 
 ## Query Logging
 
+Query logging is configuration, not a runtime switch - it has to be on before
+the first query for the tracker to be installed:
+
 ```typescript
-import { enableQueryLogging, disableQueryLogging } from '@stacksjs/database'
+// config/database.ts
+export default {
+  queryLogging: {
+    // On in development, opt-in in production - the history is write-heavy.
+    enabled: true,
+    // Milliseconds above which a query is marked slow.
+    slowThreshold: 100,
+    // Days of history to keep, pruned by a scheduled job.
+    retention: 7,
+    // Patterns to skip. `query_logs` is here to avoid logging the log.
+    excludedQueries: ['query_logs'],
+  },
+}
+```
 
-// Enable query logging
-enableQueryLogging()
+Logged queries land in the `query_logs` table and in the dashboard. See
+[Query Monitoring](/guide/query-monitoring) for the full configuration,
+including EXPLAIN-plan collection.
 
-// All queries will be logged to console
-await db.selectFrom('users').execute()
-// [SQL] SELECT _ FROM users (2.3ms)
+To route the log somewhere of your own, replace the tracker:
 
-// Disable logging
-disableQueryLogging()
+```typescript
+import { setQueryTracker } from '@stacksjs/database'
+
+setQueryTracker(async (event) => {
+  metrics.histogram('db.query.duration', event.queryDurationMillis)
+})
 ```
 
 ## Edge Cases

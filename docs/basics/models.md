@@ -737,7 +737,7 @@ for (const post of posts) {
 
 ```typescript
 
-import { transaction } from '@stacksjs/database'
+import { transaction } from '@stacksjs/orm'
 
 await transaction(async (trx) => {
   const user = await User.create({ name: 'John' }, { transaction: trx })

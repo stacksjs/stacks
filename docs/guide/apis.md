@@ -237,54 +237,83 @@ Stacks ships these as default actions under
 
 ### Transforming Responses
 
+`buddy make:resource UserResource` scaffolds one. Resources extend
+`JsonResource` from `@stacksjs/api`, and the model is `this.resource`:
+
 ```typescript
 // app/Resources/UserResource.ts
-import { Resource } from '@stacksjs/http'
+import type { Request } from '@stacksjs/router'
+import { JsonResource } from '@stacksjs/api'
 
-export class UserResource extends Resource {
-  toArray() {
+export default class UserResource extends JsonResource<User> {
+  toArray(request?: Request): Record<string, any> {
     return {
-      id: this.id,
-      name: this.name,
-      email: this.email,
-      avatar: this.avatar_url,
-      created_at: this.created_at.toISOString(),
-      // Don't expose sensitive data
-    }
-  }
+      id: this.resource.id,
+      name: this.resource.name,
+      email: this.resource.email,
+      avatar: this.resource.avatar_url,
 
-  with() {
-    return {
-      posts: PostResource.collection(this.posts),
+      // Only for callers who should see it.
+      secret: this.when(request?.user?.isAdmin, this.resource.secret),
+
+      // Only when the relation was eager-loaded, so a resource cannot
+      // trigger a query per row.
+      posts: this.whenLoaded('posts', () => PostResource.collection(this.resource.posts)),
+      posts_count: this.whenCounted('posts'),
+
+      created_at: this.resource.created_at,
+      updated_at: this.resource.updated_at,
     }
   }
 }
 
 // Usage
-return UserResource.make(user)
-return UserResource.collection(users)
+return new UserResource(user).toResponse()
+return UserResource.collection(users).toResponse()
+
+// With extra top-level data
+return new UserResource(user)
+  .withAdditional({ message: 'Success' })
+  .toResponse()
 ```
 
 ### Resource Collections
 
 ```typescript
 // app/Resources/PostResource.ts
-export class PostResource extends Resource {
-  toArray() {
+import { JsonResource } from '@stacksjs/api'
+
+export default class PostResource extends JsonResource<Post> {
+  toArray(): Record<string, any> {
     return {
-      id: this.id,
-      title: this.title,
-      excerpt: this.content.substring(0, 200),
-      author: new UserResource(this.author),
-      created_at: this.created_at.toISOString(),
+      id: this.resource.id,
+      title: this.resource.title,
+      excerpt: this.resource.content.substring(0, 200),
+      author: new UserResource(this.resource.author).toArray(),
+      created_at: this.resource.created_at,
     }
   }
 }
 
-// With pagination
-return PostResource.collection(posts).additional({
-  meta: { total: posts.total },
-})
+// A collection, with extra top-level data
+return PostResource.collection(posts)
+  .withAdditional({ meta: { total: posts.length } })
+  .toResponse()
+```
+
+For a paginated response, `fromPagination` builds the `meta` and `links`
+(`current_page`, `last_page`, `from`, `to`, `total`) rather than you assembling
+them:
+
+```typescript
+import { PaginatedResourceCollection } from '@stacksjs/api'
+
+return PaginatedResourceCollection.fromPagination(posts, PostResource, {
+  currentPage: 1,
+  perPage: 20,
+  total,
+  baseUrl: '/api/posts',
+}).toResponse()
 ```
 
 ## Pagination
@@ -333,32 +362,47 @@ route.group({
 
 ### Custom Rate Limits
 
+Rate limiting ships as the `throttle` middleware - attach it to a route with a
+Laravel-style pattern:
+
 ```typescript
-// app/Middleware/ApiRateLimit.ts
-import { RateLimiter, Request, Response, Next } from '@stacksjs/http'
-
-export async function apiRateLimit(
-  request: Request,
-  response: Response,
-  next: Next
-) {
-  const limiter = new RateLimiter({
-    key: request.user?.id || request.ip,
-    max: 100,
-    window: '15m',
-  })
-
-  if (await limiter.exceeded()) {
-    return response.json({
-      error: 'Too many requests',
-      retry_after: await limiter.retryAfter(),
-    }, 429)
-  }
-
-  await limiter.hit()
-  return next()
-}
+// routes/api.ts
+route.get('/posts', 'Actions/PostIndexAction').middleware('throttle:60,1')    // 60/minute
+route.post('/uploads', 'Actions/UploadAction').middleware('throttle:10,30s')  // 10/30 seconds
+route.get('/search', 'Actions/SearchAction').middleware('throttle:1000,1h')   // 1000/hour
 ```
+
+It keys on the authenticated user when there is one and the IP otherwise, adds
+`X-RateLimit-Limit`, `X-RateLimit-Remaining` and `X-RateLimit-Reset` to every
+response, and answers 429 with `Retry-After` when the limit is hit.
+
+For a limit the pattern cannot express, write a middleware. Note the real shape:
+a `Middleware` instance from `@stacksjs/router` with a `handle(request)`, which
+returns nothing to pass the request through - there is no `response`/`next`
+pair:
+
+```typescript
+// app/Middleware/PlanQuota.ts
+import { HttpError } from '@stacksjs/error-handling'
+import { Middleware } from '@stacksjs/router'
+
+export default new Middleware({
+  name: 'planQuota',
+  priority: 2, // after auth, which is what resolves request.user
+
+  async handle(request) {
+    const used = await countCallsThisMonth(request.user?.id)
+
+    if (used >= quotaFor(request.user?.plan))
+      throw new HttpError(429, 'Monthly API quota exhausted')
+
+    // Returning nothing continues the request.
+  },
+})
+```
+
+Register it in `app/Middleware.ts`, then attach it by name:
+`.middleware('planQuota')`.
 
 ## API Versioning
 
@@ -379,57 +423,73 @@ route.group({ prefix: '/v2' }, () => {
 
 ```typescript
 // app/Middleware/ApiVersion.ts
-export async function apiVersion(request: Request, response: Response, next: Next) {
-  const version = request.header('Accept-Version') || 'v1'
+import { Middleware } from '@stacksjs/router'
 
-  request.apiVersion = version
+export default new Middleware({
+  name: 'apiVersion',
+  priority: 1,
 
-  return next()
-}
+  async handle(request) {
+    // Returning nothing continues the request; there is no `next()`.
+    request.apiVersion = request.headers.get('Accept-Version') ?? 'v1'
+  },
+})
 ```
 
 ## Error Handling
 
 ### API Error Responses
 
+Errors are `HttpError` from `@stacksjs/error-handling`, and there is no handler
+class to subclass - the framework decides HTML or JSON from the request and
+renders accordingly.
+
 ```typescript
-// app/Exceptions/Handler.ts
-import { ExceptionHandler, HttpException } from '@stacksjs/http'
+import { HttpError } from '@stacksjs/error-handling'
 
-export class Handler extends ExceptionHandler {
-  render(exception: Error, request: Request): Response {
-    if (request.wantsJson()) {
-      if (exception instanceof HttpException) {
-        return response.json({
-          error: exception.message,
-          status: exception.statusCode,
-        }, exception.statusCode)
-      }
+// status first, then message, then an optional structured payload
+throw new HttpError(404, 'Post not found')
+throw new HttpError(403, 'You do not own this post')
 
-      return response.json({
-        error: 'Internal server error',
-        status: 500,
-      }, 500)
-    }
-
-    return super.render(exception, request)
-  }
-}
+// `details` is serialized alongside the message, which is how validation
+// attaches its per-field error map instead of stringifying it into `message`.
+throw new HttpError(422, 'Validation failed', {
+  email: ['must be a valid email address'],
+})
 ```
 
-### Custom Exceptions
+The response is `{ "error": "...", "details": ... }`, with `error` defaulting to
+the standard reason phrase for the status.
+
+### Custom Errors
+
+Subclass `HttpError` where a status and message always travel together:
 
 ```typescript
-import { HttpException } from '@stacksjs/http'
+import { HttpError } from '@stacksjs/error-handling'
 
-export class ResourceNotFoundException extends HttpException {
+export class ResourceNotFoundError extends HttpError {
   constructor(resource: string) {
-    super(`${resource} not found`, 404)
+    super(404, `${resource} not found`)
   }
 }
 
 // Usage
-throw new ResourceNotFoundException('Post')
+throw new ResourceNotFoundError('Post')
+```
+
+`ModelNotFoundException` already exists for the common case of a lookup that
+found nothing.
+
+### Custom rendering
+
+To take over the response, install your own error middleware:
+
+```typescript
+import { errorMiddleware } from '@stacksjs/error-handling'
+
+const handle = errorMiddleware({ isDevelopment: false })
+const response = await handle(error, request)
 ```
 
 ## API Documentation

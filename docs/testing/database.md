@@ -35,10 +35,11 @@ Ensure migrations run before tests:
 ```typescript
 // tests/setup.ts
 import { beforeAll } from 'bun:test'
-import { migrate } from '@stacksjs/database'
+import { setupDatabase } from '@stacksjs/testing/database'
 
+// Creates the test database where the driver needs one, then migrates it.
 beforeAll(async () => {
-  await migrate.latest()
+  await setupDatabase()
 })
 ```
 
@@ -50,16 +51,16 @@ Use transactions to automatically rollback database changes after each test:
 
 ```typescript
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { db, beginTransaction, rollbackTransaction } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
+import { useTransactionalTests } from '@stacksjs/testing/database'
 
 describe('User Model', () => {
-  beforeEach(async () => {
-    await beginTransaction()
-  })
+  // Returns the two hooks, so you decide where they run. `useTransaction()`
+  // below wires them for you.
+  const { begin, rollback } = useTransactionalTests()
 
-  afterEach(async () => {
-    await rollbackTransaction()
-  })
+  beforeEach(begin)
+  afterEach(rollback)
 
   it('creates a user', async () => {
     await db.insertInto('users').values({
@@ -78,7 +79,6 @@ describe('User Model', () => {
   })
 })
 ```
-
 ### UseTransaction Helper
 
 Stacks provides a helper that handles setup/teardown automatically:
