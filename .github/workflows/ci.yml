@@ -29,9 +29,9 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -74,9 +74,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -172,9 +172,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -274,9 +274,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -302,26 +302,33 @@ jobs:
       # reads one line. This runs the install and asks git whether anything
       # moved, which is the only check that covers every kind of drift.
       #
-      # bun.lock only, still - but for one remaining record rather than 1,278.
+      # Both lockfiles, and `pantry.lock` is the one that took four fixes to
+      # get here. A Linux install used to rewrite it with 144 additions and
+      # 1,278 deletions:
       #
-      # Three causes made a Linux install rewrite `pantry.lock` with 144
-      # additions and 1,278 deletions. Two are fixed upstream: foreign-platform
-      # pins survive regeneration and their own dependencies come with them
-      # (pantry-pm/pantry#231, 0.11.58), and a frozen install no longer rejects
-      # a lock it just wrote (pantry-pm/pantry#233). The third was this
-      # repository's own lock, written by pantry 0.11.48 recording 80 workspace
-      # members as npm packages, corrected in f21708e705.
+      #   - foreign-platform pins did not survive regeneration, and their own
+      #     dependencies did not come with them (pantry-pm/pantry#231, 0.11.58)
+      #   - a frozen install rejected a lock it had just written
+      #     (pantry-pm/pantry#233, 0.11.58)
+      #   - this repository's own lock recorded 80 workspace members as npm
+      #     packages, written that way by pantry 0.11.48 and corrected in
+      #     f21708e705
+      #   - the companion merge step swept the foreign pins back out, because
+      #     it seeded its catalog closure from a lockfile that holds only those
+      #     pins - and a foreign pin is a leaf, so nothing in that set declares
+      #     the guard that makes it foreign (pantry-pm/pantry#232, 0.11.59)
       #
-      # What is left is `gnu.org/gettext`, which resolves to 1.0.0 on macOS and
-      # 0.21.1 on Linux. The lock holds one version per package name, so
-      # whichever platform installs last collapses the other's - a property of
-      # the format rather than a bug to fix here. One record cannot be asserted
-      # away, so `pantry.lock` waits for that; #2533 tracks it.
-      - name: Check bun.lock still describes this workspace
+      # The last one is why `gnu.org/gettext` was the final holdout: it
+      # resolves to 1.0.0 on macOS and 0.21.1 on Linux, because `git-scm.org`
+      # declares `linux:gnu.org/gettext^0.21`, and `git-scm.org` is the only
+      # package that does. The lock keys by `name@version`, so both records fit
+      # - the earlier reading of this as "one version per package name" was
+      # wrong, and led to treating a bug as a property of the format. #2533.
+      - name: Check the lockfiles still describe this workspace
         run: |
-          if ! git diff --exit-code --stat bun.lock; then
-            echo "::error::Installing changed bun.lock. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and commit the result."
-            git diff -- bun.lock
+          if ! git diff --exit-code --stat bun.lock pantry.lock; then
+            echo "::error::Installing changed a lockfile. A committed lockfile must survive an install of the tree it describes. Run './pantry/.bin/bun install' - the pinned Bun (engines.bun) - and 'pantry install', then commit the result."
+            git diff -- bun.lock pantry.lock
             exit 1
           fi
 
@@ -344,9 +351,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -437,9 +444,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Install Dependencies
@@ -462,9 +469,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       # Run from the script's own directory so the repo's `bunfig.toml` does not
@@ -505,9 +512,9 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
@@ -580,9 +587,9 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Setup Pantry
-        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        uses: pantry-pm/pantry/packages/action@6f407f5d0391767bd95a358957056b6164779420 # v0.11.59
         with:
-          version: '0.11.57'
+          version: '0.11.59'
           install: 'false'
 
       - name: Use cached node_modules
