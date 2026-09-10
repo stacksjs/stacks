@@ -18,6 +18,10 @@
 // Tests that don't need them get a fast, hang-free import from
 // '@stacksjs/testing'.
 export * from './feature'
+// Clock control (stacksjs/stacks#2581). No database dependency, so unlike the
+// fixtures it is safe at the root.
+export * from './console'
+export * from './time'
 export * from 'bun:test'
 
 // dynamodb utilities are not re-exported here because they require

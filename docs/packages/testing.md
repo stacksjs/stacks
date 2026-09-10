@@ -460,16 +460,22 @@ it('should send email', async () => {
 ### Freezing Time
 
 ```typescript
-import { freezeTime, travelTo } from '@stacksjs/testing'
+import { afterEach, freezeTime, travelTo, useRealTime } from '@stacksjs/testing'
+
+// Not optional. The system clock is process-wide and bun does not roll it back
+// between test files, so a frozen clock leaks into every later suite in the
+// run - where it surfaces as a token that is inexplicably expired, a long way
+// from the test that caused it.
+afterEach(useRealTime)
 
 it('should test time-dependent code', () => {
-  // Freeze time
-  freezeTime('2024-01-15 10:00:00')
+  // Freeze time. Pass a Date, an ISO string, or an epoch number.
+  freezeTime('2024-01-15T10:00:00Z')
 
   const now = new Date()
   expect(now.toISOString()).toBe('2024-01-15T10:00:00.000Z')
 
-  // Travel to specific time
+  // Travel to a specific time; the clock stays frozen there.
   travelTo(new Date('2024-06-01'))
 
   const future = new Date()

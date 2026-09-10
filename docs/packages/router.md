@@ -413,7 +413,7 @@ await serve({
   hostname: '0.0.0.0',
 
   // Development mode
-  development: process.env.NODE*ENV !== 'production',
+  development: process.env.NODE_ENV !== 'production',
 
   // TLS/SSL
   tls: {

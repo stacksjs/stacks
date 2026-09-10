@@ -382,7 +382,7 @@ jobs:
       - run: npm publish
 
         env:
-          NODE*AUTH*TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ## Versioning

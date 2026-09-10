@@ -174,7 +174,7 @@ describe('Export Command', () => {
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { command, withInput } from '@stacksjs/testing'
+import { command } from '@stacksjs/testing'
 
 describe('Interactive Command', () => {
   it('handles confirmation prompt', async () => {
@@ -388,12 +388,12 @@ describe('Exit Codes', () => {
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { command, withEnv } from '@stacksjs/testing'
+import { command } from '@stacksjs/testing'
 
 describe('Environment Commands', () => {
   it('runs only in production', async () => {
     const result = await command('deploy:assets')
-      .withEnv({ NODE*ENV: 'development' })
+      .withEnv({ NODE_ENV: 'development' })
 
     expect(result.exitCode).toBe(1)
     expect(result.output).toContain('only in production')
@@ -402,7 +402,7 @@ describe('Environment Commands', () => {
   it('runs with custom env vars', async () => {
     const result = await command('config:show')
       .withEnv({
-        APP*DEBUG: 'true',
+        APP_DEBUG: 'true',
         DB_CONNECTION: 'sqlite',
       })
 

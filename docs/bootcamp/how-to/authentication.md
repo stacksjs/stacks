@@ -66,8 +66,8 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   name TEXT,
   email_verified_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT*TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT*TIMESTAMP
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Tokens table for API authentication
@@ -79,7 +79,7 @@ CREATE TABLE personal_access_tokens (
   abilities TEXT,
   last_used_at DATETIME,
   expires_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT*TIMESTAMP,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
@@ -800,7 +800,7 @@ export default new Action({
         subject: 'Reset Your Password',
         template: 'password-reset',
         data: {
-          resetUrl: `${APP*URL}/reset-password?token=${token}`,
+          resetUrl: `${APP_URL}/reset-password?token=${token}`,
         },
       })
     }

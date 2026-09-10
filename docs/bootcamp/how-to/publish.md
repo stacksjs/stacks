@@ -256,7 +256,7 @@ npm login
 npm login --scope=@yourscope
 
 # Set auth token (CI/CD)
-echo "//registry.npmjs.org/:*authToken=${NPM*TOKEN}" >> .npmrc
+echo "//registry.npmjs.org/:*authToken=${NPM_TOKEN}" >> .npmrc
 ```
 
 ### Private Registry
@@ -264,7 +264,7 @@ echo "//registry.npmjs.org/:*authToken=${NPM*TOKEN}" >> .npmrc
 ```ts
 // .npmrc
 @yourscope:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:*authToken=${GITHUB*TOKEN}
+//npm.pkg.github.com/:*authToken=${GITHUB_TOKEN}
 ```
 
 ### GitHub Packages
@@ -320,7 +320,7 @@ jobs:
 
         run: npm publish
         env:
-          NODE*AUTH*TOKEN: ${{ secrets.NPM*TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ### Automated Release
@@ -357,8 +357,8 @@ jobs:
 
         run: bunx semantic-release
         env:
-          GITHUB*TOKEN: ${{ secrets.GITHUB*TOKEN }}
-          NPM*TOKEN: ${{ secrets.NPM*TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ## Documentation

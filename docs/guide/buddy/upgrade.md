@@ -459,11 +459,11 @@ Test upgrades in staging before production:
 
 ```bash
 # Staging
-APP*ENV=staging buddy upgrade:all
+APP_ENV=staging buddy upgrade:all
 buddy test
 
 # Production (after verification)
-APP*ENV=production buddy upgrade:all
+APP_ENV=production buddy upgrade:all
 ```
 
 ## Related Commands
