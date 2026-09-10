@@ -63,6 +63,26 @@ export function setup(buddy: CLI): void {
     .action(async (options: SetupOptions) => {
       log.debug('Running `buddy setup` ...', options)
 
+      // `--dry-run` is registered process-wide, so it appears in this
+      // command's help as "Preview actions without making changes" - and
+      // setup never read it. Measured: `buddy setup --dry-run` ran the
+      // database migrations, wrote `deps.yaml` and modified `pantry.lock`,
+      // which is exactly what somebody types the flag to avoid finding out
+      // the hard way (stacksjs/stacks#853).
+      //
+      // Refused rather than implemented. A preview of setup would have to be
+      // threaded through Pantry installation, dependency optimization and
+      // project initialization, and a half-built one that quietly skipped a
+      // step would be a worse lie than saying no.
+      if (process.argv.includes('--dry-run')) {
+        await log.error(
+          '`buddy setup` does not support --dry-run. It is a process-wide flag, so it appears in '
+          + 'every command\'s help, but setup makes changes it cannot preview: it migrates the '
+          + 'database and provisions the toolchain. Run it without the flag when you mean to.',
+        )
+        process.exit(ExitCode.InvalidArgument)
+      }
+
       await ensurePantryInstalled()
 
       // ensure the minimal amount of deps are written to ./pantry.yaml
