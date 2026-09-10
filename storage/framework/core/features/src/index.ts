@@ -86,6 +86,7 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
     'app/Actions/Dashboard/dashboard-response.ts',
     'app/Models/Campaign.ts',
     'app/Models/CampaignSend.ts',
+    'app/Models/CampaignVariant.ts',
     'app/Models/EmailList.ts',
     'app/Models/EmailListSubscriber.ts',
     'app/Models/SocialPost.ts',
@@ -148,11 +149,19 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
   // `posts`/`tags`/`categories`, so leaving them unclaimed means they run
   // against a database where the tables they point at were gated out.
   cms: [
-    'posts', 'pages', 'comments', 'tags', 'authors', 'categories',
-    'taggable_models', 'categorizable_models', 'commentables',
+    'posts', 'pages', 'comments', 'tags', 'authors',
+    'taggable_models', 'commentables',
     // Real-pages additions: revisions snapshot pages, redirects + menus key
     // to sites/pages, so they gate out together with the rest of the CMS.
     'page_revisions', 'redirects', 'menus', 'menu_items',
+    // `categories` and `categorizable_models` are deliberately absent, per the
+    // shared-table rule above. They were claimed here, but `categories` is
+    // declared by exactly one model - `app/Models/commerce/Category.ts` - which
+    // COMMERCE installs. With cms disabled and commerce enabled, the gate hid
+    // the table out from under a model it had just copied in. Both features
+    // categorize (cms through `Post`, commerce through `Category`), so neither
+    // owns them and they stay ungated: an unused empty table is harmless, a
+    // missing one is not.
   ],
   commerce: [
     'products', 'product_variants', 'product_units', 'manufacturers',
@@ -189,6 +198,11 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
   marketing: [
     'campaigns', 'campaign_sends', 'email_lists', 'email_list_subscribers',
     'social_posts', 'mail_preferences',
+    // `campaign_variants` carries a foreign key to `campaigns`. Unclaimed, its
+    // migration ran with marketing disabled against a database where the parent
+    // had just been gated out - the third time this exact shape has bitten, after
+    // the commerce delivery and auction tables above.
+    'campaign_variants',
   ],
   monitoring: ['errors'],
   realtime: ['websockets'],
