@@ -178,6 +178,8 @@ Use `--output <directory>` to select the artifact directory.
 The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
 can be dispatched manually to run the full default matrix on Ubuntu with pinned,
 checksummed oha, five seconds of warm-up, thirty measured seconds and three repeats.
+Its `cost` mode runs the same matrix at a fixed rate and reports CPU per request
+instead, which is what a shared runner can actually answer.
 It uploads the report, metadata and raw samples as a `routing-diagnostic` artifact.
 The hosted runner is shared, so the workflow explicitly sets `BENCH_DEDICATED=0`.
 Use these artifacts for investigation, not published rankings. Source resolution,
@@ -395,7 +397,10 @@ the profile it came from named beside it.
 ## Regression watching
 
 Once a baseline exists on known hardware, re-run `static-json` on a schedule and
-alert when throughput drops more than ~15% against it. Scheduled and
+alert when throughput drops more than ~15% against it. Per-request CPU cost is
+the better regression signal where the hardware is not known - a shared runner's
+throughput moves with its neighbours, while the CPU a server charges for the
+same fixed work does not - so `--rate` is worth watching on a tighter band. Scheduled and
 non-blocking, not a per-PR gate: shared runners vary enough that a hard gate
 would fail merges for reasons that have nothing to do with the change, and a
 flaky gate stops being read long before it catches anything real.

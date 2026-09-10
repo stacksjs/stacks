@@ -4,12 +4,17 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: Run the throughput matrix or capture stock HTTP CPU profiles
+        description: Throughput matrix, per-request CPU cost, or stock HTTP CPU profiles
         type: choice
         default: benchmark
         options:
           - benchmark
+          - cost
           - profile
+      rate:
+        description: Fixed requests per second per target in cost mode. Low enough that the slowest target still attains it on a shared runner.
+        type: string
+        default: '10000'
 
 permissions:
   contents: read
@@ -62,8 +67,16 @@ jobs:
           git diff --binary HEAD > "$RUNNER_TEMP/routing-diagnostic/source-before.patch"
 
       - name: Measure the full routing matrix
-        if: inputs.mode != 'profile'
+        if: inputs.mode == 'benchmark'
         run: bun bench/routing/run.ts --driver oha --warmup 5 --duration 30 --runs 3 --output "$RUNNER_TEMP/routing-diagnostic"
+
+      # A shared runner is where saturating throughput is least informative and
+      # cost per request is most: every target answers the same fixed rate, so
+      # a noisy neighbour lengthens the wall clock without changing what each
+      # server charged for the work it did.
+      - name: Measure per-request CPU cost
+        if: inputs.mode == 'cost'
+        run: bun bench/routing/run.ts --driver oha --rate "${{ inputs.rate }}" --warmup 5 --duration 30 --runs 3 --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Capture stock HTTP CPU profiles
         if: inputs.mode == 'profile'
