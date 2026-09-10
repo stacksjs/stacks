@@ -126,4 +126,42 @@ describe('the registry covers the storage adapters that exist', () => {
 
     expect(unclaimed).toEqual([])
   })
+
+  /**
+   * The same check for mail, which is also one file per driver.
+   *
+   * Extended here because the registry is the ALLOWLIST - `assertCapability
+   * Available` refuses a driver that is not in it - so a driver shipping
+   * without an entry is a driver nobody can configure. That is exactly how the
+   * Azure storage adapter shipped in #1896, and there is no reason mail is
+   * immune: it has seven drivers and gains one whenever a provider is added.
+   *
+   * Matched by NAME here rather than by path, because the mail registry cites
+   * `drivers/<name>.ts` directly and the file name is the config name.
+   */
+  it('claims every driver file in the email package', () => {
+    const dir = 'storage/framework/core/email/src/drivers'
+    const drivers = readdirSync(join(root, dir))
+      .filter(file => file.endsWith('.ts') && file !== 'index.ts')
+      // The abstract base every driver extends, not a driver.
+      .filter(file => file !== 'base.ts')
+      .map(file => file.replace(/\.ts$/, ''))
+
+    const claimed = new Set(capabilityDrivers('mail').map(driver => driver.name))
+    const unclaimed = drivers.filter(name => !claimed.has(name))
+
+    expect(unclaimed).toEqual([])
+  })
+
+  it('claims every driver file in the cache package', () => {
+    const dir = 'storage/framework/core/cache/src/drivers'
+    const drivers = readdirSync(join(root, dir))
+      .filter(file => file.endsWith('.ts') && file !== 'index.ts')
+      .map(file => file.replace(/\.ts$/, ''))
+
+    const claimed = new Set(capabilityDrivers('cache').map(driver => driver.name))
+    const unclaimed = drivers.filter(name => !claimed.has(name))
+
+    expect(unclaimed).toEqual([])
+  })
 })
