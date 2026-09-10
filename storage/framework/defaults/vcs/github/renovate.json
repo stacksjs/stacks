@@ -1,5 +1,0 @@
-{
-  "extends": [
-    "github>ow3org/renovate-config"
-  ]
-}

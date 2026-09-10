@@ -1,0 +1,20 @@
+# Dependabot is scoped to nothing on purpose.
+#
+# buddy-bot owns dependency updates here (AGENTS.md, and
+# .github/workflows/buddy-bot.yml). Dependabot was never configured, so it ran
+# on defaults and proposed bumps against `node_modules.partial/` - a path that
+# is not on `main` and is not tracked, found in some historical state of the
+# repository. Nothing consumes those manifests, so #2218 and #2219 were pure
+# review load (stacksjs/stacks#2574).
+#
+# `open-pull-requests-limit: 0` is the documented way to turn version updates
+# off while leaving security advisories alone, and naming `/` explicitly means
+# the untracked path is never a directory Dependabot is configured to look at.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0

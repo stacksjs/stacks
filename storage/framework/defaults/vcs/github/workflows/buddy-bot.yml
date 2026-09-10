@@ -1,0 +1,109 @@
+# The one dependency bot a generated app gets.
+#
+# The template used to ship a `renovate.json` instead, which opted every new app
+# into a bot the framework's own policy does not use (AGENTS.md: "buddy-bot
+# handles dependency updates, not renovatebot"). Running both is what
+# stacksjs/stacks#2574 is about: the same bump arrives twice, two dashboards
+# disagree, and a human picks a winner with nothing recording why.
+#
+# This is the app-shaped version of the framework's own buddy-bot workflow -
+# the three scheduled jobs and the manual trigger, without the framework's
+# release plumbing. Configure it in `config/buddy-bot.ts`.
+name: Buddy Bot
+
+on:
+  schedule:
+    # Look for updates every two hours, then refresh the dashboard 15 minutes
+    # later so it reflects the pull requests that run just opened.
+    - cron: '0 */2 * * *'
+    - cron: '15 */2 * * *'
+    # Daily: close pull requests whose update already landed, and clean up the
+    # branches left behind.
+    - cron: '0 4 * * *'
+
+  workflow_dispatch:
+    inputs:
+      job:
+        description: Which job to run
+        required: false
+        default: all
+        type: choice
+        options:
+          - all
+          - check
+          - update
+          - dashboard
+      strategy:
+        description: Update strategy
+        required: false
+        default: patch
+        type: choice
+        options:
+          - all
+          - major
+          - minor
+          - patch
+      dry_run:
+        description: Dry run (preview only)
+        required: false
+        default: false
+        type: boolean
+
+env:
+  # The built-in token is enough for commits, pull requests and issues.
+  # BUDDY_BOT_TOKEN (a PAT with `repo` and `workflow` scope) is only needed if
+  # you want buddy-bot to update workflow files themselves.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  BUDDY_BOT_TOKEN: ${{ secrets.BUDDY_BOT_TOKEN }}
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+# Serialize runs so a scheduled tick and a manual one cannot race on the same
+# branches. `cancel-in-progress: false` lets the running job finish rather than
+# being killed part-way through a commit.
+concurrency:
+  group: buddy-bot-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  buddy-bot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          # Rebasing an open branch needs the history it was cut from.
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Pantry
+        uses: pantry-pm/pantry/packages/action@531cae9ead49fb7b64e7f31350b910226a90b90e # v0.11.57
+        with:
+          version: '0.11.57'
+          install: 'false'
+
+      - name: Install Dependencies
+        run: bun install
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Open and refresh update pull requests
+        if: ${{ github.event.schedule == '0 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "update"]'), inputs.job)) }}
+        run: bunx buddy-bot update --strategy "${{ inputs.strategy || 'patch' }}" ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Update the dependency dashboard
+        if: ${{ github.event.schedule == '15 */2 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "dashboard"]'), inputs.job)) }}
+        run: bunx buddy-bot dashboard ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Close landed pull requests and clean up branches
+        if: ${{ github.event.schedule == '0 4 * * *' || (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "check"]'), inputs.job)) }}
+        run: bunx buddy-bot update-check ${{ inputs.dry_run && '--dry-run' || '' }}

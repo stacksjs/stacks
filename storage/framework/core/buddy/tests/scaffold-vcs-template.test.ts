@@ -42,6 +42,9 @@ function filesUnder(dir: string): string[] {
 
 const appTemplateFiles = existsSync(APP_VCS) ? filesUnder(APP_VCS) : []
 
+/** `create.ts` itself, asserted on as text: the scaffold's ordering is a property of the source. */
+const source = readFileSync(CREATE_COMMAND, 'utf8')
+
 describe('the app CI template exists and is measurable (#2239)', () => {
   test('the template directory is present', () => {
     // create.ts degrades to a warning when this is missing, so its absence
@@ -143,9 +146,55 @@ describe('the app CI template is app-shaped (#2239)', () => {
   })
 })
 
-describe('the scaffold installs it (#2239)', () => {
-  const source = readFileSync(CREATE_COMMAND, 'utf8')
+describe('the app template runs exactly one dependency bot (#2574)', () => {
+  const SCAFFOLD_CONFIG = join(import.meta.dir, '../../../defaults/scaffold/config')
 
+  test('buddy-bot is the bot it ships', () => {
+    // AGENTS.md states the policy - "buddy-bot handles dependency updates, not
+    // renovatebot" - and the template used to contradict it, shipping a
+    // `renovate.json` and no buddy-bot workflow at all. An app scaffolded then
+    // got the wrong bot, or both, which is what #2574 costs: the same bump
+    // arrives twice, two dashboards disagree, and each duplicate burns a full
+    // CI matrix.
+    expect(existsSync(join(APP_VCS, 'workflows/buddy-bot.yml'))).toBeTrue()
+  })
+
+  test('it ships no configuration for any other dependency bot', () => {
+    // A property rather than a list of two filenames: whatever the next bot is
+    // called, its config landing in this directory is the same regression.
+    const offenders = appTemplateFiles
+      .map(file => file.slice(APP_VCS.length + 1))
+      .filter(name => /^(?:renovate|dependabot|\.renovaterc)/.test(name.split('/').pop() ?? ''))
+
+    expect(offenders).toEqual([])
+  })
+
+  test('the workflow ships the config it reads, pointed at the app', () => {
+    // The same rule as the labeler above, one directory over: buddy-bot reads
+    // `config/buddy-bot.ts`, and `repository.owner` / `repository.name` are not
+    // optional to it. The framework's own copy names stacksjs/stacks, so
+    // without a scaffold template a generated app inherits a bot aimed at this
+    // repository - which it has no token for, so every run fails.
+    const template = join(SCAFFOLD_CONFIG, 'buddy-bot.ts')
+    expect(existsSync(template)).toBeTrue()
+
+    const contents = readFileSync(template, 'utf8')
+    expect(contents).toContain('__APP_SLUG__')
+    expect(contents).not.toContain('stacksjs\'')
+    expect(contents).toContain('GITHUB_REPOSITORY_OWNER')
+  })
+
+  test('the scaffold renders that template, so the placeholder never ships', () => {
+    // applyAppConfigTemplate is what substitutes __APP_SLUG__; it copies every
+    // .ts in the directory, so adding the file is enough - this pins that the
+    // pass still exists and still runs on the config directory.
+    expect(source).toContain('applyAppConfigTemplate')
+    expect(source).toContain('defaults/scaffold/config')
+    expect(source).toContain('__APP_SLUG__')
+  })
+})
+
+describe('the scaffold installs it (#2239)', () => {
   test('create.ts applies the template', () => {
     expect(source).toContain('applyAppVcsTemplate')
     expect(source).toContain('defaults/vcs/github')

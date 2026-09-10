@@ -1,5 +1,9 @@
 {
-  "extends": [
-    "github>ow3org/renovate-config"
-  ]
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": [
+    "Renovate is off in this repository. buddy-bot owns dependency updates - AGENTS.md says so, and .github/workflows/buddy-bot.yml is what implements it.",
+    "Running both produced the same pull request twice (web-ext as #2194 and #2195, all-non-major as #1825 and #2202) and a second dependency dashboard in #1, each pair burning a full CI matrix and needing a human to pick a winner (stacksjs/stacks#2574).",
+    "This file stays rather than being deleted: with no config at all Renovate falls back to its own defaults and starts again the moment the app installation is present."
+  ],
+  "enabled": false
 }
