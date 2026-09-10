@@ -1,552 +1,224 @@
 ---
-title: Extend Cloud
-description: "This guide covers extending Stacks cloud functionality with custom cloud providers, infrastructure configurations, and advanced cloud resources."
+title: Extend the Cloud
+description: "How to add infrastructure Stacks does not declare for you: extra services on the box, extra AWS resources beside the generated template, and deploy-time hooks."
 ---
-# Extend Cloud
+# Extend the Cloud
 
-This guide covers extending Stacks cloud functionality with custom cloud providers, infrastructure configurations, and advanced cloud resources.
+::: warning What this page used to say
+This page documented a pluggable `CloudProvider` interface, custom AWS CDK
+constructs, a `Stack` class to subclass, and a `hooks` registry - roughly 550
+lines of it. None of that exists
+([#2581](https://github.com/stacksjs/stacks/issues/2581)).
 
-## Getting Started
+Providers are a closed set in ts-cloud (`'aws' | 'hetzner' | 'ssh'`); adding one
+means a PR to [ts-cloud](https://github.com/stacksjs/ts-cloud), not a class in
+your application. CDK was replaced by ts-cloud's `InfrastructureGenerator`,
+which emits CloudFormation directly, so there is no construct to extend.
 
-Stacks provides a flexible cloud infrastructure layer that can be extended with custom providers and configurations.
+What follows is how to actually extend a deployment.
+:::
 
-```ts
-import { Cloud } from '@stacksjs/cloud'
+## The extension points
+
+There are four, in rough order of how often you want them:
+
+1. **Config** - most "extension" is a key you have not set yet.
+2. **Sites** - extra processes the deploy runs and the proxy routes to.
+3. **Managed services** - databases and brokers installed on the box.
+4. **Your own resources** - anything the generator does not model, applied
+   beside the stack.
+
+## 1. Config first
+
+`config/cloud.ts` covers more than most applications use. Before writing
+anything, check whether the key exists - the shipped file documents every one
+inline, with worked examples for mixed instance fleets, spot capacity,
+auto-scaling and monitoring thresholds.
+
+```typescript
+infrastructure: {
+  compute: {
+    instances: 3,
+    size: 'medium',
+
+    // Scale on load rather than by hand.
+    autoScaling: { min: 2, max: 10, scaleUpThreshold: 70 },
+
+    // Deploy-time installs can briefly exceed physical headroom on a busy
+    // box; swap prevents a box-wide OOM cascade.
+    swapGb: 4,
+
+    autoUpdates: true,
+    webServer: 'rpx',
+    monitoring: {
+      enabled: true,
+      alerts: { cpuLoadPerCore: 1.5, memPercent: 85, diskPercent: 80 },
+    },
+  },
+},
 ```
 
-## Custom Cloud Providers
+::: tip Check the key is read, not just documented
+The shipped `config/cloud.ts` carries `@example` blocks for `fleet` and
+`spotConfig` that nothing in ts-cloud or the deploy actually reads. A key you
+cannot find in the provider's code is a key that does nothing.
+:::
 
-### Creating a Custom Provider
+## 2. Extra services, as sites
 
-```ts
-// cloud/providers/custom-provider.ts
-import type { CloudProvider, DeploymentConfig, DeploymentResult } from '@stacksjs/cloud'
+A site is any process the deploy should run and the proxy should route to. It
+does not have to be a web application - anything with a start command and a port
+works:
 
-export class CustomCloudProvider implements CloudProvider {
-  name = 'custom'
-
-  async deploy(config: DeploymentConfig): Promise<DeploymentResult> {
-    // Implementation for custom deployment
-    const resources = await this.createResources(config)
-
-    return {
-      success: true,
-      url: resources.url,
-      deploymentId: resources.id,
-    }
-  }
-
-  async destroy(deploymentId: string): Promise<boolean> {
-    // Implementation for destroying resources
-    return true
-  }
-
-  async getStatus(deploymentId: string): Promise<DeploymentStatus> {
-    // Implementation for getting deployment status
-    return {
-      status: 'running',
-      health: 'healthy',
-    }
-  }
-
-  private async createResources(config: DeploymentConfig) {
-    // Custom resource creation logic
-    return {
-      id: 'deployment-123',
-      url: 'https://app.custom-cloud.com',
-    }
-  }
-}
-```
-
-### Registering Custom Providers
-
-```ts
-// config/cloud.ts
-import { CustomCloudProvider } from '../cloud/providers/custom-provider'
-
-export default {
-  driver: 'custom',
-
-  providers: {
-    custom: new CustomCloudProvider(),
+```typescript
+sites: {
+  main: {
+    root: '.',
+    path: '/',
+    domain: 'myapp.com',
+    start: 'bun storage/framework/runtime/production/serve.js',
+    port: 3000,
   },
 
-  // Provider-specific configuration
-  custom: {
-    apiKey: process.env.CUSTOM_CLOUD_API_KEY,
+  // A second process on the same box, on its own subdomain.
+  admin: {
+    root: '.',
+    domain: 'admin.myapp.com',
+    start: 'bun app/admin/serve.ts',
+    port: 3010,
+  },
+},
+```
+
+Each becomes a systemd unit, so it restarts on failure and on reboot without
+anything further.
+
+::: warning Pick ports from what is listening, not from config
+On a shared box two tenants can bind the same port and only one wins, silently.
+Check `ss -lntp` on the server before choosing, rather than scanning config
+files - a port that no config mentions may still be in use.
+:::
+
+::: warning A site's domain is a DNS contract
+The gateway routes by hostname. A site whose domain has no DNS record pointing
+at the box does not 404 - the request arrives with a hostname the gateway does
+not know and falls through to whichever site answers first, serving another
+site's content under another site's certificate.
+:::
+
+## 3. Managed services on the box
+
+Databases and brokers that should live on the instance are declared under
+`compute.managedServices`. The deploy installs and configures them:
+
+```typescript
+infrastructure: {
+  compute: {
+    managedServices: {
+      vitess: {
+        mode: 'cluster',
+        cell: 'zone1',
+        keyspaces: [{ name: 'myapp', sharded: false }],
+        vtgatePort: 15306,
+        username: 'myapp',
+        password: String(env.MYAPP_DB_PASSWORD || ''),
+        // Bind to loopback unless something off-box genuinely needs it.
+        bindAddress: '127.0.0.1',
+      },
+    },
+  },
+},
+```
+
+Anything reachable from outside also needs its port in `compute.firewall`, which
+is reconciled to the declaration on every deploy.
+
+## 4. Resources the generator does not model
+
+For anything outside the model, generate the template and apply your own
+resources beside it. `Cloud` gives you the CloudFormation the deploy would use:
+
+```typescript
+import { Cloud } from '@stacksjs/cloud'
+import cloudConfig from '../config/cloud'
+
+const cloud = new Cloud(cloudConfig, { appEnv: 'production' })
+const template = JSON.parse(cloud.generate())
+
+// Inspect what Stacks declares, then manage the rest as its own stack.
+console.log(Object.keys(template.Resources))
+```
+
+Keep them in a separate stack rather than editing the generated one: the
+generated template is rewritten from config on every deploy, so an edit to it
+survives exactly until the next `buddy deploy`.
+
+## Deploy-time work
+
+There is no hooks registry. Work that has to happen around a deploy belongs in
+one of the places that already runs:
+
+- **Before the app starts** - a site's `preStart` list, whose commands run in order on the server in
+  the deployed directory. This is where migrations and one-time setup go.
+- **After a deploy** - a job or command invoked by CI after `buddy deploy`
+  returns.
+- **On a schedule** - `app/Scheduler.ts`.
+
+```typescript
+sites: {
+  main: {
+    root: '.',
+    domain: 'myapp.com',
+    start: 'bun storage/framework/runtime/production/serve.js',
+    port: 3000,
+    // Runs on the server before the service starts. Create any directory the
+    // app expects: the deployed tree contains only what the packager shipped.
+    preStart: ['mkdir -p storage/logs', 'bun install', 'bun buddy migrate'],
+  },
+},
+```
+
+## Multi-region
+
+Regions are per environment, so a second region is a second environment
+deploying the same codebase:
+
+```typescript
+environments: {
+  production: {
+    type: 'production',
+    deployBranch: 'main',
     region: 'us-east-1',
   },
-}
-```
-
-## Extending AWS Infrastructure
-
-### Custom CDK Constructs
-
-```ts
-// cloud/constructs/custom-api.ts
-import * as cdk from 'aws-cdk-lib'
-import * as apigateway from 'aws-cdk-lib/aws-apigateway'
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import { Construct } from 'constructs'
-
-export interface CustomApiProps {
-  functionName: string
-  handler: string
-  memorySize?: number
-  timeout?: number
-}
-
-export class CustomApi extends Construct {
-  public readonly api: apigateway.RestApi
-  public readonly function: lambda.Function
-
-  constructor(scope: Construct, id: string, props: CustomApiProps) {
-    super(scope, id)
-
-    // Create Lambda function
-    this.function = new lambda.Function(this, 'Function', {
-      functionName: props.functionName,
-      runtime: lambda.Runtime.PROVIDED_AL2,
-      handler: props.handler,
-      code: lambda.Code.fromAsset('./dist'),
-      memorySize: props.memorySize || 256,
-      timeout: cdk.Duration.seconds(props.timeout || 30),
-    })
-
-    // Create API Gateway
-    this.api = new apigateway.RestApi(this, 'Api', {
-      restApiName: `${props.functionName}-api`,
-      deployOptions: {
-        stageName: 'prod',
-      },
-    })
-
-    // Add Lambda integration
-    const integration = new apigateway.LambdaIntegration(this.function)
-    this.api.root.addMethod('ANY', integration)
-    this.api.root.addProxy({
-      defaultIntegration: integration,
-      anyMethod: true,
-    })
-  }
-}
-```
-
-### Custom Stack
-
-```ts
-// cloud/stacks/custom-stack.ts
-import * as cdk from 'aws-cdk-lib'
-import * as s3 from 'aws-cdk-lib/aws-s3'
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
-import * as sqs from 'aws-cdk-lib/aws-sqs'
-import { Construct } from 'constructs'
-import { CustomApi } from '../constructs/custom-api'
-
-export interface CustomStackProps extends cdk.StackProps {
-  environment: string
-  appName: string
-}
-
-export class CustomStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: CustomStackProps) {
-    super(scope, id, props)
-
-    // S3 Bucket for assets
-    const bucket = new s3.Bucket(this, 'AssetsBucket', {
-      bucketName: `${props.appName}-${props.environment}-assets`,
-      versioned: true,
-      encryption: s3.BucketEncryption.S3_MANAGED,
-      removalPolicy: props.environment === 'production'
-        ? cdk.RemovalPolicy.RETAIN
-        : cdk.RemovalPolicy.DESTROY,
-    })
-
-    // DynamoDB Table
-    const table = new dynamodb.Table(this, 'MainTable', {
-      tableName: `${props.appName}-${props.environment}`,
-      partitionKey: {
-        name: 'pk',
-        type: dynamodb.AttributeType.STRING,
-      },
-      sortKey: {
-        name: 'sk',
-        type: dynamodb.AttributeType.STRING,
-      },
-      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      pointInTimeRecovery: props.environment === 'production',
-    })
-
-    // SQS Queue for background jobs
-    const queue = new sqs.Queue(this, 'JobsQueue', {
-      queueName: `${props.appName}-${props.environment}-jobs`,
-      visibilityTimeout: cdk.Duration.seconds(300),
-      retentionPeriod: cdk.Duration.days(14),
-    })
-
-    // Custom API
-    const api = new CustomApi(this, 'Api', {
-      functionName: `${props.appName}-${props.environment}-api`,
-      handler: 'index.handler',
-      memorySize: 512,
-      timeout: 30,
-    })
-
-    // Grant permissions
-    bucket.grantReadWrite(api.function)
-    table.grantReadWriteData(api.function)
-    queue.grantSendMessages(api.function)
-
-    // Outputs
-    new cdk.CfnOutput(this, 'ApiUrl', {
-      value: api.api.url,
-    })
-
-    new cdk.CfnOutput(this, 'BucketName', {
-      value: bucket.bucketName,
-    })
-  }
-}
-```
-
-### Using Custom Stack
-
-```ts
-// cloud/app.ts
-import * as cdk from 'aws-cdk-lib'
-import { CustomStack } from './stacks/custom-stack'
-
-const app = new cdk.App()
-
-const environment = app.node.tryGetContext('environment') || 'development'
-
-new CustomStack(app, `MyApp-${environment}`, {
-  environment,
-  appName: 'my-app',
-  env: {
-    account: process.env.AWS_ACCOUNT_ID,
-    region: process.env.AWS_REGION || 'us-east-1',
+  productionEu: {
+    type: 'production',
+    deployBranch: 'main',
+    region: 'eu-west-1',
+    domainPrefix: 'eu',
   },
-})
-
-app.synth()
+},
 ```
 
-## Custom Infrastructure Resources
-
-### Adding Custom Lambda Functions
-
-```ts
-// cloud/functions/custom-function.ts
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import * as events from 'aws-cdk-lib/aws-events'
-import * as targets from 'aws-cdk-lib/aws-events-targets'
-import { Construct } from 'constructs'
-
-export function addScheduledFunction(
-  scope: Construct,
-  id: string,
-  options: {
-    schedule: string // cron expression
-    handler: string
-    memorySize?: number
-  }
-) {
-  const fn = new lambda.Function(scope, id, {
-    runtime: lambda.Runtime.PROVIDED_AL2,
-    handler: options.handler,
-    code: lambda.Code.fromAsset('./dist/functions'),
-    memorySize: options.memorySize || 128,
-  })
-
-  // Create scheduled rule
-  const rule = new events.Rule(scope, `${id}Rule`, {
-    schedule: events.Schedule.expression(options.schedule),
-  })
-
-  rule.addTarget(new targets.LambdaFunction(fn))
-
-  return fn
-}
-
-// Usage
-addScheduledFunction(this, 'DailyCleanup', {
-  schedule: 'cron(0 0 _ _ ? _)', // Every day at midnight
-  handler: 'cleanup.handler',
-})
+```bash
+buddy deploy --env production
+buddy deploy --env productionEu
 ```
 
-### Adding Custom Databases
+Routing between them is DNS - latency or geolocation records in
+`infrastructure.dns` - not something the deploy decides.
 
-```ts
-// cloud/databases/custom-database.ts
-import * as rds from 'aws-cdk-lib/aws-rds'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as cdk from 'aws-cdk-lib'
-import { Construct } from 'constructs'
+## Adding a provider
 
-export function addRdsDatabase(
-  scope: Construct,
-  id: string,
-  vpc: ec2.IVpc,
-  options: {
-    instanceType?: string
-    engine?: string
-    multiAz?: boolean
-  }
-) {
-  const database = new rds.DatabaseInstance(scope, id, {
-    engine: rds.DatabaseInstanceEngine.mysql({
-      version: rds.MysqlEngineVersion.VER_8_0,
-    }),
-    instanceType: ec2.InstanceType.of(
-      ec2.InstanceClass.T3,
-      ec2.InstanceSize.SMALL
-    ),
-    vpc,
-    vpcSubnets: {
-      subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS,
-    },
-    multiAz: options.multiAz ?? false,
-    allocatedStorage: 20,
-    maxAllocatedStorage: 100,
-    backupRetention: cdk.Duration.days(7),
-    deletionProtection: true,
-  })
+Providers are `'aws' | 'hetzner' | 'ssh'`, defined in
+[ts-cloud](https://github.com/stacksjs/ts-cloud). A new one is a PR there rather
+than a class in your application, because the generator has to know how to emit
+resources for it - an interface an application implements could not do that.
 
-  return database
-}
-```
+`'ssh'` is the escape hatch in the meantime: it deploys to a machine you already
+have, wherever it is, over SSH.
 
-### Adding Custom Caching
+## Related
 
-```ts
-// cloud/caching/elasticache.ts
-import * as elasticache from 'aws-cdk-lib/aws-elasticache'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import { Construct } from 'constructs'
-
-export function addRedisCluster(
-  scope: Construct,
-  id: string,
-  vpc: ec2.IVpc,
-  options: {
-    nodeType?: string
-    numCacheNodes?: number
-  }
-) {
-  const subnetGroup = new elasticache.CfnSubnetGroup(scope, `${id}SubnetGroup`, {
-    description: 'Subnet group for Redis cluster',
-    subnetIds: vpc.privateSubnets.map(subnet => subnet.subnetId),
-  })
-
-  const cluster = new elasticache.CfnCacheCluster(scope, id, {
-    cacheNodeType: options.nodeType || 'cache.t3.micro',
-    engine: 'redis',
-    numCacheNodes: options.numCacheNodes || 1,
-    cacheSubnetGroupName: subnetGroup.ref,
-  })
-
-  return cluster
-}
-```
-
-## Custom Deployment Hooks
-
-### Pre-Deployment Hooks
-
-```ts
-// cloud/hooks/pre-deploy.ts
-export async function preDeployHook(context: DeploymentContext): Promise<void> {
-  console.log('Running pre-deployment checks...')
-
-  // Run database migrations
-  await runMigrations()
-
-  // Validate configuration
-  await validateConfig()
-
-  // Backup current state
-  await createBackup()
-
-  console.log('Pre-deployment checks complete')
-}
-
-async function runMigrations() {
-  // Run pending migrations
-  const migrations = await getPendingMigrations()
-
-  for (const migration of migrations) {
-    console.log(`Running migration: ${migration.name}`)
-    await migration.up()
-  }
-}
-
-async function validateConfig() {
-  const requiredEnvVars = [
-    'DATABASE_URL',
-    'REDIS_URL',
-    'AWS_ACCESS_KEY_ID',
-  ]
-
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      throw new Error(`Missing required environment variable: ${envVar}`)
-    }
-  }
-}
-
-async function createBackup() {
-  // Create backup before deployment
-  const timestamp = new Date().toISOString()
-  console.log(`Creating backup: backup-${timestamp}`)
-}
-```
-
-### Post-Deployment Hooks
-
-```ts
-// cloud/hooks/post-deploy.ts
-export async function postDeployHook(context: DeploymentContext): Promise<void> {
-  console.log('Running post-deployment tasks...')
-
-  // Clear caches
-  await clearCaches()
-
-  // Warm up endpoints
-  await warmUp()
-
-  // Notify team
-  await notifyDeployment(context)
-
-  console.log('Post-deployment tasks complete')
-}
-
-async function clearCaches() {
-  // Clear CDN cache
-  await cloudfront.createInvalidation({
-    DistributionId: process.env.CLOUDFRONT_DISTRIBUTION_ID,
-    InvalidationBatch: {
-      Paths: { Quantity: 1, Items: ['/_'] },
-      CallerReference: Date.now().toString(),
-    },
-  })
-
-  // Clear Redis cache
-  await redis.flushall()
-}
-
-async function warmUp() {
-  const endpoints = [
-    '/api/health',
-    '/api/products',
-    '/api/categories',
-  ]
-
-  for (const endpoint of endpoints) {
-    await fetch(`${process.env.APP_URL}${endpoint}`)
-  }
-}
-
-async function notifyDeployment(context: DeploymentContext) {
-  await sendSlackNotification({
-    channel: '#deployments',
-    text: `Deployed ${context.version} to ${context.environment}`,
-  })
-}
-```
-
-### Registering Hooks
-
-```ts
-// config/cloud.ts
-import { preDeployHook } from '../cloud/hooks/pre-deploy'
-import { postDeployHook } from '../cloud/hooks/post-deploy'
-
-export default {
-  hooks: {
-    preDeploy: preDeployHook,
-    postDeploy: postDeployHook,
-
-    onError: async (error: Error, context: DeploymentContext) => {
-      console.error('Deployment failed:', error)
-
-      // Rollback on failure
-      await context.rollback()
-
-      // Notify team
-      await sendSlackNotification({
-        channel: '#deployments',
-        text: `Deployment failed: ${error.message}`,
-      })
-    },
-  },
-}
-```
-
-## Multi-Region Deployment
-
-### Configuration
-
-```ts
-// config/cloud.ts
-export default {
-  multiRegion: {
-    enabled: true,
-    primaryRegion: 'us-east-1',
-    replicaRegions: ['eu-west-1', 'ap-southeast-1'],
-    routing: 'latency', // 'latency' | 'geolocation' | 'weighted'
-  },
-}
-```
-
-### Multi-Region Stack
-
-```ts
-// cloud/stacks/multi-region-stack.ts
-import * as cdk from 'aws-cdk-lib'
-import * as route53 from 'aws-cdk-lib/aws-route53'
-import { Construct } from 'constructs'
-
-export class MultiRegionStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props: cdk.StackProps) {
-    super(scope, id, props)
-
-    const regions = ['us-east-1', 'eu-west-1', 'ap-southeast-1']
-
-    // Create resources in each region
-    for (const region of regions) {
-      // Resources are created using nested stacks or cross-region references
-    }
-
-    // Set up Route53 latency-based routing
-    const hostedZone = route53.HostedZone.fromLookup(this, 'Zone', {
-      domainName: 'myapp.com',
-    })
-
-    // Add latency-based records for each region
-  }
-}
-```
-
-## Error Handling
-
-```ts
-try {
-  await Cloud.deploy(config)
-} catch (error) {
-  if (error instanceof CloudProviderError) {
-    console.error('Provider error:', error.message)
-    // Handle provider-specific errors
-  } else if (error instanceof InfrastructureError) {
-    console.error('Infrastructure error:', error.message)
-    // Handle infrastructure errors
-  } else {
-    console.error('Unknown error:', error)
-  }
-}
-```
-
-This documentation covers extending Stacks cloud functionality with custom providers and infrastructure configurations. Each example is designed for flexible cloud infrastructure management.
+- [@stacksjs/cloud](/packages/cloud) - the package reference
+- [Deployment](/guide/cloud/deployment) - the deploy workflow
+- [Deploy how-to](/bootcamp/how-to/deploy) - a first deployment, start to finish

@@ -25,75 +25,79 @@ Configure your deployment settings in `config/cloud.ts`:
 import type { CloudConfig } from '@stacksjs/cloud'
 
 const config: CloudConfig = {
-  // Deployment driver
-  driver: 'aws', // 'aws' | 'vercel' | 'netlify'
+  project: { name: 'my-stacks-app' },
 
-  // Application name (used for resource naming)
-  appName: 'my-stacks-app',
+  // Where cloud state (server inventory, deploy pins) lives.
+  stateDir: 'storage/cloud',
 
-  // Deployment environment
-  environment: 'production', // 'production' | 'staging' | 'development'
+  cloud: {
+    provider: 'aws', // 'aws' | 'hetzner' | 'ssh'
+  },
 
-  // AWS Configuration
-  aws: {
-    region: 'us-east-1',
-    accountId: process.env.AWS_ACCOUNT_ID,
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  // 'server' runs long-lived instances; 'serverless' runs containers and
+  // static sites.
+  mode: 'server',
+
+  environments: {
+    production: {
+      type: 'production',
+      // A push to this branch deploys this environment.
+      deployBranch: 'main',
+      region: 'us-east-1',
+      variables: { NODE_ENV: 'production' },
+    },
+    staging: {
+      type: 'staging',
+      deployBranch: 'develop',
+      region: 'us-east-1',
+      // Every site's domain gets this prefix: staging.myapp.com.
+      domainPrefix: 'staging',
     },
   },
 
-  // Domain configuration
-  domain: {
-    name: 'myapp.com',
-    subdomain: 'www',
-    certificate: {
-      provider: 'acm', // AWS Certificate Manager
-      autoRenew: true,
-    },
-  },
+  infrastructure: {
+    compute: {
+      instances: 1,
+      size: 'medium',
+      disk: { size: 80, type: 'ssd', encrypted: true },
 
-  // CDN settings
-  cdn: {
-    enabled: true,
-    provider: 'cloudfront',
-    priceClass: 'PriceClass_100', // US, Canada, Europe
-    cachePolicy: {
-      defaultTTL: 86400, // 24 hours
-      maxTTL: 31536000, // 1 year
-      minTTL: 0,
-    },
-  },
+      // Reconciled on every deploy. A port open on the box but absent here is
+      // closed by the next deploy, even while its service is healthy.
+      firewall: { enabled: true, allowedPorts: [80, 443] },
 
-  // Compute settings
-  compute: {
-    memory: 1024, // MB
-    timeout: 30, // seconds
-    minInstances: 1,
-    maxInstances: 10,
-    autoScale: {
+      autoScaling: { min: 1, max: 10, scaleUpThreshold: 70 },
+      webServer: 'rpx',
+    },
+
+    cdn: {
       enabled: true,
-      targetCpuUtilization: 70,
+      priceClass: 'PriceClass_100', // US, Canada, Europe
     },
+
+    ssl: { autoRenew: true },
   },
 
-  // Database settings
-  database: {
-    provider: 'planetscale', // 'planetscale' | 'rds' | 'aurora'
-    region: 'us-east-1',
-  },
-
-  // Storage settings
-  storage: {
-    provider: 's3',
-    bucket: 'my-stacks-app-assets',
-    publicAccess: true,
+  // What gets served, and from where.
+  sites: {
+    main: {
+      root: '.',
+      path: '/',
+      domain: 'myapp.com',
+      start: 'bun storage/framework/runtime/production/serve.js',
+      port: 3000,
+    },
   },
 }
 
 export default config
 ```
+
+Credentials come from the environment (`AWS_ACCESS_KEY_ID` /
+`AWS_SECRET_ACCESS_KEY`, or `HCLOUD_TOKEN`), never from this file - it is
+committed.
+
+The shipped `config/cloud.ts` documents every key inline with worked examples
+and is the authoritative reference for the shape.
 
 ## Using buddy deploy
 

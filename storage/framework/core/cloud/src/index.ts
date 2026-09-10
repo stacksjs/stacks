@@ -1,4 +1,14 @@
 export * from './cloud'
+
+/**
+ * The config types, re-exported from ts-cloud.
+ *
+ * `config/cloud.ts` is typed by `CloudConfig`, and an application writing that
+ * file should not have to know that the shape lives one package over -
+ * `@stacksjs/cloud` is the package it configures. Documented as coming from
+ * here for a long time before it did (stacksjs/stacks#2581).
+ */
+export type { CloudConfig, EnvironmentType, InfrastructureConfig } from '@stacksjs/ts-cloud'
 export * from './helpers'
 export type * from './types'
 
