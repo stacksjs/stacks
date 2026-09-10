@@ -1,5 +1,30 @@
+/** A channel a notification can be delivered on. */
+export type NotificationChannelName = 'email' | 'sms' | 'chat' | 'database' | 'push' | 'broadcast'
+
 export interface NotificationOptions {
   default: 'email' | 'sms' | 'chat' | string
+
+  /**
+   * Delivery tracking: every send recorded to `notification_deliveries`, which
+   * is what the dashboard's notification pages read (stacksjs/stacks#328).
+   *
+   * On by default, because the value is in not having to remember to turn it
+   * on before the send you needed to explain. `channels` narrows it - a
+   * high-volume push channel can be excluded without losing the email trail.
+   */
+  tracking: {
+    enabled: boolean
+    /** Record only these channels. Omitted or empty means all of them. */
+    channels?: NotificationChannelName[]
+    /**
+     * Record the rendered body.
+     *
+     * Off for a project whose notifications carry personal data it would
+     * rather not keep a second copy of; the row still records that the
+     * message was sent, to whom, and whether it succeeded.
+     */
+    body: boolean
+  }
 
   email: {
     default:

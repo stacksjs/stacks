@@ -1,4 +1,5 @@
 import { log } from '@stacksjs/cli'
+import { config } from '@stacksjs/config'
 import { db, sqlDateTime} from '@stacksjs/database'
 import type {
   NotificationChannel,
@@ -60,7 +61,36 @@ export function makeDeliveryRecord(
   }
 }
 
+/**
+ * Whether this channel's deliveries are recorded (stacksjs/stacks#328).
+ *
+ * Read from the `config` proxy rather than a destructured section, so a value
+ * set after this module was first imported is still seen - the sections are
+ * snapshots refreshed once at boot.
+ *
+ * Defaults to ON. The value of delivery tracking is in not having to remember
+ * to enable it before the send you needed to explain.
+ */
+export function tracksChannel(channel: NotificationChannel): boolean {
+  const tracking = config.notification?.tracking
+
+  if (tracking?.enabled === false)
+    return false
+
+  const channels = tracking?.channels
+  // Omitted or empty means every channel: an empty allowlist that meant
+  // "none" would silently disable tracking for a project that wrote
+  // `channels: []` intending "no restriction".
+  if (!channels || channels.length === 0)
+    return true
+
+  return channels.includes(channel as (typeof channels)[number])
+}
+
 export async function recordNotificationDelivery(record: NotificationDeliveryRecord): Promise<void> {
+  if (!tracksChannel(record.channel))
+    return
+
   const now = sqlDateTime()
 
   try {
@@ -71,7 +101,7 @@ export async function recordNotificationDelivery(record: NotificationDeliveryRec
         channel: record.channel,
         recipient: record.recipient,
         subject: record.subject ?? null,
-        body: record.body,
+        body: config.notification?.tracking?.body === false ? '' : record.body,
         status: record.status,
         error: record.error ?? null,
         metadata: record.metadata ? JSON.stringify(record.metadata) : null,
