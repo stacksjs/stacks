@@ -5,6 +5,7 @@ import {
   copyFileSync,
   existsSync,
   mkdirSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -117,6 +118,11 @@ export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeAp
   if (!config.installerSigningIdentity) errors.push('APPLE_INSTALLER_SIGNING_IDENTITY is required')
   if (!config.provisioningProfile || !existsSync(config.provisioningProfile)) errors.push('APPLE_PROVISIONING_PROFILE must point to an existing .provisionprofile file')
   if (config.icon && !existsSync(resolve(config.icon))) errors.push(`Apple app icon does not exist: ${config.icon}`)
+  // Both have defaults, so a wrong value here is not a missing one - it reaches
+  // Info.plist and comes back as an App Store rejection rather than a build
+  // error (stacksjs/stacks#2199).
+  if (!/^\d+(?:\.\d+){0,2}$/.test(config.minimumMacos)) errors.push('APPLE_MINIMUM_MACOS must be a macOS version such as 13.0')
+  if (!isAppleCategory(config.category)) errors.push('APPLE_APP_CATEGORY must be an Apple LSApplicationCategoryType such as public.app-category.productivity')
   if (includeApi) {
     if (!config.apiKeyId) errors.push('APP_STORE_CONNECT_API_KEY_ID is required')
     if (!config.apiIssuerId) errors.push('APP_STORE_CONNECT_API_ISSUER_ID is required')
@@ -126,6 +132,81 @@ export function validateAppleDesktopConfig(config: AppleDesktopConfig, includeAp
     if (!Bun.which(tool)) errors.push(`Required Apple command is unavailable: ${tool}`)
   }
   return errors
+}
+
+/** Every file inside a `.app`, relative to it and POSIX-separated. */
+function bundleFiles(appPath: string): string[] {
+  const walk = (dir: string, prefix: string): string[] =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const relative = prefix ? `${prefix}/${entry.name}` : entry.name
+      return entry.isDirectory() ? walk(join(dir, entry.name), relative) : [relative]
+    })
+
+  return walk(appPath, '')
+}
+
+/**
+ * Whether a string is shaped like an `LSApplicationCategoryType`.
+ *
+ * The SHAPE, not membership of a list. Apple's set changes and games carry
+ * their own subcategories (`public.app-category.action-games`), so a hard-coded
+ * list here would reject a legitimate value the day Apple adds one - a worse
+ * failure than the one it prevents. What this catches is the actual mistake:
+ * free text like `Productivity`, which App Store Connect rejects on upload
+ * after everything has been built and signed.
+ */
+export function isAppleCategory(value: string): boolean {
+  return /^public\.app-category\.[a-z][a-z0-9-]*$/.test(value)
+}
+
+/**
+ * Store-rejection preflight over a built `.app` bundle's file list
+ * (stacksjs/stacks#2199).
+ *
+ * Every one of these is a real rejection reason, and every one of them is
+ * cheaper to find here than after an upload: App Review answers hours or days
+ * later, and the message names a rule rather than a file.
+ *
+ * A pure function of the paths so it can be tested without building a bundle -
+ * and this repository cannot build a signed one at all until the platform
+ * identities exist (#2062).
+ *
+ * `paths` are relative to the `.app` directory, POSIX-separated.
+ */
+export function storeRejectionFindings(paths: readonly string[], executable = 'stacks-desktop'): string[] {
+  const findings: string[] = []
+  const has = (path: string): boolean => paths.includes(path)
+
+  // The layout Apple requires. A bundle missing any of these is not a bundle.
+  for (const required of ['Contents/Info.plist', `Contents/MacOS/${executable}`, 'Contents/embedded.provisionprofile']) {
+    if (!has(required)) findings.push(`missing required bundle file: ${required}`)
+  }
+
+  for (const path of paths) {
+    // Finder and archive debris. `.DS_Store` in particular rides along in any
+    // bundle assembled by copying a directory, and is an automatic rejection.
+    const base = path.split('/').pop() ?? ''
+    if (base === '.DS_Store' || path.startsWith('__MACOSX/') || base.startsWith('._'))
+      findings.push(`forbidden file in the bundle: ${path}`)
+
+    // Nested code has to live where codesign will find and seal it. Anything
+    // executable outside these directories is unsigned nested code, which is
+    // the rejection that is hardest to diagnose from Apple's wording.
+    if (/\.(?:dylib|so|framework|app|xpc)$/.test(path)) {
+      const allowed = path.startsWith('Contents/Frameworks/')
+        || path.startsWith('Contents/MacOS/')
+        || path.startsWith('Contents/XPCServices/')
+        || path.startsWith('Contents/PlugIns/')
+      if (!allowed) findings.push(`nested code outside a signed location: ${path}`)
+    }
+
+    // Everything under Resources is data. An executable there is not sealed
+    // the way code is, and Apple rejects it.
+    if (path.startsWith('Contents/Resources/') && /\.(?:sh|command|dylib|so)$/.test(path))
+      findings.push(`executable content under Resources: ${path}`)
+  }
+
+  return findings
 }
 
 export function renderInfoPlist(config: AppleDesktopConfig, executable = 'stacks-desktop'): string {
@@ -383,6 +464,16 @@ async function packageAppleDesktop(config: AppleDesktopConfig, skipBuild = false
   })) command(args)
   command(['codesign', '--verify', '--deep', '--strict', '--verbose=2', appPath])
   command(['codesign', '-d', '--entitlements', ':-', appPath])
+
+  // Before the installer is built and long before an upload. App Review answers
+  // hours or days later and names a rule rather than a file, so every one of
+  // these is far cheaper to find here (stacksjs/stacks#2199).
+  const findings = storeRejectionFindings(bundleFiles(appPath))
+  if (findings.length > 0) {
+    throw new Error(
+      `The app bundle would be rejected by App Review:\n${findings.map(finding => `  - ${finding}`).join('\n')}`,
+    )
+  }
 
   const packagePath = join(appleDir, `${config.appName}-${config.version}-${config.buildNumber}.pkg`)
   command([

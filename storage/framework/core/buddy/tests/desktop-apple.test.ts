@@ -6,8 +6,10 @@ import {
   renderFailure,
   renderAppleWorkflowCaller,
   renderHelperEntitlements,
+  isAppleCategory,
   renderInfoPlist,
   signingPlan,
+  storeRejectionFindings,
   validateAppleDesktopConfig,
 } from '../src/commands/desktop-apple'
 
@@ -165,5 +167,95 @@ describe('desktop:apple:doctor output', () => {
 
     expect(body).toContain('process.exit(1)')
     expect(body.match(/process\.stderr\.write\(|console\.(?:error|warn|log)\(/g) ?? []).toHaveLength(1)
+  })
+})
+
+/**
+ * App Review answers hours or days later and names a rule rather than a file,
+ * so every one of these is far cheaper to catch before the installer is built
+ * (stacksjs/stacks#2199). A pure function of the paths, because this repository
+ * cannot build a signed bundle at all until the platform identities exist
+ * (#2062).
+ */
+describe('store rejection preflight', () => {
+  /** The layout `packageApp` produces, which must pass cleanly. */
+  const valid = [
+    'Contents/Info.plist',
+    'Contents/MacOS/stacks-desktop',
+    'Contents/MacOS/craft-runtime',
+    'Contents/MacOS/desktop.json',
+    'Contents/embedded.provisionprofile',
+    'Contents/Resources/AppIcon.icns',
+    'Contents/_CodeSignature/CodeResources',
+  ]
+
+  it('passes the bundle the packager actually builds', () => {
+    // Guards against the rules being so strict that the real output fails -
+    // which is how a preflight gets disabled rather than fixed.
+    expect(storeRejectionFindings(valid)).toEqual([])
+  })
+
+  it('requires the files that make it a bundle', () => {
+    expect(storeRejectionFindings(['Contents/MacOS/stacks-desktop'])).toEqual([
+      'missing required bundle file: Contents/Info.plist',
+      'missing required bundle file: Contents/embedded.provisionprofile',
+    ])
+  })
+
+  it('catches Finder debris, which rides along in any copied directory', () => {
+    // `.DS_Store` is an automatic rejection and is invisible in a directory
+    // listing, which is what makes it worth a rule rather than a habit.
+    expect(storeRejectionFindings([...valid, 'Contents/Resources/.DS_Store']))
+      .toContain('forbidden file in the bundle: Contents/Resources/.DS_Store')
+    expect(storeRejectionFindings([...valid, 'Contents/Resources/._AppIcon.icns']))
+      .toContain('forbidden file in the bundle: Contents/Resources/._AppIcon.icns')
+  })
+
+  it('catches nested code outside a location codesign seals', () => {
+    expect(storeRejectionFindings([...valid, 'Contents/Resources/helper.dylib']))
+      .toContain('nested code outside a signed location: Contents/Resources/helper.dylib')
+    expect(storeRejectionFindings([...valid, 'Contents/Extra/Widget.app']))
+      .toContain('nested code outside a signed location: Contents/Extra/Widget.app')
+  })
+
+  it('accepts nested code where Apple expects it', () => {
+    for (const path of [
+      'Contents/Frameworks/Sparkle.framework',
+      'Contents/XPCServices/Updater.xpc',
+      'Contents/PlugIns/Thing.app',
+    ])
+      expect(storeRejectionFindings([...valid, path])).toEqual([])
+  })
+
+  it('catches executable content filed as a resource', () => {
+    expect(storeRejectionFindings([...valid, 'Contents/Resources/postinstall.sh']))
+      .toContain('executable content under Resources: Contents/Resources/postinstall.sh')
+  })
+})
+
+describe('isAppleCategory', () => {
+  it('accepts the categories Apple issues, including game subcategories', () => {
+    for (const category of [
+      'public.app-category.productivity',
+      'public.app-category.developer-tools',
+      'public.app-category.action-games',
+    ])
+      expect(isAppleCategory(category)).toBeTrue()
+  })
+
+  it('rejects free text, which is the mistake that actually happens', () => {
+    // A wrong category is not a build error - it reaches Info.plist and comes
+    // back from App Store Connect after everything is built and signed.
+    for (const category of ['Productivity', 'productivity', 'public.app-category.', 'public.app-category.Games', ''])
+      expect(isAppleCategory(category)).toBeFalse()
+  })
+
+  /**
+   * The shape, not a list. Apple's set changes and games carry their own
+   * subcategories, so a hard-coded list would reject a legitimate value the day
+   * Apple adds one - a worse failure than the one it prevents.
+   */
+  it('accepts a category it has never heard of, as long as it is shaped right', () => {
+    expect(isAppleCategory('public.app-category.something-new')).toBeTrue()
   })
 })
