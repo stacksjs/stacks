@@ -2,6 +2,7 @@ import type { CLI } from '@stacksjs/types'
 import { run as runAgentCounts } from './docs/agent-counts'
 import { run as runArtifacts } from './docs/generated-artifacts'
 import { run as runBuddyDocs } from './docs/buddy-commands'
+import { run as runCapabilities } from './docs/capabilities'
 import { run as runDesktopMatrix } from './docs/desktop-matrix'
 import { run as runLinks } from './docs/links'
 import { runTool } from './run-tool'
@@ -46,6 +47,18 @@ export function docs(buddy: CLI): void {
     .command('docs:agent-counts:check', 'Verify the counts AGENTS.md and the skills state are current')
     .action(async () => {
       await runTool(runAgentCounts, '--check')
+    })
+
+  buddy
+    .command('docs:capabilities', 'Regenerate the driver capability matrix in docs/features/capabilities.md')
+    .action(async () => {
+      await runTool(runCapabilities, '--write')
+    })
+
+  buddy
+    .command('docs:capabilities:check', 'Verify the published capability matrix matches its registry')
+    .action(async () => {
+      await runTool(runCapabilities, '--check')
     })
 
   buddy

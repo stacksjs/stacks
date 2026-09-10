@@ -70,6 +70,8 @@
     "test:types": "./buddy test:types",
     "docs:buddy": "./buddy docs:buddy",
     "docs:buddy:check": "./buddy docs:buddy:check",
+    "docs:capabilities": "./buddy docs:capabilities",
+    "docs:capabilities:check": "./buddy docs:capabilities:check",
     "docs:desktop-matrix": "./buddy docs:desktop-matrix",
     "docs:desktop-matrix:check": "./buddy docs:desktop-matrix:check",
     "docs:artifacts": "./buddy docs:artifacts",

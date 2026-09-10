@@ -396,6 +396,15 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run declarations:check
 
+      # The driver capability matrix, published from `capabilityRegistry`
+      # (stacksjs/stacks#2056). That registry is the ALLOWLIST - a driver
+      # missing from it cannot be configured - so the page and the registry
+      # disagreeing means the docs name drivers that do not work, or omit ones
+      # that do. The Azure adapter shipped in #1896 with no entry at all.
+      - name: docs:capabilities:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:capabilities:check
+
       # The desktop support matrix, published from `desktopSupportMatrix`
       # (stacksjs/stacks#2059). Every target there is experimental and unsigned,
       # and `assertDesktopReleaseChannel` enforces that - but the page a reader

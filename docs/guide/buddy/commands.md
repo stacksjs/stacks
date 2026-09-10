@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **325 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **327 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -28,7 +28,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 6 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 10 |
+| `docs` | 12 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1419,6 +1419,24 @@ Regenerate the buddy command reference doc
 Verify the buddy command reference doc is current
 
 - Usage: `$ buddy docs:buddy:check`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:capabilities`
+
+Regenerate the driver capability matrix in docs/features/capabilities.md
+
+- Usage: `$ buddy docs:capabilities`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:capabilities:check`
+
+Verify the published capability matrix matches its registry
+
+- Usage: `$ buddy docs:capabilities:check`
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none
