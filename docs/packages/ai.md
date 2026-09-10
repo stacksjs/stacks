@@ -340,117 +340,118 @@ for await (const chunk of stream) {
 
 ### Using Bedrock Client
 
+There is no client to construct. The Bedrock clients are created lazily from
+`config/ai.ts` and the AWS environment, so the functions take the call's
+parameters directly:
+
 ```typescript
-import {
-  createBedrockClient,
-  createBedrockRuntimeClient,
-  invokeModel,
-  checkModelAccess
-} from '@stacksjs/ai'
+import { invokeModel, listFoundationModels, requestModelAccess } from '@stacksjs/ai'
 
-// Create Bedrock client
-const client = createBedrockClient({
-  region: 'us-east-1',
-})
+// Request access to every model named in config/ai.ts
+await requestModelAccess()
 
-// Check model access
-const hasAccess = await checkModelAccess(client, 'anthropic.claude-3-sonnet-20240229-v1:0')
+// What the account can actually reach
+const { modelSummaries } = await listFoundationModels({})
 
-// Create runtime client
-const runtimeClient = createBedrockRuntimeClient({
-  region: 'us-east-1',
-})
-
-// Invoke model
-const response = await invokeModel(runtimeClient, {
+const response = await invokeModel({
   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
+  contentType: 'application/json',
   body: JSON.stringify({
     anthropic_version: 'bedrock-2023-05-31',
     max_tokens: 1024,
     messages: [
-      { role: 'user', content: 'Hello!' }
+      { role: 'user', content: 'Hello!' },
     ],
   }),
 })
 ```
 
+`invokeModelWithResponseStream` has the same shape and yields chunks.
+
 ## AI Agents
 
 ### Creating Agents
 
+There is no `createAgent` with a tools array. Agents in Stacks are **drivers**
+that delegate to the Claude CLI - locally or over SSH on an EC2 box - and the
+tools are the CLI's own:
+
 ```typescript
-import { createAgent } from '@stacksjs/ai'
+import { claudeAgent } from '@stacksjs/ai'
 
-const agent = createAgent({
-  name: 'ResearchAssistant',
-  model: 'claude-3-opus-20240229',
-  systemPrompt: `You are a research assistant. You help users find and summarize information.
-    You have access to web search and can analyze documents.`,
-  tools: [
-    {
-      name: 'web_search',
-      description: 'Search the web for information',
-      execute: async (query: string) => {
-        // Implement web search
-        return searchResults
-      },
-    },
-    {
-      name: 'read_document',
-      description: 'Read and analyze a document',
-      execute: async (path: string) => {
-        // Read document
-        return documentContent
-      },
-    },
-  ],
-})
+// Runs the `claude` CLI in a working directory
+const local = claudeAgent.createLocal({ cwd: process.cwd() })
 
-const result = await agent.run('Research the latest AI developments in 2024')
+// Or over SSH, from BUDDY_EC2_HOST / BUDDY_EC2_USER / BUDDY_EC2_KEY
+const remote = claudeAgent.createEC2({ ec2Host: 'agent.example.com' })
+
+const answer = await local.process(
+  'Summarize the recent changes in this repository',
+  context,
+  history,
+)
 ```
 
-### Agent Memory
+`local.process(command, context, history)` is the driver interface: the history
+is passed in, so a driver holds no conversation state of its own.
+
+For streaming, and for sessions that resume:
 
 ```typescript
-import { createAgent, MemoryStore } from '@stacksjs/ai'
+import { claudeAgentSDK, processCommandStreaming } from '@stacksjs/ai'
 
-const memory = new MemoryStore()
+const result = await processCommandStreaming('Refactor this module', process.cwd())
 
-const agent = createAgent({
-  name: 'PersonalAssistant',
-  model: 'claude-3-sonnet-20240229',
-  memory,
-})
+const sessionId = claudeAgentSDK.getLastSessionId()
+await claudeAgentSDK.resumeSession(sessionId, 'Now add tests')
+claudeAgentSDK.clearSession()
+```
 
-// Agent remembers previous conversations
-await agent.run('My name is John')
-await agent.run('What is my name?') // Remembers "John"
+### Conversation memory
+
+There is no `MemoryStore` class. Conversation state lives in `buddyState`,
+which the Buddy command loop reads and writes:
+
+```typescript
+import { buddyState } from '@stacksjs/ai'
+
+buddyState.addToHistory({ role: 'user', content: 'My name is John' })
+const { conversationHistory } = buddyState.getState()
+buddyState.clearHistory()
 ```
 
 ## Buddy - Voice AI Assistant
 
 ### Using Buddy
 
+Buddy is a repository-scoped command loop, not a voice assistant class - there
+is no `Buddy`, no `createBuddy`, and no speech in the package. It opens a repo,
+then processes commands against it:
+
 ```typescript
-import { Buddy, createBuddy } from '@stacksjs/ai'
+import { buddyState, openRepository, processCommand } from '@stacksjs/ai'
 
-// Create Buddy instance
-const buddy = createBuddy({
-  name: 'CodeAssistant',
-  voice: {
-    enabled: true,
-    model: 'whisper-1',
-  },
-})
+// Clone or open a repository; the path or a GitHub URL both work.
+const repo = await openRepository('https://github.com/stacksjs/stacks')
+buddyState.setRepo(repo)
 
-// Voice input
-const transcription = await buddy.listen()
+const answer = await processCommand('What does the queue package do?')
+```
 
-// Process and respond
-const response = await buddy.respond(transcription)
+`processCommand` throws if no repository is open - it is the context every
+command is answered against. Streaming has the same shape:
 
-// Text-to-speech output
-await buddy.speak(response)
+```typescript
+import { buddyProcessStreaming } from '@stacksjs/ai'
+
+// A ReadableStream to consume now, plus the assembled text when it ends -
+// so a caller can render as it arrives and still log the whole answer.
+const { stream, fullResponse } = await buddyProcessStreaming('Explain the router')
+
+for await (const chunk of stream)
+  process.stdout.write(chunk)
+
+const complete = await fullResponse
 ```
 
 ## Text Utilities
@@ -458,26 +459,24 @@ await buddy.speak(response)
 ### Text Generation
 
 ```typescript
-import { generateText, summarize, translate } from '@stacksjs/ai'
+import { analyzeSentiment, ask, classifyText, summarize } from '@stacksjs/ai'
 
-// Generate text
-const generated = await generateText({
-  prompt: 'Write a product description for a smart watch',
-  maxTokens: 200,
+// Free-form generation. The prompt is the first argument, not an option.
+const generated = await ask('Write a product description for a smart watch', {
+  maxTokenCount: 200,
 })
 
-// Summarize text
-const summary = await summarize({
-  text: longArticle,
-  maxLength: 100,
-})
+const summary = await summarize(longArticle, { maxTokenCount: 100 })
 
-// Translate text
-const translated = await translate({
-  text: 'Hello, how are you?',
-  from: 'en',
-  to: 'es',
-})
+// Sentiment and classification take the text first, then their own arguments.
+const sentiment = await analyzeSentiment('This product exceeded my expectations')
+const category = await classifyText(ticket, ['billing', 'bug', 'feature request'])
+```
+
+There is no `translate`. Ask for it:
+
+```typescript
+const translated = await ask(`Translate to Spanish: ${'Hello, how are you?'}`)
 ```
 
 ### Sentiment Analysis
@@ -610,7 +609,7 @@ try {
 
 | Function | Description |
 |----------|-------------|
-| `generateText(options)` | Generate text |
+| `ask(question, options)` | Generate text |
 | `summarize(options)` | Summarize text |
-| `translate(options)` | Translate text |
+
 | `analyzeSentiment(text)` | Analyze sentiment |
