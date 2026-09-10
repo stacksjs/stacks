@@ -47,9 +47,9 @@ buddy deploy
 
 ```typescript
 // config/cloud.ts
-import { defineCloudConfig } from '@stacksjs/config'
+import { defineCloud } from '@stacksjs/config'
 
-export default defineCloudConfig({
+export default defineCloud({
   provider: 'aws',
 
   region: process.env.AWS_REGION || 'us-east-1',

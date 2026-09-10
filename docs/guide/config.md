@@ -111,9 +111,9 @@ export default defineDatabase({
 
 ```typescript
 // config/cache.ts
-import { defineCacheConfig } from '@stacksjs/config'
+import { defineCache } from '@stacksjs/config'
 
-export default defineCacheConfig({
+export default defineCache({
   default: process.env.CACHE_DRIVER || 'file',
 
   stores: {
@@ -149,9 +149,9 @@ export default defineCacheConfig({
 
 ```typescript
 // config/queue.ts
-import { defineQueueConfig } from '@stacksjs/config'
+import { defineQueue } from '@stacksjs/config'
 
-export default defineQueueConfig({
+export default defineQueue({
   default: process.env.QUEUE_CONNECTION || 'sync',
 
   connections: {
@@ -278,9 +278,9 @@ export default defineStorage({
 
 ```typescript
 // config/auth.ts
-import { defineAuthConfig } from '@stacksjs/config'
+import { defineAuth } from '@stacksjs/config'
 
-export default defineAuthConfig({
+export default defineAuth({
   defaults: {
     guard: 'web',
     provider: 'users',
@@ -509,21 +509,28 @@ buddy config:migrate
 
 Stacks validates your configuration at startup:
 
+There is no `config/validation.ts` and no rules file. Validation is two
+functions, called where booting should stop:
+
 ```typescript
-// config/validation.ts
-import { defineConfigValidation } from '@stacksjs/config'
+import { requireEnv, validateEnv } from '@stacksjs/env'
 
-export default defineConfigValidation({
-  required: [
-    'APP_KEY',
-    'DB_CONNECTION',
-  ],
+// Throws, naming every missing key at once rather than the first one.
+requireEnv(['APP_KEY', 'DB_CONNECTION'])
 
-  rules: {
-    APP_KEY: (value) => value.length >= 32,
-    DB_PORT: (value) => !isNaN(Number(value)),
-  },
-})
+// Checks declared enum values (APP_ENV, DB_CONNECTION, ...) and returns the
+// problems rather than throwing, so a caller can decide what is fatal.
+const errors = validateEnv()
+if (errors.length > 0)
+  throw new Error(errors.join('\n'))
+```
+
+Beyond that, a config file is TypeScript: `defineApp`, `defineAuth`,
+`defineCache` and the rest type it, so a wrong key is a compile error rather
+than a startup one.
+
+```bash
+buddy env:check    # validate the current .env
 ```
 
 ## Best Practices
@@ -531,7 +538,6 @@ export default defineConfigValidation({
 1. **Never commit secrets** - Use `.env` for sensitive values
 2. **Use environment variables** - Keep config files environment-agnostic
 3. **Validate configuration** - Catch errors early at startup
-4. **Cache in production** - Improve boot time with config caching
 5. **Type your config** - Use TypeScript for autocompletion and safety
 
 ## Related

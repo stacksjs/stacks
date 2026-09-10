@@ -1,9 +1,11 @@
 import type {
   AppConfig,
+  AuthConfig,
   CacheConfig,
   CdnConfig,
   ChatConfig,
   CliConfig,
+  CloudConfig,
   DatabaseConfig,
   DependenciesConfig,
   DnsConfig,
@@ -133,7 +135,21 @@ export function defineApp(config: AppConfig): AppConfig {
   return config
 }
 
+export function defineAuth(config: AuthConfig): AuthConfig {
+  return config
+}
+
 export function defineCache(config: CacheConfig): CacheConfig {
+  return config
+}
+
+/**
+ * `config/cloud.ts` is the largest config file in a Stacks application and the
+ * one most worth having typed, and it was the one with no helper - along with
+ * `auth`. Both types already existed; only the two-line functions were missing
+ * (stacksjs/stacks#2581).
+ */
+export function defineCloud(config: CloudConfig): CloudConfig {
   return config
 }
 

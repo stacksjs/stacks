@@ -336,6 +336,216 @@ route.get('/profile', async (req) => {
 
 ## Response Helpers
 
+`json`, `redirect` and `view` are methods on the `response` helper, not
+standalone exports:
+
+```typescript
+import { response } from '@stacksjs/router'
+
+// JSON response
+route.get('/api/data', () => response.json({ data: 'value' }))
+
+// With status code - `created` is the named form of 201
+route.post('/users', () => response.created({ created: true }))
+
+// Plain text
+route.get('/health', () => response.text('OK'))
+
+// Redirect
+route.get('/old-path', () => response.redirect('/new-path'))
+route.get('/moved', () => response.redirectPermanent('/new-path'))
+
+// Render a view
+route.get('/about', () => response.view('about'))
+
+// No content
+route.delete('/items/:id', () => response.noContent())
+```
+
+It also carries the named error responses (`notFound`, `unauthorized`,
+`forbidden`, `error`), `paginate`, and the file responses (`file`, `download`,
+`streamDownload`). A plain `Response` still works anywhere - `response` is
+shorthand, not a requirement.
+
+## Route Groups
+
+```typescript
+// Prefix all routes
+route.group({ prefix: '/api/v1' }, () => {
+  route.get('/users', 'Controllers/UserController@index')
+  route.get('/posts', 'Controllers/PostController@index')
+})
+
+// With middleware
+route.group({ prefix: '/admin', middleware: 'auth' }, () => {
+  route.get('/dashboard', 'Actions/AdminDashboard')
+  route.get('/users', 'Actions/AdminUsers')
+})
+
+// Multiple middleware
+route.group({ middleware: ['auth', 'admin'] }, () => {
+  route.get('/settings', 'Actions/AdminSettings')
+})
+
+// Nested groups
+route.group({ prefix: '/api' }, () => {
+  route.group({ prefix: '/v1', middleware: 'auth' }, () => {
+    route.get('/me', 'Actions/GetCurrentUser')
+  })
+})
+```
+
+## Middleware
+
+### Using Middleware
+
+```typescript
+// Single route middleware
+route.get('/profile', 'Actions/Profile').middleware('auth')
+
+// Multiple middleware
+route.get('/admin', 'Actions/Admin')
+  .middleware('auth')
+  .middleware('admin')
+
+// Middleware with parameters
+route.get('/posts', 'Actions/Posts')
+  .middleware('abilities:read,write')
+```
+
+### Built-in Auth Middleware
+
+```typescript
+// Protect routes with authentication
+route.get('/dashboard', 'Actions/Dashboard').middleware('auth')
+
+// The auth middleware:
+// - Validates bearer token
+// - Loads authenticated user
+// - Makes user available via req.user()
+```
+
+### Creating Custom Middleware
+
+```typescript
+// app/Middleware/AdminMiddleware.ts
+export default {
+  async handle(req: EnhancedRequest) {
+    const user = await req.user()
+
+    if (!user || user.role !== 'admin') {
+      throw { statusCode: 403, message: 'Forbidden' }
+    }
+
+    // Continue to next middleware/handler
+  }
+}
+```
+
+## Request Helpers
+
+The enhanced request object provides Laravel-style helpers:
+
+### Input Methods
+
+```typescript
+route.post('/users', async (req) => {
+  // Get single input value
+  const name = req.get('name')
+  const email = req.input('email')
+
+  // Get all input
+  const allInput = req.all()
+
+  // Get only specific fields
+  const userData = req.only(['name', 'email', 'password'])
+
+  // Get all except specific fields
+  const safeData = req.except(['password', 'token'])
+
+  // Check if input exists
+  if (req.has('remember')) { /* ... */ }
+  if (req.hasAny(['email', 'phone'])) { /* ... */ }
+
+  // Check if input is filled (not empty)
+  if (req.filled('name')) { /* ... */ }
+
+  // Check if input is missing
+  if (req.missing('optional_field')) { /* ... */ }
+})
+```
+
+### Type Casting
+
+```typescript
+route.get('/products', (req) => {
+  // Cast to string (with default)
+  const search = req.string('q', '')
+
+  // Cast to integer
+  const page = req.integer('page', 1)
+
+  // Cast to float
+  const minPrice = req.float('min_price', 0.0)
+
+  // Cast to boolean
+  const inStock = req.boolean('in_stock', false)
+
+  // Cast to array
+  const categories = req.array('categories')
+})
+```
+
+### File Uploads
+
+```typescript
+route.post('/upload', async (req) => {
+  // Get single file
+  const avatar = req.file('avatar')
+  if (avatar) {
+    // Store file
+    await avatar.store('avatars')
+    // Or with custom filename
+    await avatar.storeAs('avatars', 'custom-name.jpg')
+  }
+
+  // Get multiple files
+  const documents = req.getFiles('documents')
+  for (const doc of documents) {
+    await doc.store('documents')
+  }
+
+  // Check if file exists
+  if (req.hasFile('resume')) { /* ... */ }
+
+  // Get all files
+  const allFiles = req.allFiles()
+})
+```
+
+### Authentication Helpers
+
+```typescript
+route.get('/profile', async (req) => {
+  // Get authenticated user
+  const user = await req.user()
+
+  // Get user's access token
+  const token = await req.userToken()
+
+  // Check token abilities
+  if (await req.tokenCan('posts:write')) {
+    // User can write posts
+  }
+
+  if (await req.tokenCant('admin:access')) {
+    // User cannot access admin
+  }
+})
+```
+
+## Response Helpers
+
 ```typescript
 import { json, redirect, view } from '@stacksjs/router'
 
