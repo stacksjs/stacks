@@ -124,14 +124,20 @@ export function cacheRequestQuery<T>(key: string, fetcher: () => T | Promise<T>)
   }
 }
 
-async function startQuery<T>(cache: RequestQueryCache | undefined, key: string, fetcher: () => T | Promise<T>): Promise<T> {
-  if (!cache) return fetcher()
+function startQuery<T>(cache: RequestQueryCache | undefined, key: string, fetcher: () => T | Promise<T>): Promise<T> {
+  if (!cache) return uncachedQuery(fetcher)
   const promise = Promise.resolve().then(() => fetcher())
   cache.map.set(key, promise)
   // Drop failures so a transient DB error doesn't poison the slot for
   // the rest of the request.
   promise.catch(() => cache.map.delete(key))
-  return promise
+  // Like cache hits, give the caller its own rejection without the async
+  // return's extra promise adoption. The eviction handler owns only the cache.
+  return promise.then()
+}
+
+async function uncachedQuery<T>(fetcher: () => T | Promise<T>): Promise<T> {
+  return fetcher()
 }
 
 /**

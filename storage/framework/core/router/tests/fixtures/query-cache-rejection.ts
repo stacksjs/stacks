@@ -16,6 +16,8 @@ const retried = await runWithRequest(new Request('https://example.test') as Enha
   const handled = cacheRequestQuery('mixed', () => Promise.reject(failure))
   void cacheRequestQuery('mixed', () => Promise.reject(failure))
   await handled.catch(() => {})
+  void cacheRequestQuery('ignored-first', () => Promise.reject(new Error('ignored first caller')))
+  await cacheRequestQuery('ignored-first', () => 0).catch(() => {})
   await Bun.sleep(20)
   return value
 })

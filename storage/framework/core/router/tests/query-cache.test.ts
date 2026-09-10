@@ -146,7 +146,7 @@ describe('request query cache', () => {
         child.exited,
       ])
       expect({ code, stderr }).toEqual({ code: 0, stderr: '' })
-      expect(JSON.parse(stdout)).toEqual({ unhandled: ['ignored query', 'mixed callers'], retried: 42 })
+      expect(JSON.parse(stdout)).toEqual({ unhandled: ['ignored query', 'mixed callers', 'ignored first caller'], retried: 42 })
     }
     finally {
       clearTimeout(timeout)
