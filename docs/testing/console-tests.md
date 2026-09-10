@@ -246,7 +246,8 @@ describe('Auth Commands', () => {
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { command, useTransaction } from '@stacksjs/testing'
+import { command } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 import { db } from '@stacksjs/database'
 
 describe('Database Commands', () => {

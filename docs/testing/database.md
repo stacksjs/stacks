@@ -85,7 +85,7 @@ Stacks provides a helper that handles setup/teardown automatically:
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { useTransaction } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 import { db } from '@stacksjs/database'
 
 describe('Order Model', () => {

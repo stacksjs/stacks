@@ -224,7 +224,7 @@ describe('UserService', () => {
 
 ```typescript
 import { describe, it, expect } from 'bun:test'
-import { useTransaction } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 import { User } from '@/models/User'
 
 describe('User Model', () => {
@@ -288,7 +288,8 @@ describe('UserService', () => {
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { http, useTransaction } from '@stacksjs/testing'
+import { http } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 import { UserFactory } from '../factories/UserFactory'
 
 describe('Users API', () => {

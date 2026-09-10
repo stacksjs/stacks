@@ -464,7 +464,8 @@ describe('Users API with database', () => {
 
 ```typescript
 import { describe, expect, it } from 'bun:test'
-import { http, useTransaction } from '@stacksjs/testing'
+import { http } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 
 describe('Transactional tests', () => {
   // Each test runs in a transaction that's rolled back

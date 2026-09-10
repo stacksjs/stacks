@@ -462,7 +462,8 @@ async index(request: Request): Promise<Response> {
 
 ```typescript
 import { describe, it, expect } from 'bun:test'
-import { http, useTransaction } from '@stacksjs/testing'
+import { http } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 
 describe('Posts API', () => {
   useTransaction()

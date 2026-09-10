@@ -1,3 +1,4 @@
+import { afterEach, beforeEach } from 'bun:test'
 import { config } from '@stacksjs/config'
 import {
   copyModelFiles,
@@ -423,4 +424,36 @@ export async function assertNotSoftDeleted(table: string, criteria: RowCriteria)
     `Expected no ${table} row matching ${describeCriteria(criteria)} to be soft-deleted, `
     + `but ${deleted.length} of ${rows.length} has a deleted_at set.`,
   )
+}
+
+/**
+ * Wrap every test in this file in a transaction that is rolled back after it
+ * (stacksjs/stacks#2581).
+ *
+ * The self-wiring form of {@link useTransactionalTests}, and the one six
+ * documentation pages have always shown. It registers its own `beforeEach` and
+ * `afterEach`, so a suite says what it wants once:
+ *
+ * ```ts
+ * import { useTransaction } from '@stacksjs/testing/database'
+ *
+ * describe('Order', () => {
+ *   useTransaction()
+ *
+ *   it('creates an order', async () => {
+ *     // ...rolled back when this returns
+ *   })
+ * })
+ * ```
+ *
+ * Call it at the top of a `describe`, or at the top of the file for every test
+ * in it - `beforeEach` is scoped by where it is registered, and so is this.
+ *
+ * Prefer {@link useTransactionalTests} when the hooks need to interleave with
+ * others in a particular order; this is the common case, not the only one.
+ */
+export function useTransaction(): void {
+  const tx = useTransactionalTests()
+  beforeEach(tx.begin)
+  afterEach(tx.rollback)
 }

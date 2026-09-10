@@ -33,6 +33,8 @@ export function setupTestEnvironment(): void {
  */
 export interface FeatureTestResponse {
   status: number
+  /** `true` for a 2xx status, matching `Response.ok`. */
+  ok: boolean
   headers: Headers
   text: () => Promise<string>
   json: <T = unknown>() => Promise<T>
@@ -44,11 +46,104 @@ export interface FeatureTestResponse {
 export interface FeatureTestClient {
   actingAs: (user: { id: number | string, [k: string]: unknown }) => FeatureTestClient
   withHeaders: (headers: Record<string, string>) => FeatureTestClient
+  /**
+   * The full request, for anything the verb shorthands cannot express -
+   * a query string, a multipart body, or a method they do not cover.
+   */
+  request: (method: string, path: string, spec?: Omit<RequestOptions, 'actingAs'>) => Promise<FeatureTestResponse>
   get: (path: string) => Promise<FeatureTestResponse>
   post: (path: string, body?: unknown) => Promise<FeatureTestResponse>
   put: (path: string, body?: unknown) => Promise<FeatureTestResponse>
   patch: (path: string, body?: unknown) => Promise<FeatureTestResponse>
   delete: (path: string, body?: unknown) => Promise<FeatureTestResponse>
+}
+
+/** A value a query string can carry, before it is stringified. */
+export type QueryValue = string | number | boolean | null | undefined | Array<string | number | boolean>
+
+/**
+ * One request, described rather than built up by chaining.
+ *
+ * This is the shape `http.*` takes. It exists next to the fluent client
+ * because the two answer different questions: `featureTest()` is for a
+ * sequence of requests that share an identity, `http` is for a single
+ * self-contained one.
+ */
+export interface RequestOptions {
+  /** Extra headers. An explicit `Authorization` wins over `actingAs`. */
+  headers?: Record<string, string>
+  /** Appended to the path as a query string; arrays repeat the key. */
+  query?: Record<string, QueryValue>
+  /** JSON body. Objects are serialized; a string is sent as-is. */
+  body?: unknown
+  /** Multipart body. Mutually exclusive with `body`. */
+  formData?: Record<string, string | Blob>
+  /** Authenticate as this user for this request only. */
+  actingAs?: { id: number | string, [k: string]: unknown }
+}
+
+const REQUEST_OPTION_KEYS: ReadonlySet<string> = new Set(['headers', 'query', 'body', 'formData', 'actingAs'])
+
+/**
+ * A stateless HTTP client for feature tests.
+ *
+ * Every method takes `(path, options?)` and builds a fresh request, so
+ * nothing leaks between tests and there is no client to construct.
+ */
+export interface HttpClient {
+  get: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  post: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  put: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  patch: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  delete: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  head: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+  options: (path: string, options?: RequestOptions) => Promise<FeatureTestResponse>
+}
+
+/**
+ * `?a=1&b=2` for `options.query`, or `''` when there is nothing to append.
+ *
+ * `undefined` and `null` are dropped rather than sent as the strings
+ * `"undefined"` / `"null"`, so an optional filter can be passed through
+ * without the caller building the object conditionally. An array repeats the
+ * key (`tag=a&tag=b`), which is what every server-side parser in this
+ * repository expects.
+ */
+export function queryString(query: Record<string, QueryValue> | undefined): string {
+  if (!query)
+    return ''
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(query)) {
+    if (value === undefined || value === null)
+      continue
+    if (Array.isArray(value)) {
+      for (const item of value)
+        params.append(key, String(item))
+      continue
+    }
+    params.append(key, String(value))
+  }
+  const rendered = params.toString()
+  return rendered ? `?${rendered}` : ''
+}
+
+/**
+ * Reject an options object that is really a body.
+ *
+ * `http.post('/api/users', { name: 'Jane' })` is the mistake this package
+ * would otherwise make silently: the object looks like a body, is treated as
+ * options, matches no known key, and the request goes out empty. Failing
+ * loudly costs one comparison and saves a debugging session.
+ */
+export function assertRequestOptions(options: RequestOptions, method: string, path: string): void {
+  const unknown = Object.keys(options).filter(key => !REQUEST_OPTION_KEYS.has(key))
+  if (unknown.length === 0)
+    return
+  throw new TypeError(
+    `http.${method.toLowerCase()}('${path}', …) got unknown option(s) ${unknown.map(k => `'${k}'`).join(', ')}. `
+    + `Did you mean to send a body? Wrap it: { body: { ${unknown[0]}: … } }. `
+    + `Valid options are ${[...REQUEST_OPTION_KEYS].join(', ')}.`,
+  )
 }
 
 /**
@@ -65,6 +160,7 @@ async function resolveServer(): Promise<(req: Request) => Promise<Response>> {
 function buildResponse(res: Response): FeatureTestResponse {
   const wrapper: FeatureTestResponse = {
     status: res.status,
+    ok: res.ok,
     headers: res.headers,
     text: () => res.text(),
     json: async <T = unknown>() => (await res.clone().json()) as T,
@@ -147,12 +243,17 @@ export function featureTest(baseUrl: string = 'http://localhost'): FeatureTestCl
     return actingToken
   }
 
-  async function buildHeaders(body?: unknown): Promise<Record<string, string>> {
+  async function buildHeaders(spec: Omit<RequestOptions, 'actingAs'>): Promise<Record<string, string>> {
     const headers: Record<string, string> = {
       'Accept': 'application/json',
       ...extraHeaders,
+      ...spec.headers,
     }
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    // A multipart body carries a generated boundary in its content type, so
+    // `Request` has to set that header itself - writing `multipart/form-data`
+    // here without the boundary produces a body no parser can read.
+    if (spec.body !== undefined && spec.formData === undefined)
+      headers['Content-Type'] = 'application/json'
 
     const token = await resolveActingToken()
     // An explicit `withHeaders({ Authorization })` wins: a test that sets its
@@ -163,13 +264,31 @@ export function featureTest(baseUrl: string = 'http://localhost'): FeatureTestCl
     return headers
   }
 
-  async function send(method: string, path: string, body?: unknown): Promise<FeatureTestResponse> {
+  function buildBody(spec: Omit<RequestOptions, 'actingAs'>): BodyInit | undefined {
+    if (spec.formData !== undefined) {
+      if (spec.body !== undefined)
+        throw new TypeError('A request carries either `body` or `formData`, not both.')
+      const form = new FormData()
+      for (const [key, value] of Object.entries(spec.formData))
+        form.append(key, value as string | Blob)
+      return form
+    }
+    if (spec.body === undefined)
+      return undefined
+    return typeof spec.body === 'string' ? spec.body : JSON.stringify(spec.body)
+  }
+
+  async function send(method: string, path: string, spec: Omit<RequestOptions, 'actingAs'> = {}): Promise<FeatureTestResponse> {
     const handler = await resolveServer()
-    const url = path.startsWith('http') ? path : `${baseUrl}${path}`
+    const base = path.startsWith('http') ? path : `${baseUrl}${path}`
+    // Appended rather than assigned, so a path that already carries a query
+    // string keeps it: `http.get('/a?b=1', { query: { c: 2 } })`.
+    const qs = queryString(spec.query)
+    const url = qs && base.includes('?') ? `${base}&${qs.slice(1)}` : `${base}${qs}`
     const init: RequestInit = {
       method,
-      headers: await buildHeaders(body),
-      body: body === undefined ? undefined : typeof body === 'string' ? body : JSON.stringify(body),
+      headers: await buildHeaders(spec),
+      body: buildBody(spec),
     }
     const res = await handler(new Request(url, init))
     return buildResponse(res)
@@ -187,11 +306,59 @@ export function featureTest(baseUrl: string = 'http://localhost'): FeatureTestCl
       extraHeaders = { ...extraHeaders, ...headers }
       return client
     },
+    request: (method, path, spec) => send(method, path, spec),
     get: path => send('GET', path),
-    post: (path, body) => send('POST', path, body),
-    put: (path, body) => send('PUT', path, body),
-    patch: (path, body) => send('PATCH', path, body),
-    delete: (path, body) => send('DELETE', path, body),
+    post: (path, body) => send('POST', path, { body }),
+    put: (path, body) => send('PUT', path, { body }),
+    patch: (path, body) => send('PATCH', path, { body }),
+    delete: (path, body) => send('DELETE', path, { body }),
   }
   return client
 }
+
+/**
+ * Authenticate as `user`, then make requests.
+ *
+ * Shorthand for `featureTest().actingAs(user)`, which is how nearly every
+ * feature test starts. The returned client is fresh per call, so two tests
+ * acting as two users never share a token.
+ */
+export function actingAs(
+  user: { id: number | string, [k: string]: unknown },
+  baseUrl?: string,
+): FeatureTestClient {
+  return featureTest(baseUrl).actingAs(user)
+}
+
+/**
+ * A request-at-a-time HTTP client for feature tests.
+ *
+ * Each call constructs its own `featureTest()` client, so `http` holds no
+ * state at all: nothing an earlier test set can reach a later one, which is
+ * the failure mode a shared module-level client would have.
+ *
+ * ```ts
+ * await http.get('/api/users', { query: { page: 1 } })
+ * await http.post('/api/users', { body: { name: 'Jane' } })
+ * await http.post('/api/upload', { formData: { file: new File(['x'], 'a.txt') } })
+ * ```
+ *
+ * Note the body is WRAPPED. The fluent client takes a bare body
+ * (`featureTest().post('/api/users', { name: 'Jane' })`) because it has no
+ * options to disambiguate it from; `http` has, so it cannot. Passing a bare
+ * body here throws rather than sending an empty request - see
+ * `assertRequestOptions`.
+ */
+export const http: HttpClient = Object.freeze(
+  (['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'] as const).reduce((client, method) => {
+    const send = async (path: string, options: RequestOptions = {}): Promise<FeatureTestResponse> => {
+      assertRequestOptions(options, method, path)
+      const { actingAs: user, ...spec } = options
+      const client = featureTest()
+      if (user)
+        client.actingAs(user)
+      return client.request(method, path, spec)
+    }
+    return { ...client, [method.toLowerCase()]: send }
+  }, {} as HttpClient),
+)

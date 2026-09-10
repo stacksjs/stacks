@@ -22,7 +22,8 @@ Feature tests help you:
 ```typescript
 // tests/Feature/UserRegistrationTest.ts
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test'
-import { http, useTransaction } from '@stacksjs/testing'
+import { http } from '@stacksjs/testing'
+import { useTransaction } from '@stacksjs/testing/database'
 import { db } from '@stacksjs/database'
 
 describe('User Registration', () => {
@@ -98,7 +99,8 @@ describe('User Registration', () => {
 ```typescript
 // tests/Feature/CheckoutTest.ts
 import { describe, expect, it } from 'bun:test'
-import { actingAs, assertDatabaseHas, http, useTransaction } from '@stacksjs/testing'
+import { actingAs, http } from '@stacksjs/testing'
+import { assertDatabaseHas, useTransaction } from '@stacksjs/testing/database'
 import { UserFactory, ProductFactory } from '../factories'
 
 describe('Checkout Flow', () => {
