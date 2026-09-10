@@ -294,6 +294,28 @@ jobs:
       # Publishing succeeded is not enough: registry manifests can still carry
       # monorepo-only protocols that make the package impossible to install.
       # Exercise the public artifact from a clean, non-workspace directory.
+      #
+      # Two failures wear the same costume here, and only one of them is ours:
+      #
+      #   1. The manifest cannot ever install — a `workspace:` protocol escaped
+      #      into the published artifact. Deterministic, ours, and worth
+      #      failing the release over.
+      #   2. npm has not finished propagating. ~180 packages go out per
+      #      release, and metadata appears on the CDN edges well before every
+      #      tarball does.
+      #
+      # The second is not a defect in what we published, so it must not fail
+      # the release. It did: v0.74.41 published every package correctly and
+      # went red because `@stacksjs/defaults` became visible a minute after the
+      # retry budget ran out. Everything after this step — the dummy libs, the
+      # VS Code extension, the GitHub release assets — was skipped for a
+      # release that was entirely fine, which is the real cost.
+      #
+      # So the outcome is decided on evidence rather than on a clock: ask the
+      # registry whether the versions we are waiting for actually exist. If
+      # they do, this is propagation and the release continues with a warning.
+      # If they do not, the publish genuinely lost a package and the release
+      # fails, however long it took to find out.
       - name: Verify published framework install
         run: |
           version="${GITHUB_REF#refs/tags/v}"
@@ -301,21 +323,17 @@ jobs:
           trap 'rm -rf "$smoke_dir"' EXIT
           cd "$smoke_dir"
           echo '{"name":"stacks-release-smoke","private":true}' > package.json
+
+          # Does the registry itself list this exact version? Asked of the
+          # source of truth rather than of an installer reading a cache, which
+          # is the whole distinction this step turns on.
+          registry_has() {
+            code="$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 \
+              "https://registry.npmjs.org/$1/$2" 2>/dev/null || echo 000)"
+            [ "$code" = "200" ]
+          }
+
           installed=false
-          # This gate exists to catch a manifest that can never install (a
-          # `workspace:` protocol that escaped into the published artifact).
-          # That failure is deterministic and worth failing the release over.
-          #
-          # A tarball 404 is a different animal: npm publishes ~180 packages
-          # here, and metadata becomes visible on the edges well before every
-          # tarball does. The old three-minute budget was routinely shorter
-          # than that propagation, so a completely successful publish was
-          # reported as a failed release, twice in a row, while the packages
-          # it had just pushed installed fine minutes later.
-          #
-          # So: fail fast on the deterministic error, and be patient about the
-          # transient one. Twelve minutes, backing off, costs nothing when
-          # propagation is quick.
           attempts=30
           for attempt in $(seq 1 "$attempts"); do
             # Force fresh manifests each retry: a package published near the
@@ -336,11 +354,7 @@ jobs:
               exit 1
             fi
 
-            if [ "$attempt" -eq "$attempts" ]; then
-              cat install.log
-              echo "::error::stacks@$version is published but still could not be installed from a clean project after $attempts attempts"
-              exit 1
-            fi
+            [ "$attempt" -eq "$attempts" ] && break
 
             # Report a retry as ONE line, and dump the log only when the
             # release actually fails.
@@ -367,10 +381,42 @@ jobs:
             # quick, patient when it is not.
             if [ "$attempt" -le 6 ]; then sleep 10; else sleep 30; fi
           done
-          if [ "$installed" != true ]; then
+
+          if [ "$installed" = true ]; then
+            bun node_modules/@stacksjs/buddy/dist/cli.js --help >/dev/null
+            echo "stacks@$version installs from a clean project"
+            exit 0
+          fi
+
+          # The budget is gone. Decide what actually happened.
+          waiting_on="$(grep -oE 'for specifier "[^"]+"' install.log | sed 's/for specifier //; s/"//g' | sort -u)"
+          [ -n "$waiting_on" ] || waiting_on="stacks"
+
+          missing=""
+          for pkg in $waiting_on; do
+            registry_has "$pkg" "$version" || missing="$missing $pkg"
+          done
+
+          if [ -n "$missing" ]; then
+            cat install.log
+            echo "::error::stacks@$version is incomplete - the registry has no$missing at $version. The publish lost a package; re-run the release."
             exit 1
           fi
-          bun node_modules/@stacksjs/buddy/dist/cli.js --help >/dev/null
+
+          # Every version the installer wanted is in the registry, so what we
+          # published is correct and complete and only the edges are behind.
+          # Say so loudly and let the release finish: the steps below this one
+          # ship the GitHub release assets, and skipping those over a slow CDN
+          # is a worse outcome than a warning nobody had to act on.
+          cat install.log
+          echo "::warning::stacks@$version is published and complete, but npm had not propagated it to this runner within the retry budget. Every awaited version exists in the registry ($(echo $waiting_on | tr '\n' ' ')). Continuing; no action needed."
+          {
+            echo "### Release verification"
+            echo ""
+            echo "\`stacks@$version\` published successfully. The clean-project install did not"
+            echo "resolve within the retry budget, but every awaited version is present in the"
+            echo "registry, so this is npm propagation rather than a bad artifact."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Publish Dummy Libraries
         run: ./storage/framework/scripts/publish-dummy-libs
