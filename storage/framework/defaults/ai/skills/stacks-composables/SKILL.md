@@ -17,6 +17,26 @@ in STX templates", which is the same mistake `AGENTS.md` carries a scar about
 under "200+ composables": an agent reaching for a name on that authority writes
 a template that does not run, and reads the failure as a framework bug.
 
+## The 27 you can write bare in a template
+
+Everything else on this page needs an explicit import, including most of what
+the sections below list. Of the 88 composables named here, 68 are in that
+second group - `useCounter`, `useLocalStorage`, `useMouse`, `useScroll`,
+`useIntersectionObserver` and `usePreferredReducedMotion` among them, which are
+exactly the names `AGENTS.md` calls out for having been wrongly listed as free.
+
+`useAbs`, `useAuth`, `useAverage`, `useCeil`, `useClamp`, `useDark`,
+`useDateFormat`, `useFetch`, `useFloor`, `useForm`, `useGitStore`, `useMax`,
+`useMin`, `useNow`, `useOnline`, `usePaymentStore`, `usePrecision`,
+`usePreferredDark`, `useQueueStore`, `useRound`, `useScrollLock`, `useStorage`,
+`useSum`, `useTimeoutFn`, `useToggle`, `useTrunc`, `useUserStore`.
+
+A name not on that list is imported:
+
+```ts
+import { useCounter } from '@stacksjs/composables'
+```
+
 ## Key Path
 - Core package: `storage/framework/core/composables/src/`
 
