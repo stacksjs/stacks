@@ -21,12 +21,14 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import type { GetStreamOptions, PresignedUploadPolicy, PresignedUploadPolicyOptions, PresignedUploadUrl, PresignedUploadUrlOptions, PutResult, PutStreamOptions, SignedUrlOptions, StatEntry, StorageAdapter } from './types'
+import { AzureBlobStorageAdapter } from './adapters/azure'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
 import { parseDiskPath } from './path-sanitize'
 import { putUploadedFile } from './put-file'
 import type { PutFileOptions, UploadedFileLike } from './put-file'
 import type {
+  AzureDiskConfig,
   DiskConfig,
   DiskName,
   FilesystemConfig,
@@ -177,6 +179,8 @@ class StorageManager {
         return this.createLocalAdapter(config)
       case 's3':
         return this.createS3Adapter(name, config)
+      case 'azure':
+        return this.createAzureAdapter(config)
       default:
         throw new Error(`Unsupported driver: ${(config as { driver?: unknown }).driver}`)
     }
@@ -206,6 +210,24 @@ class StorageManager {
       credentials: config.credentials
         ? { accessKeyId: config.credentials.key, secretAccessKey: config.credentials.secret }
         : undefined,
+    })
+  }
+
+  /**
+   * Build the Azure disk (stacksjs/stacks#1896).
+   *
+   * The adapter has no lazy-client dance like the S3 one: it speaks the blob
+   * REST API over `fetch`, so there is no SDK to keep off the boot graph.
+   */
+  private createAzureAdapter(config: AzureDiskConfig): StorageAdapter {
+    return new AzureBlobStorageAdapter({
+      account: config.account,
+      accountKey: config.accountKey,
+      sasToken: config.sasToken,
+      container: config.container,
+      prefix: config.prefix,
+      url: config.url,
+      endpoint: config.endpoint,
     })
   }
 
@@ -583,6 +605,7 @@ export const Storage = new StorageManager()
 export { StorageManager }
 
 export type {
+  AzureDiskConfig,
   DiskConfig,
   FilesystemConfig,
   LocalDiskConfig,

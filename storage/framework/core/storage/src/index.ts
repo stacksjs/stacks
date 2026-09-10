@@ -22,12 +22,12 @@ export type { ServeFileOptions } from './static-serve'
 
 // Laravel-style Storage facade and UploadedFile
 export { Storage, StorageManager } from './facade'
-export type { DiskConfig, FilesystemConfig, LocalDiskConfig, S3DiskConfig } from './facade'
+export type { AzureDiskConfig, DiskConfig, FilesystemConfig, LocalDiskConfig, S3DiskConfig } from './facade'
 export type { FilenameStrategy, PutFileOptions, UploadedFileLike } from './put-file'
 export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Filesystem type helpers
-export { backblazeDisk, configFromEnv, filebaseDisk, gcsDisk, hetznerDisk, localDisk, r2Disk, s3Disk } from './types/filesystem'
+export { azureDisk, backblazeDisk, configFromEnv, filebaseDisk, gcsDisk, hetznerDisk, localDisk, r2Disk, s3Disk } from './types/filesystem'
 // Disk-name autocomplete: userland augments `KnownDisks` to get
 // completion on `Storage.disk('…')` (stacksjs/stacks#1924).
 export type { DiskName, KnownDisks } from './types/filesystem'

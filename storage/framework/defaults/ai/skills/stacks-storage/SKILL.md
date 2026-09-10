@@ -8,7 +8,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Storage
 
-File system abstraction with a Laravel-style Storage facade, local/S3 adapters, file upload handling, and low-level file utilities.
+File system abstraction with a Laravel-style Storage facade, local/S3/Azure adapters, file upload handling, and low-level file utilities.
 
 ## Key Paths
 - Core package: `storage/framework/core/storage/src/`
@@ -18,6 +18,8 @@ File system abstraction with a Laravel-style Storage facade, local/S3 adapters, 
 - Filesystem config types: `storage/framework/core/storage/src/types/filesystem.ts`
 - Local adapter: `storage/framework/core/storage/src/adapters/local.ts`
 - S3 adapter: `storage/framework/core/storage/src/adapters/s3.ts`
+- Azure adapter: `storage/framework/core/storage/src/adapters/azure.ts`
+- Azure request signing: `storage/framework/core/storage/src/azure-signing.ts`
 - Memory adapter: `storage/framework/core/storage/src/adapters/memory.ts`
 - Bun adapter: `storage/framework/core/storage/src/adapters/bun.ts`
 - File utilities: `storage/framework/core/storage/src/files.ts`
@@ -45,7 +47,7 @@ import { createLocalStorage, LocalStorageAdapter } from '@stacksjs/storage'
 import { createS3Storage, S3StorageAdapter } from '@stacksjs/storage'
 
 // Config helpers
-import { localDisk, s3Disk, configFromEnv } from '@stacksjs/storage'
+import { localDisk, s3Disk, azureDisk, r2Disk, gcsDisk, filebaseDisk, backblazeDisk, hetznerDisk, configFromEnv } from '@stacksjs/storage'
 
 // Types
 import type { StorageAdapter, FileContents, StatEntry, DirectoryEntry, DirectoryListing } from '@stacksjs/storage'
@@ -232,6 +234,46 @@ const s3 = new S3StorageAdapter(client, { bucket: 'my-bucket', region: 'us-east-
 - `publicUrl()` defaults to `https://<bucket>.s3.<region>.amazonaws.com/<key>`
 - `list()` supports pagination via continuation tokens; `deep: true` uses `listAllObjects()`
 - `fileExists()` uses `headObject()` and catches 404/NoSuchKey/NotFound errors
+
+Every S3-COMPATIBLE provider is an `s3` disk with a different endpoint, and has
+a preset that fills it in: `r2Disk(bucket, accountId)`, `gcsDisk(bucket)`,
+`filebaseDisk(bucket)`, `backblazeDisk(bucket, region)`,
+`hetznerDisk(bucket, location)`. R2 additionally needs `url` set, because its
+API host never serves public objects.
+
+### Azure Adapter (`AzureBlobStorageAdapter`)
+
+```typescript
+import { azureDisk, AzureBlobStorageAdapter } from '@stacksjs/storage'
+
+const azure = new AzureBlobStorageAdapter({
+  account: 'mystorageaccount',
+  accountKey: process.env.AZURE_STORAGE_ACCOUNT_KEY,
+  container: 'uploads',
+  prefix: 'tenant-7',
+})
+```
+
+Its own driver rather than an `s3` disk with an endpoint, because Azure is the
+one provider with no S3-compatible API.
+
+- Speaks the blob REST API over `fetch`; no SDK, and no lazy-client dance
+- Shared Key authorization for server-side calls, service SAS for signed URLs,
+  both in `azure-signing.ts` and tested there directly
+- `changeVisibility()` THROWS -- Azure has no per-blob ACL. Public access is a
+  container property, so `visibility()` reports the container's level, and a
+  per-object grant is `signedUrl()`
+- `putStream()` stages blocks (Put Block) and commits one Put Block List, so the
+  write is atomic; block ids are zero-padded to a fixed width because Azure
+  rejects unequal-length ids
+- `getStream()` is genuinely incremental, unlike the S3 adapter's buffered one
+- `createDirectory()` is a no-op and `deleteDirectory()` deletes by prefix, same
+  as S3
+- `endpoint` defaults to `https://<account>.blob.core.windows.net`; point it at
+  `http://127.0.0.1:10000/devstoreaccount1` for Azurite
+- A `sasToken` disk can read and write but cannot sign URLs -- minting a SAS
+  needs the account key, and re-serving the configured token would hand out its
+  full grant
 
 ## File Uploads (UploadedFile)
 
@@ -490,8 +532,8 @@ interface ChecksumOptions {
 }
 
 // Filesystem config types
-type FilesystemDriver = 'local' | 's3'
-type DiskConfig = LocalDiskConfig | S3DiskConfig
+type FilesystemDriver = 'local' | 's3' | 'azure'
+type DiskConfig = LocalDiskConfig | S3DiskConfig | AzureDiskConfig
 
 interface LocalDiskConfig {
   driver: 'local'
@@ -509,6 +551,18 @@ interface S3DiskConfig {
   usePathStyleEndpoint?: boolean
   url?: string
   credentials?: { key: string; secret: string }
+  visibility?: 'public' | 'private'
+}
+
+interface AzureDiskConfig {
+  driver: 'azure'
+  account: string
+  container: string
+  accountKey?: string
+  sasToken?: string
+  prefix?: string
+  url?: string
+  endpoint?: string
   visibility?: 'public' | 'private'
 }
 

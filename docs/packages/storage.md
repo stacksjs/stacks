@@ -377,6 +377,75 @@ export default {
 }
 ```
 
+### Provider presets
+
+Most object stores speak the S3 API, so they are `s3` disks with a different
+endpoint. Each has a helper that fills in the endpoint and region so you do not
+have to look them up:
+
+```typescript
+import { backblazeDisk, filebaseDisk, gcsDisk, hetznerDisk, r2Disk, s3Disk } from '@stacksjs/storage'
+
+r2Disk('assets', process.env.R2_ACCOUNT_ID!)   // Cloudflare R2
+gcsDisk('assets')                              // Google Cloud Storage (interop mode)
+filebaseDisk('assets')                         // Filebase (IPFS-backed)
+backblazeDisk('assets', 'us-west-004')         // Backblaze B2
+hetznerDisk('assets', 'fsn1')                  // Hetzner Object Storage
+```
+
+Two of them need something extra:
+
+- **R2** serves public objects only from a mapped custom domain or a
+  `pub-<hash>.r2.dev` address, never from its API host. Set `url` to that domain,
+  or `publicUrl()` returns a well-formed address that does not resolve to the
+  object.
+- **GCS** authenticates with HMAC keys from Cloud Storage > Settings >
+  Interoperability, not with a service-account JSON file. The interop API covers
+  object CRUD, listing and signed URLs; GCS-only features such as
+  resumable-upload sessions have no S3 verb and are not reachable through it.
+
+### Azure Blob Storage
+
+Azure is the one provider here with no S3-compatible API, so it has its own
+driver rather than an endpoint on the `s3` one:
+
+```typescript
+import { azureDisk, Storage } from '@stacksjs/storage'
+
+// config/filesystems.ts
+export default {
+  disks: {
+    azure: azureDisk('uploads', process.env.AZURE_STORAGE_ACCOUNT!, {
+      accountKey: process.env.AZURE_STORAGE_ACCOUNT_KEY,
+      url: 'https://cdn.example.com', // optional: a CDN or custom domain
+    }),
+  },
+}
+
+await Storage.disk('azure').put('reports/q1.pdf', bytes)
+const url = await Storage.disk('azure').signedUrl('reports/q1.pdf', { expiresIn: 3600 })
+```
+
+**Setup.** Create a storage account and a container in the Azure portal, then
+take a key from Access keys. `accountKey` is what authorizes server-side calls
+and what mints signed URLs; a pre-minted `sasToken` works instead for a disk that
+only reads, but signed URLs are then unavailable, because re-serving that token
+would hand out its whole grant.
+
+Three things behave differently from an S3 disk:
+
+- **Visibility is a property of the container, not the blob.** Azure has no
+  per-object ACL, so `changeVisibility()` refuses rather than silently doing
+  nothing. `visibility()` reports the container's public access level, which is
+  every blob's answer. A per-object grant on Azure is a SAS - that is
+  `signedUrl()`.
+- **Large uploads are blocked, not multipart.** `putStream` stages blocks and
+  commits them in one Put Block List, so a reader mid-upload sees the previous
+  version or nothing, never a partial one. Abandoned blocks are garbage
+  collected by Azure after a week rather than billed indefinitely.
+- **The emulator scopes the account by path.** Point `endpoint` at
+  `http://127.0.0.1:10000/devstoreaccount1` to run against Azurite.
+
 ### S3 Visibility
 
 ```typescript

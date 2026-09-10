@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer'
-import { basename } from 'node:path'
 import type {
   ChecksumOptions,
   DirectoryEntry,
@@ -17,6 +16,7 @@ import type {
   TemporaryUrlOptions,
   Visibility,
 } from '../types'
+import { mimeFromExtension } from '../mime-from-extension'
 import { createDirectoryListing, normalizeExpiryToDate } from '../types'
 
 interface MemoryFile {
@@ -486,29 +486,9 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     return file.mimeType
   }
 
+  /** @see {@link mimeFromExtension} - shared with the other adapters. */
   private detectMimeType(path: string): string {
-    const ext = basename(path).split('.').pop()?.toLowerCase()
-
-    const mimeTypes: Record<string, string> = {
-      txt: 'text/plain',
-      html: 'text/html',
-      css: 'text/css',
-      js: 'application/javascript',
-      json: 'application/json',
-      xml: 'application/xml',
-      pdf: 'application/pdf',
-      zip: 'application/zip',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      svg: 'image/svg+xml',
-      mp4: 'video/mp4',
-      mp3: 'audio/mpeg',
-      wav: 'audio/wav',
-    }
-
-    return mimeTypes[ext || ''] || 'application/octet-stream'
+    return mimeFromExtension(path)
   }
 
   async lastModified(path: string): Promise<number> {

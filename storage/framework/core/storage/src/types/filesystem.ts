@@ -2,10 +2,11 @@
  * Filesystem Configuration Types
  *
  * Laravel-style filesystem configuration with clean, typed interfaces.
- * Supports local, public, and S3 disk drivers.
+ * Supports local, public, S3 (and every S3-compatible provider) and Azure
+ * Blob Storage disk drivers.
  */
 
-export type FilesystemDriver = 'local' | 's3'
+export type FilesystemDriver = 'local' | 's3' | 'azure'
 export type Visibility = 'public' | 'private'
 
 /**
@@ -56,9 +57,38 @@ export interface S3DiskConfig extends BaseDiskConfig {
 }
 
 /**
+ * Azure Blob Storage disk configuration (stacksjs/stacks#1896).
+ *
+ * Its own driver rather than an `s3` disk with an endpoint, because Azure is
+ * the one provider in that issue with no S3-compatible API - R2, GCS, Filebase,
+ * Backblaze, Hetzner and MinIO all reuse `s3`.
+ */
+export interface AzureDiskConfig extends BaseDiskConfig {
+  driver: 'azure'
+  /** Storage account name, e.g. `mystorageaccount`. */
+  account: string
+  /** Blob container this disk is rooted at. */
+  container: string
+  /** Account key, base64 as the portal presents it. One of this or `sasToken`. */
+  accountKey?: string
+  /**
+   * A pre-minted SAS token, with or without its leading `?`, instead of the
+   * account key. Signed URLs are unavailable on this path - minting one needs
+   * the key - so the adapter refuses rather than re-serving this token.
+   */
+  sasToken?: string
+  /** Name prefix applied to every path, so one container can hold several disks. */
+  prefix?: string
+  /** Public base URL: a CDN or a custom domain mapped to the container. */
+  url?: string
+  /** Blob service endpoint, for Azurite or a sovereign cloud. */
+  endpoint?: string
+}
+
+/**
  * Union type for all disk configurations
  */
-export type DiskConfig = LocalDiskConfig | S3DiskConfig
+export type DiskConfig = LocalDiskConfig | S3DiskConfig | AzureDiskConfig
 
 /**
  * Userland-augmentable disk-name registry (stacksjs/stacks#1924).
@@ -292,6 +322,38 @@ export function hetznerDisk(bucket: string, location: HetznerLocation = 'fsn1', 
     region: location,
     endpoint: `https://${location}.your-objectstorage.com`,
     usePathStyleEndpoint: true,
+    visibility: 'private',
+    ...options,
+  }
+}
+
+/**
+ * Helper to create an Azure Blob Storage disk config (stacksjs/stacks#1896).
+ *
+ * The one provider here that is not S3-compatible, so it uses the `azure`
+ * driver rather than an endpoint on the `s3` one. Supply the account key via
+ * `options.accountKey` or `AZURE_STORAGE_ACCOUNT_KEY`.
+ *
+ * Two things behave differently from every S3 disk above, and neither can be
+ * emulated:
+ *
+ * - **Visibility is a container property.** Azure has no per-blob ACL, so
+ *   `changeVisibility()` refuses instead of silently doing nothing; a
+ *   per-object grant on Azure is a SAS, which is what `signedUrl()` mints.
+ * - **`endpoint` carries the account for Azurite.** The local emulator serves
+ *   `http://127.0.0.1:10000/devstoreaccount1`, path-scoped rather than
+ *   subdomain-scoped, which is exactly what that option is for.
+ */
+export function azureDisk(
+  container: string,
+  account: string,
+  options?: Partial<Omit<AzureDiskConfig, 'driver' | 'container' | 'account'>>,
+): AzureDiskConfig {
+  return {
+    driver: 'azure',
+    account,
+    container,
+    accountKey: process.env.AZURE_STORAGE_ACCOUNT_KEY,
     visibility: 'private',
     ...options,
   }

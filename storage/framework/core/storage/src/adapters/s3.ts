@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer'
-import { basename } from 'node:path'
 import type { S3Client } from '@stacksjs/ts-cloud'
 import type {
   ChecksumOptions,
@@ -22,6 +21,7 @@ import type {
   TemporaryUrlOptions,
   Visibility,
 } from '../types'
+import { extensionForContentType, mimeFromExtension } from '../mime-from-extension'
 import { normalizeExpiryToMilliseconds } from '../types'
 import { sanitizePresignedDir, sanitizePresignedFilename } from '../path-sanitize'
 import { signS3PresignedPost } from '../s3-presigned-post'
@@ -879,32 +879,9 @@ export class S3StorageAdapter implements StorageAdapter {
     })
   }
 
-  /**
-   * Map MIME → extension for presigned upload URL filenames. Mirrors
-   * the short list in `putUploadedFile()`; kept private here so the
-   * adapter stays self-contained.
-   */
+  /** @see {@link extensionForContentType} - shared with the Azure adapter. */
   private extensionForContentType(contentType: string): string {
-    const mime = contentType.toLowerCase().split(';')[0]?.trim() ?? ''
-    const map: Record<string, string> = {
-      'image/jpeg': '.jpg',
-      'image/jpg': '.jpg',
-      'image/png': '.png',
-      'image/webp': '.webp',
-      'image/gif': '.gif',
-      'image/avif': '.avif',
-      'image/svg+xml': '.svg',
-      'application/pdf': '.pdf',
-      'application/json': '.json',
-      'application/zip': '.zip',
-      'text/plain': '.txt',
-      'text/csv': '.csv',
-      'video/mp4': '.mp4',
-      'video/webm': '.webm',
-      'audio/mpeg': '.mp3',
-      'audio/wav': '.wav',
-    }
-    return map[mime] ?? ''
+    return extensionForContentType(contentType)
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {
@@ -921,29 +898,9 @@ export class S3StorageAdapter implements StorageAdapter {
     return stats.mimeType || this.detectMimeType(path)
   }
 
+  /** @see {@link mimeFromExtension} - shared with the other adapters. */
   private detectMimeType(path: string): string {
-    const ext = basename(path).split('.').pop()?.toLowerCase()
-
-    const mimeTypes: Record<string, string> = {
-      txt: 'text/plain',
-      html: 'text/html',
-      css: 'text/css',
-      js: 'application/javascript',
-      json: 'application/json',
-      xml: 'application/xml',
-      pdf: 'application/pdf',
-      zip: 'application/zip',
-      jpg: 'image/jpeg',
-      jpeg: 'image/jpeg',
-      png: 'image/png',
-      gif: 'image/gif',
-      svg: 'image/svg+xml',
-      mp4: 'video/mp4',
-      mp3: 'audio/mpeg',
-      wav: 'audio/wav',
-    }
-
-    return mimeTypes[ext || ''] || 'application/octet-stream'
+    return mimeFromExtension(path)
   }
 
   async lastModified(path: string): Promise<number> {
