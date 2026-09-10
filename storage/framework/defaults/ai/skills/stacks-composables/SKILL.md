@@ -37,6 +37,14 @@ A name not on that list is imported:
 import { useCounter } from '@stacksjs/composables'
 ```
 
+**And the 27 are free only in the STX script entry.** The injection does not
+reach a TypeScript module that entry imports - bindings there do not leak into
+bundled module scope - so a `.ts` file beside your template imports every one
+of these explicitly, same as any other name. `AGENTS.md` states the same limit
+under Auto-imports. Referencing an uninjected name is a ReferenceError thrown
+before any binding applies, which takes the whole page down rather than
+degrading the one call.
+
 ## Key Path
 - Core package: `storage/framework/core/composables/src/`
 
