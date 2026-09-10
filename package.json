@@ -52,6 +52,7 @@
     "commit": "./buddy commit",
     "release": "./buddy release",
     "release:patch": "./buddy release --bump patch",
+    "release:calendar": "./buddy release --bump calendar",
     "release:minor": "./buddy release --bump minor",
     "release:major": "./buddy release --bump major",
     "changelog": "./buddy changelog",

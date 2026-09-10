@@ -4303,7 +4303,7 @@ Release a new version of your libraries/packages
 | --- | --- | --- | --- |
 | `--dry-run` | Run the release without actually releasing | boolean, optional | `false` |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| x.y.z | value, required | - |
+| `--bump` | Non-interactive bump: patch \| minor \| major \| prepatch \| preminor \| premajor \| prerelease \| calendar \| x.y.z | value, required | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 
 ### `route:list`

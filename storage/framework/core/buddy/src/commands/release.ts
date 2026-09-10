@@ -11,7 +11,7 @@ const descriptions = {
   release: 'Release a new version of your libraries/packages',
   project: 'Target a specific project',
   dryRun: 'Run the release without actually releasing',
-  bump: 'Non-interactive bump: patch | minor | major | prepatch | preminor | premajor | prerelease | x.y.z',
+  bump: 'Non-interactive bump: patch | minor | major | prepatch | preminor | premajor | prerelease | calendar | x.y.z',
   verbose: 'Enable verbose output',
 }
 

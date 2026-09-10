@@ -90,6 +90,32 @@ feat: add new dashboard        -> 1.0.1 to 1.1.0
 feat!: redesign API            -> 1.1.0 to 2.0.0
 ```
 
+## Calendar Versioning
+
+For projects that version by date rather than by change, `--bump calendar`
+(also `calver`, `date`) computes `YYYY.M.N`:
+
+```bash
+buddy release --bump calendar     # 0.74.41 -> 2026.9.0
+bun run release:calendar
+```
+
+`N` counts releases within the month and resets when the month changes. It is
+not the day: two releases on one day would collide, and a month with releases
+on the 3rd and the 20th would jump the version by 17 for no reason a reader
+could act on.
+
+The result is valid semver on purpose - npm, Bun and every range operator parse
+`major.minor.patch` and nothing else, so `2026.09.10` (leading zero) and
+`2026.9.10-1` (a prerelease) are both unusable. Switching from semver is
+one-way in practice: `2026.9.0` sorts above `0.74.41`, and there is no going
+back down.
+
+If the machine's clock is behind the last release - a runner in another
+timezone, a drifted VM - the sequence continues within the existing version's
+month rather than emitting something lower, which npm would reject with an
+error naming the registry rather than the clock.
+
 ## Pre-release Checklist
 
 Before releasing:

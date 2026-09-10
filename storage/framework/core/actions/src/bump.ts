@@ -2,6 +2,7 @@
 import { execSync, log, parseOptions } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { versionBump } from '@stacksjs/bumpx'
+import { isCalendarBump, nextCalendarVersion } from './calendar-version'
 import { generateChangelog, loadLogsmithConfig } from '@stacksjs/logsmith'
 import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join, relative } from 'node:path'
@@ -14,10 +15,10 @@ const options = parseOptions() as { dryRun?: boolean, bump?: string, verbose?: b
 const allowedBumps = new Set(['patch', 'minor', 'major', 'prepatch', 'preminor', 'premajor', 'prerelease'])
 const rawBump = options?.bump?.toString()
 const bumpArg = rawBump
-  ? (allowedBumps.has(rawBump) || /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(rawBump) ? rawBump : null)
+  ? (allowedBumps.has(rawBump) || isCalendarBump(rawBump) || /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(rawBump) ? rawBump : null)
   : null
 if (rawBump && !bumpArg)
-  log.warn(`Ignoring invalid --bump "${rawBump}"; expected one of patch|minor|major or x.y.z`)
+  log.warn(`Ignoring invalid --bump "${rawBump}"; expected patch|minor|major, calendar, or x.y.z`)
 
 const isDryRun = options?.dryRun === true
 const isVerbose = (options as { verbose?: boolean })?.verbose === true
@@ -49,6 +50,15 @@ const primaryManifest = isFrameworkRelease ? p.frameworkPath('core/package.json'
 async function resolveBumpArg(bump: string | null): Promise<string | null> {
   if (!bump || /^\d+\.\d+\.\d+(?:-[\w.]+)?$/.test(bump))
     return bump
+
+  // Calendar versioning (stacksjs/stacks#475). Resolved to an explicit
+  // `x.y.z` here rather than handed to bumpx as a keyword, because bumpx only
+  // knows semver increments - and the result has to be a literal version
+  // anyway for the framework's own re-pinning step downstream.
+  if (isCalendarBump(bump)) {
+    const pkg = await readPackage(primaryManifest)
+    return nextCalendarVersion(pkg?.version)
+  }
 
   if (!['patch', 'minor', 'major'].includes(bump))
     return bump
