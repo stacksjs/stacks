@@ -14,9 +14,48 @@
       "required": ["title"],
       "properties": {
         "title": { "type": "string", "minLength": 1 },
+        "locale": { "$ref": "common.schema.json#/$defs/locale" },
         "subtitle": { "type": "string" },
         "output": { "type": "string" },
-        "animation": { "enum": ["trace", "none"] },
+        "animation": { "$ref": "common.schema.json#/$defs/animation" },
+        "visual_preset": { "$ref": "common.schema.json#/$defs/visualPreset" },
+        "quality_profile": { "$ref": "common.schema.json#/$defs/qualityProfile" },
+        "engineering_profile": { "enum": ["deployment-ownership"] },
+        "repository": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["url", "revision"],
+          "properties": {
+            "url": {
+              "type": "string",
+              "minLength": 1
+            },
+            "provider": { "enum": ["github", "gitee"] },
+            "link_mode": { "enum": ["web", "local-only"] },
+            "revision": { "type": "string", "pattern": "^[a-fA-F0-9]{40}$" }
+          }
+        },
+        "views": { "$ref": "common.schema.json#/$defs/guidedViews" },
+        "legend": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "$ref": "common.schema.json#/$defs/legendMode" },
+            "entries": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "frontend": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "backend": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "database": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "cloud": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "security": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "messagebus": { "$ref": "common.schema.json#/$defs/legendEntry" },
+                "external": { "$ref": "common.schema.json#/$defs/legendEntry" }
+              }
+            }
+          }
+        },
         "viewBox": {
           "type": "array",
           "prefixItems": [
@@ -56,6 +95,23 @@
           "label": { "type": "string", "minLength": 1 },
           "sublabel": { "type": "string" },
           "tag": { "type": "string" },
+          "brand": { "$ref": "common.schema.json#/$defs/brandMark" },
+          "sources": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["path"],
+              "properties": {
+                "path": { "type": "string", "minLength": 1, "maxLength": 240 },
+                "line": { "type": "integer", "minimum": 1 },
+                "end_line": { "type": "integer", "minimum": 1 },
+                "label": { "type": "string", "minLength": 1, "maxLength": 48 }
+              }
+            }
+          },
           "row": { "type": "integer", "minimum": 0 },
           "col": { "type": "integer", "minimum": 0 },
           "pos": { "$ref": "common.schema.json#/$defs/point" },
@@ -97,12 +153,13 @@
         "additionalProperties": false,
         "required": ["from", "to"],
         "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/id" },
           "from": { "$ref": "common.schema.json#/$defs/id" },
           "to": { "$ref": "common.schema.json#/$defs/id" },
           "label": { "type": "string" },
           "variant": { "$ref": "common.schema.json#/$defs/variant" },
-          "fromSide": { "enum": ["left", "right", "top", "bottom"] },
-          "toSide": { "enum": ["left", "right", "top", "bottom"] },
+          "fromSide": { "$ref": "common.schema.json#/$defs/side" },
+          "toSide": { "$ref": "common.schema.json#/$defs/side" },
           "route": { "enum": ["auto", "straight", "orthogonal-h", "orthogonal-v"] },
           "via": {
             "type": "array",
@@ -112,7 +169,7 @@
           "labelDx": { "type": "number" },
           "labelDy": { "type": "number" },
           "labelSegment": { "type": "integer", "minimum": 0 },
-          "width": { "type": "number", "minimum": 0.5 }
+          "width": { "$ref": "common.schema.json#/$defs/relationshipWidth" }
         }
       }
     },

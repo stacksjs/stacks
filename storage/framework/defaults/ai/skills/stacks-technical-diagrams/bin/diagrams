@@ -1,0 +1,10 @@
+#!/bin/sh
+# Thin launcher for the technical-diagrams CLI.
+#
+# It exists so every documented command is one copy-pasteable line. Bun runs the
+# CLI against the skill's own empty bunfig, so a diagram render never inherits
+# the host application's `preload` list or its .env file.
+set -e
+skill_root=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+exec bun --config="$skill_root/bunfig.toml" --no-env-file \
+  "$skill_root/bin/technical-diagrams.mjs" "$@"

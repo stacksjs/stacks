@@ -1,43 +1,58 @@
 ---
 title: "Technical diagrams skill"
-description: "Create polished, dependency-free architecture, workflow, sequence, data-flow, and lifecycle diagrams for Stacks applications as standalone HTML with inline SVG, dark/light themes, and PNG, JPEG, WebP, and SVG export. Use for system or cloud architecture, security boundaries, network topology, technical workflows, CI/CD, runbooks, API call sequences, request lifecycles, data pipelines, lineage, PII boundaries, state machines, status transitions, or converting Mermaid into a purpose-built diagram."
+description: "Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle diagrams for Stacks applications as explorable standalone HTML with inline SVG, dark/light themes, four visual presets, optional trace motion, and PNG, JPEG, WebP, SVG and WebM export. Accepts plain-language requirements or pasted Mermaid; reads repository evidence when the diagram must reflect real code; compares two architecture snapshots as a Before/Delta/After review."
 ---
 # Technical diagrams
 
 `stacks-technical-diagrams` · Design · model-invoked
 
-Architecture, workflow, sequence, data flow and lifecycle diagrams. The largest
-skill in the set by supporting files, with three dozen reference documents behind
-one `SKILL.md`, which is progressive disclosure doing its job.
+Architecture, workflow, sequence, data flow and lifecycle diagrams, rendered from
+typed JSON into one explorable, self-contained HTML file. The largest skill in the
+set by supporting files: five renderers, six schemas, a delta comparer and four
+reference documents sit behind one lean `SKILL.md`, which is progressive
+disclosure doing its job.
 
 ## Inside the skill
 
 The sections an agent reads once the skill loads.
 
 - Attribution
-- Dependency-free contract
+- Running the CLI
+- Fast authoring path
 - Stacks repository workflow
-- Choosing a Diagram Type
-- Mermaid as an Input Dialect
-- Layout principles (read before placing)
-- Renderer Modes (architecture / workflow / sequence / dataflow / lifecycle)
-- Architecture Mode
+- Type router
+- Mermaid input
+- Authoring invariants
+- Delivery evidence
+- Architecture Delta
+- Brand marks
+- Dependency-free and offline contract
+- Deeper references
+- Hand-placed fallback (no Bun available)
 - Output
 
 ## Supporting files
 
-Reference and scripts the skill reaches for on demand, rather than loading up front.
+Reference, renderers and scripts the skill reaches for on demand, rather than loading up front.
 
 - [`LICENSE`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/LICENSE)
+- [`THIRD_PARTY_NOTICES.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/THIRD_PARTY_NOTICES.md)
 - [`agents/openai.yaml`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/agents/openai.yaml)
 - [`assets/template.html`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/assets/template.html)
+- [`bin/diagrams`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/diagrams)
 - [`bin/technical-diagrams.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/technical-diagrams.mjs)
+- [`bin/preview.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/preview.mjs)
+- [`bin/visual-check.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bin/visual-check.mjs)
+- [`brand-marks/README.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/brand-marks/README.md)
 - [`bunfig.toml`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/bunfig.toml)
-- [`examples/agent-run.lifecycle.json`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples/agent-run.lifecycle.json)
-- [`examples/agent-tool-call.workflow.json`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples/agent-tool-call.workflow.json)
-- [`examples/cache-miss-request.sequence.json`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples/cache-miss-request.sequence.json)
-- [`examples/product-analytics.dataflow.json`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples/product-analytics.dataflow.json)
-- [`examples/web-app.architecture.json`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples/web-app.architecture.json)
+- [`delta/architecture-delta.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/delta/architecture-delta.mjs)
+- [`examples`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/examples)
+- [`migrations/workflow-v2.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/migrations/workflow-v2.mjs)
+- [`recipes/scenarios.mjs`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/recipes/scenarios.mjs)
+- [`references/authoring-contract.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/references/authoring-contract.md)
+- [`references/brand-marks.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/references/brand-marks.md)
+- [`references/delivery-contract.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/references/delivery-contract.md)
+- [`references/viewer-runtime.md`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/references/viewer-runtime.md)
 - [`renderers/architecture`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/renderers/architecture)
 - [`renderers/dataflow`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/renderers/dataflow)
 - [`renderers/lifecycle`](https://github.com/stacksjs/stacks/blob/main/storage/framework/defaults/ai/skills/stacks-technical-diagrams/renderers/lifecycle)

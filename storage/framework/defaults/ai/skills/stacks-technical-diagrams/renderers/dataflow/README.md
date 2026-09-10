@@ -4,7 +4,7 @@ Render `diagram_type: "dataflow"` JSON files into the standalone technical diagr
 template.
 
 ```bash
-bun --config=.claude/skills/stacks-technical-diagrams/bunfig.toml --no-env-file .claude/skills/stacks-technical-diagrams/renderers/dataflow/render-dataflow.mjs input.dataflow.json output.html
+node .claude/skills/stacks-technical-diagrams/renderers/dataflow/render-dataflow.mjs input.dataflow.json output.html
 ```
 
 The renderer validates input against `.claude/skills/stacks-technical-diagrams/schemas/dataflow.schema.json`
@@ -23,7 +23,6 @@ Data-flow JSON files must set:
   "diagram_type": "dataflow",
   "meta": {
     "title": "Product Analytics Data Flow",
-    "subtitle": "Events, consent, PII isolation, warehouse sync, and consumers",
     "viewBox": [940, 720]
   },
   "stages": [],
@@ -41,6 +40,18 @@ The schema lives at:
 ```text
 .claude/skills/stacks-technical-diagrams/schemas/dataflow.schema.json
 ```
+
+## Legend
+
+The default visual legend derives kinds from `flows[].variant` (omitting
+`variant` means `default`) and adds `database` only when a database node exists.
+Supported `meta.legend.entries` keys, in stable order, are `emphasis`,
+`security`, `dashed`, `database`, and `default`. Flow variants remain
+visual-only because the renderer has no compiled edge-kind facts in this slice. A
+present `database` entry is different: it comes from exact
+`nodes[].type: "database"` facts, so it publishes the normal Semantic Legend
+count, accessible name, and keyboard interaction. Forcing `database` visible
+without a database node keeps it visual-only.
 
 ## Layout budget
 
@@ -78,5 +89,16 @@ element's id or label. The renderer additionally fails when it can detect
 layout problems, including missing stages, duplicate node IDs, nodes outside
 the readable diagram area, node overlap, labels colliding with nodes or other
 labels, labels wider than their node, unknown flow endpoints, missing flow
-labels, unreadably short flows, or stages that exceed the viewBox. Text width
+labels, unreadably short flows, flows crossing unrelated nodes (2px Clean Flow
+clearance), or stages that exceed the viewBox. Stage frames remain intentional
+pass-through containers. Text width
 is estimated CJK-aware: fullwidth glyphs count as two units.
+
+Set `meta.quality_profile` to `showcase` for polished delivery. Unrelated proper
+X crossings then fail with `composition/proper-crossing`; default `standard`
+keeps them as artifact-receipt warnings. Collinear stage corridors are outside
+the proper-X rule, but a separate gate warns in `standard` and fails in
+`showcase` when unrelated flows overlap for at least 8px. Shared semantic
+endpoints, point touches, and shorter overlaps remain valid. Showcase also
+rejects any route segment below 8px and any interior turn segment below 16px;
+ordinary 8-15px endpoint stubs remain valid.

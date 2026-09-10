@@ -3,8 +3,13 @@
   "diagram_type": "architecture",
   "meta": {
     "title": "Sample Web App",
-    "subtitle": "Classic 3-tier SaaS on AWS",
-    "output": "web-app-rendered.html"
+    "output": "web-app-rendered.html",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "request-path", "label": "Primary request path", "focus": ["users", "cdn", "lb", "api", "db"], "note": "Follow the primary customer request from the edge to durable state." },
+      { "id": "identity-and-cache", "label": "Identity and cache", "focus": ["auth", "api", "cache"], "note": "Isolate authentication and the read-through cache beside the request path." },
+      { "id": "async-work", "label": "Static and async work", "focus": ["cdn", "s3", "api", "queue", "worker"], "note": "See the two secondary paths without adding noise to the main request." }
+    ]
   },
   "components": [
     { "id": "users", "type": "external", "label": "Users", "sublabel": "Browser / Mobile", "pos": [40, 300], "size": [120, 60] },
@@ -23,15 +28,15 @@
     { "kind": "security-group", "label": "sg-api :443/:8000", "wraps": ["lb", "api"] }
   ],
   "connections": [
-    { "from": "users", "to": "cdn", "label": "HTTPS", "variant": "emphasis" },
-    { "from": "auth", "to": "api", "label": "verify JWT", "variant": "security", "fromSide": "right", "toSide": "top" },
-    { "from": "cdn", "to": "lb" },
-    { "from": "cdn", "to": "s3", "label": "static", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 58 },
-    { "from": "lb", "to": "api" },
-    { "from": "api", "to": "cache", "label": "read-through", "fromSide": "top", "toSide": "bottom", "labelDy": -68 },
-    { "from": "api", "to": "db", "label": "SQL" },
-    { "from": "api", "to": "queue", "label": "enqueue", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 58 },
-    { "from": "queue", "to": "worker" }
+    { "id": "users-to-cdn", "from": "users", "to": "cdn", "label": "HTTPS", "variant": "emphasis" },
+    { "id": "jwt-verification", "from": "auth", "to": "api", "label": "verify JWT", "variant": "security", "fromSide": "right", "toSide": "top", "via": [[620, 142], [620, 246], [735, 246]] },
+    { "id": "cdn-to-lb", "from": "cdn", "to": "lb" },
+    { "id": "static-assets", "from": "cdn", "to": "s3", "label": "static", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 58 },
+    { "id": "lb-to-api", "from": "lb", "to": "api" },
+    { "id": "cache-read-through", "from": "api", "to": "cache", "label": "read-through", "fromSide": "top", "toSide": "bottom", "labelDy": -68 },
+    { "id": "api-sql", "from": "api", "to": "db", "label": "SQL" },
+    { "id": "enqueue-job", "from": "api", "to": "queue", "label": "enqueue", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelDy": 58 },
+    { "id": "queue-to-worker", "from": "queue", "to": "worker" }
   ],
   "cards": [
     { "dot": "cyan", "title": "Edge", "items": ["CloudFront CDN fronts all traffic", "S3 serves static assets via OAI"] },

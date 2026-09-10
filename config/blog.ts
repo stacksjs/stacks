@@ -3,9 +3,22 @@ export interface BlogConfig {
   title: string
   description: string
   postsPerPage: number
+  /**
+   * NOT YET HONOURED by the static blog builder. Nothing reads this: the
+   * generated pages carry no comment section either way. The CMS has
+   * commenting (the `commentable` trait and `comments` in `@stacksjs/cms`),
+   * but the static build does not render it (stacksjs/stacks#365-adjacent;
+   * found auditing config keys nothing reads).
+   */
   enableComments: boolean
+  /** Honoured: generates `feed.xml` and the RSS link in the layout. */
   enableRss: boolean
+  /** Honoured: generates `sitemap.xml`. */
   enableSitemap: boolean
+  /**
+   * NOT YET HONOURED by the static blog builder. Nothing reads this and no
+   * search index is generated.
+   */
   enableSearch: boolean
   /** Short title used in the blog layout nav; defaults to `title`. */
   siteTitle?: string
@@ -34,6 +47,9 @@ const config: BlogConfig = {
   title: 'The Stacks Blog',
   description: 'Notes from building a full-stack TypeScript framework whose only dependencies are TypeScript and Bun.',
   postsPerPage: 10,
+  // `enableComments` and `enableSearch` are declared but not yet implemented
+  // by the static blog builder - see the interface above. Left `true` so the
+  // value does not have to change when they are.
   enableComments: true,
   enableRss: true,
   enableSitemap: true,

@@ -4,6 +4,7 @@
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runtimeArgs } from '../renderers/shared/bun-runtime.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const skillRoot = path.resolve(__dirname, '..');
@@ -18,11 +19,9 @@ const TARGETS = [
 ];
 
 for (const [mode, input, output] of TARGETS) {
-  execFileSync(process.execPath, [
-    `--config=${path.join(skillRoot, 'bunfig.toml')}`,
-    '--no-env-file',
+  execFileSync(process.execPath, runtimeArgs([
     path.join(skillRoot, `renderers/${mode}/render-${mode}.mjs`),
     path.join(skillRoot, 'examples', input),
     path.join(outputRoot, output),
-  ], { stdio: 'inherit' });
+  ]), { stdio: 'inherit' });
 }

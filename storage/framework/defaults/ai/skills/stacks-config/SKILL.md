@@ -110,7 +110,7 @@ they name: `defineEvents` and `defineListener` from `@stacksjs/events`,
 ### Features
 | File | Type | Key Settings |
 |------|------|-------------|
-| `blog.ts` | BlogConfig | subdomain, postsPerPage, enableComments/RSS/sitemap |
+| `blog.ts` | BlogConfig | subdomain, postsPerPage, enableRss/enableSitemap (enableComments and enableSearch are declared but not yet honoured) |
 | `cms.ts` | CmsConfig | content management settings |
 | `saas.ts` | SaasConfig | plans (Hobby/Pro/Lifetime with pricing), webhook, currencies |
 | `ui.ts` | HeadwindOptions | content, output, minify |
