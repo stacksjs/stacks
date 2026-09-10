@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.35...v0.74.36)
+
+## ✨ Features
+
+- **deploy**: reconcile declared Cloudflare zone settings ([d889303](https://github.com/stacksjs/stacks/commit/d889303)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **docs**: report a shared broken import against every document (#2580) ([bba9014](https://github.com/stacksjs/stacks/commit/bba9014)) _(by Chris <chris@stacksjs.com>)_ ([#2580](https://github.com/stacksjs/stacks/issues/2580), [#2580](https://github.com/stacksjs/stacks/issues/2580))
+- **docs**: resolve documented imports from source, not from dist (#2580) ([36560f0](https://github.com/stacksjs/stacks/commit/36560f0)) _(by Chris <chris@stacksjs.com>)_ ([#2580](https://github.com/stacksjs/stacks/issues/2580), [#2580](https://github.com/stacksjs/stacks/issues/2580))
+
+## 📝 Documentation
+
+- **search-engine**: call the driver, not free functions that never existed ([204a0d9](https://github.com/stacksjs/stacks/commit/204a0d9)) _(by Chris <chris@stacksjs.com>)_ ([#2580](https://github.com/stacksjs/stacks/issues/2580))
+- fix twelve samples that named exports which do not exist (#2580) ([7c34950](https://github.com/stacksjs/stacks/commit/7c34950)) _(by Chris <chris@stacksjs.com>)_ ([#2580](https://github.com/stacksjs/stacks/issues/2580), [#2580](https://github.com/stacksjs/stacks/issues/2580), [#2580](https://github.com/stacksjs/stacks/issues/2580))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.34...v0.74.35)
 
 ## ✨ Features
