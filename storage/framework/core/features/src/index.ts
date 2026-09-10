@@ -163,14 +163,18 @@ export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
     // was claimed by cms, and with cms disabled and commerce enabled the gate
     // hid the table out from under a model it had just copied in.
     //
-    // cms categorizes too, through `Post`, so gating it with commerce degrades
-    // post categorization when commerce is off. That is the lesser of the two:
-    // with commerce disabled there is no `Category` model being maintained, so
-    // no `categories` table is coherent, whereas the old arrangement broke the
-    // table's own model. The pivot `categorizable_models` is genuinely shared
-    // and stays out of the manifest per the rule above - it carries no foreign
-    // keys, `@stacksjs/database` creates it at runtime anyway, and an unused
-    // empty pivot is harmless where a missing one is not.
+    // The CMS does not need it. Its categories are a different table,
+    // `categorizables`, which is what `@stacksjs/cms` inserts into and selects
+    // from and what `categorizable_models.category_id` points at; that table is
+    // unclaimed and always migrates. `Post` does declare a `belongsToMany`
+    // naming the `Category` model, which resolves to this table - but that
+    // relation already reads a different id space than the CMS module writes,
+    // which is stacksjs/stacks#2584 rather than a gating question.
+    //
+    // The pivot `categorizable_models` stays out of the manifest per the rule
+    // above: it is shared, it carries no foreign keys, `@stacksjs/database`
+    // creates it at runtime anyway, and an unused empty pivot is harmless where
+    // a missing one is not.
     'categories',
     'products', 'product_variants', 'product_units', 'manufacturers',
     'orders', 'order_items', 'order_idempotency', 'carts', 'cart_items',
