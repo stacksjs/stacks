@@ -3,6 +3,7 @@ import { run as runAgentCounts } from './docs/agent-counts'
 import { run as runArtifacts } from './docs/generated-artifacts'
 import { run as runBuddyDocs } from './docs/buddy-commands'
 import { run as runCapabilities } from './docs/capabilities'
+import { run as runSnippets } from './docs/snippets'
 import { run as runDesktopMatrix } from './docs/desktop-matrix'
 import { run as runLinks } from './docs/links'
 import { runTool } from './run-tool'
@@ -71,6 +72,18 @@ export function docs(buddy: CLI): void {
     .command('docs:desktop-matrix:check', 'Verify the published desktop support matrix matches its source')
     .action(async () => {
       await runTool(runDesktopMatrix, '--check')
+    })
+
+  buddy
+    .command('docs:snippets', 'Record the documented imports that do not compile, as the baseline')
+    .action(async () => {
+      await runTool(runSnippets, '--write')
+    })
+
+  buddy
+    .command('docs:snippets:check', 'Verify no NEW documented import fails to compile')
+    .action(async () => {
+      await runTool(runSnippets, '--check')
     })
 
   buddy

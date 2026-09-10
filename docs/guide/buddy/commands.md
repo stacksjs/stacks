@@ -6,7 +6,7 @@ description: Generated reference for every Buddy command, argument, option, alia
 
 # Buddy Command Reference
 
-This reference is generated from Buddy's runtime command registry and currently contains **327 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
+This reference is generated from Buddy's runtime command registry and currently contains **329 commands**. Run `bun run docs:buddy` after changing the registry; CI rejects stale output.
 
 ## Command groups
 
@@ -28,7 +28,7 @@ This reference is generated from Buddy's runtime command registry and currently 
 | `desktop` | 6 |
 | `dev` | 8 |
 | `dns` | 3 |
-| `docs` | 12 |
+| `docs` | 14 |
 | `domains` | 3 |
 | `email` | 7 |
 | `env` | 7 |
@@ -1473,6 +1473,24 @@ Report internal documentation links
 Verify internal documentation links resolve
 
 - Usage: `$ buddy docs:links:check`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:snippets`
+
+Record the documented imports that do not compile, as the baseline
+
+- Usage: `$ buddy docs:snippets`
+- Namespace: `docs`
+- Aliases: none
+- Arguments: none
+
+### `docs:snippets:check`
+
+Verify no NEW documented import fails to compile
+
+- Usage: `$ buddy docs:snippets:check`
 - Namespace: `docs`
 - Aliases: none
 - Arguments: none

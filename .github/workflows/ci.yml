@@ -417,6 +417,14 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:links:check
 
+      # The imports in docs code samples, compiled for real
+      # (stacksjs/stacks#2580). Baselined rather than clean: 197 documented
+      # imports do not compile today, and this fails only on a NEW one, so the
+      # guard lands before the backlog is cleared and the list can only shrink.
+      - name: docs:snippets:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:snippets:check
+
       - name: docs:agent-counts:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:agent-counts:check

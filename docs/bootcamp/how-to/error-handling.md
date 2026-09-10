@@ -450,7 +450,7 @@ function logError(
 ### Error Tracking Integration
 
 ```ts
-import _ as Sentry from '@sentry/bun'
+import * as Sentry from '@sentry/bun'
 
 // Initialize Sentry
 Sentry.init({

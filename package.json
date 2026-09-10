@@ -79,6 +79,8 @@
     "docs:artifacts:check": "./buddy docs:artifacts:check",
     "docs:links": "./buddy docs:links",
     "docs:links:check": "./buddy docs:links:check",
+    "docs:snippets": "./buddy docs:snippets",
+    "docs:snippets:check": "./buddy docs:snippets:check",
     "deps:lockfile:check": "bun .github/scripts/check-lockfile-version.ts",
     "bud": "./buddy",
     "stx": "./buddy",
