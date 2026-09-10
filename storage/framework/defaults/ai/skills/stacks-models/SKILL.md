@@ -262,7 +262,15 @@ A model with no `useSeeder` trait is never seeded. Auth and OAuth models are
 skipped on a non-fresh database so re-seeding cannot invalidate live sessions -
 pass `--allow-protected` to override.
 
-## All 62 built-in models by category
+## Built-in models by category
+
+The 46 below are the ones worth knowing by name. They are a selection, not
+the set: `storage/framework/defaults/app/Models/` holds 102, and that
+directory is the authority. This section said "All 62" while listing 46 of
+102, so an agent reading to the end had no way to tell it was short.
+
+Run `find storage/framework/defaults/app/Models -name '*.ts'` for the full
+list, or `buddy list` for what a given project resolves.
 
 ### Users & Auth
 - **User** — name, email, password | traits: useAuth(passkey), useUuid, useTimestamps, useSocials(github) | hasOne: Subscriber, Driver, Author | hasMany: PersonalAccessToken, Customer

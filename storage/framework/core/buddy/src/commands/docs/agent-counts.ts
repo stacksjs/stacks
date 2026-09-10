@@ -92,6 +92,15 @@ const CLAIMS: Claim[] = [
       { file: AGENTS, pattern: /All (\d+) models \(`User`/ },
       { file: `${SKILLS}/stacks-orm/SKILL.md`, pattern: /(\d+) models/ },
       { file: `${SKILLS}/stacks-auto-imports/SKILL.md`, pattern: /\((\d+) models\)/ },
+      // Both said `60+` while the sentence between them said 102, which is the
+      // exact disagreement this file exists to make impossible.
+      { file: AGENTS, pattern: /including the (\d+) built-in `Models\/`/ },
+      { file: AGENTS, pattern: /\((\d+) built-ins, grouped into/ },
+      // `stacks-models` headed its list "All 62 built-in models by category"
+      // while listing 46 of 102. The header now says how many the section
+      // covers, which is a different number from how many exist - so the site
+      // pinned here is the sentence naming the total.
+      { file: `${SKILLS}/stacks-models/SKILL.md`, pattern: /holds (\d+), and that/ },
     ],
   },
   {
@@ -108,6 +117,9 @@ const CLAIMS: Claim[] = [
     sites: [
       { file: AGENTS, pattern: /widgets \((\d+) components\)/ },
       { file: `${SKILLS}/stacks-dashboard/SKILL.md`, pattern: /(\d+) built-in dashboard components/ },
+      // The description was pinned and the opening paragraph was not, so the
+      // file said 400 in one sentence and 399 in the next.
+      { file: `${SKILLS}/stacks-dashboard/SKILL.md`, pattern: /route views, (\d+) components,/ },
     ],
   },
   {
@@ -119,7 +131,10 @@ const CLAIMS: Claim[] = [
   {
     what: 'migrations',
     measure: () => countFiles('database/migrations', '.sql'),
-    sites: [{ file: AGENTS, pattern: /(\d+) migrations ship for/ }],
+    sites: [
+      { file: AGENTS, pattern: /(\d+) migrations ship for/ },
+      { file: `${SKILLS}/stacks-migrations/SKILL.md`, pattern: /(\d+) built-in migration files/ },
+    ],
   },
   {
     what: 'browser auto-imports',
@@ -135,6 +150,11 @@ const CLAIMS: Claim[] = [
         .match(/\buse[A-Z][A-Za-z0-9]*/g) ?? [],
     ).size,
     sites: [{ file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) composables/ }],
+  },
+  {
+    what: 'config files',
+    measure: () => countFiles('config', '.ts'),
+    sites: [{ file: AGENTS, pattern: /~(\d+) typed config files/ }],
   },
   {
     what: 'skills',
