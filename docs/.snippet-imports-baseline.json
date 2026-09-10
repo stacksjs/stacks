@@ -1,8 +1,6 @@
 {
   "comment": "Known docs-import failures. Run `buddy docs:snippets` after fixing some, and commit the shorter list. See stacksjs/stacks#2580.",
   "known": [
-    "docs/basics/functions.md :: @stacksjs/testing :: Module '\"@stacksjs/testing\"' has no exported member 'createMockContext'.",
-    "docs/basics/functions.md :: @stacksjs/types :: Module '\"@stacksjs/types\"' has no exported member 'FunctionContext'.",
     "docs/basics/models.md :: @stacksjs/database :: Module '\"@stacksjs/database\"' has no exported member 'transaction'.",
     "docs/bootcamp/cli.md :: @stacksjs/cli :: Module '\"@stacksjs/cli\"' has no exported member 'progress'.",
     "docs/bootcamp/cli.md :: @stacksjs/cli :: Module '\"@stacksjs/cli\"' has no exported member 'table'.",

@@ -613,6 +613,6 @@ const { activeTab } = inject('tabs')
 ## Related Documentation
 
 - **[Views](/basics/views)** - Page templates
-- **[Functions](/basics/functions)** - Server-side logic
+- **[Functions](/basics/functions)** - Shared logic and composables under `resources/functions`
 - **[Styling](/basics/views#styling)** - CSS and styling guide
 - **[State Management](/basics/views#events-and-state)** - Managing component state
