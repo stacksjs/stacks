@@ -19,17 +19,29 @@ a template that does not run, and reads the failure as a framework bug.
 
 ## The 27 you can write bare in a template
 
-Everything else on this page needs an explicit import, including most of what
-the sections below list. Of the 88 composables named here, 68 are in that
-second group - `useCounter`, `useLocalStorage`, `useMouse`, `useScroll`,
-`useIntersectionObserver` and `usePreferredReducedMotion` among them, which are
-exactly the names `AGENTS.md` calls out for having been wrongly listed as free.
+Everything else on this page needs an explicit import, and that is most of what
+the sections below list - `useCounter`, `useLocalStorage`, `useMouse`,
+`useScroll`, `useIntersectionObserver` and `usePreferredReducedMotion` among
+them, which are exactly the names `AGENTS.md` calls out for having been wrongly
+listed as free.
+
+No count of how many fall on each side, deliberately. That number is
+maintained by hand and moves whenever a name is added to any section on this
+page - it was wrong within one edit of being written. The list below is the
+whole of the free side; anything not on it is on the other.
+
+<!-- auto-imported:begin - checked against browser-auto-imports.json by
+     core/server/tests/composables-skill-auto-imports.test.ts. Both directions:
+     every name here must be in the manifest, and every `use*` in the manifest
+     must be here. Edit the manifest, not this list. -->
 
 `useAbs`, `useAuth`, `useAverage`, `useCeil`, `useClamp`, `useDark`,
 `useDateFormat`, `useFetch`, `useFloor`, `useForm`, `useGitStore`, `useMax`,
 `useMin`, `useNow`, `useOnline`, `usePaymentStore`, `usePrecision`,
 `usePreferredDark`, `useQueueStore`, `useRound`, `useScrollLock`, `useStorage`,
 `useSum`, `useTimeoutFn`, `useToggle`, `useTrunc`, `useUserStore`.
+
+<!-- auto-imported:end -->
 
 A name not on that list is imported:
 

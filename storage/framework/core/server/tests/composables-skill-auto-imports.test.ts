@@ -34,33 +34,25 @@ function manifestGlobals(): Set<string> {
 }
 
 /**
- * The names the skill presents as free.
+ * The list is delimited by comment markers in the document itself.
  *
- * Bounded by position rather than filtered by an exclusion list. The
- * AGENTS.md version of this test learned that the hard way: excluding the
- * known-bad names by name made it blind to exactly those names coming back.
- *
- * The prose above the list names counter-examples (`useCounter` and friends,
- * as things that are NOT free), so that sentence is cut out first. It is
- * delimited by its own text rather than by the first name in the list - an
- * earlier version anchored on `useAbs`, so deleting `useAbs` moved the anchor
- * instead of failing, and every name read as missing at once.
+ * Two earlier versions of this bound to the prose around it and both broke on
+ * an edit that changed nothing about the list: one anchored on `useAbs`, so
+ * deleting that name moved the anchor rather than failing, and every name read
+ * as missing at once; the next anchored on a sentence that got reworded. The
+ * markers say what they are for, so an editor can see why they are there.
  */
+const BEGIN = '<!-- auto-imported:begin'
+const END = '<!-- auto-imported:end -->'
+
 function claimedFree(): string[] {
-  const start = skill.indexOf('## The 27 you can write bare in a template')
-  const end = skill.indexOf('A name not on that list is imported')
+  const begin = skill.indexOf(BEGIN)
+  const finish = skill.indexOf(END)
 
-  expect(start).toBeGreaterThan(-1)
-  expect(end).toBeGreaterThan(start)
+  expect(begin).toBeGreaterThan(-1)
+  expect(finish).toBeGreaterThan(begin)
 
-  const section = skill.slice(start, end)
-  const counterExamples = section.indexOf('second group -')
-  const listBegins = section.indexOf('as free.')
-
-  expect(counterExamples).toBeGreaterThan(-1)
-  expect(listBegins).toBeGreaterThan(counterExamples)
-
-  const list = section.slice(listBegins + 'as free.'.length)
+  const list = skill.slice(begin + BEGIN.length, finish)
 
   return [...list.matchAll(/`(use[A-Z][A-Za-z0-9]*)`/g)].map(match => match[1]!)
 }
