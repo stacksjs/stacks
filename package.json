@@ -70,6 +70,8 @@
     "test:types": "./buddy test:types",
     "docs:buddy": "./buddy docs:buddy",
     "docs:buddy:check": "./buddy docs:buddy:check",
+    "docs:desktop-matrix": "./buddy docs:desktop-matrix",
+    "docs:desktop-matrix:check": "./buddy docs:desktop-matrix:check",
     "docs:artifacts": "./buddy docs:artifacts",
     "declarations:check": "bun .github/scripts/check-declarations-fresh.ts",
     "docs:artifacts:check": "./buddy docs:artifacts:check",

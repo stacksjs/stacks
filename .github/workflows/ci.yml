@@ -396,6 +396,14 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run declarations:check
 
+      # The desktop support matrix, published from `desktopSupportMatrix`
+      # (stacksjs/stacks#2059). Every target there is experimental and unsigned,
+      # and `assertDesktopReleaseChannel` enforces that - but the page a reader
+      # sees is a copy, so this fails when the copy stops agreeing.
+      - name: docs:desktop-matrix:check
+        if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        run: bun run docs:desktop-matrix:check
+
       - name: docs:links:check
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         run: bun run docs:links:check
