@@ -58,6 +58,16 @@ redefine those behaviors.
 
 ## Get Started
 
+### In the browser
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/stacksjs/stacks)
+
+A Codespace provisions Pantry, installs dependencies, runs `buddy setup` and
+forwards the dev ports, so `./buddy dev` works on first open. Nothing to
+install locally.
+
+### On your machine
+
 The fastest path after Pantry is installed:
 
 ```bash

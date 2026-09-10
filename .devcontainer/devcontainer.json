@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json",
+  "name": "Stacks",
+
+  // Debian rather than a Bun image on purpose. Pantry provisions and PINS Bun
+  // for this workspace (1.4.1 today), so a base image that ships its own Bun
+  // would put a second, differently-versioned one earlier on PATH - and the
+  // version skew would show up as a lockfile or build difference nobody
+  // configured. See the Prerequisites section of the README.
+  "image": "mcr.microsoft.com/devcontainers/base:bookworm",
+
+  "features": {
+    // Codespaces mounts the repo over SSH-authenticated git; the CLI is used
+    // by `buddy commit`, the release flow, and buddy-bot.
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+
+  // `pantry bootstrap` writes shell configuration, so it has to run once as
+  // the user who will open the terminal - not at image build time, where it
+  // would land in a layer the container user does not own.
+  "postCreateCommand": ".devcontainer/setup.sh",
+
+  "forwardPorts": [3000, 3001, 3002, 3003, 3006, 3007, 3008],
+  "portsAttributes": {
+    "3000": { "label": "Frontend", "onAutoForward": "notify" },
+    "3001": { "label": "Backend" },
+    "3002": { "label": "Admin" },
+    "3003": { "label": "Library" },
+    "3006": { "label": "Docs" },
+    "3007": { "label": "Inspect" },
+    "3008": { "label": "API" }
+  },
+
+  // The extension the framework already recommends, from
+  // `storage/framework/defaults/ide/vscode/.vscode/extensions.json`. Not a
+  // second list invented here: two lists of recommendations drift, and that
+  // one is the maintained one.
+  //
+  // Editor settings are deliberately absent for the same reason - `buddy
+  // setup` copies them into `.vscode/` on first run, so duplicating them here
+  // would mean a Codespace disagreeing with a local checkout.
+  "customizations": {
+    "vscode": {
+      "extensions": ["stacks.vscode-stacks"]
+    }
+  },
+
+  // A floor, not a measurement. `bun install` for this workspace resolves a
+  // large dependency graph and the suite runs ~4000 tests, so the 2-core
+  // default is the machine most likely to disappoint on first open.
+  "hostRequirements": {
+    "cpus": 4,
+    "memory": "8gb",
+    "storage": "32gb"
+  },
+
+  "remoteUser": "vscode"
+}
