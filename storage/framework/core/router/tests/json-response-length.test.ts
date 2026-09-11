@@ -73,6 +73,21 @@ describe('JSON byte lengths and compression', () => {
     expect(JSON.parse(new TextDecoder().decode(bytes))).toEqual([small, 'é😀'])
   })
 
+  test('a text return states its byte length rather than being read back for it', async () => {
+    // The text branch had neither a size bound nor a length, so the
+    // compression layer opened its stream to find out how big it was - which
+    // costs several times more than building the response did.
+    // A primitive answered to a browser-shaped request takes the text branch.
+    const response = await fetch(`http://127.0.0.1:${server.port}/json-length/primitive-string`, {
+      headers: { 'accept-encoding': 'gzip', 'accept': 'text/html', 'cookie': 'X-CSRF-Token=already-mine' },
+    })
+    const bytes = await response.bytes()
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8')
+    expect(response.headers.get('content-encoding')).toBeNull()
+    expect(Number(response.headers.get('content-length'))).toBe(bytes.byteLength)
+    expect(new TextDecoder().decode(bytes)).toBe('café 😀')
+  })
+
   test('custom serialization runs once per response', async () => {
     for (const encoding of ['identity', 'gzip']) {
       const before = serializations

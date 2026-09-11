@@ -3543,11 +3543,27 @@ function formatResult(result: unknown, req: EnhancedRequest): Response {
   if (apiShaped) {
     if (typeof result === 'string' || typeof result === 'number' || typeof result === 'boolean')
       return formatJsonResult(result, req)
-    return Response.json(result)
+    return serializedResponse(JSON.stringify(result) ?? '', 'application/json;charset=utf-8')
   }
 
-  return new Response(String(result), {
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+  return serializedResponse(String(result), 'text/plain; charset=utf-8')
+}
+
+/**
+ * A response whose length is stated, because this function just measured it.
+ *
+ * `formatJsonResult` hands the compression layer a size bound so it can reject
+ * a small body without opening its stream. These branches had neither a bound
+ * nor a `Content-Length`, so every primitive and text return was read back
+ * through a stream reader before it could be declined for compression - which
+ * costs several times more than building the response did.
+ */
+function serializedResponse(body: string, contentType: string): Response {
+  return new Response(body, {
+    headers: {
+      'Content-Type': contentType,
+      'Content-Length': String(Buffer.byteLength(body)),
+    },
   })
 }
 
