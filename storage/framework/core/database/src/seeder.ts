@@ -43,6 +43,34 @@ export abstract class Seeder {
    */
   static order = 0
 
+  /**
+   * What this seeder is for, so a caller can select a set of them without
+   * naming each one.
+   *
+   * The motivating case is a deploy. Some seeders are cheap and idempotent and
+   * belong on every release — the accounts a test environment needs, the small
+   * fixtures that keep a surface from rendering its empty state. Others build
+   * a large demo corpus and must run once, by hand. Telling those apart used
+   * to mean a hand-written `--only-seeders A,B,C` in a deploy config, which
+   * rots the moment a seeder is added: the new one is safe to run, nobody
+   * remembers the list exists, and the surface it fills stays empty in every
+   * environment built from that config.
+   *
+   * Tagging inverts that. The author who knows what a seeder costs is the one
+   * who declares it, next to the code that makes it true.
+   *
+   * @example
+   * ```ts
+   * export default class UserSeeder extends Seeder {
+   *   static override order = -100
+   *   static override tags = ['deploy']
+   * }
+   * ```
+   *
+   * @default []
+   */
+  static tags: readonly string[] = []
+
   abstract run(): Promise<void> | void
 }
 
@@ -71,6 +99,14 @@ export interface ApplicationSeederConfig {
   only?: string[]
   /** Skip these application seeder class names. */
   except?: string[]
+  /**
+   * Run only seeders carrying at least one of these tags.
+   *
+   * Combines with `only`/`except` rather than replacing them: every filter
+   * given has to pass, so `--tag deploy --except-seeders TrailSeeder` means
+   * what it reads like.
+   */
+  tags?: string[]
 }
 
 const SEEDER_EXTENSIONS = new Set(['.js', '.mjs', '.ts'])
@@ -131,6 +167,7 @@ export async function runApplicationSeeders(config: ApplicationSeederConfig = {}
     displayFile: string
     name: string
     order: number
+    tags: readonly string[]
     SeederClass?: any
     loadError?: unknown
   }
@@ -143,17 +180,27 @@ export async function runApplicationSeeders(config: ApplicationSeederConfig = {}
       const module = await import(pathToFileURL(file).href)
       const SeederClass = module.default
       const order = typeof SeederClass?.order === 'number' ? SeederClass.order : 0
-      loaded.push({ file, displayFile, name: SeederClass?.name || fallbackName, order, SeederClass })
+      const tags = Array.isArray(SeederClass?.tags) ? SeederClass.tags.map(String) : []
+      loaded.push({ file, displayFile, name: SeederClass?.name || fallbackName, order, tags, SeederClass })
     }
     catch (error) {
-      loaded.push({ file, displayFile, name: fallbackName, order: 0, loadError: error })
+      // A seeder that will not import carries no tags, so a tagged run cannot
+      // select it — but it stays in the list so it still reports as a failure
+      // rather than vanishing from the summary.
+      loaded.push({ file, displayFile, name: fallbackName, order: 0, tags: [], loadError: error })
     }
   }
 
   const only = config.only ? new Set(config.only) : undefined
   const except = config.except ? new Set(config.except) : undefined
+  const tags = config.tags?.length ? new Set(config.tags) : undefined
   const selected = loaded.filter((entry) => {
     if (only && !only.has(entry.name))
+      return false
+
+    // Every filter given has to pass, so combining a tag with an exclusion
+    // means what it reads like.
+    if (tags && !entry.tags.some(tag => tags.has(tag)))
       return false
 
     return !except?.has(entry.name)

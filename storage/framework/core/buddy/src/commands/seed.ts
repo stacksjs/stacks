@@ -17,6 +17,11 @@ export function seed(buddy: CLI): void {
     .option('--only [models]', 'Comma-separated list of models to seed', { default: '' })
     .option('--except [models]', 'Comma-separated list of models to skip', { default: '' })
     .option('--only-seeders [seeders]', 'Comma-separated list of application seeder classes to run', { default: '' })
+    // Selecting a SET of seeders without naming each one. A deploy wants "the
+    // cheap, idempotent ones", which is a property of the seeder and belongs
+    // beside it — a name list in a deploy config goes stale the moment
+    // somebody adds a seeder and does not think to update the list.
+    .option('--tag [tags]', 'Comma-separated list of seeder tags to run (e.g. deploy)', { default: '' })
     .option('--except-seeders [seeders]', 'Comma-separated list of application seeder classes to skip', { default: '' })
     .option('--skip-models', 'Skip model-factory seeding', { default: false })
     .option('--skip-application-seeders', 'Skip application seeders', { default: false })
@@ -30,7 +35,7 @@ export function seed(buddy: CLI): void {
     .option('--fresh', 'Truncate tables before seeding', { default: false })
     .option('--append', 'Add rows to tables that already have some, instead of skipping them', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions & { only?: string, except?: string, onlySeeders?: string, exceptSeeders?: string, skipModels?: boolean, skipApplicationSeeders?: boolean, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
+    .action(async (options: SeedOptions & { only?: string, except?: string, onlySeeders?: string, exceptSeeders?: string, tag?: string, skipModels?: boolean, skipApplicationSeeders?: boolean, includeDefaults?: boolean, allowProtected?: boolean, fresh?: boolean, append?: boolean, verbose?: boolean }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')
@@ -63,6 +68,7 @@ export function seed(buddy: CLI): void {
             verbose: options.verbose,
             only: list(options.onlySeeders),
             except: list(options.exceptSeeders),
+            tags: list(options.tag),
           })
 
       const APP_ENV = process.env.APP_ENV || 'local'
