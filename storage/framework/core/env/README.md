@@ -33,6 +33,18 @@ autoLoadEnv()
 console.log(process.env.MY_SECRET)
 ```
 
+When loading a named environment, `loadEnv` and `autoLoadEnv` look for its
+`DOTENV_PRIVATE_KEY_<ENV>` key, then fall back to `DOTENV_PRIVATE_KEY` if the
+scoped key is absent. This applies both to `.env.keys` (including a custom
+`keysFile`) and to process environment variables. A standard single-key setup
+does not need a duplicate `DOTENV_PRIVATE_KEY_DEVELOPMENT` alias.
+
+The existing loader priority is unchanged: an explicit `privateKey`, then the
+keys file, then process environment variables. Within each source the scoped
+key wins over the generic key. A present key that fails decryption is an error,
+not a reason to try a different key. Plaintext shell/CI value overrides are
+still preserved unless `overload` is enabled.
+
 ### 2. Programmatic Usage
 
 ```typescript

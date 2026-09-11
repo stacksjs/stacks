@@ -244,7 +244,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
 
         if (envName) {
           const keyName = `DOTENV_PRIVATE_KEY_${envName.toUpperCase()}`
-          privateKey = parsed[keyName]
+          privateKey = parsed[keyName] || parsed.DOTENV_PRIVATE_KEY
         }
         else {
           privateKey = parsed.DOTENV_PRIVATE_KEY
@@ -258,7 +258,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
 
   // If still no private key, check environment variables
   if (!privateKey) {
-    privateKey = getPrivateKey(envName || '')
+    privateKey = getPrivateKey(envName || '') || getPrivateKey()
   }
 
   // Resolve and load each .env file
