@@ -1,5 +1,51 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.42...v0.74.43)
+
+## 🐛 Bug Fixes
+
+- **bench**: keep the application environment out of benchmark servers ([c0407d9](https://github.com/stacksjs/stacks/commit/c0407d9)) _(by Chris <chris@stacksjs.com>)_ ([#2589](https://github.com/stacksjs/stacks/issues/2589))
+- **bench**: measure host load as it is, not averaged over process lifetimes ([3600b95](https://github.com/stacksjs/stacks/commit/3600b95)) _(by Chris <chris@stacksjs.com>)_ ([#2588](https://github.com/stacksjs/stacks/issues/2588))
+- **skills**: drop my own hand-maintained counts from the composables page ([0c46e3c](https://github.com/stacksjs/stacks/commit/0c46e3c)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: say which 27 composables a template gets for free ([fabc003](https://github.com/stacksjs/stacks/commit/fabc003)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: 27 of 154 composables are auto-imported, not all of them (#2056) ([2c52208](https://github.com/stacksjs/stacks/commit/2c52208)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **docs**: register the agent-facing counts nothing owned (#2056) ([7752be4](https://github.com/stacksjs/stacks/commit/7752be4)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056))
+- **pagination**: an empty result is one empty page, not zero pages ([2a7d320](https://github.com/stacksjs/stacks/commit/2a7d320)) _(by Chris <chris@stacksjs.com>)_
+- **features**: commerce owns categories, not cms (#1854) ([dd0af60](https://github.com/stacksjs/stacks/commit/dd0af60)) _(by Chris <chris@stacksjs.com>)_ ([#1854](https://github.com/stacksjs/stacks/issues/1854), [#1854](https://github.com/stacksjs/stacks/issues/1854))
+- **path**: modelsPath resolves app/Models, not app/models ([cc01256](https://github.com/stacksjs/stacks/commit/cc01256)) _(by Chris <chris@stacksjs.com>)_
+- **path**: resolve the package paths that moved out from under them ([48ed957](https://github.com/stacksjs/stacks/commit/48ed957)) _(by Chris <chris@stacksjs.com>)_
+- **features**: claim campaign_variants before its parent is gated (#1854) ([16702c6](https://github.com/stacksjs/stacks/commit/16702c6)) _(by Chris <chris@stacksjs.com>)_ ([#1854](https://github.com/stacksjs/stacks/issues/1854), [#1854](https://github.com/stacksjs/stacks/issues/1854))
+
+## 📝 Documentation
+
+- **skills**: the 27 are free in the script entry only ([06c9d3d](https://github.com/stacksjs/stacks/commit/06c9d3d)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: drop the hand-maintained count from the models list ([2c34ce6](https://github.com/stacksjs/stacks/commit/2c34ce6)) _(by Chris <chris@stacksjs.com>)_
+- AGENTS.md gives one model count instead of two ([2ca381f](https://github.com/stacksjs/stacks/commit/2ca381f)) _(by Chris <chris@stacksjs.com>)_
+- AGENTS.md quotes 52 config files, and the counts are now checked ([a6ae06c](https://github.com/stacksjs/stacks/commit/a6ae06c)) _(by Chris <chris@stacksjs.com>)_
+- **features**: correct why commerce owns categories ([7f5d5c9](https://github.com/stacksjs/stacks/commit/7f5d5c9)) _(by Chris <chris@stacksjs.com>)_ ([#2584](https://github.com/stacksjs/stacks/issues/2584))
+
+## ✅ Tests
+
+- typecheck the benchmark harness ([16bf88c](https://github.com/stacksjs/stacks/commit/16bf88c)) _(by Chris <chris@stacksjs.com>)_ ([#2587](https://github.com/stacksjs/stacks/issues/2587))
+- anchor the two new corpus tests to their own location ([5353654](https://github.com/stacksjs/stacks/commit/5353654)) _(by Chris <chris@stacksjs.com>)_
+- **config**: guard mail and cache driver coverage like storage (#2056) ([09461c8](https://github.com/stacksjs/stacks/commit/09461c8)) _(by Chris <chris@stacksjs.com>)_ ([#2056](https://github.com/stacksjs/stacks/issues/2056), [#2056](https://github.com/stacksjs/stacks/issues/2056), [#1896](https://github.com/stacksjs/stacks/issues/1896))
+
+## 💚 Continuous Integration
+
+- **bench**: offer the per-request CPU cost matrix on the shared runner ([67cb698](https://github.com/stacksjs/stacks/commit/67cb698)) _(by Chris <chris@stacksjs.com>)_
+
+## 🔧 Chores
+
+- upgrade stx to 0.2.286 ([4ffe721](https://github.com/stacksjs/stacks/commit/4ffe721)) _(by Chris <chris@stacksjs.com>)_
+
+## bench
+
+- compare CPU cost per request at a fixed rate ([cb2b332](https://github.com/stacksjs/stacks/commit/cb2b332)) _(by Chris <chris@stacksjs.com>)_ ([#2586](https://github.com/stacksjs/stacks/issues/2586))
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.41...v0.74.42)
 
 ## ✨ Features
