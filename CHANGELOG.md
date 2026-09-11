@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.44...v0.74.45)
+
+## 🐛 Bug Fixes
+
+- **buddy**: stop an env value deciding a documented CLI default ([420d29b](https://github.com/stacksjs/stacks/commit/420d29b)) _(by Chris <chris@stacksjs.com>)_
+- **features**: uninstall keeps the files you edited (#2598) ([530986b](https://github.com/stacksjs/stacks/commit/530986b)) _(by Chris <chris@stacksjs.com>)_ ([#2598](https://github.com/stacksjs/stacks/issues/2598), [#2598](https://github.com/stacksjs/stacks/issues/2598))
+
+## 📝 Documentation
+
+- say that <feature>:uninstall deletes files ([6bab62d](https://github.com/stacksjs/stacks/commit/6bab62d)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.43...v0.74.44)
 
 ## ✨ Features
