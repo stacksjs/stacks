@@ -12,6 +12,7 @@ on:
           - cost
           - profile
           - machine
+          - machine-symbols
       rate:
         description: Fixed requests per second per target in cost mode. Low enough that the slowest target still attains it on a shared runner.
         type: string
@@ -88,7 +89,7 @@ jobs:
       # linux-tools-generic attach anyway for software events, and the runner
       # grants sudo, so paranoid can be lowered to let them.
       - name: Install perf
-        if: inputs.mode == 'machine'
+        if: startsWith(inputs.mode, 'machine')
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends linux-tools-common linux-tools-generic
@@ -103,6 +104,30 @@ jobs:
             --scenario path-param \
             --rate "${{ inputs.rate }}" \
             --duration 20 \
+            --output "$RUNNER_TEMP/routing-diagnostic"
+
+      # The released Bun is stripped, so its own frames profile as bare
+      # addresses. The profile build carries symbols; the servers inherit
+      # whichever binary runs the runner through `process.execPath`, so
+      # invoking it directly is all it takes. That build is slower than the
+      # release one, so its shares describe itself - use it to name functions,
+      # not to size them.
+      - name: Profile against a symbolized Bun
+        if: inputs.mode == 'machine-symbols'
+        run: |
+          BUN_VERSION=$(bun --version)
+          curl -fsSL -o "$RUNNER_TEMP/bun-profile.zip" \
+            "https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-linux-x64-profile.zip"
+          unzip -q -d "$RUNNER_TEMP" "$RUNNER_TEMP/bun-profile.zip"
+          PROFILE_BUN=$(find "$RUNNER_TEMP" -type f -name 'bun-profile' | head -1)
+          chmod +x "$PROFILE_BUN"
+          "$PROFILE_BUN" --version
+          "$PROFILE_BUN" bench/routing/perf.ts \
+            --targets stacks-minimal,elysia,bun-raw \
+            --scenario path-param \
+            --rate "${{ inputs.rate }}" \
+            --duration 20 \
+            --runs 2 \
             --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Record source after measurement

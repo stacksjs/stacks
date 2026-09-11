@@ -218,7 +218,21 @@ and after, as everywhere else here, and these artifacts are never a ranking.
 
 The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
 runs it in `machine` mode, which installs `linux-tools-generic` and lowers
-`perf_event_paranoid` so the versioned binaries can attach.
+`perf_event_paranoid` so the versioned binaries can attach. Its
+`machine-symbols` mode runs the same thing under Bun's profile build, because
+the released binary is stripped and its own frames otherwise profile as bare
+addresses. That build is slower than the release one, so use it to name
+functions rather than to size them - the servers inherit whichever binary runs
+the runner, through `process.execPath`.
+
+What the first run of this found, for the record: at 8,000 req/s on
+`path-param`, the kernel is 57% of the CPU a request costs and is identical
+across Stacks, Elysia and the `Bun.serve` baseline to within 0.03us. The
+difference between frameworks lives entirely in the remaining 43% - for
+`stacks-minimal` against Elysia, +0.46us in Bun's own native code and +0.21us
+in JIT-compiled JavaScript. That is why three rounds of substituting individual
+JavaScript operations moved nothing measurable: the operations were never the
+larger half of the problem.
 
 Anything published needs a documented machine and load tool: CPU model, core
 count, OS, Bun version, exact generator version, and load topology. The report
