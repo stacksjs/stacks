@@ -35,9 +35,18 @@ export function configure(buddy: CLI): void {
   buddy
     .command('configure:aws', descriptions.aws)
     .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--profile', descriptions.profile, {
-      default: process.env.AWS_PROFILE,
-    })
+    // No default. It used to be `process.env.AWS_PROFILE`, which made the
+    // documented default a property of whoever generated the docs: "stacks" on
+    // a machine that can decrypt the dev env, the raw `encrypted:…` ciphertext
+    // in CI where it cannot, and empty on a machine that never set it. The
+    // command reference is generated from this registry and checked in, so an
+    // environment-derived default meant the check could not pass in two places
+    // at once — and it blocked a release.
+    //
+    // Behaviour is unchanged: `runConfigureAws` already reads the environment
+    // first (`process.env.AWS_PROFILE ?? options?.profile`), so the default
+    // never decided anything it decides now.
+    .option('--profile', descriptions.profile)
     .option('--verbose', descriptions.verbose, { default: false })
     .option('--access-key-id', 'The AWS access key')
     .option('--secret-access-key', 'The AWS secret access key')

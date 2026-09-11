@@ -886,7 +886,7 @@ Configure the AWS connection
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `-p`, `--project` | Target a specific project | value, optional | `false` |
-| `--profile` | The AWS profile to use | boolean, optional | `"stacks"` |
+| `--profile` | The AWS profile to use | boolean, optional | - |
 | `--verbose` | Enable verbose output | boolean, optional | `false` |
 | `--access-key-id` | The AWS access key | boolean, optional | - |
 | `--secret-access-key` | The AWS secret access key | boolean, optional | - |
