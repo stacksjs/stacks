@@ -2,6 +2,7 @@ import { afterEach, describe, expect, test } from 'bun:test'
 import process from 'node:process'
 import {
   clearCurrentRequest,
+  setAmbientRequestContext,
   getCurrentRequest,
   request,
   runWithRequest,
@@ -234,5 +235,47 @@ describe('Request Context - clearing', () => {
     clearCurrentRequest()
 
     expect(await inFlight).toBe('https://example.com/in-flight')
+  })
+})
+
+describe('the ambient scope as an option', () => {
+  // Process-wide, like the storage it controls, so every test here puts it
+  // back - otherwise the file's other cases would run without a scope.
+  afterEach(() => {
+    setAmbientRequestContext(true)
+  })
+
+  test('runs the same work without entering a scope', () => {
+    const req = makeFakeRequest()
+    setAmbientRequestContext(false)
+
+    expect(runWithRequest(req, () => 'answered')).toBe('answered')
+    expect(runWithRequestArgument(req, (n: number) => n * 2, 21)).toBe(42)
+    expect(runWithRequestArguments(req, (a: number, b: number, c: number) => a + b + c, 1, 2, 3)).toBe(6)
+    // Nothing entered means nothing to read, which is the trade.
+    expect(runWithRequest(req, () => getCurrentRequest())).toBeUndefined()
+  })
+
+  test('names the option instead of answering with empty defaults', () => {
+    setAmbientRequestContext(false)
+
+    // Outside a request these answer '' and undefined so a logger reaching in
+    // early gets something harmless. With the scope disabled that would be
+    // every handler in the application, so it has to be loud.
+    expect(() => request.url).toThrow(/requestContext: false/)
+    expect(() => request.all()).toThrow(/requestContext: false/)
+  })
+
+  test('still answers harmlessly outside a request while the scope is on', () => {
+    expect(request.url).toBe('')
+    expect(request.bearerToken()).toBeNull()
+  })
+
+  test('reads the request again as soon as the scope is back', () => {
+    const req = makeFakeRequest()
+    setAmbientRequestContext(false)
+    setAmbientRequestContext(true)
+
+    expect(runWithRequest(req, () => getCurrentRequest())).toBe(req)
   })
 })

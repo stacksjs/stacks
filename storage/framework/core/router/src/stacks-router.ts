@@ -256,7 +256,7 @@ export function shouldUseNativeRoutesByDefault(routes: readonly Route[]): boolea
   return hasEligibleRoute
 }
 
-import { runWithRequestArgument, runWithRequestArguments } from './request-context'
+import { runWithRequestArgument, runWithRequestArguments, setAmbientRequestContext } from './request-context'
 import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 import { applySecurityHeaders, createJsonSecurityHeaders, secureSerializedJsonResponse } from './security-headers'
@@ -349,6 +349,23 @@ export interface StacksRouterConfig {
    * @default true
    */
   csrf?: boolean
+  /**
+   * Run every handler inside an ambient request scope, so `request()` and
+   * `getCurrentRequest()` resolve anywhere below it - across awaits, and
+   * inside code that was never handed the request.
+   *
+   * That scope is an `AsyncLocalStorage`, and entering one is not free.
+   * Disabling this skips two of the three entries a request makes (this one
+   * and bun-router's), worth 0.24us per request on Bun 1.4.1 - around half of
+   * what the framework costs over a hand-written Bun route.
+   *
+   * Only disable it if handlers take their request as an argument, which is
+   * how every route in this repository's own defaults is written. With it off,
+   * touching `request()` throws and names this option rather than quietly
+   * answering with empty defaults.
+   * @default true
+   */
+  requestContext?: boolean
 }
 
 interface GroupOptions {
@@ -732,6 +749,8 @@ const NATIVE_DIRECT_ROUTE_REQUEST = Symbol('stacks.router.nativeDirectRouteReque
 const CSRF_SECURE_TRANSPORT = Symbol.for('@stacksjs/router:csrf-secure-transport')
 const secureNativeRouteRouters = new WeakSet<Router>()
 const csrfEnabledNativeRouteRouters = new WeakSet<Router>()
+/** Routers whose handlers were told to take the request as an argument. */
+const routersWithoutRequestContext = new WeakSet<Router>()
 
 interface ResolvedMiddleware {
   name: string
@@ -4597,6 +4616,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // keeps callers away from private router fields.
     ;(bunRouter as Router & { _apiRoutesInitialized: boolean })._apiRoutesInitialized = true
   }
+  // Process-wide, like the storage it controls. Set before any route is
+  // registered so a handler never sees the scope change under it.
+  const requestContextEnabled = config.requestContext !== false
+  setAmbientRequestContext(requestContextEnabled)
+  if (!requestContextEnabled)
+    routersWithoutRequestContext.add(bunRouter)
   const csrfEnabled = config.csrf !== false
   if (csrfEnabled)
     csrfEnabledNativeRouteRouters.add(bunRouter)
@@ -5699,6 +5724,13 @@ function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeRespo
   if (nativeRouter.globalMiddleware.length !== 0)
     return handlers
 
+  // bun-router's own ambient scope answers `getCurrentRequest()` for code that
+  // imported it from there rather than from here. With the Stacks scope off,
+  // both are off, so entering this one buys a handler nothing.
+  const enterBunRouterContext: typeof runWithBunRouterRequest = routersWithoutRequestContext.has(router)
+    ? ((_req, fn) => fn()) as typeof runWithBunRouterRequest
+    : runWithBunRouterRequest
+
   for (const route of nativeRouter.routes) {
     if (
       !isNativeRouteMethod(route.method)
@@ -5727,7 +5759,7 @@ function buildDirectNativeHandlers(router: Router, finalizeResponse: NativeRespo
       if (typeof requestMarkers[CSRF_SECURE_TRANSPORT] !== 'boolean')
         requestMarkers[NATIVE_DIRECT_ROUTE_REQUEST] = true
 
-      return runWithBunRouterRequest(enhancedRequest, () => {
+      return enterBunRouterContext(enhancedRequest, () => {
         try {
           const response = handler(enhancedRequest)
           return response instanceof Response

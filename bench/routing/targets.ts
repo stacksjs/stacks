@@ -42,6 +42,13 @@ export const TARGETS: readonly Target[] = [
     optIn: true,
   },
   {
+    id: 'stacks-no-context',
+    label: 'Stacks (minimal profile, ambient request scope off)',
+    server: 'stacks.ts',
+    env: { BENCH_MODE: 'minimal', STACKS_SECURITY_HEADERS_DISABLE: 'true', BENCH_REQUEST_CONTEXT: 'false' },
+    optIn: true,
+  },
+  {
     id: 'stacks-minimal',
     label: 'Stacks (proxy IDs, security headers and CSRF off)',
     server: 'stacks.ts',

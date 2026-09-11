@@ -14,6 +14,9 @@
  *                        price the safe-by-default work, NOT to produce a
  *                        headline number. See the README.
  *
+ * BENCH_REQUEST_CONTEXT=false additionally turns off the ambient request
+ * scope, pricing `request()` separately from the rest of the framework.
+ *
  * BENCH_SQLITE_PROFILE=wal-full opts into 1000-page WAL checkpoints and
  * synchronous=FULL for the database scenario. It keeps the secure profile.
  */
@@ -39,6 +42,10 @@ const router = createStacksRouter({
   autoDiscoverRoutes: false,
   requestIds: !minimal,
   csrf: !minimal,
+  // Every route below takes its request as an argument, so the no-context
+  // profile measures a real deployment shape rather than a crippled one:
+  // `request()` throws under it, and nothing here calls it.
+  requestContext: process.env.BENCH_REQUEST_CONTEXT !== 'false',
 })
 // This programmatic API server registers its complete route table above and
 // below. The repository also contains application route files and views, and

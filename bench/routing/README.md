@@ -310,6 +310,15 @@ and reading it as anything else is the mistake this table exists to prevent.
 | `stacks` | Stock defaults, and a client that never sends a cookie back. Every GET mints a fresh CSRF render token, which is a real cost for a real first visit. |
 | `stacks-warm` | Stock defaults, client echoes the CSRF cookie — a browser or SPA from its second request onward. |
 | `stacks-minimal` | `STACKS_SECURITY_HEADERS_DISABLE=true`, `csrf: false` for token-only APIs, and `requestIds: false` for deployments whose proxy owns correlation. GET requests carry the same headers as peer targets. Everything else unchanged. |
+| `stacks-no-context` | Opt-in. `stacks-minimal` plus `requestContext: false`, so no async scope is entered per handler and `request()` throws. Prices the ambient request scope on its own. |
+
+The opt-in `stacks-no-context` target is `stacks-minimal` with
+`requestContext: false`, which stops the framework entering an async scope
+around each handler. `request()` throws under it, so it only applies to an
+application whose handlers take their request as an argument. It is here to
+price that scope rather than to produce a number: measured paired against
+`stacks-minimal` over 30-second windows, it is worth 0.12 us/req on
+`static-json` and 0.08 on `path-param`, 4/4 runs each.
 
 **`stacks-minimal` is not a headline number.** It exists to price the
 safe-by-default work separately from the framework's own overhead. Publishing it

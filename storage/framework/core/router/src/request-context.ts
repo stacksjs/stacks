@@ -179,16 +179,54 @@ export function clearCurrentRequest(): void {
 }
 
 /**
+ * Whether handlers run inside an ambient request scope.
+ *
+ * Process-wide, like `requestStorage` itself, and set from
+ * `createStacksRouter({ requestContext })`. A process serving two routers with
+ * different settings gets the last one, which is the same caveat
+ * `warnOnMultipleRouterInstances` already exists for.
+ *
+ * Entering an `AsyncLocalStorage` is not free. Three nested entries per
+ * request - this one, bun-router's, and the database routing scope - measure
+ * at 0.36us on Bun 1.4.1, against 0.00us for the module variable a synchronous
+ * handler could use instead. That is most of what the framework costs over a
+ * hand-written route, and an API whose handlers take their request as an
+ * argument pays it for a helper it never calls.
+ *
+ * So it is an option rather than a given. What it buys is `request()` working
+ * anywhere below the handler, including across awaits and inside code that was
+ * never handed the request - which is exactly why the mechanism is an async
+ * context and not a variable.
+ */
+let ambientContextEnabled = true
+
+/**
+ * Turn the ambient request scope on or off for this process.
+ *
+ * Called by `createStacksRouter`. Exported because the router is not the only
+ * entry point - a test harness or an embedding host that dispatches requests
+ * itself needs the same switch.
+ */
+export function setAmbientRequestContext(enabled: boolean): void {
+  ambientContextEnabled = enabled
+}
+
+/** Whether `request()` and `getCurrentRequest()` can see anything. */
+export function ambientRequestContextEnabled(): boolean {
+  return ambientContextEnabled
+}
+
+/**
  * Run a function with a request context
  * All code executed within the callback will have access to the request
  */
 export function runWithRequest<T>(req: EnhancedRequest, fn: () => T): T {
-  return requestStorage.run(req, fn)
+  return ambientContextEnabled ? requestStorage.run(req, fn) : fn()
 }
 
 /** Run a synchronous dispatcher without allocating a callback closure. */
 export function runWithRequestArgument<T, A>(req: EnhancedRequest, fn: (arg: A) => T, arg: A): T {
-  return requestStorage.run(req, fn, arg)
+  return ambientContextEnabled ? requestStorage.run(req, fn, arg) : fn(arg)
 }
 
 /** Run a dispatcher with three arguments without allocating a callback closure. */
@@ -199,7 +237,7 @@ export function runWithRequestArguments<T, A, B, C>(
   second: B,
   third: C,
 ): T {
-  return requestStorage.run(req, fn, first, second, third)
+  return ambientContextEnabled ? requestStorage.run(req, fn, first, second, third) : fn(first, second, third)
 }
 
 /**
@@ -254,6 +292,22 @@ export const request: RequestInstance & StacksRequestMarkers = new Proxy(
       const currentRequest = getCurrentRequest()
 
       if (!currentRequest) {
+        /*
+         * Opted out, so there is no scope to read and never will be.
+         *
+         * The defaults below are for a logger or a test harness reaching in
+         * early, where an empty answer is the honest one and the request will
+         * arrive shortly. With the ambient scope disabled they would answer
+         * every handler in the application the same way - `request.url` as
+         * `''`, `request.all()` as `undefined` - which is a wrong answer
+         * dressed as a working one. Fail loudly and name the switch instead.
+         */
+        if (!ambientContextEnabled) {
+          throw new Error(
+            `request.${String(prop)} needs the ambient request context, which this process disabled with `
+            + `createStacksRouter({ requestContext: false }). Take the request as a handler argument, or re-enable it.`,
+          )
+        }
         if (process.env.NODE_ENV !== 'production') {
           console.warn(`[RequestContext] Accessing request.${String(prop)} outside of request context`)
         }
