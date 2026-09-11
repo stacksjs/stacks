@@ -143,13 +143,15 @@ const CLAIMS: Claim[] = [
       { file: `${SKILLS}/stacks-database/SKILL.md`, pattern: /\((\d+) migration files/ },
     ],
   },
-  {
-    what: 'browser auto-imports',
-    measure: () => Object.keys(JSON.parse(
-      readFileSync(abs('storage/framework/browser-auto-imports.json'), 'utf-8'),
-    ).globals).length,
-    sites: [{ file: AGENTS, pattern: /There are \*\*(\d+)\*\* of/ }],
-  },
+  /*
+   * `browser auto-imports` used to live here, pinning AGENTS.md's "There are
+   * **83** of them" to the manifest's size. Same wrong source as the composables
+   * claim below: the manifest governs what `tsc` accepts, not what the browser
+   * has, and the two overlap by three names (stacksjs/stacks#2585). AGENTS.md
+   * no longer quotes a size, and
+   * `core/server/tests/agents-md-auto-imports.test.ts` checks its list against
+   * the runtime by name.
+   */
   {
     what: 'composables',
     measure: () => new Set(

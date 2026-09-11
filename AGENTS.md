@@ -161,27 +161,53 @@ Manifests: `storage/framework/{browser,server}-auto-imports.json`. Generated typ
 `storage/framework/types/*auto-imports.d.ts`. Regenerate with `buddy generate` (`--types` for the
 declarations). Full reference: `stacks-auto-imports`.
 
-**stx templates (browser)** - available with no import. There are **83** of
-them, 27 of which are `use*` composables; this said "200+ composables" for a
-long time, which was not a stale count but a wrong one. The manifest is the
-count: `storage/framework/browser-auto-imports.json` and the generated
-`storage/framework/types/browser-auto-imports.d.ts` agree on 83, and a name
-that is not in them needs an import however familiar it looks.
+**stx templates (browser)** - available with no import. What the stx runtime
+attaches to `window` is what decides whether a bare call resolves, and the list
+below is generated from it.
 
-- The 27 `use*` composables, in full, because a half-remembered name is the whole
-  problem: `useAbs`, `useAuth`, `useAverage`, `useCeil`, `useClamp`, `useDark`,
-  `useDateFormat`, `useFetch`, `useFloor`, `useForm`, `useGitStore`, `useMax`, `useMin`,
-  `useNow`, `useOnline`, `usePaymentStore`, `usePrecision`, `usePreferredDark`,
-  `useQueueStore`, `useRound`, `useScrollLock`, `useStorage`, `useSum`, `useTimeoutFn`,
-  `useToggle`, `useTrunc`, `useUserStore`.
-- Utilities (`debounce`, `throttle`, `clamp`, `delay`, `dateFormat`, `format`, ...) and the
-  Stripe helpers (`loadCardElement`, `confirmPayment`, `confirmCardPayment`, ...).
-- **NOT** `ref`, `computed`, `reactive`, `watch` or `watchEffect`. This list named all five
-  for a long time, along with `useColorMode`, `useLocalStorage`, `useCounter`,
-  `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax` and
-  `usePreferredReducedMotion` - 13 of the 24 names it gave. None of them are in either
-  manifest. Reactivity in a template comes from stx's own `state` / `derived` / `effect`
-  (see `stacks-stx`), and everything else here needs an import.
+Do NOT use `storage/framework/browser-auto-imports.json` for this, despite its
+name and despite what this section used to say. Nothing reads it at build time;
+it feeds an ambient `.d.ts`, so it governs what `tsc` accepts and not what the
+browser has. The two now overlap by three names. It describes an injection
+`unplugin-auto-import` used to perform and no longer does, which is why it
+drifted this far without anyone noticing (stacksjs/stacks#2585).
+
+The practical consequence is that `buddy typecheck` cannot answer this question
+and currently disagrees with the browser in both directions.
+
+<!-- runtime-globals:begin - generated from the stx runtime and checked by
+     core/composables/tests/skill-runtime-globals.test.ts. Every name between
+     these markers must be attached to `window` by getCachedSignalsRuntime(),
+     and every name it attaches must appear here. Do not edit from
+     browser-auto-imports.json; see #2585. -->
+
+- The `use*` composables, in full, because a half-remembered name is the
+  whole problem: `useAsync`, `useClickOutside`, `useColorMode`, `useCounter`,
+  `useDark`, `useDebounce`, `useDebouncedValue`, `useEventListener`, `useFetch`,
+  `useFocus`, `useHead`, `useInterval`, `useLocalStorage`, `useMutation`,
+  `useQuery`, `useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`,
+  `useSessionStorage`, `useStore`, `useThrottle`, `useTimeout`, `useToggle`,
+  `useWebSocket`.
+- Signals and lifecycle: `state`, `derived`, `effect`, `batch`, `nextTick`,
+  `onMount`, `onDestroy`, `provide`, `defineStore`, `stx`.
+- Routing and UI: `navigate`, `goBack`, `goForward`, `modal`, `drawer`, `toast`,
+  `stxAlert`, `stxConfirm`.
+- **Vue-compatible aliases onto the above**: `ref` (= `state`), `computed`
+  (= `derived`), `reactive`, `watch`, `watchEffect`. This section said all five
+  were NOT available, on the manifest's authority; they are, and they have been.
+  Prefer `state` / `derived` / `effect` in new code - the aliases exist so
+  familiar code runs, not to make Vue the idiom (see `stacks-stx`).
+
+<!-- runtime-globals:end -->
+
+- **NOT** `debounce`, `throttle`, `clamp`, `delay`, `dateFormat`, `format`, the
+  Stripe helpers (`loadCardElement`, `confirmPayment`, `confirmCardPayment`), or
+  `useStorage`, `useNow`, `useDateFormat`, `useForm`, `useAbs` and the `use*Store`
+  set. Every one of those is in the manifest and absent from the runtime, so it
+  typechecks and then throws a ReferenceError during setup - which takes the
+  whole page down rather than failing the one call. Import them.
+- **NOT** `useIntersectionObserver`, `useScroll`, `useMouse`, `useParallax` or
+  `usePreferredReducedMotion`, which are in neither.
 - Your components under `resources/components/` (write `<Card />` directly, resolved by the stx
   plugin) and your functions under `resources/functions/` (e.g. `increment`, `toggleDark`).
 
