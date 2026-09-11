@@ -742,6 +742,7 @@ Deactivate the cms feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the cms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the cms scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `coming-soon`
 
@@ -806,6 +807,7 @@ Deactivate the commerce feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the commerce scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the commerce scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `commit`
 
@@ -936,6 +938,7 @@ Deactivate the dashboard feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the dashboard scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the dashboard scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `db:backup`
 
@@ -2146,6 +2149,7 @@ Deactivate the forms feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the forms scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the forms scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `fresh`
 
@@ -3517,6 +3521,7 @@ Deactivate the marketing feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the marketing scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the marketing scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `migrate`
 
@@ -3641,6 +3646,7 @@ Deactivate the monitoring feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the monitoring scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the monitoring scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `new`
 
@@ -4232,6 +4238,7 @@ Deactivate the queue feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the queue scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the queue scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `queue:unquarantine`
 
@@ -4289,6 +4296,7 @@ Deactivate the realtime feature bundle.
 | Option | Description | Contract | Default |
 | --- | --- | --- | --- |
 | `--keep-files` | Don't delete the realtime scaffolding (action/model/view files). Flip the flag only. | boolean, optional | - |
+| `--force` | Delete the realtime scaffolding even where you have edited it. Without this, changed files are kept. | boolean, optional | - |
 
 ### `release`
 

@@ -1,6 +1,6 @@
 import type { FeatureName } from '@stacksjs/features'
 import type { CLI } from '@stacksjs/types'
-import { existsSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, rmdirSync, statSync } from 'node:fs'
 import { cp, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -65,24 +65,133 @@ export function featurePathsPresent(feature: FeatureName, root: string = project
   return FEATURE_FILES[feature].filter(rel => existsSync(`${root}/${rel}`))
 }
 
+/** Every file under `dir`, as paths relative to it. */
+function filesUnder(dir: string, prefix = ''): string[] {
+  const out: string[] = []
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = prefix ? `${prefix}/${entry.name}` : entry.name
+    if (entry.isDirectory()) out.push(...filesUnder(join(dir, entry.name), rel))
+    else out.push(rel)
+  }
+  return out
+}
+
+/** Whether the project's copy is byte-identical to the template it came from. */
+function matchesTemplate(projectFile: string, templateFile: string): boolean {
+  if (!existsSync(templateFile)) return false
+  try {
+    return readFileSync(projectFile).equals(readFileSync(templateFile))
+  }
+  catch {
+    // Unreadable is not "unchanged". Keeping it is the safe direction.
+    return false
+  }
+}
+
+/** Drop directories that the deletion emptied, deepest first. */
+function pruneEmptyDirs(root: string, dir: string): void {
+  let current = dir
+  while (current.startsWith(root) && current !== root) {
+    try {
+      if (readdirSync(current).length > 0) return
+      rmdirSync(current)
+    }
+    catch {
+      return
+    }
+    current = join(current, '..')
+  }
+}
+
+export interface DeleteFeatureFilesOptions {
+  /**
+   * Delete a path even when it differs from the template it was stamped from.
+   * Default `false`, so an edited file survives `<feature>:uninstall`.
+   */
+  force?: boolean
+  /** Source root holding the framework defaults. Override for tests. */
+  source?: string
+}
+
 /**
- * Recursively delete every file/dir listed in the feature's manifest under
- * `root` (defaults to `projectPath()`). Missing entries are skipped
- * silently — the operation is safe to re-run. Returns the list of paths
- * actually removed so the caller can print a useful summary.
+ * Delete the paths in a feature's manifest that are still as this command left
+ * them, and keep the ones that are not (stacksjs/stacks#2598).
+ *
+ * This used to `rm -rf` every claimed path unconditionally, which made the two
+ * halves of the same file disagree: `copyFeatureFiles` below refuses to
+ * overwrite a path that already exists, "don't overwrite the user's
+ * possibly-customised file", and this removed that same customised file
+ * without looking. The framework protected your edits on the way in and
+ * deleted them on the way out.
+ *
+ * The rule it follows now is the one `stack:uninstall` already used - a
+ * command may remove what it put there and left untouched, and anything the
+ * developer changed needs `--force`. `uninstallStack` compares a checksum
+ * recorded at install time; features keep no such record, so the comparison is
+ * against the template in `storage/framework/defaults/<path>` instead. That is
+ * weaker in one way worth knowing: a file edited and then edited back to match
+ * the template reads as untouched.
+ *
+ * Directory entries - which most feature paths are - are compared per file, so
+ * one edited action does not strand the other twenty beside it.
+ *
+ * Missing entries are skipped silently, so the operation stays safe to re-run.
  */
 export async function deleteFeatureFiles(
   feature: FeatureName,
   root: string = projectPath(),
-): Promise<string[]> {
+  options: DeleteFeatureFilesOptions = {},
+): Promise<{ removed: string[], preserved: string[] }> {
+  const source = options.source ?? frameworkPath('defaults')
+  const force = options.force === true
+
   const removed: string[] = []
+  const preserved: string[] = []
+
   for (const rel of FEATURE_FILES[feature]) {
-    const full = `${root}/${rel}`
+    const full = join(root, rel)
     if (!existsSync(full)) continue
-    await rm(full, { recursive: true, force: true })
-    removed.push(rel)
+
+    if (force) {
+      await rm(full, { recursive: true, force: true })
+      removed.push(rel)
+      continue
+    }
+
+    const template = join(source, rel)
+
+    if (!statSync(full).isDirectory()) {
+      if (matchesTemplate(full, template)) {
+        await rm(full, { force: true })
+        removed.push(rel)
+      }
+      else {
+        preserved.push(rel)
+      }
+      continue
+    }
+
+    // A directory: take it apart file by file so one edit does not pin the
+    // whole tree, and one untouched file does not drag an edited sibling out.
+    let keptAny = false
+    for (const child of filesUnder(full)) {
+      const projectFile = join(full, child)
+      if (matchesTemplate(projectFile, join(template, child))) {
+        await rm(projectFile, { force: true })
+        removed.push(`${rel}${child}`)
+      }
+      else {
+        keptAny = true
+        preserved.push(`${rel}${child}`)
+      }
+    }
+
+    pruneEmptyDirs(root, full)
+    if (!keptAny && existsSync(full))
+      await rm(full, { recursive: true, force: true })
   }
-  return removed
+
+  return { removed, preserved }
 }
 
 export interface CopyFeatureFilesOptions {
@@ -403,7 +512,12 @@ export async function uninstallAllFeatures(
   const results: UninstallAllFeaturesResult[] = []
   for (const feature of FEATURE_NAMES) {
     const configOutcome = await setFeatureEnabled(feature, false, { createIfMissing: false, root })
-    const filesRemoved = await deleteFeatureFiles(feature, root)
+    // `force`, unlike the per-feature command. This backs `./buddy new
+    // --minimal`, where the scaffolding was stamped seconds ago and there are
+    // no edits to protect - and where `buddy new` stamps through gitit, whose
+    // substitutions would make a freshly written file read as modified and
+    // leave `--minimal` anything but.
+    const { removed: filesRemoved } = await deleteFeatureFiles(feature, root, { force: true })
     results.push({ feature, configOutcome, filesRemoved })
   }
   return results
@@ -452,7 +566,8 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
   buddy
     .command(`${feature}:uninstall`, `Deactivate the ${feature} feature bundle.`)
     .option('--keep-files', `Don't delete the ${feature} scaffolding (action/model/view files). Flip the flag only.`)
-    .action(async (options: { keepFiles?: boolean }) => {
+    .option('--force', `Delete the ${feature} scaffolding even where you have edited it. Without this, changed files are kept.`)
+    .action(async (options: { keepFiles?: boolean, force?: boolean }) => {
       try {
         const outcome = await setFeatureEnabled(feature, false, { createIfMissing: false })
         switch (outcome) {
@@ -478,10 +593,16 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
             console.log(`  → ${stillPresent.length} stamped path(s) preserved (--keep-files).`)
         }
         else {
-          const removed = await deleteFeatureFiles(feature)
+          const { removed, preserved } = await deleteFeatureFiles(feature, projectPath(), { force: options.force })
           if (removed.length > 0) {
             console.log(`✓ Removed ${removed.length} stamped path(s):`)
             for (const path of removed) console.log(`    - ${path}`)
+          }
+          if (preserved.length > 0) {
+            // Named rather than counted: the whole point is that the developer
+            // can see which of their edits survived, and decide.
+            console.log(`  → Kept ${preserved.length} path(s) you have edited (re-run with --force to remove):`)
+            for (const path of preserved) console.log(`    - ${path}`)
           }
         }
 

@@ -77,7 +77,7 @@ describe('deleteFeatureFiles()', () => {
     await touch('app/Actions/Cms/PostIndexAction.ts')
     await touch('app/Models/Tag.ts')
 
-    const removed = await deleteFeatureFiles('cms', root)
+    const { removed } = await deleteFeatureFiles('cms', root, { force: true })
 
     expect(removed).toContain('app/Actions/Cms/')
     expect(removed).toContain('app/Models/Tag.ts')
@@ -89,14 +89,14 @@ describe('deleteFeatureFiles()', () => {
     // Only one of the cms paths exists; the rest should be skipped.
     await touch('app/Models/Comment.ts')
 
-    const removed = await deleteFeatureFiles('cms', root)
+    const { removed } = await deleteFeatureFiles('cms', root, { force: true })
 
     expect(removed).toEqual(['app/Models/Comment.ts'])
     expect(existsSync(join(root, 'app/Models/Comment.ts'))).toBe(false)
   })
 
   it('returns an empty list when nothing matches the manifest', async () => {
-    const removed = await deleteFeatureFiles('marketing', root)
+    const { removed } = await deleteFeatureFiles('marketing', root, { force: true })
     expect(removed).toEqual([])
   })
 
@@ -104,7 +104,7 @@ describe('deleteFeatureFiles()', () => {
     await touch('app/Actions/Cms/PostIndexAction.ts') // claimed
     await touch('app/Actions/MyCustomAction.ts') // user file — must survive
 
-    await deleteFeatureFiles('cms', root)
+    await deleteFeatureFiles('cms', root, { force: true })
 
     expect(existsSync(join(root, 'app/Actions/Cms'))).toBe(false)
     expect(existsSync(join(root, 'app/Actions/MyCustomAction.ts'))).toBe(true)
@@ -113,11 +113,94 @@ describe('deleteFeatureFiles()', () => {
   it('is idempotent across repeated runs', async () => {
     await touch('app/Models/Job.ts')
 
-    const first = await deleteFeatureFiles('queue', root)
-    const second = await deleteFeatureFiles('queue', root)
+    const first = await deleteFeatureFiles('queue', root, { force: true })
+    const second = await deleteFeatureFiles('queue', root, { force: true })
 
-    expect(first).toContain('app/Models/Job.ts')
-    expect(second).toEqual([])
+    expect(first.removed).toContain('app/Models/Job.ts')
+    expect(second.removed).toEqual([])
+  })
+
+  // stacksjs/stacks#2598. Uninstall used to `rm -rf` every claimed path while
+  // install refused to overwrite an existing one, so the framework protected
+  // an edit on the way in and deleted it on the way out. It now follows the
+  // rule `stack:uninstall` already used: remove what this command put there
+  // and left untouched, and leave the rest to `--force`.
+  describe('files the developer has edited', () => {
+    let source: string
+
+    beforeEach(async () => {
+      source = mkdtempSync(join(tmpdir(), 'stacks-defaults-'))
+    })
+
+    afterEach(async () => {
+      await rm(source, { recursive: true, force: true })
+    })
+
+    async function stampBoth(rel: string, template: string, inProject: string): Promise<void> {
+      await mkdir(join(source, rel, '..'), { recursive: true })
+      await writeFile(join(source, rel), template)
+      await mkdir(join(root, rel, '..'), { recursive: true })
+      await writeFile(join(root, rel), inProject)
+    }
+
+    it('keeps an edited file and reports it', async () => {
+      await stampBoth('app/Models/Tag.ts', 'from defaults', 'my version')
+
+      const { removed, preserved } = await deleteFeatureFiles('cms', root, { source })
+
+      expect(preserved).toEqual(['app/Models/Tag.ts'])
+      expect(removed).toEqual([])
+      expect(readFileSync(join(root, 'app/Models/Tag.ts'), 'utf8')).toBe('my version')
+    })
+
+    it('still removes an untouched file beside an edited one', async () => {
+      // One edit must not strand the rest of the bundle.
+      await stampBoth('app/Models/Tag.ts', 'from defaults', 'my version')
+      await stampBoth('app/Models/Comment.ts', 'from defaults', 'from defaults')
+
+      const { removed, preserved } = await deleteFeatureFiles('cms', root, { source })
+
+      expect(removed).toEqual(['app/Models/Comment.ts'])
+      expect(preserved).toEqual(['app/Models/Tag.ts'])
+      expect(existsSync(join(root, 'app/Models/Comment.ts'))).toBe(false)
+      expect(existsSync(join(root, 'app/Models/Tag.ts'))).toBe(true)
+    })
+
+    it('compares a claimed directory file by file', async () => {
+      // Most feature paths are directories. One edited action inside one must
+      // not pin the other twenty, and must not be dragged out with them.
+      await stampBoth('app/Actions/Cms/PostIndexAction.ts', 'from defaults', 'from defaults')
+      await stampBoth('app/Actions/Cms/PostStoreAction.ts', 'from defaults', 'my version')
+
+      const { removed, preserved } = await deleteFeatureFiles('cms', root, { source })
+
+      expect(removed).toContain('app/Actions/Cms/PostIndexAction.ts')
+      expect(preserved).toContain('app/Actions/Cms/PostStoreAction.ts')
+      expect(existsSync(join(root, 'app/Actions/Cms/PostStoreAction.ts'))).toBe(true)
+      expect(existsSync(join(root, 'app/Actions/Cms/PostIndexAction.ts'))).toBe(false)
+    })
+
+    it('keeps a file the developer added inside a claimed directory', async () => {
+      // Not in the template at all, so there is nothing it can match.
+      await stampBoth('app/Actions/Cms/PostIndexAction.ts', 'from defaults', 'from defaults')
+      await mkdir(join(root, 'app/Actions/Cms'), { recursive: true })
+      await writeFile(join(root, 'app/Actions/Cms/MyAction.ts'), 'mine')
+
+      const { preserved } = await deleteFeatureFiles('cms', root, { source })
+
+      expect(preserved).toContain('app/Actions/Cms/MyAction.ts')
+      expect(existsSync(join(root, 'app/Actions/Cms/MyAction.ts'))).toBe(true)
+    })
+
+    it('--force removes the edited file anyway', async () => {
+      await stampBoth('app/Models/Tag.ts', 'from defaults', 'my version')
+
+      const { removed, preserved } = await deleteFeatureFiles('cms', root, { source, force: true })
+
+      expect(removed).toEqual(['app/Models/Tag.ts'])
+      expect(preserved).toEqual([])
+      expect(existsSync(join(root, 'app/Models/Tag.ts'))).toBe(false)
+    })
   })
 })
 
@@ -219,7 +302,10 @@ describe('copyFeatureFiles()', () => {
     expect(existsSync(join(target, 'app/Models/Tag.ts'))).toBe(true)
     expect(existsSync(join(target, 'app/Models/Comment.ts'))).toBe(true)
 
-    const removed = await deleteFeatureFiles('cms', target)
+    // Against the same template the copy came from. Uninstall compares the
+    // project's copy to the defaults, so handing it a different source is
+    // asking whether the file matches something it never came from.
+    const { removed } = await deleteFeatureFiles('cms', target, { source })
     expect(removed).toContain('app/Models/Tag.ts')
     expect(removed).toContain('app/Models/Comment.ts')
     expect(existsSync(join(target, 'app/Models/Tag.ts'))).toBe(false)

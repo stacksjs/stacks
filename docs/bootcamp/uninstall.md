@@ -14,26 +14,28 @@ Feature bundles and reusable stacks have dedicated commands:
 ./buddy stack:uninstall blog
 ```
 
-::: warning These delete files, including ones you changed
+::: warning These delete the scaffolding they installed
 `<feature>:uninstall` does two things: it flips the feature off in `config/`,
-and it **deletes every path in that feature's manifest**, recursively, with no
-prompt. For commerce that is `app/Models/commerce/`, `app/Actions/Commerce/`,
+and it **deletes the paths in that feature's manifest**. For commerce that is
+`app/Models/commerce/`, `app/Actions/Commerce/`,
 `app/Actions/Dashboard/Commerce/`, `resources/components/Dashboard/Commerce/`
 and `resources/views/dashboard/commerce/`.
 
-Edits you made inside those paths go with them. Install is careful here and
-skips a file that already exists rather than overwriting your version; uninstall
-does not make the same check.
+Files you have edited are kept. The command compares each one against the
+template it was stamped from and removes only what is still unchanged, listing
+anything it kept so you can see what survived. A file you added inside one of
+those directories is kept too, since it matches no template.
 
-To turn a feature off and keep the scaffolding:
+Two flags change that:
 
 ```bash
-./buddy commerce:uninstall --keep-files
+./buddy commerce:uninstall --keep-files   # disable the feature, delete nothing
+./buddy commerce:uninstall --force        # delete your edits as well
 ```
 
-The feature is disabled either way. `--keep-files` only decides whether the
-files survive, so reach for it whenever you have touched anything in those
-directories, or commit first so the deletion is recoverable.
+The feature is disabled in every case. A file edited and then changed back to
+match the template reads as untouched and is removed, so commit before a large
+uninstall if that distinction matters to you.
 :::
 
 Run `./buddy doctor` afterward to find configuration or stamped files left by a disabled feature. Do not delete `storage/framework` from an active application because it contains the framework runtime.
