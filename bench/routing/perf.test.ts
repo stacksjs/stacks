@@ -30,6 +30,14 @@ describe('task-clock parsing', () => {
     expect(parseTaskClockMs('            420.00 msec task-clock')).toBe(420)
   })
 
+  it('reads the bare count as nanoseconds, which is what perf 6.17 prints', () => {
+    // Without a PMU to scale against, perf emits the raw event count and that
+    // counter counts nanoseconds. Reading it as milliseconds would report a
+    // server as a million times cheaper than it is.
+    expect(parseTaskClockMs('        2060804055      task-clock                       #    0.103 CPUs utilized')).toBeCloseTo(2060.804, 3)
+    expect(parseTaskClockMs('     2,060,804,055      task-clock')).toBeCloseTo(2060.804, 3)
+  })
+
   it('reports no reading rather than zero when the counter is absent', () => {
     // Zero would read as a free server, which is the one answer that must not
     // come out of a failed attachment.

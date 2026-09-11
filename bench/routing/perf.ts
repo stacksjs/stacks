@@ -51,6 +51,7 @@ interface Options {
   rate: number
   durationSeconds: number
   warmupSeconds: number
+  runs: number
   output?: string
   allowBusyHost: boolean
 }
@@ -62,6 +63,7 @@ export function parseArgs(argv: string[]): Options {
     rate: 8000,
     durationSeconds: 20,
     warmupSeconds: 5,
+    runs: 3,
     allowBusyHost: false,
   }
   for (let i = 0; i < argv.length; i++) {
@@ -77,6 +79,7 @@ export function parseArgs(argv: string[]): Options {
       case '--rate': opts.rate = Number(next()); break
       case '--duration': opts.durationSeconds = Number(next()); break
       case '--warmup': opts.warmupSeconds = Number(next()); break
+      case '--runs': opts.runs = Number(next()); break
       case '--output': opts.output = next(); break
       case '--allow-busy-host': opts.allowBusyHost = true; break
       default: throw new Error(`Unknown flag ${arg}`)
@@ -86,6 +89,8 @@ export function parseArgs(argv: string[]): Options {
     throw new Error('--rate must be a positive safe integer')
   if (!Number.isFinite(opts.durationSeconds) || opts.durationSeconds <= 0)
     throw new Error('--duration must be a positive finite number')
+  if (!Number.isSafeInteger(opts.runs) || opts.runs <= 0)
+    throw new Error('--runs must be a positive safe integer')
   const unknown = opts.targets.filter(id => !TARGETS.some(target => target.id === id))
   if (unknown.length > 0)
     throw new Error(`Unknown target(s): ${unknown.join(', ')}`)
@@ -201,12 +206,13 @@ async function main(): Promise<void> {
 
   const summary: Array<Record<string, unknown>> = []
 
+  for (let repeat = 1; repeat <= opts.runs; repeat++)
   for (const target of targets) {
-    console.error(`\n[perf] === ${target.id}`)
+    console.error(`\n[perf] === ${target.id} run ${repeat}`)
     const booted = await boot(target, scenario.requiresDb === true, scenario)
     if ('skipped' in booted) {
       console.error(`[perf]   skipped: ${booted.skipped}`)
-      summary.push({ targetId: target.id, skipped: booted.skipped })
+      summary.push({ targetId: target.id, run: repeat, skipped: booted.skipped })
       continue
     }
 
@@ -231,24 +237,39 @@ async function main(): Promise<void> {
       const countedLoad = await driver.run({ ...request, durationSeconds: opts.durationSeconds })
       const counters = await counted
 
-      const sampled = recordWindow(perf, booted.pid, opts.durationSeconds, join(outDir, `${target.id}.perf.data`))
+      const sampled = recordWindow(perf, booted.pid, opts.durationSeconds, join(outDir, `${target.id}--run${repeat}.perf.data`))
       const sampledLoad = await driver.run({ ...request, durationSeconds: opts.durationSeconds })
       const record = await sampled
 
       const after = await assertParity(target, scenario)
       assertStableParity(target, scenario, before, after)
 
+      const data = join(outDir, `${target.id}--run${repeat}.perf.data`)
+      /*
+       * Two reports, and the first is the one that matters.
+       *
+       * Bun emits no jitdump, so JIT code appears as a crowd of anonymous
+       * entries with no symbol - individually far below any percent limit,
+       * collectively the largest thing in the profile. Aggregating by shared
+       * object with no limit is the only way the shares add up to the whole,
+       * and the anonymous share is exactly the number this is here to get.
+       */
+      const byDso = record.code === 0
+        ? await run([perf, 'report', '--stdio', '--no-children', '--percent-limit', '0', '-i', data, '--sort', 'dso'])
+        : { code: record.code, stdout: '', stderr: record.stderr }
       const report = record.code === 0
-        ? await run([perf, 'report', '--stdio', '--no-children', '--percent-limit', '0.2', '-i', join(outDir, `${target.id}.perf.data`), '--sort', 'dso,symbol'])
+        ? await run([perf, 'report', '--stdio', '--no-children', '--percent-limit', '0.2', '-i', data, '--sort', 'dso,symbol'])
         : { code: record.code, stdout: '', stderr: record.stderr }
 
-      writeFileSync(join(outDir, `${target.id}--counters.txt`), `${counters.software.stderr}\n\n${counters.hardware.stderr}\n`)
-      writeFileSync(join(outDir, `${target.id}--report.txt`), report.stdout || report.stderr)
-      writeFileSync(join(outDir, `${target.id}--load.json`), `${countedLoad.raw}\n`)
+      writeFileSync(join(outDir, `${target.id}--run${repeat}--counters.txt`), `${counters.software.stderr}\n\n${counters.hardware.stderr}\n`)
+      writeFileSync(join(outDir, `${target.id}--run${repeat}--dso.txt`), byDso.stdout || byDso.stderr)
+      writeFileSync(join(outDir, `${target.id}--run${repeat}--report.txt`), report.stdout || report.stderr)
+      writeFileSync(join(outDir, `${target.id}--run${repeat}--load.json`), `${countedLoad.raw}\n`)
 
       const taskClockMs = parseTaskClockMs(counters.software.stderr)
       summary.push({
         targetId: target.id,
+        run: repeat,
         requestsCounted: countedLoad.requests,
         errorsCounted: countedLoad.errors,
         rateAttained: countedLoad.requests / (opts.rate * opts.durationSeconds),
@@ -288,13 +309,27 @@ function recordWindow(perf: string, pid: number, seconds: number, output: string
   return run([perf, 'record', '-F', '997', '-g', '-e', 'cpu-clock', '-p', String(pid), '-o', output, '--', 'sleep', String(seconds)])
 }
 
-/** `perf stat` prints task-clock in milliseconds, with a locale separator. */
+/**
+ * `task-clock`, in milliseconds, from either shape `perf stat` prints.
+ *
+ * With a unit applied it is `1,234.56 msec task-clock`. Without one - which is
+ * what perf 6.17 does when it has no PMU to scale against - it is the raw
+ * event count, and that counter counts nanoseconds. Reading the second shape
+ * as milliseconds would report a server as a million times cheaper than it is,
+ * so the unit is required to be present or absent explicitly rather than
+ * assumed.
+ */
 export function parseTaskClockMs(output: string): number | null {
-  const match = /^\s*([\d,.]+)\s+msec\s+task-clock/m.exec(output)
-  if (!match)
+  const withUnit = /^\s*([\d,.]+)\s+msec\s+task-clock/m.exec(output)
+  if (withUnit) {
+    const value = Number(withUnit[1]!.replace(/,/g, ''))
+    return Number.isFinite(value) ? value : null
+  }
+  const bare = /^\s*([\d,]+)\s+task-clock/m.exec(output)
+  if (!bare)
     return null
-  const value = Number(match[1]!.replace(/,/g, ''))
-  return Number.isFinite(value) ? value : null
+  const nanoseconds = Number(bare[1]!.replace(/,/g, ''))
+  return Number.isFinite(nanoseconds) ? nanoseconds / 1e6 : null
 }
 
 if (import.meta.main)
