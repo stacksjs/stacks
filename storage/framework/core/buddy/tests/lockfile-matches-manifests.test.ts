@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 /**
- * `bun.lock` records the same dependency ranges the manifests declare.
+ * Both lockfiles record the same dependency ranges the manifests declare.
  *
  * A commit that bumps a range without the lockfile that resolves it passes
  * every local check and then kills CI in its INSTALL step - `error: lockfile
@@ -19,15 +19,15 @@ import { join } from 'node:path'
 const root = join(import.meta.dir, '..', '..', '..', '..', '..')
 
 /** bun.lock is JSONC: trailing commas, otherwise JSON. */
-function readLockfile(): any {
-  const text = readFileSync(join(root, 'bun.lock'), 'utf8')
+function readLockfile(filename: string): any {
+  const text = readFileSync(join(root, filename), 'utf8')
   return JSON.parse(text.replace(/,(\s*[}\]])/g, '$1'))
 }
 
 const FIELDS = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies'] as const
 
-describe('bun.lock', () => {
-  const lock = readLockfile()
+describe.each(['bun.lock', 'pantry.lock'])('%s', (filename) => {
+  const lock = readLockfile(filename)
 
   it('records the workspaces', () => {
     expect(Object.keys(lock.workspaces ?? {}).length).toBeGreaterThan(50)
@@ -43,7 +43,7 @@ describe('bun.lock', () => {
         manifest = JSON.parse(readFileSync(manifestPath, 'utf8'))
       }
       catch {
-        drift.push(`${path}: bun.lock names a workspace with no package.json`)
+        drift.push(`${path}: ${filename} names a workspace with no package.json`)
         continue
       }
 
@@ -52,14 +52,19 @@ describe('bun.lock', () => {
         const inLock: Record<string, string> = recorded[field] ?? {}
 
         for (const [name, range] of Object.entries(declared)) {
+          // Pantry omits optional workspace peers rather than locking them.
+          // Still validate their range if an entry is present.
+          if (filename === 'pantry.lock' && field === 'peerDependencies'
+            && manifest.peerDependenciesMeta?.[name]?.optional && !(name in inLock))
+            continue
           if (!(name in inLock))
-            drift.push(`${path}: ${field}.${name} is declared but not in bun.lock`)
+            drift.push(`${path}: ${field}.${name} is declared but not in ${filename}`)
           else if (inLock[name] !== range)
-            drift.push(`${path}: ${field}.${name} is '${range}' but bun.lock says '${inLock[name]}'`)
+            drift.push(`${path}: ${field}.${name} is '${range}' but ${filename} says '${inLock[name]}'`)
         }
         for (const name of Object.keys(inLock)) {
           if (!(name in declared))
-            drift.push(`${path}: bun.lock records ${field}.${name}, which the manifest does not declare`)
+            drift.push(`${path}: ${filename} records ${field}.${name}, which the manifest does not declare`)
         }
       }
     }
