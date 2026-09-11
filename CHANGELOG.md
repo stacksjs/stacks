@@ -1,5 +1,20 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.45...v0.74.46)
+
+## 🐛 Bug Fixes
+
+- **bench**: read task-clock in both shapes perf prints, and report every sample ([83aec39](https://github.com/stacksjs/stacks/commit/83aec39)) _(by Chris <chris@stacksjs.com>)_
+- **skills**: list the composables the runtime has, not the manifest (#2585) ([a9b0112](https://github.com/stacksjs/stacks/commit/a9b0112)) _(by Chris <chris@stacksjs.com>)_ ([#2585](https://github.com/stacksjs/stacks/issues/2585), [#2585](https://github.com/stacksjs/stacks/issues/2585))
+
+## bench
+
+- profile the request path at the machine level on Linux ([0869701](https://github.com/stacksjs/stacks/commit/0869701)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.44...v0.74.45)
 
 ## 🐛 Bug Fixes
