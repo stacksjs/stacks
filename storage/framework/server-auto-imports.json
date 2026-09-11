@@ -19,6 +19,7 @@
     "CardComment": true,
     "Cart": true,
     "CartItem": true,
+    "Categorizable": true,
     "Category": true,
     "ComingSoonController": true,
     "Comment": true,

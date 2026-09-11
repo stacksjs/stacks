@@ -1,6 +1,6 @@
 ---
 name: stacks-orm
-description: Use when working with the Stacks ORM - defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 102 built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/defaults/app/Models/.
+description: Use when working with the Stacks ORM - defining models with defineModel(), model relationships (hasOne, hasMany, belongsTo, belongsToMany, morphOne, hasManyThrough), attributes, traits, factories, computed properties, query building, transactions, or the 103 built-in models. Covers @stacksjs/orm, storage/framework/orm/, and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Core ORM package: `storage/framework/core/orm/src/`
 - ORM implementation: `storage/framework/orm/`
-- Model definitions: `storage/framework/defaults/app/Models/` (102 models)
+- Model definitions: `storage/framework/defaults/app/Models/` (103 models)
 - Application models: `app/Models/`
 - Default model templates: `storage/framework/defaults/app/Models/`
 - ORM type globals: `storage/framework/types/orm-globals.d.ts`

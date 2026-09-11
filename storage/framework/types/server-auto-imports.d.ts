@@ -148,6 +148,7 @@ declare global {
   const WaitlistProduct: typeof import('../defaults/app/Models/commerce/WaitlistProduct')['default']
   const WaitlistRestaurant: typeof import('../defaults/app/Models/commerce/WaitlistRestaurant')['default']
   const Author: typeof import('../defaults/app/Models/Content/Author')['default']
+  const Categorizable: typeof import('../defaults/app/Models/Content/Categorizable')['default']
   const Menu: typeof import('../defaults/app/Models/Content/Menu')['default']
   const MenuItem: typeof import('../defaults/app/Models/Content/MenuItem')['default']
   const Page: typeof import('../defaults/app/Models/Content/Page')['default']

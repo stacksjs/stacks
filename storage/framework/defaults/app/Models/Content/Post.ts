@@ -44,7 +44,7 @@ export default defineModel({
   belongsTo: ['Author', 'Site'],
   belongsToMany: {
     categories: {
-      model: 'Category',
+      model: 'Categorizable',
       table: 'categorizable_models',
       foreignKey: 'categorizable_id',
       relatedKey: 'category_id',

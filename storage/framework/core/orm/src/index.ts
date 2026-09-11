@@ -308,6 +308,7 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature:
   ['Subscription', [''], 'auth'],
 
   // CMS (Content subdir on disk uses the capital C)
+  ['Categorizable', ['Content'], 'cms'],
   ['Post', ['Content'], 'cms'],
   ['Page', ['Content'], 'cms'],
   ['PageRevision', ['Content'], 'cms'],
@@ -531,6 +532,7 @@ export const PaymentMethod = lazyModel<typeof import('../../../defaults/app/Mode
 export const PaymentProduct = lazyModel<typeof import('../../../defaults/app/Models/PaymentProduct').default>('PaymentProduct')
 export const PaymentTransaction = lazyModel<typeof import('../../../defaults/app/Models/PaymentTransaction').default>('PaymentTransaction')
 export const Post = lazyModel<typeof import('../../../defaults/app/Models/Content/Post').default>('Post')
+export const Categorizable = lazyModel<typeof import('../../../defaults/app/Models/Content/Categorizable').default>('Categorizable')
 export const PrintDevice = lazyModel<typeof import('../../../defaults/app/Models/commerce/PrintDevice').default>('PrintDevice')
 export const Product = lazyModel<typeof import('../../../defaults/app/Models/commerce/Product').default>('Product')
 export const ProductUnit = lazyModel<typeof import('../../../defaults/app/Models/commerce/ProductUnit').default>('ProductUnit')
@@ -573,7 +575,7 @@ const _allExports: Record<string, any> = {
   User, Job, FailedJob,
   Activity, AnalyticsEvent, Automation, AutomationRun, Auction, AuctionItem,
   Author, Bid, Board, BoardColumn, Campaign, CampaignSend, CampaignVariant, Card,
-  CardComment, Cart, CartItem, Category, Comment, Coupon, Customer,
+  CardComment, Cart, CartItem, Categorizable, Category, Comment, Coupon, Customer,
   CommunicationSuppression, ConsentEvent,
   DeliveryRoute, DeliveryStop, Deployment, DigitalDelivery, Courier, CourierPing,
   EmailList,

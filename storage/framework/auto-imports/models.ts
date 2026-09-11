@@ -93,6 +93,7 @@ export { default as Transaction } from '../defaults/app/Models/commerce/Transact
 export { default as WaitlistProduct } from '../defaults/app/Models/commerce/WaitlistProduct'
 export { default as WaitlistRestaurant } from '../defaults/app/Models/commerce/WaitlistRestaurant'
 export { default as Author } from '../defaults/app/Models/Content/Author'
+export { default as Categorizable } from '../defaults/app/Models/Content/Categorizable'
 export { default as Menu } from '../defaults/app/Models/Content/Menu'
 export { default as MenuItem } from '../defaults/app/Models/Content/MenuItem'
 export { default as Page } from '../defaults/app/Models/Content/Page'

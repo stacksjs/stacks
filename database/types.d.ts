@@ -344,13 +344,14 @@ declare module '@stacksjs/database' {
     categorizables: {
       // columns
       id: number
+      created_at: string
+      updated_at: string | null
       name: string
       slug: string
       description: string | null
       is_active: number
+      categorizable_id: number
       categorizable_type: string
-      created_at: string
-      updated_at: string | null
     }
     ci_run_states: {
       // columns

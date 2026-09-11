@@ -1,6 +1,6 @@
 ---
 name: stacks-models
-description: Use when working with data models in Stacks - the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 102 built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
+description: Use when working with data models in Stacks - the defineModel() API, model attributes with validation and factories, relationships (hasOne/hasMany/belongsTo/belongsToMany), traits (useAuth, useUuid, useTimestamps, useSearch, useApi, billable, taggable, categorizable, commentable, likeable, observe), computed properties (get/set), model generation, and the 103 built-in framework models. Covers model definitions and storage/framework/defaults/app/Models/.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript, SQLite >= 3.47.2
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -265,7 +265,7 @@ pass `--allow-protected` to override.
 ## Built-in models by category
 
 The ones below are worth knowing by name. They are a selection, not the set:
-`storage/framework/defaults/app/Models/` holds 102, and that directory is the
+`storage/framework/defaults/app/Models/` holds 103, and that directory is the
 authority. This section said "All 62 built-in models by category" while
 listing fewer than that against 102 on disk, so an agent reading to the end
 had no way to tell it was short.
