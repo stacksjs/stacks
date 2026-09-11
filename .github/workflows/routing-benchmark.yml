@@ -11,6 +11,7 @@ on:
           - benchmark
           - cost
           - profile
+          - machine
       rate:
         description: Fixed requests per second per target in cost mode. Low enough that the slowest target still attains it on a shared runner.
         type: string
@@ -81,6 +82,28 @@ jobs:
       - name: Capture stock HTTP CPU profiles
         if: inputs.mode == 'profile'
         run: bun bench/routing/profile.ts --output "$RUNNER_TEMP/routing-diagnostic"
+
+      # `perf` needs a linux-tools package matching the running kernel, which a
+      # hosted runner does not have. The versioned binaries from
+      # linux-tools-generic attach anyway for software events, and the runner
+      # grants sudo, so paranoid can be lowered to let them.
+      - name: Install perf
+        if: inputs.mode == 'machine'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends linux-tools-common linux-tools-generic
+          sudo sysctl -w kernel.perf_event_paranoid=-1
+          sudo sysctl -w kernel.kptr_restrict=0
+
+      - name: Profile at the machine level
+        if: inputs.mode == 'machine'
+        run: |
+          bun bench/routing/perf.ts \
+            --targets stacks-minimal,elysia,bun-raw \
+            --scenario path-param \
+            --rate "${{ inputs.rate }}" \
+            --duration 20 \
+            --output "$RUNNER_TEMP/routing-diagnostic"
 
       - name: Record source after measurement
         if: always()

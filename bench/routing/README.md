@@ -187,6 +187,39 @@ parity, busy-host and stability checks still apply.
 Select its `profile` mode to capture stock HTTP CPU profiles instead; the default
 `benchmark` mode retains the full throughput matrix and measurement windows.
 
+## Machine-level diagnostics
+
+`bench/routing/perf.ts` is Linux-only and answers what the rest of this
+directory cannot see.
+
+```bash
+bun bench/routing/perf.ts --targets stacks-minimal,elysia,bun-raw --scenario path-param --rate 8000
+```
+
+Two things come out of it. `perf stat`'s `task-clock` is the same CPU time `ps`
+reports, read from the kernel in nanoseconds instead of hundredths of a second
+- at 8,000 req/s over 20 seconds that is three orders of magnitude more
+resolution than the throughput runner has, which matters because three separate
+attempts to explain the last half-microsecond of Stacks' cost ran into that
+floor (stacksjs/stacks#2597). And `perf record` says where the time goes:
+kernel, Bun's own native code, or JIT-compiled JavaScript.
+
+Bun emits no jitdump, so JIT frames stay anonymous. That is itself the
+measurement - the share of samples landing in anonymous executable memory
+against the runtime's own symbols is exactly what a JavaScript-level profiler
+cannot tell you.
+
+Counters and samples are collected over separate load windows, because
+`perf record` perturbs what it samples and folding it into the counted window
+would report a cost that includes the profiler. Hardware counters are attempted
+separately from software ones: a hosted runner is a VM and usually exposes no
+PMU, and that absence is recorded rather than fatal. Parity is checked before
+and after, as everywhere else here, and these artifacts are never a ranking.
+
+The [Routing diagnostic workflow](https://github.com/stacksjs/stacks/actions/workflows/routing-benchmark.yml)
+runs it in `machine` mode, which installs `linux-tools-generic` and lowers
+`perf_event_paranoid` so the versioned binaries can attach.
+
 Anything published needs a documented machine and load tool: CPU model, core
 count, OS, Bun version, exact generator version, and load topology. The report
 records all of them automatically. A laptop throttles and a shared cloud VM has
