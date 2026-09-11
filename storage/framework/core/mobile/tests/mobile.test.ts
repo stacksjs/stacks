@@ -1,31 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
-
-mock.module('craft-native/mobile', () => ({
-  appReview: {},
-  biometrics: {},
-  camera: {},
-  deepLinks: {
-    getInitialURL: async () => ({ url: 'wildloop://record' }),
-    onLink: (callback: (value: unknown) => void) => {
-      callback({ url: 'wildloop://trail/42' })
-      return () => {}
-    },
-  },
-  device: { isMobile: () => false },
-  haptics: { impact: async () => {}, notification: async () => {} },
-  health: { getData: async () => ({ unit: 'count', value: 0 }), saveWorkout: async () => ({ id: 'workout' }) },
-  keepAwake: {},
-  lifecycle: {},
-  liveActivities: { start: async () => ({ id: 'test' }) },
-  location: {},
-  network: {},
-  notifications: {},
-  permissions: {},
-  pushNotifications: {},
-  secureStorage: {},
-  share: {},
-  watchConnectivity: { isReachable: async () => false },
-}))
+import { describe, expect, it } from 'bun:test'
 
 const { deepLinks, health, isNativeMobile, liveActivities, normalizeDeepLinkURL, onMobileReady, watchConnectivity, withNativeFeedback } = await import('../src')
 
@@ -52,12 +25,29 @@ describe('@stacksjs/mobile', () => {
     expect(normalizeDeepLinkURL({ path: '/record' })).toBeNull()
   })
 
-  it('delegates normalized deep links through the lazy Craft surface', async () => {
-    await expect(deepLinks.getInitialURL()).resolves.toBe('wildloop://record')
-
-    let received: string | undefined
-    const unsubscribe = deepLinks.onLink(value => received = value)
-    expect(received).toBe('wildloop://trail/42')
-    expect(typeof unsubscribe).toBe('function')
+  it('delegates normalized deep links through the real Craft browser entrypoint', async () => {
+    const original = Object.getOwnPropertyDescriptor(globalThis, 'window')
+    Object.defineProperty(globalThis, 'window', { configurable: true, value: {
+      craft: {
+        deepLinks: {
+          getInitialURL: async () => ({ url: 'wildloop://record' }),
+          onLink: (callback: (value: unknown) => void) => {
+            callback({ url: 'wildloop://trail/42' })
+            return () => {}
+          },
+        },
+      },
+    } })
+    try {
+      await expect(deepLinks.getInitialURL()).resolves.toBe('wildloop://record')
+      let received: string | undefined
+      const unsubscribe = deepLinks.onLink(value => received = value)
+      expect(received).toBe('wildloop://trail/42')
+      expect(typeof unsubscribe).toBe('function')
+    }
+    finally {
+      if (original) Object.defineProperty(globalThis, 'window', original)
+      else Reflect.deleteProperty(globalThis, 'window')
+    }
   })
 })

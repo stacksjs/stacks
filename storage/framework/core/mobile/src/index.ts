@@ -19,6 +19,8 @@ import type {
   AppReviewApi,
   BiometricsApi,
   CameraApi,
+  CraftMobileBridge,
+  CraftReadyEvent,
   DeepLinksApi,
   DeviceApi,
   HapticsApi,
@@ -27,6 +29,7 @@ import type {
   LifecycleApi,
   LiveActivitiesApi,
   LocationApi,
+  MobileApi,
   NetworkApi,
   NotificationsApi,
   PermissionsApi,
@@ -95,35 +98,52 @@ export const health: HealthApi = craftHealth
 export const liveActivities: LiveActivitiesApi = craftLiveActivities
 export const watchConnectivity: WatchConnectivityApi = craftWatchConnectivity
 
-interface CraftReadyEvent extends Event {
-  detail?: { platform?: string }
-}
-
 interface CraftHost extends EventTarget {
   craft?: unknown
 }
 
 function host(): CraftHost | undefined {
-  if (typeof globalThis === 'undefined') return undefined
-  return globalThis as unknown as CraftHost
+  if (typeof window === 'undefined') return undefined
+  return window as unknown as CraftHost
+}
+
+/** Reads the current host, including a bridge injected after this module loaded. */
+export function getNativeMobileBridge(): CraftMobileBridge | null {
+  const bridge = host()?.craft
+  if (!bridge || typeof bridge !== 'object') return null
+  if (!('platform' in bridge) || (bridge.platform !== 'ios' && bridge.platform !== 'android'))
+    return null
+
+  // Older hosts can omit flags. Missing is unknown, never implicitly enabled.
+  const flags = 'capabilities' in bridge ? bridge.capabilities : undefined
+  const capabilities = flags && typeof flags === 'object' && !Array.isArray(flags)
+    ? Object.fromEntries(Object.entries(flags).filter(([, value]) => typeof value === 'boolean'))
+    : {}
+  return { platform: bridge.platform, capabilities }
 }
 
 export function isNativeMobile(): boolean {
-  const current = host()
-  return Boolean(current?.craft) && device.isMobile()
+  return getNativeMobileBridge() !== null
 }
 
 export function onMobileReady(callback: (event: CraftReadyEvent) => void): () => void {
   const current = host()
   if (!current) return () => {}
 
-  if (current.craft) {
-    queueMicrotask(() => callback(new Event('craftReady') as CraftReadyEvent))
-    return () => {}
+  if (getNativeMobileBridge()) {
+    let cancelled = false
+    queueMicrotask(() => {
+      if (!cancelled) callback(new Event('craftReady') as CraftReadyEvent)
+    })
+    return () => { cancelled = true }
   }
 
-  const listener: EventListener = event => callback(event as CraftReadyEvent)
-  current.addEventListener('craftReady', listener, { once: true })
+  const listener: EventListener = (event) => {
+    if (!getNativeMobileBridge()) return
+    current.removeEventListener('craftReady', listener)
+    callback(event as CraftReadyEvent)
+  }
+  current.addEventListener('craftReady', listener)
   return () => current.removeEventListener('craftReady', listener)
 }
 
@@ -140,7 +160,8 @@ export async function withNativeFeedback<T>(action: () => T | Promise<T>): Promi
   }
 }
 
-export const mobile = {
+export const mobile: MobileApi = {
+  get nativeBridge() { return getNativeMobileBridge() },
   biometrics,
   camera,
   device,

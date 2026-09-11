@@ -1,3 +1,85 @@
+/** Enabled native features, not the hardware report from device.getCapabilities(). */
+export interface CraftMobileCapabilities {
+  haptics?: boolean
+  speechRecognition?: boolean
+  share?: boolean
+  camera?: boolean
+  biometric?: boolean
+  pushNotifications?: boolean
+  secureStorage?: boolean
+  geolocation?: boolean
+  backgroundLocation?: boolean
+  healthKit?: boolean
+  health?: boolean
+  liveActivities?: boolean
+  watchConnectivity?: boolean
+  clipboard?: boolean
+  contacts?: boolean
+  calendar?: boolean
+  localNotifications?: boolean
+  inAppPurchase?: boolean
+  keepAwake?: boolean
+  orientationLock?: boolean
+  deepLinks?: boolean
+  flashlight?: boolean
+  network?: boolean
+  deviceInfo?: boolean
+  badge?: boolean
+  appReview?: boolean
+  appBadge?: boolean
+  networkStatus?: boolean
+  openURL?: boolean
+  vibrationPattern?: boolean
+  appState?: boolean
+  qrScanner?: boolean
+  filePicker?: boolean
+  fileDownload?: boolean
+  googleSignIn?: boolean
+  audioRecording?: boolean
+  videoRecording?: boolean
+  motionSensors?: boolean
+  localDatabase?: boolean
+  bluetooth?: boolean
+  nfc?: boolean
+  screenCapture?: boolean
+}
+
+/** Browser-safe metadata from Craft's iOS or Android bridge. */
+export interface CraftMobileBridge {
+  readonly platform: 'ios' | 'android'
+  readonly capabilities: Readonly<CraftMobileCapabilities>
+}
+
+export interface CraftReadyEvent extends Event {
+  detail?: { platform?: string }
+}
+
+/** Services retain their web fallbacks; nativeBridge describes only a native host. */
+export interface MobileApi {
+  readonly nativeBridge: CraftMobileBridge | null
+  biometrics: BiometricsApi
+  camera: CameraApi
+  device: DeviceApi
+  haptics: HapticsApi
+  lifecycle: LifecycleApi
+  location: LocationApi
+  notifications: NotificationsApi
+  permissions: PermissionsApi
+  secureStorage: SecureStorageApi
+  share: ShareApi
+  appReview: AppReviewApi
+  deepLinks: DeepLinksApi
+  keepAwake: KeepAwakeApi
+  network: NetworkApi
+  pushNotifications: PushNotificationsApi
+  health: HealthApi
+  liveActivities: LiveActivitiesApi
+  watchConnectivity: WatchConnectivityApi
+  isNativeMobile: () => boolean
+  onReady: (callback: (event: CraftReadyEvent) => void) => () => void
+  withFeedback: <T>(action: () => T | Promise<T>) => Promise<T>
+}
+
 export interface DeviceInfo {
   platform: 'ios' | 'android' | 'macos' | 'windows' | 'linux'
   osVersion: string
