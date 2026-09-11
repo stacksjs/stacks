@@ -4482,6 +4482,7 @@ Seed your database
 | `--only` | Comma-separated list of models to seed | value, optional | `""` |
 | `--except` | Comma-separated list of models to skip | value, optional | `""` |
 | `--only-seeders` | Comma-separated list of application seeder classes to run | value, optional | `""` |
+| `--tag` | Comma-separated list of seeder tags to run (e.g. deploy) | value, optional | `""` |
 | `--except-seeders` | Comma-separated list of application seeder classes to skip | value, optional | `""` |
 | `--skip-models` | Skip model-factory seeding | boolean, optional | `false` |
 | `--skip-application-seeders` | Skip application seeders | boolean, optional | `false` |
