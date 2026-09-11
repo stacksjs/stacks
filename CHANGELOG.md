@@ -1,5 +1,44 @@
 # Stacks Changelog
 
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.43...v0.74.44)
+
+## ✨ Features
+
+- **seed**: tag seeders, so a deploy can select a set without naming it ([70054e6](https://github.com/stacksjs/stacks/commit/70054e6)) _(by Chris <chris@stacksjs.com>)_
+
+## 🐛 Bug Fixes
+
+- **env**: fall back to generic keys for named environments ([769cfc5](https://github.com/stacksjs/stacks/commit/769cfc5)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2595](https://github.com/stacksjs/stacks/issues/2595))
+- **mobile**: expose typed native bridge metadata ([67d5e77](https://github.com/stacksjs/stacks/commit/67d5e77)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2594](https://github.com/stacksjs/stacks/issues/2594))
+- **cms**: resolve post categories from the CMS catalogue ([482fa65](https://github.com/stacksjs/stacks/commit/482fa65)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2584](https://github.com/stacksjs/stacks/issues/2584), [#2593](https://github.com/stacksjs/stacks/issues/2593))
+
+## ⚡ Performance Improvements
+
+- **router**: make the ambient request context opt-out ([d55f356](https://github.com/stacksjs/stacks/commit/d55f356)) _(by Chris <chris@stacksjs.com>)_ ([#2591](https://github.com/stacksjs/stacks/issues/2591))
+- **router**: state the length of a primitive or text response ([466098d](https://github.com/stacksjs/stacks/commit/466098d)) _(by Chris <chris@stacksjs.com>)_ ([#2592](https://github.com/stacksjs/stacks/issues/2592))
+
+## 📝 Documentation
+
+- **buddy**: record the seed --tag flag ([b13e5a9](https://github.com/stacksjs/stacks/commit/b13e5a9)) _(by Chris <chris@stacksjs.com>)_
+
+## ✅ Tests
+
+- **features**: recognize shared trait table ownership ([211f716](https://github.com/stacksjs/stacks/commit/211f716)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2584](https://github.com/stacksjs/stacks/issues/2584), [#2594](https://github.com/stacksjs/stacks/issues/2594))
+
+## 🔧 Chores
+
+- **deps**: sync pantry lock with bun-router 0.1.18 ([6dd739b](https://github.com/stacksjs/stacks/commit/6dd739b)) _(by glennmichael123 <gtorregosa@gmail.com>)_ ([#2594](https://github.com/stacksjs/stacks/issues/2594))
+- **deps**: bun-router 0.1.18 ([46c5b49](https://github.com/stacksjs/stacks/commit/46c5b49)) _(by Chris <chris@stacksjs.com>)_
+
+## bench
+
+- measure the routing runtime Stacks sits on ([8914304](https://github.com/stacksjs/stacks/commit/8914304)) _(by Chris <chris@stacksjs.com>)_
+
+## Contributors
+
+- _Chris <chris@stacksjs.com>_
+- _glennmichael123 <gtorregosa@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.74.42...v0.74.43)
 
 ## 🐛 Bug Fixes
