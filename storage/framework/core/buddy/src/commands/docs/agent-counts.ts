@@ -159,30 +159,21 @@ const CLAIMS: Claim[] = [
     sites: [
       { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) composables/ },
       { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /(\d+) reactive composables for STX/ },
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /Only 27 of the (\d+) composables/ },
     ],
   },
-  {
-    /*
-     * How many of them a template gets for free, which is a different number
-     * from how many exist and the one that decides whether code runs.
-     *
-     * `stacks-composables` said "All are auto-imported in STX templates" in two
-     * places while 27 of 154 are. That is the failure `AGENTS.md` records under
-     * "200+ composables": a name reached for on that authority is not there,
-     * and the template does not run.
-     */
-    what: 'auto-imported composables',
-    measure: () => Object.keys(JSON.parse(
-      readFileSync(abs('storage/framework/browser-auto-imports.json'), 'utf-8'),
-    ).globals).filter(name => /^use[A-Z]/.test(name)).length,
-    sites: [
-      { file: AGENTS, pattern: /(\d+) of which are `use\*` composables/ },
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /\*\*(\d+) of them are auto-imported\*\*/ },
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /Only (\d+) of the \d+ composables/ },
-      { file: `${SKILLS}/stacks-composables/SKILL.md`, pattern: /83 names in total, (\d+) of which/ },
-    ],
-  },
+  /*
+   * `auto-imported composables` used to live here, measuring the `use*` count
+   * in `browser-auto-imports.json`. It measured the wrong thing: nothing reads
+   * that manifest at build time, so it says what `tsc` accepts and not what the
+   * browser has, and only five of its 27 `use*` are in the stx runtime
+   * (stacksjs/stacks#2585).
+   *
+   * The replacement is not a count. `core/composables/tests/
+   * skill-runtime-globals.test.ts` generates the runtime and checks the skill's
+   * list against the globals it attaches, both directions, which subsumes any
+   * number this could have pinned - and needs an async measure, which this
+   * checker has no shape for.
+   */
   {
     what: 'config files',
     measure: () => countFiles('config', '.ts'),

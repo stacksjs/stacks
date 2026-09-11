@@ -8,54 +8,56 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Composables
 
-154 reactive composables for STX templates. **27 of them are auto-imported**;
-the rest need an explicit import from `@stacksjs/composables`.
+154 reactive composables for STX templates. **A fixed set of them is available
+bare**, listed below; everything else needs an explicit import from
+`@stacksjs/composables`.
 
-`storage/framework/browser-auto-imports.json` is the authority, and it declares
-83 names in total, 27 of which are `use*`. This page said "All are auto-imported
-in STX templates", which is the same mistake `AGENTS.md` carries a scar about
-under "200+ composables": an agent reaching for a name on that authority writes
-a template that does not run, and reads the failure as a framework bug.
+The stx runtime decides this, not `browser-auto-imports.json`. That manifest
+feeds an ambient `.d.ts` and nothing reads it at build time, so it says what the
+compiler accepts and not what the browser has; the two disagree in both
+directions (stacksjs/stacks#2585).
 
-## The 27 you can write bare in a template
+This page said "All are auto-imported in STX templates", which is the mistake
+`AGENTS.md` carries a scar about under "200+ composables": an agent reaching for
+a name on that authority writes a template that does not run, and reads the
+failure as a framework bug.
 
-Everything else on this page needs an explicit import, and that is most of what
-the sections below list - `useCounter`, `useLocalStorage`, `useMouse`,
-`useScroll`, `useIntersectionObserver` and `usePreferredReducedMotion` among
-them, which are exactly the names `AGENTS.md` calls out for having been wrongly
-listed as free.
+## What you can write bare in a template
 
-No count of how many fall on each side, deliberately. That number is
-maintained by hand and moves whenever a name is added to any section on this
-page - it was wrong within one edit of being written. The list below is the
-whole of the free side; anything not on it is on the other.
+<!-- auto-imported:begin - checked against the stx runtime by
+     core/composables/tests/skill-runtime-globals.test.ts. These are the names
+     `getCachedSignalsRuntime()` attaches to `window`, which is what decides
+     whether a bare call resolves in a template. Do not derive this list from
+     `browser-auto-imports.json`: that manifest is compile-time only, and 22 of
+     the 27 `use*` it declares are absent from the runtime. -->
 
-<!-- auto-imported:begin - checked against browser-auto-imports.json by
-     core/server/tests/composables-skill-auto-imports.test.ts. Both directions:
-     every name here must be in the manifest, and every `use*` in the manifest
-     must be here. Edit the manifest, not this list. -->
-
-`useAbs`, `useAuth`, `useAverage`, `useCeil`, `useClamp`, `useDark`,
-`useDateFormat`, `useFetch`, `useFloor`, `useForm`, `useGitStore`, `useMax`,
-`useMin`, `useNow`, `useOnline`, `usePaymentStore`, `usePrecision`,
-`usePreferredDark`, `useQueueStore`, `useRound`, `useScrollLock`, `useStorage`,
-`useSum`, `useTimeoutFn`, `useToggle`, `useTrunc`, `useUserStore`.
+`useAsync`, `useClickOutside`, `useColorMode`, `useCounter`, `useDark`,
+`useDebounce`, `useDebouncedValue`, `useEventListener`, `useFetch`, `useFocus`,
+`useHead`, `useInterval`, `useLocalStorage`, `useMutation`, `useQuery`,
+`useRef`, `useRoute`, `useSearchParams`, `useSeoMeta`, `useSessionStorage`,
+`useStore`, `useThrottle`, `useTimeout`, `useToggle`, `useWebSocket`.
 
 <!-- auto-imported:end -->
 
-A name not on that list is imported:
+Everything else needs an explicit import, and that is most of what the sections
+below list:
 
 ```ts
-import { useCounter } from '@stacksjs/composables'
+import { useStorage } from '@stacksjs/composables'
 ```
 
-**And the 27 are free only in the STX script entry.** The injection does not
-reach a TypeScript module that entry imports - bindings there do not leak into
-bundled module scope - so a `.ts` file beside your template imports every one
-of these explicitly, same as any other name. `AGENTS.md` states the same limit
-under Auto-imports. Referencing an uninjected name is a ReferenceError thrown
-before any binding applies, which takes the whole page down rather than
-degrading the one call.
+**`buddy typecheck` will not tell you which is which, and currently disagrees
+with the browser in both directions** (stacksjs/stacks#2585).
+`storage/framework/browser-auto-imports.json` feeds an ambient `.d.ts`, so the
+compiler accepts every name it declares - and only five of its 27 `use*` are in
+the runtime. `useStorage`, `useNow`, `useDateFormat`, `useForm` and the `use*Store`
+composables typecheck and then throw a ReferenceError during setup, which takes
+the page down rather than failing the one call. In the other direction
+`useLocalStorage`, `useColorMode`, `useCounter` and `useMediaQuery` all work in
+a template and `tsc` rejects them.
+
+The list above is the runtime's, so it is the one that predicts whether the page
+loads.
 
 ## Key Path
 - Core package: `storage/framework/core/composables/src/`
@@ -200,9 +202,11 @@ isRef(val)           // type guard
 - `and`, `or`, `logicNot`, `logicOr`
 
 ## Gotchas
-- Only 27 of the 154 composables are auto-imported in STX templates. Check
-  `storage/framework/browser-auto-imports.json` before relying on a bare name;
-  everything else needs `import { … } from '@stacksjs/composables'`
+- Only the names listed above are available bare in an STX template, and they
+  come from the stx runtime, not from `browser-auto-imports.json` - that
+  manifest is compile-time only and disagrees with the runtime in both
+  directions (stacksjs/stacks#2585). Everything else needs
+  `import { … } from '@stacksjs/composables'`
 - NEVER use vanilla JS (`var`, `document.*`, `window.*`) in STX `<script>` tags
 - Only use stx-compatible code: signals, composables, directives
 - Auto-imports defined in `storage/framework/browser-auto-imports.json`
