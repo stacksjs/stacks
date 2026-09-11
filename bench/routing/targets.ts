@@ -72,6 +72,12 @@ export const TARGETS: readonly Target[] = [
     optional: true,
   },
   {
+    id: 'bun-router',
+    label: 'bun-router (the routing runtime Stacks sits on)',
+    server: 'bun-router.ts',
+    optIn: true,
+  },
+  {
     id: 'bun-raw',
     label: 'Bun.serve baseline',
     server: 'bun-raw.ts',

@@ -338,6 +338,23 @@ applying each target's settings, so shell variables from a previous run cannot
 silently turn a stock target into a tuned or minimal one.
 It also fixes the database driver to SQLite, matching the isolated fixture.
 
+## The layer underneath
+
+Between the `bun-raw` ceiling and the Stacks profiles there are two layers, and
+a single number spanning both cannot say which one a change moved. The opt-in
+`bun-router` target is the boundary: everything `bun-raw` pays plus route
+registration, request enhancement and native dispatch, and none of what Stacks
+adds on top.
+
+```bash
+bun bench/routing/run.ts --targets bun-raw,bun-router,stacks-minimal --rate 10000
+```
+
+It registers the same routes through bun-router's own API, returns plain values
+the way its documentation does, and enables the native dispatch Stacks turns on
+by default. It is excluded from the default matrix and from published rankings:
+those compare frameworks, and this is a component of one of them.
+
 ## Peer targets
 
 Elysia, Express, Fastify, and Hono are exact dependencies of the isolated
