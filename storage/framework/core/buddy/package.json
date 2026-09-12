@@ -106,7 +106,7 @@
     "@stacksjs/build": "^0.74.46",
     "@stacksjs/cache": "^0.74.46",
     "@stacksjs/chat": "^0.74.46",
-    "@stacksjs/clapp": "^0.2.12",
+    "@stacksjs/clapp": "^0.2.16",
     "@stacksjs/cli": "^0.74.46",
     "@stacksjs/cloud": "^0.74.46",
     "@stacksjs/cms": "^0.74.46",
@@ -158,7 +158,7 @@
     "ajv": "^8.20.0",
     "ajv-formats": "^3.0.1",
     "bun-plugin-stx": "^0.2.286",
-    "ts-pantry": "^0.11.35"
+    "ts-pantry": "^0.11.60"
   },
   "devDependencies": {
     "better-dx": "^0.2.24"

@@ -3,5 +3,5 @@ dependencies:
   # that writes this repository's lockfile format.
   bun: 1.4.1
   curl: ^8.22.0
-  git: ^2.47.0
-  sqlite: ^3.47.2
+  git: ^2.53.0
+  sqlite: ^3.53.4
