@@ -1,28 +1,34 @@
 import { describe, expect, it } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { hasUnfinishedRun, loadPersistedLastRun, overlapPayloadPattern, persistLastRun } from '../src/scheduler-persistence'
+import { overlapPayloadPattern } from '../src/scheduler-persistence'
 
 // stacksjs/stacks#1984 — the scheduler's `lastRun` marker lived only in memory
 // and reset on restart, so a deploy within the same clock-minute a job fires
 // could re-dispatch it. It's now persisted to a bounded `scheduled_job_runs`
 // table and seeded on startup. The DB round-trip needs a live table to
-// exercise (the queue test harness mocks the DB), so the round-trip is covered
-// by the degrade-safety assertions here plus source-shape wiring checks.
+// exercise. Runtime checks run in a child with an explicit in-memory database;
+// depending on another test file's mocks can write into the app DB when this
+// file is run alone.
 
 const src = (rel: string) => readFileSync(resolve(__dirname, '..', 'src', rel), 'utf-8')
 
 describe('scheduler run-marker persistence (#1984)', () => {
-  describe('degrades gracefully when the DB/table is unavailable', () => {
-    it('loadPersistedLastRun resolves (null or Date) without throwing', async () => {
-      const result = await loadPersistedLastRun('__no_such_scheduled_job__')
-      expect(result === null || result instanceof Date).toBe(true)
+  it('persists and handles missing tables in an isolated database', async () => {
+    const child = Bun.spawn([process.execPath, `${import.meta.dir}/fixtures/scheduler-persistence.ts`], {
+      env: { ...process.env, APP_ENV: 'test', DB_CONNECTION: 'sqlite', DB_DATABASE_PATH: ':memory:' },
+      stdout: 'pipe', stderr: 'pipe',
     })
-
-    it('persistLastRun never throws', async () => {
-      await expect(persistLastRun('__no_such_scheduled_job__', new Date(0))).resolves.toBeUndefined()
-    })
-  })
+    const watchdog = setTimeout(() => child.kill(), 10_000)
+    try {
+      const [code, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
+      expect(code, `${stdout}\n${stderr}`).toBe(0)
+    }
+    finally {
+      clearTimeout(watchdog)
+      child.kill()
+    }
+  }, 15_000)
 
   describe('persistence module shape', () => {
     const mod = src('scheduler-persistence.ts')
@@ -85,12 +91,6 @@ describe('scheduler overlap guard (#1984)', () => {
     // the same protection against real `buildScheduledJobRow` output instead of
     // against the source text: that the LIKE pattern still matches the row, that
     // a prefix name does not match a sibling, and that underscores stay literal.
-  })
-
-  it('degrades to "not running" rather than throwing when the DB is unavailable', async () => {
-    // A scheduler that cannot reach the database must keep dispatching, not
-    // wedge itself shut.
-    expect(await hasUnfinishedRun('__no_such_scheduled_job__')).toBe(false)
   })
 
   describe('scheduler wiring', () => {
