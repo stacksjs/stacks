@@ -31,7 +31,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@ts-audio/core": "^0.1.1",
+    "@ts-audio/core": "^0.1.2",
     "ts-video-player": "^0.1.1"
   },
   "devDependencies": {
