@@ -70,15 +70,11 @@ export async function logoutCookie(
 ): Promise<string> {
   const token = authCookieToken(request, options)
 
-  if (token) {
-    try {
-      await Auth.revokeToken(token)
-    }
-    catch {
-      // An already-revoked or malformed token is still a successful logout
-      // from the browser's point of view; the cookie goes either way.
-    }
-  }
+  // Missing/already-revoked tokens are idempotent in the token layer. A storage
+  // failure is different: do not clear the browser's only retry credential
+  // while a copied token may still authenticate.
+  if (token)
+    await Auth.revokeToken(token)
 
   return clearAuthCookie(options)
 }

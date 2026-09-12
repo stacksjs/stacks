@@ -40,6 +40,7 @@ const { acquireDbConfigLock, db, ensureDatabaseConfigLoaded, initializeDbConfig 
 const { ensureFrameworkAuthTables } = await import('./helpers/auth-schema')
 const { createToken } = await import('../src/tokens')
 const { Auth } = await import('../src/authentication')
+const { logoutCookie, authCookie } = await import('../src/cookie-auth')
 
 const USER_ID = 4242
 const OTHER_USER_ID = 4343
@@ -107,6 +108,46 @@ afterAll(() => {
 })
 
 describe('revoking an access token revokes the refresh token paired with it (#2306)', () => {
+  test('cookie logout propagates a revocation failure instead of clearing a live credential', async () => {
+    const session = await createToken(USER_ID, 'cookie-revoke-failure', ['*'], { withRefreshToken: true })
+    const request = new Request('https://example.test/logout', {
+      headers: { cookie: authCookie(session.plainTextToken).split(';')[0]! },
+    })
+    await db.unsafe("CREATE TRIGGER reject_cookie_revoke BEFORE UPDATE ON oauth_access_tokens BEGIN SELECT RAISE(ABORT, 'fixture token revocation denied'); END").execute()
+    try {
+      let failure: unknown
+      try {
+        await logoutCookie(request)
+      }
+      catch (error) {
+        failure = error
+      }
+      expect(await accessTokenLive(Number(session.accessToken.id))).toBe(true)
+      expect(failure).toBeInstanceOf(Error)
+      expect((failure as Error).message).toContain('fixture token revocation denied')
+    }
+    finally {
+      await db.unsafe('DROP TRIGGER reject_cookie_revoke').execute()
+    }
+  })
+
+  test('cookie logout revokes both tokens and keeps the clearing cookie identity', async () => {
+    const session = await createToken(USER_ID, 'cookie-revoke-success', ['*'], { withRefreshToken: true })
+    const options = { name: 'custom-session', path: '/account', domain: 'example.test' }
+    const request = new Request('https://example.test/account/logout', {
+      headers: { cookie: authCookie(session.plainTextToken, options).split(';')[0]! },
+    })
+    const cleared = await logoutCookie(request, options)
+    expect(cleared).toContain('custom-session=')
+    expect(cleared).toContain('Path=/account')
+    expect(cleared).toContain('Domain=example.test')
+    expect(cleared).toContain('Max-Age=0')
+    expect(await accessTokenLive(Number(session.accessToken.id))).toBe(false)
+    expect(await refreshTokenLiveFor(Number(session.accessToken.id))).toBe(false)
+    expect(await logoutCookie(request, options)).toBe(cleared)
+    expect(await logoutCookie(new Request('https://example.test/account/logout'), options)).toBe(cleared)
+  })
+
   test('revokeToken() cascades, so a leaked refresh cannot outlive the sign-out', async () => {
     const session = await createToken(USER_ID, 'cascade-bearer', ['*'], { withRefreshToken: true })
     const id = Number(session.accessToken.id)
