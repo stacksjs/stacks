@@ -572,17 +572,48 @@ export { applySqlitePragmas, SQLITE_BOOTSTRAP_PRAGMAS } from '@stacksjs/query-bu
  * queueing it would deadlock — the inner call would wait for the outer
  * transaction (its own caller) to finish.
  */
-const sqliteTxOwner = new AsyncLocalStorage<true>()
+interface SqliteTransactionOwner {
+  parent?: SqliteTransactionOwner
+  accepting: boolean
+  transactions: number
+  completionTail: Promise<void>
+}
+
+const sqliteTxOwner = new AsyncLocalStorage<SqliteTransactionOwner>()
 let sqliteTxTail: Promise<void> = Promise.resolve()
 
-function serializeSqliteTransaction<T>(run: () => Promise<T>): Promise<T> {
-  if (sqliteTxOwner.getStore())
-    return run()
+function runOwnedSqliteTransaction<T>(run: () => Promise<T>, parent?: SqliteTransactionOwner): Promise<T> {
+  const owner: SqliteTransactionOwner = { parent, accepting: true, transactions: 0, completionTail: Promise.resolve() }
+  return sqliteTxOwner.run(owner, async () => {
+    try { return await run() }
+    finally {
+      // Lingering continuations must acquire a fresh lock. Already-enrolled
+      // completion transactions finish before we release the shared connection.
+      owner.accepting = false
+      await owner.completionTail
+    }
+  })
+}
 
-  const result = sqliteTxTail.then(() => sqliteTxOwner.run(true, run))
+function serializeSqliteTransaction<T>(run: () => Promise<T>): Promise<T> {
+  let owner = sqliteTxOwner.getStore()
+  // A child's late continuation can still belong to an active ancestor's
+  // completion. Queueing it globally would make that ancestor wait on itself.
+  while (owner && !owner.accepting)
+    owner = owner.parent
+  if (owner?.accepting && owner.transactions > 0)
+    return sqliteTxOwner.run(owner, run)
+
+  // Completion still owns the connection, but its new transactions are not
+  // savepoints. Give siblings a local queue instead of bypassing serialization
+  // or deadlocking behind their enclosing completion's global lock.
+  const completionOwner = owner?.accepting ? owner : undefined
+  const result = (completionOwner?.completionTail ?? sqliteTxTail).then(() => runOwnedSqliteTransaction(run, completionOwner))
   // Keep the chain alive after a rollback — the rejection still surfaces
   // to this transaction's caller via `result`.
-  sqliteTxTail = result.then(() => undefined, () => undefined)
+  const tail = result.then(() => undefined, () => undefined)
+  if (completionOwner) completionOwner.completionTail = tail
+  else sqliteTxTail = tail
   return result
 }
 
@@ -617,8 +648,8 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
  * is still open. Flushing outside it would send an after-commit read to a
  * replica, which can lag the commit that callback is predicated on.
  *
- * Reentrant, so the ORM's `transaction()` wrapping this one shares the buffer
- * without flushing twice. Each callback handle is instrumented too, since
+ * The ORM delegates here so this wrapper alone owns completion. Nested calls
+ * share the buffer. Each callback handle is instrumented too, since
  * bun-query-builder creates a new builder for nested transactions/savepoints.
  */
 const dispatchScopedBuilders = new WeakSet<object>()
@@ -628,14 +659,34 @@ function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
     return
   dispatchScopedBuilders.add(instance)
 
+  let defaultAfterCommit: (() => void) | undefined
+  const setDefaults = instance.setTransactionDefaults.bind(instance)
+  instance.setTransactionDefaults = (defaults) => {
+    setDefaults(defaults)
+    defaultAfterCommit = { afterCommit: defaultAfterCommit, ...defaults }.afterCommit
+  }
+
   for (const method of ['transaction', 'savepoint'] as const) {
     const original = instance[method].bind(instance) as RawQueryBuilder['transaction']
-    instance[method] = (callback, options?: Parameters<RawQueryBuilder['transaction']>[1]) => runInTransactionScope((runAttempt) => {
-      return original(tx => runAttempt(async () => {
-        applyTransactionDispatchScope(tx)
-        return callback(tx)
-      }), options)
-    })
+    instance[method] = async (callback, options?: Parameters<RawQueryBuilder['transaction']>[1]) => {
+      const effectiveOptions = { afterCommit: defaultAfterCommit, ...options }
+      const afterCommit = method === 'transaction' ? effectiveOptions.afterCommit : undefined
+      const result = await runInTransactionScope(async (runAttempt) => {
+        const owner = sqliteTxOwner.getStore()
+        if (owner) owner.transactions++
+        try {
+          return await original(tx => runAttempt(async () => {
+            applyTransactionDispatchScope(tx)
+            return callback(tx)
+          }), method === 'transaction' ? { ...options, afterCommit: undefined } : options)
+        }
+        finally { if (owner) owner.transactions-- }
+      })
+      // Observer failures happen after the real commit. They must not make
+      // the dispatch scope discard work or make the driver retry that commit.
+      await afterCommit?.()
+      return result
+    }
   }
 }
 
@@ -667,14 +718,15 @@ function getDb(): ReturnType<typeof createQueryBuilder> {
     // change can swap bun-query-builder's signature-keyed singleton) is
     // re-bootstrapped without an explicit call here.
     _dbInstance = createQueryBuilder()
+    applyTransactionDispatchScope(_dbInstance)
     // stacksjs/stacks#1953 — re-applied on every instance recreation
     // (config reload nulls `_dbInstance`). Pragmas themselves are applied
     // inside the wrapped createQueryBuilder (#1951), so only the
-    // transaction serialization patch is needed here.
+    // transaction serialization patch is needed here. It must surround the
+    // completion wrapper too: observers and queued effects use the same
+    // SQLite connection and must not land inside another caller's transaction.
     if (getDialect() === 'sqlite')
       applySqliteTransactionSerialization(_dbInstance)
-    // Before the routing patch on purpose; see applyTransactionDispatchScope.
-    applyTransactionDispatchScope(_dbInstance)
     // Applied after the sqlite patch so the routing context is the
     // outermost wrapper — a read issued while queued behind another
     // transaction is then treated as in-transaction and stays on the

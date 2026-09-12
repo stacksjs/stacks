@@ -558,16 +558,22 @@ await transaction(async (trx) => {
   // If any query fails, all changes are rolled back
 })
 
-// Manual transaction control
-const trx = await db.transaction()
-try {
-  await trx.insertInto('orders').values({ /_ ... _/ }).execute()
-  await trx.commit()
-} catch (error) {
-  await trx.rollback()
-  throw error
-}
+// Observe successful completion through the callback API
+await db.transaction(async (trx) => {
+  await trx.insertInto('orders').values({ user_id: 1, total: 100 }).execute()
+}, {
+  afterCommit: () => { console.info('Order committed') },
+})
 ```
+
+At outermost transaction completion, Stacks flushes queued after-commit effects
+before invoking its `afterCommit` observer. Nested effects remain buffered until
+the outer transaction commits, even after a savepoint has been released.
+The observer can return a promise, which is awaited.
+If it fails, its error propagates but the committed writes and flushed effects
+remain committed; do not retry the transaction in response to that error.
+Genuine transaction failures still discard queued effects. The ORM transaction
+helper uses this same completion boundary. See [#2609](https://github.com/stacksjs/stacks/issues/2609).
 
 ## Raw Queries
 

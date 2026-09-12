@@ -5,7 +5,7 @@
  * commit on success and rollback on error.
  */
 
-import { db, runInTransactionScope } from '@stacksjs/database'
+import { db } from '@stacksjs/database'
 
 /**
  * Transaction handle. Aliases the project's `db` type so callers get
@@ -55,13 +55,10 @@ export async function transaction<T>(
   // internal QueryBuilder<DB> shape, while we expose the augmented `Db`
   // alias here. They're structurally compatible at runtime.
   //
-  // Wrap in the transaction-context scope (stacksjs/stacks#1882) so
-  // side-effect emitters (queue dispatch, mailer send) running inside
-  // the callback can buffer themselves until commit — and get dropped
-  // on rollback. Nested calls are detected and share the outer scope.
-  return await runInTransactionScope(async () => {
-    return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
-  })
+  // The database wrapper owns the dispatch scope and knows when the driver
+  // has committed. A second scope here would mistake a post-commit observer
+  // failure for a rollback and discard effects for already-committed writes.
+  return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
 }
 
 /**
