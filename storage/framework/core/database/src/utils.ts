@@ -232,6 +232,9 @@ function getDialect(): QueryBuilderDialect {
   return queryBuilderDialect
 }
 
+/** The initialized database's SQL dialect, including application config overrides. */
+export { getDialect as getDatabaseDialect }
+
 /**
  * Get database configuration for bun-query-builder
  */

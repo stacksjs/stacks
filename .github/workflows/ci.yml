@@ -168,6 +168,20 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       dynamodb:
         image: amazon/dynamodb-local
         ports:
@@ -264,6 +278,7 @@ jobs:
         env:
           # Disposable CI service. The fixtures create/drop unique databases.
           STACKS_TEST_MYSQL_URL: mysql://root:root@127.0.0.1:3306/mysql?ssl=true
+          STACKS_TEST_POSTGRES_URL: postgres://postgres:postgres@127.0.0.1:5432/test_db
         run: |
           failed=""
           for dir in storage/framework/core/*/tests; do

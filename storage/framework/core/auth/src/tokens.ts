@@ -25,6 +25,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
+import { revokeTokenPairs } from './token-revocation'
 
 // ============================================================================
 // DATABASE DRIVER DETECTION & SQL HELPERS
@@ -927,14 +928,7 @@ export async function revokeTokenById(tokenId: number): Promise<void> {
  * await revokeAllTokens(user.id)
  */
 export async function revokeAllTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
-  // Revoke all refresh tokens first
-  await revokeAllRefreshTokens(userId)
-
-  await db.unsafe(`
-    UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${appNow()}
-    WHERE tokenable_id = ${param(1)} AND tokenable_type = ${param(2)}
-  `, [userId, tokenableType])
+  await revokeTokenPairs(userId, tokenableType)
 }
 
 /**
@@ -947,39 +941,10 @@ export async function revokeAllTokens(userId: number, tokenableType: string = DE
 export async function revokeOtherTokens(userId: number, tokenableType: string = DEFAULT_TOKENABLE_TYPE): Promise<void> {
   const current = await currentAccessToken()
   if (!current) {
-    return revokeAllTokens(userId)
+    return revokeAllTokens(userId, tokenableType)
   }
 
-  // Revoke refresh tokens for other access tokens
-  if (isPostgres) {
-    await db.unsafe(`
-      UPDATE oauth_refresh_tokens
-      SET revoked = true
-      WHERE access_token_id IN (
-        SELECT id FROM oauth_access_tokens WHERE tokenable_id = $1 AND tokenable_type = $3 AND id != $2
-      )
-    `, [userId, current.id, tokenableType])
-
-    await db.unsafe(`
-      UPDATE oauth_access_tokens
-      SET revoked = true, updated_at = ${appNow()}
-      WHERE tokenable_id = $1 AND tokenable_type = $3 AND id != $2
-    `, [userId, current.id])
-  } else {
-    await db.unsafe(`
-      UPDATE oauth_refresh_tokens
-      SET revoked = 1
-      WHERE access_token_id IN (
-        SELECT id FROM oauth_access_tokens WHERE tokenable_id = ? AND tokenable_type = ? AND id != ?
-      )
-    `, [userId, tokenableType, current.id])
-
-    await db.unsafe(`
-      UPDATE oauth_access_tokens
-      SET revoked = 1, updated_at = ${appNow()}
-      WHERE tokenable_id = ? AND tokenable_type = ? AND id != ?
-    `, [userId, current.id])
-  }
+  await revokeTokenPairs(userId, tokenableType, current.id)
 }
 
 /**

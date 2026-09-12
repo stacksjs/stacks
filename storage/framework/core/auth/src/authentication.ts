@@ -16,6 +16,7 @@ import { formatDate, User } from '@stacksjs/orm'
 import { getCurrentRequest, request } from '@stacksjs/router'
 import { requestToken } from './request-token'
 import { sessionLogout } from './session-auth'
+import { revokeTokenPairs } from './token-revocation'
 import { Buffer } from 'node:buffer'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
@@ -930,22 +931,7 @@ export class Auth {
     if (!uid)
       return
 
-    // Same reasoning as `revokeToken`: "sign out everywhere" that leaves the
-    // paired refresh tokens alive is not signing out everywhere (#2306).
-    const accessTokens = await db.selectFrom('oauth_access_tokens')
-      .where('tokenable_id', '=', uid)
-      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
-      .select(['id'])
-      .execute()
-
-    for (const accessToken of accessTokens)
-      await this.revokeRefreshTokensFor(Number(accessToken.id))
-
-    await db.updateTable('oauth_access_tokens')
-      .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('tokenable_id', '=', uid)
-      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
-      .execute()
+    await revokeTokenPairs(uid, DEFAULT_TOKENABLE_TYPE)
   }
 
   /**
@@ -960,12 +946,7 @@ export class Auth {
     if (!currentToken)
       return
 
-    await db.updateTable('oauth_access_tokens')
-      .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('tokenable_id', '=', uid)
-      .where('tokenable_type', '=', DEFAULT_TOKENABLE_TYPE)
-      .where('id', '!=', currentToken.id)
-      .execute()
+    await revokeTokenPairs(uid, DEFAULT_TOKENABLE_TYPE, currentToken.id)
   }
 
   /**
