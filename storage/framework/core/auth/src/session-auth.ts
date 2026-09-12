@@ -296,15 +296,20 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       return false
 
     const newExpiry = new Date(Date.now() + ttlMs)
-    await db.updateTable('sessions')
+    const result = await db.updateTable('sessions')
       .set({
         expires_at: sqlDateTime(newExpiry),
         last_activity: Math.floor(Date.now() / 1000),
       })
       .where('id', '=', sessionId)
-      .execute()
+      .returning('id')
+      .executeTakeFirst()
 
-    return true
+    // A concurrent logout can remove the row after the SELECT. Successful SQL
+    // execution alone does not mean this session's expiry was renewed.
+    // Returning a row also preserves idempotent refreshes on MySQL, where an
+    // unchanged row reports zero changed rows despite still being present.
+    return Boolean(result)
   }
   catch {
     return false

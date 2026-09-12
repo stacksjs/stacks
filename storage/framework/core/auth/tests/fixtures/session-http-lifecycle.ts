@@ -167,6 +167,50 @@ try {
         setSystemTime()
       }
 
+      const refreshId = 'refresh-revoked-before-update'
+      await db.insertInto('sessions').values({
+        id: refreshId, user_id: 1, payload: '{}', last_activity: 0,
+        expires_at: sqlDateTime(new Date(Date.now() + 60_000)),
+      }).execute()
+      assert.equal(await SessionAuth.refresh(refreshId, 120_000), true)
+      assert.equal(await SessionAuth.refresh('missing-refresh-session'), false)
+      if (dialect === 'sqlite') {
+        // Pause at the public query hook immediately before UPDATE executes.
+        // A second real connection revokes the row after refresh read it.
+        const { Database } = await import('bun:sqlite')
+        const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
+        const revoker = new Database(file)
+        let removed = false
+        const unregister = registerPersistentQueryHooks({
+          onQueryStart(event) {
+            if (event.kind === 'update' && event.sql.includes('sessions')) {
+              removed = revoker.query('DELETE FROM sessions WHERE id = ?').run(refreshId).changes === 1
+            }
+          },
+        })
+        try {
+          const refreshed = await SessionAuth.refresh(refreshId)
+          assert(removed, 'the competing connection must revoke the row before UPDATE')
+          assert.equal(refreshed, false, 'refresh must report that its UPDATE matched no session')
+        }
+        finally {
+          unregister()
+          revoker.close()
+        }
+      }
+      else {
+        // PostgreSQL can decline an UPDATE without throwing. The absence of a
+        // returned row, not merely statement success, must drive the result.
+        await db.unsafe("CREATE FUNCTION reject_session_refresh() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END; $$").execute()
+        await db.unsafe('CREATE TRIGGER reject_session_refresh BEFORE UPDATE ON sessions FOR EACH ROW EXECUTE FUNCTION reject_session_refresh()').execute()
+        try {
+          assert.equal(await SessionAuth.refresh(refreshId), false, 'zero-row PostgreSQL update is not a successful refresh')
+        }
+        finally {
+          await db.unsafe('DROP TRIGGER reject_session_refresh ON sessions').execute()
+        }
+      }
+
       // Token credentials take precedence even when another user's database
       // session is present. Signing out Bob must not revoke Alice's session.
       for (const transport of ['bearer', 'cookie']) {
