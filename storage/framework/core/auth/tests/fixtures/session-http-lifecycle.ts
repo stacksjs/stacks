@@ -1,22 +1,41 @@
 import assert from 'node:assert/strict'
+import { setSystemTime } from 'bun:test'
 import { readFileSync, writeFileSync } from 'node:fs'
 
 const [phase, cookiesFile] = process.argv.slice(2)
 const file = process.env.STACKS_SESSION_FIXTURE_DB
 assert(file && cookiesFile, 'Only run with an isolated database and cookie fixture')
-assert.equal(process.env.DB_DATABASE_PATH, file)
-assert.equal(process.env.DB_CONNECTION, 'sqlite')
+const dialect = process.env.DB_CONNECTION
+assert(dialect === 'sqlite' || dialect === 'postgres')
+const postgres = dialect === 'postgres' ? new URL(file) : undefined
+if (postgres) {
+  assert(postgres.pathname.startsWith('/stacks_session_test_'))
+  assert(['127.0.0.1', 'localhost', '[::1]'].includes(postgres.hostname))
+}
+else {
+  assert.equal(process.env.DB_DATABASE_PATH, file)
+}
 
 const { overridesReady } = await import('@stacksjs/config')
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection } = await import('@stacksjs/database')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, sqlDateTime } = await import('@stacksjs/database')
 await overridesReady
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({
   app: { env: 'test' },
-  database: { default: 'sqlite', connections: { sqlite: { database: file } }, queryLogging: { enabled: false } },
+  database: {
+    default: dialect,
+    connections: postgres ? {
+      postgres: {
+        name: postgres.pathname.slice(1), host: postgres.hostname, port: Number(postgres.port || 5432),
+        username: decodeURIComponent(postgres.username), password: decodeURIComponent(postgres.password),
+      },
+    } : { sqlite: { database: file } },
+    queryLogging: { enabled: false },
+  },
 })
 const { configureOrm, releaseOrm } = await import('bun-query-builder')
-configureOrm({ database: file })
+if (dialect === 'sqlite')
+  configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
 const { Auth, SessionAuth, authCookie } = await import('@stacksjs/auth')
@@ -30,16 +49,16 @@ const password = 'session-fixture-password'
 try {
   if (phase === 'login') {
     await db.unsafe(`CREATE TABLE users (
-      id INTEGER PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
+      id ${dialect === 'postgres' ? 'BIGINT' : 'INTEGER'} PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
       password_changed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
     )`).execute()
     await db.unsafe(`CREATE TABLE sessions (
-      id TEXT PRIMARY KEY, user_id INTEGER NOT NULL, ip_address TEXT, user_agent TEXT,
+      id TEXT PRIMARY KEY, user_id ${dialect === 'postgres' ? 'BIGINT' : 'INTEGER'} NOT NULL, ip_address TEXT, user_agent TEXT,
       payload TEXT NOT NULL, last_activity INTEGER NOT NULL, expires_at TIMESTAMP
     )`).execute()
     const hash = await makeHash(password, { algorithm: 'bcrypt' })
     for (const [index, email] of emails.entries())
-      await db.unsafe('INSERT INTO users (id, name, email, password) VALUES (?, ?, ?, ?)', [index + 1, email, email, hash]).execute()
+      await db.insertInto('users').values({ id: index + 1, name: email, email, password: hash }).execute()
     const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
     await ensureFrameworkAuthTables()
   }
@@ -112,6 +131,23 @@ try {
     console.log(`PASS ${phase}: concurrent session isolation and guest rejection`)
 
     if (phase === 'logout') {
+      const boundary = new Date('2030-01-02T03:04:05.000Z')
+      try {
+        setSystemTime(boundary)
+        for (const offset of [-1, 0, 1]) {
+          for (const method of ['user', 'check', 'refresh'] as const) {
+            const id = `expiry-boundary-${method}-${offset}`
+            await db.insertInto('sessions').values({
+              id, user_id: 1, payload: '{}', last_activity: Math.floor(boundary.getTime() / 1000), expires_at: sqlDateTime(new Date(boundary.getTime() + offset)),
+            }).execute()
+            assert.equal(Boolean(await SessionAuth[method](id)), offset > 0, `${method}: expiry offset ${offset}ms`)
+          }
+        }
+      }
+      finally {
+        setSystemTime()
+      }
+
       // Token credentials take precedence even when another user's database
       // session is present. Signing out Bob must not revoke Alice's session.
       for (const transport of ['bearer', 'cookie']) {
@@ -143,7 +179,13 @@ try {
       }
 
       // A real database failure must not become a successful logout response.
-      await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions BEGIN SELECT RAISE(ABORT, 'fixture session deletion denied'); END").execute()
+      if (dialect === 'postgres') {
+        await db.unsafe("CREATE FUNCTION reject_session_logout() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture session deletion denied'; END; $$").execute()
+        await db.unsafe('CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION reject_session_logout()').execute()
+      }
+      else {
+        await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions BEGIN SELECT RAISE(ABORT, 'fixture session deletion denied'); END").execute()
+      }
       try {
         const denied = await fetch(`${base}/logout`, {
           method: 'POST', headers: { cookie: `${cookies[0]}; ${csrfCookie}`, accept: 'application/json', 'x-csrf-token': csrfToken },
@@ -154,7 +196,7 @@ try {
         await me(cookies[0]!, 1)
       }
       finally {
-        await db.unsafe('DROP TRIGGER reject_session_logout').execute()
+        await db.unsafe(`DROP TRIGGER reject_session_logout${dialect === 'postgres' ? ' ON sessions' : ''}`).execute()
       }
 
       const response = await fetch(`${base}/logout`, {

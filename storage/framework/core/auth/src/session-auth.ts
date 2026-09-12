@@ -226,7 +226,7 @@ export async function sessionUser(sessionId: string): Promise<UserModel | undefi
       return undefined
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
-    if (Date.now() > expiresAt) {
+    if (Date.now() >= expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return undefined
     }
@@ -258,7 +258,7 @@ export async function sessionCheck(sessionId: string): Promise<boolean> {
       return false
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
-    if (Date.now() > expiresAt) {
+    if (Date.now() >= expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return false
     }
@@ -287,7 +287,7 @@ export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1
       return false
 
     const expiresAt = parseSqlDateTime(session.expires_at)?.getTime() ?? 0
-    if (Date.now() > expiresAt) {
+    if (Date.now() >= expiresAt) {
       await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
       return false
     }
