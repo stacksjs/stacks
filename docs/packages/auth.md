@@ -276,6 +276,16 @@ await Auth.revokeOtherTokens(userId)
 const newToken = await Auth.rotateToken(oldToken)
 ```
 
+Individual revocation updates an access token and its paired refresh tokens in
+one transaction. If storage rejects either update, neither change is committed
+and the error reaches the caller. `logoutCookie()` only clears the browser
+cookie after revocation succeeds, preserving the credential for a retry on
+failure. Other sessions are not changed. See [#2610](https://github.com/stacksjs/stacks/issues/2610).
+
+An already-rotated token does not identify its replacement in the current
+schema. Revoking a predecessor is not a sign-out of that replacement; use
+`revokeAllTokens` when the intent is to revoke every session for the owner.
+
 ### Token Cleanup
 
 ```typescript

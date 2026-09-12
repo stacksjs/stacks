@@ -1,6 +1,33 @@
-import { db, getDatabaseDialect, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database'
+import { db, getDatabaseDialect, markContextWrote, sqlDateTimeLiteral, sqlHelpers } from '@stacksjs/database'
 
 interface TokenIdRow { id: number | string | bigint }
+
+/** Revoke one access/refresh pair without partially applying a failed logout. */
+export async function revokeTokenPair(selector: { id: number } | { hash: string }): Promise<void> {
+  await db.transaction(async (trx) => {
+    const sql = sqlHelpers(getDatabaseDialect())
+    const byId = 'id' in selector
+    // Match refresh and bulk revocation's access-row lock. A failed cascade
+    // rolls back as one unit, and no unrelated session is selected (#2610).
+    const rows = await trx.unsafe(`
+      SELECT id FROM oauth_access_tokens
+      WHERE ${byId ? 'id' : 'token'} = ${sql.param(1)}${sql.isSqlite ? '' : ' FOR UPDATE'}
+    `, [byId ? selector.id : selector.hash]) as unknown as TokenIdRow[]
+    const row = rows[0]
+    if (!row) return
+    // Raw transaction writes bypass the facade's updateTable marker. Keep
+    // subsequent request reads off lagging replicas after a successful logout.
+    markContextWrote()
+    await trx.unsafe(`
+      UPDATE oauth_refresh_tokens SET revoked = ${sql.boolTrue}
+      WHERE access_token_id = ${sql.param(1)}
+    `, [row.id])
+    await trx.unsafe(`
+      UPDATE oauth_access_tokens SET revoked = ${sql.boolTrue}, updated_at = ${sqlDateTimeLiteral()}
+      WHERE id = ${sql.param(1)}
+    `, [row.id])
+  }, { retries: 2, sqlStates: ['40001', '40P01'] })
+}
 
 /** Revoke an owner's access/refresh pairs, optionally keeping one session. */
 export async function revokeTokenPairs(userId: number, ownerType: string, exceptId?: number): Promise<void> {

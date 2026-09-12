@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash } from 'node:crypto'
 import { SQL } from 'bun'
 
 const dialect = process.env.DB_CONNECTION
@@ -10,7 +11,7 @@ if (dialect !== 'sqlite') {
 }
 const { overridesReady } = await import('@stacksjs/config')
 await overridesReady
-const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection } = await import('@stacksjs/database')
+const { db, ensureDatabaseConfigLoaded, initializeDbConfig, resetDatabaseConnection, withRoutingContext, shouldRouteToReplica } = await import('@stacksjs/database')
 await ensureDatabaseConfigLoaded()
 initializeDbConfig({ app: { env: 'test' }, database: {
   default: dialect,
@@ -20,8 +21,9 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken } = await import('../../src/tokens')
+const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
+const { authCookie, logoutCookie } = await import('../../src/cookie-auth')
 const { enhanceRequest } = await import('@stacksjs/router')
 const { runWithRequest, setAmbientRequestContext } = await import('../../../router/src/request-context')
 setAmbientRequestContext(true)
@@ -41,6 +43,85 @@ try {
   await db.unsafe('CREATE TABLE users (id INTEGER PRIMARY KEY, password_changed_at TIMESTAMP)').execute()
   await db.insertInto('users').values({ id: 42 }).execute()
   await ensureFrameworkAuthTables()
+  for (const mode of ['raw', 'raw-id', 'auth', 'auth-id', 'cookie'] as const) {
+    for (const rejectedTable of ['oauth_access_tokens', 'oauth_refresh_tokens']) {
+      await check(`${mode}: individual revocation rolls back a failed ${rejectedTable} update`, async () => {
+        const pair = await createToken(42, 'individual', ['*'])
+        const other = await createToken(42, 'unrelated-session', ['*'])
+        const options = { name: 'fixture-session', path: '/account', domain: 'fixture.test' }
+        const revoke = async () => {
+          if (mode === 'raw') return revokeToken(pair.plainTextToken)
+          if (mode === 'raw-id') return revokeTokenById(Number(pair.accessToken.id))
+          if (mode === 'auth') return Auth.revokeToken(pair.plainTextToken)
+          if (mode === 'auth-id') return Auth.revokeTokenById(Number(pair.accessToken.id))
+          return logoutCookie(new Request('https://fixture.test/account/logout', {
+            headers: { cookie: authCookie(pair.plainTextToken, options).split(';')[0]! },
+          }), options)
+        }
+        if (dialect === 'postgres') {
+          await db.unsafe("CREATE FUNCTION reject_individual_revoke() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture individual revocation denied'; END; $$").execute()
+          await db.unsafe(`CREATE TRIGGER reject_individual_revoke BEFORE UPDATE ON ${rejectedTable} FOR EACH ROW EXECUTE FUNCTION reject_individual_revoke()`).execute()
+        }
+        else if (dialect === 'mysql') {
+          await db.unsafe(`CREATE TRIGGER reject_individual_revoke BEFORE UPDATE ON ${rejectedTable} FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture individual revocation denied'`).execute()
+        }
+        else {
+          await db.unsafe(`CREATE TRIGGER reject_individual_revoke BEFORE UPDATE ON ${rejectedTable} BEGIN SELECT RAISE(ABORT, 'fixture individual revocation denied'); END`).execute()
+        }
+        try {
+          await assert.rejects(revoke(), /fixture individual revocation denied/)
+          await assertPairLive(pair, true)
+          await assertPairLive(other, true)
+        }
+        finally {
+          await db.unsafe(`DROP TRIGGER reject_individual_revoke${dialect === 'postgres' ? ` ON ${rejectedTable}` : ''}`).execute()
+          if (dialect === 'postgres') await db.unsafe('DROP FUNCTION reject_individual_revoke()').execute()
+        }
+        const cleared = await withRoutingContext(async () => {
+          const routing = { replicas: [{ host: '127.0.0.1' }], policy: { autoRoute: true } }
+          assert.equal(shouldRouteToReplica(routing), true)
+          const result = await revoke()
+          assert.equal(shouldRouteToReplica(routing), false, 'Post-logout reads must stay on the primary in the writing request')
+          return result
+        })
+        await assertPairLive(pair, false)
+        await assertPairLive(other, true)
+        await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)
+        assert.equal(await revoke(), cleared, 'Repeated revocation is idempotent')
+        if (mode === 'cookie') {
+          assert.equal(typeof cleared, 'string')
+          for (const attribute of ['fixture-session=', 'Path=/account', 'Domain=fixture.test', 'Max-Age=0'])
+            assert(cleared!.includes(attribute))
+        }
+      })
+    }
+  }
+  for (const mode of ['raw', 'auth', 'cookie'] as const) {
+    await check(`${mode}: colon-bearing tokens preserve caller-specific hashing`, async () => {
+      const prefix = await createToken(42, 'legacy-prefix', ['*'])
+      const full = await createToken(42, 'full-bearer', ['*'])
+      const bearer = `${prefix.plainTextToken}:fixture-suffix`
+      // Model both historical at-rest hashes without mocking either lookup.
+      await db.updateTable('oauth_access_tokens').set({ token: createHash('sha256').update(bearer).digest('hex') }).where('id', '=', full.accessToken.id).execute()
+      if (mode === 'raw') await revokeToken(bearer)
+      else if (mode === 'auth') await Auth.revokeToken(bearer)
+      else await logoutCookie(new Request('https://fixture.test/logout', { headers: { cookie: authCookie(bearer).split(';')[0]! } }))
+      for (const [pair, revoked] of [[prefix, mode === 'raw'], [full, mode !== 'raw']] as const) {
+        const row = await db.selectFrom('oauth_access_tokens').where('id', '=', pair.accessToken.id).select('revoked').executeTakeFirst()
+        assert.equal(Boolean(row?.revoked), revoked)
+        assert.equal(await validateRefreshToken(pair.refreshToken!), !revoked)
+      }
+    })
+  }
+  await check('individual revocation accepts missing tokens and access-only tokens', async () => {
+    await revokeToken('not-issued')
+    await Auth.revokeToken('not-issued')
+    await revokeTokenById(-1)
+    await Auth.revokeTokenById(-1)
+    const pair = await createToken(42, 'access-only', ['*'], { withRefreshToken: false })
+    await revokeToken(pair.plainTextToken)
+    assert.equal(await findToken(pair.plainTextToken), null)
+  })
   await check('revokeAllTokens preserves the requested owner type', async () => {
     const user = await createToken(42, 'user', ['*'])
     const author = await createToken(42, 'author', ['*'], { tokenableType: 'authors' })

@@ -25,7 +25,7 @@ import { createHash, randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 import { getCurrentRequest } from '@stacksjs/router'
-import { revokeTokenPairs } from './token-revocation'
+import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
 
 // ============================================================================
 // DATABASE DRIVER DETECTION & SQL HELPERS
@@ -880,22 +880,7 @@ export async function revokeToken(plainTextToken: string): Promise<void> {
   // Use the dual-shape lookup so bearers minted by `Auth.createTokenForUser`
   // (legacy `${jwt}:${encryptedId}` form) revoke the right row instead
   // of silently missing. See stacksjs/stacks#1867.
-  const hashedToken = bearerLookupHash(plainTextToken)
-
-  // Also revoke associated refresh tokens
-  await db.unsafe(`
-    UPDATE oauth_refresh_tokens
-    SET revoked = ${boolTrue}
-    WHERE access_token_id IN (
-      SELECT id FROM oauth_access_tokens WHERE token = ${param(1)}
-    )
-  `, [hashedToken])
-
-  await db.unsafe(`
-    UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${appNow()}
-    WHERE token = ${param(1)}
-  `, [hashedToken])
+  await revokeTokenPair({ hash: bearerLookupHash(plainTextToken) })
 }
 
 /**
@@ -906,18 +891,7 @@ export async function revokeToken(plainTextToken: string): Promise<void> {
  * await revokeTokenById(123)
  */
 export async function revokeTokenById(tokenId: number): Promise<void> {
-  // Also revoke associated refresh tokens
-  await db.unsafe(`
-    UPDATE oauth_refresh_tokens
-    SET revoked = ${boolTrue}
-    WHERE access_token_id = ${param(1)}
-  `, [tokenId])
-
-  await db.unsafe(`
-    UPDATE oauth_access_tokens
-    SET revoked = ${boolTrue}, updated_at = ${appNow()}
-    WHERE id = ${param(1)}
-  `, [tokenId])
+  await revokeTokenPair({ id: tokenId })
 }
 
 /**

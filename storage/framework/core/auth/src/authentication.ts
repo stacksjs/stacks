@@ -16,7 +16,7 @@ import { formatDate, User } from '@stacksjs/orm'
 import { getCurrentRequest, request } from '@stacksjs/router'
 import { requestToken } from './request-token'
 import { sessionLogout } from './session-auth'
-import { revokeTokenPairs } from './token-revocation'
+import { revokeTokenPair, revokeTokenPairs } from './token-revocation'
 import { Buffer } from 'node:buffer'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
@@ -888,38 +888,14 @@ export class Auth {
    * it belongs here where all callers get it (#2306).
    */
   public static async revokeToken(token: string): Promise<void> {
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('token', '=', hashToken(token))
-      .select(['id'])
-      .executeTakeFirst()
-
-    if (accessToken)
-      await this.revokeRefreshTokensFor(Number(accessToken.id))
-
-    await db.updateTable('oauth_access_tokens')
-      .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('token', '=', hashToken(token))
-      .execute()
+    await revokeTokenPair({ hash: hashToken(token) })
   }
 
   /**
    * Revoke a token by its ID, and any refresh token paired with it.
    */
   public static async revokeTokenById(tokenId: number): Promise<void> {
-    await this.revokeRefreshTokensFor(tokenId)
-
-    await db.updateTable('oauth_access_tokens')
-      .set({ revoked: true, updated_at: formatDate(new Date()) })
-      .where('id', '=', tokenId)
-      .execute()
-  }
-
-  /** Revoke every refresh token issued against one access token. */
-  private static async revokeRefreshTokensFor(accessTokenId: number): Promise<void> {
-    await db.updateTable('oauth_refresh_tokens')
-      .set({ revoked: true })
-      .where('access_token_id', '=', accessTokenId)
-      .execute()
+    await revokeTokenPair({ id: tokenId })
   }
 
   /**
