@@ -6,11 +6,11 @@ const [phase, cookiesFile] = process.argv.slice(2)
 const file = process.env.STACKS_SESSION_FIXTURE_DB
 assert(file && cookiesFile, 'Only run with an isolated database and cookie fixture')
 const dialect = process.env.DB_CONNECTION
-assert(dialect === 'sqlite' || dialect === 'postgres')
-const postgres = dialect === 'postgres' ? new URL(file) : undefined
-if (postgres) {
-  assert(postgres.pathname.startsWith('/stacks_session_test_'))
-  assert(['127.0.0.1', 'localhost', '[::1]'].includes(postgres.hostname))
+assert(dialect === 'sqlite' || dialect === 'postgres' || dialect === 'mysql')
+const connection = dialect !== 'sqlite' ? new URL(file) : undefined
+if (connection) {
+  assert(connection.pathname.startsWith('/stacks_session_test_'))
+  assert(['127.0.0.1', 'localhost', '[::1]'].includes(connection.hostname))
 }
 else {
   assert.equal(process.env.DB_DATABASE_PATH, file)
@@ -24,10 +24,10 @@ initializeDbConfig({
   app: { env: 'test' },
   database: {
     default: dialect,
-    connections: postgres ? {
-      postgres: {
-        name: postgres.pathname.slice(1), host: postgres.hostname, port: Number(postgres.port || 5432),
-        username: decodeURIComponent(postgres.username), password: decodeURIComponent(postgres.password),
+    connections: connection ? {
+      [dialect]: {
+        name: connection.pathname.slice(1), host: connection.hostname, port: Number(connection.port || (dialect === 'postgres' ? 5432 : 3306)),
+        username: decodeURIComponent(connection.username), password: decodeURIComponent(connection.password),
       },
     } : { sqlite: { database: file } },
     queryLogging: { enabled: false },
@@ -45,16 +45,17 @@ const LogoutAction = (await import('../../../../defaults/app/Actions/Auth/Logout
 
 const emails = ['alice@session.test', 'bob@session.test']
 const password = 'session-fixture-password'
+const timestamp = dialect === 'mysql' ? 'DATETIME(3)' : 'TIMESTAMP'
 
 try {
   if (phase === 'login') {
     await db.unsafe(`CREATE TABLE users (
-      id ${dialect === 'postgres' ? 'BIGINT' : 'INTEGER'} PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
-      password_changed_at TIMESTAMP, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, updated_at TIMESTAMP
+      id ${dialect === 'sqlite' ? 'INTEGER' : 'BIGINT'} PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
+      password_changed_at ${timestamp}, created_at ${timestamp} DEFAULT ${dialect === 'mysql' ? 'CURRENT_TIMESTAMP(3)' : 'CURRENT_TIMESTAMP'}, updated_at ${timestamp}
     )`).execute()
     await db.unsafe(`CREATE TABLE sessions (
-      id TEXT PRIMARY KEY, user_id ${dialect === 'postgres' ? 'BIGINT' : 'INTEGER'} NOT NULL, ip_address TEXT, user_agent TEXT,
-      payload TEXT NOT NULL, last_activity INTEGER NOT NULL, expires_at TIMESTAMP
+      id ${dialect === 'mysql' ? 'VARCHAR(255)' : 'TEXT'} PRIMARY KEY, user_id ${dialect === 'sqlite' ? 'INTEGER' : 'BIGINT'} NOT NULL, ip_address TEXT, user_agent TEXT,
+      payload TEXT NOT NULL, last_activity INTEGER NOT NULL, expires_at ${timestamp}
     )`).execute()
     const hash = await makeHash(password, { algorithm: 'bcrypt' })
     for (const [index, email] of emails.entries())
@@ -198,7 +199,7 @@ try {
           revoker.close()
         }
       }
-      else {
+      else if (dialect === 'postgres') {
         // PostgreSQL can decline an UPDATE without throwing. The absence of a
         // returned row, not merely statement success, must drive the result.
         await db.unsafe("CREATE FUNCTION reject_session_refresh() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RETURN NULL; END; $$").execute()
@@ -259,6 +260,9 @@ try {
       if (dialect === 'postgres') {
         await db.unsafe("CREATE FUNCTION reject_session_logout() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'fixture session deletion denied'; END; $$").execute()
         await db.unsafe('CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW EXECUTE FUNCTION reject_session_logout()').execute()
+      }
+      else if (dialect === 'mysql') {
+        await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'fixture session deletion denied'").execute()
       }
       else {
         await db.unsafe("CREATE TRIGGER reject_session_logout BEFORE DELETE ON sessions BEGIN SELECT RAISE(ABORT, 'fixture session deletion denied'); END").execute()

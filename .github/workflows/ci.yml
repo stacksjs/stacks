@@ -162,6 +162,11 @@ jobs:
           MYSQL_PASSWORD: password
         ports:
           - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -proot"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
 
       dynamodb:
         image: amazon/dynamodb-local
@@ -256,6 +261,9 @@ jobs:
       # paths, e.g. orm's sensitive-api-security.test.ts.
       - name: Core tests (all packages)
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
+        env:
+          # Disposable CI service. The fixtures create/drop unique databases.
+          STACKS_TEST_MYSQL_URL: mysql://root:root@127.0.0.1:3306/mysql
         run: |
           failed=""
           for dir in storage/framework/core/*/tests; do

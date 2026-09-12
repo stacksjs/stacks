@@ -4,7 +4,7 @@ import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-async function checkLifecycle(database: { dialect: 'sqlite' | 'postgres', url?: URL }): Promise<void> {
+async function checkLifecycle(database: { dialect: 'sqlite' | 'postgres' | 'mysql', url?: URL }): Promise<void> {
   const directory = await mkdtemp(join(tmpdir(), 'stacks-session-http-'))
   const file = database.url?.href ?? join(directory, 'sessions.sqlite')
   const cookiesFile = join(directory, 'cookies.json')
@@ -50,28 +50,33 @@ async function checkLifecycle(database: { dialect: 'sqlite' | 'postgres', url?: 
 
 test('SQLite sessions survive restart and cannot authenticate after HTTP logout', () => checkLifecycle({ dialect: 'sqlite' }), 60_000)
 
-// Opt in with a local test PostgreSQL server whose role can CREATE DATABASE.
+// Opt in with a local test server whose role can CREATE DATABASE.
 // Only the uniquely named database created here is ever modified or dropped.
-test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('PostgreSQL sessions survive restart and cannot authenticate after HTTP logout', async () => {
-  const url = new URL(process.env.STACKS_TEST_POSTGRES_URL!)
+async function checkServerLifecycle(dialect: 'postgres' | 'mysql', connection: string): Promise<void> {
+  const url = new URL(connection)
   if (!['127.0.0.1', 'localhost', '[::1]'].includes(url.hostname))
-    throw new Error('Session integration tests require a local PostgreSQL test server')
+    throw new Error('Session integration tests require a local database test server')
   const name = `stacks_session_test_${crypto.randomUUID().replaceAll('-', '')}`
+  const quoted = dialect === 'postgres' ? `"${name}"` : `\`${name}\``
   const admin = new SQL(url.href)
   let created = false
   try {
-    await admin.unsafe(`CREATE DATABASE "${name}"`)
+    await admin.unsafe(`CREATE DATABASE ${quoted}`)
     created = true
     url.pathname = `/${name}`
-    await checkLifecycle({ dialect: 'postgres', url })
+    await checkLifecycle({ dialect, url })
   }
   finally {
     try {
       if (created)
-        await admin.unsafe(`DROP DATABASE "${name}" WITH (FORCE)`)
+        await admin.unsafe(`DROP DATABASE ${quoted}${dialect === 'postgres' ? ' WITH (FORCE)' : ''}`)
     }
     finally {
       await admin.close()
     }
   }
-}, 60_000)
+}
+
+test.skipIf(!process.env.STACKS_TEST_POSTGRES_URL)('PostgreSQL sessions survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('postgres', process.env.STACKS_TEST_POSTGRES_URL!), 60_000)
+
+test.skipIf(!process.env.STACKS_TEST_MYSQL_URL)('MySQL sessions survive restart and cannot authenticate after HTTP logout', () => checkServerLifecycle('mysql', process.env.STACKS_TEST_MYSQL_URL!), 60_000)
