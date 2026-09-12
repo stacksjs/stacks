@@ -15,6 +15,7 @@ import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
 import { getCurrentRequest, request } from '@stacksjs/router'
 import { requestToken } from './request-token'
+import { sessionLogout } from './session-auth'
 import { Buffer } from 'node:buffer'
 import { createHash, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
@@ -397,14 +398,19 @@ export class Auth {
    * access token after the user has signed out. The cascade now lives in
    * `revokeToken`, so every revoke path gets it rather than only this one.
    *
-   * Resolves the token from the Authorization header or the auth cookie, so a
-   * server-rendered page can sign out too.
+   * Matches the auth middleware's credential precedence: bearer token, auth
+   * cookie, then database session. Revoke only the credential used to sign in.
    */
   public static async logout(): Promise<void> {
     const bearerToken = this.getBearerToken()
 
     if (bearerToken)
       await this.revokeToken(bearerToken)
+    else {
+      const sessionId = getCurrentRequest()?.cookie?.('session_id')
+      if (sessionId)
+        await sessionLogout(sessionId)
+    }
 
     const state = authStateOrNull()
     if (state) {

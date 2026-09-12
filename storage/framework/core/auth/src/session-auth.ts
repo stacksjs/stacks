@@ -174,16 +174,12 @@ export async function sessionLogin(
  * Destroy the session for the given session ID.
  */
 export async function sessionLogout(sessionId: string): Promise<void> {
+  // A failed delete must reach the caller: otherwise a copied cookie remains
+  // valid while the user is told they signed out (stacksjs/stacks#2599).
+  await db.deleteFrom('sessions')
+    .where('id', '=', sessionId)
+    .execute()
   log.debug('[auth] Session destroyed')
-
-  try {
-    await db.deleteFrom('sessions')
-      .where('id', '=', sessionId)
-      .execute()
-  }
-  catch (err) {
-    log.debug(`[auth] Session destroy failed: ${(err as Error).message}`)
-  }
 }
 
 /**
@@ -193,7 +189,7 @@ export async function sessionLogout(sessionId: string): Promise<void> {
  * session cookie survives a password reset for up to 24h
  * (stacksjs/stacks#1947).
  *
- * Unlike `sessionLogout`, real failures propagate (fail loud): a reset
+ * Like `sessionLogout`, real failures propagate (fail loud): a reset
  * that reports success while the attacker's session lives would be a
  * lie. A missing `sessions` table alone is a benign no-op — no
  * framework migration creates it (only userland adopting session-auth
