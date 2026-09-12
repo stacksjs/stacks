@@ -417,6 +417,13 @@ export class Auth {
       state.authUser = undefined
       state.currentToken = undefined
     }
+    // Middleware and request macros keep their own cached user/token markers.
+    // Clear them only after revocation succeeds, just like the Auth state.
+    const currentRequest = getCurrentRequest()
+    if (currentRequest) {
+      currentRequest._authenticatedUser = undefined
+      currentRequest._currentAccessToken = undefined
+    }
   }
 
   // ============================================================================

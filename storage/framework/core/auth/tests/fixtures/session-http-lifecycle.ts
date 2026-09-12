@@ -38,7 +38,7 @@ if (dialect === 'sqlite')
   configureOrm({ database: file })
 const { ormReady } = await import('@stacksjs/orm')
 await ormReady
-const { Auth, SessionAuth, authCookie } = await import('@stacksjs/auth')
+const { Auth, SessionAuth, authCookie, authUser, authenticatedUser } = await import('@stacksjs/auth')
 const { makeHash } = await import('@stacksjs/security')
 const { createStacksRouter } = await import('@stacksjs/router')
 const LogoutAction = (await import('../../../../defaults/app/Actions/Auth/LogoutAction')).default
@@ -84,6 +84,20 @@ try {
     return { id: after?.id, email: after?.email }
   }).middleware('auth')
   router.post('/session-audit/logout', LogoutAction).middleware('auth')
+  router.post('/session-audit/logout-state', async (req) => {
+    assert(await Auth.user(), 'logout-state must start authenticated')
+    assert(await authUser())
+    assert(await authenticatedUser(req))
+    await Auth.logout()
+    return {
+      auth: Boolean(await Auth.user()),
+      helper: Boolean(await authUser()),
+      middleware: Boolean(await authenticatedUser(req)),
+      user: Boolean(await req.user?.()),
+      token: Boolean(await req.userToken?.()),
+      ability: Boolean(await req.tokenCan?.('*')),
+    }
+  }).middleware('auth')
 
   const server = await router.serve({ port: 0, hostname: '127.0.0.1' })
   try {
@@ -93,6 +107,11 @@ try {
     assert(csrfCookie, 'the initial page must seed a CSRF cookie')
     const csrfToken = csrfCookie.slice(csrfCookie.indexOf('=') + 1)
     await start.arrayBuffer()
+    const checkLogoutState = async (headers: Headers | Record<string, string>) => {
+      const state = await fetch(`${base}/logout-state`, { method: 'POST', headers })
+      assert.equal(state.status, 200)
+      assert.deepEqual(await state.json(), { auth: false, helper: false, middleware: false, user: false, token: false, ability: false })
+    }
     const me = async (cookie: string, expectedId: number) => {
       const response = await fetch(`${base}/me`, { headers: { cookie, accept: 'application/json' } })
       assert.equal(response.status, 200, 'valid session must authenticate')
@@ -176,6 +195,20 @@ try {
         assert.equal(revoked.status, 401, `${transport} token must be revoked`)
         await me(cookies[0]!, 1)
         await me(cookies[1]!, 2)
+        const freshLogin = await fetch(`${base}/token-login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', accept: 'application/json', cookie: csrfCookie, 'x-csrf-token': csrfToken },
+          body: JSON.stringify({ email: emails[1], password }),
+        })
+        assert.equal(freshLogin.status, 200)
+        const fresh = await freshLogin.json() as { token: string }
+        if (transport === 'bearer')
+          headers.set('authorization', `Bearer ${fresh.token}`)
+        else
+          headers.set('cookie', `${cookies[0]}; ${csrfCookie}; ${authCookie(fresh.token).split(';')[0]}`)
+        await checkLogoutState(headers)
+        await me(cookies[0]!, 1)
+        await me(cookies[1]!, 2)
       }
 
       // A real database failure must not become a successful logout response.
@@ -211,6 +244,9 @@ try {
       await stale.arrayBuffer()
       assert.equal(stale.status, 401, 'copied session cookie must stop authenticating after logout')
       await me(cookies[1]!, 2)
+      // Revocation must also invalidate the current request's cached identity,
+      // not just reject its credentials on the next HTTP request.
+      await checkLogoutState({ cookie: `${cookies[1]}; ${csrfCookie}`, accept: 'application/json', 'x-csrf-token': csrfToken })
       console.log('PASS restart persistence, logout revocation, bystander preserved')
     }
   }
