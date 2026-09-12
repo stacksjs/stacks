@@ -22,6 +22,7 @@ async function checkLifecycle(database: { dialect: 'sqlite' | 'postgres' | 'mysq
             DB_DATABASE: database.url.pathname.slice(1),
             DB_USERNAME: decodeURIComponent(database.url.username),
             DB_PASSWORD: decodeURIComponent(database.url.password),
+            ...(database.dialect === 'mysql' ? { DB_SSL: database.url.searchParams.get('ssl') === 'true' ? 'true' : 'false' } : {}),
           } : {}),
           STACKS_SESSION_FIXTURE_DB: file,
         },

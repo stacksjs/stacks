@@ -16,6 +16,7 @@ test.skipIf(!process.env.STACKS_TEST_MYSQL_URL)('MySQL session refresh preserves
         ...process.env, APP_ENV: 'test', DB_CONNECTION: 'mysql', DB_DATABASE_PATH: ':memory:',
         DB_HOST: url.hostname, DB_PORT: url.port || '3306', DB_DATABASE: name,
         DB_USERNAME: decodeURIComponent(url.username), DB_PASSWORD: decodeURIComponent(url.password),
+        DB_SSL: url.searchParams.get('ssl') === 'true' ? 'true' : 'false',
       },
       stdout: 'pipe', stderr: 'pipe',
     })

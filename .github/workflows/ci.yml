@@ -263,7 +263,7 @@ jobs:
         if: ${{ !cancelled() && steps.install.outcome == 'success' }}
         env:
           # Disposable CI service. The fixtures create/drop unique databases.
-          STACKS_TEST_MYSQL_URL: mysql://root:root@127.0.0.1:3306/mysql
+          STACKS_TEST_MYSQL_URL: mysql://root:root@127.0.0.1:3306/mysql?ssl=true
         run: |
           failed=""
           for dir in storage/framework/core/*/tests; do

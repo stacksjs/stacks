@@ -18,6 +18,10 @@ const { sessionRefresh } = await import('../../src/session-auth')
 const { registerPersistentQueryHooks } = await import('@stacksjs/query-builder')
 
 try {
+  if (process.env.DB_SSL === 'true') {
+    const status = await db.unsafe("SHOW STATUS LIKE 'Ssl_cipher'").execute()
+    assert(status[0]?.Value, 'the refresh connection must negotiate TLS')
+  }
   setSystemTime(new Date('2030-01-02T03:04:05.000Z'))
   await db.unsafe('CREATE TABLE sessions (id VARCHAR(255) PRIMARY KEY, expires_at DATETIME, last_activity BIGINT, ip_address TEXT, user_agent TEXT)').execute()
   await db.insertInto('sessions').values({ id: 'mysql-refresh', expires_at: sqlDateTime(new Date(Date.now() + 60_000)), last_activity: 0 }).execute()
@@ -37,8 +41,15 @@ try {
       const revoker = Bun.spawnSync([process.execPath, '-e', `
         const db = new Bun.SQL({ adapter: 'mysql', hostname: process.env.DB_HOST,
           port: Number(process.env.DB_PORT), database: process.env.DB_DATABASE,
-          username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD })
-        try { await db.unsafe('DELETE FROM sessions WHERE id = ?', ['mysql-refresh']) }
+          username: process.env.DB_USERNAME, password: process.env.DB_PASSWORD,
+          tls: process.env.DB_SSL === 'true' ? 'require' : 'disable' })
+        try {
+          if (process.env.DB_SSL === 'true') {
+            const status = await db.unsafe("SHOW STATUS LIKE 'Ssl_cipher'")
+            if (!status[0]?.Value) throw new Error('The revocation connection must negotiate TLS')
+          }
+          await db.unsafe('DELETE FROM sessions WHERE id = ?', ['mysql-refresh'])
+        }
         finally { await db.close() }
       `], { cwd: tmpdir(), env: process.env, stdout: 'pipe', stderr: 'pipe', timeout: 5000 })
       revoked = revoker.exitCode === 0

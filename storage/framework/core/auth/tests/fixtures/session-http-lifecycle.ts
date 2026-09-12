@@ -48,6 +48,10 @@ const password = 'session-fixture-password'
 const timestamp = dialect === 'mysql' ? 'DATETIME(3)' : 'TIMESTAMP'
 
 try {
+  if (dialect === 'mysql' && process.env.DB_SSL === 'true') {
+    const status = await db.unsafe("SHOW STATUS LIKE 'Ssl_cipher'").execute()
+    assert(status[0]?.Value, 'the session connection must negotiate TLS')
+  }
   if (phase === 'login') {
     await db.unsafe(`CREATE TABLE users (
       id ${dialect === 'sqlite' ? 'INTEGER' : 'BIGINT'} PRIMARY KEY, name TEXT, email TEXT NOT NULL, password TEXT NOT NULL,
