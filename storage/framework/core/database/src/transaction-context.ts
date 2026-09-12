@@ -44,13 +44,11 @@ type AfterCommitCallback = () => Promise<void> | void
 
 interface TransactionScope {
   /** Buffered callbacks to fire after the outer transaction commits. */
-  pending: AfterCommitCallback[]
-  /**
-   * Depth of nested `db.transaction(...)` calls within this scope.
-   * Nested transactions (savepoints) fire on the OUTER commit, not
-   * the savepoint commit — Eloquent semantics.
-   */
-  depth: number
+  pending: Array<{ callback: AfterCommitCallback, owner: TransactionScope }>
+  /** The savepoint's parent; callbacks remain owned until the outer commit. */
+  parent?: TransactionScope
+  /** Closed scopes cannot enroll new work from lingering async continuations. */
+  accepting: boolean
   /**
    * Optional error handler invoked when a buffered callback throws
    * during flush. Defaults to `console.error` so failures aren't
@@ -73,8 +71,8 @@ export function isInTransaction(): boolean {
 /**
  * Enqueue a callback to fire after the surrounding transaction
  * commits. Returns:
- *   - `true`  — buffered; caller should NOT execute the side-effect now
- *   - `false` — no active transaction; caller should execute immediately
+ *   - `true`: handled, either buffered or discarded from a closed scope
+ *   - `false`: no transaction context; caller should execute immediately
  *
  * This is the low-level primitive. Higher-level facades (queue
  * dispatch, mailer send, event emit) wrap it with their own
@@ -83,7 +81,13 @@ export function isInTransaction(): boolean {
 export function enqueueAfterCommit(callback: AfterCommitCallback): boolean {
   const scope = transactionStorage.getStore()
   if (!scope) return false
-  scope.pending.push(callback)
+  for (let owner: TransactionScope | undefined = scope; owner; owner = owner.parent) {
+    // Consume rather than return false: false tells the dispatcher to execute
+    // immediately, which would let rolled-back work escape the buffer entirely.
+    if (!owner.accepting)
+      return true
+  }
+  scope.pending.push({ callback, owner: scope })
   return true
 }
 
@@ -96,55 +100,72 @@ export function enqueueAfterCommit(callback: AfterCommitCallback): boolean {
  * Used by `@stacksjs/orm`'s `transaction()` wrapper to thread the
  * scope through user code. Apps don't call this directly.
  *
- * Nested calls reuse the outer scope rather than nesting — flush
- * happens on the OUTERMOST commit, matching the savepoint
- * semantics of every relational database. The depth counter is
- * tracked so the outer call knows when it owns the flush.
+ * Nested calls share an ordered buffer but keep distinct owners. A failed
+ * savepoint discards only its own callbacks and its descendants' callbacks;
+ * a successful savepoint still waits for the outermost commit to flush.
+ * The callback receives an attempt runner for driver retries. Starting a new
+ * attempt discards the previous one's callbacks even if COMMIT, rather than
+ * the callback, failed. Each attempt gets its own async-context owner.
  */
 export async function runInTransactionScope<T>(
-  fn: () => Promise<T>,
+  fn: (runAttempt: <R>(callback: () => Promise<R>) => Promise<R>) => Promise<T>,
   options: { onError?: (err: unknown, index: number) => void } = {},
 ): Promise<T> {
-  const existing = transactionStorage.getStore()
-  if (existing) {
-    // Nested: just track depth and let the outer scope handle flush.
-    existing.depth += 1
-    try {
-      return await fn()
-    }
-    finally {
-      existing.depth -= 1
-    }
-  }
-
+  const parent = transactionStorage.getStore()
   const scope: TransactionScope = {
-    pending: [],
-    depth: 1,
-    onError: options.onError,
+    pending: parent?.pending ?? [],
+    parent,
+    accepting: true,
+    onError: parent?.onError ?? options.onError,
   }
-  let result: T
-  try {
-    result = await transactionStorage.run(scope, fn)
+  let previousAttempt: TransactionScope | undefined
+  const runAttempt = async <R>(callback: () => Promise<R>): Promise<R> => {
+    if (previousAttempt)
+      discardScope(previousAttempt)
+    const attempt: TransactionScope = { pending: scope.pending, parent: scope, accepting: true, onError: scope.onError }
+    previousAttempt = attempt
+    return runOwnedScope(attempt, callback)
   }
-  catch (err) {
-    // Rollback path — drop buffered callbacks without invoking them.
-    // They were predicated on the commit landing.
-    scope.pending.length = 0
-    throw err
-  }
-
+  const result = await runOwnedScope(scope, () => fn(runAttempt))
   // Commit path — fire each callback in order. Errors are swallowed
   // by default (with onError if provided) because the commit
   // already landed; throwing here would falsely tell the caller
   // their write didn't happen.
-  await flushScope(scope)
+  if (!parent)
+    await flushScope(scope)
   return result
+}
+
+async function runOwnedScope<T>(scope: TransactionScope, callback: () => Promise<T>): Promise<T> {
+  try {
+    return await transactionStorage.run(scope, callback)
+  }
+  catch (error) {
+    discardScope(scope)
+    throw error
+  }
+  finally {
+    scope.accepting = false
+  }
+}
+
+function discardScope(scope: TransactionScope): void {
+  scope.accepting = false
+  // Truncating at the starting length would also discard callbacks that
+  // concurrent parent/sibling contexts enrolled while this one awaited.
+  for (let i = scope.pending.length - 1; i >= 0; i--) {
+    let owner: TransactionScope | undefined = scope.pending[i]!.owner
+    while (owner && owner !== scope)
+      owner = owner.parent
+    if (owner === scope)
+      scope.pending.splice(i, 1)
+  }
 }
 
 async function flushScope(scope: TransactionScope): Promise<void> {
   for (let i = 0; i < scope.pending.length; i++) {
     try {
-      await scope.pending[i]!()
+      await scope.pending[i]!.callback()
     }
     catch (err) {
       if (scope.onError) {

@@ -614,14 +614,26 @@ function applySqliteTransactionSerialization(instance: RawQueryBuilder): void {
  * is still open. Flushing outside it would send an after-commit read to a
  * replica, which can lag the commit that callback is predicated on.
  *
- * Reentrant, so the ORM's `transaction()` wrapping this one is a no-op beyond
- * depth tracking, and `transactional()` / `savepoint()` - which call
- * `this.transaction(...)` internally - are covered by the same patch.
+ * Reentrant, so the ORM's `transaction()` wrapping this one shares the buffer
+ * without flushing twice. Each callback handle is instrumented too, since
+ * bun-query-builder creates a new builder for nested transactions/savepoints.
  */
+const dispatchScopedBuilders = new WeakSet<object>()
+
 function applyTransactionDispatchScope(instance: RawQueryBuilder): void {
-  const original = (instance.transaction as (...args: any[]) => Promise<any>).bind(instance)
-  ;(instance).transaction = (...args: any[]) =>
-    runInTransactionScope(() => original(...args))
+  if (dispatchScopedBuilders.has(instance))
+    return
+  dispatchScopedBuilders.add(instance)
+
+  for (const method of ['transaction', 'savepoint'] as const) {
+    const original = instance[method].bind(instance) as RawQueryBuilder['transaction']
+    instance[method] = (callback, options?: Parameters<RawQueryBuilder['transaction']>[1]) => runInTransactionScope((runAttempt) => {
+      return original(tx => runAttempt(async () => {
+        applyTransactionDispatchScope(tx)
+        return callback(tx)
+      }), options)
+    })
+  }
 }
 
 /**

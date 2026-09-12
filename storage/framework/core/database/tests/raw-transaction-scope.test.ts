@@ -110,4 +110,55 @@ describe('db.transaction() and the after-commit scope', () => {
 
     expect(fired).toEqual(['inner'])
   })
+
+  it('discards a rolled-back savepoint callback when the outer transaction commits', async () => {
+    await db.unsafe('CREATE TABLE scope_savepoint_probe (id INTEGER PRIMARY KEY)').execute()
+    const fired: string[] = []
+
+    await db.transaction(async (outer) => {
+      await outer.unsafe('INSERT INTO scope_savepoint_probe (id) VALUES (1)').execute()
+      enqueueAfterCommit(() => { fired.push('outer') })
+      await expect(db.transaction(async (inner) => {
+        await inner.unsafe('INSERT INTO scope_savepoint_probe (id) VALUES (2)').execute()
+        enqueueAfterCommit(() => { fired.push('rolled-back-inner') })
+        throw new Error('rollback savepoint only')
+      })).rejects.toThrow('rollback savepoint only')
+      expect(fired).toEqual([])
+    })
+
+    const rows = await db.unsafe('SELECT id FROM scope_savepoint_probe ORDER BY id').execute()
+    expect(rows.map(row => row.id)).toEqual([1])
+    expect(fired).toEqual(['outer'])
+  })
+
+  it.each(['transaction', 'savepoint'] as const)('tracks %s opened through the callback handle', async (method) => {
+    await db.unsafe('CREATE TABLE IF NOT EXISTS scope_handle_probe (id INTEGER PRIMARY KEY)').execute()
+    const fired: string[] = []
+    await db.transaction(async (outer) => {
+      enqueueAfterCommit(() => { fired.push('outer') })
+      await expect(outer[method](async (inner) => {
+        await inner.unsafe('INSERT INTO scope_handle_probe (id) VALUES (2)').execute()
+        enqueueAfterCommit(() => { fired.push('rolled-back-inner') })
+        throw new Error('callback handle rollback')
+      })).rejects.toThrow('callback handle rollback')
+    })
+    expect(await db.unsafe('SELECT id FROM scope_handle_probe').execute()).toEqual([])
+    expect(fired).toEqual(['outer'])
+  })
+
+  it('consumes late dispatches from an already rolled-back savepoint', async () => {
+    const fired: string[] = []
+    const release = Promise.withResolvers<void>()
+    let lingering: Promise<boolean> | undefined
+    await db.transaction(async (outer) => {
+      await expect(outer.savepoint(async () => {
+        lingering = release.promise.then(() => enqueueAfterCommit(() => { fired.push('late') }))
+        await Promise.all([Promise.reject(new Error('rollback first')), lingering])
+      })).rejects.toThrow('rollback first')
+      release.resolve()
+      expect(await lingering).toBe(true)
+      enqueueAfterCommit(() => { fired.push('outer') })
+    })
+    expect(fired).toEqual(['outer'])
+  })
 })

@@ -119,13 +119,7 @@ describe('transaction-context', () => {
       expect(log).toEqual(['outer-1', 'inner', 'outer-2'])
     })
 
-    test('inner-scope rollback does NOT drop outer callbacks (deviation from PG savepoint, but matches Laravel)', async () => {
-      // This matches Laravel's afterCommit semantics: throwing inside
-      // a nested scope rolls back the whole stack from the outer's
-      // perspective. We document this rather than emulating PG's
-      // savepoint-only rollback because most uses of nested
-      // transactions in Stacks code are accidental (two functions
-      // both calling `transaction()` on the same code path).
+    test('an uncaught inner failure discards the whole outer transaction', async () => {
       let fired = 0
       try {
         await runInTransactionScope(async () => {
@@ -137,6 +131,96 @@ describe('transaction-context', () => {
       }
       catch {}
       expect(fired).toBe(0)
+    })
+
+    test('a caught inner failure discards only its callbacks and descendants', async () => {
+      const fired: string[] = []
+      await runInTransactionScope(async () => {
+        enqueueAfterCommit(() => { fired.push('outer-before') })
+        await expect(runInTransactionScope(async () => {
+          enqueueAfterCommit(() => { fired.push('inner') })
+          await runInTransactionScope(async () => {
+            enqueueAfterCommit(() => { fired.push('descendant') })
+          })
+          throw new Error('savepoint failed')
+        })).rejects.toThrow('savepoint failed')
+        enqueueAfterCommit(() => { fired.push('outer-after') })
+        expect(__pendingAfterCommitCount()).toBe(2)
+      })
+      expect(fired).toEqual(['outer-before', 'outer-after'])
+    })
+
+    test('a nested rollback does not truncate concurrent parent or sibling work', async () => {
+      const fired: string[] = []
+      const entered = Promise.withResolvers<void>()
+      const release = Promise.withResolvers<void>()
+      await runInTransactionScope(async () => {
+        const failing = runInTransactionScope(async () => {
+          enqueueAfterCommit(() => { fired.push('rolled-back') })
+          entered.resolve()
+          await release.promise
+          throw new Error('nested rollback')
+        })
+        const rejected = failing.catch(error => error)
+        await entered.promise
+        enqueueAfterCommit(() => { fired.push('parent') })
+        await runInTransactionScope(async () => {
+          enqueueAfterCommit(() => { fired.push('sibling') })
+        })
+        release.resolve()
+        expect((await rejected as Error).message).toBe('nested rollback')
+      })
+      expect(fired).toEqual(['parent', 'sibling'])
+    })
+
+    test('retry discards a returned attempt without clearing the parent buffer', async () => {
+      const fired: string[] = []
+      await runInTransactionScope(async () => {
+        enqueueAfterCommit(() => { fired.push('parent') })
+        await runInTransactionScope(async (runAttempt) => {
+          await runAttempt(async () => {
+            enqueueAfterCommit(() => { fired.push('failed-at-commit') })
+          })
+          await runAttempt(async () => {
+            enqueueAfterCommit(() => { fired.push('committed-retry') })
+          })
+        })
+      })
+      expect(fired).toEqual(['parent', 'committed-retry'])
+    })
+
+    test('a surviving continuation cannot enqueue after its scope rolls back', async () => {
+      const fired: string[] = []
+      const release = Promise.withResolvers<void>()
+      let lingering: Promise<boolean> | undefined
+      await runInTransactionScope(async () => {
+        await expect(runInTransactionScope(async () => {
+          lingering = release.promise.then(() => enqueueAfterCommit(() => { fired.push('late-rolled-back') }))
+          await Promise.all([Promise.reject(new Error('rollback')), lingering])
+        })).rejects.toThrow('rollback')
+        release.resolve()
+        expect(await lingering).toBe(true)
+        enqueueAfterCommit(() => { fired.push('parent') })
+      })
+      expect(fired).toEqual(['parent'])
+    })
+
+    test('a retry gets a new owner while old async continuations remain closed', async () => {
+      const fired: string[] = []
+      const release = Promise.withResolvers<void>()
+      let lingering: Promise<boolean> | undefined
+      await runInTransactionScope(async (runAttempt) => {
+        await runAttempt(async () => {
+          enqueueAfterCommit(() => { fired.push('first-attempt') })
+          lingering = release.promise.then(() => enqueueAfterCommit(() => { fired.push('late-first-attempt') }))
+        })
+        await runAttempt(async () => {
+          release.resolve()
+          expect(await lingering).toBe(true)
+          enqueueAfterCommit(() => { fired.push('retry') })
+        })
+      })
+      expect(fired).toEqual(['retry'])
     })
   })
 
