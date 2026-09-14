@@ -627,7 +627,7 @@ export class Auth {
     log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
     // Check if token is expired
-    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) < new Date()) {
+    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
@@ -677,7 +677,7 @@ export class Auth {
     if (!accessToken)
       return undefined
 
-    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) < new Date()) {
+    if (accessToken.expires_at && (parseSqlDateTime(accessToken.expires_at) ?? new Date(0)) <= new Date()) {
       await db.deleteFrom('oauth_access_tokens')
         .where('id', '=', accessToken.id)
         .execute()
