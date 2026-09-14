@@ -396,6 +396,14 @@ try {
       await assertPairLive(replacement, true)
     })
   }
+  await check('adding an optional password stamp takes effect without restarting the process', async () => {
+    const pair = await createToken(42, 'legacy-upgrade', ['read'], { tokenableType: 'legacy_owner_rows' })
+    assert(await findToken(pair.plainTextToken), 'a model without a password stamp remains supported')
+    await db.unsafe('ALTER TABLE legacy_owner_rows ADD COLUMN password_changed_at TIMESTAMP').execute()
+    await db.updateTable('legacy_owner_rows').set({ password_changed_at: sqlDateTime(new Date(Date.now() + 3_600_000)) }).where('id', '=', 42).execute()
+    assert.equal(await findToken(pair.plainTextToken), null, 'the newly installed stamp must be enforced')
+    await assert.rejects(refreshToken(pair.refreshToken!), /Invalid or expired refresh token/)
+  })
   // Both quote styles occur in the literal table name. The stamp lookup must
   // treat it as one identifier rather than invalid SQL or an absent column.
   const quotedOwner = 'author"archive`old'

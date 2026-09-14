@@ -188,7 +188,19 @@ export async function getPasswordChangedAt(
   const quote = isMysql ? '`' : '"'
   const table = `${quote}${ownerType.replaceAll(quote, quote + quote)}${quote}`
   try {
-    if (isPostgres && q !== db) {
+    if (isMysql) {
+      // This stamp is optional on legacy models. Check existence instead of
+      // preparing an invalid query: MySQL drivers can retain a failed prepare
+      // even after a later schema upgrade adds the missing table or column.
+      const columns = await q.unsafe(`
+        SELECT 1 FROM information_schema.columns
+        WHERE table_schema = DATABASE() AND table_name = ?
+        AND column_name = 'password_changed_at'
+      `, [ownerType])
+      if ((columns as unknown[]).length === 0)
+        return null
+    }
+    else if (isPostgres && q !== db) {
       // A missing optional column aborts a PostgreSQL transaction even when
       // its error is caught. Probe without raising before using a tx runner.
       const columns = await q.unsafe(`
