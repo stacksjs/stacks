@@ -497,7 +497,7 @@ export async function createToken(
 
   // Get the personal access client
   const clients = await db.unsafe(`
-    SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} LIMIT 1
+    SELECT id FROM oauth_clients WHERE personal_access_client = ${boolTrue} AND revoked = ${boolFalse} LIMIT 1
   `)
 
   const client = (clients as unknown as OAuthClientRow[])[0]

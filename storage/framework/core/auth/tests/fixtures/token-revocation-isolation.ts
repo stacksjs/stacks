@@ -21,7 +21,7 @@ initializeDbConfig({ app: { env: 'test' }, database: {
   queryLogging: { enabled: false },
 } })
 const { ensureFrameworkAuthTables } = await import('../helpers/auth-schema')
-const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken, currentAccessToken, tokenCan, tokenCant, tokenCanAll, tokenCanAny, tokenAbilities } = await import('../../src/tokens')
+const { createToken, revokeToken, revokeTokenById, revokeAllTokens, revokeOtherTokens, validateRefreshToken, refreshToken, findToken, currentAccessToken, tokenCan, tokenCant, tokenCanAll, tokenCanAny, tokenAbilities, createClient, revokeClient } = await import('../../src/tokens')
 const { Auth } = await import('../../src/authentication')
 const { authCookie, logoutCookie } = await import('../../src/cookie-auth')
 const { enhanceRequest } = await import('@stacksjs/router')
@@ -288,6 +288,35 @@ try {
       }
     })
   }
+  // Revoking the installation's personal client must stop new token issuance,
+  // even when an unrelated, active OAuth client is still present.
+  const personalClients = await db.selectFrom('oauth_clients').select('id').where('personal_access_client', '=', true).get()
+  for (const client of personalClients)
+    await revokeClient(Number(client.id))
+  assert((await db.selectFrom('oauth_clients').where('personal_access_client', '=', true).select('revoked').get()).every(client => Boolean(client.revoked)))
+  await createClient({ name: 'non-personal', redirect: 'https://revocation.test/callback', passwordClient: true })
+  for (const withRefreshToken of [false, true]) {
+    await check(`revoked personal clients cannot mint tokens (refresh: ${withRefreshToken})`, async () => {
+      const before = await db.selectFrom('oauth_clients').selectAll().orderBy('id').get()
+      await assert.rejects(createToken(42, 'revoked-client', ['read'], { withRefreshToken }), /No personal access client found/)
+      assert.equal((await db.selectFrom('oauth_access_tokens').get()).length, 0)
+      assert.equal((await db.selectFrom('oauth_refresh_tokens').get()).length, 0)
+      assert.deepEqual(await db.selectFrom('oauth_clients').selectAll().orderBy('id').get(), before)
+    })
+  }
+  await check('a replacement active personal client can mint both token forms', async () => {
+    const active = await createClient({ name: 'replacement', redirect: 'https://revocation.test/callback', personalAccessClient: true })
+    for (const withRefreshToken of [false, true]) {
+      const pair = await createToken(42, 'active-client', ['read'], { withRefreshToken })
+      assert.equal(Number(pair.accessToken.clientId), Number(active.client.id))
+      assert(await findToken(pair.plainTextToken))
+      assert.deepEqual(pair.accessToken.scopes, ['read'])
+      if (withRefreshToken)
+        assert.equal(await validateRefreshToken(pair.refreshToken!), true)
+      else
+        assert.equal(pair.refreshToken, undefined)
+    }
+  })
 }
 finally {
   resetDatabaseConnection()
