@@ -77,10 +77,11 @@ function normalizeEnvName(value: string | undefined): string | undefined {
 // preloader, and config/app code can read env before it runs — so the env
 // proxy needs to decrypt on read too. These helpers resolve the private key
 // once (process.env first, then `.env.keys`) and cache the result (including
-// "no key") per environment, so a per-read decrypt costs a map lookup rather
-// than a disk read.
+// "no key") per environment and project root, so repeated reads use the cache
+// rather than touching disk.
 
 let cachedKeyEnv: string | null = null
+let cachedKeyCwd: string | null = null
 let cachedPrivateKey: string | undefined
 
 /**
@@ -134,14 +135,14 @@ export function activeEnvName(options: { env?: string } = {}): string {
  * Resolve the dotenvx private key for the active environment, checking
  * process.env (`DOTENV_PRIVATE_KEY_<ENV>` then `DOTENV_PRIVATE_KEY`) and
  * finally a local `.env.keys` file. The result — key or `undefined` — is
- * cached per environment so the env proxy can call this on every encrypted
- * read without repeatedly touching disk.
+ * cached per environment and resolved project root so the env proxy can read
+ * encrypted values without repeatedly touching disk.
  */
 export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}): string | undefined {
   const envName = activeEnvName(options)
-  const cwd = options.cwd || process.cwd()
+  const cwd = resolve(options.cwd || process.cwd())
 
-  if (cachedKeyEnv === envName)
+  if (cachedKeyEnv === envName && cachedKeyCwd === cwd)
     return cachedPrivateKey
 
   let key = getPrivateKey(envName)
@@ -151,6 +152,7 @@ export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}):
     key = keyFromKeysFile(envName, cwd)
 
   cachedKeyEnv = envName
+  cachedKeyCwd = cwd
   cachedPrivateKey = key
   return key
 }
@@ -173,6 +175,7 @@ export function resolvePrivateKey(options: { env?: string, cwd?: string } = {}):
  */
 export function resetPrivateKeyCache(): void {
   cachedKeyEnv = null
+  cachedKeyCwd = null
   cachedPrivateKey = undefined
   loadedEnvName = undefined
 }
@@ -379,6 +382,7 @@ export function autoLoadEnv(options: Omit<EnvPluginOptions, 'path'> = {}): { loa
   if (loadedEnvName !== env) {
     loadedEnvName = env
     cachedKeyEnv = null
+    cachedKeyCwd = null
     cachedPrivateKey = undefined
   }
 

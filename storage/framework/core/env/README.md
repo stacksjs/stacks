@@ -379,6 +379,15 @@ loadEnv({
 })
 ```
 
+### Lazy reads across projects
+
+`resolvePrivateKey({ env, cwd })` and `decryptEnvValue(value, { env, cwd })`
+cache the last lookup by environment and resolved project directory. Switching
+projects resolves that project's key instead of reusing the previous project's
+key or cached missing-key result. Equivalent directory paths share the warm
+lookup. Key-file changes within the same project still require an explicit
+`resetPrivateKeyCache()` before the next read.
+
 ### `encryptEnv(options)`
 
 Encrypt a .env file.
